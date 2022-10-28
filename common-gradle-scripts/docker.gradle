@@ -1,5 +1,4 @@
-// TODO: append image version
-def imageName = 'wso2/' + project.name
+def imageName = System.getenv("docker_username") + '/' + project.name + ':' project.version
 
 task docker_login(type:Exec) {
     group 'docker'
