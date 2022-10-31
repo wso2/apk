@@ -1,0 +1,14 @@
+task go_clean(type:Exec) {
+    group 'go'
+    commandLine 'go', 'clean'
+}
+
+task go_test(type:Exec) {
+    group 'go'
+    commandLine 'go', 'test'
+}
+
+task go_build(type:Exec) {
+    group 'go'
+    commandLine 'go', 'build', 'main.go'
+}
