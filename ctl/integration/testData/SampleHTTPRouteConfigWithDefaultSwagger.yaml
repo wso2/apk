@@ -1,0 +1,21 @@
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: petstore-test-1.0.0
+  labels:
+    version: 1.0.0
+spec:
+  parentRefs:
+  - name: eg
+  hostnames:
+  - www.apk.com
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /
+    backendRefs:
+    - name: httpbin
+      port: 80
+      group: ""
+      kind: Service

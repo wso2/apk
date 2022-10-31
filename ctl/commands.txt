@@ -1,0 +1,20 @@
+./apkctl install platform
+
+kubectl apply -f sample-resources/BackendService.yaml
+
+./apkctl create api demo-petstore --version 1.0.1 -f sample-resources/swagger.yaml --dry-run
+
+./apkctl create api petstore --version 1.0.2  --service-url=http://httpbin.default.svc.cluster.local:80 -f sample-resources/openapi.yaml --dry-run
+
+./apkctl create api petstore --version 1.0.3  --service-url=http://httpbin.default.svc.cluster.local:80 --dry-run
+
+./apkctl create api demo-petstore --version 1.0.1 -f sample-resources/swagger.yaml
+
+curl --verbose --header "Host: www.apk.com" http://192.168.1.8:8080/api/v3/pet/3
+
+./apkctl get apis
+
+./apkctl delete api demo-petstore
+
+./apkctl uninstall platform
+

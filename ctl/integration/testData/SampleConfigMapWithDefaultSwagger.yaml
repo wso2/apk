@@ -1,0 +1,85 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: petstore-test-1.0.0
+  namespace: default
+data:
+  openapi.yaml: |
+    extensionprops: {}
+    openapi: 3.0.1
+    components:
+      extensionprops: {}
+      securitySchemes:
+        default:
+          ref: ""
+          value:
+            extensionprops: {}
+            type: oauth2
+            flows:
+              extensionprops: {}
+              implicit:
+                extensionprops: {}
+                authorizationUrl: https://test.com
+                scopes: {}
+    info:
+      extensionprops: {}
+      title: petstore-test
+      version: 1.0.0
+    paths:
+      /*:
+        extensionprops: {}
+        delete:
+          extensionprops: {}
+          responses:
+            "200":
+              ref: ""
+              value:
+                extensionprops: {}
+                description: OK
+          security:
+          - default: []
+        get:
+          extensionprops: {}
+          responses:
+            "200":
+              ref: ""
+              value:
+                extensionprops: {}
+                description: OK
+          security:
+          - default: []
+        patch:
+          extensionprops: {}
+          responses:
+            "200":
+              ref: ""
+              value:
+                extensionprops: {}
+                description: OK
+          security:
+          - default: []
+        post:
+          extensionprops: {}
+          responses:
+            "200":
+              ref: ""
+              value:
+                extensionprops: {}
+                description: OK
+          security:
+          - default: []
+        put:
+          extensionprops: {}
+          responses:
+            "200":
+              ref: ""
+              value:
+                extensionprops: {}
+                description: OK
+          security:
+          - default: []
+    security:
+    - default: []
+    servers:
+    - extensionprops: {}
+      url: http://httpbin.default.svc.cluster.local:80/api/v3
