@@ -1,24 +1,18 @@
-def imageName = System.getenv("docker_username") + '/' + project.name + ':' project.version
+def imageName = System.getenv('docker_username') + '/' + project.name + ':' + project.version
 
 task docker_login(type:Exec) {
     group 'docker'
-    doLast {
-        commandLine 'docker', 'login', '--username', System.getenv("docker_username"), '--password', System.getenv("docker_password")
-    }
+    commandLine 'docker', 'login', '--username', System.getenv('docker_username'), '--password', System.getenv('docker_password')
 }
 
 task docker_build(type:Exec) {
     group 'docker'
-    doLast {
-        commandLine 'docker', 'build', '-t', imageName, '.'
-    }
+    commandLine 'docker', 'build', '-t', imageName, '.'
 }
 
 task docker_push(type:Exec) {
     group 'docker'
     dependsOn docker_login
     dependsOn docker_build
-    doLast {
-        commandLine 'docker', 'push', imageName
-    }
+    commandLine 'docker', 'push', imageName
 }
