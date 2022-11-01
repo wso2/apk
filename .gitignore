@@ -25,3 +25,6 @@ hs_err_pid*
 # gradle
 .gradle
 build/
+
+# macOS
+.DS_Store
