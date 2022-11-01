@@ -1,14 +1,17 @@
 tasks.register('go_clean', Exec) {
     group 'go'
+    description 'Removes object files from package source directories.'
     commandLine 'go', 'clean'
 }
 
 tasks.register('go_test', Exec) {
     group 'go'
+    description 'Automates testing the packages named by the import paths.'
     commandLine 'go', 'test'
 }
 
 tasks.register('go_build', Exec) {
     group 'go'
+    description 'Compiles the packages named by the import paths, along with their dependencies.'
     commandLine 'go', 'build', 'main.go'
 }

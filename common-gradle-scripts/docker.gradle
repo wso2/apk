@@ -2,16 +2,19 @@ def imageName = System.getenv('docker_username') + '/' + project.name + ':' + pr
 
 tasks.register('docker_login', Exec) {
     group 'docker'
+    description 'Log in to a Docker registry.'
     commandLine 'docker', 'login', '--username', System.getenv('docker_username'), '--password', System.getenv('docker_password')
 }
 
 tasks.register('docker_build', Exec) {
     group 'docker'
+    description 'Build an image from a Dockerfile.'
     commandLine 'docker', 'build', '-t', imageName, '.'
 }
 
 tasks.register('docker_push', Exec) {
     group 'docker'
+    description 'Push an image or a repository to a registry.'
     dependsOn docker_login
     dependsOn docker_build
     commandLine 'docker', 'push', imageName
