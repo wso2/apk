@@ -1,0 +1,133 @@
+/*
+Copyright 2022.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+syntax = "proto3";
+option go_package = "github.com/Tharsanan1/grpc-agent/grpc/api";
+package wso2.agent.api;
+service APIService {
+    rpc createAPI(API) returns (Response);
+    rpc updateAPI(API) returns (Response);
+    rpc deleteAPI(API) returns (Response);
+}
+
+message API {
+    string apiUUID = 1;
+    string apiProvider = 2;
+    string apiVersion = 3;
+    string apiName = 4;
+    string context = 5;
+    string contextTemplate = 6;
+    string apiTire = 7;
+    string apiType = 8;
+    string organization = 9;
+    string gatewayVendor = 10;
+    string createdBy = 11;
+    string createdTime = 12;
+    string updatedBy = 13;
+    string updatedTime = 14;
+    string status = 15;
+    string versionComparable = 16;
+    string logLevel = 17;
+    int64 revisionsCreated = 18;
+    Swagger swagger = 19;
+    repeated HttpRoute httpRoutesProd = 20;
+    repeated HttpRoute httpRoutesSand = 21;
+    
+}
+
+message Swagger {
+    string swagger = 1;
+}
+
+
+
+message HttpRoute {
+    repeated string hostnames = 1;
+    repeated HttpPath httpPaths = 2;
+    repeated ApiPolicy apiPolicies = 3;
+}
+
+message Matching {
+    repeated HttpPath httpPaths = 1;
+    repeated ApiPolicy apiPolicies = 2;
+}
+
+message HttpPath {
+    Path path = 1;
+    string method = 2;
+    repeated QueryParam queryParams = 3;
+
+}
+
+message ApiPolicy {
+    string name = 1;
+    string type = 2;
+    string definition = 3;
+
+}
+
+message Path {
+    string type = 1;
+    string value = 2;
+}
+
+message QueryParam {
+    string type = 1;
+    string name = 2;
+    string value = 3;
+}
+
+message ScopeMapping {
+    repeated Scope scopes = 1;
+    repeated SMapping scopeMappings = 2;
+
+}
+
+message Scope {
+    string name = 1;
+    string displayName = 2;
+    string description = 3;
+    repeated string roles = 4;
+}
+
+message SMapping {
+    string name = 1;
+    string path = 2;
+    string method = 3;
+    repeated string scopes = 4;
+}
+
+message Authentication {
+    string name = 1;
+    ServiceRef serviceRef = 2;
+    repeated string authTypes = 3;
+}
+
+message ServiceRef {
+    string group = 1;
+    string kind = 2;
+    string name = 3;
+    string port = 4;
+}
+
+message RateLimit { 
+    string name = 1;
+    string definition = 2;
+}
+
+message Response {
+    bool result = 1;
+}

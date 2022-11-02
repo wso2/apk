@@ -97,6 +97,8 @@ type adapter struct {
 	SoapErrorInXMLEnabled bool
 	// SourceControl represents the configuration related to the repository where the api artifacts are stored
 	SourceControl sourceControl
+	// GRPCClient represents the configuration related to gRPC connection to Management server to agent
+	GRPCClient gRPCCLient
 }
 
 // Envoy Listener Component related configurations.
@@ -543,4 +545,13 @@ type mutualSSL struct {
 	EnableClientValidation          bool
 	ClientCertificateEncode         bool
 	EnableOutboundCertificateHeader bool
+}
+
+type gRPCCLient struct {
+	ManagementServerAddress string;
+	ManagementServerGRPCPort int;
+	MaxAttempts int;
+	MaxCapacity int;
+	DesiredCapacity int;
+	BackOffInMilliSeconds int;
 }
