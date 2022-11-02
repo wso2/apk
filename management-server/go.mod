@@ -1,4 +1,4 @@
-module APKManagementServer
+module github.com/wso2/apk/APKManagementServer
 
 go 1.18
 

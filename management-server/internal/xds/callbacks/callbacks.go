@@ -19,10 +19,10 @@
 package callbacks
 
 import (
-	"APKManagementServer/internal/logger"
 	"context"
 
 	discovery "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
+	"github.com/wso2/apk/APKManagementServer/internal/logger"
 )
 
 // Callbacks is used to debug the xds server related communication.

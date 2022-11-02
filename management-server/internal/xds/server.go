@@ -18,8 +18,6 @@
 package xds
 
 import (
-	"APKManagementServer/internal/logger"
-	"APKManagementServer/internal/xds/callbacks"
 	"context"
 	"fmt"
 	"math/rand"
@@ -29,6 +27,8 @@ import (
 
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
+	"github.com/wso2/apk/APKManagementServer/internal/logger"
+	"github.com/wso2/apk/APKManagementServer/internal/xds/callbacks"
 	apkmgt_application "github.com/wso2/product-microgateway/adapter/pkg/discovery/api/wso2/discovery/apkmgt"
 	apkmgt_service "github.com/wso2/product-microgateway/adapter/pkg/discovery/api/wso2/discovery/service/apkmgt"
 	wso2_cache "github.com/wso2/product-microgateway/adapter/pkg/discovery/protocol/cache/v3"
@@ -38,12 +38,9 @@ import (
 )
 
 var (
-	apiCache wso2_cache.SnapshotCache
-	// The labels with partition IDs are stored here. <LabelHirerarchy>-P:<partition_ID>
-	// TODO: (VirajSalaka) change the implementation of the snapshot library to provide the same information.
-	introducedLabels map[string]string
-	apiCacheMutex    sync.Mutex
-	Sent             bool = true
+	apiCache      wso2_cache.SnapshotCache
+	apiCacheMutex sync.Mutex
+	Sent          bool = true
 )
 
 const (
@@ -69,7 +66,6 @@ var _ wso2_cache.NodeHash = IDHash{}
 func init() {
 	apiCache = wso2_cache.NewSnapshotCache(false, IDHash{}, nil)
 	rand.Seed(time.Now().UnixNano())
-	introducedLabels = make(map[string]string, 1)
 }
 
 //FeedData mock data

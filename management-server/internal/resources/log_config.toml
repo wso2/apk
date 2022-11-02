@@ -13,5 +13,5 @@ Compress = true
 # LogLevels = "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC"
 
 [[pkg]]
-name = "github.com/AmaliMatharaarachchi/APKAgent/xds"
+name = "github.com/wso2/apk/APKAgent/xds"
 logLevel = "INFO"

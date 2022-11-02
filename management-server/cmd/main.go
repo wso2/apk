@@ -18,10 +18,11 @@
 package main
 
 import (
-	"APKManagementServer/internal/logger"
-	"APKManagementServer/internal/xds"
 	"os"
 	"os/signal"
+
+	"github.com/wso2/apk/APKManagementServer/internal/logger"
+	"github.com/wso2/apk/APKManagementServer/internal/xds"
 )
 
 func main() {
