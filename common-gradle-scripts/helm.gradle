@@ -1,0 +1,47 @@
+tasks.register('helm_dependency_build', Exec) {
+    group 'helm'
+    description 'Build out the charts/ directory from the Chart.lock file.'
+    commandLine 'helm', 'dependency', 'build'
+    standardOutput = new ByteArrayOutputStream()
+    ext.outputHelmDependencyBuild = {
+        return standardOutput.toString()
+    }
+}
+
+tasks.register('helm_dependency_update', Exec) {
+    group 'helm'
+    description 'Update the on-disk dependencies to mirror Chart.yaml.'
+    commandLine 'helm', 'dependency', 'update'
+    standardOutput = new ByteArrayOutputStream()
+    ext.outputHelmDependencyUpdate = {
+        return standardOutput.toString()
+    }
+}
+
+tasks.register('helm_template', Exec) {
+    group 'helm'
+    description 'Render chart templates locally and display the output.'
+    dependsOn helm_dependency_build
+    commandLine 'helm', 'template', '.'
+    standardOutput = new ByteArrayOutputStream()
+    ext.outputHelmTemplate = {
+        return standardOutput.toString()
+    }
+}
+
+tasks.register('helm_push', Exec) {
+    group 'helm'
+    description 'Push helm chart to chartmuseum.'
+    dependsOn helm_dependency_update
+    // TODO: set configurable properties
+    commandLine 'helm', 'repo', 'add', 'chartmuseum', 'http://localhost:8080'
+    commandLine 'helm', 'package', '.'
+    commandLine 'helm', 'plugin', 'install', 'https://github.com/chartmuseum/helm-push'
+    commandLine 'helm', 'cm-push', '.', 'chartmuseum'
+    commandLine 'helm', 'repo', 'update', 'chartmuseum'
+    commandLine 'helm', 'search', 'repo', 'ipk', '--devel'
+    standardOutput = new ByteArrayOutputStream()
+    ext.outputHelmPush = {
+        return standardOutput.toString()
+    }
+}
