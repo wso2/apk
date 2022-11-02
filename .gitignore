@@ -28,3 +28,6 @@ build/
 
 # macOS
 .DS_Store
+
+# Directories generated for helm
+helm-charts/charts/
