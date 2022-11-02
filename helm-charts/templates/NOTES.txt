@@ -1,0 +1,12 @@
+You can get the ip-address using 'kubectl get ing' command, IP address will be shown under ADDRESS column.
+
+To connect with devportal use http://<ip-address>//api/am/devportal/<version>/<uri>, for example http://192.168.49.2/api/am/devportal/v2/apis?limit=2&offset=2
+
+To connect with admin use http://<ip-address>//api/am/admin/<version>/<uri>, for example http://192.168.49.2/api/am/admin/v3/settings?limit=2&offset=2
+
+To connect with publisher use http://<ip-address>//api/am/publisher/<version>/<uri>, for example 192.168.49.2/api/am/publisher/v3/apis?limit=2&offset=2&sortBy=name&sortOrder=1
+
+To browse dev portal UI -  Add "<ip-address> portal.ui.wso2" to /etc/hosts file
+Browse the dev portal UI using : https://portal.ui.wso2/
+
+To access the Identity mangement console (If you have installed IPK) add "<ip-address> identity.wso2.com" to /etc/hosts file, and visit https://identity.wso2.com/carbon/

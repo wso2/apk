@@ -1,0 +1,350 @@
+# Copyright (c) 2022, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
+#
+# WSO2 LLC. licenses this file to you under the Apache License,
+# Version 2.0 (the "License"); you may not use this file except
+# in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+wso2:
+  apk:
+    cp:
+      enabled: true
+      postgresql:
+        enabled: true
+      ipk:
+        enabled: true
+      devportal:
+        appName: "devportal-ds"
+        deployment:
+          npi: devportal-ds-npi
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "1028Mi"
+              cpu: "1000m"
+          readinessProbe:
+            path: /api/am/devportal/v2/apis?limit=2&offset=2
+            port: 9443
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 5
+          livenessProbe:
+            path: /api/am/devportal/v2/apis?limit=2&offset=2
+            port: 9443
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 5
+          strategy: Recreate
+          replicas: 1
+          imagePullPolicy: IfNotPresent
+          # TODO update image 
+          image: rakhitharr/apk-devportal:0.1.0
+        ingress:
+          path: /api/am/devportal
+          className: ""
+          annotations:
+            kubernetes.io/ingress.class: "nginx"
+            nginx.ingress.kubernetes.io/affinity: "cookie"
+            nginx.ingress.kubernetes.io/session-cookie-name: "route"
+            nginx.ingress.kubernetes.io/session-cookie-hash: "sha1"
+      admin:
+        appName: "admin-ds"
+        deployment:
+          npi: admin-ds-npi
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "1028Mi"
+              cpu: "1000m"
+          readinessProbe:
+            path: /api/am/admin/v3/settings?limit=2&offset=2
+            port: 9443
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 5
+          livenessProbe:
+            path: /api/am/admin/v3/settings?limit=2&offset=2
+            port: 9443
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 5
+          strategy: Recreate
+          replicas: 1
+          imagePullPolicy: IfNotPresent
+          # TODO update image 
+          image: rakhitharr/apk-admin:0.1.0
+        ingress:
+          path: /api/am/admin
+          className: ""
+          annotations:
+            kubernetes.io/ingress.class: "nginx"
+            nginx.ingress.kubernetes.io/affinity: "cookie"
+            nginx.ingress.kubernetes.io/session-cookie-name: "route"
+            nginx.ingress.kubernetes.io/session-cookie-hash: "sha1"
+      publisher:
+        appName: "publisher-ds"
+        deployment:
+          npi: publisher-ds-npi
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "1028Mi"
+              cpu: "1000m"
+          readinessProbe:
+            path: /api/am/publisher/v3/apis?limit=2&offset=2&sortBy=name&sortOrder=1
+            port: 9443
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 5
+          livenessProbe:
+            path: /api/am/publisher/v3/apis?limit=2&offset=2&sortBy=name&sortOrder=1
+            port: 9443
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 5
+          strategy: Recreate
+          replicas: 1
+          imagePullPolicy: IfNotPresent
+          # TODO update image 
+          image: rakhitharr/apk-publisher:0.1.0
+        ingress:
+          path: /api/am/publisher
+          className: ""
+          annotations:
+            kubernetes.io/ingress.class: "nginx"
+            nginx.ingress.kubernetes.io/affinity: "cookie"
+            nginx.ingress.kubernetes.io/session-cookie-name: "route"
+            nginx.ingress.kubernetes.io/session-cookie-hash: "sha1"
+      sts:
+        appName: "sts-ds"
+        deployment:
+          npi: sts-ds-npi
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "1028Mi"
+              cpu: "1000m"
+          readinessProbe:
+            path: /health
+            port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 5
+          livenessProbe:
+            path: /health
+            port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 5
+          strategy: Recreate
+          replicas: 1
+          imagePullPolicy: IfNotPresent
+          # TODO update image 
+          image: lakshithag/apk-sts
+        ingress:
+          path:  /api/am/sts
+          className: ""
+          annotations:
+            kubernetes.io/ingress.class: "nginx"
+            nginx.ingress.kubernetes.io/affinity: "cookie"
+            nginx.ingress.kubernetes.io/session-cookie-name: "route"
+            nginx.ingress.kubernetes.io/session-cookie-hash: "sha1"
+      devportalUI:
+        appName: "devportal-ui"
+        deployment:
+          npi: devportal-ui-npi
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "1028Mi"
+              cpu: "1000m"
+          readinessProbe:
+            path: /
+            port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 5
+          livenessProbe:
+            path: /
+            port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 5
+          strategy: Recreate
+          replicas: 1
+          imagePullPolicy: IfNotPresent
+          # TODO update image 
+          image: chanaka3d/portals:linux1.0.0
+        ingress:
+          path:  /
+          host: portal.ui.wso2
+          className: ""
+          annotations:
+            kubernetes.io/ingress.class: "nginx"
+            nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+            nginx.ingress.kubernetes.io/affinity: "cookie"
+            nginx.ingress.kubernetes.io/session-cookie-name: "route"
+            nginx.ingress.kubernetes.io/session-cookie-hash: "sha1"
+      cnpg:
+        npi: cnpg-npi
+        instances: 1
+        clusterName: cluster-example
+        appUserPassword: password
+        superUserPassword: password
+
+    dp: 
+      enabled: true
+      cc:
+        adapter: 
+          appName: "cc-adapter"
+          deployment:
+            npi: cc-adapter-npi
+            resources:
+              requests:
+                memory: "128Mi"
+                cpu: "100m"
+              limits:
+                memory: "1028Mi"
+                cpu: "1000m"
+            env:
+              ADAPTER_PRIVATE_KEY_PATH: /home/wso2/security/keystore/mg.key
+              ADAPTER_PUBLIC_CERT_PATH: /home/wso2/security/keystore/mg.pem
+              cp_admin_pwd: admin
+              adapter_admin_pwd: admin
+            readinessProbe:
+              path: /api/am/devportal/v2/apis?limit=2&offset=2
+              port: 9443
+              initialDelaySeconds: 20
+              periodSeconds: 20
+              failureThreshold: 5
+            livenessProbe:
+              path: /api/am/devportal/v2/apis?limit=2&offset=2
+              port: 9443
+              initialDelaySeconds: 20
+              periodSeconds: 20
+              failureThreshold: 5
+            strategy: Recreate
+            replicas: 1
+            imagePullPolicy: IfNotPresent
+            image: wso2/choreo-connect-adapter:1.1.0
+            security:
+              sslHostname: "adapter"
+        gatewayRuntime:
+          appName: "cc-router"
+          deployment:
+            replicas: 1
+            router: 
+              npi: cc-router-npi
+              resources:
+                requests:
+                  memory: "128Mi"
+                  cpu: "100m"
+                limits:
+                  memory: "1028Mi"
+                  cpu: "1000m"
+              env: 
+                  ROUTER_ADMIN_HOST: 0.0.0.0
+                  ROUTER_ADMIN_PORT: "9000"
+                  ROUTER_CLUSTER: default_cluster
+                  ROUTER_LABEL: Default
+                  ROUTER_PRIVATE_KEY_PATH: /home/wso2/security/keystore/mg.key
+                  ROUTER_PUBLIC_CERT_PATH: /home/wso2/security/keystore/mg.pem
+                  ADAPTER_PORT: "18000"
+                  ADAPTER_CA_CERT_PATH: /home/wso2/security/truststore/mg.pem
+                  ENFORCER_PORT: "8081"
+                  ENFORCER_ANALYTICS_RECEIVER_PORT: "18090"
+                  ENFORCER_CA_CERT_PATH: /home/wso2/security/truststore/mg.pem
+                  CONCURRENCY: 2
+              readinessProbe:
+                path: /api/am/devportal/v2/apis?limit=2&offset=2
+                port: 9443
+                initialDelaySeconds: 20
+                periodSeconds: 20
+                failureThreshold: 5
+              livenessProbe:
+                path: /api/am/devportal/v2/apis?limit=2&offset=2
+                port: 9443
+                initialDelaySeconds: 20
+                periodSeconds: 20
+                failureThreshold: 5
+              strategy: Recreate
+              imagePullPolicy: IfNotPresent
+              image: wso2/choreo-connect-router:1.1.0
+            enforcer: 
+              npi: cc-enforcer-npi
+              resources:
+                requests:
+                  memory: "128Mi"
+                  cpu: "100m"
+                limits:
+                  memory: "1028Mi"
+                  cpu: "1000m"
+              env:
+                ENFORCER_PRIVATE_KEY_PATH: /home/wso2/security/keystore/mg.key
+                ENFORCER_PUBLIC_CERT_PATH: /home/wso2/security/keystore/mg.pem
+                TRUSTED_CA_CERTS_PATH: /home/wso2/security/truststore
+                ADAPTER_XDS_PORT: "18000"
+                ENFORCER_LABEL: Default
+                ENFORCER_REGION: UNKNOWN
+                XDS_MAX_MSG_SIZE: "4194304"
+                XDS_MAX_RETRIES: "3"
+                apim_admin_pwd: admin
+                enforcer_admin_pwd: admin
+                tm_admin_pwd: admin
+                analytics_authURL: https://localhost:8080
+                analytics_authToken: 
+                JAVA_OPTS: -Dhttpclient.hostnameVerifier=AllowAll -Xms512m -Xmx512m -XX:MaxRAMFraction=2
+              readinessProbe:
+                path: /api/am/devportal/v2/apis?limit=2&offset=2
+                port: 9443
+                initialDelaySeconds: 20
+                periodSeconds: 20
+                failureThreshold: 5
+              livenessProbe:
+                path: /api/am/devportal/v2/apis?limit=2&offset=2
+                port: 9443
+                initialDelaySeconds: 20
+                periodSeconds: 20
+                failureThreshold: 5
+              strategy: Recreate
+              imagePullPolicy: IfNotPresent
+              image: wso2/choreo-connect-enforcer:1.1.0
+              security:
+                sslHostname: "enforcer"
+
+postgresql:
+  auth:
+    postgresPassword: "test1"
+  primary:
+    initdb:
+      scriptsConfigMap: postgres-initdb-scripts-configmap
+      user: postgres
+      password: "test1"
+  image:
+    debug: true
+    
+ipk:
+  wso2:
+    deployment:
+      wso2is:
+        replicas: 1
+        imagePullPolicy: IfNotPresent
