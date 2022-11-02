@@ -1,0 +1,5 @@
+tasks.register('helm_template', Exec) {
+    group 'helm'
+    description 'Render chart templates locally and display the output.'
+    commandLine 'helm', 'template'
+}

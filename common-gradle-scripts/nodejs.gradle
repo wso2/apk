@@ -1,0 +1,35 @@
+tasks.register('npm_install', Exec) {
+    group 'npm'
+    description 'Installs a package and any packages that it depends on.'
+    commandLine 'npm', 'install'
+}
+
+tasks.register('npm_restart', Exec) {
+    group 'npm'
+    description 'Restarts a project.'
+    commandLine 'npm', 'restart'
+}
+
+tasks.register('npm_run', Exec) {
+    group 'npm'
+    description 'Runs an arbitrary command from a package\'s "scripts" object.'
+    commandLine 'npm', 'run'
+}
+
+tasks.register('npm_start', Exec) {
+    group 'npm'
+    description 'Runs a predefined command specified in the "start" property of a package\'s "scripts" object.'
+    commandLine 'npm', 'start'
+}
+
+tasks.register('npm_stop', Exec) {
+    group 'npm'
+    description 'Runs a predefined command specified in the "stop" property of a package\'s "scripts" object.'
+    commandLine 'npm', 'stop'
+}
+
+tasks.register('npm_test', Exec) {
+    group 'npm'
+    description 'Runs a predefined command specified in the "test" property of a package\'s "scripts" object.'
+    commandLine 'npm', 'test'
+}

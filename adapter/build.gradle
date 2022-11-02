@@ -1,0 +1,2 @@
+apply from: "$rootDir/../common-gradle-scripts/go.gradle"
+apply from: "$rootDir/../common-gradle-scripts/docker.gradle"
