@@ -15,32 +15,23 @@
  *
  */
 
-package main
+// Package v1alpha1 contains API Schema definitions for the dp v1alpha1 API group
+// +kubebuilder:object:generate=true
+// +groupName=dp.wso2.com
+package v1alpha1
 
 import (
-	"os"
-	"os/signal"
-
-	logger "github.com/sirupsen/logrus"
-	"github.com/wso2/apk/adapter/internal/operator"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"sigs.k8s.io/controller-runtime/pkg/scheme"
 )
 
-// invokes the code from the /internal and /pkg directories and nothing else.
-func main() {
-	logger.Info("Starting the Adapter")
-	sig := make(chan os.Signal)
-	signal.Notify(sig, os.Interrupt)
+var (
+	// GroupVersion is group version used to register these objects
+	GroupVersion = schema.GroupVersion{Group: "dp.wso2.com", Version: "v1alpha1"}
 
-	go operator.InitOperator()
+	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
+	SchemeBuilder = &scheme.Builder{GroupVersion: GroupVersion}
 
-OUTER:
-	for {
-		select {
-		case s := <-sig:
-			switch s {
-			case os.Interrupt:
-				break OUTER
-			}
-		}
-	}
-}
+	// AddToScheme adds the types in this group-version to the given scheme.
+	AddToScheme = SchemeBuilder.AddToScheme
+)

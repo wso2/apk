@@ -28,3 +28,9 @@ build/
 
 # macOS
 .DS_Store
+
+# .vscode
+*.vscode
+
+# operator bins
+adapter/internal/operator/bin/*
