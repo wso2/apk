@@ -19,7 +19,6 @@ package client
 import (
 	"errors"
 	"log"
-	"strconv"
 	"sync"
 	"time"
 
@@ -62,16 +61,14 @@ func Init(serverAddress string, maxCapacity int, desiredCapacity int, dialOption
 		if (err != nil) {
 			return nil,err;
 		}
-		
-		availableConnections := connectionPool.availableConnections;
-		*availableConnections = append(*availableConnections, *conn);
+		*connectionPool.availableConnections = append(*connectionPool.availableConnections, *conn);
 	}
 	return &connectionPool, nil;
 }
 
 func InitWithConfig()  (*Pool, error) {
 	conf, _ := config.ReadConfigs()
-	address := conf.Adapter.GRPCClient.ManagementServerAddress + ":" + strconv.Itoa(conf.Adapter.GRPCClient.ManagementServerGRPCPort);
+	address := conf.Adapter.GRPCClient.ManagementServerAddress;
 	return Init(address, conf.Adapter.GRPCClient.MaxCapacity, conf.Adapter.GRPCClient.DesiredCapacity, 
 		[]grpc.DialOption{
 			grpc.WithInsecure(),
@@ -98,7 +95,7 @@ func (connectionPool *Pool) GetConnection() (*grpc.ClientConn, error){
 		if (totalConnectionLength < connectionPool.maxCapacity) {
 			return createGRPCConnection(*connectionPool);
 		} else {
-			return nil, errors.New("Maximum connection reached in the pool.")
+			return nil, errors.New("maximum connection reached in the pool")
 		}
 	}
 }
@@ -113,27 +110,27 @@ func createGRPCConnection(connectionPool Pool) (*grpc.ClientConn, error) {
 func (connectionPool *Pool) Close(connection *grpc.ClientConn) error{
 	connectionPool.lock.Lock();
 	defer connectionPool.lock.Unlock();
-	var index int = -1;
+	var indexOfConnectionInPool int = -1;
 	var connections *[]grpc.ClientConn;
 	for k, v := range *connectionPool.usedConnections {
-       if connection == &v {
-           index = k;
-		   connections = connectionPool.usedConnections;
-		   break;
-       }
+		if connection == &v {
+			indexOfConnectionInPool = k;
+			connections = connectionPool.usedConnections;
+			break;
+		}
     }
-	if (index == -1) {
+	if (indexOfConnectionInPool == -1) {
 		for k, v := range *connectionPool.availableConnections {
 			if connection == &v {
-				index = k;
+				indexOfConnectionInPool = k;
 				connections = connectionPool.availableConnections;
 				break;
 			}
 		}
 	}
-	if (index != -1) {
+	if (indexOfConnectionInPool != -1) {
 		len := len(*connections);
-		(*connections)[index] = (*connections)[len-1]
+		(*connections)[indexOfConnectionInPool] = (*connections)[len-1]
 		*connections = (*connections)[:len-1];
 	}
 	return connection.Close();
@@ -141,10 +138,10 @@ func (connectionPool *Pool) Close(connection *grpc.ClientConn) error{
 
 func (connectionPool *Pool) CloseAll() {
 	for _, v := range *connectionPool.usedConnections {
-       v.Close();
+		v.Close();
     }
 	for _, v := range *connectionPool.availableConnections {
-       v.Close();
+		v.Close();
     }
 	*connectionPool.usedConnections = []grpc.ClientConn{};
 	*connectionPool.availableConnections = []grpc.ClientConn{};

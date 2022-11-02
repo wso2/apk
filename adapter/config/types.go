@@ -98,7 +98,7 @@ type adapter struct {
 	// SourceControl represents the configuration related to the repository where the api artifacts are stored
 	SourceControl sourceControl
 	// GRPCClient represents the configuration related to gRPC connection to Management server to agent
-	GRPCClient gRPCCLient
+	GRPCClient gRPCClient
 }
 
 // Envoy Listener Component related configurations.
@@ -547,9 +547,8 @@ type mutualSSL struct {
 	EnableOutboundCertificateHeader bool
 }
 
-type gRPCCLient struct {
+type gRPCClient struct {
 	ManagementServerAddress string;
-	ManagementServerGRPCPort int;
 	MaxAttempts int;
 	MaxCapacity int;
 	DesiredCapacity int;

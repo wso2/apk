@@ -66,9 +66,8 @@ var defaultConfig = &Config{
 			MaxRetryCount:      20,
 			ArtifactsDirectory: "/home/wso2/git-artifacts",
 		},
-		GRPCClient: gRPCCLient{
-			ManagementServerAddress : "localhost",
-			ManagementServerGRPCPort : 8765,
+		GRPCClient: gRPCClient{
+			ManagementServerAddress : "localhost:8765",
 			MaxAttempts : 5,
 			MaxCapacity : 5,
 			DesiredCapacity : 3,
