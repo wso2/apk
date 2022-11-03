@@ -20,3 +20,7 @@ apply plugin: 'com.github.spotbugs'
 apply plugin: 'jacoco'
 apply plugin: 'java'
 
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
