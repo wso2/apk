@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { MouseEventHandler } from 'react';
 import PropTypes from 'prop-types';
 
 // material-ui
 import { useTheme } from '@mui/material/styles';
-import { AppBar, IconButton, Toolbar, useMediaQuery } from '@mui/material';
+import { AppBar, AppBarProps, IconButton, Toolbar, useMediaQuery } from '@mui/material';
 
 // project import
 import AppBarStyled from './AppBarStyled';
@@ -13,8 +13,12 @@ import HeaderContent from './HeaderContent';
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 
 // ==============================|| MAIN LAYOUT - HEADER ||============================== //
+export interface HeaderProps {
+    open: boolean;
+    handleDrawerToggle: MouseEventHandler;
+}
 
-const Header = ({ open, handleDrawerToggle }) => {
+const Header = ({ open, handleDrawerToggle }: HeaderProps) => {
     const theme = useTheme();
     const matchDownMD = useMediaQuery(theme.breakpoints.down('lg'));
 
@@ -39,7 +43,7 @@ const Header = ({ open, handleDrawerToggle }) => {
     );
 
     // app-bar params
-    const appBar = {
+    const appBar: AppBarProps = {
         position: 'fixed',
         color: 'inherit',
         elevation: 0,
@@ -60,11 +64,6 @@ const Header = ({ open, handleDrawerToggle }) => {
             )}
         </>
     );
-};
-
-Header.propTypes = {
-    open: PropTypes.bool,
-    handleDrawerToggle: PropTypes.func
 };
 
 export default Header;

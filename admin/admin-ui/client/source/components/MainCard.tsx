@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import PropTypes from 'prop-types';
 import { forwardRef } from 'react';
 
 // material-ui
-import { useTheme } from '@mui/material/styles';
-import { Card, CardContent, CardHeader, Divider, Typography } from '@mui/material';
+import { useTheme, SxProps } from '@mui/material/styles';
+import { Card, CardContent, CardHeader, CardProps, Divider, Typography } from '@mui/material';
 
 // header style
 const headerSX = {
@@ -13,8 +13,29 @@ const headerSX = {
 };
 
 // ==============================|| CUSTOM - MAIN CARD ||============================== //
+export type CardSXProps = {
+    sx: SxProps;
+}
 
-const MainCard = forwardRef(
+interface MainCardProps {
+    border?: boolean,
+    boxShadow?: boolean,
+    contentSX?: object,
+    darkTitle?: boolean,
+    divider?: boolean,
+    elevation?: number,
+    secondary?: ReactNode,
+    shadow?: string,
+    sx?: CardSXProps,
+    title?: string,
+    codeHighlight?: boolean,
+    content?: boolean,
+    children?: ReactNode
+}
+
+export type Ref = HTMLDivElement;
+
+const MainCard = forwardRef<Ref, MainCardProps>(
     (
         {
             border = true,
@@ -41,16 +62,11 @@ const MainCard = forwardRef(
             <Card
                 elevation={elevation || 0}
                 ref={ref}
-                {...others}
                 sx={{
                     ...sx,
                     border: border ? '1px solid' : 'none',
                     borderRadius: 2,
-                    borderColor: theme.palette.mode === 'dark' ? theme.palette.divider : theme.palette.grey.A800,
-                    boxShadow: boxShadow && (!border || theme.palette.mode === 'dark') ? shadow || theme.customShadows.z1 : 'inherit',
-                    ':hover': {
-                        boxShadow: boxShadow ? shadow || theme.customShadows.z1 : 'inherit'
-                    },
+                    borderColor: theme.palette.mode === 'dark' ? theme.palette.divider : theme.palette.grey[100],
                     '& pre': {
                         m: 0,
                         p: '16px !important',
@@ -58,6 +74,24 @@ const MainCard = forwardRef(
                         fontSize: '0.75rem'
                     }
                 }}
+                // sx={{
+                //     ...sx,
+                //     border: border ? '1px solid' : 'none',
+                //     borderRadius: 2,
+                //     borderColor: theme.palette.mode === 'dark' ? theme.palette.divider : theme.palette.grey[100],
+                //     boxShadow: boxShadow && (!border || theme.palette.mode === 'dark') ? shadow || theme.customShadows.z1 : 'inherit',
+                //     ':hover': {
+                //         boxShadow: boxShadow //? shadow || theme.customShadows.z1 : 'inherit'
+                //     },
+                //     '& pre': {
+                //         m: 0,
+                //         p: '16px !important',
+                //         fontFamily: theme.typography.fontFamily,
+                //         fontSize: '0.75rem'
+                //     }
+                // }}
+                {...others}
+
             >
                 {/* card header and action */}
                 {!darkTitle && title && (
@@ -78,21 +112,5 @@ const MainCard = forwardRef(
         );
     }
 );
-
-MainCard.propTypes = {
-    border: PropTypes.bool,
-    boxShadow: PropTypes.bool,
-    contentSX: PropTypes.object,
-    darkTitle: PropTypes.bool,
-    divider: PropTypes.bool,
-    elevation: PropTypes.number,
-    secondary: PropTypes.node,
-    shadow: PropTypes.string,
-    sx: PropTypes.object,
-    title: PropTypes.string,
-    codeHighlight: PropTypes.bool,
-    content: PropTypes.bool,
-    children: PropTypes.node
-};
 
 export default MainCard;

@@ -15,7 +15,7 @@ var app = express();
 
 // Live reload browser
 const liveReloadServer = livereload.createServer();
-liveReloadServer.watch(path.join(__dirname, '../client/public'));
+liveReloadServer.watch(path.join(__dirname, '../client/public/build'));
 liveReloadServer.server.once("connection", () => {
   setTimeout(() => {
     liveReloadServer.refresh("/");

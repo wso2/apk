@@ -17,8 +17,8 @@ import { MoreOutlined } from '@ant-design/icons';
 const MobileSection = () => {
     const theme = useTheme();
 
-    const [open, setOpen] = useState(false);
-    const anchorRef = useRef(null);
+    const [open, setOpen] = useState<boolean>(false);
+    const anchorRef = useRef<HTMLHeadingElement>(null);
 
     const handleToggle = () => {
         setOpen((prevOpen) => !prevOpen);
@@ -34,7 +34,7 @@ const MobileSection = () => {
 
     const prevOpen = useRef(open);
     useEffect(() => {
-        if (prevOpen.current === true && open === false) {
+        if (prevOpen.current === true && open === false && anchorRef && anchorRef.current) {
             anchorRef.current.focus();
         }
 
@@ -82,7 +82,7 @@ const MobileSection = () => {
             >
                 {({ TransitionProps }) => (
                     <Transitions type="fade" in={open} {...TransitionProps}>
-                        <Paper sx={{ boxShadow: theme.customShadows.z1 }}>
+                        <Paper>
                             <ClickAwayListener onClickAway={handleClose}>
                                 <AppBar color="inherit">
                                     <Toolbar>
