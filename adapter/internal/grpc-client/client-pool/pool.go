@@ -18,18 +18,22 @@ package client
 
 import (
 	"errors"
-	"log"
 	"sync"
 	"time"
 
 	"github.com/wso2/apk/adapter/config"
+	logger "github.com/wso2/apk/adapter/internal/loggers"
 	"google.golang.org/grpc"
+	grpcStatus "google.golang.org/grpc/status"
 ) 
 
 
 type Pool struct {
+	// GRPC server address
 	serverAddress string;
+	// Maximum capacity of the pool
 	maxCapacity int;
+	// Initial active connection. Set zero if you need on demand connections
 	desiredCapacity int;
 	dialOptions []grpc.DialOption;
 	availableConnections *[]grpc.ClientConn;
@@ -39,9 +43,10 @@ type Pool struct {
 }
 
 type RetryPolicy struct {
+	// Maximum number of time a failed grpc call will be retried. Set negative value to try indefinitely.
 	MaxAttempts int;
+	// Time delay between retries. (In milli seconds)
 	BackOffInMilliSeconds int;
-	RetryableStatuses []string;
 }
 
 
@@ -66,17 +71,18 @@ func Init(serverAddress string, maxCapacity int, desiredCapacity int, dialOption
 	return &connectionPool, nil;
 }
 
+// Initialize a pool with default configuration
 func InitWithConfig()  (*Pool, error) {
 	conf, _ := config.ReadConfigs()
 	address := conf.Adapter.GRPCClient.ManagementServerAddress;
 	return Init(address, conf.Adapter.GRPCClient.MaxCapacity, conf.Adapter.GRPCClient.DesiredCapacity, 
 		[]grpc.DialOption{
+			// TODO use tls credentials.
 			grpc.WithInsecure(),
 			grpc.WithBlock()}, 
 		RetryPolicy{
 			MaxAttempts : conf.Adapter.GRPCClient.MaxAttempts,
 			BackOffInMilliSeconds : conf.Adapter.GRPCClient.BackOffInMilliSeconds,
-			RetryableStatuses : []string{},
 		})
 }
 
@@ -107,11 +113,13 @@ func createGRPCConnection(connectionPool Pool) (*grpc.ClientConn, error) {
 	)
 }
 
+// Close a specific connection.
 func (connectionPool *Pool) Close(connection *grpc.ClientConn) error{
 	connectionPool.lock.Lock();
 	defer connectionPool.lock.Unlock();
 	var indexOfConnectionInPool int = -1;
 	var connections *[]grpc.ClientConn;
+	// Try to find the connection in the usedConnection slice.
 	for k, v := range *connectionPool.usedConnections {
 		if connection == &v {
 			indexOfConnectionInPool = k;
@@ -119,6 +127,7 @@ func (connectionPool *Pool) Close(connection *grpc.ClientConn) error{
 			break;
 		}
     }
+	// If usedConnection slice does not contain connection find it in available connection.
 	if (indexOfConnectionInPool == -1) {
 		for k, v := range *connectionPool.availableConnections {
 			if connection == &v {
@@ -136,6 +145,7 @@ func (connectionPool *Pool) Close(connection *grpc.ClientConn) error{
 	return connection.Close();
 }
 
+// Close all connection in the pool.
 func (connectionPool *Pool) CloseAll() {
 	for _, v := range *connectionPool.usedConnections {
 		v.Close();
@@ -153,13 +163,16 @@ func (connectionPool *Pool) ExecuteGRPCCall(connection *grpc.ClientConn, call fu
 	for {
 		
 		if (err != nil) {
+			errStatus, _ := grpcStatus.FromError(err)
+			logger.LoggerGRPCClient.Errorf("gRPC call failed. errorCode: %s errorMessage: %s", errStatus.Code().String(), errStatus.Message());
 			if (connectionPool.retryPolicy.MaxAttempts < 0) {
+				// If max attempts has a negative value, retry indefinitely by setting retry less than max attempts.
 				retries = connectionPool.retryPolicy.MaxAttempts - 1;
 			} else {
 				retries++;
 			}
 			if (retries <= connectionPool.retryPolicy.MaxAttempts) {
-				log.Print("Error occured while calling grpc server", err);
+				// Retry grpc call after BackOffInMilliSeconds
 				time.Sleep(time.Duration(connectionPool.retryPolicy.BackOffInMilliSeconds) * time.Millisecond)
 				response, err = call();
 			} else {
