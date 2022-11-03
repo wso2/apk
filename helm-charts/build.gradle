@@ -1,1 +1,4 @@
 apply from: "$rootDir/../common-gradle-scripts/helm.gradle"
+apply from: "$rootDir/../common-gradle-scripts/release.gradle"
+
+afterReleaseBuild.dependsOn helm_push
