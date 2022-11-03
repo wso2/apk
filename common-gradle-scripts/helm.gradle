@@ -33,13 +33,14 @@ tasks.register('helm_push', Exec) {
     group 'helm'
     description 'Push helm chart to chartmuseum.'
     dependsOn helm_dependency_update
-    // TODO: set configurable properties
+    // TODO: set properties (chartmuseum, url, apk-helm) configurable
+    // TODO: add task validation upon success or failure (for all helm tasks)
     commandLine 'helm', 'repo', 'add', 'chartmuseum', 'http://localhost:8080'
     commandLine 'helm', 'package', '.'
     commandLine 'helm', 'plugin', 'install', 'https://github.com/chartmuseum/helm-push'
     commandLine 'helm', 'cm-push', '.', 'chartmuseum'
     commandLine 'helm', 'repo', 'update', 'chartmuseum'
-    commandLine 'helm', 'search', 'repo', 'ipk', '--devel'
+    commandLine 'helm', 'search', 'repo', 'apk-helm', '--devel'
     standardOutput = new ByteArrayOutputStream()
     ext.outputHelmPush = {
         return standardOutput.toString()
