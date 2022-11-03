@@ -76,12 +76,8 @@ import org.wso2.apk.apimgt.api.LoginPostExecutor;
 import org.wso2.apk.apimgt.api.NewPostLoginExecutor;
 import org.wso2.apk.apimgt.api.model.API;
 import org.wso2.apk.apimgt.api.model.APICategory;
-import org.wso2.apk.apimgt.api.model.APIIdentifier;
-import org.wso2.apk.apimgt.api.model.APIProductIdentifier;
-import org.wso2.apk.apimgt.api.model.APIRevision;
 import org.wso2.apk.apimgt.api.model.APIStatus;
 import org.wso2.apk.apimgt.api.model.APIStore;
-import org.wso2.apk.apimgt.api.model.Application;
 import org.wso2.apk.apimgt.api.model.AsyncProtocolEndpoint;
 import org.wso2.apk.apimgt.api.model.CORSConfiguration;
 import org.wso2.apk.apimgt.api.model.EndpointSecurity;
@@ -95,13 +91,7 @@ import org.wso2.apk.apimgt.api.model.Scope;
 import org.wso2.apk.apimgt.api.model.Tier;
 import org.wso2.apk.apimgt.api.model.VHost;
 import org.wso2.apk.apimgt.api.model.WebsubSubscriptionConfiguration;
-import org.wso2.apk.apimgt.api.model.graphql.queryanalysis.GraphqlComplexityInfo;
-import org.wso2.apk.apimgt.api.model.policy.BandwidthLimit;
-import org.wso2.apk.apimgt.api.model.policy.EventCountLimit;
-import org.wso2.apk.apimgt.api.model.policy.Limit;
-import org.wso2.apk.apimgt.api.model.policy.Policy;
 import org.wso2.apk.apimgt.api.model.policy.PolicyConstants;
-import org.wso2.apk.apimgt.api.model.policy.RequestCountLimit;
 import org.wso2.apk.apimgt.api.model.policy.SubscriptionPolicy;
 import org.wso2.apk.apimgt.impl.APIConstants;
 import org.wso2.apk.apimgt.impl.APIManagerAnalyticsConfiguration;
@@ -110,12 +100,8 @@ import org.wso2.apk.apimgt.impl.ConfigurationHolder;
 import org.wso2.apk.apimgt.impl.ExternalEnvironment;
 import org.wso2.apk.apimgt.impl.config.APIMConfigService;
 import org.wso2.apk.apimgt.impl.config.APIMConfigServiceImpl;
-import org.wso2.apk.apimgt.impl.dao.ApiMgtDAO;
 import org.wso2.apk.apimgt.impl.dao.ScopesDAO;
-import org.wso2.apk.apimgt.impl.dao.WorkflowDAO;
-import org.wso2.apk.apimgt.impl.dao.impl.WorkflowDAOImpl;
 import org.wso2.apk.apimgt.impl.dto.ThrottleProperties;
-import org.wso2.apk.apimgt.impl.dto.WorkflowDTO;
 import org.wso2.apk.apimgt.impl.internal.ServiceReferenceHolder;
 import org.wso2.apk.apimgt.impl.proxy.ExtendedProxyRoutePlanner;
 import org.wso2.apk.apimgt.user.exceptions.UserException;
@@ -453,102 +439,6 @@ public final class APIUtil {
     }
 
     /**
-     * Returns an unfiltered map of API availability tiers as defined in the underlying governance
-     * registry.
-     *
-     * @return Map<String, Tier> an unfiltered Map of tier names and Tier objects - possibly empty
-     * @throws APIManagementException if an error occurs when loading tiers from the registry
-     */
-    public static Map<String, Tier> getAllTiers() throws APIManagementException {
-
-        return getTiersFromPolicies(PolicyConstants.POLICY_LEVEL_SUB, APIConstants.SUPER_TENANT_ID);
-    }
-
-    /**
-     * Returns an unfiltered map of API availability tiers of the tenant as defined in the underlying governance
-     * registry.
-     *
-     * @return Map<String, Tier> an unfiltered Map of tier names and Tier objects - possibly empty
-     * @throws APIManagementException if an error occurs when loading tiers from the registry
-     */
-    public static Map<String, Tier> getAllTiers(int tenantId) throws APIManagementException {
-
-        return getTiersFromPolicies(PolicyConstants.POLICY_LEVEL_SUB, tenantId);
-
-    }
-
-    /**
-     * Returns a map of API availability tiers as defined in the underlying governance
-     * registry.
-     *
-     * @return a Map of tier names and Tier objects - possibly empty
-     * @throws APIManagementException if an error occurs when loading tiers from the registry
-     */
-    public static Map<String, Tier> getTiers() throws APIManagementException {
-
-        return getTiersFromPolicies(PolicyConstants.POLICY_LEVEL_SUB, APIConstants.SUPER_TENANT_ID);
-    }
-
-    /**
-     * Returns a map of API availability tiers as defined in the underlying governance
-     * registry.
-     *
-     * @return a Map of tier names and Tier objects - possibly empty
-     * @throws APIManagementException if an error occurs when loading tiers from the registry
-     */
-    public static Map<String, Tier> getAdvancedSubsriptionTiers() throws APIManagementException {
-
-        return getAdvancedSubsriptionTiers(APIConstants.SUPER_TENANT_ID);
-    }
-
-    /**
-     * Returns a map of API subscription tiers of the tenant as defined in database
-     * registry.
-     *
-     * @return a Map of tier names and Tier objects - possibly empty
-     * @throws APIManagementException if an error occurs when loading tiers from the registry
-     */
-    public static Map<String, Tier> getAdvancedSubsriptionTiers(int tenantId) throws APIManagementException {
-
-        return APIUtil.getTiersFromPolicies(PolicyConstants.POLICY_LEVEL_SUB, tenantId);
-    }
-
-    /**
-     * Returns a map of API availability tiers of the tenant as defined in the underlying governance
-     * registry.
-     *
-     * @return a Map of tier names and Tier objects - possibly empty
-     * @throws APIManagementException if an error occurs when loading tiers from the registry
-     */
-    public static Map<String, Tier> getTiers(int tenantId) throws APIManagementException {
-
-        return getTiersFromPolicies(PolicyConstants.POLICY_LEVEL_SUB, tenantId);
-    }
-
-    /**
-     * Returns a map of API availability tiers of the tenant as defined in the underlying governance
-     * registry.
-     *
-     * @param tierType     type of the tiers
-     * @param organization identifier of the organization
-     * @return a Map of tier names and Tier objects - possibly empty
-     * @throws APIManagementException if an error occurs when loading tiers from the registry
-     */
-    public static Map<String, Tier> getTiers(int tierType, String organization) throws APIManagementException {
-
-        int tenantId = APIUtil.getInternalOrganizationId(organization);
-        if (tierType == APIConstants.TIER_API_TYPE) {
-            return getTiersFromPolicies(PolicyConstants.POLICY_LEVEL_SUB, tenantId);
-        } else if (tierType == APIConstants.TIER_RESOURCE_TYPE) {
-            return getTiersFromPolicies(PolicyConstants.POLICY_LEVEL_API, tenantId);
-        } else if (tierType == APIConstants.TIER_APPLICATION_TYPE) {
-            return getTiersFromPolicies(PolicyConstants.POLICY_LEVEL_APP, tenantId);
-        } else {
-            throw new APIManagementException("No such a tier type : " + tierType, ExceptionCodes.UNSUPPORTED_TIER_TYPE);
-        }
-    }
-
-    /**
      * Checks whether the specified user has the specified permission.
      *
      * @param userNameWithoutChange A username
@@ -791,56 +681,6 @@ public final class APIUtil {
             }
         }
         return uriTemplate;
-    }
-
-    public static float getAverageRating(String id) throws APIManagementException {
-
-        return ApiMgtDAO.getInstance().getAverageRating(id);
-    }
-
-    public static float getAverageRating(int apiId) throws APIManagementException {
-
-        return ApiMgtDAO.getInstance().getAverageRating(apiId);
-    }
-
-    public static String getApplicationUUID(String appName, String userId) throws APIManagementException {
-
-        return ApiMgtDAO.getInstance().getApplicationUUID(appName, userId);
-    }
-
-    public static int getApplicationId(String appName, String userId) throws APIManagementException {
-
-        return ApiMgtDAO.getInstance().getApplicationId(appName, userId);
-    }
-
-    public static int getApplicationId(String appName, String userId, String groupId) throws APIManagementException {
-
-        Application application = ApiMgtDAO.getInstance().getApplicationByName(appName, userId, groupId);
-        if (application != null) {
-            return application.getId();
-        } else {
-            return 0;
-        }
-    }
-
-    /**
-     * This method is used to retrieve complexity details
-     *
-     * @param api API
-     * @return GraphqlComplexityInfo object that contains the complexity details
-     * @throws APIManagementException
-     */
-
-    public static GraphqlComplexityInfo getComplexityDetails(API api) throws APIManagementException {
-
-        return ApiMgtDAO.getInstance().getComplexityDetails(api.getUuid());
-    }
-
-    public static boolean isAPIManagementEnabled() {
-
-        //TODO configuration flow
-//        return Boolean.parseBoolean(CarbonUtils.getServerConfiguration().getFirstProperty("APIManagement.Enabled"));
-        return true;
     }
 
     public static Set<APIStore> getExternalAPIStores(int tenantId) throws APIManagementException {
@@ -1293,31 +1133,6 @@ public final class APIUtil {
         return domains;
     }
 
-    public static Set<String> extractEnvironmentsForAPI(String environments, String organization) throws APIManagementException {
-
-        Set<String> environmentStringSet = null;
-        if (environments == null) {
-            environmentStringSet = new HashSet<>(getEnvironments(organization).keySet());
-        } else {
-            //handle not to publish to any of the gateways
-            if (APIConstants.API_GATEWAY_NONE.equals(environments)) {
-                environmentStringSet = new HashSet<String>();
-            }
-            //handle to set published gateways nto api object
-            else if (!"".equals(environments)) {
-                String[] publishEnvironmentArray = environments.split(",");
-                environmentStringSet = new HashSet<String>(Arrays.asList(publishEnvironmentArray));
-                environmentStringSet.remove(APIConstants.API_GATEWAY_NONE);
-            }
-            //handle to publish to any of the gateways when api creating stage
-            else if ("".equals(environments)) {
-                environmentStringSet = new HashSet<>(getEnvironments(organization).keySet());
-            }
-        }
-
-        return environmentStringSet;
-    }
-
     /**
      * Read the REST API group id extractor class reference from api-manager.xml.
      *
@@ -1347,36 +1162,6 @@ public final class APIUtil {
         return config.getFirstProperty(APIConstants.API_STORE_GROUP_EXTRACTOR_IMPLEMENTATION);
     }
 
-    /**
-     * Check whether given application name is available under current subscriber or group
-     *
-     * @param subscriber      subscriber name
-     * @param applicationName application name
-     * @param groupId         group of the subscriber
-     * @param organization    identifier of the organization
-     * @return true if application is available for the subscriber
-     * @throws APIManagementException if failed to get applications for given subscriber
-     */
-    public static boolean isApplicationExist(String subscriber, String applicationName, String groupId,
-                                             String organization) throws APIManagementException {
-
-        return ApiMgtDAO.getInstance().isApplicationExist(applicationName, subscriber, groupId, organization);
-    }
-
-    /**
-     * Check whether the new user has an application
-     *
-     * @param subscriber      subscriber name
-     * @param applicationName application name
-     * @return true if application is available for the subscriber
-     * @throws APIManagementException if failed to get applications for given subscriber
-     */
-    public static boolean isApplicationOwnedBySubscriber(String subscriber, String applicationName, String organization)
-            throws APIManagementException {
-
-        return ApiMgtDAO.getInstance().isApplicationOwnedBySubscriber(applicationName, subscriber, organization);
-    }
-
     private static boolean isUnlimitedTierPaid(String tenantDomain) throws APIManagementException {
 
         JSONObject apiTenantConfig = getTenantConfig(tenantDomain);
@@ -1393,17 +1178,6 @@ public final class APIUtil {
         }
 
         return false;
-    }
-
-    public static Map<String, Tier> getTiers(String organization) throws APIManagementException {
-
-        int requestedTenantId = getInternalOrganizationId(organization);
-
-        if (requestedTenantId == 0) {
-            return APIUtil.getAdvancedSubsriptionTiers();
-        } else {
-            return APIUtil.getAdvancedSubsriptionTiers(requestedTenantId);
-        }
     }
 
     /**
@@ -1854,38 +1628,6 @@ public final class APIUtil {
     }
 
     /**
-     * @param userName    user name with tenant domain ex: admin@carbon.super
-     * @param stakeHolder value "p" for publisher value "s" for subscriber value "a" for admin
-     * @return map of saved values of alert types.
-     * @throws APIManagementException
-     */
-    public static List<Integer> getSavedAlertTypesIdsByUserNameAndStakeHolder(String userName, String stakeHolder)
-            throws APIManagementException {
-
-        List<Integer> list;
-        list = ApiMgtDAO.getInstance().getSavedAlertTypesIdsByUserNameAndStakeHolder(userName, stakeHolder);
-        return list;
-
-    }
-
-    /**
-     * This util method retrieves saved email list by user and stakeHolder name
-     *
-     * @param userName    user name with tenant ID.
-     * @param stakeHolder if its publisher values should "p", if it is store value is "s" if admin dashboard value is "a"
-     * @return List of eamil list.
-     * @throws APIManagementException
-     */
-    public static List<String> retrieveSavedEmailList(String userName, String stakeHolder)
-            throws APIManagementException {
-
-        List<String> list;
-        list = ApiMgtDAO.getInstance().retrieveSavedEmailList(userName, stakeHolder);
-
-        return list;
-    }
-
-    /**
      * Used to get unlimited throttling tier is enable
      *
      * @return condition of enable unlimited tier
@@ -1896,184 +1638,6 @@ public final class APIUtil {
                 .getAPIManagerConfigurationService().getAPIManagerConfiguration()
                 .getThrottleProperties();
         return throttleProperties.isEnableUnlimitedTier();
-    }
-
-    /**
-     * This method is used to get the default policy in a given tenant space
-     *
-     * @param tenantDomain tenant domain name
-     * @return default throttling policy for a given tenant
-     */
-    public static String getDefaultThrottlingPolicy(String tenantDomain) {
-
-        String defaultTier = APIConstants.UNLIMITED_TIER;
-        if (!isEnabledUnlimitedTier()) {
-            // Set an available value if the Unlimited policy is disabled
-            try {
-                Map<String, Tier> tierMap = getTiers(APIConstants.TIER_RESOURCE_TYPE, tenantDomain);
-                if (tierMap.size() > 0) {
-                    defaultTier = tierMap.keySet().toArray()[0].toString();
-                } else {
-                    log.error("No throttle policies available in the tenant " + tenantDomain);
-                }
-            } catch (APIManagementException e) {
-                log.error("Error while getting throttle policies for tenant " + tenantDomain);
-            }
-        }
-        return defaultTier;
-    }
-
-    public static Map<String, Tier> getTiersFromPolicies(String policyLevel, int tenantId) throws APIManagementException {
-
-        Map<String, Tier> tierMap = new TreeMap<>();
-        ApiMgtDAO apiMgtDAO = ApiMgtDAO.getInstance();
-        Policy[] policies;
-        if (PolicyConstants.POLICY_LEVEL_SUB.equalsIgnoreCase(policyLevel)) {
-            policies = apiMgtDAO.getSubscriptionPolicies(tenantId);
-        } else if (PolicyConstants.POLICY_LEVEL_API.equalsIgnoreCase(policyLevel)) {
-            policies = apiMgtDAO.getAPIPolicies(tenantId);
-        } else if (PolicyConstants.POLICY_LEVEL_APP.equalsIgnoreCase(policyLevel)) {
-            policies = apiMgtDAO.getApplicationPolicies(tenantId);
-        } else {
-            throw new APIManagementException("No such a policy type : " + policyLevel, ExceptionCodes.UNSUPPORTED_POLICY_TYPE);
-        }
-
-        for (Policy policy : policies) {
-            if (!APIConstants.UNLIMITED_TIER.equalsIgnoreCase(policy.getPolicyName())) {
-                Tier tier = new Tier(policy.getPolicyName());
-                tier.setDescription(policy.getDescription());
-                tier.setDisplayName(policy.getDisplayName());
-                Limit limit = policy.getDefaultQuotaPolicy().getLimit();
-                tier.setTimeUnit(limit.getTimeUnit());
-                tier.setUnitTime(limit.getUnitTime());
-                tier.setQuotaPolicyType(policy.getDefaultQuotaPolicy().getType());
-
-                //If the policy is a subscription policy
-                if (policy instanceof SubscriptionPolicy) {
-                    SubscriptionPolicy subscriptionPolicy = (SubscriptionPolicy) policy;
-                    tier.setRateLimitCount(subscriptionPolicy.getRateLimitCount());
-                    tier.setRateLimitTimeUnit(subscriptionPolicy.getRateLimitTimeUnit());
-                    setBillingPlanAndCustomAttributesToTier(subscriptionPolicy, tier);
-                    if (StringUtils.equals(subscriptionPolicy.getBillingPlan(), APIConstants.COMMERCIAL_TIER_PLAN)) {
-                        tier.setMonetizationAttributes(subscriptionPolicy.getMonetizationPlanProperties());
-                    }
-                }
-
-                if (limit instanceof RequestCountLimit) {
-
-                    RequestCountLimit countLimit = (RequestCountLimit) limit;
-                    tier.setRequestsPerMin(countLimit.getRequestCount());
-                    tier.setRequestCount(countLimit.getRequestCount());
-                } else if (limit instanceof BandwidthLimit) {
-                    BandwidthLimit bandwidthLimit = (BandwidthLimit) limit;
-                    tier.setRequestsPerMin(bandwidthLimit.getDataAmount());
-                    tier.setRequestCount(bandwidthLimit.getDataAmount());
-                    tier.setBandwidthDataUnit(bandwidthLimit.getDataUnit());
-                } else {
-                    EventCountLimit eventCountLimit = (EventCountLimit) limit;
-                    tier.setRequestCount(eventCountLimit.getEventCount());
-                    tier.setRequestsPerMin(eventCountLimit.getEventCount());
-                }
-                if (PolicyConstants.POLICY_LEVEL_SUB.equalsIgnoreCase(policyLevel)) {
-                    tier.setTierPlan(((SubscriptionPolicy) policy).getBillingPlan());
-                }
-                tierMap.put(policy.getPolicyName(), tier);
-            } else {
-                if (APIUtil.isEnabledUnlimitedTier()) {
-                    Tier tier = new Tier(policy.getPolicyName());
-                    tier.setDescription(policy.getDescription());
-                    tier.setDisplayName(policy.getDisplayName());
-                    tier.setRequestsPerMin(Integer.MAX_VALUE);
-                    tier.setRequestCount(Integer.MAX_VALUE);
-                    if (isUnlimitedTierPaid(getTenantDomainFromTenantId(tenantId))) {
-                        tier.setTierPlan(APIConstants.COMMERCIAL_TIER_PLAN);
-                    } else {
-                        tier.setTierPlan(APIConstants.BILLING_PLAN_FREE);
-                    }
-
-                    tierMap.put(policy.getPolicyName(), tier);
-                }
-            }
-        }
-
-        if (PolicyConstants.POLICY_LEVEL_SUB.equalsIgnoreCase(policyLevel)) {
-            tierMap.remove(APIConstants.UNAUTHENTICATED_TIER);
-        }
-        return tierMap;
-    }
-
-    public static Tier getPolicyByName(String policyLevel, String policyName, String organization)
-            throws APIManagementException {
-
-        int tenantId = APIUtil.getInternalOrganizationId(organization);
-        ApiMgtDAO apiMgtDAO = ApiMgtDAO.getInstance();
-        Policy policy;
-        if (PolicyConstants.POLICY_LEVEL_SUB.equalsIgnoreCase(policyLevel)) {
-            policy = apiMgtDAO.getSubscriptionPolicy(policyName, tenantId);
-        } else if (PolicyConstants.POLICY_LEVEL_API.equalsIgnoreCase(policyLevel)) {
-            policy = apiMgtDAO.getAPIPolicy(policyName, tenantId);
-        } else if (PolicyConstants.POLICY_LEVEL_APP.equalsIgnoreCase(policyLevel)) {
-            policy = apiMgtDAO.getApplicationPolicy(policyName, tenantId);
-        } else {
-            throw new APIManagementException("No such a policy type : " + policyLevel,
-                    ExceptionCodes.UNSUPPORTED_POLICY_TYPE);
-        }
-        if (policy != null) {
-            if (!APIConstants.UNLIMITED_TIER.equalsIgnoreCase(policy.getPolicyName())) {
-                Tier tier = new Tier(policy.getPolicyName());
-                tier.setDescription(policy.getDescription());
-                tier.setDisplayName(policy.getDisplayName());
-                Limit limit = policy.getDefaultQuotaPolicy().getLimit();
-                tier.setTimeUnit(limit.getTimeUnit());
-                tier.setUnitTime(limit.getUnitTime());
-                tier.setQuotaPolicyType(policy.getDefaultQuotaPolicy().getType());
-
-                //If the policy is a subscription policy
-                if (policy instanceof SubscriptionPolicy) {
-                    SubscriptionPolicy subscriptionPolicy = (SubscriptionPolicy) policy;
-                    tier.setRateLimitCount(subscriptionPolicy.getRateLimitCount());
-                    tier.setRateLimitTimeUnit(subscriptionPolicy.getRateLimitTimeUnit());
-                    setBillingPlanAndCustomAttributesToTier(subscriptionPolicy, tier);
-                    if (StringUtils.equals(subscriptionPolicy.getBillingPlan(), APIConstants.COMMERCIAL_TIER_PLAN)) {
-                        tier.setMonetizationAttributes(subscriptionPolicy.getMonetizationPlanProperties());
-                    }
-                }
-
-                if (limit instanceof RequestCountLimit) {
-                    RequestCountLimit countLimit = (RequestCountLimit) limit;
-                    tier.setRequestsPerMin(countLimit.getRequestCount());
-                    tier.setRequestCount(countLimit.getRequestCount());
-                } else if (limit instanceof BandwidthLimit) {
-                    BandwidthLimit bandwidthLimit = (BandwidthLimit) limit;
-                    tier.setRequestsPerMin(bandwidthLimit.getDataAmount());
-                    tier.setRequestCount(bandwidthLimit.getDataAmount());
-                    tier.setBandwidthDataUnit(bandwidthLimit.getDataUnit());
-                } else {
-                    EventCountLimit eventCountLimit = (EventCountLimit) limit;
-                    tier.setRequestCount(eventCountLimit.getEventCount());
-                    tier.setRequestsPerMin(eventCountLimit.getEventCount());
-                }
-                if (PolicyConstants.POLICY_LEVEL_SUB.equalsIgnoreCase(policyLevel)) {
-                    tier.setTierPlan(((SubscriptionPolicy) policy).getBillingPlan());
-                }
-                return tier;
-            } else {
-                if (APIUtil.isEnabledUnlimitedTier()) {
-                    Tier tier = new Tier(policy.getPolicyName());
-                    tier.setDescription(policy.getDescription());
-                    tier.setDisplayName(policy.getDisplayName());
-                    tier.setRequestsPerMin(Integer.MAX_VALUE);
-                    tier.setRequestCount(Integer.MAX_VALUE);
-                    if (isUnlimitedTierPaid(getTenantDomainFromTenantId(tenantId))) {
-                        tier.setTierPlan(APIConstants.COMMERCIAL_TIER_PLAN);
-                    } else {
-                        tier.setTierPlan(APIConstants.BILLING_PLAN_FREE);
-                    }
-                    return tier;
-                }
-            }
-        }
-        return null;
     }
 
     /**
@@ -2318,19 +1882,6 @@ public final class APIUtil {
     }
 
     /**
-     * This method is used to get application from client id.
-     *
-     * @param clientId client id
-     * @return application object.
-     * @throws APIManagementException
-     */
-    public static Application getApplicationByClientId(String clientId) throws APIManagementException {
-
-        ApiMgtDAO apiMgtDAO = ApiMgtDAO.getInstance();
-        return apiMgtDAO.getApplicationByClientId(clientId);
-    }
-
-    /**
      * Get the Security Audit Attributes for tenant from the Registry
      *
      * @param organization organization name.
@@ -2502,18 +2053,6 @@ public final class APIUtil {
                 .getFirstProperty(APIConstants.API_STORE_URL);
     }
 
-    // Take organization as a parameter
-    public static Map<String, Environment> getEnvironments(String organization) throws APIManagementException {
-        // get dynamic gateway environments read from database
-        Map<String, Environment> envFromDB = ApiMgtDAO.getInstance().getAllEnvironments(organization).stream()
-                .collect(Collectors.toMap(Environment::getName, env -> env));
-
-        // clone and overwrite api-manager.xml environments with environments from DB if exists with same name
-        Map<String, Environment> allEnvironments = new LinkedHashMap<>(getReadOnlyEnvironments());
-        allEnvironments.putAll(envFromDB);
-        return allEnvironments;
-    }
-
     /**
      * Get gateway environments defined in the configuration: api-manager.xml
      *
@@ -2575,23 +2114,6 @@ public final class APIUtil {
     }
 
     /**
-     * Get the workflow status information for the given api for the given workflow type
-     *
-     * @param uuid         Api uuid
-     * @param workflowType workflow type
-     * @return WorkflowDTO
-     * @throws APIManagementException
-     */
-    public static WorkflowDTO getAPIWorkflowStatus(String uuid, String workflowType)
-            throws APIManagementException {
-
-        ApiMgtDAO apiMgtDAO = ApiMgtDAO.getInstance();
-        int apiId = apiMgtDAO.getAPIID(uuid);
-        WorkflowDAO workflowDAO = WorkflowDAOImpl.getInstance();
-        return workflowDAO.retrieveWorkflowFromInternalReference(Integer.toString(apiId), workflowType);
-    }
-
-    /**
      * Returns a masked token for a given token.
      *
      * @param token token to be masked
@@ -2644,39 +2166,6 @@ public final class APIUtil {
             return true;
         }
         return Boolean.parseBoolean(anonymousMode);
-    }
-
-    /**
-     * This method is used to get the categories in a given tenant space
-     *
-     * @param organization organization name
-     * @return categories in a given tenant space
-     * @throws APIManagementException if failed to fetch categories
-     */
-    public static List<APICategory> getAllAPICategoriesOfOrganization(String organization)
-            throws APIManagementException {
-
-        ApiMgtDAO apiMgtDAO = ApiMgtDAO.getInstance();
-        return apiMgtDAO.getAllCategories(organization);
-    }
-
-    /**
-     * Validates the API category names to be attached to an API
-     *
-     * @param categories
-     * @param organization
-     * @return
-     */
-    public static boolean validateAPICategories(List<APICategory> categories, String organization)
-            throws APIManagementException {
-
-        List<APICategory> availableCategories = getAllAPICategoriesOfOrganization(organization);
-        for (APICategory category : categories) {
-            if (!availableCategories.contains(category)) {
-                return false;
-            }
-        }
-        return true;
     }
 
     public static Map getTenantBasedStoreDomainMapping(String tenantDomain) throws APIManagementException {
@@ -2839,28 +2328,6 @@ public final class APIUtil {
         //TODO handle configs
 //        return ServiceReferenceHolder.getInstance().getKeyManagerConnectorConfigurations();
         return new HashMap<>(); //Dummy return
-    }
-
-    /**
-     * Get scopes attached to the API.
-     *
-     * @param id           API uuid
-     * @param organization Organization
-     * @return Scope key to Scope object mapping
-     * @throws APIManagementException if an error occurs while getting scope attached to API
-     */
-    public static Map<String, Scope> getAPIScopes(String id, String organization)
-            throws APIManagementException {
-
-        String currentApiUuid;
-        APIRevision apiRevision = ApiMgtDAO.getInstance().checkAPIUUIDIsARevisionUUID(id);
-        if (apiRevision != null && apiRevision.getApiUUID() != null) {
-            currentApiUuid = apiRevision.getApiUUID();
-        } else {
-            currentApiUuid = id;
-        }
-        Set<String> scopeKeys = ApiMgtDAO.getInstance().getAPIScopeKeys(currentApiUuid);
-        return getScopes(scopeKeys, organization);
     }
 
     /**
@@ -3069,57 +2536,6 @@ public final class APIUtil {
             }
         }
         return foundUserRole;
-    }
-
-    /**
-     * Get UUID by the API Identifier.
-     *
-     * @param identifier
-     * @param organization identifier of the organization
-     * @return String uuid string
-     * @throws APIManagementException
-     */
-    public static String getUUIDFromIdentifier(APIIdentifier identifier, String organization) throws APIManagementException {
-
-        return ApiMgtDAO.getInstance().getUUIDFromIdentifier(identifier, organization);
-    }
-
-    /**
-     * Get UUID by the API Identifier.
-     *
-     * @param identifier
-     * @param organization
-     * @return String uuid string
-     * @throws APIManagementException
-     */
-    public static String getUUIDFromIdentifier(APIProductIdentifier identifier, String organization)
-            throws APIManagementException {
-
-        return ApiMgtDAO.getInstance().getUUIDFromIdentifier(identifier, organization);
-    }
-
-    /**
-     * Get the API Product Identifier from UUID.
-     *
-     * @param uuid UUID of the API
-     * @return API Product Identifier
-     * @throws APIManagementException
-     */
-    public static APIProductIdentifier getAPIProductIdentifierFromUUID(String uuid) throws APIManagementException {
-
-        return ApiMgtDAO.getInstance().getAPIProductIdentifierFromUUID(uuid);
-    }
-
-    /**
-     * Get the API Identifier from UUID.
-     *
-     * @param uuid UUID of the API
-     * @return API Identifier
-     * @throws APIManagementException
-     */
-    public static APIIdentifier getAPIIdentifierFromUUID(String uuid) throws APIManagementException {
-
-        return ApiMgtDAO.getInstance().getAPIIdentifierFromUUID(uuid);
     }
 
     public static String[] getFilteredUserRoles(String username) throws APIManagementException {

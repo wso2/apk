@@ -56,7 +56,7 @@ public class SystemConfigurationsDAO {
     /**
      * Method to get the instance of the ApiMgtDAO.
      *
-     * @return {@link ApiMgtDAO} instance
+     * @return
      */
     public static SystemConfigurationsDAO getInstance() {
 
