@@ -1,4 +1,14 @@
+plugins {
+    id 'net.researchgate.release' version '3.0.2'
+}
+
 apply from: "$rootDir/../common-gradle-scripts/helm.gradle"
-apply from: "$rootDir/../common-gradle-scripts/release.gradle"
+
+release {
+    // TODO: finalize release version and rules
+    // failOnCommitNeeded = false
+    // failOnUpdateNeeded = false
+    tagTemplate = '${project.name}-${project.version}'
+}
 
 afterReleaseBuild.dependsOn helm_push
