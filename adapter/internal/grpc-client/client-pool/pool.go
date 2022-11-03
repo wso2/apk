@@ -89,17 +89,21 @@ func InitWithConfig()  (*Pool, error) {
 func (connectionPool *Pool) GetConnection() (*grpc.ClientConn, error){
 	connectionPool.lock.Lock();
 	defer connectionPool.lock.Unlock();
-	availableConnections := *connectionPool.availableConnections;
-	availableConnectionLength := len(availableConnections);
+	availableConnectionLength := len(*connectionPool.availableConnections);
 	if (availableConnectionLength > 0) {
-		availableConnection := &availableConnections[0];
+		availableConnection := &(*connectionPool.availableConnections)[0];
 		*connectionPool.availableConnections = (*connectionPool.availableConnections)[1:]
 		*connectionPool.usedConnections = append(*connectionPool.usedConnections, *availableConnection);
 		return availableConnection, nil;
 	} else {
 		totalConnectionLength := availableConnectionLength + len(*connectionPool.usedConnections);
 		if (totalConnectionLength < connectionPool.maxCapacity) {
-			return createGRPCConnection(*connectionPool);
+			connection, err := createGRPCConnection(*connectionPool);
+			if (err == nil) {
+				*connectionPool.usedConnections = append(*connectionPool.usedConnections, *connection);
+				return connection, nil;
+			}
+			return nil, err;
 		} else {
 			return nil, errors.New("maximum connection reached in the pool")
 		}
