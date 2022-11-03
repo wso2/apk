@@ -50,7 +50,7 @@ const Notification = () => {
     const theme = useTheme();
     const matchesXs = useMediaQuery(theme.breakpoints.down('md'));
 
-    const anchorRef = useRef(null);
+    const anchorRef = useRef<HTMLButtonElement>(null);
     const [open, setOpen] = useState(false);
     const handleToggle = () => {
         setOpen((prevOpen) => !prevOpen);
@@ -104,7 +104,7 @@ const Notification = () => {
                     <Transitions type="fade" in={open} {...TransitionProps}>
                         <Paper
                             sx={{
-                                boxShadow: theme.customShadows.z1,
+                                // boxShadow: theme.customShadows.z1,
                                 width: '100%',
                                 minWidth: 285,
                                 maxWidth: 420,

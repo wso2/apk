@@ -34,7 +34,7 @@ export default function Dashboard() {
     return (
         <Grid container spacing={3} justify='center'>
             <Grid item xs={11} md={6}>
-                <RateLimitingCard />
+                <RateLimitingCard />sss
             </Grid>
             <Grid item xs={11} md={6}>
                 <APICategoriesCard />

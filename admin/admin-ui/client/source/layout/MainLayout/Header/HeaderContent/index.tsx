@@ -1,7 +1,7 @@
 
 import React from 'react';
 // material-ui
-import { Box, IconButton, Link, useMediaQuery } from '@mui/material';
+import { Box, IconButton, Link, Theme, useMediaQuery } from '@mui/material';
 import { GithubOutlined } from '@ant-design/icons';
 
 // project import
@@ -13,7 +13,7 @@ import MobileSection from './MobileSection';
 // ==============================|| HEADER - CONTENT ||============================== //
 
 const HeaderContent = () => {
-    const matchesXs = useMediaQuery((theme) => theme.breakpoints.down('md'));
+    const matchesXs = useMediaQuery((theme: Theme) => theme.breakpoints.down('md'));
 
     return (
         <>

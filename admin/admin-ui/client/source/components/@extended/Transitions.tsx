@@ -1,12 +1,19 @@
+import React from 'react';
 import PropTypes from 'prop-types';
-import { forwardRef } from 'react';
+import { forwardRef, ReactNode } from 'react';
 
 // material-ui
 import { Fade, Box, Grow } from '@mui/material';
 
 // ==============================|| TRANSITIONS ||============================== //
+interface Props {
+    children?: ReactNode;
+    position?: string;
+    type?: string;
+    others?: any;
+}
 
-const Transitions = forwardRef(({ children, position, type, ...others }, ref) => {
+const Transitions = forwardRef<HTMLButtonElement, Props>(({ children, position, type, ...others }, ref) => {
     let positionSX = {
         transformOrigin: '0 0 0'
     };

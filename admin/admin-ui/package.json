@@ -3,8 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./server/bin/www",
-    "watch": "nodemon --ignore public",
+    "node-prod": "node ./server/bin/www",
+    "node-dev": "nodemon ./server/bin/www",
     "react-dev": "webpack --watch",
     "react-prod": "webpack"
   },

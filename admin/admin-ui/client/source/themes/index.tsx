@@ -9,15 +9,22 @@ import { createTheme, ThemeProvider, ThemeOptions, Shadows } from '@mui/material
 // project import
 import Palette from './palette';
 import Typography from './typography';
-import CustomShadows from './shadows';
 import componentsOverride from './overrides';
+import CustomShadows, { CustomShadowsProps } from './shadows';
 
 // ==============================|| DEFAULT THEME - MAIN  ||============================== //
-interface ThemeCustomizationProps {
-    children: React.ReactNode,
+declare module '@mui/material/styles' {
+    interface Theme {
+        customShadows: CustomShadowsProps;
+    }
+
+    interface ThemeOptions {
+        customShadows?: CustomShadowsProps;
+    }
+
 }
 
-export default function ThemeCustomization({ children }: ThemeCustomizationProps) {
+export default function ThemeCustomization({ children }) {
     const theme  = Palette('light');
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -44,6 +51,7 @@ export default function ThemeCustomization({ children }: ThemeCustomizationProps
                 }
             },
             palette: theme.palette,
+            customShadows: themeCustomShadows,
             typography: themeTypography
         }),
         [theme, themeTypography]

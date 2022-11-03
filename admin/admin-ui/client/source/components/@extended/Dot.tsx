@@ -1,10 +1,15 @@
+import React from 'react';
 import PropTypes from 'prop-types';
 
 // material-ui
 import { useTheme } from '@mui/material/styles';
 import { Box } from '@mui/material';
 
-const Dot = ({ color, size }) => {
+interface DotProps {
+    color: string;
+    size: number;
+}
+const Dot = ({ color, size }: DotProps) => {
     const theme = useTheme();
     let main;
     switch (color) {
