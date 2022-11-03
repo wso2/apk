@@ -19,8 +19,41 @@ apply plugin: 'checkstyle'
 apply plugin: 'com.github.spotbugs'
 apply plugin: 'jacoco'
 apply plugin: 'java'
+apply plugin: 'maven-publish'
 
 repositories {
     mavenLocal()
     mavenCentral()
 }
+
+jar {
+    into("META-INF/maven/$project.group/$project.name") {
+        from { generatePomFileForMavenPublication }
+        rename ".*", "pom.xml"
+    }
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+        }
+    }
+
+    repositories {
+        maven {
+            name 'nexus'
+            // TODO: define public nexus repositories
+            def snapshotsRepoUrl = 'http://localhost:8081/nexus/content/repositories/snapshots/'
+            def releasesRepoUrl = 'http://localhost:8081/nexus/content/repositories/releases/'
+            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+            credentials {
+                username rootProject.hasProperty("nexus_username") ? nexus_username : System.getenv("nexus_username")
+                password rootProject.hasProperty("nexus_password") ? nexus_password : System.getenv("nexus_password")
+            }
+            allowInsecureProtocol = true
+        }
+    }
+}
+
+afterReleaseBuild.dependsOn publish
