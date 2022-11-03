@@ -1,0 +1,13 @@
+group = 'org.wso2.apk'
+version = '0.1.0-SNAPSHOT'
+description = 'WSO2 APK Init Component'
+java.sourceCompatibility = JavaVersion.VERSION_11
+
+dependencies {
+    implementation project(':org.wso2.apk.apimgt.api')
+    implementation project(':org.wso2.apk.apimgt.impl')
+    implementation libs.json.simple
+    implementation libs.commons.lang3
+    implementation libs.commons.logging
+    implementation libs.jackson.databind
+}

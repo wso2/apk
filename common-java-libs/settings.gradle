@@ -1,0 +1,16 @@
+rootProject.name = 'common-java-libs'
+
+include ':org.wso2.apk.apimgt.api'
+include ':org.wso2.apk.apimgt.user'
+include ':org.wso2.apk.apimgt.impl'
+include ':org.wso2.apk.apimgt.init'
+include ':org.wso2.apk.apimgt.rest.api.util'
+include ':org.wso2.apk.apimgt.rest.api.admin.v1.common'
+
+dependencyResolutionManagement {
+    versionCatalogs {
+        libs {
+            from(files("../libs.versions.toml"))
+        }
+    }
+}

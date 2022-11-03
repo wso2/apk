@@ -1,0 +1,67 @@
+plugins {
+    id "org.openapi.generator" version "6.2.1"
+}
+
+group = 'org.wso2.apk'
+version = '0.1.0-SNAPSHOT'
+description = 'WSO2 APK Admin API Common Component'
+java.sourceCompatibility = JavaVersion.VERSION_11
+
+sourceSets {
+    main {
+        java {
+            srcDirs("src/gen/java")
+        }
+    }
+}
+
+dependencies {
+    implementation project(':org.wso2.apk.apimgt.api')
+    implementation project(':org.wso2.apk.apimgt.impl')
+    implementation project(':org.wso2.apk.apimgt.rest.api.util')
+    implementation project(':org.wso2.apk.apimgt.user')
+    implementation libs.jackson.databind
+    implementation libs.commons.io
+    implementation libs.commons.lang
+    implementation libs.commons.lang3
+    implementation libs.cxf.rt.frontend.jaxrs
+    implementation libs.cxf.rt.rs.service.description
+    implementation libs.hibernate.validator
+    implementation libs.swagger.annotations
+    implementation libs.json.simple
+    implementation libs.json
+    implementation libs.gson
+    implementation libs.openfeign.feign.core
+    implementation libs.openfeign.feign.gson
+    implementation libs.openfeign.feign.okhttp
+    implementation libs.snakeyaml
+    implementation libs.guava
+    implementation libs.jackson.dataformat.yaml
+    implementation libs.httpcomponents.client
+    compileOnly libs.jackson.annotations
+}
+
+
+openApiGenerate {
+    generatorName = "jaxrs-cxf-cdi"
+    apiPackage = "org.wso2.apk.apimgt.rest.api.admin.v1"
+    modelPackage = "org.wso2.apk.apimgt.rest.api.admin.v1.dto"
+    outputDir = "$projectDir".toString()
+    inputSpec = "$projectDir/src/main/resources/admin-api.yaml".toString()
+    modelNameSuffix = "DTO"
+    skipOverwrite = true
+    globalProperties = [
+            apis  : "false",
+            models: ""
+    ]
+}
+
+tasks.register("cleanDTOs") {
+    delete "$projectDir/src/gen/java/org/wso2/apk/apimgt/rest/api/admin/v1/dto".toString()
+}
+
+tasks.named('compileJava').configure {
+    dependsOn 'cleanDTOs'
+    dependsOn 'openApiGenerate'
+}
+

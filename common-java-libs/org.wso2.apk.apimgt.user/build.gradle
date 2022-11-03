@@ -1,0 +1,9 @@
+group = 'org.wso2.apk'
+version = '0.1.0-SNAPSHOT'
+description = 'WSO2 APK User Component'
+java.sourceCompatibility = JavaVersion.VERSION_11
+
+dependencies {
+    implementation libs.nimbus.jose.jwt
+    implementation libs.commons.logging
+}

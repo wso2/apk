@@ -1,0 +1,11 @@
+group = 'org.wso2.apk'
+version = '0.1.0-SNAPSHOT'
+description = 'WSO2 APK API Component'
+java.sourceCompatibility = JavaVersion.VERSION_11
+
+dependencies {
+    implementation libs.json.simple
+    implementation libs.commons.lang3
+    implementation libs.commons.logging
+    implementation libs.graphql
+}

@@ -1,0 +1,14 @@
+group = 'org.wso2.apk'
+version = '0.1.0-SNAPSHOT'
+description = 'WSO2 APK REST API Util Component'
+java.sourceCompatibility = JavaVersion.VERSION_11
+
+dependencies {
+    implementation project(':org.wso2.apk.apimgt.api')
+    implementation project(':org.wso2.apk.apimgt.impl')
+    implementation libs.commons.logging
+    implementation libs.commons.io
+    implementation libs.json.simple
+    implementation libs.wso2.uri.templates
+    compileOnly libs.swagger.jaxrs
+}

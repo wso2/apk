@@ -1,0 +1,50 @@
+group = 'org.wso2.apk'
+version = '0.1.0-SNAPSHOT'
+description = 'WSO2 APK Implementation Component'
+java.sourceCompatibility = JavaVersion.VERSION_11
+
+dependencies {
+    implementation project(':org.wso2.apk.apimgt.api')
+    implementation project(':org.wso2.apk.apimgt.user')
+    implementation libs.amazonaws.awslambda
+    implementation libs.commons.codec
+    implementation libs.gson
+    implementation libs.httpcomponents.httpmime
+    implementation libs.json.simple
+    implementation libs.swagger.models
+    implementation libs.swagger.inflector
+    implementation libs.swagger.inflector.oas3
+    implementation libs.swagger.parser
+    implementation libs.swagger.parser.v3
+    implementation libs.swagger.models.v3
+    implementation libs.swagger.core.v3
+    implementation libs.jackson.datatype.guava
+    implementation libs.slf4j.ext
+    implementation libs.openapi.generator
+    implementation libs.xerces
+    implementation libs.jackson.dataformat.yaml
+    implementation libs.graphql
+    implementation libs.okio
+    implementation libs.okhttp
+    implementation libs.openfeign.feign.core
+    implementation libs.openfeign.feign.gson
+    implementation libs.openfeign.feign.okhttp
+    implementation libs.openfeign.feign.slf4j
+    implementation libs.jackson.annotations
+    implementation libs.everit.json.schema
+    implementation libs.apicurio.data.models
+    implementation libs.commons.validator
+    implementation libs.handy.uri.templates
+    implementation libs.hikaricp
+    implementation libs.mapstruct
+    implementation libs.json
+    implementation libs.postgresql
+    implementation libs.commons.lang
+    implementation libs.javax.cache
+    testImplementation libs.mockito.core
+    testImplementation libs.hamcrest
+    testImplementation libs.powermock.module.junit4
+    testImplementation libs.powermock.api.mockito2
+    testImplementation libs.jacoco.agent
+    testImplementation libs.xml.apis
+}
