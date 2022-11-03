@@ -58,6 +58,9 @@ message HttpRoute {
     repeated string hostnames = 1;
     repeated HttpPath httpPaths = 2;
     repeated ApiPolicy apiPolicies = 3;
+    repeated Authentication authentications = 4;
+    repeated ScopeMapping scopeMappings = 5;
+    repeated RateLimit rateLimits = 6;
 }
 
 message Matching {
@@ -92,7 +95,7 @@ message QueryParam {
 
 message ScopeMapping {
     repeated Scope scopes = 1;
-    repeated SMapping scopeMappings = 2;
+    repeated Mapping mappings = 2;
 
 }
 
@@ -103,7 +106,7 @@ message Scope {
     repeated string roles = 4;
 }
 
-message SMapping {
+message Mapping {
     string name = 1;
     string path = 2;
     string method = 3;
