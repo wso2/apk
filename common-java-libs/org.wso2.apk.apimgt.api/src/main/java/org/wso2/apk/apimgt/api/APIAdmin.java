@@ -141,39 +141,6 @@ public interface APIAdmin {
             throws APIManagementException;
 
     /**
-     * Add a bot detection alert subscription
-     *
-     * @param email email to be registered for the subscription
-     * @throws APIManagementException if an error occurs when adding a bot detection alert subscription
-     */
-    void addBotDetectionAlertSubscription(String email) throws APIManagementException;
-
-    /**
-     * Delete a bot detection alert subscription
-     *
-     * @param uuid uuid of the subscription
-     * @throws APIManagementException if an error occurs when deleting a bot detection alert subscription
-     */
-    void deleteBotDetectionAlertSubscription(String uuid) throws APIManagementException;
-
-    /**
-     * Retrieve a bot detection alert subscription by querying a particular field (uuid or email)
-     *
-     * @param field field to be queried to obtain the bot detection alert subscription. Can be uuid or email
-     * @param value value corresponding to the field (uuid or email value)
-     * @return if a subscription exists, returns the bot detection alert subscription, else returns a null object
-     * @throws APIManagementException if an error occurs when retrieving a bot detection alert subscription
-     */
-    BotDetectionData getBotDetectionAlertSubscription(String field, String value) throws APIManagementException;
-
-    /**
-     * Retrieve all bot detection alert subscriptions
-     *
-     * @throws APIManagementException if an error occurs when retrieving bot detection alert subscriptions
-     */
-    List<BotDetectionData> getBotDetectionAlertSubscriptions() throws APIManagementException;
-
-    /**
      * Retrieve all bot detected data
      *
      * @return list of bot detected data

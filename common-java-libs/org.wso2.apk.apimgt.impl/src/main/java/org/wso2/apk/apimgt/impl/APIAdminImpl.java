@@ -53,7 +53,6 @@ import org.wso2.apk.apimgt.api.model.policy.Pipeline;
 import org.wso2.apk.apimgt.api.model.policy.Policy;
 import org.wso2.apk.apimgt.api.model.policy.PolicyConstants;
 import org.wso2.apk.apimgt.api.model.policy.SubscriptionPolicy;
-import org.wso2.apk.apimgt.impl.alertmgt.AlertMgtConstants;
 import org.wso2.apk.apimgt.impl.dao.constants.SQLConstants;
 import org.wso2.apk.apimgt.impl.dao.impl.AdminDAOImpl;
 import org.wso2.apk.apimgt.impl.dao.impl.ApplicationDAOImpl;
@@ -398,34 +397,10 @@ public class APIAdminImpl implements APIAdmin {
     // ToDo :  Add KM configuration methods
 
     @Override
-    public void addBotDetectionAlertSubscription(String email) throws APIManagementException {
-
-        adminDAOImpl.addBotDetectionAlertSubscription(email);
-    }
-
-    @Override
-    public List<BotDetectionData> getBotDetectionAlertSubscriptions() throws APIManagementException {
-
-        return adminDAOImpl.getBotDetectionAlertSubscriptions();
-    }
-
-    @Override
-    public void deleteBotDetectionAlertSubscription(String uuid) throws APIManagementException {
-
-        adminDAOImpl.deleteBotDetectionAlertSubscription(uuid);
-    }
-
-    @Override
-    public BotDetectionData getBotDetectionAlertSubscription(String field, String value) throws APIManagementException {
-
-        return adminDAOImpl.getBotDetectionAlertSubscription(field, value);
-    }
-
-    @Override
     public List<BotDetectionData> retrieveBotDetectionData() throws APIManagementException {
 
         List<BotDetectionData> botDetectionDatalist = new ArrayList<>();
-        String appName = AlertMgtConstants.APIM_ALERT_BOT_DETECTION_APP;
+        String appName = "APIM_ALERT_BOT_DETECTION_EMAIL";
         String query = SQLConstants.BotDataConstants.GET_BOT_DETECTED_DATA;
 
         JSONObject botDataJsonObject = APIUtil.executeQueryOnStreamProcessor(appName, query);

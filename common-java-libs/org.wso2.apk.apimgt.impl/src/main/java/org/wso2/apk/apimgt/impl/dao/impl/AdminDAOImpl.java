@@ -26,7 +26,6 @@ import org.wso2.apk.apimgt.api.ExceptionCodes;
 import org.wso2.apk.apimgt.api.model.APICategory;
 import org.wso2.apk.apimgt.api.model.MonetizationUsagePublishInfo;
 import org.wso2.apk.apimgt.api.model.botDataAPI.BotDetectionData;
-import org.wso2.apk.apimgt.impl.alertmgt.AlertMgtConstants;
 import org.wso2.apk.apimgt.impl.dao.AdminDAO;
 import org.wso2.apk.apimgt.impl.dao.constants.SQLConstants;
 import org.wso2.apk.apimgt.impl.utils.APIMgtDBUtil;
@@ -162,94 +161,6 @@ public class AdminDAOImpl implements AdminDAO {
         } finally {
             APIMgtDBUtil.closeAllConnections(ps, conn, rs);
         }
-    }
-
-    @Override
-    public void addBotDetectionAlertSubscription(String email) throws APIManagementException {
-
-        String query = SQLConstants.BotDataConstants.ADD_NOTIFICATION;
-        try (Connection connection = APIMgtDBUtil.getConnection();
-             PreparedStatement ps = connection.prepareStatement(query)) {
-            connection.setAutoCommit(false);
-            UUID uuid = UUID.randomUUID();
-            String randomUUIDString = uuid.toString();
-            String category = "Bot-Detection";
-            String notificationType = "email";
-            ps.setString(1, randomUUIDString);
-            ps.setString(2, category);
-            ps.setString(3, notificationType);
-            ps.setString(4, email);
-            ps.execute();
-            connection.commit();
-        } catch (SQLException e) {
-            handleExceptionWithCode("Error while adding bot detection alert subscription", e,
-                    ExceptionCodes.APIMGT_DAO_EXCEPTION);
-        }
-    }
-
-    @Override
-    public List<BotDetectionData> getBotDetectionAlertSubscriptions() throws APIManagementException {
-
-        List<BotDetectionData> list = new ArrayList<>();
-        String query = SQLConstants.BotDataConstants.GET_SAVED_ALERT_EMAILS;
-        try (Connection connection = APIMgtDBUtil.getConnection();
-             PreparedStatement ps = connection.prepareStatement(query)) {
-            ResultSet resultSet = ps.executeQuery();
-            while (resultSet.next()) {
-                BotDetectionData botDetectedData = new BotDetectionData();
-                botDetectedData.setUuid(resultSet.getString("UUID"));
-                botDetectedData.setEmail(resultSet.getString("SUBSCRIBER_ADDRESS"));
-                list.add(botDetectedData);
-            }
-        } catch (SQLException e) {
-            handleExceptionWithCode("Error while retrieving bot detection alert subscriptions", e,
-                    ExceptionCodes.APIMGT_DAO_EXCEPTION);
-        }
-        return list;
-    }
-
-    @Override
-    public void deleteBotDetectionAlertSubscription(String uuid) throws APIManagementException {
-
-        String query = SQLConstants.BotDataConstants.DELETE_EMAIL_BY_UUID;
-        try (Connection connection = APIMgtDBUtil.getConnection();
-             PreparedStatement ps = connection.prepareStatement(query)) {
-            connection.setAutoCommit(false);
-            ps.setString(1, uuid);
-            ps.execute();
-            connection.commit();
-        } catch (SQLException e) {
-            handleExceptionWithCode("Error while deleting bot detection alert subscription", e,
-                    ExceptionCodes.APIMGT_DAO_EXCEPTION);
-        }
-    }
-
-    @Override
-    public BotDetectionData getBotDetectionAlertSubscription(String field, String value)
-            throws APIManagementException {
-
-        BotDetectionData alertSubscription = null;
-        String query = "";
-        if (AlertMgtConstants.BOT_DETECTION_UUID_FIELD.equals(field)) {
-            query = SQLConstants.BotDataConstants.GET_ALERT_SUBSCRIPTION_BY_UUID;
-        }
-        if (AlertMgtConstants.BOT_DETECTION_EMAIL_FIELD.equals(field)) {
-            query = SQLConstants.BotDataConstants.GET_ALERT_SUBSCRIPTION_BY_EMAIL;
-        }
-        try (Connection connection = APIMgtDBUtil.getConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setString(1, value);
-            ResultSet resultSet = statement.executeQuery();
-            if (resultSet.next()) {
-                alertSubscription = new BotDetectionData();
-                alertSubscription.setUuid(resultSet.getString("UUID"));
-                alertSubscription.setEmail(resultSet.getString("SUBSCRIBER_ADDRESS"));
-            }
-        } catch (SQLException e) {
-            handleExceptionWithCode("Failed to retrieve bot detection alert subscription of " + field + ": " + value,
-                    e, ExceptionCodes.APIMGT_DAO_EXCEPTION);
-        }
-        return alertSubscription;
     }
 
     @Override

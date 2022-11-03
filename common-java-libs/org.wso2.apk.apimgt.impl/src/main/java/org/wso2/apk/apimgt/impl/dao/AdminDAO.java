@@ -53,44 +53,10 @@ public interface AdminDAO {
             throws APIManagementException;
 
     /**
-     * Add a bot detection alert subscription
-     *
-     * @param email email to be registered for the subscription
-     * @throws APIManagementException if an error occurs when adding a bot detection alert subscription
-     */
-    void addBotDetectionAlertSubscription(String email) throws APIManagementException;
-
-    /**
-     * Retrieve all bot detection alert subscriptions
-     *
-     * @throws APIManagementException if an error occurs when retrieving bot detection alert subscriptions
-     */
-    List<BotDetectionData> getBotDetectionAlertSubscriptions() throws APIManagementException;
-
-    /**
-     * Delete a bot detection alert subscription
-     *
-     * @param uuid uuid of the subscription
-     * @throws APIManagementException if an error occurs when deleting a bot detection alert subscription
-     */
-    void deleteBotDetectionAlertSubscription(String uuid) throws APIManagementException;
-
-    /**
-     * Retrieve a bot detection alert subscription by querying a particular field (uuid or email)
-     *
-     * @param field field to be queried to obtain the bot detection alert subscription. Can be uuid or email
-     * @param value value corresponding to the field (uuid or email value)
-     * @return if subscription exist, returns the bot detection alert subscription, else returns a null object
-     * @throws APIManagementException if an error occurs when retrieving a bot detection alert subscription
-     */
-    BotDetectionData getBotDetectionAlertSubscription(String field, String value)
-            throws APIManagementException;
-
-    /**
      * Adds an API category
      *
-     * @param category      Category
-     * @param organization  Organization
+     * @param category     Category
+     * @param organization Organization
      * @return Category
      */
     APICategory addCategory(APICategory category, String organization) throws APIManagementException;
@@ -113,6 +79,7 @@ public interface AdminDAO {
 
     /**
      * Get all available API categories of the organization
+     *
      * @param organization
      * @return
      * @throws APIManagementException
@@ -132,6 +99,7 @@ public interface AdminDAO {
 
     /**
      * Get API category by ID
+     *
      * @param apiCategoryID Category ID
      * @return
      * @throws APIManagementException
@@ -141,7 +109,7 @@ public interface AdminDAO {
     /**
      * Adds a tenant theme to the database
      *
-     * @param tenantId     tenant ID of user
+     * @param organization tenant ID of user
      * @param themeContent content of the tenant theme
      * @throws APIManagementException if an error occurs when adding a tenant theme to the database
      */
@@ -150,7 +118,7 @@ public interface AdminDAO {
     /**
      * Updates an existing tenant theme in the database
      *
-     * @param tenantId     tenant ID of user
+     * @param organization tenant ID of user
      * @param themeContent content of the tenant theme
      * @throws APIManagementException if an error occurs when updating an existing tenant theme in the database
      */

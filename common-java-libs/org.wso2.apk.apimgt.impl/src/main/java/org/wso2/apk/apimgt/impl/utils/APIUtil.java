@@ -26,9 +26,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
-//import org.apache.axiom.om.OMElement;
-//import org.apache.axiom.om.util.AXIOMUtil;
-//import org.apache.axis2.Constants;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -68,7 +65,6 @@ import org.apache.http.util.EntityUtils;
 import org.apache.xerces.util.SecurityManager;
 import org.everit.json.schema.Schema;
 import org.everit.json.schema.ValidationException;
-import org.everit.json.schema.loader.SchemaLoader;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -78,16 +74,10 @@ import org.wso2.apk.apimgt.api.ErrorHandler;
 import org.wso2.apk.apimgt.api.ExceptionCodes;
 import org.wso2.apk.apimgt.api.LoginPostExecutor;
 import org.wso2.apk.apimgt.api.NewPostLoginExecutor;
-import org.wso2.apk.apimgt.api.PasswordResolver;
-import org.wso2.apk.apimgt.api.doc.model.APIDefinition;
-import org.wso2.apk.apimgt.api.doc.model.APIResource;
-import org.wso2.apk.apimgt.api.doc.model.Operation;
-import org.wso2.apk.apimgt.api.doc.model.Parameter;
 import org.wso2.apk.apimgt.api.model.API;
 import org.wso2.apk.apimgt.api.model.APICategory;
 import org.wso2.apk.apimgt.api.model.APIIdentifier;
 import org.wso2.apk.apimgt.api.model.APIProductIdentifier;
-import org.wso2.apk.apimgt.api.model.APIPublisher;
 import org.wso2.apk.apimgt.api.model.APIRevision;
 import org.wso2.apk.apimgt.api.model.APIStatus;
 import org.wso2.apk.apimgt.api.model.APIStore;
@@ -103,7 +93,6 @@ import org.wso2.apk.apimgt.api.model.OperationPolicyDefinition;
 import org.wso2.apk.apimgt.api.model.OperationPolicySpecification;
 import org.wso2.apk.apimgt.api.model.Scope;
 import org.wso2.apk.apimgt.api.model.Tier;
-import org.wso2.apk.apimgt.api.model.URITemplate;
 import org.wso2.apk.apimgt.api.model.VHost;
 import org.wso2.apk.apimgt.api.model.WebsubSubscriptionConfiguration;
 import org.wso2.apk.apimgt.api.model.graphql.queryanalysis.GraphqlComplexityInfo;
@@ -114,13 +103,11 @@ import org.wso2.apk.apimgt.api.model.policy.Policy;
 import org.wso2.apk.apimgt.api.model.policy.PolicyConstants;
 import org.wso2.apk.apimgt.api.model.policy.RequestCountLimit;
 import org.wso2.apk.apimgt.api.model.policy.SubscriptionPolicy;
-import org.wso2.apk.apimgt.impl.APIAdminImpl;
 import org.wso2.apk.apimgt.impl.APIConstants;
 import org.wso2.apk.apimgt.impl.APIManagerAnalyticsConfiguration;
 import org.wso2.apk.apimgt.impl.APIManagerConfigurationServiceImpl;
 import org.wso2.apk.apimgt.impl.ConfigurationHolder;
 import org.wso2.apk.apimgt.impl.ExternalEnvironment;
-import org.wso2.apk.apimgt.impl.PasswordResolverFactory;
 import org.wso2.apk.apimgt.impl.config.APIMConfigService;
 import org.wso2.apk.apimgt.impl.config.APIMConfigServiceImpl;
 import org.wso2.apk.apimgt.impl.dao.ApiMgtDAO;
@@ -162,19 +149,13 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.cache.Cache;
-//import javax.cache.CacheConfiguration;
-import javax.cache.CacheManager;
-import javax.cache.Caching;
 import javax.net.ssl.SSLContext;
-import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.stream.XMLStreamException;
 
 /**
  * This class contains the utility methods used by the implementations of APIManager, APIProvider
@@ -236,28 +217,6 @@ public final class APIUtil {
 
     }
 
-    //Need tenantIdleTime to check whether the tenant is in idle state in loadTenantConfig method
-//    static {
-//        tenantIdleTimeMillis =
-//                Long.parseLong(System.getProperty(
-//                        TENANT_IDLE_TIME,
-//                        String.valueOf(DEFAULT_TENANT_IDLE_MINS)))
-//                        * 60 * 1000;
-//        try (InputStream inputStream = APIAdminImpl.class.getResourceAsStream("/tenant/tenant-config-schema.json")) {
-//            org.json.JSONObject tenantConfigSchema = new org.json.JSONObject(IOUtils.toString(inputStream));
-//            tenantConfigJsonSchema = SchemaLoader.load(tenantConfigSchema);
-//        } catch (IOException e) {
-//            log.error("Error occurred while reading tenant-config-schema.json", e);
-//        }
-//
-//        try (InputStream inputStream = APIUtil.class.getResourceAsStream("/operationPolicy/operation-policy-specification-schema.json")) {
-//            org.json.JSONObject operationPolicySpecificationSchema = new org.json.JSONObject(IOUtils.toString(inputStream));
-//            operationPolicySpecSchema = SchemaLoader.load(operationPolicySpecificationSchema);
-//        } catch (IOException e) {
-//            log.error("Error occurred while reading operation-policy-specification-schema.json", e);
-//        }
-//    }
-
     private static String hostAddress = null;
     private static final int timeoutInSeconds = 15;
     private static final int retries = 2;
@@ -279,50 +238,7 @@ public final class APIUtil {
                 .getFirstProperty(APIConstants.PUBLISHER_ROLE_CACHE_ENABLED);
         isPublisherRoleCacheEnabled = isPublisherRoleCacheEnabledConfiguration == null || Boolean
                 .parseBoolean(isPublisherRoleCacheEnabledConfiguration);
-//        try {
-//            eventPublisherFactory = ServiceReferenceHolder.getInstance().getEventPublisherFactory();
-//            eventPublishers.putIfAbsent(EventPublisherType.ASYNC_WEBHOOKS,
-//                    eventPublisherFactory.getEventPublisher(EventPublisherType.ASYNC_WEBHOOKS));
-//            eventPublishers.putIfAbsent(EventPublisherType.CACHE_INVALIDATION,
-//                    eventPublisherFactory.getEventPublisher(EventPublisherType.CACHE_INVALIDATION));
-//            eventPublishers.putIfAbsent(EventPublisherType.GLOBAL_CACHE_INVALIDATION,
-//                    eventPublisherFactory.getEventPublisher(EventPublisherType.GLOBAL_CACHE_INVALIDATION));
-//            eventPublishers.putIfAbsent(EventPublisherType.NOTIFICATION,
-//                    eventPublisherFactory.getEventPublisher(EventPublisherType.NOTIFICATION));
-//            eventPublishers.putIfAbsent(EventPublisherType.TOKEN_REVOCATION,
-//                    eventPublisherFactory.getEventPublisher(EventPublisherType.TOKEN_REVOCATION));
-//            eventPublishers.putIfAbsent(EventPublisherType.BLOCKING_EVENT,
-//                    eventPublisherFactory.getEventPublisher(EventPublisherType.BLOCKING_EVENT));
-//            eventPublishers.putIfAbsent(EventPublisherType.KEY_TEMPLATE,
-//                    eventPublisherFactory.getEventPublisher(EventPublisherType.KEY_TEMPLATE));
-//            eventPublishers.putIfAbsent(EventPublisherType.KEYMGT_EVENT,
-//                    eventPublisherFactory.getEventPublisher(EventPublisherType.KEYMGT_EVENT));
-//        } catch (EventPublisherException e) {
-//            log.error("Could not initialize the event publishers. Events might not be published properly.");
-//            throw new APIManagementException(e);
-//        }
     }
-
-//    /**
-//     * This method used to send Notifications
-//     *
-//     * @param event        Event object
-//     * @param notifierType eventType
-//     */
-//    public static void sendNotification(org.wso2.carbon.apimgt.impl.notifier.events.Event event, String notifierType) {
-//
-//        if (ServiceReferenceHolder.getInstance().getNotifiersMap().containsKey(notifierType)) {
-//            List<Notifier> notifierList = ServiceReferenceHolder.getInstance().getNotifiersMap().get(notifierType);
-//            notifierList.forEach((notifier) -> {
-//                try {
-//                    notifier.publishEvent(event);
-//                } catch (NotifierException e) {
-//                    log.error("Error when publish " + event + " through notifier:" + notifierType + ". Error:" + e);
-//                }
-//            });
-//        }
-//
-//    }
 
     public static APIStatus getApiStatus(String status) throws APIManagementException {
 
@@ -3653,13 +3569,6 @@ public final class APIUtil {
     public static boolean isFalseExplicitly(String value) {
         return value == null || value.equalsIgnoreCase("false")
                 || value.equals("0") || value.equalsIgnoreCase("no");
-    }
-
-    public static HashMap<Integer, String> getAllAlertTypeByStakeHolder(String stakeHolder)
-            throws APIManagementException {
-        HashMap<Integer, String> map;
-        map = ApiMgtDAO.getInstance().getAllAlertTypesByStakeHolder(stakeHolder);
-        return map;
     }
 
 
