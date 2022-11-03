@@ -30,7 +30,7 @@ tasks.register('npm_restart', Exec) {
 tasks.register('npm_run', Exec) {
     group 'npm'
     description 'Runs an arbitrary command from a package\'s "scripts" object.'
-    commandLine 'npm', 'run'
+    commandLine 'npm', 'run', npmCommand
 }
 
 tasks.register('npm_start', Exec) {
