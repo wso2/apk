@@ -22,6 +22,8 @@ import (
 	"os/signal"
 
 	logger "github.com/sirupsen/logrus"
+	"github.com/wso2/apk/adapter/config"
+	"github.com/wso2/apk/adapter/internal/adapter"
 	"github.com/wso2/apk/adapter/internal/operator"
 )
 
@@ -32,6 +34,12 @@ func main() {
 	signal.Notify(sig, os.Interrupt)
 
 	go operator.InitOperator()
+
+	conf, errReadConfig := config.ReadConfigs()
+	if errReadConfig != nil {
+		logger.Fatal("Error loading configuration. ", errReadConfig)
+	}
+	adapter.Run(conf)
 
 OUTER:
 	for {

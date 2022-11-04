@@ -79,14 +79,14 @@ type server struct {
 	keymgt.UnimplementedKMDiscoveryServiceServer
 	keymgt.UnimplementedRevokedTokenDiscoveryServiceServer
 	throttle.UnimplementedThrottleDataDiscoveryServiceServer
-	ga.UnimplementedApiGADiscoveryServiceServer
+	//ga.UnimplementedApiGADiscoveryServiceServer
 	apkmgt.UnimplementedAPKMgtDiscoveryServiceServer
 	rest  rest.Server
 	sotw  envoy_sotw.Server
 	delta envoy_delta.Server
 }
 
-func (s *server) StreamHandler(stream envoy_sotw.Stream, typeURL string) error {
+func (s *server) StreamHandler(stream streamv3.Stream, typeURL string) error {
 	return s.sotw.StreamHandler(stream, typeURL)
 }
 

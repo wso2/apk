@@ -21,10 +21,12 @@ import (
 	"os"
 
 	"github.com/wso2/apk/adapter/internal/loggers"
-	"github.com/wso2/apk/adapter/internal/operator/controllers"
-	"github.com/wso2/apk/adapter/internal/operator/synchronizer"
 	gwapiv1a2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
+
+	cpcontrollers "github.com/wso2/apk/adapter/internal/operator/controllers/cp"
+	dpcontrollers "github.com/wso2/apk/adapter/internal/operator/controllers/dp"
+	"github.com/wso2/apk/adapter/internal/operator/synchronizer"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
@@ -37,7 +39,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/api/v1alpha1"
+	cpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/cp/v1alpha1"
+	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -54,6 +57,7 @@ func init() {
 	utilruntime.Must(gwapiv1b1.AddToScheme(scheme))
 
 	utilruntime.Must(gwapiv1a2.AddToScheme(scheme))
+	utilruntime.Must(cpv1alpha1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 
@@ -102,12 +106,16 @@ func InitOperator() {
 	// TODO: Decide on a buffer size and add to config.
 	ch := make(chan synchronizer.APIEvent, 10)
 
-	if err := controllers.NewAPIController(mgr, operatorDataStore, &ch); err != nil {
+	if err := dpcontrollers.NewAPIController(mgr, operatorDataStore, &ch); err != nil {
 		loggers.LoggerAPKOperator.Errorf("Error creating API controller: %v", err)
 	}
 
-	if err := controllers.NewHttpRouteController(mgr, operatorDataStore); err != nil {
+	if err := dpcontrollers.NewHttpRouteController(mgr, operatorDataStore); err != nil {
 		loggers.LoggerAPKOperator.Errorf("Error creating HttpRoute controller: %v", err)
+	}
+
+	if err := cpcontrollers.NewApplicationController(mgr); err != nil {
+		loggers.LoggerAPKOperator.Errorf("Error creating Application controller: %v", err)
 	}
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
