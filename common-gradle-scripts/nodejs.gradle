@@ -1,0 +1,52 @@
+/*
+ * Copyright (c) 2022, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); 
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software 
+ * distributed under the License is distributed on an "AS IS" BASIS, 
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+ * See the License for the specific language governing permissions and 
+ * limitations under the License.
+ *
+ */
+
+tasks.register('npm_install', Exec) {
+    group 'npm'
+    description 'Installs a package and any packages that it depends on.'
+    commandLine 'npm', 'install'
+}
+
+tasks.register('npm_restart', Exec) {
+    group 'npm'
+    description 'Restarts a project.'
+    commandLine 'npm', 'restart'
+}
+
+tasks.register('npm_run', Exec) {
+    group 'npm'
+    description 'Runs an arbitrary command from a package\'s "scripts" object.'
+    commandLine 'npm', 'run', npmCommand
+}
+
+tasks.register('npm_start', Exec) {
+    group 'npm'
+    description 'Runs a predefined command specified in the "start" property of a package\'s "scripts" object.'
+    commandLine 'npm', 'start'
+}
+
+tasks.register('npm_stop', Exec) {
+    group 'npm'
+    description 'Runs a predefined command specified in the "stop" property of a package\'s "scripts" object.'
+    commandLine 'npm', 'stop'
+}
+
+tasks.register('npm_test', Exec) {
+    group 'npm'
+    description 'Runs a predefined command specified in the "test" property of a package\'s "scripts" object.'
+    commandLine 'npm', 'test'
+}
