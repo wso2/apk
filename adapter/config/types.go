@@ -553,4 +553,6 @@ type gRPCClient struct {
 	MaxCapacity int;
 	DesiredCapacity int;
 	BackOffInMilliSeconds int;
+	
 }
+

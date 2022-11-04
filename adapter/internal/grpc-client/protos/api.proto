@@ -24,111 +24,86 @@ service APIService {
 }
 
 message API {
-    string apiUUID = 1;
-    string apiProvider = 2;
-    string apiVersion = 3;
-    string apiName = 4;
+    string uuid = 1;
+    string provider = 2;
+    string version = 3;
+    string name = 4;
     string context = 5;
-    string contextTemplate = 6;
-    string apiTire = 7;
-    string apiType = 8;
-    string organization = 9;
-    string gatewayVendor = 10;
-    string createdBy = 11;
-    string createdTime = 12;
-    string updatedBy = 13;
-    string updatedTime = 14;
-    string status = 15;
-    string versionComparable = 16;
-    string logLevel = 17;
-    int64 revisionsCreated = 18;
-    Swagger swagger = 19;
-    repeated HttpRoute httpRoutesProd = 20;
-    repeated HttpRoute httpRoutesSand = 21;
-    
+    string type = 6;
+    string organizationId = 7;
+    string createdBy = 8;
+    string createdTime = 9;
+    string updatedBy = 10;
+    string updatedTime = 11;
+    string definition = 12;
+    repeated string transport = 13; 
+    EndpointConfig endpointConfig = 14;
+    repeated Resource resources = 16;
+    CorsConfiguration corsConfiguration = 17;
 }
 
-message Swagger {
-    string swagger = 1;
-}
-
-
-
-message HttpRoute {
-    repeated string hostnames = 1;
-    repeated HttpPath httpPaths = 2;
-    repeated ApiPolicy apiPolicies = 3;
-    repeated Authentication authentications = 4;
-    repeated ScopeMapping scopeMappings = 5;
-    repeated RateLimit rateLimits = 6;
-}
-
-message Matching {
-    repeated HttpPath httpPaths = 1;
-    repeated ApiPolicy apiPolicies = 2;
-}
-
-message HttpPath {
-    Path path = 1;
-    string method = 2;
-    repeated QueryParam queryParams = 3;
-
-}
-
-message ApiPolicy {
-    string name = 1;
-    string type = 2;
-    string definition = 3;
-
-}
-
-message Path {
+message EndpointConfig {
     string type = 1;
-    string value = 2;
+    string productionUrl = 2;
+    string sandboxUrl = 3;
+}
+
+message CorsConfiguration {
+    bool corsConfigurationEnabled = 1;
+    repeated string accessControlAllowOrigins = 2;
+    bool accessControlAllowCredentials = 3;
+    repeated string accessControlAllowHeaders = 4;
+    repeated string accessControlAllowMethods = 5;
+}
+
+message Resource {
+    string path = 1;
+    string verb = 2;
+    repeated Authentication authentications = 3;  
+    repeated Scope scopes = 4;
+    RateLimit rateLimit = 5;
+    OperationPolicies operationPolicies = 6;
+    repeated QueryParam queryParams = 7;
+    repeated string hostname = 8;
+}
+
+message OperationPolicies {}
+
+message Backend {
+    string type = 1;
+    string url = 2;
 }
 
 message QueryParam {
-    string type = 1;
-    string name = 2;
-    string value = 3;
+    string name = 1;
+    string value = 2;
 }
 
-message ScopeMapping {
-    repeated Scope scopes = 1;
-    repeated Mapping mappings = 2;
-
-}
 
 message Scope {
     string name = 1;
     string displayName = 2;
     string description = 3;
-    repeated string roles = 4;
+    repeated string bindings = 4;
 }
 
-message Mapping {
-    string name = 1;
-    string path = 2;
-    string method = 3;
-    repeated string scopes = 4;
-}
 
 message Authentication {
-    string name = 1;
-    ServiceRef serviceRef = 2;
-    repeated string authTypes = 3;
+    string type = 1;
+    string iss = 2;
+    string aud = 3;
+    string jwksUri = 4;
+    repeated Credential credentialList = 5;
 }
 
-message ServiceRef {
-    string group = 1;
-    string kind = 2;
-    string name = 3;
-    string port = 4;
+message Credential {
+    string username = 1;
+    string password = 2;
 }
 
 message RateLimit { 
-    string name = 1;
-    string definition = 2;
+    string requestPerUnit = 1;
+    string unit = 2;
 }
 
 message Response {
