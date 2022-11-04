@@ -19,7 +19,6 @@
 package org.wso2.apk.apimgt.impl.internal;
 
 import org.wso2.apk.apimgt.impl.APIManagerConfigurationService;
-import org.wso2.apk.apimgt.impl.caching.CacheProvider;
 import org.wso2.apk.apimgt.impl.config.APIMConfigService;
 import org.wso2.apk.apimgt.impl.config.APIMConfigServiceImpl;
 
@@ -28,7 +27,6 @@ public class ServiceReferenceHolder {
     private static final ServiceReferenceHolder instance = new ServiceReferenceHolder();
     private APIManagerConfigurationService amConfigurationService;
     private APIMConfigService apimConfigService;
-    private CacheProvider cacheProvider;
 
     private ServiceReferenceHolder() {
 
@@ -58,16 +56,6 @@ public class ServiceReferenceHolder {
             return apimConfigService;
         }
         return new APIMConfigServiceImpl();
-    }
-
-    public CacheProvider getCacheStore() {
-
-        return cacheProvider;
-    }
-
-    public void setCacheStoreService(CacheProvider cacheProvider) {
-
-        this.cacheProvider = cacheProvider;
     }
 
 }

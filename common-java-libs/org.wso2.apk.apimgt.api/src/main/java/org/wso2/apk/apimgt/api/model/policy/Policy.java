@@ -30,23 +30,13 @@ public class Policy implements Serializable {
     private String displayName;
     private String description;
     private QuotaPolicy defaultQuotaPolicy;
-    private int tenantId;
     private String tenantDomain;
     private boolean isDeployed;
 
     public Policy(String name){
         this.policyName = name;
         this.policyId = -1;
-        this.tenantId = -1;
         this.isDeployed = false;
-    }
-
-    public int getTenantId() {
-        return tenantId;
-    }
-
-    public void setTenantId(int tenantId) {
-        this.tenantId = tenantId;
     }
 
     public String getDescription() {
@@ -103,8 +93,7 @@ public class Policy implements Serializable {
         return "Policy{" +
                 "defaultQuotaPolicy=" + defaultQuotaPolicy +
                 ", policyName='" + policyName + '\'' +
-                ", description='" + description + '\'' +
-                ", tenantId=" + tenantId +
+                ", description='" + description +
                 '}';
     }
 

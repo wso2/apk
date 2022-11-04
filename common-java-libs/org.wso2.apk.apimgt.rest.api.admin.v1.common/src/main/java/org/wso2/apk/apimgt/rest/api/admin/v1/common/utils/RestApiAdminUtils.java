@@ -70,10 +70,8 @@ public class RestApiAdminUtils {
         String userTenantDomain = UserContext.getThreadLocalUserContext().getOrganization();
         if (!StringUtils.isBlank(policy.getTenantDomain())) {
             return policy.getTenantDomain().equals(userTenantDomain);
-        } else {
-            String tenantDomainFromId = APIUtil.getTenantDomainFromTenantId(policy.getTenantId());
-            return !StringUtils.isBlank(tenantDomainFromId) && tenantDomainFromId.equals(userTenantDomain);
         }
+        return false;
     }
 
     /**

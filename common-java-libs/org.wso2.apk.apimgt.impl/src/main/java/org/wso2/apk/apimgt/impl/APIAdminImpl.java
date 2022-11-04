@@ -61,10 +61,8 @@ import org.wso2.apk.apimgt.impl.dao.impl.EnvironmentDAOImpl;
 import org.wso2.apk.apimgt.impl.dao.impl.KeyManagerDAOImpl;
 import org.wso2.apk.apimgt.impl.dao.impl.PolicyDAOImpl;
 import org.wso2.apk.apimgt.impl.dao.impl.TierDAOImpl;
-import org.wso2.apk.apimgt.impl.dao.impl.WorkflowDAOImpl;
 import org.wso2.apk.apimgt.impl.dto.ThrottleProperties;
 import org.wso2.apk.apimgt.impl.dto.TierPermissionDTO;
-import org.wso2.apk.apimgt.impl.dto.WorkflowProperties;
 import org.wso2.apk.apimgt.impl.internal.ServiceReferenceHolder;
 import org.wso2.apk.apimgt.impl.monetization.DefaultMonetizationImpl;
 import org.wso2.apk.apimgt.impl.utils.APIUtil;
@@ -104,7 +102,6 @@ public class APIAdminImpl implements APIAdmin {
     protected ApplicationDAOImpl applicationDAOImpl;
     protected AdminDAOImpl adminDAOImpl;
     protected KeyManagerDAOImpl keyManagerDAOImpl;
-    protected WorkflowDAOImpl workflowDAOImpl;
     protected PolicyDAOImpl policyDAOImpl;
     protected BlockConditionDAOImpl blockConditionDAOImpl;
     protected TierDAOImpl tierDAOImpl;
@@ -114,7 +111,6 @@ public class APIAdminImpl implements APIAdmin {
         applicationDAOImpl = ApplicationDAOImpl.getInstance();
         adminDAOImpl = AdminDAOImpl.getInstance();
         keyManagerDAOImpl = KeyManagerDAOImpl.getInstance();
-        workflowDAOImpl = WorkflowDAOImpl.getInstance();
         policyDAOImpl = PolicyDAOImpl.getInstance();
         blockConditionDAOImpl = BlockConditionDAOImpl.getInstance();
         tierDAOImpl = TierDAOImpl.getInstance();
@@ -502,53 +498,6 @@ public class APIAdminImpl implements APIAdmin {
     }
 
     /**
-     * The method converts the date into timestamp
-     *
-     * @param workflowType workflow Type of workflow pending request
-     * @param status       Workflow status of workflow pending request
-     * @param tenantDomain tenant domain of user
-     * @return Workflow[]  list of workflow pending requests
-     * @throws APIManagementException
-     */
-    public Workflow[] getworkflows(String workflowType, String status, String tenantDomain)
-            throws APIManagementException {
-
-        WorkflowProperties workflowConfig = ServiceReferenceHolder.getInstance().getAPIManagerConfigurationService()
-                .getAPIManagerConfiguration().getWorkflowProperties();
-        if (workflowConfig.isListTasks()) {
-            return workflowDAOImpl.getWorkflows(workflowType, status, tenantDomain);
-        } else {
-            return new Workflow[0];
-        }
-    }
-
-    /**
-     * The method converts the date into timestamp
-     *
-     * @param externelWorkflowRef External Workflow Reference of workflow pending request
-     * @param status              Workflow status of workflow pending request
-     * @param tenantDomain        tenant domain of user
-     * @return Workflow pending request
-     * @throws APIManagementException
-     */
-    public Workflow getworkflowReferenceByExternalWorkflowReferenceID(String externelWorkflowRef, String status,
-                                                                      String tenantDomain) throws APIManagementException {
-        Workflow workflow = null;
-        WorkflowProperties workflowConfig = ServiceReferenceHolder.
-                getInstance().getAPIManagerConfigurationService().getAPIManagerConfiguration().getWorkflowProperties();
-        if (workflowConfig.isListTasks()) {
-            workflow = workflowDAOImpl.getWorkflowReferenceByExternalWorkflowReferenceID(externelWorkflowRef,
-                    status, tenantDomain);
-        }
-
-        if (workflow == null) {
-            String msg = "External workflow Reference: " + externelWorkflowRef + " was not found.";
-            throw new APIManagementException(msg, ExceptionCodes.WORKFLOW_NOT_FOUND);
-        }
-        return workflow;
-    }
-
-    /**
      * This method used to check the existence of the scope name for the particular user
      *
      * @param username  username to be validated
@@ -748,14 +697,6 @@ public class APIAdminImpl implements APIAdmin {
 
     }
 
-    private String sanitizeName(String inputName) {
-        return inputName.replaceAll("[^a-zA-Z0-9-_\\.]", "_");
-    }
-
-    private String getSubstringOfTen(String inputString) {
-        return inputString.length() < 10 ? inputString : inputString.substring(0, 10);
-    }
-
     @Override
     public APIPolicy getAPIPolicy(String username, String policyName) throws APIManagementException {
         return policyDAOImpl.getAPIPolicy(policyName, APIUtil.getTenantDomain(username));
@@ -862,12 +803,6 @@ public class APIAdminImpl implements APIAdmin {
             for (Pipeline pipeline : apiPolicy.getPipelines()) {
                 addedConditionGroupIds.add(pipeline.getId());
             }
-            //TODO:APK
-//            APIPolicyEvent apiPolicyEvent = new APIPolicyEvent(UUID.randomUUID().toString(),
-//                    System.currentTimeMillis(), APIConstants.EventType.POLICY_CREATE.name(), tenantId,
-//                    apiPolicy.getTenantDomain(), apiPolicy.getPolicyId(), apiPolicy.getPolicyName(),
-//                    apiPolicy.getDefaultQuotaPolicy().getType(), addedConditionGroupIds, null);
-//            APIUtil.sendNotification(apiPolicyEvent, APIConstants.NotifierType.POLICY.name());
         } else if (policy instanceof ApplicationPolicy) {
             ApplicationPolicy appPolicy = (ApplicationPolicy) policy;
             //Check if there's a policy exists before adding the new policy
@@ -880,12 +815,6 @@ public class APIAdminImpl implements APIAdmin {
             policyDAOImpl.addApplicationPolicy(appPolicy);
             //policy id is not set. retrieving policy to get the id.
             ApplicationPolicy retrievedPolicy = policyDAOImpl.getApplicationPolicy(appPolicy.getPolicyName(), appPolicy.getTenantDomain());
-            //TODO:APK
-//            ApplicationPolicyEvent applicationPolicyEvent = new ApplicationPolicyEvent(UUID.randomUUID().toString(),
-//                    System.currentTimeMillis(), APIConstants.EventType.POLICY_CREATE.name(), tenantId,
-//                    appPolicy.getTenantDomain(), retrievedPolicy.getPolicyId(), appPolicy.getPolicyName(),
-//                    appPolicy.getDefaultQuotaPolicy().getType());
-//            APIUtil.sendNotification(applicationPolicyEvent, APIConstants.NotifierType.POLICY.name());
         } else if (policy instanceof SubscriptionPolicy) {
             SubscriptionPolicy subPolicy = (SubscriptionPolicy) policy;
             //Check if there's a policy exists before adding the new policy
@@ -903,13 +832,6 @@ public class APIAdminImpl implements APIAdmin {
             }
             //policy id is not set. retrieving policy to get the id.
             SubscriptionPolicy retrievedPolicy = policyDAOImpl.getSubscriptionPolicy(subPolicy.getPolicyName(), subPolicy.getTenantDomain());
-            //TODO:APK
-//            SubscriptionPolicyEvent subscriptionPolicyEvent = new SubscriptionPolicyEvent(UUID.randomUUID().toString(),
-//                    System.currentTimeMillis(), APIConstants.EventType.POLICY_CREATE.name(), tenantId, subPolicy.getTenantDomain(), retrievedPolicy.getPolicyId(),
-//                    subPolicy.getPolicyName(), subPolicy.getDefaultQuotaPolicy().getType(),
-//                    subPolicy.getRateLimitCount(),subPolicy.getRateLimitTimeUnit(), subPolicy.isStopOnQuotaReach(),
-//                    subPolicy.getGraphQLMaxDepth(),subPolicy.getGraphQLMaxComplexity(),subPolicy.getSubscriberCount());
-//            APIUtil.sendNotification(subscriptionPolicyEvent, APIConstants.NotifierType.POLICY.name());
         } else {
             String msg = "Policy type " + policy.getClass().getName() + " is not supported";
             log.error(msg);
@@ -981,22 +903,12 @@ public class APIAdminImpl implements APIAdmin {
                 addedConditionGroupIds.add(pipeline.getId());
             }
             //TODO:APK
-//            APIPolicyEvent apiPolicyEvent = new APIPolicyEvent(UUID.randomUUID().toString(),
-//                    System.currentTimeMillis(), APIConstants.EventType.POLICY_UPDATE.name(), tenantId,
-//                    apiPolicy.getTenantDomain(), apiPolicy.getPolicyId(), apiPolicy.getPolicyName(),
-//                    apiPolicy.getDefaultQuotaPolicy().getType(), addedConditionGroupIds, deletedConditionGroupIds);
-//            APIUtil.sendNotification(apiPolicyEvent, APIConstants.NotifierType.POLICY.name());
         } else if (policy instanceof ApplicationPolicy) {
             ApplicationPolicy appPolicy = (ApplicationPolicy) policy;
             policyDAOImpl.updateApplicationPolicy(appPolicy);
             //policy id is not set. retrieving policy to get the id.
             ApplicationPolicy retrievedPolicy = policyDAOImpl.getApplicationPolicy(appPolicy.getPolicyName(), policy.getTenantDomain());
             //TODO:APK
-//            ApplicationPolicyEvent applicationPolicyEvent = new ApplicationPolicyEvent(UUID.randomUUID().toString(),
-//                    System.currentTimeMillis(), APIConstants.EventType.POLICY_UPDATE.name(), tenantId,
-//                    appPolicy.getTenantDomain(), retrievedPolicy.getPolicyId(), appPolicy.getPolicyName(),
-//                    appPolicy.getDefaultQuotaPolicy().getType());
-//            APIUtil.sendNotification(applicationPolicyEvent, APIConstants.NotifierType.POLICY.name());
         } else if (policy instanceof SubscriptionPolicy) {
             SubscriptionPolicy subPolicy = (SubscriptionPolicy) policy;
             policyDAOImpl.updateSubscriptionPolicy(subPolicy);
@@ -1009,12 +921,6 @@ public class APIAdminImpl implements APIAdmin {
             //policy id is not set. retrieving policy to get the id.
             SubscriptionPolicy retrievedPolicy = policyDAOImpl.getSubscriptionPolicy(subPolicy.getPolicyName(), subPolicy.getTenantDomain());
             //TODO:APK
-//            SubscriptionPolicyEvent subscriptionPolicyEvent = new SubscriptionPolicyEvent(UUID.randomUUID().toString(),
-//                    System.currentTimeMillis(), APIConstants.EventType.POLICY_UPDATE.name(), tenantId,subPolicy.getTenantDomain(), retrievedPolicy.getPolicyId(),
-//                    subPolicy.getPolicyName(), subPolicy.getDefaultQuotaPolicy().getType(),
-//                    subPolicy.getRateLimitCount(),subPolicy.getRateLimitTimeUnit(), subPolicy.isStopOnQuotaReach(),subPolicy.getGraphQLMaxDepth(),
-//                    subPolicy.getGraphQLMaxComplexity(), subPolicy.getSubscriberCount());
-//            APIUtil.sendNotification(subscriptionPolicyEvent, APIConstants.NotifierType.POLICY.name());
         } else {
             String msg = "Policy type " + policy.getClass().getName() + " is not supported";
             log.error(msg);
@@ -1054,39 +960,20 @@ public class APIAdminImpl implements APIAdmin {
 
         if (PolicyConstants.POLICY_LEVEL_API.equals(policyLevel)) {
             //need to load whole policy object to get the pipelines
-            APIPolicy policy = policyDAOImpl.getAPIPolicy(policyName, APIUtil.getTenantDomain(username));
+            APIPolicy policy = policyDAOImpl.getAPIPolicy(policyName, tenantDomain);
             List<Integer> deletedConditionGroupIds = new ArrayList<>();
             for (Pipeline pipeline : policy.getPipelines()) {
                 deletedConditionGroupIds.add(pipeline.getId());
             }
             //TODO:APK
-//            APIPolicyEvent apiPolicyEvent = new APIPolicyEvent(UUID.randomUUID().toString(), System.currentTimeMillis(),
-//                    APIConstants.EventType.POLICY_DELETE.name(), tenantId, policy.getTenantDomain(),
-//                    policy.getPolicyId(), policy.getPolicyName(), policy.getDefaultQuotaPolicy().getType(),
-//                    null, deletedConditionGroupIds);
-//            APIUtil.sendNotification(apiPolicyEvent, APIConstants.NotifierType.POLICY.name());
-
         } else if (PolicyConstants.POLICY_LEVEL_APP.equals(policyLevel)) {
-            ApplicationPolicy appPolicy = policyDAOImpl.getApplicationPolicy(policyName, APIUtil.getTenantDomain(username));
+            ApplicationPolicy appPolicy = policyDAOImpl.getApplicationPolicy(policyName, tenantDomain);
             //TODO:APK
-//            ApplicationPolicyEvent applicationPolicyEvent = new ApplicationPolicyEvent(UUID.randomUUID().toString(),
-//                    System.currentTimeMillis(), APIConstants.EventType.POLICY_DELETE.name(), tenantId,
-//                    appPolicy.getTenantDomain(), appPolicy.getPolicyId(), appPolicy.getPolicyName(),
-//                    appPolicy.getDefaultQuotaPolicy().getType());
-//            APIUtil.sendNotification(applicationPolicyEvent, APIConstants.NotifierType.POLICY.name());
         } else if (PolicyConstants.POLICY_LEVEL_SUB.equals(policyLevel)) {
-            SubscriptionPolicy subscriptionPolicy = policyDAOImpl.getSubscriptionPolicy(policyName, APIUtil.getTenantDomain(username));
+            SubscriptionPolicy subscriptionPolicy = policyDAOImpl.getSubscriptionPolicy(policyName, tenantDomain);
             //call the monetization extension point to delete plans if any
             deleteMonetizationPlan(subscriptionPolicy);
             //TODO:APK
-//            SubscriptionPolicyEvent subscriptionPolicyEvent = new SubscriptionPolicyEvent(UUID.randomUUID().toString(),
-//                    System.currentTimeMillis(), APIConstants.EventType.POLICY_DELETE.name(), tenantId,
-//                    subscriptionPolicy.getTenantDomain(), subscriptionPolicy.getPolicyId(),
-//                    subscriptionPolicy.getPolicyName(), subscriptionPolicy.getDefaultQuotaPolicy().getType(),
-//                    subscriptionPolicy.getRateLimitCount(), subscriptionPolicy.getRateLimitTimeUnit(),
-//                    subscriptionPolicy.isStopOnQuotaReach(), subscriptionPolicy.getGraphQLMaxDepth(),
-//                    subscriptionPolicy.getGraphQLMaxComplexity(), subscriptionPolicy.getSubscriberCount());
-//            APIUtil.sendNotification(subscriptionPolicyEvent, APIConstants.NotifierType.POLICY.name());
         }
         //remove from database
         policyDAOImpl.removeThrottlePolicy(policyLevel, policyName, tenantDomain);

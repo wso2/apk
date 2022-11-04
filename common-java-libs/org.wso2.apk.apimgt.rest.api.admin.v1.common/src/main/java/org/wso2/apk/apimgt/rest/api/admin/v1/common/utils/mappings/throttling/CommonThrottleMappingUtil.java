@@ -25,7 +25,6 @@ import org.wso2.apk.apimgt.api.ExceptionCodes;
 import org.wso2.apk.apimgt.api.UnsupportedThrottleConditionTypeException;
 import org.wso2.apk.apimgt.api.UnsupportedThrottleLimitTypeException;
 import org.wso2.apk.apimgt.api.model.policy.*;
-import org.wso2.apk.apimgt.impl.utils.APIUtil;
 import org.wso2.apk.apimgt.rest.api.admin.v1.common.utils.RestApiAdminUtils;
 import org.wso2.apk.apimgt.rest.api.admin.v1.dto.*;
 import org.wso2.apk.apimgt.rest.api.util.utils.RestApiCommonUtil;
@@ -558,8 +557,6 @@ public class CommonThrottleMappingUtil {
     public static <T extends Policy> T updateFieldsFromDTOToPolicy(ThrottlePolicyDTO dto, T policy) {
         String tenantDomain = RestApiCommonUtil.getLoggedInUserTenantDomain();
         policy.setTenantDomain(tenantDomain);
-
-        policy.setTenantId(APIUtil.getTenantIdFromTenantDomain(tenantDomain));
         policy.setDisplayName(dto.getDisplayName());
         policy.setDescription(dto.getDescription());
         policy.setPolicyName(dto.getPolicyName());

@@ -22,7 +22,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.wso2.apk.apimgt.api.model.APIStore;
 import org.wso2.apk.apimgt.impl.dto.DatasourceProperties;
 import org.wso2.apk.apimgt.impl.dto.ThrottleProperties;
-import org.wso2.apk.apimgt.impl.dto.WorkflowProperties;
 import org.wso2.apk.apimgt.impl.monetization.MonetizationConfigurationDto;
 import org.wso2.apk.apimgt.api.model.Environment;
 
@@ -42,8 +41,6 @@ public class ConfigurationHolder {
 
     @JsonProperty("datasourceConfiguration")
     private DatasourceProperties datasourceProperties = new DatasourceProperties();
-
-    private WorkflowProperties workflowProperties = new WorkflowProperties();
 
     private Map<String, Environment> apiGatewayEnvironments = new LinkedHashMap<>();
 
@@ -95,16 +92,6 @@ public class ConfigurationHolder {
     public void setMonetizationConfigurationDto(MonetizationConfigurationDto monetizationConfigurationDto) {
 
         this.monetizationConfigurationDto = monetizationConfigurationDto;
-    }
-
-    public WorkflowProperties getWorkflowProperties() {
-
-        return workflowProperties;
-    }
-
-    public void setWorkflowProperties(WorkflowProperties workflowProperties) {
-
-        this.workflowProperties = workflowProperties;
     }
 
     public Map<String, Environment> getApiGatewayEnvironments() {
