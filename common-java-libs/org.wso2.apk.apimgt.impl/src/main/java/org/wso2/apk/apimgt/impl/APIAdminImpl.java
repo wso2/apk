@@ -44,7 +44,6 @@ import org.wso2.apk.apimgt.api.model.Environment;
 import org.wso2.apk.apimgt.api.model.Monetization;
 import org.wso2.apk.apimgt.api.model.MonetizationUsagePublishInfo;
 import org.wso2.apk.apimgt.api.model.VHost;
-import org.wso2.apk.apimgt.api.model.Workflow;
 import org.wso2.apk.apimgt.api.model.botDataAPI.BotDetectionData;
 import org.wso2.apk.apimgt.api.model.policy.APIPolicy;
 import org.wso2.apk.apimgt.api.model.policy.ApplicationPolicy;
@@ -391,65 +390,6 @@ public class APIAdminImpl implements APIAdmin {
     }
 
     // ToDo :  Add KM configuration methods
-
-    @Override
-    public List<BotDetectionData> retrieveBotDetectionData() throws APIManagementException {
-
-        List<BotDetectionData> botDetectionDatalist = new ArrayList<>();
-        String appName = "APIM_ALERT_BOT_DETECTION_EMAIL";
-        String query = SQLConstants.BotDataConstants.GET_BOT_DETECTED_DATA;
-
-        JSONObject botDataJsonObject = APIUtil.executeQueryOnStreamProcessor(appName, query);
-        if (botDataJsonObject != null) {
-            JSONArray botDataJsonArray = (JSONArray) botDataJsonObject.get("records");
-            if (botDataJsonArray != null && botDataJsonArray.size() != 0) {
-                for (Object botData : botDataJsonArray) {
-                    JSONArray values = (JSONArray) botData;
-                    BotDetectionData botDetectionData = new BotDetectionData();
-                    botDetectionData.setCurrentTime((Long) values.get(0));
-                    botDetectionData.setMessageID((String) values.get(1));
-                    botDetectionData.setApiMethod((String) values.get(2));
-                    botDetectionData.setHeaderSet((String) values.get(3));
-                    botDetectionData.setMessageBody(extractBotDetectionDataContent((String) values.get(4)));
-                    botDetectionData.setClientIp((String) values.get(5));
-                    botDetectionDatalist.add(botDetectionData);
-                }
-            }
-        }
-        return botDetectionDatalist;
-    }
-
-    /**
-     * Extract content of the bot detection data
-     *
-     * @param messageBody message body of bot detection data
-     * @return extracted content
-     */
-    public String extractBotDetectionDataContent(String messageBody) {
-
-        String content = "";
-        try {
-            //Parse the message body and extract the content in XML form
-            DocumentBuilderFactory factory = APIUtil.getSecuredDocumentBuilder();
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            Document document = builder.parse(new InputSource(new StringReader(messageBody)));
-            Node bodyContentNode = document.getFirstChild().getFirstChild();
-
-            //Convert XML form to String
-            if (bodyContentNode != null) {
-                StringWriter writer = new StringWriter();
-                Transformer transformer = TransformerFactory.newInstance().newTransformer();
-                transformer.transform(new DOMSource(bodyContentNode), new StreamResult(writer));
-                String output = writer.toString();
-                content = output.substring(output.indexOf("?>") + 2); //remove <?xml version="1.0" encoding="UTF-8"?>
-            }
-        } catch (ParserConfigurationException | TransformerException | IOException | SAXException e) {
-            String errorMessage = "Error while extracting content from " + messageBody;
-            log.error(errorMessage, e);
-            content = messageBody;
-        }
-        return content;
-    }
 
     public APICategory addCategory(APICategory category, String userName, String organization) throws APIManagementException {
 
