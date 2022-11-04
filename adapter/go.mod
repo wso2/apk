@@ -3,6 +3,7 @@ module github.com/wso2/apk/adapter
 go 1.19
 
 require (
+	github.com/cncf/udpa/go v0.0.0-20210930031921-04548b0d99d4
 	github.com/envoyproxy/go-control-plane v0.10.3
 	github.com/fsnotify/fsnotify v1.5.4
 	github.com/go-openapi/errors v0.19.8

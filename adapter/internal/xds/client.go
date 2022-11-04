@@ -80,9 +80,7 @@ func initConnection(xdsURL string) error {
 
 func watchApplications() {
 	for {
-		loggers.LoggerXds.Error("89")
 		discoveryResponse, err := xdsStream.Recv()
-		loggers.LoggerXds.Error("91")
 		if err == io.EOF {
 			loggers.LoggerXds.Error("EOF is received from the apk mgt server.")
 			return

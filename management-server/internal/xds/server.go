@@ -45,7 +45,7 @@ var (
 
 const (
 	maxRandomInt             int    = 999999999
-	typeURL                  string = "type.googleapis.com/wso2.discovery.ga.Api"
+	typeURL                  string = "wso2.discovery.apkmgt.Application"
 	grpcMaxConcurrentStreams        = 1000000
 	port                            = 18000
 )
@@ -72,13 +72,9 @@ func init() {
 func FeedData() {
 	logger.LoggerXdsServer.Debug("adding mock data")
 	version := rand.Intn(maxRandomInt)
-	applications := apkmgt_application.ApplicationDetails{
-		Applications: []*apkmgt_application.Application{
-			{
-				Uuid: "apiUUID1",
-				Name: "name1",
-			},
-		},
+	applications := apkmgt_application.Application{
+		Uuid: "apiUUID1",
+		Name: "name1",
 	}
 	newSnapshot, _ := wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
 		wso2_resource.APKMgtApplicationType: {&applications},
