@@ -16,7 +16,7 @@
  */
 
 plugins {
-    id 'org.openapi.generator' version "${openapiGeneratorVersion}"
+    alias libs.plugins.openapi.generator.plugin
 }
 
 description = 'WSO2 APK Admin API Common Component'
@@ -70,7 +70,7 @@ openApiGenerate {
     ]
 }
 
-task cleanDTOs {
+tasks.register('cleanDTOs', Delete) {
     group 'build'
     description 'Clean auto generated DTOs'
     delete "$projectDir/src/gen/java/org/wso2/apk/apimgt/rest/api/admin/v1/dto".toString()

@@ -27,7 +27,7 @@ include ':org.wso2.apk.apimgt.rest.api.admin.v1.common'
 dependencyResolutionManagement {
     versionCatalogs {
         libs {
-            from(files("../libs.versions.toml"))
+            from(files("$rootDir/../libs.versions.toml"))
         }
     }
 }
