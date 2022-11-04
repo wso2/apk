@@ -1,7 +1,6 @@
-group = 'org.wso2.apk'
-version = '0.1.0-SNAPSHOT'
+group = project.group
+version = project.version
 description = 'WSO2 APK Implementation Component'
-java.sourceCompatibility = JavaVersion.VERSION_11
 
 dependencies {
     implementation project(':org.wso2.apk.apimgt.api')

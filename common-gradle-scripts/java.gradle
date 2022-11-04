@@ -21,6 +21,8 @@ apply plugin: 'jacoco'
 apply plugin: 'java'
 apply plugin: 'maven-publish'
 
+java.sourceCompatibility = JavaVersion.VERSION_11
+
 repositories {
     mavenLocal()
     mavenCentral()
