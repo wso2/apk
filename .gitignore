@@ -31,3 +31,6 @@ build/
 
 # Directories generated for helm
 helm-charts/charts/
+
+# Adapter API temporary target
+Adapter/api/target

@@ -1,0 +1,61 @@
+//  Copyright (c) 2021, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+//
+//  WSO2 LLC. licenses this file to you under the Apache License,
+//  Version 2.0 (the "License"); you may not use this file except
+//  in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing,
+//  software distributed under the License is distributed on an
+//  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+//  KIND, either express or implied.  See the License for the
+//  specific language governing permissions and limitations
+//  under the License.
+
+syntax = "proto3";
+
+package wso2.discovery.api;
+
+import "wso2/discovery/api/endpoint_cluster.proto";
+import "wso2/discovery/api/Resource.proto";
+import "wso2/discovery/api/endpoint_security.proto";
+import "wso2/discovery/api/security_scheme.proto";
+import "wso2/discovery/api/Certificate.proto";
+import "wso2/discovery/api/graphql.proto";
+
+option go_package = "github.com/envoyproxy/go-control-plane/wso2/discovery/api;api";
+option java_package = "org.wso2.choreo.connect.discovery.api";
+option java_outer_classname = "ApiProto";
+option java_multiple_files = true;
+
+// [#protodoc-title: Api]
+
+// API config model
+message Api {
+	string id = 1;
+	string title = 2;
+	string version = 3;
+	string apiType = 4;
+	string description = 5;
+	EndpointCluster productionEndpoints = 6;
+	EndpointCluster sandboxEndpoints = 7;
+	repeated Resource resources = 8;
+	string basePath = 9;
+	string tier = 10;
+	string apiLifeCycleState = 11;
+	repeated SecurityScheme securityScheme = 12;
+	repeated SecurityList security = 13;
+	EndpointSecurity endpointSecurity = 14;
+	string authorizationHeader = 15;
+	bool disableSecurity = 16;
+	string vhost = 17;
+	string organizationId = 18;
+	bool isMockedApi = 19;
+	repeated Certificate clientCertificates = 20;
+	string mutualSSL = 21;
+	bool applicationSecurity = 22;
+	string graphQLSchema = 23;
+	repeated GraphqlComplexity graphqlComplexityInfo = 24;
+}
