@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2022, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2022, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -15,32 +15,18 @@
  *
  */
 
-package main
+package synchronizer
 
 import (
-	"os"
-	"os/signal"
-
-	logger "github.com/sirupsen/logrus"
-	"github.com/wso2/apk/adapter/internal/operator"
+	"github.com/wso2/apk/adapter/internal/operator/api/v1alpha1"
+	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
-// invokes the code from the /internal and /pkg directories and nothing else.
-func main() {
-	logger.Info("Starting the Adapter")
-	sig := make(chan os.Signal)
-	signal.Notify(sig, os.Interrupt)
-
-	go operator.InitOperator()
-
-OUTER:
-	for {
-		select {
-		case s := <-sig:
-			switch s {
-			case os.Interrupt:
-				break OUTER
-			}
-		}
-	}
+// APIState holds the state of the deployed APIs. This state is compared with
+// the state of the Kubernetes controller cache to detect updates.
+// +k8s:deepcopy-gen=true
+type APIState struct {
+	APIDefinition *v1alpha1.API
+	ProdHTTPRoute *gwapiv1b1.HTTPRoute
+	SandHTTPRoute *gwapiv1b1.HTTPRoute
 }

@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2022, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2022, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -15,32 +15,21 @@
  *
  */
 
-package main
+package synchronizer
 
 import (
-	"os"
-	"os/signal"
-
-	logger "github.com/sirupsen/logrus"
-	"github.com/wso2/apk/adapter/internal/operator"
+	"github.com/wso2/apk/adapter/internal/loggers"
 )
 
-// invokes the code from the /internal and /pkg directories and nothing else.
-func main() {
-	logger.Info("Starting the Adapter")
-	sig := make(chan os.Signal)
-	signal.Notify(sig, os.Interrupt)
+type APIEvent struct {
+	EventType string
+	Event     APIState
+}
 
-	go operator.InitOperator()
-
-OUTER:
-	for {
-		select {
-		case s := <-sig:
-			switch s {
-			case os.Interrupt:
-				break OUTER
-			}
-		}
+// HandleAPILifeCycleEvents handles the API events generated from OperatorDataStore
+func HandleAPILifeCycleEvents(ch *chan APIEvent) {
+	loggers.LoggerAPKOperator.Info("Operator synchronizer listening for API lifecycle events...")
+	for event := range *ch {
+		loggers.LoggerAPKOperator.Infof("Event received: %v\n", event)
 	}
 }
