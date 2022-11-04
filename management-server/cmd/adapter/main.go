@@ -18,12 +18,12 @@
 package main
 
 import (
-	logger "github.com/sirupsen/logrus"
+	logger "github.com/wso2/apk/management-server/internal/loggers"
 	server "github.com/wso2/apk/management-server/internal/grpc-server"
 )
 
 // invokes the code from the /internal and /pkg directories and nothing else.
 func main() {
-	logger.Info("Starting the Management server")
+	logger.LoggerServer.Info("Starting the Management server")
 	server.RunManagementServer();
 }

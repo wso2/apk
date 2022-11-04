@@ -32,12 +32,14 @@ When you add a new logger instance add the related package name as a constant
 
 // package name constants
 const (
-	pkgMGTServer      = "github.com/wso2/apk/management-server/internal/grpc-server"
+	pkgMGTServer   	= "github.com/wso2/apk/management-server/internal/grpc-server"
+	pkgServer    	= "github.com/wso2/apk/management-server"
 )
 
 // logger package references
 var (
-	LoggerMGTServer      logging.Log
+	LoggerMGTServer  	logging.Log
+	LoggerServer    	logging.Log
 )
 
 func init() {
@@ -47,5 +49,6 @@ func init() {
 // UpdateLoggers initializes the logger package references
 func UpdateLoggers() {
 	LoggerMGTServer = logging.InitPackageLogger(pkgMGTServer)
+	LoggerServer = logging.InitPackageLogger(pkgServer)
 	logrus.Info("Updated loggers")
 }
