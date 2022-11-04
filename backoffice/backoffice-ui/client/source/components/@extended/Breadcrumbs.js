@@ -45,7 +45,7 @@ const Breadcrumbs = ({ navigation, title, ...others }) => {
 
     // only used for component demo breadcrumbs
     if (location.pathname === '/breadcrumbs') {
-        location.pathname = '/dashboard/analytics';
+        location.pathname = '/manage-apis/analytics';
     }
 
     let mainContent;
