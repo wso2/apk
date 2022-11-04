@@ -4,9 +4,6 @@ import React, { lazy } from 'react';
 import Loadable from 'components/Loadable';
 import MainLayout from 'layout/MainLayout';
 
-// render - dashboard
-const DashboardDefault = Loadable(lazy(() => import('pages/Dashboard/Dashboard')));
-
 // render - sample page
 const SamplePage = Loadable(lazy(() => import('pages/sample/SamplePage')));
 // ==============================|| MAIN ROUTING ||============================== //
@@ -17,11 +14,11 @@ const MainRoutes = {
     children: [
         {
             path: '/',
-            element: <DashboardDefault />
+            element: <SamplePage />
         },
         {
             path: 'dashboard',
-            element: <DashboardDefault />
+            element: <SamplePage />
         },
         {
             path: 'advanced-policies',
