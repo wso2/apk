@@ -18,9 +18,7 @@
 package main
 
 import (
-
 	logger "github.com/sirupsen/logrus"
-
 	server "github.com/wso2/apk/management-server/internal/grpc-server"
 )
 
@@ -29,5 +27,3 @@ func main() {
 	logger.Info("Starting the Management server")
 	server.RunManagementServer();
 }
-
-
