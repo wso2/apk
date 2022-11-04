@@ -11,7 +11,7 @@ const Settings = {
     logoutEndpoint: 'https://dev-kw-oeodk.us.auth0.com/v2/logout',
     scope: 'openid offline_access',
     state: 'RlZyVjlqYUpHTzltWC42c2FNRDRJT1JPfk1+TUFEa0RLb04yZldwYkpxVA==',
-    restApi: 'http://localhost:81/chanaka3d/wso-2_api_manager_admin/v3/',
+    restApi: 'https://virtserver.swaggerhub.com/SanojPunchihewa/BackOfficeAPI/1.0.0/',
 };
 
 if (typeof module !== 'undefined') {

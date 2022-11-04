@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { restApi } from "../../../public/conf/Settings";
+import { settings, tenantConfig } from "../../Mock";
 
 type JSONValue =
     | string
@@ -13,6 +14,18 @@ interface useFetchProps {
 }
 
 const useAxios = ({ url }: useFetchProps) => {
+
+    // mock
+    const isLoading = false;
+    const isError = false;
+    if (url == '/settings') {
+        return { data : settings, loading : isLoading, error : isError};
+    }
+    if (url == '/tenant-info/YWRtaW5AY2FyYm9uLnN1cGVy') {
+        return { data : tenantConfig, loading : isLoading, error : isError};
+    }
+    // mock end
+
     const [data, setData] = useState<any | null>(null);
     const [loading, setLoading] = useState<JSONValue | null>(true);
     const [error, setError] = useState<string>("");
