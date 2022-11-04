@@ -33,7 +33,6 @@ public class Application {
     private String name;
     private String uuid;
     private Subscriber subscriber;
-    private Set<SubscribedAPI> subscribedAPIs = new LinkedHashSet<SubscribedAPI>();
     private List<APIKey> keys = new ArrayList<APIKey>();
     private Map<String, Map<String,OAuthApplicationInfo>> keyManagerWiseOAuthApp = new HashMap<>();
     private String organization;
@@ -120,25 +119,6 @@ public class Application {
 
     public Subscriber getSubscriber() {
         return subscriber;
-    }
-
-    public Set<SubscribedAPI> getSubscribedAPIs() {
-        return subscribedAPIs;
-    }
-
-    public void setSubscribedAPIs(Set<SubscribedAPI> subscribedAPIs) {
-        this.subscribedAPIs = subscribedAPIs;
-    }
-
-    public void addSubscribedAPIs(Set<SubscribedAPI> subscribedAPIs) {
-        for (SubscribedAPI subscribedAPI : subscribedAPIs) {
-            subscribedAPI.setApplication(this);
-        }
-        this.subscribedAPIs.addAll(subscribedAPIs);
-    }
-
-    public void removeSubscribedAPIs(Set<SubscribedAPI> subscribedAPIs) {
-        this.subscribedAPIs.removeAll(subscribedAPIs);
     }
 
     public Map<String, String> getApplicationAttributes() {

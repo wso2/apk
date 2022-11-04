@@ -21,7 +21,6 @@ package org.wso2.apk.apimgt.impl.monetization;
 import org.wso2.apk.apimgt.api.APIAdmin;
 import org.wso2.apk.apimgt.api.APIManagementException;
 import org.wso2.apk.apimgt.api.MonetizationException;
-import org.wso2.apk.apimgt.api.model.API;
 import org.wso2.apk.apimgt.api.model.Monetization;
 import org.wso2.apk.apimgt.api.model.MonetizationUsagePublishInfo;
 import org.wso2.apk.apimgt.api.model.policy.SubscriptionPolicy;
@@ -31,8 +30,6 @@ import org.wso2.apk.apimgt.impl.APIConstants;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.TimeZone;
 
 public class DefaultMonetizationImpl implements Monetization {
@@ -50,23 +47,6 @@ public class DefaultMonetizationImpl implements Monetization {
     @Override
     public boolean deleteBillingPlan(SubscriptionPolicy subPolicy) throws MonetizationException {
         return true;
-    }
-
-    @Override
-    public boolean enableMonetization(String tenantDomain, API api, Map<String, String> monetizationProperties)
-            throws MonetizationException {
-        return true;
-    }
-
-    @Override
-    public boolean disableMonetization(String tenantDomain, API api, Map<String, String> monetizationProperties)
-            throws MonetizationException {
-        return true;
-    }
-
-    @Override
-    public Map<String, String> getMonetizedPoliciesToPlanMapping(API api) throws MonetizationException {
-        return new HashMap<>();
     }
 
     /**

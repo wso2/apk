@@ -75,15 +75,6 @@ public interface ApplicationDAO {
     void deleteApplication(Application application) throws APIManagementException;
 
     /**
-     * returns the SubscribedAPI object which is related to the UUID
-     *
-     * @param uuid UUID of Application
-     * @return {@link SubscribedAPI} Object which contains the subscribed API information.
-     * @throws APIManagementException
-     */
-    SubscribedAPI getSubscriptionByUUID(String uuid) throws APIManagementException;
-
-    /**
      * Retrieve the applications by user/application name
      *
      * @param user
@@ -403,18 +394,6 @@ public interface ApplicationDAO {
      * @throws APIManagementException if failed to retrieve web hook topc subscriptions
      */
     Set<Subscription> getTopicSubscriptions(String applicationId) throws APIManagementException;
-
-    /**
-     * Retrieves paginated Subscribed APIs by Application.
-     *
-     * @param application  application object
-     * @param organization Organization
-     * @return set of Subscribed APIs
-     * @throws APIManagementException if failed to retrieve APIs
-     */
-    Set<SubscribedAPI> getPaginatedSubscribedAPIsByApplication(Application application, Integer offset,
-                                                               Integer limit, String organization)
-            throws APIManagementException;
 
     /**
      * Retrieves Consumer Key.

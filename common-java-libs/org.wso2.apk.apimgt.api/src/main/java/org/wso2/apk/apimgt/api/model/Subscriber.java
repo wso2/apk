@@ -20,10 +20,7 @@ package org.wso2.apk.apimgt.api.model;
 import java.util.Date;
 
 /**
- * Subscriber of API. Mapping between a particular Subscriber using a selected API is captured in
- * {@link SubscribedAPI}.
- *
- * @see SubscribedAPI
+ * Subscriber of API.
  */
 @SuppressWarnings("unused")
 public class Subscriber {

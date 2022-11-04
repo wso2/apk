@@ -21,8 +21,6 @@ package org.wso2.apk.apimgt.api.model;
 import org.wso2.apk.apimgt.api.model.policy.SubscriptionPolicy;
 import org.wso2.apk.apimgt.api.MonetizationException;
 
-import java.util.Map;
-
 /**
  * Interface for monetization
  */
@@ -55,39 +53,6 @@ public interface Monetization {
      * @throws MonetizationException if the action failed
      */
     boolean deleteBillingPlan(SubscriptionPolicy subPolicy) throws MonetizationException;
-
-    /**
-     * Enable monetization for a API
-     *
-     * @param tenantDomain           tenant domain
-     * @param api                    API
-     * @param monetizationProperties monetization properties map
-     * @return true if successful, false otherwise
-     * @throws MonetizationException if the action failed
-     */
-    boolean enableMonetization(String tenantDomain, API api,
-                               Map<String, String> monetizationProperties) throws MonetizationException;
-
-    /**
-     * Disable monetization for a API
-     *
-     * @param tenantDomain           tenant domain
-     * @param api                    API
-     * @param monetizationProperties monetization properties map
-     * @return true if successful, false otherwise
-     * @throws MonetizationException if the action failed
-     */
-    boolean disableMonetization(String tenantDomain, API api,
-                                Map<String, String> monetizationProperties) throws MonetizationException;
-
-    /**
-     * Get mapping of tiers and billing engine plans
-     *
-     * @param api API
-     * @return tier to billing plan mapping
-     * @throws MonetizationException if failed to get tier to billing plan mapping
-     */
-    Map<String, String> getMonetizedPoliciesToPlanMapping(API api) throws MonetizationException;
 
     /**
      * Publish the usage for a subscription to the billing engine
