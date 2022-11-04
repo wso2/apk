@@ -19,7 +19,6 @@
 package org.wso2.apk.apimgt.impl;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.wso2.apk.apimgt.api.model.APIStore;
 import org.wso2.apk.apimgt.impl.dto.DatasourceProperties;
 import org.wso2.apk.apimgt.impl.dto.ThrottleProperties;
 import org.wso2.apk.apimgt.impl.monetization.MonetizationConfigurationDto;
@@ -47,8 +46,6 @@ public class ConfigurationHolder {
     private static Map<String, String> analyticsProperties;
 
     private MonetizationConfigurationDto monetizationConfigurationDto = new MonetizationConfigurationDto();
-
-    private Set<APIStore> externalAPIStores = new HashSet<>();
 
     private Map<String, Map<String, String>> loginConfiguration = new ConcurrentHashMap<String, Map<String, String>>();
 
@@ -102,11 +99,6 @@ public class ConfigurationHolder {
     public void setApiGatewayEnvironments(Map<String, Environment> apiGatewayEnvironments) {
 
         this.apiGatewayEnvironments = apiGatewayEnvironments;
-    }
-
-    public Set<APIStore> getExternalAPIStores() {
-
-        return externalAPIStores;
     }
 
     public static Map<String, String> getAnalyticsProperties() {

@@ -70,7 +70,6 @@ import org.wso2.apk.apimgt.api.ExceptionCodes;
 import org.wso2.apk.apimgt.api.LoginPostExecutor;
 import org.wso2.apk.apimgt.api.NewPostLoginExecutor;
 import org.wso2.apk.apimgt.api.model.APIStatus;
-import org.wso2.apk.apimgt.api.model.APIStore;
 import org.wso2.apk.apimgt.api.model.Environment;
 import org.wso2.apk.apimgt.api.model.KeyManagerConnectorConfiguration;
 import org.wso2.apk.apimgt.api.model.OperationPolicyData;
@@ -236,71 +235,6 @@ public final class APIUtil {
     }
 
     /**
-     * Returns a set of External API Stores as defined in the underlying governance
-     * registry.
-     *
-     * @return a Map of tier names and Tier objects - possibly empty
-     * @throws APIManagementException if an error occurs when loading tiers from the registry
-     */
-    public static Set<APIStore> getExternalStores(int tenantId) throws APIManagementException {
-        // First checking if ExternalStores are defined in api-manager.xml
-        Set<APIStore> externalAPIStores = getGlobalExternalStores();
-        // If defined, return Store Config provided there.
-        if (externalAPIStores != null && !externalAPIStores.isEmpty()) {
-            return externalAPIStores;
-        }
-        // Else Read the config from Tenant's Registry.
-        externalAPIStores = new HashSet<>();
-        //TODO: APK
-        return externalAPIStores;
-    }
-
-    /**
-     * Get OMElement iterator for external stores configured in external-store.xml in tenant registry.
-     *
-     * @param tenantId Tenant ID
-     * @return ExternalStores OMElement Iterator
-     * @throws APIManagementException If an error occurs while reading external-store.xml
-     */
-    private static Iterator getExternalStoresIteratorFromConfig(int tenantId) throws APIManagementException {
-
-        Iterator apiStoreIterator = null;
-            //TODO handle configs
-        return apiStoreIterator;
-    }
-
-    /**
-     * Check if external stores are configured and exists for given tenant.
-     *
-     * @param tenantDomain Tenant Domain of logged in user
-     * @return Whether external stores are configured and non empty
-     */
-    public static boolean isExternalStoresEnabled(String tenantDomain) throws APIManagementException {
-
-        int tenantId = APIUtil.getTenantIdFromTenantDomain(tenantDomain);
-        //First check external stores are present globally
-        Set<APIStore> globalExternalStores = getGlobalExternalStores();
-        if (globalExternalStores != null && !globalExternalStores.isEmpty()) {
-            return true;
-        }
-        //If not present check in registry
-        Iterator apiStoreIterator = getExternalStoresIteratorFromConfig(tenantId);
-        return apiStoreIterator != null && apiStoreIterator.hasNext();
-    }
-
-    /**
-     * Get external stores configured globally in api-manager.xml.
-     *
-     * @return Globally configured external store set
-     */
-    public static Set<APIStore> getGlobalExternalStores() {
-
-        // First checking if ExternalStores are defined in api-manager.xml
-        return ServiceReferenceHolder.getInstance().getAPIManagerConfigurationService().getAPIManagerConfiguration()
-                .getExternalAPIStores();
-    }
-
-    /**
      * Check if document visibility levels are enabled
      *
      * @return True if document visibility levels are enabled
@@ -312,24 +246,6 @@ public final class APIUtil {
                 getAPIManagerConfiguration().getFirstProperty(
                         APIConstants.API_PUBLISHER_ENABLE_API_DOC_VISIBILITY_LEVELS).equals("true");
 
-    }
-
-    /**
-     * Returns the External API Store Configuration with the given Store Name
-     *
-     * @param apiStoreName
-     * @return
-     * @throws APIManagementException
-     */
-    public static APIStore getExternalAPIStore(String apiStoreName, int tenantId) throws APIManagementException {
-
-        Set<APIStore> externalAPIStoresConfig = APIUtil.getExternalStores(tenantId);
-        for (APIStore apiStoreConfig : externalAPIStoresConfig) {
-            if (apiStoreConfig.getName().equals(apiStoreName)) {
-                return apiStoreConfig;
-            }
-        }
-        return null;
     }
 
     /**
@@ -560,45 +476,6 @@ public final class APIUtil {
             }
         }
         return uriTemplate;
-    }
-
-    public static Set<APIStore> getExternalAPIStores(int tenantId) throws APIManagementException {
-
-        SortedSet<APIStore> apistoreSet = new TreeSet<APIStore>(new APIStoreNameComparator());
-        apistoreSet.addAll(getExternalStores(tenantId));
-        return apistoreSet;
-
-    }
-
-    public static Set<APIStore> getExternalAPIStores(Set<APIStore> inputStores, int tenantId)
-            throws APIManagementException {
-
-        SortedSet<APIStore> apiStores = new TreeSet<APIStore>(new APIStoreNameComparator());
-        apiStores.addAll(getExternalStores(tenantId));
-        //Retains only the stores that contained in configuration
-        inputStores.retainAll(apiStores);
-        boolean exists = false;
-        if (!apiStores.isEmpty()) {
-            for (APIStore store : apiStores) {
-                for (APIStore inputStore : inputStores) {
-                    if (inputStore.getName().equals(store.getName())) { // If the configured apistore already stored in
-                        // db,ignore adding it again
-                        exists = true;
-                    }
-                }
-                if (!exists) {
-                    inputStores.add(store);
-                }
-                exists = false;
-            }
-        }
-        return inputStores;
-    }
-
-    public static boolean isAPIsPublishToExternalAPIStores(int tenantId)
-            throws APIManagementException {
-
-        return !getExternalStores(tenantId).isEmpty();
     }
 
     /**

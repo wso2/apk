@@ -20,7 +20,6 @@ package org.wso2.apk.apimgt.impl.monetization;
 
 import org.wso2.apk.apimgt.api.APIAdmin;
 import org.wso2.apk.apimgt.api.APIManagementException;
-import org.wso2.apk.apimgt.api.APIProvider;
 import org.wso2.apk.apimgt.api.MonetizationException;
 import org.wso2.apk.apimgt.api.model.API;
 import org.wso2.apk.apimgt.api.model.Monetization;
@@ -68,17 +67,6 @@ public class DefaultMonetizationImpl implements Monetization {
     @Override
     public Map<String, String> getMonetizedPoliciesToPlanMapping(API api) throws MonetizationException {
         return new HashMap<>();
-    }
-
-    @Override
-    public Map<String, String> getCurrentUsageForSubscription(String subscriptionUUID, APIProvider apiProvider)
-            throws MonetizationException {
-        return new HashMap<String, String>();
-    }
-
-    @Override
-    public Map<String, String> getTotalRevenue(API api, APIProvider apiProvider) throws MonetizationException {
-        return new HashMap<String, String>();
     }
 
     /**
