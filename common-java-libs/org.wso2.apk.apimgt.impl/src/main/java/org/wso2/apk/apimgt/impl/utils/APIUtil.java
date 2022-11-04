@@ -25,40 +25,29 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpHeaders;
 import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLContexts;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.conn.ssl.X509HostnameVerifier;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.http.util.EntityUtils;
-import org.apache.xerces.util.SecurityManager;
 import org.everit.json.schema.Schema;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -67,14 +56,11 @@ import org.json.simple.parser.ParseException;
 import org.wso2.apk.apimgt.api.APIManagementException;
 import org.wso2.apk.apimgt.api.ErrorHandler;
 import org.wso2.apk.apimgt.api.ExceptionCodes;
-import org.wso2.apk.apimgt.api.LoginPostExecutor;
-import org.wso2.apk.apimgt.api.NewPostLoginExecutor;
 import org.wso2.apk.apimgt.api.model.APIStatus;
 import org.wso2.apk.apimgt.api.model.Environment;
 import org.wso2.apk.apimgt.api.model.KeyManagerConnectorConfiguration;
 import org.wso2.apk.apimgt.api.model.OperationPolicyData;
 import org.wso2.apk.apimgt.api.model.OperationPolicyDefinition;
-import org.wso2.apk.apimgt.api.model.OperationPolicySpecification;
 import org.wso2.apk.apimgt.api.model.Scope;
 import org.wso2.apk.apimgt.api.model.Tier;
 import org.wso2.apk.apimgt.api.model.VHost;
@@ -104,16 +90,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import javax.net.ssl.SSLContext;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * This class contains the utility methods used by the implementations of APIManager, APIProvider
@@ -232,20 +213,6 @@ public final class APIUtil {
         tierList.addAll(tiers);
         Collections.sort(tierList);
         return tierList;
-    }
-
-    /**
-     * Check if document visibility levels are enabled
-     *
-     * @return True if document visibility levels are enabled
-     */
-    public static boolean isDocVisibilityLevelsEnabled() {
-
-        // checking if Doc visibility levels enabled in api-manager.xml
-        return ServiceReferenceHolder.getInstance().getAPIManagerConfigurationService().
-                getAPIManagerConfiguration().getFirstProperty(
-                        APIConstants.API_PUBLISHER_ENABLE_API_DOC_VISIBILITY_LEVELS).equals("true");
-
     }
 
     /**
@@ -408,36 +375,6 @@ public final class APIUtil {
         return null;
     }
 
-    /**
-     * When an input is having '@',replace it with '-AT-' [This is required to persist API data in registry,as registry
-     * paths don't allow '@' sign.]
-     *
-     * @param input inputString
-     * @return String modifiedString
-     */
-    public static String replaceEmailDomain(String input) {
-
-        if (input != null && input.contains(APIConstants.EMAIL_DOMAIN_SEPARATOR)) {
-            input = input.replace(APIConstants.EMAIL_DOMAIN_SEPARATOR, APIConstants.EMAIL_DOMAIN_SEPARATOR_REPLACEMENT);
-        }
-        return input;
-    }
-
-    /**
-     * When an input is having '-AT-',replace it with @ [This is required to persist API data between registry and database]
-     *
-     * @param input inputString
-     * @return String modifiedString
-     */
-    public static String replaceEmailDomainBack(String input) {
-
-        if (input != null && input.contains(APIConstants.EMAIL_DOMAIN_SEPARATOR_REPLACEMENT)) {
-            input = input.replace(APIConstants.EMAIL_DOMAIN_SEPARATOR_REPLACEMENT,
-                    APIConstants.EMAIL_DOMAIN_SEPARATOR);
-        }
-        return input;
-    }
-
     private static JsonElement getFileBaseTenantConfig() throws APIManagementException {
 
         try {
@@ -465,29 +402,6 @@ public final class APIUtil {
     public static boolean isAnalyticsEnabled() {
 
         return APIManagerAnalyticsConfiguration.getInstance().isAnalyticsEnabled();
-    }
-
-    public static String removeAnySymbolFromUriTempate(String uriTemplate) {
-
-        if (uriTemplate != null) {
-            int anySymbolIndex = uriTemplate.indexOf("/*");
-            if (anySymbolIndex != -1) {
-                return uriTemplate.substring(0, anySymbolIndex);
-            }
-        }
-        return uriTemplate;
-    }
-
-    /**
-     * Check if tenant is available
-     *
-     * @param tenantDomain tenant Domain
-     * @return isTenantAvailable
-     * @throws UserException
-     */
-    public static boolean isTenantAvailable(String tenantDomain) throws UserException {
-
-        return UserManagerHolder.getUserManager().isTenantAvailable(tenantDomain);
     }
 
     public static int getInternalOrganizationId(String organization) throws APIManagementException {
@@ -531,20 +445,6 @@ public final class APIUtil {
             return false;
         }
         return true;
-    }
-
-    /**
-     * Helper method to get tenantId from userName
-     *
-     * @param userName user name
-     * @return tenantId
-     */
-    public static int getTenantId(String userName) throws APIManagementException {
-
-        String tenantDomain = null;
-        //get tenant domain from user name
-        tenantDomain = getTenantDomain(userName);
-        return getTenantIdFromTenantDomain(tenantDomain);
     }
 
     /**
@@ -599,51 +499,6 @@ public final class APIUtil {
             log.error(e.getMessage(), e);
         }
         return null;
-    }
-
-    /**
-     * Returns true if sequence is set
-     *
-     * @param sequence
-     * @return
-     */
-    public static boolean isSequenceDefined(String sequence) {
-
-        return sequence != null && !"none".equals(sequence) && !StringUtils.isEmpty(sequence);
-    }
-
-    /**
-     * Find scope object in a set based on the key
-     *
-     * @param scopes - Set of scopes
-     * @param key    - Key to search with
-     * @return Scope - scope object
-     */
-    public static Scope findScopeByKey(Set<Scope> scopes, String key) {
-
-        for (Scope scope : scopes) {
-            if (scope.getKey().equals(key)) {
-                return scope;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Read the REST API group id extractor class reference from api-manager.xml.
-     *
-     * @return REST API group id extractor class reference.
-     */
-    public static String getRESTApiGroupingExtractorImplementation() {
-
-        ConfigurationHolder config = new APIManagerConfigurationServiceImpl(new ConfigurationHolder())
-                .getAPIManagerConfiguration();
-        String restApiGroupingExtractor = config
-                .getFirstProperty(APIConstants.API_STORE_REST_API_GROUP_EXTRACTOR_IMPLEMENTATION);
-        if (StringUtils.isEmpty(restApiGroupingExtractor)) {
-            restApiGroupingExtractor = getGroupingExtractorImplementation();
-        }
-        return restApiGroupingExtractor;
     }
 
     /**
@@ -996,71 +851,9 @@ public final class APIUtil {
         return scopes;
     }
 
-    /**
-     * Used to get access control allowed headers according to the api-manager.xml
-     *
-     * @return access control allowed headers string
-     */
-    public static String getAllowedHeaders() {
-
-        return ServiceReferenceHolder.getInstance().getAPIManagerConfigurationService().getAPIManagerConfiguration().
-                getFirstProperty(APIConstants.CORS_CONFIGURATION_ACCESS_CTL_ALLOW_HEADERS);
-    }
-
-    /**
-     * Used to get access control allowed methods define in api-manager.xml
-     *
-     * @return access control allowed methods string
-     */
-    public static String getAllowedMethods() {
-
-       return ServiceReferenceHolder.getInstance().getAPIManagerConfigurationService().getAPIManagerConfiguration().
-                getFirstProperty(APIConstants.CORS_CONFIGURATION_ACCESS_CTL_ALLOW_METHODS);
-    }
-
-    /**
-     * Used to get access control allowed origins define in api-manager.xml
-     *
-     * @return allow origins list defined in api-manager.xml
-     */
-    public static String getAllowedOrigins() {
-
-        return ServiceReferenceHolder.getInstance().getAPIManagerConfigurationService().getAPIManagerConfiguration().
-                getFirstProperty(APIConstants.CORS_CONFIGURATION_ACCESS_CTL_ALLOW_ORIGIN);
-    }
-
     public static byte[] toByteArray(InputStream is) throws IOException {
 
         return IOUtils.toByteArray(is);
-    }
-
-    /**
-     * Returns a secured DocumentBuilderFactory instance
-     *
-     * @return DocumentBuilderFactory
-     */
-    public static DocumentBuilderFactory getSecuredDocumentBuilder() {
-
-        org.apache.xerces.impl.Constants Constants = null;
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        dbf.setNamespaceAware(true);
-        dbf.setXIncludeAware(false);
-        dbf.setExpandEntityReferences(false);
-        try {
-            dbf.setFeature(Constants.SAX_FEATURE_PREFIX + Constants.EXTERNAL_GENERAL_ENTITIES_FEATURE, false);
-            dbf.setFeature(Constants.SAX_FEATURE_PREFIX + Constants.EXTERNAL_PARAMETER_ENTITIES_FEATURE, false);
-            dbf.setFeature(Constants.XERCES_FEATURE_PREFIX + Constants.LOAD_EXTERNAL_DTD_FEATURE, false);
-        } catch (ParserConfigurationException e) {
-            log.error(
-                    "Failed to load XML Processor Feature " + Constants.EXTERNAL_GENERAL_ENTITIES_FEATURE + " or " +
-                            Constants.EXTERNAL_PARAMETER_ENTITIES_FEATURE + " or " + Constants.LOAD_EXTERNAL_DTD_FEATURE);
-        }
-
-        SecurityManager securityManager = new SecurityManager();
-        securityManager.setEntityExpansionLimit(ENTITY_EXPANSION_LIMIT);
-        dbf.setAttribute(Constants.XERCES_PROPERTY_PREFIX + Constants.SECURITY_MANAGER_PROPERTY, securityManager);
-
-        return dbf;
     }
 
     /**
@@ -1110,64 +903,6 @@ public final class APIUtil {
             }
         }
         return false;
-    }
-
-    /**
-     * Used in application sharing to check if this featuer is enabled
-     *
-     * @return returns true if ENABLE_MULTIPLE_GROUPID is set to True
-     */
-    public static boolean isMultiGroupAppSharingEnabled() {
-
-        if (multiGrpAppSharing == null) {
-
-            ConfigurationHolder config = ServiceReferenceHolder.getInstance().getAPIManagerConfigurationService().
-                    getAPIManagerConfiguration();
-
-            String groupIdExtractorClass = config.getFirstProperty(
-                    APIConstants.API_STORE_GROUP_EXTRACTOR_IMPLEMENTATION);
-
-            if (groupIdExtractorClass != null && !groupIdExtractorClass.isEmpty()) {
-                try {
-
-                    LoginPostExecutor groupingExtractor =
-                            (LoginPostExecutor) APIUtil.getClassInstance(groupIdExtractorClass);
-
-                    if (groupingExtractor instanceof NewPostLoginExecutor) {
-                        multiGrpAppSharing = "true";
-                    } else {
-                        multiGrpAppSharing = "false";
-                    }
-                    // if there is a exception the default flow will work hence ingnoring the applications
-                } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-                    multiGrpAppSharing = "false";
-                }
-            } else {
-                multiGrpAppSharing = "false";
-            }
-        }
-        return Boolean.valueOf(multiGrpAppSharing);
-    }
-
-    /**
-     * This method is used to get the authorization configurations from the tenant registry or from api-manager.xml if
-     * config is not available in tenant registry
-     *
-     * @param organization The organization
-     * @param property     The configuration to get from tenant registry or api-manager.xml
-     * @return The configuration read from tenant registry or api-manager.xml
-     * @throws APIManagementException Throws if the registry resource doesn't exist
-     *                                or the content cannot be parsed to JSON
-     */
-    public static String getOAuthConfiguration(String organization, String property)
-            throws APIManagementException {
-
-        String authConfigValue = APIUtil
-                .getOAuthConfigurationFromTenantRegistry(organization, property);
-        if (StringUtils.isBlank(authConfigValue)) {
-            authConfigValue = APIUtil.getOAuthConfigurationFromAPIMConfig(property);
-        }
-        return authConfigValue;
     }
 
     /**
@@ -1230,134 +965,6 @@ public final class APIUtil {
     }
 
     /**
-     * Util method to call SP rest api to invoke queries.
-     *
-     * @param appName SP app name that the query should run against
-     * @param query   query
-     * @return jsonObj JSONObject of the response
-     * @throws APIManagementException
-     */
-    public static JSONObject executeQueryOnStreamProcessor(String appName, String query) throws APIManagementException {
-
-        String spEndpoint = APIManagerAnalyticsConfiguration.getInstance().getDasServerUrl() + "/stores/query";
-        String spUserName = APIManagerAnalyticsConfiguration.getInstance().getDasServerUser();
-        String spPassword = APIManagerAnalyticsConfiguration.getInstance().getDasServerPassword();
-        byte[] encodedAuth = Base64
-                .encodeBase64((spUserName + ":" + spPassword).getBytes(Charset.forName("ISO-8859-1")));
-        String authHeader = "Basic " + new String(encodedAuth);
-        URL spURL;
-        try {
-            spURL = new URL(spEndpoint);
-
-            HttpClient httpClient = APIUtil.getHttpClient(spURL.getPort(), spURL.getProtocol());
-            HttpPost httpPost = new HttpPost(spEndpoint);
-
-            httpPost.setHeader(HttpHeaders.AUTHORIZATION, authHeader);
-            JSONObject obj = new JSONObject();
-            obj.put("appName", appName);
-            obj.put("query", query);
-
-            if (log.isDebugEnabled()) {
-                log.debug("Request from SP: " + obj.toJSONString());
-            }
-
-            StringEntity requestEntity = new StringEntity(obj.toJSONString(), ContentType.APPLICATION_JSON);
-
-            httpPost.setEntity(requestEntity);
-
-            HttpResponse response;
-            try {
-                response = httpClient.execute(httpPost);
-                HttpEntity entity = response.getEntity();
-                if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
-                    String error = "Error while invoking SP rest api :  " + response.getStatusLine().getStatusCode()
-                            + " " + response.getStatusLine().getReasonPhrase();
-                    log.error(error);
-                    throw new APIManagementException(error,
-                            ExceptionCodes.from(ExceptionCodes.ERROR_INVOKING_SP_REST_API, error));
-                }
-                String responseStr = EntityUtils.toString(entity);
-                if (log.isDebugEnabled()) {
-                    log.debug("Response from SP: " + responseStr);
-                }
-                JSONParser parser = new JSONParser();
-                return (JSONObject) parser.parse(responseStr);
-
-            } catch (ClientProtocolException e) {
-                String error = "Error while connecting to the server";
-                handleExceptionWithCode(error, e, ExceptionCodes
-                        .from(ExceptionCodes.INTERNAL_ERROR_WITH_SPECIFIC_DESC, error));
-            } catch (IOException e) {
-                String error = "Error while parsing the response";
-                handleExceptionWithCode(error, e, ExceptionCodes
-                        .from(ExceptionCodes.INTERNAL_ERROR_WITH_SPECIFIC_DESC, error));
-            } catch (ParseException e) {
-                handleExceptionWithCode("Error while parsing the response ", e, ExceptionCodes.JSON_PARSE_ERROR);
-            } finally {
-                httpPost.reset();
-            }
-
-        } catch (MalformedURLException e) {
-            handleExceptionWithCode("Error while parsing the stream processor url", e,
-                    ExceptionCodes.MALFORMED_SP_URL);
-        }
-
-        return null;
-
-    }
-
-    /**
-     * This method is used to extact group ids from Extractor.
-     *
-     * @param response               login response String.
-     * @param groupingExtractorClass extractor class.
-     * @return group ids
-     * @throws APIManagementException Throws is an error occured when stractoing group Ids
-     */
-    public static String[] getGroupIdsFromExtractor(String response, String groupingExtractorClass)
-            throws APIManagementException {
-
-        if (groupingExtractorClass != null) {
-            try {
-                LoginPostExecutor groupingExtractor = (LoginPostExecutor) APIUtil.getClassInstance
-                        (groupingExtractorClass);
-                //switching 2.1.0 and 2.2.0
-                if (APIUtil.isMultiGroupAppSharingEnabled()) {
-                    NewPostLoginExecutor newGroupIdListExtractor = (NewPostLoginExecutor) groupingExtractor;
-                    return newGroupIdListExtractor.getGroupingIdentifierList(response);
-                } else {
-                    String groupId = groupingExtractor.getGroupingIdentifiers(response);
-                    return new String[]{groupId};
-                }
-
-            } catch (ClassNotFoundException e) {
-                String msg = groupingExtractorClass + " is not found in runtime";
-                log.error(msg, e);
-                throw new APIManagementException(msg, e);
-            } catch (ClassCastException e) {
-                String msg = "Cannot cast " + groupingExtractorClass + " NewPostLoginExecutor";
-                log.error(msg, e);
-                throw new APIManagementException(msg, e);
-            } catch (IllegalAccessException e) {
-                String msg = "Error occurred while invocation of getGroupingIdentifier method";
-                log.error(msg, e);
-                throw new APIManagementException(msg, e);
-            } catch (InstantiationException e) {
-                String msg = "Error occurred while instantiating " + groupingExtractorClass + " class";
-                log.error(msg, e);
-                throw new APIManagementException(msg, e);
-            }
-        }
-        return new String[0];
-    }
-
-    public static String getStoreUrl() {
-
-        return ServiceReferenceHolder.getInstance().getAPIManagerConfigurationService().getAPIManagerConfiguration()
-                .getFirstProperty(APIConstants.API_STORE_URL);
-    }
-
-    /**
      * Get gateway environments defined in the configuration: api-manager.xml
      *
      * @return map of configured environments against environment name
@@ -1389,29 +996,6 @@ public final class APIUtil {
     }
 
     /**
-     * Returns a masked token for a given token.
-     *
-     * @param token token to be masked
-     * @return masked token.
-     */
-    public static String getMaskedToken(String token) {
-
-        StringBuilder maskedTokenBuilder = new StringBuilder();
-        if (token != null) {
-            int allowedVisibleLen = Math.min(token.length() / MIN_VISIBLE_LEN_RATIO, MAX_VISIBLE_LEN);
-            if (token.length() > MAX_LEN) {
-                maskedTokenBuilder.append("...");
-                maskedTokenBuilder.append(String.join("", Collections.nCopies(MAX_LEN, MASK_CHAR)));
-            } else {
-                maskedTokenBuilder.append(String.join("", Collections.nCopies(token.length()
-                        - allowedVisibleLen, MASK_CHAR)));
-            }
-            maskedTokenBuilder.append(token.substring(token.length() - allowedVisibleLen));
-        }
-        return maskedTokenBuilder.toString();
-    }
-
-    /**
      * return skipRolesByRegex config
      */
     public static String getSkipRolesByRegex() {
@@ -1419,43 +1003,6 @@ public final class APIUtil {
         ConfigurationHolder config = ServiceReferenceHolder.getInstance()
                 .getAPIManagerConfigurationService().getAPIManagerConfiguration();
         return config.getFirstProperty(APIConstants.SKIP_ROLES_BY_REGEX);
-    }
-
-    public static Map<String, Object> getUserProperties(String userNameWithoutChange) throws APIManagementException {
-
-        Map<String, Object> properties = new HashMap<String, Object>();
-        if (APIUtil.hasPermission(userNameWithoutChange, APIConstants.Permissions.APIM_ADMIN)) {
-            properties.put(APIConstants.USER_CTX_PROPERTY_ISADMIN, true);
-        }
-        properties.put(APIConstants.USER_CTX_PROPERTY_SKIP_ROLES, APIUtil.getSkipRolesByRegex());
-
-        return properties;
-    }
-
-    public static boolean isDevPortalAnonymous() {
-
-        ConfigurationHolder config = ServiceReferenceHolder.getInstance().getAPIManagerConfigurationService()
-                .getAPIManagerConfiguration();
-        String anonymousMode = config.getFirstProperty(APIConstants.API_DEVPORTAL_ANONYMOUS_MODE);
-        if (anonymousMode == null) {
-            return true;
-        }
-        return Boolean.parseBoolean(anonymousMode);
-    }
-
-    public static Map getTenantBasedStoreDomainMapping(String tenantDomain) throws APIManagementException {
-
-        //TODO registry usage
-        return new HashMap();
-    }
-
-    public static boolean isPerTenantServiceProviderEnabled(String tenantDomain) throws APIManagementException {
-
-        JSONObject tenantConfig = getTenantConfig(tenantDomain);
-        if (tenantConfig.containsKey(APIConstants.ENABLE_PER_TENANT_SERVICE_PROVIDER_CREATION)) {
-            return (boolean) tenantConfig.get(APIConstants.ENABLE_PER_TENANT_SERVICE_PROVIDER_CREATION);
-        }
-        return false;
     }
 
     public static String getTenantAdminUserName(String tenantDomain) throws APIManagementException {
@@ -1478,25 +1025,6 @@ public final class APIUtil {
         //TODO handle configs
 //        return ServiceReferenceHolder.getInstance().getKeyManagerConnectorConfigurations();
         return new HashMap<>(); //Dummy return
-    }
-
-    /**
-     * Get scopes for the given scope keys from authorization server.
-     *
-     * @param scopeKeys    Scope Keys
-     * @param organization organization
-     * @return Scope key to Scope object mapping
-     * @throws APIManagementException if an error occurs while getting scopes using scope keys
-     */
-    public static Map<String, Scope> getScopes(Set<String> scopeKeys, String organization)
-            throws APIManagementException {
-
-        Map<String, Scope> scopeToKeyMap = new HashMap<>();
-        for (String scopeKey : scopeKeys) {
-            Scope scope = getScopeByName(scopeKey, organization);
-            scopeToKeyMap.put(scopeKey, scope);
-        }
-        return scopeToKeyMap;
     }
 
     public static Scope getScopeByName(String scopeKey, String organization) throws APIManagementException {
@@ -1754,48 +1282,6 @@ public final class APIUtil {
             }
         }
         return md5Hash;
-    }
-
-    public static OperationPolicyData generateOperationPolicyDataObject(String apiUuid, String organization,
-                                                                        String policyName,
-                                                                        String policyDefinitionString) {
-
-        OperationPolicySpecification policySpecification = new OperationPolicySpecification();
-        policySpecification.setCategory(OperationPolicySpecification.PolicyCategory.Mediation);
-        policySpecification.setName(policyName);
-        policySpecification.setDisplayName(policyName);
-        policySpecification.setDescription("This is a mediation policy migrated to an operation policy.");
-
-        ArrayList<String> gatewayList = new ArrayList<>();
-        gatewayList.add(APIConstants.OPERATION_POLICY_SUPPORTED_GATEWAY_SYNAPSE);
-        policySpecification.setSupportedGateways(gatewayList);
-
-        ArrayList<String> supportedAPIList = new ArrayList<>();
-        supportedAPIList.add(APIConstants.OPERATION_POLICY_SUPPORTED_API_TYPE_HTTP);
-        policySpecification.setSupportedApiTypes(supportedAPIList);
-
-        ArrayList<String> applicableFlows = new ArrayList<>();
-        applicableFlows.add(APIConstants.OPERATION_SEQUENCE_TYPE_REQUEST);
-        applicableFlows.add(APIConstants.OPERATION_SEQUENCE_TYPE_RESPONSE);
-        applicableFlows.add(APIConstants.OPERATION_SEQUENCE_TYPE_FAULT);
-        policySpecification.setApplicableFlows(applicableFlows);
-
-        OperationPolicyData policyData = new OperationPolicyData();
-        policyData.setOrganization(organization);
-        policyData.setSpecification(policySpecification);
-        policyData.setApiUUID(apiUuid);
-
-        if (policyDefinitionString != null) {
-            OperationPolicyDefinition policyDefinition = new OperationPolicyDefinition();
-            policyDefinition.setContent(policyDefinitionString);
-            policyDefinition.setGatewayType(OperationPolicyDefinition.GatewayType.Synapse);
-            policyDefinition.setMd5Hash(APIUtil.getMd5OfOperationPolicyDefinition(policyDefinition));
-            policyData.setSynapsePolicyDefinition(policyDefinition);
-        }
-
-        policyData.setMd5Hash(APIUtil.getMd5OfOperationPolicy(policyData));
-
-        return policyData;
     }
 
     public static String getTenantDomain(String userName) throws APIManagementException {
