@@ -3471,35 +3471,6 @@ components:
         description:
           type: string
           description: Description of the scope
-    APIInfoList:
-      title: API Info List
-      type: object
-      properties:
-        count:
-          type: integer
-          description: |
-            Number of API Info objects returned.
-          example: 1
-        list:
-          type: array
-          items:
-            $ref: '#/components/schemas/APIInfo'
-    APIInfo:
-      title: API info object with basic API details
-      type: object
-      properties:
-        name:
-          type: string
-          description: The name of the API.
-          example: PizzaShackAPI
-        version:
-          type: string
-          description: The version of the API
-          example: 1.0.0
-        provider:
-          type: string
-          description: The provider of the API
-          example: admin
     Environment:
       title: Environment
       required:
