@@ -61,18 +61,12 @@ message Resource {
     string verb = 2;
     repeated Authentication authentications = 3;  
     repeated Scope scopes = 4;
-    RateLimit rateLimit = 5;
     OperationPolicies operationPolicies = 6;
     repeated QueryParam queryParams = 7;
     repeated string hostname = 8;
 }
 
 message OperationPolicies {}
-
-message Backend {
-    string type = 1;
-    string url = 2;
-}
 
 message QueryParam {
     string name = 1;
@@ -99,11 +93,6 @@ message Authentication {
 message Credential {
     string username = 1;
     string password = 2;
-}
-
-message RateLimit { 
-    string requestPerUnit = 1;
-    string unit = 2;
 }
 
 message Response {
