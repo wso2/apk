@@ -24,7 +24,7 @@ import (
 	"net"
 	"time"
 
-	apiProtos "github.com/wso2/apk/management-server/internal/grpc/api"
+	apiProtos "github.com/wso2/apk/management-server/internal/discovery/api/wso2/discovery/api"
 	logger "github.com/wso2/apk/management-server/internal/loggers"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	"github.com/wso2/apk/management-server/pkg/tlsutils"
@@ -34,27 +34,27 @@ import (
 	"github.com/wso2/apk/management-server/config"
 )
 
-type aPIService struct {
+type apiService struct {
 	apiProtos.UnimplementedAPIServiceServer
 }
 
-func NewApiService() *aPIService {
-	return &aPIService{}
+func NewApiService() *apiService {
+	return &apiService{}
 }
 
-func (s *aPIService) CreateAPI(ctx context.Context, api *apiProtos.API ) (*apiProtos.Response, error) {
+func (s *apiService) CreateAPI(ctx context.Context, api *apiProtos.API ) (*apiProtos.Response, error) {
 	logger.LoggerMGTServer.Infof("Message received : %q", api);
 	// TODO(Tharsanan1) database calls to persist data
 	return &apiProtos.Response{Result : true}, nil
 }
 
-func (s *aPIService) UpdateAPI(ctx context.Context, api *apiProtos.API ) (*apiProtos.Response, error) {
+func (s *apiService) UpdateAPI(ctx context.Context, api *apiProtos.API ) (*apiProtos.Response, error) {
 	logger.LoggerMGTServer.Infof("Message received : %q", api);
 	// TODO(Tharsanan1) database calls to persist data
 	return &apiProtos.Response{Result : true}, nil
 }
 
-func (s *aPIService) DeleteAPI(ctx context.Context, api *apiProtos.API ) (*apiProtos.Response, error) {
+func (s *apiService) DeleteAPI(ctx context.Context, api *apiProtos.API ) (*apiProtos.Response, error) {
 	logger.LoggerMGTServer.Infof("Message received : %q", api);
 	// TODO(Tharsanan1) database calls to persist data
 	return &apiProtos.Response{Result : true}, nil
