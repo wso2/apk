@@ -21,7 +21,6 @@ package org.wso2.apk.apimgt.impl.dao;
 import org.wso2.apk.apimgt.api.APIManagementException;
 import org.wso2.apk.apimgt.api.model.APICategory;
 import org.wso2.apk.apimgt.api.model.MonetizationUsagePublishInfo;
-import org.wso2.apk.apimgt.api.model.botDataAPI.BotDetectionData;
 
 import java.io.InputStream;
 import java.util.List;

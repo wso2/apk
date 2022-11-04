@@ -25,7 +25,6 @@ import org.wso2.apk.apimgt.api.ErrorHandler;
 import org.wso2.apk.apimgt.api.ExceptionCodes;
 import org.wso2.apk.apimgt.api.model.APICategory;
 import org.wso2.apk.apimgt.api.model.MonetizationUsagePublishInfo;
-import org.wso2.apk.apimgt.api.model.botDataAPI.BotDetectionData;
 import org.wso2.apk.apimgt.impl.dao.AdminDAO;
 import org.wso2.apk.apimgt.impl.dao.constants.SQLConstants;
 import org.wso2.apk.apimgt.impl.utils.APIMgtDBUtil;

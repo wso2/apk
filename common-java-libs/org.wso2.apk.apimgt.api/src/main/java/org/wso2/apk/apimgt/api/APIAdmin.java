@@ -19,7 +19,6 @@ package org.wso2.apk.apimgt.api;
 
 import org.wso2.apk.apimgt.api.dto.KeyManagerConfigurationDTO;
 import org.wso2.apk.apimgt.api.model.*;
-import org.wso2.apk.apimgt.api.model.botDataAPI.BotDetectionData;
 import org.wso2.apk.apimgt.api.model.policy.*;
 
 import java.io.InputStream;

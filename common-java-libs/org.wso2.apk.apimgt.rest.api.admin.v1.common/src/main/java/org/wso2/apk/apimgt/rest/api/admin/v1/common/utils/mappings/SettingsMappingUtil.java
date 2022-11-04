@@ -21,13 +21,10 @@ package org.wso2.apk.apimgt.rest.api.admin.v1.common.utils.mappings;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.apk.apimgt.api.APIDefinition;
 import org.wso2.apk.apimgt.api.APIManagementException;
 import org.wso2.apk.apimgt.api.model.ConfigurationDto;
 import org.wso2.apk.apimgt.api.model.KeyManagerConnectorConfiguration;
-import org.wso2.apk.apimgt.api.model.Scope;
 import org.wso2.apk.apimgt.impl.APIConstants;
-import org.wso2.apk.apimgt.impl.definitions.OASParserUtil;
 import org.wso2.apk.apimgt.impl.utils.APIUtil;
 import org.wso2.apk.apimgt.rest.api.admin.v1.dto.KeyManagerConfigurationDTO;
 import org.wso2.apk.apimgt.rest.api.admin.v1.dto.SettingsDTO;
@@ -83,12 +80,8 @@ public class SettingsMappingUtil {
         } catch (IOException e) {
             log.error("Error while reading the swagger definition", e);
         }
-        APIDefinition oasParser = OASParserUtil.getOASParser(definition);
-        Set<Scope> scopeSet = oasParser.getScopes(definition);
+        //TODO: APK
         List<String> scopeList = new ArrayList<>();
-        for (Scope entry : scopeSet) {
-            scopeList.add(entry.getKey());
-        }
         return scopeList;
     }
 

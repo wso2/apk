@@ -44,7 +44,6 @@ import org.wso2.apk.apimgt.api.model.Environment;
 import org.wso2.apk.apimgt.api.model.Monetization;
 import org.wso2.apk.apimgt.api.model.MonetizationUsagePublishInfo;
 import org.wso2.apk.apimgt.api.model.VHost;
-import org.wso2.apk.apimgt.api.model.botDataAPI.BotDetectionData;
 import org.wso2.apk.apimgt.api.model.policy.APIPolicy;
 import org.wso2.apk.apimgt.api.model.policy.ApplicationPolicy;
 import org.wso2.apk.apimgt.api.model.policy.Condition;
@@ -52,7 +51,6 @@ import org.wso2.apk.apimgt.api.model.policy.Pipeline;
 import org.wso2.apk.apimgt.api.model.policy.Policy;
 import org.wso2.apk.apimgt.api.model.policy.PolicyConstants;
 import org.wso2.apk.apimgt.api.model.policy.SubscriptionPolicy;
-import org.wso2.apk.apimgt.impl.dao.constants.SQLConstants;
 import org.wso2.apk.apimgt.impl.dao.impl.AdminDAOImpl;
 import org.wso2.apk.apimgt.impl.dao.impl.ApplicationDAOImpl;
 import org.wso2.apk.apimgt.impl.dao.impl.BlockConditionDAOImpl;
@@ -65,13 +63,8 @@ import org.wso2.apk.apimgt.impl.dto.TierPermissionDTO;
 import org.wso2.apk.apimgt.impl.internal.ServiceReferenceHolder;
 import org.wso2.apk.apimgt.impl.monetization.DefaultMonetizationImpl;
 import org.wso2.apk.apimgt.impl.utils.APIUtil;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -82,14 +75,6 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
 /**
  * This class provides the core API admin functionality.
