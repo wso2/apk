@@ -60,6 +60,7 @@ type watches struct {
 	keyManagers               chan cache.Response
 	revokedTokens             chan cache.Response
 	throttleData              chan cache.Response
+	APKMgtApplications        chan cache.Response
 
 	configCancel                    func()
 	apiCancel                       func()
@@ -72,7 +73,7 @@ type watches struct {
 	keyManagerCancel                func()
 	revokedTokenCancel              func()
 	throttleDataCancel              func()
-	gaApiCancel                     func()
+	APKMgtApplicationCancel         func()
 
 	configNonce                    string
 	apiNonce                       string
@@ -85,7 +86,7 @@ type watches struct {
 	keyManagerNonce                string
 	revokedTokenNonce              string
 	throttleDataNonce              string
-	gaApiNonce                     string
+	APKMgtApplicationNonce         string
 
 	// Opaque resources share a muxed channel. Nonces and watch cancellations are indexed by type URL.
 	responses     chan cache.Response
@@ -148,8 +149,8 @@ func (values *watches) Cancel() {
 	if values.throttleDataCancel != nil {
 		values.throttleDataCancel()
 	}
-	if values.gaApiCancel != nil {
-		values.gaApiCancel()
+	if values.APKMgtApplicationCancel != nil {
+		values.APKMgtApplicationCancel()
 	}
 
 	for _, cancel := range values.cancellations {
@@ -334,7 +335,15 @@ func (s *server) process(stream stream.Stream, reqCh <-chan *discovery.Discovery
 				return err
 			}
 			values.throttleDataNonce = nonce
-
+		case resp, more := <-values.APKMgtApplications:
+			if !more {
+				return status.Errorf(codes.Unavailable, "global adapter apis watch failed")
+			}
+			nonce, err := send(resp)
+			if err != nil {
+				return err
+			}
+			values.APKMgtApplicationNonce = nonce
 		case resp, more := <-values.responses:
 			if more {
 				if resp == errorResponse {
@@ -479,6 +488,14 @@ func (s *server) process(stream stream.Stream, reqCh <-chan *discovery.Discovery
 					}
 					values.throttleData = make(chan cache.Response, 1)
 					values.throttleDataCancel = s.cache.CreateWatch(req, streamState, values.throttleData)
+				}
+			case req.TypeUrl == resource.APKMgtApplicationType:
+				if values.APKMgtApplicationNonce == "" || values.APKMgtApplicationNonce == nonce {
+					if values.APKMgtApplicationCancel != nil {
+						values.APKMgtApplicationCancel()
+					}
+					values.APKMgtApplications = make(chan cache.Response, 1)
+					values.APKMgtApplicationCancel = s.cache.CreateWatch(req, streamState, values.APKMgtApplications)
 				}
 			default:
 				typeURL := req.TypeUrl

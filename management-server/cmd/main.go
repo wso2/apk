@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2022, WSO2 Inc. (http://www.wso2.org).
+ *  Copyright (c) 2022, WSO2 LLC. (http://www.wso2.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import (
 )
 
 func main() {
-	logger.LoggerServer.Info("Hello, world.")
+	logger.LoggerServer.Info("Starting Management server ...")
 	sig := make(chan os.Signal)
 	signal.Notify(sig, os.Interrupt)
 	go xds.InitAPKMgtServer()

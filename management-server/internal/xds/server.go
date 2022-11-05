@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2022, WSO2 Inc. (http://www.wso2.org).
+ *  Copyright (c) 2022, WSO2 LLC. (http://www.wso2.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -27,13 +27,15 @@ import (
 
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
+	"github.com/wso2/apk/APKManagementServer/internal/config"
 	"github.com/wso2/apk/APKManagementServer/internal/logger"
 	"github.com/wso2/apk/APKManagementServer/internal/xds/callbacks"
-	apkmgt_application "github.com/wso2/product-microgateway/adapter/pkg/discovery/api/wso2/discovery/apkmgt"
-	apkmgt_service "github.com/wso2/product-microgateway/adapter/pkg/discovery/api/wso2/discovery/service/apkmgt"
-	wso2_cache "github.com/wso2/product-microgateway/adapter/pkg/discovery/protocol/cache/v3"
-	wso2_resource "github.com/wso2/product-microgateway/adapter/pkg/discovery/protocol/resource/v3"
-	wso2_server "github.com/wso2/product-microgateway/adapter/pkg/discovery/protocol/server/v3"
+	apkmgt_application "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/apkmgt"
+	apkmgt_service "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/apkmgt"
+	wso2_cache "github.com/wso2/apk/adapter/pkg/discovery/protocol/cache/v3"
+	wso2_resource "github.com/wso2/apk/adapter/pkg/discovery/protocol/resource/v3"
+	wso2_server "github.com/wso2/apk/adapter/pkg/discovery/protocol/server/v3"
+	"github.com/wso2/apk/adapter/pkg/logging"
 	"google.golang.org/grpc"
 )
 
@@ -47,7 +49,6 @@ const (
 	maxRandomInt             int    = 999999999
 	typeURL                  string = "wso2.discovery.apkmgt.Application"
 	grpcMaxConcurrentStreams        = 1000000
-	port                            = 18000
 )
 
 // IDHash uses ID field as the node hash.
@@ -94,15 +95,25 @@ func InitAPKMgtServer() {
 	grpcOptions = append(grpcOptions, grpc.MaxConcurrentStreams(grpcMaxConcurrentStreams))
 	grpcServer := grpc.NewServer(grpcOptions...)
 	apkmgt_service.RegisterAPKMgtDiscoveryServiceServer(grpcServer, apkMgtAPIDsSrv)
+	config := config.ReadConfigs()
+	port := config.ManagementServer.XDSPort
 
 	//todo (amaliMatharaarachchi) handle error gracefully
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
-		logger.LoggerServer.Panicf("Error while listening on port: %v. Error: %v", port, err.Error())
+		logger.LoggerServer.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("Error while listening on port: %v. Error: %v", port, err.Error()),
+			Severity:  logging.BLOCKER,
+			ErrorCode: 1000,
+		})
 	}
 
 	logger.LoggerServer.Infof("APK Management server XDS is starting on port %v.", port)
 	if err = grpcServer.Serve(listener); err != nil {
-		logger.LoggerServer.Error("Error while starting APK Management server XDS.", err)
+		logger.LoggerServer.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprint("Error while starting APK Management server XDS server."),
+			Severity:  logging.BLOCKER,
+			ErrorCode: 1001,
+		})
 	}
 }

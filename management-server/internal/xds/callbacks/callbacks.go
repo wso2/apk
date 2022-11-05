@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2022, WSO2 Inc. (http://www.wso2.org).
+ *  Copyright (c) 2022, WSO2 LLC. (http://www.wso2.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -20,9 +20,11 @@ package callbacks
 
 import (
 	"context"
+	"fmt"
 
 	discovery "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
 	"github.com/wso2/apk/APKManagementServer/internal/logger"
+	"github.com/wso2/apk/adapter/pkg/logging"
 )
 
 // Callbacks is used to debug the xds server related communication.
@@ -48,7 +50,11 @@ func (cb *Callbacks) OnStreamRequest(id int64, request *discovery.DiscoveryReque
 	logger.LoggerXds.Infof("stream request on stream id: %d, from node: %s, version: %s, for type: %s",
 		id, request.GetNode(), request.GetVersionInfo(), request.GetTypeUrl())
 	if request.ErrorDetail != nil {
-		logger.LoggerXds.Errorf("Stream request for type %s on stream id: %d Error: %s", request.GetTypeUrl(), id, request.ErrorDetail.Message)
+		logger.LoggerXds.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("Stream request for type %s on stream id: %d Error: %s", request.GetTypeUrl(), id, request.ErrorDetail.Message),
+			Severity:  logging.MINOR,
+			ErrorCode: 1001,
+		})
 	}
 	return nil
 }

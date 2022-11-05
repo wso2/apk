@@ -364,14 +364,10 @@ var defaultConfig = &Config{
 			PauseTimeAfterFailure: 5,
 		},
 	},
-	GlobalAdapter: globalAdapter{
-		Enabled:              false,
-		ServiceURL:           "global-adapter:18000",
-		ServiceURLDeprecated: UnassignedAsDeprecated,
-		OverwriteHostName:    UnassignedAsDeprecated,
-		OverrideHostName:     "",
-		LocalLabel:           "default",
-		RetryInterval:        5,
+	ManagementServer: managementServer{
+		Enabled:    false,
+		ServiceURL: "management-server:18000",
+		LocalLabel: "default",
 	},
 	Analytics: analytics{
 		Enabled: false,

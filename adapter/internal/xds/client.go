@@ -19,15 +19,18 @@ package xds
 
 import (
 	"context"
+	"fmt"
 	"io"
 
 	core "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	discovery "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
 	"github.com/golang/protobuf/ptypes"
+	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/loggers"
 
 	apkmgt_model "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/apkmgt"
 	stub "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/apkmgt"
+	"github.com/wso2/apk/adapter/pkg/logging"
 
 	"google.golang.org/genproto/googleapis/rpc/status"
 	"google.golang.org/grpc"
@@ -49,7 +52,6 @@ var (
 const (
 	// The type url for requesting Application Entries from apkmgt server.
 	applicationTypeURL string = "type.googleapis.com/wso2.discovery.apkmgt.Application"
-	nodeName                  = "mine"
 )
 
 func init() {
@@ -61,7 +63,11 @@ func initConnection(xdsURL string) error {
 	conn, err := grpc.Dial(xdsURL, grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
 		// TODO: (AmaliMatharaarachchi) retries
-		loggers.LoggerXds.Error("Error while connecting to the APK Management Server.", err)
+		loggers.LoggerXds.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprint("Error while connecting to the APK Management Server. ", err.Error()),
+			Severity:  logging.BLOCKER,
+			ErrorCode: 1700,
+		})
 		return err
 	}
 
@@ -71,7 +77,11 @@ func initConnection(xdsURL string) error {
 
 	if err != nil {
 		// TODO: (AmaliMatharaarachchi) handle error.
-		loggers.LoggerXds.Error("Error while starting client. ", err)
+		loggers.LoggerXds.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprint("Error while starting APK Management application stream. ", err.Error()),
+			Severity:  logging.CRITICAL,
+			ErrorCode: 1701,
+		})
 		return err
 	}
 	loggers.LoggerXds.Infof("Connection to the APK Management Server: %s is successful.", xdsURL)
@@ -82,14 +92,26 @@ func watchApplications() {
 	for {
 		discoveryResponse, err := xdsStream.Recv()
 		if err == io.EOF {
-			loggers.LoggerXds.Error("EOF is received from the apk mgt server.")
+			loggers.LoggerXds.ErrorC(logging.ErrorDetails{
+				Message:   fmt.Sprint("EOF is received from the APK Management Server application stream. ", err.Error()),
+				Severity:  logging.CRITICAL,
+				ErrorCode: 1702,
+			})
 			return
 		}
 		if err != nil {
-			loggers.LoggerXds.Error("Failed to receive the discovery response ", err)
+			loggers.LoggerXds.ErrorC(logging.ErrorDetails{
+				Message:   fmt.Sprint("Failed to receive the discovery response from the APK Management Server application stream. ", err.Error()),
+				Severity:  logging.CRITICAL,
+				ErrorCode: 1703,
+			})
 			errStatus, _ := grpcStatus.FromError(err)
 			if errStatus.Code() == codes.Unavailable {
-				loggers.LoggerXds.Error("Connection stopped. ")
+				loggers.LoggerXds.ErrorC(logging.ErrorDetails{
+					Message:   fmt.Sprint("The APK Management Server application stream connection stopped"),
+					Severity:  logging.MINOR,
+					ErrorCode: 1704,
+				})
 			}
 			nack(err.Error())
 		} else {
@@ -129,15 +151,17 @@ func nack(errorMessage string) {
 }
 
 func getAdapterNode() *core.Node {
+	config := config.ReadConfigs()
 	return &core.Node{
-		Id: nodeName,
+		Id: config.ManagementServer.LocalLabel,
 	}
 }
 
 // InitApkMgtClient initializes the connection to the apkmgt server.
-func InitApkMgtClient(xdsURL string) {
-	loggers.LoggerXds.Info("Starting the XDS Client connection to APK Mgt server.")
-	err := initConnection(xdsURL)
+func InitApkMgtClient() {
+	loggers.LoggerXds.Info("Starting the XDS Client connection to APK Management server.")
+	config := config.ReadConfigs()
+	err := initConnection(config.ManagementServer.ServiceURL)
 	if err == nil {
 		go watchApplications()
 		discoveryRequest := &discovery.DiscoveryRequest{
@@ -147,7 +171,11 @@ func InitApkMgtClient(xdsURL string) {
 		}
 		xdsStream.Send(discoveryRequest)
 	} else {
-		loggers.LoggerXds.Error("error in InitApkMgtClient ", err.Error())
+		loggers.LoggerXds.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprint("Error while starting the APK Management Server. ", err.Error()),
+			Severity:  logging.BLOCKER,
+			ErrorCode: 1705,
+		})
 	}
 }
 
@@ -157,7 +185,11 @@ func addApplicationsToChannel(resp *discovery.DiscoveryResponse) {
 		err := ptypes.UnmarshalAny(res, application)
 
 		if err != nil {
-			loggers.LoggerXds.Error("Error while unmarshalling: ", err.Error())
+			loggers.LoggerXds.ErrorC(logging.ErrorDetails{
+				Message:   fmt.Sprint("Error while unmarshalling APK Management Server Application discovery response. ", err.Error()),
+				Severity:  logging.MINOR,
+				ErrorCode: 1706,
+			})
 			continue
 		}
 		loggers.LoggerXds.Debug("client has received: ", res)

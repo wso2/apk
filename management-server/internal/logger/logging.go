@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2022, WSO2 Inc. (http://www.wso2.org)
+ *  Copyright (c) 2022, WSO2 LLC. (http://www.wso2.org)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ package logger
 
 import (
 	"github.com/sirupsen/logrus"
-	"github.com/wso2/product-microgateway/adapter/pkg/logging"
+	"github.com/wso2/apk/adapter/pkg/logging"
 )
 
 /* loggers should be initiated only for the main packages

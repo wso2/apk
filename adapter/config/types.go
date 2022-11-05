@@ -70,13 +70,13 @@ const (
 // 		Don't use toml tag for configuration properties as it may affect environment variable based
 // 		config resolution.
 type Config struct {
-	Adapter       adapter
-	Enforcer      enforcer
-	Envoy         envoy         `toml:"router"`
-	ControlPlane  controlPlane  `toml:"controlPlane"`
-	GlobalAdapter globalAdapter `toml:"globalAdapter"`
-	Analytics     analytics     `toml:"analytics"`
-	Tracing       tracing
+	Adapter          adapter
+	Enforcer         enforcer
+	Envoy            envoy            `toml:"router"`
+	ControlPlane     controlPlane     `toml:"controlPlane"`
+	ManagementServer managementServer `toml:"managementServer"`
+	Analytics        analytics        `toml:"analytics"`
+	Tracing          tracing
 }
 
 // Adapter related Configurations
@@ -500,16 +500,10 @@ type requestWorkerPool struct {
 	PauseTimeAfterFailure time.Duration
 }
 
-type globalAdapter struct {
+type managementServer struct {
 	Enabled    bool
 	ServiceURL string
-	// Deprecated: Use ServiceURL instead.
-	ServiceURLDeprecated string `toml:"serviceUrl"`
-	LocalLabel           string
-	// Deprecated: Use OverrideHostName instead.
-	OverwriteHostName string
-	OverrideHostName  string
-	RetryInterval     time.Duration
+	LocalLabel string
 }
 
 type brokerConnectionParameters struct {
