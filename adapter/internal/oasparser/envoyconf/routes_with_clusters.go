@@ -1007,8 +1007,8 @@ end`
 				metadataValue := operation.GetMethod() + "_to_" + newMethod
 				match2.DynamicMetadata = generateMetadataMatcherForInternalRoutes(metadataValue)
 
-				action1 := generateRouteAction(apiType, prodRouteConfig, sandRouteConfig, corsPolicy, prodClusterName)
-				action2 := generateRouteAction(apiType, prodRouteConfig, sandRouteConfig, corsPolicy, prodClusterName)
+				action1 := generateRouteAction(apiType, prodRouteConfig, sandRouteConfig, corsPolicy)
+				action2 := generateRouteAction(apiType, prodRouteConfig, sandRouteConfig, corsPolicy)
 
 				// Create route1 for current method.
 				// Do not add policies to route config. Send via enforcer
@@ -1031,7 +1031,7 @@ end`
 			} else {
 				logger.LoggerOasparser.Debug("Creating routes for resource with policies", resourcePath, operation.GetMethod())
 				// create route for current method. Add policies to route config. Send via enforcer
-				action := generateRouteAction(apiType, prodRouteConfig, sandRouteConfig, corsPolicy, prodClusterName)
+				action := generateRouteAction(apiType, prodRouteConfig, sandRouteConfig, corsPolicy)
 				match := generateRouteMatch(routePath)
 				match.Headers = generateHTTPMethodMatcher(operation.GetMethod(), params.isSandbox, sandClusterName)
 				match.DynamicMetadata = generateMetadataMatcherForExternalRoutes()
@@ -1055,7 +1055,7 @@ end`
 		}
 		match := generateRouteMatch(routePath)
 		match.Headers = generateHTTPMethodMatcher(methodRegex, params.isSandbox, sandClusterName)
-		action := generateRouteAction(apiType, prodRouteConfig, sandRouteConfig, corsPolicy, prodClusterName)
+		action := generateRouteAction(apiType, prodRouteConfig, sandRouteConfig, corsPolicy)
 		action.Route.RegexRewrite = generateRegexMatchAndSubstitute(routePath, endpointBasepath, resourcePath)
 
 		route := generateRouteConfig(xWso2Basepath, match, action, nil, decorator, perRouteFilterConfigs,

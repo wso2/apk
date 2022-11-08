@@ -81,7 +81,7 @@ func generateRouteMatch(routeRegex string) *routev3.RouteMatch {
 }
 
 func generateRouteAction(apiType string, prodRouteConfig, sandRouteConfig *model.EndpointConfig,
-	corsPolicy *routev3.CorsPolicy, clusterName string) (action *routev3.Route_Route) {
+	corsPolicy *routev3.CorsPolicy) (action *routev3.Route_Route) {
 
 	config, _ := config.ReadConfigs()
 
@@ -96,8 +96,8 @@ func generateRouteAction(apiType string, prodRouteConfig, sandRouteConfig *model
 			MaxStreamDuration: getMaxStreamDuration(apiType),
 			Timeout:           durationpb.New(time.Duration(config.Envoy.Upstream.Timeouts.RouteTimeoutInSeconds) * time.Second),
 			IdleTimeout:       durationpb.New(time.Duration(config.Envoy.Upstream.Timeouts.RouteIdleTimeoutInSeconds) * time.Second),
-			ClusterSpecifier: &routev3.RouteAction_Cluster{
-				Cluster: clusterName,
+			ClusterSpecifier: &routev3.RouteAction_ClusterHeader{
+				ClusterHeader: clusterHeaderName,
 			},
 		},
 	}
