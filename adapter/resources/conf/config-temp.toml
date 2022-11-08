@@ -1,0 +1,78 @@
+[adapter]
+[adapter.server]
+enabled = true
+port = "9843"
+tokenPrivateKeyPath = "../resources/security/mg.key"
+[[adapter.server.users]]
+username = "admin"
+password = "$env{adapter_admin_pwd}"
+
+[adapter.keystore]
+certPath = "../resources/security/mg.pem"
+keyPath = "../resources/security/mg.key"
+
+[adapter.truststore]
+location = "../resources/adapter/security/truststore"
+
+[router]
+listenerPort = 9090
+securedListenerPort = 9095
+systemHost = "localhost"
+useRemoteAddress = false
+
+[router.keystore]
+certPath = "/security/mg.pem"
+keyPath = "/security/mg.key"
+
+[router.upstream]
+[router.upstream.tls]
+trustedCertPath = "/etc/ssl/certs/ca-certificates.crt"
+verifyHostName = true
+disableSslVerification = false
+
+[enforcer]
+[enforcer.jwtIssuer]
+enabled = true
+issuer = "https://localhost:9095/testkey"
+
+[enforcer.security]
+[[enforcer.security.tokenService]]
+name = "Resident Key Manager"
+issuer = "https://localhost:9443/oauth2/token"
+certificateAlias = "wso2carbon"
+jwksURL = ""
+validateSubscription = false
+consumerKeyClaim = "azp"
+certificateFilePath = "/enforcer/security/truststore/wso2carbon.pem"
+
+[[enforcer.security.tokenService]]
+name = "MGW"
+issuer = "https://localhost:9095/testkey"
+certificateAlias = "mgw"
+jwksURL = ""
+validateSubscription = false
+consumerKeyClaim = ""
+certificateFilePath = "/enforcer/security/truststore/mg.pem"
+
+[[enforcer.security.tokenService]]
+name = "APIM Publisher"
+issuer = "https://localhost:9443/publisher"
+validateSubscription = true
+certificateFilePath = "/enforcer/security/truststore/wso2carbon.pem"
+
+[enforcer.throttling]
+enableGlobalEventPublishing = false
+jmsConnectionProviderURL = "amqp://admin:$env{tm_admin_pwd}@carbon/carbon?brokerlist='tcp://apim:5672'"
+[enforcer.throttling.publisher]
+username = "admin"
+password = "$env{tm_admin_pwd}"
+[[enforcer.throttling.publisher.URLGroup]]
+receiverURLs = ["tcp://apim:9611"]
+authURLs = ["ssl://apim:9711"]
+
+[analytics]
+enabled = false
+
+[enforcer.metrics]
+enabled = false
+

@@ -1,12 +1,4 @@
 [adapter]
-[adapter.server]
-  enabled = true
-  port = "9843"
-  tokenPrivateKeyPath = "/home/wso2/security/keystore/mg.key"
-  [[adapter.server.users]]
-    username = "admin"
-    password = "$env{adapter_admin_pwd}"
-
 [adapter.keystore]
   certPath = "/home/wso2/security/keystore/mg.pem"
   keyPath = "/home/wso2/security/keystore/mg.key"
@@ -35,10 +27,20 @@
   enabled = true
   issuer = "https://localhost:9095/testkey"
 
+[enforcer.throttling]
+  enableGlobalEventPublishing = true
+  jmsConnectionProviderURL = "amqp://admin:$env{tm_admin_pwd}@carbon/carbon?brokerlist='tcp://apim:5673'"
+  [enforcer.throttling.publisher]
+    username = "admin"
+    password = "$env{tm_admin_pwd}"
+    [[enforcer.throttling.publisher.URLGroup]]
+      receiverURLs = ["tcp://apim:9612"]
+      authURLs = ["ssl://apim:9712"]
+
 [enforcer.security]
 [[enforcer.security.tokenService]]
   name = "Resident Key Manager"
-  issuer = "https://localhost:9443/oauth2/token"
+  issuer = "https://localhost:9444/oauth2/token"
   certificateAlias = "wso2carbon"
   jwksURL = ""
   validateSubscription = false
@@ -56,27 +58,19 @@
 
 [[enforcer.security.tokenService]]
   name = "APIM Publisher"
-  issuer = "https://localhost:9443/publisher"
+  issuer = "https://localhost:9444/publisher"
   validateSubscription = true
   certificateFilePath = "/home/wso2/security/truststore/wso2carbon.pem"
 
-[enforcer.throttling]
-  enableGlobalEventPublishing = false
-  jmsConnectionProviderURL = "amqp://admin:$env{tm_admin_pwd}@carbon/carbon?brokerlist='tcp://apim:5672'"
-  [enforcer.throttling.publisher]
-    username = "admin"
-    password = "$env{tm_admin_pwd}"
-    [[enforcer.throttling.publisher.URLGroup]]
-      receiverURLs = ["tcp://apim:9611"]
-      authURLs = ["ssl://apim:9711"]
+[controlPlane]
+  enabled = true
+  serviceURL = "https://apim:9444/"
+  username = "admin"
+  password = "$env{cp_admin_pwd}"
+  environmentLabels = ["Default"]
+  skipSSLVerification = true
+  [controlPlane.brokerConnectionParameters]
+    eventListeningEndpoints = ["amqp://admin:$env{cp_admin_pwd}@apim:5673?retries='10'&connectdelay='30'"]
 
 [analytics]
   enabled = false
-
-[enforcer.metrics]
-  enabled = false
-
-
-[managementServer]
-  serviceURL="localhost:18000"
-	NodeLabel="default"
