@@ -105,6 +105,7 @@ func (ods *OperatorDataStore) GetAPI(apiName types.NamespacedName) (APIState, bo
 
 }
 
+// GetAPIForHTTPRoute returns the related API for a particular HttpRoute.
 func (ods *OperatorDataStore) GetAPIForHTTPRoute(httpRoute types.NamespacedName) (types.NamespacedName, bool) {
 	api, found := ods.HTTPRouteToAPIRefs[httpRoute]
 	if !found {

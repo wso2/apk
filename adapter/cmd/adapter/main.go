@@ -15,23 +15,20 @@
  *
  */
 
-// Package v1alpha1 contains API Schema definitions for the dp v1alpha1 API group
-// +kubebuilder:object:generate=true
-// +groupName=dp.wso2.com
-package v1alpha1
+package main
 
 import (
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	"sigs.k8s.io/controller-runtime/pkg/scheme"
+	logger "github.com/sirupsen/logrus"
+	"github.com/wso2/apk/adapter/config"
+	"github.com/wso2/apk/adapter/internal/adapter"
 )
 
-var (
-	// GroupVersion is group version used to register these objects
-	GroupVersion = schema.GroupVersion{Group: "dp.wso2.com", Version: "v1alpha1"}
-
-	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
-	SchemeBuilder = &scheme.Builder{GroupVersion: GroupVersion}
-
-	// AddToScheme adds the types in this group-version to the given scheme.
-	AddToScheme = SchemeBuilder.AddToScheme
-)
+// invokes the code from the /internal and /pkg directories and nothing else.
+func main() {
+	logger.Info("Starting the Adapter")
+	conf, errReadConfig := config.ReadConfigs()
+	if errReadConfig != nil {
+		logger.Fatal("Error loading configuration. ", errReadConfig)
+	}
+	adapter.Run(conf)
+}

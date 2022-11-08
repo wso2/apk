@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2022, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2022, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -19,9 +19,11 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/operator/synchronizer"
+	"github.com/wso2/apk/adapter/pkg/logging"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -31,11 +33,13 @@ import (
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
+// HttpRouteReconciler reconciles a HTTPRoute object.
 type HttpRouteReconciler struct {
 	client client.Client
 	ods    *synchronizer.OperatorDataStore
 }
 
+// NewHttpRouteController creates a new HTTPRoute controller.
 func NewHttpRouteController(mgr manager.Manager, ods *synchronizer.OperatorDataStore) error {
 	r := &HttpRouteReconciler{
 		client: mgr.GetClient(),
@@ -43,23 +47,39 @@ func NewHttpRouteController(mgr manager.Manager, ods *synchronizer.OperatorDataS
 	}
 	c, err := controller.New("HttpRoute", mgr, controller.Options{Reconciler: r})
 	if err != nil {
-		loggers.LoggerAPKOperator.Errorf("Error creating HttpRoute controller: %v\n", err)
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("error creating HttpRoute controller: %v", err),
+			Severity:  logging.CRITICAL,
+			ErrorCode: 2609,
+		})
 		return err
 	}
 
 	if err := c.Watch(&source.Kind{Type: &gwapiv1b1.HTTPRoute{}}, &handler.EnqueueRequestForObject{}); err != nil {
 		loggers.LoggerAPKOperator.Errorf("Error watching gwapiv1b1.HTTPRoute: %v", err)
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("error watching HttpRoute objects: %v", err),
+			Severity:  logging.CRITICAL,
+			ErrorCode: 2610,
+		})
 		return err
 	}
 	return nil
 }
 
+// Reconcile gets triggered when a HTTPRoute object gets changed.
 func (r *HttpRouteReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	var httpRoute gwapiv1b1.HTTPRoute
 	if err := r.client.Get(ctx, req.NamespacedName, &httpRoute); err != nil {
-		loggers.LoggerAPKOperator.Errorf("Error reconciling HTTPRoute: %v", err)
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("httpRoute related to reconcile request with key : %v not found", req.NamespacedName),
+			Severity:  logging.TRIVIAL,
+			ErrorCode: 2611,
+		})
+		// TODO: Handle HttpRoute delete event.
 		return ctrl.Result{}, err
 	}
+	// TODO: Add validation for backendRefs and HttpRoute status.
 	loggers.LoggerAPKOperator.Infof("Reconciled HTTPRoute: %v", httpRoute.Name)
 	return ctrl.Result{}, nil
 }
