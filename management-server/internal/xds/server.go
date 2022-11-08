@@ -69,7 +69,7 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
-//FeedData mock data
+// FeedData mock data
 func FeedData() {
 	logger.LoggerXdsServer.Debug("adding mock data")
 	version := rand.Intn(maxRandomInt)
@@ -88,7 +88,6 @@ func FeedData() {
 func InitAPKMgtServer() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	apiCache := wso2_cache.NewSnapshotCache(false, IDHash{}, nil)
 	apkMgtAPIDsSrv := wso2_server.NewServer(ctx, apiCache, &callbacks.Callbacks{})
 
 	var grpcOptions []grpc.ServerOption
