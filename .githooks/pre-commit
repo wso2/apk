@@ -1,0 +1,19 @@
+
+#!/bin/bash
+
+# Root Directory
+BASE_FOLDER_NAME="$(basename `pwd`)"
+
+APP_NAME=$(cat Ballerina.toml | grep -e "name =" -e "name=" | cut -d"=" -f2- | sed 's/"//g; s/ //g')
+if [ -z "$APP_NAME" ]
+then
+    APP_NAME=$BASE_FOLDER_NAME
+fi
+rm -rf .choreo/build
+mkdir -p .choreo/build
+bal build --sticky --export-openapi --generate-config-schema --observability-included --target-dir .choreo/build || { echo 'Ballerina Build Failed' ; exit 1; }
+mv .choreo/build/bin/config-schema.json .choreo/
+unzip -p .choreo/build/bin/$(echo $APP_NAME).jar syntax-tree/syntax-tree.json > .choreo/syntax-tree.json
+rm -rf .choreo/build
+git add .choreo
+  
