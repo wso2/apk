@@ -103,8 +103,5 @@ func GetTrustedCertPool(truststoreLocation string) *x509.CertPool {
 func IsPublicCertificate(certContent []byte) bool {
 	certContentPattern := `\-\-\-\-\-BEGIN\sCERTIFICATE\-\-\-\-\-((.|\n)*)\-\-\-\-\-END\sCERTIFICATE\-\-\-\-\-`
 	regex := regexp.MustCompile(certContentPattern)
-	if regex.Match(certContent) {
-		return true
-	}
-	return false
+	return regex.Match(certContent)
 }
