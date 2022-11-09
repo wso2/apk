@@ -36,19 +36,29 @@ service / on ep0 {
             if (serviceNameAvailable && string:length(name.toString()) > 0) {
                 ServiceList|error serviceList = getServiceFromK8s(name.toString(), namespace.toString());
                 if serviceList is error {
+                    InternalServerErrorError internalError = {body: {code: 900910, message: serviceList.message()}};
+                    return internalError;
                 } else {
                     return serviceList;
                 }
             } else {
-                ServiceList|error serviceList = getServicesListFromK8s(namespace.toString());
+                ServiceList|error serviceList = getServicesListInNamespace(namespace.toString());
                 if serviceList is error {
+                    InternalServerErrorError internalError = {body: {code: 900910, message: serviceList.message()}};
+                    return internalError;
                 } else {
                     return serviceList;
                 }
             }
         }
-        BadRequestError badeRequest = {body: {code: 0, message: "service namespace Required"}};
-        return badeRequest;
+        ServiceList|error serviceList = getServicesListFromK8s();
+        if serviceList is error {
+            InternalServerErrorError internalError = {body: {code: 900910, message: serviceList.message()}};
+            return internalError;
+        } else {
+            return serviceList;
+        }
+
     }
     // resource function get services/[string serviceId](string? namespace) returns Service|BadRequestError|UnauthorizedError|NotFoundError|InternalServerErrorError {
     // }

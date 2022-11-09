@@ -1760,11 +1760,17 @@ components:
     Service:
       title: The Service Object
       required:
+        - id
         - name
         - namespace
         - type
       type: object
       properties:
+        id:
+          type: string
+          minLength: 1
+          maxLength: 255
+          example: 11cd3fa3-c886-49f9-bf78-0ec349b1f4c1
         name:
           maxLength: 255
           minLength: 1
