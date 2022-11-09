@@ -206,6 +206,8 @@ public class API implements Serializable {
 
     private String revisionCreatedTime;
 
+    private List<APIDeploymentInfo> deploymentInfoList;
+
     private String audience;
 
     public String getAudience() {
@@ -1330,4 +1332,13 @@ public class API implements Serializable {
         this.revisionCreatedTime = revisionCreatedTime;
     }
 
+    public List<APIDeploymentInfo> getDeploymentInfoList() {
+
+        return deploymentInfoList;
+    }
+
+    public void setDeploymentInfoList(List<APIDeploymentInfo> deploymentInfoList) {
+
+        this.deploymentInfoList = deploymentInfoList;
+    }
 }
