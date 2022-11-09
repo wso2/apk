@@ -551,8 +551,6 @@ type mutualSSL struct {
 type gRPCClient struct {
 	ManagementServerAddress string;
 	MaxAttempts int;
-	MaxCapacity int;
-	DesiredCapacity int;
 	BackOffInMilliSeconds int;
 }
 
