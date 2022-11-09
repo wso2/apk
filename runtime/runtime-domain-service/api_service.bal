@@ -29,8 +29,27 @@ service / on ep0 {
     // }
     // resource function post apis/'import(boolean? overwrite, @http:Payload json payload) returns http:Ok|ForbiddenError|NotFoundError|ConflictError|InternalServerErrorError {
     // }
-    // resource function get services(string? name, string? namespace, string sortBy = "createdTime", string sortOrder = "desc", int 'limit = 25, int offset = 0) returns ServiceList|BadRequestError|UnauthorizedError|InternalServerErrorError {
-    // }
+    resource function get services(string? name, string? namespace, string sortBy = "createdTime", string sortOrder = "desc", int 'limit = 25, int offset = 0) returns ServiceList|BadRequestError|UnauthorizedError|InternalServerErrorError {
+        boolean serviceNameAvailable = name == () ? false : true;
+        boolean nameSpaceAvailable = namespace == () ? false : true;
+        if (nameSpaceAvailable && string:length(namespace.toString()) > 0) {
+            if (serviceNameAvailable && string:length(name.toString()) > 0) {
+                ServiceList|error serviceList = getServiceFromK8s(name.toString(), namespace.toString());
+                if serviceList is error {
+                } else {
+                    return serviceList;
+                }
+            } else {
+                ServiceList|error serviceList = getServicesListFromK8s(namespace.toString());
+                if serviceList is error {
+                } else {
+                    return serviceList;
+                }
+            }
+        }
+        BadRequestError badeRequest = {body: {code: 0, message: "service namespace Required"}};
+        return badeRequest;
+    }
     // resource function get services/[string serviceId](string? namespace) returns Service|BadRequestError|UnauthorizedError|NotFoundError|InternalServerErrorError {
     // }
     // resource function get services/[string serviceId]/usage(string? namespace) returns APIList|BadRequestError|UnauthorizedError|NotFoundError|InternalServerErrorError {
