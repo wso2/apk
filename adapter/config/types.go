@@ -116,6 +116,7 @@ type envoy struct {
 	Connection                       connection
 	PayloadPassingToEnforcer         payloadPassingToEnforcer
 	UseRemoteAddress                 bool
+	Filters                          filters
 }
 
 type connectionTimeouts struct {
@@ -543,4 +544,29 @@ type mutualSSL struct {
 	EnableClientValidation          bool
 	ClientCertificateEncode         bool
 	EnableOutboundCertificateHeader bool
+}
+
+type filters struct {
+	Compression compression
+}
+
+type compression struct {
+	Enabled           bool
+	Library           string
+	RequestDirection  requestDirection
+	ResponseDirection responseDirection
+	LibraryProperties map[string]interface{}
+}
+
+type requestDirection struct {
+	Enabled              bool
+	MinimumContentLength int
+	ContentType          []string
+}
+
+type responseDirection struct {
+	Enabled              bool
+	MinimumContentLength int
+	ContentType          []string
+	EnableForEtagHeader  bool
 }
