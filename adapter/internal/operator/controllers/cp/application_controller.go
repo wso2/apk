@@ -1,18 +1,19 @@
 /*
-Copyright 2022.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+ *  Copyright (c) 2022, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ */
 
 package cp
 
@@ -22,6 +23,7 @@ import (
 
 	"github.com/wso2/apk/adapter/internal/discovery/xds"
 	"github.com/wso2/apk/adapter/internal/loggers"
+	"github.com/wso2/apk/adapter/pkg/logging"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -55,16 +57,24 @@ func NewApplicationController(mgr manager.Manager) error {
 	}
 	c, err := controller.New("Application", mgr, controller.Options{Reconciler: r})
 	if err != nil {
-		loggers.LoggerAPKOperator.Errorf("Error creating Application controller: %v", err)
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprint("Error creating Application controller. ", err.Error()),
+			Severity:  logging.BLOCKER,
+			ErrorCode: 5001,
+		})
 		return err
 	}
 
 	if err := c.Watch(&source.Kind{Type: &cpv1alpha1.Application{}}, &handler.EnqueueRequestForObject{}); err != nil {
-		loggers.LoggerAPKOperator.Errorf("Error watching Application resources: %v", err)
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprint("Error watching Application resources. ", err.Error()),
+			Severity:  logging.BLOCKER,
+			ErrorCode: 5002,
+		})
 		return err
 	}
 
-	loggers.LoggerAPKOperator.Info("Application Controller successfully started. Watching Application Objects....")
+	loggers.LoggerAPKOperator.Info("Application Controller successfully started. Watching Application Objects...")
 	return nil
 }
 
@@ -92,12 +102,12 @@ func (r *ApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		if errors.IsNotFound(err) {
 			// The application doesn't exist in the applicationCache, remove it
 			delete(r.applicationCache, applicationKey)
-			loggers.LoggerAPKOperator.Info("deleted application from application cache")
+			loggers.LoggerAPKOperator.Info("Application deleted from application cache")
 
 			sendUpdates(r.applicationCache)
 			return ctrl.Result{}, nil
 		}
-		return reconcile.Result{}, fmt.Errorf("failed to get application %s/%s",
+		return reconcile.Result{}, fmt.Errorf("Failed to get application %s/%s",
 			applicationKey.Namespace, applicationKey.Name)
 	}
 	// The application created / updated, add to the map
