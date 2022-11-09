@@ -64,9 +64,7 @@ func RunManagementServer() {
 	var grpcOptions []grpc.ServerOption
 	publicKeyLocation, privateKeyLocation, truststoreLocation := tlsutils.GetKeyLocations()
 	cert, err := tlsutils.GetServerCertificate(publicKeyLocation, privateKeyLocation)
-
 	caCertPool := tlsutils.GetTrustedCertPool(truststoreLocation)
-
 	if err == nil {
 		grpcOptions = append(grpcOptions, grpc.Creds(
 			credentials.NewTLS(&tls.Config{
@@ -76,10 +74,12 @@ func RunManagementServer() {
 			}),
 		))
 	} else {
-		logger.LoggerMGTServer.Warn("failed to initiate the ssl context: ", err)
-		panic(err)
+		logger.LoggerMGTServer.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("Failed to initiate the ssl context, error: %v", err.Error()),
+			Severity:  logging.BLOCKER,
+			ErrorCode: 1200,
+		})
 	}
-
 	grpcOptions = append(grpcOptions, grpc.KeepaliveParams(
 		keepalive.ServerParameters{
 			Time:    time.Duration(5 * time.Minute),
@@ -94,16 +94,12 @@ func RunManagementServer() {
 		logger.LoggerMGTServer.ErrorC(logging.ErrorDetails{
 			Message:   fmt.Sprintf("Failed to listen on port: %v, error: %v", port, err.Error()),
 			Severity:  logging.BLOCKER,
-			ErrorCode: 1100,
+			ErrorCode: 1201,
 		})
 	}
-
 	// register services
 	apiService := NewApiService();
 	apiProtos.RegisterAPIServiceServer(grpcServer, apiService)
-
-
-
-	logger.LoggerMGTServer.Info("port: ", port, " management server listening")
+	logger.LoggerMGTServer.Info("Port: ", port, " management server listening")
 	grpcServer.Serve(lis)
 }
