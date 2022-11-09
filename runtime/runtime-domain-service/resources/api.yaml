@@ -1,0 +1,2154 @@
+---
+openapi: 3.0.1
+info:
+  title: Runtime Service API
+  description: |
+    This document specifies a **RESTful API** for WSO2 **APK** - **Runtime Component**.
+  version: 1.0.0
+paths:
+  /apis:
+    get:
+      tags:
+        - APIs
+      summary: |
+        Retrieve/Search APIs
+      description: |
+        This operation provides you a list of available APIs qualifying under a given search condition.
+
+        Each retrieved API is represented with a minimal amount of attributes. If you want to get complete details of an API, you need to use **Get details of an API** operation.
+      operationId: getAllAPIs
+      parameters:
+        - name: limit
+          in: query
+          description: |
+            Maximum size of resource array to return.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: integer
+            default: 25
+        - name: offset
+          in: query
+          description: |
+            Starting point within the complete list of items qualified.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: integer
+            default: 0
+        - name: sortBy
+          in: query
+          description: |
+            Criteria for sorting.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            default: createdTime
+            enum:
+              - apiName
+              - version
+              - createdTime
+              - status
+        - name: sortOrder
+          in: query
+          description: |
+            Order of sorting(ascending/descending).
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            default: desc
+            enum:
+              - asc
+              - desc
+        - name: query
+          in: query
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: Accept
+          in: header
+          description: |
+            Media types acceptable for the response. Default is application/json.
+          required: false
+          style: simple
+          explode: false
+          schema:
+            type: string
+            default: application/json
+      responses:
+        "200":
+          description: |
+            OK.
+            List of qualifying APIs is returned.
+          headers:
+            Content-Type:
+              description: The content type of the body.
+              style: simple
+              explode: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIList"
+        "406":
+          description: Not Acceptable. The requested media type is not supported.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 406
+                message: Not Acceptable
+                description: The requested media type is not supported
+                moreInfo: ""
+                error: []
+    post:
+      tags:
+        - APIs
+      summary: Create a New API
+      description: |
+        This operation can be used to create a new API specifying the details of the API in the payload.
+      operationId: createAPI
+      requestBody:
+        description: API object that needs to be added
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/API"
+        required: true
+      responses:
+        "201":
+          description: |
+            Created.
+            Successful response with the newly created object as entity in the body.
+            Location header contains URL of newly created entity.
+          headers:
+            Location:
+              description: |
+                The URL of the newly created resource.
+              style: simple
+              explode: false
+              schema:
+                type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              style: simple
+              explode: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/API"
+        "400":
+          description: Bad Request. Invalid request or validation error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+        "415":
+          description: Unsupported Media Type. The entity of the request was not in a supported format.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 415
+                message: Unsupported media type
+                description: The entity of the request was not in a supported format
+                moreInfo: ""
+                error: []
+  /apis/{apiId}:
+    get:
+      tags:
+        - APIs
+      summary: Get Details of an API
+      description: |
+        Using this operation, you can retrieve complete details of a single API. You need to provide the id of the API to retrive it.
+      operationId: getAPI
+      parameters:
+        - name: apiId
+          in: path
+          description: |
+            **API ID** consisting of the **Name** of the API.
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: |
+            OK.
+            Requested API is returned
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              style: simple
+              explode: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/API"
+        "404":
+          description: Not Found. The specified resource does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+        "406":
+          description: Not Acceptable. The requested media type is not supported.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 406
+                message: Not Acceptable
+                description: The requested media type is not supported
+                moreInfo: ""
+                error: []
+    put:
+      tags:
+        - APIs
+      summary: Update an API
+      description: |
+        This operation can be used to update an existing API. This operation will insruct runtime to update deployment.
+      operationId: updateAPI
+      parameters:
+        - name: apiId
+          in: path
+          description: |
+            **API ID** consisting of the **Name** of the API.
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      requestBody:
+        description: API object that needs to be added
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/API"
+        required: true
+      responses:
+        "200":
+          description: |
+            OK.
+            Successful response with updated API object
+          headers:
+            Location:
+              description: |
+                The URL of the newly created resource.
+              style: simple
+              explode: false
+              schema:
+                type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              style: simple
+              explode: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/API"
+        "400":
+          description: Bad Request. Invalid request or validation error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+        "403":
+          description: Forbidden. The request must be conditional but no condition has been specified.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 403
+                message: Forbidden
+                description: The request must be conditional but no condition has been specified
+                moreInfo: ""
+                error: []
+        "404":
+          description: Not Found. The specified resource does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+        "409":
+          description: Conflict. Specified resource already exists.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 409
+                message: Conflict
+                description: Specified resource already exists
+                moreInfo: ""
+                error: []
+        "412":
+          description: Precondition Failed. The request has not been performed because one of the preconditions is not met.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 412
+                message: Precondition Failed
+                description: The request has not been performed because one of the preconditions is not met
+                moreInfo: ""
+                error: []
+    delete:
+      tags:
+        - APIs
+      summary: Delete an API
+      description: |
+        This operation can be used to delete an existing API proving the Id of the API.
+      operationId: deleteAPI
+      parameters:
+        - name: apiId
+          in: path
+          description: |
+            **API ID** consisting of the **Name** of the API.
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: |
+            OK.
+            Resource successfully deleted.
+          content: {}
+        "403":
+          description: Forbidden. The request must be conditional but no condition has been specified.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 403
+                message: Forbidden
+                description: The request must be conditional but no condition has been specified
+                moreInfo: ""
+                error: []
+        "404":
+          description: Not Found. The specified resource does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+        "409":
+          description: Conflict. Specified resource already exists.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 409
+                message: Conflict
+                description: Specified resource already exists
+                moreInfo: ""
+                error: []
+        "412":
+          description: Precondition Failed. The request has not been performed because one of the preconditions is not met.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 412
+                message: Precondition Failed
+                description: The request has not been performed because one of the preconditions is not met
+                moreInfo: ""
+                error: []
+  /apis/import-service:
+    post:
+      tags:
+        - Service or Schema Import
+      summary: Create API from a Service
+      description: This operation can be used to create an API from available Service by providing service
+      operationId: importService
+      parameters:
+        - name: serviceKey
+          in: query
+          description: ID of service that should be imported from Service Catalog
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: string
+          example: Pizzashack-1.0.0
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/API"
+      responses:
+        "201":
+          description: |
+            Created.
+            Successful response with the newly created object as entity in the body.
+            Location header contains the URL of the newly created entity.
+          headers:
+            Location:
+              description: |
+                The URL of the newly created resource.
+              style: simple
+              explode: false
+              schema:
+                type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              style: simple
+              explode: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/API"
+        "404":
+          description: Not Found. The specified resource does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+        "500":
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact administrator.
+                moreInfo: ""
+                error: []
+  /apis/import-definition:
+    post:
+      tags:
+        - Service or Schema Import
+      summary: Import an API Definition
+      description: |
+        This operation can be used to create an API from an API definition. Provide either `url` or `file`
+        to specify the definition.
+
+        Specify additionalProperties with **at least** API's name, version, context and endpointConfig.
+      operationId: importAPIDefinition
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/apis_importdefinition_body"
+      responses:
+        "201":
+          description: |
+            Created.
+            Successful response with the newly created object as entity in the body.
+            Location header contains URL of newly created entity.
+          headers:
+            Location:
+              description: |
+                The URL of the newly created resource.
+              style: simple
+              explode: false
+              schema:
+                type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              style: simple
+              explode: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/API"
+        "400":
+          description: Bad Request. Invalid request or validation error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+        "415":
+          description: Unsupported Media Type. The entity of the request was not in a supported format.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 415
+                message: Unsupported media type
+                description: The entity of the request was not in a supported format
+                moreInfo: ""
+                error: []
+  /apis/validate-definition:
+    post:
+      tags:
+        - Validation
+      summary: Validate an OpenAPI Definition
+      description: |
+        This operation can be used to validate an OpenAPI definition and retrieve a summary. Provide either `url`
+        or `file` to specify the definition.
+      operationId: validateOpenAPIDefinition
+      parameters:
+        - name: returnContent
+          in: query
+          description: |
+            Specify whether to return the full content of the OpenAPI definition in the response. This is only
+            applicable when using url based validation
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: boolean
+            default: false
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/apis_validatedefinition_body"
+      responses:
+        "200":
+          description: |
+            OK.
+            API definition validation information is returned
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              style: simple
+              explode: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIDefinitionValidationResponse"
+        "400":
+          description: Bad Request. Invalid request or validation error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+        "404":
+          description: Not Found. The specified resource does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+  /apis/validate:
+    post:
+      tags:
+        - Validation
+      summary: Check Given API Context Name already Exists
+      description: |
+        Using this operation, you can check a given API context is already used. You need to provide the context name you want to check.
+      operationId: validateAPI
+      responses:
+        "200":
+          description: |
+            OK.
+            API definition validation information is returned
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              style: simple
+              explode: false
+              schema:
+                type: string
+          content: {}
+        "400":
+          description: Bad Request. Invalid request or validation error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+        "404":
+          description: Not Found. The specified resource does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+  /apis/{apiId}/definition:
+    get:
+      tags:
+        - APIs
+      summary: Get API Definition
+      description: |
+        This operation can be used to retrieve the definition of an API.
+      operationId: getAPIDefinition
+      parameters:
+        - name: apiId
+          in: path
+          description: |
+            **API ID** consisting of the **Name** of the API.
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: |
+            OK.
+            Requested definition document of the API is returned
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              style: simple
+              explode: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: string
+                example: ""
+        "404":
+          description: Not Found. The specified resource does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+        "406":
+          description: Not Acceptable. The requested media type is not supported.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 406
+                message: Not Acceptable
+                description: The requested media type is not supported
+                moreInfo: ""
+                error: []
+    put:
+      tags:
+        - APIs
+      summary: Update API Definition
+      description: |
+        This operation can be used to update the API definition of an existing API. API definition to be updated is passed as a form data parameter `apiDefinition`.
+      operationId: updateAPIDefinition
+      parameters:
+        - name: apiId
+          in: path
+          description: |
+            **API ID** consisting of the **Name** of the API.
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/apiId_definition_body"
+      responses:
+        "200":
+          description: |
+            OK.
+            Successful response with updated Swagger definition
+          headers:
+            Location:
+              description: |
+                The URL of the newly created resource.
+              style: simple
+              explode: false
+              schema:
+                type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              style: simple
+              explode: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: string
+                example: ""
+        "400":
+          description: Bad Request. Invalid request or validation error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+        "403":
+          description: Forbidden. The request must be conditional but no condition has been specified.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 403
+                message: Forbidden
+                description: The request must be conditional but no condition has been specified
+                moreInfo: ""
+                error: []
+        "404":
+          description: Not Found. The specified resource does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+        "412":
+          description: Precondition Failed. The request has not been performed because one of the preconditions is not met.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 412
+                message: Precondition Failed
+                description: The request has not been performed because one of the preconditions is not met
+                moreInfo: ""
+                error: []
+  /apis/export:
+    get:
+      tags:
+        - Import Export
+      summary: Export an API
+      description: |
+        This operation can be used to export the details of a particular API as a zip file.
+      operationId: exportAPI
+      parameters:
+        - name: apiId
+          in: query
+          description: Name of the API
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: name
+          in: query
+          description: |
+            API Name
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: version
+          in: query
+          description: |
+            Version of the API
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: format
+          in: query
+          description: |
+            Format of output documents. Can be YAML or JSON.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            enum:
+              - JSON
+              - YAML
+      responses:
+        "200":
+          description: |
+            OK.
+            Export Successful.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              style: simple
+              explode: false
+              schema:
+                type: string
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: Not Found. The specified resource does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+        "500":
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact administrator.
+                moreInfo: ""
+                error: []
+  /apis/import:
+    post:
+      tags:
+        - Import Export
+      summary: Import an API
+      description: |
+        This operation can be used to import an API.
+      operationId: importAPI
+      parameters:
+        - name: overwrite
+          in: query
+          description: |
+            Whether to update the API or not. This is used when updating already existing APIs
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: boolean
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/apis_import_body"
+      responses:
+        "200":
+          description: |
+            Created.
+            API Imported Successfully.
+        "403":
+          description: Forbidden. The request must be conditional but no condition has been specified.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 403
+                message: Forbidden
+                description: The request must be conditional but no condition has been specified
+                moreInfo: ""
+                error: []
+        "404":
+          description: Not Found. The specified resource does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+        "409":
+          description: Conflict. Specified resource already exists.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 409
+                message: Conflict
+                description: Specified resource already exists
+                moreInfo: ""
+                error: []
+        "500":
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact administrator.
+                moreInfo: ""
+                error: []
+  /services:
+    get:
+      tags:
+        - Services
+      summary: Retrieve/search services
+      description: |
+        Retrieve or search services in the Cluster
+      operationId: searchServices
+      parameters:
+        - name: name
+          in: query
+          description: |
+            Filter services by the name of the service
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: namespace
+          in: query
+          description: |
+            Required namespace in the K8s cluster
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: sortBy
+          in: query
+          description: |
+            Criteria for sorting.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            default: createdTime
+            enum:
+              - apiName
+              - version
+              - createdTime
+              - status
+        - name: sortOrder
+          in: query
+          description: |
+            Order of sorting(ascending/descending).
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            default: desc
+            enum:
+              - asc
+              - desc
+        - name: limit
+          in: query
+          description: |
+            Maximum size of resource array to return.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: integer
+            default: 25
+        - name: offset
+          in: query
+          description: |
+            Starting point within the complete list of items qualified.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: integer
+            default: 0
+      responses:
+        "200":
+          description: |
+            Paginated matched list of services returned.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceList"
+        "400":
+          description: Bad Request. Invalid request or validation error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+        "401":
+          description: Unauthorized. The user is not authorized.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 401
+                message: Unauthorized
+                description: The user is not authorized
+                moreInfo: ""
+                error: []
+        "500":
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact administrator.
+                moreInfo: ""
+                error: []
+  /services/{serviceId}:
+    get:
+      tags:
+        - Services
+      summary: Get details of a service
+      description: |
+        Get details of a service using the id of the service.
+      operationId: getServiceById
+      parameters:
+        - name: namespace
+          in: query
+          description: |
+            Required namespace in the K8s cluster
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: serviceId
+          in: path
+          description: name of the service
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: |
+            Requested service in the Service Catalog is returned.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Service"
+        "400":
+          description: Bad Request. Invalid request or validation error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+        "401":
+          description: Unauthorized. The user is not authorized.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 401
+                message: Unauthorized
+                description: The user is not authorized
+                moreInfo: ""
+                error: []
+        "404":
+          description: Not Found. The specified resource does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+        "500":
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact administrator.
+                moreInfo: ""
+                error: []
+  /services/{serviceId}/usage:
+    get:
+      tags:
+        - Services
+      summary: Retrieve the usage of service
+      description: |
+        Retrieve usage
+      operationId: getServiceUsage
+      parameters:
+        - name: namespace
+          in: query
+          description: |
+            Required namespace in the K8s cluster
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: serviceId
+          in: path
+          description: name of the service
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: |
+            List of APIs that uses the service in the Service Catalog is returned.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIList"
+        "400":
+          description: Bad Request. Invalid request or validation error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 400
+                message: Bad Request
+                description: Invalid request or validation error
+                moreInfo: ""
+                error: []
+        "401":
+          description: Unauthorized. The user is not authorized.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 401
+                message: Unauthorized
+                description: The user is not authorized
+                moreInfo: ""
+                error: []
+        "404":
+          description: Not Found. The specified resource does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+        "500":
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact administrator.
+                moreInfo: ""
+                error: []
+  /policies:
+    get:
+      tags:
+        - Policies
+      summary: |
+        Retrieve/Search Policies
+      description: |
+        This operation provides you a list of available Policies
+      operationId: getAllPolicies
+      parameters:
+        - name: limit
+          in: query
+          description: |
+            Maximum size of resource array to return.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: integer
+            default: 25
+        - name: offset
+          in: query
+          description: |
+            Starting point within the complete list of items qualified.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: integer
+            default: 0
+        - name: sortBy
+          in: query
+          description: |
+            Criteria for sorting.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            default: createdTime
+            enum:
+              - apiName
+              - version
+              - createdTime
+              - status
+        - name: sortOrder
+          in: query
+          description: |
+            Order of sorting(ascending/descending).
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            default: desc
+            enum:
+              - asc
+              - desc
+        - name: query
+          in: query
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: Accept
+          in: header
+          description: |
+            Media types acceptable for the response. Default is application/json.
+          required: false
+          style: simple
+          explode: false
+          schema:
+            type: string
+            default: application/json
+      responses:
+        "200":
+          description: |
+            OK.
+            List of Policies is returned.
+          headers:
+            Content-Type:
+              description: The content type of the body.
+              style: simple
+              explode: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MediationPolicyList"
+        "406":
+          description: Not Acceptable. The requested media type is not supported.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 406
+                message: Not Acceptable
+                description: The requested media type is not supported
+                moreInfo: ""
+                error: []
+  /policies/{policyId}:
+    get:
+      tags:
+        - Policies
+      summary: Get Details of a Policy
+      description: |
+        Using this operation, you can retrieve complete details of a single Policy. You need to provide the Id of the Policy to retrive it.
+      operationId: getPolicy
+      parameters:
+        - name: policyId
+          in: path
+          description: name of the gateway
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: |
+            OK.
+            Requested Policy is returned
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              style: simple
+              explode: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MediationPolicy"
+        "404":
+          description: Not Found. The specified resource does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 404
+                message: Not Found
+                description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+        "406":
+          description: Not Acceptable. The requested media type is not supported.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 406
+                message: Not Acceptable
+                description: The requested media type is not supported
+                moreInfo: ""
+                error: []
+components:
+  schemas:
+    APIList:
+      title: API List
+      type: object
+      properties:
+        count:
+          type: integer
+          description: |
+            Number of APIs returned.
+          example: 1
+        list:
+          type: array
+          items:
+            $ref: "#/components/schemas/APIInfo"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+    APIInfo:
+      title: API Info object with basic API details.
+      type: object
+      properties:
+        name:
+          type: string
+          example: CalculatorAPI
+        context:
+          type: string
+          example: CalculatorAPI
+        version:
+          type: string
+          example: 1.0.0
+        type:
+          type: string
+          example: HTTP
+        createdTime:
+          type: string
+          example: 2021-02-11 09:57:25
+        updatedTime:
+          type: string
+          example: 2021-02-11 09:57:25
+    API:
+      title: API object
+      required:
+        - context
+        - name
+        - version
+      type: object
+      properties:
+        name:
+          maxLength: 60
+          minLength: 1
+          pattern: (^[^~!@#;:%^*()+={}|\\<>"',&$\[\]\/]*$)
+          type: string
+          example: PizzaShackAPI
+        context:
+          maxLength: 232
+          minLength: 1
+          type: string
+          example: pizza
+        version:
+          maxLength: 30
+          minLength: 1
+          pattern: ^[^~!@#;:%^*()+={}|\\<>"',&/$\[\]\s+\/]+$
+          type: string
+          example: 1.0.0
+        type:
+          type: string
+          description: The api creation type to be used. Accepted values are HTTP, WS, GRAPHQL, WEBSUB, SSE, WEBHOOK, ASYNC
+          example: HTTP
+          default: HTTP
+          enum:
+            - HTTP
+            - WS
+            - GRAPHQL
+            - WEBSUB
+            - SSE
+            - WEBHOOK
+            - ASYNC
+        endpointConfig:
+          type: object
+          properties: {}
+          description: |
+            Endpoint configuration of the API. This can be used to provide different types of endpoints including Simple REST Endpoints, Loadbalanced and Failover.
+
+            `Simple REST Endpoint`
+              {
+                "endpoint_type": "http",
+                "sandbox_endpoints":       {
+                   "url": "https://pizzashack-service:8080/am/sample/pizzashack/v3/api/"
+                },
+                "production_endpoints":       {
+                   "url": "https://pizzashack-service:8080/am/sample/pizzashack/v3/api/"
+                }
+              }
+          example:
+            endpoint_type: http
+            sandbox_endpoints:
+              url: https://pizzashack-service:8080/am/sample/pizzashack/v3/api/
+            production_endpoints:
+              url: https://pizzashack-service:8080/am/sample/pizzashack/v3/api/
+        operations:
+          type: array
+          example:
+            - target: /order/{orderId}
+              verb: POST
+              authTypeEnabled: true
+              throttlingPolicy: 1000
+            - target: /menu
+              verb: GET
+              authTypeEnabled: false
+              throttlingPolicy: 1000
+          items:
+            $ref: "#/components/schemas/APIOperations"
+        serviceInfo:
+          $ref: "#/components/schemas/API_serviceInfo"
+        createdTime:
+          type: string
+        lastUpdatedTime:
+          type: string
+    APIOperations:
+      title: Operation
+      type: object
+      properties:
+        id:
+          type: string
+          example: postapiresource
+        target:
+          type: string
+          example: /order/{orderId}
+        verb:
+          type: string
+          example: POST
+        scopes:
+          type: array
+          example: []
+          items:
+            type: string
+        payloadSchema:
+          type: string
+          example: ""
+        uriMapping:
+          type: string
+          example: ""
+        operationPolicies:
+          $ref: "#/components/schemas/APIOperationPolicies"
+    APIOperationPolicies:
+      title: API Operation Level Policies
+      properties:
+        request:
+          type: array
+          items:
+            $ref: "#/components/schemas/OperationPolicy"
+        response:
+          type: array
+          items:
+            $ref: "#/components/schemas/OperationPolicy"
+        fault:
+          type: array
+          items:
+            $ref: "#/components/schemas/OperationPolicy"
+    OperationPolicy:
+      title: API Operation Policy
+      required:
+        - policyName
+      type: object
+      properties:
+        policyName:
+          type: string
+        policyVersion:
+          type: string
+          default: v1
+        policyId:
+          type: string
+        parameters:
+          type: object
+          additionalProperties:
+            type: object
+    GraphQLSchema:
+      title: GraphQL Schema
+      required:
+        - name
+      type: object
+      properties:
+        name:
+          type: string
+          example: admin--HackerNewsAPI.graphql
+        schemaDefinition:
+          type: string
+    MediationPolicyList:
+      title: Paginated List of Policies
+      type: object
+      properties:
+        list:
+          title: List of Policies
+          type: array
+          items:
+            $ref: "#/components/schemas/MediationPolicy"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+    MediationPolicy:
+      title: Mediation Policy
+      required:
+        - name
+      type: object
+      properties:
+        name:
+          type: string
+          example: log_in_message
+        type:
+          type: string
+          example: in
+    Error:
+      title: Error object returned with 4XX HTTP Status
+      required:
+        - code
+        - message
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int64
+        message:
+          type: string
+          description: Error message.
+        description:
+          type: string
+          description: |
+            A detail description about the error message.
+        moreInfo:
+          type: string
+          description: |
+            Preferably an url with more details about the error.
+        error:
+          type: array
+          description: |
+            If there are more than one error list them out.
+            For example, list out validation errors by each field.
+          items:
+            $ref: "#/components/schemas/ErrorListItem"
+    ErrorListItem:
+      title: Description of individual errors that may have occurred during a request.
+      required:
+        - code
+        - message
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+          description: |
+            Description about individual errors occurred
+        description:
+          type: string
+          description: |
+            A detail description about the error message.
+    APIDefinitionValidationResponse:
+      title: API Definition Validation Response
+      required:
+        - isValid
+      type: object
+      properties:
+        isValid:
+          type: boolean
+          description: |
+            This attribute declares whether this definition is valid or not.
+          example: true
+        content:
+          type: string
+          description: |
+            OpenAPI definition content.
+        info:
+          $ref: "#/components/schemas/APIDefinitionValidationResponse_info"
+        errors:
+          type: array
+          description: |
+            If there are more than one error list them out.
+            For example, list out validation errors by each field.
+          items:
+            $ref: "#/components/schemas/ErrorListItem"
+    SearchResult:
+      title: Search Result
+      required:
+        - name
+      type: object
+      properties:
+        id:
+          type: string
+          example: 01234567-0123-0123-0123-012345678901
+        name:
+          type: string
+          example: TestAPI
+        transportType:
+          type: string
+          description: Accepted values are HTTP, WS, GRAPHQL
+      discriminator:
+        propertyName: name
+    Pagination:
+      title: Pagination
+      type: object
+      properties:
+        offset:
+          type: integer
+          example: 0
+        limit:
+          type: integer
+          example: 1
+        total:
+          type: integer
+          example: 10
+        next:
+          type: string
+          description: |
+            Link to the next subset of resources qualified.
+            Empty if no more resources are to be returned.
+        previous:
+          type: string
+          description: |
+            Link to the previous subset of resources qualified.
+            Empty if current subset is the first subset returned.
+    ServiceList:
+      title: Paginated List of Services in Service Catalog
+      type: object
+      properties:
+        list:
+          title: List of Services in Service Catalog
+          type: array
+          items:
+            $ref: "#/components/schemas/Service"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+    Service:
+      title: The Service Object
+      required:
+        - name
+        - namespace
+        - type
+      type: object
+      properties:
+        name:
+          maxLength: 255
+          minLength: 1
+          type: string
+          example: pizzashack-service
+        namespace:
+          maxLength: 255
+          type: string
+          example: dev
+        type:
+          type: string
+          example: ClusterIP
+        portmapping:
+          title: List of PortMapping in the Service
+          type: array
+          items:
+            $ref: "#/components/schemas/PortMapping"
+    PortMapping:
+      title: The PortMapping Object
+      required:
+        - name
+        - port
+        - targetport
+      type: object
+      properties:
+        name:
+          maxLength: 255
+          minLength: 1
+          type: string
+          example: pizzashack-service
+        protocol:
+          type: string
+          example: tcp
+        targetport:
+          type: integer
+          format: int32
+          example: 8088
+        port:
+          type: integer
+          format: int32
+          example: 8080
+    GatewayList:
+      title: Paginated List of Gateways
+      type: object
+      properties:
+        list:
+          title: List of Gateways
+          type: array
+          items:
+            $ref: "#/components/schemas/Gateway"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+    Gateway:
+      title: Gateway object
+      required:
+        - name
+        - port
+        - protocol
+      type: object
+      properties:
+        name:
+          maxLength: 255
+          minLength: 1
+          type: string
+          description: Name of the Gateway
+          example: PizzaOrdersGateway
+        protocol:
+          maxLength: 50
+          minLength: 1
+          type: string
+          description: Protocol of the Listener
+          example: HTTP
+        port:
+          type: number
+          description: Port of the Listener
+          example: 8080
+    apis_importdefinition_body:
+      properties:
+        file:
+          type: string
+          description: Definition to upload as a file
+          format: binary
+        url:
+          type: string
+          description: Definition url
+        additionalProperties:
+          type: string
+          description: Additional attributes specified as a stringified JSON with API's schema
+        inlineAPIDefinition:
+          type: string
+          description: Inline content of the API definition
+    apis_validatedefinition_body:
+      properties:
+        url:
+          type: string
+          description: API definition definition url
+        file:
+          type: string
+          description: API definition as a file
+          format: binary
+        type:
+          type: string
+          description: API definition type - OpenAPI/AsyncAPI/GraphQL
+        inlineAPIDefinition:
+          type: string
+          description: Inline content of the API definition
+    apiId_definition_body:
+      properties:
+        apiDefinition:
+          type: string
+          description: API definition of the API
+        url:
+          type: string
+          description: API definition URL of the API
+        file:
+          type: string
+          description: API definitio as a file
+          format: binary
+    apis_import_body:
+      required:
+        - file
+      properties:
+        file:
+          type: string
+          description: Zip archive consisting on exported API configuration
+          format: binary
+    API_serviceInfo:
+      type: object
+      properties:
+        name:
+          type: string
+          example: pizzashack-service
+    APIDefinitionValidationResponse_info:
+      type: object
+      properties:
+        name:
+          type: string
+          example: PetStore
+        version:
+          type: string
+          example: 1.0.0
+        context:
+          type: string
+          example: /petstore
+        description:
+          type: string
+          example: A sample API that uses a petstore as an example to demonstrate swagger-2.0 specification
+        openAPIVersion:
+          type: string
+          example: 3.0.0
+        endpoints:
+          type: array
+          description: |
+            contains host/servers specified in the API definition file/URL
+          items:
+            type: string
+            example: https://localhost:9443/am/sample/pizzashack/v3/api/
+      description: |
+        API definition information
+  responses:
+    BadRequest:
+      description: Bad Request. Invalid request or validation error.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 400
+            message: Bad Request
+            description: Invalid request or validation error
+            moreInfo: ""
+            error: []
+    Conflict:
+      description: Conflict. Specified resource already exists.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 409
+            message: Conflict
+            description: Specified resource already exists
+            moreInfo: ""
+            error: []
+    Forbidden:
+      description: Forbidden. The request must be conditional but no condition has been specified.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 403
+            message: Forbidden
+            description: The request must be conditional but no condition has been specified
+            moreInfo: ""
+            error: []
+    InternalServerError:
+      description: Internal Server Error.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 500
+            message: Internal Server Error
+            description: The server encountered an internal error. Please contact administrator.
+            moreInfo: ""
+            error: []
+    NotAcceptable:
+      description: Not Acceptable. The requested media type is not supported.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 406
+            message: Not Acceptable
+            description: The requested media type is not supported
+            moreInfo: ""
+            error: []
+    NotFound:
+      description: Not Found. The specified resource does not exist.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 404
+            message: Not Found
+            description: The specified resource does not exist
+            moreInfo: ""
+            error: []
+    PreconditionFailed:
+      description: Precondition Failed. The request has not been performed because one of the preconditions is not met.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 412
+            message: Precondition Failed
+            description: The request has not been performed because one of the preconditions is not met
+            moreInfo: ""
+            error: []
+    Unauthorized:
+      description: Unauthorized. The user is not authorized.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 401
+            message: Unauthorized
+            description: The user is not authorized
+            moreInfo: ""
+            error: []
+    UnsupportedMediaType:
+      description: Unsupported Media Type. The entity of the request was not in a supported format.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 415
+            message: Unsupported media type
+            description: The entity of the request was not in a supported format
+            moreInfo: ""
+            error: []
+  parameters:
+    apiId:
+      name: apiId
+      in: path
+      description: |
+        **API ID** consisting of the **Name** of the API.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    name:
+      name: name
+      in: path
+      description: |
+        Name of the API
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    version:
+      name: version
+      in: path
+      description: |
+        Version of the API
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    limit:
+      name: limit
+      in: query
+      description: |
+        Maximum size of resource array to return.
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: integer
+        default: 25
+    Accept:
+      name: Accept
+      in: header
+      description: |
+        Media types acceptable for the response. Default is application/json.
+      required: false
+      style: simple
+      explode: false
+      schema:
+        type: string
+        default: application/json
+    offset:
+      name: offset
+      in: query
+      description: |
+        Starting point within the complete list of items qualified.
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: integer
+        default: 0
+    sortBy:
+      name: sortBy
+      in: query
+      description: |
+        Criteria for sorting.
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: string
+        default: createdTime
+        enum:
+          - apiName
+          - version
+          - createdTime
+          - status
+    sortOrder:
+      name: sortOrder
+      in: query
+      description: |
+        Order of sorting(ascending/descending).
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: string
+        default: desc
+        enum:
+          - asc
+          - desc
+    serviceId:
+      name: serviceId
+      in: path
+      description: name of the service
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    gatewayId:
+      name: gatewayId
+      in: path
+      description: name of the gateway
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    policyId:
+      name: policyId
+      in: path
+      description: policy uuid
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string

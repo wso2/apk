@@ -26,6 +26,12 @@ hs_err_pid*
 .gradle
 build/
 
+# IDE specific
+.idea
+
+# Build artifacts
+target
+
 # macOS
 .DS_Store
 
