@@ -24,7 +24,6 @@ import org.wso2.apk.apimgt.api.APIManagementException;
 import org.wso2.apk.apimgt.api.model.Comment;
 import org.wso2.apk.apimgt.api.model.CommentList;
 import org.wso2.apk.apimgt.impl.APIConstants;
-import org.wso2.apk.apimgt.impl.utils.APIRealmUtils;
 import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.CommentDTO;
 import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.CommentListDTO;
 import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.CommenterInfoDTO;
@@ -102,8 +101,8 @@ public class CommentMappingUtil {
 
         Map userClaims;
         if (userClaimsMap.get(username) == null) {
-            userClaims = APIRealmUtils.getUserClaims(username);
-            userClaimsMap.put(username, userClaims);
+            // userClaims = APIRealmUtils.getUserClaims(username);
+            // userClaimsMap.put(username, userClaims);
         }
         return userClaimsMap;
     }
