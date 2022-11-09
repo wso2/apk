@@ -35,6 +35,7 @@ const (
 	pkgAPKOperator          = "github.com/wso2/apk/adapter/internal/operator"
 	pkgEnforcerXdsCallbacks = "github.com/wso2/apk/adapter/internal/discovery/xds/enforcercallbacks"
 	pkgRouterXdsCallbacks   = "github.com/wso2/apk/adapter/internal/discovery/xds/routercallbacks"
+	pkgGrpcClient              = "github.com/wso2/apk/adapter/internal/grpc-client"
 	pkgXds                  = "github.com/wso2/apk/adapter/internal/discovery/xds"
 	pkgOasParser            = "github.com/wso2/apk/adapter/internal/oasparser"
 	pkgInterceptor          = "github.com/wso2/apk/adapter/internal/interceptor"
@@ -50,6 +51,7 @@ var (
 	LoggerEnforcerXdsCallbacks logging.Log
 	LoggerRouterXdsCallbacks   logging.Log
 	LoggerXds                  logging.Log
+	LoggerGRPCClient           logging.Log
 	LoggerOasparser            logging.Log
 	LoggerInterceptor          logging.Log
 	LoggerSvcDiscovery         logging.Log
@@ -67,6 +69,7 @@ func UpdateLoggers() {
 	LoggerRouterXdsCallbacks = logging.InitPackageLogger(pkgRouterXdsCallbacks)
 	LoggerEnforcerXdsCallbacks = logging.InitPackageLogger(pkgEnforcerXdsCallbacks)
 	LoggerXds = logging.InitPackageLogger(pkgXds)
+	LoggerGRPCClient = logging.InitPackageLogger(pkgGrpcClient)
 	LoggerAPKOperator = logging.InitPackageLogger(pkgAPKOperator)
 	LoggerOasparser = logging.InitPackageLogger(pkgOasParser)
 	LoggerInterceptor = logging.InitPackageLogger(pkgInterceptor)
