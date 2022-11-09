@@ -57,6 +57,8 @@ import org.json.simple.parser.ParseException;
 import org.wso2.apk.apimgt.api.APIManagementException;
 import org.wso2.apk.apimgt.api.ErrorHandler;
 import org.wso2.apk.apimgt.api.ExceptionCodes;
+import org.wso2.apk.apimgt.api.LoginPostExecutor;
+import org.wso2.apk.apimgt.api.NewPostLoginExecutor;
 import org.wso2.apk.apimgt.api.model.*;
 import org.wso2.apk.apimgt.impl.APIConstants;
 import org.wso2.apk.apimgt.impl.APIManagerAnalyticsConfiguration;
@@ -64,6 +66,7 @@ import org.wso2.apk.apimgt.impl.APIManagerConfigurationServiceImpl;
 import org.wso2.apk.apimgt.impl.ConfigurationHolder;
 import org.wso2.apk.apimgt.impl.config.APIMConfigService;
 import org.wso2.apk.apimgt.impl.config.APIMConfigServiceImpl;
+import org.wso2.apk.apimgt.impl.dao.ApiMgtDAO;
 import org.wso2.apk.apimgt.impl.dao.ScopesDAO;
 import org.wso2.apk.apimgt.impl.internal.ServiceReferenceHolder;
 import org.wso2.apk.apimgt.impl.proxy.ExtendedProxyRoutePlanner;
@@ -84,10 +87,14 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import javax.net.ssl.SSLContext;
 
 /**
@@ -1375,4 +1382,124 @@ public final class APIUtil {
         return list.contains(fileType.toLowerCase());
     }
 
+    /**
+     * Get the API Identifier from UUID.
+     *
+     * @param uuid UUID of the API
+     * @return API Identifier
+     * @throws APIManagementException
+     */
+    public static APIIdentifier getAPIIdentifierFromUUID(String uuid) throws APIManagementException {
+
+        return ApiMgtDAO.getInstance().getAPIIdentifierFromUUID(uuid);
+    }
+
+    /**
+     * Validates the API category names to be attached to an API
+     *
+     * @param categories
+     * @param organization
+     * @return
+     */
+    public static boolean validateAPICategories(List<APICategory> categories, String organization)
+            throws APIManagementException {
+
+        List<APICategory> availableCategories = getAllAPICategoriesOfOrganization(organization);
+        for (APICategory category : categories) {
+            if (!availableCategories.contains(category)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * This method is used to get the categories in a given tenant space
+     *
+     * @param organization organization name
+     * @return categories in a given tenant space
+     * @throws APIManagementException if failed to fetch categories
+     */
+    public static List<APICategory> getAllAPICategoriesOfOrganization(String organization)
+            throws APIManagementException {
+
+        ApiMgtDAO apiMgtDAO = ApiMgtDAO.getInstance();
+        return apiMgtDAO.getAllCategories(organization);
+    }
+
+    public static String getInternalOrganizationDomain(String organization) throws APIManagementException {
+
+        return APIUtil.getTenantDomainFromTenantId(APIUtil.getInternalOrganizationId(organization));
+    }
+
+    /**
+     * Used in application sharing to check if this featuer is enabled
+     *
+     * @return returns true if ENABLE_MULTIPLE_GROUPID is set to True
+     */
+    public static boolean isMultiGroupAppSharingEnabled() {
+
+        if (multiGrpAppSharing == null) {
+
+            ConfigurationHolder config = ServiceReferenceHolder.getInstance().getAPIManagerConfigurationService().
+                    getAPIManagerConfiguration();
+
+            String groupIdExtractorClass = config.getFirstProperty(
+                    APIConstants.API_STORE_GROUP_EXTRACTOR_IMPLEMENTATION);
+
+            if (groupIdExtractorClass != null && !groupIdExtractorClass.isEmpty()) {
+                try {
+
+                    LoginPostExecutor groupingExtractor =
+                            (LoginPostExecutor) APIUtil.getClassInstance(groupIdExtractorClass);
+
+                    if (groupingExtractor instanceof NewPostLoginExecutor) {
+                        multiGrpAppSharing = "true";
+                    } else {
+                        multiGrpAppSharing = "false";
+                    }
+                    // if there is a exception the default flow will work hence ingnoring the applications
+                } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+                    multiGrpAppSharing = "false";
+                }
+            } else {
+                multiGrpAppSharing = "false";
+            }
+        }
+        return Boolean.valueOf(multiGrpAppSharing);
+    }
+
+    public static Map<String, Object> getUserProperties(String userNameWithoutChange) throws APIManagementException {
+
+        Map<String, Object> properties = new HashMap<String, Object>();
+        if (APIUtil.hasPermission(userNameWithoutChange, APIConstants.Permissions.APIM_ADMIN)) {
+            properties.put(APIConstants.USER_CTX_PROPERTY_ISADMIN, true);
+        }
+        properties.put(APIConstants.USER_CTX_PROPERTY_SKIP_ROLES, APIUtil.getSkipRolesByRegex());
+
+        return properties;
+    }
+
+    public static String[] getFilteredUserRoles(String username) throws APIManagementException {
+
+        String[] userRoles = APIUtil.getListOfRoles(username);
+        String skipRolesByRegex = APIUtil.getSkipRolesByRegex();
+        if (StringUtils.isNotEmpty(skipRolesByRegex)) {
+            List<String> filteredUserRoles = new ArrayList<>(Arrays.asList(userRoles));
+            String[] regexList = skipRolesByRegex.split(",");
+            for (int i = 0; i < regexList.length; i++) {
+                Pattern p = Pattern.compile(regexList[i]);
+                Iterator<String> itr = filteredUserRoles.iterator();
+                while (itr.hasNext()) {
+                    String role = itr.next();
+                    Matcher m = p.matcher(role);
+                    if (m.matches()) {
+                        itr.remove();
+                    }
+                }
+            }
+            userRoles = filteredUserRoles.toArray(new String[0]);
+        }
+        return userRoles;
+    }
 }

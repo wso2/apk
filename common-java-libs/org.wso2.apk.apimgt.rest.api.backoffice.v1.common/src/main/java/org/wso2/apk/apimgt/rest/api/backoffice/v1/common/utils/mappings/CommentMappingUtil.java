@@ -18,8 +18,8 @@
 
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.common.utils.mappings;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.wso2.apk.apimgt.api.APIManagementException;
 import org.wso2.apk.apimgt.api.model.Comment;
 import org.wso2.apk.apimgt.api.model.CommentList;
@@ -39,7 +39,7 @@ import java.util.Map;
  */
 public class CommentMappingUtil {
 
-    private static final Logger log = LoggerFactory.getLogger(CommentMappingUtil.class);
+    private static final Log log = LogFactory.getLog(CommentMappingUtil.class);
 
     /**
      * Converts a Comment object into corresponding REST API CommentDTO object.

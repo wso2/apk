@@ -1,7 +1,7 @@
 /*
- *  Copyright (c) 2005-2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright 2022 WSO2 LLC (http://www.wso2.org) All Rights Reserved.
  *
- *  WSO2 Inc. licenses this file to you under the Apache License,
+ *  WSO2 LCC licenses this file to you under the Apache License,
  *  Version 2.0 (the "License"); you may not use this file except
  *  in compliance with the License.
  *  You may obtain a copy of the License at
@@ -15,6 +15,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.wso2.apk.apimgt.api;
 
 import org.wso2.apk.apimgt.api.model.API;
@@ -54,7 +55,7 @@ public abstract class APIDefinition {
      * @param resourceConfigsJSON resource json
      * @return scopes
      */
-    public abstract Set<Scope> getScopes(String resourceConfigsJSON) throws APIManagementException;
+//    public abstract Set<Scope> getScopes(String resourceConfigsJSON) throws APIManagementException;
 
     /**
      * This method generates API definition to the given api
@@ -124,8 +125,8 @@ public abstract class APIDefinition {
      * @param returnJsonContent whether to return the converted json form of the OpenAPI definition
      * @return APIDefinitionValidationResponse object with validation information
      */
-    public abstract APIDefinitionValidationResponse validateAPIDefinition(String apiDefinition,
-                                                                          boolean returnJsonContent) throws APIManagementException;
+//    public abstract APIDefinitionValidationResponse validateAPIDefinition(String apiDefinition,
+//                                                                          boolean returnJsonContent) throws APIManagementException;
 
     /**
      * This method validates the given OpenAPI definition by content
@@ -135,8 +136,8 @@ public abstract class APIDefinition {
      * @param returnJsonContent whether to return the converted json form of the OpenAPI definition
      * @return APIDefinitionValidationResponse object with validation information
      */
-    public abstract APIDefinitionValidationResponse validateAPIDefinition(String apiDefinition, String url,
-            boolean returnJsonContent) throws APIManagementException;
+//    public abstract APIDefinitionValidationResponse validateAPIDefinition(String apiDefinition, String url,
+//            boolean returnJsonContent) throws APIManagementException;
 
     /**
      * Populate definition with wso2 APIM specific information
@@ -146,8 +147,8 @@ public abstract class APIDefinition {
      * @return Generated OAS definition
      * @throws APIManagementException If an error occurred
      */
-    public abstract String populateCustomManagementInfo(String oasDefinition, SwaggerData swaggerData)
-            throws APIManagementException;
+//    public abstract String populateCustomManagementInfo(String oasDefinition, SwaggerData swaggerData)
+//            throws APIManagementException;
 
     /**
      * Update the OAS definition for API consumers
@@ -158,8 +159,8 @@ public abstract class APIDefinition {
      * @return updated OAS definition
      * @throws APIManagementException throws if an error occurred
      */
-    public abstract String getOASDefinitionForStore(API api, String oasDefinition, Map<String, String> hostsWithSchemes)
-            throws APIManagementException;
+//    public abstract String getOASDefinitionForStore(API api, String oasDefinition, Map<String, String> hostsWithSchemes)
+//            throws APIManagementException;
 
     /**
      * Update the OAS definition for API consumers
@@ -170,13 +171,13 @@ public abstract class APIDefinition {
      * @return updated OAS definition
      * @throws APIManagementException throws if an error occurred
      */
-    public abstract String getOASDefinitionForStore(APIProduct product, String oasDefinition,
-                                                    Map<String, String> hostsWithSchemes) throws APIManagementException;
+//    public abstract String getOASDefinitionForStore(APIProduct product, String oasDefinition,
+//                                                    Map<String, String> hostsWithSchemes) throws APIManagementException;
 
-    public abstract String getOASVersion(String oasDefinition) throws APIManagementException;
+//    public abstract String getOASVersion(String oasDefinition) throws APIManagementException;
 
-    public abstract String getOASDefinitionWithTierContentAwareProperty(String oasDefinition,
-            List<String> contentAwareTiersList, String apiLevelTier) throws APIManagementException;
+//    public abstract String getOASDefinitionWithTierContentAwareProperty(String oasDefinition,
+//            List<String> contentAwareTiersList, String apiLevelTier) throws APIManagementException;
 
     /**
      * This method changes the URI templates from the API definition as it support different schemes
@@ -184,8 +185,8 @@ public abstract class APIDefinition {
      * @throws APIManagementException throws if an error occurred
      * @return String
      */
-    public abstract String processOtherSchemeScopes(String resourceConfigsJSON)
-            throws APIManagementException;
+//    public abstract String processOtherSchemeScopes(String resourceConfigsJSON)
+//            throws APIManagementException;
 
     /**
      * This method returns OAS definition which replaced X-WSO2-throttling-tier extension comes from
@@ -195,8 +196,8 @@ public abstract class APIDefinition {
      * @return OpenAPI
      * @throws APIManagementException
      */
-    public abstract String injectMgwThrottlingExtensionsToDefault(String swaggerContent)
-            throws APIManagementException;
+//    public abstract String injectMgwThrottlingExtensionsToDefault(String swaggerContent)
+//            throws APIManagementException;
 
     /**
      * This method copy the vendor extensions from Existing OAS to the updated OAS
@@ -206,8 +207,8 @@ public abstract class APIDefinition {
      * @return OAS content
      * @throws APIManagementException
      */
-    public abstract String copyVendorExtensions(String existingOASContent, String updatedOASContent)
-            throws APIManagementException;
+//    public abstract String copyVendorExtensions(String existingOASContent, String updatedOASContent)
+//            throws APIManagementException;
     /**
      * This method will extractX-WSO2-disable-security extension provided in API level
      * by mgw and inject that extension to all resources in OAS file
@@ -216,8 +217,8 @@ public abstract class APIDefinition {
      * @return String
      * @throws APIManagementException
      */
-    public abstract String processDisableSecurityExtension(String swaggerContent)
-            throws APIManagementException;
+//    public abstract String processDisableSecurityExtension(String swaggerContent)
+//            throws APIManagementException;
 
     /**
      * This method will extract the vendor provider or the API specification form the extensions list
@@ -225,12 +226,12 @@ public abstract class APIDefinition {
      * @param swaggerContent String
      * @return String
      */
-    public abstract String getVendorFromExtension(String swaggerContent);
+//    public abstract String getVendorFromExtension(String swaggerContent);
 
     /**
      * Get parser Type
      *
      * @return String parserType
      */
-    public abstract String getType();
+//    public abstract String getType();
 }
