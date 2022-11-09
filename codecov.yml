@@ -1,0 +1,15 @@
+coverage:
+  status:
+    project: off
+    patch: off
+
+flag_management:
+  individual_flags:
+    - name: common-java-libs
+      paths:
+        - common-java-libs/
+      statuses:
+        - type: project
+          target: 75%
+          threshold: 1%
+      carryforward: true
