@@ -67,10 +67,7 @@ func CreateRoutesConfigForRds(vHosts []*routev3.VirtualHost) *routev3.RouteConfi
 // mentioned in the adapter configuration. These certificate, key values are added
 // as inline records (base64 encoded).
 func CreateListenersWithRds() []*listenerv3.Listener {
-	conf, errReadConfig := config.ReadConfigs()
-	if errReadConfig != nil {
-		logger.LoggerOasparser.Fatal("Error loading configuration. ", errReadConfig)
-	}
+	conf := config.ReadConfigs()
 	return createListeners(conf)
 }
 

@@ -925,14 +925,7 @@ func GenerateEnvoyResoucesForLabel(label string) ([]types.Resource, []types.Reso
 	}
 
 	// If the token endpoint is enabled, the token endpoint also needs to be added.
-	conf, errReadConfig := config.ReadConfigs()
-	if errReadConfig != nil {
-		logger.LoggerOasparser.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("Error loading configuration. %v", errReadConfig.Error()),
-			Severity:  logging.BLOCKER,
-			ErrorCode: 1412,
-		})
-	}
+	conf := config.ReadConfigs()
 	enableJwtIssuer := conf.Enforcer.JwtIssuer.Enabled
 	systemHost := conf.Envoy.SystemHost
 	if enableJwtIssuer {

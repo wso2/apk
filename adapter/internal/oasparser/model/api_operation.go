@@ -241,7 +241,7 @@ func (operation *Operation) GetCallInterceptorService(isIn bool) InterceptEndpoi
 						if isString && url != "" {
 							endpoint, err := getHTTPEndpoint(url)
 							if err == nil {
-								conf, _ := config.ReadConfigs()
+								conf := config.ReadConfigs()
 								clusterTimeoutV := conf.Envoy.ClusterTimeoutInSeconds
 								requestTimeoutV := conf.Envoy.ClusterTimeoutInSeconds
 								includesV := &interceptor.RequestInclusions{}

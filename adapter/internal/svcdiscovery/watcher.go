@@ -78,7 +78,7 @@ func init() {
 	ClusterConsulDoneChanMap = make(map[string]chan bool)
 	ServiceConsulMeshMap = make(map[string]bool)
 	//Read config
-	conf, errConfLoad = config.ReadConfigs()
+	conf = config.ReadConfigs()
 	IsServiceDiscoveryEnabled = conf.Adapter.Consul.Enabled
 	aclToken = strings.TrimSpace(conf.Adapter.Consul.ACLToken)
 	mgwServiceName = conf.Adapter.Consul.MgwServiceName
@@ -86,21 +86,21 @@ func init() {
 	MeshUpdateSignal = make(chan bool)
 }
 
-//SetClusterConsulResultMap avoid concurrent map writes when writing to ClusterConsulResultMap
+// SetClusterConsulResultMap avoid concurrent map writes when writing to ClusterConsulResultMap
 func SetClusterConsulResultMap(key string, value []Upstream) {
 	mutexForResultMap.Lock()
 	defer mutexForResultMap.Unlock()
 	ClusterConsulResultMap[key] = value
 }
 
-//GetClusterConsulResultMap avoid concurrent map reads/writes when reading from ClusterConsulResultMap
+// GetClusterConsulResultMap avoid concurrent map reads/writes when reading from ClusterConsulResultMap
 func GetClusterConsulResultMap(key string) []Upstream {
 	mutexForResultMap.RLock()
 	defer mutexForResultMap.RUnlock()
 	return ClusterConsulResultMap[key]
 }
 
-//read the certs and access token required for tls into respective global variables
+// read the certs and access token required for tls into respective global variables
 func readCerts() error {
 	// TODO: (VirajSalaka) Replace with common CA cert pool
 	caFileContent, readErr := ioutil.ReadFile(conf.Adapter.Consul.CaCertFile)
@@ -125,15 +125,11 @@ func readCerts() error {
 	return nil
 }
 
-//InitConsul loads certs and initialize a ConsulClient
-//lazy loading
+// InitConsul loads certs and initialize a ConsulClient
+// lazy loading
 func InitConsul() {
 	onceConfigLoad.Do(func() {
-		conf, errConfLoad = config.ReadConfigs()
-		if errConfLoad != nil {
-			logger.LoggerSvcDiscovery.Error("Consul Config loading error ", errConfLoad)
-			return
-		}
+		conf = config.ReadConfigs()
 		pollInterval = time.Duration(conf.Adapter.Consul.PollInterval) * time.Second
 		urlStructure, errURLParse := url.Parse(conf.Adapter.Consul.URL)
 		if errURLParse != nil {
@@ -179,7 +175,7 @@ func InitConsul() {
 	})
 }
 
-//generate TLS certs as inline strings
+// generate TLS certs as inline strings
 func generateTLSCertWithStr(privateKey string, publicKey string) *tlsv3.TlsCertificate {
 	var tlsCert tlsv3.TlsCertificate
 	tlsCert = tlsv3.TlsCertificate{
@@ -197,7 +193,7 @@ func generateTLSCertWithStr(privateKey string, publicKey string) *tlsv3.TlsCerti
 	return &tlsCert
 }
 
-//CreateUpstreamTLSContext create a new TLS context using CA, private key and public key
+// CreateUpstreamTLSContext create a new TLS context using CA, private key and public key
 func CreateUpstreamTLSContext(upstreamCACert, privateKey, publicKey string) *tlsv3.UpstreamTlsContext {
 	tlsCert := generateTLSCertWithStr(privateKey, publicKey)
 	// Convert the cipher string to a string array
@@ -234,8 +230,8 @@ func CreateUpstreamTLSContext(upstreamCACert, privateKey, publicKey string) *tls
 	return upstreamTLSContext
 }
 
-//copied from oasparser/envoyconf/routes_with_clusters.go
-//reason: to avoid cyclic import
+// copied from oasparser/envoyconf/routes_with_clusters.go
+// reason: to avoid cyclic import
 func createTLSProtocolVersion(tlsVersion string) tlsv3.TlsParameters_TlsProtocol {
 	switch tlsVersion {
 	case "TLS1_0":

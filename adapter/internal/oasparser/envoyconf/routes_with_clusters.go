@@ -86,7 +86,7 @@ func CreateRoutesWithClusters(mgwSwagger model.MgwSwagger, upstreamCerts map[str
 	apiTitle := mgwSwagger.GetTitle()
 	apiVersion := mgwSwagger.GetVersion()
 
-	conf, _ := config.ReadConfigs()
+	conf := config.ReadConfigs()
 	timeout := conf.Envoy.ClusterTimeoutInSeconds
 
 	// The any upstream endpoint's basepath.
@@ -521,7 +521,7 @@ func processEndpoints(clusterName string, clusterDetails *model.EndpointCluster,
 			priority = priority + 1
 		}
 	}
-	conf, _ := config.ReadConfigs()
+	conf := config.ReadConfigs()
 
 	httpProtocolOptions := &upstreams_http_v3.HttpProtocolOptions{
 		UpstreamProtocolOptions: &upstreams_http_v3.HttpProtocolOptions_ExplicitHttpConfig_{
@@ -621,7 +621,7 @@ func processEndpoints(clusterName string, clusterDetails *model.EndpointCluster,
 }
 
 func createHealthCheck() []*corev3.HealthCheck {
-	conf, _ := config.ReadConfigs()
+	conf := config.ReadConfigs()
 	return []*corev3.HealthCheck{
 		{
 			Timeout:            durationpb.New(time.Duration(conf.Envoy.Upstream.Health.Timeout) * time.Second),
@@ -635,12 +635,7 @@ func createHealthCheck() []*corev3.HealthCheck {
 }
 
 func createUpstreamTLSContext(upstreamCerts []byte, address *corev3.Address, hTTP2BackendEnabled bool) *tlsv3.UpstreamTlsContext {
-	conf, errReadConfig := config.ReadConfigs()
-	//TODO: (VirajSalaka) Error Handling
-	if errReadConfig != nil {
-		logger.LoggerOasparser.Fatal("Error loading configuration. ", errReadConfig)
-		return nil
-	}
+	conf := config.ReadConfigs()
 	tlsCert := generateTLSCert(conf.Envoy.KeyStore.KeyPath, conf.Envoy.KeyStore.CertPath)
 	// Convert the cipher string to a string array
 	ciphersArray := strings.Split(conf.Envoy.Upstream.TLS.Ciphers, ",")
