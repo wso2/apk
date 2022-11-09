@@ -15,33 +15,12 @@
  *
  */
 
-package main
+package config
 
-import (
-	"os"
-	"os/signal"
-
-	logger "github.com/sirupsen/logrus"
-	"github.com/wso2/apk/adapter/internal/xds"
-)
-
-// invokes the code from the /internal and /pkg directories and nothing else.
-func main() {
-	logger.Info("Starting the Adapter")
-	sig := make(chan os.Signal)
-	signal.Notify(sig, os.Interrupt)
-
-	// go operator.InitOperator()
-	go xds.InitApkMgtClient()
-
-OUTER:
-	for {
-		select {
-		case s := <-sig:
-			switch s {
-			case os.Interrupt:
-				break OUTER
-			}
-		}
-	}
+// Configuration object which is populated with default values.
+var defaultConfig = &Config{
+	ManagementServer: managementServer{
+		XDSPort:    18000,
+		NodeLabels: []string{"default"},
+	},
 }

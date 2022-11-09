@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2022, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2022, WSO2 LLC. (http://www.wso2.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -21,18 +21,17 @@ import (
 	"os"
 	"os/signal"
 
-	logger "github.com/sirupsen/logrus"
-	"github.com/wso2/apk/adapter/internal/xds"
+	"github.com/wso2/apk/management-server/internal/logger"
+	"github.com/wso2/apk/management-server/internal/xds"
 )
 
-// invokes the code from the /internal and /pkg directories and nothing else.
 func main() {
-	logger.Info("Starting the Adapter")
+	logger.LoggerServer.Info("Starting Management server ...")
 	sig := make(chan os.Signal)
 	signal.Notify(sig, os.Interrupt)
-
-	// go operator.InitOperator()
-	go xds.InitApkMgtClient()
+	go xds.InitAPKMgtServer()
+	// todo(amaliMatharaarachchi) watch data updates and update snapshot accordingly.
+	go xds.FeedData()
 
 OUTER:
 	for {

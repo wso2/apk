@@ -15,33 +15,15 @@
  *
  */
 
-package main
+package config
 
-import (
-	"os"
-	"os/signal"
+// Config represents the adapter configuration.
+// It is created directly from the configuration toml file.
+type Config struct {
+	ManagementServer managementServer
+}
 
-	logger "github.com/sirupsen/logrus"
-	"github.com/wso2/apk/adapter/internal/xds"
-)
-
-// invokes the code from the /internal and /pkg directories and nothing else.
-func main() {
-	logger.Info("Starting the Adapter")
-	sig := make(chan os.Signal)
-	signal.Notify(sig, os.Interrupt)
-
-	// go operator.InitOperator()
-	go xds.InitApkMgtClient()
-
-OUTER:
-	for {
-		select {
-		case s := <-sig:
-			switch s {
-			case os.Interrupt:
-				break OUTER
-			}
-		}
-	}
+type managementServer struct {
+	XDSPort    int32    `toml:"xdsPort"`
+	NodeLabels []string `toml:"nodeLabels"`
 }

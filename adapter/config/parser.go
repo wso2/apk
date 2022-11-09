@@ -39,7 +39,6 @@ var (
 	onceGetDefaultVhost sync.Once
 	adapterConfig       *Config
 	defaultVhost        map[string]string
-	e                   error
 )
 
 // DefaultGatewayName represents the name of the default gateway
@@ -72,7 +71,7 @@ const (
 //
 // Returns the configuration object that is initialized with default values. Changes to the default
 // configuration object is achieved through the configuration file.
-func ReadConfigs() (*Config, error) {
+func ReadConfigs() *Config {
 	onceConfigRead.Do(func() {
 		adapterConfig = defaultConfig
 		_, err := os.Stat(pkgconf.GetMgwHome() + relativeConfigPath)
@@ -106,11 +105,10 @@ func ReadConfigs() (*Config, error) {
 		pkgconf.ResolveConfigEnvValues(reflect.ValueOf(&(adapterConfig.Adapter)).Elem(), "Adapter", true)
 		pkgconf.ResolveConfigEnvValues(reflect.ValueOf(&(adapterConfig.ControlPlane)).Elem(), "ControlPlane", true)
 		pkgconf.ResolveConfigEnvValues(reflect.ValueOf(&(adapterConfig.Envoy)).Elem(), "Router", true)
-		pkgconf.ResolveConfigEnvValues(reflect.ValueOf(&(adapterConfig.GlobalAdapter)).Elem(), "GlobalAdapter", true)
 		pkgconf.ResolveConfigEnvValues(reflect.ValueOf(&(adapterConfig.Enforcer)).Elem(), "Enforcer", false)
 		pkgconf.ResolveConfigEnvValues(reflect.ValueOf(&(adapterConfig.Analytics)).Elem(), "Analytics", false)
 	})
-	return adapterConfig, e
+	return adapterConfig
 }
 
 // SetConfig sets the given configuration to the adapter configuration
@@ -130,11 +128,7 @@ func GetDefaultVhost(environment string) (string, bool, error) {
 	var err error
 	onceGetDefaultVhost.Do(func() {
 		defaultVhost = make(map[string]string)
-		configs, errConf := ReadConfigs()
-		if errConf != nil {
-			err = errConf
-			return
-		}
+		configs := ReadConfigs()
 		for _, gateway := range configs.Adapter.VhostMapping {
 			defaultVhost[gateway.Environment] = gateway.Vhost
 		}
@@ -179,7 +173,7 @@ func GetMgwHome() string {
 // GetControlPlaneConnectedTenantDomain returns the tenant domain of the user used to authenticate with event hub.
 func GetControlPlaneConnectedTenantDomain() string {
 	// Read configurations to get the control plane authenticated user
-	conf, _ := ReadConfigs()
+	conf := ReadConfigs()
 
 	// Populate data from the config
 	cpTenantAdminUser := conf.ControlPlane.Username
@@ -194,18 +188,6 @@ func (config *Config) resolveDeprecatedProperties() {
 	if config.ControlPlane.ServiceURLDeprecated != UnassignedAsDeprecated {
 		printDeprecatedWarningLog("controlPlane.serviceUrl", "controlPlane.serviceURL")
 		config.ControlPlane.ServiceURL = config.ControlPlane.ServiceURLDeprecated
-	}
-	if config.GlobalAdapter.ServiceURLDeprecated != UnassignedAsDeprecated {
-		printDeprecatedWarningLog("globalAdapter.serviceUrl", "globalAdapter.serviceURL")
-		config.GlobalAdapter.ServiceURL = config.GlobalAdapter.ServiceURLDeprecated
-	}
-	if config.Enforcer.Throttling.JmsConnectionProviderURLDeprecated != UnassignedAsDeprecated {
-		printDeprecatedWarningLog("enforcer.throttling.JmsConnectionProviderUrl", "enforcer.throttling.JmsConnectionProviderURL")
-		config.Enforcer.Throttling.JmsConnectionProviderURL = config.Enforcer.Throttling.JmsConnectionProviderURLDeprecated
-	}
-	if config.GlobalAdapter.OverwriteHostName != UnassignedAsDeprecated {
-		printDeprecatedWarningLog("globalAdapter.OverwriteHostName", "globalAdapter.OverrideHostName")
-		config.GlobalAdapter.OverrideHostName = config.GlobalAdapter.OverwriteHostName
 	}
 
 	if len(config.Enforcer.Throttling.Publisher.URLGroupDeprecated) > 0 {
