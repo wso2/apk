@@ -1,0 +1,12 @@
+version: '3'
+services:
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: apimtest
+      POSTGRES_PASSWORD: apimtest
+      POSTGRES_DB: apimdb
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/01-init.sql
+    ports:
+      - 5432:5432

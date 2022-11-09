@@ -15,6 +15,10 @@
  *
  */
 
+plugins {
+    id 'com.avast.gradle.docker-compose' version '0.16.8'
+}
+
 description = 'WSO2 APK Implementation Component'
 
 dependencies {
@@ -61,4 +65,16 @@ dependencies {
     testImplementation libs.powermock.api.mockito2
     testImplementation libs.jacoco.agent
     testImplementation libs.xml.apis
+    testImplementation group: 'org.testng', name: 'testng', version: '7.6.1'
+}
+
+test {
+    useTestNG() {
+        useDefaultListeners = true
+    }
+}
+
+dockerCompose {
+    useComposeFiles = ['src/test/resources/docker-compose.yaml']
+    isRequiredBy(project.tasks.test)
 }
