@@ -55,6 +55,7 @@ dependencies {
     implementation libs.postgresql
     implementation libs.commons.lang
     implementation libs.javax.cache
+    implementation libs.nimbus.jose.jwt
     testImplementation libs.mockito.core
     testImplementation libs.hamcrest
     testImplementation libs.powermock.module.junit4

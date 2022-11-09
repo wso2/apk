@@ -179,6 +179,8 @@ public final class APIConstants {
     public static final String OPENAPI_MASTER_JSON = "swagger.json";
     public static final String OPENAPI_MASTER_YAML = "swagger.yaml";
 
+    public static final String API_OVERVIEW_STATUS_SEARCH_TYPE_KEY = "status=";
+
     // registry location for wsdl files
     public static final String API_WSDL_RESOURCE_LOCATION = API_APPLICATION_DATA_LOCATION + "/wsdls/";
     public static final String API_WSDL_RESOURCE = API_APPLICATION_DATA_LOCATION + "/wsdls";
