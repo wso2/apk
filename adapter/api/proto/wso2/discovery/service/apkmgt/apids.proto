@@ -17,8 +17,8 @@
 
 syntax = "proto3";
 
-option go_package = "github.com/wso2/apk/adapter/discovery/service/apkmgt/api";
-package wso2.service.apkmgt.api.v1;
+option go_package = "github.com/wso2/apk/adapter/discovery/service/apkmgt";
+package discovery.service.apkmgt;
 
 service APIService {
     rpc createAPI(API) returns (Response);
