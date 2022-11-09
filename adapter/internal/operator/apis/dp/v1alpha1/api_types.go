@@ -77,6 +77,13 @@ type APISpec struct {
 	//
 	// +kubebuilder:validation:MinLength=2
 	Context string `json:"context"`
+
+	// Organization denotes the organization
+	// related to the API
+	//
+	// +kubebuilder:validation:MinLength=4
+	// +optional
+	Organization string `json:"organization"`
 }
 
 // APIStatus defines the observed state of API

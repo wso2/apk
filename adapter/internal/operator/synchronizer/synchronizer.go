@@ -39,12 +39,14 @@ func HandleAPILifeCycleEvents(ch *chan APIEvent) {
 	loggers.LoggerAPKOperator.Info("Operator synchronizer listening for API lifecycle events...")
 	for event := range *ch {
 		loggers.LoggerAPKOperator.Infof("Event received: %v\n", event)
-		deployAPIInGateway(event.Event)
+		if err := deployAPIInGateway(event.Event); err != nil {
+			loggers.LoggerAPKOperator.Infof("API deployment failed: %v", err)
+		}
 	}
 }
 
 // deployAPIInGateway deploys the related API in CREATE and UPDATE events.
-func deployAPIInGateway(apiState APIState) {
+func deployAPIInGateway(apiState APIState) error {
 	var mgwSwagger model.MgwSwagger
 	if err := mgwSwagger.SetInfoAPICR(*apiState.APIDefinition); err != nil {
 		loggers.LoggerAPKOperator.Errorf("Error setting API CR info to mgwSwagger: %v", err)
@@ -62,6 +64,14 @@ func deployAPIInGateway(apiState APIState) {
 			ErrorCode: 2613,
 		})
 	}
+	if err := mgwSwagger.ValidateIR(); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("error validating mgwSwagger intermediate representation: %v", err),
+			Severity:  logging.MAJOR,
+			ErrorCode: 2615,
+		})
+		return err
+	}
 	// mgwSwagger.UUID = string(apiState.APIDefinition.UID)
 	vHosts := getVhostForAPI(apiState)
 	labels := getLabelsForAPI(apiState)
@@ -75,6 +85,7 @@ func deployAPIInGateway(apiState APIState) {
 			})
 		}
 	}
+	return nil
 }
 
 // getVhostForAPI returns the vHosts related to an API.

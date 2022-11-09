@@ -16,6 +16,8 @@ require (
 	github.com/onsi/gomega v1.19.0
 	github.com/pelletier/go-toml v1.8.1
 	github.com/sirupsen/logrus v1.9.0
+	github.com/tetratelabs/multierror v1.1.1
+	github.com/wso2/product-microgateway/adapter v0.0.0-20221103111251-9bdaac1269a7
 	google.golang.org/genproto v0.0.0-20220502173005-c8bf987b8c21
 	google.golang.org/grpc v1.50.1
 	google.golang.org/protobuf v1.28.1
@@ -61,6 +63,7 @@ require (
 	github.com/google/gnostic v0.5.7-v3refs // indirect
 	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/google/gofuzz v1.1.0 // indirect
+	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/invopop/yaml v0.1.0 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect

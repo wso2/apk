@@ -22,6 +22,7 @@ import (
 	"fmt"
 
 	"github.com/wso2/apk/adapter/internal/loggers"
+	"github.com/wso2/apk/adapter/internal/operator/constants"
 	"github.com/wso2/apk/adapter/internal/operator/synchronizer"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -45,7 +46,7 @@ func NewHttpRouteController(mgr manager.Manager, ods *synchronizer.OperatorDataS
 		client: mgr.GetClient(),
 		ods:    ods,
 	}
-	c, err := controller.New("HttpRoute", mgr, controller.Options{Reconciler: r})
+	c, err := controller.New(constants.HTTPRouteController, mgr, controller.Options{Reconciler: r})
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
 			Message:   fmt.Sprintf("error creating HttpRoute controller: %v", err),

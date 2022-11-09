@@ -22,6 +22,7 @@ import (
 	"fmt"
 
 	"github.com/wso2/apk/adapter/internal/loggers"
+	"github.com/wso2/apk/adapter/internal/operator/constants"
 	"github.com/wso2/apk/adapter/internal/operator/synchronizer"
 	"github.com/wso2/apk/adapter/internal/operator/utils"
 	"github.com/wso2/apk/adapter/pkg/logging"
@@ -53,7 +54,7 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 		ods:    operatorDataStore,
 		ch:     ch,
 	}
-	c, err := controller.New("API", mgr, controller.Options{Reconciler: r})
+	c, err := controller.New(constants.APIController, mgr, controller.Options{Reconciler: r})
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
 			Message:   fmt.Sprintf("error creating API controller:%v", err),
@@ -132,7 +133,7 @@ func (r *APIReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 			})
 			return ctrl.Result{}, err
 		}
-		*r.ch <- synchronizer.APIEvent{EventType: "CREATE", Event: apiState}
+		*r.ch <- synchronizer.APIEvent{EventType: constants.Create, Event: apiState}
 		return ctrl.Result{}, nil
 	}
 	apiState := synchronizer.APIState{}
@@ -160,7 +161,7 @@ func (r *APIReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 		}
 		apiState = apiStateUpdate
 	}
-	*r.ch <- synchronizer.APIEvent{EventType: "UPDATE", Event: apiState}
+	*r.ch <- synchronizer.APIEvent{EventType: constants.Update, Event: apiState}
 	return ctrl.Result{}, nil
 
 }
