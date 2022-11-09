@@ -1905,22 +1905,34 @@ components:
           example: pizzashack-service
     APIDefinitionValidationResponse_info:
       type: object
+      description: |
+        API definition information
       properties:
         name:
           type: string
           example: PetStore
+          description: |
+            Name of the API
         version:
           type: string
           example: 1.0.0
+          description: |
+            Version of the API
         context:
           type: string
           example: /petstore
+          description: |
+            Context of the API
         description:
           type: string
           example: A sample API that uses a petstore as an example to demonstrate swagger-2.0 specification
+          description: |
+            Description of the API
         openAPIVersion:
           type: string
           example: 3.0.0
+          description: |
+            OpenAPI Version.
         endpoints:
           type: array
           description: |
@@ -1928,8 +1940,6 @@ components:
           items:
             type: string
             example: https://localhost:9443/am/sample/pizzashack/v3/api/
-      description: |
-        API definition information
   responses:
     BadRequest:
       description: Bad Request. Invalid request or validation error.

@@ -32,6 +32,7 @@ isolated function getServicesListInNamespace(string namespace) returns ServiceLi
         json[] serviceArr = <json[]>check serviceResp.items;
         foreach json i in serviceArr {
             Service serviceData = {
+                id: <string>check i.metadata.uid,
                 name: <string>check i.metadata.name,
                 namespace: <string>check i.metadata.namespace,
                 'type: <string>check i.spec.'type
@@ -55,6 +56,7 @@ isolated function getServicesListFromK8s() returns ServiceList|error {
         json[] serviceArr = <json[]>check serviceResp.items;
         foreach json i in serviceArr {
             Service serviceData = {
+                id: <string>check i.metadata.uid,
                 name: <string>check i.metadata.name,
                 namespace: <string>check i.metadata.namespace,
                 'type: <string>check i.spec.'type
@@ -77,6 +79,7 @@ isolated function getServiceFromK8s(string name, string namespace) returns Servi
         json[] serviceArr = <json[]>check serviceResp.items;
         foreach json i in serviceArr {
             Service serviceData = {
+                id: <string>check i.metadata.uid,
                 name: <string>check i.metadata.name,
                 namespace: <string>check i.metadata.namespace,
                 'type: <string>check i.spec.'type

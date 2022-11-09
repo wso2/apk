@@ -66,6 +66,6 @@ service / on ep0 {
     // }
     // resource function get policies(string? query, int 'limit = 25, int offset = 0, string sortBy = "createdTime", string sortOrder = "desc", @http:Header string? accept = "application/json") returns MediationPolicyList|NotAcceptableError {
     // }
-    // resource function get policies/[string mediationPolicyId]() returns MediationPolicy|NotFoundError|NotAcceptableError {
+    // resource function get policies/[string policyId]() returns MediationPolicy|NotFoundError|NotAcceptableError {
     // }
 }
