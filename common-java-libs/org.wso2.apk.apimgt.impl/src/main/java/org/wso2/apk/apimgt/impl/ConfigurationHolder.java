@@ -19,6 +19,7 @@
 package org.wso2.apk.apimgt.impl;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.wso2.apk.apimgt.api.model.APIStore;
 import org.wso2.apk.apimgt.impl.dto.DatasourceProperties;
 import org.wso2.apk.apimgt.impl.dto.ThrottleProperties;
 import org.wso2.apk.apimgt.impl.monetization.MonetizationConfigurationDto;
@@ -52,6 +53,8 @@ public class ConfigurationHolder {
     public ThrottleProperties getThrottleProperties() {
         return throttleProperties;
     }
+
+    private Set<APIStore> externalAPIStores = new HashSet<>();
 
     public void setThrottleProperties(ThrottleProperties throttleProperties) {
         //TODO: Read configs and assign
@@ -109,5 +112,10 @@ public class ConfigurationHolder {
     public Map<String, Map<String, String>> getLoginConfiguration() {
 
         return loginConfiguration;
+    }
+
+    public Set<APIStore> getExternalAPIStores() {
+
+        return externalAPIStores;
     }
 }

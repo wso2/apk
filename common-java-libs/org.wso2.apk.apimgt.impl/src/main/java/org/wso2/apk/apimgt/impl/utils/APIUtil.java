@@ -26,6 +26,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -56,14 +57,7 @@ import org.json.simple.parser.ParseException;
 import org.wso2.apk.apimgt.api.APIManagementException;
 import org.wso2.apk.apimgt.api.ErrorHandler;
 import org.wso2.apk.apimgt.api.ExceptionCodes;
-import org.wso2.apk.apimgt.api.model.APIStatus;
-import org.wso2.apk.apimgt.api.model.Environment;
-import org.wso2.apk.apimgt.api.model.KeyManagerConnectorConfiguration;
-import org.wso2.apk.apimgt.api.model.OperationPolicyData;
-import org.wso2.apk.apimgt.api.model.OperationPolicyDefinition;
-import org.wso2.apk.apimgt.api.model.Scope;
-import org.wso2.apk.apimgt.api.model.Tier;
-import org.wso2.apk.apimgt.api.model.VHost;
+import org.wso2.apk.apimgt.api.model.*;
 import org.wso2.apk.apimgt.impl.APIConstants;
 import org.wso2.apk.apimgt.impl.APIManagerAnalyticsConfiguration;
 import org.wso2.apk.apimgt.impl.APIManagerConfigurationServiceImpl;
@@ -1320,4 +1314,142 @@ public final class APIUtil {
         return value == null || value.equalsIgnoreCase("false")
                 || value.equals("0") || value.equalsIgnoreCase("no");
     }
+
+    /**
+     * Check whether the file type is supported.
+     *
+     * @param filename name
+     * @return true if supported
+     */
+    public static boolean isSupportedFileType(String filename) {
+
+        if (log.isDebugEnabled()) {
+            log.debug("File name " + filename);
+        }
+        if (StringUtils.isEmpty(filename)) {
+            return false;
+        }
+        String fileType = FilenameUtils.getExtension(filename);
+        List<String> list = null;
+        ConfigurationHolder apiManagerConfiguration =
+                ServiceReferenceHolder.getInstance().getAPIManagerConfigurationService().getAPIManagerConfiguration();
+        String supportedTypes = apiManagerConfiguration
+                .getFirstProperty(APIConstants.API_PUBLISHER_SUPPORTED_DOC_TYPES);
+        if (!StringUtils.isEmpty(supportedTypes)) {
+            String[] definedTypesArr = supportedTypes.trim().split("\\s*,\\s*");
+            list = Arrays.asList(definedTypesArr);
+        } else {
+            String[] defaultType = {"pdf", "txt", "doc", "docx", "xls", "xlsx", "odt", "ods", "json", "yaml", "md"};
+            list = Arrays.asList(defaultType);
+        }
+        return list.contains(fileType.toLowerCase());
+    }
+
+    /**
+     * Get external stores configured globally in api-manager.xml.
+     *
+     * @return Globally configured external store set
+     */
+    public static Set<APIStore> getGlobalExternalStores() {
+
+        // First checking if ExternalStores are defined in api-manager.xml
+        return ServiceReferenceHolder.getInstance().getAPIManagerConfigurationService().getAPIManagerConfiguration()
+                .getExternalAPIStores();
+    }
+
+    /**
+     * Returns a set of External API Stores as defined in the underlying governance
+     * registry.
+     *
+     * @return a Map of tier names and Tier objects - possibly empty
+     * @throws APIManagementException if an error occurs when loading tiers from the registry
+     */
+    public static Set<APIStore> getExternalStores(int tenantId) throws APIManagementException {
+        // First checking if ExternalStores are defined in api-manager.xml
+        Set<APIStore> externalAPIStores = getGlobalExternalStores();
+        // If defined, return Store Config provided there.
+        if (externalAPIStores != null && !externalAPIStores.isEmpty()) {
+            return externalAPIStores;
+        }
+        // Else Read the config from Tenant's Registry.
+        externalAPIStores = new HashSet<>();
+        //TODO: APK
+//        try {
+//            Iterator apiStoreIterator = getExternalStoresIteratorFromConfig(tenantId);
+//            if (apiStoreIterator != null) {
+//                while (apiStoreIterator.hasNext()) {
+//                    APIStore store = new APIStore();
+//                    OMElement storeElem = (OMElement) apiStoreIterator.next();
+//                    String type = storeElem.getAttributeValue(new QName(APIConstants.EXTERNAL_API_STORE_TYPE));
+//                    String className =
+//                            storeElem.getAttributeValue(new QName(APIConstants.EXTERNAL_API_STORE_CLASS_NAME));
+//                    store.setPublisher((APIPublisher) getClassInstance(className));
+//                    store.setType(type); //Set Store type [eg:wso2]
+//                    String name = storeElem.getAttributeValue(new QName(APIConstants.EXTERNAL_API_STORE_ID));
+//                    if (name == null) {
+//                        log.error("The ExternalAPIStore name attribute is not defined in external-api-stores.xml.");
+//                    }
+//                    store.setName(name); //Set store name
+//                    OMElement configDisplayName = storeElem.getFirstChildWithName
+//                            (new QName(APIConstants.EXTERNAL_API_STORE_DISPLAY_NAME));
+//                    String displayName = (configDisplayName != null) ? replaceSystemProperty(
+//                            configDisplayName.getText()) : name;
+//                    store.setDisplayName(displayName);//Set store display name
+//                    store.setEndpoint(replaceSystemProperty(storeElem.getFirstChildWithName(
+//                            new QName(APIConstants.EXTERNAL_API_STORE_ENDPOINT)).getText()));
+//                    //Set store endpoint, which is used to publish APIs
+//                    store.setPublished(false);
+//                    if (APIConstants.WSO2_API_STORE_TYPE.equals(type)) {
+//                        OMElement password = storeElem.getFirstChildWithName(new QName(
+//                                APIConstants.EXTERNAL_API_STORE_PASSWORD));
+//                        if (password != null) {
+//
+//                            String value = password.getText();
+//                            PasswordResolver passwordResolver = PasswordResolverFactory.getInstance();
+//                            store.setPassword(replaceSystemProperty(passwordResolver.getPassword(value)));
+//                            store.setUsername(replaceSystemProperty(storeElem.getFirstChildWithName(
+//                                    new QName(APIConstants.EXTERNAL_API_STORE_USERNAME)).getText()));
+//                            //Set store login username
+//                        } else {
+//                            log.error("The user-credentials of API Publisher is not defined in the <ExternalAPIStore> " +
+//                                    "config of external-api-stores.xml.");
+//                        }
+//                    }
+//                    externalAPIStores.add(store);
+//                }
+//            }
+//        } catch (ClassNotFoundException e) {
+//            String msg = "One or more classes defined in APIConstants.EXTERNAL_API_STORE_CLASS_NAME cannot be found";
+//            log.error(msg, e);
+//            throw new APIManagementException(ExceptionCodes.EXTERNAL_STORE_CLASS_NOT_FOUND);
+//        } catch (InstantiationException e) {
+//            String msg = "One or more classes defined in APIConstants.EXTERNAL_API_STORE_CLASS_NAME cannot be load";
+//            log.error(msg, e);
+//            throw new APIManagementException(ExceptionCodes.EXTERNAL_STORE_CLASS_NOT_LOADED);
+//        } catch (IllegalAccessException e) {
+//            String msg = "One or more classes defined in APIConstants.EXTERNAL_API_STORE_CLASS_NAME cannot be access";
+//            log.error(msg, e);
+//            throw new APIManagementException(ExceptionCodes.EXTERNAL_STORE_CLASS_NOT_ACCESSIBLE);
+//        }
+        return externalAPIStores;
+    }
+
+    /**
+     * Returns the External API Store Configuration with the given Store Name
+     *
+     * @param apiStoreName
+     * @return
+     * @throws APIManagementException
+     */
+    public static APIStore getExternalAPIStore(String apiStoreName, int tenantId) throws APIManagementException {
+
+        Set<APIStore> externalAPIStoresConfig = APIUtil.getExternalStores(tenantId);
+        for (APIStore apiStoreConfig : externalAPIStoresConfig) {
+            if (apiStoreConfig.getName().equals(apiStoreName)) {
+                return apiStoreConfig;
+            }
+        }
+        return null;
+    }
+
 }
