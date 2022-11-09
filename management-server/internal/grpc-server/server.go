@@ -24,14 +24,14 @@ import (
 	"net"
 	"time"
 
-	apiProtos "github.com/wso2/apk/management-server/internal/discovery/api/wso2/discovery/api"
-	logger "github.com/wso2/apk/management-server/internal/loggers"
+	apiProtos "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/apkmgt"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	"github.com/wso2/apk/adapter/pkg/tlsutils"
+	"github.com/wso2/apk/management-server/config"
+	logger "github.com/wso2/apk/management-server/internal/loggers"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/keepalive"
-	"github.com/wso2/apk/management-server/config"
 )
 
 type apiService struct {
@@ -42,25 +42,25 @@ func NewApiService() *apiService {
 	return &apiService{}
 }
 
-func (s *apiService) CreateAPI(ctx context.Context, api *apiProtos.API ) (*apiProtos.Response, error) {
-	logger.LoggerMGTServer.Infof("Message received : %q", api);
+func (s *apiService) CreateAPI(ctx context.Context, api *apiProtos.API) (*apiProtos.Response, error) {
+	logger.LoggerMGTServer.Infof("Message received : %q", api)
 	// TODO(Tharsanan1) database calls to persist data
-	return &apiProtos.Response{Result : true}, nil
+	return &apiProtos.Response{Result: true}, nil
 }
 
-func (s *apiService) UpdateAPI(ctx context.Context, api *apiProtos.API ) (*apiProtos.Response, error) {
-	logger.LoggerMGTServer.Infof("Message received : %q", api);
+func (s *apiService) UpdateAPI(ctx context.Context, api *apiProtos.API) (*apiProtos.Response, error) {
+	logger.LoggerMGTServer.Infof("Message received : %q", api)
 	// TODO(Tharsanan1) database calls to persist data
-	return &apiProtos.Response{Result : true}, nil
+	return &apiProtos.Response{Result: true}, nil
 }
 
-func (s *apiService) DeleteAPI(ctx context.Context, api *apiProtos.API ) (*apiProtos.Response, error) {
-	logger.LoggerMGTServer.Infof("Message received : %q", api);
+func (s *apiService) DeleteAPI(ctx context.Context, api *apiProtos.API) (*apiProtos.Response, error) {
+	logger.LoggerMGTServer.Infof("Message received : %q", api)
 	// TODO(Tharsanan1) database calls to persist data
-	return &apiProtos.Response{Result : true}, nil
+	return &apiProtos.Response{Result: true}, nil
 }
 
-func RunManagementServer() {
+func StartGRPCServer() {
 	var grpcOptions []grpc.ServerOption
 	publicKeyLocation, privateKeyLocation, truststoreLocation := tlsutils.GetKeyLocations()
 	cert, err := tlsutils.GetServerCertificate(publicKeyLocation, privateKeyLocation)
@@ -98,8 +98,8 @@ func RunManagementServer() {
 		})
 	}
 	// register services
-	apiService := NewApiService();
+	apiService := NewApiService()
 	apiProtos.RegisterAPIServiceServer(grpcServer, apiService)
-	logger.LoggerMGTServer.Info("Port: ", port, " management server listening")
+	logger.LoggerMGTServer.Infof("Management server is listening for GRPC connections on port: %v.", port)
 	grpcServer.Serve(lis)
 }
