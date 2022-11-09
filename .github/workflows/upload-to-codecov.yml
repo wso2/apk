@@ -1,0 +1,25 @@
+name: Upload coverage reports to CodeCov
+
+on:
+  pull_request:
+    types: [opened]
+    paths:
+      - 'common-java-libs/**' 
+
+jobs:
+  build:
+    name: Upload coverage reports to CodeCov
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./common-java-libs
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Run unit tests
+        run: ./gradlew build
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          flags: common-java-libs
+          files: ./common-java-libs/build/reports/jacoco/testCodeCoverageReport/testCodeCoverageReport.xml

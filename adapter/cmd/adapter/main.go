@@ -22,7 +22,7 @@ import (
 	"os/signal"
 
 	logger "github.com/sirupsen/logrus"
-	"github.com/wso2/apk/adapter/internal/operator"
+	"github.com/wso2/apk/adapter/internal/xds"
 )
 
 // invokes the code from the /internal and /pkg directories and nothing else.
@@ -31,7 +31,8 @@ func main() {
 	sig := make(chan os.Signal)
 	signal.Notify(sig, os.Interrupt)
 
-	go operator.InitOperator()
+	// go operator.InitOperator()
+	go xds.InitApkMgtClient()
 
 OUTER:
 	for {

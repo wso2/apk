@@ -32,12 +32,20 @@ When you add a new logger instance add the related package name as a constant
 
 // package name constants
 const (
-	pkgAuth = "github.com/wso2/apk/adapter/pkg/auth"
+	pkgAuth      = "github.com/wso2/apk/adapter/pkg/auth"
+	pkgSync      = "github.com/wso2/apk/adapter/pkg/synchronizer"
+	pkgTLSUtils  = "github.com/wso2/apk/adapter/pkg/tlsutils"
+	pkgHealth    = "github.com/wso2/apk/adapter/pkg/health"
+	pkgSoapUtils = "github.com/wso2/apk/adapter/pkg/soaputils"
 )
 
 // logger package references
 var (
-	LoggerAuth logging.Log
+	LoggerAuth      logging.Log
+	LoggerSync      logging.Log
+	LoggerTLSUtils  logging.Log
+	LoggerHealth    logging.Log
+	LoggerSoapUtils logging.Log
 )
 
 func init() {
@@ -47,5 +55,9 @@ func init() {
 // UpdateLoggers initializes the logger package references
 func UpdateLoggers() {
 	LoggerAuth = logging.InitPackageLogger(pkgAuth)
+	LoggerSync = logging.InitPackageLogger(pkgSync)
+	LoggerTLSUtils = logging.InitPackageLogger(pkgTLSUtils)
+	LoggerHealth = logging.InitPackageLogger(pkgHealth)
+	LoggerSoapUtils = logging.InitPackageLogger(pkgSoapUtils)
 	logrus.Info("Updated loggers")
 }

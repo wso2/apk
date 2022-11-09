@@ -19,7 +19,7 @@ import (
 
 	envoy_types "github.com/envoyproxy/go-control-plane/pkg/cache/types"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/api"
-	apikmgt "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/apkmgt"
+	apkmgt "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/apkmgt"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/config/enforcer"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/keymgt"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/subscription"
@@ -63,7 +63,7 @@ func GetResponseType(typeURL string) types.ResponseType {
 func GetResourceName(res envoy_types.Resource) string {
 	// Since Applications, Subscriptions, API-Metadata, Application Policies and Subscription Policies
 	// are always maintained under a single list, there is no need to have separate key.
-	// (Compared to GAAPI and API)
+	// (Compared to mgtServerApp and API)
 	switch v := res.(type) {
 	case *api.Api:
 		return fmt.Sprint(v.Vhost, v.BasePath, v.Version)
@@ -85,8 +85,8 @@ func GetResourceName(res envoy_types.Resource) string {
 		return fmt.Sprint(v.Name)
 	case *throttle.ThrottleData:
 		return "ThrottleData"
-	case *apikmgt.ApplicationDetails:
-		return fmt.Sprint(v.Applications)
+	case *apkmgt.Application:
+		return fmt.Sprint(v.Uuid)
 	case *keymgt.RevokedToken:
 		return fmt.Sprint(v.Jti)
 	default:

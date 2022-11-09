@@ -15,6 +15,36 @@
  *
  */
 
+plugins {
+    id 'base'
+    id 'jacoco-report-aggregation'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    jacocoAggregation project(':org.wso2.apk.apimgt.api')
+    jacocoAggregation project(':org.wso2.apk.apimgt.impl')
+    jacocoAggregation project(':org.wso2.apk.apimgt.init')
+    jacocoAggregation project(':org.wso2.apk.apimgt.rest.api.admin.v1.common')
+    jacocoAggregation project(':org.wso2.apk.apimgt.rest.api.util')
+    jacocoAggregation project(':org.wso2.apk.apimgt.user')
+}
+
+reporting {
+    reports {
+        testCodeCoverageReport(JacocoCoverageReport) {
+            testType = TestSuiteType.UNIT_TEST
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('testCodeCoverageReport', JacocoReport)
+}
+
 subprojects {
     apply from: "$rootDir/../common-gradle-scripts/java.gradle"
 }

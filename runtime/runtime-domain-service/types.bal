@@ -192,6 +192,8 @@ public type Error record {
 
 public type Service record {
     @constraint:String {maxLength: 255, minLength: 1}
+    string id;
+    @constraint:String {maxLength: 255, minLength: 1}
     string name;
     @constraint:String {maxLength: 255}
     string namespace;
@@ -265,15 +267,15 @@ public type API record {
 
 # API definition information
 public type ApidefinitionvalidationresponseInfo record {
-    # name of the api.
+    # Name of the API
     string name?;
-    # version of the api.
+    # Version of the API
     string 'version?;
-    # context of the api.
+    # Context of the API
     string context?;
-    # description of the api.
+    # Description of the API
     string description?;
-    # openapi version of the api.
+    # OpenAPI Version.
     string openAPIVersion?;
     # contains host/servers specified in the API definition file/URL
     string[] endpoints?;
