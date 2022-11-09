@@ -20,6 +20,7 @@ package xds
 import (
 	"context"
 	"fmt"
+	"github.com/wso2/apk/APKManagementServer/internal/database"
 	"math/rand"
 	"net"
 	"sync"
@@ -27,6 +28,10 @@ import (
 
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
+	"github.com/wso2/apk/APKManagementServer/internal/config"
+	"github.com/wso2/apk/APKManagementServer/internal/logger"
+	internal_types "github.com/wso2/apk/APKManagementServer/internal/types"
+	"github.com/wso2/apk/APKManagementServer/internal/xds/callbacks"
 	apkmgt_application "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/apkmgt"
 	apkmgt_service "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/apkmgt"
 	wso2_cache "github.com/wso2/apk/adapter/pkg/discovery/protocol/cache/v3"
@@ -40,9 +45,10 @@ import (
 )
 
 var (
-	apiCache      wso2_cache.SnapshotCache
-	apiCacheMutex sync.Mutex
-	Sent          bool = true
+	apiCache         wso2_cache.SnapshotCache
+	apiCacheMutex    sync.Mutex
+	introducedLabels map[string]bool
+	Sent             bool = true
 )
 
 const (
@@ -82,9 +88,55 @@ func FeedData() {
 		wso2_resource.APKMgtApplicationType: {&applications},
 	})
 	apiCacheMutex.Lock()
-	// TODO (amaliMatharaarachchi) update relevant adapters with snapshot caches
-	apiCache.SetSnapshot(context.Background(), config.ManagementServer.NodeLabels[0], newSnapshot)
-	apiCacheMutex.Unlock()
+	defer apiCacheMutex.Unlock()
+	apiCache.SetSnapshot(context.Background(), "mine", newSnapshot)
+}
+
+func AddMultipleApplications(applicationEventArray []*internal_types.ApplicationEvent) {
+	snapshotMap := make(map[string]*wso2_cache.Snapshot)
+	version := rand.Intn(maxRandomInt)
+
+	for _, event := range applicationEventArray {
+		label := event.Label
+		appUUID := event.UUID
+
+		snapshotEntry, snapshotFound := snapshotMap[label]
+		var newSnapshot wso2_cache.Snapshot
+		application, _ := database.GetApplicationByUUID(appUUID)
+		if !snapshotFound {
+			newSnapshot, _ = wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
+				wso2_resource.APKMgtApplicationType: {application},
+			})
+			snapshotEntry = &newSnapshot
+			snapshotMap[label] = &newSnapshot
+		} else {
+			// error occurs if no snapshot is under the provided label
+			resourceMap := snapshotEntry.GetResourcesAndTTL(typeURL)
+			resourceMap[appUUID] = types.ResourceWithTTL{
+				Resource: application,
+			}
+			appResources := convertResourceMapToArray(resourceMap)
+			newSnapshot, _ = wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
+				wso2_resource.APKMgtApplicationType: appResources,
+			})
+			snapshotMap[label] = &newSnapshot
+		}
+	}
+	apiCacheMutex.Lock()
+	defer apiCacheMutex.Unlock()
+	for label, snapshotEntry := range snapshotMap {
+		apiCache.SetSnapshot(context.Background(), label, *snapshotEntry)
+		introducedLabels[label] = true
+		logger.LoggerXds.Infof("Application Snaphsot is updated for label %s with the version %d.", label, version)
+	}
+}
+
+func convertResourceMapToArray(resourceMap map[string]types.ResourceWithTTL) []types.Resource {
+	var appResources []types.Resource
+	for _, res := range resourceMap {
+		appResources = append(appResources, res.Resource)
+	}
+	return appResources
 }
 
 func InitAPKMgtServer() {

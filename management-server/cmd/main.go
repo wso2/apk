@@ -18,6 +18,7 @@
 package main
 
 import (
+	"github.com/wso2/apk/APKManagementServer/internal/database"
 	"os"
 	"os/signal"
 
@@ -30,6 +31,9 @@ func main() {
 	logger.LoggerServer.Info("Starting Management server ...")
 	sig := make(chan os.Signal)
 	signal.Notify(sig, os.Interrupt)
+	// connect to the postgres database
+	database.ConnectToDB()
+	defer database.CloseDBConn()
 	go xds.InitAPKMgtServer()
 	// todo(amaliMatharaarachchi) watch data updates and update snapshot accordingly.
 	go xds.FeedData()

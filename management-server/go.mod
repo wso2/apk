@@ -8,6 +8,7 @@ require (
 	github.com/sirupsen/logrus v1.9.0
 	github.com/wso2/apk/adapter v0.0.0-20221109134906-6472d67fda07
 	google.golang.org/grpc v1.50.1
+	github.com/jackc/pgx/v5 v5.0.4
 )
 
 require (
