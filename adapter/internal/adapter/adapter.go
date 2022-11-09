@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2020, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2022, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -22,11 +22,19 @@ import (
 	"crypto/tls"
 	"time"
 
+	discoveryv3 "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
+	xdsv3 "github.com/envoyproxy/go-control-plane/pkg/server/v3"
 	enforcerCallbacks "github.com/wso2/apk/adapter/internal/discovery/xds/enforcercallbacks"
+	routercb "github.com/wso2/apk/adapter/internal/discovery/xds/routercallbacks"
+	"github.com/wso2/apk/adapter/internal/operator"
 	apiservice "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/api"
 	configservice "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/config"
+	keymanagerservice "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/keymgt"
 	subscriptionservice "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/subscription"
+	throttleservice "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/throttle"
 	wso2_server "github.com/wso2/apk/adapter/pkg/discovery/protocol/server/v3"
+	"github.com/wso2/apk/adapter/pkg/health"
+	healthservice "github.com/wso2/apk/adapter/pkg/health/api/wso2/health/service"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	"github.com/wso2/apk/adapter/pkg/tlsutils"
 
@@ -75,8 +83,11 @@ func init() {
 
 const grpcMaxConcurrentStreams = 1000000
 
-func runManagementServer(conf *config.Config, enforcerServer wso2_server.Server, enforcerSdsServer wso2_server.Server,
-	enforcerAppDsSrv wso2_server.Server, enforcerAppKeyMappingDsSrv wso2_server.Server, port uint) {
+func runManagementServer(conf *config.Config, server xdsv3.Server, enforcerServer wso2_server.Server, enforcerSdsServer wso2_server.Server,
+	enforcerAppDsSrv wso2_server.Server, enforcerAPIDsSrv wso2_server.Server, enforcerAppPolicyDsSrv wso2_server.Server,
+	enforcerSubPolicyDsSrv wso2_server.Server, enforcerAppKeyMappingDsSrv wso2_server.Server,
+	enforcerKeyManagerDsSrv wso2_server.Server, enforcerRevokedTokenDsSrv wso2_server.Server,
+	enforcerThrottleDataDsSrv wso2_server.Server, port uint) {
 	var grpcOptions []grpc.ServerOption
 	grpcOptions = append(grpcOptions, grpc.MaxConcurrentStreams(grpcMaxConcurrentStreams))
 	publicKeyLocation, privateKeyLocation, truststoreLocation := tlsutils.GetKeyLocations()
@@ -115,14 +126,29 @@ func runManagementServer(conf *config.Config, enforcerServer wso2_server.Server,
 	}
 
 	// register services
+	discoveryv3.RegisterAggregatedDiscoveryServiceServer(grpcServer, server)
 	configservice.RegisterConfigDiscoveryServiceServer(grpcServer, enforcerServer)
 	apiservice.RegisterApiDiscoveryServiceServer(grpcServer, enforcerServer)
 	subscriptionservice.RegisterSubscriptionDiscoveryServiceServer(grpcServer, enforcerSdsServer)
 	subscriptionservice.RegisterApplicationDiscoveryServiceServer(grpcServer, enforcerAppDsSrv)
+	subscriptionservice.RegisterApiListDiscoveryServiceServer(grpcServer, enforcerAPIDsSrv)
+	subscriptionservice.RegisterApplicationPolicyDiscoveryServiceServer(grpcServer, enforcerAppPolicyDsSrv)
+	subscriptionservice.RegisterSubscriptionPolicyDiscoveryServiceServer(grpcServer, enforcerSubPolicyDsSrv)
 	subscriptionservice.RegisterApplicationKeyMappingDiscoveryServiceServer(grpcServer, enforcerAppKeyMappingDsSrv)
+	keymanagerservice.RegisterKMDiscoveryServiceServer(grpcServer, enforcerKeyManagerDsSrv)
+	keymanagerservice.RegisterRevokedTokenDiscoveryServiceServer(grpcServer, enforcerRevokedTokenDsSrv)
+	throttleservice.RegisterThrottleDataDiscoveryServiceServer(grpcServer, enforcerThrottleDataDsSrv)
+
+	// register health service
+	healthservice.RegisterHealthServer(grpcServer, &health.Server{})
 
 	logger.LoggerMgw.Info("port: ", port, " management server listening")
 	go func() {
+		// if control plane enabled wait until it starts
+		if conf.ControlPlane.Enabled {
+			// wait current goroutine forever for until control plane starts
+			health.WaitForControlPlane()
+		}
 		logger.LoggerMgw.Info("Starting XDS GRPC server.")
 		if err = grpcServer.Serve(lis); err != nil {
 			logger.LoggerMgw.ErrorC(logging.ErrorDetails{
@@ -160,28 +186,52 @@ func Run(conf *config.Config) {
 	}
 
 	logger.LoggerMgw.Info("Starting adapter ....")
+	cache := xds.GetXdsCache()
 	enforcerCache := xds.GetEnforcerCache()
 	enforcerSubscriptionCache := xds.GetEnforcerSubscriptionCache()
 	enforcerApplicationCache := xds.GetEnforcerApplicationCache()
+	enforcerAPICache := xds.GetEnforcerAPICache()
+	enforcerApplicationPolicyCache := xds.GetEnforcerApplicationPolicyCache()
+	enforcerSubscriptionPolicyCache := xds.GetEnforcerSubscriptionPolicyCache()
 	enforcerApplicationKeyMappingCache := xds.GetEnforcerApplicationKeyMappingCache()
+	enforcerKeyManagerCache := xds.GetEnforcerKeyManagerCache()
+	enforcerRevokedTokenCache := xds.GetEnforcerRevokedTokenCache()
+	enforcerThrottleDataCache := xds.GetEnforcerThrottleDataCache()
 
+	srv := xdsv3.NewServer(ctx, cache, &routercb.Callbacks{})
 	enforcerXdsSrv := wso2_server.NewServer(ctx, enforcerCache, &enforcerCallbacks.Callbacks{})
 	enforcerSdsSrv := wso2_server.NewServer(ctx, enforcerSubscriptionCache, &enforcerCallbacks.Callbacks{})
 	enforcerAppDsSrv := wso2_server.NewServer(ctx, enforcerApplicationCache, &enforcerCallbacks.Callbacks{})
+	enforcerAPIDsSrv := wso2_server.NewServer(ctx, enforcerAPICache, &enforcerCallbacks.Callbacks{})
+	enforcerAppPolicyDsSrv := wso2_server.NewServer(ctx, enforcerApplicationPolicyCache, &enforcerCallbacks.Callbacks{})
+	enforcerSubPolicyDsSrv := wso2_server.NewServer(ctx, enforcerSubscriptionPolicyCache, &enforcerCallbacks.Callbacks{})
 	enforcerAppKeyMappingDsSrv := wso2_server.NewServer(ctx, enforcerApplicationKeyMappingCache, &enforcerCallbacks.Callbacks{})
+	enforcerKeyManagerDsSrv := wso2_server.NewServer(ctx, enforcerKeyManagerCache, &enforcerCallbacks.Callbacks{})
+	enforcerRevokedTokenDsSrv := wso2_server.NewServer(ctx, enforcerRevokedTokenCache, &enforcerCallbacks.Callbacks{})
+	enforcerThrottleDataDsSrv := wso2_server.NewServer(ctx, enforcerThrottleDataCache, &enforcerCallbacks.Callbacks{})
 
-	runManagementServer(conf, enforcerXdsSrv, enforcerSdsSrv, enforcerAppDsSrv, enforcerAppKeyMappingDsSrv, port)
+	runManagementServer(conf, srv, enforcerXdsSrv, enforcerSdsSrv, enforcerAppDsSrv, enforcerAPIDsSrv,
+		enforcerAppPolicyDsSrv, enforcerSubPolicyDsSrv, enforcerAppKeyMappingDsSrv, enforcerKeyManagerDsSrv,
+		enforcerRevokedTokenDsSrv, enforcerThrottleDataDsSrv, port)
 
 	// Set enforcer startup configs
 	xds.UpdateEnforcerConfig(conf)
 
-	// Set enforcer startup configs
 	envs := conf.ControlPlane.EnvironmentLabels
 
 	// If no environments are configured, default gateway label value is assigned.
 	if len(envs) == 0 {
 		envs = append(envs, config.DefaultGatewayName)
 	}
+
+	for _, env := range envs {
+		xds.GenerateGlobalClusters(env)
+		listeners, clusters, routes, endpoints, apis := xds.GenerateEnvoyResoucesForLabel(env)
+		xds.UpdateXdsCacheWithLock(env, endpoints, clusters, routes, listeners)
+		xds.UpdateEnforcerApis(env, apis, "")
+	}
+
+	go operator.InitOperator()
 
 OUTER:
 	for {

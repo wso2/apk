@@ -25,6 +25,7 @@ import (
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/adapter"
 	"github.com/wso2/apk/adapter/internal/operator"
+	"github.com/wso2/apk/adapter/internal/xds"
 )
 
 // invokes the code from the /internal and /pkg directories and nothing else.
@@ -33,7 +34,8 @@ func main() {
 	sig := make(chan os.Signal)
 	signal.Notify(sig, os.Interrupt)
 
-	go operator.InitOperator()
+	// go operator.InitOperator()
+	go xds.InitApkMgtClient()
 
 	conf, errReadConfig := config.ReadConfigs()
 	if errReadConfig != nil {

@@ -25,7 +25,8 @@ import (
 // This uses singleton pattern where creating a single channel for communication
 //
 // To get a instance of the channel for a data publisher go routine
-//  `publisher := NewSender()`
+//
+//	`publisher := NewSender()`
 //
 // Create a receiver channel in worker go routine
 // receiver := NewReceiver()
@@ -67,16 +68,17 @@ const (
 // Config represents the adapter configuration.
 // It is created directly from the configuration toml file.
 // Note :
-// 		Don't use toml tag for configuration properties as it may affect environment variable based
-// 		config resolution.
+//
+//	Don't use toml tag for configuration properties as it may affect environment variable based
+//	config resolution.
 type Config struct {
-	Adapter       adapter
-	Enforcer      enforcer
-	Envoy         envoy         `toml:"router"`
-	ControlPlane  controlPlane  `toml:"controlPlane"`
-	GlobalAdapter globalAdapter `toml:"globalAdapter"`
-	Analytics     analytics     `toml:"analytics"`
-	Tracing       tracing
+	Adapter          adapter
+	Enforcer         enforcer
+	Envoy            envoy            `toml:"router"`
+	ControlPlane     controlPlane     `toml:"controlPlane"`
+	ManagementServer managementServer `toml:"managementServer"`
+	Analytics        analytics        `toml:"analytics"`
+	Tracing          tracing
 }
 
 // Adapter related Configurations
@@ -97,6 +99,8 @@ type adapter struct {
 	SoapErrorInXMLEnabled bool
 	// SourceControl represents the configuration related to the repository where the api artifacts are stored
 	SourceControl sourceControl
+	// GRPCClient represents the configuration related to gRPC connection to Management server to agent
+	GRPCClient gRPCClient
 }
 
 // Envoy Listener Component related configurations.
@@ -116,6 +120,7 @@ type envoy struct {
 	Connection                       connection
 	PayloadPassingToEnforcer         payloadPassingToEnforcer
 	UseRemoteAddress                 bool
+	Filters                          filters
 }
 
 type connectionTimeouts struct {
@@ -497,16 +502,10 @@ type requestWorkerPool struct {
 	PauseTimeAfterFailure time.Duration
 }
 
-type globalAdapter struct {
+type managementServer struct {
 	Enabled    bool
 	ServiceURL string
-	// Deprecated: Use ServiceURL instead.
-	ServiceURLDeprecated string `toml:"serviceUrl"`
-	LocalLabel           string
-	// Deprecated: Use OverrideHostName instead.
-	OverwriteHostName string
-	OverrideHostName  string
-	RetryInterval     time.Duration
+	NodeLabel  string
 }
 
 type brokerConnectionParameters struct {
@@ -543,4 +542,35 @@ type mutualSSL struct {
 	EnableClientValidation          bool
 	ClientCertificateEncode         bool
 	EnableOutboundCertificateHeader bool
+}
+
+type gRPCClient struct {
+	ManagementServerAddress string;
+	MaxAttempts int;
+	BackOffInMilliSeconds int;
+}
+
+type filters struct {
+	Compression compression
+}
+
+type compression struct {
+	Enabled           bool
+	Library           string
+	RequestDirection  requestDirection
+	ResponseDirection responseDirection
+	LibraryProperties map[string]interface{}
+}
+
+type requestDirection struct {
+	Enabled              bool
+	MinimumContentLength int
+	ContentType          []string
+}
+
+type responseDirection struct {
+	Enabled              bool
+	MinimumContentLength int
+	ContentType          []string
+	EnableForEtagHeader  bool
 }

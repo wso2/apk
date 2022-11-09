@@ -66,6 +66,11 @@ var defaultConfig = &Config{
 			MaxRetryCount:      20,
 			ArtifactsDirectory: "/home/wso2/git-artifacts",
 		},
+		GRPCClient: gRPCClient{
+			ManagementServerAddress : "localhost:8765",
+			MaxAttempts : 5,
+			BackOffInMilliSeconds : 1000,
+		},
 	},
 	Envoy: envoy{
 		ListenerHost:                     "0.0.0.0",
@@ -145,6 +150,30 @@ var defaultConfig = &Config{
 			MaxRequestBytes:     102400,
 			AllowPartialMessage: false,
 			PackAsBytes:         false,
+		},
+		Filters: filters{
+			Compression: compression{
+				Enabled: true,
+				Library: "gzip",
+				RequestDirection: requestDirection{
+					Enabled:              false,
+					MinimumContentLength: 30,
+					ContentType:          []string{"application/javascript", "application/json", "application/xhtml+xml", "image/svg+xml", "text/css", "text/html", "text/plain", "text/xml"},
+				},
+				ResponseDirection: responseDirection{
+					Enabled:              true,
+					MinimumContentLength: 30,
+					ContentType:          []string{"application/javascript", "application/json", "application/xhtml+xml", "image/svg+xml", "text/css", "text/html", "text/plain", "text/xml"},
+					EnableForEtagHeader:  true,
+				},
+				LibraryProperties: map[string]interface{}{
+					"memoryLevel":         3,
+					"windowBits":          12,
+					"compressionLevel":    9,
+					"compressionStrategy": "defaultStrategy",
+					"chunkSize":           4096,
+				},
+			},
 		},
 	},
 	Enforcer: enforcer{
@@ -335,14 +364,10 @@ var defaultConfig = &Config{
 			PauseTimeAfterFailure: 5,
 		},
 	},
-	GlobalAdapter: globalAdapter{
-		Enabled:              false,
-		ServiceURL:           "global-adapter:18000",
-		ServiceURLDeprecated: UnassignedAsDeprecated,
-		OverwriteHostName:    UnassignedAsDeprecated,
-		OverrideHostName:     "",
-		LocalLabel:           "default",
-		RetryInterval:        5,
+	ManagementServer: managementServer{
+		Enabled:    false,
+		ServiceURL: "management-server:18000",
+		NodeLabel:  "default",
 	},
 	Analytics: analytics{
 		Enabled: false,

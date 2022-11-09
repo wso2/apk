@@ -79,7 +79,6 @@ type server struct {
 	keymgt.UnimplementedKMDiscoveryServiceServer
 	keymgt.UnimplementedRevokedTokenDiscoveryServiceServer
 	throttle.UnimplementedThrottleDataDiscoveryServiceServer
-	//ga.UnimplementedApiGADiscoveryServiceServer
 	apkmgt.UnimplementedAPKMgtDiscoveryServiceServer
 	rest  rest.Server
 	sotw  envoy_sotw.Server

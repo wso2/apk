@@ -32,11 +32,17 @@ When you add a new logger instance add the related package name as a constant
 
 // package name constants
 const (
-	apkOperator             = "github.com/wso2/apk/adapter/internal/operator"
+	pkgAPKOperator          = "github.com/wso2/apk/adapter/internal/operator"
 	pkgEnforcerXdsCallbacks = "github.com/wso2/apk/adapter/internal/discovery/xds/enforcercallbacks"
 	pkgRouterXdsCallbacks   = "github.com/wso2/apk/adapter/internal/discovery/xds/routercallbacks"
-	pkgXds                  = "github.com/wso2/product-microgateway/adapter/internal/discovery/xds"
-	pkgMgw                  = "github.com/wso2/product-microgateway/adapter/internal/adapter"
+	pkgGrpcClient           = "github.com/wso2/apk/adapter/internal/grpc-client"
+	pkgXds                  = "github.com/wso2/apk/adapter/internal/discovery/xds"
+	pkgOasParser            = "github.com/wso2/apk/adapter/internal/oasparser"
+	pkgInterceptor          = "github.com/wso2/apk/adapter/internal/interceptor"
+	pkgSvcDiscovery         = "github.com/wso2/apk/adapter/internal/svcdiscovery"
+	pkgNotifier             = "github.com/wso2/apk/adapter/internal/notifier"
+	pkgAPI                  = "github.com/wso2/apk/adapter/internal/api"
+	pkgMgw                  = "github.com/wso2/apk/adapter/internal/adapter"
 )
 
 // logger package references
@@ -45,6 +51,12 @@ var (
 	LoggerEnforcerXdsCallbacks logging.Log
 	LoggerRouterXdsCallbacks   logging.Log
 	LoggerXds                  logging.Log
+	LoggerGRPCClient           logging.Log
+	LoggerOasparser            logging.Log
+	LoggerInterceptor          logging.Log
+	LoggerSvcDiscovery         logging.Log
+	LoggerNotifier             logging.Log
+	LoggerAPI                  logging.Log
 	LoggerMgw                  logging.Log
 )
 
@@ -57,7 +69,13 @@ func UpdateLoggers() {
 	LoggerRouterXdsCallbacks = logging.InitPackageLogger(pkgRouterXdsCallbacks)
 	LoggerEnforcerXdsCallbacks = logging.InitPackageLogger(pkgEnforcerXdsCallbacks)
 	LoggerXds = logging.InitPackageLogger(pkgXds)
+	LoggerGRPCClient = logging.InitPackageLogger(pkgGrpcClient)
+	LoggerAPKOperator = logging.InitPackageLogger(pkgAPKOperator)
+	LoggerOasparser = logging.InitPackageLogger(pkgOasParser)
+	LoggerInterceptor = logging.InitPackageLogger(pkgInterceptor)
+	LoggerSvcDiscovery = logging.InitPackageLogger(pkgSvcDiscovery)
+	LoggerNotifier = logging.InitPackageLogger(pkgNotifier)
+	LoggerAPI = logging.InitPackageLogger(pkgAPI)
 	LoggerMgw = logging.InitPackageLogger(pkgMgw)
-	LoggerAPKOperator = logging.InitPackageLogger(apkOperator)
 	logrus.Info("Updated loggers")
 }

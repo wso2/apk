@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2021, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2022, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -99,9 +100,31 @@ func IsPublicCertificate(certContent []byte) bool {
 	return false
 }
 
+// InvokeControlPlane sends request to the control plane and returns the response
+func InvokeControlPlane(req *http.Request, skipSSL bool) (*http.Response, error) {
+	tr := &http.Transport{}
+	if !skipSSL {
+		_, _, truststoreLocation := GetKeyLocations()
+		caCertPool := GetTrustedCertPool(truststoreLocation)
+		tr = &http.Transport{
+			TLSClientConfig: &tls.Config{RootCAs: caCertPool},
+		}
+	} else {
+		tr = &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}
+	}
+
+	// Configuring the http client
+	client := &http.Client{
+		Transport: tr,
+	}
+	return client.Do(req)
+}
+
 // GetKeyLocations function returns the public key path and private key path
 func GetKeyLocations() (string, string, string) {
-	conf, _ := config.ReadConfigs()
+	conf := config.ReadConfigs()
 	publicKeyLocation := conf.Adapter.Keystore.CertPath
 	privateKeyLocation := conf.Adapter.Keystore.KeyPath
 	truststoreLocation := conf.Adapter.Truststore.Location
