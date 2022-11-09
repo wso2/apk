@@ -28,7 +28,6 @@ public class DBDataSource {
     static String databaseName = "apimdb";
 
     DBDataSource() throws Exception {
-        //todo: need to fetch the IP correctly without hardcoding
         String ipAddress = "localhost";
         String port = "5432";
         basicDataSource.setDriverClassName("org.postgresql.Driver");
@@ -56,23 +55,4 @@ public class DBDataSource {
     public HikariDataSource getDatasource() throws SQLException {
         return basicDataSource;
     }
-
-    /*public void resetDB() throws SQLException {
-        List<String> tables = new ArrayList<>();
-        try (Connection connection = basicDataSource.getConnection();
-             Statement statement = connection.createStatement()) {
-            try (ResultSet resultSet = statement.executeQuery("SELECT table_name as TABLE_NAME FROM " +
-                    "information_schema.tables WHERE table_type = 'BASE TABLE' AND table_schema='public'")) {
-                while (resultSet.next()) {
-                    tables.add(resultSet.getString("TABLE_NAME"));
-                }
-            }
-            statement.execute("SET FOREIGN_KEY_CHECKS = 0");
-            for (String table : tables) {
-                statement.addBatch("DROP TABLE " + table + " CASCADE");
-            }
-            statement.executeBatch();
-            statement.execute("SET FOREIGN_KEY_CHECKS = 1");
-        }
-    }*/
 }
