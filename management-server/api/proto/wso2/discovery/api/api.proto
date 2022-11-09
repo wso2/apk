@@ -19,7 +19,7 @@
 syntax = "proto3";
 
 option go_package = "github.com/wso2/apk/management-server/wso2/discovery/api";
-package wso2.discovery.api;
+package wso2.discovery.api.v1;
 
 service APIService {
     rpc createAPI(API) returns (Response);

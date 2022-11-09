@@ -37,7 +37,7 @@ func NewAPIServiceClient(cc grpc.ClientConnInterface) APIServiceClient {
 
 func (c *aPIServiceClient) CreateAPI(ctx context.Context, in *API, opts ...grpc.CallOption) (*Response, error) {
 	out := new(Response)
-	err := c.cc.Invoke(ctx, "/wso2.discovery.api.APIService/createAPI", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/wso2.discovery.api.v1.APIService/createAPI", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +46,7 @@ func (c *aPIServiceClient) CreateAPI(ctx context.Context, in *API, opts ...grpc.
 
 func (c *aPIServiceClient) UpdateAPI(ctx context.Context, in *API, opts ...grpc.CallOption) (*Response, error) {
 	out := new(Response)
-	err := c.cc.Invoke(ctx, "/wso2.discovery.api.APIService/updateAPI", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/wso2.discovery.api.v1.APIService/updateAPI", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +55,7 @@ func (c *aPIServiceClient) UpdateAPI(ctx context.Context, in *API, opts ...grpc.
 
 func (c *aPIServiceClient) DeleteAPI(ctx context.Context, in *API, opts ...grpc.CallOption) (*Response, error) {
 	out := new(Response)
-	err := c.cc.Invoke(ctx, "/wso2.discovery.api.APIService/deleteAPI", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/wso2.discovery.api.v1.APIService/deleteAPI", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +108,7 @@ func _APIService_CreateAPI_Handler(srv interface{}, ctx context.Context, dec fun
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/wso2.discovery.api.APIService/createAPI",
+		FullMethod: "/wso2.discovery.api.v1.APIService/createAPI",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(APIServiceServer).CreateAPI(ctx, req.(*API))
@@ -126,7 +126,7 @@ func _APIService_UpdateAPI_Handler(srv interface{}, ctx context.Context, dec fun
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/wso2.discovery.api.APIService/updateAPI",
+		FullMethod: "/wso2.discovery.api.v1.APIService/updateAPI",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(APIServiceServer).UpdateAPI(ctx, req.(*API))
@@ -144,7 +144,7 @@ func _APIService_DeleteAPI_Handler(srv interface{}, ctx context.Context, dec fun
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/wso2.discovery.api.APIService/deleteAPI",
+		FullMethod: "/wso2.discovery.api.v1.APIService/deleteAPI",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(APIServiceServer).DeleteAPI(ctx, req.(*API))
@@ -156,7 +156,7 @@ func _APIService_DeleteAPI_Handler(srv interface{}, ctx context.Context, dec fun
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var APIService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "wso2.discovery.api.APIService",
+	ServiceName: "wso2.discovery.api.v1.APIService",
 	HandlerType: (*APIServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
