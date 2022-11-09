@@ -24,7 +24,7 @@ function initializeK8sClient() returns http:Client|error {
     return k8sApiClient;
 }
 
-isolated function getServicesListFromK8s(string namespace) returns ServiceList|error {
+isolated function getServicesListInNamespace(string namespace) returns ServiceList|error {
     Service[] serviceNames = [];
     string endpoint = "/namespaces/" + namespace + "/services";
     error|json serviceResp = k8sApiServerEp->get(endpoint, targetType = json);
@@ -32,6 +32,7 @@ isolated function getServicesListFromK8s(string namespace) returns ServiceList|e
         json[] serviceArr = <json[]>check serviceResp.items;
         foreach json i in serviceArr {
             Service serviceData = {
+                id: <string>check i.metadata.uid,
                 name: <string>check i.metadata.name,
                 namespace: <string>check i.metadata.namespace,
                 'type: <string>check i.spec.'type
@@ -47,6 +48,29 @@ isolated function getServicesListFromK8s(string namespace) returns ServiceList|e
                 namespace);
 }
 
+isolated function getServicesListFromK8s() returns ServiceList|error {
+    Service[] serviceNames = [];
+    string endpoint = "/services";
+    error|json serviceResp = k8sApiServerEp->get(endpoint, targetType = json);
+    if (serviceResp is json) {
+        json[] serviceArr = <json[]>check serviceResp.items;
+        foreach json i in serviceArr {
+            Service serviceData = {
+                id: <string>check i.metadata.uid,
+                name: <string>check i.metadata.name,
+                namespace: <string>check i.metadata.namespace,
+                'type: <string>check i.spec.'type
+            };
+            serviceNames.push(serviceData);
+        }
+        ServiceList serviceList = {
+            list: serviceNames
+        };
+        return serviceList;
+    }
+    return error("error while retrieving service list from K8s API server for namespace");
+}
+
 isolated function getServiceFromK8s(string name, string namespace) returns ServiceList|error {
     Service[] serviceNames = [];
     string endpoint = "/namespaces/" + namespace + "/services/" + name;
@@ -55,6 +79,7 @@ isolated function getServiceFromK8s(string name, string namespace) returns Servi
         json[] serviceArr = <json[]>check serviceResp.items;
         foreach json i in serviceArr {
             Service serviceData = {
+                id: <string>check i.metadata.uid,
                 name: <string>check i.metadata.name,
                 namespace: <string>check i.metadata.namespace,
                 'type: <string>check i.spec.'type
