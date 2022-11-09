@@ -15,7 +15,6 @@
  *
  */
 
-
 syntax = "proto3";
 
 option go_package = "github.com/wso2/apk/adapter/discovery/service/apkmgt/api";
