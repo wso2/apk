@@ -16,7 +16,7 @@
  */
 
 plugins {
-    id 'com.avast.gradle.docker-compose' version '0.16.8'
+    alias libs.plugins.docker.compose
 }
 
 description = 'WSO2 APK Implementation Component'
@@ -65,7 +65,7 @@ dependencies {
     testImplementation libs.powermock.api.mockito2
     testImplementation libs.jacoco.agent
     testImplementation libs.xml.apis
-    testImplementation group: 'org.testng', name: 'testng', version: '7.6.1'
+    testImplementation libs.testng
 }
 
 test {

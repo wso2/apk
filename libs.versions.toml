@@ -72,10 +72,11 @@ mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
 powermock-api-mockito2 = { module = "org.powermock:powermock-api-mockito2", version.ref = "powermock" }
 powermock-module-junit4 = { module = "org.powermock:powermock-module-junit4", version.ref = "powermock" }
 xml-apis = { module = "xml-apis:xml-apis", version.ref = "xml-apis" }
+testng = { module = "org.testng:testng", version.ref = "testng"}
 
 [plugins]
 openapi-generator-plugin = { id = "org.openapi.generator", version.ref = "openapi-generator-plugin" }
-
+docker-compose = { id = "com.avast.gradle.docker-compose", version.ref = "docker-compose" }
 
 [versions]
 apicurio = "1.1.5"
@@ -127,5 +128,7 @@ jacoco = "0.8.4"
 mockito = "2.23.4"
 powermock = "2.0.2"
 xml-apis = "1.4.01"
+testng = "7.6.1"
 # Plugins
 openapi-generator-plugin = "6.2.1"
+docker-compose = "0.16.8"
