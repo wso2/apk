@@ -666,58 +666,6 @@ public interface APIProvider extends APIManager {
     String getExternalWorkflowReferenceId (int subscriptionId) throws APIManagementException;
 
     /**
-     * Method to add a Certificate to publisher and gateway nodes.
-     *
-     * @param userName : The user name of the logged in user.
-     * @param certificate : Base64 encoded certificate string.
-     * @param alias : Alias for the certificate.
-     * @param endpoint : Endpoint which the certificate should be mapped to.
-     * @return Integer which represents the operation status.
-     * @throws APIManagementException
-     */
-    int addCertificate(String userName, String certificate, String alias, String endpoint) throws APIManagementException;
-
-    /**
-     * Method to add client certificate to gateway nodes to support mutual SSL based authentication.
-     *
-     * @param userName      : User name of the logged in user.
-     * @param apiTypeWrapper : API Type Wrapper.
-     * @param certificate   : Relevant public certificate.
-     * @param alias         : Alias of the certificate.
-     * @param organization  : Organization
-     * @return SUCCESS : If operation succeeded,
-     * INTERNAL_SERVER_ERROR : If any internal error occurred,
-     * ALIAS_EXISTS_IN_TRUST_STORE : If alias is already present in the trust store,
-     * CERTIFICATE_EXPIRED : If the certificate is expired.
-     * @throws APIManagementException API Management Exception.
-     */
-    int addClientCertificate(String userName, ApiTypeWrapper apiTypeWrapper, String certificate, String alias,
-                             String tierName, String organization) throws APIManagementException;
-
-    /**
-     * Method to remove the certificate which mapped to the given alias, endpoint from publisher and gateway nodes.
-     * @param userName : UserName of the logged in user.
-     * @param alias    : Alias of the certificate which needs to be deleted.
-     * @param endpoint : Endpoint which the certificate is mapped to.
-     * @return Integer which represents the operation status.
-     * @throws APIManagementException
-     */
-    int deleteCertificate(String userName, String alias, String endpoint) throws APIManagementException;
-
-    /**
-     * Method to remove the client certificates which is mapped to given alias and api identifier from database.
-     *
-     * @param userName      : Name of the logged in user.
-     * @param alias         : Alias of the certificate which needs to be deleted.
-     * @return 1: If delete succeeded,
-     * 2: If delete failed, due to an un-expected error.
-     * 4 : If certificate is not found in the trust store.
-     * @throws APIManagementException API Management Exception.
-     */
-    int deleteClientCertificate(String userName, ApiTypeWrapper apiTypeWrapper, String alias)
-            throws APIManagementException;
-
-    /**
      * Method to get the server is configured to Dynamic SSL Profile feature.
      * @return : TRUE if all the configurations are met, FALSE otherwise.
      */
@@ -1148,28 +1096,6 @@ public interface APIProvider extends APIManager {
     List<APIRevision> getAPIRevisions(String apiUUID) throws APIManagementException;
 
     /**
-     * Adds a new APIRevisionDeployment to an existing API
-     *
-     * @param apiId                     API UUID
-     * @param apiRevisionId             API Revision UUID
-     * @param apiRevisionDeployments    List of APIRevisionDeployment objects
-     * @param organization              Identifier of an organization
-     * @throws APIManagementException if failed to add APIRevision
-     */
-    void deployAPIRevision(String apiId, String apiRevisionId, List<APIRevisionDeployment> apiRevisionDeployments, String organization) throws APIManagementException;
-
-    /**
-     * Adds a new DeployedAPIRevision to an existing API
-     *
-     * @param apiId API UUID
-     * @param apiRevisionUUID API Revision UUID
-     * @param deployedAPIRevisions List of DeployedAPIRevision objects
-     * @throws APIManagementException if failed to add APIRevision
-     */
-    void addDeployedAPIRevision(String apiId, String apiRevisionUUID, List<DeployedAPIRevision>
-            deployedAPIRevisions) throws APIManagementException;
-
-    /**
      * Adds a new DeployedAPIRevision to an existing API
      *
      * @param apiId API UUID
@@ -1218,45 +1144,6 @@ public interface APIProvider extends APIManager {
      */
     List<APIRevisionDeployment> getAPIRevisionDeploymentList(String revisionUUID) throws APIManagementException;
 
-    /**
-     * Adds a new APIRevisionDeployment to an existing API
-     *
-     * @param apiId API UUID
-     * @param apiRevisionId API Revision UUID
-     * @param apiRevisionDeployments List of APIRevisionDeployment objects
-     * @param organization identifier of the organization
-     * @throws APIManagementException if failed to add APIRevision
-     */
-    void undeployAPIRevisionDeployment(String apiId, String apiRevisionId, List<APIRevisionDeployment> apiRevisionDeployments, String organization) throws APIManagementException;
-
-    /**
-     * Restore a provided API Revision as the working copy of the API
-     *
-     * @param apiId          API UUID
-     * @param apiRevisionId  API Revision UUID
-     * @param orgId          Identifier of an organization
-     * @throws APIManagementException if failed to restore APIRevision
-     */
-    void restoreAPIRevision(String apiId, String apiRevisionId, String orgId) throws APIManagementException;
-
-    /**
-     * Delete an API Revision
-     *
-     * @param apiId         API UUID
-     * @param apiRevisionId API Revision UUID
-     * @param organization  Identifier of an organization
-     * @throws APIManagementException if failed to delete APIRevision
-     */
-    void deleteAPIRevision(String apiId, String apiRevisionId, String organization) throws APIManagementException;
-
-    /**
-     * Delete all API Revision
-     *
-     * @param apiId         API UUID
-     * @param organization  Identifier of an organization
-     * @throws APIManagementException if failed to delete APIRevision
-     */
-    void deleteAPIRevisions(String apiId, String organization) throws APIManagementException;
 
     /**
      * This method updates the AsyncApi definition in registry
@@ -1266,68 +1153,7 @@ public interface APIProvider extends APIManager {
      * @throws APIManagementException
      */
     void saveAsyncApiDefinition(API api, String jsonText) throws APIManagementException;
-    /**
-    * Adds a new APIRevision to an existing API Product
-     *
-     * @param apiRevision APIRevision
-     * @param organization Organization
-     * @throws APIManagementException if failed to add APIRevision
-     */
-    String addAPIProductRevision(APIRevision apiRevision, String organization) throws APIManagementException;
 
-    /**
-     * Adds a new APIRevisionDeployment to an existing API Product
-     *
-     * @param apiProductId API Product UUID
-     * @param apiRevisionId API Revision UUID
-     * @param apiRevisionDeployments List of APIRevisionDeployment objects
-     * @throws APIManagementException if failed to add APIRevision
-     */
-    void deployAPIProductRevision(String apiProductId, String apiRevisionId, List<APIRevisionDeployment>
-            apiRevisionDeployments) throws APIManagementException;
-
-    /**
-     * Undeploy revision from provided gateway environments
-     *
-     * @param apiProductId API Product UUID
-     * @param apiRevisionId API Revision UUID
-     * @param apiRevisionDeployments List of APIRevisionDeployment objects
-     * @throws APIManagementException if failed to add APIRevision
-     */
-    void undeployAPIProductRevisionDeployment(String apiProductId, String apiRevisionId,
-                                              List<APIRevisionDeployment> apiRevisionDeployments) throws APIManagementException;
-
-    /**
-     * Restore a provided API Product Revision as the working copy of the API Product
-     *
-     * @param apiProductId API Product UUID
-     * @param apiRevisionId API Revision UUID
-     * @param organization organization of the API
-     * @throws APIManagementException if failed to restore APIRevision
-     */
-    void restoreAPIProductRevision(String apiProductId, String apiRevisionId, String organization)
-            throws APIManagementException;
-    /**
-     * Delete an API Product Revision
-     *
-     * @param apiProductId API Product UUID
-     * @param organization Organization
-     * @throws APIManagementException if failed to delete APIRevision
-     */
-    void deleteAPIProductRevisions(String apiProductId, String organization)
-            throws APIManagementException;
-
-
-    /**
-     * Delete an API Product Revision
-     *
-     * @param apiProductId API Product UUID
-     * @param apiRevisionId API Revision UUID
-     * @param organization Organization
-     * @throws APIManagementException if failed to delete APIRevision
-     */
-    void deleteAPIProductRevision(String apiProductId, String apiRevisionId, String organization)
-            throws APIManagementException;
 
     String generateApiKey(String apiId) throws APIManagementException;
 
