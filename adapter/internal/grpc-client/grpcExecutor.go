@@ -51,14 +51,13 @@ func GetConnection() (*grpc.ClientConn, error){
 func generateTLSCredentials() credentials.TransportCredentials {
 	conf, _ := config.ReadConfigs()
 	certPool := tlsutils.GetTrustedCertPool(conf.Adapter.Truststore.Location)
-	// There is a single private-public key pair for XDS server initialization, as well as for XDS client authentication
 	certificate, err := tlsutils.GetServerCertificate(conf.Adapter.Keystore.CertPath,
 		conf.Adapter.Keystore.KeyPath)
 	if err != nil {
 		logger.LoggerGRPCClient.ErrorC(logging.ErrorDetails{
 			Message:   fmt.Sprintf("Error while processing the private-public key pair : %v", err.Error()),
 			Severity:  logging.BLOCKER,
-			ErrorCode: 1702,
+			ErrorCode: 2700,
 		})
 	}
 	tlsConfig := &tls.Config{
@@ -75,11 +74,14 @@ func  ExecuteGRPCCall(connection *grpc.ClientConn, call func() (interface{}, err
 	backOffInMilliSeconds := conf.Adapter.GRPCClient.BackOffInMilliSeconds;
 	retries := 0;
 	response, err := call();
-	for {
-		
+	for {	
 		if (err != nil) {
 			errStatus, _ := grpcStatus.FromError(err)
-			logger.LoggerGRPCClient.Errorf("gRPC call failed. errorCode: %s errorMessage: %s", errStatus.Code().String(), errStatus.Message());
+			logger.LoggerGRPCClient.ErrorC(logging.ErrorDetails{
+				Message:   fmt.Sprintf("GRPC call failed. errorCode: %v errorMessage: %v", errStatus.Code().String(), errStatus.Message()),
+				Severity:  logging.CRITICAL,
+				ErrorCode: 2701,
+			})
 			if (maxAttempts < 0) {
 				// If max attempts has a negative value, retry indefinitely by setting retry less than max attempts.
 				retries = maxAttempts - 1;
