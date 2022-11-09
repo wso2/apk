@@ -40,19 +40,12 @@ message API {
     string updatedBy = 10;
     string updatedTime = 11;
     string definition = 12;
-    repeated string transport = 13; 
-    EndpointConfig endpointConfig = 14;
+    repeated string transports = 13; 
     repeated Resource resources = 16;
-    CorsConfiguration corsConfiguration = 17;
+    CorsConfig corsConfig = 17;
 }
 
-message EndpointConfig {
-    string type = 1;
-    string productionUrl = 2;
-    string sandboxUrl = 3;
-}
-
-message CorsConfiguration {
+message CorsConfig {
     bool corsConfigurationEnabled = 1;
     repeated string accessControlAllowOrigins = 2;
     bool accessControlAllowCredentials = 3;
@@ -77,14 +70,12 @@ message QueryParam {
     string value = 2;
 }
 
-
 message Scope {
     string name = 1;
     string displayName = 2;
     string description = 3;
     repeated string bindings = 4;
 }
-
 
 message Authentication {
     string type = 1;
