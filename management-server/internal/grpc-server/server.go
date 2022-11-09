@@ -27,7 +27,7 @@ import (
 	apiProtos "github.com/wso2/apk/management-server/internal/discovery/api/wso2/discovery/api"
 	logger "github.com/wso2/apk/management-server/internal/loggers"
 	"github.com/wso2/apk/adapter/pkg/logging"
-	"github.com/wso2/apk/management-server/pkg/tlsutils"
+	"github.com/wso2/apk/adapter/pkg/tlsutils"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/keepalive"
