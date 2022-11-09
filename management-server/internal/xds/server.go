@@ -27,15 +27,15 @@ import (
 
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
-	"github.com/wso2/apk/APKManagementServer/internal/config"
-	"github.com/wso2/apk/APKManagementServer/internal/logger"
-	"github.com/wso2/apk/APKManagementServer/internal/xds/callbacks"
 	apkmgt_application "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/apkmgt"
 	apkmgt_service "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/apkmgt"
 	wso2_cache "github.com/wso2/apk/adapter/pkg/discovery/protocol/cache/v3"
 	wso2_resource "github.com/wso2/apk/adapter/pkg/discovery/protocol/resource/v3"
 	wso2_server "github.com/wso2/apk/adapter/pkg/discovery/protocol/server/v3"
 	"github.com/wso2/apk/adapter/pkg/logging"
+	"github.com/wso2/apk/management-server/internal/config"
+	"github.com/wso2/apk/management-server/internal/logger"
+	"github.com/wso2/apk/management-server/internal/xds/callbacks"
 	"google.golang.org/grpc"
 )
 
@@ -71,6 +71,7 @@ func init() {
 
 // FeedData mock data
 func FeedData() {
+	config := config.ReadConfigs()
 	logger.LoggerXdsServer.Debug("adding mock data")
 	version := rand.Intn(maxRandomInt)
 	applications := apkmgt_application.Application{
@@ -81,7 +82,8 @@ func FeedData() {
 		wso2_resource.APKMgtApplicationType: {&applications},
 	})
 	apiCacheMutex.Lock()
-	apiCache.SetSnapshot(context.Background(), "mine", newSnapshot)
+	// TODO (amaliMatharaarachchi) update relevant adapters with snapshot caches
+	apiCache.SetSnapshot(context.Background(), config.ManagementServer.NodeLabels[0], newSnapshot)
 	apiCacheMutex.Unlock()
 }
 

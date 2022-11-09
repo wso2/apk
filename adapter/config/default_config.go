@@ -367,7 +367,7 @@ var defaultConfig = &Config{
 	ManagementServer: managementServer{
 		Enabled:    false,
 		ServiceURL: "management-server:18000",
-		LocalLabel: "default",
+		NodeLabel:  "default",
 	},
 	Analytics: analytics{
 		Enabled: false,

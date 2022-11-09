@@ -1,4 +1,4 @@
-module github.com/wso2/apk/APKManagementServer
+module github.com/wso2/apk/management-server
 
 go 1.19
 

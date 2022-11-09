@@ -32,9 +32,9 @@ When you add a new logger instance add the related package name as a constant
 
 // package name constants
 const (
-	pkgServer    = "github.com/wso2/apk/APKManagementServer"
-	pkgXds       = "github.com/wso2/apk/APKManagementServer/xds"
-	pkgXdsServer = "github.com/wso2/apk/APKManagementServer/xds/server"
+	pkgServer    = "github.com/wso2/apk/management-server"
+	pkgXds       = "github.com/wso2/apk/management-server/xds"
+	pkgXdsServer = "github.com/wso2/apk/management-server/xds/server"
 )
 
 // logger package references

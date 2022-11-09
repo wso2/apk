@@ -20,6 +20,7 @@ package config
 // Configuration object which is populated with default values.
 var defaultConfig = &Config{
 	ManagementServer: managementServer{
-		XDSPort: 18000,
+		XDSPort:    18000,
+		NodeLabels: []string{"default"},
 	},
 }

@@ -153,7 +153,7 @@ func nack(errorMessage string) {
 func getAdapterNode() *core.Node {
 	config := config.ReadConfigs()
 	return &core.Node{
-		Id: config.ManagementServer.LocalLabel,
+		Id: config.ManagementServer.NodeLabel,
 	}
 }
 

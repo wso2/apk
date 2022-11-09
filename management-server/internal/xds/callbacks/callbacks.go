@@ -23,8 +23,8 @@ import (
 	"fmt"
 
 	discovery "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
-	"github.com/wso2/apk/APKManagementServer/internal/logger"
 	"github.com/wso2/apk/adapter/pkg/logging"
+	"github.com/wso2/apk/management-server/internal/logger"
 )
 
 // Callbacks is used to debug the xds server related communication.

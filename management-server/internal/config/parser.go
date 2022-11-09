@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2021, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2022, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -34,17 +34,17 @@ var (
 	managementServerConfig *Config
 )
 
-//constants related to utility functions
+// constants related to utility functions
 const (
 	// RelativeConfigPath is the relative file path where the configuration file is.
-	relativeConfigPath = "/conf/ga_config.toml"
+	relativeConfigPath = "/conf/config.toml"
 )
 
 // ReadConfigs implements adapter configuration read operation. The read operation will happen only once, hence
 // the consistancy is ensured.
 //
 // If the "MGW_HOME" variable is set, the configuration file location would be picked relative to the
-// variable's value ("/conf/ga_config.toml"). otherwise, the "MGW_HOME" variable would be set to the directory
+// variable's value ("/conf/config.toml"). otherwise, the "MGW_HOME" variable would be set to the directory
 // from where the executable is called from.
 //
 // Returns the configuration object mapped from the configuration file during the startup.
