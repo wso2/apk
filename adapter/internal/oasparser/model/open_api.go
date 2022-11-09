@@ -187,7 +187,7 @@ func setSecuritySchemesOpenAPI(openAPI openapi3.T) []SecurityScheme {
 // getRequestBodyBufferConfig method returns a boolean value indicating whether a given API is configured to
 // pass request body to the enforcer or not.
 func getRequestBodyBufferConfig(vendorExtensions map[string]interface{}) bool {
-	configs, _ := conf.ReadConfigs()
+	configs := conf.ReadConfigs()
 	if !configs.Envoy.PayloadPassingToEnforcer.PassRequestPayload {
 		return false
 	}

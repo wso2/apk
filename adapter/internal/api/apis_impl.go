@@ -88,7 +88,7 @@ func extractAPIProject(payload []byte) (apiProject model.ProjectAPI, err error) 
 
 // ProcessMountedAPIProjects iterates through the api artifacts directory and apply the projects located within the directory.
 func ProcessMountedAPIProjects() (artifactsMap map[string]model.ProjectAPI, err error) {
-	conf, _ := config.ReadConfigs()
+	conf := config.ReadConfigs()
 	apisDirName := filepath.FromSlash(conf.Adapter.ArtifactsDirectory + "/" + apisArtifactDir)
 	files, err := ioutil.ReadDir((apisDirName))
 	if err != nil {

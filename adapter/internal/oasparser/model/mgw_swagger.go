@@ -693,7 +693,7 @@ func (endpointCluster *EndpointCluster) SetEndpointsConfig(endpointInfos []Endpo
 			if err != nil {
 				return err
 			}
-			conf, _ := config.ReadConfigs()
+			conf := config.ReadConfigs()
 			retryConfig := &RetryConfig{
 				Count:       int32(count),
 				StatusCodes: conf.Envoy.Upstream.Retry.StatusCodes,
@@ -804,7 +804,7 @@ func (endpoint *Endpoint) GetAuthorityHeader() string {
 }
 
 func (retryConfig *RetryConfig) validateRetryConfig() {
-	conf, _ := config.ReadConfigs()
+	conf := config.ReadConfigs()
 	maxConfigurableCount := conf.Envoy.Upstream.Retry.MaxRetryCount
 	if retryConfig.Count > int32(maxConfigurableCount) || retryConfig.Count < 0 {
 		logger.LoggerOasparser.Errorf("Retry count for the API must be within the range 0 - %v."+
@@ -844,7 +844,7 @@ func (endpointCluster *EndpointCluster) validateEndpointCluster(endpointName str
 				endpointCluster.Config.RetryConfig.validateRetryConfig()
 			}
 			// Validate timeout
-			conf, _ := config.ReadConfigs()
+			conf := config.ReadConfigs()
 			maxTimeoutInMillis := conf.Envoy.Upstream.Timeouts.MaxRouteTimeoutInSeconds * 1000
 			if endpointCluster.Config.TimeoutInMillis > maxTimeoutInMillis {
 				endpointCluster.Config.TimeoutInMillis = maxTimeoutInMillis
@@ -1032,7 +1032,7 @@ func generateEndpointCluster(endpointPrefix string, endpoints []Endpoint, endpoi
 }
 
 func generateGlobalCors() *CorsConfig {
-	conf, _ := config.ReadConfigs()
+	conf := config.ReadConfigs()
 	logger.LoggerOasparser.Debug("CORS policy is applied from global configuration.")
 	return &CorsConfig{
 		Enabled:                       conf.Envoy.Cors.Enabled,
@@ -1082,7 +1082,7 @@ func (swagger *MgwSwagger) GetOperationInterceptors(apiInterceptor InterceptEndp
 // GetInterceptor returns interceptors
 func (swagger *MgwSwagger) GetInterceptor(vendorExtensions map[string]interface{}, extensionName string, level string) InterceptEndpoint {
 	var endpointCluster EndpointCluster
-	conf, _ := config.ReadConfigs()
+	conf := config.ReadConfigs()
 	clusterTimeoutV := conf.Envoy.ClusterTimeoutInSeconds
 	requestTimeoutV := conf.Envoy.ClusterTimeoutInSeconds
 	includesV := &interceptor.RequestInclusions{}

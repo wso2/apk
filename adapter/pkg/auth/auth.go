@@ -41,16 +41,7 @@ func GetBasicAuth(username, password string) string {
 
 // GetGitAuth returns the authentication for the repository
 func GetGitAuth() (transport.AuthMethod, error) {
-	conf, err := config.ReadConfigs()
-	if err != nil {
-		loggers.LoggerAuth.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("Error while reading configs: %s", err.Error()),
-			Severity:  logging.BLOCKER,
-			ErrorCode: 3000,
-		})
-		return nil, err
-	}
-
+	conf := config.ReadConfigs()
 	username := conf.Adapter.SourceControl.Repository.Username
 	sshKeyFile := conf.Adapter.SourceControl.Repository.SSHKeyFile
 	if username == "" && sshKeyFile == "" {

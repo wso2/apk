@@ -135,7 +135,7 @@ func getGRPCAccessLogConfigs(conf *config.Config) *config_access_logv3.AccessLog
 
 // getAccessLogs provides access logs for envoy
 func getAccessLogs() []*config_access_logv3.AccessLog {
-	conf, _ := config.ReadConfigs()
+	conf := config.ReadConfigs()
 	var accessLoggers []*config_access_logv3.AccessLog
 	fileAccessLog := getFileAccessLogConfigs()
 	grpcAccessLog := getGRPCAccessLogConfigs(conf)

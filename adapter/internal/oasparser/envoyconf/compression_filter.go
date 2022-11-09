@@ -94,7 +94,7 @@ func getGzipConfigurations(config config.Config) *gzip_compressor.Gzip {
 }
 
 func getCompressorFilter() (*hcmv3.HttpFilter, error) {
-	configRead, _ := config.ReadConfigs()
+	configRead := config.ReadConfigs()
 	var responseDirectionContentTypes []string
 	var requestDirectionContentTypes []string
 	var libraryConfig protoiface.MessageV1

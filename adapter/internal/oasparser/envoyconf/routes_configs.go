@@ -31,10 +31,10 @@ import (
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes/any"
+	"github.com/wso2/apk/adapter/config"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
-	"github.com/wso2/product-microgateway/adapter/config"
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
@@ -83,7 +83,7 @@ func generateRouteMatch(routeRegex string) *routev3.RouteMatch {
 func generateRouteAction(apiType string, prodRouteConfig, sandRouteConfig *model.EndpointConfig,
 	corsPolicy *routev3.CorsPolicy) (action *routev3.Route_Route) {
 
-	config, _ := config.ReadConfigs()
+	config := config.ReadConfigs()
 
 	action = &routev3.Route_Route{
 		Route: &routev3.RouteAction{

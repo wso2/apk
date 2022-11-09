@@ -33,10 +33,10 @@ import (
 	subscriptionservice "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/subscription"
 	throttleservice "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/throttle"
 	wso2_server "github.com/wso2/apk/adapter/pkg/discovery/protocol/server/v3"
+	"github.com/wso2/apk/adapter/pkg/health"
+	healthservice "github.com/wso2/apk/adapter/pkg/health/api/wso2/health/service"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	"github.com/wso2/apk/adapter/pkg/tlsutils"
-	"github.com/wso2/product-microgateway/adapter/pkg/health"
-	healthservice "github.com/wso2/product-microgateway/adapter/pkg/health/api/wso2/health/service"
 
 	"context"
 	"flag"

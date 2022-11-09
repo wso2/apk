@@ -60,7 +60,7 @@ func getHTTPFilters() []*hcmv3.HttpFilter {
 		lua,
 		router,
 	}
-	conf, _ := config.ReadConfigs()
+	conf := config.ReadConfigs()
 	if conf.Envoy.Filters.Compression.Enabled {
 		compressionFilter, err := getCompressorFilter()
 		if err != nil {
@@ -121,7 +121,7 @@ func getUpgradeFilters() []*hcmv3.HttpFilter {
 
 // getExtAuthzHTTPFilter gets ExtAuthz http filter.
 func getExtAuthzHTTPFilter() *hcmv3.HttpFilter {
-	conf, _ := config.ReadConfigs()
+	conf := config.ReadConfigs()
 	extAuthzConfig := &ext_authv3.ExtAuthz{
 		// This would clear the route cache only if there is a header added/removed or changed
 		// within ext-authz filter. Without this configuration, the API cannot have production
@@ -165,7 +165,6 @@ func getExtAuthzHTTPFilter() *hcmv3.HttpFilter {
 
 // getLuaFilter gets Lua http filter.
 func getLuaFilter() *hcmv3.HttpFilter {
-	//conf, _ := config.ReadConfigs()
 	luaConfig := &luav3.Lua{
 		InlineCode: "function envoy_on_request(request_handle)" +
 			"\nend" +

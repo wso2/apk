@@ -40,7 +40,7 @@ const (
 	contentTypeHeader    string = "Content-Type"
 )
 
-//UpdateDeployedRevisions create the DeployedAPIRevision object
+// UpdateDeployedRevisions create the DeployedAPIRevision object
 func UpdateDeployedRevisions(apiID string, revisionID int, envs []string, vhost string) *DeployedAPIRevision {
 	revisions := &DeployedAPIRevision{
 		APIID:      apiID,
@@ -57,9 +57,9 @@ func UpdateDeployedRevisions(apiID string, revisionID int, envs []string, vhost 
 	return revisions
 }
 
-//SendRevisionUpdateAck sends succeeded revision deployment acknowledgement to the control plane
+// SendRevisionUpdateAck sends succeeded revision deployment acknowledgement to the control plane
 func SendRevisionUpdateAck(deployedRevisionList []*DeployedAPIRevision) {
-	conf, _ := config.ReadConfigs()
+	conf := config.ReadConfigs()
 	cpConfigs := conf.ControlPlane
 
 	if len(deployedRevisionList) < 1 || !cpConfigs.Enabled || !cpConfigs.SendRevisionUpdate {
@@ -118,7 +118,7 @@ func SendRevisionUpdateAck(deployedRevisionList []*DeployedAPIRevision) {
 
 // SendRevisionUndeployAck - send the undeployed revision acknowledgement to control plane
 func SendRevisionUndeployAck(apiUUID string, revisionUUID string, environment string) {
-	conf, _ := config.ReadConfigs()
+	conf := config.ReadConfigs()
 	cpConfigs := conf.ControlPlane
 	if apiUUID == "" || revisionUUID == "" || environment == "" || !cpConfigs.Enabled || !cpConfigs.SendRevisionUpdate {
 		return

@@ -55,7 +55,7 @@ func GetGlobalClusters() ([]*clusterv3.Cluster, []*corev3.Address) {
 		clusters  []*clusterv3.Cluster
 		endpoints []*corev3.Address
 	)
-	conf, _ := config.ReadConfigs()
+	conf := config.ReadConfigs()
 
 	if conf.Tracing.Enabled && conf.Tracing.Type != envoyconf.TracerTypeAzure {
 		logger.LoggerOasparser.Debugln("Creating global cluster - Tracing")

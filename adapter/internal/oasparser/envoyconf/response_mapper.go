@@ -24,9 +24,9 @@ import (
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	envoy_config_route_v3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 	hcmv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/http_connection_manager/v3"
+	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/err"
-	"github.com/wso2/product-microgateway/adapter/config"
-	"github.com/wso2/product-microgateway/adapter/pkg/soaputils"
+	"github.com/wso2/apk/adapter/pkg/soaputils"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
@@ -63,7 +63,7 @@ func init() {
 
 func getErrorResponseMappers() []*hcmv3.ResponseMapper {
 	responseMappers := []*hcmv3.ResponseMapper{}
-	conf, _ := config.ReadConfigs()
+	conf := config.ReadConfigs()
 	if conf.Adapter.SoapErrorInXMLEnabled {
 		for flag, details := range errorResponseMap {
 			responseMappers = append(responseMappers,

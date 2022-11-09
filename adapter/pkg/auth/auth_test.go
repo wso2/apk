@@ -26,7 +26,7 @@ import (
 )
 
 func setGitAuth(username, accessToken, sshKeyFile string) {
-	conf, _ := config.ReadConfigs()
+	conf := config.ReadConfigs()
 	conf.Adapter.SourceControl.Repository.Username = username
 	conf.Adapter.SourceControl.Repository.AccessToken = accessToken
 	conf.Adapter.SourceControl.Repository.SSHKeyFile = sshKeyFile
