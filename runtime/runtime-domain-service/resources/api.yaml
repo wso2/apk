@@ -180,7 +180,7 @@ paths:
         - APIs
       summary: Get Details of an API
       description: |
-        Using this operation, you can retrieve complete details of a single API. You need to provide the name of the API to retrive it.
+        Using this operation, you can retrieve complete details of a single API. You need to provide the id of the API to retrive it.
       operationId: getAPI
       parameters:
         - name: apiId
@@ -238,8 +238,7 @@ paths:
         - APIs
       summary: Update an API
       description: |
-        This operation can be used to update an existing API.
-        But the properties `name`, `version`, `context`, `provider`, `state` will not be changed by this operation.
+        This operation can be used to update an existing API. This operation will insruct runtime to update deployment.
       operationId: updateAPI
       parameters:
         - name: apiId
@@ -416,9 +415,9 @@ paths:
   /apis/import-service:
     post:
       tags:
-        - APIs
+        - Service or Schema Import
       summary: Create API from a Service
-      description: This operation can be used to create an API from the Services lis
+      description: This operation can be used to create an API from available Service by providing service
       operationId: importService
       parameters:
         - name: serviceKey
@@ -487,7 +486,7 @@ paths:
   /apis/import-definition:
     post:
       tags:
-        - APIs
+        - Service or Schema Import
       summary: Import an API Definition
       description: |
         This operation can be used to create an API from an API definition. Provide either `url` or `file`
@@ -1368,7 +1367,7 @@ paths:
                 description: The requested media type is not supported
                 moreInfo: ""
                 error: []
-  /policies/{mediationPolicyId}:
+  /policies/{policyId}:
     get:
       tags:
         - Policies
@@ -1377,7 +1376,7 @@ paths:
         Using this operation, you can retrieve complete details of a single Policy. You need to provide the Id of the Policy to retrive it.
       operationId: getPolicy
       parameters:
-        - name: mediationPolicyId
+        - name: policyId
           in: path
           description: name of the gateway
           required: true
@@ -2144,10 +2143,10 @@ components:
       explode: false
       schema:
         type: string
-    mediationPolicyId:
-      name: mediationPolicyId
+    policyId:
+      name: policyId
       in: path
-      description: name of the gateway
+      description: policy uuid
       required: true
       style: simple
       explode: false
