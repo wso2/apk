@@ -19,11 +19,6 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.common.utils.mappings;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import graphql.language.FieldDefinition;
-import graphql.language.ObjectTypeDefinition;
-import graphql.language.TypeDefinition;
-import graphql.schema.idl.SchemaParser;
-import graphql.schema.idl.TypeDefinitionRegistry;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -31,16 +26,27 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.json.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.wso2.apk.apimgt.api.*;
-import org.wso2.apk.apimgt.api.doc.model.APIResource;
-import org.wso2.apk.apimgt.api.model.*;
+import org.wso2.apk.apimgt.api.APIManagementException;
+import org.wso2.apk.apimgt.api.APIProvider;
+import org.wso2.apk.apimgt.api.ExceptionCodes;
+import org.wso2.apk.apimgt.api.FaultGatewaysException;
+import org.wso2.apk.apimgt.api.model.API;
+import org.wso2.apk.apimgt.api.model.APICategory;
+import org.wso2.apk.apimgt.api.model.APIIdentifier;
+import org.wso2.apk.apimgt.api.model.APIProductIdentifier;
+import org.wso2.apk.apimgt.api.model.APIStateChangeResponse;
+import org.wso2.apk.apimgt.api.model.ApiTypeWrapper;
+import org.wso2.apk.apimgt.api.model.Documentation;
+import org.wso2.apk.apimgt.api.model.DocumentationContent;
+import org.wso2.apk.apimgt.api.model.Identifier;
+import org.wso2.apk.apimgt.api.model.LifeCycleEvent;
+import org.wso2.apk.apimgt.api.model.OperationPolicyData;
+import org.wso2.apk.apimgt.api.model.ResourceFile;
+import org.wso2.apk.apimgt.api.model.Tier;
 import org.wso2.apk.apimgt.impl.APIConstants;
-import org.wso2.apk.apimgt.impl.definitions.AsyncApiParser;
-import org.wso2.apk.apimgt.impl.definitions.OASParserUtil;
 import org.wso2.apk.apimgt.impl.importexport.APIImportExportException;
 import org.wso2.apk.apimgt.impl.importexport.ExportFormat;
 import org.wso2.apk.apimgt.impl.importexport.ImportExportConstants;
@@ -49,15 +55,31 @@ import org.wso2.apk.apimgt.impl.utils.APIUtil;
 import org.wso2.apk.apimgt.impl.utils.APIVersionStringComparator;
 import org.wso2.apk.apimgt.rest.api.backoffice.v1.common.utils.crypto.CryptoTool;
 import org.wso2.apk.apimgt.rest.api.backoffice.v1.common.utils.crypto.CryptoToolException;
-import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.*;
+import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.APIDTO;
+import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.DocumentDTO;
+import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.LifecycleHistoryDTO;
+import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.LifecycleStateDTO;
 import org.wso2.apk.apimgt.rest.api.common.RestApiCommonUtil;
 import org.wso2.apk.apimgt.rest.api.common.RestApiConstants;
 import org.wso2.apk.apimgt.rest.api.common.annotations.Scope;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * This is a publisher rest api utility class.
@@ -87,13 +109,6 @@ public class PublisherCommonUtils {
                     + " as the token information hasn't been correctly set internally",
                     ExceptionCodes.TOKEN_SCOPES_NOT_SET);
         }
-        boolean isGraphql = originalAPI.getType() != null && APIConstants.APITransportType.GRAPHQL.toString()
-                .equals(originalAPI.getType());
-        boolean isAsyncAPI = originalAPI.getType() != null
-                && (APIConstants.APITransportType.WS.toString().equals(originalAPI.getType())
-                || APIConstants.APITransportType.WEBSUB.toString().equals(originalAPI.getType())
-                || APIConstants.APITransportType.SSE.toString().equals(originalAPI.getType())
-                || APIConstants.APITransportType.ASYNC.toString().equals(originalAPI.getType()));
 
         Scope[] apiDtoClassAnnotatedScopes = APIDTO.class.getAnnotationsByType(Scope.class);
         boolean hasClassLevelScope = checkClassScopeAnnotation(apiDtoClassAnnotatedScopes, tokenScopes);
@@ -186,24 +201,14 @@ public class PublisherCommonUtils {
         }
         //Overriding some properties:
         //API Name change not allowed if OnPrem
-        if (APIUtil.isOnPremResolver()) {
-            apiDtoToUpdate.setName(apiIdentifier.getApiName());
-        }
+//        if (APIUtil.isOnPremResolver()) {
+//            apiDtoToUpdate.setName(apiIdentifier.getApiName());
+//        }
         apiDtoToUpdate.setVersion(apiIdentifier.getVersion());
         //apiDtoToUpdate.setProvider(apiIdentifier.getProviderName());
         apiDtoToUpdate.setContext(originalAPI.getContextTemplate());
         //apiDtoToUpdate.setLifeCycleStatus(originalAPI.getStatus());
         apiDtoToUpdate.setType(APIDTO.TypeEnum.fromValue(originalAPI.getType()));
-
-        List<APIResource> removedProductResources = getRemovedProductResources(apiDtoToUpdate, originalAPI);
-
-        if (!removedProductResources.isEmpty()) {
-            throw new APIManagementException(
-                    "Cannot remove following resource paths " + removedProductResources.toString()
-                            + " because they are used by one or more API Products", ExceptionCodes
-                    .from(ExceptionCodes.API_PRODUCT_USED_RESOURCES, originalAPI.getId().getApiName(),
-                            originalAPI.getId().getVersion()));
-        }
 
 //        // Validate API Security
 //        List<String> apiSecurity = apiDtoToUpdate.getSecurityScheme();
@@ -266,43 +271,6 @@ public class PublisherCommonUtils {
 
         //preserve monetization status in the update flow
         //apiProvider.configureMonetizationInAPIArtifact(originalAPI); ////////////TODO /////////REG call
-
-        if (!isAsyncAPI) {
-            String oldDefinition = apiProvider
-                    .getOpenAPIDefinition(apiToUpdate.getUuid(), originalAPI.getOrganization());
-            APIDefinition apiDefinition = OASParserUtil.getOASParser(oldDefinition);
-            SwaggerData swaggerData = new SwaggerData(apiToUpdate);
-            String newDefinition = apiDefinition.generateAPIDefinition(swaggerData, oldDefinition);
-            apiProvider.saveSwaggerDefinition(apiToUpdate, newDefinition, originalAPI.getOrganization());
-            if (!isGraphql) {
-                Set<URITemplate> uriTemplates = apiDefinition.getURITemplates(newDefinition);
-
-                //set operation policies from the original API Payload
-                Set<URITemplate> uriTemplatesFromPayload = apiToUpdate.getUriTemplates();
-                Map<String, List<OperationPolicy>> operationPoliciesPerURITemplate = new HashMap<>();
-                for (URITemplate uriTemplate : uriTemplatesFromPayload) {
-                    if (!uriTemplate.getOperationPolicies().isEmpty()) {
-                        String key = uriTemplate.getHTTPVerb() + ":" + uriTemplate.getUriTemplate();
-                        operationPoliciesPerURITemplate.put(key, uriTemplate.getOperationPolicies());
-                    }
-                }
-
-                for (URITemplate uriTemplate : uriTemplates) {
-                    String key = uriTemplate.getHTTPVerb() + ":" + uriTemplate.getUriTemplate();
-                    if (operationPoliciesPerURITemplate.containsKey(key)) {
-                        uriTemplate.setOperationPolicies(operationPoliciesPerURITemplate.get(key));
-                    }
-                }
-
-                apiToUpdate.setUriTemplates(uriTemplates);
-            }
-        } else {
-            String oldDefinition = apiProvider
-                    .getAsyncAPIDefinition(apiToUpdate.getUuid(), originalAPI.getOrganization());
-            AsyncApiParser asyncApiParser = new AsyncApiParser();
-            String updateAsyncAPIDefinition = asyncApiParser.updateAsyncAPIDefinition(oldDefinition, apiToUpdate);
-            apiProvider.saveAsyncApiDefinition(originalAPI, updateAsyncAPIDefinition);
-        }
         //apiToUpdate.setWsdlUrl(apiDtoToUpdate.getWsdlUrl());
         //apiToUpdate.setGatewayType(apiDtoToUpdate.getGatewayType());
 
@@ -538,834 +506,6 @@ public class PublisherCommonUtils {
     }
 
     /**
-     * Finds resources that have been removed in the updated API, that are currently reused by API Products.
-     *
-     * @param updatedDTO  Updated API
-     * @param existingAPI Existing API
-     * @return List of removed resources that are reused among API Products
-     */
-    private static List<APIResource> getRemovedProductResources(APIDTO updatedDTO, API existingAPI) {
-
-        List<APIOperationsDTO> updatedOperations = updatedDTO.getOperations();
-        Set<URITemplate> existingUriTemplates = existingAPI.getUriTemplates();
-        List<APIResource> removedReusedResources = new ArrayList<>();
-
-        for (URITemplate existingUriTemplate : existingUriTemplates) {
-
-            // If existing URITemplate is used by any API Products
-            if (!existingUriTemplate.retrieveUsedByProducts().isEmpty()) {
-                String existingVerb = existingUriTemplate.getHTTPVerb();
-                String existingPath = existingUriTemplate.getUriTemplate();
-                boolean isReusedResourceRemoved = true;
-
-                for (APIOperationsDTO updatedOperation : updatedOperations) {
-                    String updatedVerb = updatedOperation.getVerb();
-                    String updatedPath = updatedOperation.getTarget();
-
-                    //Check if existing reused resource is among updated resources
-                    if (existingVerb.equalsIgnoreCase(updatedVerb) && existingPath.equalsIgnoreCase(updatedPath)) {
-                        isReusedResourceRemoved = false;
-                        break;
-                    }
-                }
-
-                // Existing reused resource is not among updated resources
-                if (isReusedResourceRemoved) {
-                    APIResource removedResource = new APIResource(existingVerb, existingPath);
-                    removedReusedResources.add(removedResource);
-                }
-            }
-        }
-
-        return removedReusedResources;
-    }
-
-    /**
-     * To validate the roles against user roles and tenant roles.
-     *
-     * @param inputRoles Input roles.
-     * @return relevant error string or empty string.
-     * @throws APIManagementException API Management Exception.
-     */
-    public static String validateUserRoles(List<String> inputRoles) throws APIManagementException {
-
-        String userName = RestApiCommonUtil.getLoggedInUsername();
-        boolean isMatched = false;
-        String[] userRoleList = null;
-
-        if (APIUtil.hasPermission(userName, APIConstants.Permissions.APIM_ADMIN)) {
-            isMatched = true;
-        } else {
-            userRoleList = APIUtil.getListOfRoles(userName);
-        }
-        if (inputRoles != null && !inputRoles.isEmpty()) {
-            if (!isMatched && userRoleList != null) {
-                for (String inputRole : inputRoles) {
-                    if (APIUtil.compareRoleList(userRoleList, inputRole)) {
-                        isMatched = true;
-                        break;
-                    }
-                }
-                return isMatched ? "" : "This user does not have at least one role specified in API access control.";
-            }
-
-            String roleString = String.join(",", inputRoles);
-            if (!APIUtil.isRoleNameExist(userName, roleString)) {
-                return "Invalid user roles found in accessControlRole list";
-            }
-        }
-        return "";
-    }
-
-    /**
-     * To validate the roles against and tenant roles.
-     *
-     * @param inputRoles Input roles.
-     * @return relevant error string or empty string.
-     */
-    public static String validateRoles(List<String> inputRoles) {
-
-        String userName = RestApiCommonUtil.getLoggedInUsername();
-        boolean isMatched = false;
-        if (inputRoles != null && !inputRoles.isEmpty()) {
-            String roleString = String.join(",", inputRoles);
-            isMatched = APIUtil.isRoleNameExist(userName, roleString);
-            if (!isMatched) {
-                return "Invalid user roles found in visibleRoles list";
-            }
-        }
-        return "";
-    }
-
-//    /**
-//     * To validate the additional properties.
-//     * Validation will be done for the keys of additional properties. Property keys should not contain spaces in it
-//     * and property keys should not conflict with reserved key words.
-//     *
-//     * @param additionalProperties Map<String, String>  properties to validate
-//     * @return error message if there is an validation error with additional properties.
-//     */
-//    public static String validateAdditionalProperties(List<APIInfoAdditionalPropertiesDTO> additionalProperties) {
-//
-//        if (additionalProperties != null) {
-//            for (APIInfoAdditionalPropertiesDTO property : additionalProperties) {
-//                String propertyKey = property.getName();
-//                String propertyValue = property.getValue();
-//                if (propertyKey.contains(" ")) {
-//                    return "Property names should not contain space character. Property '" + propertyKey + "' "
-//                            + "contains space in it.";
-//                }
-//                if (Arrays.asList(APIConstants.API_SEARCH_PREFIXES).contains(propertyKey.toLowerCase())) {
-//                    return "Property '" + propertyKey + "' conflicts with the reserved keywords. Reserved keywords "
-//                            + "are [" + Arrays.toString(APIConstants.API_SEARCH_PREFIXES) + "]";
-//                }
-//                // Maximum allowable characters of registry property name and value is 100 and 1000. Hence we are
-//                // restricting them to be within 80 and 900.
-//                if (propertyKey.length() > 80) {
-//                    return "Property name can have maximum of 80 characters. Property '" + propertyKey + "' + contains "
-//                            + propertyKey.length() + "characters";
-//                }
-//                if (propertyValue.length() > 900) {
-//                    return "Property value can have maximum of 900 characters. Property '" + propertyKey + "' + "
-//                            + "contains a value with " + propertyValue.length() + "characters";
-//                }
-//            }
-//        }
-//        return "";
-//    }
-
-//    /**
-//     * validate user inout scopes.
-//     *
-//     * @param api api information
-//     * @throws APIManagementException throw if validation failure
-//     */
-//    public static void validateScopes(API api) throws APIManagementException {
-//
-//        String username = RestApiCommonUtil.getLoggedInUsername();
-//        int tenantId = APIUtil.getInternalOrganizationId(api.getOrganization());
-//        String tenantDomain = APIUtil.getTenantDomainFromTenantId(tenantId);
-//        APIProvider apiProvider = RestApiCommonUtil.getProvider(username);
-//        Set<org.wso2.carbon.apimgt.api.model.Scope> sharedAPIScopes = new HashSet<>();
-//
-//        for (org.wso2.carbon.apimgt.api.model.Scope scope : api.getScopes()) {
-//            String scopeName = scope.getKey();
-//            if (!(APIUtil.isAllowedScope(scopeName))) {
-//                // Check if each scope key is already assigned as a local scope to a different API which is also not a
-//                // different version of the same API. If true, return error.
-//                // If false, check if the scope key is already defined as a shared scope. If so, do not honor the
-//                // other scope attributes (description, role bindings) in the request payload, replace them with
-//                // already defined values for the existing shared scope.
-//                if (apiProvider.isScopeKeyAssignedLocally(api.getId().getApiName(), scopeName, api.getOrganization())) {
-//                    throw new APIManagementException(
-//                            "Scope " + scopeName + " is already assigned locally by another API",
-//                            ExceptionCodes.SCOPE_ALREADY_ASSIGNED);
-//                } else if (apiProvider.isSharedScopeNameExists(scopeName, tenantId)) {
-//                    sharedAPIScopes.add(scope);
-//                    continue;
-//                }
-//            }
-//
-//            //set display name as empty if it is not provided
-//            if (StringUtils.isBlank(scope.getName())) {
-//                scope.setName(scopeName);
-//            }
-//
-//            //set description as empty if it is not provided
-//            if (StringUtils.isBlank(scope.getDescription())) {
-//                scope.setDescription("");
-//            }
-//            if (scope.getRoles() != null) {
-//                for (String aRole : scope.getRoles().split(",")) {
-//                    boolean isValidRole = APIUtil.isRoleNameExist(username, aRole);
-//                    if (!isValidRole) {
-//                        throw new APIManagementException("Role '" + aRole + "' does not exist.",
-//                                ExceptionCodes.ROLE_DOES_NOT_EXIST);
-//                    }
-//                }
-//            }
-//        }
-//
-//        apiProvider.validateSharedScopes(sharedAPIScopes, tenantDomain);
-//    }
-
-//    /**
-//     * Add API with the generated swagger from the DTO.
-//     *
-//     * @param apiDto     API DTO of the API
-//     * @param oasVersion Open API Definition version
-//     * @param username   Username
-//     * @param organization  Organization Identifier
-//     * @return Created API object
-//     * @throws APIManagementException Error while creating the API
-//     */
-//    public static API addAPIWithGeneratedSwaggerDefinition(APIDTO apiDto, String oasVersion, String username,
-//                                                           String organization)
-//            throws APIManagementException {
-//        if (APIUtil.isOnPremResolver()) {
-//            String name = apiDto.getName();
-//            //replace all white spaces in the API Name
-//            apiDto.setName(name.replaceAll("\\s+", ""));
-//        }
-//        if (APIDTO.TypeEnum.ASYNC.equals(apiDto.getType())) {
-//            throw new APIManagementException("ASYNC API type does not support API creation from scratch",
-//                    ExceptionCodes.API_CREATION_NOT_SUPPORTED_FOR_ASYNC_TYPE_APIS);
-//        }
-//        boolean isWSAPI = APIDTO.TypeEnum.WS.equals(apiDto.getType());
-//        boolean isAsyncAPI =
-//                isWSAPI || APIDTO.TypeEnum.WEBSUB.equals(apiDto.getType()) ||
-//                        APIDTO.TypeEnum.SSE.equals(apiDto.getType()) || APIDTO.TypeEnum.ASYNC.equals(apiDto.getType());
-//        username = StringUtils.isEmpty(username) ? RestApiCommonUtil.getLoggedInUsername() : username;
-//        APIProvider apiProvider = RestApiCommonUtil.getProvider(username);
-//
-//        // validate web socket api endpoint configurations
-//        if (isWSAPI && !PublisherCommonUtils.isValidWSAPI(apiDto)) {
-//            throw new APIManagementException("Endpoint URLs should be valid web socket URLs",
-//                    ExceptionCodes.INVALID_ENDPOINT_URL);
-//        }
-//
-//        // validate sandbox and production endpoints
-//        if (!PublisherCommonUtils.validateEndpoints(apiDto)) {
-//            throw new APIManagementException("Invalid/Malformed endpoint URL(s) detected",
-//                    ExceptionCodes.INVALID_ENDPOINT_URL);
-//        }
-//
-//        Map endpointConfig = (Map) apiDto.getEndpointConfig();
-//        CryptoTool cryptoTool = CryptoToolUtil.getDefaultCryptoTool();
-//
-//        // OAuth 2.0 backend protection: API Key and API Secret encryption
-//        encryptEndpointSecurityOAuthCredentials(endpointConfig, cryptoTool, StringUtils.EMPTY, StringUtils.EMPTY,
-//                apiDto);
-//
-//        // AWS Lambda: secret key encryption while creating the API
-//        if (apiDto.getEndpointConfig() != null) {
-//            if (endpointConfig.containsKey(APIConstants.AMZN_SECRET_KEY)) {
-//                String secretKey = (String) endpointConfig.get(APIConstants.AMZN_SECRET_KEY);
-//                if (!StringUtils.isEmpty(secretKey)) {
-//                    try {
-//                        String encryptedSecretKey = cryptoTool.encryptAndBase64Encode(secretKey.getBytes());
-//                        endpointConfig.put(APIConstants.AMZN_SECRET_KEY, encryptedSecretKey);
-//                        apiDto.setEndpointConfig(endpointConfig);
-//                    } catch (CryptoToolException e) {
-//                        throw new APIManagementException(ExceptionCodes.from(ExceptionCodes.ENDPOINT_CRYPTO_ERROR,
-//                                "Error while encrypting AWS secret key"));
-//                    }
-//
-//                }
-//            }
-//        }
-//
-//       /* if (isWSAPI) {
-//            ArrayList<String> websocketTransports = new ArrayList<>();
-//            websocketTransports.add(APIConstants.WS_PROTOCOL);
-//            websocketTransports.add(APIConstants.WSS_PROTOCOL);
-//            apiDto.setTransport(websocketTransports);
-//        }*/
-//        API apiToAdd = prepareToCreateAPIByDTO(apiDto, apiProvider, username, organization);
-//        validateScopes(apiToAdd);
-//        //validate API categories
-//        List<APICategory> apiCategories = apiToAdd.getApiCategories();
-//        List<APICategory> apiCategoriesList = new ArrayList<>();
-//        for (APICategory category : apiCategories) {
-//            category.setOrganization(organization);
-//            apiCategoriesList.add(category);
-//        }
-//        apiToAdd.setApiCategories(apiCategoriesList);
-//        if (apiCategoriesList.size() > 0) {
-//            if (!APIUtil.validateAPICategories(apiCategoriesList, organization)) {
-//                throw new APIManagementException("Invalid API Category name(s) defined",
-//                        ExceptionCodes.from(ExceptionCodes.API_CATEGORY_INVALID));
-//            }
-//        }
-//
-//        if (!isAsyncAPI) {
-//            APIDefinition oasParser;
-//            if (RestApiConstants.OAS_VERSION_2.equalsIgnoreCase(oasVersion)) {
-//                oasParser = new OAS2Parser();
-//            } else {
-//                oasParser = new OAS3Parser();
-//            }
-//            SwaggerData swaggerData = new SwaggerData(apiToAdd);
-//            String apiDefinition = oasParser.generateAPIDefinition(swaggerData);
-//            apiToAdd.setSwaggerDefinition(apiDefinition);
-//        } else {
-//            AsyncApiParser asyncApiParser = new AsyncApiParser();
-//            String asyncApiDefinition = asyncApiParser.generateAsyncAPIDefinition(apiToAdd);
-//            apiToAdd.setAsyncApiDefinition(asyncApiDefinition);
-//        }
-//
-//        apiToAdd.setOrganization(organization);
-//        if (isAsyncAPI) {
-//            AsyncApiParser asyncApiParser = new AsyncApiParser();
-//            String apiDefinition = asyncApiParser.generateAsyncAPIDefinition(apiToAdd);
-//            apiToAdd.setAsyncApiDefinition(apiDefinition);
-//        }
-//
-//        //adding the api
-//        apiProvider.addAPI(apiToAdd);
-//        return apiToAdd;
-//    }
-
-//    /**
-//     * Validate endpoint configurations of {@link APIDTO} for web socket endpoints.
-//     *
-//     * @param api api model
-//     * @return validity of the web socket api
-//     */
-//    public static boolean isValidWSAPI(APIDTO api) {
-//
-//        boolean isValid = false;
-//
-//        if (api.getEndpointConfig() != null) {
-//            Map endpointConfig = (Map) api.getEndpointConfig();
-//            String prodEndpointUrl = String
-//                    .valueOf(((Map) endpointConfig.get("production_endpoints")).get("url"));
-//            String sandboxEndpointUrl = String
-//                    .valueOf(((Map) endpointConfig.get("sandbox_endpoints")).get("url"));
-//            isValid = prodEndpointUrl.startsWith("ws://") || prodEndpointUrl.startsWith("wss://");
-//
-//            if (isValid) {
-//                isValid = sandboxEndpointUrl.startsWith("ws://") || sandboxEndpointUrl.startsWith("wss://");
-//            }
-//        }
-//
-//        return isValid;
-//    }
-
-    /**
-     * Validate sandbox and production endpoint URLs.
-     *
-     * @param apiDto API DTO of the API
-     * @return validity of URLs found within the endpoint configurations of the DTO
-     */
-    public static boolean validateEndpoints(APIDTO apiDto) {
-
-        ArrayList<String> endpoints = new ArrayList<>();
-//        org.json.JSONObject endpointConfiguration = new org.json.JSONObject((Map) apiDto.getEndpointConfig());
-//
-//        if (!endpointConfiguration.isNull(APIConstants.API_ENDPOINT_CONFIG_PROTOCOL_TYPE) && StringUtils.equals(
-//                endpointConfiguration.get(APIConstants.API_ENDPOINT_CONFIG_PROTOCOL_TYPE).toString(),
-//                APIConstants.ENDPOINT_TYPE_DEFAULT)) {
-//            // if the endpoint type is dynamic, then the validation should be skipped
-//            return true;
-//        }
-//
-//        // extract sandbox endpoint URL(s)
-//        extractURLsFromEndpointConfig(endpointConfiguration, APIConstants.API_DATA_SANDBOX_ENDPOINTS, endpoints);
-//
-//        // extract production endpoint URL(s)
-//        extractURLsFromEndpointConfig(endpointConfiguration, APIConstants.API_DATA_PRODUCTION_ENDPOINTS, endpoints);
-
-        return APIUtil.validateEndpointURLs(endpoints);
-    }
-
-    /**
-     * Extract sandbox or production endpoint URLs from endpoint config object.
-     *
-     * @param endpointConfigObj Endpoint config JSON object
-     * @param endpointType      Indicating whether Sandbox or Production endpoints are to be extracted
-     * @param endpoints         List of URLs. Extracted URL(s), if any, are added to this list.
-     */
-    private static void extractURLsFromEndpointConfig(org.json.JSONObject endpointConfigObj, String endpointType,
-            ArrayList<String> endpoints) {
-        if (!endpointConfigObj.isNull(endpointType)) {
-            org.json.JSONObject endpointObj = endpointConfigObj.optJSONObject(endpointType);
-            if (endpointObj != null) {
-                endpoints.add(endpointConfigObj.getJSONObject(endpointType).getString(APIConstants.API_DATA_URL));
-            } else {
-                JSONArray endpointArray = endpointConfigObj.getJSONArray(endpointType);
-                for (int i = 0; i < endpointArray.length(); i++) {
-                    endpoints.add((String) endpointArray.getJSONObject(i).get(APIConstants.API_DATA_URL));
-                }
-            }
-        }
-    }
-
-    public static String constructEndpointConfigForService(String serviceUrl, String protocol) {
-
-        StringBuilder sb = new StringBuilder();
-        String endpointType = APIDTO.TypeEnum.HTTP.value().toLowerCase();
-        if (StringUtils.isNotEmpty(protocol) && (APIDTO.TypeEnum.SSE.equals(protocol.toUpperCase())
-                || APIDTO.TypeEnum.WS.equals(protocol.toUpperCase()))) {
-            endpointType = "ws";
-        }
-        if (StringUtils.isNotEmpty(serviceUrl)) {
-            sb.append("{\"endpoint_type\": \"")
-                    .append(endpointType)
-                    .append("\",")
-                    .append("\"production_endpoints\": {\"url\": \"")
-                    .append(serviceUrl)
-                    .append("\"}}");
-        } // TODO Need to check on the endpoint security
-        return sb.toString();
-    }
-
-    public static APIDTO.TypeEnum getAPIType(ServiceEntry.DefinitionType definitionType, String protocol)
-            throws APIManagementException {
-        if (ServiceEntry.DefinitionType.ASYNC_API.equals(definitionType)) {
-            if (protocol.isEmpty()) {
-                throw new APIManagementException("A protocol should be specified in the Async API definition",
-                        ExceptionCodes.MISSING_PROTOCOL_IN_ASYNC_API_DEFINITION);
-            } else if (!APIConstants.API_TYPE_WEBSUB.equals(protocol.toUpperCase()) &&
-                    !APIConstants.API_TYPE_SSE.equals(protocol.toUpperCase()) &&
-                    !APIConstants.API_TYPE_WS.equals(protocol.toUpperCase())) {
-                throw new APIManagementException("Unsupported protocol specified in Async API Definition",
-                        ExceptionCodes.UNSUPPORTED_PROTOCOL_SPECIFIED_IN_ASYNC_API_DEFINITION);
-            }
-
-        }
-        switch (definitionType) {
-            case WSDL1:
-            case WSDL2:
-                return APIDTO.TypeEnum.SOAP;
-            case GRAPHQL_SDL:
-                return APIDTO.TypeEnum.GRAPHQL;
-            case ASYNC_API:
-                return APIDTO.TypeEnum.fromValue(protocol.toUpperCase());
-            default:
-                return APIDTO.TypeEnum.HTTP;
-        }
-    }
-
-//    /**
-//     * Prepares the API Model object to be created using the DTO object.
-//     *
-//     * @param body        APIDTO of the API
-//     * @param apiProvider API Provider
-//     * @param username    Username
-//     * @param organization  Organization Identifier
-//     * @return API object to be created
-//     * @throws APIManagementException Error while creating the API
-//     */
-//    public static API prepareToCreateAPIByDTO(APIDTO body, APIProvider apiProvider, String username,
-//                                              String organization)
-//            throws APIManagementException {
-//
-//        String context = body.getContext();
-//        //Make sure context starts with "/". ex: /pizza
-//        context = context.startsWith("/") ? context : ("/" + context);
-//
-//        if (body.getAccessControlRoles() != null) {
-//            String errorMessage = PublisherCommonUtils.validateUserRoles(body.getAccessControlRoles());
-//
-//            if (!errorMessage.isEmpty()) {
-//                throw new APIManagementException(errorMessage, ExceptionCodes.INVALID_USER_ROLES);
-//            }
-//        }
-//        if (body.getAdditionalProperties() != null) {
-//            String errorMessage = PublisherCommonUtils.validateAdditionalProperties(body.getAdditionalProperties());
-//            if (!errorMessage.isEmpty()) {
-//                throw new APIManagementException(errorMessage, ExceptionCodes
-//                        .from(ExceptionCodes.INVALID_ADDITIONAL_PROPERTIES, body.getName(), body.getVersion()));
-//            }
-//        }
-//        if (body.getContext() == null) {
-//            throw new APIManagementException("Parameter: \"context\" cannot be null",
-//                    ExceptionCodes.PARAMETER_NOT_PROVIDED);
-//        } else if (body.getContext().endsWith("/")) {
-//            throw new APIManagementException("Context cannot end with '/' character", ExceptionCodes.INVALID_CONTEXT);
-//        }
-//        if (apiProvider.isApiNameWithDifferentCaseExist(body.getName(), organization)) {
-//            throw new APIManagementException(
-//                    "Error occurred while adding API. API with name " + body.getName() + " already exists.",
-//                    ExceptionCodes.from(ExceptionCodes.API_NAME_ALREADY_EXISTS, body.getName()));
-//        }
-//        if (body.getAuthorizationHeader() == null) {
-//            body.setAuthorizationHeader(APIUtil.getOAuthConfigurationFromAPIMConfig(APIConstants.AUTHORIZATION_HEADER));
-//        }
-//        if (body.getAuthorizationHeader() == null) {
-//            body.setAuthorizationHeader(APIConstants.AUTHORIZATION_HEADER_DEFAULT);
-//        }
-//
-//        if (body.getVisibility() == APIDTO.VisibilityEnum.RESTRICTED && body.getVisibleRoles().isEmpty()) {
-//            throw new APIManagementException(
-//                    "Valid roles should be added under 'visibleRoles' to restrict " + "the visibility",
-//                    ExceptionCodes.USER_ROLES_CANNOT_BE_NULL);
-//        }
-//        if (body.getVisibleRoles() != null) {
-//            String errorMessage = PublisherCommonUtils.validateRoles(body.getVisibleRoles());
-//            if (!errorMessage.isEmpty()) {
-//                throw new APIManagementException(errorMessage, ExceptionCodes.INVALID_USER_ROLES);
-//            }
-//        }
-//
-//        //Get all existing versions of  api been adding
-//        List<String> apiVersions = apiProvider.getApiVersionsMatchingApiNameAndOrganization(body.getName(),
-//                username, organization);
-//        if (!apiVersions.isEmpty()) {
-//            //If any previous version exists
-//            for (String version : apiVersions) {
-//                if (version.equalsIgnoreCase(body.getVersion())) {
-//                    //If version already exists
-//                    if (apiProvider.isDuplicateContextTemplateMatchingOrganization(context, organization)) {
-//                        throw new APIManagementException(
-//                                "Error occurred while " + "adding the API. A duplicate API already exists for "
-//                                        + context + " in the organization : " + organization,
-//                                ExceptionCodes.API_ALREADY_EXISTS);
-//                    } else {
-//                        throw new APIManagementException(
-//                                "Error occurred while adding API. API with name " + body.getName()
-//                                        + " already exists with different context" + context  + " in the organization" +
-//                                        " : " + organization,  ExceptionCodes.API_ALREADY_EXISTS);
-//                    }
-//                }
-//            }
-//        } else {
-//            //If no any previous version exists
-//            if (apiProvider.isDuplicateContextTemplateMatchingOrganization(context, organization)) {
-//                throw new APIManagementException(
-//                        "Error occurred while adding the API. A duplicate API context already exists for "
-//                                + context + " in the organization" + " : " + organization, ExceptionCodes
-//                        .from(ExceptionCodes.API_CONTEXT_ALREADY_EXISTS, context));
-//            }
-//        }
-//
-//        //Check if the user has admin permission before applying a different provider than the current user
-//        String provider = body.getProvider();
-//        if (!StringUtils.isBlank(provider) && !provider.equals(username)) {
-//            if (!APIUtil.hasPermission(username, APIConstants.Permissions.APIM_ADMIN)) {
-//                if (log.isDebugEnabled()) {
-//                    log.debug("User " + username + " does not have admin permission ("
-//                            + APIConstants.Permissions.APIM_ADMIN + ") hence provider (" + provider
-//                            + ") overridden with current user (" + username + ")");
-//                }
-//                provider = username;
-//            } else {
-//                if (!APIUtil.isUserExist(provider)) {
-//                    throw new APIManagementException("Specified provider " + provider + " not exist.",
-//                            ExceptionCodes.PARAMETER_NOT_PROVIDED);
-//                }
-//            }
-//        } else {
-//            //Set username in case provider is null or empty
-//            provider = username;
-//        }
-//
-//        List<String> tiersFromDTO = body.getPolicies();
-//
-//        //check whether the added API's tiers are all valid
-//        Set<Tier> definedTiers = apiProvider.getTiers();
-//        List<String> invalidTiers = getInvalidTierNames(definedTiers, tiersFromDTO);
-//        if (!invalidTiers.isEmpty()) {
-//            throw new APIManagementException(
-//                    "Specified tier(s) " + Arrays.toString(invalidTiers.toArray()) + " are invalid",
-//                    ExceptionCodes.TIER_NAME_INVALID);
-//        }
-//        APIPolicy apiPolicy = apiProvider.getAPIPolicy(username, body.getApiThrottlingPolicy());
-//        if (apiPolicy == null && body.getApiThrottlingPolicy() != null) {
-//            throw new APIManagementException("Specified policy " + body.getApiThrottlingPolicy() + " is invalid",
-//                    ExceptionCodes.UNSUPPORTED_THROTTLE_LIMIT_TYPE);
-//        }
-//
-//        API apiToAdd = APIMappingUtil.fromDTOtoAPI(body, provider);
-//        //Overriding some properties:
-//        //only allow CREATED as the stating state for the new api if not status is PROTOTYPED
-//        if (!APIConstants.PROTOTYPED.equals(apiToAdd.getStatus())) {
-//            apiToAdd.setStatus(APIConstants.CREATED);
-//        }
-//
-//        if (!apiToAdd.isAdvertiseOnly() || StringUtils.isBlank(apiToAdd.getApiOwner())) {
-//            //we are setting the api owner as the logged in user until we support checking admin privileges and
-//            //assigning the owner as a different user
-//            apiToAdd.setApiOwner(provider);
-//        }
-//
-//        // Set default gatewayVendor
-//        if (body.getGatewayVendor() == null) {
-//            apiToAdd.setGatewayVendor(APIConstants.WSO2_GATEWAY_ENVIRONMENT);
-//        }
-//        apiToAdd.setOrganization(organization);
-//        //apiToAdd.setGatewayType(body.getGatewayType());
-//        return apiToAdd;
-//    }
-
-    public static String updateAPIDefinition(String apiId, APIDefinitionValidationResponse response,
-                ServiceEntry service, String organization) throws APIManagementException, FaultGatewaysException {
-
-        if (ServiceEntry.DefinitionType.OAS2.equals(service.getDefinitionType()) ||
-                ServiceEntry.DefinitionType.OAS3.equals(service.getDefinitionType())) {
-            return updateSwagger(apiId, response, true, organization);
-        } else if (ServiceEntry.DefinitionType.ASYNC_API.equals(service.getDefinitionType())) {
-            return updateAsyncAPIDefinition(apiId, response, organization);
-        }
-        return null;
-    }
-
-    /**
-     * update AsyncPI definition of the given api.
-     *
-     * @param apiId    API Id
-     * @param response response of the AsyncAPI definition validation call
-     * @param organization identifier of the organization
-     * @return updated AsyncAPI definition
-     * @throws APIManagementException when error occurred updating AsyncAPI definition
-     * @throws FaultGatewaysException when error occurred publishing API to the gateway
-     */
-    public static String updateAsyncAPIDefinition(String apiId, APIDefinitionValidationResponse response,
-            String organization) throws APIManagementException, FaultGatewaysException {
-
-        APIProvider apiProvider = RestApiCommonUtil.getLoggedInUserProvider();
-        //this will fall if user does not have access to the API or the API does not exist
-        API oldapi = apiProvider.getAPIbyUUID(apiId, organization);
-        API existingAPI = apiProvider.getAPIbyUUID(apiId, organization);
-        existingAPI.setOrganization(organization);
-        String apiDefinition = response.getJsonContent();
-
-        AsyncApiParser asyncApiParser = new AsyncApiParser();
-        // Set uri templates
-        Set<URITemplate> uriTemplates = asyncApiParser.getURITemplates(apiDefinition, APIConstants.
-                API_TYPE_WS.equals(existingAPI.getType()) || !APIConstants.WSO2_GATEWAY_ENVIRONMENT.equals
-                (existingAPI.getGatewayVendor()));
-        if (uriTemplates == null || uriTemplates.isEmpty()) {
-            throw new APIManagementException(ExceptionCodes.NO_RESOURCES_FOUND);
-        }
-        existingAPI.setUriTemplates(uriTemplates);
-
-        // Update ws uri mapping
-        existingAPI.setWsUriMapping(asyncApiParser.buildWSUriMapping(apiDefinition));
-
-        //updating APi with the new AsyncAPI definition
-        existingAPI.setAsyncApiDefinition(apiDefinition);
-        apiProvider.saveAsyncApiDefinition(existingAPI, apiDefinition);
-        apiProvider.updateAPI(existingAPI, oldapi);
-        //retrieves the updated AsyncAPI definition
-        return apiProvider.getAsyncAPIDefinition(existingAPI.getId().getUUID(), organization);
-    }
-
-    /**
-     * update swagger definition of the given api.
-     *
-     * @param apiId    API Id
-     * @param response response of a swagger definition validation call
-     * @param organization  Organization Identifier
-     * @return updated swagger definition
-     * @throws APIManagementException when error occurred updating swagger
-     */
-    public static String updateSwagger(String apiId, APIDefinitionValidationResponse response, boolean isServiceAPI,
-                                       String organization)
-            throws APIManagementException {
-
-        APIProvider apiProvider = RestApiCommonUtil.getLoggedInUserProvider();
-        //this will fail if user does not have access to the API or the API does not exist
-        API existingAPI = apiProvider.getAPIbyUUID(apiId, organization);
-        APIDefinition oasParser = response.getParser();
-        String apiDefinition = response.getJsonContent();
-        if (isServiceAPI) {
-            apiDefinition = oasParser.copyVendorExtensions(existingAPI.getSwaggerDefinition(), apiDefinition);
-        } else {
-            apiDefinition = OASParserUtil.preProcess(apiDefinition);
-        }
-        if (APIConstants.API_TYPE_SOAPTOREST.equals(existingAPI.getType())) {
-//            List<SOAPToRestSequence> sequenceList = SequenceGenerator.generateSequencesFromSwagger(apiDefinition);
-//            existingAPI.setSoapToRestSequences(sequenceList);
-        }
-        Set<URITemplate> uriTemplates = null;
-        uriTemplates = oasParser.getURITemplates(apiDefinition);
-
-        if (uriTemplates == null || uriTemplates.isEmpty()) {
-            throw new APIManagementException(ExceptionCodes.NO_RESOURCES_FOUND);
-        }
-//        Set<org.wso2.carbon.apimgt.api.model.Scope> scopes = oasParser.getScopes(apiDefinition);
-//        //validating scope roles
-//        for (org.wso2.carbon.apimgt.api.model.Scope scope : scopes) {
-//            String roles = scope.getRoles();
-//            if (roles != null) {
-//                for (String aRole : roles.split(",")) {
-//                    boolean isValidRole = APIUtil.isRoleNameExist(RestApiCommonUtil.getLoggedInUsername(), aRole);
-//                    if (!isValidRole) {
-//                        throw new APIManagementException("Role '" + aRole + "' Does not exist.",
-//                                ExceptionCodes.ROLE_DOES_NOT_EXIST);
-//                    }
-//                }
-//            }
-//        }
-
-        List<APIResource> removedProductResources = apiProvider.getRemovedProductResources(uriTemplates, existingAPI);
-
-        if (!removedProductResources.isEmpty()) {
-            throw new APIManagementException(
-                    "Cannot remove following resource paths " + removedProductResources.toString()
-                            + " because they are used by one or more API Products", ExceptionCodes
-                    .from(ExceptionCodes.API_PRODUCT_USED_RESOURCES, existingAPI.getId().getApiName(),
-                            existingAPI.getId().getVersion()));
-        }
-
-        //set existing operation policies to URI templates
-        apiProvider.setOperationPoliciesToURITemplates(apiId, uriTemplates);
-
-        existingAPI.setUriTemplates(uriTemplates);
-        //existingAPI.setScopes(scopes);
-        //PublisherCommonUtils.validateScopes(existingAPI);
-        //Update API is called to update URITemplates and scopes of the API
-        SwaggerData swaggerData = new SwaggerData(existingAPI);
-        String updatedApiDefinition = oasParser.populateCustomManagementInfo(apiDefinition, swaggerData);
-        apiProvider.saveSwaggerDefinition(existingAPI, updatedApiDefinition, organization);
-        existingAPI.setSwaggerDefinition(updatedApiDefinition);
-        API unModifiedAPI = apiProvider.getAPIbyUUID(apiId, organization);
-        existingAPI.setStatus(unModifiedAPI.getStatus());
-        try {
-            apiProvider.updateAPI(existingAPI, unModifiedAPI);
-        } catch (FaultGatewaysException e) {
-            throw new APIManagementException("Error while updating the API: " + apiId, ExceptionCodes.INTERNAL_ERROR);
-        }
-
-        //retrieves the updated swagger definition
-        String apiSwagger = apiProvider.getOpenAPIDefinition(apiId, organization); // TODO see why we need to get it
-        // instead of passing same
-        return oasParser.getOASDefinitionForPublisher(existingAPI, apiSwagger);
-    }
-
-//    /**
-//     * Add GraphQL schema.
-//     *
-//     * @param originalAPI      API
-//     * @param schemaDefinition GraphQL schema definition to add
-//     * @param apiProvider      API Provider
-//     * @return the arrayList of APIOperationsDTOextractGraphQLOperationList
-//     */
-//    public static API addGraphQLSchema(API originalAPI, String schemaDefinition, APIProvider apiProvider)
-//            throws APIManagementException, FaultGatewaysException {
-//        API oldApi = apiProvider.getAPIbyUUID(originalAPI.getUuid(), originalAPI.getOrganization());
-//
-//        List<APIOperationsDTO> operationListWithOldData = APIMappingUtil
-//                .getOperationListWithOldData(originalAPI.getUriTemplates(),
-//                        extractGraphQLOperationList(schemaDefinition));
-//
-//        Set<URITemplate> uriTemplates = APIMappingUtil.getURITemplates(originalAPI, operationListWithOldData);
-//        originalAPI.setUriTemplates(uriTemplates);
-//
-//        apiProvider.saveGraphqlSchemaDefinition(originalAPI.getUuid(), schemaDefinition, originalAPI.getOrganization());
-//        apiProvider.updateAPI(originalAPI, oldApi);
-//
-//        return originalAPI;
-//    }
-
-    /**
-     * Extract GraphQL Operations from given schema.
-     *
-     * @param schema graphQL Schema
-     * @return the arrayList of APIOperationsDTOextractGraphQLOperationList
-     */
-    public static List<APIOperationsDTO> extractGraphQLOperationList(String schema) {
-
-        List<APIOperationsDTO> operationArray = new ArrayList<>();
-        SchemaParser schemaParser = new SchemaParser();
-        TypeDefinitionRegistry typeRegistry = schemaParser.parse(schema);
-        Map<String, TypeDefinition> operationList = typeRegistry.types();
-        for (Map.Entry<String, TypeDefinition> entry : operationList.entrySet()) {
-            if (entry.getValue().getName().equals(APIConstants.GRAPHQL_QUERY) || entry.getValue().getName()
-                    .equals(APIConstants.GRAPHQL_MUTATION) || entry.getValue().getName()
-                    .equals(APIConstants.GRAPHQL_SUBSCRIPTION)) {
-                for (FieldDefinition fieldDef : ((ObjectTypeDefinition) entry.getValue()).getFieldDefinitions()) {
-                    APIOperationsDTO operation = new APIOperationsDTO();
-                    operation.setVerb(entry.getKey());
-                    operation.setTarget(fieldDef.getName());
-                    operationArray.add(operation);
-                }
-            }
-        }
-        return operationArray;
-    }
-
-//    /**
-//     * Validate GraphQL Schema.
-//     *
-//     * @param filename file name of the schema
-//     * @param schema   GraphQL schema
-//     */
-//    public static GraphQLValidationResponseDTO validateGraphQLSchema(String filename, String schema)
-//            throws APIManagementException {
-//
-//        String errorMessage;
-//        GraphQLValidationResponseDTO validationResponse = new GraphQLValidationResponseDTO();
-//        boolean isValid = false;
-//        try {
-//            if (filename.endsWith(".graphql") || filename.endsWith(".txt") || filename.endsWith(".sdl")) {
-//                if (schema.isEmpty()) {
-//                    throw new APIManagementException("GraphQL Schema cannot be empty or null to validate it",
-//                            ExceptionCodes.GRAPHQL_SCHEMA_CANNOT_BE_NULL);
-//                }
-//                SchemaParser schemaParser = new SchemaParser();
-//                TypeDefinitionRegistry typeRegistry = schemaParser.parse(schema);
-//                GraphQLSchema graphQLSchema = UnExecutableSchemaGenerator.makeUnExecutableSchema(typeRegistry);
-//                SchemaValidator schemaValidation = new SchemaValidator();
-//                Set<SchemaValidationError> validationErrors = schemaValidation.validateSchema(graphQLSchema);
-//
-//                if (validationErrors.toArray().length > 0) {
-//                    errorMessage = "InValid Schema";
-//                    validationResponse.isValid(Boolean.FALSE);
-//                    validationResponse.errorMessage(errorMessage);
-//                } else {
-//                    validationResponse.setIsValid(Boolean.TRUE);
-//                    GraphQLValidationResponseGraphQLInfoDTO graphQLInfo = new GraphQLValidationResponseGraphQLInfoDTO();
-//                    GraphQLSchemaDefinition graphql = new GraphQLSchemaDefinition();
-//                    List<URITemplate> operationList = graphql.extractGraphQLOperationList(typeRegistry, null);
-//                    List<APIOperationsDTO> operationArray = APIMappingUtil
-//                            .fromURITemplateListToOprationList(operationList);
-//                    graphQLInfo.setOperations(operationArray);
-//                    GraphQLSchemaDTO schemaObj = new GraphQLSchemaDTO();
-//                    schemaObj.setSchemaDefinition(schema);
-//                    graphQLInfo.setGraphQLSchema(schemaObj);
-//                    validationResponse.setGraphQLInfo(graphQLInfo);
-//                }
-//            } else {
-//                throw new APIManagementException("Unsupported extension type of file: " + filename,
-//                        ExceptionCodes.UNSUPPORTED_GRAPHQL_FILE_EXTENSION);
-//            }
-//            isValid = validationResponse.isIsValid();
-//            errorMessage = validationResponse.getErrorMessage();
-//        } catch (SchemaProblem e) {
-//            errorMessage = e.getMessage();
-//        }
-//
-//        if (!isValid) {
-//            validationResponse.setIsValid(isValid);
-//            validationResponse.setErrorMessage(errorMessage);
-//        }
-//        return validationResponse;
-//    }
-
-    /**
      * Update thumbnail of an API/API Product
      *
      * @param fileInputStream Input stream
@@ -1491,61 +631,6 @@ public class PublisherCommonUtils {
         }
         return invalidTiers;
     }
-
-
-    public static boolean isStreamingAPI(APIDTO apidto) {
-
-        return APIDTO.TypeEnum.WS.equals(apidto.getType()) || APIDTO.TypeEnum.SSE.equals(apidto.getType()) ||
-                APIDTO.TypeEnum.WEBSUB.equals(apidto.getType()) || APIDTO.TypeEnum.ASYNC.equals(apidto.getType());
-    }
-
-//    public static boolean isThirdPartyAsyncAPI(APIDTO apidto) {
-//        return APIDTO.TypeEnum.ASYNC.equals(apidto.getType()) && apidto.getAdvertiseInfo() != null &&
-//                apidto.getAdvertiseInfo().isAdvertised();
-//    }
-
-    /**
-     * Add WSDL file of an API.
-     *
-     * @param fileContentType Content type of the file
-     * @param fileInputStream Input Stream
-     * @param api             API to which the WSDL belongs to
-     * @param apiProvider     API Provider
-     * @param tenantDomain    Tenant domain of the API
-     * @throws APIManagementException If an error occurs while adding the WSDL resource
-     */
-    public static void addWsdl(String fileContentType, InputStream fileInputStream, API api, APIProvider apiProvider,
-                               String tenantDomain) throws APIManagementException {
-        ResourceFile wsdlResource;
-        if (APIConstants.APPLICATION_ZIP.equals(fileContentType) || APIConstants.APPLICATION_X_ZIP_COMPRESSED
-                .equals(fileContentType)) {
-            wsdlResource = new ResourceFile(fileInputStream, APIConstants.APPLICATION_ZIP);
-        } else {
-            wsdlResource = new ResourceFile(fileInputStream, fileContentType);
-        }
-        api.setWsdlResource(wsdlResource);
-        apiProvider.addWSDLResource(api.getUuid(), wsdlResource, null, tenantDomain);
-    }
-
-//    /**
-//     * Set the generated SOAP to REST sequences from the swagger file to the API and update it.
-//     *
-//     * @param swaggerContent Swagger content
-//     * @param api            API to update
-//     * @param apiProvider    API Provider
-//     * @param organization  Organization Identifier
-//     * @return Updated API Object
-//     * @throws APIManagementException If an error occurs while generating the sequences or updating the API
-//     * @throws FaultGatewaysException If an error occurs while updating the API
-//     */
-//    public static API updateAPIBySettingGenerateSequencesFromSwagger(String swaggerContent, API api,
-//                                                                     APIProvider apiProvider, String organization)
-//            throws APIManagementException, FaultGatewaysException {
-//        List<SOAPToRestSequence> list = SequenceGenerator.generateSequencesFromSwagger(swaggerContent);
-//        API updatedAPI = apiProvider.getAPIbyUUID(api.getUuid(), organization);
-//        updatedAPI.setSoapToRestSequences(list);
-//        return apiProvider.updateAPI(updatedAPI, api);
-//    }
 
     /**
      * Change the lifecycle state of an API or API Product identified by UUID
