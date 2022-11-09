@@ -54,8 +54,6 @@ public class ConfigurationHolder {
         return throttleProperties;
     }
 
-    private Set<APIStore> externalAPIStores = new HashSet<>();
-
     public void setThrottleProperties(ThrottleProperties throttleProperties) {
         //TODO: Read configs and assign
         this.throttleProperties = throttleProperties;
@@ -114,8 +112,4 @@ public class ConfigurationHolder {
         return loginConfiguration;
     }
 
-    public Set<APIStore> getExternalAPIStores() {
-
-        return externalAPIStores;
-    }
 }
