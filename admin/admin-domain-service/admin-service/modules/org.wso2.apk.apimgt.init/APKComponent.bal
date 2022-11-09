@@ -1,6 +1,6 @@
 import ballerina/jballerina.java;
-import apk.org.wso2.apk.apimgt.api as orgwso2apkapimgtapi;
-import apk.java.lang as javalang;
+import admin_service.org.wso2.apk.apimgt.api as orgwso2apkapimgtapi;
+import admin_service.java.lang as javalang;
 
 # Ballerina class mapping for the Java `org.wso2.apk.apimgt.init.APKComponent` class.
 @java:Binding {'class: "org.wso2.apk.apimgt.init.APKComponent"}

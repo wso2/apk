@@ -1,4 +1,4 @@
-import apk.admin as _;
+import admin_service.admin as _;
 import ballerina/http;
 
 service on new http:Listener(8080) {

@@ -1,8 +1,8 @@
-[wso2.apk.admin]
+[wso2.admin_service.admin]
 ADMIN_PORT = 9443
 
 # Sample configurations
-[wso2.apk.admin.datasourceConfiguration]
+[wso2.admin_service.admin.datasourceConfiguration]
 description = "APK DB"
 url = "jdbc:postgresql://localhost:5432/apkdb"
 username = "admin"
@@ -10,5 +10,5 @@ password = "admin"
 validationTimeout = 30000
 testQuery = "SELECT 1"
 
-[wso2.apk.admin.throttleConfig]
+[wso2.admin_service.admin.throttleConfig]
 enableUnlimitedTier = true

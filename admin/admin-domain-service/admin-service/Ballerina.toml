@@ -1,6 +1,6 @@
 [package]
 org = "wso2"
-name = "apk"
+name = "admin_service"
 version = "0.1.0"
 distribution = "2201.2.0"
 

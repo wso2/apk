@@ -1,9 +1,9 @@
 import ballerina/jballerina.java;
-import apk.org.wso2.apk.apimgt.api as orgwso2apkapimgtapi;
-import apk.java.lang as javalang;
-import apk.java.util as javautil;
-import apk.java.io as javaio;
-import apk.org.wso2.apk.apimgt.rest.api.admin.v1.dto as orgwso2apkapimgtrestapiadminv1dto;
+import admin_service.org.wso2.apk.apimgt.api as orgwso2apkapimgtapi;
+import admin_service.java.lang as javalang;
+import admin_service.java.util as javautil;
+import admin_service.java.io as javaio;
+import admin_service.org.wso2.apk.apimgt.rest.api.admin.v1.dto as orgwso2apkapimgtrestapiadminv1dto;
 
 # Ballerina class mapping for the Java `org.wso2.apk.apimgt.rest.api.admin.v1.common.impl.ThrottlingCommonImpl` class.
 @java:Binding {'class: "org.wso2.apk.apimgt.rest.api.admin.v1.common.impl.ThrottlingCommonImpl"}

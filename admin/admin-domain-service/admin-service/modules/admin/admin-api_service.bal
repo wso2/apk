@@ -1,8 +1,8 @@
 import ballerina/http;
 import ballerina/io;
-import apk.org.wso2.apk.apimgt.api as api;
 import ballerina/lang.value;
-import apk.org.wso2.apk.apimgt.rest.api.admin.v1.common.impl as admin;
+import admin_service.org.wso2.apk.apimgt.api as api;
+import admin_service.org.wso2.apk.apimgt.rest.api.admin.v1.common.impl as admin;
 
 configurable int ADMIN_PORT = 9443;
 
@@ -220,9 +220,9 @@ service /api/am/admin/v3 on ep0 {
     // }
     // resource function delete 'api\-categories/[string apiCategoryId]() returns http:Ok|NotFoundError {
     // }
-    resource function get settings() returns Settings|NotFoundError {
-        return settingPayload;
-    }
+    // resource function get settings() returns Settings|NotFoundError {
+    //     return settingPayload;
+    // }
     // resource function get 'system\-scopes/[string scopeName](string? username) returns ScopeSettings|BadRequestError|NotFoundError {
     // }
     // resource function get 'system\-scopes() returns ScopeList|InternalServerErrorError {
