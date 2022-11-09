@@ -34,9 +34,13 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.wso2.apk.apimgt.api.APIManagementException;
+import org.wso2.apk.apimgt.api.APIProvider;
 import org.wso2.apk.apimgt.api.ErrorHandler;
 import org.wso2.apk.apimgt.api.ExceptionCodes;
+import org.wso2.apk.apimgt.api.model.API;
+import org.wso2.apk.apimgt.api.model.APIRevision;
 import org.wso2.apk.apimgt.api.model.Scope;
+import org.wso2.apk.apimgt.api.model.URITemplate;
 import org.wso2.apk.apimgt.impl.APIConstants;
 import org.wso2.apk.apimgt.impl.APIManagerFactory;
 import org.wso2.apk.apimgt.impl.dao.ApiMgtDAO;
@@ -47,6 +51,10 @@ import org.wso2.apk.apimgt.user.mgt.util.UserUtils;
 import org.wso2.uri.template.URITemplateException;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
