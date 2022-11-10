@@ -21,6 +21,7 @@ commons-lang3 = { module = "org.apache.commons:commons-lang3", version.ref = "co
 commons-logging = { module = "commons-logging:commons-logging", version.ref = "commons-logging" }
 commons-io = { module = "commons-io:commons-io", version.ref = "commons-io" }
 commons-validator = { module = "commons-validator:commons-validator", version.ref = "commons-validator" }
+commons-collection = { module = "org.apache.commons:commons-collections4", version.ref = "commons-collection" }
 cxf-rt-frontend-jaxrs = { module = "org.apache.cxf:cxf-rt-frontend-jaxrs", version.ref = "cxf" }
 cxf-rt-rs-service-description = { module = "org.apache.cxf:cxf-rt-rs-service-description", version.ref = "cxf" }
 everit-json-schema = { module = "org.wso2.orbit.org.everit.json:org.everit.json.schema", version.ref = "everit" }
@@ -85,6 +86,7 @@ awslambda = "1.11.1034.wso2v2"
 commons-codec = "1.14"
 commons-lang = "2.4"
 commons-lang3 = "3.10"
+commons-collection = "4.1"
 commons-logging = "1.1.1"
 commons-io = "2.11.0"
 commons-validator = "1.7"
