@@ -16,6 +16,7 @@
  */
 
 def imageName = docker_image_name + ':' + project.version
+def platforms = 'linux/amd64,linux/arm64'
 
 // tasks.register('docker_login', Exec) {
 //     group 'docker'
@@ -37,3 +38,31 @@ tasks.register('docker_build', Exec) {
 //     dependsOn docker_build
 //     commandLine 'docker', 'push', imageName
 // }
+
+// Following tasks are required only if you need to make multi architecture docker images
+tasks.register('setup_arch', Exec) {
+    group 'docker'
+    description 'Setup QEMU for buildx'
+    commandLine 'docker', 'run', '--rm', '--privileged', 'multiarch/qemu-user-static', '--reset', '-p', 'yes'
+}
+
+tasks.register('setup_buildx', Exec) {
+    group 'docker'
+    description 'Setup builder instance'
+    dependsOn setup_arch
+    commandLine 'docker', 'buildx', 'create', '--name', 'mybuilder', '--use'
+}
+
+tasks.register('start_builder', Exec) {
+    group 'docker'
+    description 'Bootstrap buildx builder'
+    dependsOn setup_buildx
+    commandLine 'docker', 'buildx', 'inspect', '--bootstrap'
+}
+
+tasks.register('docker_buildx', Exec) {
+    group 'docker'
+    description 'Build a multiarch image using docker buildx buildkit'
+    dependsOn start_builder
+    commandLine 'docker', 'buildx', 'build', '--platform', platforms, '-t', imageName, '--push', '.'
+}
