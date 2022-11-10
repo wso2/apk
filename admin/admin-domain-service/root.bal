@@ -16,12 +16,12 @@
 // under the License.
 //
 
-plugins {
-    id 'net.researchgate.release' version '3.0.2'
-}
+import admin_service.admin as _;
+import ballerina/http;
 
-apply from: "$rootDir/../../common-gradle-scripts/ballerina.gradle"
-
-tasks.named('build').configure {
-    dependsOn 'bal_build'
+service on new http:Listener(8080) {
+    resource function get health (http:Caller caller, http:Request req)
+            returns error? {
+        check caller->respond("Domain service started!");
+    }
 }
