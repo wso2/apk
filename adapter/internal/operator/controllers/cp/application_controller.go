@@ -58,18 +58,18 @@ func NewApplicationController(mgr manager.Manager) error {
 	c, err := controller.New("Application", mgr, controller.Options{Reconciler: r})
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprint("Error creating Application controller. ", err.Error()),
+			Message:   fmt.Sprintf("Error creating Application controller: %v", err.Error()),
 			Severity:  logging.BLOCKER,
-			ErrorCode: 5001,
+			ErrorCode: 2801,
 		})
 		return err
 	}
 
 	if err := c.Watch(&source.Kind{Type: &cpv1alpha1.Application{}}, &handler.EnqueueRequestForObject{}); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprint("Error watching Application resources. ", err.Error()),
+			Message:   fmt.Sprintf("Error watching Application resources: %v", err.Error()),
 			Severity:  logging.BLOCKER,
-			ErrorCode: 5002,
+			ErrorCode: 2802,
 		})
 		return err
 	}
@@ -91,32 +91,32 @@ func NewApplicationController(mgr manager.Manager) error {
 //
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.13.0/pkg/reconcile
-func (r *ApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (applicationReconciler *ApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
 
 	loggers.LoggerAPKOperator.Info("Reconciling application: " + req.NamespacedName.String())
 
 	applicationKey := req.NamespacedName
 	var application = new(cpv1alpha1.Application)
-	if err := r.client.Get(ctx, applicationKey, application); err != nil {
+	if err := applicationReconciler.client.Get(ctx, applicationKey, application); err != nil {
 		if errors.IsNotFound(err) {
 			// The application doesn't exist in the applicationCache, remove it
-			delete(r.applicationCache, applicationKey)
+			delete(applicationReconciler.applicationCache, applicationKey)
 			loggers.LoggerAPKOperator.Info("Application deleted from application cache")
 
-			sendUpdates(r.applicationCache)
+			sendUpdates(applicationReconciler.applicationCache)
 			return ctrl.Result{}, nil
 		}
 		return reconcile.Result{}, fmt.Errorf("Failed to get application %s/%s",
 			applicationKey.Namespace, applicationKey.Name)
 	}
 	// The application created / updated, add to the map
-	if r.applicationCache == nil {
-		r.applicationCache = applicationCache{}
+	if applicationReconciler.applicationCache == nil {
+		applicationReconciler.applicationCache = applicationCache{}
 	}
-	r.applicationCache[applicationKey] = application
+	applicationReconciler.applicationCache[applicationKey] = application
 
-	sendUpdates(r.applicationCache)
+	sendUpdates(applicationReconciler.applicationCache)
 	return ctrl.Result{}, nil
 }
 

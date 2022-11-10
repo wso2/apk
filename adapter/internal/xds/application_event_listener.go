@@ -21,7 +21,7 @@ func HandleApplicationEventsFromMgtServer(c client.Client) {
 				loggers.LoggerXds.ErrorC(logging.ErrorDetails{
 					Message:   fmt.Sprint("Error creating application: ", err.Error()),
 					Severity:  logging.CRITICAL,
-					ErrorCode: 5003,
+					ErrorCode: 1707,
 				})
 			} else {
 				loggers.LoggerXds.Info("Application created: " + applicationEvent.Application.Name)
@@ -35,7 +35,7 @@ func HandleApplicationEventsFromMgtServer(c client.Client) {
 				loggers.LoggerXds.ErrorC(logging.ErrorDetails{
 					Message:   fmt.Sprint("Error retrieving application: ", err.Error()),
 					Severity:  logging.CRITICAL,
-					ErrorCode: 5004,
+					ErrorCode: 1708,
 				})
 				break
 			}
@@ -45,7 +45,7 @@ func HandleApplicationEventsFromMgtServer(c client.Client) {
 				loggers.LoggerXds.ErrorC(logging.ErrorDetails{
 					Message:   fmt.Sprint("Error updating application: ", err.Error()),
 					Severity:  logging.CRITICAL,
-					ErrorCode: 5004,
+					ErrorCode: 1709,
 				})
 			} else {
 				loggers.LoggerXds.Info("Application updated: " + applicationEvent.Application.Name)
@@ -57,7 +57,7 @@ func HandleApplicationEventsFromMgtServer(c client.Client) {
 				loggers.LoggerXds.ErrorC(logging.ErrorDetails{
 					Message:   fmt.Sprint("Error deleting application: ", err.Error()),
 					Severity:  logging.CRITICAL,
-					ErrorCode: 5005,
+					ErrorCode: 1710,
 				})
 			} else {
 				loggers.LoggerXds.Info("Application deleted: " + applicationEvent.Application.Name)
