@@ -1,5 +1,7 @@
 rootProject.name = 'runtime-domain-service'
 include ':ballerina'
 include ':docker'
+include ':java'
 project(':ballerina').projectDir = file('ballerina')
 project(':docker').projectDir = file('docker')
+project(':java').projectDir = file('java')
