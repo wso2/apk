@@ -21,6 +21,8 @@ package org.wso2.apk.apimgt.rest.api.util.utils;
 import org.apache.commons.lang3.StringUtils;
 import org.wso2.apk.apimgt.api.APIConsumer;
 import org.wso2.apk.apimgt.api.APIManagementException;
+import org.wso2.apk.apimgt.api.APIProvider;
+import org.wso2.apk.apimgt.api.model.API;
 import org.wso2.apk.apimgt.impl.APIManagerFactory;
 import org.wso2.apk.apimgt.rest.api.util.RestApiConstants;
 
@@ -193,5 +195,39 @@ public class RestApiCommonUtil {
         paginatedURL = paginatedURL.replace(RestApiConstants.QUERY_PARAM, query);
         return paginatedURL;
     }
+
+    /**
+     * Returns the paginated url for API ratings
+     *
+     * @param offset starting index
+     * @param limit  max number of objects returned
+     * @return constructed paginated url
+     */
+    public static String getRatingPaginatedURL(Integer offset, Integer limit, String apiId) {
+
+        String paginatedURL = RestApiConstants.RATINGS_GET_PAGINATION_URL;
+        paginatedURL = paginatedURL.replace(RestApiConstants.LIMIT_PARAM, String.valueOf(limit));
+        paginatedURL = paginatedURL.replace(RestApiConstants.OFFSET_PARAM, String.valueOf(offset));
+        paginatedURL = paginatedURL.replace(RestApiConstants.APIID_PARAM, apiId);
+        return paginatedURL;
+    }
+
+    /**
+     * Returns the paginated url for tiers
+     *
+     * @param tierLevel tier level (api/application or resource)
+     * @param offset    starting index
+     * @param limit     max number of objects returned
+     * @return constructed paginated url
+     */
+    public static String getTiersPaginatedURL(String tierLevel, Integer offset, Integer limit) {
+
+        String paginatedURL = RestApiConstants.TIERS_GET_PAGINATION_URL;
+        paginatedURL = paginatedURL.replace(RestApiConstants.TIER_LEVEL_PARAM, tierLevel);
+        paginatedURL = paginatedURL.replace(RestApiConstants.LIMIT_PARAM, String.valueOf(limit));
+        paginatedURL = paginatedURL.replace(RestApiConstants.OFFSET_PARAM, String.valueOf(offset));
+        return paginatedURL;
+    }
+
 
 }

@@ -299,4 +299,8 @@ public final class RestApiConstants {
 
     public static final Set<String> ALLOWED_THUMBNAIL_EXTENSIONS = new HashSet<String>(
             Arrays.asList("jpg", "png", "jpeg", "gif", "json"));
+
+    public static final String GENERIC_ERROR_STRING = "Error while generating" ;
+    public static final String STATUS_CONFLICT_MESSAGE_SUBSCRIPTION_ALREADY_EXISTS =
+            "Specified subscription already exists for API";
 }
