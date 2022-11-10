@@ -1,16 +1,24 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import javax.validation.constraints.*;
 
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
 public class APIExternalStoreDTO   {
   
-    private String id = null;
-    private String lastUpdatedTime = null;
+  private String id;
+
+  private String lastUpdatedTime;
+
 
   /**
    * The external store identifier, which is a unique value. 
@@ -30,6 +38,7 @@ public class APIExternalStoreDTO   {
     this.id = id;
   }
 
+
   /**
    * The recent timestamp which a given API is updated in the external store. 
    **/
@@ -47,6 +56,7 @@ public class APIExternalStoreDTO   {
   public void setLastUpdatedTime(String lastUpdatedTime) {
     this.lastUpdatedTime = lastUpdatedTime;
   }
+
 
 
   @Override

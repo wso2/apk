@@ -1,18 +1,28 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import javax.validation.constraints.*;
 
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
 public class APIOperationsDTO   {
   
-    private String id = null;
-    private String target = null;
-    private String verb = null;
-    private String usagePlan = null;
+  private String id;
+
+  private String target;
+
+  private String verb;
+
+  private String usagePlan;
+
 
   /**
    **/
@@ -31,6 +41,7 @@ public class APIOperationsDTO   {
     this.id = id;
   }
 
+
   /**
    **/
   public APIOperationsDTO target(String target) {
@@ -47,6 +58,7 @@ public class APIOperationsDTO   {
   public void setTarget(String target) {
     this.target = target;
   }
+
 
   /**
    **/
@@ -65,6 +77,7 @@ public class APIOperationsDTO   {
     this.verb = verb;
   }
 
+
   /**
    **/
   public APIOperationsDTO usagePlan(String usagePlan) {
@@ -81,6 +94,7 @@ public class APIOperationsDTO   {
   public void setUsagePlan(String usagePlan) {
     this.usagePlan = usagePlan;
   }
+
 
 
   @Override

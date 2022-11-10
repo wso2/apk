@@ -1,17 +1,26 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import javax.validation.constraints.*;
 
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
 public class APICategoryDTO   {
   
-    private String id = null;
-    private String name = null;
-    private String description = null;
+  private String id;
+
+  private String name;
+
+  private String description;
+
 
   /**
    **/
@@ -29,6 +38,7 @@ public class APICategoryDTO   {
   public void setId(String id) {
     this.id = id;
   }
+
 
   /**
    **/
@@ -48,6 +58,7 @@ public class APICategoryDTO   {
     this.name = name;
   }
 
+
   /**
    **/
   public APICategoryDTO description(String description) {
@@ -64,6 +75,7 @@ public class APICategoryDTO   {
   public void setDescription(String description) {
     this.description = description;
   }
+
 
 
   @Override

@@ -1,117 +1,132 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.wso2.apk.apimgt.rest.api.common.annotations.Scope;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.APIAdditionalPropertiesValueDTO;
+import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.APIBusinessInformationDTO;
+import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.APIDeploymentDTO;
+import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.APIMonetizationInfoDTO;
+import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.APIOperationsDTO;
+import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.APIRevisionDTO;
+import javax.validation.constraints.*;
 
-import javax.validation.Valid;
-import java.util.*;
+
+import io.swagger.annotations.*;
+import java.util.Objects;
 
 
 
-@Scope(name = "apim:api_create", description="", value ="")
-@Scope(name = "apim:api_manage", description="", value ="")
 public class APIDTO   {
   
-    private String id = null;
-    private String name = null;
-    private String description = null;
-    private String context = null;
-    private String version = null;
+  private String id;
 
-    @XmlType(name="TypeEnum")
-    @XmlEnum(String.class)
-    public enum TypeEnum {
-        HTTP("HTTP"),
-        WS("WS"),
-        SOAPTOREST("SOAPTOREST"),
-        SOAP("SOAP"),
-        GRAPHQL("GRAPHQL"),
-        WEBSUB("WEBSUB"),
-        SSE("SSE"),
-        WEBHOOK("WEBHOOK"),
-        ASYNC("ASYNC");
-        private String value;
+  private String name;
 
-        TypeEnum (String v) {
-            value = v;
-        }
+  private String description;
 
-        public String value() {
-            return value;
-        }
+  private String context;
 
-        @Override
-        public String toString() {
-            return String.valueOf(value);
-        }
+  private String version;
 
-        @JsonCreator
-        public static TypeEnum fromValue(String v) {
-            for (TypeEnum b : TypeEnum.values()) {
-                if (String.valueOf(b.value).equals(v)) {
-                    return b;
-                }
-            }
-return null;
-        }
+
+public enum TypeEnum {
+
+    HTTP(String.valueOf("HTTP")), WS(String.valueOf("WS")), SOAPTOREST(String.valueOf("SOAPTOREST")), SOAP(String.valueOf("SOAP")), GRAPHQL(String.valueOf("GRAPHQL")), WEBSUB(String.valueOf("WEBSUB")), SSE(String.valueOf("SSE")), WEBHOOK(String.valueOf("WEBHOOK")), ASYNC(String.valueOf("ASYNC"));
+
+
+    private String value;
+
+    TypeEnum(String v) {
+        value = v;
     }
-    private TypeEnum type = TypeEnum.HTTP;
-    private List<String> transport = new ArrayList<String>();
-    private Boolean hasThumbnail = null;
 
-    @XmlType(name="StateEnum")
-    @XmlEnum(String.class)
-    public enum StateEnum {
-        CREATED("CREATED"),
-        PUBLISHED("PUBLISHED");
-        private String value;
-
-        StateEnum (String v) {
-            value = v;
-        }
-
-        public String value() {
-            return value;
-        }
-
-        @Override
-        public String toString() {
-            return String.valueOf(value);
-        }
-
-        @JsonCreator
-        public static StateEnum fromValue(String v) {
-            for (StateEnum b : StateEnum.values()) {
-                if (String.valueOf(b.value).equals(v)) {
-                    return b;
-                }
-            }
-return null;
-        }
+    public String value() {
+        return value;
     }
-    private StateEnum state = StateEnum.CREATED;
-    private List<String> tags = new ArrayList<String>();
-    private List<String> categories = new ArrayList<String>();
-    @Scope(name = "apim:api_publish", description="", value ="")
-    @Scope(name = "apim:api_manage", description="", value ="")
-    private List<APIAdditionalPropertiesDTO> additionalProperties = new ArrayList<APIAdditionalPropertiesDTO>();
-    @Scope(name = "apim:api_publish", description="", value ="")
-    @Scope(name = "apim:api_manage", description="", value ="")
-    private Map<String, APIAdditionalPropertiesMapDTO> additionalPropertiesMap = new HashMap<String, APIAdditionalPropertiesMapDTO>();
-    private String createdTime = null;
-    @Scope(name = "apim:api_publish", description="", value ="")
-    @Scope(name = "apim:api_manage", description="", value ="")
-    private String lastUpdatedTime = null;
-    private List<APIOperationsDTO> operations = new ArrayList<APIOperationsDTO>();
-    @Scope(name = "apim:api_publish", description="", value ="")
-    @Scope(name = "apim:api_manage", description="", value ="")
-    private String apiUsagePolicy = null;
-    private APIMonetizationInfoDTO monetization = null;
-    private APIBusinessInformationDTO businessInformation = null;
-    private APIRevisionDTO revision = null;
-    private List<APIDeploymentDTO> deployments = new ArrayList<APIDeploymentDTO>();
+
+    @Override
+    public String toString() {
+        return String.valueOf(value);
+    }
+
+    public static TypeEnum fromValue(String value) {
+        for (TypeEnum b : TypeEnum.values()) {
+            if (b.value.equals(value)) {
+                return b;
+            }
+        }
+        throw new IllegalArgumentException("Unexpected value '" + value + "'");
+    }
+}
+
+  private TypeEnum type = TypeEnum.HTTP;
+
+  private List<String> transport = null;
+
+  private Boolean hasThumbnail;
+
+
+public enum StateEnum {
+
+    CREATED(String.valueOf("CREATED")), PUBLISHED(String.valueOf("PUBLISHED"));
+
+
+    private String value;
+
+    StateEnum(String v) {
+        value = v;
+    }
+
+    public String value() {
+        return value;
+    }
+
+    @Override
+    public String toString() {
+        return String.valueOf(value);
+    }
+
+    public static StateEnum fromValue(String value) {
+        for (StateEnum b : StateEnum.values()) {
+            if (b.value.equals(value)) {
+                return b;
+            }
+        }
+        throw new IllegalArgumentException("Unexpected value '" + value + "'");
+    }
+}
+
+  private StateEnum state = StateEnum.CREATED;
+
+  private List<String> tags = null;
+
+  private List<String> categories = null;
+
+  private Map<String, APIAdditionalPropertiesValueDTO> additionalProperties = null;
+
+  private String createdTime;
+
+  private String lastUpdatedTime;
+
+  private List<APIOperationsDTO> operations = null;
+
+  private String apiUsagePolicy;
+
+  private APIMonetizationInfoDTO monetization;
+
+  private APIBusinessInformationDTO businessInformation;
+
+  private APIRevisionDTO revision;
+
+  private List<APIDeploymentDTO> deployments = null;
+
 
   /**
    * UUID of the API 
@@ -131,6 +146,7 @@ return null;
     this.id = id;
   }
 
+
   /**
    **/
   public APIDTO name(String name) {
@@ -149,6 +165,7 @@ return null;
     this.name = name;
   }
 
+
   /**
    **/
   public APIDTO description(String description) {
@@ -165,6 +182,7 @@ return null;
   public void setDescription(String description) {
     this.description = description;
   }
+
 
   /**
    **/
@@ -184,6 +202,7 @@ return null;
     this.context = context;
   }
 
+
   /**
    **/
   public APIDTO version(String version) {
@@ -201,6 +220,7 @@ return null;
   public void setVersion(String version) {
     this.version = version;
   }
+
 
   /**
    * The api creation type to be used. Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL, WEBSUB, SSE, WEBHOOK, ASYNC
@@ -220,6 +240,7 @@ return null;
     this.type = type;
   }
 
+
   /**
    * Supported transports for the API (http and/or https). 
    **/
@@ -238,6 +259,15 @@ return null;
     this.transport = transport;
   }
 
+  public APIDTO addTransportItem(String transportItem) {
+    if (this.transport == null) {
+      this.transport = new ArrayList<>();
+    }
+    this.transport.add(transportItem);
+    return this;
+  }
+
+
   /**
    **/
   public APIDTO hasThumbnail(Boolean hasThumbnail) {
@@ -248,12 +278,13 @@ return null;
   
   @ApiModelProperty(example = "false", value = "")
   @JsonProperty("hasThumbnail")
-  public Boolean isHasThumbnail() {
+  public Boolean getHasThumbnail() {
     return hasThumbnail;
   }
   public void setHasThumbnail(Boolean hasThumbnail) {
     this.hasThumbnail = hasThumbnail;
   }
+
 
   /**
    * State of the API. Only published APIs are visible on the Developer Portal 
@@ -273,6 +304,7 @@ return null;
     this.state = state;
   }
 
+
   /**
    **/
   public APIDTO tags(List<String> tags) {
@@ -289,6 +321,15 @@ return null;
   public void setTags(List<String> tags) {
     this.tags = tags;
   }
+
+  public APIDTO addTagsItem(String tagsItem) {
+    if (this.tags == null) {
+      this.tags = new ArrayList<>();
+    }
+    this.tags.add(tagsItem);
+    return this;
+  }
+
 
   /**
    * API categories 
@@ -308,41 +349,39 @@ return null;
     this.categories = categories;
   }
 
-  /**
-   * Map of custom properties of API
-   **/
-  public APIDTO additionalProperties(List<APIAdditionalPropertiesDTO> additionalProperties) {
-    this.additionalProperties = additionalProperties;
+  public APIDTO addCategoriesItem(String categoriesItem) {
+    if (this.categories == null) {
+      this.categories = new ArrayList<>();
+    }
+    this.categories.add(categoriesItem);
     return this;
   }
 
-  
-  @ApiModelProperty(value = "Map of custom properties of API")
-      @Valid
-  @JsonProperty("additionalProperties")
-  public List<APIAdditionalPropertiesDTO> getAdditionalProperties() {
-    return additionalProperties;
-  }
-  public void setAdditionalProperties(List<APIAdditionalPropertiesDTO> additionalProperties) {
-    this.additionalProperties = additionalProperties;
-  }
 
   /**
    **/
-  public APIDTO additionalPropertiesMap(Map<String, APIAdditionalPropertiesMapDTO> additionalPropertiesMap) {
-    this.additionalPropertiesMap = additionalPropertiesMap;
+  public APIDTO additionalProperties(Map<String, APIAdditionalPropertiesValueDTO> additionalProperties) {
+    this.additionalProperties = additionalProperties;
     return this;
   }
 
   
   @ApiModelProperty(value = "")
-      @Valid
-  @JsonProperty("additionalPropertiesMap")
-  public Map<String, APIAdditionalPropertiesMapDTO> getAdditionalPropertiesMap() {
-    return additionalPropertiesMap;
+  @JsonProperty("additionalProperties")
+  public Map<String, APIAdditionalPropertiesValueDTO> getAdditionalProperties() {
+    return additionalProperties;
   }
-  public void setAdditionalPropertiesMap(Map<String, APIAdditionalPropertiesMapDTO> additionalPropertiesMap) {
-    this.additionalPropertiesMap = additionalPropertiesMap;
+  public void setAdditionalProperties(Map<String, APIAdditionalPropertiesValueDTO> additionalProperties) {
+    this.additionalProperties = additionalProperties;
+  }
+
+
+  public APIDTO putAdditionalPropertiesItem(String key, APIAdditionalPropertiesValueDTO additionalPropertiesItem) {
+    if (this.additionalProperties == null) {
+      this.additionalProperties = new HashMap<>();
+    }
+    this.additionalProperties.put(key, additionalPropertiesItem);
+    return this;
   }
 
   /**
@@ -362,6 +401,7 @@ return null;
     this.createdTime = createdTime;
   }
 
+
   /**
    **/
   public APIDTO lastUpdatedTime(String lastUpdatedTime) {
@@ -379,6 +419,7 @@ return null;
     this.lastUpdatedTime = lastUpdatedTime;
   }
 
+
   /**
    **/
   public APIDTO operations(List<APIOperationsDTO> operations) {
@@ -388,7 +429,6 @@ return null;
 
   
   @ApiModelProperty(example = "[{\"target\":\"/order/{orderId}\",\"verb\":\"POST\",\"usagePlan\":\"Unlimited\"},{\"target\":\"/menu\",\"verb\":\"GET\",\"usagePlan\":\"Unlimited\"}]", value = "")
-      @Valid
   @JsonProperty("operations")
   public List<APIOperationsDTO> getOperations() {
     return operations;
@@ -396,6 +436,15 @@ return null;
   public void setOperations(List<APIOperationsDTO> operations) {
     this.operations = operations;
   }
+
+  public APIDTO addOperationsItem(APIOperationsDTO operationsItem) {
+    if (this.operations == null) {
+      this.operations = new ArrayList<>();
+    }
+    this.operations.add(operationsItem);
+    return this;
+  }
+
 
   /**
    * The API level usage policy selected for the particular Runtime API
@@ -415,6 +464,7 @@ return null;
     this.apiUsagePolicy = apiUsagePolicy;
   }
 
+
   /**
    **/
   public APIDTO monetization(APIMonetizationInfoDTO monetization) {
@@ -424,7 +474,6 @@ return null;
 
   
   @ApiModelProperty(value = "")
-      @Valid
   @JsonProperty("monetization")
   public APIMonetizationInfoDTO getMonetization() {
     return monetization;
@@ -432,6 +481,7 @@ return null;
   public void setMonetization(APIMonetizationInfoDTO monetization) {
     this.monetization = monetization;
   }
+
 
   /**
    **/
@@ -442,7 +492,6 @@ return null;
 
   
   @ApiModelProperty(value = "")
-      @Valid
   @JsonProperty("businessInformation")
   public APIBusinessInformationDTO getBusinessInformation() {
     return businessInformation;
@@ -450,6 +499,7 @@ return null;
   public void setBusinessInformation(APIBusinessInformationDTO businessInformation) {
     this.businessInformation = businessInformation;
   }
+
 
   /**
    **/
@@ -460,7 +510,6 @@ return null;
 
   
   @ApiModelProperty(value = "")
-      @Valid
   @JsonProperty("revision")
   public APIRevisionDTO getRevision() {
     return revision;
@@ -468,6 +517,7 @@ return null;
   public void setRevision(APIRevisionDTO revision) {
     this.revision = revision;
   }
+
 
   /**
    **/
@@ -478,7 +528,6 @@ return null;
 
   
   @ApiModelProperty(example = "[{\"name\":\"US\",\"deployedTime\":\"2022-10-28T06:13:35.024Z\"},{\"name\":\"Europe\",\"deployedTime\":\"2022-10-28T06:13:35.024Z\"}]", value = "")
-      @Valid
   @JsonProperty("deployments")
   public List<APIDeploymentDTO> getDeployments() {
     return deployments;
@@ -486,6 +535,15 @@ return null;
   public void setDeployments(List<APIDeploymentDTO> deployments) {
     this.deployments = deployments;
   }
+
+  public APIDTO addDeploymentsItem(APIDeploymentDTO deploymentsItem) {
+    if (this.deployments == null) {
+      this.deployments = new ArrayList<>();
+    }
+    this.deployments.add(deploymentsItem);
+    return this;
+  }
+
 
 
   @Override
@@ -509,7 +567,6 @@ return null;
         Objects.equals(tags, API.tags) &&
         Objects.equals(categories, API.categories) &&
         Objects.equals(additionalProperties, API.additionalProperties) &&
-        Objects.equals(additionalPropertiesMap, API.additionalPropertiesMap) &&
         Objects.equals(createdTime, API.createdTime) &&
         Objects.equals(lastUpdatedTime, API.lastUpdatedTime) &&
         Objects.equals(operations, API.operations) &&
@@ -522,7 +579,7 @@ return null;
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, description, context, version, type, transport, hasThumbnail, state, tags, categories, additionalProperties, additionalPropertiesMap, createdTime, lastUpdatedTime, operations, apiUsagePolicy, monetization, businessInformation, revision, deployments);
+    return Objects.hash(id, name, description, context, version, type, transport, hasThumbnail, state, tags, categories, additionalProperties, createdTime, lastUpdatedTime, operations, apiUsagePolicy, monetization, businessInformation, revision, deployments);
   }
 
   @Override
@@ -542,7 +599,6 @@ return null;
     sb.append("    tags: ").append(toIndentedString(tags)).append("\n");
     sb.append("    categories: ").append(toIndentedString(categories)).append("\n");
     sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n");
-    sb.append("    additionalPropertiesMap: ").append(toIndentedString(additionalPropertiesMap)).append("\n");
     sb.append("    createdTime: ").append(toIndentedString(createdTime)).append("\n");
     sb.append("    lastUpdatedTime: ").append(toIndentedString(lastUpdatedTime)).append("\n");
     sb.append("    operations: ").append(toIndentedString(operations)).append("\n");

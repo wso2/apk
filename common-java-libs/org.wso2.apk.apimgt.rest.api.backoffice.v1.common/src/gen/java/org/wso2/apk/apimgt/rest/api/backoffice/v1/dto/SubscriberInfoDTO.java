@@ -1,15 +1,22 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import javax.validation.constraints.*;
 
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
 public class SubscriberInfoDTO   {
   
-    private String name = null;
+  private String name;
+
 
   /**
    **/
@@ -27,6 +34,7 @@ public class SubscriberInfoDTO   {
   public void setName(String name) {
     this.name = name;
   }
+
 
 
   @Override

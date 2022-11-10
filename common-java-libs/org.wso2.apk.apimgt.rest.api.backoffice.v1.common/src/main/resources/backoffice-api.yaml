@@ -2279,21 +2279,6 @@ components:
           items:
             type: string
         additionalProperties:
-          type: array
-          description: Map of custom properties of API
-          items:
-            type: object
-            properties:
-              name:
-                type: string
-              value:
-                type: string
-              display:
-                type: boolean
-          x-otherScopes:
-            - apim:api_publish
-            - apim:api_manage
-        additionalPropertiesMap:
           type: object
           additionalProperties:
             type: object
@@ -2438,18 +2423,6 @@ components:
           items:
             type: string
         additionalProperties:
-          type: array
-          items:
-            type: object
-            properties:
-              name:
-                type: string
-              value:
-                type: string
-              display:
-                type: boolean
-          description: Map of custom properties of API
-        additionalPropertiesMap:
           type: object
           additionalProperties:
             type: object

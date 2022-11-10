@@ -33,7 +33,6 @@ dependencies {
     implementation project(':org.wso2.apk.apimgt.api')
     implementation project(':org.wso2.apk.apimgt.impl')
     implementation project(':org.wso2.apk.apimgt.rest.api.util')
-    implementation project(':org.wso2.apk.apimgt.rest.api.common')
     implementation libs.commons.io
     implementation libs.commons.lang
     implementation libs.commons.lang3
@@ -48,6 +47,7 @@ dependencies {
     implementation libs.guava
     implementation libs.jackson.dataformat.yaml
     implementation libs.httpcomponents.client
+    implementation libs.javax.validation
     compileOnly libs.jackson.annotations
 }
 

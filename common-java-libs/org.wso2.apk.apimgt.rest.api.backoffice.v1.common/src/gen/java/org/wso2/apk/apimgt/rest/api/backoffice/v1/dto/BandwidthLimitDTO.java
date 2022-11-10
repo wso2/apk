@@ -1,18 +1,28 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import javax.validation.constraints.*;
 
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
 public class BandwidthLimitDTO   {
   
-    private String timeUnit = null;
-    private Integer unitTime = null;
-    private Long dataAmount = null;
-    private String dataUnit = null;
+  private String timeUnit;
+
+  private Integer unitTime;
+
+  private Long dataAmount;
+
+  private String dataUnit;
+
 
   /**
    * Unit of the time. Allowed values are \&quot;sec\&quot;, \&quot;min\&quot;, \&quot;hour\&quot;, \&quot;day\&quot;
@@ -33,6 +43,7 @@ public class BandwidthLimitDTO   {
     this.timeUnit = timeUnit;
   }
 
+
   /**
    * Time limit that the usage limit applies.
    **/
@@ -51,6 +62,7 @@ public class BandwidthLimitDTO   {
   public void setUnitTime(Integer unitTime) {
     this.unitTime = unitTime;
   }
+
 
   /**
    * Amount of data allowed to be transfered
@@ -71,6 +83,7 @@ public class BandwidthLimitDTO   {
     this.dataAmount = dataAmount;
   }
 
+
   /**
    * Unit of data allowed to be transfered. Allowed values are \&quot;KB\&quot;, \&quot;MB\&quot; and \&quot;GB\&quot;
    **/
@@ -89,6 +102,7 @@ public class BandwidthLimitDTO   {
   public void setDataUnit(String dataUnit) {
     this.dataUnit = dataUnit;
   }
+
 
 
   @Override

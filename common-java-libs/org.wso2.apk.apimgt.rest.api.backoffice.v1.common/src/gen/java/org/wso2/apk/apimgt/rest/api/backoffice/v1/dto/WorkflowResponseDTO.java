@@ -1,10 +1,15 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.LifecycleStateDTO;
+import javax.validation.constraints.*;
 
-import javax.validation.Valid;
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
@@ -12,41 +17,42 @@ import java.util.Objects;
 public class WorkflowResponseDTO   {
   
 
-    @XmlType(name="WorkflowStatusEnum")
-    @XmlEnum(String.class)
-    public enum WorkflowStatusEnum {
-        CREATED("CREATED"),
-        APPROVED("APPROVED"),
-        REJECTED("REJECTED"),
-        REGISTERED("REGISTERED");
-        private String value;
+public enum WorkflowStatusEnum {
 
-        WorkflowStatusEnum (String v) {
-            value = v;
-        }
+    CREATED(String.valueOf("CREATED")), APPROVED(String.valueOf("APPROVED")), REJECTED(String.valueOf("REJECTED")), REGISTERED(String.valueOf("REGISTERED"));
 
-        public String value() {
-            return value;
-        }
 
-        @Override
-        public String toString() {
-            return String.valueOf(value);
-        }
+    private String value;
 
-        @JsonCreator
-        public static WorkflowStatusEnum fromValue(String v) {
-            for (WorkflowStatusEnum b : WorkflowStatusEnum.values()) {
-                if (String.valueOf(b.value).equals(v)) {
-                    return b;
-                }
-            }
-return null;
-        }
+    WorkflowStatusEnum(String v) {
+        value = v;
     }
-    private WorkflowStatusEnum workflowStatus = null;
-    private String jsonPayload = null;
-    private LifecycleStateDTO lifecycleState = null;
+
+    public String value() {
+        return value;
+    }
+
+    @Override
+    public String toString() {
+        return String.valueOf(value);
+    }
+
+    public static WorkflowStatusEnum fromValue(String value) {
+        for (WorkflowStatusEnum b : WorkflowStatusEnum.values()) {
+            if (b.value.equals(value)) {
+                return b;
+            }
+        }
+        throw new IllegalArgumentException("Unexpected value '" + value + "'");
+    }
+}
+
+  private WorkflowStatusEnum workflowStatus;
+
+  private String jsonPayload;
+
+  private LifecycleStateDTO lifecycleState;
+
 
   /**
    * This attribute declares whether this workflow task is approved or rejected. 
@@ -67,6 +73,7 @@ return null;
     this.workflowStatus = workflowStatus;
   }
 
+
   /**
    * Attributes that returned after the workflow execution 
    **/
@@ -85,6 +92,7 @@ return null;
     this.jsonPayload = jsonPayload;
   }
 
+
   /**
    **/
   public WorkflowResponseDTO lifecycleState(LifecycleStateDTO lifecycleState) {
@@ -94,7 +102,6 @@ return null;
 
   
   @ApiModelProperty(value = "")
-      @Valid
   @JsonProperty("lifecycleState")
   public LifecycleStateDTO getLifecycleState() {
     return lifecycleState;
@@ -102,6 +109,7 @@ return null;
   public void setLifecycleState(LifecycleStateDTO lifecycleState) {
     this.lifecycleState = lifecycleState;
   }
+
 
 
   @Override

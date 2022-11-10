@@ -1,10 +1,17 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.BandwidthLimitDTO;
+import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.EventCountLimitDTO;
+import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.RequestCountLimitDTO;
+import javax.validation.constraints.*;
 
-import javax.validation.Valid;
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
@@ -12,41 +19,44 @@ import java.util.Objects;
 public class UsageLimitDTO   {
   
 
-    @XmlType(name="TypeEnum")
-    @XmlEnum(String.class)
-    public enum TypeEnum {
-        REQUESTCOUNTLIMIT("REQUESTCOUNTLIMIT"),
-        BANDWIDTHLIMIT("BANDWIDTHLIMIT"),
-        EVENTCOUNTLIMIT("EVENTCOUNTLIMIT");
-        private String value;
+public enum TypeEnum {
 
-        TypeEnum (String v) {
-            value = v;
-        }
+    REQUESTCOUNTLIMIT(String.valueOf("REQUESTCOUNTLIMIT")), BANDWIDTHLIMIT(String.valueOf("BANDWIDTHLIMIT")), EVENTCOUNTLIMIT(String.valueOf("EVENTCOUNTLIMIT"));
 
-        public String value() {
-            return value;
-        }
 
-        @Override
-        public String toString() {
-            return String.valueOf(value);
-        }
+    private String value;
 
-        @JsonCreator
-        public static TypeEnum fromValue(String v) {
-            for (TypeEnum b : TypeEnum.values()) {
-                if (String.valueOf(b.value).equals(v)) {
-                    return b;
-                }
-            }
-return null;
-        }
+    TypeEnum(String v) {
+        value = v;
     }
-    private TypeEnum type = null;
-    private RequestCountLimitDTO requestCount = null;
-    private BandwidthLimitDTO bandwidth = null;
-    private EventCountLimitDTO eventCount = null;
+
+    public String value() {
+        return value;
+    }
+
+    @Override
+    public String toString() {
+        return String.valueOf(value);
+    }
+
+    public static TypeEnum fromValue(String value) {
+        for (TypeEnum b : TypeEnum.values()) {
+            if (b.value.equals(value)) {
+                return b;
+            }
+        }
+        throw new IllegalArgumentException("Unexpected value '" + value + "'");
+    }
+}
+
+  private TypeEnum type;
+
+  private RequestCountLimitDTO requestCount;
+
+  private BandwidthLimitDTO bandwidth;
+
+  private EventCountLimitDTO eventCount;
+
 
   /**
    * Type of the usage limit. Allowed values are \&quot;REQUESTCOUNTLIMIT\&quot; and \&quot;BANDWIDTHLIMIT\&quot;. Please see schemas of \&quot;RequestCountLimit\&quot; and \&quot;BandwidthLimit\&quot; usage limit types in Definitions section. 
@@ -67,6 +77,7 @@ return null;
     this.type = type;
   }
 
+
   /**
    **/
   public UsageLimitDTO requestCount(RequestCountLimitDTO requestCount) {
@@ -76,7 +87,6 @@ return null;
 
   
   @ApiModelProperty(value = "")
-      @Valid
   @JsonProperty("requestCount")
   public RequestCountLimitDTO getRequestCount() {
     return requestCount;
@@ -84,6 +94,7 @@ return null;
   public void setRequestCount(RequestCountLimitDTO requestCount) {
     this.requestCount = requestCount;
   }
+
 
   /**
    **/
@@ -94,7 +105,6 @@ return null;
 
   
   @ApiModelProperty(value = "")
-      @Valid
   @JsonProperty("bandwidth")
   public BandwidthLimitDTO getBandwidth() {
     return bandwidth;
@@ -102,6 +112,7 @@ return null;
   public void setBandwidth(BandwidthLimitDTO bandwidth) {
     this.bandwidth = bandwidth;
   }
+
 
   /**
    **/
@@ -112,7 +123,6 @@ return null;
 
   
   @ApiModelProperty(value = "")
-      @Valid
   @JsonProperty("eventCount")
   public EventCountLimitDTO getEventCount() {
     return eventCount;
@@ -120,6 +130,7 @@ return null;
   public void setEventCount(EventCountLimitDTO eventCount) {
     this.eventCount = eventCount;
   }
+
 
 
   @Override

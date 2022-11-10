@@ -1,21 +1,30 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import javax.validation.constraints.*;
 
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
-public class APIAdditionalPropertiesDTO   {
+public class APIAdditionalPropertiesValueDTO   {
   
-    private String name = null;
-    private String value = null;
-    private Boolean display = null;
+  private String name;
+
+  private String value;
+
+  private Boolean display = false;
+
 
   /**
    **/
-  public APIAdditionalPropertiesDTO name(String name) {
+  public APIAdditionalPropertiesValueDTO name(String name) {
     this.name = name;
     return this;
   }
@@ -30,9 +39,10 @@ public class APIAdditionalPropertiesDTO   {
     this.name = name;
   }
 
+
   /**
    **/
-  public APIAdditionalPropertiesDTO value(String value) {
+  public APIAdditionalPropertiesValueDTO value(String value) {
     this.value = value;
     return this;
   }
@@ -47,9 +57,10 @@ public class APIAdditionalPropertiesDTO   {
     this.value = value;
   }
 
+
   /**
    **/
-  public APIAdditionalPropertiesDTO display(Boolean display) {
+  public APIAdditionalPropertiesValueDTO display(Boolean display) {
     this.display = display;
     return this;
   }
@@ -57,12 +68,13 @@ public class APIAdditionalPropertiesDTO   {
   
   @ApiModelProperty(value = "")
   @JsonProperty("display")
-  public Boolean isDisplay() {
+  public Boolean getDisplay() {
     return display;
   }
   public void setDisplay(Boolean display) {
     this.display = display;
   }
+
 
 
   @Override
@@ -73,10 +85,10 @@ public class APIAdditionalPropertiesDTO   {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    APIAdditionalPropertiesDTO apIAdditionalProperties = (APIAdditionalPropertiesDTO) o;
-    return Objects.equals(name, apIAdditionalProperties.name) &&
-        Objects.equals(value, apIAdditionalProperties.value) &&
-        Objects.equals(display, apIAdditionalProperties.display);
+    APIAdditionalPropertiesValueDTO apIAdditionalPropertiesValue = (APIAdditionalPropertiesValueDTO) o;
+    return Objects.equals(name, apIAdditionalPropertiesValue.name) &&
+        Objects.equals(value, apIAdditionalPropertiesValue.value) &&
+        Objects.equals(display, apIAdditionalPropertiesValue.display);
   }
 
   @Override
@@ -87,7 +99,7 @@ public class APIAdditionalPropertiesDTO   {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class APIAdditionalPropertiesDTO {\n");
+    sb.append("class APIAdditionalPropertiesValueDTO {\n");
     
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
     sb.append("    value: ").append(toIndentedString(value)).append("\n");

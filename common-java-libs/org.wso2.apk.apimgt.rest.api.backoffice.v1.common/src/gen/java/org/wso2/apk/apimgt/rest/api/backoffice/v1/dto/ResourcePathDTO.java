@@ -1,17 +1,26 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import javax.validation.constraints.*;
 
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
 public class ResourcePathDTO   {
   
-    private Integer id = null;
-    private String resourcePath = null;
-    private String httpVerb = null;
+  private Integer id;
+
+  private String resourcePath;
+
+  private String httpVerb;
+
 
   /**
    **/
@@ -31,6 +40,7 @@ public class ResourcePathDTO   {
     this.id = id;
   }
 
+
   /**
    **/
   public ResourcePathDTO resourcePath(String resourcePath) {
@@ -48,6 +58,7 @@ public class ResourcePathDTO   {
     this.resourcePath = resourcePath;
   }
 
+
   /**
    **/
   public ResourcePathDTO httpVerb(String httpVerb) {
@@ -64,6 +75,7 @@ public class ResourcePathDTO   {
   public void setHttpVerb(String httpVerb) {
     this.httpVerb = httpVerb;
   }
+
 
 
   @Override

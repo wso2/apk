@@ -1,16 +1,24 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import javax.validation.constraints.*;
 
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
 public class AdditionalPropertyDTO   {
   
-    private String key = null;
-    private String value = null;
+  private String key;
+
+  private String value;
+
 
   /**
    **/
@@ -29,6 +37,7 @@ public class AdditionalPropertyDTO   {
     this.key = key;
   }
 
+
   /**
    **/
   public AdditionalPropertyDTO value(String value) {
@@ -45,6 +54,7 @@ public class AdditionalPropertyDTO   {
   public void setValue(String value) {
     this.value = value;
   }
+
 
 
   @Override

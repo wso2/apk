@@ -1,16 +1,23 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.ScopeDTO;
+import javax.validation.constraints.*;
 
-import javax.validation.Valid;
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
 public class APIScopeDTO   {
   
-    private ScopeDTO scope = null;
+  private ScopeDTO scope;
+
 
   /**
    **/
@@ -21,7 +28,6 @@ public class APIScopeDTO   {
 
   
   @ApiModelProperty(required = true, value = "")
-      @Valid
   @JsonProperty("scope")
   @NotNull
   public ScopeDTO getScope() {
@@ -30,6 +36,7 @@ public class APIScopeDTO   {
   public void setScope(ScopeDTO scope) {
     this.scope = scope;
   }
+
 
 
   @Override

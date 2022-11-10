@@ -32,8 +32,8 @@ import org.wso2.apk.apimgt.rest.api.backoffice.v1.common.utils.mappings.CommentM
 import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.CommentDTO;
 import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.PatchRequestBodyDTO;
 import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.PostRequestBodyDTO;
-import org.wso2.apk.apimgt.rest.api.common.RestApiCommonUtil;
-import org.wso2.apk.apimgt.rest.api.common.RestApiConstants;
+import org.wso2.apk.apimgt.rest.api.util.utils.RestApiCommonUtil;
+import org.wso2.apk.apimgt.rest.api.util.RestApiConstants;
 
 import java.util.Arrays;
 import java.util.HashMap;

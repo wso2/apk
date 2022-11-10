@@ -20,24 +20,15 @@ package org.wso2.apk.apimgt.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.apk.apimgt.api.APIManagementException;
-import org.wso2.apk.apimgt.api.APIMgtResourceNotFoundException;
-import org.wso2.apk.apimgt.api.APIProvider;
-import org.wso2.apk.apimgt.api.ExceptionCodes;
-import org.wso2.apk.apimgt.api.model.API;
-import org.wso2.apk.apimgt.api.model.APIIdentifier;
-import org.wso2.apk.apimgt.api.model.APIInfo;
-import org.wso2.apk.apimgt.api.model.APIProduct;
-import org.wso2.apk.apimgt.api.model.APIRevisionDeployment;
-import org.wso2.apk.apimgt.api.model.APIStateChangeResponse;
-import org.wso2.apk.apimgt.api.model.ApiTypeWrapper;
-import org.wso2.apk.apimgt.api.model.Comment;
-import org.wso2.apk.apimgt.api.model.CommentList;
-import org.wso2.apk.apimgt.api.model.Documentation;
-import org.wso2.apk.apimgt.api.model.DocumentationContent;
-import org.wso2.apk.apimgt.api.model.LifeCycleEvent;
-import org.wso2.apk.apimgt.api.model.ResourceFile;
-import org.wso2.apk.apimgt.api.model.ResourcePath;
+import org.json.simple.JSONObject;
+import org.wso2.apk.apimgt.api.*;
+import org.wso2.apk.apimgt.api.doc.model.APIResource;
+import org.wso2.apk.apimgt.api.dto.*;
+import org.wso2.apk.apimgt.api.model.*;
+import org.wso2.apk.apimgt.api.model.policy.APIPolicy;
+import org.wso2.apk.apimgt.api.model.policy.ApplicationPolicy;
+import org.wso2.apk.apimgt.api.model.policy.GlobalPolicy;
+import org.wso2.apk.apimgt.api.model.policy.SubscriptionPolicy;
 import org.wso2.apk.apimgt.impl.dao.dto.DocumentContent;
 import org.wso2.apk.apimgt.impl.dao.dto.DocumentSearchResult;
 import org.wso2.apk.apimgt.impl.dao.dto.Organization;
@@ -52,6 +43,7 @@ import org.wso2.apk.apimgt.impl.dao.mapper.DocumentMapper;
 import org.wso2.apk.apimgt.impl.lifecycle.LCManagerFactory;
 import org.wso2.apk.apimgt.impl.utils.APIUtil;
 
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -124,6 +116,96 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
     }
 
     @Override
+    public Set<Subscriber> getSubscribersOfProvider(String providerId) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public Usage getUsageByAPI(APIIdentifier apiIdentifier) {
+        return null;
+    }
+
+    @Override
+    public Usage getAPIUsageByUsers(String providerId, String apiName) {
+        return null;
+    }
+
+    @Override
+    public UserApplicationAPIUsage[] getAllAPIUsageByProvider(String providerId) throws APIManagementException {
+        return new UserApplicationAPIUsage[0];
+    }
+
+    @Override
+    public List<SubscribedAPI> getAPIUsageByAPIId(String uuid, String organization) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public List<SubscribedAPI> getAPIProductUsageByAPIProductId(APIProductIdentifier apiProductId) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public Usage getAPIUsageBySubscriber(APIIdentifier apiIdentifier, String consumerEmail) {
+        return null;
+    }
+
+    @Override
+    public List<SubscribedAPI> getSubscriptionsOfAPI(String apiName, String apiVersion, String provider) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public String getSubscriber(String subscriptionId) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public Map getSubscriberClaims(String subscriber) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public void deleteSubscriptionBlockCondition(String conditionValue) throws APIManagementException {
+
+    }
+
+    @Override
+    public String getAPIContext(String uuid) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public APIPolicy getAPIPolicy(String username, String policyName) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public ApplicationPolicy getApplicationPolicy(String username, String policyName) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public SubscriptionPolicy getSubscriptionPolicy(String username, String policyName) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public GlobalPolicy getGlobalPolicy(String policyName) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public boolean isGlobalPolicyKeyTemplateExists(GlobalPolicy policy) throws APIManagementException {
+        return false;
+    }
+
+    @Override
+    public API addAPI(API api) throws APIManagementException {
+        return null;
+    }
+
+    @Override
     public ApiTypeWrapper getAPIorAPIProductByUUID(String uuid, String requestedTenantDomain) throws APIManagementException {
         APIInfo apiInfo = apiDAOImpl.getAPIInfoByUUID(uuid);
         if (apiInfo != null) {
@@ -172,10 +254,75 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
 //        }
     }
 
+    @Override
+    public void deleteAPIProduct(APIProduct apiProduct) throws APIManagementException {
+
+    }
+
+    @Override
+    public String addAPIRevision(APIRevision apiRevision, String organization) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public APIRevision getAPIRevision(String revisionUUID) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public String getAPIRevisionUUID(String revisionNum, String apiUUID) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public String getAPIRevisionUUIDByOrganization(String revisionNum, String apiUUID, String organization) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public String getEarliestRevisionUUID(String apiUUID) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public String getLatestRevisionUUID(String apiUUID) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public List<APIRevision> getAPIRevisions(String apiUUID) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public void removeUnDeployedAPIRevision(String apiId, String apiRevisionUUID, String environment) throws APIManagementException {
+
+    }
+
+    @Override
+    public void updateAPIDisplayOnDevportal(String apiId, String apiRevisionId, APIRevisionDeployment apiRevisionDeployment) throws APIManagementException {
+
+    }
+
+    @Override
+    public void updateAPIProductDisplayOnDevportal(String apiProductId, String apiRevisionId, APIRevisionDeployment apiRevisionDeployment) throws APIManagementException {
+
+    }
+
+    @Override
+    public APIRevisionDeployment getAPIRevisionDeployment(String name, String revisionId) throws APIManagementException {
+        return null;
+    }
+
 
     @Override
     public API getAPIbyUUID(String uuid, String organization) throws APIManagementException {
         //TODO:APK
+        return null;
+    }
+
+    @Override
+    public APISearchResult searchPaginatedAPIsByFQDN(String endpoint, String tenantDomain, int start, int end) throws APIManagementException {
         return null;
     }
 
@@ -220,6 +367,11 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
             throw new APIManagementException("Error while searching the api ", e, ExceptionCodes.INTERNAL_ERROR);
         }
         return result ;
+    }
+
+    @Override
+    public Map<String, Object> searchPaginatedContent(String searchQuery, String orgId, int start, int end) throws APIManagementException {
+        return null;
     }
 
     private void populateAPIStatus(API api) throws APIManagementException {
@@ -271,6 +423,11 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
                     ExceptionCodes.INTERNAL_ERROR);
         }
         return exist;
+    }
+
+    @Override
+    public void addWSDLResource(String apiId, ResourceFile resource, String url, String organization) throws APIManagementException {
+
     }
 
     /**
@@ -332,8 +489,188 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
     }
 
     @Override
+    public void deleteWorkflowTask(Identifier identifier) throws APIManagementException {
+
+    }
+
+    @Override
+    public JSONObject getSecurityAuditAttributesFromConfig(String userId) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public List<APIResource> getRemovedProductResources(Set<URITemplate> updatedUriTemplates, API existingAPI) {
+        return null;
+    }
+
+    @Override
+    public boolean isSharedScopeNameExists(String scopeName, int tenantId) throws APIManagementException {
+        return false;
+    }
+
+    @Override
+    public String addSharedScope(Scope scope, String tenantDomain) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public List<Scope> getAllSharedScopes(String tenantDomain) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public Set<String> getAllSharedScopeKeys(String tenantDomain) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public Scope getSharedScopeByUUID(String sharedScopeId, String tenantDomain) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public void deleteSharedScope(String scopeName, String tenantDomain) throws APIManagementException {
+
+    }
+
+    @Override
+    public void updateSharedScope(Scope sharedScope, String tenantDomain) throws APIManagementException {
+
+    }
+
+    @Override
+    public void validateSharedScopes(Set<Scope> scopes, String tenantDomain) throws APIManagementException {
+
+    }
+
+    @Override
+    public SharedScopeUsage getSharedScopeUsage(String uuid, int tenantId) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public List<APIResource> getUsedProductResources(String uuid) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public void deleteAPI(String apiUuid, String organization) throws APIManagementException {
+
+    }
+
+    @Override
     public List<APIRevisionDeployment> getAPIRevisionDeploymentList(String revisionUUID) throws APIManagementException {
         return apiDAOImpl.getAPIRevisionDeploymentByRevisionUUID(revisionUUID);
+    }
+
+    @Override
+    public void saveAsyncApiDefinition(API api, String jsonText) throws APIManagementException {
+
+    }
+
+    @Override
+    public String generateApiKey(String apiId) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public List<APIRevisionDeployment> getAPIRevisionsDeploymentList(String apiId) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public void addEnvironmentSpecificAPIProperties(String apiUuid, String envUuid, EnvironmentPropertiesDTO environmentPropertyDTO) throws APIManagementException {
+
+    }
+
+    @Override
+    public EnvironmentPropertiesDTO getEnvironmentSpecificAPIProperties(String apiUuid, String envUuid) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public Environment getEnvironment(String organization, String uuid) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public void setOperationPoliciesToURITemplates(String apiId, Set<URITemplate> uriTemplates) throws APIManagementException {
+
+    }
+
+    @Override
+    public String importOperationPolicy(OperationPolicyData operationPolicyData, String organization) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public String addAPISpecificOperationPolicy(String apiUUID, OperationPolicyData operationPolicyData, String organization) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public String addCommonOperationPolicy(OperationPolicyData operationPolicyData, String organization) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public OperationPolicyData getAPISpecificOperationPolicyByPolicyName(String policyName, String policyVersion, String apiUUID, String revisionUUID, String organization, boolean isWithPolicyDefinition) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public OperationPolicyData getCommonOperationPolicyByPolicyName(String policyName, String policyVersion, String organization, boolean isWithPolicyDefinition) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public OperationPolicyData getAPISpecificOperationPolicyByPolicyId(String policyId, String apiUUID, String organization, boolean isWithPolicyDefinition) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public OperationPolicyData getCommonOperationPolicyByPolicyId(String policyId, String organization, boolean isWithPolicyDefinition) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public void updateOperationPolicy(String operationPolicyId, OperationPolicyData operationPolicyData, String organization) throws APIManagementException {
+
+    }
+
+    @Override
+    public List<OperationPolicyData> getAllCommonOperationPolicies(String organization) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public List<OperationPolicyData> getAllAPISpecificOperationPolicies(String apiUUID, String organization) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public void deleteOperationPolicyById(String policyId, String organization) throws APIManagementException {
+
+    }
+
+    @Override
+    public void loadMediationPoliciesToAPI(API api, String organization) throws APIManagementException {
+
+    }
+
+    @Override
+    public APIRevision checkAPIUUIDIsARevisionUUID(String apiUUID) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public APIProduct getAPIProduct(APIProductIdentifier identifier) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public Map<String, Object> searchPaginatedAPIProducts(String searchQuery, String tenantDomain, int start, int end) throws APIManagementException {
+        return null;
     }
 
 
@@ -372,6 +709,16 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
     }
 
     @Override
+    public API createNewAPIVersion(String apiId, String newVersion, Boolean defaultVersion, String organization) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public String retrieveServiceKeyByApiId(int apiId, int tenantId) throws APIManagementException {
+        return null;
+    }
+
+    @Override
     public void setThumbnailToAPI(String apiId, ResourceFile resource, String organization) throws APIManagementException {
 
         try {
@@ -389,6 +736,11 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
         }
     }
 
+    @Override
+    public void saveGraphqlSchemaDefinition(String apiId, String definition, String orgId) throws APIManagementException {
+
+    }
+
     /**
      * This method returns the lifecycle data for an API including current state,next states.
      *
@@ -400,6 +752,131 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
 
         API api = getLightweightAPIByUUID(uuid, orgId);
         return getApiOrApiProductLifecycleData(api.getStatus());
+    }
+
+    @Override
+    public String[] getPolicyNames(String username, String level) throws APIManagementException {
+        return new String[0];
+    }
+
+    @Override
+    public BlockConditionsDTO getBlockCondition(int conditionId) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public BlockConditionsDTO getBlockConditionByUUID(String uuid) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public boolean updateBlockCondition(int conditionId, String state) throws APIManagementException {
+        return false;
+    }
+
+    @Override
+    public String addBlockCondition(String conditionType, String conditionValue) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public boolean deleteBlockConditionByUUID(String uuid) throws APIManagementException {
+        return false;
+    }
+
+    @Override
+    public String getExternalWorkflowReferenceId(int subscriptionId) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public boolean isConfigured() {
+        return false;
+    }
+
+    @Override
+    public CertificateMetadataDTO getCertificate(String alias) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public List<CertificateMetadataDTO> getCertificates(String userName) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public List<CertificateMetadataDTO> searchCertificates(int tenantId, String alias, String endpoint) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public List<ClientCertificateDTO> searchClientCertificates(int tenantId, String alias, APIIdentifier apiIdentifier, String organization) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public List<ClientCertificateDTO> searchClientCertificates(int tenantId, String alias, APIProductIdentifier apiProductIdentifier, String organization) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public int getCertificateCountPerTenant(int tenantId) throws APIManagementException {
+        return 0;
+    }
+
+    @Override
+    public int getClientCertificateCount(int tenantId) throws APIManagementException {
+        return 0;
+    }
+
+    @Override
+    public boolean isCertificatePresent(int tenantId, String alias) throws APIManagementException {
+        return false;
+    }
+
+    @Override
+    public ClientCertificateDTO getClientCertificate(String alias, ApiTypeWrapper apiTypeWrapper, String organization) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public CertificateInformationDTO getCertificateStatus(String alias) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public int updateCertificate(String certificateString, String alias) throws APIManagementException {
+        return 0;
+    }
+
+    @Override
+    public int updateClientCertificate(String certificate, String alias, ApiTypeWrapper apiTypeWrapper, String tier, int tenantId, String organization) throws APIManagementException {
+        return 0;
+    }
+
+    @Override
+    public ByteArrayInputStream getCertificateContent(String alias) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public Map<API, List<APIProductResource>> addAPIProductWithoutPublishingToGateway(APIProduct product) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public void saveToGateway(APIProduct product) throws FaultGatewaysException, APIManagementException {
+
+    }
+
+    @Override
+    public void deleteAPIProduct(APIProductIdentifier identifier, String apiProductUUID, String organization) throws APIManagementException {
+
+    }
+
+    @Override
+    public Map<API, List<APIProductResource>> updateAPIProduct(APIProduct product) throws APIManagementException, FaultGatewaysException {
+        return null;
     }
 
     private Map<String, Object> getApiOrApiProductLifecycleData(String status) throws APIManagementException {
@@ -521,5 +998,110 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
     public List<LifeCycleEvent> getLifeCycleEvents(String uuid) throws APIManagementException {
 
         return apiDAOImpl.getLifeCycleEvents(uuid);
+    }
+
+    @Override
+    public void updateSubscription(APIIdentifier apiId, String subStatus, int appId, String organization) throws APIManagementException {
+
+    }
+
+    @Override
+    public void updateSubscription(SubscribedAPI subscribedAPI) throws APIManagementException {
+
+    }
+
+    @Override
+    public void updateTierPermissions(String tierName, String permissionType, String roles) throws APIManagementException {
+
+    }
+
+    @Override
+    public Set getTierPermissions() throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public Set getThrottleTierPermissions() throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public boolean publishToExternalAPIStores(API api, List<String> externalStoreIds) throws APIManagementException {
+        return false;
+    }
+
+    @Override
+    public void publishToExternalAPIStores(API api, Set<APIStore> apiStoreSet, boolean apiOlderVersionExist) throws APIManagementException {
+
+    }
+
+    @Override
+    public boolean updateAPIsInExternalAPIStores(API api, Set<APIStore> apiStoreSet, boolean apiOlderVersionExist) throws APIManagementException {
+        return false;
+    }
+
+    @Override
+    public Set<APIStore> getExternalAPIStores(String apiId) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public Set<APIStore> getPublishedExternalAPIStores(String apiId) throws APIManagementException {
+        return null;
+    }
+
+    @Override
+    public boolean isSynapseGateway() throws APIManagementException {
+        return false;
+    }
+
+    @Override
+    public void saveSwaggerDefinition(API api, String jsonText, String organization) throws APIManagementException {
+
+    }
+
+    @Override
+    public void saveSwaggerDefinition(String apiId, String jsonText, String orgId) throws APIManagementException {
+
+    }
+
+    @Override
+    public void addAPIProductSwagger(String apiProductId, Map<API, List<APIProductResource>> apiToProductResourceMapping, APIProduct apiProduct, String orgId) throws APIManagementException {
+
+    }
+
+    @Override
+    public void updateAPIProductSwagger(String apiProductId, Map<API, List<APIProductResource>> apiToProductResourceMapping, APIProduct apiProduct, String orgId) throws APIManagementException, FaultGatewaysException {
+
+    }
+
+    @Override
+    public void validateResourceThrottlingTiers(API api, String tenantDomain) throws APIManagementException {
+
+    }
+
+    @Override
+    public void validateResourceThrottlingTiers(String swaggerContent, String tenantDomain) throws APIManagementException {
+
+    }
+
+    @Override
+    public void validateAPIThrottlingTier(API api, String tenantDomain) throws APIManagementException {
+
+    }
+
+    @Override
+    public void validateProductThrottlingTier(APIProduct apiProduct, String tenantDomain) throws APIManagementException {
+
+    }
+
+    @Override
+    public void configureMonetizationInAPIArtifact(API api) throws APIManagementException {
+
+    }
+
+    @Override
+    public Monetization getMonetizationImplClass() throws APIManagementException {
+        return null;
     }
 }

@@ -1803,36 +1803,6 @@ public final class APIUtil {
     }
 
     /**
-     * When an input is having '@',replace it with '-AT-' [This is required to persist API data in registry,as registry
-     * paths don't allow '@' sign.]
-     *
-     * @param input inputString
-     * @return String modifiedString
-     */
-    public static String replaceEmailDomain(String input) {
-
-        if (input != null && input.contains(APIConstants.EMAIL_DOMAIN_SEPARATOR)) {
-            input = input.replace(APIConstants.EMAIL_DOMAIN_SEPARATOR, APIConstants.EMAIL_DOMAIN_SEPARATOR_REPLACEMENT);
-        }
-        return input;
-    }
-
-    /**
-     * When an input is having '-AT-',replace it with @ [This is required to persist API data between registry and database]
-     *
-     * @param input inputString
-     * @return String modifiedString
-     */
-    public static String replaceEmailDomainBack(String input) {
-
-        if (input != null && input.contains(APIConstants.EMAIL_DOMAIN_SEPARATOR_REPLACEMENT)) {
-            input = input.replace(APIConstants.EMAIL_DOMAIN_SEPARATOR_REPLACEMENT,
-                    APIConstants.EMAIL_DOMAIN_SEPARATOR);
-        }
-        return input;
-    }
-
-    /**
      * This method gets the RESTAPIScopes configuration from tenant-conf.json in registry. Role Mappings (Role aliases
      * will not be substituted to the scope/role mappings)
      *

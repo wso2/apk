@@ -23,8 +23,8 @@ import org.wso2.apk.apimgt.api.model.DocumentationType;
 import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.DocumentDTO;
 import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.DocumentListDTO;
 import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.PaginationDTO;
-import org.wso2.apk.apimgt.rest.api.common.RestApiCommonUtil;
-import org.wso2.apk.apimgt.rest.api.common.RestApiConstants;
+import org.wso2.apk.apimgt.rest.api.util.utils.RestApiCommonUtil;
+import org.wso2.apk.apimgt.rest.api.util.RestApiConstants;
 
 import java.util.ArrayList;
 import java.util.List;

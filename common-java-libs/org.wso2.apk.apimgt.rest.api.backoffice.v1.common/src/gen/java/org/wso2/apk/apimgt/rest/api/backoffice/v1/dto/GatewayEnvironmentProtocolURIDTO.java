@@ -1,16 +1,24 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import javax.validation.constraints.*;
 
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
 public class GatewayEnvironmentProtocolURIDTO   {
   
-    private String protocol = null;
-    private String endpointURI = null;
+  private String protocol;
+
+  private String endpointURI;
+
 
   /**
    **/
@@ -30,6 +38,7 @@ public class GatewayEnvironmentProtocolURIDTO   {
     this.protocol = protocol;
   }
 
+
   /**
    **/
   public GatewayEnvironmentProtocolURIDTO endpointURI(String endpointURI) {
@@ -47,6 +56,7 @@ public class GatewayEnvironmentProtocolURIDTO   {
   public void setEndpointURI(String endpointURI) {
     this.endpointURI = endpointURI;
   }
+
 
 
   @Override

@@ -38,26 +38,11 @@ import org.wso2.apk.apimgt.api.model.URITemplate;
 import org.wso2.apk.apimgt.impl.APIConstants;
 import org.wso2.apk.apimgt.impl.definitions.OASParserUtil;
 import org.wso2.apk.apimgt.impl.utils.APIUtil;
-import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.APIAdditionalPropertiesDTO;
-import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.APIAdditionalPropertiesMapDTO;
-import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.APIBusinessInformationDTO;
-import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.APIDTO;
-import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.APIDeploymentDTO;
-import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.APIInfoDTO;
-import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.APIListDTO;
-import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.APIMonetizationInfoDTO;
-import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.APIOperationsDTO;
-import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.APIRevisionDTO;
-import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.LifecycleHistoryDTO;
-import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.LifecycleHistoryItemDTO;
-import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.LifecycleStateAvailableTransitionsDTO;
-import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.LifecycleStateDTO;
-import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.PaginationDTO;
-import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.ResourcePathDTO;
-import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.ResourcePathListDTO;
-import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.WorkflowResponseDTO;
-import org.wso2.apk.apimgt.rest.api.common.RestApiCommonUtil;
-import org.wso2.apk.apimgt.rest.api.common.RestApiConstants;
+import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.*;
+import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.APIAdditionalPropertiesValueDTO;
+import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.LifecycleStateAvailableTransitionsInnerDTO;
+import org.wso2.apk.apimgt.rest.api.util.utils.RestApiCommonUtil;
+import org.wso2.apk.apimgt.rest.api.util.RestApiConstants;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -133,22 +118,10 @@ public class APIMappingUtil {
         String transports = StringUtils.join(dto.getTransport(), ',');
         model.setTransports(transports);
 
-        List<APIAdditionalPropertiesDTO> additionalProperties = dto.getAdditionalProperties();
-        if (additionalProperties != null) {
-            for (APIAdditionalPropertiesDTO property : additionalProperties) {
-                if (property.isDisplay()) {
-                    model.addProperty(property.getName() + APIConstants.API_RELATED_CUSTOM_PROPERTIES_SURFIX, property
-                            .getValue());
-                } else {
-                    model.addProperty(property.getName(), property.getValue());
-                }
-            }
-        }
-
-        Map<String, APIAdditionalPropertiesMapDTO> additionalPropertiesMap = dto.getAdditionalPropertiesMap();
+        Map<String, APIAdditionalPropertiesValueDTO> additionalPropertiesMap = dto.getAdditionalProperties();
         if (additionalPropertiesMap != null && !additionalPropertiesMap.isEmpty()) {
-            for (Map.Entry<String, APIAdditionalPropertiesMapDTO> entry : additionalPropertiesMap.entrySet()) {
-                if (entry.getValue().isDisplay()) {
+            for (Map.Entry<String, APIAdditionalPropertiesValueDTO> entry : additionalPropertiesMap.entrySet()) {
+                if (entry.getValue().getDisplay()) {
                     model.addProperty(entry.getKey() + APIConstants.API_RELATED_CUSTOM_PROPERTIES_SURFIX,
                             entry.getValue().getValue());
                 } else {
@@ -529,31 +502,22 @@ public class APIMappingUtil {
 
         if (model.getAdditionalProperties() != null) {
             JSONObject additionalProperties = model.getAdditionalProperties();
-            List<APIAdditionalPropertiesDTO> additionalPropertiesList = new ArrayList<>();
-            Map<String, APIAdditionalPropertiesMapDTO> additionalPropertiesMap = new HashMap<>();
+            Map<String, APIAdditionalPropertiesValueDTO> additionalPropertiesMap = new HashMap<>();
             for (Object propertyKey : additionalProperties.keySet()) {
-                APIAdditionalPropertiesDTO additionalPropertiesDTO = new APIAdditionalPropertiesDTO();
-                APIAdditionalPropertiesMapDTO apiInfoAdditionalPropertiesMapDTO =
-                        new APIAdditionalPropertiesMapDTO();
+                APIAdditionalPropertiesValueDTO apiInfoAdditionalPropertiesMapDTO =
+                        new APIAdditionalPropertiesValueDTO();
                 String key = (String) propertyKey;
                 int index = key.lastIndexOf(APIConstants.API_RELATED_CUSTOM_PROPERTIES_SURFIX);
-                additionalPropertiesDTO.setValue((String) additionalProperties.get(key));
                 apiInfoAdditionalPropertiesMapDTO.setValue((String) additionalProperties.get(key));
                 if (index > 0) {
-                    additionalPropertiesDTO.setName(key.substring(0, index));
                     apiInfoAdditionalPropertiesMapDTO.setName(key.substring(0, index));
-                    additionalPropertiesDTO.setDisplay(true);
                 } else {
-                    additionalPropertiesDTO.setName(key);
                     apiInfoAdditionalPropertiesMapDTO.setName(key);
-                    additionalPropertiesDTO.setDisplay(false);
                 }
                 apiInfoAdditionalPropertiesMapDTO.setDisplay(false);
                 additionalPropertiesMap.put(key, apiInfoAdditionalPropertiesMapDTO);
-                additionalPropertiesList.add(additionalPropertiesDTO);
             }
-            dto.setAdditionalProperties(additionalPropertiesList);
-            dto.setAdditionalPropertiesMap(additionalPropertiesMap);
+            dto.setAdditionalProperties(additionalPropertiesMap);
         }
 
         APIBusinessInformationDTO apiBusinessInformationDTO = new APIBusinessInformationDTO();
@@ -636,9 +600,9 @@ public class APIMappingUtil {
 
         String[] nextStates = (String[]) apiLCData.get(APIConstants.LC_NEXT_STATES);
         if (nextStates != null) {
-            List<LifecycleStateAvailableTransitionsDTO> transitionDTOList = new ArrayList<>();
+            List<LifecycleStateAvailableTransitionsInnerDTO> transitionDTOList = new ArrayList<>();
             for (String state : nextStates) {
-                LifecycleStateAvailableTransitionsDTO transitionDTO = new LifecycleStateAvailableTransitionsDTO();
+                LifecycleStateAvailableTransitionsInnerDTO transitionDTO = new LifecycleStateAvailableTransitionsInnerDTO();
                 transitionDTO.setEvent(state);
                 //todo: Set target state properly
                 transitionDTO.setTargetState("");

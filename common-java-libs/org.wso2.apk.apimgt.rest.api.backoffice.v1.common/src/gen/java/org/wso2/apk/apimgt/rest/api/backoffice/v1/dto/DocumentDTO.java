@@ -1,130 +1,141 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import javax.validation.constraints.*;
 
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
 public class DocumentDTO   {
   
-    private String documentId = null;
-    private String name = null;
+  private String documentId;
 
-    @XmlType(name="TypeEnum")
-    @XmlEnum(String.class)
-    public enum TypeEnum {
-        HOWTO("HOWTO"),
-        SAMPLES("SAMPLES"),
-        PUBLIC_FORUM("PUBLIC_FORUM"),
-        SUPPORT_FORUM("SUPPORT_FORUM"),
-        API_MESSAGE_FORMAT("API_MESSAGE_FORMAT"),
-        SWAGGER_DOC("SWAGGER_DOC"),
-        OTHER("OTHER");
-        private String value;
+  private String name;
 
-        TypeEnum (String v) {
-            value = v;
-        }
 
-        public String value() {
-            return value;
-        }
+public enum TypeEnum {
 
-        @Override
-        public String toString() {
-            return String.valueOf(value);
-        }
+    HOWTO(String.valueOf("HOWTO")), SAMPLES(String.valueOf("SAMPLES")), PUBLIC_FORUM(String.valueOf("PUBLIC_FORUM")), SUPPORT_FORUM(String.valueOf("SUPPORT_FORUM")), API_MESSAGE_FORMAT(String.valueOf("API_MESSAGE_FORMAT")), SWAGGER_DOC(String.valueOf("SWAGGER_DOC")), OTHER(String.valueOf("OTHER"));
 
-        @JsonCreator
-        public static TypeEnum fromValue(String v) {
-            for (TypeEnum b : TypeEnum.values()) {
-                if (String.valueOf(b.value).equals(v)) {
-                    return b;
-                }
-            }
-return null;
-        }
+
+    private String value;
+
+    TypeEnum(String v) {
+        value = v;
     }
-    private TypeEnum type = null;
-    private String summary = null;
 
-    @XmlType(name="SourceTypeEnum")
-    @XmlEnum(String.class)
-    public enum SourceTypeEnum {
-        INLINE("INLINE"),
-        MARKDOWN("MARKDOWN"),
-        URL("URL"),
-        FILE("FILE");
-        private String value;
-
-        SourceTypeEnum (String v) {
-            value = v;
-        }
-
-        public String value() {
-            return value;
-        }
-
-        @Override
-        public String toString() {
-            return String.valueOf(value);
-        }
-
-        @JsonCreator
-        public static SourceTypeEnum fromValue(String v) {
-            for (SourceTypeEnum b : SourceTypeEnum.values()) {
-                if (String.valueOf(b.value).equals(v)) {
-                    return b;
-                }
-            }
-return null;
-        }
+    public String value() {
+        return value;
     }
-    private SourceTypeEnum sourceType = null;
-    private String sourceUrl = null;
-    private String fileName = null;
-    private String inlineContent = null;
-    private String otherTypeName = null;
 
-    @XmlType(name="VisibilityEnum")
-    @XmlEnum(String.class)
-    public enum VisibilityEnum {
-        OWNER_ONLY("OWNER_ONLY"),
-        PRIVATE("PRIVATE"),
-        API_LEVEL("API_LEVEL");
-        private String value;
-
-        VisibilityEnum (String v) {
-            value = v;
-        }
-
-        public String value() {
-            return value;
-        }
-
-        @Override
-        public String toString() {
-            return String.valueOf(value);
-        }
-
-        @JsonCreator
-        public static VisibilityEnum fromValue(String v) {
-            for (VisibilityEnum b : VisibilityEnum.values()) {
-                if (String.valueOf(b.value).equals(v)) {
-                    return b;
-                }
-            }
-return null;
-        }
+    @Override
+    public String toString() {
+        return String.valueOf(value);
     }
-    private VisibilityEnum visibility = null;
-    private String createdTime = null;
-    private String createdBy = null;
-    private String lastUpdatedTime = null;
-    private String lastUpdatedBy = null;
+
+    public static TypeEnum fromValue(String value) {
+        for (TypeEnum b : TypeEnum.values()) {
+            if (b.value.equals(value)) {
+                return b;
+            }
+        }
+        throw new IllegalArgumentException("Unexpected value '" + value + "'");
+    }
+}
+
+  private TypeEnum type;
+
+  private String summary;
+
+
+public enum SourceTypeEnum {
+
+    INLINE(String.valueOf("INLINE")), MARKDOWN(String.valueOf("MARKDOWN")), URL(String.valueOf("URL")), FILE(String.valueOf("FILE"));
+
+
+    private String value;
+
+    SourceTypeEnum(String v) {
+        value = v;
+    }
+
+    public String value() {
+        return value;
+    }
+
+    @Override
+    public String toString() {
+        return String.valueOf(value);
+    }
+
+    public static SourceTypeEnum fromValue(String value) {
+        for (SourceTypeEnum b : SourceTypeEnum.values()) {
+            if (b.value.equals(value)) {
+                return b;
+            }
+        }
+        throw new IllegalArgumentException("Unexpected value '" + value + "'");
+    }
+}
+
+  private SourceTypeEnum sourceType;
+
+  private String sourceUrl;
+
+  private String fileName;
+
+  private String inlineContent;
+
+  private String otherTypeName;
+
+
+public enum VisibilityEnum {
+
+    OWNER_ONLY(String.valueOf("OWNER_ONLY")), PRIVATE(String.valueOf("PRIVATE")), API_LEVEL(String.valueOf("API_LEVEL"));
+
+
+    private String value;
+
+    VisibilityEnum(String v) {
+        value = v;
+    }
+
+    public String value() {
+        return value;
+    }
+
+    @Override
+    public String toString() {
+        return String.valueOf(value);
+    }
+
+    public static VisibilityEnum fromValue(String value) {
+        for (VisibilityEnum b : VisibilityEnum.values()) {
+            if (b.value.equals(value)) {
+                return b;
+            }
+        }
+        throw new IllegalArgumentException("Unexpected value '" + value + "'");
+    }
+}
+
+  private VisibilityEnum visibility;
+
+  private String createdTime;
+
+  private String createdBy;
+
+  private String lastUpdatedTime;
+
+  private String lastUpdatedBy;
+
 
   /**
    **/
@@ -142,6 +153,7 @@ return null;
   public void setDocumentId(String documentId) {
     this.documentId = documentId;
   }
+
 
   /**
    **/
@@ -161,6 +173,7 @@ return null;
     this.name = name;
   }
 
+
   /**
    **/
   public DocumentDTO type(TypeEnum type) {
@@ -179,6 +192,7 @@ return null;
     this.type = type;
   }
 
+
   /**
    **/
   public DocumentDTO summary(String summary) {
@@ -195,6 +209,7 @@ return null;
   public void setSummary(String summary) {
     this.summary = summary;
   }
+
 
   /**
    **/
@@ -214,6 +229,7 @@ return null;
     this.sourceType = sourceType;
   }
 
+
   /**
    **/
   public DocumentDTO sourceUrl(String sourceUrl) {
@@ -222,7 +238,7 @@ return null;
   }
 
   
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "", value = "")
   @JsonProperty("sourceUrl")
   public String getSourceUrl() {
     return sourceUrl;
@@ -230,6 +246,7 @@ return null;
   public void setSourceUrl(String sourceUrl) {
     this.sourceUrl = sourceUrl;
   }
+
 
   /**
    **/
@@ -239,7 +256,7 @@ return null;
   }
 
   
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "", value = "")
   @JsonProperty("fileName")
   public String getFileName() {
     return fileName;
@@ -247,6 +264,7 @@ return null;
   public void setFileName(String fileName) {
     this.fileName = fileName;
   }
+
 
   /**
    **/
@@ -265,6 +283,7 @@ return null;
     this.inlineContent = inlineContent;
   }
 
+
   /**
    **/
   public DocumentDTO otherTypeName(String otherTypeName) {
@@ -273,7 +292,7 @@ return null;
   }
 
   
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(example = "", value = "")
   @JsonProperty("otherTypeName")
   public String getOtherTypeName() {
     return otherTypeName;
@@ -281,6 +300,7 @@ return null;
   public void setOtherTypeName(String otherTypeName) {
     this.otherTypeName = otherTypeName;
   }
+
 
   /**
    **/
@@ -300,6 +320,7 @@ return null;
     this.visibility = visibility;
   }
 
+
   /**
    **/
   public DocumentDTO createdTime(String createdTime) {
@@ -316,6 +337,7 @@ return null;
   public void setCreatedTime(String createdTime) {
     this.createdTime = createdTime;
   }
+
 
   /**
    **/
@@ -334,6 +356,7 @@ return null;
     this.createdBy = createdBy;
   }
 
+
   /**
    **/
   public DocumentDTO lastUpdatedTime(String lastUpdatedTime) {
@@ -351,6 +374,7 @@ return null;
     this.lastUpdatedTime = lastUpdatedTime;
   }
 
+
   /**
    **/
   public DocumentDTO lastUpdatedBy(String lastUpdatedBy) {
@@ -367,6 +391,7 @@ return null;
   public void setLastUpdatedBy(String lastUpdatedBy) {
     this.lastUpdatedBy = lastUpdatedBy;
   }
+
 
 
   @Override

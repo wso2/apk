@@ -1,57 +1,73 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.CommentListDTO;
+import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.CommenterInfoDTO;
+import javax.validation.constraints.*;
 
-import javax.validation.Valid;
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
 public class CommentDTO   {
   
-    private String id = null;
-    private String content = null;
-    private String createdTime = null;
-    private String createdBy = null;
-    private String updatedTime = null;
-    private String category = "general";
-    private String parentCommentId = null;
+  private String id;
 
-    @XmlType(name="EntryPointEnum")
-    @XmlEnum(String.class)
-    public enum EntryPointEnum {
-        DEVPORTAL("devPortal"),
-        PUBLISHER("publisher");
-        private String value;
+  private String content;
 
-        EntryPointEnum (String v) {
-            value = v;
-        }
+  private String createdTime;
 
-        public String value() {
-            return value;
-        }
+  private String createdBy;
 
-        @Override
-        public String toString() {
-            return String.valueOf(value);
-        }
+  private String updatedTime;
 
-        @JsonCreator
-        public static EntryPointEnum fromValue(String v) {
-            for (EntryPointEnum b : EntryPointEnum.values()) {
-                if (String.valueOf(b.value).equals(v)) {
-                    return b;
-                }
-            }
-return null;
-        }
+  private String category = "general";
+
+  private String parentCommentId;
+
+
+public enum EntryPointEnum {
+
+    DEVPORTAL(String.valueOf("devPortal")), PUBLISHER(String.valueOf("publisher"));
+
+
+    private String value;
+
+    EntryPointEnum(String v) {
+        value = v;
     }
-    private EntryPointEnum entryPoint = null;
-    private CommenterInfoDTO commenterInfo = null;
-    private CommentListDTO replies = null;
+
+    public String value() {
+        return value;
+    }
+
+    @Override
+    public String toString() {
+        return String.valueOf(value);
+    }
+
+    public static EntryPointEnum fromValue(String value) {
+        for (EntryPointEnum b : EntryPointEnum.values()) {
+            if (b.value.equals(value)) {
+                return b;
+            }
+        }
+        throw new IllegalArgumentException("Unexpected value '" + value + "'");
+    }
+}
+
+  private EntryPointEnum entryPoint;
+
+  private CommenterInfoDTO commenterInfo;
+
+  private CommentListDTO replies;
+
 
   /**
    **/
@@ -69,6 +85,7 @@ return null;
   public void setId(String id) {
     this.id = id;
   }
+
 
   /**
    **/
@@ -88,6 +105,7 @@ return null;
     this.content = content;
   }
 
+
   /**
    **/
   public CommentDTO createdTime(String createdTime) {
@@ -104,6 +122,7 @@ return null;
   public void setCreatedTime(String createdTime) {
     this.createdTime = createdTime;
   }
+
 
   /**
    **/
@@ -122,6 +141,7 @@ return null;
     this.createdBy = createdBy;
   }
 
+
   /**
    **/
   public CommentDTO updatedTime(String updatedTime) {
@@ -138,6 +158,7 @@ return null;
   public void setUpdatedTime(String updatedTime) {
     this.updatedTime = updatedTime;
   }
+
 
   /**
    **/
@@ -156,6 +177,7 @@ return null;
     this.category = category;
   }
 
+
   /**
    **/
   public CommentDTO parentCommentId(String parentCommentId) {
@@ -172,6 +194,7 @@ return null;
   public void setParentCommentId(String parentCommentId) {
     this.parentCommentId = parentCommentId;
   }
+
 
   /**
    **/
@@ -190,6 +213,7 @@ return null;
     this.entryPoint = entryPoint;
   }
 
+
   /**
    **/
   public CommentDTO commenterInfo(CommenterInfoDTO commenterInfo) {
@@ -199,7 +223,6 @@ return null;
 
   
   @ApiModelProperty(value = "")
-      @Valid
   @JsonProperty("commenterInfo")
   public CommenterInfoDTO getCommenterInfo() {
     return commenterInfo;
@@ -207,6 +230,7 @@ return null;
   public void setCommenterInfo(CommenterInfoDTO commenterInfo) {
     this.commenterInfo = commenterInfo;
   }
+
 
   /**
    **/
@@ -217,7 +241,6 @@ return null;
 
   
   @ApiModelProperty(value = "")
-      @Valid
   @JsonProperty("replies")
   public CommentListDTO getReplies() {
     return replies;
@@ -225,6 +248,7 @@ return null;
   public void setReplies(CommentListDTO replies) {
     this.replies = replies;
   }
+
 
 
   @Override
