@@ -641,6 +641,10 @@ public final class APIConstants {
         CREATED, MAPPED
     }
 
+    public enum ParserType {
+        OAS3, OAS2, ASYNC
+    }
+
     public enum CommentEntryPoint {
         PUBLISHER, DEVPORTAL
     }
