@@ -1,6 +1,6 @@
 import ballerina/http;
 
-listener http:Listener ep0 = new (9090, config = {host: "localhost"});
+listener http:Listener ep0 = new (9443, config = {host: "localhost"});
 
 service / on ep0 {
     // resource function get apis(string? query, int 'limit = 25, int offset = 0, string sortBy = "createdTime", string sortOrder = "desc", @http:Header string? accept = "application/json") returns APIList|NotAcceptableError {
