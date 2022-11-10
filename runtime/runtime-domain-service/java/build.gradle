@@ -37,6 +37,15 @@ tasks.named('check') {
     dependsOn tasks.named('testCodeCoverageReport', JacocoReport)
 }
 
+tasks.register('java_build') {
+    group 'Java build'
+    println "build java"
+}
+
+tasks.named('build').configure {
+    dependsOn java_build
+}
+
 subprojects {
-    apply from: "$rootDir/../../common-gradle-scripts/java.gradle"
+    apply from: "$projectDir/../../common-gradle-scripts/java.gradle"
 }
