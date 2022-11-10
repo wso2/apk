@@ -19,6 +19,9 @@
 package org.wso2.apk.apimgt.rest.api.util.utils;
 
 import org.apache.commons.lang3.StringUtils;
+import org.wso2.apk.apimgt.api.APIConsumer;
+import org.wso2.apk.apimgt.api.APIManagementException;
+import org.wso2.apk.apimgt.impl.APIManagerFactory;
 import org.wso2.apk.apimgt.rest.api.util.RestApiConstants;
 
 import java.util.HashMap;
@@ -131,4 +134,64 @@ public class RestApiCommonUtil {
         paginatedURL = paginatedURL.replace(RestApiConstants.OFFSET_PARAM, String.valueOf(offset));
         return paginatedURL;
     }
+
+    /**
+     * Returns an APIConsumer which is corresponding to the current logged in user taken from the carbon context
+     *
+     * @return an APIConsumer which is corresponding to the current logged in user
+     * @throws APIManagementException
+     */
+    public static APIConsumer getLoggedInUserConsumer() throws APIManagementException {
+
+        return APIManagerFactory.getInstance().getAPIConsumer(getLoggedInUsername());
+    }
+
+    public static APIConsumer getConsumer(String subscriberName) throws APIManagementException {
+
+        return APIManagerFactory.getInstance().getAPIConsumer(subscriberName);
+    }
+
+    public static APIConsumer getConsumer(String subscriberName, String organization) throws APIManagementException {
+
+        return APIManagerFactory.getInstance().getAPIConsumer(subscriberName, organization);
+    }
+
+    public static String getSubscriptionPaginatedURLForAPIId(Integer offset, Integer limit, String apiId,
+                                                             String groupId) {
+
+        groupId = groupId == null ? "" : groupId;
+        String paginatedURL = RestApiConstants.SUBSCRIPTIONS_GET_PAGINATION_URL_APIID;
+        paginatedURL = paginatedURL.replace(RestApiConstants.LIMIT_PARAM, String.valueOf(limit));
+        paginatedURL = paginatedURL.replace(RestApiConstants.OFFSET_PARAM, String.valueOf(offset));
+        paginatedURL = paginatedURL.replace(RestApiConstants.APIID_PARAM, apiId);
+        paginatedURL = paginatedURL.replace(RestApiConstants.GROUPID_PARAM, groupId);
+        return paginatedURL;
+    }
+
+    public static String getDocumentationPaginatedURL(Integer offset, Integer limit, String apiId) {
+
+        String paginatedURL = RestApiConstants.DOCUMENTS_GET_PAGINATION_URL;
+        paginatedURL = paginatedURL.replace(RestApiConstants.LIMIT_PARAM, String.valueOf(limit));
+        paginatedURL = paginatedURL.replace(RestApiConstants.OFFSET_PARAM, String.valueOf(offset));
+        paginatedURL = paginatedURL.replace(RestApiConstants.APIID_PARAM, apiId);
+        return paginatedURL;
+    }
+
+    public static String getTagsPaginatedURL(Integer offset, Integer limit) {
+
+        String paginatedURL = RestApiConstants.TAGS_GET_PAGINATION_URL;
+        paginatedURL = paginatedURL.replace(RestApiConstants.LIMIT_PARAM, String.valueOf(limit));
+        paginatedURL = paginatedURL.replace(RestApiConstants.OFFSET_PARAM, String.valueOf(offset));
+        return paginatedURL;
+    }
+
+    public static String getAPIPaginatedURL(Integer offset, Integer limit, String query) {
+
+        String paginatedURL = RestApiConstants.APIS_GET_PAGINATION_URL;
+        paginatedURL = paginatedURL.replace(RestApiConstants.LIMIT_PARAM, String.valueOf(limit));
+        paginatedURL = paginatedURL.replace(RestApiConstants.OFFSET_PARAM, String.valueOf(offset));
+        paginatedURL = paginatedURL.replace(RestApiConstants.QUERY_PARAM, query);
+        return paginatedURL;
+    }
+
 }

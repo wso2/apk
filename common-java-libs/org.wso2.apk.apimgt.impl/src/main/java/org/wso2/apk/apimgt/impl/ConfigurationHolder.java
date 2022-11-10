@@ -18,11 +18,13 @@
 
 package org.wso2.apk.apimgt.impl;
 
+import org.json.simple.JSONArray;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.wso2.apk.apimgt.impl.dto.DatasourceProperties;
 import org.wso2.apk.apimgt.impl.dto.ThrottleProperties;
 import org.wso2.apk.apimgt.impl.monetization.MonetizationConfigurationDto;
 import org.wso2.apk.apimgt.api.model.Environment;
+import org.wso2.apk.apimgt.impl.recommendationmgt.RecommendationEnvironment;
 
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -48,6 +50,12 @@ public class ConfigurationHolder {
     private MonetizationConfigurationDto monetizationConfigurationDto = new MonetizationConfigurationDto();
 
     private Map<String, Map<String, String>> loginConfiguration = new ConcurrentHashMap<String, Map<String, String>>();
+
+    private JSONArray applicationAttributes = new JSONArray();
+
+    private Map<String, String> persistenceProperties = new ConcurrentHashMap<String, String>();
+
+    private RecommendationEnvironment recommendationEnvironment = new RecommendationEnvironment();
 
     public ThrottleProperties getThrottleProperties() {
         return throttleProperties;
@@ -109,5 +117,35 @@ public class ConfigurationHolder {
     public Map<String, Map<String, String>> getLoginConfiguration() {
 
         return loginConfiguration;
+    }
+
+
+    public Map<String, String> getPersistenceProperties() {
+        return persistenceProperties;
+    }
+
+    public RecommendationEnvironment getApiRecommendationEnvironment() {
+        return recommendationEnvironment;
+    }
+
+    public JSONArray getApplicationAttributes() {
+        return applicationAttributes;
+    }
+
+    /**
+     * Returns the configuration of the Identity Provider.
+     *
+     * @return configuration of the Identity Provider from the api-manager configuration
+     */
+    public IDPConfiguration getIdentityProviderConfig() {
+        //TODO: need to check if this is required
+        if (getFirstProperty(APIConstants.IDENTITY_PROVIDER_AUTHORIZE_ENDPOINT) != null) {
+            return new IDPConfiguration.Builder()
+                    .authorizeEndpoint(getFirstProperty(APIConstants.IDENTITY_PROVIDER_AUTHORIZE_ENDPOINT))
+                    .oidcLogoutEndpoint(getFirstProperty(APIConstants.IDENTITY_PROVIDER_OIDC_LOGOUT_ENDPOINT))
+                    .build();
+        } else {
+            return null;
+        }
     }
 }
