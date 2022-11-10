@@ -19,6 +19,7 @@ package database
 
 import apkmgt_application "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/apkmgt"
 
+// GetApplicationByUUID returns the Application details from the DB for a given application
 func GetApplicationByUUID(uuid string) (*apkmgt_application.Application, error) {
 	rows, _ := ExecDBQuery(QueryGetApplicationByUUID, uuid)
 	rows.Next()
@@ -26,8 +27,8 @@ func GetApplicationByUUID(uuid string) (*apkmgt_application.Application, error) 
 	if err != nil {
 		return nil, err
 	} else {
-		subs, _ := GetSubscriptionsForApplication(uuid)
-		keys, _ := GetConsumerKeysForApplication(uuid)
+		subs, _ := getSubscriptionsForApplication(uuid)
+		keys, _ := getConsumerKeysForApplication(uuid)
 		application := &apkmgt_application.Application{
 			Uuid:          values[0].(string),
 			Name:          values[1].(string),
@@ -42,7 +43,8 @@ func GetApplicationByUUID(uuid string) (*apkmgt_application.Application, error) 
 	}
 }
 
-func GetSubscriptionsForApplication(appUuid string) ([]*apkmgt_application.Subscription, error) {
+// getSubscriptionsForApplication returns all subscriptions from DB, for a given application
+func getSubscriptionsForApplication(appUuid string) ([]*apkmgt_application.Subscription, error) {
 	rows, err := ExecDBQuery(QueryGetAllSubscriptionsForApplication, appUuid)
 	if err != nil {
 	}
@@ -65,7 +67,8 @@ func GetSubscriptionsForApplication(appUuid string) ([]*apkmgt_application.Subsc
 	return subs, nil
 }
 
-func GetConsumerKeysForApplication(appUUID string) ([]*apkmgt_application.ConsumerKey, error) {
+// getConsumerKeysForApplication returns all Consumer Keys from DB, for a given application
+func getConsumerKeysForApplication(appUUID string) ([]*apkmgt_application.ConsumerKey, error) {
 	rows, err := ExecDBQuery(QueryConsumerKeysForApplication, appUUID)
 	if err != nil {
 	}

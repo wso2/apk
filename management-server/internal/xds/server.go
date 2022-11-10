@@ -90,10 +90,20 @@ func FeedData() {
 	applicationCache.SetSnapshot(context.Background(), "mine", newSnapshot)
 }
 
+// AddSingleApplication will update the Application specified by the UUID to the xds cache
 func AddSingleApplication(label, appUUID string) {
 	var newSnapshot wso2_cache.Snapshot
 	version := rand.Intn(maxRandomInt)
-	application, _ := database.GetApplicationByUUID(appUUID)
+	application, errDb := database.GetApplicationByUUID(appUUID)
+	if errDb != nil {
+		logger.LoggerDatabase.ErrorC(logging.ErrorDetails{
+			Message: fmt.Sprintf("Error retrieving application for uuid : %s from database error: %v, "+
+				"hence skipping add to xdx cache", appUUID, errDb),
+			Severity:  logging.MINOR,
+			ErrorCode: 1101,
+		})
+		return
+	}
 	currentSnapshot, err := applicationCache.GetSnapshot(label)
 
 	// error occurs if no snapshot is under the provided label
@@ -120,7 +130,7 @@ func AddSingleApplication(label, appUUID string) {
 
 }
 
-// RemoveApplication removes the API entry from XDS cache
+// RemoveApplication removes the Application entry from XDS cache
 func RemoveApplication(label, appUUID string) {
 	var newSnapshot wso2_cache.Snapshot
 	version := rand.Intn(maxRandomInt)
@@ -136,7 +146,7 @@ func RemoveApplication(label, appUUID string) {
 
 		resourceMap := currentSnapshot.GetResourcesAndTTL(typeURL)
 		_, apiFound := resourceMap[appUUID]
-		// If the API is found, then the xds cache is updated and returned.
+		// If the Application is found, then the xds cache is updated and returned.
 		if apiFound {
 			logger.LoggerXds.Debugf("Application : %s is found within snapshot for label %s", appUUID, label)
 			delete(resourceMap, appUUID)
@@ -155,6 +165,8 @@ func RemoveApplication(label, appUUID string) {
 	logger.LoggerXds.Errorf("Application : %s is not found within snapshot for label %s", appUUID, label)
 }
 
+// AddMultipleApplications adds the applications specified in applicationEventArray to the xds cache
+// This will ideally be used to populate all applications in the startup of the mgt server.
 func AddMultipleApplications(applicationEventArray []*internal_types.ApplicationEvent) {
 	snapshotMap := make(map[string]*wso2_cache.Snapshot)
 	version := rand.Intn(maxRandomInt)
@@ -163,9 +175,20 @@ func AddMultipleApplications(applicationEventArray []*internal_types.Application
 		label := event.Label
 		appUUID := event.UUID
 
+		application, err := database.GetApplicationByUUID(appUUID)
+		if err != nil {
+			logger.LoggerDatabase.ErrorC(logging.ErrorDetails{
+				Message: fmt.Sprintf("Error retrieving application for uuid : %s from database error: %v, "+
+					"hence skipping add to xdx cache", appUUID, err),
+				Severity:  logging.MINOR,
+				ErrorCode: 1101,
+			})
+			continue
+		}
+
 		snapshotEntry, snapshotFound := snapshotMap[label]
 		var newSnapshot wso2_cache.Snapshot
-		application, _ := database.GetApplicationByUUID(appUUID)
+
 		if !snapshotFound {
 			newSnapshot, _ = wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
 				wso2_resource.APKMgtApplicationType: {application},
@@ -202,8 +225,8 @@ func convertResourceMapToArray(resourceMap map[string]types.ResourceWithTTL) []t
 	return appResources
 }
 
-// SetEmptySnapshot sets an empty snapshot into the apiCache for the given label
-// this is used to set empty snapshot when there are no APIs available for a label
+// SetEmptySnapshot sets an empty snapshot into the applicationCache for the given label
+// this is used to set empty snapshot when there are no Applications available for a label
 func SetEmptySnapshot(label string) error {
 	version := rand.Intn(maxRandomInt)
 	newSnapshot, err := wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{

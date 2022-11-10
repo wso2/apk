@@ -47,7 +47,7 @@ func ConnectToDB() {
 		conf.Database.PoolOptions.PoolMaxConnLifetimeJitter)
 	dbPool, err = pgxpool.New(context.Background(), connString)
 	if err != nil {
-		logger.LoggerServer.ErrorC(logging.ErrorDetails{
+		logger.LoggerDatabase.ErrorC(logging.ErrorDetails{
 			Message:   fmt.Sprintf("Unable to connect to database: %v", err.Error()),
 			Severity:  logging.CRITICAL,
 			ErrorCode: 1100,
