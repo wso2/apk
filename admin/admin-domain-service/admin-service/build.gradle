@@ -1,7 +1,0 @@
-plugins {
-    id 'net.researchgate.release'
-}
-
-tasks.named('build').configure {
-    dependsOn 'bal_build'
-}

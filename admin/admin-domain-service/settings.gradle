@@ -1,5 +1,0 @@
-rootProject.name = 'admin-domain-service'
-
-include ':admin-service'
-
-
