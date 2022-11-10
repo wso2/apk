@@ -1,0 +1,7 @@
+[adapter] 
+[adapter.keystore]
+  certPath = "$env{APK_HOME}/adapter/cmd/adapter/conf/resources/adapter/security/keystore/mg.pem"
+  keyPath = "$env{APK_HOME}/adapter/cmd/adapter/conf/resources/adapter/security/keystore/mg.key"
+
+[adapter.truststore]
+  location = "$env{APK_HOME}/adapter/cmd/adapter/conf/resources/adapter/security/truststore"
