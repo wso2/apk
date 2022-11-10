@@ -25,11 +25,31 @@ import org.wso2.apk.apimgt.api.APIProvider;
 import org.wso2.apk.apimgt.api.model.API;
 import org.wso2.apk.apimgt.impl.APIManagerFactory;
 import org.wso2.apk.apimgt.rest.api.util.RestApiConstants;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
+import org.wso2.apk.apimgt.api.APIManagementException;
+import org.wso2.apk.apimgt.api.APIProvider;
+import org.wso2.apk.apimgt.api.ExceptionCodes;
+import org.wso2.apk.apimgt.api.model.APIInfo;
+import org.wso2.apk.apimgt.impl.APIManagerFactory;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class RestApiCommonUtil {
+
+    private static final Log log = LogFactory.getLog(RestApiCommonUtil.class);
+
+    public static APIProvider getLoggedInUserProvider() throws APIManagementException {
+
+        return APIManagerFactory.getInstance().getAPIProvider(getLoggedInUsername());
+    }
     public static String getLoggedInUsername() {
 
 //        return UserContext.getThreadLocalUserContext().getUsername();
@@ -40,6 +60,20 @@ public class RestApiCommonUtil {
 
 //        return UserContext.getThreadLocalUserContext().getOrganization();
         return "carbon.super";
+    }
+
+    /**
+     * Returns date in RFC3339 format.
+     * Example: 2008-11-13T12:23:30-08:00
+     *
+     * @param date Date object
+     * @return date string in RFC3339 format.
+     */
+    public static String getRFC3339Date(Date date) {
+
+        DateTimeFormatter jodaDateTimeFormatter = ISODateTimeFormat.dateTime();
+        DateTime dateTime = new DateTime(date);
+        return jodaDateTimeFormatter.print(dateTime);
     }
 
     /**
@@ -79,6 +113,22 @@ public class RestApiCommonUtil {
             }
         }
         return result;
+    }
+
+    /**
+     * Returns the paginated url for Endpoint Certificate Usage API
+     *
+     * @param alias  alias of certificate
+     * @param offset starting index
+     * @param limit  max number of objects returned
+     * @return constructed paginated url
+     */
+    public static String getCertificateUsagePaginatedURL(String alias, Integer offset, Integer limit) {
+        String paginatedURL = RestApiConstants.ENDPOINT_CERTIFICATE_USAGE_GET_PAGINATION_URL;
+        paginatedURL = paginatedURL.replace(RestApiConstants.ALIAS_PARAM, alias);
+        paginatedURL = paginatedURL.replace(RestApiConstants.LIMIT_PARAM, String.valueOf(limit));
+        paginatedURL = paginatedURL.replace(RestApiConstants.OFFSET_PARAM, String.valueOf(offset));
+        return paginatedURL;
     }
 
     /**
@@ -229,5 +279,73 @@ public class RestApiCommonUtil {
         return paginatedURL;
     }
 
+
+    /**
+     * Returns the paginated url for tags
+     *
+     * @param offset starting index
+     * @param limit  max number of objects returned
+     * @return constructed paginated url
+     */
+    public static String getResourcePathPaginatedURL(Integer offset, Integer limit) {
+
+        String paginatedURL = RestApiConstants.RESOURCE_PATH_PAGINATION_URL;
+        paginatedURL = paginatedURL.replace(RestApiConstants.LIMIT_PARAM, String.valueOf(limit));
+        paginatedURL = paginatedURL.replace(RestApiConstants.OFFSET_PARAM, String.valueOf(offset));
+        return paginatedURL;
+    }
+
+    /**
+     * Returns the paginated url for product documentations
+     *
+     * @param offset starting index
+     * @param limit  max number of objects returned
+     * @return constructed paginated url
+     */
+    public static String getProductDocumentPaginatedURL(Integer offset, Integer limit, String apiId) {
+
+        String paginatedURL = RestApiConstants.PRODUCT_DOCUMENTS_GET_PAGINATION_URL;
+        paginatedURL = paginatedURL.replace(RestApiConstants.LIMIT_PARAM, String.valueOf(limit));
+        paginatedURL = paginatedURL.replace(RestApiConstants.OFFSET_PARAM, String.valueOf(offset));
+        paginatedURL = paginatedURL.replace(RestApiConstants.APIID_PARAM, apiId);
+        return paginatedURL;
+    }
+
+    public static APIProvider getProvider(String username) throws APIManagementException {
+
+        return APIManagerFactory.getInstance().getAPIProvider(username);
+    }
+
+    /**
+     * Url validator, Allow any url with https and http.
+     * Allow any url without fully qualified domain
+     *
+     * @param url Url as string
+     * @return boolean type stating validated or not
+     */
+    public static boolean isURL(String url) {
+
+        Pattern pattern = Pattern.compile("^(http|https)://(.)+", Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(url);
+        return matcher.matches();
+
+    }
+
+    /**
+     * @param apiId UUID of the API
+     * @return API details
+     * @throws APIManagementException when API does not exist in the DB
+     */
+    public static APIInfo validateAPIExistence(String apiId) throws APIManagementException {
+
+        APIProvider apiProvider = getLoggedInUserProvider();
+        APIInfo apiInfo = apiProvider.getAPIInfoByUUID(apiId);
+        if (apiInfo == null) {
+            throw new APIManagementException("Couldn't retrieve existing API with API UUID: "
+                    + apiId, ExceptionCodes.from(ExceptionCodes.API_NOT_FOUND,
+                    apiId));
+        }
+        return apiInfo;
+    }
 
 }

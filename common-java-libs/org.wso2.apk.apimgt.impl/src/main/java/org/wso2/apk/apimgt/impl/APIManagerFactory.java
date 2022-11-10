@@ -44,6 +44,16 @@ public class APIManagerFactory {
 
     }
 
+    private APIProvider newProvider(String username) throws APIManagementException {
+        //TODO: APK
+//        return new UserAwareAPIProvider(username);
+        return new APIProviderImpl(username);
+    }
+
+    public APIProvider getAPIProvider(String username) throws APIManagementException {
+        return newProvider(username);
+    }
+
     public static APIManagerFactory getInstance() {
         return instance;
     }
