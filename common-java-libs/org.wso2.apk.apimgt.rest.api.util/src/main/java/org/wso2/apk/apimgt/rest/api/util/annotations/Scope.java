@@ -16,17 +16,15 @@
  * under the License.
  */
 
-package org.wso2.apk.apimgt.rest.api.common.annotations;
+package org.wso2.apk.apimgt.rest.api.util.annotations;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
+@Repeatable(Scopes.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD, ElementType.TYPE})
-public @interface Scopes {
-    Scope[] value();
+public @interface Scope {
+    String description();
+    String value();
+    String name();
 }
-
-

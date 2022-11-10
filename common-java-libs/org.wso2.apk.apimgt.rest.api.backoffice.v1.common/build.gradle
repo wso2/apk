@@ -46,6 +46,7 @@ dependencies {
     implementation libs.openfeign.feign.okhttp
     implementation libs.snakeyaml
     implementation libs.guava
+    implementation libs.javax.validation
     implementation libs.jackson.dataformat.yaml
     implementation libs.httpcomponents.client
     compileOnly libs.jackson.annotations

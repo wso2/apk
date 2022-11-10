@@ -1,17 +1,26 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import javax.validation.constraints.*;
 
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
 public class CommenterInfoDTO   {
   
-    private String firstName = null;
-    private String lastName = null;
-    private String fullName = null;
+  private String firstName;
+
+  private String lastName;
+
+  private String fullName;
+
 
   /**
    **/
@@ -30,6 +39,7 @@ public class CommenterInfoDTO   {
     this.firstName = firstName;
   }
 
+
   /**
    **/
   public CommenterInfoDTO lastName(String lastName) {
@@ -47,6 +57,7 @@ public class CommenterInfoDTO   {
     this.lastName = lastName;
   }
 
+
   /**
    **/
   public CommenterInfoDTO fullName(String fullName) {
@@ -63,6 +74,7 @@ public class CommenterInfoDTO   {
   public void setFullName(String fullName) {
     this.fullName = fullName;
   }
+
 
 
   @Override

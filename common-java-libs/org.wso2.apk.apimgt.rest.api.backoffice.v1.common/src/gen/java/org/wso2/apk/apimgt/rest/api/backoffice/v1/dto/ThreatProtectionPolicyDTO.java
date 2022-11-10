@@ -1,18 +1,28 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import javax.validation.constraints.*;
 
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
 public class ThreatProtectionPolicyDTO   {
   
-    private String uuid = null;
-    private String name = null;
-    private String type = null;
-    private String policy = null;
+  private String uuid;
+
+  private String name;
+
+  private String type;
+
+  private String policy;
+
 
   /**
    * Policy ID
@@ -31,6 +41,7 @@ public class ThreatProtectionPolicyDTO   {
   public void setUuid(String uuid) {
     this.uuid = uuid;
   }
+
 
   /**
    * Name of the policy
@@ -51,6 +62,7 @@ public class ThreatProtectionPolicyDTO   {
     this.name = name;
   }
 
+
   /**
    * Type of the policy
    **/
@@ -70,6 +82,7 @@ public class ThreatProtectionPolicyDTO   {
     this.type = type;
   }
 
+
   /**
    * policy as a json string
    **/
@@ -88,6 +101,7 @@ public class ThreatProtectionPolicyDTO   {
   public void setPolicy(String policy) {
     this.policy = policy;
   }
+
 
 
   @Override

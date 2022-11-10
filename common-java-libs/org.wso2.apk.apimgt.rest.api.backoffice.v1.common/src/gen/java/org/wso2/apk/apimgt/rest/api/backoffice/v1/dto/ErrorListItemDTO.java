@@ -1,17 +1,26 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import javax.validation.constraints.*;
 
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
 public class ErrorListItemDTO   {
   
-    private String code = null;
-    private String message = null;
-    private String description = null;
+  private String code;
+
+  private String message;
+
+  private String description;
+
 
   /**
    **/
@@ -30,6 +39,7 @@ public class ErrorListItemDTO   {
   public void setCode(String code) {
     this.code = code;
   }
+
 
   /**
    * Description about individual errors occurred 
@@ -50,6 +60,7 @@ public class ErrorListItemDTO   {
     this.message = message;
   }
 
+
   /**
    * A detail description about the error message. 
    **/
@@ -67,6 +78,7 @@ public class ErrorListItemDTO   {
   public void setDescription(String description) {
     this.description = description;
   }
+
 
 
   @Override

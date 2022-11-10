@@ -1,22 +1,33 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-
-import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
+import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.ErrorListItemDTO;
+import javax.validation.constraints.*;
+
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
 public class ErrorDTO   {
   
-    private Long code = null;
-    private String message = null;
-    private String description = null;
-    private String moreInfo = null;
-    private List<ErrorListItemDTO> error = new ArrayList<ErrorListItemDTO>();
+  private Long code;
+
+  private String message;
+
+  private String description;
+
+  private String moreInfo;
+
+  private List<ErrorListItemDTO> error = null;
+
 
   /**
    **/
@@ -35,6 +46,7 @@ public class ErrorDTO   {
   public void setCode(Long code) {
     this.code = code;
   }
+
 
   /**
    * Error message.
@@ -55,6 +67,7 @@ public class ErrorDTO   {
     this.message = message;
   }
 
+
   /**
    * A detail description about the error message. 
    **/
@@ -72,6 +85,7 @@ public class ErrorDTO   {
   public void setDescription(String description) {
     this.description = description;
   }
+
 
   /**
    * Preferably an url with more details about the error. 
@@ -91,6 +105,7 @@ public class ErrorDTO   {
     this.moreInfo = moreInfo;
   }
 
+
   /**
    * If there are more than one error list them out. For example, list out validation errors by each field. 
    **/
@@ -101,7 +116,6 @@ public class ErrorDTO   {
 
   
   @ApiModelProperty(value = "If there are more than one error list them out. For example, list out validation errors by each field. ")
-      @Valid
   @JsonProperty("error")
   public List<ErrorListItemDTO> getError() {
     return error;
@@ -109,6 +123,15 @@ public class ErrorDTO   {
   public void setError(List<ErrorListItemDTO> error) {
     this.error = error;
   }
+
+  public ErrorDTO addErrorItem(ErrorListItemDTO errorItem) {
+    if (this.error == null) {
+      this.error = new ArrayList<>();
+    }
+    this.error.add(errorItem);
+    return this;
+  }
+
 
 
   @Override

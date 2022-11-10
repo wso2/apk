@@ -1,16 +1,24 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import javax.validation.constraints.*;
 
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
 public class PatchRequestBodyDTO   {
   
-    private String content = null;
-    private String category = null;
+  private String content;
+
+  private String category;
+
 
   /**
    * Content of the comment 
@@ -30,6 +38,7 @@ public class PatchRequestBodyDTO   {
     this.content = content;
   }
 
+
   /**
    * Category of the comment 
    **/
@@ -47,6 +56,7 @@ public class PatchRequestBodyDTO   {
   public void setCategory(String category) {
     this.category = category;
   }
+
 
 
   @Override

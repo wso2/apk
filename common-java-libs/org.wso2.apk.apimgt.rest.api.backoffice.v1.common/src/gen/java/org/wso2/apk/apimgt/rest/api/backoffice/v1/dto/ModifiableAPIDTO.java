@@ -1,59 +1,80 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.APIAdditionalPropertiesValueDTO;
+import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.APIBusinessInformationDTO;
+import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.APIMonetizationInfoDTO;
+import javax.validation.constraints.*;
 
-import javax.validation.Valid;
-import java.util.*;
+
+import io.swagger.annotations.*;
+import java.util.Objects;
 
 
 
 public class ModifiableAPIDTO   {
   
-    private String id = null;
-    private String name = null;
-    private String context = null;
-    private String description = null;
-    private Boolean hasThumbnail = null;
+  private String id;
 
-    @XmlType(name="StateEnum")
-    @XmlEnum(String.class)
-    public enum StateEnum {
-        CREATED("CREATED"),
-        PUBLISHED("PUBLISHED");
-        private String value;
+  private String name;
 
-        StateEnum (String v) {
-            value = v;
-        }
+  private String context;
 
-        public String value() {
-            return value;
-        }
+  private String description;
 
-        @Override
-        public String toString() {
-            return String.valueOf(value);
-        }
+  private Boolean hasThumbnail;
 
-        @JsonCreator
-        public static StateEnum fromValue(String v) {
-            for (StateEnum b : StateEnum.values()) {
-                if (String.valueOf(b.value).equals(v)) {
-                    return b;
-                }
-            }
-return null;
-        }
+
+public enum StateEnum {
+
+    CREATED(String.valueOf("CREATED")), PUBLISHED(String.valueOf("PUBLISHED"));
+
+
+    private String value;
+
+    StateEnum(String v) {
+        value = v;
     }
-    private StateEnum state = StateEnum.CREATED;
-    private List<String> tags = new ArrayList<String>();
-    private List<APIAdditionalPropertiesDTO> additionalProperties = new ArrayList<APIAdditionalPropertiesDTO>();
-    private Map<String, APIAdditionalPropertiesMapDTO> additionalPropertiesMap = new HashMap<String, APIAdditionalPropertiesMapDTO>();
-    private APIMonetizationInfoDTO monetization = null;
-    private APIBusinessInformationDTO businessInformation = null;
-    private List<String> categories = new ArrayList<String>();
+
+    public String value() {
+        return value;
+    }
+
+    @Override
+    public String toString() {
+        return String.valueOf(value);
+    }
+
+    public static StateEnum fromValue(String value) {
+        for (StateEnum b : StateEnum.values()) {
+            if (b.value.equals(value)) {
+                return b;
+            }
+        }
+        throw new IllegalArgumentException("Unexpected value '" + value + "'");
+    }
+}
+
+  private StateEnum state = StateEnum.CREATED;
+
+  private List<String> tags = null;
+
+  private Map<String, APIAdditionalPropertiesValueDTO> additionalProperties = null;
+
+  private APIMonetizationInfoDTO monetization;
+
+  private APIBusinessInformationDTO businessInformation;
+
+  private List<String> categories = null;
+
 
   /**
    * UUID of the API 
@@ -72,6 +93,7 @@ return null;
   public void setId(String id) {
     this.id = id;
   }
+
 
   /**
    * Name of the API
@@ -92,6 +114,7 @@ return null;
     this.name = name;
   }
 
+
   /**
    **/
   public ModifiableAPIDTO context(String context) {
@@ -108,6 +131,7 @@ return null;
   public void setContext(String context) {
     this.context = context;
   }
+
 
   /**
    * A brief description about the API
@@ -127,6 +151,7 @@ return null;
     this.description = description;
   }
 
+
   /**
    **/
   public ModifiableAPIDTO hasThumbnail(Boolean hasThumbnail) {
@@ -137,12 +162,13 @@ return null;
   
   @ApiModelProperty(example = "false", value = "")
   @JsonProperty("hasThumbnail")
-  public Boolean isHasThumbnail() {
+  public Boolean getHasThumbnail() {
     return hasThumbnail;
   }
   public void setHasThumbnail(Boolean hasThumbnail) {
     this.hasThumbnail = hasThumbnail;
   }
+
 
   /**
    * State of the API. Only published APIs are visible on the Developer Portal 
@@ -162,6 +188,7 @@ return null;
     this.state = state;
   }
 
+
   /**
    **/
   public ModifiableAPIDTO tags(List<String> tags) {
@@ -179,41 +206,39 @@ return null;
     this.tags = tags;
   }
 
-  /**
-   * Map of custom properties of API
-   **/
-  public ModifiableAPIDTO additionalProperties(List<APIAdditionalPropertiesDTO> additionalProperties) {
-    this.additionalProperties = additionalProperties;
+  public ModifiableAPIDTO addTagsItem(String tagsItem) {
+    if (this.tags == null) {
+      this.tags = new ArrayList<>();
+    }
+    this.tags.add(tagsItem);
     return this;
   }
 
-  
-  @ApiModelProperty(value = "Map of custom properties of API")
-      @Valid
-  @JsonProperty("additionalProperties")
-  public List<APIAdditionalPropertiesDTO> getAdditionalProperties() {
-    return additionalProperties;
-  }
-  public void setAdditionalProperties(List<APIAdditionalPropertiesDTO> additionalProperties) {
-    this.additionalProperties = additionalProperties;
-  }
 
   /**
    **/
-  public ModifiableAPIDTO additionalPropertiesMap(Map<String, APIAdditionalPropertiesMapDTO> additionalPropertiesMap) {
-    this.additionalPropertiesMap = additionalPropertiesMap;
+  public ModifiableAPIDTO additionalProperties(Map<String, APIAdditionalPropertiesValueDTO> additionalProperties) {
+    this.additionalProperties = additionalProperties;
     return this;
   }
 
   
   @ApiModelProperty(value = "")
-      @Valid
-  @JsonProperty("additionalPropertiesMap")
-  public Map<String, APIAdditionalPropertiesMapDTO> getAdditionalPropertiesMap() {
-    return additionalPropertiesMap;
+  @JsonProperty("additionalProperties")
+  public Map<String, APIAdditionalPropertiesValueDTO> getAdditionalProperties() {
+    return additionalProperties;
   }
-  public void setAdditionalPropertiesMap(Map<String, APIAdditionalPropertiesMapDTO> additionalPropertiesMap) {
-    this.additionalPropertiesMap = additionalPropertiesMap;
+  public void setAdditionalProperties(Map<String, APIAdditionalPropertiesValueDTO> additionalProperties) {
+    this.additionalProperties = additionalProperties;
+  }
+
+
+  public ModifiableAPIDTO putAdditionalPropertiesItem(String key, APIAdditionalPropertiesValueDTO additionalPropertiesItem) {
+    if (this.additionalProperties == null) {
+      this.additionalProperties = new HashMap<>();
+    }
+    this.additionalProperties.put(key, additionalPropertiesItem);
+    return this;
   }
 
   /**
@@ -225,7 +250,6 @@ return null;
 
   
   @ApiModelProperty(value = "")
-      @Valid
   @JsonProperty("monetization")
   public APIMonetizationInfoDTO getMonetization() {
     return monetization;
@@ -233,6 +257,7 @@ return null;
   public void setMonetization(APIMonetizationInfoDTO monetization) {
     this.monetization = monetization;
   }
+
 
   /**
    **/
@@ -243,7 +268,6 @@ return null;
 
   
   @ApiModelProperty(value = "")
-      @Valid
   @JsonProperty("businessInformation")
   public APIBusinessInformationDTO getBusinessInformation() {
     return businessInformation;
@@ -251,6 +275,7 @@ return null;
   public void setBusinessInformation(APIBusinessInformationDTO businessInformation) {
     this.businessInformation = businessInformation;
   }
+
 
   /**
    * API categories 
@@ -270,6 +295,15 @@ return null;
     this.categories = categories;
   }
 
+  public ModifiableAPIDTO addCategoriesItem(String categoriesItem) {
+    if (this.categories == null) {
+      this.categories = new ArrayList<>();
+    }
+    this.categories.add(categoriesItem);
+    return this;
+  }
+
+
 
   @Override
   public boolean equals(Object o) {
@@ -288,7 +322,6 @@ return null;
         Objects.equals(state, modifiableAPI.state) &&
         Objects.equals(tags, modifiableAPI.tags) &&
         Objects.equals(additionalProperties, modifiableAPI.additionalProperties) &&
-        Objects.equals(additionalPropertiesMap, modifiableAPI.additionalPropertiesMap) &&
         Objects.equals(monetization, modifiableAPI.monetization) &&
         Objects.equals(businessInformation, modifiableAPI.businessInformation) &&
         Objects.equals(categories, modifiableAPI.categories);
@@ -296,7 +329,7 @@ return null;
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, context, description, hasThumbnail, state, tags, additionalProperties, additionalPropertiesMap, monetization, businessInformation, categories);
+    return Objects.hash(id, name, context, description, hasThumbnail, state, tags, additionalProperties, monetization, businessInformation, categories);
   }
 
   @Override
@@ -312,7 +345,6 @@ return null;
     sb.append("    state: ").append(toIndentedString(state)).append("\n");
     sb.append("    tags: ").append(toIndentedString(tags)).append("\n");
     sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n");
-    sb.append("    additionalPropertiesMap: ").append(toIndentedString(additionalPropertiesMap)).append("\n");
     sb.append("    monetization: ").append(toIndentedString(monetization)).append("\n");
     sb.append("    businessInformation: ").append(toIndentedString(businessInformation)).append("\n");
     sb.append("    categories: ").append(toIndentedString(categories)).append("\n");

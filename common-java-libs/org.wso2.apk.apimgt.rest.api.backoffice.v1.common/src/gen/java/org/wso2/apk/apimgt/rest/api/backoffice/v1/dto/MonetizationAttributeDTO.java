@@ -1,20 +1,32 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import javax.validation.constraints.*;
 
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
 public class MonetizationAttributeDTO   {
   
-    private Boolean required = null;
-    private String name = null;
-    private String displayName = null;
-    private String description = null;
-    private Boolean hidden = null;
-    private String _default = null;
+  private Boolean required;
+
+  private String name;
+
+  private String displayName;
+
+  private String description;
+
+  private Boolean hidden;
+
+  private String _default;
+
 
   /**
    * Is attribute required 
@@ -27,12 +39,13 @@ public class MonetizationAttributeDTO   {
   
   @ApiModelProperty(example = "true", value = "Is attribute required ")
   @JsonProperty("required")
-  public Boolean isRequired() {
+  public Boolean getRequired() {
     return required;
   }
   public void setRequired(Boolean required) {
     this.required = required;
   }
+
 
   /**
    * Name of the attribute 
@@ -52,6 +65,7 @@ public class MonetizationAttributeDTO   {
     this.name = name;
   }
 
+
   /**
    * Display name of the attribute 
    **/
@@ -69,6 +83,7 @@ public class MonetizationAttributeDTO   {
   public void setDisplayName(String displayName) {
     this.displayName = displayName;
   }
+
 
   /**
    * Description of the attribute 
@@ -88,6 +103,7 @@ public class MonetizationAttributeDTO   {
     this.description = description;
   }
 
+
   /**
    * Is attribute hidden 
    **/
@@ -99,12 +115,13 @@ public class MonetizationAttributeDTO   {
   
   @ApiModelProperty(value = "Is attribute hidden ")
   @JsonProperty("hidden")
-  public Boolean isHidden() {
+  public Boolean getHidden() {
     return hidden;
   }
   public void setHidden(Boolean hidden) {
     this.hidden = hidden;
   }
+
 
   /**
    * Default value of the attribute 
@@ -123,6 +140,7 @@ public class MonetizationAttributeDTO   {
   public void setDefault(String _default) {
     this._default = _default;
   }
+
 
 
   @Override

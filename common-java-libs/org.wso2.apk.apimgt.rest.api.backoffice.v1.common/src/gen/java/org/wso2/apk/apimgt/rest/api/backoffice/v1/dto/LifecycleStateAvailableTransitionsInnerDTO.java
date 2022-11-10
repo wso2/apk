@@ -1,20 +1,28 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import javax.validation.constraints.*;
 
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
-public class LifecycleStateAvailableTransitionsDTO   {
+public class LifecycleStateAvailableTransitionsInnerDTO   {
   
-    private String event = null;
-    private String targetState = null;
+  private String event;
+
+  private String targetState;
+
 
   /**
    **/
-  public LifecycleStateAvailableTransitionsDTO event(String event) {
+  public LifecycleStateAvailableTransitionsInnerDTO event(String event) {
     this.event = event;
     return this;
   }
@@ -29,9 +37,10 @@ public class LifecycleStateAvailableTransitionsDTO   {
     this.event = event;
   }
 
+
   /**
    **/
-  public LifecycleStateAvailableTransitionsDTO targetState(String targetState) {
+  public LifecycleStateAvailableTransitionsInnerDTO targetState(String targetState) {
     this.targetState = targetState;
     return this;
   }
@@ -47,6 +56,7 @@ public class LifecycleStateAvailableTransitionsDTO   {
   }
 
 
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -55,9 +65,9 @@ public class LifecycleStateAvailableTransitionsDTO   {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    LifecycleStateAvailableTransitionsDTO lifecycleStateAvailableTransitions = (LifecycleStateAvailableTransitionsDTO) o;
-    return Objects.equals(event, lifecycleStateAvailableTransitions.event) &&
-        Objects.equals(targetState, lifecycleStateAvailableTransitions.targetState);
+    LifecycleStateAvailableTransitionsInnerDTO lifecycleStateAvailableTransitionsInner = (LifecycleStateAvailableTransitionsInnerDTO) o;
+    return Objects.equals(event, lifecycleStateAvailableTransitionsInner.event) &&
+        Objects.equals(targetState, lifecycleStateAvailableTransitionsInner.targetState);
   }
 
   @Override
@@ -68,7 +78,7 @@ public class LifecycleStateAvailableTransitionsDTO   {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class LifecycleStateAvailableTransitionsDTO {\n");
+    sb.append("class LifecycleStateAvailableTransitionsInnerDTO {\n");
     
     sb.append("    event: ").append(toIndentedString(event)).append("\n");
     sb.append("    targetState: ").append(toIndentedString(targetState)).append("\n");

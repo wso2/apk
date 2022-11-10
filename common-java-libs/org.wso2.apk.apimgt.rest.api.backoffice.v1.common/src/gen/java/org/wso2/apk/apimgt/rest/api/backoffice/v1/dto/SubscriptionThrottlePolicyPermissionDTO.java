@@ -1,11 +1,16 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-
 import java.util.ArrayList;
 import java.util.List;
+import javax.validation.constraints.*;
+
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
@@ -13,38 +18,40 @@ import java.util.Objects;
 public class SubscriptionThrottlePolicyPermissionDTO   {
   
 
-    @XmlType(name="PermissionTypeEnum")
-    @XmlEnum(String.class)
-    public enum PermissionTypeEnum {
-        ALLOW("ALLOW"),
-        DENY("DENY");
-        private String value;
+public enum PermissionTypeEnum {
 
-        PermissionTypeEnum (String v) {
-            value = v;
-        }
+    ALLOW(String.valueOf("ALLOW")), DENY(String.valueOf("DENY"));
 
-        public String value() {
-            return value;
-        }
 
-        @Override
-        public String toString() {
-            return String.valueOf(value);
-        }
+    private String value;
 
-        @JsonCreator
-        public static PermissionTypeEnum fromValue(String v) {
-            for (PermissionTypeEnum b : PermissionTypeEnum.values()) {
-                if (String.valueOf(b.value).equals(v)) {
-                    return b;
-                }
-            }
-return null;
-        }
+    PermissionTypeEnum(String v) {
+        value = v;
     }
-    private PermissionTypeEnum permissionType = null;
-    private List<String> roles = new ArrayList<String>();
+
+    public String value() {
+        return value;
+    }
+
+    @Override
+    public String toString() {
+        return String.valueOf(value);
+    }
+
+    public static PermissionTypeEnum fromValue(String value) {
+        for (PermissionTypeEnum b : PermissionTypeEnum.values()) {
+            if (b.value.equals(value)) {
+                return b;
+            }
+        }
+        throw new IllegalArgumentException("Unexpected value '" + value + "'");
+    }
+}
+
+  private PermissionTypeEnum permissionType;
+
+  private List<String> roles = new ArrayList<>();
+
 
   /**
    **/
@@ -64,6 +71,7 @@ return null;
     this.permissionType = permissionType;
   }
 
+
   /**
    **/
   public SubscriptionThrottlePolicyPermissionDTO roles(List<String> roles) {
@@ -81,6 +89,12 @@ return null;
   public void setRoles(List<String> roles) {
     this.roles = roles;
   }
+
+  public SubscriptionThrottlePolicyPermissionDTO addRolesItem(String rolesItem) {
+    this.roles.add(rolesItem);
+    return this;
+  }
+
 
 
   @Override

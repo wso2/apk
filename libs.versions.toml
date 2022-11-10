@@ -37,6 +37,7 @@ jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", ver
 jackson-dataformat-yaml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml", version.ref = "jackson" }
 jackson-datatype-guava = { module = "com.fasterxml.jackson.datatype:jackson-datatype-guava", version.ref = "jackson" }
 javax-cache = { module = "javax.cache:cache-api", version.ref = "javax-cache" }
+javax-validation = { module = "javax.validation:validation-api", version.ref = "javax-validation" }
 json = { module = "org.json.wso2:json", version.ref = "org-json-wso2" }
 json-simple = { module = "com.googlecode.json-simple.wso2:json-simple", version.ref = "json-simple-wso2" }
 mapstruct = { module = "org.mapstruct:mapstruct", version.ref = "mapstruct" }
@@ -101,6 +102,7 @@ io-swagger = "1.6.5"
 io-swagger-v3 = "2.1.12"
 jackson = "2.13.1"
 javax-cache = "1.1.1"
+javax-validation = "2.0.1.Final"
 json-simple-wso2 = "1.1.wso2v1"
 org-json-wso2 = "3.0.0.wso2v1"
 mapstruct = "1.5.3.Final"

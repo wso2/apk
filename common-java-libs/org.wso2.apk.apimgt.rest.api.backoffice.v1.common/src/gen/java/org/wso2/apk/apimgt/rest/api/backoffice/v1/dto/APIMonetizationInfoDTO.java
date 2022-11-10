@@ -1,18 +1,26 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-
 import java.util.HashMap;
 import java.util.Map;
+import javax.validation.constraints.*;
+
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
 public class APIMonetizationInfoDTO   {
   
-    private Boolean enabled = null;
-    private Map<String, String> properties = new HashMap<String, String>();
+  private Boolean enabled;
+
+  private Map<String, String> properties = null;
+
 
   /**
    * Flag to indicate the monetization status
@@ -26,12 +34,13 @@ public class APIMonetizationInfoDTO   {
   @ApiModelProperty(example = "true", required = true, value = "Flag to indicate the monetization status")
   @JsonProperty("enabled")
   @NotNull
-  public Boolean isEnabled() {
+  public Boolean getEnabled() {
     return enabled;
   }
   public void setEnabled(Boolean enabled) {
     this.enabled = enabled;
   }
+
 
   /**
    * Map of custom properties related to monetization
@@ -49,6 +58,15 @@ public class APIMonetizationInfoDTO   {
   }
   public void setProperties(Map<String, String> properties) {
     this.properties = properties;
+  }
+
+
+  public APIMonetizationInfoDTO putPropertiesItem(String key, String propertiesItem) {
+    if (this.properties == null) {
+      this.properties = new HashMap<>();
+    }
+    this.properties.put(key, propertiesItem);
+    return this;
   }
 
 

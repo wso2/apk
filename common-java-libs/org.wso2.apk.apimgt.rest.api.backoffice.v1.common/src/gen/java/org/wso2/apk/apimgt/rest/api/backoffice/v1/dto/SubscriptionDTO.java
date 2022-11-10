@@ -1,56 +1,60 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.ApplicationInfoDTO;
+import javax.validation.constraints.*;
 
-import javax.validation.Valid;
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
 public class SubscriptionDTO   {
   
-    private String subscriptionId = null;
-    private ApplicationInfoDTO applicationInfo = null;
-    private String usagePlan = null;
+  private String subscriptionId;
 
-    @XmlType(name="SubscriptionStatusEnum")
-    @XmlEnum(String.class)
-    public enum SubscriptionStatusEnum {
-        BLOCKED("BLOCKED"),
-        PROD_ONLY_BLOCKED("PROD_ONLY_BLOCKED"),
-        UNBLOCKED("UNBLOCKED"),
-        ON_HOLD("ON_HOLD"),
-        REJECTED("REJECTED"),
-        TIER_UPDATE_PENDING("TIER_UPDATE_PENDING"),
-        DELETE_PENDING("DELETE_PENDING");
-        private String value;
+  private ApplicationInfoDTO applicationInfo;
 
-        SubscriptionStatusEnum (String v) {
-            value = v;
-        }
+  private String usagePlan;
 
-        public String value() {
-            return value;
-        }
 
-        @Override
-        public String toString() {
-            return String.valueOf(value);
-        }
+public enum SubscriptionStatusEnum {
 
-        @JsonCreator
-        public static SubscriptionStatusEnum fromValue(String v) {
-            for (SubscriptionStatusEnum b : SubscriptionStatusEnum.values()) {
-                if (String.valueOf(b.value).equals(v)) {
-                    return b;
-                }
-            }
-return null;
-        }
+    BLOCKED(String.valueOf("BLOCKED")), PROD_ONLY_BLOCKED(String.valueOf("PROD_ONLY_BLOCKED")), UNBLOCKED(String.valueOf("UNBLOCKED")), ON_HOLD(String.valueOf("ON_HOLD")), REJECTED(String.valueOf("REJECTED")), TIER_UPDATE_PENDING(String.valueOf("TIER_UPDATE_PENDING")), DELETE_PENDING(String.valueOf("DELETE_PENDING"));
+
+
+    private String value;
+
+    SubscriptionStatusEnum(String v) {
+        value = v;
     }
-    private SubscriptionStatusEnum subscriptionStatus = null;
+
+    public String value() {
+        return value;
+    }
+
+    @Override
+    public String toString() {
+        return String.valueOf(value);
+    }
+
+    public static SubscriptionStatusEnum fromValue(String value) {
+        for (SubscriptionStatusEnum b : SubscriptionStatusEnum.values()) {
+            if (b.value.equals(value)) {
+                return b;
+            }
+        }
+        throw new IllegalArgumentException("Unexpected value '" + value + "'");
+    }
+}
+
+  private SubscriptionStatusEnum subscriptionStatus;
+
 
   /**
    **/
@@ -70,6 +74,7 @@ return null;
     this.subscriptionId = subscriptionId;
   }
 
+
   /**
    **/
   public SubscriptionDTO applicationInfo(ApplicationInfoDTO applicationInfo) {
@@ -79,7 +84,6 @@ return null;
 
   
   @ApiModelProperty(required = true, value = "")
-      @Valid
   @JsonProperty("applicationInfo")
   @NotNull
   public ApplicationInfoDTO getApplicationInfo() {
@@ -88,6 +92,7 @@ return null;
   public void setApplicationInfo(ApplicationInfoDTO applicationInfo) {
     this.applicationInfo = applicationInfo;
   }
+
 
   /**
    **/
@@ -107,6 +112,7 @@ return null;
     this.usagePlan = usagePlan;
   }
 
+
   /**
    **/
   public SubscriptionDTO subscriptionStatus(SubscriptionStatusEnum subscriptionStatus) {
@@ -124,6 +130,7 @@ return null;
   public void setSubscriptionStatus(SubscriptionStatusEnum subscriptionStatus) {
     this.subscriptionStatus = subscriptionStatus;
   }
+
 
 
   @Override

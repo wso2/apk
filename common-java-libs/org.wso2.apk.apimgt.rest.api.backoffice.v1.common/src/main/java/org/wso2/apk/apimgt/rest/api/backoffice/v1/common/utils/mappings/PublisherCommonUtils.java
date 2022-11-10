@@ -59,9 +59,9 @@ import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.APIDTO;
 import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.DocumentDTO;
 import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.LifecycleHistoryDTO;
 import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.LifecycleStateDTO;
-import org.wso2.apk.apimgt.rest.api.common.RestApiCommonUtil;
-import org.wso2.apk.apimgt.rest.api.common.RestApiConstants;
-import org.wso2.apk.apimgt.rest.api.common.annotations.Scope;
+import org.wso2.apk.apimgt.rest.api.util.utils.RestApiCommonUtil;
+import org.wso2.apk.apimgt.rest.api.util.RestApiConstants;
+import org.wso2.apk.apimgt.rest.api.util.annotations.Scope;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

@@ -1,20 +1,30 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-
-import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
+import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.DocumentDTO;
+import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.PaginationDTO;
+import javax.validation.constraints.*;
+
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
 public class DocumentListDTO   {
   
-    private Integer count = null;
-    private List<DocumentDTO> list = new ArrayList<DocumentDTO>();
-    private PaginationDTO pagination = null;
+  private Integer count;
+
+  private List<DocumentDTO> _list = null;
+
+  private PaginationDTO pagination;
+
 
   /**
    * Number of Documents returned. 
@@ -34,23 +44,32 @@ public class DocumentListDTO   {
     this.count = count;
   }
 
+
   /**
    **/
-  public DocumentListDTO list(List<DocumentDTO> list) {
-    this.list = list;
+  public DocumentListDTO _list(List<DocumentDTO> _list) {
+    this._list = _list;
     return this;
   }
 
   
   @ApiModelProperty(value = "")
-      @Valid
   @JsonProperty("list")
   public List<DocumentDTO> getList() {
-    return list;
+    return _list;
   }
-  public void setList(List<DocumentDTO> list) {
-    this.list = list;
+  public void setList(List<DocumentDTO> _list) {
+    this._list = _list;
   }
+
+  public DocumentListDTO addListItem(DocumentDTO _listItem) {
+    if (this._list == null) {
+      this._list = new ArrayList<>();
+    }
+    this._list.add(_listItem);
+    return this;
+  }
+
 
   /**
    **/
@@ -61,7 +80,6 @@ public class DocumentListDTO   {
 
   
   @ApiModelProperty(value = "")
-      @Valid
   @JsonProperty("pagination")
   public PaginationDTO getPagination() {
     return pagination;
@@ -69,6 +87,7 @@ public class DocumentListDTO   {
   public void setPagination(PaginationDTO pagination) {
     this.pagination = pagination;
   }
+
 
 
   @Override
@@ -81,13 +100,13 @@ public class DocumentListDTO   {
     }
     DocumentListDTO documentList = (DocumentListDTO) o;
     return Objects.equals(count, documentList.count) &&
-        Objects.equals(list, documentList.list) &&
+        Objects.equals(_list, documentList._list) &&
         Objects.equals(pagination, documentList.pagination);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(count, list, pagination);
+    return Objects.hash(count, _list, pagination);
   }
 
   @Override
@@ -96,7 +115,7 @@ public class DocumentListDTO   {
     sb.append("class DocumentListDTO {\n");
     
     sb.append("    count: ").append(toIndentedString(count)).append("\n");
-    sb.append("    list: ").append(toIndentedString(list)).append("\n");
+    sb.append("    _list: ").append(toIndentedString(_list)).append("\n");
     sb.append("    pagination: ").append(toIndentedString(pagination)).append("\n");
     sb.append("}");
     return sb.toString();

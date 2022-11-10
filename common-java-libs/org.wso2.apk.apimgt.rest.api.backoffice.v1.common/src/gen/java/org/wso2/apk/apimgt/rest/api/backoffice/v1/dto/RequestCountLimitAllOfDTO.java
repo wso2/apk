@@ -1,15 +1,22 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import javax.validation.constraints.*;
 
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
 public class RequestCountLimitAllOfDTO   {
   
-    private Long requestCount = null;
+  private Long requestCount;
+
 
   /**
    * Maximum number of requests allowed
@@ -29,6 +36,7 @@ public class RequestCountLimitAllOfDTO   {
   public void setRequestCount(Long requestCount) {
     this.requestCount = requestCount;
   }
+
 
 
   @Override

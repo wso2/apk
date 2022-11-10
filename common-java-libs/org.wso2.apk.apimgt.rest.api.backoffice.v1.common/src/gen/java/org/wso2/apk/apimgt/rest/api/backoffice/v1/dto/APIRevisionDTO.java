@@ -1,18 +1,28 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import javax.validation.constraints.*;
 
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
 public class APIRevisionDTO   {
   
-    private String displayName = null;
-    private String id = null;
-    private String description = null;
-    private java.util.Date createdTime = null;
+  private String displayName;
+
+  private String id;
+
+  private String description;
+
+  private java.util.Date createdTime;
+
 
   /**
    **/
@@ -31,6 +41,7 @@ public class APIRevisionDTO   {
     this.displayName = displayName;
   }
 
+
   /**
    **/
   public APIRevisionDTO id(String id) {
@@ -47,6 +58,7 @@ public class APIRevisionDTO   {
   public void setId(String id) {
     this.id = id;
   }
+
 
   /**
    **/
@@ -65,6 +77,7 @@ public class APIRevisionDTO   {
     this.description = description;
   }
 
+
   /**
    **/
   public APIRevisionDTO createdTime(java.util.Date createdTime) {
@@ -81,6 +94,7 @@ public class APIRevisionDTO   {
   public void setCreatedTime(java.util.Date createdTime) {
     this.createdTime = createdTime;
   }
+
 
 
   @Override

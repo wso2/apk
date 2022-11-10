@@ -1,16 +1,24 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import javax.validation.constraints.*;
 
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
 public class CustomAttributeDTO   {
   
-    private String name = null;
-    private String value = null;
+  private String name;
+
+  private String value;
+
 
   /**
    * Name of the custom attribute
@@ -31,6 +39,7 @@ public class CustomAttributeDTO   {
     this.name = name;
   }
 
+
   /**
    * Value of the custom attribute
    **/
@@ -49,6 +58,7 @@ public class CustomAttributeDTO   {
   public void setValue(String value) {
     this.value = value;
   }
+
 
 
   @Override

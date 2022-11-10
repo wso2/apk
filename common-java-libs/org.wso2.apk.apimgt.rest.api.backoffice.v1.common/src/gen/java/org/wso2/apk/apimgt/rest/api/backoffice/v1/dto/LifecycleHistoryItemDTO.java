@@ -1,18 +1,28 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import javax.validation.constraints.*;
 
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
 public class LifecycleHistoryItemDTO   {
   
-    private String previousState = null;
-    private String postState = null;
-    private String user = null;
-    private String updatedTime = null;
+  private String previousState;
+
+  private String postState;
+
+  private String user;
+
+  private String updatedTime;
+
 
   /**
    **/
@@ -31,6 +41,7 @@ public class LifecycleHistoryItemDTO   {
     this.previousState = previousState;
   }
 
+
   /**
    **/
   public LifecycleHistoryItemDTO postState(String postState) {
@@ -47,6 +58,7 @@ public class LifecycleHistoryItemDTO   {
   public void setPostState(String postState) {
     this.postState = postState;
   }
+
 
   /**
    **/
@@ -65,6 +77,7 @@ public class LifecycleHistoryItemDTO   {
     this.user = user;
   }
 
+
   /**
    **/
   public LifecycleHistoryItemDTO updatedTime(String updatedTime) {
@@ -81,6 +94,7 @@ public class LifecycleHistoryItemDTO   {
   public void setUpdatedTime(String updatedTime) {
     this.updatedTime = updatedTime;
   }
+
 
 
   @Override

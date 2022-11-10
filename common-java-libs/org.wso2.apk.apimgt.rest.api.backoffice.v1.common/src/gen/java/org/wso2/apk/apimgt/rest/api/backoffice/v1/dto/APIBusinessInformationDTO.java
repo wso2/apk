@@ -1,18 +1,28 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import javax.validation.constraints.*;
 
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
 public class APIBusinessInformationDTO   {
   
-    private String businessOwner = null;
-    private String businessOwnerEmail = null;
-    private String technicalOwner = null;
-    private String technicalOwnerEmail = null;
+  private String businessOwner;
+
+  private String businessOwnerEmail;
+
+  private String technicalOwner;
+
+  private String technicalOwnerEmail;
+
 
   /**
    **/
@@ -31,6 +41,7 @@ public class APIBusinessInformationDTO   {
     this.businessOwner = businessOwner;
   }
 
+
   /**
    **/
   public APIBusinessInformationDTO businessOwnerEmail(String businessOwnerEmail) {
@@ -47,6 +58,7 @@ public class APIBusinessInformationDTO   {
   public void setBusinessOwnerEmail(String businessOwnerEmail) {
     this.businessOwnerEmail = businessOwnerEmail;
   }
+
 
   /**
    **/
@@ -65,6 +77,7 @@ public class APIBusinessInformationDTO   {
     this.technicalOwner = technicalOwner;
   }
 
+
   /**
    **/
   public APIBusinessInformationDTO technicalOwnerEmail(String technicalOwnerEmail) {
@@ -81,6 +94,7 @@ public class APIBusinessInformationDTO   {
   public void setTechnicalOwnerEmail(String technicalOwnerEmail) {
     this.technicalOwnerEmail = technicalOwnerEmail;
   }
+
 
 
   @Override

@@ -1,22 +1,34 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-
 import java.util.ArrayList;
 import java.util.List;
+import javax.validation.constraints.*;
+
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
 public class ScopeDTO   {
   
-    private String id = null;
-    private String name = null;
-    private String displayName = null;
-    private String description = null;
-    private List<String> bindings = new ArrayList<String>();
-    private Integer usageCount = null;
+  private String id;
+
+  private String name;
+
+  private String displayName;
+
+  private String description;
+
+  private List<String> bindings = null;
+
+  private Integer usageCount;
+
 
   /**
    * UUID of the Scope. Valid only for shared scopes. 
@@ -35,6 +47,7 @@ public class ScopeDTO   {
   public void setId(String id) {
     this.id = id;
   }
+
 
   /**
    * name of Scope 
@@ -55,6 +68,7 @@ public class ScopeDTO   {
     this.name = name;
   }
 
+
   /**
    * display name of Scope 
    **/
@@ -72,6 +86,7 @@ public class ScopeDTO   {
   public void setDisplayName(String displayName) {
     this.displayName = displayName;
   }
+
 
   /**
    * description of Scope 
@@ -91,6 +106,7 @@ public class ScopeDTO   {
     this.description = description;
   }
 
+
   /**
    * role bindings list of the Scope 
    **/
@@ -109,6 +125,15 @@ public class ScopeDTO   {
     this.bindings = bindings;
   }
 
+  public ScopeDTO addBindingsItem(String bindingsItem) {
+    if (this.bindings == null) {
+      this.bindings = new ArrayList<>();
+    }
+    this.bindings.add(bindingsItem);
+    return this;
+  }
+
+
   /**
    * usage count of Scope 
    **/
@@ -126,6 +151,7 @@ public class ScopeDTO   {
   public void setUsageCount(Integer usageCount) {
     this.usageCount = usageCount;
   }
+
 
 
   @Override

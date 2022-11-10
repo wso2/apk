@@ -1,16 +1,24 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import javax.validation.constraints.*;
 
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
 public class UsageLimitBaseDTO   {
   
-    private String timeUnit = null;
-    private Integer unitTime = null;
+  private String timeUnit;
+
+  private Integer unitTime;
+
 
   /**
    * Unit of the time. Allowed values are \&quot;sec\&quot;, \&quot;min\&quot;, \&quot;hour\&quot;, \&quot;day\&quot;
@@ -31,6 +39,7 @@ public class UsageLimitBaseDTO   {
     this.timeUnit = timeUnit;
   }
 
+
   /**
    * Time limit that the usage limit applies.
    **/
@@ -49,6 +58,7 @@ public class UsageLimitBaseDTO   {
   public void setUnitTime(Integer unitTime) {
     this.unitTime = unitTime;
   }
+
 
 
   @Override
