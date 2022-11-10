@@ -7,9 +7,7 @@ apply from: "$projectDir/../../../common-gradle-scripts/docker.gradle"
 
 tasks.register('copy_distribution',Copy) {
     group 'Copy'
-    println "Copy distribution"
     from "$projectDir/../ballerina/target/bin/runtime_domain_service.jar"
-    println "$buildDir/docker"
     into "$projectDir"
     include "*.jar"
 }
