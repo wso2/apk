@@ -44,4 +44,14 @@ const (
 		"	AND APP.application_id = SUB.application_id " +
 		"	AND SUB.api_id = API.api_id " +
 		"	AND APP.uuid = $1"
+
+	QueryConsumerKeysForApplication string = "select " +
+		"	APPKEY.consumer_key, " +
+		"	APPKEY.key_manager " +
+		" from " +
+		"	am_application_key_mapping APPKEY, " +
+		"	am_application APP " +
+		" where 1=1 " +
+		"	AND APP.application_id = APPKEY.application_id " +
+		"	AND APP.UUID = $1"
 )

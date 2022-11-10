@@ -27,15 +27,16 @@ func GetApplicationByUUID(uuid string) (*apkmgt_application.Application, error) 
 		return nil, err
 	} else {
 		subs, _ := GetSubscriptionsForApplication(uuid)
+		keys, _ := GetConsumerKeysForApplication(uuid)
 		application := &apkmgt_application.Application{
 			Uuid:          values[0].(string),
 			Name:          values[1].(string),
-			Owner:         "",
-			Attributes:    nil,
+			Owner:         "",  //ToDo : Check how to get Owner from db
+			Attributes:    nil, //ToDo : check the values for Attributes
 			Subscriber:    "",
 			Organization:  values[3].(string),
 			Subscriptions: subs,
-			ConsumerKeys:  nil,
+			ConsumerKeys:  keys,
 		}
 		return application, nil
 	}
@@ -62,4 +63,23 @@ func GetSubscriptionsForApplication(appUuid string) ([]*apkmgt_application.Subsc
 		}
 	}
 	return subs, nil
+}
+
+func GetConsumerKeysForApplication(appUUID string) ([]*apkmgt_application.ConsumerKey, error) {
+	rows, err := ExecDBQuery(QueryConsumerKeysForApplication, appUUID)
+	if err != nil {
+	}
+	var keys []*apkmgt_application.ConsumerKey
+	for rows.Next() {
+		values, err := rows.Values()
+		if err != nil {
+			return nil, err
+		} else {
+			keys = append(keys, &apkmgt_application.ConsumerKey{
+				Key:        values[0].(string),
+				KeyManager: values[1].(string),
+			})
+		}
+	}
+	return keys, nil
 }

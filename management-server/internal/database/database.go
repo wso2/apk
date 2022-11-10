@@ -22,9 +22,9 @@ import (
 	"fmt"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/wso2/apk/APKManagementServer/internal/config"
-	"github.com/wso2/apk/APKManagementServer/internal/logger"
 	"github.com/wso2/apk/adapter/pkg/logging"
+	"github.com/wso2/apk/management-server/internal/config"
+	"github.com/wso2/apk/management-server/internal/logger"
 )
 
 var dbPool *pgxpool.Pool

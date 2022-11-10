@@ -27,7 +27,7 @@ var defaultConfig = &Config{
 	Database: database{
 		Name:     "APIM_DB",
 		Username: "postgres",
-		Password: "vajira123",
+		Password: "pg123",
 		Host:     "localhost",
 		Port:     5432,
 		PoolOptions: dbPool{

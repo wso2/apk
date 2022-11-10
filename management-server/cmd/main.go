@@ -19,6 +19,7 @@ package main
 
 import (
 	"github.com/wso2/apk/management-server/internal/database"
+	server "github.com/wso2/apk/management-server/internal/grpc-server"
 	"github.com/wso2/apk/management-server/internal/logger"
 	internal_types "github.com/wso2/apk/management-server/internal/types"
 	"github.com/wso2/apk/management-server/internal/xds"
@@ -37,13 +38,20 @@ func main() {
 	// todo(amaliMatharaarachchi) watch data updates and update snapshot accordingly.
 
 	// temp data
-	var arr []*internal_types.ApplicationEvent
-	arr = append(arr, &internal_types.ApplicationEvent{
-		Label:         "dev",
-		UUID:          "b9850225-c7db-444d-87fd-4feeb3c6b3cc",
-		IsRemoveEvent: false,
-	})
+	var arr = []*internal_types.ApplicationEvent{
+		{
+			Label:         "dev",
+			UUID:          "b9850225-c7db-444d-87fd-4feeb3c6b3cc",
+			IsRemoveEvent: false,
+		},
+		{
+			Label:         "stage",
+			UUID:          "6e2dc623-1a23-46a3-86cf-389d63bbbc3e",
+			IsRemoveEvent: false,
+		},
+	}
 	go xds.AddMultipleApplications(arr)
+	go server.StartGRPCServer()
 
 OUTER:
 	for {
