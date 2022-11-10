@@ -1,0 +1,4 @@
+[managementServer]
+  serviceURL="localhost:18000"
+	NodeLabel="default"
+  

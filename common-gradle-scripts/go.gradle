@@ -30,7 +30,7 @@ tasks.register('go_test', Exec) {
 tasks.register('go_build', Exec) {
     group 'go'
     description 'Compiles the packages named by the import paths, along with their dependencies.'
-    if (hasProperty('file')) {
+    if (project.hasProperty('file')) {
         commandLine 'go', 'build', file
     } else {
         throw new StopExecutionException('Missing "file" property')
