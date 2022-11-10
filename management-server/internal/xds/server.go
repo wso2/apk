@@ -23,6 +23,7 @@ import (
 	"github.com/wso2/apk/APKManagementServer/internal/database"
 	"math/rand"
 	"net"
+	"strings"
 	"sync"
 	"time"
 
@@ -45,10 +46,10 @@ import (
 )
 
 var (
-	apiCache         wso2_cache.SnapshotCache
-	apiCacheMutex    sync.Mutex
-	introducedLabels map[string]bool
-	Sent             bool = true
+	applicationCache      wso2_cache.SnapshotCache
+	applicationCacheMutex sync.Mutex
+	introducedLabels      map[string]bool
+	Sent                  bool = true
 )
 
 const (
@@ -71,8 +72,9 @@ func (IDHash) ID(node *corev3.Node) string {
 var _ wso2_cache.NodeHash = IDHash{}
 
 func init() {
-	apiCache = wso2_cache.NewSnapshotCache(false, IDHash{}, nil)
+	applicationCache = wso2_cache.NewSnapshotCache(false, IDHash{}, nil)
 	rand.Seed(time.Now().UnixNano())
+	introducedLabels = make(map[string]bool, 1)
 }
 
 // FeedData mock data
@@ -87,9 +89,74 @@ func FeedData() {
 	newSnapshot, _ := wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
 		wso2_resource.APKMgtApplicationType: {&applications},
 	})
-	apiCacheMutex.Lock()
-	defer apiCacheMutex.Unlock()
-	apiCache.SetSnapshot(context.Background(), "mine", newSnapshot)
+	applicationCacheMutex.Lock()
+	defer applicationCacheMutex.Unlock()
+	applicationCache.SetSnapshot(context.Background(), "mine", newSnapshot)
+}
+
+func AddSingleApplication(label, appUUID string) {
+	var newSnapshot wso2_cache.Snapshot
+	version := rand.Intn(maxRandomInt)
+	application, _ := database.GetApplicationByUUID(appUUID)
+	currentSnapshot, err := applicationCache.GetSnapshot(label)
+
+	// error occurs if no snapshot is under the provided label
+	if err != nil {
+		newSnapshot, _ = wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
+			wso2_resource.APKMgtApplicationType: {application},
+		})
+	} else {
+		resourceMap := currentSnapshot.GetResourcesAndTTL(typeURL)
+		resourceMap[appUUID] = types.ResourceWithTTL{
+			Resource: application,
+		}
+		applicationResources := convertResourceMapToArray(resourceMap)
+		newSnapshot, _ = wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
+			wso2_resource.APKMgtApplicationType: applicationResources,
+		})
+	}
+	applicationCacheMutex.Lock()
+	defer applicationCacheMutex.Unlock()
+	applicationCache.SetSnapshot(context.Background(), label, newSnapshot)
+	introducedLabels[label] = true
+	logger.LoggerXds.Infof("Application Snapshot is updated for label %s with the version %d. New snapshot "+
+		"size is %d.", label, version, len(newSnapshot.GetResourcesAndTTL(typeURL)))
+
+}
+
+// RemoveApplication removes the API entry from XDS cache
+func RemoveApplication(label, appUUID string) {
+	var newSnapshot wso2_cache.Snapshot
+	version := rand.Intn(maxRandomInt)
+	for l := range introducedLabels {
+		// If the label does not match with any introduced labels, don't need to delete the application from cache.
+		if !strings.EqualFold(label, l) {
+			continue
+		}
+		currentSnapshot, err := applicationCache.GetSnapshot(label)
+		if err != nil {
+			continue
+		}
+
+		resourceMap := currentSnapshot.GetResourcesAndTTL(typeURL)
+		_, apiFound := resourceMap[appUUID]
+		// If the API is found, then the xds cache is updated and returned.
+		if apiFound {
+			logger.LoggerXds.Debugf("Application : %s is found within snapshot for label %s", appUUID, label)
+			delete(resourceMap, appUUID)
+			apiResources := convertResourceMapToArray(resourceMap)
+			newSnapshot, _ = wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
+				wso2_resource.APKMgtApplicationType: apiResources,
+			})
+			applicationCacheMutex.Lock()
+			defer applicationCacheMutex.Unlock()
+			applicationCache.SetSnapshot(context.Background(), label, newSnapshot)
+			logger.LoggerXds.Infof("API Snaphsot is updated for label %s with the version %d. New snapshot "+
+				"size is %d.", label, version, len(newSnapshot.GetResourcesAndTTL(typeURL)))
+			return
+		}
+	}
+	logger.LoggerXds.Errorf("Application : %s is not found within snapshot for label %s", appUUID, label)
 }
 
 func AddMultipleApplications(applicationEventArray []*internal_types.ApplicationEvent) {
@@ -122,10 +189,10 @@ func AddMultipleApplications(applicationEventArray []*internal_types.Application
 			snapshotMap[label] = &newSnapshot
 		}
 	}
-	apiCacheMutex.Lock()
-	defer apiCacheMutex.Unlock()
+	applicationCacheMutex.Lock()
+	defer applicationCacheMutex.Unlock()
 	for label, snapshotEntry := range snapshotMap {
-		apiCache.SetSnapshot(context.Background(), label, *snapshotEntry)
+		applicationCache.SetSnapshot(context.Background(), label, *snapshotEntry)
 		introducedLabels[label] = true
 		logger.LoggerXds.Infof("Application Snaphsot is updated for label %s with the version %d.", label, version)
 	}
@@ -139,10 +206,35 @@ func convertResourceMapToArray(resourceMap map[string]types.ResourceWithTTL) []t
 	return appResources
 }
 
+// SetEmptySnapshot sets an empty snapshot into the apiCache for the given label
+// this is used to set empty snapshot when there are no APIs available for a label
+func SetEmptySnapshot(label string) error {
+	version := rand.Intn(maxRandomInt)
+	newSnapshot, err := wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
+		wso2_resource.APKMgtApplicationType: {},
+	})
+	if err != nil {
+		logger.LoggerXds.Errorf("Error creating empty snapshot. error: %v", err.Error())
+		return err
+	}
+	applicationCacheMutex.Lock()
+	defer applicationCacheMutex.Unlock()
+	//performing null check again to avoid race conditions
+	_, errSnap := applicationCache.GetSnapshot(label)
+	if errSnap != nil && strings.Contains(errSnap.Error(), "no snapshot found for node") {
+		errSetSnap := applicationCache.SetSnapshot(context.Background(), label, newSnapshot)
+		if errSetSnap != nil {
+			logger.LoggerXds.Errorf("Error setting empty snapshot to apiCache. error : %v", errSetSnap.Error())
+			return errSetSnap
+		}
+	}
+	return nil
+}
+
 func InitAPKMgtServer() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	apkMgtAPIDsSrv := wso2_server.NewServer(ctx, apiCache, &callbacks.Callbacks{})
+	apkMgtAPIDsSrv := wso2_server.NewServer(ctx, applicationCache, &callbacks.Callbacks{})
 
 	var grpcOptions []grpc.ServerOption
 	grpcOptions = append(grpcOptions, grpc.MaxConcurrentStreams(grpcMaxConcurrentStreams))
