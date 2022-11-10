@@ -30,6 +30,7 @@ import org.wso2.apk.apimgt.api.APIManagerDatabaseException;
 import org.wso2.apk.apimgt.api.ExceptionCodes;
 import org.wso2.apk.apimgt.impl.ConfigurationHolder;
 import org.wso2.apk.apimgt.impl.dto.DatasourceProperties;
+import org.wso2.apk.apimgt.api.model.APIRevisionDeployment;
 import org.wso2.apk.apimgt.impl.internal.ServiceReferenceHolder;
 
 import java.io.IOException;
@@ -39,6 +40,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Map;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public final class APIMgtDBUtil {
@@ -273,5 +278,50 @@ public final class APIMgtDBUtil {
             }
         }
         return map;
+    }
+
+    /**
+     * Handle connection rollback logic. Rethrow original exception so that it can be handled centrally.
+     *
+     * @param rs result set
+     * @throws SQLException           sql exception
+     * @throws APIManagementException api management exception
+     */
+    public static List<APIRevisionDeployment> mergeRevisionDeploymentDTOs(ResultSet rs) throws APIManagementException,
+            SQLException {
+        List<APIRevisionDeployment> apiRevisionDeploymentList = new ArrayList<>();
+        Map<String, APIRevisionDeployment> uniqueSet = new HashMap<>();
+        while (rs.next()) {
+            APIRevisionDeployment apiRevisionDeployment;
+            String environmentName = rs.getString("NAME");
+            String vhost = VHostUtils.resolveIfNullToDefaultVhost(environmentName,
+                    rs.getString("VHOST"));
+            String revisionUuid = rs.getString("REVISION_UUID");
+            String uniqueKey = (environmentName != null ? environmentName : "") +
+                    (vhost != null ? vhost : "") + (revisionUuid != null ? revisionUuid : "");
+            if (!uniqueSet.containsKey(uniqueKey)) {
+                apiRevisionDeployment = new APIRevisionDeployment();
+                apiRevisionDeployment.setDeployment(environmentName);
+                apiRevisionDeployment.setVhost(vhost);
+                apiRevisionDeployment.setRevisionUUID(revisionUuid);
+                apiRevisionDeployment.setDisplayOnDevportal(rs.getBoolean("DISPLAY_ON_DEVPORTAL"));
+                apiRevisionDeployment.setDeployedTime(rs.getString("DEPLOY_TIME"));
+                apiRevisionDeployment.setSuccessDeployedTime(rs.getString("DEPLOYED_TIME"));
+                apiRevisionDeploymentList.add(apiRevisionDeployment);
+                uniqueSet.put(uniqueKey, apiRevisionDeployment);
+            } else {
+                apiRevisionDeployment = uniqueSet.get(uniqueKey);
+                if (!apiRevisionDeployment.isDisplayOnDevportal()) {
+                    apiRevisionDeployment.setDisplayOnDevportal(rs.getBoolean("DISPLAY_ON_DEVPORTAL"));
+                }
+                if (apiRevisionDeployment.getDeployedTime() == null) {
+                    apiRevisionDeployment.setDeployedTime(rs.getString("DEPLOY_TIME"));
+                }
+                if (apiRevisionDeployment.getSuccessDeployedTime() == null) {
+                    apiRevisionDeployment.setSuccessDeployedTime(rs.getString("DEPLOYED_TIME"));
+                }
+            }
+        }
+        return apiRevisionDeploymentList;
     }
 }

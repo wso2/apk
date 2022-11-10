@@ -22,6 +22,9 @@ import (
 	"os/signal"
 
 	logger "github.com/sirupsen/logrus"
+	"github.com/wso2/apk/adapter/config"
+	"github.com/wso2/apk/adapter/internal/adapter"
+
 	"github.com/wso2/apk/adapter/internal/xds"
 )
 
@@ -33,6 +36,9 @@ func main() {
 
 	// go operator.InitOperator()
 	go xds.InitApkMgtClient()
+
+	conf := config.ReadConfigs()
+	adapter.Run(conf)
 
 OUTER:
 	for {

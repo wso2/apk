@@ -1,0 +1,8 @@
+plugins {
+    id 'net.researchgate.release' version '3.0.2'
+}
+apply from: "$projectDir/../common-gradle-scripts/docker.gradle"
+
+tasks.named('build').configure {
+    dependsOn docker_build
+}

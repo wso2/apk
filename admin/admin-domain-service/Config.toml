@@ -1,0 +1,11 @@
+[wso2.admin_service.admin]
+ADMIN_PORT = 9443
+
+# Sample configurations
+[wso2.admin_service.admin.datasourceConfiguration]
+description = ""
+url = ""
+username = ""
+password = ""
+validationTimeout = 0
+testQuery = ""
