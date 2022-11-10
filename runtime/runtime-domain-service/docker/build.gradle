@@ -11,6 +11,7 @@ tasks.register('copy_distribution',Copy) {
     into "$projectDir"
     include "*.jar"
 }
+
 tasks.named('copy_distribution').configure{
     finalizedBy docker_build
 }

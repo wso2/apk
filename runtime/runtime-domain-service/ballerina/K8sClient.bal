@@ -1,4 +1,5 @@
 import ballerina/http;
+
 import ballerina/io;
 
 const string K8S_API_ENDPOINT = "/api/v1";
@@ -7,9 +8,6 @@ configurable string k8sHost = "kubernetes.default";
 configurable string saTokenPath = "var/run/secrets/kubernetes.io/serviceaccount/token";
 configurable string token = check io:fileReadString(saTokenPath);
 configurable string caCertPath = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt";
-
-function init() {
-}
 
 function initializeK8sClient() returns http:Client|error {
     http:Client k8sApiClient = check new ("https://" + k8sHost ,
