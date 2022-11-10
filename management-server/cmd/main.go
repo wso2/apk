@@ -23,6 +23,7 @@ import (
 
 	"github.com/wso2/apk/management-server/internal/logger"
 	"github.com/wso2/apk/management-server/internal/xds"
+	server "github.com/wso2/apk/management-server/internal/grpc-server"
 )
 
 func main() {
@@ -32,6 +33,7 @@ func main() {
 	go xds.InitAPKMgtServer()
 	// todo(amaliMatharaarachchi) watch data updates and update snapshot accordingly.
 	go xds.FeedData()
+	go server.StartGRPCServer();
 
 OUTER:
 	for {

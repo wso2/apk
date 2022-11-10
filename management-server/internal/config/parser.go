@@ -18,14 +18,16 @@
 package config
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"reflect"
 	"sync"
 
 	toml "github.com/pelletier/go-toml"
-	logger "github.com/sirupsen/logrus"
+	"github.com/wso2/apk/management-server/internal/logger"
 	"github.com/wso2/apk/adapter/pkg/config"
+	"github.com/wso2/apk/adapter/pkg/logging"
 )
 
 var (
@@ -54,17 +56,27 @@ func ReadConfigs() *Config {
 		mgwHome = config.GetMgwHome()
 		_, err := os.Stat(mgwHome + relativeConfigPath)
 		if err != nil {
-			logger.Fatal("Configuration file not found.", err)
+			logger.LoggerMGTServer.ErrorC(logging.ErrorDetails{
+				Message:   fmt.Sprintf("Configuration file not found. Error: %v", err),
+				Severity:  logging.BLOCKER,
+				ErrorCode: 1202,
+			})
 		}
 		content, readErr := ioutil.ReadFile(mgwHome + relativeConfigPath)
 		if readErr != nil {
-			logger.Fatal("Error reading configurations. ", readErr)
-			return
+			logger.LoggerMGTServer.ErrorC(logging.ErrorDetails{
+				Message:   fmt.Sprintf("Error reading configurations. Error: %v", readErr),
+				Severity:  logging.BLOCKER,
+				ErrorCode: 1203,
+			})
 		}
 		parseErr := toml.Unmarshal(content, managementServerConfig)
 		if parseErr != nil {
-			logger.Fatal("Error parsing the configuration ", parseErr)
-			return
+			logger.LoggerMGTServer.ErrorC(logging.ErrorDetails{
+				Message:   fmt.Sprintf("Error parsing the configuration. Error: %v ", parseErr),
+				Severity:  logging.BLOCKER,
+				ErrorCode: 1204,
+			})
 		}
 		// Resolve environment variables.
 		config.ResolveConfigEnvValues(reflect.ValueOf(&(managementServerConfig.ManagementServer)).Elem(), "ManagementServer", true)

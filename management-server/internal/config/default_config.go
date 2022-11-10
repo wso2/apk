@@ -22,5 +22,6 @@ var defaultConfig = &Config{
 	ManagementServer: managementServer{
 		XDSPort:    18000,
 		NodeLabels: []string{"default"},
+		GRPCPort: 8765,
 	},
 }
