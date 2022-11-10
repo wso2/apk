@@ -24,7 +24,6 @@ def imageName = docker_image_name + ':' + project.version
 // }
 
 tasks.register('docker_build', Exec) {
-    println imageName
     group 'docker'
     description 'Build an image from a Dockerfile.'
     commandLine 'docker', 'build', '-t', imageName, '.'
