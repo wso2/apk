@@ -22,6 +22,7 @@ import (
 	"os"
 
 	"github.com/wso2/apk/adapter/internal/loggers"
+	"github.com/wso2/apk/adapter/internal/xds"
 	gwapiv1a2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 
@@ -130,6 +131,7 @@ func InitOperator() {
 	}
 
 	go synchronizer.HandleAPILifeCycleEvents(&ch)
+	go xds.HandleApplicationEventsFromMgtServer(mgr.GetClient())
 
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		loggers.LoggerAPKOperator.Errorf("problem running manager", err)
