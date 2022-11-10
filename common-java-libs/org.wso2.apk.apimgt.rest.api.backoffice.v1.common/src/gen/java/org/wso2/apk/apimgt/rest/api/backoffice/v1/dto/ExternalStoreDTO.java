@@ -1,18 +1,28 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import javax.validation.constraints.*;
 
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
 public class ExternalStoreDTO   {
   
-    private String id = null;
-    private String displayName = null;
-    private String type = null;
-    private String endpoint = null;
+  private String id;
+
+  private String displayName;
+
+  private String type;
+
+  private String endpoint;
+
 
   /**
    * The external store identifier, which is a unique value. 
@@ -32,6 +42,7 @@ public class ExternalStoreDTO   {
     this.id = id;
   }
 
+
   /**
    * The name of the external API Store that is displayed in the Publisher UI. 
    **/
@@ -49,6 +60,7 @@ public class ExternalStoreDTO   {
   public void setDisplayName(String displayName) {
     this.displayName = displayName;
   }
+
 
   /**
    * The type of the Store. This can be a WSO2-specific API Store or an external one. 
@@ -68,6 +80,7 @@ public class ExternalStoreDTO   {
     this.type = type;
   }
 
+
   /**
    * The endpoint URL of the external store 
    **/
@@ -85,6 +98,7 @@ public class ExternalStoreDTO   {
   public void setEndpoint(String endpoint) {
     this.endpoint = endpoint;
   }
+
 
 
   @Override

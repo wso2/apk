@@ -1,26 +1,42 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-
-import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
+import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.AdditionalPropertyDTO;
+import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.GatewayEnvironmentProtocolURIDTO;
+import javax.validation.constraints.*;
+
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
 public class EnvironmentDTO   {
   
-    private String id = null;
-    private String name = null;
-    private String displayName = null;
-    private String type = null;
-    private String serverUrl = null;
-    private String provider = null;
-    private Boolean showInApiConsole = null;
-    private List<GatewayEnvironmentProtocolURIDTO> endpointURIs = new ArrayList<GatewayEnvironmentProtocolURIDTO>();
-    private List<AdditionalPropertyDTO> additionalProperties = new ArrayList<AdditionalPropertyDTO>();
+  private String id;
+
+  private String name;
+
+  private String displayName;
+
+  private String type;
+
+  private String serverUrl;
+
+  private String provider;
+
+  private Boolean showInApiConsole;
+
+  private List<GatewayEnvironmentProtocolURIDTO> endpointURIs = null;
+
+  private List<AdditionalPropertyDTO> additionalProperties = null;
+
 
   /**
    **/
@@ -40,6 +56,7 @@ public class EnvironmentDTO   {
     this.id = id;
   }
 
+
   /**
    **/
   public EnvironmentDTO name(String name) {
@@ -58,6 +75,7 @@ public class EnvironmentDTO   {
     this.name = name;
   }
 
+
   /**
    **/
   public EnvironmentDTO displayName(String displayName) {
@@ -74,6 +92,7 @@ public class EnvironmentDTO   {
   public void setDisplayName(String displayName) {
     this.displayName = displayName;
   }
+
 
   /**
    **/
@@ -93,6 +112,7 @@ public class EnvironmentDTO   {
     this.type = type;
   }
 
+
   /**
    **/
   public EnvironmentDTO serverUrl(String serverUrl) {
@@ -111,6 +131,7 @@ public class EnvironmentDTO   {
     this.serverUrl = serverUrl;
   }
 
+
   /**
    **/
   public EnvironmentDTO provider(String provider) {
@@ -128,6 +149,7 @@ public class EnvironmentDTO   {
     this.provider = provider;
   }
 
+
   /**
    **/
   public EnvironmentDTO showInApiConsole(Boolean showInApiConsole) {
@@ -139,12 +161,13 @@ public class EnvironmentDTO   {
   @ApiModelProperty(example = "true", required = true, value = "")
   @JsonProperty("showInApiConsole")
   @NotNull
-  public Boolean isShowInApiConsole() {
+  public Boolean getShowInApiConsole() {
     return showInApiConsole;
   }
   public void setShowInApiConsole(Boolean showInApiConsole) {
     this.showInApiConsole = showInApiConsole;
   }
+
 
   /**
    **/
@@ -155,7 +178,6 @@ public class EnvironmentDTO   {
 
   
   @ApiModelProperty(value = "")
-      @Valid
   @JsonProperty("endpointURIs")
   public List<GatewayEnvironmentProtocolURIDTO> getEndpointURIs() {
     return endpointURIs;
@@ -163,6 +185,15 @@ public class EnvironmentDTO   {
   public void setEndpointURIs(List<GatewayEnvironmentProtocolURIDTO> endpointURIs) {
     this.endpointURIs = endpointURIs;
   }
+
+  public EnvironmentDTO addEndpointURIsItem(GatewayEnvironmentProtocolURIDTO endpointURIsItem) {
+    if (this.endpointURIs == null) {
+      this.endpointURIs = new ArrayList<>();
+    }
+    this.endpointURIs.add(endpointURIsItem);
+    return this;
+  }
+
 
   /**
    **/
@@ -173,7 +204,6 @@ public class EnvironmentDTO   {
 
   
   @ApiModelProperty(value = "")
-      @Valid
   @JsonProperty("additionalProperties")
   public List<AdditionalPropertyDTO> getAdditionalProperties() {
     return additionalProperties;
@@ -181,6 +211,15 @@ public class EnvironmentDTO   {
   public void setAdditionalProperties(List<AdditionalPropertyDTO> additionalProperties) {
     this.additionalProperties = additionalProperties;
   }
+
+  public EnvironmentDTO addAdditionalPropertiesItem(AdditionalPropertyDTO additionalPropertiesItem) {
+    if (this.additionalProperties == null) {
+      this.additionalProperties = new ArrayList<>();
+    }
+    this.additionalProperties.add(additionalPropertiesItem);
+    return this;
+  }
+
 
 
   @Override

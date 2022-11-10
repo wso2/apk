@@ -1,31 +1,53 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-
-import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
+import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.CustomAttributeDTO;
+import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.SubscriptionThrottlePolicyPermissionDTO;
+import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.UsageLimitDTO;
+import javax.validation.constraints.*;
+
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
 public class UsagePlanAllOfDTO   {
   
-    private Integer policyId = null;
-    private String uuid = null;
-    private String policyName = null;
-    private String displayName = null;
-    private String description = null;
-    private String organization = null;
-    private UsageLimitDTO defaultLimit = null;
-    private Integer rateLimitCount = null;
-    private String rateLimitTimeUnit = null;
-    private Integer subscriberCount = null;
-    private List<CustomAttributeDTO> customAttributes = new ArrayList<CustomAttributeDTO>();
-    private Boolean stopOnQuotaReach = false;
-    private String billingPlan = null;
-    private SubscriptionThrottlePolicyPermissionDTO permissions = null;
+  private Integer policyId;
+
+  private String uuid;
+
+  private String policyName;
+
+  private String displayName;
+
+  private String description;
+
+  private String organization;
+
+  private UsageLimitDTO defaultLimit;
+
+  private Integer rateLimitCount;
+
+  private String rateLimitTimeUnit;
+
+  private Integer subscriberCount;
+
+  private List<CustomAttributeDTO> customAttributes = null;
+
+  private Boolean stopOnQuotaReach = false;
+
+  private String billingPlan;
+
+  private SubscriptionThrottlePolicyPermissionDTO permissions;
+
 
   /**
    * Id of policy
@@ -45,6 +67,7 @@ public class UsagePlanAllOfDTO   {
     this.policyId = policyId;
   }
 
+
   /**
    * policy uuid
    **/
@@ -62,6 +85,7 @@ public class UsagePlanAllOfDTO   {
   public void setUuid(String uuid) {
     this.uuid = uuid;
   }
+
 
   /**
    * Name of policy
@@ -81,6 +105,7 @@ public class UsagePlanAllOfDTO   {
     this.policyName = policyName;
   }
 
+
   /**
    * Display name of the policy
    **/
@@ -98,6 +123,7 @@ public class UsagePlanAllOfDTO   {
   public void setDisplayName(String displayName) {
     this.displayName = displayName;
   }
+
 
   /**
    * Description of the policy
@@ -117,6 +143,7 @@ public class UsagePlanAllOfDTO   {
     this.description = description;
   }
 
+
   /**
    * Usage policy organization
    **/
@@ -135,6 +162,7 @@ public class UsagePlanAllOfDTO   {
     this.organization = organization;
   }
 
+
   /**
    **/
   public UsagePlanAllOfDTO defaultLimit(UsageLimitDTO defaultLimit) {
@@ -144,7 +172,6 @@ public class UsagePlanAllOfDTO   {
 
   
   @ApiModelProperty(required = true, value = "")
-      @Valid
   @JsonProperty("defaultLimit")
   @NotNull
   public UsageLimitDTO getDefaultLimit() {
@@ -153,6 +180,7 @@ public class UsagePlanAllOfDTO   {
   public void setDefaultLimit(UsageLimitDTO defaultLimit) {
     this.defaultLimit = defaultLimit;
   }
+
 
   /**
    * Burst control request count
@@ -172,6 +200,7 @@ public class UsagePlanAllOfDTO   {
     this.rateLimitCount = rateLimitCount;
   }
 
+
   /**
    * Burst control time unit
    **/
@@ -189,6 +218,7 @@ public class UsagePlanAllOfDTO   {
   public void setRateLimitTimeUnit(String rateLimitTimeUnit) {
     this.rateLimitTimeUnit = rateLimitTimeUnit;
   }
+
 
   /**
    * Number of subscriptions allowed
@@ -208,6 +238,7 @@ public class UsagePlanAllOfDTO   {
     this.subscriberCount = subscriberCount;
   }
 
+
   /**
    * Custom attributes added to the Usage plan 
    **/
@@ -218,7 +249,6 @@ public class UsagePlanAllOfDTO   {
 
   
   @ApiModelProperty(example = "[]", value = "Custom attributes added to the Usage plan ")
-      @Valid
   @JsonProperty("customAttributes")
   public List<CustomAttributeDTO> getCustomAttributes() {
     return customAttributes;
@@ -226,6 +256,15 @@ public class UsagePlanAllOfDTO   {
   public void setCustomAttributes(List<CustomAttributeDTO> customAttributes) {
     this.customAttributes = customAttributes;
   }
+
+  public UsagePlanAllOfDTO addCustomAttributesItem(CustomAttributeDTO customAttributesItem) {
+    if (this.customAttributes == null) {
+      this.customAttributes = new ArrayList<>();
+    }
+    this.customAttributes.add(customAttributesItem);
+    return this;
+  }
+
 
   /**
    * This indicates the action to be taken when a user goes beyond the allocated quota. If checked, the user&#39;s requests will be dropped. If unchecked, the requests will be allowed to pass through. 
@@ -238,12 +277,13 @@ public class UsagePlanAllOfDTO   {
   
   @ApiModelProperty(value = "This indicates the action to be taken when a user goes beyond the allocated quota. If checked, the user's requests will be dropped. If unchecked, the requests will be allowed to pass through. ")
   @JsonProperty("stopOnQuotaReach")
-  public Boolean isStopOnQuotaReach() {
+  public Boolean getStopOnQuotaReach() {
     return stopOnQuotaReach;
   }
   public void setStopOnQuotaReach(Boolean stopOnQuotaReach) {
     this.stopOnQuotaReach = stopOnQuotaReach;
   }
+
 
   /**
    * define whether this is Paid or a Free plan. Allowed values are FREE or COMMERCIAL. 
@@ -263,6 +303,7 @@ public class UsagePlanAllOfDTO   {
     this.billingPlan = billingPlan;
   }
 
+
   /**
    **/
   public UsagePlanAllOfDTO permissions(SubscriptionThrottlePolicyPermissionDTO permissions) {
@@ -272,7 +313,6 @@ public class UsagePlanAllOfDTO   {
 
   
   @ApiModelProperty(value = "")
-      @Valid
   @JsonProperty("permissions")
   public SubscriptionThrottlePolicyPermissionDTO getPermissions() {
     return permissions;
@@ -280,6 +320,7 @@ public class UsagePlanAllOfDTO   {
   public void setPermissions(SubscriptionThrottlePolicyPermissionDTO permissions) {
     this.permissions = permissions;
   }
+
 
 
   @Override

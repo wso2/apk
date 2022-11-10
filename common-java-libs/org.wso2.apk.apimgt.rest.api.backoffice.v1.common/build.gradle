@@ -47,6 +47,7 @@ dependencies {
     implementation libs.guava
     implementation libs.jackson.dataformat.yaml
     implementation libs.httpcomponents.client
+    implementation libs.javax.validation
     compileOnly libs.jackson.annotations
 }
 

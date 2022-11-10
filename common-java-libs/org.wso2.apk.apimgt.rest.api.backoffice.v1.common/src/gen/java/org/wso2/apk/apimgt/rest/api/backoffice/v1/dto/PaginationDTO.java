@@ -1,19 +1,30 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import javax.validation.constraints.*;
 
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
 public class PaginationDTO   {
   
-    private Integer offset = null;
-    private Integer limit = null;
-    private Integer total = null;
-    private String next = null;
-    private String previous = null;
+  private Integer offset;
+
+  private Integer limit;
+
+  private Integer total;
+
+  private String next;
+
+  private String previous;
+
 
   /**
    **/
@@ -32,6 +43,7 @@ public class PaginationDTO   {
     this.offset = offset;
   }
 
+
   /**
    **/
   public PaginationDTO limit(Integer limit) {
@@ -49,6 +61,7 @@ public class PaginationDTO   {
     this.limit = limit;
   }
 
+
   /**
    **/
   public PaginationDTO total(Integer total) {
@@ -65,6 +78,7 @@ public class PaginationDTO   {
   public void setTotal(Integer total) {
     this.total = total;
   }
+
 
   /**
    * Link to the next subset of resources qualified. Empty if no more resources are to be returned. 
@@ -84,6 +98,7 @@ public class PaginationDTO   {
     this.next = next;
   }
 
+
   /**
    * Link to the previous subset of resources qualified. Empty if current subset is the first subset returned. 
    **/
@@ -101,6 +116,7 @@ public class PaginationDTO   {
   public void setPrevious(String previous) {
     this.previous = previous;
   }
+
 
 
   @Override

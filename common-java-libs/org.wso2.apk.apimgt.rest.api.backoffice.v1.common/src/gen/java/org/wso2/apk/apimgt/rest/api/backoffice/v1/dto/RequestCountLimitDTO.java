@@ -1,17 +1,26 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import javax.validation.constraints.*;
 
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
 public class RequestCountLimitDTO   {
   
-    private String timeUnit = null;
-    private Integer unitTime = null;
-    private Long requestCount = null;
+  private String timeUnit;
+
+  private Integer unitTime;
+
+  private Long requestCount;
+
 
   /**
    * Unit of the time. Allowed values are \&quot;sec\&quot;, \&quot;min\&quot;, \&quot;hour\&quot;, \&quot;day\&quot;
@@ -32,6 +41,7 @@ public class RequestCountLimitDTO   {
     this.timeUnit = timeUnit;
   }
 
+
   /**
    * Time limit that the usage limit applies.
    **/
@@ -51,6 +61,7 @@ public class RequestCountLimitDTO   {
     this.unitTime = unitTime;
   }
 
+
   /**
    * Maximum number of requests allowed
    **/
@@ -69,6 +80,7 @@ public class RequestCountLimitDTO   {
   public void setRequestCount(Long requestCount) {
     this.requestCount = requestCount;
   }
+
 
 
   @Override

@@ -39,8 +39,8 @@ import org.wso2.apk.apimgt.rest.api.backoffice.v1.common.utils.mappings.Publishe
 import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.APIDTO;
 import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.FileInfoDTO;
 import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.ResourcePathListDTO;
-import org.wso2.apk.apimgt.rest.api.common.RestApiCommonUtil;
-import org.wso2.apk.apimgt.rest.api.common.RestApiConstants;
+import org.wso2.apk.apimgt.rest.api.util.utils.RestApiCommonUtil;
+import org.wso2.apk.apimgt.rest.api.util.RestApiConstants;
 
 import java.io.InputStream;
 import java.net.URLConnection;

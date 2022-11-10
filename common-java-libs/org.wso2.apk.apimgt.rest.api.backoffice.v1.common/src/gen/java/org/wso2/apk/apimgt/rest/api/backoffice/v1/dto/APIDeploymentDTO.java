@@ -1,16 +1,24 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import javax.validation.constraints.*;
 
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
 public class APIDeploymentDTO   {
   
-    private String name = null;
-    private java.util.Date deployedTime = null;
+  private String name;
+
+  private java.util.Date deployedTime;
+
 
   /**
    **/
@@ -29,6 +37,7 @@ public class APIDeploymentDTO   {
     this.name = name;
   }
 
+
   /**
    **/
   public APIDeploymentDTO deployedTime(java.util.Date deployedTime) {
@@ -45,6 +54,7 @@ public class APIDeploymentDTO   {
   public void setDeployedTime(java.util.Date deployedTime) {
     this.deployedTime = deployedTime;
   }
+
 
 
   @Override

@@ -1,19 +1,27 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-
-import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
+import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.LifecycleStateAvailableTransitionsInnerDTO;
+import javax.validation.constraints.*;
+
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
 public class LifecycleStateDTO   {
   
-    private String state = null;
-    private List<LifecycleStateAvailableTransitionsDTO> availableTransitions = new ArrayList<LifecycleStateAvailableTransitionsDTO>();
+  private String state;
+
+  private List<LifecycleStateAvailableTransitionsInnerDTO> availableTransitions = null;
+
 
   /**
    **/
@@ -32,23 +40,32 @@ public class LifecycleStateDTO   {
     this.state = state;
   }
 
+
   /**
    **/
-  public LifecycleStateDTO availableTransitions(List<LifecycleStateAvailableTransitionsDTO> availableTransitions) {
+  public LifecycleStateDTO availableTransitions(List<LifecycleStateAvailableTransitionsInnerDTO> availableTransitions) {
     this.availableTransitions = availableTransitions;
     return this;
   }
 
   
   @ApiModelProperty(value = "")
-      @Valid
   @JsonProperty("availableTransitions")
-  public List<LifecycleStateAvailableTransitionsDTO> getAvailableTransitions() {
+  public List<LifecycleStateAvailableTransitionsInnerDTO> getAvailableTransitions() {
     return availableTransitions;
   }
-  public void setAvailableTransitions(List<LifecycleStateAvailableTransitionsDTO> availableTransitions) {
+  public void setAvailableTransitions(List<LifecycleStateAvailableTransitionsInnerDTO> availableTransitions) {
     this.availableTransitions = availableTransitions;
   }
+
+  public LifecycleStateDTO addAvailableTransitionsItem(LifecycleStateAvailableTransitionsInnerDTO availableTransitionsItem) {
+    if (this.availableTransitions == null) {
+      this.availableTransitions = new ArrayList<>();
+    }
+    this.availableTransitions.add(availableTransitionsItem);
+    return this;
+  }
+
 
 
   @Override

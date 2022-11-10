@@ -1,19 +1,30 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import javax.validation.constraints.*;
 
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
 public class ApplicationInfoDTO   {
   
-    private String applicationId = null;
-    private String name = null;
-    private String subscriber = null;
-    private String description = null;
-    private Integer subscriptionCount = null;
+  private String applicationId;
+
+  private String name;
+
+  private String subscriber;
+
+  private String description;
+
+  private Integer subscriptionCount;
+
 
   /**
    **/
@@ -32,6 +43,7 @@ public class ApplicationInfoDTO   {
     this.applicationId = applicationId;
   }
 
+
   /**
    **/
   public ApplicationInfoDTO name(String name) {
@@ -48,6 +60,7 @@ public class ApplicationInfoDTO   {
   public void setName(String name) {
     this.name = name;
   }
+
 
   /**
    **/
@@ -66,6 +79,7 @@ public class ApplicationInfoDTO   {
     this.subscriber = subscriber;
   }
 
+
   /**
    **/
   public ApplicationInfoDTO description(String description) {
@@ -83,6 +97,7 @@ public class ApplicationInfoDTO   {
     this.description = description;
   }
 
+
   /**
    **/
   public ApplicationInfoDTO subscriptionCount(Integer subscriptionCount) {
@@ -99,6 +114,7 @@ public class ApplicationInfoDTO   {
   public void setSubscriptionCount(Integer subscriptionCount) {
     this.subscriptionCount = subscriptionCount;
   }
+
 
 
   @Override

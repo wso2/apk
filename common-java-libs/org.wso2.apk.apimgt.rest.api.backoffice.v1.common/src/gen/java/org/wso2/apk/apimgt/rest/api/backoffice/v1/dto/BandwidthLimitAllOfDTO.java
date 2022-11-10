@@ -1,16 +1,24 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import javax.validation.constraints.*;
 
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
 public class BandwidthLimitAllOfDTO   {
   
-    private Long dataAmount = null;
-    private String dataUnit = null;
+  private Long dataAmount;
+
+  private String dataUnit;
+
 
   /**
    * Amount of data allowed to be transfered
@@ -31,6 +39,7 @@ public class BandwidthLimitAllOfDTO   {
     this.dataAmount = dataAmount;
   }
 
+
   /**
    * Unit of data allowed to be transfered. Allowed values are \&quot;KB\&quot;, \&quot;MB\&quot; and \&quot;GB\&quot;
    **/
@@ -49,6 +58,7 @@ public class BandwidthLimitAllOfDTO   {
   public void setDataUnit(String dataUnit) {
     this.dataUnit = dataUnit;
   }
+
 
 
   @Override

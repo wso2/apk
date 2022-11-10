@@ -1,19 +1,27 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-
-import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
+import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.ExternalStoreDTO;
+import javax.validation.constraints.*;
+
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
 public class ExternalStoreListDTO   {
   
-    private Integer count = null;
-    private List<ExternalStoreDTO> list = new ArrayList<ExternalStoreDTO>();
+  private Integer count;
+
+  private List<ExternalStoreDTO> _list = null;
+
 
   /**
    * Number of external stores returned. 
@@ -33,23 +41,32 @@ public class ExternalStoreListDTO   {
     this.count = count;
   }
 
+
   /**
    **/
-  public ExternalStoreListDTO list(List<ExternalStoreDTO> list) {
-    this.list = list;
+  public ExternalStoreListDTO _list(List<ExternalStoreDTO> _list) {
+    this._list = _list;
     return this;
   }
 
   
   @ApiModelProperty(value = "")
-      @Valid
   @JsonProperty("list")
   public List<ExternalStoreDTO> getList() {
-    return list;
+    return _list;
   }
-  public void setList(List<ExternalStoreDTO> list) {
-    this.list = list;
+  public void setList(List<ExternalStoreDTO> _list) {
+    this._list = _list;
   }
+
+  public ExternalStoreListDTO addListItem(ExternalStoreDTO _listItem) {
+    if (this._list == null) {
+      this._list = new ArrayList<>();
+    }
+    this._list.add(_listItem);
+    return this;
+  }
+
 
 
   @Override
@@ -62,12 +79,12 @@ public class ExternalStoreListDTO   {
     }
     ExternalStoreListDTO externalStoreList = (ExternalStoreListDTO) o;
     return Objects.equals(count, externalStoreList.count) &&
-        Objects.equals(list, externalStoreList.list);
+        Objects.equals(_list, externalStoreList._list);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(count, list);
+    return Objects.hash(count, _list);
   }
 
   @Override
@@ -76,7 +93,7 @@ public class ExternalStoreListDTO   {
     sb.append("class ExternalStoreListDTO {\n");
     
     sb.append("    count: ").append(toIndentedString(count)).append("\n");
-    sb.append("    list: ").append(toIndentedString(list)).append("\n");
+    sb.append("    _list: ").append(toIndentedString(_list)).append("\n");
     sb.append("}");
     return sb.toString();
   }

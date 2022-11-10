@@ -1,17 +1,24 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-
 import java.util.HashMap;
 import java.util.Map;
+import javax.validation.constraints.*;
+
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
 public class APIRevenueDTO   {
   
-    private Map<String, String> properties = new HashMap<String, String>();
+  private Map<String, String> properties = null;
+
 
   /**
    * Map of custom properties related to API revenue
@@ -29,6 +36,15 @@ public class APIRevenueDTO   {
   }
   public void setProperties(Map<String, String> properties) {
     this.properties = properties;
+  }
+
+
+  public APIRevenueDTO putPropertiesItem(String key, String propertiesItem) {
+    if (this.properties == null) {
+      this.properties = new HashMap<>();
+    }
+    this.properties.put(key, propertiesItem);
+    return this;
   }
 
 

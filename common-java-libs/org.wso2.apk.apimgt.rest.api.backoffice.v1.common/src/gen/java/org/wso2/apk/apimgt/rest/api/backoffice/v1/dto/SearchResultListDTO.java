@@ -1,20 +1,29 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-
-import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
+import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.PaginationDTO;
+import javax.validation.constraints.*;
+
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
 public class SearchResultListDTO   {
   
-    private Integer count = null;
-    private List<Object> list = new ArrayList<Object>();
-    private PaginationDTO pagination = null;
+  private Integer count;
+
+  private List<Object> _list = null;
+
+  private PaginationDTO pagination;
+
 
   /**
    * Number of results returned. 
@@ -34,10 +43,11 @@ public class SearchResultListDTO   {
     this.count = count;
   }
 
+
   /**
    **/
-  public SearchResultListDTO list(List<Object> list) {
-    this.list = list;
+  public SearchResultListDTO _list(List<Object> _list) {
+    this._list = _list;
     return this;
   }
 
@@ -45,11 +55,20 @@ public class SearchResultListDTO   {
   @ApiModelProperty(value = "")
   @JsonProperty("list")
   public List<Object> getList() {
-    return list;
+    return _list;
   }
-  public void setList(List<Object> list) {
-    this.list = list;
+  public void setList(List<Object> _list) {
+    this._list = _list;
   }
+
+  public SearchResultListDTO addListItem(Object _listItem) {
+    if (this._list == null) {
+      this._list = new ArrayList<>();
+    }
+    this._list.add(_listItem);
+    return this;
+  }
+
 
   /**
    **/
@@ -60,7 +79,6 @@ public class SearchResultListDTO   {
 
   
   @ApiModelProperty(value = "")
-      @Valid
   @JsonProperty("pagination")
   public PaginationDTO getPagination() {
     return pagination;
@@ -68,6 +86,7 @@ public class SearchResultListDTO   {
   public void setPagination(PaginationDTO pagination) {
     this.pagination = pagination;
   }
+
 
 
   @Override
@@ -80,13 +99,13 @@ public class SearchResultListDTO   {
     }
     SearchResultListDTO searchResultList = (SearchResultListDTO) o;
     return Objects.equals(count, searchResultList.count) &&
-        Objects.equals(list, searchResultList.list) &&
+        Objects.equals(_list, searchResultList._list) &&
         Objects.equals(pagination, searchResultList.pagination);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(count, list, pagination);
+    return Objects.hash(count, _list, pagination);
   }
 
   @Override
@@ -95,7 +114,7 @@ public class SearchResultListDTO   {
     sb.append("class SearchResultListDTO {\n");
     
     sb.append("    count: ").append(toIndentedString(count)).append("\n");
-    sb.append("    list: ").append(toIndentedString(list)).append("\n");
+    sb.append("    _list: ").append(toIndentedString(_list)).append("\n");
     sb.append("    pagination: ").append(toIndentedString(pagination)).append("\n");
     sb.append("}");
     return sb.toString();

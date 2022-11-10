@@ -1,19 +1,27 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-
-import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
+import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.LifecycleHistoryItemDTO;
+import javax.validation.constraints.*;
+
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
 public class LifecycleHistoryDTO   {
   
-    private Integer count = null;
-    private List<LifecycleHistoryItemDTO> list = new ArrayList<LifecycleHistoryItemDTO>();
+  private Integer count;
+
+  private List<LifecycleHistoryItemDTO> _list = null;
+
 
   /**
    **/
@@ -32,23 +40,32 @@ public class LifecycleHistoryDTO   {
     this.count = count;
   }
 
+
   /**
    **/
-  public LifecycleHistoryDTO list(List<LifecycleHistoryItemDTO> list) {
-    this.list = list;
+  public LifecycleHistoryDTO _list(List<LifecycleHistoryItemDTO> _list) {
+    this._list = _list;
     return this;
   }
 
   
   @ApiModelProperty(value = "")
-      @Valid
   @JsonProperty("list")
   public List<LifecycleHistoryItemDTO> getList() {
-    return list;
+    return _list;
   }
-  public void setList(List<LifecycleHistoryItemDTO> list) {
-    this.list = list;
+  public void setList(List<LifecycleHistoryItemDTO> _list) {
+    this._list = _list;
   }
+
+  public LifecycleHistoryDTO addListItem(LifecycleHistoryItemDTO _listItem) {
+    if (this._list == null) {
+      this._list = new ArrayList<>();
+    }
+    this._list.add(_listItem);
+    return this;
+  }
+
 
 
   @Override
@@ -61,12 +78,12 @@ public class LifecycleHistoryDTO   {
     }
     LifecycleHistoryDTO lifecycleHistory = (LifecycleHistoryDTO) o;
     return Objects.equals(count, lifecycleHistory.count) &&
-        Objects.equals(list, lifecycleHistory.list);
+        Objects.equals(_list, lifecycleHistory._list);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(count, list);
+    return Objects.hash(count, _list);
   }
 
   @Override
@@ -75,7 +92,7 @@ public class LifecycleHistoryDTO   {
     sb.append("class LifecycleHistoryDTO {\n");
     
     sb.append("    count: ").append(toIndentedString(count)).append("\n");
-    sb.append("    list: ").append(toIndentedString(list)).append("\n");
+    sb.append("    _list: ").append(toIndentedString(_list)).append("\n");
     sb.append("}");
     return sb.toString();
   }

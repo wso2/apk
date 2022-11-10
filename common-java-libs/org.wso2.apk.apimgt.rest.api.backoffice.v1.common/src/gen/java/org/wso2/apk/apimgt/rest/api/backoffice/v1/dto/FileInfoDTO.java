@@ -1,16 +1,24 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import javax.validation.constraints.*;
 
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
 public class FileInfoDTO   {
   
-    private String relativePath = null;
-    private String mediaType = null;
+  private String relativePath;
+
+  private String mediaType;
+
 
   /**
    * relative location of the file (excluding the base context and host of the Publisher API)
@@ -30,6 +38,7 @@ public class FileInfoDTO   {
     this.relativePath = relativePath;
   }
 
+
   /**
    * media-type of the file
    **/
@@ -47,6 +56,7 @@ public class FileInfoDTO   {
   public void setMediaType(String mediaType) {
     this.mediaType = mediaType;
   }
+
 
 
   @Override

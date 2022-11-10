@@ -1,56 +1,71 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import javax.validation.constraints.*;
 
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
 public class APIInfoDTO   {
   
-    private String id = null;
-    private String name = null;
-    private String description = null;
-    private String context = null;
-    private String version = null;
-    private String type = null;
-    private String createdTime = null;
-    private String updatedTime = null;
-    private Boolean hasThumbnail = null;
+  private String id;
 
-    @XmlType(name="StateEnum")
-    @XmlEnum(String.class)
-    public enum StateEnum {
-        CREATED("CREATED"),
-        PUBLISHED("PUBLISHED");
-        private String value;
+  private String name;
 
-        StateEnum (String v) {
-            value = v;
-        }
+  private String description;
 
-        public String value() {
-            return value;
-        }
+  private String context;
 
-        @Override
-        public String toString() {
-            return String.valueOf(value);
-        }
+  private String version;
 
-        @JsonCreator
-        public static StateEnum fromValue(String v) {
-            for (StateEnum b : StateEnum.values()) {
-                if (String.valueOf(b.value).equals(v)) {
-                    return b;
-                }
-            }
-return null;
-        }
+  private String type;
+
+  private String createdTime;
+
+  private String updatedTime;
+
+  private Boolean hasThumbnail;
+
+
+public enum StateEnum {
+
+    CREATED(String.valueOf("CREATED")), PUBLISHED(String.valueOf("PUBLISHED"));
+
+
+    private String value;
+
+    StateEnum(String v) {
+        value = v;
     }
-    private StateEnum state = null;
+
+    public String value() {
+        return value;
+    }
+
+    @Override
+    public String toString() {
+        return String.valueOf(value);
+    }
+
+    public static StateEnum fromValue(String value) {
+        for (StateEnum b : StateEnum.values()) {
+            if (b.value.equals(value)) {
+                return b;
+            }
+        }
+        throw new IllegalArgumentException("Unexpected value '" + value + "'");
+    }
+}
+
+  private StateEnum state;
+
 
   /**
    **/
@@ -69,6 +84,7 @@ return null;
     this.id = id;
   }
 
+
   /**
    **/
   public APIInfoDTO name(String name) {
@@ -85,6 +101,7 @@ return null;
   public void setName(String name) {
     this.name = name;
   }
+
 
   /**
    **/
@@ -103,6 +120,7 @@ return null;
     this.description = description;
   }
 
+
   /**
    **/
   public APIInfoDTO context(String context) {
@@ -119,6 +137,7 @@ return null;
   public void setContext(String context) {
     this.context = context;
   }
+
 
   /**
    **/
@@ -137,6 +156,7 @@ return null;
     this.version = version;
   }
 
+
   /**
    **/
   public APIInfoDTO type(String type) {
@@ -153,6 +173,7 @@ return null;
   public void setType(String type) {
     this.type = type;
   }
+
 
   /**
    **/
@@ -171,6 +192,7 @@ return null;
     this.createdTime = createdTime;
   }
 
+
   /**
    **/
   public APIInfoDTO updatedTime(String updatedTime) {
@@ -188,6 +210,7 @@ return null;
     this.updatedTime = updatedTime;
   }
 
+
   /**
    **/
   public APIInfoDTO hasThumbnail(Boolean hasThumbnail) {
@@ -198,12 +221,13 @@ return null;
   
   @ApiModelProperty(example = "true", value = "")
   @JsonProperty("hasThumbnail")
-  public Boolean isHasThumbnail() {
+  public Boolean getHasThumbnail() {
     return hasThumbnail;
   }
   public void setHasThumbnail(Boolean hasThumbnail) {
     this.hasThumbnail = hasThumbnail;
   }
+
 
   /**
    * State of the API. Only published APIs are visible on the Developer Portal 
@@ -222,6 +246,7 @@ return null;
   public void setState(StateEnum state) {
     this.state = state;
   }
+
 
 
   @Override

@@ -1,20 +1,30 @@
 package org.wso2.apk.apimgt.rest.api.backoffice.v1.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-
-import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
+import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.PaginationDTO;
+import org.wso2.apk.apimgt.rest.api.backoffice.v1.dto.ResourcePathDTO;
+import javax.validation.constraints.*;
+
+
+import io.swagger.annotations.*;
 import java.util.Objects;
 
 
 
 public class ResourcePathListDTO   {
   
-    private Integer count = null;
-    private List<ResourcePathDTO> list = new ArrayList<ResourcePathDTO>();
-    private PaginationDTO pagination = null;
+  private Integer count;
+
+  private List<ResourcePathDTO> _list = null;
+
+  private PaginationDTO pagination;
+
 
   /**
    * Number of API Resource Paths returned. 
@@ -34,23 +44,32 @@ public class ResourcePathListDTO   {
     this.count = count;
   }
 
+
   /**
    **/
-  public ResourcePathListDTO list(List<ResourcePathDTO> list) {
-    this.list = list;
+  public ResourcePathListDTO _list(List<ResourcePathDTO> _list) {
+    this._list = _list;
     return this;
   }
 
   
   @ApiModelProperty(value = "")
-      @Valid
   @JsonProperty("list")
   public List<ResourcePathDTO> getList() {
-    return list;
+    return _list;
   }
-  public void setList(List<ResourcePathDTO> list) {
-    this.list = list;
+  public void setList(List<ResourcePathDTO> _list) {
+    this._list = _list;
   }
+
+  public ResourcePathListDTO addListItem(ResourcePathDTO _listItem) {
+    if (this._list == null) {
+      this._list = new ArrayList<>();
+    }
+    this._list.add(_listItem);
+    return this;
+  }
+
 
   /**
    **/
@@ -61,7 +80,6 @@ public class ResourcePathListDTO   {
 
   
   @ApiModelProperty(value = "")
-      @Valid
   @JsonProperty("pagination")
   public PaginationDTO getPagination() {
     return pagination;
@@ -69,6 +87,7 @@ public class ResourcePathListDTO   {
   public void setPagination(PaginationDTO pagination) {
     this.pagination = pagination;
   }
+
 
 
   @Override
@@ -81,13 +100,13 @@ public class ResourcePathListDTO   {
     }
     ResourcePathListDTO resourcePathList = (ResourcePathListDTO) o;
     return Objects.equals(count, resourcePathList.count) &&
-        Objects.equals(list, resourcePathList.list) &&
+        Objects.equals(_list, resourcePathList._list) &&
         Objects.equals(pagination, resourcePathList.pagination);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(count, list, pagination);
+    return Objects.hash(count, _list, pagination);
   }
 
   @Override
@@ -96,7 +115,7 @@ public class ResourcePathListDTO   {
     sb.append("class ResourcePathListDTO {\n");
     
     sb.append("    count: ").append(toIndentedString(count)).append("\n");
-    sb.append("    list: ").append(toIndentedString(list)).append("\n");
+    sb.append("    _list: ").append(toIndentedString(_list)).append("\n");
     sb.append("    pagination: ").append(toIndentedString(pagination)).append("\n");
     sb.append("}");
     return sb.toString();
