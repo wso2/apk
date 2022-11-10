@@ -3,11 +3,13 @@ import ballerina/http;
 listener http:Listener ep0 = new (9090, config = {host: "localhost"});
 
 service / on ep0 {
-    // resource function get apis(string? query, int 'limit = 25, int offset = 0, string sortBy = "createdTime", string sortOrder = "desc", @http:Header string? accept = "application/json") returns APIList|NotAcceptableError {
-    // }
+     resource function get apis(string? query, int 'limit = 25, int offset = 0, string sortBy = "createdTime", string sortOrder = "desc", @http:Header string? accept = "application/json") returns APIList|BadRequestError|UnauthorizedError|InternalServerErrorError|error {
+       return getAPIListInNamespaceWithQuery(query, 'limit, offset, sortBy, sortOrder);  
+     }
+    resource function get apis/[string apiId]() returns API|BadRequestError|UnauthorizedError|InternalServerErrorError|error {
+        return getAPIById(apiId);
+    }
     // resource function post apis(@http:Payload API payload) returns CreatedAPI|BadRequestError|UnsupportedMediaTypeError {
-    // }
-    // resource function get apis/[string apiId]() returns API|NotFoundError|NotAcceptableError {
     // }
     // resource function put apis/[string apiId](@http:Payload API payload) returns API|BadRequestError|ForbiddenError|NotFoundError|ConflictError|PreconditionFailedError {
     // }
@@ -69,3 +71,4 @@ service / on ep0 {
     // resource function get policies/[string policyId]() returns MediationPolicy|NotFoundError|NotAcceptableError {
     // }
 }
+
