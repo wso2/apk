@@ -20,7 +20,7 @@ plugins {
     id 'net.researchgate.release' version '3.0.2'
 }
 
-apply from: "$rootDir/../../../common-gradle-scripts/ballerina.gradle"
+apply from: "$projectDir/../../../common-gradle-scripts/ballerina.gradle"
 
 tasks.named('build').configure {
     dependsOn 'bal_build'
