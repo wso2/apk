@@ -29,34 +29,62 @@ everit-json-schema = {module = "org.wso2.orbit.org.everit.json:org.everit.json.s
 graphql = {module = "org.wso2.orbit.graphQL:graphQL", version.ref = "graphql"}
 gson = {module = "com.google.code.gson:gson", version.ref = "gson"}
 guava = {module = "com.google.guava:guava", version.ref = "guava"}
+handy-uri-templates = { module = "com.damnhandy.wso2:handy-uri-templates", version.ref = "wso2-damnhandy" }
 handy-uri-templates = {module = "com.damnhandy.wso2:handy-uri-templates", version.ref = "wso2-damnhandy"}
+hibernate-validator = { module = "org.hibernate:hibernate-validator", version.ref = "hibernate-validator" }
 hibernate-validator = {module = "org.hibernate:hibernate-validator", version.ref = "hibernate-validator"}
+hikaricp = { module = "com.zaxxer:HikariCP", version.ref = "hikari" }
 hikaricp = {module = "com.zaxxer:HikariCP", version.ref = "hikari"}
+httpcomponents-client = { module = "org.apache.httpcomponents:httpclient", version.ref = "httpcomponents" }
 httpcomponents-client = {module = "org.apache.httpcomponents:httpclient", version.ref = "httpcomponents"}
+httpcomponents-httpmime = { module = "org.apache.httpcomponents:httpmime", version.ref = "httpcomponents" }
 httpcomponents-httpmime = {module = "org.apache.httpcomponents:httpmime", version.ref = "httpcomponents"}
+jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "jackson" }
 jackson-annotations = {module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "jackson"}
+jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
 jackson-databind = {module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson"}
+jackson-dataformat-yaml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml", version.ref = "jackson" }
 jackson-dataformat-yaml = {module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml", version.ref = "jackson"}
+jackson-datatype-guava = { module = "com.fasterxml.jackson.datatype:jackson-datatype-guava", version.ref = "jackson" }
 jackson-datatype-guava = {module = "com.fasterxml.jackson.datatype:jackson-datatype-guava", version.ref = "jackson"}
+javax-cache = { module = "javax.cache:cache-api", version.ref = "javax-cache" }
 javax-cache = {module = "javax.cache:cache-api", version.ref = "javax-cache"}
 javax-validation = {module = "javax.validation:validation-api", version.ref = "javax-validation"}
+json = { module = "org.json.wso2:json", version.ref = "org-json-wso2" }
 json = {module = "org.json.wso2:json", version.ref = "org-json-wso2"}
+json-simple = { module = "com.googlecode.json-simple.wso2:json-simple", version.ref = "json-simple-wso2" }
 json-simple = {module = "com.googlecode.json-simple.wso2:json-simple", version.ref = "json-simple-wso2"}
+junit = { module = "junit:junit", version.ref = "junit" }
+log4j-api = { module = "org.apache.logging.log4j:log4j-api", version.ref = "log4j" }
+log4j-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j" }
+mapstruct = { module = "org.mapstruct:mapstruct", version.ref = "mapstruct" }
 mapstruct = {module = "org.mapstruct:mapstruct", version.ref = "mapstruct"}
+minidev-json = { module = "net.minidev:json-smart", version.ref = "minidev" }
+nimbus-jose-jwt = { module = "org.wso2.orbit.com.nimbusds:nimbus-jose-jwt", version.ref = "nimbus" }
 nimbus-jose-jwt = {module = "org.wso2.orbit.com.nimbusds:nimbus-jose-jwt", version.ref = "nimbus"}
+okhttp = { module = "org.wso2.orbit.com.squareup.okhttp:okhttp", version.ref = "okhttp" }
 okhttp = {module = "org.wso2.orbit.com.squareup.okhttp:okhttp", version.ref = "okhttp"}
+okio = { module = "org.wso2.orbit.com.squareup.okio:okio", version.ref = "okio" }
 okio = {module = "org.wso2.orbit.com.squareup.okio:okio", version.ref = "okio"}
+openapi-generator = { module = "org.wso2.orbit.org.openapitools:openapi-generator", version.ref = "openapi-generator" }
 openapi-generator = {module = "org.wso2.orbit.org.openapitools:openapi-generator", version.ref = "openapi-generator"}
+openfeign-feign-core = { module = "io.github.openfeign:feign-core", version.ref = "io-github-openfeign" }
 openfeign-feign-core = {module = "io.github.openfeign:feign-core", version.ref = "io-github-openfeign"}
+openfeign-feign-gson = { module = "io.github.openfeign:feign-gson", version.ref = "io-github-openfeign" }
 openfeign-feign-gson = {module = "io.github.openfeign:feign-gson", version.ref = "io-github-openfeign"}
+openfeign-feign-okhttp = { module = "io.github.openfeign:feign-okhttp", version.ref = "io-github-openfeign" }
 openfeign-feign-okhttp = {module = "io.github.openfeign:feign-okhttp", version.ref = "io-github-openfeign"}
+openfeign-feign-slf4j = { module = "io.github.openfeign:feign-slf4j", version.ref = "io-github-openfeign" }
 openfeign-feign-slf4j = {module = "io.github.openfeign:feign-slf4j", version.ref = "io-github-openfeign"}
 org-wso2-apk-apimgt-api = {module = "org.wso2.apk:org.wso2.apk.apimgt.api", version.ref = "apimgt"}
 org-wso2-apk-apimgt-impl = {module = "org.wso2.apk:org.wso2.apk.apimgt.impl", version.ref = "apimgt"}
 org-wso2-apk-apimgt-rest-api-util = {module = "org.wso2.apk:org.wso2.apk.apimgt.rest.api.util", version.ref = "apimgt"}
 org-wso2-apk-apimgt-user = {module = "org.wso2.apk:org.wso2.apk.apimgt.user", version.ref = "apimgt"}
+pdfbox = { module = "org.apache.pdfbox:pdfbox", version.ref = "apache-pdfbox" }
 pdfbox = {module = "org.apache.pdfbox:pdfbox", version.ref = "apache-pdfbox"}
+postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
 postgresql = {module = "org.postgresql:postgresql", version.ref = "postgresql"}
+slf4j-ext = { module = "org.slf4j:slf4j-ext", version.ref = "slf4j-ext" }
 slf4j-ext = {module = "org.slf4j:slf4j-ext", version.ref = "slf4j-ext"}
 snakeyaml = {module = "org.yaml:snakeyaml", version.ref = "snakeyaml"}
 swagger-annotations = {module = "io.swagger:swagger-annotations", version.ref = "io-swagger"}
@@ -111,11 +139,15 @@ jackson = "2.13.1"
 javax-cache = "1.1.1"
 javax-validation = "2.0.1.Final"
 json-simple-wso2 = "1.1.wso2v1"
+junit = "4.13.2"
+log4j = "2.17.1"
 mapstruct = "1.5.3.Final"
+minidev = "2.4.7"
 nimbus = "7.9.0.wso2v1"
 okhttp = "4.9.3.wso2v1"
 okio = "2.8.0.wso2v1"
 openapi-generator = "4.3.1.wso2v4"
+org-json-wso2 = "3.0.0.wso2v1"
 org-json-wso2 = "3.0.0.wso2v1"
 postgresql = "42.5.0"
 slf4j-ext = "1.7.29"
