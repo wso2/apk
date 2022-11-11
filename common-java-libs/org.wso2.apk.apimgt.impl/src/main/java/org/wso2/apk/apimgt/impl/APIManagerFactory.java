@@ -20,10 +20,7 @@ package org.wso2.apk.apimgt.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.apk.apimgt.api.APIConsumer;
-import org.wso2.apk.apimgt.api.APIManagementException;
-import org.wso2.apk.apimgt.api.APIManager;
-import org.wso2.apk.apimgt.api.APIProvider;
+import org.wso2.apk.apimgt.api.*;
 import org.wso2.apk.apimgt.impl.utils.LRUCache;
 import org.wso2.apk.apimgt.user.mgt.UserConstants;
 
@@ -51,7 +48,7 @@ public class APIManagerFactory {
     }
 
     public APIProvider getAPIProvider(String username) throws APIManagementException {
-        return getAPIProviderFromCache(username, () -> newProvider(username));
+        return new APIProviderImpl(username);
     }
 
     public static APIManagerFactory getInstance() {
@@ -108,29 +105,8 @@ public class APIManagerFactory {
         return consumer;
     }
 
-    public APIProvider getAPIProviderFromCache(String key, ProviderCreator providerCreator)
-            throws APIManagementException {
-        APIProvider provider = providers.get(key);
-        if (provider == null) {
-            synchronized (key.intern()) {
-                provider = providers.get(key);
-                if (provider != null) {
-                    return provider;
-                }
-
-                provider = providerCreator.create();
-                providers.put(key, provider);
-            }
-        }
-        return provider;
-    }
-
     interface ConsumerCreator {
         APIConsumer create() throws APIManagementException;
-    }
-
-    interface ProviderCreator {
-        APIProvider create() throws APIManagementException;
     }
 
     public void clearAll() {
