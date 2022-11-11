@@ -16,6 +16,10 @@
 // under the License.
 //
 
-plugins {
-    id 'net.researchgate.release' version '3.0.2'
+apply from: "$rootDir/../../common-gradle-scripts/ballerina.gradle"
+
+tasks.register('build') {
+    group 'build'
+    description 'Build ballerina component'
+    dependsOn 'bal_build'
 }
