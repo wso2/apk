@@ -5,8 +5,8 @@ BACKOFFICE_PORT = 9443
 [wso2.backoffice_service.backoffice.datasourceConfiguration]
 description = "APK DB"
 url = "jdbc:postgresql://localhost:5432/apkdb"
-username = "sampath"
-password = "1qaz2wsx@Q"
+username = "apimadmin"
+password = "apimadmin"
 validationTimeout = 30000
 testQuery = "SELECT 1"
 

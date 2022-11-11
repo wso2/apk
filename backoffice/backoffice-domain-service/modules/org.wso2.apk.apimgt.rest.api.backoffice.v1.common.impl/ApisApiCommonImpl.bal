@@ -1,9 +1,9 @@
 import ballerina/jballerina.java;
 import ballerina/jballerina.java.arrays as jarrays;
-import backoffice_domain_service.org.wso2.apk.apimgt.api as orgwso2apkapimgtapi;
-import backoffice_domain_service.java.lang as javalang;
-import backoffice_domain_service.java.io as javaio;
-import backoffice_domain_service.org.wso2.apk.apimgt.api.model as orgwso2apkapimgtapimodel;
+import backoffice_service.org.wso2.apk.apimgt.api as orgwso2apkapimgtapi;
+import backoffice_service.java.lang as javalang;
+import backoffice_service.java.io as javaio;
+import backoffice_service.org.wso2.apk.apimgt.api.model as orgwso2apkapimgtapimodel;
 
 # Ballerina class mapping for the Java `org.wso2.apk.apimgt.rest.api.backoffice.v1.common.impl.ApisApiCommonImpl` class.
 @java:Binding {'class: "org.wso2.apk.apimgt.rest.api.backoffice.v1.common.impl.ApisApiCommonImpl"}

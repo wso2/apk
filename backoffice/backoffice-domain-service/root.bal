@@ -16,7 +16,7 @@
 // under the License.
 //
 
-import backoffice_domain_service.backoffice as _;
+import backoffice_service.backoffice as _;
 import ballerina/http;
 
 service on new http:Listener(8080) {

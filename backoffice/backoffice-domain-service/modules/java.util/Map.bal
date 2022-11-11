@@ -1,7 +1,7 @@
 import ballerina/jballerina.java;
 import ballerina/jballerina.java.arrays as jarrays;
-import backoffice_domain_service.java.lang as javalang;
-import backoffice_domain_service.java.util.'function as javautilfunction;
+import backoffice_service.java.lang as javalang;
+import backoffice_service.java.util.'function as javautilfunction;
 
 # Ballerina class mapping for the Java `java.util.Map` interface.
 @java:Binding {'class: "java.util.Map"}

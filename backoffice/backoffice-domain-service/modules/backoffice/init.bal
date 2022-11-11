@@ -17,8 +17,8 @@
 //
 
 import ballerina/io;
-import backoffice_domain_service.org.wso2.apk.apimgt.api as api;
-import backoffice_domain_service.org.wso2.apk.apimgt.init as apkinit;
+import backoffice_service.org.wso2.apk.apimgt.api as api;
+import backoffice_service.org.wso2.apk.apimgt.init as apkinit;
 
 configurable DatasourceConfiguration datasourceConfiguration = ?;
 
@@ -29,6 +29,7 @@ function init() {
     };
     string configJson = apkConfig.toJson().toJsonString();
     // Pass the configurations to java init component
+    io:println(configJson);
     api:APIManagementException? err = apkinit:APKComponent_activate(configJson);
     if (err != ()) {
         io:println(err);

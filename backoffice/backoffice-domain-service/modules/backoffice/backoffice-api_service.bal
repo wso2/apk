@@ -1,8 +1,8 @@
 import ballerina/http;
 import ballerina/io;
 import ballerina/lang.value;
-import backoffice_domain_service.org.wso2.apk.apimgt.api as api;
-import backoffice_domain_service.org.wso2.apk.apimgt.rest.api.backoffice.v1.common.impl as backoffice;
+import backoffice_service.org.wso2.apk.apimgt.api as api;
+import backoffice_service.org.wso2.apk.apimgt.rest.api.backoffice.v1.common.impl as backoffice;
 
 configurable int BACKOFFICE_PORT = 9443;
 

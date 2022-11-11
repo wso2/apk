@@ -303,7 +303,7 @@ modules = [
 
 [[package]]
 org = "wso2"
-name = "backoffice_domain_service"
+name = "backoffice_service"
 version = "0.1.0"
 dependencies = [
 	{org = "ballerina", name = "constraint"},
@@ -315,16 +315,16 @@ dependencies = [
 	{org = "ballerinai", name = "observe"}
 ]
 modules = [
-	{org = "wso2", packageName = "backoffice_domain_service", moduleName = "backoffice_domain_service"},
-	{org = "wso2", packageName = "backoffice_domain_service", moduleName = "backoffice_domain_service.backoffice"},
-	{org = "wso2", packageName = "backoffice_domain_service", moduleName = "backoffice_domain_service.java.io"},
-	{org = "wso2", packageName = "backoffice_domain_service", moduleName = "backoffice_domain_service.java.lang"},
-	{org = "wso2", packageName = "backoffice_domain_service", moduleName = "backoffice_domain_service.java.util"},
-	{org = "wso2", packageName = "backoffice_domain_service", moduleName = "backoffice_domain_service.java.util.function"},
-	{org = "wso2", packageName = "backoffice_domain_service", moduleName = "backoffice_domain_service.org.wso2.apk.apimgt.api"},
-	{org = "wso2", packageName = "backoffice_domain_service", moduleName = "backoffice_domain_service.org.wso2.apk.apimgt.api.model"},
-	{org = "wso2", packageName = "backoffice_domain_service", moduleName = "backoffice_domain_service.org.wso2.apk.apimgt.init"},
-	{org = "wso2", packageName = "backoffice_domain_service", moduleName = "backoffice_domain_service.org.wso2.apk.apimgt.rest.api.backoffice.v1.common.impl"}
+	{org = "wso2", packageName = "backoffice_service", moduleName = "backoffice_service"},
+	{org = "wso2", packageName = "backoffice_service", moduleName = "backoffice_service.backoffice"},
+	{org = "wso2", packageName = "backoffice_service", moduleName = "backoffice_service.java.io"},
+	{org = "wso2", packageName = "backoffice_service", moduleName = "backoffice_service.java.lang"},
+	{org = "wso2", packageName = "backoffice_service", moduleName = "backoffice_service.java.util"},
+	{org = "wso2", packageName = "backoffice_service", moduleName = "backoffice_service.java.util.function"},
+	{org = "wso2", packageName = "backoffice_service", moduleName = "backoffice_service.org.wso2.apk.apimgt.api"},
+	{org = "wso2", packageName = "backoffice_service", moduleName = "backoffice_service.org.wso2.apk.apimgt.api.model"},
+	{org = "wso2", packageName = "backoffice_service", moduleName = "backoffice_service.org.wso2.apk.apimgt.init"},
+	{org = "wso2", packageName = "backoffice_service", moduleName = "backoffice_service.org.wso2.apk.apimgt.rest.api.backoffice.v1.common.impl"}
 ]
 
 
