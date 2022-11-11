@@ -1,0 +1,13 @@
+[wso2.backoffice_service.backoffice]
+BACKOFFICE_PORT = 9443
+
+# Sample configurations
+[wso2.backoffice_service.backoffice.datasourceConfiguration]
+description = "APK DB"
+url = "jdbc:postgresql://localhost:5432/apkdb"
+username = "sampath"
+password = "1qaz2wsx@Q"
+validationTimeout = 30000
+testQuery = "SELECT 1"
+
+
