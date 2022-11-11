@@ -29,6 +29,7 @@ import org.wso2.apk.apimgt.api.model.*;
 import org.wso2.apk.apimgt.api.model.webhooks.Subscription;
 import org.wso2.apk.apimgt.impl.APIConstants;
 import org.wso2.apk.apimgt.impl.dao.ApplicationDAO;
+import org.wso2.apk.apimgt.impl.dao.constants.SQLConstantPostgreSQL;
 import org.wso2.apk.apimgt.impl.dao.constants.SQLConstants;
 import org.wso2.apk.apimgt.impl.factory.SQLConstantManagerFactory;
 import org.wso2.apk.apimgt.impl.utils.APIMgtDBUtil;
@@ -139,6 +140,19 @@ public class ApplicationDAOImpl implements ApplicationDAO {
             }
         }
         return String.join(",", grpIdList);
+    }
+    public Integer getSubscriptionCountByApplicationId(Application application, String organization)
+            throws APIManagementException {
+
+        int subscriptionCount = 0;
+
+        try (Connection connection = APIMgtDBUtil.getConnection()) {
+            return getSubscriptionCountByApplicationId(connection, application, organization);
+        } catch (SQLException e) {
+            handleExceptionWithCode("Failed to get SubscribedAPI of : application " + application.getName()
+                    + " in organization " + organization, e, ExceptionCodes.APIMGT_DAO_EXCEPTION);
+        }
+        return subscriptionCount;
     }
 
     private Integer getSubscriptionCountByApplicationId(Connection connection, Application application,
@@ -1873,26 +1887,22 @@ public class ApplicationDAOImpl implements ApplicationDAO {
         if (groupingId != null && !"null".equals(groupingId) && !groupingId.isEmpty()) {
             if (multiGroupAppSharingEnabled) {
                 if (forceCaseInsensitiveComparisons) {
-                    sqlQuery = SQLConstantManagerFactory.
-                            getSQlString("GET_APPLICATIONS_PREFIX_NONE_CASESENSITVE_WITH_MULTIGROUPID");
+                    sqlQuery = SQLConstantPostgreSQL.GET_APPLICATIONS_PREFIX_NONE_CASESENSITVE_WITH_MULTIGROUPID;
                 } else {
-                    sqlQuery = SQLConstantManagerFactory.
-                            getSQlString("GET_APPLICATIONS_PREFIX_CASESENSITVE_WITH_MULTIGROUPID");
+                    sqlQuery = SQLConstantPostgreSQL.GET_APPLICATIONS_PREFIX_CASESENSITVE_WITH_MULTIGROUPID;
                 }
             } else {
                 if (forceCaseInsensitiveComparisons) {
-                    sqlQuery = SQLConstantManagerFactory.
-                            getSQlString("GET_APPLICATIONS_PREFIX_NONE_CASESENSITVE_WITHGROUPID");
+                    sqlQuery = SQLConstantPostgreSQL.GET_APPLICATIONS_PREFIX_NONE_CASESENSITVE_WITHGROUPID;
                 } else {
-                    sqlQuery = SQLConstantManagerFactory.
-                            getSQlString("GET_APPLICATIONS_PREFIX_CASESENSITVE_WITHGROUPID");
+                    sqlQuery = SQLConstantPostgreSQL.GET_APPLICATIONS_PREFIX_CASESENSITVE_WITHGROUPID;
                 }
             }
         } else {
             if (forceCaseInsensitiveComparisons) {
-                sqlQuery = SQLConstantManagerFactory.getSQlString("GET_APPLICATIONS_PREFIX_NONE_CASESENSITVE");
+                sqlQuery = SQLConstantPostgreSQL.GET_APPLICATIONS_PREFIX_NONE_CASESENSITVE;
             } else {
-                sqlQuery = SQLConstantManagerFactory.getSQlString("GET_APPLICATIONS_PREFIX_CASESENSITVE");
+                sqlQuery = SQLConstantPostgreSQL.GET_APPLICATIONS_PREFIX_CASESENSITVE;
             }
         }
 
