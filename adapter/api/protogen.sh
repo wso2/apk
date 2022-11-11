@@ -24,6 +24,7 @@ rm -rf target
 mkdir -p target/deps
 
 ADAPTER_GEN_DIR=$cur_dir/../pkg/discovery/api/wso2/
+ENFORCER_GEN_DIR=$cur_dir/../../gateway/enforcer-parent/enforcer/src/main/java/
 GREEN='\033[0;32m'
 BOLD="\033[1m"
 NC='\033[0m' # No Color
@@ -43,6 +44,11 @@ mkdir -p target/include/
 cp -r target/deps/udpa/udpa target/include
 cp -r target/deps/envoy/envoy target/include
 cp -r target/deps/validate/validate target/include
+printf " - ${GREEN}${BOLD}done${NC}\n"
+
+# generate code for java
+printf "protoc java"
+docker run -v `pwd`:/defs namely/protoc-all:$PROTOC_VERSION -l java -i proto -i target/include/ -o target/gen/java -d proto/wso2/
 printf " - ${GREEN}${BOLD}done${NC}\n"
 
 # generate code for go grpc messages
@@ -74,6 +80,11 @@ printf "protoc go services - ${GREEN}${BOLD}done${NC}\n"
 
 rm -rf $ADAPTER_GEN_DIR
 cp -r target/gen/go/* $ADAPTER_GEN_DIR
+# Java generated implementations are not required for apkmgt related protobufs
+rm -rf target/gen/java/org/wso2/choreo/connect/discovery/apkmgt
+rm -rf target/gen/java/org/wso2/choreo/connect/discovery/service/apkmgt
+rm -rf $ENFORCER_GEN_DIR/org/wso2/choreo/connect/discovery
+cp -r target/gen/java/* $ENFORCER_GEN_DIR
 
 # remove all the containers created
 docker rm -f $(docker ps -a -q -f "ancestor=namely/protoc-all:$PROTOC_VERSION")

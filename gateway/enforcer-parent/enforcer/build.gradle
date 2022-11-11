@@ -55,6 +55,7 @@ dependencies {
     implementation 'javax.xml.soap:javax.xml.soap-api:1.4.0'
     implementation 'com.sun.xml.messaging.saaj:saaj-impl:1.5.3'
     implementation 'org.wso2.orbit.graphQL:graphQL:17.3.wso2v1'
+    implementation 'org.apache.httpcomponents:httpclient:4.5.13'
     testImplementation 'junit:junit:4.13.2'
     compileOnly 'org.apache.tomcat:annotations-api:6.0.53'
 }
