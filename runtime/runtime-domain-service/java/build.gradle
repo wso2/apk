@@ -17,16 +17,8 @@
 
 apply from: "$projectDir/../../../common-gradle-scripts/java.gradle"
 
-tasks.register('java_build') {
-    group 'Java build'
-    doLast {
-        println "build java"
-    }
-}
 
-tasks.named('build').configure {
-    dependsOn java_build
-}
+jar.baseName = 'org.wso2.apk.runtime'
 
 dependencies {
     implementation 'org.wso2.apk:org.wso2.apk.apimgt.impl:0.1.0-SNAPSHOT'
