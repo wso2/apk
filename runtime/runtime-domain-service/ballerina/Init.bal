@@ -15,7 +15,13 @@
 // specific language governing permissions and limitations
 // under the License.
 //
+import ballerina/log;
+import ballerina/http;
 
-plugins {
-    id 'net.researchgate.release' version '3.0.2'
+listener http:Listener ep0 = new (9443);
+
+# Initializing method for runtime
+function init() {
+    log:printInfo("Initializing Runtime Domain Service..");
 }
+

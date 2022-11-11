@@ -14,28 +14,28 @@
 # specific language governing permissions and limitations
 # under the License.
 
-{{- if .Values.wso2.apk.cp.enabled }}
+{{- if .Values.wso2.apk.dp.enabled }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-sts-ds-ingress
+  name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-ingress
   namespace: {{ .Release.Namespace }}
-{{- if .Values.wso2.apk.cp.sts.ingress.annotations }}
+{{- if .Values.wso2.apk.dp.runtime.ingress.annotations }}
   annotations:
-{{ toYaml .Values.wso2.apk.cp.sts.ingress.annotations | indent 4 }}
+{{ toYaml .Values.wso2.apk.dp.runtime.ingress.annotations | indent 4 }}
 {{- end }}
 spec:
-  {{- if .Values.wso2.apk.cp.sts.ingress.className }}
-  ingressClassName: {{ .Values.wso2.apk.cp.sts.ingress.className }}
+  {{- if .Values.wso2.apk.dp.runtime.ingress.className }}
+  ingressClassName: {{ .Values.wso2.apk.dp.runtime.ingress.className }}
   {{- end }}
   rules:
     - http:
         paths:
-          - path: {{ .Values.wso2.apk.cp.sts.ingress.path }}
+          - path: {{ .Values.wso2.apk.dp.runtime.ingress.path }}
             pathType: Prefix
             backend:
               service:
-                name: {{ template "apk-helm.resource.prefix" . }}-sts-ds-service
+                name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-service
                 port:
                   number: 9443
 {{- end -}}

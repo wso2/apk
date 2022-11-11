@@ -407,5 +407,14 @@ public interface ApplicationDAO {
     String getConsumerKeyByApplicationIdKeyTypeKeyManager(int applicationId, String keyType, String keyManager)
             throws APIManagementException;
 
-
+    /**
+     * Retrieves Subscription Count.
+     *
+     * @param application application
+     * @param organization  Organization
+     * @return Subscription Count
+     * @throws APIManagementException if failed to retrieve Subscription Count
+     */
+    Integer getSubscriptionCountByApplicationId(Application application, String organization)
+            throws APIManagementException;
 }

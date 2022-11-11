@@ -15,7 +15,11 @@
 // specific language governing permissions and limitations
 // under the License.
 //
+import ballerina/http;
 
-plugins {
-    id 'net.researchgate.release' version '3.0.2'
+service / on ep0 {
+    resource function get health() returns http:Ok {
+        json status = {"health": "Ok"};
+        return {body: status};
+    }
 }
