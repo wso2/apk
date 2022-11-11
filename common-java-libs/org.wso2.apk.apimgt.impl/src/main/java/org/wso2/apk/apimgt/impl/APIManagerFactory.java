@@ -51,7 +51,7 @@ public class APIManagerFactory {
     }
 
     public APIProvider getAPIProvider(String username) throws APIManagementException {
-        return newProvider(username);
+        return getAPIProviderFromCache(username, () -> newProvider(username));
     }
 
     public static APIManagerFactory getInstance() {
@@ -108,8 +108,29 @@ public class APIManagerFactory {
         return consumer;
     }
 
+    public APIProvider getAPIProviderFromCache(String key, ProviderCreator providerCreator)
+            throws APIManagementException {
+        APIProvider provider = providers.get(key);
+        if (provider == null) {
+            synchronized (key.intern()) {
+                provider = providers.get(key);
+                if (provider != null) {
+                    return provider;
+                }
+
+                provider = providerCreator.create();
+                providers.put(key, provider);
+            }
+        }
+        return provider;
+    }
+
     interface ConsumerCreator {
         APIConsumer create() throws APIManagementException;
+    }
+
+    interface ProviderCreator {
+        APIProvider create() throws APIManagementException;
     }
 
     public void clearAll() {
