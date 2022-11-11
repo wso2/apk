@@ -18,6 +18,7 @@
 
 package org.wso2.choreo.connect.enforcer.util;
 
+import java.util.Objects;
 import org.junit.Assert;
 import org.junit.Test;
 import org.wso2.choreo.connect.enforcer.commons.exception.EnforcerException;
@@ -68,8 +69,8 @@ public class TLSUtilsTest {
     @Test
     public void testAddCertificatesToTruststoreMultipleCertsInSingleFile() throws KeyStoreException,
             CertificateException, IOException, NoSuchAlgorithmException {
-        String trustStoreLocation = TLSUtilsTest.class.getProtectionDomain().getCodeSource().
-                getLocation().getPath() + certsDir + File.separator + trustStoreWithSingleFile;
+        String trustStoreLocation = Objects.requireNonNull(this.getClass().getResource(File.separator + certsDir + File.separator +
+                trustStoreWithSingleFile)).getPath();
         KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
         trustStore.load(null);
         Assert.assertEquals(0, trustStore.size());
@@ -79,10 +80,10 @@ public class TLSUtilsTest {
         ArrayList<String> serialNumList = new ArrayList<>();
         serialNumList.add("1571815843");
         serialNumList.add("13677610512757128594");
-        Iterator<String> aliases =  trustStore.aliases().asIterator();
+        Iterator<String> aliases = trustStore.aliases().asIterator();
         while (aliases.hasNext()) {
             String alias = aliases.next();
-            X509Certificate cert = (X509Certificate)trustStore.getCertificate(alias);
+            X509Certificate cert = (X509Certificate) trustStore.getCertificate(alias);
             String serialNum = cert.getSerialNumber().toString();
             Assert.assertTrue(serialNumList.contains(serialNum));
             serialNumList.remove(serialNum);
@@ -92,8 +93,8 @@ public class TLSUtilsTest {
     @Test
     public void testAddCertificatesToTruststoreCertsInSeparateFiles() throws KeyStoreException,
             CertificateException, IOException, NoSuchAlgorithmException {
-        String trustStoreLocation = TLSUtilsTest.class.getProtectionDomain().getCodeSource().
-                getLocation().getPath() + certsDir + File.separator + trustStoreWithSeparateCerts;
+        String trustStoreLocation = Objects.requireNonNull(this.getClass().getResource(File.separator + certsDir + File.separator +
+                trustStoreWithSeparateCerts)).getPath();
         KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
         trustStore.load(null);
         Assert.assertEquals(0, trustStore.size());
@@ -103,10 +104,10 @@ public class TLSUtilsTest {
         ArrayList<String> serialNumList = new ArrayList<>();
         serialNumList.add("1571815843");
         serialNumList.add("13677610512757128594");
-        Iterator<String> aliases =  trustStore.aliases().asIterator();
+        Iterator<String> aliases = trustStore.aliases().asIterator();
         while (aliases.hasNext()) {
             String alias = aliases.next();
-            X509Certificate cert = (X509Certificate)trustStore.getCertificate(alias);
+            X509Certificate cert = (X509Certificate) trustStore.getCertificate(alias);
             String serialNum = cert.getSerialNumber().toString();
             Assert.assertTrue(serialNumList.contains(serialNum));
             serialNumList.remove(serialNum);
