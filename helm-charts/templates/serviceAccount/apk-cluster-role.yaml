@@ -20,7 +20,7 @@ kind: ClusterRole
 metadata:
   name: {{ .Values.wso2.apk.auth.roleName }}
 rules:
-  - apiGroups: ["*"]
-    resources: ["*"]
-    verbs: ["*"]
+  - apiGroups: ["","dp.wso2.com"]
+    resources: ["services","apis","configmaps"]
+    verbs: ["get","list","watch","update","delete","create"]
 {{- end -}}
