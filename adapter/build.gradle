@@ -29,4 +29,13 @@ release {
     tagTemplate = '${project.name}-${project.version}'
 }
 
-afterReleaseBuild.dependsOn docker_push
+tasks.named('go_build').configure {
+    finalizedBy docker_build
+} 
+
+tasks.named('build').configure {
+    dependsOn go_build
+    dependsOn docker_build
+}
+
+// afterReleaseBuild.dependsOn docker_push
