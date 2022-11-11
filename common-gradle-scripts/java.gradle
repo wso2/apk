@@ -59,4 +59,7 @@ publishing {
     }
 }
 
+tasks.named('build').configure {
+    finalizedBy publishToMavenLocal
+}
 // afterReleaseBuild.dependsOn publish

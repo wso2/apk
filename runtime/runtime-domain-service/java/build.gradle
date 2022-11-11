@@ -15,37 +15,13 @@
  *
  */
 
-plugins {
-    id 'base'
-    id 'jacoco-report-aggregation'
-}
-
-repositories {
-    mavenCentral()
-}
+apply from: "$projectDir/../../../common-gradle-scripts/java.gradle"
 
 
-reporting {
-    reports {
-        testCodeCoverageReport(JacocoCoverageReport) {
-            testType = TestSuiteType.UNIT_TEST
-        }
-    }
-}
+jar.baseName = 'org.wso2.apk.runtime'
 
-tasks.named('check') {
-    dependsOn tasks.named('testCodeCoverageReport', JacocoReport)
-}
-
-tasks.register('java_build') {
-    group 'Java build'
-    println "build java"
-}
-
-tasks.named('build').configure {
-    dependsOn java_build
-}
-
-subprojects {
-    apply from: "$projectDir/../../common-gradle-scripts/java.gradle"
+dependencies {
+    implementation 'org.wso2.apk:org.wso2.apk.apimgt.impl:0.1.0-SNAPSHOT'
+    implementation 'org.wso2.apk:org.wso2.apk.apimgt.api:0.1.0-SNAPSHOT'
+    implementation libs.commons.logging
 }
