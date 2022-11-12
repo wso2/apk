@@ -15,16 +15,14 @@
  *
  */
 
-rootProject.name = 'enforcer-parent'
-include(':org.wso2.choreo.connect.enforcer')
-include(':org.wso2.choreo.connect.enforcer.commons')
-project(":org.wso2.choreo.connect.enforcer").projectDir = file('enforcer')
-project(":org.wso2.choreo.connect.enforcer.commons").projectDir = file('commons')
-
-dependencyResolutionManagement {
-    versionCatalogs {
-        libs {
-            from(files("$rootDir/../../libs.versions.toml"))
-        }
-    }
+dependencies {
+    implementation libs.commons.lang3
+    implementation libs.graphql
+    implementation libs.httpcomponents.client
+    implementation libs.log4j.api
+    implementation libs.log4j.core
+    implementation libs.minidev.json
+    testImplementation libs.junit
 }
+
+description = 'Choreo Connect - Enforcer Commons'
