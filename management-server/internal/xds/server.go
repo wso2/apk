@@ -91,19 +91,10 @@ func FeedData() {
 }
 
 // AddSingleApplication will update the Application specified by the UUID to the xds cache
-func AddSingleApplication(label, appUUID string) {
+func AddSingleApplication(label string, application *apkmgt_application.Application) {
 	var newSnapshot wso2_cache.Snapshot
 	version := rand.Intn(maxRandomInt)
-	application, errDb := database.GetApplicationByUUID(appUUID)
-	if errDb != nil {
-		logger.LoggerDatabase.ErrorC(logging.ErrorDetails{
-			Message: fmt.Sprintf("Error retrieving application for uuid : %s from database error: %v, "+
-				"hence skipping add to xdx cache", appUUID, errDb),
-			Severity:  logging.MINOR,
-			ErrorCode: 1101,
-		})
-		return
-	}
+	//application, errDb := database.GetApplicationByUUID(appUUID)
 	currentSnapshot, err := applicationCache.GetSnapshot(label)
 
 	// error occurs if no snapshot is under the provided label
@@ -113,7 +104,7 @@ func AddSingleApplication(label, appUUID string) {
 		})
 	} else {
 		resourceMap := currentSnapshot.GetResourcesAndTTL(typeURL)
-		resourceMap[appUUID] = types.ResourceWithTTL{
+		resourceMap[application.Uuid] = types.ResourceWithTTL{
 			Resource: application,
 		}
 		applicationResources := convertResourceMapToArray(resourceMap)

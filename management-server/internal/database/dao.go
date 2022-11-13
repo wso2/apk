@@ -17,10 +17,18 @@
 
 package database
 
-import apkmgt_application "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/apkmgt"
+import (
+	apkmgt "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/apkmgt"
+	"time"
+)
 
-// GetApplicationByUUID returns the Application details from the DB for a given application
-func GetApplicationByUUID(uuid string) (*apkmgt_application.Application, error) {
+var DbCache *ApplicationLocalCache
+
+func init() {
+	DbCache = NewApplicationLocalCache(time.Hour)
+}
+
+func GetApplicationByUUID(uuid string) (*apkmgt.Application, error) {
 	rows, _ := ExecDBQuery(QueryGetApplicationByUUID, uuid)
 	rows.Next()
 	values, err := rows.Values()
@@ -29,7 +37,7 @@ func GetApplicationByUUID(uuid string) (*apkmgt_application.Application, error) 
 	} else {
 		subs, _ := getSubscriptionsForApplication(uuid)
 		keys, _ := getConsumerKeysForApplication(uuid)
-		application := &apkmgt_application.Application{
+		application := &apkmgt.Application{
 			Uuid:          values[0].(string),
 			Name:          values[1].(string),
 			Owner:         "",  //ToDo : Check how to get Owner from db
@@ -39,22 +47,33 @@ func GetApplicationByUUID(uuid string) (*apkmgt_application.Application, error) 
 			Subscriptions: subs,
 			ConsumerKeys:  keys,
 		}
+		DbCache.Update(application, time.Now().Unix()+time.Hour.Milliseconds())
 		return application, nil
 	}
 }
 
-// getSubscriptionsForApplication returns all subscriptions from DB, for a given application
-func getSubscriptionsForApplication(appUuid string) ([]*apkmgt_application.Subscription, error) {
+// GetCachedApplicationByUUID returns the Application details from the cache.
+// If the application is not available in the cache, it will fetch the application from DB.
+func GetCachedApplicationByUUID(uuid string) (*apkmgt.Application, error) {
+	if app, ok := DbCache.Read(uuid); ok == nil {
+		return &app, nil
+	} else {
+		return GetApplicationByUUID(uuid)
+	}
+}
+
+// getSubscriptionsForApplication returns all subscriptions from DB, for a given application.
+func getSubscriptionsForApplication(appUuid string) ([]*apkmgt.Subscription, error) {
 	rows, err := ExecDBQuery(QueryGetAllSubscriptionsForApplication, appUuid)
 	if err != nil {
 	}
-	var subs []*apkmgt_application.Subscription
+	var subs []*apkmgt.Subscription
 	for rows.Next() {
 		values, err := rows.Values()
 		if err != nil {
 			return nil, err
 		} else {
-			subs = append(subs, &apkmgt_application.Subscription{
+			subs = append(subs, &apkmgt.Subscription{
 				Uuid:               values[0].(string),
 				ApiUuid:            values[1].(string),
 				PolicyId:           "",
@@ -67,22 +86,41 @@ func getSubscriptionsForApplication(appUuid string) ([]*apkmgt_application.Subsc
 	return subs, nil
 }
 
-// getConsumerKeysForApplication returns all Consumer Keys from DB, for a given application
-func getConsumerKeysForApplication(appUUID string) ([]*apkmgt_application.ConsumerKey, error) {
+// getConsumerKeysForApplication returns all Consumer Keys from DB, for a given application.
+func getConsumerKeysForApplication(appUUID string) ([]*apkmgt.ConsumerKey, error) {
 	rows, err := ExecDBQuery(QueryConsumerKeysForApplication, appUUID)
 	if err != nil {
 	}
-	var keys []*apkmgt_application.ConsumerKey
+	var keys []*apkmgt.ConsumerKey
 	for rows.Next() {
 		values, err := rows.Values()
 		if err != nil {
 			return nil, err
 		} else {
-			keys = append(keys, &apkmgt_application.ConsumerKey{
+			keys = append(keys, &apkmgt.ConsumerKey{
 				Key:        values[0].(string),
 				KeyManager: values[1].(string),
 			})
 		}
 	}
 	return keys, nil
+}
+
+// GetSubscriptionByUUID returns the Application details from the DB for a given subscription UUID.
+func GetSubscriptionByUUID(subUUID string) (*apkmgt.Subscription, error) {
+	rows, _ := ExecDBQuery(QuerySubscriptionByUUID, subUUID)
+	rows.Next()
+	values, err := rows.Values()
+	if err != nil {
+		return nil, err
+	} else {
+		return &apkmgt.Subscription{
+			Uuid:               values[0].(string),
+			ApiUuid:            values[1].(string),
+			PolicyId:           "",
+			SubscriptionStatus: values[2].(string),
+			Organization:       values[3].(string),
+			CreatedBy:          values[4].(string),
+		}, nil
+	}
 }

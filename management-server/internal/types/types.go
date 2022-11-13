@@ -26,5 +26,7 @@ type ApplicationEvent struct {
 type SubscriptionEvent struct {
 	Label         string
 	UUID          string
+	AppUUID       string
 	IsRemoveEvent bool
+	IsUpdateEvent bool
 }
