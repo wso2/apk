@@ -49,20 +49,20 @@ func HandleAPILifeCycleEvents(ch *chan APIEvent) {
 func deployAPIInGateway(apiState APIState) error {
 	var mgwSwagger model.MgwSwagger
 	if err := mgwSwagger.SetInfoAPICR(*apiState.APIDefinition); err != nil {
-		loggers.LoggerAPKOperator.Errorf("Error setting API CR info to mgwSwagger: %v", err)
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
 			Message:   fmt.Sprintf("error setting API CR info to mgwSwagger: %v", err),
 			Severity:  logging.MAJOR,
 			ErrorCode: 2612,
 		})
+		return err
 	}
 	if err := mgwSwagger.SetInfoHTTPRouteCR(*apiState.ProdHTTPRoute); err != nil {
-		loggers.LoggerAPKOperator.Errorf("Error setting HttpRoute CR info to mgwSwagger: %v", err)
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
 			Message:   fmt.Sprintf("error setting HttpRoute CR info to mgwSwagger: %v", err),
 			Severity:  logging.MAJOR,
 			ErrorCode: 2613,
 		})
+		return err
 	}
 	if err := mgwSwagger.ValidateIR(); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{

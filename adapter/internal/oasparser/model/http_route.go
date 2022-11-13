@@ -2,10 +2,12 @@ package model
 
 import (
 	"errors"
+	"fmt"
+	"strings"
 
 	"github.com/tetratelabs/multierror"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
-	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/api/v1alpha1"
+	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
@@ -17,7 +19,11 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute gwapiv1b1.HTTPRoute) err
 	var endPoints []Endpoint
 	for _, rule := range httpRoute.Spec.Rules {
 		for _, match := range rule.Matches {
-			resources = append(resources, &Resource{path: *match.Path.Value, methods: []*Operation{{iD: ":method", method: "GET"}}})
+			resourcePath, err := swagger.trimBasePath(*match.Path.Value)
+			if err != nil {
+				return fmt.Errorf("error parsing resource path: %v", err)
+			}
+			resources = append(resources, &Resource{path: resourcePath, methods: []*Operation{{iD: ":method", method: "GET"}}})
 		}
 		for _, backend := range rule.BackendRefs {
 			endPoints = append(endPoints, Endpoint{Host: string(backend.Name), Port: uint32(*backend.Port)})
@@ -69,4 +75,15 @@ func (swagger *MgwSwagger) ValidateIR() error {
 		errs = multierror.Append(errs, errors.New("no resources found"))
 	}
 	return errs
+}
+
+func (swagger *MgwSwagger) trimBasePath(path string) (string, error) {
+	if strings.Compare(path, swagger.GetXWso2Basepath()) == 0 {
+		return "/", nil
+	}
+	resourcePath := strings.TrimPrefix(path, swagger.GetXWso2Basepath())
+	if strings.Compare(path, resourcePath) == 0 {
+		return "", fmt.Errorf("basepath mismatch: %v:%v", swagger.GetXWso2Basepath(), path)
+	}
+	return resourcePath, nil
 }

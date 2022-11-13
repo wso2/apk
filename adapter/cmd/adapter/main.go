@@ -26,9 +26,6 @@ import (
 // invokes the code from the /internal and /pkg directories and nothing else.
 func main() {
 	logger.Info("Starting the Adapter")
-	conf, errReadConfig := config.ReadConfigs()
-	if errReadConfig != nil {
-		logger.Fatal("Error loading configuration. ", errReadConfig)
-	}
+	conf := config.ReadConfigs()
 	adapter.Run(conf)
 }
