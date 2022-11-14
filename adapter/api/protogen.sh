@@ -1,6 +1,6 @@
 #!/bin/bash
 # --------------------------------------------------------------------
-# Copyright (c) 2021, WSO2 LLC. (http://wso2.com) All Rights Reserved.
+# Copyright (c) 2022, WSO2 LLC. (http://wso2.com) All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ rm -rf target
 mkdir -p target/deps
 
 ADAPTER_GEN_DIR=$cur_dir/../pkg/discovery/api/wso2/
-ENFORCER_GEN_DIR=$cur_dir/../../gateway/enforcer-parent/enforcer/src/main/java/
+ENFORCER_GEN_DIR=$cur_dir/../../gateway/enforcer/org.wso2.choreo.connect.enforcer/src/main/java/
 GREEN='\033[0;32m'
 BOLD="\033[1m"
 NC='\033[0m' # No Color

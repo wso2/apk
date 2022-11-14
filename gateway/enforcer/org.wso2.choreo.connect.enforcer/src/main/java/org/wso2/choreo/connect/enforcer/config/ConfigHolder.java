@@ -18,6 +18,7 @@
 
 package org.wso2.choreo.connect.enforcer.config;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -67,6 +68,7 @@ import org.wso2.choreo.connect.enforcer.config.dto.ThrottlePublisherConfigDto;
 import org.wso2.choreo.connect.enforcer.config.dto.TracingDTO;
 import org.wso2.choreo.connect.enforcer.constants.APIConstants;
 import org.wso2.choreo.connect.enforcer.constants.Constants;
+import org.wso2.choreo.connect.enforcer.jmx.MBeanRegistrator;
 import org.wso2.choreo.connect.enforcer.throttle.databridge.agent.conf.AgentConfiguration;
 import org.wso2.choreo.connect.enforcer.util.BackendJwtUtils;
 import org.wso2.choreo.connect.enforcer.util.FilterUtils;
@@ -80,6 +82,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -87,7 +90,9 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
 
 /**
  * Configuration holder class for Microgateway.
@@ -231,6 +236,8 @@ public class ConfigHolder {
         authDto.setMaxMessageSize(cdsAuth.getMaxMessageSize());
 
         ThreadPoolConfig threadPool = new ThreadPoolConfig();
+        MBeanRegistrator.registerMBean(threadPool);
+
         threadPool.setCoreSize(cdsAuth.getThreadPool().getCoreSize());
         threadPool.setKeepAliveTime(cdsAuth.getThreadPool().getKeepAliveTime());
         threadPool.setMaxSize(cdsAuth.getThreadPool().getMaxSize());
@@ -376,14 +383,55 @@ public class ConfigHolder {
 
     private void loadTrustStore() {
         try {
+
             trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
             trustStore.load(null);
-            String truststoreFilePath = getEnvVarConfig().getTrustedAdapterCertsPath();
-            TLSUtils.addCertsToTruststore(trustStore, truststoreFilePath);
+
+            if (getEnvVarConfig().isTrustDefaultCerts()) {
+                loadDefaultCertsToTrustStore();
+            }
+            loadTrustedCertsToTrustStore();
+
             trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
             trustManagerFactory.init(trustStore);
+
         } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException e) {
             logger.error("Error in loading certs to the trust store.", e);
+        }
+    }
+
+    private void loadTrustedCertsToTrustStore() throws IOException {
+        String truststoreFilePath = getEnvVarConfig().getTrustedAdapterCertsPath();
+        TLSUtils.addCertsToTruststore(trustStore, truststoreFilePath);
+    }
+
+    private void loadDefaultCertsToTrustStore() throws NoSuchAlgorithmException, KeyStoreException {
+        TrustManagerFactory tmf = TrustManagerFactory
+                .getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        // Using null here initialises the TMF with the default trust store.
+        tmf.init((KeyStore) null);
+
+        // Get hold of the default trust manager
+        X509TrustManager defaultTm = null;
+        for (TrustManager tm : tmf.getTrustManagers()) {
+            if (tm instanceof X509TrustManager) {
+                defaultTm = (X509TrustManager) tm;
+                break;
+            }
+        }
+
+        // Get the certs from defaultTm and add them to our trustStore
+        if (defaultTm != null) {
+            X509Certificate[] trustedCerts = defaultTm.getAcceptedIssuers();
+            Arrays.stream(trustedCerts)
+                    .forEach(cert -> {
+                        try {
+                            trustStore.setCertificateEntry(RandomStringUtils.random(10, true, false),
+                                    cert);
+                        } catch (KeyStoreException e) {
+                            logger.error("Error while adding default trusted ca cert", e);
+                        }
+                    });
         }
     }
 

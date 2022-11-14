@@ -1,5 +1,5 @@
 # --------------------------------------------------------------------
-# Copyright (c) 2022, WSO2 LLC. (http://wso2.com) All Rights Reserved.
+# Copyright (c) 2020, WSO2 Inc. (http://wso2.com) All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,17 +24,17 @@ LABEL maintainer="WSO2 Docker Maintainers <dev@wso2.org>"
 
 ENV LANG=C.UTF-8
 
-ARG APK_USER=wso2
-ARG APK_USER_ID=10500
-ARG APK_USER_GROUP=wso2
-ARG APK_USER_GROUP_ID=10500
-ARG APK_USER_HOME=/home/${APK_USER}
-ARG APK_VERSION=1.0-SNAPSHOT
+ARG MG_USER=wso2
+ARG MG_USER_ID=10500
+ARG MG_USER_GROUP=wso2
+ARG MG_USER_GROUP_ID=10500
+ARG MG_USER_HOME=/home/${MG_USER}
+ARG MG_VERSION=1.0-SNAPSHOT
 ARG GRPC_HEALTH_PROBE_PATH=/bin/grpc_health_probe
 
-ENV VERSION=${APK_VERSION}
+ENV VERSION=${MG_VERSION}
 ENV JAVA_OPTS=""
-ENV ENFORCER_HOME=${APK_USER_HOME}
+ENV ENFORCER_HOME=${MG_USER_HOME}
 
 ENV ENFORCER_PRIVATE_KEY_PATH=/home/wso2/security/keystore/mg.key
 ENV ENFORCER_PUBLIC_CERT_PATH=/home/wso2/security/keystore/mg.pem
@@ -55,17 +55,17 @@ ARG MOTD="\n\
  Read more about Apache License, Version 2.0 here @ http://www.apache.org/licenses/LICENSE-2.0.\n"
 
 RUN \
-    addgroup -S -g ${APK_USER_GROUP_ID} ${APK_USER_GROUP} \
-    && adduser -S -u ${APK_USER_ID} -h ${APK_USER_HOME} -G ${APK_USER_GROUP} ${APK_USER} \
-    && mkdir ${APK_USER_HOME}/logs && mkdir -p ${APK_USER_HOME}/lib/dropins \
-    && chown -R ${APK_USER}:${APK_USER_GROUP} ${APK_USER_HOME} \
+    addgroup -S -g ${MG_USER_GROUP_ID} ${MG_USER_GROUP} \
+    && adduser -S -u ${MG_USER_ID} -h ${MG_USER_HOME} -G ${MG_USER_GROUP} ${MG_USER} \
+    && mkdir ${MG_USER_HOME}/logs && mkdir -p ${MG_USER_HOME}/lib/dropins \
+    && chown -R ${MG_USER}:${MG_USER_GROUP} ${MG_USER_HOME} \
     && echo '[ ! -z "${TERM}" -a -r /etc/motd ] && cat /etc/motd' >> /etc/bash.bashrc; echo "${MOTD}" > /etc/motd
 
 COPY maven/grpc_health_probe-linux-amd64 ${GRPC_HEALTH_PROBE_PATH}
 RUN chmod +x ${GRPC_HEALTH_PROBE_PATH}
 
-WORKDIR ${APK_USER_HOME}
-USER ${APK_USER}
+WORKDIR ${MG_USER_HOME}
+USER ${MG_USER}
 
 COPY maven/lib/ lib/
 COPY maven/conf/log4j2.properties conf/log4j2.properties

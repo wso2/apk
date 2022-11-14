@@ -29,17 +29,18 @@ dependencies {
     jacocoAggregation project(':org.wso2.choreo.connect.enforcer')
 }
 
-reporting {
-    reports {
-        testCodeCoverageReport(JacocoCoverageReport) {
-            testType = TestSuiteType.UNIT_TEST
-        }
-    }
-}
+// TODO (amali) uncomment after fixing dependency issues
+// reporting {
+//     reports {
+//         testCodeCoverageReport(JacocoCoverageReport) {
+//             testType = TestSuiteType.UNIT_TEST
+//         }
+//     }
+// }
 
-tasks.named('check') {
-    dependsOn tasks.named('testCodeCoverageReport', JacocoReport)
-}
+// tasks.named('check') {
+//     dependsOn tasks.named('testCodeCoverageReport', JacocoReport)
+// }
 
 subprojects {
     apply from: "$rootDir/../../common-gradle-scripts/java.gradle"

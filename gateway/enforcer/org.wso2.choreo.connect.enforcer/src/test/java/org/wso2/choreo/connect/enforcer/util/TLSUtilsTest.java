@@ -18,6 +18,7 @@
 
 package org.wso2.choreo.connect.enforcer.util;
 
+import java.util.Objects;
 import org.junit.Assert;
 import org.junit.Test;
 import org.wso2.choreo.connect.enforcer.commons.exception.EnforcerException;
@@ -68,8 +69,8 @@ public class TLSUtilsTest {
     @Test
     public void testAddCertificatesToTruststoreMultipleCertsInSingleFile() throws KeyStoreException,
             CertificateException, IOException, NoSuchAlgorithmException {
-        String trustStoreLocation = TLSUtilsTest.class.getProtectionDomain().getCodeSource().
-                getLocation().getPath() + certsDir + File.separator + trustStoreWithSingleFile;
+        String trustStoreLocation = Objects.requireNonNull(this.getClass().getResource(File.separator + certsDir + File.separator +
+                trustStoreWithSingleFile)).getPath();
         KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
         trustStore.load(null);
         Assert.assertEquals(0, trustStore.size());
@@ -92,8 +93,8 @@ public class TLSUtilsTest {
     @Test
     public void testAddCertificatesToTruststoreCertsInSeparateFiles() throws KeyStoreException,
             CertificateException, IOException, NoSuchAlgorithmException {
-        String trustStoreLocation = TLSUtilsTest.class.getProtectionDomain().getCodeSource().
-                getLocation().getPath() + certsDir + File.separator + trustStoreWithSeparateCerts;
+        String trustStoreLocation = Objects.requireNonNull(this.getClass().getResource(File.separator + certsDir + File.separator +
+                trustStoreWithSeparateCerts)).getPath();
         KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
         trustStore.load(null);
         Assert.assertEquals(0, trustStore.size());
