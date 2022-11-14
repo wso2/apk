@@ -76,6 +76,7 @@ func init() {
 
 // FeedData mock data
 func FeedData() {
+	config := config.ReadConfigs()
 	logger.LoggerXdsServer.Debug("adding mock data")
 	version := rand.Intn(maxRandomInt)
 	applications := apkmgt_application.Application{
@@ -87,7 +88,7 @@ func FeedData() {
 	})
 	applicationCacheMutex.Lock()
 	defer applicationCacheMutex.Unlock()
-	applicationCache.SetSnapshot(context.Background(), "mine", newSnapshot)
+	applicationCache.SetSnapshot(context.Background(), config.ManagementServer.NodeLabels[0], newSnapshot)
 }
 
 // AddSingleApplication will update the Application specified by the UUID to the xds cache
@@ -224,7 +225,11 @@ func SetEmptySnapshot(label string) error {
 		wso2_resource.APKMgtApplicationType: {},
 	})
 	if err != nil {
-		logger.LoggerXds.Errorf("Error creating empty snapshot. error: %v", err.Error())
+		logger.LoggerXds.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("Error creating empty snapshot. error: %v", err.Error()),
+			Severity:  logging.CRITICAL,
+			ErrorCode: 1003,
+		})
 		return err
 	}
 	applicationCacheMutex.Lock()
@@ -234,7 +239,11 @@ func SetEmptySnapshot(label string) error {
 	if errSnap != nil && strings.Contains(errSnap.Error(), "no snapshot found for node") {
 		errSetSnap := applicationCache.SetSnapshot(context.Background(), label, newSnapshot)
 		if errSetSnap != nil {
-			logger.LoggerXds.Errorf("Error setting empty snapshot to apiCache. error : %v", errSetSnap.Error())
+			logger.LoggerXds.ErrorC(logging.ErrorDetails{
+				Message:   fmt.Sprintf("Error setting empty snapshot to applicationCache. error : %v", errSetSnap.Error()),
+				Severity:  logging.CRITICAL,
+				ErrorCode: 1004,
+			})
 			return errSetSnap
 		}
 	}
