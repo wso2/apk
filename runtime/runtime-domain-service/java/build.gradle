@@ -21,7 +21,7 @@ apply from: "$projectDir/../../../common-gradle-scripts/java.gradle"
 jar.baseName = 'org.wso2.apk.runtime'
 
 dependencies {
-    implementation 'org.wso2.apk:org.wso2.apk.apimgt.impl:0.1.0-SNAPSHOT'
-    implementation 'org.wso2.apk:org.wso2.apk.apimgt.api:0.1.0-SNAPSHOT'
+    implementation libs.org.wso2.apk.apimgt.api
+    implementation libs.org.wso2.apk.apimgt.impl
     implementation libs.commons.logging
 }
