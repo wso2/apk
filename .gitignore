@@ -46,3 +46,5 @@ helm-charts/charts/
 
 # Adapter API temporary target
 Adapter/api/target
+
+.java-version

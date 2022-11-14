@@ -146,14 +146,14 @@ public class ApiDocumentsAPICommonImpl {
         return BackofficeAPIUtils.getJsonFromDTO(DocumentationMappingUtil.fromDocumentationToDTO(newDocumentation));
     }
 
-    public static String getAPIDocuments(String apiId, Integer limit, Integer offset, String organization)
+    public static String getAPIDocuments(String apiId, int limit, int offset, String organization)
             throws APIManagementException {
 
         RestApiCommonUtil.validateAPIExistence(apiId);
 
         //setting default limit and offset values if they are not set
-        limit = limit != null ? limit : RestApiConstants.PAGINATION_LIMIT_DEFAULT;
-        offset = offset != null ? offset : RestApiConstants.PAGINATION_OFFSET_DEFAULT;
+        limit = limit != 0 ? limit : RestApiConstants.PAGINATION_LIMIT_DEFAULT;
+        offset = offset != 0 ? offset : RestApiConstants.PAGINATION_OFFSET_DEFAULT;
 
         APIProvider apiProvider = RestApiCommonUtil.getLoggedInUserProvider();
         //this will fail if user does not have access to the API or the API does not exist

@@ -63,7 +63,7 @@ public class ApisApiCommonImpl {
 
     private static final Log log = LogFactory.getLog(ApisApiCommonImpl.class);
 
-    public static String getAllAPIs(Integer limit, Integer offset, String sortBy, String sortOrder, String query,
+    public static String getAllAPIs(int limit, int offset, String sortBy, String sortOrder, String query,
                                     String organization) throws APIManagementException {
 
         List<API> allMatchedApis = new ArrayList<>();
@@ -71,8 +71,8 @@ public class ApisApiCommonImpl {
 
         //pre-processing
         //setting default limit and offset values if they are not set
-        limit = limit != null ? limit : RestApiConstants.PAGINATION_LIMIT_DEFAULT;
-        offset = offset != null ? offset : RestApiConstants.PAGINATION_OFFSET_DEFAULT;
+        limit = limit != 0 ? limit : RestApiConstants.PAGINATION_LIMIT_DEFAULT;
+        offset = offset != 0 ? offset : RestApiConstants.PAGINATION_OFFSET_DEFAULT;
         query = query == null ? "" : query;
         sortBy = sortBy != null ? sortBy : RestApiConstants.DEFAULT_SORT_CRITERION;
         sortOrder = sortOrder != null ? sortOrder : RestApiConstants.DESCENDING_SORT_ORDER;
@@ -189,7 +189,7 @@ public class ApisApiCommonImpl {
         return BackofficeAPIUtils.getJsonFromDTO(apiProvider.getIcon(apiId, organization));
     }
 
-    public static String getAPIResourcePaths(String apiId, Integer limit, Integer offset)
+    public static String getAPIResourcePaths(String apiId, int limit, int offset)
             throws APIManagementException {
 
         RestApiCommonUtil.validateAPIExistence(apiId);

@@ -64,7 +64,7 @@ public class ApiCommentsAPICommonImpl {
         return BackofficeAPIUtils.getJsonFromDTO(CommentMappingUtil.fromCommentToDTO(createdComment));
     }
 
-    public static String getAllCommentsOfAPI(String apiId, Integer limit, Integer offset,
+    public static String getAllCommentsOfAPI(String apiId, int limit, int offset,
                                                      Boolean includeCommenterInfo, String requestedTenantDomain)
             throws APIManagementException {
 
@@ -76,8 +76,8 @@ public class ApiCommentsAPICommonImpl {
                 fromCommentListToDTO(comments, includeCommenterInfo));
     }
 
-    public static String getCommentOfAPI(String commentId, String apiId, Boolean includeCommenterInfo,
-                                             Integer replyLimit, Integer replyOffset, String requestedTenantDomain)
+    public static String getCommentOfAPI(String commentId, String apiId, boolean includeCommenterInfo,
+                                             int replyLimit, int replyOffset, String requestedTenantDomain)
             throws APIManagementException {
 
         APIProvider apiProvider = RestApiCommonUtil.getLoggedInUserProvider();
@@ -126,8 +126,8 @@ public class ApiCommentsAPICommonImpl {
         return BackofficeAPIUtils.getJsonFromDTO(commentDTO);
     }
 
-    public static String getRepliesOfComment(String commentId, String apiId, Integer limit, Integer offset,
-                                                     Boolean includeCommenterInfo, String requestedTenantDomain)
+    public static String getRepliesOfComment(String commentId, String apiId, int limit, int offset,
+                                                     boolean includeCommenterInfo, String requestedTenantDomain)
             throws APIManagementException {
 
         APIProvider apiProvider = RestApiCommonUtil.getLoggedInUserProvider();

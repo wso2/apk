@@ -69,7 +69,7 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
     private final String userNameWithoutChange;
 
     public APIProviderImpl(String username) throws APIManagementException {
-//        super(username);
+        super(username);
         this.userNameWithoutChange = username;
 //        certificateManager = CertificateManagerImpl.getInstance();
 //        this.artifactSaver = ServiceReferenceHolder.getInstance().getArtifactSaver();

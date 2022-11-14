@@ -272,11 +272,10 @@ public class APIMappingUtil {
     public static APIListDTO fromAPIListToInfoDTO(List<API> apiList) throws APIManagementException {
 
         APIListDTO apiListDTO = new APIListDTO();
-        List<APIInfoDTO> apiInfoDTOs = apiListDTO.getList();
         for (API api : apiList) {
-            apiInfoDTOs.add(fromAPIToInfoDTO(api));
+            apiListDTO.addListItem(fromAPIToInfoDTO(api));
         }
-        apiListDTO.setCount(apiInfoDTOs.size());
+        apiListDTO.setCount(apiList.size());
         return apiListDTO;
     }
 
