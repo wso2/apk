@@ -85,7 +85,7 @@ public class JWTUtils {
                 if (response.getStatusLine().getStatusCode() == 200) {
                     HttpEntity entity = response.getEntity();
                     try (InputStream content = entity.getContent()) {
-                        return IOUtils.toString(content, Charset.defaultCharset());
+                        return IOUtils.toString(content, String.valueOf(Charset.defaultCharset()));
                     }
                 } else {
                     return null;
