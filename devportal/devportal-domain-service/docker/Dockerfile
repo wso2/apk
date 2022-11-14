@@ -49,8 +49,9 @@ ARG USER_HOME=/home/${USER}
 
 RUN groupadd --system -g ${USER_GROUP_ID} ${USER_GROUP} && useradd --system --create-home --home-dir ${USER_HOME} --no-log-init -g ${USER_GROUP_ID} -u ${USER_ID} ${USER}
 
-COPY target/bin/devportal_service.jar ${USER_HOME}
-COPY Config.toml ${USER_HOME}
+COPY devportal_service.jar ${USER_HOME}
+#COPY Config.toml ${USER_HOME}
+COPY docker-entrypoint.sh ${USER_HOME}
 
 RUN chown wso2apk /home/wso2apk/devportal_service.jar
 
