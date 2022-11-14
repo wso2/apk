@@ -76,5 +76,6 @@ dependencies {
     implementation libs.toml
     implementation libs.websocket
     implementation project(':org.wso2.choreo.connect.enforcer.commons')
+    implementation project(':org.wso2.choreo.connect.discovery')
     testImplementation libs.junit
 }

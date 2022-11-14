@@ -91,6 +91,7 @@ json = {module = "org.json.wso2:json", version.ref = "org-json-wso2"}
 json-simple = { module = "com.googlecode.json-simple.wso2:json-simple", version.ref = "json-simple-wso2" }
 json-simple = {module = "com.googlecode.json-simple.wso2:json-simple", version.ref = "json-simple-wso2"}
 # json-simple = { module = "com.googlecode.json-simple.wso2:json-simple", version.ref = "json-simple-wso2" }
+json-simple = { module = "com.googlecode.json-simple.wso2:json-simple", version.ref = "json-simple-wso2" }
 junit = { module = "junit:junit", version.ref = "junit" }
 lmax-disruptor = { module = "org.wso2.orbit.com.lmax:disruptor", version.ref = "lmax" }
 log4j-api = { module = "org.apache.logging.log4j:log4j-api", version.ref = "log4j" }
@@ -236,19 +237,20 @@ okio = "2.8.0.wso2v1"
 openapi-generator = "4.3.1.wso2v4"
 org-json-wso2 = "3.0.0.wso2v1"
 opentelemetry = "1.18.0"
+opentelemetry-jaeger-thrift = "1.6.0"
 opentelemetry-semconv = "1.18.0-alpha"
 org-json-wso2 = "3.0.0.wso2v1"
 postgresql = "42.5.0"
 slf4j-ext = "1.7.29"
 snakeyaml = "1.28"
 sun = "1.5.3"
-tomcat = "6.0.53"
 swagger-codegen = "2.4.11"
 swagger-inflector = "1.0.16.wso2v1"
 swagger-inflector-v3 = "2.0.5.wso2v2"
 swagger-jaxrs = "1.6.1"
 swagger-parser = "1.0.57.wso2v1"
 swagger-parser-v3 = "2.0.29.wso2v1"
+tomcat = "6.0.53"
 websocket = "1.5.3"
 wsdl4j = "1.6.3.wso2v3"
 wso2-analytics = "6.1.60"

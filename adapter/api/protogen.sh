@@ -24,7 +24,7 @@ rm -rf target
 mkdir -p target/deps
 
 ADAPTER_GEN_DIR=$cur_dir/../pkg/discovery/api/wso2/
-ENFORCER_GEN_DIR=$cur_dir/../../gateway/enforcer/org.wso2.choreo.connect.enforcer/src/main/java/
+ENFORCER_GEN_DIR=$cur_dir/../../gateway/enforcer/org.wso2.choreo.connect.discovery/src/main/java/
 GREEN='\033[0;32m'
 BOLD="\033[1m"
 NC='\033[0m' # No Color
