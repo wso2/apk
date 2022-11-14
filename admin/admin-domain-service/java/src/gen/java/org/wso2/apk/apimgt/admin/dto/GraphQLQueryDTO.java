@@ -1,0 +1,102 @@
+package org.wso2.apk.apimgt.admin.dto;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import javax.validation.constraints.*;
+
+
+import io.swagger.annotations.*;
+import java.util.Objects;
+
+
+
+public class GraphQLQueryDTO   {
+  
+  private Integer graphQLMaxComplexity;
+
+  private Integer graphQLMaxDepth;
+
+
+  /**
+   * Maximum Complexity of the GraphQL query
+   **/
+  public GraphQLQueryDTO graphQLMaxComplexity(Integer graphQLMaxComplexity) {
+    this.graphQLMaxComplexity = graphQLMaxComplexity;
+    return this;
+  }
+
+  
+  @ApiModelProperty(example = "400", value = "Maximum Complexity of the GraphQL query")
+  @JsonProperty("graphQLMaxComplexity")
+  public Integer getGraphQLMaxComplexity() {
+    return graphQLMaxComplexity;
+  }
+  public void setGraphQLMaxComplexity(Integer graphQLMaxComplexity) {
+    this.graphQLMaxComplexity = graphQLMaxComplexity;
+  }
+
+
+  /**
+   * Maximum Depth of the GraphQL query
+   **/
+  public GraphQLQueryDTO graphQLMaxDepth(Integer graphQLMaxDepth) {
+    this.graphQLMaxDepth = graphQLMaxDepth;
+    return this;
+  }
+
+  
+  @ApiModelProperty(example = "10", value = "Maximum Depth of the GraphQL query")
+  @JsonProperty("graphQLMaxDepth")
+  public Integer getGraphQLMaxDepth() {
+    return graphQLMaxDepth;
+  }
+  public void setGraphQLMaxDepth(Integer graphQLMaxDepth) {
+    this.graphQLMaxDepth = graphQLMaxDepth;
+  }
+
+
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    GraphQLQueryDTO graphQLQuery = (GraphQLQueryDTO) o;
+    return Objects.equals(graphQLMaxComplexity, graphQLQuery.graphQLMaxComplexity) &&
+        Objects.equals(graphQLMaxDepth, graphQLQuery.graphQLMaxDepth);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(graphQLMaxComplexity, graphQLMaxDepth);
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("class GraphQLQueryDTO {\n");
+    
+    sb.append("    graphQLMaxComplexity: ").append(toIndentedString(graphQLMaxComplexity)).append("\n");
+    sb.append("    graphQLMaxDepth: ").append(toIndentedString(graphQLMaxDepth)).append("\n");
+    sb.append("}");
+    return sb.toString();
+  }
+
+  /**
+   * Convert the given object to string with each line indented by 4 spaces
+   * (except the first line).
+   */
+  private String toIndentedString(Object o) {
+    if (o == null) {
+      return "null";
+    }
+    return o.toString().replace("\n", "\n    ");
+  }
+}
+

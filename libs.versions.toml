@@ -1,5 +1,6 @@
 # Copyright (c) 2022, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
 #
+
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -12,84 +13,88 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 [libraries]
-amazonaws-awslambda = { module = "org.wso2.orbit.com.amazonaws:awslambda", version.ref = "awslambda" }
-apicurio-data-models = { module = "io.apicurio:apicurio-data-models", version.ref = "apicurio" }
-aspectjrt = { module = "org.aspectj:aspectjrt", version.ref = "aspectj" }
-commons-codec = { module = "commons-codec:commons-codec", version.ref = "commons-codec" }
-commons-lang = { module = "commons-lang:commons-lang", version.ref = "commons-lang" }
-commons-lang3 = { module = "org.apache.commons:commons-lang3", version.ref = "commons-lang3" }
-commons-logging = { module = "commons-logging:commons-logging", version.ref = "commons-logging" }
-commons-io = { module = "commons-io:commons-io", version.ref = "commons-io" }
-commons-validator = { module = "commons-validator:commons-validator", version.ref = "commons-validator" }
-commons-collection = { module = "org.apache.commons:commons-collections4", version.ref = "commons-collection" }
-cxf-rt-frontend-jaxrs = { module = "org.apache.cxf:cxf-rt-frontend-jaxrs", version.ref = "cxf" }
-cxf-rt-rs-service-description = { module = "org.apache.cxf:cxf-rt-rs-service-description", version.ref = "cxf" }
-everit-json-schema = { module = "org.wso2.orbit.org.everit.json:org.everit.json.schema", version.ref = "everit" }
-graphql = { module = "org.wso2.orbit.graphQL:graphQL", version.ref = "graphql" }
-gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+amazonaws-awslambda = {module = "org.wso2.orbit.com.amazonaws:awslambda", version.ref = "awslambda"}
+apicurio-data-models = {module = "io.apicurio:apicurio-data-models", version.ref = "apicurio"}
+aspectjrt = {module = "org.aspectj:aspectjrt", version.ref = "aspectj"}
+commons-codec = {module = "commons-codec:commons-codec", version.ref = "commons-codec"}
+commons-collection = {module = "org.apache.commons:commons-collections4", version.ref = "commons-collection"}
+commons-io = {module = "commons-io:commons-io", version.ref = "commons-io"}
+commons-lang = {module = "commons-lang:commons-lang", version.ref = "commons-lang"}
+commons-lang3 = {module = "org.apache.commons:commons-lang3", version.ref = "commons-lang3"}
+commons-logging = {module = "commons-logging:commons-logging", version.ref = "commons-logging"}
+commons-validator = {module = "commons-validator:commons-validator", version.ref = "commons-validator"}
+cxf-rt-frontend-jaxrs = {module = "org.apache.cxf:cxf-rt-frontend-jaxrs", version.ref = "cxf"}
+cxf-rt-rs-service-description = {module = "org.apache.cxf:cxf-rt-rs-service-description", version.ref = "cxf"}
+everit-json-schema = {module = "org.wso2.orbit.org.everit.json:org.everit.json.schema", version.ref = "everit"}
+graphql = {module = "org.wso2.orbit.graphQL:graphQL", version.ref = "graphql"}
+gson = {module = "com.google.code.gson:gson", version.ref = "gson"}
 guava = {module = "com.google.guava:guava", version.ref = "guava"}
-handy-uri-templates = { module = "com.damnhandy.wso2:handy-uri-templates", version.ref = "wso2-damnhandy" }
-hibernate-validator = { module = "org.hibernate:hibernate-validator", version.ref = "hibernate-validator" }
-hikaricp = { module = "com.zaxxer:HikariCP", version.ref = "hikari" }
-httpcomponents-httpmime = { module = "org.apache.httpcomponents:httpmime", version.ref = "httpcomponents" }
-httpcomponents-client = { module = "org.apache.httpcomponents:httpclient", version.ref = "httpcomponents" }
-jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "jackson" }
-jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
-jackson-dataformat-yaml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml", version.ref = "jackson" }
-jackson-datatype-guava = { module = "com.fasterxml.jackson.datatype:jackson-datatype-guava", version.ref = "jackson" }
-javax-cache = { module = "javax.cache:cache-api", version.ref = "javax-cache" }
-javax-validation = { module = "javax.validation:validation-api", version.ref = "javax-validation" }
-json = { module = "org.json.wso2:json", version.ref = "org-json-wso2" }
-json-simple = { module = "com.googlecode.json-simple.wso2:json-simple", version.ref = "json-simple-wso2" }
-mapstruct = { module = "org.mapstruct:mapstruct", version.ref = "mapstruct" }
-nimbus-jose-jwt = { module = "org.wso2.orbit.com.nimbusds:nimbus-jose-jwt", version.ref = "nimbus" }
-okio = { module = "org.wso2.orbit.com.squareup.okio:okio", version.ref = "okio" }
-okhttp = { module = "org.wso2.orbit.com.squareup.okhttp:okhttp", version.ref = "okhttp" }
-openapi-generator = { module = "org.wso2.orbit.org.openapitools:openapi-generator", version.ref = "openapi-generator" }
-openfeign-feign-core = { module = "io.github.openfeign:feign-core", version.ref = "io-github-openfeign" }
-openfeign-feign-gson = { module = "io.github.openfeign:feign-gson", version.ref = "io-github-openfeign" }
-openfeign-feign-okhttp = { module = "io.github.openfeign:feign-okhttp", version.ref = "io-github-openfeign" }
-openfeign-feign-slf4j = { module = "io.github.openfeign:feign-slf4j", version.ref = "io-github-openfeign" }
-pdfbox = { module = "org.apache.pdfbox:pdfbox", version.ref = "apache-pdfbox" }
-postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
-slf4j-ext = { module = "org.slf4j:slf4j-ext", version.ref = "slf4j-ext" }
+handy-uri-templates = {module = "com.damnhandy.wso2:handy-uri-templates", version.ref = "wso2-damnhandy"}
+hibernate-validator = {module = "org.hibernate:hibernate-validator", version.ref = "hibernate-validator"}
+hikaricp = {module = "com.zaxxer:HikariCP", version.ref = "hikari"}
+httpcomponents-client = {module = "org.apache.httpcomponents:httpclient", version.ref = "httpcomponents"}
+httpcomponents-httpmime = {module = "org.apache.httpcomponents:httpmime", version.ref = "httpcomponents"}
+jackson-annotations = {module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "jackson"}
+jackson-databind = {module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson"}
+jackson-dataformat-yaml = {module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml", version.ref = "jackson"}
+jackson-datatype-guava = {module = "com.fasterxml.jackson.datatype:jackson-datatype-guava", version.ref = "jackson"}
+javax-cache = {module = "javax.cache:cache-api", version.ref = "javax-cache"}
+javax-validation = {module = "javax.validation:validation-api", version.ref = "javax-validation"}
+json = {module = "org.json.wso2:json", version.ref = "org-json-wso2"}
+json-simple = {module = "com.googlecode.json-simple.wso2:json-simple", version.ref = "json-simple-wso2"}
+mapstruct = {module = "org.mapstruct:mapstruct", version.ref = "mapstruct"}
+nimbus-jose-jwt = {module = "org.wso2.orbit.com.nimbusds:nimbus-jose-jwt", version.ref = "nimbus"}
+okhttp = {module = "org.wso2.orbit.com.squareup.okhttp:okhttp", version.ref = "okhttp"}
+okio = {module = "org.wso2.orbit.com.squareup.okio:okio", version.ref = "okio"}
+openapi-generator = {module = "org.wso2.orbit.org.openapitools:openapi-generator", version.ref = "openapi-generator"}
+openfeign-feign-core = {module = "io.github.openfeign:feign-core", version.ref = "io-github-openfeign"}
+openfeign-feign-gson = {module = "io.github.openfeign:feign-gson", version.ref = "io-github-openfeign"}
+openfeign-feign-okhttp = {module = "io.github.openfeign:feign-okhttp", version.ref = "io-github-openfeign"}
+openfeign-feign-slf4j = {module = "io.github.openfeign:feign-slf4j", version.ref = "io-github-openfeign"}
+org-wso2-apk-apimgt-api = {module = "org.wso2.apk:org.wso2.apk.apimgt.api", version.ref = "apimgt"}
+org-wso2-apk-apimgt-impl = {module = "org.wso2.apk:org.wso2.apk.apimgt.impl", version.ref = "apimgt"}
+org-wso2-apk-apimgt-rest-api-util = {module = "org.wso2.apk:org.wso2.apk.apimgt.rest.api.util", version.ref = "apimgt"}
+org-wso2-apk-apimgt-user = {module = "org.wso2.apk:org.wso2.apk.apimgt.user", version.ref = "apimgt"}
+pdfbox = {module = "org.apache.pdfbox:pdfbox", version.ref = "apache-pdfbox"}
+postgresql = {module = "org.postgresql:postgresql", version.ref = "postgresql"}
+slf4j-ext = {module = "org.slf4j:slf4j-ext", version.ref = "slf4j-ext"}
 snakeyaml = {module = "org.yaml:snakeyaml", version.ref = "snakeyaml"}
 swagger-annotations = {module = "io.swagger:swagger-annotations", version.ref = "io-swagger"}
-swagger-codegen = { module = "io.swagger:swagger-codegen", version.ref = "swagger-codegen" }
-swagger-core-v3 = { module = "io.swagger.core.v3:swagger-core", version.ref = "io-swagger-v3" }
-swagger-inflector = { module = "org.wso2.orbit.io.swagger:swagger-inflector", version.ref = "swagger-inflector" }
-swagger-inflector-oas3 = { module = "org.wso2.orbit.io.swagger:swagger-inflector-oas3", version.ref = "swagger-inflector-v3" }
-swagger-jaxrs = { module = "io.swagger:swagger-jaxrs", version.ref = "swagger-jaxrs" }
-swagger-models = { module = "io.swagger:swagger-models", version.ref = "io-swagger" }
-swagger-models-v3 = { module = "io.swagger.core.v3:swagger-models", version.ref = "io-swagger-v3" }
-swagger-parser = { module = "org.wso2.orbit.io.swagger:swagger-parser", version.ref = "swagger-parser" }
-swagger-parser-v3 = { module = "org.wso2.orbit.io.swagger.v3:swagger-parser", version.ref = "swagger-parser-v3" }
-wsdl4j = { module = "org.wso2.wsdl4j:wsdl4j.wso2", version.ref = "wsdl4j" }
-wso2-uri-templates = { module = "org.wso2.uri.template:wso2-uri-templates", version.ref = "wso2-uri-templates" }
-xerces = { module = "xerces.wso2:xercesImpl", version.ref = "xerces" }
+swagger-codegen = {module = "io.swagger:swagger-codegen", version.ref = "swagger-codegen"}
+swagger-core-v3 = {module = "io.swagger.core.v3:swagger-core", version.ref = "io-swagger-v3"}
+swagger-inflector = {module = "org.wso2.orbit.io.swagger:swagger-inflector", version.ref = "swagger-inflector"}
+swagger-inflector-oas3 = {module = "org.wso2.orbit.io.swagger:swagger-inflector-oas3", version.ref = "swagger-inflector-v3"}
+swagger-jaxrs = {module = "io.swagger:swagger-jaxrs", version.ref = "swagger-jaxrs"}
+swagger-models = {module = "io.swagger:swagger-models", version.ref = "io-swagger"}
+swagger-models-v3 = {module = "io.swagger.core.v3:swagger-models", version.ref = "io-swagger-v3"}
+swagger-parser = {module = "org.wso2.orbit.io.swagger:swagger-parser", version.ref = "swagger-parser"}
+swagger-parser-v3 = {module = "org.wso2.orbit.io.swagger.v3:swagger-parser", version.ref = "swagger-parser-v3"}
+wsdl4j = {module = "org.wso2.wsdl4j:wsdl4j.wso2", version.ref = "wsdl4j"}
+wso2-uri-templates = {module = "org.wso2.uri.template:wso2-uri-templates", version.ref = "wso2-uri-templates"}
+xerces = {module = "xerces.wso2:xercesImpl", version.ref = "xerces"}
 #Test dependencies
-hamcrest = { module = "org.hamcrest:hamcrest-all", version.ref = "hamcrest" }
-jacoco-agent = { module = "org.jacoco:org.jacoco.agent", version.ref = "jacoco" }
-mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
-powermock-api-mockito2 = { module = "org.powermock:powermock-api-mockito2", version.ref = "powermock" }
-powermock-module-junit4 = { module = "org.powermock:powermock-module-junit4", version.ref = "powermock" }
-xml-apis = { module = "xml-apis:xml-apis", version.ref = "xml-apis" }
+hamcrest = {module = "org.hamcrest:hamcrest-all", version.ref = "hamcrest"}
+jacoco-agent = {module = "org.jacoco:org.jacoco.agent", version.ref = "jacoco"}
+mockito-core = {module = "org.mockito:mockito-core", version.ref = "mockito"}
+powermock-api-mockito2 = {module = "org.powermock:powermock-api-mockito2", version.ref = "powermock"}
+powermock-module-junit4 = {module = "org.powermock:powermock-module-junit4", version.ref = "powermock"}
+xml-apis = {module = "xml-apis:xml-apis", version.ref = "xml-apis"}
 
 [plugins]
-openapi-generator-plugin = { id = "org.openapi.generator", version.ref = "openapi-generator-plugin" }
-
+openapi-generator-plugin = {id = "org.openapi.generator", version.ref = "openapi-generator-plugin"}
 
 [versions]
-apicurio = "1.1.5"
 apache-pdfbox = "2.0.25"
+apicurio = "1.1.5"
+apimgt = "0.1.0-SNAPSHOT"
 aspectj = "1.9.5"
 awslambda = "1.11.1034.wso2v2"
 commons-codec = "1.14"
+commons-collection = "4.1"
+commons-io = "2.11.0"
 commons-lang = "2.4"
 commons-lang3 = "3.10"
-commons-collection = "4.1"
 commons-logging = "1.1.1"
-commons-io = "2.11.0"
 commons-validator = "1.7"
 cxf = "3.5.4"
 everit = "1.5.0.wso2.v2"
@@ -106,12 +111,12 @@ jackson = "2.13.1"
 javax-cache = "1.1.1"
 javax-validation = "2.0.1.Final"
 json-simple-wso2 = "1.1.wso2v1"
-org-json-wso2 = "3.0.0.wso2v1"
 mapstruct = "1.5.3.Final"
 nimbus = "7.9.0.wso2v1"
 okhttp = "4.9.3.wso2v1"
 okio = "2.8.0.wso2v1"
 openapi-generator = "4.3.1.wso2v4"
+org-json-wso2 = "3.0.0.wso2v1"
 postgresql = "42.5.0"
 slf4j-ext = "1.7.29"
 snakeyaml = "1.28"

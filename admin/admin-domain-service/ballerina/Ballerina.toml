@@ -9,8 +9,9 @@ observabilityIncluded = true
 
 [[platform.java11.dependency]]
 groupId = "org.wso2.apk"
-artifactId = "org.wso2.apk.apimgt.rest.api.admin.v1.common"
+artifactId = "org.wso2.apk.apimgt.admin"
 version = "0.1.0-SNAPSHOT"
+path = "../java/build/libs/org.wso2.apk.apimgt.admin-0.1.0-SNAPSHOT.jar"
 
 # transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.rest.api.admin.v1.common:0.1.0-SNAPSHOT
 [[platform.java11.dependency]]
@@ -24,11 +25,6 @@ groupId = "commons-logging"
 artifactId = "commons-logging"
 version = "1.1.1"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.api:0.1.0-SNAPSHOT
-[[platform.java11.dependency]]
-groupId = "org.wso2.orbit.graphQL"
-artifactId = "graphQL"
-version = "17.3.wso2v1"
 
 # transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.api:0.1.0-SNAPSHOT
 [[platform.java11.dependency]]
@@ -119,12 +115,6 @@ version = "1.0.57"
 groupId = "io.swagger"
 artifactId = "swagger-core"
 version = "1.6.5"
-
-# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.impl:0.1.0-SNAPSHOT
-[[platform.java11.dependency]]
-groupId = "org.wso2.orbit.io.swagger.v3"
-artifactId = "swagger-parser"
-version = "2.0.29.wso2v1"
 
 # transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.impl:0.1.0-SNAPSHOT
 [[platform.java11.dependency]]
@@ -904,3 +894,20 @@ version = "1.2"
 groupId = "org.slf4j"
 artifactId = "slf4j-api"
 version = "1.7.29"
+
+[[platform.java11.dependency]]
+groupId = "org.wso2.apk"
+artifactId = "org.wso2.apk.apimgt.admin"
+version = "0.1.0-SNAPSHOT"
+
+# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.api:0.1.0-SNAPSHOT
+[[platform.java11.dependency]]
+groupId = "org.wso2.orbit.graphQL"
+artifactId = "graphQL"
+version = "17.3.wso2v1"
+
+# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.impl:0.1.0-SNAPSHOT
+[[platform.java11.dependency]]
+groupId = "org.wso2.orbit.io.swagger.v3"
+artifactId = "swagger-parser"
+version = "2.0.29.wso2v1"
