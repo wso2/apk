@@ -19,10 +19,10 @@ description = 'WSO2 APK Enforcer Common Component'
 
 dependencies {
     implementation libs.commons.lang3
-    implementation libs.httpcomponents.client
     implementation libs.graphql
-    implementation libs.junit
+    implementation libs.httpcomponents.client
     implementation libs.log4j.api
     implementation libs.log4j.core
     implementation libs.minidev.json
+    testImplementation libs.junit
 }
