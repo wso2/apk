@@ -19,9 +19,14 @@
 import ballerina/io;
 import admin_service.org.wso2.apk.apimgt.api as api;
 import admin_service.org.wso2.apk.apimgt.init as apkinit;
+import ballerina/http;
 
 configurable DatasourceConfiguration datasourceConfiguration = ?;
 configurable ThrottlingConfiguration throttleConfig = ?;
+
+configurable int ADMIN_PORT = 9443;
+
+listener http:Listener ep0 = new (ADMIN_PORT);
 
 function init() {
     io:println("Starting APK Admin Domain Service...");

@@ -1,3 +1,0 @@
-caCertPath= "/media/tharindud/dev/satoken/ca.crt"
-saTokenPath= "/media/tharindud/dev/satoken/token"
-k8sHost= "192.168.49.2:8443"
