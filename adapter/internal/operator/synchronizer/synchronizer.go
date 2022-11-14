@@ -21,8 +21,14 @@ import (
 	"fmt"
 
 	"github.com/wso2/apk/adapter/internal/discovery/xds"
+	"context"
+	"fmt"
+
+	client "github.com/wso2/apk/adapter/internal/grpc-client"
 	"github.com/wso2/apk/adapter/internal/loggers"
 	model "github.com/wso2/apk/adapter/internal/oasparser/model"
+	"github.com/wso2/apk/adapter/pkg/logging"
+	apiProtos "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/apkmgt"
 	"github.com/wso2/apk/adapter/pkg/logging"
 )
 
@@ -46,6 +52,7 @@ func HandleAPILifeCycleEvents(ch *chan APIEvent) {
 				Severity:  logging.MAJOR,
 			})
 		}
+		go sendAPIToAPKMgtServer(event)
 	}
 }
 
@@ -107,4 +114,36 @@ func getLabelsForAPI(api APIState) []string {
 		labels = append(labels, string(parentRef.Name))
 	}
 	return labels
+}
+
+// sendAPIToAPKMgtServer sends the API create/update/delete event to the APK management server.
+func sendAPIToAPKMgtServer(apiEvent APIEvent) {
+	loggers.LoggerAPKOperator.Infof("Sending API to APK management server:%v", apiEvent.Event.APIDefinition.Spec.APIDisplayName)
+	conn, err := client.GetConnection()
+	api := apiEvent.Event
+	if err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("error creating connection: %v", err),
+			ErrorCode: 6000,
+			Severity:  logging.BLOCKER,
+		})
+	}
+	res, err := client.ExecuteGRPCCall(conn, func() (interface{}, error) {
+		apiClient := apiProtos.NewAPIServiceClient(conn)
+		return apiClient.CreateAPI(context.Background(), &apiProtos.API{
+			Uuid:    string(api.APIDefinition.GetUID()),
+			Version: api.APIDefinition.Spec.APIVersion,
+			Name:    api.APIDefinition.Spec.APIDisplayName,
+			Context: api.APIDefinition.Spec.Context,
+			Type:    api.APIDefinition.Spec.APIType,
+		})
+	})
+	if err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("error sending API to APK management server:%v", err),
+			ErrorCode: 6001,
+			Severity:  logging.MAJOR,
+		})
+	}
+	loggers.LoggerAPKOperator.Info(res)
 }
