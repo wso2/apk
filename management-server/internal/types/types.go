@@ -15,28 +15,16 @@
  *
  */
 
-package config
+package types
 
-// Configuration object which is populated with default values.
-var defaultConfig = &Config{
-	ManagementServer: managementServer{
-		XDSPort:    18000,
-		NodeLabels: []string{"default"},
-		GRPCPort: 8765,
-	},
-	Database: database{
-		Name:     "APIM_DB",
-		Username: "postgres",
-		Password: "pg123",
-		Host:     "localhost",
-		Port:     5432,
-		PoolOptions: dbPool{
-			PoolMaxConns:              4,
-			PoolMinConns:              0,
-			PoolMaxConnLifetime:       "1h",
-			PoolMaxConnIdleTime:       "1h",
-			PoolHealthCheckPeriod:     "1m",
-			PoolMaxConnLifetimeJitter: "1s",
-		},
-	},
+type ApplicationEvent struct {
+	Label         string
+	UUID          string
+	IsRemoveEvent bool
+}
+
+type SubscriptionEvent struct {
+	Label         string
+	UUID          string
+	IsRemoveEvent bool
 }

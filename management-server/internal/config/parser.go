@@ -80,6 +80,7 @@ func ReadConfigs() *Config {
 		}
 		// Resolve environment variables.
 		config.ResolveConfigEnvValues(reflect.ValueOf(&(managementServerConfig.ManagementServer)).Elem(), "ManagementServer", true)
+		config.ResolveConfigEnvValues(reflect.ValueOf(&(managementServerConfig.Database)).Elem(), "Database", true)
 	})
 	return managementServerConfig
 }
