@@ -21,6 +21,7 @@ package database
 import (
 	"errors"
 	apkmgt "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/apkmgt"
+	"github.com/wso2/apk/management-server/internal/config"
 	"github.com/wso2/apk/management-server/internal/logger"
 	"sync"
 	"time"
@@ -37,6 +38,16 @@ type ApplicationLocalCache struct {
 	wg   sync.WaitGroup
 	mu   sync.RWMutex
 	apps map[string]CachedApplication
+}
+
+var cleanupInterval time.Duration
+var ttl time.Duration
+
+func init() {
+	conf := config.ReadConfigs()
+	cleanupInterval, _ = time.ParseDuration(conf.Database.DbCache.CleanupInterval)
+	ttl, _ = time.ParseDuration(conf.Database.DbCache.Ttl)
+	DbCache = NewApplicationLocalCache(cleanupInterval)
 }
 
 func NewApplicationLocalCache(cleanupInterval time.Duration) *ApplicationLocalCache {
@@ -97,6 +108,7 @@ func (lc *ApplicationLocalCache) UpdateSubscriptionInApplication(appUUID string,
 				return nil
 			}
 		}
+		app.expireAtTimestamp = time.Now().Unix() + ttl.Microseconds()
 	} else {
 		return ErrApplicationNotInCache
 	}
@@ -106,6 +118,7 @@ func (lc *ApplicationLocalCache) UpdateSubscriptionInApplication(appUUID string,
 func (lc *ApplicationLocalCache) AddSubscriptionForApplication(appUUID string, s *apkmgt.Subscription) error {
 	if app, ok := lc.apps[appUUID]; ok {
 		app.application.Subscriptions = append(app.application.Subscriptions, s)
+		app.expireAtTimestamp = time.Now().Unix() + ttl.Microseconds()
 		return nil
 	} else {
 		return ErrApplicationNotInCache
@@ -121,6 +134,7 @@ func (lc *ApplicationLocalCache) DeleteSubscriptionFromApplication(appUUID, subU
 				return nil
 			}
 		}
+		app.expireAtTimestamp = time.Now().Unix() + ttl.Microseconds()
 	} else {
 		return ErrApplicationNotInCache
 	}

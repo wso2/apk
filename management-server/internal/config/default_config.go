@@ -22,7 +22,7 @@ var defaultConfig = &Config{
 	ManagementServer: managementServer{
 		XDSPort:    18000,
 		NodeLabels: []string{"default"},
-		GRPCPort: 8765,
+		GRPCPort:   8765,
 	},
 	Database: database{
 		Name:     "APIM_DB",
@@ -37,6 +37,10 @@ var defaultConfig = &Config{
 			PoolMaxConnIdleTime:       "1h",
 			PoolHealthCheckPeriod:     "1m",
 			PoolMaxConnLifetimeJitter: "1s",
+		},
+		DbCache: dbCache{
+			CleanupInterval: "1h",
+			Ttl:             "1h",
 		},
 	},
 }

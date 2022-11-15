@@ -25,7 +25,7 @@ import (
 var DbCache *ApplicationLocalCache
 
 func init() {
-	DbCache = NewApplicationLocalCache(time.Hour)
+	DbCache = NewApplicationLocalCache(cleanupInterval)
 }
 
 func GetApplicationByUUID(uuid string) (*apkmgt.Application, error) {
@@ -47,7 +47,7 @@ func GetApplicationByUUID(uuid string) (*apkmgt.Application, error) {
 			Subscriptions: subs,
 			ConsumerKeys:  keys,
 		}
-		DbCache.Update(application, time.Now().Unix()+time.Hour.Milliseconds())
+		DbCache.Update(application, time.Now().Unix()+ttl.Microseconds())
 		return application, nil
 	}
 }
