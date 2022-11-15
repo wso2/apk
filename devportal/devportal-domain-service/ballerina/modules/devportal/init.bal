@@ -17,8 +17,6 @@
 //
 
 import ballerina/io;
-import devportal_service.org.wso2.apk.apimgt.api as api;
-import devportal_service.org.wso2.apk.apimgt.init as apkinit;
 
 configurable DatasourceConfiguration datasourceConfiguration = ?;
 configurable ThrottlingConfiguration throttleConfig = ?;
@@ -30,9 +28,4 @@ function init() {
         datasourceConfiguration: datasourceConfiguration
     };
     string configJson = apkConfig.toJson().toJsonString();
-    // Pass the configurations to java init component
-    api:APIManagementException? err = apkinit:APKComponent_activate(configJson);
-    if (err != ()) {
-        io:println(err);
-    }
 }
