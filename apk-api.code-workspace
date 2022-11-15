@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": "admin/admin-domain-service/ballerina"
+		},
+		{
+			"path": "devportal/devportal-domain-service/ballerina"
+		},
+		{
+			"path": "backoffice/backoffice-domain-service/ballerina"
+		},
+		{
+			"path": "runtime/runtime-domain-service/ballerina"
+		}
+	]
+}

@@ -18,6 +18,11 @@
 
 import ballerina/http;
 
+@display {
+    label: "runtime-api-service",
+    id: "runtime-api-service"
+}
+
 service /api/am/runtime on ep0 {
     resource function get apis(string? query, int 'limit = 25, int offset = 0, string sortBy = "createdTime", string sortOrder = "desc", @http:Header string? accept = "application/json") returns APIList|BadRequestError|UnauthorizedError|InternalServerErrorError|error {
         return getAPIListInNamespaceWithQuery(query, 'limit, offset, sortBy, sortOrder);
