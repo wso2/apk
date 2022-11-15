@@ -1,6 +1,12 @@
 import ballerina/grpc;
 
+
 listener grpc:Listener ep = new (9090);
+
+@display {
+    label: "management-server",
+    id: "management-server"
+}
 
 @grpc:Descriptor {value: APIDS_DESC}
 service "APIService" on ep {

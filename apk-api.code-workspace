@@ -11,6 +11,9 @@
 		},
 		{
 			"path": "runtime/runtime-domain-service/ballerina"
+		},
+		{
+			"path": "management-server/ballerina"
 		}
 	]
 }
