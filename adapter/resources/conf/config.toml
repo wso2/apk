@@ -76,7 +76,6 @@
 [enforcer.metrics]
   enabled = false
 
-
 [managementServer]
   serviceURL="localhost:18000"
 	NodeLabel="default"

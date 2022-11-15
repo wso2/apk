@@ -50,7 +50,7 @@ func NewHttpRouteController(mgr manager.Manager, ods *synchronizer.OperatorDataS
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
 			Message:   fmt.Sprintf("error creating HttpRoute controller: %v", err),
-			Severity:  logging.CRITICAL,
+			Severity:  logging.BLOCKER,
 			ErrorCode: 2609,
 		})
 		return err
@@ -60,7 +60,7 @@ func NewHttpRouteController(mgr manager.Manager, ods *synchronizer.OperatorDataS
 		loggers.LoggerAPKOperator.Errorf("Error watching gwapiv1b1.HTTPRoute: %v", err)
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
 			Message:   fmt.Sprintf("error watching HttpRoute objects: %v", err),
-			Severity:  logging.CRITICAL,
+			Severity:  logging.BLOCKER,
 			ErrorCode: 2610,
 		})
 		return err

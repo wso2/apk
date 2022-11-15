@@ -1407,11 +1407,6 @@ func UpdateEnforcerThrottleData(throttleData *throttle.ThrottleData) {
 
 // UpdateAPICache updates the xDS cache related to the API Lifecycle event.
 func UpdateAPICache(vHost string, newLabels []string, mgwSwagger model.MgwSwagger) error {
-
-	// TODO: Read org and labels from http route spec.
-	// newLabels := []string{"Default"}
-	mgwSwagger.OrganizationID = "wso2"
-
 	mutexForInternalMapUpdate.Lock()
 	defer mutexForInternalMapUpdate.Unlock()
 
@@ -1477,6 +1472,6 @@ func UpdateAPICache(vHost string, newLabels []string, mgwSwagger model.MgwSwagge
 	}
 
 	revisionStatus := updateXdsCacheOnAPIAdd(oldLabels, newLabels)
-	logger.LoggerXds.Infof("Deployed Revision: %v", revisionStatus)
+	logger.LoggerXds.Infof("Deployed Revision: %v:%v", apiIdentifier, revisionStatus)
 	return nil
 }

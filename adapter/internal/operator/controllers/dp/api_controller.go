@@ -58,7 +58,7 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
 			Message:   fmt.Sprintf("error creating API controller:%v", err),
-			Severity:  logging.CRITICAL,
+			Severity:  logging.BLOCKER,
 			ErrorCode: 2600,
 		})
 		return err
@@ -67,7 +67,7 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.API{}}, &handler.EnqueueRequestForObject{}); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
 			Message:   fmt.Sprintf("error watching API resources: %v", err),
-			Severity:  logging.CRITICAL,
+			Severity:  logging.BLOCKER,
 			ErrorCode: 2601,
 		})
 		return err
@@ -76,7 +76,7 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 		loggers.LoggerAPKOperator.Errorf("Error watching HttpRoute from API Controller: %v", err)
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
 			Message:   fmt.Sprintf("error watching HTTPRoute resources: %v", err),
-			Severity:  logging.CRITICAL,
+			Severity:  logging.BLOCKER,
 			ErrorCode: 2602,
 		})
 		return err

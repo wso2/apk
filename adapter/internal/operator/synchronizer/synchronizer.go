@@ -40,7 +40,11 @@ func HandleAPILifeCycleEvents(ch *chan APIEvent) {
 	for event := range *ch {
 		loggers.LoggerAPKOperator.Infof("Event received: %v\n", event)
 		if err := deployAPIInGateway(event.Event); err != nil {
-			loggers.LoggerAPKOperator.Infof("API deployment failed: %v", err)
+			loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+				Message:   fmt.Sprintf("api deployment failed:%v", err),
+				ErrorCode: 2616,
+				Severity:  logging.MAJOR,
+			})
 		}
 	}
 }
@@ -72,7 +76,6 @@ func deployAPIInGateway(apiState APIState) error {
 		})
 		return err
 	}
-	// mgwSwagger.UUID = string(apiState.APIDefinition.UID)
 	vHosts := getVhostForAPI(apiState)
 	labels := getLabelsForAPI(apiState)
 	for _, vHost := range vHosts {

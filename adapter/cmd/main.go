@@ -18,36 +18,14 @@
 package main
 
 import (
-	"os"
-	"os/signal"
-
 	logger "github.com/sirupsen/logrus"
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/adapter"
-
-	"github.com/wso2/apk/adapter/internal/xds"
 )
 
 // invokes the code from the /internal and /pkg directories and nothing else.
 func main() {
 	logger.Info("Starting the Adapter")
-	sig := make(chan os.Signal)
-	signal.Notify(sig, os.Interrupt)
-
-	// go operator.InitOperator()
-	go xds.InitApkMgtClient()
-
 	conf := config.ReadConfigs()
 	adapter.Run(conf)
-
-OUTER:
-	for {
-		select {
-		case s := <-sig:
-			switch s {
-			case os.Interrupt:
-				break OUTER
-			}
-		}
-	}
 }
