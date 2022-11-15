@@ -22,6 +22,11 @@ import ballerina/lang.value;
 import admin_service.org.wso2.apk.apimgt.api as api;
 import admin_service.org.wso2.apk.apimgt.admin.impl as admin;
 
+@display {
+    label: "admin-api-service",
+    id: "admin-api-service"
+}
+
 service /api/am/admin/v3 on ep0 {
     // resource function get throttling/policies/search(string? query) returns ThrottlePolicyDetailsList {
     // }
