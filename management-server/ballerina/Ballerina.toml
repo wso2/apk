@@ -1,0 +1,8 @@
+[package]
+org = "wso2.apk"
+name = "mgt-server"
+version = "0.1.0"
+distribution = "2201.2.3"
+
+[build-options]
+observabilityIncluded = true
