@@ -310,10 +310,10 @@ modules = [
 	{org = "wso2", packageName = "devportal_service", moduleName = "devportal_service.java.util"},
 	{org = "wso2", packageName = "devportal_service", moduleName = "devportal_service.org.wso2.apk.apimgt.api"},
 	{org = "wso2", packageName = "devportal_service", moduleName = "devportal_service.org.wso2.apk.apimgt.api.model"},
-	{org = "wso2", packageName = "devportal_service", moduleName = "devportal_service.org.wso2.apk.apimgt.init"},
-	{org = "wso2", packageName = "devportal_service", moduleName = "devportal_service.org.wso2.apk.apimgt.rest.api.devportal.v1.common.impl"},
-	{org = "wso2", packageName = "devportal_service", moduleName = "devportal_service.org.wso2.apk.apimgt.rest.api.devportal.v1.common.models"},
-	{org = "wso2", packageName = "devportal_service", moduleName = "devportal_service.org.wso2.apk.apimgt.rest.api.devportal.v1.dto"}
+	{org = "wso2", packageName = "devportal_service", moduleName = "devportal_service.org.wso2.apk.apimgt.devportal.dto"},
+	{org = "wso2", packageName = "devportal_service", moduleName = "devportal_service.org.wso2.apk.apimgt.devportal.impl"},
+	{org = "wso2", packageName = "devportal_service", moduleName = "devportal_service.org.wso2.apk.apimgt.devportal.models"},
+	{org = "wso2", packageName = "devportal_service", moduleName = "devportal_service.org.wso2.apk.apimgt.init"}
 ]
 
 

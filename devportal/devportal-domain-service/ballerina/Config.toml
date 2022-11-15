@@ -10,3 +10,7 @@ username = ""
 password = ""
 validationTimeout = 0
 testQuery = ""
+
+[wso2.devportal_service.devportal.throttleConfig]
+enableUnlimitedTier = true
+
