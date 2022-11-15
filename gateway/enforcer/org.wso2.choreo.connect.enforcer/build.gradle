@@ -84,10 +84,15 @@ task copyDependencies(type: Copy) {
     from configurations.default
     //todo(amali) check if we need json-wso2 jar
     include("log4j-*")
-    into "$projectDir/libs"
+    into "$projectDir/../libs"
 }
 
-tasks.register('copyEnforcerJar', Copy) {
+tasks.register('copy_enforcer_jar', Copy) {
     from "$buildDir/libs"
-    into "$projectDir/libs"
+    into "$projectDir/../libs"
+}
+
+tasks.named('docker_build').configure {
+    dependsOn copyDependencies
+    dependsOn copy_enforcer_jar
 }
