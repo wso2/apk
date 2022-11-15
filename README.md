@@ -27,10 +27,11 @@ You'll find many other useful documents on our [Documentation](https://wso2.com/
 
 APK is composed of these components:
 
-<a href="https://wso2.com/">
-   <img src="https://raw.githubusercontent.com/wso2/apk/main/logo/architecture.png"
+___
+
+<img src="https://raw.githubusercontent.com/wso2/apk/main/logo/architecture.png"
         alt="API Architecture" title="APKArchitecture" />
-</a>
+___
 
 - **Control Plane** - The APK control plane. It provides API Management capabilities, marketplace capabilities along with domain services and web applications. It consists of the following sub-components:
 
