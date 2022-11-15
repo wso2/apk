@@ -20,6 +20,9 @@ plugins {
     id 'jacoco-report-aggregation'
 }
 
+apply from: "$rootDir/../../common-gradle-scripts/java.gradle"
+apply from: "$rootDir/../../common-gradle-scripts/docker.gradle"
+
 repositories {
     mavenCentral()
 }
@@ -42,6 +45,25 @@ dependencies {
 //     dependsOn tasks.named('testCodeCoverageReport', JacocoReport)
 // }
 
-subprojects {
-    apply from: "$rootDir/../../common-gradle-scripts/java.gradle"
+
+tasks.named('build').configure {
+    dependsOn docker_build
 }
+
+tasks.named('docker_build').configure {
+    dependsOn copyDependencies
+    dependsOn copyEnforcerJar
+}
+
+tasks.named('copyDependencies').configure{
+    finalizedBy docker_build
+}
+
+tasks.named('copyEnforcerJar').configure{
+    finalizedBy docker_build
+}
+
+//subprojects {
+//    apply from: "$rootDir/../../common-gradle-scripts/java.gradle"
+//    apply from: "$rootDir/../../common-gradle-scripts/docker.gradle"
+//}

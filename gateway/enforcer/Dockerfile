@@ -61,8 +61,8 @@ RUN \
     && chown -R ${APK_USER}:${APK_USER_GROUP} ${APK_USER_HOME} \
     && echo '[ ! -z "${TERM}" -a -r /etc/motd ] && cat /etc/motd' >> /etc/bash.bashrc; echo "${MOTD}" > /etc/motd
 
-COPY maven/grpc_health_probe-linux-amd64 ${GRPC_HEALTH_PROBE_PATH}
-RUN chmod +x ${GRPC_HEALTH_PROBE_PATH}
+# COPY maven/grpc_health_probe-linux-amd64 ${GRPC_HEALTH_PROBE_PATH}
+# RUN chmod +x ${GRPC_HEALTH_PROBE_PATH}
 
 WORKDIR ${APK_USER_HOME}
 USER ${APK_USER}

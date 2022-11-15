@@ -79,3 +79,15 @@ dependencies {
     implementation project(':org.wso2.choreo.connect.discovery')
     testImplementation libs.junit
 }
+
+task copyDependencies(type: Copy) {
+    from configurations.default
+    //todo(amali) check if we need json-wso2 jar
+    include("log4j-*")
+    into "$projectDir/libs"
+}
+
+tasks.register('copyEnforcerJar', Copy) {
+    from "$buildDir/libs"
+    into "$projectDir/libs"
+}
