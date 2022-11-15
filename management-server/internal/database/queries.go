@@ -54,4 +54,17 @@ const (
 		" where 1=1 " +
 		"	AND APP.application_id = APPKEY.application_id " +
 		"	AND APP.UUID = $1"
+
+	QuerySubscriptionByUUID string = "select " +
+		"	SUB.uuid, " +
+		"	API.api_uuid, " +
+		"	SUB.sub_status, " +
+		"	API.organization, " +
+		"	SUB.created_by " +
+		" from " +
+		"	am_subscription SUB, " +
+		"	am_api API " +
+		" where 1=1 " +
+		"	AND SUB.api_id = API.api_id " +
+		"	AND SUB.uuid = $1"
 )

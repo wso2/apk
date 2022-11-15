@@ -27,7 +27,7 @@ type Config struct {
 type managementServer struct {
 	XDSPort    int32    `toml:"xdsPort"`
 	NodeLabels []string `toml:"nodeLabels"`
-	GRPCPort uint 		`toml:"gRPCPort"`
+	GRPCPort   uint     `toml:"gRPCPort"`
 }
 type database struct {
 	Name        string
@@ -36,6 +36,12 @@ type database struct {
 	Host        string
 	Port        int
 	PoolOptions dbPool
+	DbCache     dbCache
+}
+
+type dbCache struct {
+	CleanupInterval string
+	Ttl             string
 }
 
 type dbPool struct {
