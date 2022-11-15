@@ -18,6 +18,11 @@
 
 import ballerina/http;
 
+@display {
+    label: "admin-api-service",
+    id: "admin-api-service"
+}
+
 service /api/am/admin/v3 on ep0 {
     resource function get throttling/policies/search(string? query) returns ThrottlePolicyDetailsList {
     }

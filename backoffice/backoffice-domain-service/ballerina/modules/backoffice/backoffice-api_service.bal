@@ -34,6 +34,11 @@ listener http:Listener ep0 = new (BACKOFFICE_PORT);
     }
 }
 
+@display {
+    label: "backoffice-api-service",
+    id: "backoffice-api-service"
+}
+
 service /api/am/backoffice on ep0 {
 
     resource function get apis(string? query, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0, string sortBy = "createdTime", string sortOrder = "desc", @http:Header string? accept = "application/json") returns APIList|http:NotModified|NotAcceptableError {
