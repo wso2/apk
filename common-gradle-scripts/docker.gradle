@@ -15,13 +15,22 @@
  *
  */
 
-def imageName = System.getenv('docker_username') + '/' + project.name + ':' + project.version
+def imageName = docker_image_name + ':' + project.version
+def platforms = 'linux/amd64,linux/arm64'
 
-tasks.register('docker_login', Exec) {
+tasks.register('copy_dist', Copy) {
     group 'docker'
-    description 'Log in to a Docker registry.'
-    commandLine 'docker', 'login', '--username', System.getenv('docker_username'), '--password', System.getenv('docker_password')
+    description 'Copy the distribution to docker context'
+    from "$projectDir/../ballerina/target/bin/" + project.jar_name
+    into "$projectDir"
+    include "*.jar"
 }
+
+// tasks.register('docker_login', Exec) {
+//     group 'docker'
+//     description 'Log in to a Docker registry.'
+//     commandLine 'docker', 'login', '--username', System.getenv('docker_username'), '--password', System.getenv('docker_password')
+// }
 
 tasks.register('docker_build', Exec) {
     group 'docker'
@@ -29,10 +38,38 @@ tasks.register('docker_build', Exec) {
     commandLine 'docker', 'build', '-t', imageName, '.'
 }
 
-tasks.register('docker_push', Exec) {
+// tasks.register('docker_push', Exec) {
+//     group 'docker'
+//     description 'Push an image or a repository to a registry.'
+//     dependsOn docker_login
+//     dependsOn docker_build
+//     commandLine 'docker', 'push', imageName
+// }
+
+// Following tasks are required only if you need to make multi architecture docker images
+tasks.register('setup_arch', Exec) {
     group 'docker'
-    description 'Push an image or a repository to a registry.'
-    dependsOn docker_login
-    dependsOn docker_build
-    commandLine 'docker', 'push', imageName
+    description 'Setup QEMU for buildx'
+    commandLine 'docker', 'run', '--rm', '--privileged', 'multiarch/qemu-user-static', '--reset', '-p', 'yes'
+}
+
+tasks.register('setup_buildx', Exec) {
+    group 'docker'
+    description 'Setup builder instance'
+    dependsOn setup_arch
+    commandLine 'docker', 'buildx', 'create', '--name', 'mybuilder', '--use'
+}
+
+tasks.register('start_builder', Exec) {
+    group 'docker'
+    description 'Bootstrap buildx builder'
+    dependsOn setup_buildx
+    commandLine 'docker', 'buildx', 'inspect', '--bootstrap'
+}
+
+tasks.register('docker_buildx', Exec) {
+    group 'docker'
+    description 'Build a multiarch image using docker buildx buildkit'
+    dependsOn start_builder
+    commandLine 'docker', 'buildx', 'build', '--platform', platforms, '-t', imageName, '--push', '.'
 }

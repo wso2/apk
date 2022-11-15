@@ -1,0 +1,22 @@
+plugins {
+    id 'net.researchgate.release' version '3.0.2'
+}
+
+apply from: "$projectDir/../../../common-gradle-scripts/docker.gradle"
+
+
+tasks.register('copy_distribution',Copy) {
+    group 'Copy'
+    from "$projectDir/../ballerina/target/bin/runtime_domain_service.jar"
+    into "$projectDir"
+    include "*.jar"
+}
+
+tasks.named('copy_distribution').configure{
+    finalizedBy docker_build
+}
+
+tasks.named('build').configure {
+    dependsOn copy_distribution
+    dependsOn docker_build
+}

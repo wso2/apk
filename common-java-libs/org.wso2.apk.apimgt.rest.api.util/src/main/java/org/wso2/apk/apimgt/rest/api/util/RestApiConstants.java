@@ -45,6 +45,10 @@ public final class RestApiConstants {
     public static final String USER_REST_API_SCOPES = "user_rest_api_scopes";
 
     public static final String API_IMPORT_EXPORT_SCOPE = "apim:api_import_export";
+    public static final String API_MANAGE_SCOPE = "apim:api_manage";
+    public static final String CREATOR_SCOPE = "apim:api_create";
+    public static final String ADMIN_SCOPE = "apim:admin";
+    public static final String PUBLISHER_SCOPE = "apim:api_publish";
 
     public static final String DEFAULT_RESPONSE_CONTENT_TYPE = APPLICATION_JSON;
 
@@ -75,6 +79,7 @@ public final class RestApiConstants {
 
     public static final String API_ID_DELIMITER = "-";
     public static final String QUERY_PARAM = "{query}";
+    public static final String ALIAS_PARAM = "{alias}";
     public static final String LIMIT_PARAM = "{limit}";
     public static final String OFFSET_PARAM = "{offset}";
     public static final String SORTBY_PARAM = "{sortBy}";
@@ -95,6 +100,8 @@ public final class RestApiConstants {
 
     //todo better to take from cxf level
     public static final String RESOURCE_PATH_APIS = "/apis";
+    public static final String RESOURCE_PATH_ENDPOINT_CERTIFICATE_USAGE = "/endpoint-certificates/"
+            + ALIAS_PARAM + "/usage";
     public static final String RESOURCE_PATH_API_PRODUCTS = "/api-products";
     public static final String RESOURCE_PATH_APPLICATIONS = "/applications";
     public static final String RESOURCE_PATH_THROTTLING = "/throttling";
@@ -175,14 +182,17 @@ public final class RestApiConstants {
     public static final String PAGINATION_NEXT_LIMIT = "next_limit";
     public static final String PAGINATION_PREVIOUS_OFFSET = "previous_offset";
     public static final String PAGINATION_PREVIOUS_LIMIT = "previous_limit";
+    public static final String DEFAULT_SORT_CRITERION = "createdTime";
     public static final String DEFAULT_SORT_ORDER = "asc";
+    public static final String DESCENDING_SORT_ORDER = "desc";
 
     public static final int TAG_LIMIT_DEFAULT = 1000;
     public static final int TAG_OFFSET_DEFAULT = 0;
 
     public static final String APIS_GET_PAGINATION_URL =
             RESOURCE_PATH_APIS + "?limit=" + LIMIT_PARAM + "&offset=" + OFFSET_PARAM + "&query=" + QUERY_PARAM;
-
+    public static final String ENDPOINT_CERTIFICATE_USAGE_GET_PAGINATION_URL =
+            RESOURCE_PATH_ENDPOINT_CERTIFICATE_USAGE + "?limit=" + LIMIT_PARAM + "&offset=" + OFFSET_PARAM;
     public static final String APPLICATIONS_GET_PAGINATION_URL =
             RESOURCE_PATH_APPLICATIONS + "?limit=" + LIMIT_PARAM + "&offset=" + OFFSET_PARAM + "&groupId="
                     + GROUPID_PARAM;
@@ -299,4 +309,8 @@ public final class RestApiConstants {
 
     public static final Set<String> ALLOWED_THUMBNAIL_EXTENSIONS = new HashSet<String>(
             Arrays.asList("jpg", "png", "jpeg", "gif", "json"));
+
+    public static final String GENERIC_ERROR_STRING = "Error while generating" ;
+    public static final String STATUS_CONFLICT_MESSAGE_SUBSCRIPTION_ALREADY_EXISTS =
+            "Specified subscription already exists for API";
 }

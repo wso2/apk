@@ -31,3 +31,29 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - cp.wso2.com
+  resources:
+  - applications
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - cp.wso2.com
+  resources:
+  - applications/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - cp.wso2.com
+  resources:
+  - applications/status
+  verbs:
+  - get
+  - patch
+  - update

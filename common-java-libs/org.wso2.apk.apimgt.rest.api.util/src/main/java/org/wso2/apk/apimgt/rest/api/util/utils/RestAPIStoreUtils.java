@@ -43,6 +43,7 @@ public class RestAPIStoreUtils {
     private static boolean isStoreCacheEnabled;
 
     static {
+        //Todo APK
 //        APIManagerConfiguration apiManagerConfiguration = ServiceReferenceHolder.getInstance()
 //                .getAPIManagerConfigurationService().getAPIManagerConfiguration();
 //        String isStoreCacheEnabledConfiguration = apiManagerConfiguration
@@ -51,97 +52,98 @@ public class RestAPIStoreUtils {
 //                isStoreCacheEnabledConfiguration != null && Boolean.parseBoolean(isStoreCacheEnabledConfiguration);
     }
 
-//    /**
-//     * check whether current logged in user has access to the specified application
-//     *
-//     * @param application Application object
-//     * @return true if current logged in consumer has access to the specified application
-//     */
-//    public static boolean isUserAccessAllowedForApplication(Application application) {
-//        String groupId;
-//
-//        if (application != null) {
-//            groupId = application.getGroupId();
-//            //If application  subscriber and the current logged in user  same then user can retrieve application
-//            // irrespective of the groupId
-//            if (application.getSubscriber() != null && isUserOwnerOfApplication(application)) {
-//                return true;
-//            }
-//            // Check for shared apps
-//            if (!StringUtils.isEmpty(groupId)) {
-//                //String userGroupId = RestApiUtil.getLoggedInUserGroupId();
-//                String userGroupId=""
-//                //Check whether there is a common groupId between user and application
-//                if (userGroupId != null) {
-//                    List<String> groupIdList = new ArrayList<>(
-//                            Arrays.asList(groupId.split(APIConstants.MULTI_ATTRIBUTE_SEPARATOR_DEFAULT)));
-//                    for (String id : userGroupId.split(APIConstants.MULTI_ATTRIBUTE_SEPARATOR_DEFAULT)) {
-//                        if (groupIdList.contains(id)) {
-//                            return true;
-//                        }
-//                    }
-//
-//                }
-//            }
-//        }
-//        //user don't have access
-//        return false;
-//    }
+    /**
+     * check whether current logged in user has access to the specified application
+     *
+     * @param application Application object
+     * @return true if current logged in consumer has access to the specified application
+     */
+    public static boolean isUserAccessAllowedForApplication(Application application) {
+        String groupId;
 
-//    /**
-//     * check whether current logged in user is the owner of the application
-//     *
-//     * @param application Application object
-//     * @return true if current logged in consumer is the owner of the specified application
-//     */
-//    public static boolean isUserOwnerOfApplication(Application application) {
-//        String username = RestApiCommonUtil.getLoggedInUsername();
-//
-//        if (application.getSubscriber().getName().equals(username)) {
-//            return true;
-//        } else if (application.getSubscriber().getName().toLowerCase().equals(username.toLowerCase())) {
+        if (application != null) {
+            groupId = application.getGroupId();
+            //If application  subscriber and the current logged in user  same then user can retrieve application
+            // irrespective of the groupId
+            if (application.getSubscriber() != null && isUserOwnerOfApplication(application)) {
+                return true;
+            }
+            // Check for shared apps
+            if (!StringUtils.isEmpty(groupId)) {
+                //String userGroupId = RestApiUtil.getLoggedInUserGroupId();
+                String userGroupId="";
+                //Check whether there is a common groupId between user and application
+                if (userGroupId != null) {
+                    List<String> groupIdList = new ArrayList<>(
+                            Arrays.asList(groupId.split(APIConstants.MULTI_ATTRIBUTE_SEPARATOR_DEFAULT)));
+                    for (String id : userGroupId.split(APIConstants.MULTI_ATTRIBUTE_SEPARATOR_DEFAULT)) {
+                        if (groupIdList.contains(id)) {
+                            return true;
+                        }
+                    }
+
+                }
+            }
+        }
+        //user don't have access
+        return false;
+    }
+
+    /**
+     * check whether current logged in user is the owner of the application
+     *
+     * @param application Application object
+     * @return true if current logged in consumer is the owner of the specified application
+     */
+    public static boolean isUserOwnerOfApplication(Application application) {
+        String username = RestApiCommonUtil.getLoggedInUsername();
+
+        if (application.getSubscriber().getName().equals(username)) {
+            return true;
+        } else if (application.getSubscriber().getName().toLowerCase().equals(username.toLowerCase())) {
+            //Todo APK
 //            APIManagerConfiguration configuration = ServiceReferenceHolder.getInstance()
 //                    .getAPIManagerConfigurationService().getAPIManagerConfiguration();
 //            String comparisonConfig = configuration
 //                    .getFirstProperty(APIConstants.API_STORE_FORCE_CI_COMPARISIONS);
 //            return (StringUtils.isNotEmpty(comparisonConfig) && Boolean.valueOf(comparisonConfig));
-//        }
-//
-//        return false;
-//    }
+        }
 
-//    /**
-//     * Check whether the specified API exists and the current logged in user has access to it.
-//     * <p>
-//     * When it tries to retrieve the resource from the registry, it will fail with AuthorizationFailedException if user
-//     * does not have enough privileges. If the API does not exist, this will throw a APIMgtResourceNotFoundException
-//     *
-//     * @param apiId API UUID
-//     * @param organization Identifier of the organization
-//     * @throws APIManagementException
-//     */
-//    public static boolean isUserAccessAllowedForAPIByUUID(String apiId, String organization)
-//            throws APIManagementException {
-//        String username = RestApiCommonUtil.getLoggedInUsername();
-//        APIConsumer consumer = RestApiCommonUtil.getLoggedInUserConsumer();
-//        //this is just to check whether the user has access to the api or the api exists.
-//        try {
-//            consumer.getLightweightAPIByUUID(apiId, organization);
-//        } catch (APIManagementException e) {
-//            if (RestApiUtil.isDueToAuthorizationFailure(e)) {
-//                String message =
-//                        "user " + username + " failed to access the API " + apiId + " due to an authorization failure";
-//                log.info(message);
-//                return false;
-//            } else {
-//                //This is an unexpected failure
-//                String message =
-//                        "Failed to retrieve the API " + apiId + " to check user " + username + " has access to the API";
-//                throw new APIManagementException(message, e);
-//            }
-//        }
-//        return true;
-//    }
+        return false;
+    }
+
+    /**
+     * Check whether the specified API exists and the current logged in user has access to it.
+     * <p>
+     * When it tries to retrieve the resource from the registry, it will fail with AuthorizationFailedException if user
+     * does not have enough privileges. If the API does not exist, this will throw a APIMgtResourceNotFoundException
+     *
+     * @param apiId API UUID
+     * @param organization Identifier of the organization
+     * @throws APIManagementException
+     */
+    public static boolean isUserAccessAllowedForAPIByUUID(String apiId, String organization)
+            throws APIManagementException {
+        String username = RestApiCommonUtil.getLoggedInUsername();
+        APIConsumer consumer = RestApiCommonUtil.getLoggedInUserConsumer();
+        //this is just to check whether the user has access to the api or the api exists.
+        try {
+            consumer.getLightweightAPIByUUID(apiId, organization);
+        } catch (APIManagementException e) {
+            if (RestApiUtil.isDueToAuthorizationFailure(e)) {
+                String message =
+                        "user " + username + " failed to access the API " + apiId + " due to an authorization failure";
+                log.info(message);
+                return false;
+            } else {
+                //This is an unexpected failure
+                String message =
+                        "Failed to retrieve the API " + apiId + " to check user " + username + " has access to the API";
+                throw new APIManagementException(message, e);
+            }
+        }
+        return true;
+    }
 
     /**
      * Check whether the specified API exists and the current logged in user has access to it.
@@ -152,28 +154,28 @@ public class RestAPIStoreUtils {
      * @param apiId API identifier
      * @throws APIManagementException
      */
-//    public static boolean isUserAccessAllowedForAPI(APIIdentifier apiId) throws APIManagementException {
-//        String username = RestApiCommonUtil.getLoggedInUsername();
-//        //this is just to check whether the user has access to the api or the api exists.
-//        try {
-//            APIConsumer apiConsumer = RestApiCommonUtil.getLoggedInUserConsumer();
-//            String organization = ApiMgtDAO.getInstance().getOrganizationByAPIUUID(apiId.getUUID());
-//            apiConsumer.getLightweightAPIByUUID(apiId.getUUID(), organization);
-//        } catch (APIManagementException e) {
-//            if (RestApiUtil.isDueToAuthorizationFailure(e)) {
-//                String message =
-//                        "user " + username + " failed to access the API " + apiId + " due to an authorization failure";
-//                log.info(message);
-//                return false;
-//            } else {
-//                //This is an unexpected failure
-//                String message =
-//                        "Failed to retrieve the API " + apiId + " to check user " + username + " has access to the API";
-//                throw new APIManagementException(message, e);
-//            }
-//        }
-//        return true;
-//    }
+    public static boolean isUserAccessAllowedForAPI(APIIdentifier apiId) throws APIManagementException {
+        String username = RestApiCommonUtil.getLoggedInUsername();
+        //this is just to check whether the user has access to the api or the api exists.
+        try {
+            APIConsumer apiConsumer = RestApiCommonUtil.getLoggedInUserConsumer();
+            String organization = ApiMgtDAO.getInstance().getOrganizationByAPIUUID(apiId.getUUID());
+            apiConsumer.getLightweightAPIByUUID(apiId.getUUID(), organization);
+        } catch (APIManagementException e) {
+            if (RestApiUtil.isDueToAuthorizationFailure(e)) {
+                String message =
+                        "user " + username + " failed to access the API " + apiId + " due to an authorization failure";
+                log.info(message);
+                return false;
+            } else {
+                //This is an unexpected failure
+                String message =
+                        "Failed to retrieve the API " + apiId + " to check user " + username + " has access to the API";
+                throw new APIManagementException(message, e);
+            }
+        }
+        return true;
+    }
 
     /**
      * Check whether user is allowed to access api product

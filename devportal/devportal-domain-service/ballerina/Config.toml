@@ -1,0 +1,12 @@
+[wso2.devportal_service.devportal]
+DEVPORTAL_PORT = 9444
+
+
+# Sample configurations
+[wso2.devportal_service.devportal.datasourceConfiguration]
+description = ""
+url = ""
+username = ""
+password = ""
+validationTimeout = 0
+testQuery = ""

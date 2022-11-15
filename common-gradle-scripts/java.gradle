@@ -27,6 +27,9 @@ java.sourceCompatibility = JavaVersion.VERSION_11
 repositories {
     mavenLocal()
     mavenCentral()
+    maven {
+        url "https://maven.wso2.org/nexus/content/groups/wso2-public/"
+    }
 }
 
 jar {
@@ -59,4 +62,7 @@ publishing {
     }
 }
 
+tasks.named('build').configure {
+    finalizedBy publishToMavenLocal
+}
 // afterReleaseBuild.dependsOn publish

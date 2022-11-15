@@ -588,7 +588,7 @@ public abstract class AbstractAPIManager implements APIManager {
      */
     public Application getApplicationByUUID(String uuid) throws APIManagementException {
 
-        Application application = apiMgtDAO.getApplicationByUUID(uuid);
+        Application application = applicationDAOImpl.getApplicationByUUID(uuid);
         if (application != null) {
             Set<APIKey> keys = getApplicationKeys(application.getId());
             for (APIKey key : keys) {
@@ -611,7 +611,7 @@ public abstract class AbstractAPIManager implements APIManager {
      */
     public Application getApplicationByUUID(String uuid, String tenantDomain) throws APIManagementException {
 
-        Application application = apiMgtDAO.getApplicationByUUID(uuid);
+        Application application = applicationDAOImpl.getApplicationByUUID(uuid);
         if (application != null) {
             Set<APIKey> keys = getApplicationKeys(application.getId(), tenantDomain);
             for (APIKey key : keys) {
@@ -620,7 +620,7 @@ public abstract class AbstractAPIManager implements APIManager {
                 }
                 application.addKey(key);
             }
-            int subscriptionCount = apiMgtDAO.getSubscriptionCountByApplicationId(application, tenantDomain);
+            int subscriptionCount = applicationDAOImpl.getSubscriptionCountByApplicationId(application, tenantDomain);
             application.setSubscriptionCount(subscriptionCount);
 
         }
@@ -630,7 +630,7 @@ public abstract class AbstractAPIManager implements APIManager {
     @Override
     public Application getLightweightApplicationByUUID(String uuid) throws APIManagementException {
 
-        return apiMgtDAO.getApplicationByUUID(uuid);
+        return applicationDAOImpl.getApplicationByUUID(uuid);
     }
 
     /**

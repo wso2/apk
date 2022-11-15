@@ -21,21 +21,25 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"reflect"
 
 	core "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	discovery "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/loggers"
+	cpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/cp/v1alpha1"
 
 	apkmgt_model "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/apkmgt"
 	stub "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/apkmgt"
 	"github.com/wso2/apk/adapter/pkg/logging"
 
+	stringutils "github.com/wso2/apk/adapter/internal/utils"
 	"google.golang.org/genproto/googleapis/rpc/status"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	grpcStatus "google.golang.org/grpc/status"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var (
@@ -47,7 +51,24 @@ var (
 	lastReceivedResponse *discovery.DiscoveryResponse
 	// XDS stream for streaming Aplications from APK Mgt client
 	xdsStream stub.APKMgtDiscoveryService_StreamAPKMgtApplicationsClient
+	// applicationMap contains the application cache
+	applicationMap map[string]cpv1alpha1.Application
+	// applicationChannel is used to notifiy the application updates
+	applicationChannel chan ApplicationEvent
 )
+
+type EventType int
+
+const (
+	APPLICATION_CREATE = 0
+	APPLICATION_UPDATE = 1
+	APPLICATION_DELETE = 2
+)
+
+type ApplicationEvent struct {
+	Type        EventType
+	Application *cpv1alpha1.Application
+}
 
 const (
 	// The type url for requesting Application Entries from apkmgt server.
@@ -56,6 +77,8 @@ const (
 
 func init() {
 	lastAckedResponse = &discovery.DiscoveryResponse{}
+	applicationChannel = make(chan ApplicationEvent, 1000)
+	applicationMap = make(map[string]cpv1alpha1.Application)
 }
 
 func initConnection(xdsURL string) error {
@@ -180,6 +203,8 @@ func InitApkMgtClient() {
 }
 
 func addApplicationsToChannel(resp *discovery.DiscoveryResponse) {
+	var newApplicationUUIDs []string
+
 	for _, res := range resp.Resources {
 		application := &apkmgt_model.Application{}
 		err := ptypes.UnmarshalAny(res, application)
@@ -192,6 +217,74 @@ func addApplicationsToChannel(resp *discovery.DiscoveryResponse) {
 			})
 			continue
 		}
-		loggers.LoggerXds.Debug("client has received: ", res)
+
+		applicationUUID := application.Uuid
+		newApplicationUUIDs = append(newApplicationUUIDs, applicationUUID)
+
+		applicationResource := &cpv1alpha1.Application{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: "default",
+				Name:      application.Uuid,
+			},
+			Spec: cpv1alpha1.ApplicationSpec{
+				UUID:       application.Uuid,
+				Name:       application.Name,
+				Owner:      application.Owner,
+				Attributes: application.Attributes,
+			},
+		}
+
+		var consumerKeys []cpv1alpha1.ConsumerKey
+		for _, consumerKey := range application.ConsumerKeys {
+			consumerKeys = append(consumerKeys, cpv1alpha1.ConsumerKey{Key: consumerKey.Key, KeyManager: consumerKey.KeyManager})
+		}
+		applicationResource.Spec.ConsumerKeys = consumerKeys
+
+		var subscriptions []cpv1alpha1.Subscription
+		for _, subscription := range application.Subscriptions {
+			subscriptions = append(subscriptions, cpv1alpha1.Subscription{
+				UUID:               subscription.Uuid,
+				SubscriptionStatus: subscription.SubscriptionStatus,
+				PolicyID:           subscription.PolicyId,
+				APIRef:             subscription.ApiUuid,
+			})
+		}
+		applicationResource.Spec.Subscriptions = subscriptions
+
+		var event ApplicationEvent
+
+		if currentApplication, found := applicationMap[applicationUUID]; found {
+			if reflect.DeepEqual(currentApplication.Spec, applicationResource.Spec) {
+				continue
+			}
+			// Application update event
+			event = ApplicationEvent{
+				Type:        APPLICATION_UPDATE,
+				Application: applicationResource,
+			}
+			applicationMap[applicationUUID] = *applicationResource
+		} else {
+			// Application create event
+			event = ApplicationEvent{
+				Type:        APPLICATION_CREATE,
+				Application: applicationResource,
+			}
+			applicationMap[applicationUUID] = *applicationResource
+		}
+
+		applicationChannel <- event
+
+	}
+	// Send delete events for removed applications
+	for _, application := range applicationMap {
+		if !stringutils.StringInSlice(application.Name, newApplicationUUIDs) {
+			// Application delete event
+			event := ApplicationEvent{
+				Type:        APPLICATION_DELETE,
+				Application: &application,
+			}
+			applicationChannel <- event
+			delete(applicationMap, application.Name)
+		}
 	}
 }

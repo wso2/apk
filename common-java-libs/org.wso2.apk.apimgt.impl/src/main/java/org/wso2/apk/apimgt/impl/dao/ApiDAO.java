@@ -61,6 +61,7 @@ import org.wso2.apk.apimgt.api.model.URITemplate;
 import org.wso2.apk.apimgt.impl.dao.dto.Documentation;
 import org.wso2.apk.apimgt.impl.dao.dto.ResourceFile;
 
+
 import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
@@ -71,43 +72,43 @@ import java.util.Set;
  * Provides access to API data layer
  */
 public interface ApiDAO {
-
-    /**
-     * Add API metadata.
-     *
-     * @param organization Organization the API Owned
-     * @param api      API to add
-     * @return API Id of the successfully added API
-     * @throws APIManagementException if fails to add API
-     */
+//
+//    /**
+//     * Add API metadata.
+//     *
+//     * @param organization Organization the API Owned
+//     * @param api      API to add
+//     * @return API Id of the successfully added API
+//     * @throws APIManagementException if fails to add API
+//     */
     int addAPI(Organization organization, API api) throws APIManagementException;
-
-    /**
-     * Update API metadata.
-     *
-     * @param api API Object to be updated
-     * @param username  User who is updating API
-     * @throws APIManagementException if fails to update API Metadata
-     */
+//
+//    /**
+//     * Update API metadata.
+//     *
+//     * @param api API Object to be updated
+//     * @param username  User who is updating API
+//     * @throws APIManagementException if fails to update API Metadata
+//     */
     void updateAPI(API api, String username) throws APIManagementException;
-
-    /**
-     * Update API Artifact.
-     *
-     * @param organization Organization the API Owned
-     * @param publisherAPI      API to be updated
-     * @return API Object of the successfully added API
-     * @throws APIManagementException if fails to update API Artifact
-     */
+//
+//    /**
+//     * Update API Artifact.
+//     *
+//     * @param organization Organization the API Owned
+//     * @param publisherAPI      API to be updated
+//     * @return API Object of the successfully added API
+//     * @throws APIManagementException if fails to update API Artifact
+//     */
     PublisherAPI updateAPIArtifact(Organization organization, PublisherAPI publisherAPI) throws APIManagementException;
-
-    /**
-     * Delete API.
-     *
-     * @param organization Organization the API Owned
-     * @param apiUUID      API UUID of the API to be deleted
-     * @throws APIManagementException if fails to add API
-     */
+//
+//    /**
+//     * Delete API.
+//     *
+//     * @param organization Organization the API Owned
+//     * @param apiUUID      API UUID of the API to be deleted
+//     * @throws APIManagementException if fails to add API
+//     */
     void deleteAPI(Organization organization, String apiUUID) throws APIManagementException;
 
     /**
@@ -134,36 +135,36 @@ public interface ApiDAO {
      */
     PublisherAPISearchResult searchAPIsForPublisher(Organization organization, String searchQuery, int start,
                                                     int offset, UserContext ctx, String sortBy, String sortOrder) throws APIManagementException;
-
-    /**
-     * Save the passed WSDL schema definition of the API.  This includes initial creation operation and later
-     * update operations
-     *
-     * @param org              Organization the WSDL is owned by
-     * @param apiId            API ID
-     * @param wsdlResourceFile WSDL Resource File
-     * @throws WSDLPersistenceException
-     */
+//
+//    /**
+//     * Save the passed WSDL schema definition of the API.  This includes initial creation operation and later
+//     * update operations
+//     *
+//     * @param org              Organization the WSDL is owned by
+//     * @param apiId            API ID
+//     * @param wsdlResourceFile WSDL Resource File
+//     * @throws WSDLPersistenceException
+//     */
     void saveWSDL(Organization org, String apiId, ResourceFile wsdlResourceFile) throws WSDLPersistenceException;
-
-    /**
-     * Get the WSDL schema definition
-     *
-     * @param org   Organization the WSDL is owned by
-     * @param apiId API ID
-     * @return WSDL schema definition
-     * @throws WSDLPersistenceException
-     */
+//
+//    /**
+//     * Get the WSDL schema definition
+//     *
+//     * @param org   Organization the WSDL is owned by
+//     * @param apiId API ID
+//     * @return WSDL schema definition
+//     * @throws WSDLPersistenceException
+//     */
     ResourceFile getWSDL(Organization org, String apiId) throws WSDLPersistenceException;
-
-    /**
-     * Save OAS Schema definition
-     *
-     * @param org           Organization the OAS definnition is owned by
-     * @param apiId         API ID
-     * @param apiDefinition API OAS definition
-     * @throws OASPersistenceException
-     */
+//
+//    /**
+//     * Save OAS Schema definition
+//     *
+//     * @param org           Organization the OAS definnition is owned by
+//     * @param apiId         API ID
+//     * @param apiDefinition API OAS definition
+//     * @throws OASPersistenceException
+//     */
     void saveOASDefinition(Organization org, String apiId, String apiDefinition) throws OASPersistenceException;
     /**
      * Get OAS Schema definition of the API
@@ -174,72 +175,72 @@ public interface ApiDAO {
      * @throws OASPersistenceException
      */
     String getOASDefinition(Organization org, String apiId) throws OASPersistenceException;
-
-    /**
-     * Save Async API definition
-     *
-     * @param org           Organization the Async API definition is owned by
-     * @param apiId         API ID
-     * @param apiDefinition Async API definition
-     * @throws AsyncSpecPersistenceException
-     */
+//
+//    /**
+//     * Save Async API definition
+//     *
+//     * @param org           Organization the Async API definition is owned by
+//     * @param apiId         API ID
+//     * @param apiDefinition Async API definition
+//     * @throws AsyncSpecPersistenceException
+//     */
     void saveAsyncDefinition(Organization org, String apiId, String apiDefinition) throws AsyncSpecPersistenceException;
-
-    /**
-     * Get Async API definition
-     *
-     * @param org   Organization the definition is owned by
-     * @param apiId API ID
-     * @return Async definition
-     * @throws AsyncSpecPersistenceException
-     */
+//
+//    /**
+//     * Get Async API definition
+//     *
+//     * @param org   Organization the definition is owned by
+//     * @param apiId API ID
+//     * @return Async definition
+//     * @throws AsyncSpecPersistenceException
+//     */
     String getAsyncDefinition(Organization org, String apiId) throws AsyncSpecPersistenceException;
-
-    /**
-     * Save GraphQL schema definition. This includes initial creation operation and later update operations.
-     *
-     * @param org              Organization the GraphQL definition is owned by
-     * @param apiId            API ID
-     * @param schemaDefinition GraphQL definition of API
-     * @throws GraphQLPersistenceException
-     */
+//
+//    /**
+//     * Save GraphQL schema definition. This includes initial creation operation and later update operations.
+//     *
+//     * @param org              Organization the GraphQL definition is owned by
+//     * @param apiId            API ID
+//     * @param schemaDefinition GraphQL definition of API
+//     * @throws GraphQLPersistenceException
+//     */
     void saveGraphQLSchemaDefinition(Organization org, String apiId, String schemaDefinition)
-            throws GraphQLPersistenceException;
-
-    /**
-     * Get GraphQL schema definition
-     *
-     * @param org   Organization the GraphQL definition is owned by
-     * @param apiId API ID
-     * @return GraphQL schema definition
-     * @throws GraphQLPersistenceException
-     */
+           throws GraphQLPersistenceException;
+//
+//    /**
+//     * Get GraphQL schema definition
+//     *
+//     * @param org   Organization the GraphQL definition is owned by
+//     * @param apiId API ID
+//     * @return GraphQL schema definition
+//     * @throws GraphQLPersistenceException
+//     */
     String getGraphQLSchema(Organization org, String apiId) throws GraphQLPersistenceException;
-
-    /**
-     * Add API Revision
-     *
-     * @param apiRevision API Revision Object to be added
-     * @throws APIManagementException
-     */
+//
+//    /**
+//     * Add API Revision
+//     *
+//     * @param apiRevision API Revision Object to be added
+//     * @throws APIManagementException
+//     */
     void addAPIRevision(APIRevision apiRevision) throws APIManagementException;
-
-    /**
-     * Restore API Revision
-     *
-     * @param apiRevision API Revision Object to be restored
-     * @throws APIManagementException
-     */
+//
+//    /**
+//     * Restore API Revision
+//     *
+//     * @param apiRevision API Revision Object to be restored
+//     * @throws APIManagementException
+//     */
     void restoreAPIRevision(APIRevision apiRevision) throws APIManagementException;
-
-    /**
-     * Delete API Revision
-     *
-     * @param apiRevision API Revision Object to be deleted
-     * @throws APIManagementException
-     */
+//
+//    /**
+//     * Delete API Revision
+//     *
+//     * @param apiRevision API Revision Object to be deleted
+//     * @throws APIManagementException
+//     */
     void deleteAPIRevision(APIRevision apiRevision) throws APIManagementException;
-
+//
     /**
      * Add documentation to API
      *
@@ -321,16 +322,16 @@ public interface ApiDAO {
      */
     void deleteDocumentation(Organization organization, String apiUUID, String docUUID) throws DocumentationPersistenceException;
 
-    /**
-     * Search based on content to display on publisher
-     *
-     * @param organization         Organization the APIs are owned by
-     * @param searchQuery search query
-     * @param start       starting index
-     * @param offset      offset to search
-     * @return Publisher  Search Result
-     * @throws APIPersistenceException
-     */
+//    /**
+//     * Search based on content to display on publisher
+//     *
+//     * @param organization         Organization the APIs are owned by
+//     * @param searchQuery search query
+//     * @param start       starting index
+//     * @param offset      offset to search
+//     * @return Publisher  Search Result
+//     * @throws APIPersistenceException
+//     */
     PublisherContentSearchResult searchContentForPublisher(Organization organization, String searchQuery, int start, int offset,
                                                            UserContext userContext) throws APIPersistenceException;
 
@@ -353,97 +354,97 @@ public interface ApiDAO {
      * @throws ThumbnailPersistenceException
      */
     ResourceFile getThumbnail(Organization organization, String apiId) throws ThumbnailPersistenceException;
-
-    /**
-     * Delete thumbnail icon of the API
-     *
-     * @param organization   Organization the thumbnail icon is owned by
-     * @param apiId API ID
-     * @throws ThumbnailPersistenceException
-     */
+//
+//    /**
+//     * Delete thumbnail icon of the API
+//     *
+//     * @param organization   Organization the thumbnail icon is owned by
+//     * @param apiId API ID
+//     * @throws ThumbnailPersistenceException
+//     */
     void deleteThumbnail(Organization organization, String apiId) throws ThumbnailPersistenceException;
-
-    /**
-     * Search APIs to be displayed on Dev Portal API listing
-     *
-     * @param organization         Organization the APIs are owned by
-     * @param searchQuery search query
-     * @param start       starting index
-     * @param offset      search offset
-     * @return Dev Portal API Search Result
-     * @throws APIPersistenceException
-     */
+//
+//    /**
+//     * Search APIs to be displayed on Dev Portal API listing
+//     *
+//     * @param organization         Organization the APIs are owned by
+//     * @param searchQuery search query
+//     * @param start       starting index
+//     * @param offset      search offset
+//     * @return Dev Portal API Search Result
+//     * @throws APIPersistenceException
+//     */
     DevPortalAPISearchResult searchAPIsForDevPortal(Organization organization, String searchQuery, int start, int offset,
                                                     UserContext ctx) throws APIPersistenceException;
-
-    /**
-     * Search based on content to display on publisher
-     *
-     * @param organization         Organization the APIs are owned by
-     * @param searchQuery search query
-     * @param start       starting index
-     * @param offset      offset to search
-     * @return Publisher  Search Result
-     * @throws APIPersistenceException
-     */
+//
+//    /**
+//     * Search based on content to display on publisher
+//     *
+//     * @param organization         Organization the APIs are owned by
+//     * @param searchQuery search query
+//     * @param start       starting index
+//     * @param offset      offset to search
+//     * @return Publisher  Search Result
+//     * @throws APIPersistenceException
+//     */
     DevPortalContentSearchResult searchContentForDevPortal(Organization organization, String searchQuery, int start,
                                                            int offset, UserContext ctx) throws APIPersistenceException;
-
-    /**
-     * Get the API information stored which is used for DevPortal operations
-     *
-     * @param organization   Organization the API is owned by
-     * @param apiId API ID
-     * @return
-     * @throws APIPersistenceException
-     */
+//
+//    /**
+//     * Get the API information stored which is used for DevPortal operations
+//     *
+//     * @param organization   Organization the API is owned by
+//     * @param apiId API ID
+//     * @return
+//     * @throws APIPersistenceException
+//     */
     DevPortalAPI getDevPortalAPI(Organization organization, String apiId) throws APIPersistenceException;
-
-    /**
-     * Add URI Templates to database with resource scope mappings.
-     *
-     * @param apiId    API Id
-     * @param api      API to add URI templates of
-     * @param tenantId Tenant ID
-     * @throws APIManagementException If an error occurs while adding URI templates.
-     */
+//
+//    /**
+//     * Add URI Templates to database with resource scope mappings.
+//     *
+//     * @param apiId    API Id
+//     * @param api      API to add URI templates of
+//     * @param tenantId Tenant ID
+//     * @throws APIManagementException If an error occurs while adding URI templates.
+//     */
     void addURITemplates(int tenantId, int apiId, API api) throws APIManagementException;
-
-    /**
-     * Get API Context using a new DB connection.
-     *
-     * @param uuid API uuid
-     * @return API Context
-     * @throws APIManagementException if an error occurs
-     */
-    String getAPIContext(String uuid) throws APIManagementException;
-
-    /**
-     * Get API Default Version using a new DB connection.
-     *
-     * @param apiId API Identifier
-     * @return API Default Version
-     * @throws APIManagementException if an error occurs
-     */
-    String getDefaultVersion(APIIdentifier apiId) throws APIManagementException;
-
-    /**
-     * Get Published API Default Version using a new DB connection.
-     *
-     * @param apiId API Identifier
-     * @return API Default Version
-     * @throws APIManagementException if an error occurs
-     */
-    String getPublishedDefaultVersion(APIIdentifier apiId) throws APIManagementException;
-
-    /**
-     * Get Lightweight API Information.
-     *
-     * @param organization Organization of the API
-     * @param apiIdentifier API Identifier
-     * @return API Object
-     * @throws APIManagementException if an error occurs
-     */
+//
+//    /**
+//     * Get API Context using a new DB connection.
+//     *
+//     * @param uuid API uuid
+//     * @return API Context
+//     * @throws APIManagementException if an error occurs
+//     */
+//    String getAPIContext(String uuid) throws APIManagementException;
+//
+//    /**
+//     * Get API Default Version using a new DB connection.
+//     *
+//     * @param apiId API Identifier
+//     * @return API Default Version
+//     * @throws APIManagementException if an error occurs
+//     */
+//    String getDefaultVersion(APIIdentifier apiId) throws APIManagementException;
+//
+//    /**
+//     * Get Published API Default Version using a new DB connection.
+//     *
+//     * @param apiId API Identifier
+//     * @return API Default Version
+//     * @throws APIManagementException if an error occurs
+//     */
+//    String getPublishedDefaultVersion(APIIdentifier apiId) throws APIManagementException;
+//
+//    /**
+//     * Get Lightweight API Information.
+//     *
+//     * @param organization Organization of the API
+//     * @param apiIdentifier API Identifier
+//     * @return API Object
+//     * @throws APIManagementException if an error occurs
+//     */
     API getLightWeightAPIInfoByAPIIdentifier(String organization, APIIdentifier apiIdentifier)
             throws APIManagementException;
 
@@ -456,119 +457,119 @@ public interface ApiDAO {
      */
     int getAPIID(String uuid) throws APIManagementException;
 
-    /**
-     * Get count of the revisions created for a particular API.
-     *
-     * @return revision count
-     * @throws APIManagementException if an error occurs while retrieving revision count
-     */
+//    /**
+//     * Get count of the revisions created for a particular API.
+//     *
+//     * @return revision count
+//     * @throws APIManagementException if an error occurs while retrieving revision count
+//     */
     int getRevisionCountByAPI(String apiUUID) throws APIManagementException;
-
-    /**
-     * Get most recent revision id of the revisions created for a particular API.
-     *
-     * @return revision id
-     * @throws APIManagementException if an error occurs while retrieving revision id
-     */
+//
+//    /**
+//     * Get most recent revision id of the revisions created for a particular API.
+//     *
+//     * @return revision id
+//     * @throws APIManagementException if an error occurs while retrieving revision id
+//     */
     int getMostRecentRevisionId(String apiUUID) throws APIManagementException;
-
-    /**
-     * Get revision details by providing revision UUID
-     *
-     * @return revision object
-     * @throws APIManagementException if an error occurs while retrieving revision details
-     */
+//
+//    /**
+//     * Get revision details by providing revision UUID
+//     *
+//     * @return revision object
+//     * @throws APIManagementException if an error occurs while retrieving revision details
+//     */
     APIRevision getRevisionByRevisionUUID(String revisionUUID) throws APIManagementException;
-
-    /**
-     * Get revision UUID providing revision number
-     *
-     * @param revisionNum Revision number
-     * @param apiUUID     UUID of the API
-     * @return UUID of the revision
-     * @throws APIManagementException if an error occurs while retrieving revision details
-     */
+//
+//    /**
+//     * Get revision UUID providing revision number
+//     *
+//     * @param revisionNum Revision number
+//     * @param apiUUID     UUID of the API
+//     * @return UUID of the revision
+//     * @throws APIManagementException if an error occurs while retrieving revision details
+//     */
     String getRevisionUUID(String revisionNum, String apiUUID) throws APIManagementException;
-
-    /**
-     * Get revision UUID providing revision number and organization
-     *
-     * @param revisionNum   Revision number
-     * @param apiUUID       UUID of the API
-     * @param organization  organization ID of the API
-     * @return UUID of the revision
-     * @throws APIManagementException if an error occurs while retrieving revision details
-     */
+//
+//    /**
+//     * Get revision UUID providing revision number and organization
+//     *
+//     * @param revisionNum   Revision number
+//     * @param apiUUID       UUID of the API
+//     * @param organization  organization ID of the API
+//     * @return UUID of the revision
+//     * @throws APIManagementException if an error occurs while retrieving revision details
+//     */
     String getRevisionUUIDByOrganization(String revisionNum, String apiUUID, String organization) throws APIManagementException;
-
-    /**
-     * Get the earliest revision UUID from the revision list for a given API
-     *
-     * @param apiUUID UUID of the API
-     * @return UUID of the revision
-     * @throws APIManagementException if an error occurs while retrieving revision details
-     */
+//
+//    /**
+//     * Get the earliest revision UUID from the revision list for a given API
+//     *
+//     * @param apiUUID UUID of the API
+//     * @return UUID of the revision
+//     * @throws APIManagementException if an error occurs while retrieving revision details
+//     */
     String getEarliestRevision(String apiUUID) throws APIManagementException;
-
-    /**
-     * Get the latest revision UUID from the revision list for a given API
-     *
-     * @param apiUUID UUID of the API
-     * @return UUID of the revision
-     * @throws APIManagementException if an error occurs while retrieving revision details
-     */
+//
+//    /**
+//     * Get the latest revision UUID from the revision list for a given API
+//     *
+//     * @param apiUUID UUID of the API
+//     * @return UUID of the revision
+//     * @throws APIManagementException if an error occurs while retrieving revision details
+//     */
     String getLatestRevisionUUID(String apiUUID) throws APIManagementException;
-
-    /**
-     * Get revision details by providing revision UUID
-     *
-     * @return revisions List object
-     * @throws APIManagementException if an error occurs while retrieving revision details
-     */
+//
+//    /**
+//     * Get revision details by providing revision UUID
+//     *
+//     * @return revisions List object
+//     * @throws APIManagementException if an error occurs while retrieving revision details
+//     */
     List<APIRevision> getRevisionsListByAPIUUID(String apiUUID) throws APIManagementException;
-
-    /**
-     * Get APIRevisionDeployment details by providing API uuid
-     *
-     * @return List<APIRevisionDeployment> object
-     * @throws APIManagementException if an error occurs while retrieving revision deployment mapping details
-     */
-    List<APIRevisionDeployment> getAPIRevisionDeploymentByApiUUID(String apiUUID) throws APIManagementException;
-
-    /**
-     * Get APIRevisionDeployment details by providing ApiUUID
-     *
-     * @return List<APIRevisionDeployment> object
-     * @throws APIManagementException if an error occurs while retrieving revision deployment mapping details
-     */
+//
+//    /**
+//     * Get APIRevisionDeployment details by providing API uuid
+//     *
+//     * @return List<APIRevisionDeployment> object
+//     * @throws APIManagementException if an error occurs while retrieving revision deployment mapping details
+//     */
+   List<APIRevisionDeployment> getAPIRevisionDeploymentByApiUUID(String apiUUID) throws APIManagementException;
+//
+//    /**
+//     * Get APIRevisionDeployment details by providing ApiUUID
+//     *
+//     * @return List<APIRevisionDeployment> object
+//     * @throws APIManagementException if an error occurs while retrieving revision deployment mapping details
+//     */
     List<APIRevisionDeployment> getAPIRevisionDeploymentsByApiUUID(String apiUUID) throws APIManagementException;
-
-    /**
-     * Remove an API revision Deployment mapping record to the database
-     *
-     * @param apiUUID          uuid of the revision
-     * @param deployments content of the revision deployment mapping objects
-     * @throws APIManagementException if an error occurs when adding a new API revision
-     */
-    void removeAPIRevisionDeployment(String apiUUID, Set<APIRevisionDeployment> deployments)
+//
+//    /**
+//     * Remove an API revision Deployment mapping record to the database
+//     *
+//     * @param apiUUID          uuid of the revision
+//     * @param deployments content of the revision deployment mapping objects
+//     * @throws APIManagementException if an error occurs when adding a new API revision
+//     */
+   void removeAPIRevisionDeployment(String apiUUID, Set<APIRevisionDeployment> deployments)
             throws APIManagementException;
-
-    /**
-     * Adds an API revision Deployment mapping record to the database
-     *
-     * @param apiRevisionId          uuid of the revision
-     * @param apiRevisionDeployments content of the revision deployment mapping objects
-     * @throws APIManagementException if an error occurs when adding a new API revision
-     */
+//
+//    /**
+//     * Adds an API revision Deployment mapping record to the database
+//     *
+//     * @param apiRevisionId          uuid of the revision
+//     * @param apiRevisionDeployments content of the revision deployment mapping objects
+//     * @throws APIManagementException if an error occurs when adding a new API revision
+//     */
     void addAPIRevisionDeployment(String apiRevisionId, List<APIRevisionDeployment> apiRevisionDeployments)
             throws APIManagementException;
-
-    /**
-     * Update Default API Published Version
-     *
-     * @param identifier APIIdentifier
-     * @throws APIManagementException if an error occurs when updating
-     */
+//
+//    /**
+//     * Update Default API Published Version
+//     *
+//     * @param identifier APIIdentifier
+//     * @throws APIManagementException if an error occurs when updating
+//     */
     void updateDefaultAPIPublishedVersion(APIIdentifier identifier)
             throws APIManagementException;
 
@@ -634,7 +635,7 @@ public interface ApiDAO {
      */
     void removeAPIRevisionDeployment(String apiRevisionId, List<APIRevisionDeployment> apiRevisionDeployments)
             throws APIManagementException;
-
+//
     /**
      * Retrieve basic information about the given API by the UUID quering only from AM_API
      *

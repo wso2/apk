@@ -28,7 +28,7 @@ dependencies {
     jacocoAggregation project(':org.wso2.apk.apimgt.api')
     jacocoAggregation project(':org.wso2.apk.apimgt.impl')
     jacocoAggregation project(':org.wso2.apk.apimgt.init')
-    jacocoAggregation project(':org.wso2.apk.apimgt.rest.api.admin.v1.common')
+    jacocoAggregation project(':org.wso2.apk.apimgt.rest.api.backoffice.v1.common')
     jacocoAggregation project(':org.wso2.apk.apimgt.rest.api.util')
     jacocoAggregation project(':org.wso2.apk.apimgt.user')
 }

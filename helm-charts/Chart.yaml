@@ -9,7 +9,7 @@ dependencies:
     version: "11.9.6"
     repository: "https://charts.bitnami.com/bitnami"
     condition: wso2.apk.cp.postgresql.enabled
-  - name: ipk
-    version: "6.0.0-1"
-    repository: "http://localhost:8080"
-    condition: wso2.apk.cp.ipk.enabled
+  # - name: ipk
+  #   version: "6.0.0-1"
+  #   repository: "http://localhost:8080"
+  #   condition: wso2.apk.cp.ipk.enabled

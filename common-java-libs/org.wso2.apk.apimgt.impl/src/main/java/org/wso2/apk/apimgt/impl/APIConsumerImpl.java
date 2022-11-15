@@ -1229,7 +1229,7 @@ public class APIConsumerImpl extends AbstractAPIManager implements APIConsumer {
         if (StringUtils.isBlank(application.getCallbackUrl())) {
             application.setCallbackUrl(null);
         }
-        int applicationId = apiMgtDAO.addApplication(application, userId, organization);
+        int applicationId = applicationDAOImpl.addApplication(application, userId, organization);
 
         JSONObject appLogObject = new JSONObject();
         appLogObject.put(APIConstants.AuditLogConstants.NAME, application.getName());
@@ -1277,10 +1277,10 @@ public class APIConsumerImpl extends AbstractAPIManager implements APIConsumer {
         Application existingApp;
         String uuid = application.getUUID();
         if (!StringUtils.isEmpty(uuid)) {
-            existingApp = apiMgtDAO.getApplicationByUUID(uuid);
+            existingApp = applicationDAOImpl.getApplicationByUUID(uuid);
             application.setId(existingApp.getId());
         } else {
-            existingApp = apiMgtDAO.getApplicationById(application.getId());
+            existingApp = applicationDAOImpl.getApplicationById(application.getId());
         }
 
         if (existingApp != null && APIConstants.ApplicationStatus.APPLICATION_CREATED.equals(existingApp.getStatus())) {
@@ -1402,7 +1402,7 @@ public class APIConsumerImpl extends AbstractAPIManager implements APIConsumer {
             application.setApplicationAttributes(null);
         }
         validateApplicationPolicy(application, existingApp.getOrganization());
-        apiMgtDAO.updateApplication(application);
+        applicationDAOImpl.updateApplication(application);
         if (log.isDebugEnabled()) {
             log.debug("Successfully updated the Application: " + application.getId() +" in the database.");
         }
@@ -1460,9 +1460,9 @@ public class APIConsumerImpl extends AbstractAPIManager implements APIConsumer {
         String uuid = application.getUUID();
         Map<String, Pair<String, String>> consumerKeysOfApplication = null;
         if (application.getId() == 0 && !StringUtils.isEmpty(uuid)) {
-            application = apiMgtDAO.getApplicationByUUID(uuid);
+            application = applicationDAOImpl.getApplicationByUUID(uuid);
         }
-        consumerKeysOfApplication = apiMgtDAO.getConsumerKeysForApplication(application.getId());
+        consumerKeysOfApplication = applicationDAOImpl.getConsumerKeysForApplication(application.getId());
 
         boolean isTenantFlowStarted = false;
         int applicationId = application.getId();
@@ -1482,8 +1482,8 @@ public class APIConsumerImpl extends AbstractAPIManager implements APIConsumer {
             throw new APIManagementException("user: " + username + ", " +
                     "attempted to remove application owned by: " + application.getSubscriber().getName());
         }
-        apiMgtDAO.updateApplicationStatus(applicationId, APIConstants.ApplicationStatus.DELETE_PENDING);
-        Application applicationAfterDeletion = apiMgtDAO.getApplicationById(applicationId);
+        applicationDAOImpl.updateApplicationStatus(applicationId, APIConstants.ApplicationStatus.DELETE_PENDING);
+        Application applicationAfterDeletion = applicationDAOImpl.getApplicationById(applicationId);
         if (applicationAfterDeletion != null) {
             application.setStatus(applicationAfterDeletion.getStatus());
         }
@@ -1909,7 +1909,7 @@ public class APIConsumerImpl extends AbstractAPIManager implements APIConsumer {
         if (APIUtil.isOnPremResolver()) {
             organization = tenantDomain;
         }
-        return apiMgtDAO.getApplicationsWithPagination(subscriber, groupingId, start, offset,
+        return applicationDAOImpl.getApplicationsWithPagination(subscriber, groupingId, start, offset,
                 search, sortColumn, sortOrder, organization);
     }
 

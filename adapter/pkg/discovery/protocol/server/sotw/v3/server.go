@@ -28,7 +28,6 @@ import (
 	discovery "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/cache/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/server/sotw/v3"
-	"github.com/envoyproxy/go-control-plane/pkg/server/stream/v3"
 	streamv3 "github.com/envoyproxy/go-control-plane/pkg/server/stream/v3"
 	"github.com/wso2/apk/adapter/pkg/discovery/protocol/resource/v3"
 )
@@ -161,7 +160,7 @@ func (values *watches) Cancel() {
 }
 
 // process handles a bi-di stream request
-func (s *server) process(stream stream.Stream, reqCh <-chan *discovery.DiscoveryRequest, defaultTypeURL string) error {
+func (s *server) process(stream streamv3.Stream, reqCh <-chan *discovery.DiscoveryRequest, defaultTypeURL string) error {
 	// increment stream count
 	streamID := atomic.AddInt64(&s.streamCount, 1)
 
@@ -513,7 +512,7 @@ func (s *server) process(stream stream.Stream, reqCh <-chan *discovery.Discovery
 }
 
 // StreamHandler converts a blocking read call to channels and initiates stream processing
-func (s *server) StreamHandler(stream stream.Stream, typeURL string) error {
+func (s *server) StreamHandler(stream streamv3.Stream, typeURL string) error {
 	// a channel for receiving incoming requests
 	reqCh := make(chan *discovery.DiscoveryRequest)
 	go func() {
