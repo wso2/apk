@@ -16,7 +16,7 @@ APK is composed of these components:
 
 ___
 
-<img src="https://raw.githubusercontent.com/wso2/apk/main/logo/architecture.png"       alt="API Architecture" title="APKArchitecture" />
+<img src="https://raw.githubusercontent.com/wso2/apk/main/logo/architecture.png" alt="API Architecture" title="APKArchitecture" />
 
 ___
 
