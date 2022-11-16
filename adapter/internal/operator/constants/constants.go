@@ -15,17 +15,16 @@
  *
  */
 
-package main
+package constants
 
-import (
-	logger "github.com/sirupsen/logrus"
-	"github.com/wso2/apk/adapter/config"
-	"github.com/wso2/apk/adapter/internal/adapter"
+// Controller related constants
+const (
+	APIController       string = "APIController"
+	HTTPRouteController string = "HTTPRouteController"
 )
 
-// invokes the code from the /internal and /pkg directories and nothing else.
-func main() {
-	logger.Info("Starting the Adapter")
-	conf := config.ReadConfigs()
-	adapter.Run(conf)
-}
+// API events related constants
+const (
+	Create string = "CREATE"
+	Update string = "UPDATE"
+)

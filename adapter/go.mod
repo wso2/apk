@@ -3,7 +3,6 @@ module github.com/wso2/apk/adapter
 go 1.19
 
 require (
-	github.com/cncf/udpa/go v0.0.0-20210930031921-04548b0d99d4
 	github.com/envoyproxy/go-control-plane v0.10.3
 	github.com/fsnotify/fsnotify v1.5.4
 	github.com/go-openapi/errors v0.19.8
@@ -16,6 +15,7 @@ require (
 	github.com/onsi/gomega v1.19.0
 	github.com/pelletier/go-toml v1.8.1
 	github.com/sirupsen/logrus v1.9.0
+	github.com/tetratelabs/multierror v1.1.1
 	google.golang.org/genproto v0.0.0-20220502173005-c8bf987b8c21
 	google.golang.org/grpc v1.50.1
 	google.golang.org/protobuf v1.28.1
@@ -61,6 +61,7 @@ require (
 	github.com/google/gnostic v0.5.7-v3refs // indirect
 	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/google/gofuzz v1.1.0 // indirect
+	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/invopop/yaml v0.1.0 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect

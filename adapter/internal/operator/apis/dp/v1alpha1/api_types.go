@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2022, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2022, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -77,6 +77,13 @@ type APISpec struct {
 	//
 	// +kubebuilder:validation:MinLength=2
 	Context string `json:"context"`
+
+	// Organization denotes the organization
+	// related to the API
+	//
+	// +kubebuilder:validation:MinLength=4
+	// +optional
+	Organization string `json:"organization"`
 }
 
 // APIStatus defines the observed state of API
