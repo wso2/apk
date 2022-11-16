@@ -29,6 +29,7 @@ import (
 	"github.com/wso2/apk/adapter/pkg/tlsutils"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/credentials/insecure"
 	grpcStatus "google.golang.org/grpc/status"
 )
 
@@ -42,12 +43,12 @@ type RetryPolicy struct {
 func GetConnection() (*grpc.ClientConn, error) {
 	conf := config.ReadConfigs()
 	address := conf.Adapter.GRPCClient.ManagementServerAddress
-	transportCredentials, err := generateTLSCredentials()
-	if err != nil {
-		return nil, err
-	}
+	// transportCredentials, err := generateTLSCredentials()
+	// if err != nil {
+	// 	return nil, err
+	// }
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
-	return grpc.DialContext(ctx, address, grpc.WithTransportCredentials(transportCredentials), grpc.WithBlock())
+	return grpc.DialContext(ctx, address, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
 }
 
 func generateTLSCredentials() (credentials.TransportCredentials, error) {

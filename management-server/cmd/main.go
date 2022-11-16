@@ -18,13 +18,14 @@
 package main
 
 import (
+	"os"
+	"os/signal"
+
 	"github.com/wso2/apk/management-server/internal/database"
 	server "github.com/wso2/apk/management-server/internal/grpc-server"
 	"github.com/wso2/apk/management-server/internal/logger"
 	internal_types "github.com/wso2/apk/management-server/internal/types"
 	"github.com/wso2/apk/management-server/internal/xds"
-	"os"
-	"os/signal"
 )
 
 func main() {

@@ -1,0 +1,36 @@
+apiVersion: dp.wso2.com/v1alpha1
+kind: API
+metadata:
+  name: swagger-petstore
+  namespace: default
+spec:
+  apiDisplayName: swagger-petstore
+  apiType: REST
+  apiVersion: 1.0.8
+  context: /pet-store-api/1.0.8
+  definitionFileRef: swagger-definition-swaggerpetstore
+  prodHTTPRouteRef: http-route-swaggerpetstore
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: http-route-swaggerpetstore
+  namespace: default
+spec:
+  hostnames:
+  - gw.wso2.com
+  parentRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: Default
+  rules:
+  - backendRefs:
+    - group: ""
+      kind: Service
+      name: backend
+      port: 80
+      weight: 1
+    matches:
+    - path:
+        type: PathPrefix
+        value: /pet-store-api/1.0.8/get

@@ -67,9 +67,9 @@ var defaultConfig = &Config{
 			ArtifactsDirectory: "/home/wso2/git-artifacts",
 		},
 		GRPCClient: gRPCClient{
-			ManagementServerAddress : "localhost:8765",
-			MaxAttempts : 5,
-			BackOffInMilliSeconds : 1000,
+			ManagementServerAddress: "management-server:8765",
+			MaxAttempts:             5,
+			BackOffInMilliSeconds:   1000,
 		},
 	},
 	Envoy: envoy{
