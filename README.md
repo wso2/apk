@@ -17,6 +17,7 @@ In this README:
 You'll find many other useful documents on our [Documentation](https://wso2.com/documentation/).
 ## Introduction
 [APK](https://github.com/wso2/apk) is an open-source platform for providing complete API Management capabilities on top of the Kubernetes cluster management platform.
+
 APK is composed of these components:
 
 ___
