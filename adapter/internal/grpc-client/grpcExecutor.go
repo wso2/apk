@@ -18,6 +18,7 @@
 package client
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"time"
@@ -45,9 +46,8 @@ func GetConnection() (*grpc.ClientConn, error) {
 	if err != nil {
 		return nil, err
 	}
-	return grpc.Dial(address, []grpc.DialOption{
-		grpc.WithTransportCredentials(transportCredentials),
-		grpc.WithBlock()})
+	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	return grpc.DialContext(ctx, address, grpc.WithTransportCredentials(transportCredentials), grpc.WithBlock())
 }
 
 func generateTLSCredentials() (credentials.TransportCredentials, error) {
