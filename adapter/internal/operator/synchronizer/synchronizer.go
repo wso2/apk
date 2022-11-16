@@ -19,15 +19,16 @@ package synchronizer
 
 import (
 	"fmt"
+	"strings"
+
+	"context"
 
 	"github.com/wso2/apk/adapter/internal/discovery/xds"
-	"context"
-	"fmt"
 
 	client "github.com/wso2/apk/adapter/internal/grpc-client"
 	"github.com/wso2/apk/adapter/internal/loggers"
 	model "github.com/wso2/apk/adapter/internal/oasparser/model"
-	"github.com/wso2/apk/adapter/pkg/logging"
+	"github.com/wso2/apk/adapter/internal/operator/constants"
 	apiProtos "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/apkmgt"
 	"github.com/wso2/apk/adapter/pkg/logging"
 )
@@ -130,13 +131,28 @@ func sendAPIToAPKMgtServer(apiEvent APIEvent) {
 	}
 	res, err := client.ExecuteGRPCCall(conn, func() (interface{}, error) {
 		apiClient := apiProtos.NewAPIServiceClient(conn)
-		return apiClient.CreateAPI(context.Background(), &apiProtos.API{
-			Uuid:    string(api.APIDefinition.GetUID()),
-			Version: api.APIDefinition.Spec.APIVersion,
-			Name:    api.APIDefinition.Spec.APIDisplayName,
-			Context: api.APIDefinition.Spec.Context,
-			Type:    api.APIDefinition.Spec.APIType,
-		})
+		if strings.Compare(apiEvent.EventType, constants.Create) == 0 {
+			return apiClient.CreateAPI(context.Background(), &apiProtos.API{
+				Uuid:           string(api.APIDefinition.GetUID()),
+				Version:        api.APIDefinition.Spec.APIVersion,
+				Name:           api.APIDefinition.Spec.APIDisplayName,
+				Context:        api.APIDefinition.Spec.Context,
+				Type:           api.APIDefinition.Spec.APIType,
+				OrganizationId: api.APIDefinition.Spec.Organization,
+				Resources:      getResourcesForAPI(api),
+			})
+		} else if strings.Compare(apiEvent.EventType, constants.Update) == 0 {
+			return apiClient.UpdateAPI(context.Background(), &apiProtos.API{
+				Uuid:           string(api.APIDefinition.GetUID()),
+				Version:        api.APIDefinition.Spec.APIVersion,
+				Name:           api.APIDefinition.Spec.APIDisplayName,
+				Context:        api.APIDefinition.Spec.Context,
+				Type:           api.APIDefinition.Spec.APIType,
+				OrganizationId: api.APIDefinition.Spec.Organization,
+				Resources:      getResourcesForAPI(api),
+			})
+		}
+		return nil, nil
 	})
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
@@ -146,4 +162,20 @@ func sendAPIToAPKMgtServer(apiEvent APIEvent) {
 		})
 	}
 	loggers.LoggerAPKOperator.Info(res)
+}
+
+// getResourcesForAPI returns []*apiProtos.Resource for HTTPRoute
+// resources. Temporary method added until a proper implementation is done.
+func getResourcesForAPI(api APIState) []*apiProtos.Resource {
+	var resources []*apiProtos.Resource
+	var hostNames []string
+	for _, hostName := range api.ProdHTTPRoute.Spec.Hostnames {
+		hostNames = append(hostNames, string(hostName))
+	}
+	for _, rule := range api.ProdHTTPRoute.Spec.Rules {
+		for _, match := range rule.Matches {
+			resources = append(resources, &apiProtos.Resource{Path: *match.Path.Value, Hostname: hostNames})
+		}
+	}
+	return resources
 }
