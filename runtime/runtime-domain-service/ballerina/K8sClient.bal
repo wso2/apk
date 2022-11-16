@@ -15,15 +15,16 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-import ballerina/http;
 
+import runtime_domain_service.model;
 import ballerina/io;
+import ballerina/http;
 
 const string K8S_API_ENDPOINT = "/api/v1";
 final http:Client k8sApiServerEp = check initializeK8sClient();
 configurable string k8sHost = "kubernetes.default";
 configurable string saTokenPath = "/var/run/secrets/kubernetes.io/serviceaccount/token";
-configurable string token = check io:fileReadString(saTokenPath);
+string token = check io:fileReadString(saTokenPath);
 configurable string caCertPath = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt";
 
 # This initialize the k8s Client.
@@ -33,10 +34,10 @@ function initializeK8sClient() returns http:Client|error {
     auth = {
         token: token
     },
-    secureSocket = {
-        cert: caCertPath
+        secureSocket = {
+            cert: caCertPath
 
-    }
+        }
     );
     return k8sApiClient;
 }
@@ -45,53 +46,21 @@ function initializeK8sClient() returns http:Client|error {
 #
 # + namespace - namespace value
 # + return - list of services in namespace.
-isolated function getServicesListInNamespace(string namespace) returns ServiceList|error {
-    Service[] serviceNames = [];
-    string endpoint = K8S_API_ENDPOINT + "/namespaces/" + namespace + "/services";
-    error|json serviceResp = k8sApiServerEp->get(endpoint, targetType = json);
-    if (serviceResp is json) {
-        json[] serviceArr = <json[]>check serviceResp.items;
-        foreach json i in serviceArr {
-            Service serviceData = {
-                id: <string>check i.metadata.uid,
-                name: <string>check i.metadata.name,
-                namespace: <string>check i.metadata.namespace,
-                'type: <string>check i.spec.'type
-            };
-            serviceNames.push(serviceData);
+function getServicesListInNamespace(string namespace) returns ServiceList|error {
+    Service[] servicesList = getServicesList();
+    Service[] filteredList = [];
+    foreach Service item in servicesList {
+        if item.namespace == namespace {
+            filteredList.push(item);
         }
-        ServiceList serviceList = {
-            list: serviceNames
-        };
-        return serviceList;
     }
-    return error("error while retrieving service list from K8s API server for namespace : " +
-                namespace);
+    return {list: filteredList, pagination: {total: filteredList.length()}};
 }
 
 # This returns list of services in all namespaces.
 # + return - list of services in namespaces.
-isolated function getServicesListFromK8s() returns ServiceList|error {
-    Service[] serviceNames = [];
-    string endpoint = K8S_API_ENDPOINT + "/services";
-    error|json serviceResp = k8sApiServerEp->get(endpoint, targetType = json);
-    if (serviceResp is json) {
-        json[] serviceArr = <json[]>check serviceResp.items;
-        foreach json i in serviceArr {
-            Service serviceData = {
-                id: <string>check i.metadata.uid,
-                name: <string>check i.metadata.name,
-                namespace: <string>check i.metadata.namespace,
-                'type: <string>check i.spec.'type
-            };
-            serviceNames.push(serviceData);
-        }
-        ServiceList serviceList = {
-            list: serviceNames
-        };
-        return serviceList;
-    }
-    return error("error while retrieving service list from K8s API server for namespace");
+function getServicesListFromK8s() returns ServiceList|error {
+    return {list: getServicesList(), pagination: {total: getServicesList().length()}};
 }
 
 # This retrieve specific service from name space.
@@ -99,78 +68,54 @@ isolated function getServicesListFromK8s() returns ServiceList|error {
 # + name - name of service.
 # + namespace - namespace of service.
 # + return - service in namespace.
-isolated function getServiceFromK8s(string name, string namespace) returns ServiceList|error {
-    Service[] serviceNames = [];
-    string endpoint = K8S_API_ENDPOINT + "/namespaces/" + namespace + "/services/" + name;
-    error|json serviceResp = k8sApiServerEp->get(endpoint, targetType = json);
-    if (serviceResp is json) {
-        json[] serviceArr = <json[]>check serviceResp.items;
-        foreach json i in serviceArr {
-            Service serviceData = {
-                id: <string>check i.metadata.uid,
-                name: <string>check i.metadata.name,
-                namespace: <string>check i.metadata.namespace,
-                'type: <string>check i.spec.'type
-            };
-            serviceNames.push(serviceData);
-        }
-        ServiceList serviceList = {
-            list: serviceNames
-        };
-        return serviceList;
+function getServiceFromK8s(string name, string namespace) returns ServiceList|error {
+    Service? serviceResult = getService(name, namespace);
+    if serviceResult is null {
+        return {list: []};
+    } else {
+        return {list: [serviceResult]};
     }
-    return error("error while retrieving service list from K8s API server for namespace : " +
-                namespace);
 }
 
-# This returns list of APIS in namespace.
+# This returns list of APIS.
 #
-# + namespace - name space to search.
 # + return - Return list of APIS in namsepace.
-function getAPIListInNamespace(string namespace) returns APIList|error {
-    API[] APINames = [];
-    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/apis";
-    error|json APIResp = k8sApiServerEp->get(endpoint, targetType = json);
-    if (APIResp is json) {
-        json[] serviceArr = <json[]>check APIResp.items;
-        foreach json i in serviceArr {
-            API APIData = {
-                context: <string>check i.spec.context,
-                name: <string>check i.metadata.name,
-                'version: <string>check i.spec.'apiVersion
-            };
-            APINames.push(APIData);
-        }
-        APIList APIList = {
-            list: APINames
-        };
-        return APIList;
+function getAPIList() returns APIList|error {
+    API[] apilist = [];
+    foreach model:K8sAPI api in getAPIs() {
+        API convertedModel = convertK8sAPItoAPI(api);
+        apilist.push(convertedModel);
     }
-    return error("error while retrieving API list from K8s API server for namespace : " +
-                namespace);
+    APIList APIList = {
+        list: apilist
+    };
+    return APIList;
+}
+
+function convertK8sAPItoAPI(model:K8sAPI api) returns API {
+    API convetedModel = {
+        id: api.uuid,
+        name: api.apiDisplayName,
+        context: api.context,
+        'version: api.apiVersion,
+        'type: api.apiType,
+        createdTime: api.creationTimestamp
+    };
+    return convetedModel;
 }
 
 //Get APIs deployed in default namespace by APIId.
-function getAPIById(string id) returns API|InternalServerErrorError|BadRequestError|error {
+function getAPIById(string id) returns API|InternalServerErrorError|BadRequestError|NotFoundError|error {
     boolean APIIDAvailable = id.length() > 0 ? true : false;
     if (APIIDAvailable && string:length(id.toString()) > 0)
     {
-        //TODO replace default namespace to work with any namespace. As of now API contract sends only query to this API and 
-        //hence default namespace hard coded in the implementation
-        string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + "default" + "/apis/" + id;
-        error|json APIResp = k8sApiServerEp->get(endpoint, targetType = json);
-        if APIResp is error {
-            InternalServerErrorError internalError = {body: {code: 900910, message: "APIResp.message()"}};
-            return internalError;
-        }
-        else
-        {
-            API APIData = {
-                context: <string>check APIResp.spec.context,
-                name: <string>check APIResp.metadata.name,
-                'version: <string>check APIResp.spec.'apiVersion
-            };
-            return APIData;
+        model:K8sAPI? api = apilist[id];
+        if api != null {
+            API detailedAPI = convertK8sAPItoAPI(api);
+            return detailedAPI;
+        } else {
+            NotFoundError notfound = {body: {code: 909100, message: id + "not found."}};
+            return notfound;
         }
     }
     BadRequestError badRequestError = {body: {code: 900910, message: "missing required attributes"}};
@@ -182,17 +127,19 @@ function deleteAPIById(string id) returns http:Ok|ForbiddenError|NotFoundError|C
     boolean APIIDAvailable = id.length() > 0 ? true : false;
     if (APIIDAvailable && string:length(id.toString()) > 0)
     {
-        //TODO replace default namespace to work with any namespace. As of now API contract sends only query to this API and 
-        //hence default namespace hard coded in the implementation
-        string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + "default" + "/apis/" + id;
-        error|json APIResp = k8sApiServerEp->delete(endpoint, targetType = json);
-        if APIResp is error {
-            NotFoundError internalError = {body: {code: 900910, message: "APIResp.message()"}};
-            return internalError;
-        }
-        else
-        {
-            return http:OK;
+        model:K8sAPI|error api = getAPI(id);
+        if api is model:K8sAPI {
+            string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + api.namespace + "/apis/" + api.k8sName;
+            error|json APIResp = k8sApiServerEp->delete(endpoint, targetType = json);
+            if APIResp is error {
+                NotFoundError internalError = {body: {code: 900910, message: "APIResp.message()"}};
+                return internalError;
+            } else {
+                return http:OK;
+            }
+        } else {
+            NotFoundError apiNotfound = {body: {code: 900910, description: "API with " + id + " not found", message: "API not found"}};
+            return apiNotfound;
         }
     }
     PreconditionFailedError badRequestError = {body: {code: 900910, message: "missing required attributes"}};
@@ -201,35 +148,6 @@ function deleteAPIById(string id) returns http:Ok|ForbiddenError|NotFoundError|C
 
 //Get all deployed APIs in namespace with specific search query
 function getAPIListInNamespaceWithQuery(string? query, int 'limit = 25, int offset = 0, string sortBy = "createdTime", string sortOrder = "desc") returns APIList|InternalServerErrorError|BadRequestError|error {
-    boolean queryAvailable = query == () ? false : true;
-    if (queryAvailable && string:length(query.toString()) > 0)
-        {
-        API[] APINames = [];
-        //TODO replace default namespace to work with any namespace. As of now API contract sends only query to this API and 
-        //hence default namespace hard coded in the implementation
-        string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + "default" + "/apis?" + query.toString();
-        error|json APIResp = k8sApiServerEp->get(endpoint, targetType = json);
-        if (APIResp is json) {
-            json[] serviceArr = <json[]>check APIResp.items;
-            foreach json i in serviceArr
-                {
-                API APIData = {
-                    context: <string>check i.spec.context,
-                    name: <string>check i.metadata.name,
-                    'version: <string>check i.spec.'apiVersion
-                };
-                APINames.push(APIData);
-            }
-            APIList APIList = {
-                list: APINames
-            };
-            return APIList;
-        }
-            else {
-            InternalServerErrorError internalError = {body: {code: 900910, message: APIResp.message()}};
-            return internalError;
-        }
-    }
-    BadRequestError badRequestError = {body: {code: 900910, message: "missing required attributes"}};
-    return badRequestError;
+    APIInfo[] apiNames = map:toArray(apilist);
+    return {list: apiNames, count: apiNames.length(), pagination: {total: apilist.length()}};
 }

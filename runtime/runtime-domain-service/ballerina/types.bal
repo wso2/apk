@@ -187,6 +187,8 @@ public type ServiceList record {
 };
 
 public type APIInfo record {
+    # UUID of the API
+    string id?;
     string name?;
     string context?;
     string 'version?;
@@ -256,6 +258,8 @@ public type OperationPolicy record {
 };
 
 public type API record {
+    # UUID of the API
+    string id?;
     @constraint:String {maxLength: 60, minLength: 1}
     string name;
     @constraint:String {maxLength: 232, minLength: 1}
