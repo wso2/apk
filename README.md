@@ -4,8 +4,14 @@
 
 ---
 A complete API Management platform for modern cloud-native architectures. This is an open platform to design, develop and manage APIs in Kubernetes environments. APK is a cloud-native API Management platform in K8s utilizing native K8s capabilities.
+
 - For more information about APK release planning and project management information, visit [APK Project Dashboard](https://github.com/orgs/wso2/projects/80/)
-- For in-depth information about WSO2 API Management Platform, visit [WSO2 API Management](https://wso2.com/api-manager/)- To ask questions and get assistance from our community, visit [WSO2 Discord](https://discord.com/invite/Xa5VubmThw?utm_source=wso2-dev&utm_medium=link&utm_campaign=wso2-dev_link_from-dev-homepage_221002)- To learn how to participate in our overall community, visit [our community page](https://wso2.com/community/)
+
+- For in-depth information about WSO2 API Management Platform, visit [WSO2 API Management](https://wso2.com/api-manager/)
+
+- To ask questions and get assistance from our community, visit [WSO2 Discord](https://discord.com/invite/Xa5VubmThw?utm_source=wso2-dev&utm_medium=link&utm_campaign=wso2-dev_link_from-dev-homepage_221002)
+
+- To learn how to participate in our overall community, visit [our community page](https://wso2.com/community/)
 
 In this README:
 - [Introduction](#introduction)
