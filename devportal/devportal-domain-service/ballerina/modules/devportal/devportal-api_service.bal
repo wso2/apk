@@ -20,7 +20,7 @@ import ballerina/http;
 import ballerina/io;
 import ballerina/lang.value;
 import devportal_service.org.wso2.apk.apimgt.api as api;
-import devportal_service.org.wso2.apk.apimgt.rest.api.devportal.v1.common.impl as devportal;
+import devportal_service.org.wso2.apk.apimgt.devportal.impl as devportal;
 
 configurable int DEVPORTAL_PORT = 9444;
 
