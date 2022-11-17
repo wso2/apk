@@ -18,8 +18,13 @@
 package database
 
 import (
-	apkmgt "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/apkmgt"
+	"fmt"
 	"time"
+
+	apkmgt "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/apkmgt"
+	apiProtos "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/apkmgt"
+	"github.com/wso2/apk/adapter/pkg/logging"
+	"github.com/wso2/apk/management-server/internal/logger"
 )
 
 var DbCache *ApplicationLocalCache
@@ -123,4 +128,48 @@ func GetSubscriptionByUUID(subUUID string) (*apkmgt.Subscription, error) {
 			CreatedBy:          values[4].(string),
 		}, nil
 	}
+}
+
+func CreateAPI(api *apiProtos.API) error {
+	_, err := ExecDBQuery(QueryCreateAPI, api.Uuid, api.Name, api.Provider,
+		api.Version, api.Context, api.OrganizationId, api.CreatedBy, api.CreatedTime, api.Definition)
+
+	_, err = ExecDBQuery(QueryCreateAPIArtifact, api.OrganizationId, api.Uuid, api.Definition)
+
+	if err != nil {
+		logger.LoggerDatabase.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("Error creating API %q, Error: %v", api.Uuid, err.Error()),
+			Severity:  logging.CRITICAL,
+			ErrorCode: 1201,
+		})
+		return err
+	}
+	return nil
+}
+
+func DeleteAPI(api *apiProtos.API) error {
+	_, err := ExecDBQuery(QueryDeleteAPI, api.Uuid)
+	if err != nil {
+		logger.LoggerDatabase.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("Error deleting API %q, Error: %v", api.Uuid, err.Error()),
+			Severity:  logging.CRITICAL,
+			ErrorCode: 1201,
+		})
+		return err
+	}
+	return nil
+}
+
+func UpdateAPI(api *apiProtos.API) error {
+	_, err := ExecDBQuery(QueryUpdateAPI, api.Uuid, api.Name, api.Provider,
+		api.Version, api.Context, api.OrganizationId, api.UpdatedBy, api.UpdatedTime, api.Definition)
+	if err != nil {
+		logger.LoggerDatabase.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("Error updating API %q, Error: %v", api.Uuid, err.Error()),
+			Severity:  logging.CRITICAL,
+			ErrorCode: 1201,
+		})
+		return err
+	}
+	return nil
 }

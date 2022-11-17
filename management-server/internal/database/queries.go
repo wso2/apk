@@ -67,4 +67,32 @@ const (
 		" where 1=1 " +
 		"	AND SUB.api_id = API.api_id " +
 		"	AND SUB.uuid = $1"
+
+	QueryCreateAPI string = "INSERT INTO AM_API " +
+		"(API_UUID, API_NAME, API_PROVIDER, API_VERSION," +
+		"CONTEXT, ORGANIZATION, CREATED_BY, CREATED_TIME, ARTIFACT)" +
+		" VALUES " + "($1, $2, $3, $4, $5, $6, $7, $8, $9)"
+
+	QueryDeleteAPI string = "DELETE FROM AM_API" +
+		" WHERE " +
+		"API_UUID = $1"
+
+	QueryUpdateAPI string = "UPDATE AM_API SET " +
+		"API_NAME = $2, " +
+		"API_PROVIDER = $3, " +
+		"API_VERSION = $4, " +
+		"CONTEXT = $5, " +
+		"ORGANIZATION = $6, " +
+		"UPDATED_BY = $7, " +
+		"UPDATED_TIME = $8, " +
+		"ARTIFACT = $9" +
+		" WHERE " +
+		"API_UUID = $1"
+
+	QueryCreateAPIArtifact string = "INSERT INTO AM_API_ARTIFACT " +
+		"(ORGANIZATION, API_UUID, API_DEFINITION)" + " VALUES " + "($1, $2, $3)"
+
+	QueryDeleteAPIArtifact string = ""
+
+	QueryUpdateAPIArtifact string = ""
 )
