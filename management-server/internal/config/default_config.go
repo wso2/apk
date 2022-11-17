@@ -25,10 +25,10 @@ var defaultConfig = &Config{
 		GRPCPort:   8765,
 	},
 	Database: database{
-		Name:     "APIM_DB",
+		Name:     "WSO2AM_DB",
 		Username: "postgres",
-		Password: "pg123",
-		Host:     "localhost",
+		Password: "postgres123",
+		Host:     "postgres-service",
 		Port:     5432,
 		PoolOptions: dbPool{
 			PoolMaxConns:              4,
