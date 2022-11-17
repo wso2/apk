@@ -19,9 +19,6 @@ rootProject.name = 'enforcer-parent'
 include(':org.wso2.choreo.connect.enforcer')
 include(':org.wso2.choreo.connect.enforcer.commons')
 include(':org.wso2.choreo.connect.discovery')
-project(":org.wso2.choreo.connect.enforcer").projectDir = file('org.wso2.choreo.connect.enforcer')
-project(":org.wso2.choreo.connect.enforcer.commons").projectDir = file('org.wso2.choreo.connect.enforcer.commons')
-project(":org.wso2.choreo.connect.discovery").projectDir = file('org.wso2.choreo.connect.discovery')
 
 dependencyResolutionManagement {
     versionCatalogs {

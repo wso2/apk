@@ -92,7 +92,7 @@ tasks.register('copy_enforcer_jar', Copy) {
     into "$projectDir/../libs"
 }
 
-tasks.named('docker_build').configure {
+tasks.named('build').configure {
     dependsOn copyDependencies
     dependsOn copy_enforcer_jar
 }
