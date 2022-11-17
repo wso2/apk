@@ -177,6 +177,28 @@ function getAPIById(string id) returns API|InternalServerErrorError|BadRequestEr
     return badRequestError;
 }
 
+//Delete APIs deployed in a namespace by APIId.
+function deleteAPIById(string id) returns http:Ok|ForbiddenError|NotFoundError|ConflictError|PreconditionFailedError {
+    boolean APIIDAvailable = id.length() > 0 ? true : false;
+    if (APIIDAvailable && string:length(id.toString()) > 0)
+    {
+        //TODO replace default namespace to work with any namespace. As of now API contract sends only query to this API and 
+        //hence default namespace hard coded in the implementation
+        string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + "default" + "/apis/" + id;
+        error|json APIResp = k8sApiServerEp->delete(endpoint, targetType = json);
+        if APIResp is error {
+            NotFoundError internalError = {body: {code: 900910, message: "APIResp.message()"}};
+            return internalError;
+        }
+        else
+        {
+            return http:OK;
+        }
+    }
+    PreconditionFailedError badRequestError = {body: {code: 900910, message: "missing required attributes"}};
+    return badRequestError;
+}
+
 //Get all deployed APIs in namespace with specific search query
 function getAPIListInNamespaceWithQuery(string? query, int 'limit = 25, int offset = 0, string sortBy = "createdTime", string sortOrder = "desc") returns APIList|InternalServerErrorError|BadRequestError|error {
     boolean queryAvailable = query == () ? false : true;
