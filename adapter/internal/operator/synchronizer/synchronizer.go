@@ -25,6 +25,7 @@ import (
 
 	"github.com/wso2/apk/adapter/internal/discovery/xds"
 
+	"github.com/wso2/apk/adapter/config"
 	client "github.com/wso2/apk/adapter/internal/grpc-client"
 	"github.com/wso2/apk/adapter/internal/loggers"
 	model "github.com/wso2/apk/adapter/internal/oasparser/model"
@@ -119,12 +120,14 @@ func getLabelsForAPI(api APIState) []string {
 
 // sendAPIToAPKMgtServer sends the API create/update/delete event to the APK management server.
 func sendAPIToAPKMgtServer(apiEvent APIEvent) {
-	loggers.LoggerAPKOperator.Infof("Sending API to APK management server:%v", apiEvent.Event.APIDefinition.Spec.APIDisplayName)
-	conn, err := client.GetConnection()
+	loggers.LoggerAPKOperator.Infof("Sending API to APK management server: %v", apiEvent.Event.APIDefinition.Spec.APIDisplayName)
+	conf := config.ReadConfigs()
+	address := conf.Adapter.GRPCClient.ManagementServerAddress
+	conn, err := client.GetConnection(address)
 	api := apiEvent.Event
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("error creating connection: %v", err),
+			Message:   fmt.Sprintf("error creating connection for %v : %v", address, err),
 			ErrorCode: 6000,
 			Severity:  logging.BLOCKER,
 		})
