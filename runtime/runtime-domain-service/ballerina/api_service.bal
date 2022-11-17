@@ -38,9 +38,8 @@ service /api/am/runtime on ep0 {
         http:NotImplemented notImplementedError = {body: {code: 900910, message: "Not implemented"}};
         return notImplementedError;
     }
-    resource function delete apis/[string apiId]() returns http:Ok|ForbiddenError|NotFoundError|ConflictError|PreconditionFailedError|http:NotImplemented {
-        http:NotImplemented notImplementedError = {body: {code: 900910, message: "Not implemented"}};
-        return notImplementedError;
+    resource function delete apis/[string apiId]() returns http:Ok|ForbiddenError|NotFoundError|ConflictError|PreconditionFailedError {
+        return deleteAPIById(apiId);
     }
     resource function post apis/'import\-service(string serviceKey, @http:Payload API payload) returns CreatedAPI|NotFoundError|InternalServerErrorError|http:NotImplemented  {
         http:NotImplemented notImplementedError = {body: {code: 900910, message: "Not implemented"}};

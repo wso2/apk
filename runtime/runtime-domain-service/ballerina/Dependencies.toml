@@ -65,7 +65,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "http"
-version = "2.4.3"
+version = "2.4.4"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "cache"},
@@ -288,7 +288,7 @@ modules = [
 ]
 
 [[package]]
-org = "tharindud"
+org = "wso2"
 name = "runtime_domain_service"
 version = "0.1.0"
 dependencies = [
@@ -299,7 +299,7 @@ dependencies = [
 	{org = "ballerinai", name = "observe"}
 ]
 modules = [
-	{org = "tharindud", packageName = "runtime_domain_service", moduleName = "runtime_domain_service"}
+	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service"}
 ]
 
 
