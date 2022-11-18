@@ -94,6 +94,7 @@ postgresql = {module = "org.postgresql:postgresql", version.ref = "postgresql"}
 slf4j-ext = {module = "org.slf4j:slf4j-ext", version.ref = "slf4j-ext"}
 snakeyaml = {module = "org.yaml:snakeyaml", version.ref = "snakeyaml"}
 sun-saaj-impl = {module = "com.sun.xml.messaging.saaj:saaj-impl", version.ref = "sun"}
+swagger-annotations = {module = "io.swagger:swagger-annotations", version.ref = "io-swagger"}
 swagger-codegen = {module = "io.swagger:swagger-codegen", version.ref = "swagger-codegen"}
 swagger-core-v3 = {module = "io.swagger.core.v3:swagger-core", version.ref = "io-swagger-v3"}
 swagger-inflector = {module = "org.wso2.orbit.io.swagger:swagger-inflector", version.ref = "swagger-inflector"}
