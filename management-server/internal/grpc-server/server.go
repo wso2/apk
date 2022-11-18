@@ -42,21 +42,18 @@ func NewApiService() *apiService {
 
 func (s *apiService) CreateAPI(ctx context.Context, api *apiProtos.API) (*apiProtos.Response, error) {
 	logger.LoggerMGTServer.Infof("Message received : %q", api)
-	// TODO(Tharsanan1) database calls to persist data
 	database.CreateAPI(api)
 	return &apiProtos.Response{Result: true}, nil
 }
 
 func (s *apiService) UpdateAPI(ctx context.Context, api *apiProtos.API) (*apiProtos.Response, error) {
 	logger.LoggerMGTServer.Infof("Message received : %q", api)
-	// TODO(Tharsanan1) database calls to persist data
 	database.UpdateAPI(api)
 	return &apiProtos.Response{Result: true}, nil
 }
 
 func (s *apiService) DeleteAPI(ctx context.Context, api *apiProtos.API) (*apiProtos.Response, error) {
 	logger.LoggerMGTServer.Infof("Message received : %q", api)
-	// TODO(Tharsanan1) database calls to persist data
 	database.DeleteAPI(api)
 	return &apiProtos.Response{Result: true}, nil
 }
