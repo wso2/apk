@@ -20,9 +20,6 @@ metadata:
   name: postgres-initdb-scripts-configmap
 data:
   setup1.sql: |
-    DROP DATABASE IF EXISTS "WSO2AM_DB";
-    CREATE DATABASE "WSO2AM_DB";
-    CREATE USER wso2carbon WITH PASSWORD 'wso2carbon';
     GRANT ALL PRIVILEGES ON DATABASE "WSO2AM_DB" TO wso2carbon;
 
     DROP DATABASE IF EXISTS "WSO2AM_SHARED_DB";

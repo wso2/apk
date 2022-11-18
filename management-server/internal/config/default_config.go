@@ -26,8 +26,8 @@ var defaultConfig = &Config{
 	},
 	Database: database{
 		Name:     "WSO2AM_DB",
-		Username: "postgres",
-		Password: "postgres123",
+		Username: "wso2carbon",
+		Password: "wso2carbon",
 		Host:     "postgres-service",
 		Port:     5432,
 		PoolOptions: dbPool{
