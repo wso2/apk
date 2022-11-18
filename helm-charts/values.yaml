@@ -38,13 +38,13 @@ wso2:
               memory: "1028Mi"
               cpu: "1000m"
           readinessProbe:
-            path: /api/am/devportal/v2/apis?limit=2&offset=2
+            path: /health
             port: 9443
             initialDelaySeconds: 20
             periodSeconds: 20
             failureThreshold: 5
           livenessProbe:
-            path: /api/am/devportal/v2/apis?limit=2&offset=2
+            path: /health
             port: 9443
             initialDelaySeconds: 20
             periodSeconds: 20

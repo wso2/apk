@@ -1,5 +1,5 @@
 [wso2.devportal_service.devportal]
-DEVPORTAL_PORT = 9444
+DEVPORTAL_PORT = 9443
 
 
 # Sample configurations
