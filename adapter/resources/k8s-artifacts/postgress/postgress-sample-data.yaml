@@ -1,0 +1,92 @@
+# --------------------------------------------------------------------
+# Copyright (c) 2022, WSO2 LLC. (http://wso2.com) All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# -----------------------------------------------------------------------
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-sample-data
+data:
+  setup2.sql: |
+    Insert into am_subscriber (subscriber_id, user_id, tenant_id, email_address, date_subscribed, created_by, created_time, updated_by, updated_time)
+    values(
+              '100',
+              '200',
+              '1',
+              'vajira@gmail.com',
+              '2016-06-22 19:10:25-07',
+              'vajira',
+              '2016-06-22 19:10:25-07',
+              'vajira',
+              '2016-06-22 19:10:25-07'
+          );
+
+    Insert into am_application (application_id, name, subscriber_id, application_tier, callback_url, description, application_status, group_id, created_by, created_time, updated_by, updated_time, uuid, token_type, organization)
+    values(
+              '1',
+              'my_app',
+              '100',
+              'Unlimited',
+              'http://example.com',
+              'sample application for testing',
+              'active',
+              '100',
+              'vajira',
+              '2016-06-22 19:10:25-07',
+              'vajira',
+              '2016-06-22 19:10:25-07',
+              'b9850225-c7db-444d-87fd-4feeb3c6b3cc',
+              'bearer',
+              'my_org'
+          );
+
+    INSERT INTO public.am_api(
+        api_id, api_uuid, api_provider, api_name, api_version, context, context_template, api_tier, api_type, organization, gateway_vendor, created_by, created_time, updated_by, updated_time, status, version_comparable, log_level, revisions_created)
+    VALUES ('1',
+            'f85c323f-388a-4ed3-99a6-c15de431660f',
+            'wso2',
+            'Petstore',
+            '1.0.0',
+            'pets',
+            'pets',
+            'Unlimited',
+            'HTTP',
+            'my_org',
+            'wso2',
+            'vajira',
+            '2016-06-22 19:10:25-07',
+            'vajira',
+            '2016-06-22 19:10:25-07',
+            'PUBLISHED',
+            '1.2',
+            'DEBUG',
+            '1');
+
+    insert into am_subscription (subscription_id, tier_id, tier_id_pending, api_id, last_accessed, application_id, sub_status, subs_create_state, created_by, created_time, updated_by, updated_time, uuid)
+    values (
+              '1',
+              '1',
+              '2',
+              '1',
+              '2016-06-22 19:10:25-07',
+              '1',
+              'active',
+              'completed',
+              'vajira',
+              '2016-06-22 19:10:25-07',
+              'vajira',
+              '2016-06-22 19:10:25-07',
+              'cdafb148-ebd8-4f76-abbb-d6ec00e8f686'
+          )

@@ -35,15 +35,18 @@ spec:
             - containerPort: 5432
           env:
             - name: POSTGRES_DB
-              value: APIM_DB
+              value: WSO2AM_DB
             - name: POSTGRES_USER
-              value: postgres
+              value: wso2carbon
             - name: POSTGRES_PASSWORD
-              value: postgres123
+              value: wso2carbon
           volumeMounts:
             - mountPath: /docker-entrypoint-initdb.d/setup1.sql
               subPath: setup1.sql
               name: init-conf-vol
+            - mountPath: /docker-entrypoint-initdb.d/setup2.sql
+              subPath: setup2.sql
+              name: init-data-vol
           resources:
             requests:
               memory: "500Mi"
@@ -55,3 +58,6 @@ spec:
         - name: init-conf-vol
           configMap:
             name: postgres-initdb-scripts-configmap
+        - name: init-data-vol
+          configMap:
+            name: postgres-sample-data
