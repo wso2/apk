@@ -1,0 +1,3 @@
+k8sHost = "192.168.49.2:8443"
+saTokenPath = "/media/tharindud/dev/satoken/token"
+caCertPath = "/media/tharindud/dev/satoken/ca.crt"
