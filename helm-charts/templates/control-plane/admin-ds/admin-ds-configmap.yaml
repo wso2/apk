@@ -15,26 +15,22 @@
 # under the License.
 
 {{- if .Values.wso2.apk.cp.enabled }}
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
+apiVersion: v1
+kind: ConfigMap
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-network-policy
+  name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-configmap
   namespace: {{ .Release.Namespace }}
-spec:
-  podSelector:
-    matchLabels:
-{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.wso2.apk.cp.admin.appName ) | indent 6}}
-  policyTypes:
-    - Egress
-  egress:
-    - to:
-      - podSelector:
-          matchLabels:
-            networkPolicyId: {{ .Values.wso2.apk.cp.cnpg.npi }}
-      ports:
-        - protocol: TCP
-          port: 5432
-      ports:
-        - protocol: TCP
-          port: 9446
+data:
+  Config.toml: |
+    # Sample configurations
+    [wso2.admin_service.datasourceConfiguration]
+    description = "Database for admin"
+    url = "{{ .Values.wso2.apk.cp.database.url }}"
+    username = "{{ .Values.wso2.apk.cp.database.username }}"
+    password = "{{ .Values.wso2.apk.cp.database.password }}"
+    validationTimeout = {{ .Values.wso2.apk.cp.database.validationTimeout }}
+    testQuery = "{{ .Values.wso2.apk.cp.database.validationQuery }}"
+    driver = "{{ .Values.wso2.apk.cp.database.driver }}"
+    [wso2.admin_service.throttleConfig.blockCondition]
+    enabled = true
 {{- end -}}

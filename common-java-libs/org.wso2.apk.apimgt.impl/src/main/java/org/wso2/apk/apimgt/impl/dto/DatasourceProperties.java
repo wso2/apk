@@ -30,6 +30,7 @@ public class DatasourceProperties {
     private long validationTimeout;
     private boolean setAutocommit;
     private String testQuery;
+    private String driver;
 
     public String getName() {
         return name;
@@ -117,5 +118,13 @@ public class DatasourceProperties {
 
     public void setTestQuery(String testQuery) {
         this.testQuery = testQuery;
+    }
+
+    public String getDriver() {
+        return driver;
+    }
+
+    public void setDriver(String driver) {
+        this.driver = driver;
     }
 }

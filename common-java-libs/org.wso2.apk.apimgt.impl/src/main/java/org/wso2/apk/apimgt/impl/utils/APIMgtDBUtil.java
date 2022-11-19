@@ -82,6 +82,7 @@ public final class APIMgtDBUtil {
                     hikariConfig.setMinimumIdle(datasourceProperties.getMinIdleTime());
                     hikariConfig.setMaxLifetime(datasourceProperties.getMaxLifeTime());
                     hikariConfig.setAutoCommit(datasourceProperties.isSetAutocommit());
+                    hikariConfig.setDriverClassName(datasourceProperties.getDriver());
                     hikariConfig.setConnectionTestQuery(datasourceProperties.getTestQuery());
                     hikariConfig.setValidationTimeout(datasourceProperties.getValidationTimeout());
                     hikariConfig.addDataSourceProperty("cachePrepStmts", "true");

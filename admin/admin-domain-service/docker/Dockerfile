@@ -23,11 +23,10 @@ FROM apkbase:0.0.1-SNAPSHOT
 ARG USER=wso2apk
 ARG USER_HOME=/home/${USER}
 
-COPY admin_service.jar ${USER_HOME}
 COPY docker-entrypoint.sh ${USER_HOME}
-
-RUN chown wso2apk /home/wso2apk/admin_service.jar
-RUN chown wso2apk /home/wso2apk/docker-entrypoint.sh
+ADD admin ${USER_HOME}/admin
+RUN chown -R ${USER} ${USER_HOME}/admin
+RUN chown ${USER} /home/${USER}/docker-entrypoint.sh
 
 EXPOSE 9443
 USER wso2apk

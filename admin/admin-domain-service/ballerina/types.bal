@@ -407,7 +407,7 @@ public type ThrottleCondition record {
     # and "QUERYPARAMETERCONDITION".
     string 'type;
     # Specifies whether inversion of the condition to be matched against the request.
-    # 
+    #
     # **Note:** When you add conditional groups for advanced throttling policies, this paramater should have the
     # same value ('true' or 'false') for the same type of conditional group.
     boolean invertCondition = false;

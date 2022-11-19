@@ -43,6 +43,7 @@ type DatasourceConfiguration record {
     int validationTimeout;
     boolean setAutocommit = false;
     string testQuery;
+    string driver;
 };
 
 type APKConfiguration record {

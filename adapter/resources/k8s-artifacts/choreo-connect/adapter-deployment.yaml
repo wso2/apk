@@ -68,16 +68,16 @@ spec:
           ports:
             - containerPort: 18000
             - containerPort: 9843
-#          livenessProbe:
-#            exec:
-#              command: [ "sh", "check_health.sh" ]
-#            initialDelaySeconds: 10
-#            periodSeconds: 30
-#          readinessProbe:
-#            exec:
-#              command: [ "sh", "check_health.sh" ]
-#            initialDelaySeconds: 8
-#            periodSeconds: 5
+      #          livenessProbe:
+      #            exec:
+      #              command: [ "sh", "check_health.sh" ]
+      #            initialDelaySeconds: 10
+      #            periodSeconds: 30
+      #          readinessProbe:
+      #            exec:
+      #              command: [ "sh", "check_health.sh" ]
+      #            initialDelaySeconds: 8
+      #            periodSeconds: 5
       serviceAccountName: controller-manager
       volumes:
         - name: adapter-keystore-vol
@@ -158,31 +158,31 @@ rules:
       - patch
       - update
   - apiGroups:
-    - cp.wso2.com
+      - cp.wso2.com
     resources:
-    - applications
+      - applications
     verbs:
-    - create
-    - delete
-    - get
-    - list
-    - patch
-    - update
-    - watch
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
   - apiGroups:
-    - cp.wso2.com
+      - cp.wso2.com
     resources:
-    - applications/finalizers
+      - applications/finalizers
     verbs:
-    - update
+      - update
   - apiGroups:
-    - cp.wso2.com
+      - cp.wso2.com
     resources:
-    - applications/status
+      - applications/status
     verbs:
-    - get
-    - patch
-    - update
+      - get
+      - patch
+      - update
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding

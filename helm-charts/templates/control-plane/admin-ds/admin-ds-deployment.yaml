@@ -30,7 +30,7 @@ spec:
   template:
     metadata:
       labels:
-        networkPolicyId: {{ .Values.wso2.apk.cp.admin.deployment.npi }}
+        # networkPolicyId: {{ .Values.wso2.apk.cp.admin.deployment.npi }}
 {{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.wso2.apk.cp.admin.appName ) | indent 8}}
     spec:
       containers:
@@ -43,4 +43,13 @@ spec:
 {{ include "apk-helm.deployment.readinessProbe.http" .Values.wso2.apk.cp.admin.deployment | indent 10 }}
 {{ include "apk-helm.deployment.livenessProbe.http" .Values.wso2.apk.cp.admin.deployment | indent 10 }}
 {{ include "apk-helm.deployment.resources" .Values.wso2.apk.cp.admin.deployment.resources | indent 10 }}
+          volumeMounts:
+            - mountPath: /home/wso2apk/admin/conf/Config.toml
+              name: config-toml-volume
+              subPath: Config.toml
+      volumes:
+        - name: config-toml-volume
+          configMap:
+            name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-configmap
+
 {{- end -}}

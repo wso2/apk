@@ -17,4 +17,4 @@
 # under the License.
 #
 
-java -jar admin_service.jar
+sh /home/wso2apk/admin/admin.sh
