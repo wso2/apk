@@ -44,21 +44,21 @@ wso2:
               memory: "1028Mi"
               cpu: "1000m"
           readinessProbe:
-            path: /api/am/devportal/v2/apis?limit=2&offset=2
+            path: /health
             port: 9443
             initialDelaySeconds: 20
             periodSeconds: 20
             failureThreshold: 5
           livenessProbe:
-            path: /api/am/devportal/v2/apis?limit=2&offset=2
+            path: /health
             port: 9443
             initialDelaySeconds: 20
             periodSeconds: 20
             failureThreshold: 5
           strategy: Recreate
-          replicas: 0
+          replicas: 1
           imagePullPolicy: IfNotPresent
-          image: rakhitharr/apk-devportal:0.1.0
+          image: devportal_service:0.1.0-SNAPSHOT
         ingress:
           path: /api/am/devportal
           className: ""
@@ -342,6 +342,8 @@ postgresql:
   auth:
     postgresPassword: "test1"
   primary:
+    extendedConfiguration: |
+      max_connections = 400
     initdb:
       scriptsConfigMap: postgres-initdb-scripts-configmap
       user: postgres

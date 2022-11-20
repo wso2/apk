@@ -22,21 +22,11 @@ import ballerina/lang.value;
 import devportal_service.org.wso2.apk.apimgt.api as api;
 import devportal_service.org.wso2.apk.apimgt.devportal.impl as devportal;
 
-configurable int DEVPORTAL_PORT = 9444;
+configurable int DEVPORTAL_PORT = 9443;
 
 listener http:Listener ep0 = new (DEVPORTAL_PORT);
 
-@http:ServiceConfig {
-    cors: {
-        allowOrigins: ["*"],
-        allowCredentials: true,
-        allowHeaders: ["*"],
-        exposeHeaders: ["*"],
-        maxAge: 84900
-    }
-}
-
-service /api/am/devportal/v2 on ep0 {
+service /api/am/devportal on ep0 {
     // resource function get apis(@http:Header string? 'x\-wso2\-tenant, string? query, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0) returns APIList|NotAcceptableError {
     // }
     // resource function get apis/[string apiId](@http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match) returns API|http:NotModified|NotFoundError|NotAcceptableError {
@@ -82,7 +72,7 @@ service /api/am/devportal/v2 on ep0 {
     // resource function get apis/[string apiId]/'subscription\-policies(@http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match) returns ThrottlingPolicy|http:NotModified|NotFoundError|NotAcceptableError {
     // }
     resource function get applications(string groupId, string query, string sortBy, string sortOrder, int 'limit = 25, int offset = 0, string organization = "carbon.super") returns ApplicationList|http:NotModified|BadRequestError|NotAcceptableError|error {
-        string? | api:APIManagementException applicationList = check devportal:ApplicationsCommonImpl_getApplicationList(groupId, query, sortBy, sortOrder, 'limit, offset, organization);
+        string?|api:APIManagementException applicationList = check devportal:ApplicationsCommonImpl_getApplicationList(groupId, query, sortBy, sortOrder, 'limit, offset, organization);
         if applicationList is string {
             json j = check value:fromJsonString(applicationList);
             ApplicationList appList = check j.cloneWithType(ApplicationList);
@@ -93,7 +83,7 @@ service /api/am/devportal/v2 on ep0 {
         return {count: 0};
     }
     resource function post applications(@http:Payload Application payload) returns CreatedApplication|AcceptedWorkflowResponse|BadRequestError|ConflictError|UnsupportedMediaTypeError|error {
-        string? | api:APIManagementException application = devportal:ApplicationsCommonImpl_addApplication(payload.toJsonString(), "carbon.super");
+        string?|api:APIManagementException application = devportal:ApplicationsCommonImpl_addApplication(payload.toJsonString(), "carbon.super");
         if application is string {
             json j = check value:fromJsonString(application);
             CreatedApplication createdApp = {body: check j.cloneWithType(Application)};
@@ -104,7 +94,7 @@ service /api/am/devportal/v2 on ep0 {
 
     }
     resource function get applications/[string applicationId]() returns Application|http:NotModified|NotFoundError|NotAcceptableError|error {
-        string? | api:APIManagementException application = devportal:ApplicationsCommonImpl_getApplicationById(applicationId, "carbon.super");
+        string?|api:APIManagementException application = devportal:ApplicationsCommonImpl_getApplicationById(applicationId, "carbon.super");
         if application is string {
             json j = check value:fromJsonString(application);
             Application app = check j.cloneWithType(Application);
@@ -114,7 +104,7 @@ service /api/am/devportal/v2 on ep0 {
         return {};
     }
     resource function put applications/[string applicationId](@http:Payload Application payload) returns Application|BadRequestError|NotFoundError|PreconditionFailedError|error {
-        string? | api:APIManagementException application = devportal:ApplicationsCommonImpl_updateApplication(applicationId, payload.toJsonString());
+        string?|api:APIManagementException application = devportal:ApplicationsCommonImpl_updateApplication(applicationId, payload.toJsonString());
         if application is string {
             json j = check value:fromJsonString(application);
             Application app = check j.cloneWithType(Application);
@@ -124,7 +114,7 @@ service /api/am/devportal/v2 on ep0 {
         return error("Error while updating the application");
     }
     resource function delete applications/[string applicationId]() returns http:Ok|AcceptedWorkflowResponse|NotFoundError|PreconditionFailedError|string {
-        int? | api:APIManagementException response = devportal:ApplicationsCommonImpl_deleteApplication(applicationId);
+        int?|api:APIManagementException response = devportal:ApplicationsCommonImpl_deleteApplication(applicationId);
         if response is int {
             return "success";
         } else {

@@ -15,27 +15,22 @@
 # under the License.
 
 {{- if .Values.wso2.apk.cp.enabled }}
-apiVersion: networking.k8s.io/v1
-kind: Ingress
+apiVersion: v1
+kind: ConfigMap
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-ingress
+  name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-configmap
   namespace: {{ .Release.Namespace }}
-{{- if .Values.wso2.apk.cp.devportal.ingress.annotations }}
-  annotations:
-{{ toYaml .Values.wso2.apk.cp.devportal.ingress.annotations | indent 4 }}
-{{- end }}
-spec:
-  {{- if .Values.wso2.apk.cp.devportal.ingress.className }}
-  ingressClassName: {{ .Values.wso2.apk.cp.devportal.ingress.className }}
-  {{- end }}
-  rules:
-    - http:
-        paths:
-          - path: {{ .Values.wso2.apk.cp.devportal.ingress.path }}
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-                port:
-                  number: 9443
+data:
+  Config.toml: |
+    # Sample configurations
+    [wso2.devportal_service.datasourceConfiguration]
+    description = "Database for admin"
+    url = "{{ .Values.wso2.apk.cp.database.url }}"
+    username = "{{ .Values.wso2.apk.cp.database.username }}"
+    password = "{{ .Values.wso2.apk.cp.database.password }}"
+    validationTimeout = {{ .Values.wso2.apk.cp.database.validationTimeout }}
+    testQuery = "{{ .Values.wso2.apk.cp.database.validationQuery }}"
+    driver = "{{ .Values.wso2.apk.cp.database.driver }}"
+    [wso2.devportal_service.throttleConfig.blockCondition]
+    enabled = true
 {{- end -}}

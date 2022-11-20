@@ -38,11 +38,12 @@ type DatasourceConfiguration record {
     string username;
     string password;
     int maxPoolSize = 50;
-    int minIdleTime = 60000;
+    int minIdle = 20;
     int maxLifeTime = 60000;
     int validationTimeout;
-    boolean setAutocommit = false;
+    boolean autoCommit = true;
     string testQuery;
+    string driver;
 };
 
 type APKConfiguration record {

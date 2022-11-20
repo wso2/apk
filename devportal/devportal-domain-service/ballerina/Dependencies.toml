@@ -304,7 +304,6 @@ dependencies = [
 ]
 modules = [
 	{org = "wso2", packageName = "devportal_service", moduleName = "devportal_service"},
-	{org = "wso2", packageName = "devportal_service", moduleName = "devportal_service.devportal"},
 	{org = "wso2", packageName = "devportal_service", moduleName = "devportal_service.java.io"},
 	{org = "wso2", packageName = "devportal_service", moduleName = "devportal_service.java.lang"},
 	{org = "wso2", packageName = "devportal_service", moduleName = "devportal_service.java.util"},
