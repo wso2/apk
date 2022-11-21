@@ -49,6 +49,7 @@ spec:
           ports:
             - containerPort: 18000
             - containerPort: 8765
+            - containerPort: 8766
       volumes:
         - name: management-server-keystore-vol
           secret:

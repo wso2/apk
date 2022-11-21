@@ -25,9 +25,10 @@ type Config struct {
 }
 
 type managementServer struct {
-	XDSPort    int32    `toml:"xdsPort"`
-	NodeLabels []string `toml:"nodeLabels"`
-	GRPCPort   uint     `toml:"gRPCPort"`
+	XDSPort          int32    `toml:"xdsPort"`
+	NodeLabels       []string `toml:"nodeLabels"`
+	GRPCPort         uint     `toml:"gRPCPort"`
+	NotificationPort uint     `toml:"notificationPort"`
 }
 type database struct {
 	Name        string

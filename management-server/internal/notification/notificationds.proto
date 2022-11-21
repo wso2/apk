@@ -1,0 +1,63 @@
+/*
+ *  Copyright (c) 2022, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ */
+
+syntax = "proto3";
+
+package discovery.service.apkmgt;
+
+option go_package = "github.com/wso2/apk/adapter/discovery/service/apkmgt";
+option java_package = "org.wso2.choreo.connect.discovery.service.apkmgt";
+option java_outer_classname = "notificationDsProto";
+option java_multiple_files = false;
+option java_generic_services = true;
+
+service NotificationService {
+    rpc CreateApplication(Application) returns (NotificationResponse);
+    rpc UpdateApplication(Application) returns (NotificationResponse);
+    rpc DeleteApplication(Application) returns (NotificationResponse);
+    rpc CreateSubscription(Subscription) returns (NotificationResponse);
+    rpc UpdateSubscription(Subscription) returns (NotificationResponse);
+    rpc DeleteSubscription(Subscription) returns (NotificationResponse);
+}
+
+message Application {
+    string eventId = 1;
+    string applicationId = 2;
+    string uuid = 3;
+    string timeStamp = 4;
+    string organization = 5;
+}
+
+message Subscription {
+    string eventId = 1;
+    string applicationId = 2;
+    string uuid = 3;
+    string timeStamp = 4;
+    string organization = 5;
+}
+
+message NotificationResponse {
+    enum StatusCode {
+          // The response code is not known.
+          UNKNOWN = 0;
+          // The response code to notify that the number of requests are under limit.
+          OK = 1;
+          // The response code to notify that the number of requests are over limit.
+          FAILED = 2;
+    }
+    StatusCode code = 1;
+}

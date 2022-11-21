@@ -24,6 +24,7 @@ import (
 	"github.com/wso2/apk/management-server/internal/database"
 	server "github.com/wso2/apk/management-server/internal/grpc-server"
 	"github.com/wso2/apk/management-server/internal/logger"
+	"github.com/wso2/apk/management-server/internal/synchronizer"
 	"github.com/wso2/apk/management-server/internal/xds"
 )
 
@@ -35,18 +36,9 @@ func main() {
 	database.ConnectToDB()
 	defer database.CloseDBConn()
 	go xds.InitAPKMgtServer()
-	// todo(amaliMatharaarachchi) watch data updates and update snapshot accordingly.
 
-	// temp data
-	// config := config.ReadConfigs()
-	// var arr = []*internal_types.ApplicationEvent{
-	// 	{
-	// 		Label:         config.ManagementServer.NodeLabels[0],
-	// 		UUID:          "b9850225-c7db-444d-87fd-4feeb3c6b3cc",
-	// 		IsRemoveEvent: false,
-	// 	},
-	// }
-	// go xds.AddMultipleApplications(arr)
+	go synchronizer.ProcessApplicationEvents()
+	go synchronizer.ProcessSubscriptionEvents()
 	go server.StartGRPCServer()
 
 OUTER:
