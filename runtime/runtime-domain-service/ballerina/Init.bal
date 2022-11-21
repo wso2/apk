@@ -17,11 +17,18 @@
 //
 import ballerina/log;
 import ballerina/http;
+import ballerina/task;
 
 listener http:Listener ep0 = new (9443);
 
 # Initializing method for runtime
-function init() {
+isolated function init() {
     log:printInfo("Initializing Runtime Domain Service..");
+    do {
+        _ = check task:scheduleJobRecurByFrequency(new ServiceTask(), 1);
+        _ = check task:scheduleJobRecurByFrequency(new APIListingTask(), 1);
+    } on fail var e {
+        log:printError("Error initializing Task", e);
+    }
 }
 
