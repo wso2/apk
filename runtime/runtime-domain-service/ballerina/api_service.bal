@@ -57,9 +57,8 @@ service /api/am/runtime on ep0 {
         http:NotImplemented notImplementedError = {body: {code: 900910, message: "Not implemented"}};
         return notImplementedError;
     }
-    resource function get apis/[string apiId]/definition() returns string|NotFoundError|NotAcceptableError|http:NotImplemented {
-        http:NotImplemented notImplementedError = {body: {code: 900910, message: "Not implemented"}};
-        return notImplementedError;
+    resource function get apis/[string apiId]/definition() returns string|NotFoundError|NotAcceptableError {
+        return getAPIDefinitionByID(apiId);
     }
     resource function put apis/[string apiId]/definition(@http:Payload json payload) returns string|BadRequestError|ForbiddenError|NotFoundError|PreconditionFailedError|http:NotImplemented {
         http:NotImplemented notImplementedError = {body: {code: 900910, message: "Not implemented"}};

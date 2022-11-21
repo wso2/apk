@@ -1,4 +1,20 @@
-
+//
+// Copyright (c) 2022, WSO2 LLC. (http://www.wso2.com).
+//
+// WSO2 LLC. licenses this file to you under the Apache License,
+// Version 2.0 (the "License"); you may not use this file except
+// in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+//
 import ballerina/websocket;
 import ballerina/lang.value;
 import ballerina/task;
@@ -27,22 +43,34 @@ class ServiceTask {
                 json eventValue = <json>check value.'object;
                 Service|error serviceModel = createServiceModel(eventValue);
                 if serviceModel is Service {
-                    if eventType == "ADDED" {
-                        services[serviceModel.id] = serviceModel;
-                    } else if (eventType == "MODIFIED") {
-                        _ = services.remove(serviceModel.id);
-                        services[serviceModel.id] = serviceModel;
-                    } else if (eventType == "DELETED") {
-                        _ = services.remove(serviceModel.id);
+                    if containsNamespace(serviceModel.namespace) {
+                        if eventType == "ADDED" {
+                            services[serviceModel.id] = serviceModel;
+                        } else if (eventType == "MODIFIED") {
+                            _ = services.remove(serviceModel.id);
+                            services[serviceModel.id] = serviceModel;
+                        } else if (eventType == "DELETED") {
+                            _ = services.remove(serviceModel.id);
+                        }
                     }
                 } else {
                     log:printError("Unable to read service messages" + serviceModel.message());
                 }
             }
-        } on fail var e {
+        }
+        on fail var e {
             log:printError("Unable to read service messages", e);
         }
     }
+}
+
+function containsNamespace(string namespace) returns boolean {
+    foreach string name in runtimeConfiguration.serviceListingNamespaces {
+        if (name == ALL_NAMESPACES || name == namespace) {
+            return true;
+        }
+    }
+    return false;
 }
 
 public function createServiceModel(json event) returns Service|error {
