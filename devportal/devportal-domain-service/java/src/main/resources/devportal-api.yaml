@@ -1,4 +1,4 @@
-#   Copyright (c) 2020, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+#   Copyright (c) 2020, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -2421,14 +2421,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApplicationInfo'
-        207:
-          description: |
-            Multi Status.
-            Partially successful response with skipped APIs information object as entity in the body.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/APIInfoList'
+        # 207:
+        #   description: |
+        #     Multi Status.
+        #     Partially successful response with skipped APIs information object as entity in the body.
+        #   content:
+        #     application/json:
+        #       schema:
+        #         $ref: '#/components/schemas/APIInfoList'
         400:
           $ref: '#/components/responses/BadRequest'
         406:
@@ -5724,6 +5724,7 @@ components:
     parentCommentID:
       name: replyTo
       in: query
+      required: false
       description: |
         ID of the perent comment.
       schema:
@@ -5739,6 +5740,7 @@ components:
     includeCommenterInfo:
       name: includeCommenterInfo
       in: query
+      required: false
       description: |
         Whether we need to display commentor details.
       schema:
@@ -5765,6 +5767,7 @@ components:
     apiId-Q:
       name: apiId
       in: query
+      required: false
       description: |
         **API ID** consisting of the **UUID** of the API.
       schema:
@@ -5772,6 +5775,7 @@ components:
     apiType-Q:
       name: apiType
       in: query
+      required: false
       description: |
         **API TYPE** Identifies the type API(API or API_PRODUCT).
       schema:
@@ -5811,6 +5815,7 @@ components:
     filterByUserRoles:
       name: filterByUserRoles
       in: query
+      required: false
       description: |
         Filter user by roles.
       schema:
@@ -5818,6 +5823,7 @@ components:
     applicationId-Q:
       name: applicationId
       in: query
+      required: false
       description: |
         **Application Identifier** consisting of the UUID of the Application.
       schema:
@@ -5825,6 +5831,7 @@ components:
     groupId:
       name: groupId
       in: query
+      required: false
       description: |
         Application Group Id
       schema:
@@ -5875,6 +5882,7 @@ components:
     environmentName:
       name: environmentName
       in: query
+      required: false
       description: |
         Name of the API gateway environment.
       schema:
@@ -5882,6 +5890,7 @@ components:
     limit:
       name: limit
       in: query
+      required: false
       description: |
         Maximum size of resource array to return.
       schema:
@@ -5890,6 +5899,7 @@ components:
     offset:
       name: offset
       in: query
+      required: false
       description: |
         Starting point within the complete list of items qualified.
       schema:
@@ -5898,6 +5908,7 @@ components:
     replyLimit:
       name: replyLimit
       in: query
+      required: false
       description: |
         Maximum size of replies array to return.
       schema:
@@ -5906,6 +5917,7 @@ components:
     replyOffset:
       name: replyOffset
       in: query
+      required: false
       description: |
         Starting point within the complete list of replies.
       schema:
