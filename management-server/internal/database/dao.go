@@ -131,8 +131,13 @@ func GetSubscriptionByUUID(subUUID string) (*apkmgt.Subscription, error) {
 }
 
 func CreateAPI(api *apiProtos.API) error {
+
+	if api.Definition == "" {
+		api.Definition = "{}"
+	}
+
 	_, err := ExecDBQuery(QueryCreateAPI, &api.Uuid, &api.Name, &api.Provider,
-		&api.Version, &api.Context, &api.OrganizationId, &api.CreatedBy, time.Now(), &api.Type)
+		&api.Version, &api.Context, &api.OrganizationId, &api.CreatedBy, time.Now(), &api.Type, &api.Definition)
 
 	if err != nil {
 		logger.LoggerDatabase.ErrorC(logging.ErrorDetails{
@@ -146,8 +151,13 @@ func CreateAPI(api *apiProtos.API) error {
 }
 
 func UpdateAPI(api *apiProtos.API) error {
+
+	if api.Definition == "" {
+		api.Definition = "{}"
+	}
+
 	_, err := ExecDBQuery(QueryUpdateAPI, &api.Uuid, &api.Name, &api.Provider,
-		&api.Version, &api.Context, &api.OrganizationId, &api.UpdatedBy, time.Now(), &api.Type)
+		&api.Version, &api.Context, &api.OrganizationId, &api.UpdatedBy, time.Now(), &api.Type, &api.Definition)
 	if err != nil {
 		logger.LoggerDatabase.ErrorC(logging.ErrorDetails{
 			Message:   fmt.Sprintf("Error updating API %q, Error: %v", api.Uuid, err.Error()),

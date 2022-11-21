@@ -28,7 +28,7 @@ var defaultConfig = &Config{
 		Name:     "WSO2AM_DB",
 		Username: "wso2carbon",
 		Password: "wso2carbon",
-		Host:     "postgres-service",
+		Host:     "wso2apk-db-service",
 		Port:     5432,
 		PoolOptions: dbPool{
 			PoolMaxConns:              4,

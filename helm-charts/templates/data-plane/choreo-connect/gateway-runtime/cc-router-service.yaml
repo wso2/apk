@@ -21,6 +21,7 @@ metadata:
   name: {{ template "apk-helm.resource.prefix" . }}-cc-router-service
   namespace : {{ .Release.Namespace }}
 spec:
+  type: LoadBalancer
   # label keys and values that must match in order to receive traffic for this service
   selector:
 {{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.wso2.apk.dp.cc.gatewayRuntime.appName ) | indent 4}}
