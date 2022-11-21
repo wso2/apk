@@ -127,11 +127,11 @@ wso2:
             periodSeconds: 20
             failureThreshold: 5
           strategy: Recreate
-          replicas: 0
+          replicas: 1
           imagePullPolicy: IfNotPresent
-          image: rakhitharr/apk-publisher:0.1.0
+          image: backoffice_service:0.1.0-SNAPSHOT
         ingress:
-          path: /api/am/publisher
+          path: /api/am/backoffice
           className: ""
           annotations:
             kubernetes.io/ingress.class: "nginx"

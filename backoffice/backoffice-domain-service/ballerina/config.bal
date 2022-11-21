@@ -16,12 +16,21 @@
 // under the License.
 //
 
-import backoffice_service.backoffice as _;
-import ballerina/http;
+type DatasourceConfiguration record {
+    string name = "jdbc/apkdb";
+    string description;
+    string url;
+    string username;
+    string password;
+    int maxPoolSize = 50;
+    int minIdle = 20;
+    int maxLifeTime = 60000;
+    int validationTimeout;
+    boolean autoCommit = true;
+    string testQuery;
+    string driver;
+};
 
-service on new http:Listener(8080) {
-    resource function get health (http:Caller caller, http:Request req)
-            returns error? {
-        check caller->respond("Domain service started!");
-    }
-}
+type APKConfiguration record {
+    DatasourceConfiguration datasourceConfiguration;
+};
