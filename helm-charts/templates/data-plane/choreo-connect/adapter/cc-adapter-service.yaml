@@ -27,7 +27,7 @@ spec:
   ports:
     - name: endpoint1
       protocol: TCP
-      port: 9843
+      port: 8765
     - name: endpoint2
       protocol: TCP
       port: 18000

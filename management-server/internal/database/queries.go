@@ -70,8 +70,8 @@ const (
 
 	QueryCreateAPI string = "INSERT INTO AM_API " +
 		"(API_UUID, API_NAME, API_PROVIDER, API_VERSION," +
-		"CONTEXT, ORGANIZATION, CREATED_BY, CREATED_TIME, API_TYPE)" +
-		" VALUES " + "($1, $2, $3, $4, $5, $6, $7, $8, $9)"
+		"CONTEXT, ORGANIZATION, CREATED_BY, CREATED_TIME, API_TYPE, ARTIFACT)" +
+		" VALUES " + "($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)"
 
 	QueryDeleteAPI string = "DELETE FROM AM_API" +
 		" WHERE " +
@@ -85,7 +85,8 @@ const (
 		"ORGANIZATION = $6, " +
 		"UPDATED_BY = $7, " +
 		"UPDATED_TIME = $8, " +
-		"API_TYPE = $9" +
+		"API_TYPE = $9, " +
+		"ARTIFACT = $10" +
 		" WHERE " +
 		"API_UUID = $1"
 )
