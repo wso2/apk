@@ -65,7 +65,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "http"
-version = "2.4.3"
+version = "2.4.4"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "cache"},
@@ -319,12 +319,10 @@ modules = [
 	{org = "wso2", packageName = "backoffice_service", moduleName = "backoffice_service.backoffice"},
 	{org = "wso2", packageName = "backoffice_service", moduleName = "backoffice_service.java.io"},
 	{org = "wso2", packageName = "backoffice_service", moduleName = "backoffice_service.java.lang"},
-	{org = "wso2", packageName = "backoffice_service", moduleName = "backoffice_service.java.util"},
-	{org = "wso2", packageName = "backoffice_service", moduleName = "backoffice_service.java.util.function"},
 	{org = "wso2", packageName = "backoffice_service", moduleName = "backoffice_service.org.wso2.apk.apimgt.api"},
 	{org = "wso2", packageName = "backoffice_service", moduleName = "backoffice_service.org.wso2.apk.apimgt.api.model"},
-	{org = "wso2", packageName = "backoffice_service", moduleName = "backoffice_service.org.wso2.apk.apimgt.init"},
-	{org = "wso2", packageName = "backoffice_service", moduleName = "backoffice_service.org.wso2.apk.apimgt.rest.api.backoffice.v1.common.impl"}
+	{org = "wso2", packageName = "backoffice_service", moduleName = "backoffice_service.org.wso2.apk.apimgt.backoffice.impl"},
+	{org = "wso2", packageName = "backoffice_service", moduleName = "backoffice_service.org.wso2.apk.apimgt.init"}
 ]
 
 

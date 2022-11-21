@@ -7,12 +7,13 @@ distribution = "2201.2.0"
 [build-options]
 observabilityIncluded = true
 
+
 [[platform.java11.dependency]]
 groupId = "org.wso2.apk"
-artifactId = "org.wso2.apk.apimgt.rest.api.backoffice.v1.common"
+artifactId = "org.wso2.apk.apimgt.backoffice"
 version = "0.1.0-SNAPSHOT"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.rest.api.backoffice.v1.common:0.1.0-SNAPSHOT
+# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.backoffice:0.1.0-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "org.wso2.apk"
 artifactId = "org.wso2.apk.apimgt.api"
@@ -54,16 +55,10 @@ groupId = "com.graphql-java"
 artifactId = "java-dataloader"
 version = "3.1.0"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.rest.api.backoffice.v1.common:0.1.0-SNAPSHOT
+# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.backoffice:0.1.0-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "org.wso2.apk"
 artifactId = "org.wso2.apk.apimgt.impl"
-version = "0.1.0-SNAPSHOT"
-
-# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.impl:0.1.0-SNAPSHOT
-[[platform.java11.dependency]]
-groupId = "org.wso2.apk"
-artifactId = "org.wso2.apk.apimgt.user"
 version = "0.1.0-SNAPSHOT"
 
 # transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.impl:0.1.0-SNAPSHOT
@@ -251,12 +246,6 @@ version = "2.1.12"
 groupId = "jakarta.xml.bind"
 artifactId = "jakarta.xml.bind-api"
 version = "2.3.2"
-
-# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.impl:0.1.0-SNAPSHOT
-[[platform.java11.dependency]]
-groupId = "jakarta.activation"
-artifactId = "jakarta.activation-api"
-version = "1.2.1"
 
 # transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.impl:0.1.0-SNAPSHOT
 [[platform.java11.dependency]]
@@ -552,43 +541,217 @@ groupId = "org.wso2.orbit.com.nimbusds"
 artifactId = "nimbus-jose-jwt"
 version = "7.9.0.wso2v1"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.rest.api.backoffice.v1.common:0.1.0-SNAPSHOT
+# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.backoffice:0.1.0-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "org.wso2.apk"
 artifactId = "org.wso2.apk.apimgt.rest.api.util"
 version = "0.1.0-SNAPSHOT"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.rest.api.backoffice.v1.common:0.1.0-SNAPSHOT
+# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.backoffice:0.1.0-SNAPSHOT
+[[platform.java11.dependency]]
+groupId = "org.wso2.apk"
+artifactId = "org.wso2.apk.apimgt.user"
+version = "0.1.0-SNAPSHOT"
+
+# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.backoffice:0.1.0-SNAPSHOT
+[[platform.java11.dependency]]
+groupId = "com.fasterxml.jackson.core"
+artifactId = "jackson-databind"
+version = "2.13.1"
+
+# transitive dependency of com.fasterxml.jackson.core:jackson-databind:2.13.1
+[[platform.java11.dependency]]
+groupId = "com.fasterxml.jackson.core"
+artifactId = "jackson-core"
+version = "2.13.1"
+
+# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.backoffice:0.1.0-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "commons-io"
 artifactId = "commons-io"
 version = "2.11.0"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.rest.api.backoffice.v1.common:0.1.0-SNAPSHOT
+# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.backoffice:0.1.0-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "commons-lang"
 artifactId = "commons-lang"
 version = "2.4"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.rest.api.backoffice.v1.common:0.1.0-SNAPSHOT
+# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.backoffice:0.1.0-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "org.apache.commons"
 artifactId = "commons-lang3"
 version = "3.10"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.rest.api.backoffice.v1.common:0.1.0-SNAPSHOT
+# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.backoffice:0.1.0-SNAPSHOT
+[[platform.java11.dependency]]
+groupId = "org.apache.commons"
+artifactId = "commons-collections4"
+version = "4.1"
+
+# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.backoffice:0.1.0-SNAPSHOT
+[[platform.java11.dependency]]
+groupId = "org.apache.cxf"
+artifactId = "cxf-rt-frontend-jaxrs"
+version = "3.5.4"
+
+# transitive dependency of org.apache.cxf:cxf-rt-frontend-jaxrs:3.5.4
+[[platform.java11.dependency]]
+groupId = "org.apache.cxf"
+artifactId = "cxf-core"
+version = "3.5.4"
+
+# transitive dependency of org.apache.cxf:cxf-rt-frontend-jaxrs:3.5.4
+[[platform.java11.dependency]]
+groupId = "org.glassfish.jaxb"
+artifactId = "jaxb-runtime"
+version = "2.3.5"
+
+# transitive dependency of org.apache.cxf:cxf-rt-frontend-jaxrs:3.5.4
+[[platform.java11.dependency]]
+groupId = "org.glassfish.jaxb"
+artifactId = "txw2"
+version = "2.3.5"
+
+# transitive dependency of org.apache.cxf:cxf-rt-frontend-jaxrs:3.5.4
+[[platform.java11.dependency]]
+groupId = "com.sun.istack"
+artifactId = "istack-commons-runtime"
+version = "3.0.12"
+
+# transitive dependency of org.apache.cxf:cxf-rt-frontend-jaxrs:3.5.4
+[[platform.java11.dependency]]
+groupId = "com.fasterxml.woodstox"
+artifactId = "woodstox-core"
+version = "6.2.8"
+
+# transitive dependency of org.apache.cxf:cxf-rt-frontend-jaxrs:3.5.4
+[[platform.java11.dependency]]
+groupId = "org.codehaus.woodstox"
+artifactId = "stax2-api"
+version = "4.2.1"
+
+# transitive dependency of org.apache.cxf:cxf-rt-frontend-jaxrs:3.5.4
+[[platform.java11.dependency]]
+groupId = "org.apache.ws.xmlschema"
+artifactId = "xmlschema-core"
+version = "2.3.0"
+
+# transitive dependency of org.apache.cxf:cxf-rt-frontend-jaxrs:3.5.4
+[[platform.java11.dependency]]
+groupId = "jakarta.ws.rs"
+artifactId = "jakarta.ws.rs-api"
+version = "2.1.6"
+
+# transitive dependency of org.apache.cxf:cxf-rt-frontend-jaxrs:3.5.4
+[[platform.java11.dependency]]
+groupId = "jakarta.annotation"
+artifactId = "jakarta.annotation-api"
+version = "1.3.5"
+
+# transitive dependency of org.apache.cxf:cxf-rt-frontend-jaxrs:3.5.4
+[[platform.java11.dependency]]
+groupId = "org.apache.cxf"
+artifactId = "cxf-rt-transports-http"
+version = "3.5.4"
+
+# transitive dependency of org.apache.cxf:cxf-rt-frontend-jaxrs:3.5.4
+[[platform.java11.dependency]]
+groupId = "org.apache.cxf"
+artifactId = "cxf-rt-security"
+version = "3.5.4"
+
+# transitive dependency of org.apache.cxf:cxf-rt-frontend-jaxrs:3.5.4
+[[platform.java11.dependency]]
+groupId = "jakarta.xml.ws"
+artifactId = "jakarta.xml.ws-api"
+version = "2.3.3"
+
+# transitive dependency of org.apache.cxf:cxf-rt-frontend-jaxrs:3.5.4
+[[platform.java11.dependency]]
+groupId = "jakarta.jws"
+artifactId = "jakarta.jws-api"
+version = "2.1.0"
+
+# transitive dependency of org.apache.cxf:cxf-rt-frontend-jaxrs:3.5.4
+[[platform.java11.dependency]]
+groupId = "jakarta.xml.soap"
+artifactId = "jakarta.xml.soap-api"
+version = "1.4.2"
+
+# transitive dependency of org.apache.cxf:cxf-rt-frontend-jaxrs:3.5.4
+[[platform.java11.dependency]]
+groupId = "jakarta.activation"
+artifactId = "jakarta.activation-api"
+version = "1.2.2"
+
+# transitive dependency of org.apache.cxf:cxf-rt-frontend-jaxrs:3.5.4
+[[platform.java11.dependency]]
+groupId = "com.sun.activation"
+artifactId = "jakarta.activation"
+version = "1.2.2"
+
+# transitive dependency of org.apache.cxf:cxf-rt-frontend-jaxrs:3.5.4
+[[platform.java11.dependency]]
+groupId = "com.sun.xml.messaging.saaj"
+artifactId = "saaj-impl"
+version = "1.5.3"
+
+# transitive dependency of org.apache.cxf:cxf-rt-frontend-jaxrs:3.5.4
+[[platform.java11.dependency]]
+groupId = "org.jvnet.staxex"
+artifactId = "stax-ex"
+version = "1.8.3"
+
+# transitive dependency of org.apache.cxf:cxf-rt-frontend-jaxrs:3.5.4
+[[platform.java11.dependency]]
+groupId = "org.apache.geronimo.specs"
+artifactId = "geronimo-jta_1.1_spec"
+version = "1.1.1"
+
+# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.backoffice:0.1.0-SNAPSHOT
+[[platform.java11.dependency]]
+groupId = "org.apache.cxf"
+artifactId = "cxf-rt-rs-service-description"
+version = "3.5.4"
+
+# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.backoffice:0.1.0-SNAPSHOT
+[[platform.java11.dependency]]
+groupId = "org.hibernate"
+artifactId = "hibernate-validator"
+version = "5.4.3.Final"
+
+# transitive dependency of org.hibernate:hibernate-validator:5.4.3.Final
+[[platform.java11.dependency]]
+groupId = "javax.validation"
+artifactId = "validation-api"
+version = "1.1.0.Final"
+
+# transitive dependency of org.hibernate:hibernate-validator:5.4.3.Final
+[[platform.java11.dependency]]
+groupId = "org.jboss.logging"
+artifactId = "jboss-logging"
+version = "3.3.0.Final"
+
+# transitive dependency of org.hibernate:hibernate-validator:5.4.3.Final
+[[platform.java11.dependency]]
+groupId = "com.fasterxml"
+artifactId = "classmate"
+version = "1.3.1"
+
+# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.backoffice:0.1.0-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "io.swagger"
 artifactId = "swagger-annotations"
 version = "1.6.5"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.rest.api.backoffice.v1.common:0.1.0-SNAPSHOT
+# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.backoffice:0.1.0-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "com.googlecode.json-simple.wso2"
 artifactId = "json-simple"
 version = "1.1.wso2v1"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.rest.api.backoffice.v1.common:0.1.0-SNAPSHOT
+# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.backoffice:0.1.0-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "org.json.wso2"
 artifactId = "json"
@@ -600,25 +763,25 @@ groupId = "org.json"
 artifactId = "json"
 version = "20140107"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.rest.api.backoffice.v1.common:0.1.0-SNAPSHOT
+# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.backoffice:0.1.0-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "com.google.code.gson"
 artifactId = "gson"
 version = "2.8.5"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.rest.api.backoffice.v1.common:0.1.0-SNAPSHOT
+# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.backoffice:0.1.0-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "io.github.openfeign"
 artifactId = "feign-core"
 version = "11.0"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.rest.api.backoffice.v1.common:0.1.0-SNAPSHOT
+# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.backoffice:0.1.0-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "io.github.openfeign"
 artifactId = "feign-gson"
 version = "11.0"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.rest.api.backoffice.v1.common:0.1.0-SNAPSHOT
+# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.backoffice:0.1.0-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "io.github.openfeign"
 artifactId = "feign-okhttp"
@@ -636,13 +799,13 @@ groupId = "com.squareup.okio"
 artifactId = "okio"
 version = "1.17.2"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.rest.api.backoffice.v1.common:0.1.0-SNAPSHOT
+# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.backoffice:0.1.0-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "org.yaml"
 artifactId = "snakeyaml"
 version = "1.28"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.rest.api.backoffice.v1.common:0.1.0-SNAPSHOT
+# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.backoffice:0.1.0-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "com.google.guava"
 artifactId = "guava"
@@ -684,25 +847,13 @@ groupId = "com.google.j2objc"
 artifactId = "j2objc-annotations"
 version = "1.3"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.rest.api.backoffice.v1.common:0.1.0-SNAPSHOT
+# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.backoffice:0.1.0-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "com.fasterxml.jackson.dataformat"
 artifactId = "jackson-dataformat-yaml"
 version = "2.13.1"
 
-# transitive dependency of com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.13.1
-[[platform.java11.dependency]]
-groupId = "com.fasterxml.jackson.core"
-artifactId = "jackson-databind"
-version = "2.13.1"
-
-# transitive dependency of com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.13.1
-[[platform.java11.dependency]]
-groupId = "com.fasterxml.jackson.core"
-artifactId = "jackson-core"
-version = "2.13.1"
-
-# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.rest.api.backoffice.v1.common:0.1.0-SNAPSHOT
+# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.backoffice:0.1.0-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "org.apache.httpcomponents"
 artifactId = "httpclient"
@@ -714,12 +865,6 @@ groupId = "org.apache.httpcomponents"
 artifactId = "httpcore"
 version = "4.4.13"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.rest.api.backoffice.v1.common:0.1.0-SNAPSHOT
-[[platform.java11.dependency]]
-groupId = "javax.validation"
-artifactId = "validation-api"
-version = "2.0.1.Final"
-
 [[platform.java11.dependency]]
 groupId = "org.wso2.apk"
 artifactId = "org.wso2.apk.apimgt.init"
@@ -727,9 +872,9 @@ version = "0.1.0-SNAPSHOT"
 
 # transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.impl:0.1.0-SNAPSHOT
 [[platform.java11.dependency]]
-groupId = "javax.validation"
-artifactId = "validation-api"
-version = "1.1.0.Final"
+groupId = "jakarta.activation"
+artifactId = "jakarta.activation-api"
+version = "1.2.1"
 
 # transitive dependency of org.wso2.apk:org.wso2.apk.apimgt.impl:0.1.0-SNAPSHOT
 [[platform.java11.dependency]]
