@@ -25,12 +25,20 @@ public class DatasourceProperties {
     private String username;
     private String password;
     private int maxPoolSize;
-    private int minIdleTime;
+    private int minIdle;
     private long maxLifeTime;
     private long validationTimeout;
-    private boolean setAutocommit;
+    private boolean autoCommit;
     private String testQuery;
     private String driver;
+
+    public int getMinIdle() {
+        return minIdle;
+    }
+
+    public void setMinIdle(int minIdle) {
+        this.minIdle = minIdle;
+    }
 
     public String getName() {
         return name;
@@ -80,14 +88,6 @@ public class DatasourceProperties {
         this.maxPoolSize = maxPoolSize;
     }
 
-    public int getMinIdleTime() {
-        return minIdleTime;
-    }
-
-    public void setMinIdleTime(int minIdleTime) {
-        this.minIdleTime = minIdleTime;
-    }
-
     public long getMaxLifeTime() {
         return maxLifeTime;
     }
@@ -104,12 +104,12 @@ public class DatasourceProperties {
         this.validationTimeout = validationTimeout;
     }
 
-    public boolean isSetAutocommit() {
-        return setAutocommit;
+    public boolean isAutoCommit() {
+        return autoCommit;
     }
 
-    public void setSetAutocommit(boolean setAutocommit) {
-        this.setAutocommit = setAutocommit;
+    public void setAutoCommit(boolean autoCommit) {
+        this.autoCommit = autoCommit;
     }
 
     public String getTestQuery() {

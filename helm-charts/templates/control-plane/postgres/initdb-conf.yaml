@@ -1568,4 +1568,8 @@ data:
         GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO wso2carbon;
         GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public TO wso2carbon;
 
+        -- Insert Demo APK data ---
+        INSERT INTO public.am_subscriber(user_id, organization, email_address, date_subscribed )
+                VALUES ( 'apkuser', 'carbon.super', 'apk@wso2.com', now());
+        -- End Insert Demo APK data        
         commit;

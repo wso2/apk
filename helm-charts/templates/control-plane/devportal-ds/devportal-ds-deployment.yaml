@@ -18,7 +18,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-dev-portal-ds-deployment
+  name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-deployment
   namespace: {{ .Release.Namespace }}
 spec:
   replicas: {{ .Values.wso2.apk.cp.devportal.deployment.replicas }}
@@ -33,7 +33,7 @@ spec:
 {{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.wso2.apk.cp.devportal.appName ) | indent 8}}
     spec:
       containers:
-        - name: dev-portal-ds
+        - name: devportal-ds
           image: {{ .Values.wso2.apk.cp.devportal.deployment.image }}
           imagePullPolicy: {{ .Values.wso2.apk.cp.devportal.deployment.imagePullPolicy }}
           ports:
@@ -42,4 +42,12 @@ spec:
 {{ include "apk-helm.deployment.readinessProbe.http" .Values.wso2.apk.cp.devportal.deployment | indent 10 }}
 {{ include "apk-helm.deployment.livenessProbe.http" .Values.wso2.apk.cp.devportal.deployment | indent 10 }}
 {{ include "apk-helm.deployment.resources" .Values.wso2.apk.cp.devportal.deployment.resources | indent 10 }}
+          volumeMounts:
+            - mountPath: /home/wso2apk/devportal/conf/Config.toml
+              name: config-toml-volume
+              subPath: Config.toml
+      volumes:
+        - name: config-toml-volume
+          configMap:
+            name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-configmap
 {{- end -}}

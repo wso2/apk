@@ -79,9 +79,9 @@ public final class APIMgtDBUtil {
                     hikariConfig.setUsername(datasourceProperties.getUsername());
                     hikariConfig.setPassword(datasourceProperties.getPassword());
                     hikariConfig.setMaximumPoolSize(datasourceProperties.getMaxPoolSize());
-                    hikariConfig.setMinimumIdle(datasourceProperties.getMinIdleTime());
+                    hikariConfig.setMinimumIdle(datasourceProperties.getMinIdle());
                     hikariConfig.setMaxLifetime(datasourceProperties.getMaxLifeTime());
-                    hikariConfig.setAutoCommit(datasourceProperties.isSetAutocommit());
+                    hikariConfig.setAutoCommit(datasourceProperties.isAutoCommit());
                     hikariConfig.setDriverClassName(datasourceProperties.getDriver());
                     hikariConfig.setConnectionTestQuery(datasourceProperties.getTestQuery());
                     hikariConfig.setValidationTimeout(datasourceProperties.getValidationTimeout());

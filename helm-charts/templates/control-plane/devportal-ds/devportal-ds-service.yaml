@@ -18,7 +18,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-dev-portal-ds-service
+  name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
   namespace : {{ .Release.Namespace }}
 spec:
   # label keys and values that must match in order to receive traffic for this service

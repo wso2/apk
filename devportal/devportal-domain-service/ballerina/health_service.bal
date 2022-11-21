@@ -15,13 +15,11 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-
-import devportal_service.devportal as _;
 import ballerina/http;
 
-service on new http:Listener(8080) {
-    resource function get health (http:Caller caller, http:Request req)
-            returns error? {
-        check caller->respond("Domain service started!");
+service / on ep0 {
+    resource function get health() returns http:Ok {
+        json status = {"health": "Ok"};
+        return {body: status};
     }
 }

@@ -14,7 +14,7 @@ done
 # Get standard environment variables
 PRGDIR=`dirname "$PRG"`
 
-[ -z "$ADMIN_HOME" ] && ADMIN_HOME=`cd "$PRGDIR" ; pwd`
+[ -z "$DEVPORTAL_HOME" ] && DEVPORTAL_HOME=`cd "$PRGDIR" ; pwd`
 
 if [ -z "$JAVACMD" ] ; then
   if [ -n "$JAVA_HOME"  ] ; then
@@ -71,7 +71,7 @@ CLASSPATH=""
 if [ -e "$JAVA_HOME/lib/tools.jar" ]; then
     CLASSPATH="$JAVA_HOME/lib/tools.jar"
 fi
-for t in "$ADMIN_HOME"/lib/*.jar
+for t in "$DEVPORTAL_HOME"/lib/*.jar
 do
     CLASSPATH="$CLASSPATH":$t
 done
@@ -79,11 +79,11 @@ done
 # ----- Execute The Requested Command -----------------------------------------
 
 echo JAVA_HOME environment variable is set to $JAVA_HOME
-echo ADMIN_HOME environment variable is set to "$ADMIN_HOME"
-export BAL_CONFIG_FILES=$ADMIN_HOME/conf/Config.toml
-cd "$ADMIN_HOME"
+echo DEVPORTAL_HOME environment variable is set to "$DEVPORTAL_HOME"
+export BAL_CONFIG_FILES=$DEVPORTAL_HOME/conf/Config.toml
+cd "$DEVPORTAL_HOME"
 
-TMP_DIR="$ADMIN_HOME"/tmp
+TMP_DIR="$DEVPORTAL_HOME"/tmp
 if [ -d "$TMP_DIR" ]; then
 rm -rf "$TMP_DIR"/*
 fi
@@ -101,6 +101,6 @@ $JAVACMD \
     $JVM_MEM_OPTS \
     $JAVA_OPTS \
     -classpath "$CLASSPATH" \
-    -Djava.io.tmpdir="$ADMIN_HOME/tmp" \
-    -jar admin_service.jar $*
+    -Djava.io.tmpdir="$DEVPORTAL_HOME/tmp" \
+    -jar devportal_service.jar $*
     status=$?
