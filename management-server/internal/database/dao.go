@@ -18,6 +18,7 @@
 package database
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -31,6 +32,14 @@ var DbCache *ApplicationLocalCache
 
 func init() {
 	DbCache = NewApplicationLocalCache(cleanupInterval)
+}
+
+type Artifact struct {
+	APIName      string `json:"apiName"`
+	ID           string `json:"id"`
+	Context      string `json:"context"`
+	Version      string `json:"version"`
+	ProviderName string `json:"providerName"`
 }
 
 func GetApplicationByUUID(uuid string) (*apkmgt.Application, error) {
@@ -131,13 +140,8 @@ func GetSubscriptionByUUID(subUUID string) (*apkmgt.Subscription, error) {
 }
 
 func CreateAPI(api *apiProtos.API) error {
-
-	if api.Definition == "" {
-		api.Definition = "{}"
-	}
-
-	_, err := ExecDBQuery(QueryCreateAPI, &api.Uuid, &api.Name, &api.Provider,
-		&api.Version, &api.Context, &api.OrganizationId, &api.CreatedBy, time.Now(), &api.Type, &api.Definition)
+	_, err := ExecDBQuery(QueryCreateAPI, &api.Uuid, &api.Name, "apkuser",
+		&api.Version, &api.Context, &api.OrganizationId, &api.CreatedBy, time.Now(), &api.Type, marshalArticat(api))
 
 	if err != nil {
 		logger.LoggerDatabase.ErrorC(logging.ErrorDetails{
@@ -151,13 +155,8 @@ func CreateAPI(api *apiProtos.API) error {
 }
 
 func UpdateAPI(api *apiProtos.API) error {
-
-	if api.Definition == "" {
-		api.Definition = "{}"
-	}
-
-	_, err := ExecDBQuery(QueryUpdateAPI, &api.Uuid, &api.Name, &api.Provider,
-		&api.Version, &api.Context, &api.OrganizationId, &api.UpdatedBy, time.Now(), &api.Type, &api.Definition)
+	_, err := ExecDBQuery(QueryUpdateAPI, &api.Uuid, &api.Name, "apkuser",
+		&api.Version, &api.Context, &api.OrganizationId, &api.UpdatedBy, time.Now(), &api.Type, marshalArticat(api))
 	if err != nil {
 		logger.LoggerDatabase.ErrorC(logging.ErrorDetails{
 			Message:   fmt.Sprintf("Error updating API %q, Error: %v", api.Uuid, err.Error()),
@@ -180,4 +179,17 @@ func DeleteAPI(api *apiProtos.API) error {
 		return err
 	}
 	return nil
+}
+
+func marshalArticat(api *apiProtos.API) string {
+	artifact := &Artifact{APIName: api.Name,
+		ID:           api.Uuid,
+		Context:      api.Context,
+		Version:      api.Version,
+		ProviderName: "apkuser"}
+	jsonString, err := json.Marshal(artifact)
+	if err != nil {
+		return "{}"
+	}
+	return string(jsonString)
 }

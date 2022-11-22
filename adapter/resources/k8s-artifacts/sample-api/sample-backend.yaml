@@ -15,17 +15,10 @@
 # -----------------------------------------------------------------------
 
 apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: httpbin
----
-apiVersion: v1
 kind: Service
 metadata:
   name: backend
-  labels:
-    app: httpbin
-    service: httpbin
+  namespace: apk
 spec:
   ports:
     - name: http
@@ -37,23 +30,28 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  namespace: apk
   name: httpbin
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: httpbin
-      version: v1
   template:
     metadata:
       labels:
         app: httpbin
-        version: v1
     spec:
-      serviceAccountName: httpbin
       containers:
         - image: docker.io/kennethreitz/httpbin
           imagePullPolicy: IfNotPresent
           name: httpbin
           ports:
             - containerPort: 80
+          resources:
+            requests:
+              memory: "200Mi"
+              cpu: "300m"
+            limits:
+              memory: "200Mi"
+              cpu: "300m"
