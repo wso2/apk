@@ -39,7 +39,7 @@ listener http:Listener ep0 = new (BACKOFFICE_PORT);
 service /api/am/backoffice on ep0 {
     
     resource function get apis(string? query, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0, string sortBy = "createdTime", string sortOrder = "desc", @http:Header string? accept = "application/json") returns APIList|http:NotModified|NotAcceptableError {
-        string? | api:APIManagementException apiList = backoffice:ApisApiCommonImpl_getAllAPIs('limit, offset, sortBy, sortOrder, "query", "org1");
+        string? | api:APIManagementException apiList = backoffice:ApisApiCommonImpl_getAllAPIs('limit, offset, sortBy, sortOrder, "", "org1");
         do {
             if apiList is string {
                 json j = check value:fromJsonString(apiList);
