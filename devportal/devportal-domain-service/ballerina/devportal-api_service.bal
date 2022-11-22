@@ -71,8 +71,9 @@ service /api/am/devportal on ep0 {
     // }
     // resource function get apis/[string apiId]/'subscription\-policies(@http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match) returns ThrottlingPolicy|http:NotModified|NotFoundError|NotAcceptableError {
     // }
-    resource function get applications(string groupId, string query, string sortBy, string sortOrder, int 'limit = 25, int offset = 0, string organization = "carbon.super") returns ApplicationList|http:NotModified|BadRequestError|NotAcceptableError|error {
-        string?|api:APIManagementException applicationList = check devportal:ApplicationsCommonImpl_getApplicationList(groupId, query, sortBy, sortOrder, 'limit, offset, organization);
+    resource function get applications(string? groupId, string? query, string? sortBy, string? sortOrder, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0) returns ApplicationList|http:NotModified|BadRequestError|NotAcceptableError|error{
+        string organization = "carbon.super";
+        string?|api:APIManagementException applicationList = check devportal:ApplicationsCommonImpl_getApplicationList("", "", "name", "asc", 'limit, offset, organization);
         if applicationList is string {
             json j = check value:fromJsonString(applicationList);
             ApplicationList appList = check j.cloneWithType(ApplicationList);
@@ -90,10 +91,10 @@ service /api/am/devportal on ep0 {
             return createdApp;
         }
         io:print(application);
-        return error("Error while adding the application");
-
+        ConflictError internalError = {body: {code: 900910, message: "Error while adding the application"}};
+        return internalError;
     }
-    resource function get applications/[string applicationId]() returns Application|http:NotModified|NotFoundError|NotAcceptableError|error {
+    resource function get applications/[string applicationId](@http:Header string? 'if\-none\-match, @http:Header string? 'x\-wso2\-tenant) returns Application|http:NotModified|NotFoundError|NotAcceptableError|error {
         string?|api:APIManagementException application = devportal:ApplicationsCommonImpl_getApplicationById(applicationId, "carbon.super");
         if application is string {
             json j = check value:fromJsonString(application);
@@ -103,7 +104,7 @@ service /api/am/devportal on ep0 {
         }
         return {};
     }
-    resource function put applications/[string applicationId](@http:Payload Application payload) returns Application|BadRequestError|NotFoundError|PreconditionFailedError|error {
+    resource function put applications/[string applicationId](@http:Header string? 'if\-match, @http:Payload Application payload) returns Application|BadRequestError|NotFoundError|PreconditionFailedError|error {
         string?|api:APIManagementException application = devportal:ApplicationsCommonImpl_updateApplication(applicationId, payload.toJsonString());
         if application is string {
             json j = check value:fromJsonString(application);
@@ -111,14 +112,17 @@ service /api/am/devportal on ep0 {
             io:print(app);
             return app;
         }
-        return error("Error while updating the application");
+        PreconditionFailedError internalError = {body: {code: 900911, message: "Error while updating the application"}};
+        return internalError;
     }
-    resource function delete applications/[string applicationId]() returns http:Ok|AcceptedWorkflowResponse|NotFoundError|PreconditionFailedError|string {
-        int?|api:APIManagementException response = devportal:ApplicationsCommonImpl_deleteApplication(applicationId);
+    resource function delete applications/[string applicationId](@http:Header string? 'if\-match) returns http:Ok|AcceptedWorkflowResponse|NotFoundError|PreconditionFailedError|error {
+        int?|api:APIManagementException response = check devportal:ApplicationsCommonImpl_deleteApplication(applicationId);
         if response is int {
-            return "success";
-        } else {
-            return "failure";
+            http:Ok success = {body: { message: "Application Deleted"}};
+            return success;
+        }  else {
+            http:Ok failed = {body: { message: "Application Deleted Failed"}};
+            return failed;
         }
     }
     // resource function post applications/[string applicationId]/'generate\-keys(@http:Header string? 'x\-wso2\-tenant, @http:Payload ApplicationKeyGenerateRequest payload) returns ApplicationKey|BadRequestError|NotFoundError|PreconditionFailedError {
