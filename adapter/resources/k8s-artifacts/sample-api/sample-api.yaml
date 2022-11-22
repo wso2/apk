@@ -17,21 +17,22 @@
 apiVersion: dp.wso2.com/v1alpha1
 kind: API
 metadata:
-  name: swagger-petstore
-  namespace: default
+  name: http-bin-api
+  namespace: apk
 spec:
-  apiDisplayName: swagger-petstore
+  apiDisplayName: http-bin-api
   apiType: REST
   apiVersion: 1.0.8
-  context: /pet-store-api/1.0.8
-  definitionFileRef: swagger-definition-swaggerpetstore
-  prodHTTPRouteRef: http-route-swaggerpetstore
+  context: /http-bin-api/1.0.8
+  definitionFileRef: swagger-definition-http-bin-api
+  prodHTTPRouteRef: http-route-http-bin-api
+  organization: carbon.super
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: HTTPRoute
 metadata:
-  name: http-route-swaggerpetstore
-  namespace: default
+  name: http-route-http-bin-api
+  namespace: apk
 spec:
   hostnames:
   - gw.wso2.com
@@ -49,4 +50,4 @@ spec:
     matches:
     - path:
         type: PathPrefix
-        value: /pet-store-api/1.0.8/get
+        value: /http-bin-api/1.0.8/get

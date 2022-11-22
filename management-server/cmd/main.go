@@ -21,11 +21,9 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/wso2/apk/management-server/internal/config"
 	"github.com/wso2/apk/management-server/internal/database"
 	server "github.com/wso2/apk/management-server/internal/grpc-server"
 	"github.com/wso2/apk/management-server/internal/logger"
-	internal_types "github.com/wso2/apk/management-server/internal/types"
 	"github.com/wso2/apk/management-server/internal/xds"
 )
 
@@ -40,15 +38,15 @@ func main() {
 	// todo(amaliMatharaarachchi) watch data updates and update snapshot accordingly.
 
 	// temp data
-	config := config.ReadConfigs()
-	var arr = []*internal_types.ApplicationEvent{
-		{
-			Label:         config.ManagementServer.NodeLabels[0],
-			UUID:          "b9850225-c7db-444d-87fd-4feeb3c6b3cc",
-			IsRemoveEvent: false,
-		},
-	}
-	go xds.AddMultipleApplications(arr)
+	// config := config.ReadConfigs()
+	// var arr = []*internal_types.ApplicationEvent{
+	// 	{
+	// 		Label:         config.ManagementServer.NodeLabels[0],
+	// 		UUID:          "b9850225-c7db-444d-87fd-4feeb3c6b3cc",
+	// 		IsRemoveEvent: false,
+	// 	},
+	// }
+	// go xds.AddMultipleApplications(arr)
 	go server.StartGRPCServer()
 
 OUTER:
