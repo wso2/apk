@@ -2666,7 +2666,13 @@ public class APIConsumerImpl extends AbstractAPIManager implements APIConsumer {
                 List<DevPortalAPIInfo> list = searchAPIs.getDevPortalAPIInfoList();
                 List<Object> apiList = new ArrayList<>();
                 for (DevPortalAPIInfo devPortalAPIInfo : list) {
-                    API mappedAPI = APIMapper.INSTANCE.toApi(devPortalAPIInfo);
+                    //API mappedAPI = APIMapper.INSTANCE.toApi(devPortalAPIInfo);
+                    APIIdentifier apiIdentifier = new APIIdentifier(devPortalAPIInfo.getProviderName(), devPortalAPIInfo.getApiName(), devPortalAPIInfo.getVersion(), devPortalAPIInfo.getId());
+                    API mappedAPI = new API(apiIdentifier);
+                    mappedAPI.setContext(devPortalAPIInfo.getContext());
+                    mappedAPI.setId(apiIdentifier);
+                    mappedAPI.setUuid(devPortalAPIInfo.getId());
+                    mappedAPI.setContextTemplate(devPortalAPIInfo.getContext());
                     mappedAPI.setRating(APIUtil.getAverageRating(mappedAPI.getUuid()));
                     Set<String> tierNameSet = devPortalAPIInfo.getAvailableTierNames();
                     String tiers = null;

@@ -21,14 +21,23 @@ import ballerina/io;
 import ballerina/lang.value;
 import devportal_service.org.wso2.apk.apimgt.api as api;
 import devportal_service.org.wso2.apk.apimgt.devportal.impl as devportal;
+import devportal_service.org.wso2.apk.apimgt.devportal.dto as dto;
 
 configurable int DEVPORTAL_PORT = 9443;
 
 listener http:Listener ep0 = new (DEVPORTAL_PORT);
 
 service /api/am/devportal on ep0 {
-    // resource function get apis(@http:Header string? 'x\-wso2\-tenant, string? query, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0) returns APIList|NotAcceptableError {
-    // }
+    resource function get apis(@http:Header string? 'x\-wso2\-tenant, string? query, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0) returns APIList|NotAcceptableError|error {
+        string organization = "carbon.super";
+        string?| api:APIManagementException | dto:APIListDTO apiList = check devportal:ApisCommonImpl_getAPIList('limit, offset, "", organization);
+        if apiList is string {
+            json j = check value:fromJsonString(apiList);
+            APIList apiListObj = check j.cloneWithType(APIList);
+            return apiListObj;
+        }
+        return {count: 0};
+    }
     // resource function get apis/[string apiId](@http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match) returns API|http:NotModified|NotFoundError|NotAcceptableError {
     // }
     // resource function get apis/[string apiId]/swagger(string? environmentName, @http:Header string? 'if\-none\-match, @http:Header string? 'x\-wso2\-tenant) returns string|http:NotModified|NotFoundError|NotAcceptableError {
