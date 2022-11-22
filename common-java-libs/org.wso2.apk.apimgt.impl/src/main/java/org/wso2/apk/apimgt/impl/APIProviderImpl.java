@@ -349,7 +349,13 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
                 List<PublisherAPIInfo> list = searchAPIs.getPublisherAPIInfoList();
                 List<Object> apiList = new ArrayList<>();
                 for (PublisherAPIInfo publisherAPIInfo : list) {
-                    API mappedAPI = APIMapper.INSTANCE.toApi(publisherAPIInfo);
+                    // API mappedAPI = APIMapper.INSTANCE.toApi(publisherAPIInfo);
+                    APIIdentifier apiIdentifier = new APIIdentifier(publisherAPIInfo.getProviderName(), publisherAPIInfo.getApiName(), publisherAPIInfo.getVersion(), publisherAPIInfo.getId());
+                    API mappedAPI = new API(apiIdentifier);
+                    mappedAPI.setContext(publisherAPIInfo.getContext());
+                    mappedAPI.setId(apiIdentifier);
+                    mappedAPI.setUuid(publisherAPIInfo.getId());
+                    mappedAPI.setContextTemplate(publisherAPIInfo.getContext());
                     populateAPIStatus(mappedAPI);
                     populateDefaultVersion(mappedAPI);
                     apiList.add(mappedAPI);
