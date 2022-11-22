@@ -733,7 +733,7 @@ public class APIMappingUtil {
         APIConsumer apiConsumer = RestApiCommonUtil.getLoggedInUserConsumer();
         Set<String> deniedTiers = apiConsumer.getDeniedTiers(organization);
         Map<String, Tier> tierMap = APIUtil.getSubscriptionTiers(organization);
-        List<APIInfoDTO> apiInfoDTOs = apiListDTO.getList();
+        List<APIInfoDTO> apiInfoDTOs = new ArrayList<>();
         if (apiList != null) {
             for (Object api : apiList) {
                 APIInfoDTO apiInfoDTO = null;
@@ -749,6 +749,7 @@ public class APIMappingUtil {
                 apiInfoDTOs.add(apiInfoDTO);
             }
         }
+        apiListDTO.setList(apiInfoDTOs);
         apiListDTO.setCount(apiInfoDTOs.size());
         return apiListDTO;
     }

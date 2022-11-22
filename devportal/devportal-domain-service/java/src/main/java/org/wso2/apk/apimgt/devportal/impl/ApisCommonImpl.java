@@ -97,10 +97,10 @@ public class ApisCommonImpl {
      * @param organization organization
      * @return API List DTO
      */
-    public static APIListDTO getAPIList(Integer limit, Integer offset, String query, String organization)
+    public static String getAPIList(int limit, int offset, String query, String organization)
             throws APIManagementException {
-        limit = limit != null ? limit : RestApiConstants.PAGINATION_LIMIT_DEFAULT;
-        offset = offset != null ? offset : RestApiConstants.PAGINATION_OFFSET_DEFAULT;
+        limit = limit != 0 ? limit : RestApiConstants.PAGINATION_LIMIT_DEFAULT;
+        offset = offset != 0 ? offset : RestApiConstants.PAGINATION_OFFSET_DEFAULT;
         query = query == null ? "" : query;
         APIListDTO apiListDTO = new APIListDTO();
 
@@ -132,14 +132,14 @@ public class ApisCommonImpl {
 
             APIMappingUtil.setPaginationParams(apiListDTO, query, offset, limit, totalAvailableAPis);
 
-            return apiListDTO;
+            return RestApiUtil.getJsonFromDTO(apiListDTO);
         } catch (APIManagementException e) {
             if (RestApiUtil.rootCauseMessageMatches(e, "start index seems to be greater than the limit count")) {
                 //this is not an error of the user as he does not know the total number of apis available. Thus sends
                 //  an empty response
                 apiListDTO.setCount(0);
                 apiListDTO.setPagination(new PaginationDTO());
-                return apiListDTO;
+                return RestApiUtil.getJsonFromDTO(apiListDTO);
             } else {
                 String errorMessage = "Error while retrieving APIs";
                 throw new APIManagementException(errorMessage, e.getErrorHandler());
