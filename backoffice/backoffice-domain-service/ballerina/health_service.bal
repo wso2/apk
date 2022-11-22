@@ -16,20 +16,11 @@
 // under the License.
 //
 
-type DatasourceConfiguration record {
-    string name = "jdbc/apkdb";
-    string description;
-    string url;
-    string username;
-    string password;
-    int maxPoolSize = 50;
-    int minIdleTime = 60000;
-    int maxLifeTime = 60000;
-    int validationTimeout;
-    boolean setAutocommit = false;
-    string testQuery;
-};
+import ballerina/http;
 
-type APKConfiguration record {
-    DatasourceConfiguration datasourceConfiguration;
-};
+service / on ep0 {
+    resource function get health() returns http:Ok {
+        json status = {"health": "Ok"};
+        return {body: status};
+    }
+}
