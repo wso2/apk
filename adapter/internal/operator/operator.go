@@ -131,7 +131,7 @@ func InitOperator() {
 	}
 
 	go synchronizer.HandleAPILifeCycleEvents(&ch)
-	go xds.HandleApplicationEventsFromMgtServer(mgr.GetClient())
+	go xds.HandleApplicationEventsFromMgtServer(mgr.GetClient(), mgr.GetAPIReader())
 
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		loggers.LoggerAPKOperator.Errorf("problem running manager", err)
