@@ -40,6 +40,7 @@ type Artifact struct {
 	Context      string `json:"context"`
 	Version      string `json:"version"`
 	ProviderName string `json:"providerName"`
+	Status       string `json:"status"`
 }
 
 func GetApplicationByUUID(uuid string) (*apkmgt.Application, error) {
@@ -141,7 +142,7 @@ func GetSubscriptionByUUID(subUUID string) (*apkmgt.Subscription, error) {
 
 func CreateAPI(api *apiProtos.API) error {
 	_, err := ExecDBQuery(QueryCreateAPI, &api.Uuid, &api.Name, "apkuser",
-		&api.Version, &api.Context, &api.OrganizationId, &api.CreatedBy, time.Now(), &api.Type, marshalArtifact(api))
+		&api.Version, &api.Context, &api.OrganizationId, &api.CreatedBy, time.Now(), &api.Type, marshalArtifact(api), "PUBLISHED")
 
 	if err != nil {
 		logger.LoggerDatabase.ErrorC(logging.ErrorDetails{
@@ -156,7 +157,7 @@ func CreateAPI(api *apiProtos.API) error {
 
 func UpdateAPI(api *apiProtos.API) error {
 	_, err := ExecDBQuery(QueryUpdateAPI, &api.Uuid, &api.Name, "apkuser",
-		&api.Version, &api.Context, &api.OrganizationId, &api.UpdatedBy, time.Now(), &api.Type, marshalArtifact(api))
+		&api.Version, &api.Context, &api.OrganizationId, &api.UpdatedBy, time.Now(), &api.Type, marshalArtifact(api), "PUBLISHED")
 	if err != nil {
 		logger.LoggerDatabase.ErrorC(logging.ErrorDetails{
 			Message:   fmt.Sprintf("Error updating API %q, Error: %v", api.Uuid, err.Error()),
@@ -186,7 +187,9 @@ func marshalArtifact(api *apiProtos.API) string {
 		ID:           api.Uuid,
 		Context:      api.Context,
 		Version:      api.Version,
-		ProviderName: "apkuser"}
+		ProviderName: "apkuser",
+		Status:       "PUBLISHED",
+	}
 	jsonString, err := json.Marshal(artifact)
 	if err != nil {
 		return "{}"
