@@ -20,7 +20,7 @@ func HandleApplicationEventsFromMgtServer(c client.Client, cReader client.Reader
 	for applicationEvent := range applicationChannel {
 		switch applicationEvent.Type {
 		case APPLICATION_CREATE:
-			if err, found, _ := checkApplicationEsists(applicationEvent.Application, c, cReader); err == nil && !found {
+			if err, found, _ := checkApplicationExists(applicationEvent.Application, c, cReader); err == nil && !found {
 				if err := c.Create(context.Background(), *&applicationEvent.Application); err != nil {
 					loggers.LoggerXds.ErrorC(logging.ErrorDetails{
 						Message:   fmt.Sprint("Error creating application: ", err.Error()),
@@ -33,7 +33,7 @@ func HandleApplicationEventsFromMgtServer(c client.Client, cReader client.Reader
 			}
 			break
 		case APPLICATION_UPDATE:
-			if err, found, application := checkApplicationEsists(applicationEvent.Application, c, cReader); err == nil && found {
+			if err, found, application := checkApplicationExists(applicationEvent.Application, c, cReader); err == nil && found {
 				application.Spec = applicationEvent.Application.Spec
 				err := c.Update(context.Background(), application)
 				if err != nil {
@@ -65,7 +65,7 @@ func HandleApplicationEventsFromMgtServer(c client.Client, cReader client.Reader
 	}
 }
 
-func checkApplicationEsists(application *cpv1alpha1.Application, c client.Client, cReader client.Reader) (error, bool, *cpv1alpha1.Application) {
+func checkApplicationExists(application *cpv1alpha1.Application, c client.Client, cReader client.Reader) (error, bool, *cpv1alpha1.Application) {
 	var retrivedApplication = new(cpv1alpha1.Application)
 	// Try reading from cache
 	if err := c.Get(context.Background(), types.NamespacedName{
