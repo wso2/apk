@@ -3088,7 +3088,6 @@ public class ApiDAOImpl implements ApiDAO {
         Connection connection = null;
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
-        PublisherAPI api = null;
         DevPortalAPI devPortalAPI = null;
         String getAPIArtefactQuery = PostgreSQLConstants.GET_DEVPORTAL_API_ARTIFACT_SQL;
         try {
@@ -3103,26 +3102,25 @@ public class ApiDAOImpl implements ApiDAO {
                 String json = resultSet.getString("ARTIFACT");
                 ObjectMapper mapper = new ObjectMapper();
                 JsonNode tree = mapper.readTree(json);
-                api = mapper.treeToValue(tree, PublisherAPI.class);
+                devPortalAPI = mapper.treeToValue(tree, DevPortalAPI.class);
                 String mediaType = resultSet.getString("MEDIA_TYPE");
                 InputStream apiDefinitionBlob = resultSet.getBinaryStream("API_DEFINITION");
                 if (apiDefinitionBlob != null) {
                     if (StringUtils.equals("swagger.json", mediaType)) {
-                        api.setSwaggerDefinition(APIMgtDBUtil.getStringFromInputStream(apiDefinitionBlob));
-                    } else if (StringUtils.equals("asyncapi.json", mediaType)) {
-                        api.setAsyncApiDefinition(APIMgtDBUtil.getStringFromInputStream(apiDefinitionBlob));
+                        devPortalAPI.setSwaggerDefinition(APIMgtDBUtil.getStringFromInputStream(apiDefinitionBlob));
                     }
+                    // TODO (CrowleyRajapakse) In future need to handle async API use case
+//                    else if (StringUtils.equals("asyncapi.json", mediaType)) {
+//                        devPortalAPI.setAsyncApiDefinition(APIMgtDBUtil.getStringFromInputStream(apiDefinitionBlob));
+//                    }
                 }
-                API apiObject = APIMapper.INSTANCE.toApi(api);
-                devPortalAPI = APIMapper.INSTANCE.toDevPortalApi(apiObject);
-                if (APIConstants.API_GLOBAL_VISIBILITY.equals(api.getVisibility())) {
+                if (APIConstants.API_GLOBAL_VISIBILITY.equals(devPortalAPI.getVisibility())) {
                     return devPortalAPI;
                 }
-                String apiOrganization = APIUtil.getTenantDomain(APIUtil.replaceEmailDomainBack(apiObject.getId()
-                        .getProviderName()));
-                if (!organization.equals(apiOrganization)) {
+                String apiOrganization = APIUtil.getTenantDomain(APIUtil.replaceEmailDomainBack(devPortalAPI.getProviderName()));
+                if (!organization.getName().equals(apiOrganization)) {
                     throw new APIPersistenceException("User does not have permission to view API : "
-                            + apiObject.getId().getApiName());
+                            + devPortalAPI.getApiName());
                 }
             }
         } catch (SQLException e) {

@@ -191,15 +191,14 @@ public function ApisCommonImpl_getAPI(string arg0, string arg1) returns orgwso2a
 #
 # + arg0 - The `string` value required to map with the Java method parameter.
 # + arg1 - The `string` value required to map with the Java method parameter.
-# + return - The `orgwso2apkapimgtdevportaldto:APIDTO` or the `orgwso2apkapimgtapi:APIManagementException` value returning from the Java mapping.
-public function ApisCommonImpl_getAPIByAPIId(string arg0, string arg1) returns orgwso2apkapimgtdevportaldto:APIDTO|orgwso2apkapimgtapi:APIManagementException {
+# + return - The `string` or the `orgwso2apkapimgtapi:APIManagementException` value returning from the Java mapping.
+public function ApisCommonImpl_getAPIByAPIId(string arg0, string arg1) returns string?|orgwso2apkapimgtapi:APIManagementException {
     handle|error externalObj = org_wso2_apk_apimgt_devportal_impl_ApisCommonImpl_getAPIByAPIId(java:fromString(arg0), java:fromString(arg1));
     if (externalObj is error) {
         orgwso2apkapimgtapi:APIManagementException e = error orgwso2apkapimgtapi:APIManagementException(orgwso2apkapimgtapi:APIMANAGEMENTEXCEPTION, externalObj, message = externalObj.message());
         return e;
     } else {
-        orgwso2apkapimgtdevportaldto:APIDTO newObj = new (externalObj);
-        return newObj;
+        return java:toString(externalObj);
     }
 }
 
