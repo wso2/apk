@@ -45,6 +45,11 @@ spec:
               protocol: "TCP"
 {{ include "apk-helm.deployment.resources" .Values.wso2.apk.dp.cc.adapter.deployment.resources | indent 10 }}
 {{ include "apk-helm.deployment.env" .Values.wso2.apk.dp.cc.adapter.deployment.env | indent 10 }}
+          env:
+            - name: OPERATOR_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
           volumeMounts:
             - name: cc-adapter-keystore-secret-volume
               mountPath: /home/wso2/security/keystore

@@ -71,6 +71,9 @@ var defaultConfig = &Config{
 			MaxAttempts:             5,
 			BackOffInMilliSeconds:   1000,
 		},
+		Operator: operator{
+			Namespaces: []string{},
+		},
 	},
 	Envoy: envoy{
 		ListenerHost:                     "0.0.0.0",
