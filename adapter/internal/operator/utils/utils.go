@@ -34,12 +34,12 @@ func NamespacedName(obj client.Object) types.NamespacedName {
 	}
 }
 
-// FilterByNamespaces returns a filter function which will filter object
-// using the given namespaces
+// FilterByNamespaces takes a list of namespaces and returns a filter function
+// which return true if the input object is in the given namespaces list,
+// and returns false otherwise
 func FilterByNamespaces(namespaces []string) func(object client.Object) bool {
 	return func(object client.Object) bool {
-		if len(namespaces) == 0 {
-			// no filtering is effective when namespaces slice is empty
+		if namespaces == nil {
 			return true
 		}
 		return stringutils.StringInSlice(object.GetNamespace(), namespaces)
@@ -54,6 +54,7 @@ func GetNamespace(namespace *v1beta1.Namespace, defaultNamespace string) string 
 	return defaultNamespace
 }
 
+// Returns the namesapce of the operator pod
 func GetOperatorPodNamespace() string {
 	return envutils.GetEnv(constants.OperatorPodNamespace,
 		constants.OperatorPodNamespaceDefaultValue)

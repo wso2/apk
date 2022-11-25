@@ -72,7 +72,7 @@ var defaultConfig = &Config{
 			BackOffInMilliSeconds:   1000,
 		},
 		Operator: operator{
-			Namespaces: []string{},
+			Namespaces: nil,
 		},
 	},
 	Envoy: envoy{

@@ -184,7 +184,8 @@ data:
 
     # Configurations for operator
     [adapter.operator]
-    # Add the namespaces to watch, leaving this empty causes to watch for all namespaces
+    # Add the namespaces to watch, unspecified will cause to watch all namespaces
+    # while keeping an empty array causes to watch no namespaces
     namespaces = ["alpha"]
 
     # Configurations required for router to route the traffic from different clients to services
