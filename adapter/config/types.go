@@ -101,6 +101,8 @@ type adapter struct {
 	SourceControl sourceControl
 	// GRPCClient represents the configuration related to gRPC connection to Management server to agent
 	GRPCClient gRPCClient
+	// Operator represents the operator related configurations
+	Operator operator
 }
 
 // Envoy Listener Component related configurations.
@@ -573,4 +575,8 @@ type responseDirection struct {
 	MinimumContentLength int
 	ContentType          []string
 	EnableForEtagHeader  bool
+}
+
+type operator struct {
+	Namespaces []string
 }

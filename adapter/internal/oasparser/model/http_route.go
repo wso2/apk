@@ -25,6 +25,7 @@ import (
 	"github.com/tetratelabs/multierror"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
 	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
+	operatorutils "github.com/wso2/apk/adapter/internal/operator/utils"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
@@ -43,7 +44,10 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute gwapiv1b1.HTTPRoute) err
 			resources = append(resources, &Resource{path: resourcePath, methods: []*Operation{{iD: ":method", method: "GET"}}})
 		}
 		for _, backend := range rule.BackendRefs {
-			endPoints = append(endPoints, Endpoint{Host: string(backend.Name), Port: uint32(*backend.Port)})
+			endPoints = append(endPoints,
+				Endpoint{Host: fmt.Sprintf("%s.%s", backend.Name,
+					operatorutils.GetNamespace(backend.Namespace, httpRoute.Namespace)),
+					Port: uint32(*backend.Port)})
 		}
 	}
 	endpointCluster = EndpointCluster{

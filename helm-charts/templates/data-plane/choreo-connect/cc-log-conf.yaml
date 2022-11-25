@@ -182,6 +182,12 @@ data:
         # Path to the private key used for authentication (Use "" in the case of a public repository (only for GitHub))
         sshKeyFile = "/home/wso2/ssh-keys/id_ed25519"
 
+    # Configurations for operator
+    [adapter.operator]
+    # Add the namespaces to watch, unspecified will cause to watch all namespaces
+    # while keeping an empty array causes to watch no namespaces
+    namespaces = ["alpha"]
+
     # Configurations required for router to route the traffic from different clients to services
     [router] # --------------------------------------------------------
     # Host for listener of Router

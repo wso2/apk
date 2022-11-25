@@ -28,3 +28,9 @@ const (
 	Create string = "CREATE"
 	Update string = "UPDATE"
 )
+
+// Environment variable names and default values
+const (
+	OperatorPodNamespace             string = "OPERATOR_POD_NAMESPACE"
+	OperatorPodNamespaceDefaultValue string = "default"
+)

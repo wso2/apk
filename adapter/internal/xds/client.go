@@ -34,7 +34,8 @@ import (
 	stub "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/apkmgt"
 	"github.com/wso2/apk/adapter/pkg/logging"
 
-	stringutils "github.com/wso2/apk/adapter/internal/utils"
+	operatorutils "github.com/wso2/apk/adapter/internal/operator/utils"
+	stringutils "github.com/wso2/apk/adapter/internal/utils/string"
 	"google.golang.org/genproto/googleapis/rpc/status"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -223,7 +224,7 @@ func addApplicationsToChannel(resp *discovery.DiscoveryResponse) {
 
 		applicationResource := &cpv1alpha1.Application{
 			ObjectMeta: metav1.ObjectMeta{
-				Namespace: "default",
+				Namespace: operatorutils.GetOperatorPodNamespace(),
 				Name:      application.Uuid,
 			},
 			Spec: cpv1alpha1.ApplicationSpec{
