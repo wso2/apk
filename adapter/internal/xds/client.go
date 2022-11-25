@@ -35,7 +35,7 @@ import (
 	"github.com/wso2/apk/adapter/pkg/logging"
 
 	operatorutils "github.com/wso2/apk/adapter/internal/operator/utils"
-	stringutils "github.com/wso2/apk/adapter/internal/utils"
+	stringutils "github.com/wso2/apk/adapter/internal/utils/string"
 	"google.golang.org/genproto/googleapis/rpc/status"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"

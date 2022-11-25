@@ -18,7 +18,7 @@
 package config
 
 import (
-	stringutils "github.com/wso2/apk/adapter/internal/utils"
+	stringutils "github.com/wso2/apk/adapter/internal/utils/string"
 )
 
 // WireLogConfig is the config holder for wire logs

@@ -19,8 +19,8 @@ package utils
 
 import (
 	constants "github.com/wso2/apk/adapter/internal/operator/constants"
-	stringutils "github.com/wso2/apk/adapter/internal/utils"
 	envutils "github.com/wso2/apk/adapter/internal/utils/env"
+	stringutils "github.com/wso2/apk/adapter/internal/utils/string"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/gateway-api/apis/v1beta1"
