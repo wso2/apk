@@ -204,7 +204,9 @@ public class APIMappingUtil {
         }
         dto.setTiers(tiersToReturn);
 
-        dto.setTransport(Arrays.asList(model.getTransports().split(",")));
+        if (model.getTransports() != null) {
+            dto.setTransport(Arrays.asList(model.getTransports().split(",")));
+        }
 
         APIBusinessInformationDTO apiBusinessInformationDTO = new APIBusinessInformationDTO();
         apiBusinessInformationDTO.setBusinessOwner(model.getBusinessOwner());

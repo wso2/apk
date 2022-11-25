@@ -491,7 +491,7 @@ public class ApisCommonImpl {
             String message = "Error generating the SDK. API id or language should not be empty";
             throw new APIManagementException(message, ExceptionCodes.SDK_NOT_GENERATED);
         }
-        APIDTO api = getAPIByAPIId(apiId, organization);
+        APIDTO api = getAPIByAPIID(apiId, organization);
         APIClientGenerationManager apiClientGenerationManager = new APIClientGenerationManager();
         Map<String, String> sdkArtifacts;
         if (api != null) {
@@ -675,7 +675,7 @@ public class ApisCommonImpl {
      * @throws APIManagementException APIManagementException
      */
     public static List<Tier> getSubscriptionPolicies(String apiId, String organization) throws APIManagementException {
-        APIDTO apiInfo = getAPIByAPIId(apiId, organization);
+        APIDTO apiInfo = getAPIByAPIID(apiId, organization);
         List<Tier> availableThrottlingPolicyList = ThrottlingPoliciesCommonImpl.getThrottlingPolicyList(
                 ThrottlingPolicyDTO.PolicyLevelEnum.SUBSCRIPTION.toString(), organization);
         List<Tier> tierList = null;
@@ -695,7 +695,32 @@ public class ApisCommonImpl {
      * @param organization organization
      * @return
      */
-    public static APIDTO getAPIByAPIId(String apiId, String organization) throws APIManagementException {
+    public static String getAPIByAPIId(String apiId, String organization) throws APIManagementException {
+        APIConsumer apiConsumer = RestApiCommonUtil.getLoggedInUserConsumer();
+        ApiTypeWrapper api = apiConsumer.getAPIorAPIProductByUUID(apiId, organization);
+        String status = api.getStatus();
+
+        // Extracting clicked API name by the user, for the recommendation system
+        String userName = RestApiCommonUtil.getLoggedInUsername();
+        apiConsumer.publishClickedAPI(api, userName, organization);
+
+        if (APIConstants.PUBLISHED.equals(status) || APIConstants.PROTOTYPED.equals(status)
+                || APIConstants.DEPRECATED.equals(status)) {
+            return RestApiUtil.getJsonFromDTO(APIMappingUtil.fromAPItoDTO(api, organization));
+        } else {
+            throw new APIManagementException("User " + userName + " does not have permission to access API with Id : "
+                    + apiId, ExceptionCodes.NO_READ_PERMISSIONS);
+        }
+    }
+
+    /**
+     * get API By Id
+     *
+     * @param apiId        apiId
+     * @param organization organization
+     * @return
+     */
+    private static APIDTO getAPIByAPIID(String apiId, String organization) throws APIManagementException {
         APIConsumer apiConsumer = RestApiCommonUtil.getLoggedInUserConsumer();
         ApiTypeWrapper api = apiConsumer.getAPIorAPIProductByUUID(apiId, organization);
         String status = api.getStatus();

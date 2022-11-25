@@ -38,8 +38,20 @@ service /api/am/devportal on ep0 {
         }
         return {count: 0};
     }
-    // resource function get apis/[string apiId](@http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match) returns API|http:NotModified|NotFoundError|NotAcceptableError {
-    // }
+    resource function get apis/[string apiId](@http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match) returns API|http:NotModified|NotFoundError|NotAcceptableError|error|json {
+        string organization = "carbon.super";
+        string?| api:APIManagementException | dto:APIDTO api = check devportal:ApisCommonImpl_getAPIByAPIId(apiId, organization);
+        if api is string {
+            json j = check value:fromJsonString(api);
+            io:print(j);
+            return j;
+            // TODO (CrowleyRajapakse) need to fix the logic to return API object instead plain json 
+            // API apiObj = check j.cloneWithType(API);
+            // io:print(apiObj);
+            // return apiObj;
+        }
+        return;
+    }
     // resource function get apis/[string apiId]/swagger(string? environmentName, @http:Header string? 'if\-none\-match, @http:Header string? 'x\-wso2\-tenant) returns string|http:NotModified|NotFoundError|NotAcceptableError {
     // }
     // resource function get apis/[string apiId]/'graphql\-schema(@http:Header string? 'if\-none\-match, @http:Header string? 'x\-wso2\-tenant) returns string|http:NotModified|NotFoundError|NotAcceptableError {

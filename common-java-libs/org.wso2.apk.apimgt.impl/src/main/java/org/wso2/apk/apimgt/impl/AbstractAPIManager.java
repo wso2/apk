@@ -1131,7 +1131,7 @@ public abstract class AbstractAPIManager implements APIManager {
             JSONObject resourceConfigsJSON = (JSONObject) jsonParser.parse(resourceConfigsString);
             paths = (JSONObject) resourceConfigsJSON.get(APIConstants.SWAGGER_PATHS);
         }
-        Set<URITemplate> uriTemplates = apiMgtDAO.getURITemplatesOfAPI(api.getUuid());
+        Set<URITemplate> uriTemplates = apiDAOImpl.getURITemplatesOfAPI(api.getUuid());
         for (URITemplate uriTemplate : uriTemplates) {
             String uTemplate = uriTemplate.getUriTemplate();
             String method = uriTemplate.getHTTPVerb();
@@ -1172,9 +1172,6 @@ public abstract class AbstractAPIManager implements APIManager {
         }
         api.setUriTemplates(uriTemplates);
         //CORS . if null is returned, set default config from the configuration
-        if (api.getCorsConfiguration() == null) {
-            api.setCorsConfiguration(APIUtil.getDefaultCorsConfiguration());
-        }
 
         // set category
         List<APICategory> categories = api.getApiCategories();

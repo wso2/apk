@@ -2720,7 +2720,15 @@ public class APIConsumerImpl extends AbstractAPIManager implements APIConsumer {
                     apiProduct = addTiersToAPI(apiProduct, organization);
                     return new ApiTypeWrapper(apiProduct);
                 } else {
-                    API api = APIMapper.INSTANCE.toApi(devPortalApi);
+                    // TODO (CrowleyRajapakse) need to fix the code to use APIMapper Implementation
+                    //API api = APIMapper.INSTANCE.toApi(devPortalApi);
+                    APIIdentifier apiIdentifier = new APIIdentifier(devPortalApi.getProviderName(), devPortalApi.getApiName(), devPortalApi.getVersion(), devPortalApi.getId());
+                    API api = new API(apiIdentifier);
+                    api.setContext(devPortalApi.getContext());
+                    api.setId(apiIdentifier);
+                    api.setUuid(devPortalApi.getId());
+                    api.setContextTemplate(devPortalApi.getContext());
+                    api.setRating(APIUtil.getAverageRating(api.getUuid()));
                     populateDevPortalAPIInformation(uuid, organization, api);
                     populateDefaultVersion(api);
                     populateAPIStatus(api);
