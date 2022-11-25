@@ -141,7 +141,7 @@ func GetSubscriptionByUUID(subUUID string) (*apkmgt.Subscription, error) {
 }
 
 func CreateAPI(api *apiProtos.API) error {
-	_, err := ExecDBQuery(QueryCreateAPI, &api.Uuid, &api.Name, "apkuser",
+	_, err := ExecDBQuery(QueryCreateAPI, &api.Uuid, &api.Name, &api.Provider,
 		&api.Version, &api.Context, &api.OrganizationId, &api.CreatedBy, time.Now(), &api.Type, marshalArtifact(api), "PUBLISHED")
 
 	if err != nil {
@@ -156,7 +156,7 @@ func CreateAPI(api *apiProtos.API) error {
 }
 
 func UpdateAPI(api *apiProtos.API) error {
-	_, err := ExecDBQuery(QueryUpdateAPI, &api.Uuid, &api.Name, "apkuser",
+	_, err := ExecDBQuery(QueryUpdateAPI, &api.Uuid, &api.Name, &api.Provider,
 		&api.Version, &api.Context, &api.OrganizationId, &api.UpdatedBy, time.Now(), &api.Type, marshalArtifact(api), "PUBLISHED")
 	if err != nil {
 		logger.LoggerDatabase.ErrorC(logging.ErrorDetails{
@@ -187,7 +187,7 @@ func marshalArtifact(api *apiProtos.API) string {
 		ID:           api.Uuid,
 		Context:      api.Context,
 		Version:      api.Version,
-		ProviderName: "apkuser",
+		ProviderName: api.Provider,
 		Status:       "PUBLISHED",
 	}
 	jsonString, err := json.Marshal(artifact)

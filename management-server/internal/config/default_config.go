@@ -20,9 +20,10 @@ package config
 // Configuration object which is populated with default values.
 var defaultConfig = &Config{
 	ManagementServer: managementServer{
-		XDSPort:    18000,
-		NodeLabels: []string{"default"},
-		GRPCPort:   8765,
+		XDSPort:          18000,
+		NodeLabels:       []string{"default"},
+		GRPCPort:         8765,
+		NotificationPort: 8766,
 	},
 	Database: database{
 		Name:     "WSO2AM_DB",

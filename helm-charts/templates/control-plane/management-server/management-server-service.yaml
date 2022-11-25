@@ -33,4 +33,8 @@ spec:
       port: 8765
       targetPort: 8765
       protocol: TCP
+    - name: "notification-management-server"
+      port: 8766
+      targetPort: 8766
+      protocol: TCP
 {{- end -}}
