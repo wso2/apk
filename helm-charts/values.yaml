@@ -366,6 +366,9 @@ postgresql:
       scriptsConfigMap: postgres-initdb-scripts-configmap
       user: wso2carbon
       password: wso2carbon
+    service:
+      ports:
+        postgresql: 5432
   image:
     debug: true
 
