@@ -43,13 +43,15 @@ class APIListingTask {
                 json eventValue = <json>check value.'object;
                 APIInfo|error apiModel = createAPImodel(eventValue);
                 if apiModel is model:K8sAPI {
-                    if eventType == "ADDED" {
-                        apilist[apiModel.uuid] = apiModel;
-                    } else if (eventType == "MODIFIED") {
-                        _ = apilist.remove(apiModel.uuid);
-                        apilist[apiModel.uuid] = apiModel;
-                    } else if (eventType == "DELETED") {
-                        _ = apilist.remove(apiModel.uuid);
+                    if apiModel.namespace == runtimeConfiguration.apiCreationNamespace {
+                        if eventType == "ADDED" {
+                            apilist[apiModel.uuid] = apiModel;
+                        } else if (eventType == "MODIFIED") {
+                            _ = apilist.remove(apiModel.uuid);
+                            apilist[apiModel.uuid] = apiModel;
+                        } else if (eventType == "DELETED") {
+                            _ = apilist.remove(apiModel.uuid);
+                        }
                     }
                 } else {
                     log:printError("error while converting");

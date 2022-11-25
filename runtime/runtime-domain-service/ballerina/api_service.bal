@@ -57,9 +57,8 @@ service /api/am/runtime on ep0 {
         http:NotImplemented notImplementedError = {body: {code: 900910, message: "Not implemented"}};
         return notImplementedError;
     }
-    resource function get apis/[string apiId]/definition() returns string|NotFoundError|NotAcceptableError|http:NotImplemented {
-        http:NotImplemented notImplementedError = {body: {code: 900910, message: "Not implemented"}};
-        return notImplementedError;
+    resource function get apis/[string apiId]/definition() returns string|NotFoundError|NotAcceptableError {
+        return getAPIDefinitionByID(apiId);
     }
     resource function put apis/[string apiId]/definition(@http:Payload json payload) returns string|BadRequestError|ForbiddenError|NotFoundError|PreconditionFailedError|http:NotImplemented {
         http:NotImplemented notImplementedError = {body: {code: 900910, message: "Not implemented"}};
@@ -104,13 +103,24 @@ service /api/am/runtime on ep0 {
         }
 
     }
-    // resource function get services/[string serviceId](string? namespace) returns Service|BadRequestError|UnauthorizedError|NotFoundError|InternalServerErrorError {
-    // }
-    // resource function get services/[string serviceId]/usage(string? namespace) returns APIList|BadRequestError|UnauthorizedError|NotFoundError|InternalServerErrorError {
-    // }
-    // resource function get policies(string? query, int 'limit = 25, int offset = 0, string sortBy = "createdTime", string sortOrder = "desc", @http:Header string? accept = "application/json") returns MediationPolicyList|NotAcceptableError {
-    // }
-    // resource function get policies/[string policyId]() returns MediationPolicy|NotFoundError|NotAcceptableError {
-    // }
+    resource function get services/[string serviceId](string? namespace) returns Service|BadRequestError|UnauthorizedError|NotFoundError|InternalServerErrorError|http:NotImplemented {
+        http:NotImplemented notImplementedError = {body: {code: 900910, message: "Not implemented"}};
+        return notImplementedError;
+
+    }
+    resource function get services/[string serviceId]/usage(string? namespace) returns APIList|BadRequestError|UnauthorizedError|NotFoundError|InternalServerErrorError|http:NotImplemented {
+        http:NotImplemented notImplementedError = {body: {code: 900910, message: "Not implemented"}};
+        return notImplementedError;
+
+    }
+    resource function get policies(string? query, int 'limit = 25, int offset = 0, string sortBy = "createdTime", string sortOrder = "desc", @http:Header string? accept = "application/json") returns MediationPolicyList|NotAcceptableError|http:NotImplemented {
+        http:NotImplemented notImplementedError = {body: {code: 900910, message: "Not implemented"}};
+        return notImplementedError;
+
+    }
+    resource function get policies/[string policyId]() returns MediationPolicy|NotFoundError|NotAcceptableError|http:NotImplemented {
+        http:NotImplemented notImplementedError = {body: {code: 900910, message: "Not implemented"}};
+        return notImplementedError;
+    }
 }
 
