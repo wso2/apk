@@ -15,6 +15,9 @@
  *
  */
 
+
+def osName = System.getProperty("os.name").toLowerCase(Locale.ENGLISH)
+def osArch = System.getProperty("os.arch").toLowerCase(Locale.ENGLISH)
 tasks.register('go_clean', Exec) {
     group 'go'
     description 'Removes object files from package source directories.'
@@ -31,8 +34,14 @@ tasks.register('go_build', Exec) {
     group 'go'
     description 'Compiles the packages named by the import paths, along with their dependencies.'
     if (project.hasProperty('file')) {
+        println "OS name: "+osName;
+        if(osName=="mac os x") {
+        commandLine 'env', 'GOOS=linux', 'GOARCH=amd64', 'go', 'build', file
+        } else {
         commandLine 'env', 'GOOS=linux', 'GOARCH=amd64','CGO_ENABLED=0', 'go', 'build', file
+        }
     } else {
         throw new StopExecutionException('Missing "file" property')
     }
 }
+
