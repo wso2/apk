@@ -72,7 +72,7 @@ public class BlockConditionDAOImpl implements BlockConditionDAO {
         ResultSet resultSet = null;
         List<BlockConditionsDTO> blockConditionsDTOList = new ArrayList<BlockConditionsDTO>();
         try {
-            String query = SQLConstants.ThrottleSQLConstants.GET_BLOCK_CONDITIONS_SQL;
+            String query = SQLConstants.ThrottleSQLConstants.GET_BLOCK_CONDITION_SQL;
             connection = APIMgtDBUtil.getConnection();
             connection.setAutoCommit(true);
             selectPreparedStatement = connection.prepareStatement(query);
@@ -112,7 +112,7 @@ public class BlockConditionDAOImpl implements BlockConditionDAO {
         ResultSet resultSet = null;
         BlockConditionsDTO blockCondition = null;
         try {
-            String query = SQLConstants.ThrottleSQLConstants.GET_BLOCK_CONDITION_SQL;
+            String query = SQLConstants.ThrottleSQLConstants.GET_BLOCK_CONDITION_BY_ORG_SQL;
             connection = APIMgtDBUtil.getConnection();
             connection.setAutoCommit(true);
             selectPreparedStatement = connection.prepareStatement(query);
@@ -261,7 +261,7 @@ public class BlockConditionDAOImpl implements BlockConditionDAO {
         String tenantDomain = blockConditionsDTO.getTenantDomain();
         String conditionStatus = String.valueOf(blockConditionsDTO.isEnabled());
         try {
-            String query = SQLConstants.ThrottleSQLConstants.ADD_BLOCK_CONDITIONS_SQL;
+            String query = SQLConstants.ThrottleSQLConstants.ADD_BLOCK_CONDITION_SQL;
             if (APIConstants.BLOCKING_CONDITIONS_API.equals(conditionType)) {
                 String extractedTenantDomain = getTenantDomainFromRequestURL(conditionValue);
                 if (extractedTenantDomain == null) {
@@ -405,7 +405,7 @@ public class BlockConditionDAOImpl implements BlockConditionDAO {
         ResultSet resultSet = null;
         boolean status = false;
         try {
-            String query = "select count(*) COUNT from AM_API where CONTEXT=?";
+            String query = "select count(*) COUNT from API where CONTEXT=?";
             connection = APIMgtDBUtil.getConnection();
             connection.setAutoCommit(false);
             validateContextPreparedStatement = connection.prepareStatement(query);
@@ -439,7 +439,7 @@ public class BlockConditionDAOImpl implements BlockConditionDAO {
         ResultSet resultSet = null;
         boolean status = false;
         try {
-            String query = "SELECT * FROM AM_APPLICATION App,AM_SUBSCRIBER SUB  WHERE App.NAME=? AND App" +
+            String query = "SELECT * FROM APPLICATION App,SUBSCRIBER SUB  WHERE App.NAME=? AND App" +
                     ".SUBSCRIBER_ID=SUB.SUBSCRIBER_ID AND SUB.USER_ID=?";
             connection = APIMgtDBUtil.getConnection();
             connection.setAutoCommit(false);

@@ -135,7 +135,7 @@ public class ApplicationsCommonImpl {
             Subscriber subscriber = new Subscriber(username);
             Application[] applications = apiConsumer.getApplicationsWithPagination(new Subscriber(username), groupId,
                     offset, limit, query, sortBy, sortOrder, organization);
-            if (applications != null) {
+            if (applications.length != 0) {
                 JSONArray applicationAttributesFromConfig = apiConsumer.getAppAttributesFromConfig(username);
                 for (Application application : applications) {
                     // Remove hidden attributes and set the rest of the attributes from config

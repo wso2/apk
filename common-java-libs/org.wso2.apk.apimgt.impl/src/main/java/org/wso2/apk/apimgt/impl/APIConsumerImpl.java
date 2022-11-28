@@ -2242,14 +2242,14 @@ public class APIConsumerImpl extends AbstractAPIManager implements APIConsumer {
     public JSONArray getAppAttributesFromConfig(String userId) throws APIManagementException {
         String tenantDomain = APIUtil.getTenantDomain(userId);
         JSONArray applicationAttributes = null;
-        JSONObject applicationConfig = APIUtil.getAppAttributeKeysFromRegistry(tenantDomain);
-        if (applicationConfig != null) {
-            applicationAttributes = (JSONArray) applicationConfig.get(APIConstants.ApplicationAttributes.ATTRIBUTES);
-        } else {
-            ConfigurationHolder configurationHolder = ServiceReferenceHolder.getInstance()
-                    .getAPIManagerConfigurationService().getAPIManagerConfiguration();
-            applicationAttributes = configurationHolder.getApplicationAttributes();
-        }
+//        JSONObject applicationConfig = APIUtil.getAppAttributeKeysFromRegistry(tenantDomain);
+//        if (applicationConfig != null) {
+//            applicationAttributes = (JSONArray) applicationConfig.get(APIConstants.ApplicationAttributes.ATTRIBUTES);
+//        } else {
+//            ConfigurationHolder configurationHolder = ServiceReferenceHolder.getInstance()
+//                    .getAPIManagerConfigurationService().getAPIManagerConfiguration();
+//            applicationAttributes = configurationHolder.getApplicationAttributes();
+//        }
         return applicationAttributes;
     }
 

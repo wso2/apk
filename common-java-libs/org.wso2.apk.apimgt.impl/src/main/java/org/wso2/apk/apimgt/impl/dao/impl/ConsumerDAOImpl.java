@@ -141,7 +141,7 @@ public class ConsumerDAOImpl implements ConsumerDAO {
                 throw new APIManagementException(msg);
             }
             boolean userRatingExists = false;
-            //This query to check the ratings already exists for the user in the AM_API_RATINGS table
+            //This query to check the ratings already exists for the user in the API_RATINGS table
             String sqlQuery = SQLConstants.GET_API_RATING_SQL;
 
             psSelect = conn.prepareStatement(sqlQuery);
@@ -156,7 +156,7 @@ public class ConsumerDAOImpl implements ConsumerDAO {
             String sqlAddQuery;
             String ratingId = UUID.randomUUID().toString();
             if (!userRatingExists) {
-                //This query to insert into the AM_API_RATINGS table
+                //This query to insert into the API_RATINGS table
                 sqlAddQuery = SQLConstants.ADD_API_RATING_SQL;
                 ps = conn.prepareStatement(sqlAddQuery);
                 ps.setString(1, ratingId);
@@ -164,10 +164,10 @@ public class ConsumerDAOImpl implements ConsumerDAO {
                 ps.setInt(3, id);
                 ps.setInt(4, subscriber.getId());
             } else {
-                // This query to update the AM_API_RATINGS table
+                // This query to update the API_RATINGS table
                 sqlAddQuery = SQLConstants.UPDATE_API_RATING_SQL;
                 ps = conn.prepareStatement(sqlAddQuery);
-                // Adding data to the AM_API_RATINGS table
+                // Adding data to the API_RATINGS table
                 ps.setInt(1, rating);
                 ps.setInt(2, id);
                 ps.setInt(3, subscriber.getId());
@@ -306,7 +306,7 @@ public class ConsumerDAOImpl implements ConsumerDAO {
                 throw new APIManagementException(msg);
             }
 
-            //This query to check the ratings already exists for the user in the AM_API_RATINGS table
+            //This query to check the ratings already exists for the user in the API_RATINGS table
             String sqlQuery = SQLConstants.GET_API_RATING_ID_SQL;
             psSelect = conn.prepareStatement(sqlQuery);
             psSelect.setInt(1, id);
@@ -318,9 +318,9 @@ public class ConsumerDAOImpl implements ConsumerDAO {
             }
             String sqlDeleteQuery;
             if (rateId != null) {
-                //This query to delete the specific rate row from the AM_API_RATINGS table
+                //This query to delete the specific rate row from the API_RATINGS table
                 sqlDeleteQuery = SQLConstants.REMOVE_RATING_SQL;
-                // Adding data to the AM_API_RATINGS  table
+                // Adding data to the API_RATINGS  table
                 ps = conn.prepareStatement(sqlDeleteQuery);
                 ps.setString(1, rateId);
                 ps.executeUpdate();
@@ -389,10 +389,10 @@ public class ConsumerDAOImpl implements ConsumerDAO {
                 log.error(msg);
                 throw new APIManagementException(msg);
             }
-            //This query to update the AM_API_RATINGS table
+            //This query to update the API_RATINGS table
             String sqlQuery = SQLConstants.GET_API_RATING_SQL;
 
-            // Adding data to the AM_API_RATINGS  table
+            // Adding data to the API_RATINGS  table
             ps = conn.prepareStatement(sqlQuery);
             ps.setInt(1, id);
             ps.setInt(2, subscriber.getId());
@@ -462,7 +462,7 @@ public class ConsumerDAOImpl implements ConsumerDAO {
                 log.error(msg);
                 throw new APIManagementException(msg);
             }
-            //This query to get rating information from the AM_API_RATINGS table
+            //This query to get rating information from the API_RATINGS table
             String sqlQuery = SQLConstants.GET_API_ALL_RATINGS_SQL;
             ps = conn.prepareStatement(sqlQuery);
             ps.setInt(1, id);
@@ -543,7 +543,7 @@ public class ConsumerDAOImpl implements ConsumerDAO {
                 log.error(msg);
                 return Float.NEGATIVE_INFINITY;
             }
-            //This query to update the AM_API_RATINGS table
+            //This query to update the API_RATINGS table
             String sqlQuery = SQLConstants.GET_API_AVERAGE_RATING_SQL;
 
             ps = conn.prepareStatement(sqlQuery);
@@ -879,12 +879,12 @@ public class ConsumerDAOImpl implements ConsumerDAO {
 
                 if (forceCaseInsensitiveComparisons) {
                     sqlQuery += " AND  ( (APP.APPLICATION_ID IN  (SELECT APPLICATION_ID " +
-                            " FROM AM_APPLICATION_GROUP_MAPPING  " +
+                            " FROM APPLICATION_GROUP_MAPPING  " +
                             " WHERE GROUP_ID IN (" + paramString + ") AND TENANT = ?))" +
                             "  OR  ( LOWER(SUB.USER_ID) = LOWER(?) ))";
                 } else {
                     sqlQuery += " AND  ( (APP.APPLICATION_ID IN (SELECT APPLICATION_ID FROM " +
-                            "AM_APPLICATION_GROUP_MAPPING WHERE GROUP_ID IN (" + paramString + ") AND TENANT = ?))  " +
+                            "APPLICATION_GROUP_MAPPING WHERE GROUP_ID IN (" + paramString + ") AND TENANT = ?))  " +
                             "OR  ( SUB.USER_ID = ? ))";
                 }
             } else {
@@ -1048,7 +1048,7 @@ public class ConsumerDAOImpl implements ConsumerDAO {
             String whereClauseWithGroupId = " AND (APP.GROUP_ID = ? OR "
                     + "((APP.GROUP_ID = '' OR APP.GROUP_ID IS NULL) AND SUB.USER_ID = ?)) ";
             String whereClauseWithMultiGroupId = " AND  ( (APP.APPLICATION_ID IN (SELECT APPLICATION_ID  FROM " +
-                    "AM_APPLICATION_GROUP_MAPPING WHERE GROUP_ID IN ($params) AND TENANT = ?))  OR  ( SUB.USER_ID = ?" +
+                    "APPLICATION_GROUP_MAPPING WHERE GROUP_ID IN ($params) AND TENANT = ?))  OR  ( SUB.USER_ID = ?" +
                     " ))";
             String whereClauseWithUserId = " AND SUB.USER_ID = ? ";
             String whereClauseCaseSensitive = " AND LOWER(SUB.USER_ID) = LOWER(?) ";
@@ -1271,10 +1271,10 @@ public class ConsumerDAOImpl implements ConsumerDAO {
             }
         }
 
-        //This query to update the AM_SUBSCRIPTION table
+        //This query to update the SUBSCRIPTION table
         String sqlQuery = SQLConstants.ADD_SUBSCRIPTION_SQL;
 
-        //Adding data to the AM_SUBSCRIPTION table
+        //Adding data to the SUBSCRIPTION table
         //ps = conn.prepareStatement(sqlQuery, Statement.RETURN_GENERATED_KEYS);
         String subscriptionIDColumn = "SUBSCRIPTION_ID";
         if (connection.getMetaData().getDriverName().contains("PostgreSQL")) {
@@ -1407,7 +1407,7 @@ public class ConsumerDAOImpl implements ConsumerDAO {
                 subscriptionId = resultSet.getInt(1);
             }
 
-            //This query to update the AM_SUBSCRIPTION table
+            //This query to update the SUBSCRIPTION table
             String sqlQuery = SQLConstants.UPDATE_SINGLE_SUBSCRIPTION_SQL;
             preparedStForUpdate = conn.prepareStatement(sqlQuery);
             preparedStForUpdate.setString(1, requestedThrottlingTier);
@@ -1507,7 +1507,7 @@ public class ConsumerDAOImpl implements ConsumerDAO {
             conn = APIMgtDBUtil.getConnection();
             conn.setAutoCommit(false);
 
-            //This query is to update the AM_SUBSCRIPTION table
+            //This query is to update the SUBSCRIPTION table
             String sqlQuery = SQLConstants.UPDATE_SUBSCRIPTION_STATUS_SQL;
 
             ps = conn.prepareStatement(sqlQuery);

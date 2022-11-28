@@ -70,7 +70,7 @@ public class KeyManagerDAOImpl implements KeyManagerDAO {
             throws APIManagementException {
 
         List<KeyManagerConfigurationDTO> keyManagerConfigurationDTOS = new ArrayList<>();
-        final String query = "SELECT * FROM AM_KEY_MANAGER WHERE ORGANIZATION = ? ";
+        final String query = "SELECT * FROM KEY_MANAGER WHERE ORGANIZATION = ? ";
         try (Connection conn = APIMgtDBUtil.getConnection();
              PreparedStatement preparedStatement = conn.prepareStatement(query)) {
             preparedStatement.setString(1, organization);
@@ -108,7 +108,7 @@ public class KeyManagerDAOImpl implements KeyManagerDAO {
     public List<KeyManagerConfigurationDTO> getKeyManagerConfigurations() throws APIManagementException {
 
         List<KeyManagerConfigurationDTO> keyManagerConfigurationDTOS = new ArrayList<>();
-        final String query = "SELECT * FROM AM_KEY_MANAGER";
+        final String query = "SELECT * FROM KEY_MANAGER";
         try (Connection conn = APIMgtDBUtil.getConnection();
              PreparedStatement preparedStatement = conn.prepareStatement(query)) {
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -145,7 +145,7 @@ public class KeyManagerDAOImpl implements KeyManagerDAO {
     public KeyManagerConfigurationDTO getKeyManagerConfigurationByID(String organization, String id)
             throws APIManagementException {
 
-        final String query = "SELECT * FROM AM_KEY_MANAGER WHERE UUID = ? AND ORGANIZATION = ?";
+        final String query = "SELECT * FROM KEY_MANAGER WHERE UUID = ? AND ORGANIZATION = ?";
         try (Connection conn = APIMgtDBUtil.getConnection();
              PreparedStatement preparedStatement = conn.prepareStatement(query)) {
             preparedStatement.setString(1, id);
@@ -183,7 +183,7 @@ public class KeyManagerDAOImpl implements KeyManagerDAO {
     @Override
     public boolean isIDPExistInOrg(String organization, String resourceId) throws APIManagementException {
 
-        final String query = "SELECT 1 FROM AM_KEY_MANAGER WHERE EXTERNAL_REFERENCE_ID  = ? AND ORGANIZATION = ?";
+        final String query = "SELECT 1 FROM KEY_MANAGER WHERE EXTERNAL_REFERENCE_ID  = ? AND ORGANIZATION = ?";
         try (Connection conn = APIMgtDBUtil.getConnection();
              PreparedStatement preparedStatement = conn.prepareStatement(query)) {
             preparedStatement.setString(1, resourceId);
@@ -202,7 +202,7 @@ public class KeyManagerDAOImpl implements KeyManagerDAO {
 
     public boolean isKeyManagerConfigurationExistById(String organization, String id) throws APIManagementException {
 
-        final String query = "SELECT 1 FROM AM_KEY_MANAGER WHERE UUID = ? AND ORGANIZATION = ?";
+        final String query = "SELECT 1 FROM KEY_MANAGER WHERE UUID = ? AND ORGANIZATION = ?";
         try (Connection conn = APIMgtDBUtil.getConnection();
              PreparedStatement preparedStatement = conn.prepareStatement(query)) {
             preparedStatement.setString(1, id);
@@ -226,7 +226,7 @@ public class KeyManagerDAOImpl implements KeyManagerDAO {
             throws APIManagementException {
 
         try (Connection connection = APIMgtDBUtil.getConnection()) {
-            final String query = "SELECT 1 FROM AM_KEY_MANAGER WHERE NAME = ? AND ORGANIZATION = ?";
+            final String query = "SELECT 1 FROM KEY_MANAGER WHERE NAME = ? AND ORGANIZATION = ?";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                 preparedStatement.setString(1, name);
                 preparedStatement.setString(2, organization);
@@ -289,7 +289,7 @@ public class KeyManagerDAOImpl implements KeyManagerDAO {
                                                                         String name)
             throws SQLException, IOException {
 
-        final String query = "SELECT * FROM AM_KEY_MANAGER WHERE NAME = ? AND ORGANIZATION = ?";
+        final String query = "SELECT * FROM KEY_MANAGER WHERE NAME = ? AND ORGANIZATION = ?";
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             preparedStatement.setString(1, name);
             preparedStatement.setString(2, organization);
@@ -377,7 +377,7 @@ public class KeyManagerDAOImpl implements KeyManagerDAO {
     public KeyManagerConfigurationDTO getKeyManagerConfigurationByName(String organization, String name)
             throws APIManagementException {
 
-        final String query = "SELECT * FROM AM_KEY_MANAGER WHERE NAME = ? AND ORGANIZATION = ?";
+        final String query = "SELECT * FROM KEY_MANAGER WHERE NAME = ? AND ORGANIZATION = ?";
         try (Connection conn = APIMgtDBUtil.getConnection()) {
             return getKeyManagerConfigurationByName(conn, organization, name);
         } catch (SQLException | IOException e) {
@@ -402,7 +402,7 @@ public class KeyManagerDAOImpl implements KeyManagerDAO {
     private KeyManagerConfigurationDTO getKeyManagerConfigurationByUUID(Connection connection, String uuid)
             throws SQLException, IOException {
 
-        final String query = "SELECT * FROM AM_KEY_MANAGER WHERE UUID = ?";
+        final String query = "SELECT * FROM KEY_MANAGER WHERE UUID = ?";
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             preparedStatement.setString(1, uuid);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {

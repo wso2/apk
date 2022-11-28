@@ -338,7 +338,7 @@ public class ApplicationDAOImpl implements ApplicationDAO {
             throws APIManagementException {
         //mysql> select APP.APPLICATION_ID, APP.NAME, APP.SUBSCRIBER_ID,APP.APPLICATION_TIER,APP.CALLBACK_URL,APP
         // .DESCRIPTION,
-        // APP.APPLICATION_STATUS from AM_SUBSCRIBER as SUB,AM_APPLICATION as APP
+        // APP.APPLICATION_STATUS from SUBSCRIBER as SUB,APPLICATION as APP
         // where SUB.user_id='admin' AND APP.name='DefaultApplication' AND SUB.SUBSCRIBER_ID=APP.SUBSCRIBER_ID;
         Connection connection = null;
         PreparedStatement prepStmt = null;
@@ -361,14 +361,14 @@ public class ApplicationDAOImpl implements ApplicationDAO {
                             + "APP.NAME = ? AND SUB.SUBSCRIBER_ID = APP.SUBSCRIBER_ID";
 
             String whereClauseWithMultiGroupId = "  WHERE  ((APP.APPLICATION_ID IN (SELECT APPLICATION_ID  FROM " +
-                    "AM_APPLICATION_GROUP_MAPPING WHERE GROUP_ID IN ($params) AND TENANT = ?))  OR   SUB.USER_ID = ? " +
-                    "OR (APP.APPLICATION_ID IN (SELECT APPLICATION_ID FROM AM_APPLICATION WHERE GROUP_ID = ?))) " +
+                    "APPLICATION_GROUP_MAPPING WHERE GROUP_ID IN ($params) AND TENANT = ?))  OR   SUB.USER_ID = ? " +
+                    "OR (APP.APPLICATION_ID IN (SELECT APPLICATION_ID FROM APPLICATION WHERE GROUP_ID = ?))) " +
                     "AND APP.NAME = ? AND SUB.SUBSCRIBER_ID = APP.SUBSCRIBER_ID";
             String whereClauseWithMultiGroupIdCaseInSensitive =
                     "  WHERE  ((APP.APPLICATION_ID IN (SELECT APPLICATION_ID  FROM "
-                            + "AM_APPLICATION_GROUP_MAPPING WHERE GROUP_ID IN ($params) AND TENANT = ?))  "
+                            + "APPLICATION_GROUP_MAPPING WHERE GROUP_ID IN ($params) AND TENANT = ?))  "
                             + "OR   LOWER(SUB.USER_ID) = LOWER(?)  "
-                            + "OR (APP.APPLICATION_ID IN (SELECT APPLICATION_ID FROM AM_APPLICATION WHERE GROUP_ID = " +
+                            + "OR (APP.APPLICATION_ID IN (SELECT APPLICATION_ID FROM APPLICATION WHERE GROUP_ID = " +
                             "?))) "
                             + "AND APP.NAME = ? AND SUB.SUBSCRIBER_ID = APP.SUBSCRIBER_ID";
 
@@ -456,7 +456,7 @@ public class ApplicationDAOImpl implements ApplicationDAO {
         if (StringUtils.isEmpty(applicationGroupId)) { // No migrated App groupId
             application.setGroupId(getGroupId(connection, application.getId()));
         } else {
-            // Migrated data exists where Group ID for this App has been stored in AM_APPLICATION table
+            // Migrated data exists where Group ID for this App has been stored in APPLICATION table
             // in the format 'tenant/groupId', so extract groupId value and store it in the App object
             String[] split = applicationGroupId.split("/");
             if (split.length == 2) {
@@ -585,7 +585,7 @@ public class ApplicationDAOImpl implements ApplicationDAO {
             String deleteRegistrationEntry = SQLConstants.REMOVE_FROM_APPLICATION_REGISTRANTS_SQL;
 
             if (log.isDebugEnabled()) {
-                log.debug("trying to delete a record from AM_APPLICATION_REGISTRATION table by application ID " +
+                log.debug("trying to delete a record from APPLICATION_REGISTRATION table by application ID " +
                         applicationId + " and Token type" + tokenType);
             }
             ps = connection.prepareStatement(deleteRegistrationEntry);
@@ -595,7 +595,7 @@ public class ApplicationDAOImpl implements ApplicationDAO {
             ps.executeUpdate();
             connection.commit();
         } catch (SQLException e) {
-            handleException("Error while removing AM_APPLICATION_REGISTRATION table", e);
+            handleException("Error while removing APPLICATION_REGISTRATION table", e);
         } finally {
             APIMgtDBUtil.closeAllConnections(ps, connection, null);
         }
@@ -613,7 +613,7 @@ public class ApplicationDAOImpl implements ApplicationDAO {
             String deleteRegistrationEntry = SQLConstants.DELETE_APPLICATION_KEY_MAPPING_BY_APPLICATION_ID_SQL;
 
             if (log.isDebugEnabled()) {
-                log.debug("trying to delete a record from AM_APPLICATION_KEY_MAPPING table by application ID " +
+                log.debug("trying to delete a record from APPLICATION_KEY_MAPPING table by application ID " +
                         applicationId + " and Token type" + tokenType);
             }
             ps = connection.prepareStatement(deleteRegistrationEntry);
@@ -622,7 +622,7 @@ public class ApplicationDAOImpl implements ApplicationDAO {
             ps.executeUpdate();
             connection.commit();
         } catch (SQLException e) {
-            handleException("Error while removing AM_APPLICATION_KEY_MAPPING table", e);
+            handleException("Error while removing APPLICATION_KEY_MAPPING table", e);
         } finally {
             APIMgtDBUtil.closeAllConnections(ps, connection, null);
         }
@@ -743,7 +743,7 @@ public class ApplicationDAOImpl implements ApplicationDAO {
                 connection.commit();
 
             } catch (SQLException e) {
-                handleException("Error while inserting record to the AM_APPLICATION_KEY_MAPPING table,  " +
+                handleException("Error while inserting record to the APPLICATION_KEY_MAPPING table,  " +
                         "error is =  " + e.getMessage(), e);
             } finally {
                 APIMgtDBUtil.closeAllConnections(ps, connection, null);
@@ -762,7 +762,7 @@ public class ApplicationDAOImpl implements ApplicationDAO {
         try {
             connection = APIMgtDBUtil.getConnection();
 
-            String query = "SELECT APP.APPLICATION_ID FROM AM_SUBSCRIBER SUB, AM_APPLICATION APP";
+            String query = "SELECT APP.APPLICATION_ID FROM SUBSCRIBER SUB, APPLICATION APP";
             String whereClause = "  WHERE SUB.USER_ID =? AND APP.APPLICATION_ID=? AND " +
                     "SUB.SUBSCRIBER_ID=APP.SUBSCRIBER_ID";
             String whereClauseCaseInSensitive = "  WHERE LOWER(SUB.USER_ID) =LOWER(?) AND APP.APPLICATION_ID=? AND SUB"
@@ -772,8 +772,8 @@ public class ApplicationDAOImpl implements ApplicationDAO {
                     ".SUBSCRIBER_ID";
 
             String whereClauseWithMultiGroupId = "  WHERE  ((APP.APPLICATION_ID IN (SELECT APPLICATION_ID  FROM " +
-                    "AM_APPLICATION_GROUP_MAPPING WHERE GROUP_ID IN ($params) AND TENANT = ?))  OR   SUB.USER_ID = ? " +
-                    "OR (APP.APPLICATION_ID IN (SELECT APPLICATION_ID FROM AM_APPLICATION WHERE GROUP_ID = ?))) " +
+                    "APPLICATION_GROUP_MAPPING WHERE GROUP_ID IN ($params) AND TENANT = ?))  OR   SUB.USER_ID = ? " +
+                    "OR (APP.APPLICATION_ID IN (SELECT APPLICATION_ID FROM APPLICATION WHERE GROUP_ID = ?))) " +
                     "AND APP.APPLICATION_ID = ? AND SUB.SUBSCRIBER_ID = APP.SUBSCRIBER_ID";
 
             if (!StringUtils.isEmpty(groupId) && !APIConstants.NULL_GROUPID_LIST.equals(groupId)) {
@@ -980,7 +980,7 @@ public class ApplicationDAOImpl implements ApplicationDAO {
     }
 
     /**
-     * Adds a new record in AM_APPLICATION_GROUP_MAPPING for each group
+     * Adds a new record in APPLICATION_GROUP_MAPPING for each group
      *
      * @param conn
      * @param applicationId
@@ -1059,9 +1059,9 @@ public class ApplicationDAOImpl implements ApplicationDAO {
                 log.error(msg);
                 throw new APIManagementException(msg);
             }
-            //This query to update the AM_APPLICATION table
+            //This query to update the APPLICATION table
             String sqlQuery = SQLConstants.APP_APPLICATION_SQL;
-            // Adding data to the AM_APPLICATION  table
+            // Adding data to the APPLICATION  table
             //ps = conn.prepareStatement(sqlQuery);
             ps = conn.prepareStatement(sqlQuery, new String[]{"APPLICATION_ID"});
             if (conn.getMetaData().getDriverName().contains("PostgreSQL")) {
@@ -1101,7 +1101,7 @@ public class ApplicationDAOImpl implements ApplicationDAO {
                 applicationId = Integer.parseInt(rs.getString(1));
             }
 
-            //Adding data to AM_APPLICATION_ATTRIBUTES table
+            //Adding data to APPLICATION_ATTRIBUTES table
             if (application.getApplicationAttributes() != null) {
                 addApplicationAttributes(conn, application.getApplicationAttributes(), applicationId, userOrganization);
             }
@@ -1525,9 +1525,9 @@ public class ApplicationDAOImpl implements ApplicationDAO {
             conn = APIMgtDBUtil.getConnection();
             conn.setAutoCommit(false);
 
-            //This query to update the AM_APPLICATION table
+            //This query to update the APPLICATION table
             String sqlQuery = SQLConstants.UPDATE_APPLICATION_SQL;
-            // Adding data to the AM_APPLICATION  table
+            // Adding data to the APPLICATION  table
             ps = conn.prepareStatement(sqlQuery);
             ps.setString(1, application.getName());
             ps.setString(2, application.getTier());
@@ -1772,10 +1772,10 @@ public class ApplicationDAOImpl implements ApplicationDAO {
                     + " AND LOWER(SUB.USER_ID) = LOWER(?)))";
 
             String whereClauseWithMultiGroupId = "  AND  ((APP.APPLICATION_ID IN (SELECT APPLICATION_ID  FROM " +
-                    "AM_APPLICATION_GROUP_MAPPING WHERE GROUP_ID IN ($params) AND TENANT = ?))  OR   SUB.USER_ID = ? )";
+                    "APPLICATION_GROUP_MAPPING WHERE GROUP_ID IN ($params) AND TENANT = ?))  OR   SUB.USER_ID = ? )";
             String whereClauseWithMultiGroupIdCaseInSensitive = "  AND  ((APP.APPLICATION_ID IN (SELECT " +
                     "APPLICATION_ID  FROM " +
-                    "AM_APPLICATION_GROUP_MAPPING WHERE GROUP_ID IN ($params) AND TENANT = ?))  OR   LOWER(SUB" +
+                    "APPLICATION_GROUP_MAPPING WHERE GROUP_ID IN ($params) AND TENANT = ?))  OR   LOWER(SUB" +
                     ".USER_ID) = LOWER(?) )";
 
             if (groupId != null && !"null".equals(groupId) && !groupId.isEmpty()) {
@@ -2026,7 +2026,7 @@ public class ApplicationDAOImpl implements ApplicationDAO {
                     connection.rollback();
                 }
             } catch (SQLException e) {
-                handleException("Error updating the Application Metadata of the AM_APPLICATION_KEY_MAPPING table " +
+                handleException("Error updating the Application Metadata of the APPLICATION_KEY_MAPPING table " +
                         "where " +
                         "APPLICATION_ID = " + applicationId + " and KEY_TYPE = " + keyType, e);
             }
@@ -2119,7 +2119,7 @@ public class ApplicationDAOImpl implements ApplicationDAO {
             throws APIManagementException {
 
         final String query = "SELECT UUID,CONSUMER_KEY,KEY_MANAGER,KEY_TYPE,STATE,CREATE_MODE FROM " +
-                "AM_APPLICATION_KEY_MAPPING WHERE APPLICATION_ID=? AND UUID = ?";
+                "APPLICATION_KEY_MAPPING WHERE APPLICATION_ID=? AND UUID = ?";
         Set<APIKey> apiKeyList = new HashSet<>();
         try (Connection connection = APIMgtDBUtil.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(query)) {
