@@ -8718,8 +8718,7 @@ public class ApiMgtDAO {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     if (resultSet.next()) {
                         api.setDefaultVersion(apiId.getVersion().equals(resultSet.getString("DEFAULT_API_VERSION")));
-                        api.setAsPublishedDefaultVersion(apiId.getVersion().equals(resultSet.getString(
-                                "PUBLISHED_DEFAULT_API_VERSION")));
+                        //api.setAsPublishedDefaultVersion(apiId.getVersion().equals(resultSet.getString("PUBLISHED_DEFAULT_API_VERSION")));
                     }
                 }
             }
