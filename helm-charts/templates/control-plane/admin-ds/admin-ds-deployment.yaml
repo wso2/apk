@@ -33,6 +33,10 @@ spec:
         # networkPolicyId: {{ .Values.wso2.apk.cp.admin.deployment.npi }}
 {{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.wso2.apk.cp.admin.appName ) | indent 8}}
     spec:
+      initContainers:
+        - name: init-db
+          image: busybox:1.32
+          command: ['sh', '-c', 'echo -e "Checking for the availability of DB Server deployment"; while ! nc -z "{{ .Values.postgresql.fullnameOverride }}" {{ .Values.postgresql.primary.service.ports.postgresql }}; do sleep 1; printf "-"; done; echo -e "  >> DB Server has started";']
       containers:
         - name: admin-ds
           image: {{ .Values.wso2.apk.cp.admin.deployment.image }}
