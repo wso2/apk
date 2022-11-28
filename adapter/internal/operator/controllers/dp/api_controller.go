@@ -19,6 +19,7 @@ package controllers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/wso2/apk/adapter/config"
@@ -169,6 +170,18 @@ func (r *APIReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 		}
 		apiState = apiStateUpdate
 	}
+	if sandHTTPRoute.Generation > cachedAPI.SandHTTPRoute.Generation {
+		apiStateUpdate, err := r.ods.UpdateHTTPRoute(utils.NamespacedName(&apiDef), sandHTTPRoute, false)
+		if err != nil {
+			loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+				Message:   fmt.Sprintf("error updating HTTPRoute CR in operator data store: %v", err),
+				Severity:  logging.TRIVIAL,
+				ErrorCode: 2617,
+			})
+			return ctrl.Result{}, err
+		}
+		apiState = apiStateUpdate
+	}
 	*r.ch <- synchronizer.APIEvent{EventType: constants.Update, Event: apiState}
 	return ctrl.Result{}, nil
 
@@ -181,15 +194,19 @@ func (r *APIReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 func validateHTTPRouteRefs(ctx context.Context, client client.Client, namespace string,
 	prodHTTPRouteRef string, sandHTTPRouteRef string) (gwapiv1b1.HTTPRoute, gwapiv1b1.HTTPRoute, error) {
 	var prodHTTPRoute gwapiv1b1.HTTPRoute
-	if err := client.Get(ctx, types.NamespacedName{Namespace: namespace, Name: prodHTTPRouteRef}, &prodHTTPRoute); err != nil {
-		loggers.LoggerAPKOperator.Errorf("Production HttpRoute not found: %v", prodHTTPRouteRef)
-		return gwapiv1b1.HTTPRoute{}, gwapiv1b1.HTTPRoute{}, err
+	if prodHTTPRouteRef == "" && sandHTTPRouteRef == "" {
+		return gwapiv1b1.HTTPRoute{}, gwapiv1b1.HTTPRoute{}, errors.New("an endpoint should have given for the API")
+	}
+
+	if prodHTTPRouteRef != "" {
+		if err := client.Get(ctx, types.NamespacedName{Namespace: namespace, Name: prodHTTPRouteRef}, &prodHTTPRoute); err != nil {
+			return gwapiv1b1.HTTPRoute{}, gwapiv1b1.HTTPRoute{}, fmt.Errorf("production HttpRoute not found %s:%s"+prodHTTPRouteRef, err.Error())
+		}
 	}
 	var sandHTTPRoute gwapiv1b1.HTTPRoute
 	if sandHTTPRouteRef != "" {
 		if err := client.Get(ctx, types.NamespacedName{Namespace: namespace, Name: sandHTTPRouteRef}, &sandHTTPRoute); err != nil {
-			loggers.LoggerAPKOperator.Errorf("Error fetching SandHTTPRoute: %v:%v", sandHTTPRouteRef, err)
-			return prodHTTPRoute, gwapiv1b1.HTTPRoute{}, err
+			return prodHTTPRoute, gwapiv1b1.HTTPRoute{}, fmt.Errorf("error fetching SandHTTPRoute: %s:%s", sandHTTPRouteRef, err.Error())
 		}
 	}
 	return prodHTTPRoute, sandHTTPRoute, nil
