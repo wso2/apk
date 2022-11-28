@@ -23,7 +23,7 @@ import ballerina/http;
     id: "runtime-api-service"
 }
 
-service /api/am/runtime on ep0 {
+http:Service runtimeService = service object {
     resource function get apis(string? query, int 'limit = 25, int offset = 0, string sortBy = "createdTime", string sortOrder = "desc", @http:Header string? accept = "application/json") returns APIList|BadRequestError|UnauthorizedError|InternalServerErrorError|error {
         return getAPIList();
     }
@@ -41,9 +41,8 @@ service /api/am/runtime on ep0 {
     resource function delete apis/[string apiId]() returns http:Ok|ForbiddenError|NotFoundError|ConflictError|PreconditionFailedError {
         return deleteAPIById(apiId);
     }
-    resource function post apis/'import\-service(string serviceKey, @http:Payload API payload) returns CreatedAPI|NotFoundError|InternalServerErrorError|http:NotImplemented {
-        http:NotImplemented notImplementedError = {body: {code: 900910, message: "Not implemented"}};
-        return notImplementedError;
+    resource function post apis/'import\-service(string serviceKey, @http:Payload API payload) returns CreatedAPI|NotFoundError|InternalServerErrorError|ConflictError {
+        return createAPIFromService(serviceKey, payload);
     }
     resource function post apis/'import\-definition(@http:Payload json payload) returns CreatedAPI|BadRequestError|UnsupportedMediaTypeError|http:NotImplemented {
         http:NotImplemented notImplementedError = {body: {code: 900910, message: "Not implemented"}};
@@ -122,5 +121,5 @@ service /api/am/runtime on ep0 {
         http:NotImplemented notImplementedError = {body: {code: 900910, message: "Not implemented"}};
         return notImplementedError;
     }
-}
+};
 

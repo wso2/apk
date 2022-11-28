@@ -1593,7 +1593,6 @@ public class AsyncApiParser extends APIDefinition {
                                          Aai20ChannelItem channel) throws APIManagementException {
         URITemplate template = new URITemplate();
         template.setHTTPVerb(verb);
-        template.setHttpVerbs(verb);
         template.setUriTemplate(target);
 
         Extension authTypeExtension = channel.getExtension(APIConstants.SWAGGER_X_AUTH_TYPE);
@@ -1679,12 +1678,42 @@ public class AsyncApiParser extends APIDefinition {
     }
 
     @Override
-    public String generateAPIDefinition(SwaggerData swaggerData) throws APIManagementException {
-        return null;
+    public String generateAPIDefinition(API api) throws APIManagementException {
+        Aai20Document aaiDocument = new Aai20Document();
+        aaiDocument.info = aaiDocument.createInfo();
+        aaiDocument.info.title = api.getId().getName();
+        aaiDocument.info.version = api.getId().getVersion();
+        if (!APIConstants.API_TYPE_WEBSUB.equals(api.getType())) {
+            JSONObject endpointConfig = new JSONObject(api.getEndpointConfig());
+
+            Aai20Server prodServer = (Aai20Server) aaiDocument.createServer("production");
+            prodServer.url = endpointConfig.getJSONObject("production_endpoints").getString("url");
+            prodServer.protocol = api.getType().toLowerCase();
+            aaiDocument.addServer("production", prodServer);
+
+            Aai20Server sandBoxServer = (Aai20Server) aaiDocument.createServer("sandbox");
+            sandBoxServer.url = endpointConfig.getJSONObject("sandbox_endpoints").getString("url");
+            sandBoxServer.protocol = api.getType().toLowerCase();
+            aaiDocument.addServer("sandbox", sandBoxServer);
+        }
+
+        Map<String, AaiChannelItem> channels = new HashMap<>();
+        for (URITemplate uriTemplate : api.getUriTemplates()) {
+            Aai20ChannelItem channelItem = aaiDocument.createChannelItem(uriTemplate.getUriTemplate());
+            Aai20Operation subscribeOp = new Aai20Operation(channelItem,"subscribe");
+            channelItem.subscribe = subscribeOp;
+            if (APIConstants.API_TYPE_WS.equals(api.getType())) {
+                Aai20Operation publishOp = new Aai20Operation(channelItem,"publish");
+                channelItem.publish = publishOp;
+            }
+            channels.put(uriTemplate.getUriTemplate(), channelItem);
+        }
+        aaiDocument.channels = channels;
+        return Library.writeDocumentToJSONString(aaiDocument);
     }
 
     @Override
-    public String generateAPIDefinition(SwaggerData swaggerData, String swagger) throws APIManagementException {
+    public String generateAPIDefinition(API api, String swagger) throws APIManagementException {
         return null;
     }
 
@@ -1716,45 +1745,6 @@ public class AsyncApiParser extends APIDefinition {
                     (new URI("http://json-schema.org/draft-07/schema#"), json).schemaJson(hyperSchema).build();
             Schema schemaValidator = schemaLoader.load().build();
             schemaValidator.validate(schemaToBeValidated);
-            /*AaiDocument asyncApiDocument = (AaiDocument) Library.readDocumentFromJSONString(apiDefinition);
-            validationErrorMessages = new ArrayList<>();
-            if (asyncApiDocument.getServers().size() == 1) {
-                if (!APIConstants.WS_PROTOCOL.equalsIgnoreCase(asyncApiDocument.getServers().get(0).protocol)) {
-                    validationErrorMessages.add("#:The protocol of the server should be 'ws' for websockets");
-                }
-            }
-            if (asyncApiDocument.getServers().size() > 1) {
-                validationErrorMessages.add("#:The AsyncAPI definition should contain only a single server for websockets");
-            }
-            if (asyncApiDocument.getChannels().size() > 1) {
-                validationErrorMessages.add("#:The AsyncAPI definition should contain only a single channel for websockets");
-            }
-            if (validationErrorMessages.size() == 0) {
-                validationSuccess = true;
-                validationErrorMessages = null;
-            }*/
-
-            //AaiDocument asyncApiDocument = (AaiDocument) Library.readDocumentFromJSONString(apiDefinition);
-            /*//Checking whether it is a websocket
-            validationErrorMessages = new ArrayList<>();
-            if (APIConstants.WS_PROTOCOL.equalsIgnoreCase(asyncApiDocument.getServers().get(0).protocol)) {
-                if (APIConstants.WS_PROTOCOL.equalsIgnoreCase(protocol)) {
-                    isWebSocket = true;
-                }
-            }*/
-
-            //validating channel count for websockets
-            /*if (isWebSocket) {
-                if (asyncApiDocument.getChannels().size() > 1) {
-                    validationErrorMessages.add("#:The AsyncAPI definition should contain only a single channel for websockets");
-                }
-            }*/
-
-            /*if (validationErrorMessages.size() == 0) {
-                validationSuccess = true;
-                validationErrorMessages = null;
-            }*/
-
             validationSuccess = true;
         } catch(ValidationException e) {
             //validation error messages
@@ -1847,7 +1837,7 @@ public class AsyncApiParser extends APIDefinition {
     }
 
     @Override
-    public String populateCustomManagementInfo(String oasDefinition, SwaggerData swaggerData) throws APIManagementException {
+    public String populateCustomManagementInfo(String oasDefinition, API api) throws APIManagementException {
         return null;
     }
 
@@ -1863,11 +1853,6 @@ public class AsyncApiParser extends APIDefinition {
 
     @Override
     public String getOASDefinitionForPublisher(API api, String oasDefinition) throws APIManagementException {
-        return null;
-    }
-
-    @Override
-    public String getOASVersion(String oasDefinition) throws APIManagementException {
         return null;
     }
 
@@ -1906,39 +1891,6 @@ public class AsyncApiParser extends APIDefinition {
         return null;
     }
 
-    public String generateAsyncAPIDefinition(API api) throws APIManagementException {
-        Aai20Document aaiDocument = new Aai20Document();
-        aaiDocument.info = aaiDocument.createInfo();
-        aaiDocument.info.title = api.getId().getName();
-        aaiDocument.info.version = api.getId().getVersion();
-        if (!APIConstants.API_TYPE_WEBSUB.equals(api.getType())) {
-            JSONObject endpointConfig = new JSONObject(api.getEndpointConfig());
-
-            Aai20Server prodServer = (Aai20Server) aaiDocument.createServer("production");
-            prodServer.url = endpointConfig.getJSONObject("production_endpoints").getString("url");
-            prodServer.protocol = api.getType().toLowerCase();
-            aaiDocument.addServer("production", prodServer);
-
-            Aai20Server sandBoxServer = (Aai20Server) aaiDocument.createServer("sandbox");
-            sandBoxServer.url = endpointConfig.getJSONObject("sandbox_endpoints").getString("url");
-            sandBoxServer.protocol = api.getType().toLowerCase();
-            aaiDocument.addServer("sandbox", sandBoxServer);
-        }
-
-        Map<String, AaiChannelItem> channels = new HashMap<>();
-        for (URITemplate uriTemplate : api.getUriTemplates()) {
-            Aai20ChannelItem channelItem = aaiDocument.createChannelItem(uriTemplate.getUriTemplate());
-            Aai20Operation subscribeOp = new Aai20Operation(channelItem,"subscribe");
-            channelItem.subscribe = subscribeOp;
-            if (APIConstants.API_TYPE_WS.equals(api.getType())) {
-                Aai20Operation publishOp = new Aai20Operation(channelItem,"publish");
-                channelItem.publish = publishOp;
-            }
-            channels.put(uriTemplate.getUriTemplate(), channelItem);
-        }
-        aaiDocument.channels = channels;
-        return Library.writeDocumentToJSONString(aaiDocument);
-    }
 
     /**
      * Update AsyncAPI definition for store
@@ -2170,5 +2122,13 @@ public class AsyncApiParser extends APIDefinition {
     @Override
     public String getType() {
         return APIConstants.WSO2_GATEWAY_ENVIRONMENT;
+    }
+
+    @Override
+    public boolean canHandleDefinition(String definition) {
+        if (StringUtils.isNotEmpty(definition)){
+            return definition.contains("asyncapi:");
+        }
+        return false;
     }
 }

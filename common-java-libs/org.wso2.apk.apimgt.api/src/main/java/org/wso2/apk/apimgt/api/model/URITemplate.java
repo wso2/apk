@@ -17,10 +17,6 @@
  */
 package org.wso2.apk.apimgt.api.model;
 
-import org.json.simple.JSONValue;
-import org.wso2.apk.apimgt.api.model.policy.PolicyConstants;
-import org.wso2.apk.apimgt.api.dto.ConditionGroupDTO;
-
 import java.io.Serializable;
 import java.util.*;
 
@@ -33,94 +29,14 @@ public class URITemplate implements Serializable{
     private String resourceSandboxURI;
     private String httpVerb;
     private String authType;
-    private LinkedHashSet<String> httpVerbs = new LinkedHashSet<String>();
-    private List<String> authTypes = new ArrayList<String>();
-    private List<String> throttlingConditions = new ArrayList<String>();
-    private String applicableLevel;
     private String throttlingTier;
-    private List<String> throttlingTiers = new ArrayList<String>();
     private Scope scope;
-    private String mediationScript;
     private List<Scope> scopes = new ArrayList<Scope>();
-    private Map<String, String> mediationScripts = new HashMap<String, String>();
-    private ConditionGroupDTO[] conditionGroups;
     private int id;
-    private Set<APIProductIdentifier> usedByProducts = new HashSet<>();
     private String amznResourceName;
     private int amznResourceTimeout;
     private List<OperationPolicy> operationPolicies = new ArrayList<>();
 
-    public ConditionGroupDTO[] getConditionGroups() {
-        return conditionGroups;
-    }
-
-    public void setConditionGroups(ConditionGroupDTO[] conditionGroups) {
-        this.conditionGroups = conditionGroups;
-    }
-
-    public String getMediationScript() {
-        return mediationScript;
-    }
-
-
-    public List<String> getThrottlingConditions() {
-        return throttlingConditions;
-    }
-
-    public void setThrottlingConditions(List<String> throttlingConditions) {
-        this.throttlingConditions = throttlingConditions;
-    }
-
-    public void setMediationScript(String mediationScript) {
-        this.mediationScript = mediationScript;
-    }
-	/**
-     * Set mediation script for a given http method
-     * @param method http method name
-     * @param mediationScript mediation script content
-     */
-    public void setMediationScripts(String method, String mediationScript){
-        if (mediationScript != null  && !mediationScript.trim().equals("") && !mediationScript.trim().equals("null")){
-            mediationScripts.put(method, mediationScript);
-        }
-
-    }
-
-    /**
-     * Generating the script by aggregating scripts of each http method to form a single script in to be
-     * used when generating synapse configuration file.
-     *
-     * @return aggregated script in the following format,
-     * if (http-method = 'GET'){
-     *     //script for GET
-     * }
-     * ....
-     * ....
-     * if (http-method = 'POST'){
-     *     //script for POST
-     * }
-     */
-    public String getAggregatedMediationScript(){
-        if (mediationScripts.isEmpty()){
-            return "null";
-        }else if (mediationScripts.size() == 1 && httpVerbs.size() == 1){
-            return mediationScript;
-        }else{
-            StringBuilder aggregatedScript = new StringBuilder();
-
-            for (Map.Entry<String, String> entry : mediationScripts.entrySet()){
-                String httpMethod = entry.getKey();
-                String mediationScript = entry.getValue();
-
-                aggregatedScript.append("if (mc.getProperty('REST_METHOD') == '").append(httpMethod).append("'){");
-                aggregatedScript.append(mediationScript);
-                aggregatedScript.append("}");
-
-            }
-
-            return aggregatedScript.toString();
-        }
-    }
 
     public String getThrottlingTier() {
         return throttlingTier;
@@ -128,14 +44,6 @@ public class URITemplate implements Serializable{
 
     public void setThrottlingTier(String throttlingTier) {
         this.throttlingTier = throttlingTier;
-    }
-
-    public List<String> getThrottlingTiers(){
-        return throttlingTiers;
-    }
-
-    public void setThrottlingTiers(List<String> throttlingTiers) {
-        this.throttlingTiers = throttlingTiers;
     }
 
     public String getHTTPVerb() {
@@ -187,84 +95,6 @@ public class URITemplate implements Serializable{
         this.uriTemplate = template;
     }
 
-    public void setHttpVerbs(String httpVerb) {
-
-        httpVerbs.add(httpVerb);
-    }
-
-    public LinkedHashSet<String> getHttpVerbs() {
-
-        return httpVerbs;
-    }
-
-
-
-    public void setAuthTypes(String authType) {
-
-        authTypes.add(authType);
-    }
-
-    public String getAuthTypes() {
-
-        return authType;
-    }
-
-
-    public String getMethodsAsString() {
-        StringBuilder stringBuilder = new StringBuilder();
-        for (String method : httpVerbs) {
-            stringBuilder.append(method).append(" ");
-        }
-        return stringBuilder.toString().trim();
-    }
-
-    public String getAuthTypeAsString() {
-        StringBuilder stringBuilder = new StringBuilder();
-        for (String authType : authTypes) {
-            stringBuilder.append(authType).append(" ");
-        }
-        return stringBuilder.toString().trim();
-    }
-
-    public String getThrottlingConditionsAsString() {
-        StringBuilder stringBuilder = new StringBuilder();
-        for (String authType : throttlingConditions) {
-            stringBuilder.append(authType).append(" ");
-        }
-        return stringBuilder.toString().trim();
-    }
-
-    public void setThrottlingTiers(String tier) {
-        throttlingTiers.add(tier);
-    }
-
-    public String getThrottlingTiersAsString() {
-        StringBuilder stringBuilder = new StringBuilder();
-        for (String tier : throttlingTiers) {
-            if (tier.contains(PolicyConstants.THROTTLING_TIER_CONTENT_AWARE_SEPERATOR)) {
-                stringBuilder.append(tier.substring(0,
-                        tier.indexOf(PolicyConstants.THROTTLING_TIER_CONTENT_AWARE_SEPERATOR)).trim()).append(" ");
-            } else {
-                stringBuilder.append(tier.trim()).append(" ");
-            }
-        }
-        return stringBuilder.toString().trim();
-    }
-    
-    public boolean checkContentAwareFromThrottlingTiers() {
-        // use the content aware property appended  to throttling tiers
-        if (!throttlingTiers.isEmpty()) {
-            String throttlingTierWithContentAware = throttlingTiers.get(0);
-            if (throttlingTierWithContentAware != null &&
-                    throttlingTierWithContentAware.contains(PolicyConstants.THROTTLING_TIER_CONTENT_AWARE_SEPERATOR)) {
-                String[] splitThrottlingTiers =
-                        throttlingTierWithContentAware.split(PolicyConstants.THROTTLING_TIER_CONTENT_AWARE_SEPERATOR);
-                return Boolean.valueOf(splitThrottlingTiers[splitThrottlingTiers.length - 1]);
-            }
-        }
-        return false;
-    }
-
     public Scope getScope() {
         return scope;
     }
@@ -278,38 +108,6 @@ public class URITemplate implements Serializable{
 
     public void setScopes(Scope scope){
         this.scopes.add(scope);
-    }
-
-    public String getResourceMap(){
-        Map verbs = new LinkedHashMap();
-        int i = 0;
-        for (String method : httpVerbs) {
-            Map verb = new LinkedHashMap();
-            verb.put("auth_type",authTypes.get(i));
-            verb.put("throttling_tier",throttlingTiers.get(i));
-            //Following parameter is not required as it not need to reflect UI level. If need please enable it.
-            // /verb.put("throttling_conditions", throttlingConditions.get(i));
-            try{
-                Scope tmpScope = scopes.get(i);
-                if(tmpScope != null){
-                    verb.put("scope",tmpScope.getKey());
-                }
-            }catch(IndexOutOfBoundsException e){
-                //todo need to rewrite to prevent this type of exceptions
-            }
-            verbs.put(method,verb);
-            i++;
-        }
-        //todo this is a hack to make key validation service stub from braking need to rewrite.
-        return JSONValue.toJSONString(verbs);
-    }
-
-    public String getApplicableLevel() {
-        return applicableLevel;
-    }
-
-    public void setApplicableLevel(String applicableLevel) {
-        this.applicableLevel = applicableLevel;
     }
 
     @Override
@@ -339,40 +137,17 @@ public class URITemplate implements Serializable{
         if (!authType.equals(that.authType)) {
             return false;
         }
-        if (!httpVerbs.equals(that.httpVerbs)) {
-            return false;
-        }
-        if (!authTypes.equals(that.authTypes)) {
-            return false;
-        }
-        if (throttlingConditions != null ? !throttlingConditions.equals(that.throttlingConditions) : that
-                .throttlingConditions != null) {
-            return false;
-        }
-        if (applicableLevel != null ? !applicableLevel.equals(that.applicableLevel) : that.applicableLevel != null) {
-            return false;
-        }
+
         if (!throttlingTier.equals(that.throttlingTier)) {
-            return false;
-        }
-        if (!throttlingTiers.equals(that.throttlingTiers)) {
             return false;
         }
         if (scope != null ? !scope.equals(that.scope) : that.scope != null) {
             return false;
         }
-        if (mediationScript != null ? !mediationScript.equals(that.mediationScript) : that.mediationScript != null) {
-            return false;
-        }
         if (scopes != null ? !scopes.equals(that.scopes) : that.scopes != null) {
             return false;
         }
-        if (mediationScripts != null ? !mediationScripts.equals(that.mediationScripts) : that.mediationScripts !=
-                null) {
-            return false;
-        }
-        // Probably incorrect - comparing Object[] arrays with Arrays.equals
-        return Arrays.equals(conditionGroups, that.conditionGroups);
+        return true;
     }
 
     @Override
@@ -382,17 +157,9 @@ public class URITemplate implements Serializable{
         result = 31 * result + (resourceSandboxURI != null ? resourceSandboxURI.hashCode() : 0);
         result = 31 * result + (httpVerb != null ? httpVerb.hashCode() : 0);
         result = 31 * result + (authType != null ? authType.hashCode() : 0);
-        result = 31 * result + (httpVerbs != null ? httpVerbs.hashCode() : 0);
-        result = 31 * result + (authTypes != null ? authTypes.hashCode() : 0);
-        result = 31 * result + (throttlingConditions != null ? throttlingConditions.hashCode() : 0);
-        result = 31 * result + (applicableLevel != null ? applicableLevel.hashCode() : 0);
         result = 31 * result + (throttlingTier != null ? throttlingTier.hashCode() : 0);
-        result = 31 * result + (throttlingTiers != null ? throttlingTiers.hashCode() : 0);
         result = 31 * result + (scope != null ? scope.hashCode() : 0);
-        result = 31 * result + (mediationScript != null ? mediationScript.hashCode() : 0);
         result = 31 * result + (scopes != null ? scopes.hashCode() : 0);
-        result = 31 * result + (mediationScripts != null ? mediationScripts.hashCode() : 0);
-        result = 31 * result + Arrays.hashCode(conditionGroups);
         return result;
     }
 
@@ -411,14 +178,6 @@ public class URITemplate implements Serializable{
     public void addAllScopes(List<Scope> scopes) {
 
         this.scopes = scopes;
-    }
-
-    public Set<APIProductIdentifier> retrieveUsedByProducts() {
-        return usedByProducts;
-    }
-
-    public void addUsedByProduct(APIProductIdentifier usedByProduct) {
-        usedByProducts.add(usedByProduct);
     }
 
     public void setAmznResourceName(String amznResourceName) {

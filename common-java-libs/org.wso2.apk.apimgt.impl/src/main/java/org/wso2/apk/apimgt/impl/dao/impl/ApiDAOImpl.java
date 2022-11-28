@@ -919,11 +919,6 @@ public class ApiDAOImpl implements ApiDAO {
                         uriTemplate.setAuthType(rs.getString(2));
                         uriTemplate.setUriTemplate(rs.getString(3));
                         uriTemplate.setThrottlingTier(rs.getString(4));
-                        InputStream mediationScriptBlob = rs.getBinaryStream(5);
-                        if (mediationScriptBlob != null) {
-                            script = APIMgtDBUtil.getStringFromInputStream(mediationScriptBlob);
-                        }
-                        uriTemplate.setMediationScript(script);
                         if (!StringUtils.isEmpty(rs.getString(6))) {
                             Scope scope = new Scope();
                             scope.setKey(rs.getString(6));
@@ -1545,11 +1540,6 @@ public class ApiDAOImpl implements ApiDAO {
                         uriTemplate.setAuthType(rs.getString(2));
                         uriTemplate.setUriTemplate(rs.getString(3));
                         uriTemplate.setThrottlingTier(rs.getString(4));
-                        InputStream mediationScriptBlob = rs.getBinaryStream(5);
-                        if (mediationScriptBlob != null) {
-                            script = APIMgtDBUtil.getStringFromInputStream(mediationScriptBlob);
-                        }
-                        uriTemplate.setMediationScript(script);
                         if (!StringUtils.isEmpty(rs.getString(6))) {
                             Scope scope = new Scope();
                             scope.setKey(rs.getString(6));
@@ -3422,22 +3412,6 @@ public class ApiDAOImpl implements ApiDAO {
                     uriMappingPrepStmt.setString(5, (StringUtils.isEmpty(
                             api.getApiLevelPolicy())) ? APIConstants.UNLIMITED_TIER : api.getApiLevelPolicy());
                 }
-                InputStream is = null;
-                if (uriTemplate.getMediationScript() != null) {
-                    is = new ByteArrayInputStream(
-                            uriTemplate.getMediationScript().getBytes(Charset.defaultCharset()));
-                }
-                if (connection.getMetaData().getDriverName().contains("PostgreSQL") || connection.getMetaData()
-                        .getDatabaseProductName().contains("DB2")) {
-                    if (uriTemplate.getMediationScript() != null) {
-                        uriMappingPrepStmt.setBinaryStream(6, is, uriTemplate.getMediationScript()
-                                .getBytes(Charset.defaultCharset()).length);
-                    } else {
-                        uriMappingPrepStmt.setBinaryStream(6, is, 0);
-                    }
-                } else {
-                    uriMappingPrepStmt.setBinaryStream(6, is);
-                }
                 uriMappingPrepStmt.execute();
                 int uriMappingId = -1;
                 try (ResultSet resultIdSet = uriMappingPrepStmt.getGeneratedKeys()) {
@@ -5056,17 +5030,6 @@ public class ApiDAOImpl implements ApiDAO {
 
         Set<URITemplate> uriTemplatesOfAPI = getURITemplatesOfAPI(api.getUuid());
 
-        for (URITemplate uriTemplate : uriTemplatesOfAPI) {
-            Set<APIProductIdentifier> apiProductIdentifiers = uriTemplate.retrieveUsedByProducts();
-
-            for (APIProductIdentifier apiProductIdentifier : apiProductIdentifiers) {
-                APIProductResource productMapping = new APIProductResource();
-                productMapping.setProductIdentifier(apiProductIdentifier);
-                productMapping.setUriTemplate(uriTemplate);
-
-                productMappings.add(productMapping);
-            }
-        }
 
         return productMappings;
     }
@@ -5109,7 +5072,6 @@ public class ApiDAOImpl implements ApiDAO {
                         URITemplate uriTemplate = new URITemplate();
                         uriTemplate.setUriTemplate(urlPattern);
                         uriTemplate.setHTTPVerb(verb);
-                        uriTemplate.setHttpVerbs(verb);
                         uriTemplate.setId(uriTemplateId);
                         String authType = rs.getString("AUTH_SCHEME");
                         String throttlingTier = rs.getString("THROTTLING_TIER");
@@ -5123,18 +5085,8 @@ public class ApiDAOImpl implements ApiDAO {
                             scopeToURITemplateId.put(uriTemplateId, templateScopes);
                         }
                         uriTemplate.setAuthType(authType);
-                        uriTemplate.setAuthTypes(authType);
                         uriTemplate.setThrottlingTier(throttlingTier);
-                        uriTemplate.setThrottlingTiers(throttlingTier);
                         uriTemplate.setId(uriTemplateId);
-
-                        InputStream mediationScriptBlob = rs.getBinaryStream("MEDIATION_SCRIPT");
-                        if (mediationScriptBlob != null) {
-                            String script = APIMgtDBUtil.getStringFromInputStream(mediationScriptBlob);
-                            uriTemplate.setMediationScript(script);
-                            uriTemplate.setMediationScripts(verb, script);
-                        }
-
                         uriTemplates.put(uriTemplateId, uriTemplate);
                     }
                 }
@@ -5169,7 +5121,6 @@ public class ApiDAOImpl implements ApiDAO {
                         URITemplate uriTemplate = new URITemplate();
                         uriTemplate.setUriTemplate(urlPattern);
                         uriTemplate.setHTTPVerb(verb);
-                        uriTemplate.setHttpVerbs(verb);
                         String authType = rs.getString("AUTH_SCHEME");
                         String throttlingTier = rs.getString("THROTTLING_TIER");
                         if (StringUtils.isNotEmpty(scopeName)) {
@@ -5182,18 +5133,8 @@ public class ApiDAOImpl implements ApiDAO {
                             scopeToURITemplateId.put(uriTemplateId, templateScopes);
                         }
                         uriTemplate.setAuthType(authType);
-                        uriTemplate.setAuthTypes(authType);
                         uriTemplate.setThrottlingTier(throttlingTier);
-                        uriTemplate.setThrottlingTiers(throttlingTier);
                         uriTemplate.setId(uriTemplateId);
-
-                        InputStream mediationScriptBlob = rs.getBinaryStream("MEDIATION_SCRIPT");
-                        if (mediationScriptBlob != null) {
-                            String script = APIMgtDBUtil.getStringFromInputStream(mediationScriptBlob);
-                            uriTemplate.setMediationScript(script);
-                            uriTemplate.setMediationScripts(verb, script);
-                        }
-
                         uriTemplates.put(uriTemplateId, uriTemplate);
                     }
                 }
@@ -5222,11 +5163,6 @@ public class ApiDAOImpl implements ApiDAO {
                     int uriTemplateId = rs.getInt("URL_MAPPING_ID");
 
                     URITemplate uriTemplate = uriTemplates.get(uriTemplateId);
-                    if (uriTemplate != null) {
-                        APIProductIdentifier productIdentifier = new APIProductIdentifier
-                                (productProvider, productName, productVersion);
-                        uriTemplate.addUsedByProduct(productIdentifier);
-                    }
                 }
             }
         }
@@ -6430,12 +6366,6 @@ public class ApiDAOImpl implements ApiDAO {
                         uriTemplate.setAuthType(rs.getString("AUTH_SCHEME"));
                         uriTemplate.setUriTemplate(rs.getString("URL_PATTERN"));
                         uriTemplate.setThrottlingTier(rs.getString("THROTTLING_TIER"));
-                        String script = null;
-                        InputStream mediationScriptBlob = rs.getBinaryStream("MEDIATION_SCRIPT");
-                        if (mediationScriptBlob != null) {
-                            script = APIMgtDBUtil.getStringFromInputStream(mediationScriptBlob);
-                        }
-                        uriTemplate.setMediationScript(script);
                         if (!StringUtils.isEmpty(rs.getString("SCOPE_NAME"))) {
                             Scope scope = new Scope();
                             scope.setKey(rs.getString("SCOPE_NAME"));
@@ -6897,7 +6827,6 @@ public class ApiDAOImpl implements ApiDAO {
                     URITemplate uriTemplate = new URITemplate();
                     uriTemplate.setUriTemplate(urlPattern);
                     uriTemplate.setHTTPVerb(verb);
-                    uriTemplate.setHttpVerbs(verb);
                     String authType = rs.getString("AUTH_SCHEME");
                     String throttlingTier = rs.getString("THROTTLING_TIER");
                     if (StringUtils.isNotEmpty(scopeName)) {
@@ -6910,17 +6839,7 @@ public class ApiDAOImpl implements ApiDAO {
                         scopeToURITemplateId.put(uriTemplateId, templateScopes);
                     }
                     uriTemplate.setAuthType(authType);
-                    uriTemplate.setAuthTypes(authType);
                     uriTemplate.setThrottlingTier(throttlingTier);
-                    uriTemplate.setThrottlingTiers(throttlingTier);
-
-                    InputStream mediationScriptBlob = rs.getBinaryStream("MEDIATION_SCRIPT");
-                    if (mediationScriptBlob != null) {
-                        String script = APIMgtDBUtil.getStringFromInputStream(mediationScriptBlob);
-                        uriTemplate.setMediationScript(script);
-                        uriTemplate.setMediationScripts(verb, script);
-                    }
-
                     uriTemplates.put(uriTemplateId, uriTemplate);
                 }
             }
@@ -6947,11 +6866,6 @@ public class ApiDAOImpl implements ApiDAO {
                     int uriTemplateId = rs.getInt("URL_MAPPING_ID");
 
                     URITemplate uriTemplate = uriTemplates.get(uriTemplateId);
-                    if (uriTemplate != null) {
-                        APIProductIdentifier productIdentifier = new APIProductIdentifier
-                                (productProvider, productName, productVersion);
-                        uriTemplate.addUsedByProduct(productIdentifier);
-                    }
                 }
             }
         }
@@ -6995,11 +6909,6 @@ public class ApiDAOImpl implements ApiDAO {
                         uriTemplate.setAuthType(rs.getString(2));
                         uriTemplate.setUriTemplate(rs.getString(3));
                         uriTemplate.setThrottlingTier(rs.getString(4));
-                        InputStream mediationScriptBlob = rs.getBinaryStream(5);
-                        if (mediationScriptBlob != null) {
-                            script = APIMgtDBUtil.getStringFromInputStream(mediationScriptBlob);
-                        }
-                        uriTemplate.setMediationScript(script);
                         if (!StringUtils.isEmpty(rs.getString(6))) {
                             Scope scope = new Scope();
                             scope.setKey(rs.getString(6));
@@ -7258,11 +7167,6 @@ public class ApiDAOImpl implements ApiDAO {
                         uriTemplate.setAuthType(rs.getString("AUTH_SCHEME"));
                         uriTemplate.setUriTemplate(rs.getString("URL_PATTERN"));
                         uriTemplate.setThrottlingTier(rs.getString("THROTTLING_TIER"));
-                        InputStream mediationScriptBlob = rs.getBinaryStream("MEDIATION_SCRIPT");
-                        if (mediationScriptBlob != null) {
-                            script = APIMgtDBUtil.getStringFromInputStream(mediationScriptBlob);
-                        }
-                        uriTemplate.setMediationScript(script);
                         if (rs.getInt("API_ID") != 0) {
                             // Adding product id to uri template id just to store value
                             uriTemplate.setId(rs.getInt("API_ID"));

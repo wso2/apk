@@ -1561,9 +1561,6 @@ components:
       title: Operation
       type: object
       properties:
-        id:
-          type: string
-          example: postapiresource
         target:
           type: string
           example: /order/{orderId}
@@ -1575,12 +1572,6 @@ components:
           example: []
           items:
             type: string
-        payloadSchema:
-          type: string
-          example: ""
-        uriMapping:
-          type: string
-          example: ""
         operationPolicies:
           $ref: "#/components/schemas/APIOperationPolicies"
     APIOperationPolicies:
