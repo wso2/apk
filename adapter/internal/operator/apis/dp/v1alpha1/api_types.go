@@ -55,6 +55,7 @@ type APISpec struct {
 	//
 	//
 	// +kubebuilder:validation:MinLength=4
+	// +optional
 	ProdHTTPRouteRef string `json:"prodHTTPRouteRef"`
 
 	// SandHTTPRouteRef contains a list of references to HttpRoutes
