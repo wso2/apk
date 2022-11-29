@@ -53,6 +53,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes/any"
 	"github.com/golang/protobuf/ptypes/wrappers"
+	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
 // WireLogValues holds debug logging related template values
@@ -755,13 +756,15 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 
 	resourcePath := ""
 	var resourceMethods []string
+	var pathMatchType gwapiv1b1.PathMatchType
 	if params.apiType == constants.GRAPHQL {
 		resourceMethods = []string{"POST"}
 	} else {
 		resourcePath = resource.GetPath()
 		resourceMethods = resource.GetMethodList()
+		pathMatchType = resource.GetPathMatchType()
 	}
-	routePath := generateRoutePath(basePath, resourcePath)
+	routePath := generateRoutePath(basePath, resourcePath, pathMatchType)
 
 	// route path could be empty only if there is no basePath for API or the endpoint available,
 	// and resourcePath is also an empty string.
@@ -928,7 +931,7 @@ end`
 					logger.LoggerOasparser.Debug("Adding %s policy to request flow for %s %s",
 						constants.ActionRewritePath, resourcePath, operation.GetMethod())
 					regexRewrite, err := generateRewritePathRouteConfig(routePath, resourcePath, endpointBasepath,
-						requestPolicy.Parameters)
+						requestPolicy.Parameters, pathMatchType)
 					if err != nil {
 						errMsg := fmt.Sprintf("Error adding request policy %s to operation %s of resource %s. %v",
 							constants.ActionRewritePath, operation.GetMethod(), resourcePath, err)
@@ -1015,7 +1018,7 @@ end`
 				if pathRewriteConfig != nil {
 					action2.Route.RegexRewrite = pathRewriteConfig
 				} else {
-					action2.Route.RegexRewrite = generateRegexMatchAndSubstitute(routePath, endpointBasepath, resourcePath)
+					action2.Route.RegexRewrite = generateRegexMatchAndSubstitute(routePath, endpointBasepath, resourcePath, pathMatchType)
 				}
 				configToSkipEnforcer := generateFilterConfigToSkipEnforcer()
 				route2 := generateRouteConfig(xWso2Basepath, match2, action2, nil, decorator, configToSkipEnforcer,
@@ -1033,7 +1036,7 @@ end`
 				if pathRewriteConfig != nil {
 					action.Route.RegexRewrite = pathRewriteConfig
 				} else {
-					action.Route.RegexRewrite = generateRegexMatchAndSubstitute(routePath, endpointBasepath, resourcePath)
+					action.Route.RegexRewrite = generateRegexMatchAndSubstitute(routePath, endpointBasepath, resourcePath, pathMatchType)
 				}
 				route := generateRouteConfig(xWso2Basepath, match, action, nil, decorator, perRouteFilterConfigs,
 					requestHeadersToAdd, requestHeadersToRemove, responseHeadersToAdd, responseHeadersToRemove)
@@ -1051,7 +1054,7 @@ end`
 		match := generateRouteMatch(routePath)
 		match.Headers = generateHTTPMethodMatcher(methodRegex, params.isSandbox, sandClusterName)
 		action := generateRouteAction(apiType, prodRouteConfig, sandRouteConfig, corsPolicy)
-		action.Route.RegexRewrite = generateRegexMatchAndSubstitute(routePath, endpointBasepath, resourcePath)
+		action.Route.RegexRewrite = generateRegexMatchAndSubstitute(routePath, endpointBasepath, resourcePath, pathMatchType)
 
 		route := generateRouteConfig(xWso2Basepath, match, action, nil, decorator, perRouteFilterConfigs,
 			nil, nil, nil, nil) // general headers to add and remove are included in this methods
@@ -1297,16 +1300,19 @@ func CreateReadyEndpoint() *routev3.Route {
 
 // generateRoutePath generates route paths for the api resources.
 // TODO: (VirajSalaka) Improve regex specifically for strings, integers etc.
-func generateRoutePath(basePath, resourcePath string) string {
+func generateRoutePath(basePath, resourcePath string, pathMatchType gwapiv1b1.PathMatchType) string {
 	trailingSlashRegex := "[/]{0,1}"
 	if strings.Contains(resourcePath, "?") {
 		resourcePath = strings.Split(resourcePath, "?")[0]
 	}
 	newPath := replacePathParamsWithCaptureGroups(basePath + resourcePath)
-	if strings.HasSuffix(newPath, "/*") {
-		newPath = strings.TrimSuffix(newPath, "/*") + "(/.*)*"
-	} else {
+	switch pathMatchType {
+	case gwapiv1b1.PathMatchExact:
 		newPath = strings.TrimSuffix(newPath, "/") + trailingSlashRegex
+		break
+	case gwapiv1b1.PathMatchPathPrefix:
+		newPath = strings.TrimSuffix(newPath, "/") + "(/.*)*"
+		break
 	}
 	return "^" + newPath
 }
@@ -1320,7 +1326,8 @@ func replacePathParamsWithCaptureGroups(resourcePath string) string {
 }
 
 // generateSubstitutionString returns a regex that has indexes to place the path variables extracted by capture groups
-func generateSubstitutionString(endpointBasepath string, resourcePath string) string {
+func generateSubstitutionString(endpointBasepath string, resourcePath string,
+	pathMatchType gwapiv1b1.PathMatchType) string {
 	pathParaRegex := "([^/]+)"
 	pathParamIndex := 0
 	resourceRegex := replacePathParamsWithCaptureGroups(resourcePath)
@@ -1332,9 +1339,11 @@ func generateSubstitutionString(endpointBasepath string, resourcePath string) st
 		pathParamIndex++
 		resourceRegex = strings.Replace(resourceRegex, pathParaRegex, fmt.Sprintf("\\%d", pathParamIndex), 1)
 	}
-	if strings.HasSuffix(resourceRegex, "/*") {
+	switch pathMatchType {
+	case gwapiv1b1.PathMatchPathPrefix:
 		pathParamIndex++
-		resourceRegex = strings.TrimSuffix(resourceRegex, "/*") + fmt.Sprintf("\\%d", pathParamIndex)
+		resourceRegex = strings.TrimSuffix(resourceRegex, "/") + fmt.Sprintf("\\%d", pathParamIndex)
+		break
 	}
 	return endpointBasepath + resourceRegex
 }

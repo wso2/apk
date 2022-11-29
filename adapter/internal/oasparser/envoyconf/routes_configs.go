@@ -38,6 +38,7 @@ import (
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
+	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
 func generateRouteConfig(routeName string, match *routev3.RouteMatch, action *routev3.Route_Route,
@@ -167,9 +168,9 @@ func generateHeaderMatcher(headerName, valueRegex string) *routev3.HeaderMatcher
 }
 
 func generateRegexMatchAndSubstitute(routePath, endpointBasePath,
-	endpointResourcePath string) *envoy_type_matcherv3.RegexMatchAndSubstitute {
+	endpointResourcePath string, pathMatchType gwapiv1b1.PathMatchType) *envoy_type_matcherv3.RegexMatchAndSubstitute {
 
-	substitutionString := generateSubstitutionString(endpointBasePath, endpointResourcePath)
+	substitutionString := generateSubstitutionString(endpointBasePath, endpointResourcePath, pathMatchType)
 
 	return &envoy_type_matcherv3.RegexMatchAndSubstitute{
 		Pattern: &envoy_type_matcherv3.RegexMatcher{
@@ -227,7 +228,7 @@ func generateHeaderToRemoveString(policyParams interface{}) (string, error) {
 }
 
 func generateRewritePathRouteConfig(routePath, resourcePath, endpointBasepath string,
-	policyParams interface{}) (*envoy_type_matcherv3.RegexMatchAndSubstitute, error) {
+	policyParams interface{}, pathMatchType gwapiv1b1.PathMatchType) (*envoy_type_matcherv3.RegexMatchAndSubstitute, error) {
 
 	var paramsToSetHeader map[string]interface{}
 	var ok bool
@@ -244,7 +245,8 @@ func generateRewritePathRouteConfig(routePath, resourcePath, endpointBasepath st
 	if err != nil {
 		return nil, err
 	}
-	rewriteRegex := generateRegexMatchAndSubstitute(routePath, endpointBasepath, rewritePathIndexedWrtResourcePath)
+	rewriteRegex := generateRegexMatchAndSubstitute(routePath, endpointBasepath, rewritePathIndexedWrtResourcePath,
+		pathMatchType)
 	return rewriteRegex, nil
 }
 

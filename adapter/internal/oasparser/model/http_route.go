@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/tetratelabs/multierror"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
 	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
@@ -41,7 +42,9 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute gwapiv1b1.HTTPRoute) err
 			if err != nil {
 				return fmt.Errorf("error parsing resource path: %v", err)
 			}
-			resources = append(resources, &Resource{path: resourcePath, methods: []*Operation{{iD: ":method", method: "GET"}}})
+			resources = append(resources, &Resource{path: resourcePath,
+				methods:       getAllowedOperations(match.Method),
+				pathMatchType: *match.Path.Type})
 		}
 		for _, backend := range rule.BackendRefs {
 			endPoints = append(endPoints,
@@ -57,6 +60,20 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute gwapiv1b1.HTTPRoute) err
 	swagger.productionEndpoints = &endpointCluster
 	swagger.resources = resources
 	return nil
+}
+
+// getAllowedOperations retuns a list of allowed operatons, if httpMethod is not specified then all methods are allowed.
+func getAllowedOperations(httpMethod *gwapiv1b1.HTTPMethod) []*Operation {
+	if httpMethod != nil {
+		return []*Operation{{iD: uuid.New().String(), method: string(*httpMethod)}}
+	}
+	return []*Operation{{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodGet)},
+		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodPost)},
+		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodDelete)},
+		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodPatch)},
+		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodPut)},
+		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodHead)},
+		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodOptions)}}
 }
 
 // SetInfoAPICR populates ID, ApiType, Version and XWso2BasePath of mgwSwagger.

@@ -37,6 +37,7 @@ import (
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
 	"google.golang.org/protobuf/types/known/wrapperspb"
+	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
 func TestGenerateRoutePaths(t *testing.T) {
@@ -45,7 +46,7 @@ func TestGenerateRoutePaths(t *testing.T) {
 	xWso2BasePath := "/xWso2BasePath"
 	resourcePath := "/resource"
 
-	completeRoutePath := generateRoutePath(xWso2BasePath, resourcePath)
+	completeRoutePath := generateRoutePath(xWso2BasePath, resourcePath, gwapiv1b1.PathMatchPathPrefix)
 	// TODO: (VirajSalaka) check if it is possible to perform an equals operation instead of prefix
 	if !strings.HasPrefix(completeRoutePath, "^/xWso2BasePath/resource") {
 		t.Error("The generated path should contain xWso2BasePath as a prefix if xWso2Basepath is available.")
@@ -379,7 +380,7 @@ func TestGenerateRegex(t *testing.T) {
 	}
 
 	for _, item := range dataItems {
-		resultPattern := generateRoutePath(item.basePath, item.resourcePath)
+		resultPattern := generateRoutePath(item.basePath, item.resourcePath, gwapiv1b1.PathMatchPathPrefix)
 		// regexp.MatchString also returns true for partial matches. Therefore, an additional $ is added
 		// below to replicate the behavior of envoy proxy. As per the doc,
 		// "The entire path (without the query string) must match the regex.
@@ -455,7 +456,7 @@ func TestGenerateSubstitutionString(t *testing.T) {
 		},
 	}
 	for _, item := range dataItems {
-		generatedSubstitutionString := generateSubstitutionString("/basepath", item.inputPath)
+		generatedSubstitutionString := generateSubstitutionString("/basepath", item.inputPath, gwapiv1b1.PathMatchPathPrefix)
 		if item.shouldEqual {
 			assert.Equal(t, item.expectedSubsString, generatedSubstitutionString, item.message)
 		} else {

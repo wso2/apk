@@ -24,6 +24,7 @@ import (
 	"sort"
 
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
+	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
 // Resource represents the object structure holding the information related to the
@@ -36,6 +37,7 @@ import (
 // mentioned under pathItem.
 type Resource struct {
 	path                string
+	pathMatchType       gwapiv1b1.PathMatchType
 	methods             []*Operation
 	description         string
 	summary             string
@@ -59,6 +61,15 @@ func (resource *Resource) GetSandEndpoints() *EndpointCluster {
 // GetPath returns the pathItem name (of openAPI definition) corresponding to a given resource
 func (resource *Resource) GetPath() string {
 	return resource.path
+}
+
+// GetPathMatchType returns the path match type of the resource.
+// https://gateway-api.sigs.k8s.io/references/spec/#gateway.networking.k8s.io/v1beta1.PathMatchType
+func (resource *Resource) GetPathMatchType() gwapiv1b1.PathMatchType {
+	if &resource.pathMatchType == nil {
+		return gwapiv1b1.PathMatchPathPrefix
+	}
+	return resource.pathMatchType
 }
 
 // GetID returns the id of a given resource.
@@ -119,10 +130,10 @@ func CreateMinimalDummyResourceForTests(path string, methods []*Operation, id st
 // Custom sort implementation to sort the Resources based on the resource path
 type byPath []*Resource
 
-//Len Returns the length of the arry
+// Len Returns the length of the arry
 func (a byPath) Len() int { return len(a) }
 
-//Less  returns true if the first item is less than the second parameter
+// Less  returns true if the first item is less than the second parameter
 func (a byPath) Less(i, j int) bool {
 	// Get the less weighted path.
 	// Paths can be in several types.
@@ -170,7 +181,7 @@ func (a byPath) Less(i, j int) bool {
 	return pathI < pathJ
 }
 
-//Swap Swaps the input parameter values
+// Swap Swaps the input parameter values
 func (a byPath) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
 
 // SortResources Sort the list of resources provided based on the resource path.
