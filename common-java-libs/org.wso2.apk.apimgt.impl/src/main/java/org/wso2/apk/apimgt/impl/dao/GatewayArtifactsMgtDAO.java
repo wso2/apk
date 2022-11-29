@@ -315,7 +315,7 @@ public class GatewayArtifactsMgtDAO {
 
     public void deleteGatewayArtifact(String apiId, String revision) throws APIManagementException {
 
-        String deleteGWPublishedArtifacts = SQLConstants.DELETE_FROM_AM_GW_API_ARTIFACTS_WHERE_API_ID_AND_REVISION_ID;
+        String deleteGWPublishedArtifacts = SQLConstants.DELETE_FROM_GW_API_ARTIFACTS_WHERE_API_ID_AND_REVISION_ID;
         try (Connection connection = GatewayArtifactsMgtDBUtil.getArtifactSynchronizerConnection()) {
             connection.setAutoCommit(false);
             try {

@@ -436,9 +436,9 @@ public class CommentDAOImpl implements CommentDAO {
                 log.error(msg);
                 throw new APIManagementException(msg);
             }
-            /*This query to update the AM_API_COMMENTS table */
+            /*This query to update the API_COMMENTS table */
             String addCommentQuery = SQLConstants.ADD_COMMENT_SQL;
-            /*Adding data to the AM_API_COMMENTS table*/
+            /*Adding data to the API_COMMENTS table*/
             String dbProductName = connection.getMetaData().getDatabaseProductName();
             insertPrepStmt = connection.prepareStatement(addCommentQuery, new String[]{"comment_id"});
             insertPrepStmt.setString(1, commentText);

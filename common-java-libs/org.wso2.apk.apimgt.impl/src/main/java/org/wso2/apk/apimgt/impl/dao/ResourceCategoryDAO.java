@@ -13,7 +13,7 @@ import java.sql.SQLException;
 public class ResourceCategoryDAO {
 
     public static boolean isStandardResourceCategoriesExist(Connection connection) throws SQLException {
-        final String query = "SELECT 1 FROM AM_RESOURCE_CATEGORIES";
+        final String query = "SELECT 1 FROM RESOURCE_CATEGORIES";
 
         try (PreparedStatement statement = connection.prepareStatement(query)) {
 
@@ -28,7 +28,7 @@ public class ResourceCategoryDAO {
     }
 
     public static int getResourceCategoryID(Connection connection, ResourceCategory category) throws SQLException {
-        final String query = "SELECT RESOURCE_CATEGORY_ID FROM AM_RESOURCE_CATEGORIES WHERE RESOURCE_CATEGORY = ?";
+        final String query = "SELECT RESOURCE_CATEGORY_ID FROM RESOURCE_CATEGORIES WHERE RESOURCE_CATEGORY = ?";
         int resourceTypeID;
 
         try (PreparedStatement statement = connection.prepareStatement(query)) {
@@ -47,7 +47,7 @@ public class ResourceCategoryDAO {
     }
 
     public static void addResourceCategories(Connection connection) throws SQLException {
-        final String query = "INSERT INTO AM_RESOURCE_CATEGORIES (RESOURCE_CATEGORY) VALUES (?)";
+        final String query = "INSERT INTO RESOURCE_CATEGORIES (RESOURCE_CATEGORY) VALUES (?)";
 
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             for (ResourceCategory category : ResourceCategory.values()) {

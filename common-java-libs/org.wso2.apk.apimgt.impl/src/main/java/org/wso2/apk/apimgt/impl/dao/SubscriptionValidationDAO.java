@@ -515,7 +515,7 @@ public class SubscriptionValidationDAO {
 
         try (Connection conn = APIMgtDBUtil.getConnection();
              PreparedStatement ps =
-                     conn.prepareStatement(SubscriptionValidationSQLConstants.GET_TENANT_AM_KEY_MAPPING_SQL)) {
+                     conn.prepareStatement(SubscriptionValidationSQLConstants.GET_TENANT_KEY_MAPPING_SQL)) {
             int tenantId = 0;
             try {
                 tenantId = UserManagerHolder.getUserManager().getTenantId(tenantDomain);
@@ -537,7 +537,7 @@ public class SubscriptionValidationDAO {
     public List<ApplicationKeyMapping> getAllApplicationKeyMappings() {
 
         List<ApplicationKeyMapping> keyMappings = new ArrayList<>();
-        String sql = SubscriptionValidationSQLConstants.GET_ALL_AM_KEY_MAPPING_SQL;
+        String sql = SubscriptionValidationSQLConstants.GET_ALL_KEY_MAPPING_SQL;
 
         try (Connection conn = APIMgtDBUtil.getConnection();
              PreparedStatement ps =
@@ -554,7 +554,7 @@ public class SubscriptionValidationDAO {
     public List<ApplicationKeyMapping> getAllApplicationKeyMappingsByOrganization(String organization) {
 
         List<ApplicationKeyMapping> keyMappings = new ArrayList<>();
-        String sql = SubscriptionValidationSQLConstants.GET_ORGANIZATION_AM_KEY_MAPPING_SQL;
+        String sql = SubscriptionValidationSQLConstants.GET_ORGANIZATION_KEY_MAPPING_SQL;
 
         try (Connection conn = APIMgtDBUtil.getConnection();
              PreparedStatement ps =
@@ -1024,7 +1024,7 @@ public class SubscriptionValidationDAO {
 
         try (Connection conn = APIMgtDBUtil.getConnection();
              PreparedStatement ps =
-                     conn.prepareStatement(SubscriptionValidationSQLConstants.GET_AM_KEY_MAPPING_BY_CONSUMER_KEY_SQL)) {
+                     conn.prepareStatement(SubscriptionValidationSQLConstants.GET_KEY_MAPPING_BY_CONSUMER_KEY_SQL)) {
             ps.setString(1, consumerKey);
             ps.setString(2, keymanager);
             ps.setString(3, tenantDomain);
