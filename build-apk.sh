@@ -5,6 +5,7 @@ declare -i x=0;
 git pull
 current_dir=$PWD;
 #Component build sample. You can build any component with this
+cd apkbase;gradle build;
 cd common-java-libs;gradle build;
 cd $current_dir;
 cd common-go-libs/;gradle build;

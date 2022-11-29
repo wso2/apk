@@ -43,22 +43,34 @@ class ServiceTask {
                 json eventValue = <json>check value.'object;
                 Service|error serviceModel = createServiceModel(eventValue);
                 if serviceModel is Service {
-                    if eventType == "ADDED" {
-                        services[serviceModel.id] = serviceModel;
-                    } else if (eventType == "MODIFIED") {
-                        _ = services.remove(serviceModel.id);
-                        services[serviceModel.id] = serviceModel;
-                    } else if (eventType == "DELETED") {
-                        _ = services.remove(serviceModel.id);
+                    if containsNamespace(serviceModel.namespace) {
+                        if eventType == "ADDED" {
+                            services[serviceModel.id] = serviceModel;
+                        } else if (eventType == "MODIFIED") {
+                            _ = services.remove(serviceModel.id);
+                            services[serviceModel.id] = serviceModel;
+                        } else if (eventType == "DELETED") {
+                            _ = services.remove(serviceModel.id);
+                        }
                     }
                 } else {
                     log:printError("Unable to read service messages" + serviceModel.message());
                 }
             }
-        } on fail var e {
+        }
+        on fail var e {
             log:printError("Unable to read service messages", e);
         }
     }
+}
+
+function containsNamespace(string namespace) returns boolean {
+    foreach string name in runtimeConfiguration.serviceListingNamespaces {
+        if (name == ALL_NAMESPACES || name == namespace) {
+            return true;
+        }
+    }
+    return false;
 }
 
 public function createServiceModel(json event) returns Service|error {

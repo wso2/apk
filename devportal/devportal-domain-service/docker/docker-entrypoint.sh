@@ -17,4 +17,4 @@
 # under the License.
 #
 
-java -jar devportal_service.jar
+sh /home/wso2apk/devportal/devportal.sh

@@ -17,4 +17,4 @@
 # under the License.
 #
 
-java -jar backoffice_service.jar
+sh /home/wso2apk/backoffice/backoffice.sh

@@ -33,6 +33,7 @@ spec:
         networkPolicyId: {{ .Values.wso2.apk.dp.cc.adapter.deployment.npi }}
 {{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.wso2.apk.dp.cc.adapter.appName ) | indent 8}}
     spec:
+      serviceAccountName: {{ .Values.wso2.apk.auth.serviceAccountName }}
       containers:
         - name: cc-adapter
           image: {{ .Values.wso2.apk.dp.cc.adapter.deployment.image }}
@@ -40,10 +41,15 @@ spec:
           ports:
             - containerPort: 18000
               protocol: "TCP"
-            - containerPort: 9843
+            - containerPort: 8765
               protocol: "TCP"
 {{ include "apk-helm.deployment.resources" .Values.wso2.apk.dp.cc.adapter.deployment.resources | indent 10 }}
 {{ include "apk-helm.deployment.env" .Values.wso2.apk.dp.cc.adapter.deployment.env | indent 10 }}
+          env:
+            - name: OPERATOR_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
           volumeMounts:
             - name: cc-adapter-keystore-secret-volume
               mountPath: /home/wso2/security/keystore
@@ -56,11 +62,11 @@ spec:
             - mountPath: /home/wso2/check_health.sh
               name: cc-adapter-grpc-probe-script-conf-volume
               subPath: "check_health.sh"
-          readinessProbe:
-            exec:
-              command: [ "sh", "check_health.sh" ]
-            initialDelaySeconds: 8
-            periodSeconds: 5
+          # readinessProbe:
+          #   exec:
+          #     command: [ "sh", "check_health.sh" ]
+          #   initialDelaySeconds: 8
+          #   periodSeconds: 5
       volumes: 
         - name: cc-adapter-keystore-secret-volume
           secret: 

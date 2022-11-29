@@ -65,7 +65,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "http"
-version = "2.4.3"
+version = "2.4.5"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "cache"},
@@ -304,7 +304,6 @@ dependencies = [
 ]
 modules = [
 	{org = "wso2", packageName = "admin_service", moduleName = "admin_service"},
-	{org = "wso2", packageName = "admin_service", moduleName = "admin_service.admin"},
 	{org = "wso2", packageName = "admin_service", moduleName = "admin_service.java.io"},
 	{org = "wso2", packageName = "admin_service", moduleName = "admin_service.java.lang"},
 	{org = "wso2", packageName = "admin_service", moduleName = "admin_service.java.util"},

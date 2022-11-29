@@ -23,11 +23,10 @@ FROM apkbase:0.0.1-SNAPSHOT
 ARG USER=wso2apk
 ARG USER_HOME=/home/${USER}
 
-COPY backoffice_service.jar ${USER_HOME}
 COPY docker-entrypoint.sh ${USER_HOME}
-
-RUN chown wso2apk /home/wso2apk/backoffice_service.jar
-RUN chown wso2apk /home/wso2apk/docker-entrypoint.sh
+ADD backoffice ${USER_HOME}/backoffice
+RUN chown -R ${USER} ${USER_HOME}/backoffice
+RUN chown ${USER} /home/${USER}/docker-entrypoint.sh
 
 EXPOSE 9443
 USER wso2apk

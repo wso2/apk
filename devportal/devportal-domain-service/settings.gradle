@@ -20,10 +20,10 @@ rootProject.name = 'devportal-domain-service'
 include ':ballerina'
 include ':docker'
 include ':java'
-project(':ballerina').projectDir = file('ballerina')
-project(':docker').projectDir = file('docker')
 project(':java').projectDir = file('java')
 project(':java').name = 'org.wso2.apk.apimgt.devportal'
+project(':ballerina').projectDir = file('ballerina')
+project(':docker').projectDir = file('docker')
 
 if(!isRelease.toBoolean()){
     includeBuild "$rootDir/../../common-java-libs"

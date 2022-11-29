@@ -65,7 +65,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "http"
-version = "2.4.3"
+version = "2.4.5"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "cache"},
@@ -109,6 +109,20 @@ modules = [
 org = "ballerina"
 name = "jballerina.java"
 version = "0.0.0"
+modules = [
+	{org = "ballerina", packageName = "jballerina.java", moduleName = "jballerina.java"}
+]
+
+[[package]]
+org = "ballerina"
+name = "jballerina.java.arrays"
+version = "1.2.2"
+dependencies = [
+	{org = "ballerina", name = "jballerina.java"}
+]
+modules = [
+	{org = "ballerina", packageName = "jballerina.java.arrays", moduleName = "jballerina.java.arrays"}
+]
 
 [[package]]
 org = "ballerina"
@@ -186,6 +200,9 @@ name = "lang.value"
 version = "0.0.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
+]
+modules = [
+	{org = "ballerina", packageName = "lang.value", moduleName = "lang.value"}
 ]
 
 [[package]]
@@ -292,11 +309,23 @@ dependencies = [
 	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "http"},
 	{org = "ballerina", name = "io"},
+	{org = "ballerina", name = "jballerina.java"},
+	{org = "ballerina", name = "jballerina.java.arrays"},
+	{org = "ballerina", name = "lang.value"},
 	{org = "ballerinai", name = "observe"}
 ]
 modules = [
 	{org = "wso2", packageName = "devportal_service", moduleName = "devportal_service"},
-	{org = "wso2", packageName = "devportal_service", moduleName = "devportal_service.devportal"}
+	{org = "wso2", packageName = "devportal_service", moduleName = "devportal_service.java.io"},
+	{org = "wso2", packageName = "devportal_service", moduleName = "devportal_service.java.lang"},
+	{org = "wso2", packageName = "devportal_service", moduleName = "devportal_service.java.util"},
+	{org = "wso2", packageName = "devportal_service", moduleName = "devportal_service.org.json.simple"},
+	{org = "wso2", packageName = "devportal_service", moduleName = "devportal_service.org.wso2.apk.apimgt.api"},
+	{org = "wso2", packageName = "devportal_service", moduleName = "devportal_service.org.wso2.apk.apimgt.api.model"},
+	{org = "wso2", packageName = "devportal_service", moduleName = "devportal_service.org.wso2.apk.apimgt.devportal.dto"},
+	{org = "wso2", packageName = "devportal_service", moduleName = "devportal_service.org.wso2.apk.apimgt.devportal.impl"},
+	{org = "wso2", packageName = "devportal_service", moduleName = "devportal_service.org.wso2.apk.apimgt.devportal.models"},
+	{org = "wso2", packageName = "devportal_service", moduleName = "devportal_service.org.wso2.apk.apimgt.init"}
 ]
 
 

@@ -122,3 +122,61 @@ function getAPIList() returns APIList|error {
     };
     return APIList;
 }
+
+function createAPI(API api) returns string|Error {
+    if (validateName(api.name)) {
+        return {code: 90911, message: "API Name `${api.name}` already exist.", description: "API Name `${api.name}` already exist."};
+    }
+    if validateContextAndVersion(api.context, api.'version) {
+        return {code: 90912, message: "API Context `${api.context}` already exist.", description: "API Context `${api.context}` already exist."};
+    }
+    return "created";
+}
+
+function validateContextAndVersion(string context, string 'version) returns boolean {
+
+    foreach model:K8sAPI k8sAPI in getAPIs() {
+        if k8sAPI.context == returnFullContext(context, 'version) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function returnFullContext(string context, string 'version) returns string {
+    string fullContext = context;
+    if (!string:endsWith(context, 'version)) {
+        fullContext = string:'join("/", context, 'version);
+    }
+    return fullContext;
+}
+
+function validateName(string name) returns boolean {
+    foreach model:K8sAPI k8sAPI in getAPIs() {
+        if k8sAPI.apiDisplayName == name {
+            return true;
+        }
+    }
+    return false;
+}
+
+function createAndDeployAPI(API api) {
+    model:API k8sAPI = convertK8sCrAPI(api);
+    log:printInfo(<string>k8sAPI.toJson());
+}
+
+function convertK8sCrAPI(API api) returns model:API {
+    model:API apispec = {
+        metadata: {name: api.name.concat(api.'version), namespace: runtimeConfiguration.apiCreationNamespace},
+        spec: {
+            apiDisplayName: api.name,
+            apiType: api.'type,
+            apiVersion: api.'version,
+            context: returnFullContext(api.context, api.'version),
+            definitionFileRef: "",
+            prodHTTPRouteRef: "",
+            sandHTTPRouteRef: ""
+        }
+    };
+    return apispec;
+}

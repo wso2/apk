@@ -21,9 +21,15 @@ wso2:
       serviceAccountName: wso2apk-platform
       roleName: wso2apk-role
     cp:
-      enabled: false
-      postgresql:
-        enabled: false
+      enabled: true
+      database:
+        enabled: true
+        driver: "org.postgresql.Driver"
+        url: "jdbc:postgresql://wso2apk-db-service:5432/WSO2AM_DB"
+        username: "wso2carbon"
+        password: "wso2carbon"
+        validationQuery: "SELECT 1"
+        validationTimeout: 250
       ipk:
         enabled: false
       devportal:
@@ -50,9 +56,9 @@ wso2:
             periodSeconds: 20
             failureThreshold: 5
           strategy: Recreate
-          replicas: 0
+          replicas: 1
           imagePullPolicy: IfNotPresent
-          image: rakhitharr/apk-devportal:0.1.0
+          image: devportal_service:0.1.0-SNAPSHOT
         ingress:
           path: /api/am/devportal
           className: ""
@@ -73,22 +79,22 @@ wso2:
               memory: "1028Mi"
               cpu: "1000m"
           readinessProbe:
-            path: /api/am/admin/v3/settings?limit=2&offset=2
+            path: /health
             port: 9443
             initialDelaySeconds: 20
             periodSeconds: 20
             failureThreshold: 5
           livenessProbe:
-            path: /api/am/admin/v3/settings?limit=2&offset=2
+            path: /health
             port: 9443
             initialDelaySeconds: 20
             periodSeconds: 20
             failureThreshold: 5
           strategy: Recreate
-          replicas: 0
+          replicas: 1
           imagePullPolicy: IfNotPresent
           # TODO update image
-          image: rakhitharr/apk-admin:0.1.0
+          image: admin-service:0.1.0-SNAPSHOT
         ingress:
           path: /api/am/admin
           className: ""
@@ -109,23 +115,23 @@ wso2:
               memory: "1028Mi"
               cpu: "1000m"
           readinessProbe:
-            path: /api/am/publisher/v3/apis?limit=2&offset=2&sortBy=name&sortOrder=1
+            path: /health
             port: 9443
             initialDelaySeconds: 20
             periodSeconds: 20
             failureThreshold: 5
           livenessProbe:
-            path: /api/am/publisher/v3/apis?limit=2&offset=2&sortBy=name&sortOrder=1
+            path: /health
             port: 9443
             initialDelaySeconds: 20
             periodSeconds: 20
             failureThreshold: 5
           strategy: Recreate
-          replicas: 0
+          replicas: 1
           imagePullPolicy: IfNotPresent
-          image: rakhitharr/apk-publisher:0.1.0
+          image: backoffice_service:0.1.0-SNAPSHOT
         ingress:
-          path: /api/am/publisher
+          path: /api/am/backoffice
           className: ""
           annotations:
             kubernetes.io/ingress.class: "nginx"
@@ -170,6 +176,21 @@ wso2:
             nginx.ingress.kubernetes.io/affinity: "cookie"
             nginx.ingress.kubernetes.io/session-cookie-name: "route"
             nginx.ingress.kubernetes.io/session-cookie-hash: "sha1"
+      managementServer:
+        appName: "management-server"
+        deployment:
+          npi: management-server-npi
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "1028Mi"
+              cpu: "1000m"
+          strategy: Recreate
+          replicas: 1
+          imagePullPolicy: IfNotPresent
+          image: management-server:0.0.1-SNAPSHOT
       cnpg:
         npi: cnpg-npi
         instances: 1
@@ -243,15 +264,15 @@ wso2:
               periodSeconds: 20
               failureThreshold: 5
             strategy: Recreate
-            replicas: 0
+            replicas: 1
             imagePullPolicy: IfNotPresent
-            image: wso2/choreo-connect-adapter:1.1.0
+            image: adapter:0.0.1-SNAPSHOT
             security:
               sslHostname: "adapter"
         gatewayRuntime:
           appName: "cc-router"
           deployment:
-            replicas: 0
+            replicas: 1
             router:
               npi: cc-router-npi
               resources:
@@ -327,18 +348,27 @@ wso2:
                 failureThreshold: 5
               strategy: Recreate
               imagePullPolicy: IfNotPresent
-              image: wso2/choreo-connect-enforcer:1.1.0
+              image: wso2/choreo-connect-enforcer:1.1.0-ubuntu
               security:
                 sslHostname: "enforcer"
 
 postgresql:
+  fullnameOverride: "wso2apk-db-service"
   auth:
-    postgresPassword: "test1"
+    database: WSO2AM_DB
+    postgresPassword: wso2carbon
+    username: wso2carbon
+    password: wso2carbon
   primary:
+    extendedConfiguration: |
+      max_connections = 400
     initdb:
       scriptsConfigMap: postgres-initdb-scripts-configmap
-      user: postgres
-      password: "test1"
+      user: wso2carbon
+      password: wso2carbon
+    service:
+      ports:
+        postgresql: 5432
   image:
     debug: true
 

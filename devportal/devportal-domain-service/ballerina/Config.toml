@@ -1,15 +1,16 @@
 [wso2.devportal_service.devportal]
-DEVPORTAL_PORT = 9443
+DEVPORTAL_PORT = 9444
 
 
 # Sample configurations
 [wso2.devportal_service.devportal.datasourceConfiguration]
-description = ""
-url = ""
-username = ""
-password = ""
-validationTimeout = 0
-testQuery = ""
+description = "Test"
+url = "jdbc:postgresql://localhost:5432/APKDB"
+username = "admin"
+password = "admin"
+validationTimeout = 30000
+testQuery = "SELECT 1"
+
 
 [wso2.devportal_service.devportal.throttleConfig]
 enableUnlimitedTier = true

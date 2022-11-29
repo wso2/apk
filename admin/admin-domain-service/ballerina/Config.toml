@@ -9,3 +9,4 @@ username = ""
 password = ""
 validationTimeout = 0
 testQuery = ""
+driver=""

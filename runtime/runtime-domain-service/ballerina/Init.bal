@@ -18,17 +18,22 @@
 import ballerina/log;
 import ballerina/http;
 import ballerina/task;
+import ballerina/io;
 
-listener http:Listener ep0 = new (9443);
+listener http:Listener ep0 = new (9444);
+configurable string namespaceFile = "/var/run/secrets/kubernetes.io/serviceaccount/namespace";
+string namespace = check io:fileReadString(namespaceFile);
+
+configurable RuntimeConfiguratation runtimeConfiguration = {serviceListingNamespaces: [ALL_NAMESPACES], apiCreationNamespace: namespace};
 
 # Initializing method for runtime
 isolated function init() {
-    log:printInfo("Initializing Runtime Domain Service..");
     do {
         _ = check task:scheduleJobRecurByFrequency(new ServiceTask(), 1);
         _ = check task:scheduleJobRecurByFrequency(new APIListingTask(), 1);
     } on fail var e {
         log:printError("Error initializing Task", e);
     }
+    log:printInfo("Initializing Runtime Domain Service..");
 }
 

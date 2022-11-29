@@ -14,19 +14,36 @@
 # limitations under the License.
 [libraries]
 amazonaws-awslambda = {module = "org.wso2.orbit.com.amazonaws:awslambda", version.ref = "awslambda"}
+analytic-databridge = {module = "org.wso2.carbon.analytics-common:org.wso2.carbon.databridge.commons", version.ref = "wso2-analytics"}
+analytic-databridge-binary = {module = "org.wso2.carbon.analytics-common:org.wso2.carbon.databridge.commons.binary", version.ref = "wso2-analytics"}
+analytic-publisher = {module = "org.wso2.am.analytics.publisher:org.wso2.am.analytics.publisher.client", version.ref = "am-analytics"}
+andes = {module = "org.wso2.andes.wso2:andes-client", version.ref = "andes"}
 apicurio-data-models = {module = "io.apicurio:apicurio-data-models", version.ref = "apicurio"}
 aspectjrt = {module = "org.aspectj:aspectjrt", version.ref = "aspectj"}
+azure-applicationinsights = {module = "com.microsoft.azure:applicationinsights-core", version.ref = "azure-applicationinsights"}
+azure-messaging = {module = "com.azure:azure-messaging-eventhubs", version.ref = "azure-messaging"}
+azure-monitor-opentelemetry = {module = "com.azure:azure-monitor-opentelemetry-exporter", version.ref = "azure-monitor-opentelemetry"}
+azure-okhttp = {module = "com.azure:azure-core-http-okhttp", version.ref = "azure-okhttp"}
+carbon-apimgt-analytics = {module = "org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.common.analytics", version.ref = "carbon-apimgt-common"}
+carbon-apimgt-gateway = {module = "org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.common.gateway", version.ref = "carbon-apimgt-common"}
+carbon-apimgt-jms = {module = "org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.common.jms", version.ref = "carbon-apimgt-common"}
 commons-codec = {module = "commons-codec:commons-codec", version.ref = "commons-codec"}
 commons-collection = {module = "org.apache.commons:commons-collections4", version.ref = "commons-collection"}
 commons-io = {module = "commons-io:commons-io", version.ref = "commons-io"}
 commons-lang = {module = "commons-lang:commons-lang", version.ref = "commons-lang"}
 commons-lang3 = {module = "org.apache.commons:commons-lang3", version.ref = "commons-lang3"}
 commons-logging = {module = "commons-logging:commons-logging", version.ref = "commons-logging"}
+commons-pool = {module = "commons-pool.wso2:commons-pool", version.ref = "commons-pool"}
 commons-validator = {module = "commons-validator:commons-validator", version.ref = "commons-validator"}
 cxf-rt-frontend-jaxrs = {module = "org.apache.cxf:cxf-rt-frontend-jaxrs", version.ref = "cxf"}
 cxf-rt-rs-service-description = {module = "org.apache.cxf:cxf-rt-rs-service-description", version.ref = "cxf"}
+envoyproxy-controlplane = {module = "io.envoyproxy.controlplane:api", version.ref = "envoyproxy"}
 everit-json-schema = {module = "org.wso2.orbit.org.everit.json:org.everit.json.schema", version.ref = "everit"}
+geronimo = {module = "org.wso2.orbit.org.apache.geronimo.specs:geronimo-jms_1.1_spec", version.ref = "geronimo"}
 graphql = {module = "org.wso2.orbit.graphQL:graphQL", version.ref = "graphql"}
+grpc-netty = {module = "io.grpc:grpc-netty-shaded", version.ref = "grpc"}
+grpc-protobuf = {module = "io.grpc:grpc-protobuf", version.ref = "grpc"}
+grpc-stub = {module = "io.grpc:grpc-stub", version.ref = "grpc"}
 gson = {module = "com.google.code.gson:gson", version.ref = "gson"}
 guava = {module = "com.google.guava:guava", version.ref = "guava"}
 handy-uri-templates = {module = "com.damnhandy.wso2:handy-uri-templates", version.ref = "wso2-damnhandy"}
@@ -39,10 +56,20 @@ jackson-databind = {module = "com.fasterxml.jackson.core:jackson-databind", vers
 jackson-dataformat-yaml = {module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml", version.ref = "jackson"}
 jackson-datatype-guava = {module = "com.fasterxml.jackson.datatype:jackson-datatype-guava", version.ref = "jackson"}
 javax-cache = {module = "javax.cache:cache-api", version.ref = "javax-cache"}
-javax-validation = {module = "javax.validation:validation-api", version.ref = "javax-validation"}
+javax-validation-api = {module = "javax.validation:validation-api", version.ref = "javax-validation-api"}
+javax-xml-soap = {module = "javax.xml.soap:javax.xml.soap-api", version.ref = "javax-xml-soap"}
 json = {module = "org.json.wso2:json", version.ref = "org-json-wso2"}
 json-simple = {module = "com.googlecode.json-simple.wso2:json-simple", version.ref = "json-simple-wso2"}
+junit = {module = "junit:junit", version.ref = "junit"}
+lmax-disruptor = {module = "org.wso2.orbit.com.lmax:disruptor", version.ref = "lmax"}
+log4j-api = {module = "org.apache.logging.log4j:log4j-api", version.ref = "log4j"}
+log4j-core = {module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j"}
+log4j-jcl = {module = "org.apache.logging.log4j:log4j-jcl", version.ref = "log4j"}
+log4j-slf4j = {module = "org.apache.logging.log4j:log4j-slf4j-impl", version.ref = "log4j"}
 mapstruct = {module = "org.mapstruct:mapstruct", version.ref = "mapstruct"}
+minidev-json = {module = "net.minidev:json-smart", version.ref = "minidev"}
+netty-http = {module = "io.netty:netty-codec-http", version.ref = "netty"}
+netty-http2 = {module = "io.netty:netty-codec-http2", version.ref = "netty"}
 nimbus-jose-jwt = {module = "org.wso2.orbit.com.nimbusds:nimbus-jose-jwt", version.ref = "nimbus"}
 okhttp = {module = "org.wso2.orbit.com.squareup.okhttp:okhttp", version.ref = "okhttp"}
 okio = {module = "org.wso2.orbit.com.squareup.okio:okio", version.ref = "okio"}
@@ -51,6 +78,13 @@ openfeign-feign-core = {module = "io.github.openfeign:feign-core", version.ref =
 openfeign-feign-gson = {module = "io.github.openfeign:feign-gson", version.ref = "io-github-openfeign"}
 openfeign-feign-okhttp = {module = "io.github.openfeign:feign-okhttp", version.ref = "io-github-openfeign"}
 openfeign-feign-slf4j = {module = "io.github.openfeign:feign-slf4j", version.ref = "io-github-openfeign"}
+opentelemetry-api = {module = "io.opentelemetry:opentelemetry-api", version.ref = "opentelemetry"}
+opentelemetry-exporter-jaeger-thrift = {module = "io.opentelemetry:opentelemetry-exporter-jaeger-thrift", version.ref = "opentelemetry-jaeger-thrift"}
+opentelemetry-exporter-otlp = {module = "io.opentelemetry:opentelemetry-exporter-otlp", version.ref = "opentelemetry"}
+opentelemetry-exporter-zipkin = {module = "io.opentelemetry:opentelemetry-exporter-zipkin", version.ref = "opentelemetry"}
+opentelemetry-extension-trace-propagators = {module = "io.opentelemetry:opentelemetry-extension-trace-propagators", version.ref = "opentelemetry"}
+opentelemetry-sdk = {module = "io.opentelemetry:opentelemetry-sdk", version.ref = "opentelemetry"}
+opentelemetry-semconv = {module = "io.opentelemetry:opentelemetry-semconv", version.ref = "opentelemetry-semconv"}
 org-wso2-apk-apimgt-api = {module = "org.wso2.apk:org.wso2.apk.apimgt.api", version.ref = "apimgt"}
 org-wso2-apk-apimgt-impl = {module = "org.wso2.apk:org.wso2.apk.apimgt.impl", version.ref = "apimgt"}
 org-wso2-apk-apimgt-rest-api-util = {module = "org.wso2.apk:org.wso2.apk.apimgt.rest.api.util", version.ref = "apimgt"}
@@ -59,6 +93,7 @@ pdfbox = {module = "org.apache.pdfbox:pdfbox", version.ref = "apache-pdfbox"}
 postgresql = {module = "org.postgresql:postgresql", version.ref = "postgresql"}
 slf4j-ext = {module = "org.slf4j:slf4j-ext", version.ref = "slf4j-ext"}
 snakeyaml = {module = "org.yaml:snakeyaml", version.ref = "snakeyaml"}
+sun-saaj-impl = {module = "com.sun.xml.messaging.saaj:saaj-impl", version.ref = "sun"}
 swagger-annotations = {module = "io.swagger:swagger-annotations", version.ref = "io-swagger"}
 swagger-codegen = {module = "io.swagger:swagger-codegen", version.ref = "swagger-codegen"}
 swagger-core-v3 = {module = "io.swagger.core.v3:swagger-core", version.ref = "io-swagger-v3"}
@@ -69,6 +104,9 @@ swagger-models = {module = "io.swagger:swagger-models", version.ref = "io-swagge
 swagger-models-v3 = {module = "io.swagger.core.v3:swagger-models", version.ref = "io-swagger-v3"}
 swagger-parser = {module = "org.wso2.orbit.io.swagger:swagger-parser", version.ref = "swagger-parser"}
 swagger-parser-v3 = {module = "org.wso2.orbit.io.swagger.v3:swagger-parser", version.ref = "swagger-parser-v3"}
+tomcat = {module = "org.apache.tomcat:annotations-api", version.ref = "tomcat"}
+toml = {module = "com.moandjiezana.toml:toml4j", version.ref = "moandjiezana"}
+websocket = {module = "org.java-websocket:Java-WebSocket", version.ref = "websocket"}
 wsdl4j = {module = "org.wso2.wsdl4j:wsdl4j.wso2", version.ref = "wsdl4j"}
 wso2-uri-templates = {module = "org.wso2.uri.template:wso2-uri-templates", version.ref = "wso2-uri-templates"}
 xerces = {module = "xerces.wso2:xercesImpl", version.ref = "xerces"}
@@ -84,21 +122,32 @@ xml-apis = {module = "xml-apis:xml-apis", version.ref = "xml-apis"}
 openapi-generator-plugin = {id = "org.openapi.generator", version.ref = "openapi-generator-plugin"}
 
 [versions]
+am-analytics = "1.0.10"
+andes = "3.3.23"
 apache-pdfbox = "2.0.25"
 apicurio = "1.1.5"
 apimgt = "0.1.0-SNAPSHOT"
 aspectj = "1.9.5"
 awslambda = "1.11.1034.wso2v2"
+azure-applicationinsights = "2.6.3"
+azure-messaging = "5.6.0"
+azure-monitor-opentelemetry = "1.0.0-beta.5"
+azure-okhttp = "1.3.3"
+carbon-apimgt-common = "9.26.59"
 commons-codec = "1.14"
 commons-collection = "4.1"
 commons-io = "2.11.0"
 commons-lang = "2.4"
 commons-lang3 = "3.10"
 commons-logging = "1.1.1"
+commons-pool = "1.5.6.wso2v1"
 commons-validator = "1.7"
 cxf = "3.5.4"
+envoyproxy = "0.1.28"
 everit = "1.5.0.wso2.v2"
+geronimo = "1.1.1.wso2v1"
 graphql = "17.3.wso2v1"
+grpc = "1.45.1"
 gson = "2.8.5"
 guava = "31.0.1-jre"
 hibernate-validator = "5.4.3.Final"
@@ -110,23 +159,38 @@ io-swagger-v3 = "2.1.12"
 jackson = "2.13.1"
 javax-cache = "1.1.1"
 javax-validation = "2.0.1.Final"
+javax-validation-api = "1.1.0.Final"
+javax-xml-soap = "1.4.0"
 json-simple-wso2 = "1.1.wso2v1"
+junit = "4.13.2"
+lmax = "3.4.2.wso2v1"
+log4j = "2.17.1"
 mapstruct = "1.5.3.Final"
+minidev = "2.4.7"
+moandjiezana = "0.7.2"
+netty = "4.1.77.Final"
 nimbus = "7.9.0.wso2v1"
 okhttp = "4.9.3.wso2v1"
 okio = "2.8.0.wso2v1"
 openapi-generator = "4.3.1.wso2v4"
+opentelemetry = "1.18.0"
+opentelemetry-jaeger-thrift = "1.6.0"
+opentelemetry-semconv = "1.18.0-alpha"
 org-json-wso2 = "3.0.0.wso2v1"
 postgresql = "42.5.0"
 slf4j-ext = "1.7.29"
 snakeyaml = "1.28"
+sun = "1.5.3"
 swagger-codegen = "2.4.11"
 swagger-inflector = "1.0.16.wso2v1"
 swagger-inflector-v3 = "2.0.5.wso2v2"
 swagger-jaxrs = "1.6.1"
 swagger-parser = "1.0.57.wso2v1"
 swagger-parser-v3 = "2.0.29.wso2v1"
+tomcat = "6.0.53"
+websocket = "1.5.3"
 wsdl4j = "1.6.3.wso2v3"
+wso2-analytics = "6.1.60"
 wso2-damnhandy = "2.1.6.wso2v2"
 wso2-uri-templates = "1.6.5"
 xerces = "2.8.1.wso2v2"
