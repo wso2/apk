@@ -369,7 +369,6 @@ public class OAS3Parser extends APIDefinition {
                 URITemplate template = new URITemplate();
                 if (APIConstants.SUPPORTED_METHODS.contains(entry.getKey().name().toLowerCase())) {
                     template.setHTTPVerb(entry.getKey().name().toUpperCase());
-                    template.setHttpVerbs(entry.getKey().name().toUpperCase());
                     template.setUriTemplate(pathKey);
                     List<String> opScopes = getScopeOfOperations(OPENAPI_SECURITY_SCHEMA_KEY, operation);
                     if (!opScopes.isEmpty()) {
@@ -407,20 +406,12 @@ public class OAS3Parser extends APIDefinition {
                         if (extensions.containsKey(APIConstants.SWAGGER_X_AUTH_TYPE)) {
                             String scopeKey = (String) extensions.get(APIConstants.SWAGGER_X_AUTH_TYPE);
                             template.setAuthType(scopeKey);
-                            template.setAuthTypes(scopeKey);
                         } else {
                             template.setAuthType("Any");
-                            template.setAuthTypes("Any");
                         }
                         if (extensions.containsKey(APIConstants.SWAGGER_X_THROTTLING_TIER)) {
                             String throttlingTier = (String) extensions.get(APIConstants.SWAGGER_X_THROTTLING_TIER);
                             template.setThrottlingTier(throttlingTier);
-                            template.setThrottlingTiers(throttlingTier);
-                        }
-                        if (extensions.containsKey(APIConstants.SWAGGER_X_MEDIATION_SCRIPT)) {
-                            String mediationScript = (String) extensions.get(APIConstants.SWAGGER_X_MEDIATION_SCRIPT);
-                            template.setMediationScript(mediationScript);
-                            template.setMediationScripts(template.getHTTPVerb(), mediationScript);
                         }
                         if (extensions.containsKey(APIConstants.SWAGGER_X_AMZN_RESOURCE_NAME)) {
                             template.setAmznResourceName((String)
@@ -499,6 +490,12 @@ public class OAS3Parser extends APIDefinition {
         }
     }
 
+    @Override
+    public String generateAPIDefinition(API api) throws APIManagementException {
+        SwaggerData swaggerData = new SwaggerData(api);
+        return generateAPIDefinition(swaggerData);
+    }
+
     /**
      * This method generates API definition to the given api
      *
@@ -506,8 +503,7 @@ public class OAS3Parser extends APIDefinition {
      * @return API definition in string format
      * @throws APIManagementException
      */
-    @Override
-    public String generateAPIDefinition(SwaggerData swaggerData) throws APIManagementException {
+    private String generateAPIDefinition(SwaggerData swaggerData) {
         OpenAPI openAPI = new OpenAPI();
 
         // create path if null
@@ -556,15 +552,15 @@ public class OAS3Parser extends APIDefinition {
      * additional resources inside the swagger will be removed from the swagger. Changes to scopes, throtting policies,
      * on the resource will be updated on the swagger
      *
-     * @param swaggerData api
+     * @param API api
      * @param swagger     swagger definition
      * @return API definition in string format
      * @throws APIManagementException if error occurred when generating API Definition
      */
     @Override
-    public String generateAPIDefinition(SwaggerData swaggerData, String swagger) throws APIManagementException {
+    public String generateAPIDefinition(API api, String swagger) throws APIManagementException {
         OpenAPI openAPI = getOpenAPI(swagger);
-        return generateAPIDefinition(swaggerData, openAPI);
+        return generateAPIDefinition(api, openAPI);
     }
 
     @Override
@@ -579,12 +575,13 @@ public class OAS3Parser extends APIDefinition {
      * additional resources inside the swagger will be removed from the swagger. Changes to scopes, throtting policies,
      * on the resource will be updated on the swagger
      *
-     * @param swaggerData api
+     * @param API api
      * @param openAPI     OpenAPI
      * @return API definition in string format
      * @throws APIManagementException if error occurred when generating API Definition
      */
-    private String generateAPIDefinition(SwaggerData swaggerData, OpenAPI openAPI) {
+    private String generateAPIDefinition(API api, OpenAPI openAPI) {
+        SwaggerData swaggerData = new SwaggerData(api);
         Set<SwaggerData.Resource> copy = new HashSet<>(swaggerData.getResources());
 
         Iterator<Map.Entry<String, PathItem>> itr = openAPI.getPaths().entrySet().iterator();
@@ -624,7 +621,7 @@ public class OAS3Parser extends APIDefinition {
         }
         updateSwaggerSecurityDefinition(openAPI, swaggerData, OPENAPI_DEFAULT_AUTHORIZATION_URL);
         updateLegacyScopesFromSwagger(openAPI, swaggerData);
-        
+
         openAPI.getInfo().setTitle(swaggerData.getTitle());
 
         if (StringUtils.isEmpty(openAPI.getInfo().getVersion())) {
@@ -763,10 +760,10 @@ public class OAS3Parser extends APIDefinition {
      * @return Generated OAS definition
      */
     @Override
-    public String populateCustomManagementInfo(String oasDefinition, SwaggerData swaggerData) {
+    public String populateCustomManagementInfo(String oasDefinition, API api) {
         OpenAPI openAPI = getOpenAPI(oasDefinition);
         removePublisherSpecificInfo(openAPI);
-        return generateAPIDefinition(swaggerData, openAPI);
+        return generateAPIDefinition(api, openAPI);
     }
 
     /**
@@ -908,12 +905,6 @@ public class OAS3Parser extends APIDefinition {
         openAPI.addExtension(APIConstants.X_WSO2_RESPONSE_CACHE,
                 OASParserUtil.getResponseCacheConfig(api.getResponseCache(), api.getCacheTimeout()));
         return Json.pretty(openAPI);
-    }
-
-    @Override
-    public String getOASVersion(String oasDefinition) throws APIManagementException {
-        OpenAPI openAPI = getOpenAPI(oasDefinition);
-        return openAPI.getInfo().getVersion();
     }
 
     /**
@@ -1980,5 +1971,10 @@ public class OAS3Parser extends APIDefinition {
     @Override
     public String getType() {
         return null;
+    }
+
+    @Override
+    public boolean canHandleDefinition(String definition) {
+        return (StringUtils.isNotEmpty(definition) && definition.contains("openapi"));
     }
 }

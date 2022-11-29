@@ -319,7 +319,6 @@ public class OAS2Parser extends APIDefinition {
                 Operation operation = entry.getValue();
                 URITemplate template = new URITemplate();
                 template.setHTTPVerb(entry.getKey().name().toUpperCase());
-                template.setHttpVerbs(entry.getKey().name().toUpperCase());
                 template.setUriTemplate(pathString);
                 List<String> opScopes = getScopeOfOperations(oauth2SchemeKey, operation);
                 if (!opScopes.isEmpty()) {
@@ -343,20 +342,13 @@ public class OAS2Parser extends APIDefinition {
                     if (extensions.containsKey(APIConstants.SWAGGER_X_AUTH_TYPE)) {
                         String authType = (String) extensions.get(APIConstants.SWAGGER_X_AUTH_TYPE);
                         template.setAuthType(authType);
-                        template.setAuthTypes(authType);
+
                     } else {
                         template.setAuthType("Any");
-                        template.setAuthTypes("Any");
                     }
                     if (extensions.containsKey(APIConstants.SWAGGER_X_THROTTLING_TIER)) {
                         String throttlingTier = (String) extensions.get(APIConstants.SWAGGER_X_THROTTLING_TIER);
                         template.setThrottlingTier(throttlingTier);
-                        template.setThrottlingTiers(throttlingTier);
-                    }
-                    if (extensions.containsKey(APIConstants.SWAGGER_X_MEDIATION_SCRIPT)) {
-                        String mediationScript = (String) extensions.get(APIConstants.SWAGGER_X_MEDIATION_SCRIPT);
-                        template.setMediationScript(mediationScript);
-                        template.setMediationScripts(template.getHTTPVerb(), mediationScript);
                     }
                     if (extensions.containsKey(APIConstants.SWAGGER_X_AMZN_RESOURCE_NAME)) {
                         template.setAmznResourceName((String)
@@ -416,6 +408,12 @@ public class OAS2Parser extends APIDefinition {
         }
     }
 
+    @Override
+    public String generateAPIDefinition(API api) throws APIManagementException {
+        SwaggerData swaggerData = new SwaggerData(api);
+        return generateAPIDefinition(swaggerData);
+    }
+
     /**
      * Get scope information from the extensions
      *
@@ -455,8 +453,7 @@ public class OAS2Parser extends APIDefinition {
      * @return API definition in string format
      * @throws APIManagementException
      */
-    @Override
-    public String generateAPIDefinition(SwaggerData swaggerData) throws APIManagementException {
+    private String generateAPIDefinition(SwaggerData swaggerData) throws APIManagementException {
         Swagger swagger = new Swagger();
 
         //Create info object
@@ -497,15 +494,15 @@ public class OAS2Parser extends APIDefinition {
      * additional resources inside the swagger will be removed from the swagger. Changes to scopes, throtting policies,
      * on the resource will be updated on the swagger
      *
-     * @param swaggerData api
+     * @param api api
      * @param swagger     swagger definition
      * @return API definition in string format
      * @throws APIManagementException if error occurred when generating API Definition
      */
     @Override
-    public String generateAPIDefinition(SwaggerData swaggerData, String swagger) throws APIManagementException {
+    public String generateAPIDefinition(API api, String swagger) throws APIManagementException {
         Swagger swaggerObj = getSwagger(swagger);
-        return generateAPIDefinition(swaggerData, swaggerObj);
+        return generateAPIDefinition(api, swaggerObj);
     }
 
     /**
@@ -515,15 +512,16 @@ public class OAS2Parser extends APIDefinition {
      * additional resources inside the swagger will be removed from the swagger. Changes to scopes, throtting policies,
      * on the resource will be updated on the swagger
      *
-     * @param swaggerData api
+     * @param api api
      * @param swaggerObj  swagger
      * @return API definition in string format
      * @throws APIManagementException if error occurred when generating API Definition
      */
-    private String generateAPIDefinition(SwaggerData swaggerData, Swagger swaggerObj) throws APIManagementException {
+    private String generateAPIDefinition(API api, Swagger swaggerObj) throws APIManagementException {
         //Generates below model using the API's URI template
         // path -> [verb1 -> template1, verb2 -> template2, ..]
-        Map<String, Map<String, SwaggerData.Resource>> resourceMap = getResourceMap(swaggerData);
+        SwaggerData swaggerData = new SwaggerData(api);
+        Map<String, Map<String, SwaggerData.Resource>> resourceMap = getResourceMap(api);
 
         Iterator<Map.Entry<String, Path>> itr = swaggerObj.getPaths().entrySet().iterator();
         while (itr.hasNext()) {
@@ -578,7 +576,7 @@ public class OAS2Parser extends APIDefinition {
 
         updateSwaggerSecurityDefinition(swaggerObj, swaggerData, "https://test.com");
         updateLegacyScopesFromSwagger(swaggerObj, swaggerData);
-        
+
         if (StringUtils.isEmpty(swaggerObj.getInfo().getTitle())) {
             swaggerObj.getInfo().setTitle(swaggerData.getTitle());
         }
@@ -675,16 +673,16 @@ public class OAS2Parser extends APIDefinition {
      * Populate definition with wso2 APIM specific information
      *
      * @param oasDefinition OAS definition
-     * @param swaggerData   API
+     * @param api   API
      * @return Generated OAS definition
      * @throws APIManagementException If an error occurred
      */
     @Override
-    public String populateCustomManagementInfo(String oasDefinition, SwaggerData swaggerData)
+    public String populateCustomManagementInfo(String oasDefinition, API api)
             throws APIManagementException {
         Swagger swagger = getSwagger(oasDefinition);
         removePublisherSpecificInfo(swagger);
-        return generateAPIDefinition(swaggerData, swagger);
+        return generateAPIDefinition(api, swagger);
     }
 
     /**
@@ -824,12 +822,6 @@ public class OAS2Parser extends APIDefinition {
         return getSwaggerJsonString(swagger);
     }
 
-    @Override
-    public String getOASVersion(String oasDefinition) {
-        Swagger swagger = getSwagger(oasDefinition);
-        return swagger.getInfo().getVersion();
-    }
-
     /**
      * Update swagger with security definition
      *
@@ -896,7 +888,7 @@ public class OAS2Parser extends APIDefinition {
                 if (resource.getScopes().isEmpty()) {
                     requirement.put(oauth2SchemeKey, Collections.EMPTY_LIST);
                 } else {
-                     requirement.put(oauth2SchemeKey, resource.getScopes().stream().map(Scope::getKey).collect(
+                    requirement.put(oauth2SchemeKey, resource.getScopes().stream().map(Scope::getKey).collect(
                             Collectors.toList()));
                 }
                 return;
@@ -1738,5 +1730,10 @@ public class OAS2Parser extends APIDefinition {
     @Override
     public String getType() {
         return null;
+    }
+
+    @Override
+    public boolean canHandleDefinition(String definition) {
+        return (StringUtils.isNotEmpty(definition) && definition.contains("swagger"));
     }
 }
