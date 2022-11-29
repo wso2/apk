@@ -76,7 +76,7 @@ func deployAPIInGateway(apiState APIState) error {
 	return err
 }
 
-// generateMGWSwagger
+// generateMGWSwagger this will populate a mgwswagger representation for an HTTPRoute
 func generateMGWSwagger(apiState APIState, httpRoute *gwapiv1b1.HTTPRoute, isProd bool) error {
 	var mgwSwagger model.MgwSwagger
 	if err := mgwSwagger.SetInfoAPICR(*apiState.APIDefinition); err != nil {

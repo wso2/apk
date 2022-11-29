@@ -25,7 +25,7 @@ spec:
   apiVersion: 1.0.8
   context: /http-bin-api/1.0.8
   definitionFileRef: swagger-definition-http-bin-api
-  sandHTTPRouteRef: http-route-http-bin-api
+  prodHTTPRouteRef: http-route-http-bin-api
   organization: carbon.super
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
