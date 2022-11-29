@@ -19,106 +19,128 @@
 import ballerina/http;
 import ballerina/io;
 import ballerina/lang.value;
-import admin_service.org.wso2.apk.apimgt.api as api;
-import admin_service.org.wso2.apk.apimgt.admin.impl as admin;
 
-service /api/am/admin/v3 on ep0 {
+service /api/am/admin on ep0 {
     // resource function get throttling/policies/search(string? query) returns ThrottlePolicyDetailsList {
     // }
     resource function get throttling/policies/application(@http:Header string? accept = "application/json") returns ApplicationThrottlePolicyList|NotAcceptableError|error {
-        string?|api:APIManagementException appPolicyList = admin:ThrottlingCommonImpl_getApplicationThrottlePolicies();
+        string?|ApplicationThrottlePolicyList appPolicyList = getApplicationUsagePlans();
         if appPolicyList is string {
             json j = check value:fromJsonString(appPolicyList);
             ApplicationThrottlePolicyList polList = check j.cloneWithType(ApplicationThrottlePolicyList);
             return polList;
         }
+        if appPolicyList is ApplicationThrottlePolicyList {
+            return appPolicyList;
+        }
         io:print(appPolicyList);
         return {};
     }
     resource function post throttling/policies/application(@http:Payload ApplicationThrottlePolicy payload, @http:Header string 'content\-type = "application/json") returns CreatedApplicationThrottlePolicy|BadRequestError|UnsupportedMediaTypeError|error {
-        string|api:APIManagementException? createdAppPol = admin:ThrottlingCommonImpl_addApplicationThrottlePolicy(payload.toJsonString());
+        string?|ApplicationThrottlePolicy createdAppPol = addApplicationUsagePlan(payload);
+        io:println(createdAppPol);
         if createdAppPol is string {
             json j = check value:fromJsonString(createdAppPol);
             CreatedApplicationThrottlePolicy crPol = {body: check j.cloneWithType(ApplicationThrottlePolicy)};
             return crPol;
         }
-        io:println(createdAppPol);
+        if createdAppPol is ApplicationThrottlePolicy {
+            CreatedApplicationThrottlePolicy crPol = {body: check createdAppPol.cloneWithType(ApplicationThrottlePolicy)};
+            return crPol;
+        }
         return error("Error while adding Application Policy");
     }
     resource function get throttling/policies/application/[string policyId]() returns ApplicationThrottlePolicy|NotFoundError|NotAcceptableError|error {
-        string|api:APIManagementException? appPolicy = admin:ThrottlingCommonImpl_getApplicationThrottlePolicyById(policyId);
+        string?|ApplicationThrottlePolicy appPolicy = getApplicationUsagePlanById(policyId);
         if appPolicy is string {
             json j = check value:fromJsonString(appPolicy);
             ApplicationThrottlePolicy policy = check j.cloneWithType(ApplicationThrottlePolicy);
             return policy;
         }
+        if appPolicy is ApplicationThrottlePolicy {
+            return appPolicy;
+        }
         io:println(appPolicy);
         return error("Error while gettting Application Policy");
     }
     resource function put throttling/policies/application/[string policyId](@http:Payload ApplicationThrottlePolicy payload, @http:Header string 'content\-type = "application/json") returns ApplicationThrottlePolicy|BadRequestError|NotFoundError|error {
-        string|api:APIManagementException? appPolicy = admin:ThrottlingCommonImpl_updateApplicationThrottlePolicy(policyId, payload.toJsonString());
+        string?|ApplicationThrottlePolicy|NotFoundError appPolicy = updateApplicationUsagePlan(policyId, payload);
         if appPolicy is string {
             json j = check value:fromJsonString(appPolicy);
             ApplicationThrottlePolicy updatedPolicy = check j.cloneWithType(ApplicationThrottlePolicy);
             return updatedPolicy;
         }
+        if appPolicy is ApplicationThrottlePolicy|NotFoundError {
+            return appPolicy;
+        } 
         io:println(appPolicy);
         return error("Error while updating Application Policy");
     }
     resource function delete throttling/policies/application/[string policyId]() returns http:Ok|NotFoundError|error {
-        api:APIManagementException? ex = admin:ThrottlingCommonImpl_removeApplicationThrottlePolicy(policyId, "carbon.super");
-        if ex !is api:APIManagementException {
+        string|error? ex = removeApplicationUsagePlan(policyId);
+        if ex is error {
+            return ex;
+        } else {
             return http:OK;
         }
-        return error(ex.detail().toString());
     }
     resource function get throttling/policies/subscription(@http:Header string? accept = "application/json") returns SubscriptionThrottlePolicyList|NotAcceptableError|error {
-        string?|api:APIManagementException subPolicyList = admin:ThrottlingCommonImpl_getAllSubscriptionThrottlePolicies();
+        string?|SubscriptionThrottlePolicyList subPolicyList = getBusinessPlans();
         if subPolicyList is string {
             json j = check value:fromJsonString(subPolicyList);
             SubscriptionThrottlePolicyList polList = check j.cloneWithType(SubscriptionThrottlePolicyList);
             return polList;
+        } else  if subPolicyList is SubscriptionThrottlePolicyList {
+            return subPolicyList;
         }
         io:print(subPolicyList);
-        return error("Error while getting subsciption policies");
+        return error("Error while getting Business plans");
     }
     resource function post throttling/policies/subscription(@http:Payload SubscriptionThrottlePolicy payload, @http:Header string 'content\-type = "application/json") returns CreatedSubscriptionThrottlePolicy|BadRequestError|UnsupportedMediaTypeError|error {
-        string|api:APIManagementException? createdSubPol = admin:ThrottlingCommonImpl_addSubscriptionThrottlePolicy(payload.toJsonString());
+        string?|SubscriptionThrottlePolicy createdSubPol = addBusinessPlan(payload);
         if createdSubPol is string {
             json j = check value:fromJsonString(createdSubPol);
             CreatedSubscriptionThrottlePolicy crPol = {body: check j.cloneWithType(SubscriptionThrottlePolicy)};
             return crPol;
+        } else if createdSubPol is SubscriptionThrottlePolicy {
+            CreatedSubscriptionThrottlePolicy crPol = {body: check createdSubPol.cloneWithType(SubscriptionThrottlePolicy)};
+            return crPol;
         }
         io:println(createdSubPol);
-        return error("Error while adding Application Policy");
+        return error("Error while adding Business plan");
     }
     resource function get throttling/policies/subscription/[string policyId]() returns SubscriptionThrottlePolicy|NotFoundError|NotAcceptableError|error {
-        string|api:APIManagementException? subPolicy = admin:ThrottlingCommonImpl_getSubscriptionThrottlePolicyById(policyId);
+        string?|SubscriptionThrottlePolicy subPolicy = getBusinessPlanById(policyId);
         if subPolicy is string {
             json j = check value:fromJsonString(subPolicy);
             SubscriptionThrottlePolicy policy = check j.cloneWithType(SubscriptionThrottlePolicy);
             return policy;
+        } else if subPolicy is SubscriptionThrottlePolicy {
+            return subPolicy;
         }
         io:println(subPolicy);
-        return error("Error while gettting Subscription Policy");
+        return error("Error while getting Business plan");
     }
     resource function put throttling/policies/subscription/[string policyId](@http:Payload SubscriptionThrottlePolicy payload, @http:Header string 'content\-type = "application/json") returns SubscriptionThrottlePolicy|BadRequestError|NotFoundError|error {
-        string|api:APIManagementException? subPolicy = admin:ThrottlingCommonImpl_updateSubscriptionThrottlePolicy(policyId, payload.toJsonString());
+        string?|SubscriptionThrottlePolicy|NotFoundError  subPolicy = updateBusinessPlan(policyId, payload);
         if subPolicy is string {
             json j = check value:fromJsonString(subPolicy);
             SubscriptionThrottlePolicy updatedPolicy = check j.cloneWithType(SubscriptionThrottlePolicy);
             return updatedPolicy;
+        } else if subPolicy is SubscriptionThrottlePolicy | NotFoundError {
+            return subPolicy;
         }
         io:println(subPolicy);
-        return error("Error while updating Subscription Policy");
+        return error("Error while updating Business plan");
     }
-    // resource function delete throttling/policies/subscription/[string policyId]() returns http:Ok|NotFoundError|error {
-    //     api:APIManagementException? ex = admin:ThrottlingCommonImpl_removeSubscriptionThrottlePolicy(policyId, "carbon.super");
-    //     if ex !is api:APIManagementException {
-    //         return http:OK;
-    //     }
-    //     return error(ex.detail().toString());
-    // }
+    resource function delete throttling/policies/subscription/[string policyId]() returns http:Ok|NotFoundError|error {
+        string|error? ex = removeBusinessPlan(policyId);
+        if ex is error {
+            return ex;
+        } else {
+            return http:OK;
+        }
+    }
     // resource function get throttling/policies/advanced(@http:Header string? accept = "application/json") returns AdvancedThrottlePolicyList|NotAcceptableError {
     //     return advancedPolicyList;
     // }
@@ -137,49 +159,58 @@ service /api/am/admin/v3 on ep0 {
     // resource function post throttling/policies/'import(boolean? overwrite, @http:Payload json payload) returns http:Ok|ForbiddenError|NotFoundError|ConflictError|InternalServerErrorError {
     // }
     resource function get throttling/'deny\-policies(@http:Header string? accept = "application/json") returns BlockingConditionList|NotAcceptableError|error {
-        string|api:APIManagementException? conditionList = admin:ThrottlingCommonImpl_getAllDenyPolicies();
+        string?|BlockingConditionList conditionList = getAllDenyPolicies();
         if conditionList is string {
             json j = check value:fromJsonString(conditionList);
             BlockingConditionList list = check j.cloneWithType(BlockingConditionList);
             return list;
+        } else if conditionList is BlockingConditionList {
+            return conditionList;
         }
         io:println(conditionList);
         return error("Error while getting block conditions");
     }
     resource function post throttling/'deny\-policies(@http:Payload BlockingCondition payload, @http:Header string 'content\-type = "application/json") returns CreatedBlockingCondition|BadRequestError|UnsupportedMediaTypeError|error {
-        string|api:APIManagementException? createdDenyPol = admin:ThrottlingCommonImpl_addDenyPolicy(payload.toJsonString());
+        string?|BlockingCondition createdDenyPol = addDenyPolicy(payload);
         if createdDenyPol is string {
             json j = check value:fromJsonString(createdDenyPol);
             CreatedBlockingCondition condition = {body: check j.cloneWithType(BlockingCondition)};
+            return condition;
+        } else if createdDenyPol is BlockingCondition {
+            CreatedBlockingCondition condition = {body: check createdDenyPol.cloneWithType(BlockingCondition)};
             return condition;
         }
         io:println(createdDenyPol);
         return error("Error while adding deny policy");
     }
     resource function get throttling/'deny\-policy/[string conditionId]() returns BlockingCondition|NotFoundError|NotAcceptableError|error {
-        string|api:APIManagementException? denyPolicy = admin:ThrottlingCommonImpl_getDenyPolicyById(conditionId);
+        string?|BlockingCondition denyPolicy = getDenyPolicyById(conditionId);
         if denyPolicy is string {
             json j = check value:fromJsonString(denyPolicy);
             BlockingCondition condition = check j.cloneWithType(BlockingCondition);
             return condition;
+        } else if denyPolicy is BlockingCondition {
+            return denyPolicy;
         }
         io:println(denyPolicy);
         return error("Error while getting deny policy");
     }
     resource function delete throttling/'deny\-policy/[string conditionId]() returns http:Ok|NotFoundError|error {
-        api:APIManagementException? ex = admin:ThrottlingCommonImpl_removeDenyPolicy(conditionId);
-        if ex !is api:APIManagementException {
+        string|error? ex = removeDenyPolicy(conditionId);
+        if ex is error {
+            return ex;
+        } else {
             return http:OK;
         }
-        io:println(ex);
-        return error("Error while deleting deny policy");
     }
     resource function patch throttling/'deny\-policy/[string conditionId](@http:Payload BlockingConditionStatus payload, @http:Header string 'content\-type = "application/json") returns BlockingCondition|BadRequestError|NotFoundError|error {
-        string|api:APIManagementException? updatedPolicy = admin:ThrottlingCommonImpl_updateDenyPolicy(conditionId, payload.toJsonString());
+        string?|BlockingCondition|NotFoundError updatedPolicy = updateDenyPolicy(conditionId, payload);
         if updatedPolicy is string {
             json j = check value:fromJsonString(updatedPolicy);
             BlockingCondition condition = check j.cloneWithType(BlockingCondition);
             return condition;
+        } else if updatedPolicy is BlockingCondition|NotFoundError {
+            return updatedPolicy;
         }
         io:println(updatedPolicy);
         return error("Error while updating deny policy");
