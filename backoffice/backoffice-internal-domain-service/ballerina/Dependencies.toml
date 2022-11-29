@@ -101,6 +101,9 @@ dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "lang.value"}
 ]
+modules = [
+	{org = "ballerina", packageName = "io", moduleName = "io"}
+]
 
 [[package]]
 org = "ballerina"
@@ -187,6 +190,9 @@ version = "0.0.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
+modules = [
+	{org = "ballerina", packageName = "lang.value", moduleName = "lang.value"}
+]
 
 [[package]]
 org = "ballerina"
@@ -252,6 +258,20 @@ dependencies = [
 
 [[package]]
 org = "ballerina"
+name = "sql"
+version = "1.5.0"
+dependencies = [
+	{org = "ballerina", name = "io"},
+	{org = "ballerina", name = "jballerina.java"},
+	{org = "ballerina", name = "lang.object"},
+	{org = "ballerina", name = "time"}
+]
+modules = [
+	{org = "ballerina", packageName = "sql", moduleName = "sql"}
+]
+
+[[package]]
+org = "ballerina"
 name = "task"
 version = "2.2.2"
 dependencies = [
@@ -288,15 +308,34 @@ modules = [
 ]
 
 [[package]]
+org = "ballerinax"
+name = "postgresql"
+version = "1.5.0"
+dependencies = [
+	{org = "ballerina", name = "crypto"},
+	{org = "ballerina", name = "io"},
+	{org = "ballerina", name = "jballerina.java"},
+	{org = "ballerina", name = "sql"},
+	{org = "ballerina", name = "time"}
+]
+modules = [
+	{org = "ballerinax", packageName = "postgresql", moduleName = "postgresql"}
+]
+
+[[package]]
 org = "wso2"
 name = "backoffice_internal_service"
 version = "0.1.0"
 dependencies = [
 	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "http"},
+	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"},
+	{org = "ballerina", name = "lang.value"},
 	{org = "ballerina", name = "log"},
-	{org = "ballerinai", name = "observe"}
+	{org = "ballerina", name = "sql"},
+	{org = "ballerinai", name = "observe"},
+	{org = "ballerinax", name = "postgresql"}
 ]
 modules = [
 	{org = "wso2", packageName = "backoffice_internal_service", moduleName = "backoffice_internal_service"},
