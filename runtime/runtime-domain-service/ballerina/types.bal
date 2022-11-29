@@ -115,12 +115,9 @@ public type Gateway record {
 };
 
 public type APIOperations record {
-    string id?;
     string target?;
     string verb?;
     string[] scopes?;
-    string payloadSchema?;
-    string uriMapping?;
     APIOperationPolicies operationPolicies?;
 };
 

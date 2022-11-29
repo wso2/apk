@@ -29,6 +29,6 @@ public type APISpec record {|
     string apiVersion;
     string context;
     string definitionFileRef;
-    string prodHTTPRouteRef;
-    string sandHTTPRouteRef;
+    string prodHTTPRouteRef?;
+    string sandHTTPRouteRef?;
 |};

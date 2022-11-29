@@ -1165,11 +1165,6 @@ public abstract class AbstractAPIManager implements APIManager {
             }
         }
 
-        if (APIConstants.IMPLEMENTATION_TYPE_INLINE.equalsIgnoreCase(api.getImplementation())) {
-            for (URITemplate template : uriTemplates) {
-                template.setMediationScript(template.getAggregatedMediationScript());
-            }
-        }
         api.setUriTemplates(uriTemplates);
         //CORS . if null is returned, set default config from the configuration
 

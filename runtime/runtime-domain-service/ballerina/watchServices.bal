@@ -38,7 +38,7 @@ class ServiceTask {
             string|error message = check servicesClient->readMessage();
             if message is string {
                 json value = check value:fromJsonString(message);
-                log:printInfo(value:toJsonString(value));
+                // log:printInfo(value:toJsonString(value));
                 string eventType = <string>check value.'type;
                 json eventValue = <json>check value.'object;
                 Service|error serviceModel = createServiceModel(eventValue);
@@ -118,4 +118,8 @@ function getService(string name, string namespace) returns Service? {
     }
 
     return;
+}
+
+function grtServiceById(string id) returns Service|error {
+    return trap services.get(id);
 }
