@@ -33,7 +33,6 @@ import (
 // are used to create resources and httpRoute.Spec.Rules.BackendRefs are used to create EndpointClusters.
 func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, isProd bool) error {
 	var resources []*Resource
-	var endpointCluster EndpointCluster
 	var endPoints []Endpoint
 	for _, rule := range httpRoute.Spec.Rules {
 		for _, match := range rule.Matches {
@@ -50,14 +49,16 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, is
 					Port: uint32(*backend.Port)})
 		}
 	}
-	endpointCluster = EndpointCluster{
-		EndpointPrefix: constants.ProdClustersConfigNamePrefix,
-		Endpoints:      endPoints,
-	}
 	if isProd {
-		swagger.productionEndpoints = &endpointCluster
+		swagger.productionEndpoints = &EndpointCluster{
+			EndpointPrefix: constants.ProdClustersConfigNamePrefix,
+			Endpoints:      endPoints,
+		}
 	} else {
-		swagger.sandboxEndpoints = &endpointCluster
+		swagger.sandboxEndpoints = &EndpointCluster{
+			EndpointPrefix: constants.SandClustersConfigNamePrefix,
+			Endpoints:      endPoints,
+		}
 	}
 	swagger.resources = resources
 	return nil
