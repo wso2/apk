@@ -666,10 +666,8 @@ public class APIMappingUtil {
                     || (APIConstants.WS_SUPPORTED_METHOD_LIST.contains(httpVerb.toUpperCase()))) {
                 isHttpVerbDefined = true;
                 template.setThrottlingTier(operation.getUsagePlan());
-                template.setThrottlingTiers(operation.getUsagePlan());
                 template.setUriTemplate(uriTempVal);
-                template.setHTTPVerb(httpVerb.toUpperCase());
-                template.setHttpVerbs(httpVerb.toUpperCase());
+                 template.setHTTPVerb(httpVerb.toUpperCase());
                 uriTemplates.add(template);
             } else {
                 if (APIConstants.GRAPHQL_API.equals(model.getType())) {

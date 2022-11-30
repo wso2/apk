@@ -210,8 +210,7 @@ public class ApisApiCommonImpl {
     public static String getApiDefinition(API api) throws APIManagementException {
 
         APIDefinition parser = new OAS3Parser();
-        SwaggerData swaggerData = new SwaggerData(api);
-        return parser.generateAPIDefinition(swaggerData);
+        return parser.generateAPIDefinition(api);
     }
 
     private static APIDTO getAPIByID(String apiId, APIProvider apiProvider, String organization)
