@@ -34,6 +34,7 @@ public function db_createAPI(API api) returns API | error {
         
         
         sql:ExecutionResult | sql:Error result = check db_client->execute(sqlQuery);
+        check db_client.close();
         if result is sql:ExecutionResult {
             return api;
         } else {
