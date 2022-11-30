@@ -27,7 +27,8 @@ function init() {
 
     dbClient = 
         new(datasourceConfiguration.url, datasourceConfiguration.username, 
-            datasourceConfiguration.password);
+            datasourceConfiguration.password,
+            connectionPool = { maxOpenConnections: datasourceConfiguration.maxPoolSize });
 
 }
 public function getConnection() returns jdbc:Client | error {
