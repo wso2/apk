@@ -15,18 +15,23 @@
 # under the License.
 
 {{- if .Values.wso2.apk.cp.enabled }}
-apiVersion: v1
-kind: Service
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-publisher-ds-service
-  namespace : {{ .Release.Namespace }}
+  name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-network-policy
+  namespace: {{ .Release.Namespace }}
 spec:
-  # label keys and values that must match in order to receive traffic for this service
-  selector:
-{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.wso2.apk.cp.publisher.appName ) | indent 4}}
-  ports:
-    # ports that this service should serve on
-    - name: servlet-https
-      protocol: TCP
-      port: 9443
+  podSelector:
+    matchLabels:
+{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.wso2.apk.cp.backoffice.appName ) | indent 6}}
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+      - podSelector:
+          matchLabels:
+            networkPolicyId: {{ .Values.wso2.apk.cp.cnpg.npi }}
+      ports:
+        - protocol: TCP
+          port: 5432
 {{- end -}}

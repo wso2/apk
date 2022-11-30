@@ -18,34 +18,34 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-publisher-ds-deployment
+  name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-deployment
   namespace: {{ .Release.Namespace }}
 spec:
-  replicas: {{ .Values.wso2.apk.cp.publisher.deployment.replicas }}
+  replicas: {{ .Values.wso2.apk.cp.backoffice.deployment.replicas }}
   strategy:
-    type: {{ .Values.wso2.apk.cp.publisher.deployment.strategy }}
+    type: {{ .Values.wso2.apk.cp.backoffice.deployment.strategy }}
   selector:
     matchLabels:
-{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.wso2.apk.cp.publisher.appName ) | indent 6}}
+{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.wso2.apk.cp.backoffice.appName ) | indent 6}}
   template:
     metadata:
       labels:
-{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.wso2.apk.cp.publisher.appName ) | indent 8}}
+{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.wso2.apk.cp.backoffice.appName ) | indent 8}}
     spec:
       initContainers:
         - name: init-db
           image: busybox:1.32
           command: ['sh', '-c', 'echo -e "Checking for the availability of DB Server deployment"; while ! nc -z "{{ .Values.postgresql.fullnameOverride }}" {{ .Values.postgresql.primary.service.ports.postgresql }}; do sleep 1; printf "-"; done; echo -e "  >> DB Server has started";']
       containers:
-        - name: publisher-ds
-          image: {{ .Values.wso2.apk.cp.publisher.deployment.image }}
-          imagePullPolicy: {{ .Values.wso2.apk.cp.publisher.deployment.imagePullPolicy }}
+        - name: backoffice-ds
+          image: {{ .Values.wso2.apk.cp.backoffice.deployment.image }}
+          imagePullPolicy: {{ .Values.wso2.apk.cp.backoffice.deployment.imagePullPolicy }}
           ports:
             - containerPort: 9443
               protocol: "TCP"
-{{ include "apk-helm.deployment.readinessProbe.http" .Values.wso2.apk.cp.publisher.deployment | indent 10 }}
-{{ include "apk-helm.deployment.livenessProbe.http" .Values.wso2.apk.cp.publisher.deployment | indent 10 }}
-{{ include "apk-helm.deployment.resources" .Values.wso2.apk.cp.publisher.deployment.resources | indent 10 }}
+{{ include "apk-helm.deployment.readinessProbe.http" .Values.wso2.apk.cp.backoffice.deployment | indent 10 }}
+{{ include "apk-helm.deployment.livenessProbe.http" .Values.wso2.apk.cp.backoffice.deployment | indent 10 }}
+{{ include "apk-helm.deployment.resources" .Values.wso2.apk.cp.backoffice.deployment.resources | indent 10 }}
           volumeMounts:
                 - mountPath: /home/wso2apk/backoffice/conf/Config.toml
                   name: config-toml-volume
@@ -53,5 +53,5 @@ spec:
       volumes:
         - name: config-toml-volume
           configMap:
-            name: {{ template "apk-helm.resource.prefix" . }}-publisher-ds-configmap
+            name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-configmap
 {{- end -}}

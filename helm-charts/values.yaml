@@ -103,10 +103,10 @@ wso2:
             nginx.ingress.kubernetes.io/affinity: "cookie"
             nginx.ingress.kubernetes.io/session-cookie-name: "route"
             nginx.ingress.kubernetes.io/session-cookie-hash: "sha1"
-      publisher:
-        appName: "publisher-ds"
+      backoffice:
+        appName: "backoffice-ds"
         deployment:
-          npi: publisher-ds-npi
+          npi: backoffice-ds-npi
           resources:
             requests:
               memory: "128Mi"
