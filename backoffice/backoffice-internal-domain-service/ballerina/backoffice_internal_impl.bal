@@ -1,11 +1,26 @@
-import ballerina/sql;
-import ballerina/io;
+//
+// Copyright (c) 2022, WSO2 LLC. (http://www.wso2.com).
+//
+// WSO2 LLC. licenses this file to you under the Apache License,
+// Version 2.0 (the "License"); you may not use this file except
+// in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+//
 
-
-# The function that maps createAPI service to dao layer.
+# This function used to connect API create service to database
 #
-# + body - The `API` record type parameter.
-public function createAPI(API body) {
-    sql:ExecutionResult | sql:Error db = db_createAPI(body);
-    io:println(db);
+# + body - API parameter
+# + return - Return Value API | error
+public function createAPI(API body) returns API | error{
+    API | error db = db_createAPI(body);
+    return db;
 }
