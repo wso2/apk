@@ -27,7 +27,7 @@ http:Service runtimeService = service object {
     resource function get apis(string? query, int 'limit = 25, int offset = 0, string sortBy = "createdTime", string sortOrder = "desc", @http:Header string? accept = "application/json") returns APIList|BadRequestError|UnauthorizedError|InternalServerErrorError|error {
         return getAPIList();
     }
-    resource function get apis/[string apiId]() returns API|BadRequestError|UnauthorizedError|InternalServerErrorError|NotFoundError|error {
+    resource function get apis/[string apiId]() returns API|BadRequestError|InternalServerErrorError|NotFoundError {
         return getAPIById(apiId);
     }
     resource function post apis(@http:Payload API payload) returns CreatedAPI|BadRequestError|UnsupportedMediaTypeError|http:NotImplemented {
@@ -72,35 +72,7 @@ http:Service runtimeService = service object {
         return notImplementedError;
     }
     resource function get services(string? name, string? namespace, string sortBy = "createdTime", string sortOrder = "desc", int 'limit = 25, int offset = 0) returns ServiceList|BadRequestError|UnauthorizedError|InternalServerErrorError {
-        boolean serviceNameAvailable = name == () ? false : true;
-        boolean nameSpaceAvailable = namespace == () ? false : true;
-        if (nameSpaceAvailable && string:length(namespace.toString()) > 0) {
-            if (serviceNameAvailable && string:length(name.toString()) > 0) {
-                ServiceList|error serviceList = getServiceFromK8s(name.toString(), namespace.toString());
-                if serviceList is error {
-                    InternalServerErrorError internalError = {body: {code: 900910, message: serviceList.message()}};
-                    return internalError;
-                } else {
-                    return serviceList;
-                }
-            } else {
-                ServiceList|error serviceList = getServicesListInNamespace(namespace.toString());
-                if serviceList is error {
-                    InternalServerErrorError internalError = {body: {code: 900910, message: serviceList.message()}};
-                    return internalError;
-                } else {
-                    return serviceList;
-                }
-            }
-        }
-        ServiceList|error serviceList = getServicesListFromK8s();
-        if serviceList is error {
-            InternalServerErrorError internalError = {body: {code: 900910, message: serviceList.message()}};
-            return internalError;
-        } else {
-            return serviceList;
-        }
-
+        return getServices(name, namespace, sortBy, sortOrder, 'limit, offset);
     }
     resource function get services/[string serviceId](string? namespace) returns Service|BadRequestError|UnauthorizedError|NotFoundError|InternalServerErrorError|http:NotImplemented {
         http:NotImplemented notImplementedError = {body: {code: 900910, message: "Not implemented"}};
@@ -121,5 +93,9 @@ http:Service runtimeService = service object {
         http:NotImplemented notImplementedError = {body: {code: 900910, message: "Not implemented"}};
         return notImplementedError;
     }
+    resource function post apis/[string apiId]/'generate\-key() returns APIKey|BadRequestError|NotFoundError|InternalServerErrorError {
+        return generateAPIKey(apiId);
+    }
+
 };
 

@@ -21,7 +21,7 @@ import ballerina/task;
 import runtime_domain_service.model as model;
 import ballerina/log;
 
-final websocket:Client apiClient = check new ("wss://" + k8sHost + "/apis/dp.wso2.com/v1alpha1/watch/apis",
+final websocket:Client apiClient = check new ("wss://" + runtimeConfiguration.k8sConfiguration.host + "/apis/dp.wso2.com/v1alpha1/watch/apis",
 auth = {
     token: token
 },
@@ -43,7 +43,7 @@ class APIListingTask {
                 json eventValue = <json>check value.'object;
                 APIInfo|error apiModel = createAPImodel(eventValue);
                 if apiModel is model:K8sAPI {
-                    if apiModel.namespace == runtimeConfiguration.apiCreationNamespace {
+                    if apiModel.namespace == getNameSpace(runtimeConfiguration.apiCreationNamespace) {
                         if eventType == "ADDED" {
                             apilist[apiModel.uuid] = apiModel;
                         } else if (eventType == "MODIFIED") {

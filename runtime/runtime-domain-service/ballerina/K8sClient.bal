@@ -21,19 +21,16 @@ import runtime_domain_service.model;
 import ballerina/http;
 
 const string K8S_API_ENDPOINT = "/api/v1";
+string token = check io:fileReadString(runtimeConfiguration.k8sConfiguration.serviceAccountPath + "/token");
+string caCertPath = runtimeConfiguration.k8sConfiguration.serviceAccountPath + "/ca.crt";
+string namespaceFile = runtimeConfiguration.k8sConfiguration.serviceAccountPath + "/namespace";
+string currentNameSpace = check io:fileReadString(namespaceFile);
 final http:Client k8sApiServerEp = check initializeK8sClient();
-configurable string k8sHost = "kubernetes.default";
-configurable string saTokenPath = "/var/run/secrets/kubernetes.io/serviceaccount/token";
-string token = check io:fileReadString(saTokenPath);
-configurable string caCertPath = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt";
-configurable string namespaceFile = "/var/run/secrets/kubernetes.io/serviceaccount/namespace";
-string namespace = check io:fileReadString(namespaceFile);
-configurable RuntimeConfiguratation runtimeConfiguration = {serviceListingNamespaces: [ALL_NAMESPACES], apiCreationNamespace: namespace};
 
 # This initialize the k8s Client.
 # + return - k8s http client
 function initializeK8sClient() returns http:Client|error {
-    http:Client k8sApiClient = check new ("https://" + k8sHost,
+    http:Client k8sApiClient = check new ("https://" + runtimeConfiguration.k8sConfiguration.host,
     auth = {
         token: token
     },

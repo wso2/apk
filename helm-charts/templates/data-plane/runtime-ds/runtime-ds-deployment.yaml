@@ -44,4 +44,20 @@ spec:
 {{ include "apk-helm.deployment.readinessProbe.http" .Values.wso2.apk.dp.runtime.deployment | indent 10 }}
 {{ include "apk-helm.deployment.livenessProbe.http" .Values.wso2.apk.dp.runtime.deployment | indent 10 }}
 {{ include "apk-helm.deployment.resources" .Values.wso2.apk.dp.runtime.deployment.resources | indent 10 }}
+          volumeMounts:
+            - mountPath: /home/wso2apk/runtime/security/wso2carbon.key
+              name: runtime-signing-keystore-volume
+              subPath: wso2carbon.key
+            - mountPath: /home/wso2apk/runtime/conf/Config.toml
+              name: config-toml-volume
+              subPath: Config.toml
+
+      volumes:
+        - name: runtime-signing-keystore-volume
+          secret: 
+            secretName: {{ template "apk-helm.resource.prefix" . }}-signing-keystore-secret
+        - name: config-toml-volume
+          configMap:
+            name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-configmap
+        
 {{- end -}}

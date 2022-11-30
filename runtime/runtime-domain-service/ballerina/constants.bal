@@ -13,3 +13,5 @@ const string API_TYPE_SOAP = "SOAP";
 const string API_TYPE_SSE = "SSE";
 const string API_TYPE_WS = "WS";
 const string API_TYPE_WEBSUB = "WEBSUB";
+const string APK_USER = "apkuser";
+const string CURRENT_NAMESPACE = "CURRENT_NAME_SPACE";

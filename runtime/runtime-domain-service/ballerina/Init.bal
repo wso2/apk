@@ -19,8 +19,21 @@ import ballerina/log;
 import ballerina/http;
 import ballerina/task;
 import ballerina/lang.runtime;
+import ballerina/uuid;
 
 listener http:Listener ep0 = new (9443);
+string kid = uuid:createType1AsString();
+
+configurable RuntimeConfiguratation runtimeConfiguration = {
+    keyStores: {
+        signing: {
+            path: "/home/wso2apk/runtime/security/wso2carbon.key"
+        },
+        tls: {
+            path: "/home/wso2apk/runtime/security/wso2carbon.key"
+        }
+    }
+};
 
 # Initializing method for runtime
 function init() returns error? {
@@ -30,10 +43,10 @@ function init() returns error? {
     } on fail var e {
         log:printError("Error initializing Task", e);
     }
-    log:printInfo("Initializing Runtime Domain Service..");
     check ep0.attach(healthService, "/");
     check ep0.attach(runtimeService, "/api/am/runtime");
     check ep0.'start();
     runtime:registerListener(ep0);
+    log:printInfo("Initializing Runtime Domain Service..");
 }
 

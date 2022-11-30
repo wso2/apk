@@ -24,6 +24,7 @@ import runtime_domain_service.org.wso2.apk.runtime.model as runtimeModels;
 import runtime_domain_service.org.wso2.apk.apimgt.api.model as apkAPis;
 import runtime_domain_service.java.util as utilapis;
 import runtime_domain_service.org.wso2.apk.apimgt.api;
+import ballerina/jwt;
 import runtime_domain_service.org.wso2.apk.runtime as runtimeUtil;
 
 function getAPIDefinitionByID(string id) returns string|NotFoundError|NotAcceptableError {
@@ -67,7 +68,7 @@ function getDefinition(model:K8sAPI api) returns string|error {
 }
 
 //Get APIs deployed in default namespace by APIId.
-function getAPIById(string id) returns API|InternalServerErrorError|BadRequestError|NotFoundError|error {
+function getAPIById(string id) returns API|NotFoundError|BadRequestError {
     boolean APIIDAvailable = id.length() > 0 ? true : false;
     if (APIIDAvailable && string:length(id.toString()) > 0)
     {
@@ -187,7 +188,7 @@ function createAndDeployAPI(API api) {
 
 function convertK8sCrAPI(API api) returns model:API {
     model:API apispec = {
-        metadata: {name: api.name.concat(api.'version), namespace: runtimeConfiguration.apiCreationNamespace},
+        metadata: {name: api.name.concat(api.'version), namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace)},
         spec: {
             apiDisplayName: api.name,
             apiType: api.'type,
@@ -224,7 +225,7 @@ function createAPIFromService(string serviceKey, API api) returns CreatedAPI|Not
             InternalServerErrorError internalEror = {body: {code: 90900, message: "Internal Error while generating definition"}};
             return internalEror;
         }
-        json|http:ClientError deployConfigMapResult = deployConfigMap(definitionConnfigMap, runtimeConfiguration.apiCreationNamespace);
+        json|http:ClientError deployConfigMapResult = deployConfigMap(definitionConnfigMap, getNameSpace(runtimeConfiguration.apiCreationNamespace));
         if deployConfigMapResult is json {
             log:printDebug("Deployed Configmap Successfully" + deployConfigMapResult.toJsonString());
         } else {
@@ -233,7 +234,7 @@ function createAPIFromService(string serviceKey, API api) returns CreatedAPI|Not
             InternalServerErrorError internalEror = {body: {code: 90900, message: "Internal Error while generating definition"}};
             return internalEror;
         }
-        json|http:ClientError deployHttpRouteResult = deployHttpRoute(prodHttpRoute, runtimeConfiguration.apiCreationNamespace);
+        json|http:ClientError deployHttpRouteResult = deployHttpRoute(prodHttpRoute, getNameSpace(runtimeConfiguration.apiCreationNamespace));
         if deployHttpRouteResult is json {
             log:printDebug("Deployed HttpRoute Successfully" + deployHttpRouteResult.toJsonString());
         } else {
@@ -242,7 +243,7 @@ function createAPIFromService(string serviceKey, API api) returns CreatedAPI|Not
             return internalEror;
         }
 
-        json|http:ClientError deployAPICRResult = deployAPICR(k8sAPI, runtimeConfiguration.apiCreationNamespace);
+        json|http:ClientError deployAPICRResult = deployAPICR(k8sAPI, getNameSpace(runtimeConfiguration.apiCreationNamespace));
         if deployAPICRResult is json {
             log:printDebug("Deployed K8sAPI Successfully" + deployAPICRResult.toJsonString());
             CreatedAPI createdAPI = {body: {name: api.name, context: returnFullContext(api.context, api.'version), 'version: api.'version}};
@@ -267,7 +268,7 @@ function retrieveGeneratedConfigmapForDefinition(API api, string generatedSwagge
     model:ConfigMap configMap = {
         metadata: {
             name: retrieveDefinitionName(api, uniqueId),
-            namespace: runtimeConfiguration.apiCreationNamespace
+            namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace)
         },
         data: configMapData
     };
@@ -298,7 +299,7 @@ function generateAPICRArtifact(API api, model:Httproute? sandboxHttp, model:Http
     model:API k8sAPI = {
         metadata: {
             name: uniqueId,
-            namespace: runtimeConfiguration.apiCreationNamespace
+            namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace)
         },
         spec: {
             apiDisplayName: api.name,
@@ -330,11 +331,19 @@ function retrieveHttpRoute(API api, Service? serviceEntry, string uniqueId, stri
         metadata:
                 {
             name: retrieveHttpRouteRefName(api, uniqueId, 'type),
-            namespace: runtimeConfiguration.apiCreationNamespace
+            namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace)
         },
-        spec: {parentRefs: generateAndRetrieveParentRefs(api, serviceEntry, uniqueId), rules: generateHttpRouteRules(api, serviceEntry)}
+        spec: {
+            parentRefs: generateAndRetrieveParentRefs(api, serviceEntry, uniqueId),
+            rules: generateHttpRouteRules(api, serviceEntry),
+            hostnames: getHostNames(api, uniqueId, 'type)
+        }
     };
     return httpRoute;
+}
+
+function getHostNames(API api, string unoqueId, string 'type) returns string[] {
+    return ["gw.wso2.com"];
 }
 
 function generateAndRetrieveParentRefs(API api, Service? serviceEntry, string uniqueId) returns model:ParentReference[] {
@@ -411,5 +420,23 @@ function retrieveGeneratedSwaggerDefinition(API api) returns string|error {
     } else {
         return error(retrievedDefinition.message());
     }
+}
 
+function generateAPIKey(string apiId) returns APIKey|BadRequestError|NotFoundError|InternalServerErrorError {
+    model:K8sAPI|error api = getAPI(apiId);
+    if api is model:K8sAPI {
+        InternalTokenGenerator tokenGenerator = new ();
+        string|jwt:Error generatedToken = tokenGenerator.generateToken(api, APK_USER);
+        if generatedToken is string {
+            APIKey apiKey = {apikey: generatedToken, validityTime: <int>runtimeConfiguration.tokenIssuerConfiguration.expTime};
+            return apiKey;
+        } else {
+            log:printError("Error while Genereting token for API : " + apiId, generatedToken);
+            InternalServerErrorError internalError = {body: {code: 90911, message: "Error while Generating Token"}};
+            return internalError;
+        }
+    } else {
+        NotFoundError notfound = {body: {code: 909100, message: apiId + "not found."}};
+        return notfound;
+    }
 }
