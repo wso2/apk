@@ -31,7 +31,7 @@ function init() returns error? {
         log:printError("Error initializing Task", e);
     }
     log:printInfo("Initializing Runtime Domain Service..");
-    check ep0.attach(healthService, "/health");
+    check ep0.attach(healthService, "/");
     check ep0.attach(runtimeService, "/api/am/runtime");
     check ep0.'start();
     runtime:registerListener(ep0);
