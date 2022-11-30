@@ -18,12 +18,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-publisher-ds-service
+  name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-service
   namespace : {{ .Release.Namespace }}
 spec:
   # label keys and values that must match in order to receive traffic for this service
   selector:
-{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.wso2.apk.cp.publisher.appName ) | indent 4}}
+{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.wso2.apk.cp.backoffice.appName ) | indent 4}}
   ports:
     # ports that this service should serve on
     - name: servlet-https

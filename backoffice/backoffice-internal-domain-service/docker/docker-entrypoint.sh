@@ -17,4 +17,4 @@
 # under the License.
 #
 
-sh /home/wso2apk/backoffice-internal/backoffice.sh
+sh /home/wso2apk/backoffice_internal/backoffice.sh

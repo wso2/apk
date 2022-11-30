@@ -18,24 +18,24 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-publisher-ds-ingress
+  name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-ingress
   namespace: {{ .Release.Namespace }}
-{{- if .Values.wso2.apk.cp.publisher.ingress.annotations }}
+{{- if .Values.wso2.apk.cp.backoffice.ingress.annotations }}
   annotations:
-{{ toYaml .Values.wso2.apk.cp.publisher.ingress.annotations | indent 4 }}
+{{ toYaml .Values.wso2.apk.cp.backoffice.ingress.annotations | indent 4 }}
 {{- end }}
 spec:
-  {{- if .Values.wso2.apk.cp.publisher.ingress.className }}
-  ingressClassName: {{ .Values.wso2.apk.cp.publisher.ingress.className }}
+  {{- if .Values.wso2.apk.cp.backoffice.ingress.className }}
+  ingressClassName: {{ .Values.wso2.apk.cp.backoffice.ingress.className }}
   {{- end }}
   rules:
     - http:
         paths:
-          - path: {{ .Values.wso2.apk.cp.publisher.ingress.path }}
+          - path: {{ .Values.wso2.apk.cp.backoffice.ingress.path }}
             pathType: Prefix
             backend:
               service:
-                name: {{ template "apk-helm.resource.prefix" . }}-publisher-ds-service
+                name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-service
                 port:
                   number: 9443
 {{- end -}}

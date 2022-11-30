@@ -16,19 +16,17 @@
 
 {{- if .Values.wso2.apk.cp.enabled }}
 apiVersion: v1
-kind: ConfigMap
+kind: Service
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-publisher-ds-configmap
-  namespace: {{ .Release.Namespace }}
-data:
-  Config.toml: |
-    # Sample configurations
-    [wso2.backoffice_service.datasourceConfiguration]
-    description = "Database for backoffice"
-    url = "{{ .Values.wso2.apk.cp.database.url }}"
-    username = "{{ .Values.wso2.apk.cp.database.username }}"
-    password = "{{ .Values.wso2.apk.cp.database.password }}"
-    validationTimeout = {{ .Values.wso2.apk.cp.database.validationTimeout }}
-    testQuery = "{{ .Values.wso2.apk.cp.database.validationQuery }}"
-    driver = "{{ .Values.wso2.apk.cp.database.driver }}"
+  name: {{ template "apk-helm.resource.prefix" . }}-backoffice-internal-ds-service
+  namespace : {{ .Release.Namespace }}
+spec:
+  # label keys and values that must match in order to receive traffic for this service
+  selector:
+{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.wso2.apk.cp.backofficeInternal.appName ) | indent 4}}
+  ports:
+    # ports that this service should serve on
+    - name: servlet-https
+      protocol: TCP
+      port: 9443
 {{- end -}}
