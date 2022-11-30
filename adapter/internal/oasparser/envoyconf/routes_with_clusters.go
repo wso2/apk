@@ -1306,7 +1306,7 @@ func generateRoutePath(basePath, resourcePath string, pathMatchType gwapiv1b1.Pa
 	case gwapiv1b1.PathMatchExact:
 		return fmt.Sprintf("^%s([/]{0,1})", newPath)
 	case gwapiv1b1.PathMatchRegularExpression:
-		return fmt.Sprintf("^%s", newPath)
+		return fmt.Sprintf("^%s([/]{0,1})", newPath)
 	case gwapiv1b1.PathMatchPathPrefix:
 		fallthrough
 	default:
@@ -1324,7 +1324,7 @@ func generateRoutePathForReWrite(basePath, resourcePath string, pathMatchType gw
 	default:
 		return generateRoutePath(basePath, resourcePath, pathMatchType)
 	case gwapiv1b1.PathMatchRegularExpression:
-		return fmt.Sprintf("^%s(%s)", basePath, resourcePath)
+		return fmt.Sprintf("^%s(%s)", basePath, strings.TrimSuffix(resourcePath, "/"))
 	}
 }
 
