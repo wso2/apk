@@ -50,3 +50,35 @@ function getServiceFromK8s(string name, string namespace) returns ServiceList|er
         return {list: [serviceResult]};
     }
 }
+
+function getServices(string? name, string? namespace, string sortBy, string sortOrder, int 'limit, int offset) returns ServiceList|BadRequestError|UnauthorizedError|InternalServerErrorError {
+    boolean serviceNameAvailable = name == () ? false : true;
+    boolean nameSpaceAvailable = namespace == () ? false : true;
+    if (nameSpaceAvailable && string:length(namespace.toString()) > 0) {
+        if (serviceNameAvailable && string:length(name.toString()) > 0) {
+            ServiceList|error serviceList = getServiceFromK8s(name.toString(), namespace.toString());
+            if serviceList is error {
+                InternalServerErrorError internalError = {body: {code: 900910, message: serviceList.message()}};
+                return internalError;
+            } else {
+                return serviceList;
+            }
+        } else {
+            ServiceList|error serviceList = getServicesListInNamespace(namespace.toString());
+            if serviceList is error {
+                InternalServerErrorError internalError = {body: {code: 900910, message: serviceList.message()}};
+                return internalError;
+            } else {
+                return serviceList;
+            }
+        }
+    }
+    ServiceList|error serviceList = getServicesListFromK8s();
+    if serviceList is error {
+        InternalServerErrorError internalError = {body: {code: 900910, message: serviceList.message()}};
+        return internalError;
+    } else {
+        return serviceList;
+    }
+
+}

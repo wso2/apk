@@ -242,6 +242,12 @@ public type APIDefinitionValidationResponse record {
     ErrorListItem[] errors?;
 };
 
+public type APIKey record {
+    # API Key
+    string apikey?;
+    int validityTime?;
+};
+
 public type ApisImportBody record {
     # Zip archive consisting on exported API configuration
     string file;
@@ -266,17 +272,17 @@ public type API record {
     # The api creation type to be used. Accepted values are HTTP, WS, GRAPHQL, WEBSUB, SSE, WEBHOOK, ASYNC
     string 'type = "HTTP";
     # Endpoint configuration of the API. This can be used to provide different types of endpoints including Simple REST Endpoints, Loadbalanced and Failover.
-    #
+    # 
     # `Simple REST Endpoint`
-    # {
-    # "endpoint_type": "http",
-    # "sandbox_endpoints":       {
-    # "url": "https://pizzashack-service:8080/am/sample/pizzashack/v3/api/"
-    # },
-    # "production_endpoints":       {
-    # "url": "https://pizzashack-service:8080/am/sample/pizzashack/v3/api/"
-    # }
-    # }
+    #   {
+    #     "endpoint_type": "http",
+    #     "sandbox_endpoints":       {
+    #        "url": "https://pizzashack-service:8080/am/sample/pizzashack/v3/api/"
+    #     },
+    #     "production_endpoints":       {
+    #        "url": "https://pizzashack-service:8080/am/sample/pizzashack/v3/api/"
+    #     }
+    #   }
     record {} endpointConfig?;
     APIOperations[] operations?;
     ApiServiceinfo serviceInfo?;

@@ -20,7 +20,7 @@ import ballerina/lang.value;
 import ballerina/task;
 import ballerina/log;
 
-final websocket:Client servicesClient = check new ("wss://" + k8sHost + "/api/v1/watch/services",
+final websocket:Client servicesClient = check new ("wss://" + runtimeConfiguration.k8sConfiguration.host + "/api/v1/watch/services",
 auth = {
     token: token
 },
