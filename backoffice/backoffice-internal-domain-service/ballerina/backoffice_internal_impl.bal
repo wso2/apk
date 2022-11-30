@@ -16,21 +16,11 @@
 // under the License.
 //
 
-import ballerina/log;
-import ballerinax/java.jdbc;
-import ballerina/sql;
-
-configurable DatasourceConfiguration datasourceConfiguration = ?;
-jdbc:Client|sql:Error dbClient;
-function init() {
-    log:printInfo("Starting APK Backoffice internal Domain Service...");
-
-    dbClient = 
-        new(datasourceConfiguration.url, datasourceConfiguration.username, 
-            datasourceConfiguration.password,
-            connectionPool = { maxOpenConnections: datasourceConfiguration.maxPoolSize });
-
-}
-public function getConnection() returns jdbc:Client | error {
-    return dbClient;  
+# This function used to connect API create service to database
+#
+# + body - API parameter
+# + return - Return Value API | error
+public function createAPI(API body) returns API | error{
+    API | error db = db_createAPI(body);
+    return db;
 }
