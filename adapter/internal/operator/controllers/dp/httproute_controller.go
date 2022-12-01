@@ -64,7 +64,6 @@ func NewHttpRouteController(mgr manager.Manager, ods *synchronizer.OperatorDataS
 
 	if err := c.Watch(&source.Kind{Type: &gwapiv1b1.HTTPRoute{}}, &handler.EnqueueRequestForObject{},
 		predicates...); err != nil {
-		loggers.LoggerAPKOperator.Errorf("Error watching gwapiv1b1.HTTPRoute: %v", err)
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
 			Message:   fmt.Sprintf("error watching HttpRoute objects: %v", err),
 			Severity:  logging.BLOCKER,

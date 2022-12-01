@@ -24,6 +24,7 @@ import (
 	"context"
 
 	"github.com/wso2/apk/adapter/internal/discovery/xds"
+	"sigs.k8s.io/gateway-api/apis/v1beta1"
 
 	"github.com/wso2/apk/adapter/config"
 	client "github.com/wso2/apk/adapter/internal/grpc-client"
@@ -32,6 +33,7 @@ import (
 	"github.com/wso2/apk/adapter/internal/operator/constants"
 	apiProtos "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/apkmgt"
 	"github.com/wso2/apk/adapter/pkg/logging"
+	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
 // APIEvent holds the data structure used for passing API
@@ -46,20 +48,36 @@ type APIEvent struct {
 func HandleAPILifeCycleEvents(ch *chan APIEvent) {
 	loggers.LoggerAPKOperator.Info("Operator synchronizer listening for API lifecycle events...")
 	for event := range *ch {
-		loggers.LoggerAPKOperator.Infof("Event received: %v\n", event)
+		loggers.LoggerAPKOperator.Infof("%s event received : %v", event.EventType, event.Event)
 		if err := deployAPIInGateway(event.Event); err != nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-				Message:   fmt.Sprintf("api deployment failed:%v", err),
+				Message:   fmt.Sprintf("API deployment failed for %s event : %v", event.EventType, err),
 				ErrorCode: 2616,
 				Severity:  logging.MAJOR,
 			})
+		} else {
+			go sendAPIToAPKMgtServer(event)
 		}
-		go sendAPIToAPKMgtServer(event)
 	}
 }
 
 // deployAPIInGateway deploys the related API in CREATE and UPDATE events.
 func deployAPIInGateway(apiState APIState) error {
+	var err error
+	if apiState.ProdHTTPRoute != nil {
+		err = generateMGWSwagger(apiState, apiState.ProdHTTPRoute, true)
+	}
+	if err != nil {
+		return err
+	}
+	if apiState.SandHTTPRoute != nil {
+		err = generateMGWSwagger(apiState, apiState.SandHTTPRoute, false)
+	}
+	return err
+}
+
+// generateMGWSwagger this will populate a mgwswagger representation for an HTTPRoute
+func generateMGWSwagger(apiState APIState, httpRoute *gwapiv1b1.HTTPRoute, isProd bool) error {
 	var mgwSwagger model.MgwSwagger
 	if err := mgwSwagger.SetInfoAPICR(*apiState.APIDefinition); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
@@ -69,9 +87,9 @@ func deployAPIInGateway(apiState APIState) error {
 		})
 		return err
 	}
-	if err := mgwSwagger.SetInfoHTTPRouteCR(*apiState.ProdHTTPRoute); err != nil {
+	if err := mgwSwagger.SetInfoHTTPRouteCR(httpRoute, isProd); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("error setting HttpRoute CR info to mgwSwagger: %v", err),
+			Message:   fmt.Sprintf("error setting HttpRoute CR info to mgwSwagger for isProdEndpoint: %v. %v", isProd, err),
 			Severity:  logging.MAJOR,
 			ErrorCode: 2613,
 		})
@@ -79,19 +97,21 @@ func deployAPIInGateway(apiState APIState) error {
 	}
 	if err := mgwSwagger.ValidateIR(); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("error validating mgwSwagger intermediate representation: %v", err),
+			Message: fmt.Sprintf("error validating mgwSwagger intermediate representation for isProdEndpoint: %v. %v",
+				isProd, err),
 			Severity:  logging.MAJOR,
 			ErrorCode: 2615,
 		})
 		return err
 	}
-	vHosts := getVhostForAPI(apiState)
-	labels := getLabelsForAPI(apiState)
+	vHosts := getVhostsForAPI(httpRoute)
+	labels := getLabelsForAPI(httpRoute)
 	for _, vHost := range vHosts {
 		err := xds.UpdateAPICache(vHost, labels, mgwSwagger)
 		if err != nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-				Message:   fmt.Sprintf("error updating the API cache: %v", err),
+				Message: fmt.Sprintf("error updating the API : %s:%s in vhost: %s. %v",
+					mgwSwagger.GetTitle(), mgwSwagger.GetVersion(), vHost, err),
 				Severity:  logging.MAJOR,
 				ErrorCode: 2614,
 			})
@@ -101,18 +121,18 @@ func deployAPIInGateway(apiState APIState) error {
 }
 
 // getVhostForAPI returns the vHosts related to an API.
-func getVhostForAPI(api APIState) []string {
+func getVhostsForAPI(httpRoute *v1beta1.HTTPRoute) []string {
 	var vHosts []string
-	for _, hostName := range api.ProdHTTPRoute.Spec.Hostnames {
+	for _, hostName := range httpRoute.Spec.Hostnames {
 		vHosts = append(vHosts, string(hostName))
 	}
 	return vHosts
 }
 
 // getLabelsForAPI returns the labels related to an API.
-func getLabelsForAPI(api APIState) []string {
+func getLabelsForAPI(httpRoute *v1beta1.HTTPRoute) []string {
 	var labels []string
-	for _, parentRef := range api.ProdHTTPRoute.Spec.ParentRefs {
+	for _, parentRef := range httpRoute.Spec.ParentRefs {
 		labels = append(labels, string(parentRef.Name))
 	}
 	return labels
@@ -132,7 +152,7 @@ func sendAPIToAPKMgtServer(apiEvent APIEvent) {
 			Severity:  logging.BLOCKER,
 		})
 	}
-	res, err := client.ExecuteGRPCCall(conn, func() (interface{}, error) {
+	_, err = client.ExecuteGRPCCall(conn, func() (interface{}, error) {
 		apiClient := apiProtos.NewAPIServiceClient(conn)
 		if strings.Compare(apiEvent.EventType, constants.Create) == 0 {
 			return apiClient.CreateAPI(context.Background(), &apiProtos.API{
@@ -159,12 +179,11 @@ func sendAPIToAPKMgtServer(apiEvent APIEvent) {
 	})
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("error sending API to APK management server:%v", err),
+			Message:   fmt.Sprintf("Error sending API to APK management server : %v", err),
 			ErrorCode: 6001,
 			Severity:  logging.MAJOR,
 		})
 	}
-	loggers.LoggerAPKOperator.Info(res)
 }
 
 // getResourcesForAPI returns []*apiProtos.Resource for HTTPRoute
@@ -172,10 +191,14 @@ func sendAPIToAPKMgtServer(apiEvent APIEvent) {
 func getResourcesForAPI(api APIState) []*apiProtos.Resource {
 	var resources []*apiProtos.Resource
 	var hostNames []string
-	for _, hostName := range api.ProdHTTPRoute.Spec.Hostnames {
+	httpRoute := api.ProdHTTPRoute
+	if httpRoute == nil {
+		httpRoute = api.SandHTTPRoute
+	}
+	for _, hostName := range httpRoute.Spec.Hostnames {
 		hostNames = append(hostNames, string(hostName))
 	}
-	for _, rule := range api.ProdHTTPRoute.Spec.Rules {
+	for _, rule := range httpRoute.Spec.Rules {
 		for _, match := range rule.Matches {
 			resources = append(resources, &apiProtos.Resource{Path: *match.Path.Value, Hostname: hostNames})
 		}

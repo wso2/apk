@@ -19,6 +19,7 @@ package controllers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/wso2/apk/adapter/config"
@@ -81,7 +82,6 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 
 	if err := c.Watch(&source.Kind{Type: &gwapiv1b1.HTTPRoute{}}, handler.EnqueueRequestsFromMapFunc(r.getAPIForHTTPRoute),
 		predicates...); err != nil {
-		loggers.LoggerAPKOperator.Errorf("Error watching HttpRoute from API Controller: %v", err)
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
 			Message:   fmt.Sprintf("error watching HTTPRoute resources: %v", err),
 			Severity:  logging.BLOCKER,
@@ -107,9 +107,8 @@ func (r *APIReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 	// 1. Check whether the API CR exist, if not consider as a DELETE event.
 	var apiDef dpv1alpha1.API
 	if err := r.client.Get(ctx, req.NamespacedName, &apiDef); err != nil {
-		loggers.LoggerAPKOperator.Errorf("apiDef related to reconcile with key: %v not found", req.NamespacedName.String())
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("api CR related to the reconcile request with key: %v not found", err),
+			Message:   fmt.Sprintf("api CR related to the reconcile request with key: %s not found. %v", req.NamespacedName.String(), err),
 			Severity:  logging.TRIVIAL,
 			ErrorCode: 2603,
 		})
@@ -157,13 +156,25 @@ func (r *APIReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 		}
 		apiState = apiStateUpdate
 	}
-	if prodHTTPRoute.Generation > cachedAPI.ProdHTTPRoute.Generation {
+	if prodHTTPRoute != nil && prodHTTPRoute.Generation > cachedAPI.ProdHTTPRoute.Generation {
 		apiStateUpdate, err := r.ods.UpdateHTTPRoute(utils.NamespacedName(&apiDef), prodHTTPRoute, true)
 		if err != nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-				Message:   fmt.Sprintf("error updating HTTPRoute CR in operator data store: %v", err),
+				Message:   fmt.Sprintf("error updating prod HTTPRoute CR in operator data store: %v", err),
 				Severity:  logging.TRIVIAL,
 				ErrorCode: 2607,
+			})
+			return ctrl.Result{}, err
+		}
+		apiState = apiStateUpdate
+	}
+	if sandHTTPRoute != nil && sandHTTPRoute.Generation > cachedAPI.SandHTTPRoute.Generation {
+		apiStateUpdate, err := r.ods.UpdateHTTPRoute(utils.NamespacedName(&apiDef), sandHTTPRoute, false)
+		if err != nil {
+			loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+				Message:   fmt.Sprintf("error updating sand HTTPRoute CR in operator data store: %v", err),
+				Severity:  logging.TRIVIAL,
+				ErrorCode: 2617,
 			})
 			return ctrl.Result{}, err
 		}
@@ -179,18 +190,29 @@ func (r *APIReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 //
 // TODO : Consider HTTPRoute status also when validating.
 func validateHTTPRouteRefs(ctx context.Context, client client.Client, namespace string,
-	prodHTTPRouteRef string, sandHTTPRouteRef string) (gwapiv1b1.HTTPRoute, gwapiv1b1.HTTPRoute, error) {
-	var prodHTTPRoute gwapiv1b1.HTTPRoute
-	if err := client.Get(ctx, types.NamespacedName{Namespace: namespace, Name: prodHTTPRouteRef}, &prodHTTPRoute); err != nil {
-		loggers.LoggerAPKOperator.Errorf("Production HttpRoute not found: %v", prodHTTPRouteRef)
-		return gwapiv1b1.HTTPRoute{}, gwapiv1b1.HTTPRoute{}, err
+	prodHTTPRouteRef string, sandHTTPRouteRef string) (*gwapiv1b1.HTTPRoute, *gwapiv1b1.HTTPRoute, error) {
+	var prodHTTPRoute *gwapiv1b1.HTTPRoute
+	var sandHTTPRoute *gwapiv1b1.HTTPRoute
+	if prodHTTPRouteRef == "" && sandHTTPRouteRef == "" {
+		return nil, nil, errors.New("an endpoint should have given for the API")
 	}
-	var sandHTTPRoute gwapiv1b1.HTTPRoute
-	if sandHTTPRouteRef != "" {
-		if err := client.Get(ctx, types.NamespacedName{Namespace: namespace, Name: sandHTTPRouteRef}, &sandHTTPRoute); err != nil {
-			loggers.LoggerAPKOperator.Errorf("Error fetching SandHTTPRoute: %v:%v", sandHTTPRouteRef, err)
-			return prodHTTPRoute, gwapiv1b1.HTTPRoute{}, err
+
+	if prodHTTPRouteRef != "" {
+		httpRoute := gwapiv1b1.HTTPRoute{}
+		if err := client.Get(ctx, types.NamespacedName{Namespace: namespace, Name: prodHTTPRouteRef}, &httpRoute); err != nil {
+			return nil, nil, fmt.Errorf("production HttpRoute %s in namespace :%s has not found. %s",
+				prodHTTPRouteRef, namespace, err.Error())
 		}
+		prodHTTPRoute = &httpRoute
+	}
+
+	if sandHTTPRouteRef != "" {
+		httpRoute := gwapiv1b1.HTTPRoute{}
+		if err := client.Get(ctx, types.NamespacedName{Namespace: namespace, Name: sandHTTPRouteRef}, &httpRoute); err != nil {
+			return nil, nil, fmt.Errorf("error fetching SandHTTPRoute: %s in namespace : %s. %v",
+				sandHTTPRouteRef, namespace, err)
+		}
+		sandHTTPRoute = &httpRoute
 	}
 	return prodHTTPRoute, sandHTTPRoute, nil
 }

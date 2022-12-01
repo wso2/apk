@@ -53,22 +53,31 @@ func CreateNewOperatorDataStore() *OperatorDataStore {
 }
 
 // AddNewAPI stores a new API in the OperatorDataStore.
-func (ods *OperatorDataStore) AddNewAPI(api dpv1alpha1.API, prodHTTPRoute gwapiv1b1.HTTPRoute, sandHTTPRoute gwapiv1b1.HTTPRoute) (APIState, error) {
+func (ods *OperatorDataStore) AddNewAPI(api dpv1alpha1.API, prodHTTPRoute *gwapiv1b1.HTTPRoute, sandHTTPRoute *gwapiv1b1.HTTPRoute) (APIState, error) {
 	ods.mu.Lock()
 	defer ods.mu.Unlock()
 
 	ods.APIStore[utils.NamespacedName(&api)] = &APIState{
 		APIDefinition: &api,
-		ProdHTTPRoute: &prodHTTPRoute,
-		SandHTTPRoute: &sandHTTPRoute}
-	ods.APIToHTTPRouteRefs[utils.NamespacedName(&api)] = HTTPRouteRefs{ProdHTTPRouteRef: prodHTTPRoute.Name, SandHTTPRouteRef: sandHTTPRoute.Name}
-	ods.HTTPRouteToAPIRefs[utils.NamespacedName(&prodHTTPRoute)] = utils.NamespacedName(&api)
-	ods.HTTPRouteToAPIRefs[utils.NamespacedName(&sandHTTPRoute)] = utils.NamespacedName(&api)
+		ProdHTTPRoute: prodHTTPRoute,
+		SandHTTPRoute: sandHTTPRoute}
+
+	prodHTTPRouteRef := ""
+	sandHTTPRouteRef := ""
+	if prodHTTPRoute != nil {
+		ods.HTTPRouteToAPIRefs[utils.NamespacedName(prodHTTPRoute)] = utils.NamespacedName(&api)
+		prodHTTPRouteRef = prodHTTPRoute.Name
+	}
+	if sandHTTPRoute != nil {
+		ods.HTTPRouteToAPIRefs[utils.NamespacedName(sandHTTPRoute)] = utils.NamespacedName(&api)
+		sandHTTPRouteRef = sandHTTPRoute.Name
+	}
+	ods.APIToHTTPRouteRefs[utils.NamespacedName(&api)] = HTTPRouteRefs{ProdHTTPRouteRef: prodHTTPRouteRef, SandHTTPRouteRef: sandHTTPRouteRef}
 	return *ods.APIStore[utils.NamespacedName(&api)], nil
 }
 
 // UpdateHTTPRoute updates the HttpRoute of a stored API.
-func (ods *OperatorDataStore) UpdateHTTPRoute(apiName types.NamespacedName, httpRoute gwapiv1b1.HTTPRoute, production bool) (APIState, error) {
+func (ods *OperatorDataStore) UpdateHTTPRoute(apiName types.NamespacedName, httpRoute *gwapiv1b1.HTTPRoute, production bool) (APIState, error) {
 	ods.mu.Lock()
 	defer ods.mu.Unlock()
 
@@ -78,9 +87,9 @@ func (ods *OperatorDataStore) UpdateHTTPRoute(apiName types.NamespacedName, http
 	}
 
 	if production {
-		apiState.ProdHTTPRoute = &httpRoute
+		apiState.ProdHTTPRoute = httpRoute
 	} else {
-		apiState.SandHTTPRoute = &httpRoute
+		apiState.SandHTTPRoute = httpRoute
 	}
 	return *ods.APIStore[apiName], nil
 }

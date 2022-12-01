@@ -31,9 +31,8 @@ import (
 
 // SetInfoHTTPRouteCR populates resources and endpoints of mgwSwagger. httpRoute.Spec.Rules.Matches
 // are used to create resources and httpRoute.Spec.Rules.BackendRefs are used to create EndpointClusters.
-func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute gwapiv1b1.HTTPRoute) error {
+func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, isProd bool) error {
 	var resources []*Resource
-	var endpointCluster EndpointCluster
 	var endPoints []Endpoint
 	for _, rule := range httpRoute.Spec.Rules {
 		for _, match := range rule.Matches {
@@ -50,11 +49,17 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute gwapiv1b1.HTTPRoute) err
 					Port: uint32(*backend.Port)})
 		}
 	}
-	endpointCluster = EndpointCluster{
-		EndpointPrefix: constants.ProdClustersConfigNamePrefix,
-		Endpoints:      endPoints,
+	if isProd {
+		swagger.productionEndpoints = &EndpointCluster{
+			EndpointPrefix: constants.ProdClustersConfigNamePrefix,
+			Endpoints:      endPoints,
+		}
+	} else {
+		swagger.sandboxEndpoints = &EndpointCluster{
+			EndpointPrefix: constants.SandClustersConfigNamePrefix,
+			Endpoints:      endPoints,
+		}
 	}
-	swagger.productionEndpoints = &endpointCluster
 	swagger.resources = resources
 	return nil
 }
@@ -89,8 +94,9 @@ func (swagger *MgwSwagger) ValidateIR() error {
 	if swagger.xWso2Basepath == "" {
 		errs = multierror.Append(errs, errors.New("api basepath not found"))
 	}
-	if len(swagger.productionEndpoints.Endpoints) == 0 {
-		errs = multierror.Append(errs, errors.New("no production endpoints provided"))
+	if (swagger.productionEndpoints != nil && len(swagger.productionEndpoints.Endpoints) == 0) ||
+		(swagger.sandboxEndpoints != nil && len(swagger.sandboxEndpoints.Endpoints) == 0) {
+		errs = multierror.Append(errs, errors.New("no endpoints provided"))
 	}
 	if len(swagger.resources) == 0 {
 		errs = multierror.Append(errs, errors.New("no resources found"))
