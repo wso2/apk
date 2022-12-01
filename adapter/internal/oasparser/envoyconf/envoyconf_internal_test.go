@@ -388,6 +388,7 @@ func TestGenerateRegex(t *testing.T) {
 			isMatched:     false,
 		},
 		{
+			pathMatchType: gwapiv1b1.PathMatchRegularExpression,
 			basePath:      "/v2",
 			resourcePath:  "/pet/pet[a-z0-9]+",
 			userInputPath: "/v2/pet/pet1",
