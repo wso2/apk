@@ -125,7 +125,8 @@ func GetEnforcerAPI(mgwSwagger model.MgwSwagger, vhost string) *api.Api {
 	isMockedAPI := mgwSwagger.EndpointImplementationType == constants.MockedOASEndpointType
 	clientCertificates := []*api.Certificate{}
 
-	logger.LoggerOasparser.Debugf("Security schemes in GetEnforcerAPI method %v:", mgwSwagger.GetSecurityScheme())
+	logger.LoggerOasparser.Debugf("Security schemes in GetEnforcerAPI method : %s. %v",
+		mgwSwagger.GetTitle(), mgwSwagger.GetSecurityScheme())
 	for _, securityScheme := range mgwSwagger.GetSecurityScheme() {
 		scheme := &api.SecurityScheme{
 			DefinitionName: securityScheme.DefinitionName,

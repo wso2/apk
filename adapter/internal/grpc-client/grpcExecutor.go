@@ -26,7 +26,7 @@ import (
 	"github.com/wso2/apk/adapter/config"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/pkg/logging"
-	"github.com/wso2/apk/adapter/pkg/tlsutils"
+	"github.com/wso2/apk/adapter/pkg/utils/tlsutils"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	grpcStatus "google.golang.org/grpc/status"

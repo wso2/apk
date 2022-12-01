@@ -35,7 +35,7 @@ import (
 	"github.com/wso2/apk/adapter/pkg/logging"
 
 	operatorutils "github.com/wso2/apk/adapter/internal/operator/utils"
-	stringutils "github.com/wso2/apk/adapter/internal/utils/string"
+	"github.com/wso2/apk/adapter/pkg/utils/stringutils"
 	"google.golang.org/genproto/googleapis/rpc/status"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -108,7 +108,7 @@ func initConnection(xdsURL string) error {
 		// TODO: (AmaliMatharaarachchi) handle error.
 		loggers.LoggerXds.ErrorC(logging.ErrorDetails{
 			Message:   fmt.Sprint("Error while starting APK Management application stream. ", err.Error()),
-			Severity:  logging.CRITICAL,
+			Severity:  logging.BLOCKER,
 			ErrorCode: 1701,
 		})
 		return err

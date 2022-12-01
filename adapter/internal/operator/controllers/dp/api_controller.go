@@ -28,6 +28,7 @@ import (
 	"github.com/wso2/apk/adapter/internal/operator/synchronizer"
 	"github.com/wso2/apk/adapter/internal/operator/utils"
 	"github.com/wso2/apk/adapter/pkg/logging"
+	k8error "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -80,6 +81,7 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 		return err
 	}
 
+	// TODO(amali) why is this returning API CR for HttpRoute not found always?
 	if err := c.Watch(&source.Kind{Type: &gwapiv1b1.HTTPRoute{}}, handler.EnqueueRequestsFromMapFunc(r.getAPIForHTTPRoute),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
@@ -102,21 +104,30 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 //
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.13.0/pkg/reconcile
-func (r *APIReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 
 	// 1. Check whether the API CR exist, if not consider as a DELETE event.
 	var apiDef dpv1alpha1.API
-	if err := r.client.Get(ctx, req.NamespacedName, &apiDef); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("api CR related to the reconcile request with key: %s not found. %v", req.NamespacedName.String(), err),
-			Severity:  logging.TRIVIAL,
-			ErrorCode: 2603,
-		})
-		// TODO: Handle delete event.
+	if err := apiReconciler.client.Get(ctx, req.NamespacedName, &apiDef); err != nil {
+		apiState, found := apiReconciler.ods.APIStore[req.NamespacedName]
+		if found && k8error.IsNotFound(err) {
+			event := *apiState
+			// The api doesn't exist in the api Cache, remove it
+			delete(apiReconciler.ods.APIStore, req.NamespacedName)
+			delete(apiReconciler.ods.APIToHTTPRouteRefs, req.NamespacedName)
+			loggers.LoggerAPKOperator.Infof("API : %s deleted from API cache", req.NamespacedName.String())
+			*apiReconciler.ch <- synchronizer.APIEvent{EventType: constants.Delete, Event: event}
+			return ctrl.Result{}, nil
+		}
+		loggers.LoggerAPKOperator.Warnf("api CR related to the reconcile request with key: %s returned error : %v."+
+			" Hence assume that it has been already deleted.",
+			req.NamespacedName.String(), err)
+		return ctrl.Result{}, nil
 	}
 
 	// 2. Handle HTTPRoute validation
-	prodHTTPRoute, sandHTTPRoute, err := validateHTTPRouteRefs(ctx, r.client, req.Namespace, apiDef.Spec.ProdHTTPRouteRef, apiDef.Spec.SandHTTPRouteRef)
+	prodHTTPRoute, sandHTTPRoute, err := validateHTTPRouteRefs(ctx, apiReconciler.client, req.Namespace,
+		apiDef.Spec.ProdHTTPRouteRef, apiDef.Spec.SandHTTPRouteRef)
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
 			Message:   fmt.Sprintf("error validating HttpRoute CRs: %v", err),
@@ -125,14 +136,14 @@ func (r *APIReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 		})
 		return ctrl.Result{}, err
 	}
+	loggers.LoggerAPKOperator.Debugf("HTTPRoute validation has passed for API CR %s", req.NamespacedName.String())
 
 	// 3. Check whether the Operator Data store contains the received API.
-	cachedAPI, found := r.ods.GetAPI(utils.NamespacedName(&apiDef))
+	cachedAPI, found := apiReconciler.ods.GetAPI(utils.NamespacedName(&apiDef))
 
 	if !found {
-		apiState, err := r.ods.AddNewAPI(apiDef, prodHTTPRoute, sandHTTPRoute)
+		apiState, err := apiReconciler.ods.AddNewAPI(apiDef, prodHTTPRoute, sandHTTPRoute)
 		if err != nil {
-			loggers.LoggerAPKOperator.Errorf("Error storing the new API in the operator data store: %v", err)
 			loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
 				Message:   fmt.Sprintf("error storing the new API in operator data store: %v", err),
 				Severity:  logging.TRIVIAL,
@@ -140,12 +151,12 @@ func (r *APIReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 			})
 			return ctrl.Result{}, err
 		}
-		*r.ch <- synchronizer.APIEvent{EventType: constants.Create, Event: apiState}
+		*apiReconciler.ch <- synchronizer.APIEvent{EventType: constants.Create, Event: apiState}
 		return ctrl.Result{}, nil
 	}
 	apiState := synchronizer.APIState{}
 	if apiDef.Generation > cachedAPI.APIDefinition.Generation {
-		apiStateUpdate, err := r.ods.UpdateAPIDef(apiDef)
+		apiStateUpdate, err := apiReconciler.ods.UpdateAPIDef(apiDef)
 		if err != nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
 				Message:   fmt.Sprintf("error updating API CR in operator data store: %v", err),
@@ -157,7 +168,7 @@ func (r *APIReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 		apiState = apiStateUpdate
 	}
 	if prodHTTPRoute != nil && prodHTTPRoute.Generation > cachedAPI.ProdHTTPRoute.Generation {
-		apiStateUpdate, err := r.ods.UpdateHTTPRoute(utils.NamespacedName(&apiDef), prodHTTPRoute, true)
+		apiStateUpdate, err := apiReconciler.ods.UpdateHTTPRoute(utils.NamespacedName(&apiDef), prodHTTPRoute, true)
 		if err != nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
 				Message:   fmt.Sprintf("error updating prod HTTPRoute CR in operator data store: %v", err),
@@ -169,7 +180,7 @@ func (r *APIReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 		apiState = apiStateUpdate
 	}
 	if sandHTTPRoute != nil && sandHTTPRoute.Generation > cachedAPI.SandHTTPRoute.Generation {
-		apiStateUpdate, err := r.ods.UpdateHTTPRoute(utils.NamespacedName(&apiDef), sandHTTPRoute, false)
+		apiStateUpdate, err := apiReconciler.ods.UpdateHTTPRoute(utils.NamespacedName(&apiDef), sandHTTPRoute, false)
 		if err != nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
 				Message:   fmt.Sprintf("error updating sand HTTPRoute CR in operator data store: %v", err),
@@ -180,7 +191,7 @@ func (r *APIReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 		}
 		apiState = apiStateUpdate
 	}
-	*r.ch <- synchronizer.APIEvent{EventType: constants.Update, Event: apiState}
+	*apiReconciler.ch <- synchronizer.APIEvent{EventType: constants.Update, Event: apiState}
 	return ctrl.Result{}, nil
 
 }
@@ -214,6 +225,7 @@ func validateHTTPRouteRefs(ctx context.Context, client client.Client, namespace 
 		}
 		sandHTTPRoute = &httpRoute
 	}
+
 	return prodHTTPRoute, sandHTTPRoute, nil
 }
 
@@ -222,26 +234,31 @@ func validateHTTPRouteRefs(ctx context.Context, client client.Client, namespace 
 // a new reconcile event will be created and added to the reconcile event queue.
 func (r *APIReconciler) getAPIForHTTPRoute(obj client.Object) []reconcile.Request {
 	httpRoute, ok := obj.(*gwapiv1b1.HTTPRoute)
+	requests := []reconcile.Request{}
 	if !ok {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
 			Message:   fmt.Sprintf("unexpected object type, bypassing reconciliation: %v", httpRoute),
 			Severity:  logging.TRIVIAL,
 			ErrorCode: 2608,
 		})
-		return []reconcile.Request{}
+		return requests
 	}
-	apiRef, found := r.ods.GetAPIForHTTPRoute(utils.NamespacedName(httpRoute))
+
+	apiRef, found := r.ods.HTTPRouteToAPIRefs[utils.NamespacedName(httpRoute)]
 	if !found {
-		loggers.LoggerAPKOperator.Infof("API CR for HttpRoute not found: %v", httpRoute.Name)
-		return []reconcile.Request{}
+		loggers.LoggerAPKOperator.Warnf("API CR for HttpRoute not found in HTTPRouteToAPIRefs map: %v", httpRoute.Name)
+		return requests
 	}
-	requests := []reconcile.Request{}
+	loggers.LoggerAPKOperator.Debugf("API CR for HttpRoute has found in HTTPRouteToAPIRefs map: %v", httpRoute.Name)
+
 	req := reconcile.Request{
 		NamespacedName: types.NamespacedName{
 			Name:      apiRef.Name,
 			Namespace: apiRef.Namespace},
 	}
-	loggers.LoggerAPKOperator.Infof("Adding reconcile request: %v", req.NamespacedName)
-	requests = append(requests, req)
+	if _, found := r.ods.APIStore[apiRef]; found {
+		loggers.LoggerAPKOperator.Infof("Adding reconcile request in API controller's HTTPRoute watcher for API : %s", req.NamespacedName)
+		requests = append(requests, req)
+	}
 	return requests
 }

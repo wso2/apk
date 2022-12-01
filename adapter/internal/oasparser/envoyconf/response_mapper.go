@@ -26,7 +26,7 @@ import (
 	hcmv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/http_connection_manager/v3"
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/err"
-	"github.com/wso2/apk/adapter/pkg/soaputils"
+	"github.com/wso2/apk/adapter/pkg/utils/soaputils"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )

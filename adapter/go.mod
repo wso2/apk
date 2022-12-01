@@ -3,6 +3,7 @@ module github.com/wso2/apk/adapter
 go 1.19
 
 require (
+	github.com/cncf/udpa/go v0.0.0-20210930031921-04548b0d99d4
 	github.com/envoyproxy/go-control-plane v0.10.3
 	github.com/fsnotify/fsnotify v1.5.4
 	github.com/go-openapi/errors v0.19.8
@@ -35,7 +36,6 @@ require (
 	github.com/Azure/go-autorest/tracing v0.6.0 // indirect
 	github.com/Microsoft/go-winio v0.4.16 // indirect
 	github.com/acomagu/bufpipe v1.0.3 // indirect
-	github.com/agnivade/levenshtein v1.0.1 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20200907205600-7a23bdc65eef // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/census-instrumentation/opencensus-proto v0.3.0 // indirect
@@ -117,7 +117,6 @@ require (
 	github.com/go-openapi/spec v0.20.7
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/stretchr/testify v1.8.1
-	github.com/vektah/gqlparser/v2 v2.5.1
 	golang.org/x/sys v0.0.0-20220728004956-3c1f35247d10 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 	sigs.k8s.io/gateway-api v0.5.1

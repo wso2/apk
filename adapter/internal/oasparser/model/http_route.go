@@ -109,7 +109,9 @@ func getAllowedOperations(httpMethod *gwapiv1b1.HTTPMethod, policies OperationPo
 // SetInfoAPICR populates ID, ApiType, Version and XWso2BasePath of mgwSwagger.
 func (swagger *MgwSwagger) SetInfoAPICR(api dpv1alpha1.API) error {
 	swagger.UUID = string(api.ObjectMeta.UID)
+	//TODO (amali) why id = APIDisplayName?
 	swagger.id = api.Spec.APIDisplayName
+	swagger.title = api.Spec.APIDisplayName
 	swagger.apiType = api.Spec.APIType
 	swagger.version = api.Spec.APIVersion
 	swagger.xWso2Basepath = api.Spec.Context

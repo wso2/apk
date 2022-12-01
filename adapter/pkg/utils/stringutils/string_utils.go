@@ -57,3 +57,13 @@ func StringInSlice(a string, list []string) bool {
 	}
 	return false
 }
+
+// ArrayContains returns if the string is in array
+func ArrayContains(stringArray []string, stringElement string) bool {
+	for _, n := range stringArray {
+		if stringElement == n {
+			return true
+		}
+	}
+	return false
+}

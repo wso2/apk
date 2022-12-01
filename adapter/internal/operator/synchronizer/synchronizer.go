@@ -24,7 +24,6 @@ import (
 	"context"
 
 	"github.com/wso2/apk/adapter/internal/discovery/xds"
-	"sigs.k8s.io/gateway-api/apis/v1beta1"
 
 	"github.com/wso2/apk/adapter/config"
 	client "github.com/wso2/apk/adapter/internal/grpc-client"
@@ -48,17 +47,58 @@ type APIEvent struct {
 func HandleAPILifeCycleEvents(ch *chan APIEvent) {
 	loggers.LoggerAPKOperator.Info("Operator synchronizer listening for API lifecycle events...")
 	for event := range *ch {
-		loggers.LoggerAPKOperator.Infof("%s event received : %v", event.EventType, event.Event)
-		if err := deployAPIInGateway(event.Event); err != nil {
+		loggers.LoggerAPKOperator.Infof("%s event received for %v", event.EventType, event.Event.APIDefinition.Name)
+		var err error
+		switch event.EventType {
+		case constants.Delete:
+			err = undeployAPIInGateway(event.Event)
+		case constants.Create:
+			err = deployAPIInGateway(event.Event)
+		case constants.Update:
+			err = deployAPIInGateway(event.Event)
+		}
+		if err != nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
 				Message:   fmt.Sprintf("API deployment failed for %s event : %v", event.EventType, err),
 				ErrorCode: 2616,
 				Severity:  logging.MAJOR,
 			})
 		} else {
+			//TODO (amali) don't create go routine per event
 			go sendAPIToAPKMgtServer(event)
 		}
 	}
+}
+
+// deleteAPIInGateway undeploys the related API in CREATE and UPDATE events.
+func undeployAPIInGateway(apiState APIState) error {
+	var err error
+	if apiState.ProdHTTPRoute != nil {
+		err = deleteAPIFromEnv(apiState.ProdHTTPRoute, apiState)
+	}
+	if err != nil {
+		loggers.LoggerXds.ErrorC(logging.ErrorDetails{
+			Message: fmt.Sprintf("Error undeploying prod httpRoute of API : %v in Organization %v from environments %v."+
+				" Hence not checking on deleting the sand httpRoute of the API",
+				string(apiState.APIDefinition.ObjectMeta.UID), apiState.APIDefinition.Spec.Organization,
+				getLabelsForAPI(apiState.ProdHTTPRoute)),
+			Severity:  logging.MAJOR,
+			ErrorCode: 1415,
+		})
+		return err
+	}
+	if apiState.SandHTTPRoute != nil {
+		err = deleteAPIFromEnv(apiState.SandHTTPRoute, apiState)
+	}
+	return err
+}
+
+func deleteAPIFromEnv(httpRoute *gwapiv1b1.HTTPRoute, apiState APIState) error {
+	labels := getLabelsForAPI(httpRoute)
+	org := apiState.APIDefinition.Spec.Organization
+	vHosts := getVhostsForAPI(httpRoute)
+	uuid := string(apiState.APIDefinition.ObjectMeta.UID)
+	return xds.DeleteAPICREvent(vHosts, labels, uuid, org)
 }
 
 // deployAPIInGateway deploys the related API in CREATE and UPDATE events.
@@ -121,7 +161,7 @@ func generateMGWSwagger(apiState APIState, httpRoute *gwapiv1b1.HTTPRoute, isPro
 }
 
 // getVhostForAPI returns the vHosts related to an API.
-func getVhostsForAPI(httpRoute *v1beta1.HTTPRoute) []string {
+func getVhostsForAPI(httpRoute *gwapiv1b1.HTTPRoute) []string {
 	var vHosts []string
 	for _, hostName := range httpRoute.Spec.Hostnames {
 		vHosts = append(vHosts, string(hostName))
@@ -130,7 +170,7 @@ func getVhostsForAPI(httpRoute *v1beta1.HTTPRoute) []string {
 }
 
 // getLabelsForAPI returns the labels related to an API.
-func getLabelsForAPI(httpRoute *v1beta1.HTTPRoute) []string {
+func getLabelsForAPI(httpRoute *gwapiv1b1.HTTPRoute) []string {
 	var labels []string
 	for _, parentRef := range httpRoute.Spec.ParentRefs {
 		labels = append(labels, string(parentRef.Name))
@@ -166,6 +206,16 @@ func sendAPIToAPKMgtServer(apiEvent APIEvent) {
 			})
 		} else if strings.Compare(apiEvent.EventType, constants.Update) == 0 {
 			return apiClient.UpdateAPI(context.Background(), &apiProtos.API{
+				Uuid:           string(api.APIDefinition.GetUID()),
+				Version:        api.APIDefinition.Spec.APIVersion,
+				Name:           api.APIDefinition.Spec.APIDisplayName,
+				Context:        api.APIDefinition.Spec.Context,
+				Type:           api.APIDefinition.Spec.APIType,
+				OrganizationId: api.APIDefinition.Spec.Organization,
+				Resources:      getResourcesForAPI(api),
+			})
+		} else if strings.Compare(apiEvent.EventType, constants.Delete) == 0 {
+			return apiClient.DeleteAPI(context.Background(), &apiProtos.API{
 				Uuid:           string(api.APIDefinition.GetUID()),
 				Version:        api.APIDefinition.Spec.APIVersion,
 				Name:           api.APIDefinition.Spec.APIDisplayName,
