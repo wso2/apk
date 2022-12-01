@@ -106,9 +106,6 @@ dependencies = [
 org = "ballerina"
 name = "jballerina.java"
 version = "0.0.0"
-modules = [
-	{org = "ballerina", packageName = "jballerina.java", moduleName = "jballerina.java"}
-]
 
 [[package]]
 org = "ballerina"
@@ -338,7 +335,6 @@ version = "0.1.0"
 dependencies = [
 	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "http"},
-	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "log"},
 	{org = "ballerina", name = "sql"},
 	{org = "ballerina", name = "uuid"},
@@ -347,10 +343,7 @@ dependencies = [
 ]
 modules = [
 	{org = "wso2", packageName = "backoffice_internal_service", moduleName = "backoffice_internal_service"},
-	{org = "wso2", packageName = "backoffice_internal_service", moduleName = "backoffice_internal_service.backoffice_internal"},
-	{org = "wso2", packageName = "backoffice_internal_service", moduleName = "backoffice_internal_service.java.lang"},
-	{org = "wso2", packageName = "backoffice_internal_service", moduleName = "backoffice_internal_service.org.wso2.apk.apimgt.api"},
-	{org = "wso2", packageName = "backoffice_internal_service", moduleName = "backoffice_internal_service.org.wso2.apk.apimgt.init"}
+	{org = "wso2", packageName = "backoffice_internal_service", moduleName = "backoffice_internal_service.backoffice_internal"}
 ]
 
 

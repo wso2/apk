@@ -26,6 +26,9 @@ wso2:
         enabled: true
         driver: "org.postgresql.Driver"
         url: "jdbc:postgresql://wso2apk-db-service:5432/WSO2AM_DB"
+        host: "wso2apk-db-service"
+        port: 5432
+        databaseName: "WSO2AM_DB"
         username: "wso2carbon"
         password: "wso2carbon"
         validationQuery: "SELECT 1"
