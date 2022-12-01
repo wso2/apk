@@ -16,7 +16,7 @@
 // under the License.
 //
 
-import ballerina/io;
+import ballerina/log;
 import ballerinax/java.jdbc;
 import ballerina/sql;
 import ballerina/http;
@@ -29,18 +29,27 @@ configurable int ADMIN_PORT = 9443;
 
 listener http:Listener ep0 = new (ADMIN_PORT);
 
+
 function init() {
-    io:println("Starting APK Admin Domain Service...");
+    log:printInfo("Starting APK Admin Domain Service...");
     APKConfiguration apkConfig = {
         throttlingConfiguration: throttleConfig,
         datasourceConfiguration: datasourceConfiguration
     };
-    dbClient = 
-         new(datasourceConfiguration.url, datasourceConfiguration.username, 
-             datasourceConfiguration.password,
-             connectionPool = { maxOpenConnections: datasourceConfiguration.maxPoolSize });
+    dbClient = new(datasourceConfiguration.url, datasourceConfiguration.username, 
+        datasourceConfiguration.password,
+        connectionPool = { maxOpenConnections: datasourceConfiguration.maxPoolSize });
+    jdbc:Client | error dbClient  = getConnection();
+    if dbClient is error {
+        return log:printError("Error while connecting to database");
+    }
 }
 
 public function getConnection() returns jdbc:Client | error {
-     return dbClient;  
+    dbClient = new(datasourceConfiguration.url, datasourceConfiguration.username, 
+        datasourceConfiguration.password,
+        connectionPool = { maxOpenConnections: datasourceConfiguration.maxPoolSize });
+    return dbClient;  
  }
+
+

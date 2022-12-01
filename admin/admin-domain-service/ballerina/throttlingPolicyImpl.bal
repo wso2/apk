@@ -16,10 +16,10 @@
 // under the License.
 //
 
-import ballerina/io;
+import ballerina/log;
 import ballerina/uuid;
 
-function addApplicationUsagePlan(ApplicationThrottlePolicy body) returns string?|ApplicationThrottlePolicy {
+function addApplicationUsagePlan(ApplicationThrottlePolicy body) returns string?|ApplicationThrottlePolicy|error {
     string policyId = uuid:createType1AsString();
     body.policyId = policyId;
     match body.defaultLimit.'type {
@@ -33,16 +33,16 @@ function addApplicationUsagePlan(ApplicationThrottlePolicy body) returns string?
             body.defaultLimit.'type = "eventCount";
         }
     }
-    string?|ApplicationThrottlePolicy policy = addApplicationUsagePlanDAO(body);
+    string?|ApplicationThrottlePolicy|error policy = addApplicationUsagePlanDAO(body);
     return policy;
 }
 
-function getApplicationUsagePlanById(string policyId) returns string?|ApplicationThrottlePolicy {
-    string?|ApplicationThrottlePolicy policy = getApplicationUsagePlanByIdDAO(policyId);
+function getApplicationUsagePlanById(string policyId) returns string?|ApplicationThrottlePolicy|error {
+    string?|ApplicationThrottlePolicy|error policy = getApplicationUsagePlanByIdDAO(policyId);
     return policy;
 }
 
-function getApplicationUsagePlans() returns string?|ApplicationThrottlePolicyList {
+function getApplicationUsagePlans() returns string?|ApplicationThrottlePolicyList|error {
     string org = "carbon.super";
     ApplicationThrottlePolicy[]|error? usagePlans = getApplicationUsagePlansDAO(org);
     if usagePlans is ApplicationThrottlePolicy[] {
@@ -50,13 +50,12 @@ function getApplicationUsagePlans() returns string?|ApplicationThrottlePolicyLis
         ApplicationThrottlePolicyList usagePlansList = {count: count, list: usagePlans};
         return usagePlansList;
     } else {
-        io:println("error");
-        return ();
+        return usagePlans;
     }
 }
 
-function updateApplicationUsagePlan(string policyId, ApplicationThrottlePolicy body) returns string?|ApplicationThrottlePolicy|NotFoundError {
-    string?|ApplicationThrottlePolicy existingPolicy = getApplicationUsagePlanByIdDAO(policyId);
+function updateApplicationUsagePlan(string policyId, ApplicationThrottlePolicy body) returns string?|ApplicationThrottlePolicy|NotFoundError|error {
+    string?|ApplicationThrottlePolicy|error existingPolicy = getApplicationUsagePlanByIdDAO(policyId);
     if existingPolicy is ApplicationThrottlePolicy {
         body.policyId = policyId;
         //body.policyName = existingPolicy.name;
@@ -77,7 +76,7 @@ function updateApplicationUsagePlan(string policyId, ApplicationThrottlePolicy b
             body.defaultLimit.'type = "eventCount";
         }
     }
-    string?|ApplicationThrottlePolicy policy = updateApplicationUsagePlanDAO(body);
+    string?|ApplicationThrottlePolicy|error policy = updateApplicationUsagePlanDAO(body);
     return policy;
 }
 
@@ -86,7 +85,7 @@ function removeApplicationUsagePlan(string policyId) returns error?|string {
     return status;
 }
 
-function addBusinessPlan(SubscriptionThrottlePolicy body) returns string?|SubscriptionThrottlePolicy {
+function addBusinessPlan(SubscriptionThrottlePolicy body) returns string?|SubscriptionThrottlePolicy|error {
     string policyId = uuid:createType1AsString();
     body.policyId = policyId;
     match body.defaultLimit.'type {
@@ -100,16 +99,16 @@ function addBusinessPlan(SubscriptionThrottlePolicy body) returns string?|Subscr
             body.defaultLimit.'type = "eventCount";
         }
     }
-    string?|SubscriptionThrottlePolicy policy = addBusinessPlanDAO(body);
+    string?|SubscriptionThrottlePolicy|error policy = addBusinessPlanDAO(body);
     return policy;
 }
 
-function getBusinessPlanById(string policyId) returns string?|SubscriptionThrottlePolicy {
-    string?|SubscriptionThrottlePolicy policy = getBusinessPlanByIdDAO(policyId);
+function getBusinessPlanById(string policyId) returns string?|SubscriptionThrottlePolicy|error {
+    string?|SubscriptionThrottlePolicy|error policy = getBusinessPlanByIdDAO(policyId);
     return policy;
 }
 
-function getBusinessPlans() returns string?|SubscriptionThrottlePolicyList {
+function getBusinessPlans() returns string?|SubscriptionThrottlePolicyList|error {
     string org = "carbon.super";
     SubscriptionThrottlePolicy[]|error? businessPlans = getBusinessPlansDAO(org);
     if businessPlans is SubscriptionThrottlePolicy[] {
@@ -117,13 +116,12 @@ function getBusinessPlans() returns string?|SubscriptionThrottlePolicyList {
         SubscriptionThrottlePolicyList BusinessPlansList = {count: count, list: businessPlans};
         return BusinessPlansList;
     } else {
-        io:println("error");
-        return ();
+        return businessPlans;
     }
 }
 
-function updateBusinessPlan(string policyId, SubscriptionThrottlePolicy body) returns string?|SubscriptionThrottlePolicy|NotFoundError {
-    string?|SubscriptionThrottlePolicy existingPolicy = getBusinessPlanByIdDAO(policyId);
+function updateBusinessPlan(string policyId, SubscriptionThrottlePolicy body) returns string?|SubscriptionThrottlePolicy|NotFoundError|error {
+    string?|SubscriptionThrottlePolicy|error existingPolicy = getBusinessPlanByIdDAO(policyId);
     if existingPolicy is SubscriptionThrottlePolicy {
         body.policyId = policyId;
         //body.policyName = existingPolicy.name;
@@ -144,7 +142,7 @@ function updateBusinessPlan(string policyId, SubscriptionThrottlePolicy body) re
             body.defaultLimit.'type = "eventCount";
         }
     }
-    string?|SubscriptionThrottlePolicy policy = updateBusinessPlanDAO(body);
+    string?|SubscriptionThrottlePolicy|error policy = updateBusinessPlanDAO(body);
     return policy;
 }
 
@@ -153,7 +151,7 @@ function removeBusinessPlan(string policyId) returns error?|string {
     return status;
 }
 
-function addDenyPolicy(BlockingCondition body) returns string?|BlockingCondition {
+function addDenyPolicy(BlockingCondition body) returns string?|BlockingCondition|error {
     string policyId = uuid:createType1AsString();
     body.conditionId = policyId;
     //Todo : need to validate each type
@@ -169,16 +167,16 @@ function addDenyPolicy(BlockingCondition body) returns string?|BlockingCondition
         "USER" => {
         }
     }
-    string?|BlockingCondition policy = addDenyPolicyDAO(body);
+    string?|BlockingCondition|error policy = addDenyPolicyDAO(body);
     return policy;
 }
 
-function getDenyPolicyById(string policyId) returns string?|BlockingCondition {
-    string?|BlockingCondition policy = getDenyPolicyByIdDAO(policyId);
+function getDenyPolicyById(string policyId) returns string?|BlockingCondition|error {
+    string?|BlockingCondition|error policy = getDenyPolicyByIdDAO(policyId);
     return policy;
 }
 
-function getAllDenyPolicies() returns string?|BlockingConditionList {
+function getAllDenyPolicies() returns string?|BlockingConditionList|error {
     string org = "carbon.super";
     BlockingCondition[]|error? denyPolicies = getDenyPoliciesDAO(org);
     if denyPolicies is BlockingCondition[] {
@@ -186,13 +184,13 @@ function getAllDenyPolicies() returns string?|BlockingConditionList {
         BlockingConditionList denyPoliciesList = {count: count, list: denyPolicies};
         return denyPoliciesList;
     } else {
-        io:println("error");
-        return ();
+        log:printError("Error");
+        return error("Error while retrieving all deny polcies from DB");
     }
 }
 
-function updateDenyPolicy(string policyId, BlockingConditionStatus status) returns string?|BlockingCondition|NotFoundError {
-    string?|BlockingCondition existingPolicy = getDenyPolicyByIdDAO(policyId);
+function updateDenyPolicy(string policyId, BlockingConditionStatus status) returns string?|BlockingCondition|NotFoundError|error {
+    string?|BlockingCondition|error existingPolicy = getDenyPolicyByIdDAO(policyId);
     if existingPolicy !is BlockingCondition {
         Error err = {code:9010101, message:"Policy Not Found"};
         NotFoundError nfe = {body: err};
@@ -200,13 +198,16 @@ function updateDenyPolicy(string policyId, BlockingConditionStatus status) retur
     } else {
         status.conditionId = policyId;
     }
-    string? response = updateDenyPolicyDAO(status);
-    io:println(response);
-    string?|BlockingCondition updatedPolicy = getDenyPolicyByIdDAO(policyId);
+    string?|error response = updateDenyPolicyDAO(status);
+    if response is error {
+        return response;
+    }
+    string?|BlockingCondition|error updatedPolicy = getDenyPolicyByIdDAO(policyId);
     if updatedPolicy is BlockingCondition {
         return updatedPolicy;
+    } else {
+        return updatedPolicy;
     }
-    return ();
 }
 
 function removeDenyPolicy(string policyId) returns error?|string {
