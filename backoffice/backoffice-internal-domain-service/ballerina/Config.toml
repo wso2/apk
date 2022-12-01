@@ -10,4 +10,7 @@ password = "admin"
 validationTimeout = 30000
 testQuery = "SELECT 1"
 driver = "org.postgresql.Driver"
+host = "localhost"
+port = 5432
+databaseName = "APKDB"
 

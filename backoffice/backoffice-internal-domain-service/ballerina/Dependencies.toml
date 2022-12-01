@@ -106,9 +106,6 @@ dependencies = [
 org = "ballerina"
 name = "jballerina.java"
 version = "0.0.0"
-modules = [
-	{org = "ballerina", packageName = "jballerina.java", moduleName = "jballerina.java"}
-]
 
 [[package]]
 org = "ballerina"
@@ -318,16 +315,17 @@ modules = [
 
 [[package]]
 org = "ballerinax"
-name = "java.jdbc"
+name = "postgresql"
 version = "1.5.0"
 dependencies = [
+	{org = "ballerina", name = "crypto"},
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "sql"},
 	{org = "ballerina", name = "time"}
 ]
 modules = [
-	{org = "ballerinax", packageName = "java.jdbc", moduleName = "java.jdbc"}
+	{org = "ballerinax", packageName = "postgresql", moduleName = "postgresql"}
 ]
 
 [[package]]
@@ -337,19 +335,15 @@ version = "0.1.0"
 dependencies = [
 	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "http"},
-	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "log"},
 	{org = "ballerina", name = "sql"},
 	{org = "ballerina", name = "uuid"},
 	{org = "ballerinai", name = "observe"},
-	{org = "ballerinax", name = "java.jdbc"}
+	{org = "ballerinax", name = "postgresql"}
 ]
 modules = [
 	{org = "wso2", packageName = "backoffice_internal_service", moduleName = "backoffice_internal_service"},
-	{org = "wso2", packageName = "backoffice_internal_service", moduleName = "backoffice_internal_service.backoffice_internal"},
-	{org = "wso2", packageName = "backoffice_internal_service", moduleName = "backoffice_internal_service.java.lang"},
-	{org = "wso2", packageName = "backoffice_internal_service", moduleName = "backoffice_internal_service.org.wso2.apk.apimgt.api"},
-	{org = "wso2", packageName = "backoffice_internal_service", moduleName = "backoffice_internal_service.org.wso2.apk.apimgt.init"}
+	{org = "wso2", packageName = "backoffice_internal_service", moduleName = "backoffice_internal_service.backoffice_internal"}
 ]
 
 

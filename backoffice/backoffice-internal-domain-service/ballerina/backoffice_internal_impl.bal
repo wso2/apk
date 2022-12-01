@@ -24,3 +24,21 @@ public function createAPI(API body) returns API | error{
     API | error db = db_createAPI(body);
     return db;
 }
+
+# This function used to create artifact from API
+#
+# + apiID - API Id parameter
+# + api - api object
+# + return - Return Value json
+function createArtifact(string apiID, API api) returns json {
+    Artifact artifact = {
+                    id: apiID,
+                    apiName : api.name,
+                    context : api.context,
+                    'version : api.'version,
+                    status: api.lifeCycleStatus,
+                    providerName: api.provider
+                    };
+    json artifactJson = artifact;
+    return artifactJson;
+}
