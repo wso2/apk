@@ -17,20 +17,11 @@
 //
 
 import ballerina/io;
-import ballerinax/postgresql;
+import ballerinax/java.jdbc;
 import ballerina/sql;
 
-
-public function getConnection() returns postgresql:Client | error {
-    //Todo: Need to read database config from toml
-    postgresql:Client|sql:Error dbClient = 
-                                check new ("localhost", "sampath", "1qaz2wsx@Q", 
-                                     "apklat1", 5432);
-    return dbClient;
-}
-
 public function addApplicationUsagePlanDAO(ApplicationThrottlePolicy atp) returns string?|ApplicationThrottlePolicy {
-    postgresql:Client | error dbClient  = getConnection();
+    jdbc:Client | error dbClient  = getConnection();
     if dbClient is error {
         return "Error while retrieving connection";
     } else {
@@ -52,7 +43,7 @@ public function addApplicationUsagePlanDAO(ApplicationThrottlePolicy atp) return
 }
 
 public function getApplicationUsagePlanByIdDAO(string policyId) returns string?|ApplicationThrottlePolicy {
-    postgresql:Client | error dbClient  = getConnection();
+    jdbc:Client | error dbClient  = getConnection();
     if dbClient is error {
         return "Error while retrieving connection";
     } else {
@@ -74,7 +65,7 @@ public function getApplicationUsagePlanByIdDAO(string policyId) returns string?|
 }
 
 public function getApplicationUsagePlansDAO(string org) returns ApplicationThrottlePolicy[]|error? {
-    postgresql:Client | error dbClient  = getConnection();
+    jdbc:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
     } else {
@@ -88,7 +79,7 @@ public function getApplicationUsagePlansDAO(string org) returns ApplicationThrot
 }
 
 public function updateApplicationUsagePlanDAO(ApplicationThrottlePolicy atp) returns string?|ApplicationThrottlePolicy {
-    postgresql:Client | error dbClient  = getConnection();
+    jdbc:Client | error dbClient  = getConnection();
     if dbClient is error {
         return "Error while retrieving connection";
     } else {
@@ -109,7 +100,7 @@ public function updateApplicationUsagePlanDAO(ApplicationThrottlePolicy atp) ret
 }
 
 public function deleteApplicationUsagePlanDAO(string policyId) returns string?|error {
-    postgresql:Client | error dbClient  = getConnection();
+    jdbc:Client | error dbClient  = getConnection();
     if dbClient is error {
         return "Error while retrieving connection";
     } else {
@@ -127,7 +118,7 @@ public function deleteApplicationUsagePlanDAO(string policyId) returns string?|e
 }
 
 public function addBusinessPlanDAO(SubscriptionThrottlePolicy stp) returns string?|SubscriptionThrottlePolicy {
-    postgresql:Client | error dbClient  = getConnection();
+    jdbc:Client | error dbClient  = getConnection();
     if dbClient is error {
         return "Error while retrieving connection";
     } else {
@@ -151,7 +142,7 @@ public function addBusinessPlanDAO(SubscriptionThrottlePolicy stp) returns strin
 }
 
 public function getBusinessPlanByIdDAO(string policyId) returns string?|SubscriptionThrottlePolicy {
-    postgresql:Client | error dbClient  = getConnection();
+    jdbc:Client | error dbClient  = getConnection();
     if dbClient is error {
         return "Error while retrieving connection";
     } else {
@@ -173,8 +164,9 @@ public function getBusinessPlanByIdDAO(string policyId) returns string?|Subscrip
 }
 
 public function getBusinessPlansDAO(string org) returns SubscriptionThrottlePolicy[]|error? {
-    postgresql:Client | error dbClient  = getConnection();
+    jdbc:Client | error dbClient  = getConnection();
     if dbClient is error {
+        io:println("Error while retrieving connection");
         return error("Error while retrieving connection");
     } else {
         sql:ParameterizedQuery query = `SELECT * FROM BUSINESS_PLAN WHERE ORGANIZATION =${org}`;
@@ -187,7 +179,7 @@ public function getBusinessPlansDAO(string org) returns SubscriptionThrottlePoli
 }
 
 public function updateBusinessPlanDAO(SubscriptionThrottlePolicy stp) returns string?|SubscriptionThrottlePolicy {
-    postgresql:Client | error dbClient  = getConnection();
+    jdbc:Client | error dbClient  = getConnection();
     if dbClient is error {
         return "Error while retrieving connection";
     } else {
@@ -211,7 +203,7 @@ public function updateBusinessPlanDAO(SubscriptionThrottlePolicy stp) returns st
 }
 
 public function deleteBusinessPlanDAO(string policyId) returns string?|error {
-    postgresql:Client | error dbClient  = getConnection();
+    jdbc:Client | error dbClient  = getConnection();
     if dbClient is error {
         return "Error while retrieving connection";
     } else {
@@ -229,7 +221,7 @@ public function deleteBusinessPlanDAO(string policyId) returns string?|error {
 }
 
 public function addDenyPolicyDAO(BlockingCondition bc) returns string?|BlockingCondition {
-    postgresql:Client | error dbClient  = getConnection();
+    jdbc:Client | error dbClient  = getConnection();
     if dbClient is error {
         return "Error while retrieving connection";
     } else {
@@ -248,7 +240,7 @@ public function addDenyPolicyDAO(BlockingCondition bc) returns string?|BlockingC
 }
 
 public function getDenyPolicyByIdDAO(string policyId) returns string?|BlockingCondition {
-    postgresql:Client | error dbClient  = getConnection();
+    jdbc:Client | error dbClient  = getConnection();
     if dbClient is error {
         return "Error while retrieving connection";
     } else {
@@ -270,7 +262,7 @@ public function getDenyPolicyByIdDAO(string policyId) returns string?|BlockingCo
 }
 
 public function getDenyPoliciesDAO(string org) returns BlockingCondition[]|error? {
-    postgresql:Client | error dbClient  = getConnection();
+    jdbc:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
     } else {
@@ -284,7 +276,7 @@ public function getDenyPoliciesDAO(string org) returns BlockingCondition[]|error
 }
 
 public function updateDenyPolicyDAO(BlockingConditionStatus status) returns string? {
-    postgresql:Client | error dbClient  = getConnection();
+    jdbc:Client | error dbClient  = getConnection();
     if dbClient is error {
         return "Error while retrieving connection";
     } else {
@@ -301,7 +293,7 @@ public function updateDenyPolicyDAO(BlockingConditionStatus status) returns stri
 }
 
 public function deleteDenyPolicyDAO(string policyId) returns string?|error {
-    postgresql:Client | error dbClient  = getConnection();
+    jdbc:Client | error dbClient  = getConnection();
     if dbClient is error {
         return "Error while retrieving connection";
     } else {

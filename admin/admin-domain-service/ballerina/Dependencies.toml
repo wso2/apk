@@ -109,9 +109,6 @@ modules = [
 org = "ballerina"
 name = "jballerina.java"
 version = "0.0.0"
-modules = [
-	{org = "ballerina", packageName = "jballerina.java", moduleName = "jballerina.java"}
-]
 
 [[package]]
 org = "ballerina"
@@ -321,17 +318,16 @@ modules = [
 
 [[package]]
 org = "ballerinax"
-name = "postgresql"
+name = "java.jdbc"
 version = "1.5.0"
 dependencies = [
-	{org = "ballerina", name = "crypto"},
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "sql"},
 	{org = "ballerina", name = "time"}
 ]
 modules = [
-	{org = "ballerinax", packageName = "postgresql", moduleName = "postgresql"}
+	{org = "ballerinax", packageName = "java.jdbc", moduleName = "java.jdbc"}
 ]
 
 [[package]]
@@ -342,22 +338,14 @@ dependencies = [
 	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "http"},
 	{org = "ballerina", name = "io"},
-	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "lang.value"},
 	{org = "ballerina", name = "sql"},
 	{org = "ballerina", name = "uuid"},
 	{org = "ballerinai", name = "observe"},
-	{org = "ballerinax", name = "postgresql"}
+	{org = "ballerinax", name = "java.jdbc"}
 ]
 modules = [
-	{org = "wso2", packageName = "admin_service", moduleName = "admin_service"},
-	{org = "wso2", packageName = "admin_service", moduleName = "admin_service.java.io"},
-	{org = "wso2", packageName = "admin_service", moduleName = "admin_service.java.lang"},
-	{org = "wso2", packageName = "admin_service", moduleName = "admin_service.java.util"},
-	{org = "wso2", packageName = "admin_service", moduleName = "admin_service.org.wso2.apk.apimgt.admin.dto"},
-	{org = "wso2", packageName = "admin_service", moduleName = "admin_service.org.wso2.apk.apimgt.admin.impl"},
-	{org = "wso2", packageName = "admin_service", moduleName = "admin_service.org.wso2.apk.apimgt.api"},
-	{org = "wso2", packageName = "admin_service", moduleName = "admin_service.org.wso2.apk.apimgt.init"}
+	{org = "wso2", packageName = "admin_service", moduleName = "admin_service"}
 ]
 
 
