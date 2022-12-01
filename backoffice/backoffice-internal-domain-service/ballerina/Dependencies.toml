@@ -318,16 +318,17 @@ modules = [
 
 [[package]]
 org = "ballerinax"
-name = "java.jdbc"
+name = "postgresql"
 version = "1.5.0"
 dependencies = [
+	{org = "ballerina", name = "crypto"},
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "sql"},
 	{org = "ballerina", name = "time"}
 ]
 modules = [
-	{org = "ballerinax", packageName = "java.jdbc", moduleName = "java.jdbc"}
+	{org = "ballerinax", packageName = "postgresql", moduleName = "postgresql"}
 ]
 
 [[package]]
@@ -342,7 +343,7 @@ dependencies = [
 	{org = "ballerina", name = "sql"},
 	{org = "ballerina", name = "uuid"},
 	{org = "ballerinai", name = "observe"},
-	{org = "ballerinax", name = "java.jdbc"}
+	{org = "ballerinax", name = "postgresql"}
 ]
 modules = [
 	{org = "wso2", packageName = "backoffice_internal_service", moduleName = "backoffice_internal_service"},

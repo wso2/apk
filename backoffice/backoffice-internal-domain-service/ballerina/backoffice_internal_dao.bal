@@ -17,7 +17,7 @@
 //
 
 import ballerina/sql;
-import ballerinax/java.jdbc;
+import ballerinax/postgresql;
 import ballerina/uuid;
 
 # Add API details to the database 
@@ -25,15 +25,17 @@ import ballerina/uuid;
 # + api - API Parameter
 # + return - API | error
 public function db_createAPI(API api) returns API | error {
-    jdbc:Client | error db_client  = getConnection();
+    postgresql:Client | error db_client  = getConnection();
+    string apiID = uuid:createType1AsString();
     if db_client is error {
         return error("Issue while conecting to databse");
     } else {
-        sql:ParameterizedQuery values = `${uuid:createType1AsString()},${api.name}, ${api.'version}, ${api.context},${api.provider},${api.lifeCycleStatus}, '{}')`;
+        postgresql:JsonBinaryValue artifact = new (createArtifact(apiID, api));
+        sql:ParameterizedQuery values = `${apiID},${api.name}, ${api.'version}, ${api.context},${api.provider},${api.lifeCycleStatus}, ${artifact})`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(ADD_API_Suffix, values);
+
+        sql:ExecutionResult | sql:Error result = db_client->execute(sqlQuery);
         
-        
-        sql:ExecutionResult | sql:Error result = check db_client->execute(sqlQuery);
         check db_client.close();
         if result is sql:ExecutionResult {
             return api;
