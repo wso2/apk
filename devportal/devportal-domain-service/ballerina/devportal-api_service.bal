@@ -17,7 +17,7 @@
 //
 
 import ballerina/http;
-import ballerina/io;
+import ballerina/log;
 import ballerina/lang.value;
 import devportal_service.org.wso2.apk.apimgt.api as api;
 import devportal_service.org.wso2.apk.apimgt.devportal.impl as devportal;
@@ -28,7 +28,7 @@ configurable int DEVPORTAL_PORT = 9443;
 listener http:Listener ep0 = new (DEVPORTAL_PORT);
 
 service /api/am/devportal on ep0 {
-    resource function get apis(@http:Header string? 'x\-wso2\-tenant, string? query, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0) returns APIList|NotAcceptableError|error {
+    resource function get apis(@http:Header string? 'x\-wso2\-tenant, string? query, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0) returns APIList|NotAcceptableError|InternalServerErrorError|error {
         string organization = "carbon.super";
         string?| api:APIManagementException | dto:APIListDTO apiList = check devportal:ApisCommonImpl_getAPIList('limit, offset, "", organization);
         if apiList is string {
@@ -38,12 +38,12 @@ service /api/am/devportal on ep0 {
         }
         return {count: 0};
     }
-    resource function get apis/[string apiId](@http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match) returns API|http:NotModified|NotFoundError|NotAcceptableError|error|json {
+    resource function get apis/[string apiId](@http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match) returns API|http:NotModified|NotFoundError|NotAcceptableError|InternalServerErrorError|error|json {
         string organization = "carbon.super";
         string?| api:APIManagementException | dto:APIDTO api = check devportal:ApisCommonImpl_getAPIByAPIId(apiId, organization);
         if api is string {
             json j = check value:fromJsonString(api);
-            io:print(j);
+            log:printDebug(j.toString());
             return j;
             // TODO (CrowleyRajapakse) need to fix the logic to return API object instead plain json 
             // API apiObj = check j.cloneWithType(API);
@@ -92,58 +92,76 @@ service /api/am/devportal on ep0 {
     // }
     // resource function get apis/[string apiId]/'subscription\-policies(@http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match) returns ThrottlingPolicy|http:NotModified|NotFoundError|NotAcceptableError {
     // }
-    resource function get applications(string? groupId, string? query, string? sortBy, string? sortOrder, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0) returns ApplicationList|http:NotModified|BadRequestError|NotAcceptableError|error{
+    resource function get applications(string? groupId, string? query, string? sortBy, string? sortOrder, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0) returns ApplicationList|http:NotModified|BadRequestError|NotAcceptableError|InternalServerErrorError|error{
         string organization = "carbon.super";
-        string?|api:APIManagementException applicationList = check devportal:ApplicationsCommonImpl_getApplicationList("", "", "name", "asc", 'limit, offset, organization);
+        string?|ApplicationList|error applicationList = check getApplicationList(sortBy, groupId, query, sortOrder, 'limit, offset, organization);
         if applicationList is string {
             json j = check value:fromJsonString(applicationList);
             ApplicationList appList = check j.cloneWithType(ApplicationList);
-            io:print(appList);
+            log:printDebug(appList.toString());
             return appList;
+        } else if applicationList is ApplicationList {
+            log:printDebug(applicationList.toString());
+            return applicationList;
+        } else {
+            InternalServerErrorError internalError = {body: {code: 90900, message: "Internal Error while retrieving all Applications"}};
+            return internalError;
         }
-
-        return {count: 0};
     }
-    resource function post applications(@http:Payload Application payload) returns CreatedApplication|AcceptedWorkflowResponse|BadRequestError|ConflictError|UnsupportedMediaTypeError|error {
-        string?|api:APIManagementException application = devportal:ApplicationsCommonImpl_addApplication(payload.toJsonString(), "carbon.super");
+    resource function post applications(@http:Payload Application payload) returns CreatedApplication|AcceptedWorkflowResponse|BadRequestError|ConflictError|UnsupportedMediaTypeError|InternalServerErrorError|error {
+        string?|Application|error application = check addApplication(payload, "carbon.super", "apkuser");
         if application is string {
             json j = check value:fromJsonString(application);
             CreatedApplication createdApp = {body: check j.cloneWithType(Application)};
             return createdApp;
+        } else if application is Application {
+            CreatedApplication createdApp = {body: check application.cloneWithType(Application)};
+            log:printDebug(application.toString());
+            return createdApp;
+        } else {
+            InternalServerErrorError internalError = {body: {code: 90910, message: "Internal Error while adding Application"}};
+            return internalError;
         }
-        io:print(application);
-        ConflictError internalError = {body: {code: 900910, message: "Error while adding the application"}};
-        return internalError;
     }
-    resource function get applications/[string applicationId](@http:Header string? 'if\-none\-match, @http:Header string? 'x\-wso2\-tenant) returns Application|http:NotModified|NotFoundError|NotAcceptableError|error {
-        string?|api:APIManagementException application = devportal:ApplicationsCommonImpl_getApplicationById(applicationId, "carbon.super");
+    resource function get applications/[string applicationId](@http:Header string? 'if\-none\-match, @http:Header string? 'x\-wso2\-tenant) returns Application|http:NotModified|NotFoundError|NotAcceptableError|InternalServerErrorError|error {
+        string?|Application|error application = check getApplicationById(applicationId, "carbon.super");
         if application is string {
             json j = check value:fromJsonString(application);
             Application app = check j.cloneWithType(Application);
-            io:print(app);
+            log:printDebug(app.toString());
             return app;
+        } else if application is Application {
+            log:printDebug(application.toString());
+            return application;
+        } else {
+            InternalServerErrorError internalError = {body: {code: 90900, message: "Internal Error while retrieving Application By Id"}};
+            return internalError;
         }
-        return {};
     }
-    resource function put applications/[string applicationId](@http:Header string? 'if\-match, @http:Payload Application payload) returns Application|BadRequestError|NotFoundError|PreconditionFailedError|error {
-        string?|api:APIManagementException application = devportal:ApplicationsCommonImpl_updateApplication(applicationId, payload.toJsonString());
+    resource function put applications/[string applicationId](@http:Header string? 'if\-match, @http:Payload Application payload) returns Application|BadRequestError|NotFoundError|PreconditionFailedError|InternalServerErrorError|error {
+        string organization = "carbon.super";
+        string?|Application|NotFoundError|error application = check updateApplication(applicationId, payload, organization,"apkuser");
         if application is string {
             json j = check value:fromJsonString(application);
             Application app = check j.cloneWithType(Application);
-            io:print(app);
+            log:printDebug(app.toString());
             return app;
+        } else if application is Application|NotFoundError {
+            log:printDebug(application.toString());
+            return application;
+        } else {
+            InternalServerErrorError internalError = {body: {code: 90911, message: "Internal Error while updating Application"}};
+            return internalError;
         }
-        PreconditionFailedError internalError = {body: {code: 900911, message: "Error while updating the application"}};
-        return internalError;
     }
-    resource function delete applications/[string applicationId](@http:Header string? 'if\-match) returns http:Ok|AcceptedWorkflowResponse|NotFoundError|PreconditionFailedError|error {
-        int?|api:APIManagementException response = check devportal:ApplicationsCommonImpl_deleteApplication(applicationId);
-        if response is int {
-            http:Ok success = {body: { message: "Application Deleted"}};
-            return success;
-        }  else {
-            http:Ok failed = {body: { message: "Application Deleted Failed"}};
-            return failed;
+    resource function delete applications/[string applicationId](@http:Header string? 'if\-match) returns http:Ok|AcceptedWorkflowResponse|NotFoundError|PreconditionFailedError|InternalServerErrorError|error {
+        string organization = "carbon.super";
+        string|error? response = check deleteApplication(applicationId,organization);
+        if response is error {
+            InternalServerErrorError internalError = {body: {code: 90912, message: "Internal Error while deleting Application By Id"}};
+            return internalError;
+        } else {
+            return http:OK;
         }
     }
     // resource function post applications/[string applicationId]/'generate\-keys(@http:Header string? 'x\-wso2\-tenant, @http:Payload ApplicationKeyGenerateRequest payload) returns ApplicationKey|BadRequestError|NotFoundError|PreconditionFailedError {
