@@ -19,9 +19,6 @@
 import ballerina/http;
 import ballerina/log;
 import ballerina/lang.value;
-import devportal_service.org.wso2.apk.apimgt.api as api;
-import devportal_service.org.wso2.apk.apimgt.devportal.impl as devportal;
-import devportal_service.org.wso2.apk.apimgt.devportal.dto as dto;
 
 configurable int DEVPORTAL_PORT = 9443;
 
@@ -30,27 +27,34 @@ listener http:Listener ep0 = new (DEVPORTAL_PORT);
 service /api/am/devportal on ep0 {
     resource function get apis(@http:Header string? 'x\-wso2\-tenant, string? query, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0) returns APIList|NotAcceptableError|InternalServerErrorError|error {
         string organization = "carbon.super";
-        string?| api:APIManagementException | dto:APIListDTO apiList = check devportal:ApisCommonImpl_getAPIList('limit, offset, "", organization);
+        string?| APIList | error apiList = check getAPIList('limit, offset, query, organization);
         if apiList is string {
             json j = check value:fromJsonString(apiList);
             APIList apiListObj = check j.cloneWithType(APIList);
             return apiListObj;
+        } else if apiList is APIList {
+            log:printDebug(apiList.toString());
+            return apiList;
+        } else {
+            InternalServerErrorError internalError = {body: {code: 90914, message: "Internal Error while retrieving all APIs"}};
+            return internalError;
         }
-        return {count: 0};
     }
     resource function get apis/[string apiId](@http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match) returns API|http:NotModified|NotFoundError|NotAcceptableError|InternalServerErrorError|error|json {
         string organization = "carbon.super";
-        string?| api:APIManagementException | dto:APIDTO api = check devportal:ApisCommonImpl_getAPIByAPIId(apiId, organization);
+        string?|API|error api = check getAPIByAPIId(apiId, organization);
         if api is string {
             json j = check value:fromJsonString(api);
-            log:printDebug(j.toString());
-            return j;
-            // TODO (CrowleyRajapakse) need to fix the logic to return API object instead plain json 
-            // API apiObj = check j.cloneWithType(API);
-            // io:print(apiObj);
-            // return apiObj;
+            API clonedAPI = check j.cloneWithType(API);
+            log:printDebug(clonedAPI.toString());
+            return clonedAPI;
+        } else if api is API {
+            log:printDebug(api.toString());
+            return api;
+        } else {
+            InternalServerErrorError internalError = {body: {code: 90913, message: "Internal Error while retrieving API By Id"}};
+            return internalError;
         }
-        return;
     }
     // resource function get apis/[string apiId]/swagger(string? environmentName, @http:Header string? 'if\-none\-match, @http:Header string? 'x\-wso2\-tenant) returns string|http:NotModified|NotFoundError|NotAcceptableError {
     // }
