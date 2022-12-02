@@ -49,6 +49,7 @@ public type KeyStore record {|
 public type K8sConfigurations record {|
     string host = "kubernetes.default";
     string serviceAccountPath = "/var/run/secrets/kubernetes.io/serviceaccount";
+    decimal readTimeout = 5;
 |};
 
 function getNameSpace(string namespace) returns string {

@@ -17,7 +17,6 @@
 //
 import ballerina/log;
 import ballerina/http;
-import ballerina/task;
 import ballerina/lang.runtime;
 import ballerina/uuid;
 
@@ -37,12 +36,22 @@ configurable RuntimeConfiguratation runtimeConfiguration = {
 
 # Initializing method for runtime
 function init() returns error? {
-    do {
-        _ = check task:scheduleJobRecurByFrequency(new ServiceTask(), 1);
-        _ = check task:scheduleJobRecurByFrequency(new APIListingTask(), 1);
-    } on fail var e {
-        log:printError("Error initializing Task", e);
+    APIClient apiService = new ();
+    error? retrieveAllApisAtStartup = apiService.retrieveAllApisAtStartup(());
+    if retrieveAllApisAtStartup is error {
+        log:printError("Error occured while retrieving API List", retrieveAllApisAtStartup);
     }
+
+    ServiceClient servicesService = new ();
+    error? retrieveAllServicesAtStartup = servicesService.retrieveAllServicesAtStartup(());
+    if retrieveAllServicesAtStartup is error {
+        log:printError("Error occured while retrieving Service List", retrieveAllServicesAtStartup);
+    }
+
+    APIListingTask apiListingTask = new (resourceVersion);
+    _ = check apiListingTask.startListening();
+    ServiceTask serviceTask = new (servicesResourceVersion);
+    _ = check serviceTask.startListening();
     check ep0.attach(healthService, "/");
     check ep0.attach(runtimeService, "/api/am/runtime");
     check ep0.'start();
