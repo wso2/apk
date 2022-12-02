@@ -14,7 +14,6 @@ paths:
         Retrieve/Search APIs
       description: |
         This operation provides you a list of available APIs qualifying under a given search condition.
-
         Each retrieved API is represented with a minimal amount of attributes. If you want to get complete details of an API, you need to use **Get details of an API** operation.
       operationId: getAllAPIs
       parameters:
@@ -50,9 +49,7 @@ paths:
             default: createdTime
             enum:
               - apiName
-              - version
               - createdTime
-              - status
         - name: sortOrder
           in: query
           description: |
@@ -73,16 +70,6 @@ paths:
           explode: true
           schema:
             type: string
-        - name: Accept
-          in: header
-          description: |
-            Media types acceptable for the response. Default is application/json.
-          required: false
-          style: simple
-          explode: false
-          schema:
-            type: string
-            default: application/json
       responses:
         "200":
           description: |
@@ -99,16 +86,16 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/APIList"
-        "406":
-          description: Not Acceptable. The requested media type is not supported.
+        "500":
+          description: Internal Server Error.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
               example:
-                code: 406
-                message: Not Acceptable
-                description: The requested media type is not supported
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact administrator.
                 moreInfo: ""
                 error: []
     post:
@@ -162,16 +149,16 @@ paths:
                 description: Invalid request or validation error
                 moreInfo: ""
                 error: []
-        "415":
-          description: Unsupported Media Type. The entity of the request was not in a supported format.
+        "500":
+          description: Internal Server Error.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
               example:
-                code: 415
-                message: Unsupported media type
-                description: The entity of the request was not in a supported format
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact administrator.
                 moreInfo: ""
                 error: []
   /apis/{apiId}:
@@ -219,6 +206,18 @@ paths:
                 code: 404
                 message: Not Found
                 description: The specified resource does not exist
+                moreInfo: ""
+                error: []
+        "500":
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact administrator.
                 moreInfo: ""
                 error: []
     put:
@@ -305,18 +304,6 @@ paths:
                 description: The specified resource does not exist
                 moreInfo: ""
                 error: []
-        "409":
-          description: Conflict. Specified resource already exists.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 409
-                message: Conflict
-                description: Specified resource already exists
-                moreInfo: ""
-                error: []
         "412":
           description: Precondition Failed. The request has not been performed because one of the preconditions is not met.
           content:
@@ -327,6 +314,18 @@ paths:
                 code: 412
                 message: Precondition Failed
                 description: The request has not been performed because one of the preconditions is not met
+                moreInfo: ""
+                error: []
+        "500":
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact administrator.
                 moreInfo: ""
                 error: []
     delete:
@@ -376,28 +375,16 @@ paths:
                 description: The specified resource does not exist
                 moreInfo: ""
                 error: []
-        "409":
-          description: Conflict. Specified resource already exists.
+        "500":
+          description: Internal Server Error.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
               example:
-                code: 409
-                message: Conflict
-                description: Specified resource already exists
-                moreInfo: ""
-                error: []
-        "412":
-          description: Precondition Failed. The request has not been performed because one of the preconditions is not met.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 412
-                message: Precondition Failed
-                description: The request has not been performed because one of the preconditions is not met
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact administrator.
                 moreInfo: ""
                 error: []
   /apis/{apiId}/generate-key:
@@ -423,10 +410,30 @@ paths:
           $ref: "#/components/responses/BadRequest"
         404:
           $ref: "#/components/responses/NotFound"
-      security:
-        - OAuth2Security:
-            - apim:api_generate_key
-            - apim:api_manage
+        403:
+          description: Forbidden. The request must be conditional but no condition has been specified.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 403
+                message: Forbidden
+                description: The request must be conditional but no condition has been specified
+                moreInfo: ""
+                error: []
+        "500":
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact administrator.
+                moreInfo: ""
+                error: []
   /apis/import-service:
     post:
       tags:
@@ -474,18 +481,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/API"
-        "404":
-          description: Not Found. The specified resource does not exist.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 404
-                message: Not Found
-                description: The specified resource does not exist
-                moreInfo: ""
-                error: []
+        400:
+          $ref: "#/components/responses/BadRequest"
         "500":
           description: Internal Server Error.
           content:
@@ -551,16 +548,28 @@ paths:
                 description: Invalid request or validation error
                 moreInfo: ""
                 error: []
-        "415":
-          description: Unsupported Media Type. The entity of the request was not in a supported format.
+        "412":
+          description: Precondition Failed. The request has not been performed because one of the preconditions is not met.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
               example:
-                code: 415
-                message: Unsupported media type
-                description: The entity of the request was not in a supported format
+                code: 412
+                message: Precondition Failed
+                description: The request has not been performed because one of the preconditions is not met
+                moreInfo: ""
+                error: []
+        "500":
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact administrator.
                 moreInfo: ""
                 error: []
   /apis/validate-definition:
@@ -664,16 +673,28 @@ paths:
                 description: Invalid request or validation error
                 moreInfo: ""
                 error: []
-        "404":
-          description: Not Found. The specified resource does not exist.
+        "412":
+          description: Precondition Failed. The request has not been performed because one of the preconditions is not met.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
               example:
-                code: 404
-                message: Not Found
-                description: The specified resource does not exist
+                code: 412
+                message: Precondition Failed
+                description: The request has not been performed because one of the preconditions is not met
+                moreInfo: ""
+                error: []
+        "500":
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact administrator.
                 moreInfo: ""
                 error: []
   /apis/{apiId}/definition:
@@ -724,16 +745,28 @@ paths:
                 description: The specified resource does not exist
                 moreInfo: ""
                 error: []
-        "406":
-          description: Not Acceptable. The requested media type is not supported.
+        "412":
+          description: Precondition Failed. The request has not been performed because one of the preconditions is not met.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
               example:
-                code: 406
-                message: Not Acceptable
-                description: The requested media type is not supported
+                code: 412
+                message: Precondition Failed
+                description: The request has not been performed because one of the preconditions is not met
+                moreInfo: ""
+                error: []
+        "500":
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact administrator.
                 moreInfo: ""
                 error: []
     put:
@@ -829,6 +862,18 @@ paths:
                 code: 412
                 message: Precondition Failed
                 description: The request has not been performed because one of the preconditions is not met
+                moreInfo: ""
+                error: []
+        "500":
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact administrator.
                 moreInfo: ""
                 error: []
   /apis/export:
@@ -960,18 +1005,6 @@ paths:
                 description: The request must be conditional but no condition has been specified
                 moreInfo: ""
                 error: []
-        "404":
-          description: Not Found. The specified resource does not exist.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 404
-                message: Not Found
-                description: The specified resource does not exist
-                moreInfo: ""
-                error: []
         "409":
           description: Conflict. Specified resource already exists.
           content:
@@ -982,6 +1015,18 @@ paths:
                 code: 409
                 message: Conflict
                 description: Specified resource already exists
+                moreInfo: ""
+                error: []
+        "412":
+          description: Precondition Failed. The request has not been performed because one of the preconditions is not met.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: 412
+                message: Precondition Failed
+                description: The request has not been performed because one of the preconditions is not met
                 moreInfo: ""
                 error: []
         "500":
@@ -1036,10 +1081,8 @@ paths:
             type: string
             default: createdTime
             enum:
-              - apiName
-              - version
+              - serviceName
               - createdTime
-              - status
         - name: sortOrder
           in: query
           description: |
@@ -1093,18 +1136,6 @@ paths:
                 description: Invalid request or validation error
                 moreInfo: ""
                 error: []
-        "401":
-          description: Unauthorized. The user is not authorized.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 401
-                message: Unauthorized
-                description: The user is not authorized
-                moreInfo: ""
-                error: []
         "500":
           description: Internal Server Error.
           content:
@@ -1126,18 +1157,9 @@ paths:
         Get details of a service using the id of the service.
       operationId: getServiceById
       parameters:
-        - name: namespace
-          in: query
-          description: |
-            Required namespace in the K8s cluster
-          required: false
-          style: form
-          explode: true
-          schema:
-            type: string
         - name: serviceId
           in: path
-          description: name of the service
+          description: UUID(unique across all namespaces) of the service
           required: true
           style: simple
           explode: false
@@ -1161,18 +1183,6 @@ paths:
                 code: 400
                 message: Bad Request
                 description: Invalid request or validation error
-                moreInfo: ""
-                error: []
-        "401":
-          description: Unauthorized. The user is not authorized.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 401
-                message: Unauthorized
-                description: The user is not authorized
                 moreInfo: ""
                 error: []
         "404":
@@ -1208,18 +1218,9 @@ paths:
         Retrieve usage
       operationId: getServiceUsage
       parameters:
-        - name: namespace
-          in: query
-          description: |
-            Required namespace in the K8s cluster
-          required: false
-          style: form
-          explode: true
-          schema:
-            type: string
         - name: serviceId
           in: path
-          description: name of the service
+          description: UUID(unique id across cluster) of the service
           required: true
           style: simple
           explode: false
@@ -1243,18 +1244,6 @@ paths:
                 code: 400
                 message: Bad Request
                 description: Invalid request or validation error
-                moreInfo: ""
-                error: []
-        "401":
-          description: Unauthorized. The user is not authorized.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 401
-                message: Unauthorized
-                description: The user is not authorized
                 moreInfo: ""
                 error: []
         "404":
@@ -1322,10 +1311,8 @@ paths:
             type: string
             default: createdTime
             enum:
-              - apiName
-              - version
+              - policyName
               - createdTime
-              - status
         - name: sortOrder
           in: query
           description: |
@@ -1372,16 +1359,16 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/MediationPolicyList"
-        "406":
-          description: Not Acceptable. The requested media type is not supported.
+        "500":
+          description: Internal Server Error.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
               example:
-                code: 406
-                message: Not Acceptable
-                description: The requested media type is not supported
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact administrator.
                 moreInfo: ""
                 error: []
   /policies/{policyId}:
@@ -1430,16 +1417,16 @@ paths:
                 description: The specified resource does not exist
                 moreInfo: ""
                 error: []
-        "406":
-          description: Not Acceptable. The requested media type is not supported.
+        "500":
+          description: Internal Server Error.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
               example:
-                code: 406
-                message: Not Acceptable
-                description: The requested media type is not supported
+                code: 500
+                message: Internal Server Error
+                description: The server encountered an internal error. Please contact administrator.
                 moreInfo: ""
                 error: []
 components:
