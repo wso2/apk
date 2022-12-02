@@ -1,0 +1,56 @@
+//
+// Copyright (c) 2022, WSO2 LLC. (http://www.wso2.com).
+//
+// WSO2 LLC. licenses this file to you under the Apache License,
+// Version 2.0 (the "License"); you may not use this file except
+// in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+//
+
+import ballerina/log;
+import ballerinax/java.jdbc;
+import ballerina/sql;
+
+function getAPIByIdDAO(string apiId, string org) returns string?|API|error {
+        jdbc:Client | error dbClient  = getConnection();
+    if dbClient is error {
+        return error("Error while retrieving connection");
+    } else {
+        sql:ParameterizedQuery query = `SELECT * FROM API WHERE API_UUID =${apiId} AND ORGANIZATION =${org}`;
+        API | sql:Error result =  dbClient->queryRow(query);
+        check dbClient.close();
+        if result is sql:NoRowsError {
+            log:printDebug(result.toString());
+            return error("Not Found");
+        } else if result is API {
+            log:printDebug(result.toString());
+            return result;
+        } else {
+            log:printDebug(result.toString());
+            return error("Error while retrieving API");
+        }
+    }
+}
+
+function getAPIsDAO(string org) returns API[]|error? {
+    jdbc:Client | error dbClient  = getConnection();
+    if dbClient is error {
+        return error("Error while retrieving connection");
+    } else {
+        sql:ParameterizedQuery query = `SELECT * FROM API WHERE ORGANIZATION =${org}`;
+        stream<API, sql:Error?> apisStream = dbClient->query(query);
+        API[]? apis = check from API api in apisStream select api;
+        check apisStream.close();
+        check dbClient.close();
+        return apis;
+    }
+}

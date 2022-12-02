@@ -16,23 +16,32 @@
 // under the License.
 //
 
-import ballerina/io;
-import devportal_service.org.wso2.apk.apimgt.api as api;
-import devportal_service.org.wso2.apk.apimgt.init as apkinit;
+import ballerina/log;
+import ballerinax/java.jdbc;
+import ballerina/sql;
 
 configurable DatasourceConfiguration datasourceConfiguration = ?;
 configurable ThrottlingConfiguration throttleConfig = ?;
+jdbc:Client|sql:Error dbClient;
 
 function init() {
-    io:println("Starting APK Devportal Domain Service...");
+    log:printInfo("Starting APK Devportal Domain Service...");
     APKConfiguration apkConfig = {
         throttlingConfiguration: throttleConfig,
         datasourceConfiguration: datasourceConfiguration
     };
-    string configJson = apkConfig.toJson().toJsonString();
-    // Pass the configurations to java init component
-    api:APIManagementException? err = apkinit:APKComponent_activate(configJson);
-    if (err != ()) {
-        io:println(err);
+    dbClient = new(datasourceConfiguration.url, datasourceConfiguration.username, 
+        datasourceConfiguration.password,
+        connectionPool = { maxOpenConnections: datasourceConfiguration.maxPoolSize });
+    jdbc:Client | error dbClient  = getConnection();
+    if dbClient is error {
+        return log:printError("Error while connecting to database");
     }
+}
+
+public function getConnection() returns jdbc:Client | error {
+    dbClient = new(datasourceConfiguration.url, datasourceConfiguration.username, 
+        datasourceConfiguration.password,
+        connectionPool = { maxOpenConnections: datasourceConfiguration.maxPoolSize });
+    return dbClient;  
 }
