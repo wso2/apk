@@ -21,8 +21,8 @@ import runtime_domain_service.model;
 import ballerina/http;
 
 const string K8S_API_ENDPOINT = "/api/v1";
-string token = check io:fileReadString(runtimeConfiguration.k8sConfiguration.serviceAccountPath + "/token");
-string caCertPath = runtimeConfiguration.k8sConfiguration.serviceAccountPath + "/ca.crt";
+final string token = check io:fileReadString(runtimeConfiguration.k8sConfiguration.serviceAccountPath + "/token");
+final string caCertPath = runtimeConfiguration.k8sConfiguration.serviceAccountPath + "/ca.crt";
 string namespaceFile = runtimeConfiguration.k8sConfiguration.serviceAccountPath + "/namespace";
 string currentNameSpace = check io:fileReadString(namespaceFile);
 final http:Client k8sApiServerEp = check initializeK8sClient();
@@ -80,3 +80,46 @@ function deployHttpRoute(model:Httproute httproute, string namespace) returns js
     string endpoint = "/apis/gateway.networking.k8s.io/v1beta1/namespaces/" + namespace + "/httproutes";
     return k8sApiServerEp->post(endpoint, httproute, targetType = json);
 }
+
+function retrieveAllAPIS(string? continueToken) returns json|http:ClientError {
+    string? continueTokenValue = continueToken;
+    string endpoint = "/apis/dp.wso2.com/v1alpha1/apis";
+    if continueTokenValue is string {
+        if continueTokenValue.length() > 0 {
+            int? questionMarkIndex = endpoint.lastIndexOf("?");
+            if questionMarkIndex is int {
+                if questionMarkIndex > 0 {
+                    endpoint = endpoint + "&continue=" + continueTokenValue;
+                } else {
+                    endpoint = endpoint + "?continue=" + continueTokenValue;
+                }
+            } else {
+                endpoint = endpoint + "?continue=" + continueTokenValue;
+            }
+        }
+    }
+
+    return k8sApiServerEp->get(endpoint, targetType = json);
+}
+
+function retrieveAllServices(string? continueToken) returns json|http:ClientError {
+    string? continueTokenValue = continueToken;
+    string endpoint = "/api/v1/services?limit=4";
+    if continueTokenValue is string {
+        if continueTokenValue.length() > 0 {
+            int? questionMarkIndex = endpoint.lastIndexOf("?");
+            if questionMarkIndex is int {
+                if questionMarkIndex > 0 {
+                    endpoint = endpoint + "&continue=" + continueTokenValue;
+                } else {
+                    endpoint = endpoint + "?continue=" + continueTokenValue;
+                }
+            } else {
+                endpoint = endpoint + "?continue=" + continueTokenValue;
+            }
+        }
+    }
+
+    return k8sApiServerEp->get(endpoint, targetType = json);
+}
+
