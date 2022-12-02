@@ -36,15 +36,40 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute gwapiv1b1.HTTPRoute) err
 	var resources []*Resource
 	var endpointCluster EndpointCluster
 	var endPoints []Endpoint
+	var policies = OperationPolicies{}
+	hasPolicies := false
 	for _, rule := range httpRoute.Spec.Rules {
-		for _, match := range rule.Matches {
-			resourcePath, err := swagger.trimBasePath(*match.Path.Value)
-			if err != nil {
-				return fmt.Errorf("error parsing resource path: %v", err)
+		for _, filter := range rule.Filters {
+			hasPolicies = true
+			switch filter.Type {
+			case gwapiv1b1.HTTPRouteFilterURLRewrite:
+				policyParameters := make(map[string]interface{})
+				policyParameters[constants.RewritePathType] = filter.URLRewrite.Path.Type
+				policyParameters[constants.IncludeQueryParams] = true
+
+				switch filter.URLRewrite.Path.Type {
+				case gwapiv1b1.FullPathHTTPPathModifier:
+					policyParameters[constants.RewritePathResourcePath] = *filter.URLRewrite.Path.ReplaceFullPath
+					break
+				case gwapiv1b1.PrefixMatchHTTPPathModifier:
+					policyParameters[constants.RewritePathResourcePath] = *filter.URLRewrite.Path.ReplacePrefixMatch
+					break
+				}
+
+				policies.Request = append(policies.Request, Policy{
+					PolicyName: string(gwapiv1b1.HTTPRouteFilterURLRewrite),
+					Action:     constants.ActionRewritePath,
+					Parameters: policyParameters,
+				})
 			}
+		}
+
+		for _, match := range rule.Matches {
+			resourcePath := *match.Path.Value
 			resources = append(resources, &Resource{path: resourcePath,
-				methods:       getAllowedOperations(match.Method),
-				pathMatchType: *match.Path.Type})
+				methods:       getAllowedOperations(match.Method, policies),
+				pathMatchType: *match.Path.Type,
+				hasPolicies:   hasPolicies})
 		}
 		for _, backend := range rule.BackendRefs {
 			endPoints = append(endPoints,
@@ -63,17 +88,17 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute gwapiv1b1.HTTPRoute) err
 }
 
 // getAllowedOperations retuns a list of allowed operatons, if httpMethod is not specified then all methods are allowed.
-func getAllowedOperations(httpMethod *gwapiv1b1.HTTPMethod) []*Operation {
+func getAllowedOperations(httpMethod *gwapiv1b1.HTTPMethod, policies OperationPolicies) []*Operation {
 	if httpMethod != nil {
-		return []*Operation{{iD: uuid.New().String(), method: string(*httpMethod)}}
+		return []*Operation{{iD: uuid.New().String(), method: string(*httpMethod), policies: policies}}
 	}
-	return []*Operation{{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodGet)},
-		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodPost)},
-		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodDelete)},
-		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodPatch)},
-		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodPut)},
-		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodHead)},
-		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodOptions)}}
+	return []*Operation{{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodGet), policies: policies},
+		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodPost), policies: policies},
+		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodDelete), policies: policies},
+		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodPatch), policies: policies},
+		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodPut), policies: policies},
+		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodHead), policies: policies},
+		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodOptions), policies: policies}}
 }
 
 // SetInfoAPICR populates ID, ApiType, Version and XWso2BasePath of mgwSwagger.

@@ -40,19 +40,6 @@ import (
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
-func TestGenerateRoutePaths(t *testing.T) {
-	// Tested features
-	// 1. Route regex when xWso2BasePath is provided
-	xWso2BasePath := "/xWso2BasePath"
-	resourcePath := "/resource"
-
-	completeRoutePath := generateRoutePath(xWso2BasePath, resourcePath, gwapiv1b1.PathMatchPathPrefix)
-	// TODO: (VirajSalaka) check if it is possible to perform an equals operation instead of prefix
-	if !strings.HasPrefix(completeRoutePath, "^/xWso2BasePath/resource") {
-		t.Error("The generated path should contain xWso2BasePath as a prefix if xWso2Basepath is available.")
-	}
-}
-
 func TestCreateRoute(t *testing.T) {
 	// Tested features
 	// 1. RouteAction (Substitution involved) when xWso2BasePath is provided
@@ -252,7 +239,6 @@ func TestGenerateRegex(t *testing.T) {
 
 	type generateRegexTestItem struct {
 		pathMatchType gwapiv1b1.PathMatchType
-		basePath      string
 		resourcePath  string
 		userInputPath string
 		message       string
@@ -261,144 +247,127 @@ func TestGenerateRegex(t *testing.T) {
 	dataItems := []generateRegexTestItem{
 		{
 			pathMatchType: gwapiv1b1.PathMatchRegularExpression,
-			basePath:      "/v2",
 			resourcePath:  "/pet/[\\d]{1}",
-			userInputPath: "/v2/pet/5",
+			userInputPath: "/pet/5",
 			message:       "when regex is provided end of the path",
 			isMatched:     true,
 		},
 		{
 			pathMatchType: gwapiv1b1.PathMatchRegularExpression,
-			basePath:      "/v2",
 			resourcePath:  "/pet/[\\d]{1}",
-			userInputPath: "/v2/pet/5/",
+			userInputPath: "/pet/5/",
 			message:       "when the input path does not have tailing slash and user input path has trailing slash",
 			isMatched:     true,
 		},
 		{
 			pathMatchType: gwapiv1b1.PathMatchRegularExpression,
-			basePath:      "/v2",
 			resourcePath:  "/pet/[\\d]{1}/",
-			userInputPath: "/v2/pet/5",
+			userInputPath: "/pet/5",
 			message:       "when the input path has tailing slash and user input path does not have trailing slash",
 			isMatched:     true,
 		},
 		{
 			pathMatchType: gwapiv1b1.PathMatchRegularExpression,
-			basePath:      "/v2",
 			resourcePath:  "/pet/[\\d]{1}/",
-			userInputPath: "/v2/pet/5/",
+			userInputPath: "/pet/5/",
 			message:       "when both the input path and user input path has trailing slash",
 			isMatched:     true,
 		},
 		{
 			pathMatchType: gwapiv1b1.PathMatchRegularExpression,
-			basePath:      "/v2",
 			resourcePath:  "/pet/[\\d]{1}/info",
-			userInputPath: "/v2/pet/5/info",
+			userInputPath: "/pet/5/info",
 			message:       "when regex is provided in the middle of the path",
 			isMatched:     true,
 		},
 		{
 			pathMatchType: gwapiv1b1.PathMatchRegularExpression,
-			basePath:      "/v2",
 			resourcePath:  "/pet/[\\d]{1}/tst/[\\d]{1}",
-			userInputPath: "/v2/pet/5/tst/3",
+			userInputPath: "/pet/5/tst/3",
 			message:       "when multiple regex match sections are provided",
 			isMatched:     true,
 		},
 		{
 			pathMatchType: gwapiv1b1.PathMatchRegularExpression,
-			basePath:      "/v2",
 			resourcePath:  "/pet/[\\d]{1}",
-			userInputPath: "/v2/pet/5/test",
+			userInputPath: "/pet/5/test",
 			message:       "when path parameter is provided end of the path and provide incorrect path",
 			isMatched:     false,
 		},
 		{
 			pathMatchType: gwapiv1b1.PathMatchExact,
-			basePath:      "/v2",
 			resourcePath:  "/pet/5",
-			userInputPath: "/v2/pet/5",
+			userInputPath: "/pet/5",
 			message:       "when using an exact match type",
 			isMatched:     true,
 		},
 		{
 			pathMatchType: gwapiv1b1.PathMatchExact,
-			basePath:      "/v2",
 			resourcePath:  "/pet/5",
-			userInputPath: "/v2/pett/5",
+			userInputPath: "/pett/5",
 			message:       "when provide a incorrect path with exact match",
 			isMatched:     false,
 		},
 		{
 			pathMatchType: gwapiv1b1.PathMatchPathPrefix,
-			basePath:      "/v2",
 			resourcePath:  "/pet",
-			userInputPath: "/v2/pet/",
+			userInputPath: "/pet/",
 			message:       "when using path prefix type match, a single trailing slash is allowed",
 			isMatched:     true,
 		},
 		{
 			pathMatchType: gwapiv1b1.PathMatchPathPrefix,
-			basePath:      "/v2",
 			resourcePath:  "/pet",
-			userInputPath: "/v2/pet",
+			userInputPath: "/pet",
 			message:       "when using path prefix type, it can match any value after a single slash",
 			isMatched:     true,
 		},
 		{
 			pathMatchType: gwapiv1b1.PathMatchPathPrefix,
-			basePath:      "/v2",
 			resourcePath:  "/pet",
-			userInputPath: "/v2/pet/foo/bar",
+			userInputPath: "/pet/foo/bar",
 			message:       "when using path prefix type, it can match several slash and value sections",
 			isMatched:     true,
 		},
 		{
 			pathMatchType: gwapiv1b1.PathMatchPathPrefix,
-			basePath:      "/v2",
 			resourcePath:  "/pet",
-			userInputPath: "/v2/pet123",
+			userInputPath: "/pet123",
 			message:       "cannot have a value without starting with a trailing slash",
 			isMatched:     false,
 		},
 		{
 			pathMatchType: gwapiv1b1.PathMatchPathPrefix,
-			basePath:      "/v2",
 			resourcePath:  "/pet/[\\d]{1}.api",
-			userInputPath: "/v2/pet/findByIdstatus=availabe",
+			userInputPath: "/pet/findByIdstatus=availabe",
 			message:       "when the resource regex section is suffixed",
 			isMatched:     false,
 		},
 		{
 			pathMatchType: gwapiv1b1.PathMatchRegularExpression,
-			basePath:      "/v2",
 			resourcePath:  "/pet/[a-z0-9]+.api",
-			userInputPath: "/v2/pet/pet1.api",
+			userInputPath: "/pet/pet1.api",
 			message:       "when the resource path param suffixed",
 			isMatched:     true,
 		},
 		{
 			pathMatchType: gwapiv1b1.PathMatchRegularExpression,
-			basePath:      "/v2",
 			resourcePath:  "/pet/pet[a-z0-9]+",
-			userInputPath: "/v2/pet/findByIdstatus=availabe",
+			userInputPath: "/pet/findByIdstatus=availabe",
 			message:       "when the resource ends with regex section",
 			isMatched:     false,
 		},
 		{
 			pathMatchType: gwapiv1b1.PathMatchRegularExpression,
-			basePath:      "/v2",
 			resourcePath:  "/pet/pet[a-z0-9]+",
-			userInputPath: "/v2/pet/pet1",
+			userInputPath: "/pet/pet1",
 			message:       "when the resource ends with regex section",
 			isMatched:     true,
 		},
 	}
 
 	for _, item := range dataItems {
-		resultPattern := generateRoutePath(item.basePath, item.resourcePath, item.pathMatchType)
+		resultPattern := generateRoutePath(item.resourcePath, item.pathMatchType)
 		// regexp.MatchString also returns true for partial matches. Therefore, an additional $ is added
 		// below to replicate the behavior of envoy proxy. As per the doc,
 		// "The entire path (without the query string) must match the regex.
@@ -412,6 +381,7 @@ func TestGenerateRegex(t *testing.T) {
 
 func TestGenerateSubstitutionString(t *testing.T) {
 	type generateSubsStringTestItem struct {
+		pathMatchType      gwapiv1b1.PathMatchType
 		inputPath          string
 		expectedSubsString string
 		message            string
@@ -419,62 +389,50 @@ func TestGenerateSubstitutionString(t *testing.T) {
 	}
 	dataItems := []generateSubsStringTestItem{
 		{
+			gwapiv1b1.PathMatchExact,
+			"/v2/pet/",
+			"/v2/pet/",
+			"when using exact type",
+			true,
+		},
+		{
+			gwapiv1b1.PathMatchPathPrefix,
+			"/v2/pet/",
+			"/v2/pet\\1",
+			"when using path prefix type",
+			true,
+		},
+		{
+			gwapiv1b1.PathMatchRegularExpression,
+			"/v2/pet/(dog-[\\d]{2})",
+			"\\1",
+			"when using regex type",
+			true,
+		},
+		{
+			gwapiv1b1.PathMatchExact,
 			"/v2/pet",
-			"/basepath/v2/pet",
-			"when input path does not have a trailing slash",
+			"/v2/pet",
+			"when using exact type without a trailing slash in the path",
 			true,
 		},
 		{
-			"/v2/pet/",
-			"/basepath/v2/pet/",
-			"when input path has a trailing slash",
+			gwapiv1b1.PathMatchPathPrefix,
+			"/v2/pet",
+			"/v2/pet\\1",
+			"when using path prefix type without a trailing slash in the path",
 			true,
 		},
 		{
-			"/v2/pet/",
-			"/basepath/v2/pet",
-			"when input path has a trailing slash",
-			false,
-		},
-		{
-			"/v2/pet/{petId}",
-			"/basepath/v2/pet/\\1",
-			"when input path has a path param",
-			true,
-		},
-		{
-			"/v2/pet/{petId}/",
-			"/basepath/v2/pet/\\1/",
-			"when input path has a path param and trailing slash",
-			true,
-		},
-		{
-			"/v2/pet/{petId}/info",
-			"/basepath/v2/pet/\\1/info",
-			"when input path has a path param in the middle of the path",
-			true,
-		},
-		{
-			"/v2/pet/{petId}/test/{petId}",
-			"/basepath/v2/pet/\\1/test/\\2",
-			"when input path has a two path params",
-			true,
-		},
-		{
-			"/v2/*",
-			"/basepath/v2\\1",
-			"when input path has a wildcard at the end",
-			true,
-		},
-		{
-			"/v2/{petId}/*",
-			"/basepath/v2/\\1\\2",
-			"when input path has a path param and a wildcard at the end",
+			gwapiv1b1.PathMatchRegularExpression,
+			"/v2/pet/(dog-[\\d]{2})/",
+			"\\1",
+			"when using regex type with a trailing slash in the path",
 			true,
 		},
 	}
 	for _, item := range dataItems {
-		generatedSubstitutionString := generateSubstitutionString("/basepath", item.inputPath, gwapiv1b1.PathMatchPathPrefix)
+		generatedSubstitutionString := generateSubstitutionString(item.inputPath, item.pathMatchType)
 		if item.shouldEqual {
 			assert.Equal(t, item.expectedSubsString, generatedSubstitutionString, item.message)
 		} else {

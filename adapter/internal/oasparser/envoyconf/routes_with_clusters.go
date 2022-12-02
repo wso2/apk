@@ -764,7 +764,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		resourceMethods = resource.GetMethodList()
 		pathMatchType = resource.GetPathMatchType()
 	}
-	routePath := generateRoutePath(basePath, resourcePath, pathMatchType)
+	routePath := generateRoutePath(resourcePath, pathMatchType)
 
 	// route path could be empty only if there is no basePath for API or the endpoint available,
 	// and resourcePath is also an empty string.
@@ -1300,11 +1300,11 @@ func CreateReadyEndpoint() *routev3.Route {
 }
 
 // generateRoutePath generates route paths for the api resources.
-func generateRoutePath(basePath, resourcePath string, pathMatchType gwapiv1b1.PathMatchType) string {
-	newPath := strings.TrimSuffix(basePath+resourcePath, "/")
+func generateRoutePath(resourcePath string, pathMatchType gwapiv1b1.PathMatchType) string {
+	newPath := strings.TrimSuffix(resourcePath, "/")
 	switch pathMatchType {
 	case gwapiv1b1.PathMatchExact:
-		return fmt.Sprintf("^%s([/]{0,1})", newPath)
+		fallthrough
 	case gwapiv1b1.PathMatchRegularExpression:
 		return fmt.Sprintf("^%s([/]{0,1})", newPath)
 	case gwapiv1b1.PathMatchPathPrefix:
@@ -1322,9 +1322,9 @@ func generateRoutePathForReWrite(basePath, resourcePath string, pathMatchType gw
 	case gwapiv1b1.PathMatchPathPrefix:
 		fallthrough
 	default:
-		return generateRoutePath(basePath, resourcePath, pathMatchType)
+		return generateRoutePath(resourcePath, pathMatchType)
 	case gwapiv1b1.PathMatchRegularExpression:
-		return fmt.Sprintf("^%s(%s)", basePath, strings.TrimSuffix(resourcePath, "/"))
+		return fmt.Sprintf("^(%s)", strings.TrimSuffix(resourcePath, "/"))
 	}
 }
 
@@ -1337,8 +1337,7 @@ func replacePathParamsWithCaptureGroups(resourcePath string) string {
 }
 
 // generateSubstitutionString returns a regex that has indexes to place the path variables extracted by capture groups
-func generateSubstitutionString(endpointBasepath string, resourcePath string,
-	pathMatchType gwapiv1b1.PathMatchType) string {
+func generateSubstitutionString(resourcePath string, pathMatchType gwapiv1b1.PathMatchType) string {
 	var resourceRegex string
 	switch pathMatchType {
 	case gwapiv1b1.PathMatchExact:
@@ -1349,7 +1348,7 @@ func generateSubstitutionString(endpointBasepath string, resourcePath string,
 	case gwapiv1b1.PathMatchRegularExpression:
 		resourceRegex = "\\1"
 	}
-	return endpointBasepath + resourceRegex
+	return resourceRegex
 }
 
 func isMethodRewrite(resourcePath, method string, policyParams interface{}) (isMethodRewrite bool, err error) {

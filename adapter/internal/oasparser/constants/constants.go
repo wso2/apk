@@ -98,6 +98,7 @@ const (
 	ActionRewritePath        string = "REWRITE_RESOURCE_PATH"
 
 	RewritePathResourcePath    string = "resourcePath"
+	RewritePathType            string = "rewritePathType"
 	InterceptorServiceURL      string = "interceptorServiceURL"
 	InterceptorServiceIncludes string = "includes"
 	IncludeQueryParams         string = "includeQueryParams"
