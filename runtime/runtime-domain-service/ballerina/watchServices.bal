@@ -17,51 +17,51 @@
 //
 import ballerina/websocket;
 import ballerina/lang.value;
-import ballerina/task;
 import ballerina/log;
 
-final websocket:Client servicesClient = check new ("wss://" + k8sHost + "/api/v1/watch/services",
-auth = {
-    token: token
-},
-secureSocket = {
-    cert: caCertPath
-});
-
 map<Service> services = {};
+string servicesResourceVersion = "";
+websocket:Client|error|() servicesClient = ();
 
 class ServiceTask {
-    *task:Job;
 
-    public function execute() {
-        do {
-            string|error message = check servicesClient->readMessage();
-            if message is string {
-                json value = check value:fromJsonString(message);
-                log:printInfo(value:toJsonString(value));
-                string eventType = <string>check value.'type;
-                json eventValue = <json>check value.'object;
-                Service|error serviceModel = createServiceModel(eventValue);
-                if serviceModel is Service {
-                    if containsNamespace(serviceModel.namespace) {
-                        if eventType == "ADDED" {
-                            services[serviceModel.id] = serviceModel;
-                        } else if (eventType == "MODIFIED") {
-                            _ = services.remove(serviceModel.id);
-                            services[serviceModel.id] = serviceModel;
-                        } else if (eventType == "DELETED") {
-                            _ = services.remove(serviceModel.id);
+    function init(string resourceVersion) {
+        servicesClient = getServiceClient(servicesResourceVersion);
+    }
+    public function startListening() {
+
+        worker WatchServices {
+            while true {
+                do {
+                    websocket:Client|error|() serviceClientResult = servicesClient;
+                    if serviceClientResult is websocket:Client {
+                        if !serviceClientResult.isOpen() {
+                            log:printDebug("ServiceWebsocket Client connection closed conectionId: " + serviceClientResult.getConnectionId());
+                            servicesClient = getServiceClient(servicesResourceVersion);
+                            websocket:Client|error|() retryClient = servicesClient;
+                            if retryClient is websocket:Client {
+                                log:printDebug("Reinitializing client..");
+                                log:printDebug("Intializd new Client Connection conectionId: " + retryClient.getConnectionId() + " state: " + retryClient.isOpen().toString());
+                                _ = check readServiceEvents(retryClient);
+                            } else if retryClient is error {
+                                log:printError("error while reading message", retryClient);
+                            }
+                        } else {
+                            log:printDebug("Intializd new Client Connection conectionId: " + serviceClientResult.getConnectionId() + " state: " + serviceClientResult.isOpen().toString());
+                            _ = check readServiceEvents(serviceClientResult);
                         }
+
+                    } else if serviceClientResult is error {
+                        log:printError("error while reading message", serviceClientResult);
                     }
-                } else {
-                    log:printError("Unable to read service messages" + serviceModel.message());
+                } on fail var e {
+                    log:printError("Unable to read services messages", e);
                 }
             }
         }
-        on fail var e {
-            log:printError("Unable to read service messages", e);
-        }
+
     }
+
 }
 
 function containsNamespace(string namespace) returns boolean {
@@ -118,4 +118,70 @@ function getService(string name, string namespace) returns Service? {
     }
 
     return;
+}
+
+function grtServiceById(string id) returns Service|error {
+    return trap services.get(id);
+}
+
+function putAllServices(json[] servicesEntries) {
+    foreach json serviceData in servicesEntries {
+        Service|error serviceEntry = createServiceModel(serviceData);
+        if serviceEntry is Service {
+            services[serviceEntry.id] = serviceEntry;
+        }
+    }
+}
+
+function setServicesResourceVersion(string resourceVersionValue) {
+    servicesResourceVersion = resourceVersionValue;
+}
+
+isolated function getServiceClient(string resourceVersion) returns websocket:Client|error|() {
+    string requestURl = "wss://" + runtimeConfiguration.k8sConfiguration.host + "/api/v1/watch/services";
+    if resourceVersion.length() > 0 {
+        requestURl = requestURl + "?resourceVersion=" + resourceVersion.toString();
+    }
+    return new (requestURl,
+    auth = {
+        token: token
+    },
+    secureSocket = {
+        cert: caCertPath
+    },
+        readTimeout = runtimeConfiguration.k8sConfiguration.readTimeout
+    );
+}
+
+function readServiceEvents(websocket:Client serviceWebSocketClient) returns error? {
+    log:printDebug("Using Client Connection conectionId: " + serviceWebSocketClient.getConnectionId() + " state: " + serviceWebSocketClient.isOpen().toString());
+    if !serviceWebSocketClient.isOpen() {
+        error err = error("connection closed");
+        return err;
+    }
+    string|error message = check serviceWebSocketClient->readMessage();
+    if message is string {
+        json value = check value:fromJsonString(message);
+        log:printInfo(value:toJsonString(value));
+        string eventType = <string>check value.'type;
+        json eventValue = <json>check value.'object;
+        json metadata = <json>check eventValue.metadata;
+        string latestResourceVersion = <string>check metadata.resourceVersion;
+        setServicesResourceVersion(latestResourceVersion);
+        Service|error serviceModel = createServiceModel(eventValue);
+        if serviceModel is Service {
+            if containsNamespace(serviceModel.namespace) {
+                if eventType == "ADDED" {
+                    services[serviceModel.id] = serviceModel;
+                } else if (eventType == "MODIFIED") {
+                    _ = services.remove(serviceModel.id);
+                    services[serviceModel.id] = serviceModel;
+                } else if (eventType == "DELETED") {
+                    _ = services.remove(serviceModel.id);
+                }
+            }
+        } else {
+            log:printError("Unable to read service messages" + serviceModel.message());
+        }
+    }
 }

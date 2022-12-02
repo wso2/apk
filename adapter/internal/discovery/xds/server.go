@@ -91,7 +91,6 @@ var (
 	reverseAPINameVersionMap map[string]string
 
 	// Envoy Label as map key
-	envoyUpdateVersionMap  map[string]int64                       // GW-Label -> XDS version map
 	envoyListenerConfigMap map[string][]*listenerv3.Listener      // GW-Label -> Listener Configuration map
 	envoyRouteConfigMap    map[string]*routev3.RouteConfiguration // GW-Label -> Routes Configuration map
 	envoyClusterConfigMap  map[string][]*clusterv3.Cluster        // GW-Label -> Global Cluster Configuration map
@@ -151,8 +150,6 @@ func init() {
 
 	apiUUIDToGatewayToVhosts = make(map[string]map[string]string)
 	apiToVhostsMap = make(map[string]map[string]struct{})
-	//TODO: (VirajSalaka) Swagger or project should contain the version as a meta information
-	envoyUpdateVersionMap = make(map[string]int64)
 	envoyListenerConfigMap = make(map[string][]*listenerv3.Listener)
 	envoyRouteConfigMap = make(map[string]*routev3.RouteConfiguration)
 	envoyClusterConfigMap = make(map[string][]*clusterv3.Cluster)
@@ -1410,8 +1407,8 @@ func UpdateAPICache(vHost string, newLabels []string, mgwSwagger model.MgwSwagge
 	mutexForInternalMapUpdate.Lock()
 	defer mutexForInternalMapUpdate.Unlock()
 
-	oldLabels, _ := orgIDOpenAPIEnvoyMap[mgwSwagger.OrganizationID][mgwSwagger.GetID()]
 	apiIdentifier := GenerateIdentifierForAPIWithUUID(vHost, mgwSwagger.UUID)
+	oldLabels := orgIDOpenAPIEnvoyMap[mgwSwagger.GetOrganizationID()][apiIdentifier]
 
 	if _, ok := orgIDAPIMgwSwaggerMap[mgwSwagger.OrganizationID]; ok {
 		orgIDAPIMgwSwaggerMap[mgwSwagger.GetOrganizationID()][apiIdentifier] = mgwSwagger

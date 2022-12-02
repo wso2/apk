@@ -95,7 +95,6 @@ spec:
             - apiVersion
             - context
             - definitionFileRef
-            - prodHTTPRouteRef
             type: object
           status:
             description: APIStatus defines the observed state of API

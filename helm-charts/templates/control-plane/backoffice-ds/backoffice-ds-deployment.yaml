@@ -1,0 +1,57 @@
+# Copyright (c) 2022, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
+#
+# WSO2 LLC. licenses this file to you under the Apache License,
+# Version 2.0 (the "License"); you may not use this file except
+# in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+{{- if .Values.wso2.apk.cp.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-deployment
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.wso2.apk.cp.backoffice.deployment.replicas }}
+  strategy:
+    type: {{ .Values.wso2.apk.cp.backoffice.deployment.strategy }}
+  selector:
+    matchLabels:
+{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.wso2.apk.cp.backoffice.appName ) | indent 6}}
+  template:
+    metadata:
+      labels:
+{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.wso2.apk.cp.backoffice.appName ) | indent 8}}
+    spec:
+      initContainers:
+        - name: init-db
+          image: busybox:1.32
+          command: ['sh', '-c', 'echo -e "Checking for the availability of DB Server deployment"; while ! nc -z "{{ .Values.postgresql.fullnameOverride }}" {{ .Values.postgresql.primary.service.ports.postgresql }}; do sleep 1; printf "-"; done; echo -e "  >> DB Server has started";']
+      containers:
+        - name: backoffice-ds
+          image: {{ .Values.wso2.apk.cp.backoffice.deployment.image }}
+          imagePullPolicy: {{ .Values.wso2.apk.cp.backoffice.deployment.imagePullPolicy }}
+          ports:
+            - containerPort: 9443
+              protocol: "TCP"
+{{ include "apk-helm.deployment.readinessProbe.http" .Values.wso2.apk.cp.backoffice.deployment | indent 10 }}
+{{ include "apk-helm.deployment.livenessProbe.http" .Values.wso2.apk.cp.backoffice.deployment | indent 10 }}
+{{ include "apk-helm.deployment.resources" .Values.wso2.apk.cp.backoffice.deployment.resources | indent 10 }}
+          volumeMounts:
+                - mountPath: /home/wso2apk/backoffice/conf/Config.toml
+                  name: config-toml-volume
+                  subPath: Config.toml
+      volumes:
+        - name: config-toml-volume
+          configMap:
+            name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-configmap
+{{- end -}}

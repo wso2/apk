@@ -16,28 +16,40 @@
 // under the License.
 //
 
-import ballerina/io;
-import admin_service.org.wso2.apk.apimgt.api as api;
-import admin_service.org.wso2.apk.apimgt.init as apkinit;
+import ballerina/log;
+import ballerinax/java.jdbc;
+import ballerina/sql;
 import ballerina/http;
 
 configurable DatasourceConfiguration datasourceConfiguration = ?;
+jdbc:Client|sql:Error dbClient;
 configurable ThrottlingConfiguration throttleConfig = ?;
 
 configurable int ADMIN_PORT = 9443;
 
 listener http:Listener ep0 = new (ADMIN_PORT);
 
+
 function init() {
-    io:println("Starting APK Admin Domain Service...");
+    log:printInfo("Starting APK Admin Domain Service...");
     APKConfiguration apkConfig = {
         throttlingConfiguration: throttleConfig,
         datasourceConfiguration: datasourceConfiguration
     };
-    string configJson = apkConfig.toJson().toJsonString();
-    // Pass the configurations to java init component
-    api:APIManagementException? err = apkinit:APKComponent_activate(configJson);
-    if (err != ()) {
-        io:println(err);
+    dbClient = new(datasourceConfiguration.url, datasourceConfiguration.username, 
+        datasourceConfiguration.password,
+        connectionPool = { maxOpenConnections: datasourceConfiguration.maxPoolSize });
+    jdbc:Client | error dbClient  = getConnection();
+    if dbClient is error {
+        return log:printError("Error while connecting to database");
     }
 }
+
+public function getConnection() returns jdbc:Client | error {
+    dbClient = new(datasourceConfiguration.url, datasourceConfiguration.username, 
+        datasourceConfiguration.password,
+        connectionPool = { maxOpenConnections: datasourceConfiguration.maxPoolSize });
+    return dbClient;  
+ }
+
+

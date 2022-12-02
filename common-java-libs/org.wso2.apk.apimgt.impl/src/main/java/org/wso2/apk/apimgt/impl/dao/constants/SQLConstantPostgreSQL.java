@@ -41,8 +41,8 @@ public class SQLConstantPostgreSQL extends SQLConstants{
                     "   UUID, " +
                     "   APP.CREATED_BY AS CREATED_BY " +
                     " FROM" +
-                    "   AM_APPLICATION APP, " +
-                    "   AM_SUBSCRIBER SUB  " +
+                    "   APPLICATION APP, " +
+                    "   SUBSCRIBER SUB  " +
                     " WHERE " +
                     "   SUB.SUBSCRIBER_ID = APP.SUBSCRIBER_ID " +
                     " AND " +
@@ -53,7 +53,7 @@ public class SQLConstantPostgreSQL extends SQLConstants{
                     "    NAME like ?" +
                     " ORDER BY $1 $2 " +
                     " offset ? limit  ? "+
-                    " )x left join AM_BLOCK_CONDITIONS bl on  ( bl.TYPE = 'APPLICATION' AND bl.BLOCK_CONDITION = concat(concat(x.USER_ID,':'),x.name)) ";
+                    " )x left join BLOCK_CONDITION bl on  ( bl.TYPE = 'APPLICATION' AND bl.BLOCK_CONDITION = concat(concat(x.USER_ID,':'),x.name)) ";
 
 
     public static final String GET_APPLICATIONS_PREFIX_NONE_CASESENSITVE_WITHGROUPID =
@@ -73,8 +73,8 @@ public class SQLConstantPostgreSQL extends SQLConstants{
                     "   UUID, " +
                     "   APP.CREATED_BY AS CREATED_BY " +
                     " FROM" +
-                    "   AM_APPLICATION APP, " +
-                    "   AM_SUBSCRIBER SUB  " +
+                    "   APPLICATION APP, " +
+                    "   SUBSCRIBER SUB  " +
                     " WHERE " +
                     "   SUB.SUBSCRIBER_ID = APP.SUBSCRIBER_ID " +
                     " AND " +
@@ -85,7 +85,7 @@ public class SQLConstantPostgreSQL extends SQLConstants{
                     "    NAME like ?"+
                     " ORDER BY $1 $2 " +
                     " offset ? limit  ? "+
-                    " )x left join AM_BLOCK_CONDITIONS bl on  ( bl.TYPE = 'APPLICATION' AND bl.BLOCK_CONDITION = concat(concat(x.USER_ID,':'),x.name)) ";
+                    " )x left join BLOCK_CONDITION bl on  ( bl.TYPE = 'APPLICATION' AND bl.BLOCK_CONDITION = concat(concat(x.USER_ID,':'),x.name)) ";
 
     public static final String GET_APPLICATIONS_PREFIX_CASESENSITVE_WITH_MULTIGROUPID =
             "select distinct x.*,bl.ENABLED from (" +
@@ -104,16 +104,16 @@ public class SQLConstantPostgreSQL extends SQLConstants{
                     "   UUID, " +
                     "   APP.CREATED_BY AS CREATED_BY " +
                     " FROM" +
-                    "   AM_APPLICATION APP, " +
-                    "   AM_SUBSCRIBER SUB  " +
+                    "   APPLICATION APP, " +
+                    "   SUBSCRIBER SUB  " +
                     " WHERE " +
                     "   SUB.SUBSCRIBER_ID = APP.SUBSCRIBER_ID " +
                     " AND (" +
-                    "    (APPLICATION_ID IN ( SELECT APPLICATION_ID FROM AM_APPLICATION_GROUP_MAPPING WHERE GROUP_ID IN ($params) AND TENANT = ?)) " +
+                    "    (APPLICATION_ID IN ( SELECT APPLICATION_ID FROM APPLICATION_GROUP_MAPPING WHERE GROUP_ID IN ($params) AND TENANT = ?)) " +
                     "           OR " +
                     "    SUB.USER_ID = ?" +
                     "           OR " +
-                    "    (APP.APPLICATION_ID IN (SELECT APPLICATION_ID FROM AM_APPLICATION WHERE GROUP_ID = ?))" +
+                    "    (APP.APPLICATION_ID IN (SELECT APPLICATION_ID FROM APPLICATION WHERE GROUP_ID = ?))" +
                     " )" +
                     " AND " +
                     "   APP.ORGANIZATION = ? " +
@@ -121,7 +121,7 @@ public class SQLConstantPostgreSQL extends SQLConstants{
                     "    NAME like ?" +
                     " ORDER BY $1 $2 " +
                     " offset ? limit  ? "+
-                    " )x left join AM_BLOCK_CONDITIONS bl on  ( bl.TYPE = 'APPLICATION' AND bl.BLOCK_CONDITION = concat(concat(x.USER_ID,':'),x.name)) ";
+                    " )x left join BLOCK_CONDITION bl on  ( bl.TYPE = 'APPLICATION' AND bl.BLOCK_CONDITION = concat(concat(x.USER_ID,':'),x.name)) ";
 
 
     public static final String GET_APPLICATIONS_PREFIX_NONE_CASESENSITVE_WITH_MULTIGROUPID =
@@ -141,17 +141,17 @@ public class SQLConstantPostgreSQL extends SQLConstants{
                     "   UUID, " +
                     "   APP.CREATED_BY AS CREATED_BY " +
                     " FROM" +
-                    "   AM_APPLICATION APP, " +
-                    "   AM_SUBSCRIBER SUB  " +
+                    "   APPLICATION APP, " +
+                    "   SUBSCRIBER SUB  " +
                     " WHERE " +
                     "   SUB.SUBSCRIBER_ID = APP.SUBSCRIBER_ID " +
                     " AND (" +
-                    "    (APPLICATION_ID IN ( SELECT APPLICATION_ID FROM AM_APPLICATION_GROUP_MAPPING WHERE GROUP_ID " +
+                    "    (APPLICATION_ID IN ( SELECT APPLICATION_ID FROM APPLICATION_GROUP_MAPPING WHERE GROUP_ID " +
                     " IN ($params) AND TENANT = ? ))" +
                     "           OR " +
                     "    (LOWER (SUB.USER_ID) = LOWER (?))" +
                     "           OR " +
-                    "    (APP.APPLICATION_ID IN (SELECT APPLICATION_ID FROM AM_APPLICATION WHERE GROUP_ID = ?))" +
+                    "    (APP.APPLICATION_ID IN (SELECT APPLICATION_ID FROM APPLICATION WHERE GROUP_ID = ?))" +
                     " )" +
                     " AND " +
                     "   APP.ORGANIZATION = ? " +
@@ -159,7 +159,7 @@ public class SQLConstantPostgreSQL extends SQLConstants{
                     "    NAME like ?"+
                     " ORDER BY $1 $2 " +
                     " offset ? limit  ? "+
-                    " )x left join AM_BLOCK_CONDITIONS bl on  ( bl.TYPE = 'APPLICATION' AND bl.BLOCK_CONDITION = concat(concat(x.USER_ID,':'),x.name)) ";
+                    " )x left join BLOCK_CONDITION bl on  ( bl.TYPE = 'APPLICATION' AND bl.BLOCK_CONDITION = concat(concat(x.USER_ID,':'),x.name)) ";
 
 
     public static final String GET_APPLICATIONS_PREFIX_CASESENSITVE =
@@ -179,8 +179,8 @@ public class SQLConstantPostgreSQL extends SQLConstants{
                     "   UUID, " +
                     "   APP.CREATED_BY AS CREATED_BY " +
                     " FROM" +
-                    "   AM_APPLICATION APP, " +
-                    "   AM_SUBSCRIBER SUB  " +
+                    "   APPLICATION APP, " +
+                    "   SUBSCRIBER SUB  " +
                     " WHERE " +
                     "   SUB.SUBSCRIBER_ID = APP.SUBSCRIBER_ID " +
                     " AND " +
@@ -191,7 +191,7 @@ public class SQLConstantPostgreSQL extends SQLConstants{
                     "    NAME like ?"+
                     " ORDER BY $1 $2 " +
                     " offset ? limit  ? "+
-                    " )x left join AM_BLOCK_CONDITIONS bl on  ( bl.TYPE = 'APPLICATION' AND bl.BLOCK_CONDITION = concat(concat(x.USER_ID,':'),x.name)) ";
+                    " )x left join BLOCK_CONDITION bl on  ( bl.TYPE = 'APPLICATION' AND bl.BLOCK_CONDITION = concat(concat(x.USER_ID,':'),x.name)) ";
 
     public static final String GET_APPLICATIONS_PREFIX_NONE_CASESENSITVE =
             "select distinct x.*,bl.ENABLED from (" +
@@ -210,8 +210,8 @@ public class SQLConstantPostgreSQL extends SQLConstants{
                     "   UUID, " +
                     "   APP.CREATED_BY AS CREATED_BY " +
                     " FROM" +
-                    "   AM_APPLICATION APP, " +
-                    "   AM_SUBSCRIBER SUB  " +
+                    "   APPLICATION APP, " +
+                    "   SUBSCRIBER SUB  " +
                     " WHERE " +
                     "   SUB.SUBSCRIBER_ID = APP.SUBSCRIBER_ID " +
                     " AND " +
@@ -222,7 +222,7 @@ public class SQLConstantPostgreSQL extends SQLConstants{
                     "    NAME like ?"+
                     " ORDER BY $1 $2 " +
                     " offset ? limit  ? "+
-                    " )x left join AM_BLOCK_CONDITIONS bl on  ( bl.TYPE = 'APPLICATION' AND bl.BLOCK_CONDITION = concat(concat(x.USER_ID,':'),x.name)) ";
+                    " )x left join BLOCK_CONDITION bl on  ( bl.TYPE = 'APPLICATION' AND bl.BLOCK_CONDITION = concat(concat(x.USER_ID,':'),x.name)) ";
 
     public static final String GET_APPLICATIONS_BY_ORGANIZATION =
             "   SELECT " +
@@ -237,8 +237,8 @@ public class SQLConstantPostgreSQL extends SQLConstants{
                     "   APP.NAME AS NAME," +
                     "   APP.APPLICATION_STATUS as APPLICATION_STATUS  " +
                     " FROM" +
-                    "   AM_APPLICATION APP, " +
-                    "   AM_SUBSCRIBER SUB  " +
+                    "   APPLICATION APP, " +
+                    "   SUBSCRIBER SUB  " +
                     " WHERE " +
                     "   SUB.SUBSCRIBER_ID = APP.SUBSCRIBER_ID " +
                     " AND " +
@@ -251,41 +251,41 @@ public class SQLConstantPostgreSQL extends SQLConstants{
 
     public static final String GET_REPLIES_SQL =
             "SELECT " +
-                "AM_API_COMMENTS.COMMENT_ID, " +
-                "AM_API_COMMENTS.COMMENT_TEXT, " +
-                "AM_API_COMMENTS.CREATED_BY, " +
-                "AM_API_COMMENTS.CREATED_TIME, " +
-                "AM_API_COMMENTS.UPDATED_TIME, " +
-                "AM_API_COMMENTS.API_ID, " +
-                "AM_API_COMMENTS.PARENT_COMMENT_ID, " +
-                "AM_API_COMMENTS.ENTRY_POINT, " +
-                "AM_API_COMMENTS.CATEGORY " +
+                "API_COMMENTS.COMMENT_ID, " +
+                "API_COMMENTS.COMMENT_TEXT, " +
+                "API_COMMENTS.CREATED_BY, " +
+                "API_COMMENTS.CREATED_TIME, " +
+                "API_COMMENTS.UPDATED_TIME, " +
+                "API_COMMENTS.API_ID, " +
+                "API_COMMENTS.PARENT_COMMENT_ID, " +
+                "API_COMMENTS.ENTRY_POINT, " +
+                "API_COMMENTS.CATEGORY " +
             "FROM " +
-                "AM_API_COMMENTS, " +
-                "AM_API API " +
+                "API_COMMENTS, " +
+                "API API " +
             "WHERE " +
                 "API.API_UUID = ? " +
-                "AND API.API_ID = AM_API_COMMENTS.API_ID " +
+                "AND API.API_ID = API_COMMENTS.API_ID " +
                 "AND PARENT_COMMENT_ID = ? " +
-                "ORDER BY AM_API_COMMENTS.CREATED_TIME ASC OFFSET ? LIMIT ?";
+                "ORDER BY API_COMMENTS.CREATED_TIME ASC OFFSET ? LIMIT ?";
 
     public static final String GET_ROOT_COMMENTS_SQL =
             "SELECT " +
-                "AM_API_COMMENTS.COMMENT_ID, " +
-                "AM_API_COMMENTS.COMMENT_TEXT, " +
-                "AM_API_COMMENTS.CREATED_BY, " +
-                "AM_API_COMMENTS.CREATED_TIME, " +
-                "AM_API_COMMENTS.UPDATED_TIME, " +
-                "AM_API_COMMENTS.API_ID, " +
-                "AM_API_COMMENTS.PARENT_COMMENT_ID, " +
-                "AM_API_COMMENTS.ENTRY_POINT, " +
-                "AM_API_COMMENTS.CATEGORY " +
+                "API_COMMENTS.COMMENT_ID, " +
+                "API_COMMENTS.COMMENT_TEXT, " +
+                "API_COMMENTS.CREATED_BY, " +
+                "API_COMMENTS.CREATED_TIME, " +
+                "API_COMMENTS.UPDATED_TIME, " +
+                "API_COMMENTS.API_ID, " +
+                "API_COMMENTS.PARENT_COMMENT_ID, " +
+                "API_COMMENTS.ENTRY_POINT, " +
+                "API_COMMENTS.CATEGORY " +
             "FROM " +
-                "AM_API_COMMENTS, " +
-                "AM_API API " +
+                "API_COMMENTS, " +
+                "API API " +
             "WHERE " +
                 "API.API_UUID = ? " +
-                "AND API.API_ID = AM_API_COMMENTS.API_ID " +
+                "AND API.API_ID = API_COMMENTS.API_ID " +
                 "AND PARENT_COMMENT_ID IS NULL " +
-                "ORDER BY AM_API_COMMENTS.CREATED_TIME DESC OFFSET ? LIMIT ?";
+                "ORDER BY API_COMMENTS.CREATED_TIME DESC OFFSET ? LIMIT ?";
 }

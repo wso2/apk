@@ -1608,7 +1608,7 @@ public class ApiMgtDAO {
                 if (consumerKey != null) {
                     KeyManager keyManager = null;
                     // TODO: getKM instance
-                            // KeyManagerHolder.getKeyManagerInstance(tenntDomain, keyManagerName);
+                    // KeyManagerHolder.getKeyManagerInstance(tenntDomain, keyManagerName);
                     if (keyManager != null) {
                         OAuthApplicationInfo oAuthApplication = keyManager.retrieveApplication(consumerKey);
                         keyTypeWiseOAuthApps.put(keyManagerName, oAuthApplication);
@@ -4477,7 +4477,7 @@ public class ApiMgtDAO {
                     deleteDomainApp.addBatch();
                     KeyManager keyManager = null;
                     // TODO: get km instance
-                           // KeyManagerHolder.getKeyManagerInstance(keyManagerOrganization, keyManagerName);
+                    // KeyManagerHolder.getKeyManagerInstance(keyManagerOrganization, keyManagerName);
                     if (keyManager != null) {
                         try {
                             keyManager.deleteMappedApplication(consumerKey);
@@ -5601,22 +5601,6 @@ public class ApiMgtDAO {
                 } else {
                     uriMappingPrepStmt.setString(5, (StringUtils.isEmpty(
                             api.getApiLevelPolicy())) ? APIConstants.UNLIMITED_TIER : api.getApiLevelPolicy());
-                }
-                InputStream is = null;
-                if (uriTemplate.getMediationScript() != null) {
-                    is = new ByteArrayInputStream(
-                            uriTemplate.getMediationScript().getBytes(Charset.defaultCharset()));
-                }
-                if (connection.getMetaData().getDriverName().contains("PostgreSQL") || connection.getMetaData()
-                        .getDatabaseProductName().contains("DB2")) {
-                    if (uriTemplate.getMediationScript() != null) {
-                        uriMappingPrepStmt.setBinaryStream(6, is, uriTemplate.getMediationScript()
-                                .getBytes(Charset.defaultCharset()).length);
-                    } else {
-                        uriMappingPrepStmt.setBinaryStream(6, is, 0);
-                    }
-                } else {
-                    uriMappingPrepStmt.setBinaryStream(6, is);
                 }
                 uriMappingPrepStmt.execute();
                 int uriMappingId = -1;
@@ -6772,7 +6756,6 @@ public class ApiMgtDAO {
                         URITemplate uriTemplate = new URITemplate();
                         uriTemplate.setUriTemplate(urlPattern);
                         uriTemplate.setHTTPVerb(verb);
-                        uriTemplate.setHttpVerbs(verb);
                         uriTemplate.setId(uriTemplateId);
                         String authType = rs.getString("AUTH_SCHEME");
                         String throttlingTier = rs.getString("THROTTLING_TIER");
@@ -6786,17 +6769,9 @@ public class ApiMgtDAO {
                             scopeToURITemplateId.put(uriTemplateId, templateScopes);
                         }
                         uriTemplate.setAuthType(authType);
-                        uriTemplate.setAuthTypes(authType);
                         uriTemplate.setThrottlingTier(throttlingTier);
-                        uriTemplate.setThrottlingTiers(throttlingTier);
                         uriTemplate.setId(uriTemplateId);
 
-                        InputStream mediationScriptBlob = rs.getBinaryStream("MEDIATION_SCRIPT");
-                        if (mediationScriptBlob != null) {
-                            String script = APIMgtDBUtil.getStringFromInputStream(mediationScriptBlob);
-                            uriTemplate.setMediationScript(script);
-                            uriTemplate.setMediationScripts(verb, script);
-                        }
 
                         uriTemplates.put(uriTemplateId, uriTemplate);
                     }
@@ -6832,7 +6807,6 @@ public class ApiMgtDAO {
                         URITemplate uriTemplate = new URITemplate();
                         uriTemplate.setUriTemplate(urlPattern);
                         uriTemplate.setHTTPVerb(verb);
-                        uriTemplate.setHttpVerbs(verb);
                         String authType = rs.getString("AUTH_SCHEME");
                         String throttlingTier = rs.getString("THROTTLING_TIER");
                         if (StringUtils.isNotEmpty(scopeName)) {
@@ -6845,18 +6819,8 @@ public class ApiMgtDAO {
                             scopeToURITemplateId.put(uriTemplateId, templateScopes);
                         }
                         uriTemplate.setAuthType(authType);
-                        uriTemplate.setAuthTypes(authType);
                         uriTemplate.setThrottlingTier(throttlingTier);
-                        uriTemplate.setThrottlingTiers(throttlingTier);
                         uriTemplate.setId(uriTemplateId);
-
-                        InputStream mediationScriptBlob = rs.getBinaryStream("MEDIATION_SCRIPT");
-                        if (mediationScriptBlob != null) {
-                            String script = APIMgtDBUtil.getStringFromInputStream(mediationScriptBlob);
-                            uriTemplate.setMediationScript(script);
-                            uriTemplate.setMediationScripts(verb, script);
-                        }
-
                         uriTemplates.put(uriTemplateId, uriTemplate);
                     }
                 }
@@ -6899,7 +6863,6 @@ public class ApiMgtDAO {
                     URITemplate uriTemplate = new URITemplate();
                     uriTemplate.setUriTemplate(urlPattern);
                     uriTemplate.setHTTPVerb(verb);
-                    uriTemplate.setHttpVerbs(verb);
                     String authType = rs.getString("AUTH_SCHEME");
                     String throttlingTier = rs.getString("THROTTLING_TIER");
                     if (StringUtils.isNotEmpty(scopeName)) {
@@ -6912,17 +6875,7 @@ public class ApiMgtDAO {
                         scopeToURITemplateId.put(uriTemplateId, templateScopes);
                     }
                     uriTemplate.setAuthType(authType);
-                    uriTemplate.setAuthTypes(authType);
                     uriTemplate.setThrottlingTier(throttlingTier);
-                    uriTemplate.setThrottlingTiers(throttlingTier);
-
-                    InputStream mediationScriptBlob = rs.getBinaryStream("MEDIATION_SCRIPT");
-                    if (mediationScriptBlob != null) {
-                        String script = APIMgtDBUtil.getStringFromInputStream(mediationScriptBlob);
-                        uriTemplate.setMediationScript(script);
-                        uriTemplate.setMediationScripts(verb, script);
-                    }
-
                     uriTemplates.put(uriTemplateId, uriTemplate);
                 }
             }
@@ -6949,11 +6902,6 @@ public class ApiMgtDAO {
                     int uriTemplateId = rs.getInt("URL_MAPPING_ID");
 
                     URITemplate uriTemplate = uriTemplates.get(uriTemplateId);
-                    if (uriTemplate != null) {
-                        APIProductIdentifier productIdentifier = new APIProductIdentifier
-                                (productProvider, productName, productVersion);
-                        uriTemplate.addUsedByProduct(productIdentifier);
-                    }
                 }
             }
         }
@@ -6974,11 +6922,6 @@ public class ApiMgtDAO {
                     int uriTemplateId = rs.getInt("URL_MAPPING_ID");
 
                     URITemplate uriTemplate = uriTemplates.get(uriTemplateId);
-                    if (uriTemplate != null) {
-                        APIProductIdentifier productIdentifier = new APIProductIdentifier
-                                (productProvider, productName, productVersion);
-                        uriTemplate.addUsedByProduct(productIdentifier);
-                    }
                 }
             }
         }
@@ -7210,7 +7153,7 @@ public class ApiMgtDAO {
      * @throws APIManagementException
      */
     private CommentList getComments(String uuid, String parentCommentID, Integer limit, Integer offset,
-     Connection connection) throws
+                                    Connection connection) throws
             APIManagementException {
 
         List<Comment> list = new ArrayList<Comment>();
@@ -7468,7 +7411,7 @@ public class ApiMgtDAO {
             String deleteChildComments = SQLConstants.DELETE_API_CHILD_COMMENTS;
             String deleteParentComments = SQLConstants.DELETE_API_PARENT_COMMENTS;
             try (PreparedStatement childCommentPreparedStmt = connection.prepareStatement(deleteChildComments);
-                    PreparedStatement parentCommentPreparedStmt = connection.prepareStatement(deleteParentComments)) {
+                 PreparedStatement parentCommentPreparedStmt = connection.prepareStatement(deleteParentComments)) {
                 childCommentPreparedStmt.setInt(1, apiId);
                 childCommentPreparedStmt.execute();
 
@@ -7712,7 +7655,7 @@ public class ApiMgtDAO {
         String uuid = null;
         String sql = SQLConstants.GET_UUID_BY_IDENTIFIER_SQL;
         try (Connection connection = APIMgtDBUtil.getConnection();
-                PreparedStatement prepStmt = connection.prepareStatement(sql)) {
+             PreparedStatement prepStmt = connection.prepareStatement(sql)) {
             prepStmt.setString(1, APIUtil.replaceEmailDomainBack(identifier.getProviderName()));
             prepStmt.setString(2, identifier.getApiName());
             prepStmt.setString(3, identifier.getVersion());
@@ -7741,7 +7684,7 @@ public class ApiMgtDAO {
         String uuid = null;
         String sql = SQLConstants.GET_UUID_BY_IDENTIFIER_AND_ORGANIZATION_SQL;
         try (Connection connection = APIMgtDBUtil.getConnection();
-                PreparedStatement prepStmt = connection.prepareStatement(sql)) {
+             PreparedStatement prepStmt = connection.prepareStatement(sql)) {
             prepStmt.setString(1, identifier.getApiName());
             prepStmt.setString(2, identifier.getVersion());
             prepStmt.setString(3, organization);
@@ -7773,7 +7716,7 @@ public class ApiMgtDAO {
         String uuid = null;
         String sql = SQLConstants.GET_UUID_BY_IDENTIFIER_AND_ORGANIZATION_SQL;
         try (Connection connection = APIMgtDBUtil.getConnection();
-                PreparedStatement prepStmt = connection.prepareStatement(sql)) {
+             PreparedStatement prepStmt = connection.prepareStatement(sql)) {
             prepStmt.setString(1, apiName);
             prepStmt.setString(2, version);
             prepStmt.setString(3, organization);
@@ -8076,7 +8019,7 @@ public class ApiMgtDAO {
      * @throws APIManagementException
      */
     public String getSubscriptionCreaeteStatus(APIIdentifier identifier, int applicationId, String organization,
-            Connection connection) throws APIManagementException {
+                                               Connection connection) throws APIManagementException {
 
         String status = null;
         PreparedStatement ps = null;
@@ -8190,7 +8133,7 @@ public class ApiMgtDAO {
 
         final String query = "SELECT 1 FROM AM_KEY_MANAGER WHERE EXTERNAL_REFERENCE_ID  = ? AND ORGANIZATION = ?";
         try (Connection conn = APIMgtDBUtil.getConnection();
-                PreparedStatement preparedStatement = conn.prepareStatement(query)) {
+             PreparedStatement preparedStatement = conn.prepareStatement(query)) {
             preparedStatement.setString(1, resourceId);
             preparedStatement.setString(2, organization);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -8718,8 +8661,7 @@ public class ApiMgtDAO {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     if (resultSet.next()) {
                         api.setDefaultVersion(apiId.getVersion().equals(resultSet.getString("DEFAULT_API_VERSION")));
-                        api.setAsPublishedDefaultVersion(apiId.getVersion().equals(resultSet.getString(
-                                "PUBLISHED_DEFAULT_API_VERSION")));
+                        //api.setAsPublishedDefaultVersion(apiId.getVersion().equals(resultSet.getString("PUBLISHED_DEFAULT_API_VERSION")));
                     }
                 }
             }
@@ -8818,7 +8760,7 @@ public class ApiMgtDAO {
     private String getPrimaryLoginFromSecondary(String login) throws APIManagementException {
 
         Map<String, Map<String, String>> loginConfiguration = null;
-          // TODO:  read from LoginConfiguration
+        // TODO:  read from LoginConfiguration
 //        ServiceReferenceHolder.getInstance()
 //                .getAPIManagerConfigurationService().getAPIManagerConfiguration().getLoginConfiguration();
         String claimURI, username = null;
@@ -8833,7 +8775,7 @@ public class ApiMgtDAO {
         try {
             // TODO:  read from RemoteUserManagerClient
             String[] user = new String[0];
-                    // RemoteUserManagerClient.getInstance().getUserList(claimURI, login);
+            // RemoteUserManagerClient.getInstance().getUserList(claimURI, login);
             if (user.length > 0) {
                 username = user[0];
             }
@@ -9439,7 +9381,7 @@ public class ApiMgtDAO {
     public boolean isScopeKeyAssignedLocally(String apiName, String scopeKey, int tenantId, String organization)
             throws APIManagementException {
         try (Connection connection = APIMgtDBUtil.getConnection();
-                PreparedStatement statement = connection.prepareStatement(SQLConstants.IS_SCOPE_ATTACHED_LOCALLY)) {
+             PreparedStatement statement = connection.prepareStatement(SQLConstants.IS_SCOPE_ATTACHED_LOCALLY)) {
             statement.setString(1, scopeKey);
             statement.setString(2, organization);
             statement.setInt(3, tenantId);
@@ -13143,7 +13085,7 @@ public class ApiMgtDAO {
      * @throws APIManagementException
      */
     public void addAPIProductResourceMappings(List<APIProductResource> productResources, String organization,
-            Connection connection) throws APIManagementException {
+                                              Connection connection) throws APIManagementException {
         String addProductResourceMappingSql = SQLConstants.ADD_PRODUCT_RESOURCE_MAPPING_SQL;
 
         boolean isNewConnection = false;
@@ -13184,11 +13126,6 @@ public class ApiMgtDAO {
                         uriTemplate.setUriTemplate(rs.getString("URL_PATTERN"));
                         uriTemplate.setThrottlingTier(rs.getString("THROTTLING_TIER"));
                         String script = null;
-                        InputStream mediationScriptBlob = rs.getBinaryStream("MEDIATION_SCRIPT");
-                        if (mediationScriptBlob != null) {
-                            script = APIMgtDBUtil.getStringFromInputStream(mediationScriptBlob);
-                        }
-                        uriTemplate.setMediationScript(script);
                         if (!StringUtils.isEmpty(rs.getString("SCOPE_NAME"))) {
                             Scope scope = new Scope();
                             scope.setKey(rs.getString("SCOPE_NAME"));
@@ -13368,7 +13305,7 @@ public class ApiMgtDAO {
             // Removing related revision entries from AM_API_URL_MAPPING table
             // This will cascade remove entries from AM_API_RESOURCE_SCOPE_MAPPING and AM_API_PRODUCT_MAPPING tables
             removeURLMappingsStatement = connection.prepareStatement(SQLConstants
-                    .APIRevisionSqlConstants.REMOVE_PRODUCT_ENTRIES_IN_AM_API_URL_MAPPING_BY_URL_MAPPING_ID);
+                    .APIRevisionSqlConstants.REMOVE_PRODUCT_ENTRIES_IN_API_URL_MAPPING_BY_URL_MAPPING_ID);
             for (int id : urlMappingIds) {
                 removeURLMappingsStatement.setInt(1, id);
                 removeURLMappingsStatement.addBatch();
@@ -13434,17 +13371,6 @@ public class ApiMgtDAO {
 
         Set<URITemplate> uriTemplatesOfAPI = getURITemplatesOfAPI(api.getUuid());
 
-        for (URITemplate uriTemplate : uriTemplatesOfAPI) {
-            Set<APIProductIdentifier> apiProductIdentifiers = uriTemplate.retrieveUsedByProducts();
-
-            for (APIProductIdentifier apiProductIdentifier : apiProductIdentifiers) {
-                APIProductResource productMapping = new APIProductResource();
-                productMapping.setProductIdentifier(apiProductIdentifier);
-                productMapping.setUriTemplate(uriTemplate);
-
-                productMappings.add(productMapping);
-            }
-        }
 
         return productMappings;
     }
@@ -13632,8 +13558,8 @@ public class ApiMgtDAO {
                             }
 
                             try (PreparedStatement policiesStatement = connection.
-                                prepareStatement(
-                                    SQLConstants.OperationPolicyConstants.GET_OPERATION_POLICIES_BY_URI_TEMPLATE_ID)) {
+                                    prepareStatement(
+                                            SQLConstants.OperationPolicyConstants.GET_OPERATION_POLICIES_BY_URI_TEMPLATE_ID)) {
                                 policiesStatement.setInt(1, uriTemplateId);
                                 try (ResultSet policiesResult = policiesStatement.executeQuery()) {
                                     List<OperationPolicy> operationPolicies = new ArrayList<>();
@@ -14782,11 +14708,7 @@ public class ApiMgtDAO {
                         uriTemplate.setAuthType(rs.getString(2));
                         uriTemplate.setUriTemplate(rs.getString(3));
                         uriTemplate.setThrottlingTier(rs.getString(4));
-                        InputStream mediationScriptBlob = rs.getBinaryStream(5);
-                        if (mediationScriptBlob != null) {
-                            script = APIMgtDBUtil.getStringFromInputStream(mediationScriptBlob);
-                        }
-                        uriTemplate.setMediationScript(script);
+
                         if (!StringUtils.isEmpty(rs.getString(6))) {
                             Scope scope = new Scope();
                             scope.setKey(rs.getString(6));
@@ -15076,17 +14998,17 @@ public class ApiMgtDAO {
     public String getEarliestRevision(String apiUUID) throws APIManagementException {
         String revisionUUID = null;
         try (Connection connection = APIMgtDBUtil.getConnection();
-                PreparedStatement statement = (
-                        connection.getMetaData().getDriverName().contains("MS SQL") || connection.getMetaData()
-                                .getDriverName().contains("Microsoft") ?
-                                connection.prepareStatement(
-                                        SQLConstants.APIRevisionSqlConstants.GET_EARLIEST_REVISION_ID_MSSQL) :
-                                (connection.getMetaData().getDriverName().contains("MySQL") || connection.getMetaData()
-                                        .getDriverName().contains("H2")) ?
-                                        connection.prepareStatement(
-                                                SQLConstants.APIRevisionSqlConstants.GET_EARLIEST_REVISION_ID_MYSQL) :
-                                        connection.prepareStatement(
-                                                SQLConstants.APIRevisionSqlConstants.GET_EARLIEST_REVISION_ID))) {
+             PreparedStatement statement = (
+                     connection.getMetaData().getDriverName().contains("MS SQL") || connection.getMetaData()
+                             .getDriverName().contains("Microsoft") ?
+                             connection.prepareStatement(
+                                     SQLConstants.APIRevisionSqlConstants.GET_EARLIEST_REVISION_ID_MSSQL) :
+                             (connection.getMetaData().getDriverName().contains("MySQL") || connection.getMetaData()
+                                     .getDriverName().contains("H2")) ?
+                                     connection.prepareStatement(
+                                             SQLConstants.APIRevisionSqlConstants.GET_EARLIEST_REVISION_ID_MYSQL) :
+                                     connection.prepareStatement(
+                                             SQLConstants.APIRevisionSqlConstants.GET_EARLIEST_REVISION_ID))) {
             statement.setString(1, apiUUID);
             try (ResultSet rs = statement.executeQuery()) {
                 while (rs.next()) {
@@ -15637,7 +15559,7 @@ public class ApiMgtDAO {
                 String tenantDomain = APIUtil.getTenantDomainFromTenantId(tenantId);
                 // Removing related Current API entries from AM_API_URL_MAPPING table
                 PreparedStatement removeURLMappingsStatement = connection.prepareStatement(SQLConstants
-                        .APIRevisionSqlConstants.REMOVE_CURRENT_API_ENTRIES_IN_AM_API_URL_MAPPING_BY_API_ID);
+                        .APIRevisionSqlConstants.REMOVE_CURRENT_API_ENTRIES_IN_API_URL_MAPPING_BY_API_ID);
                 removeURLMappingsStatement.setInt(1, apiId);
                 removeURLMappingsStatement.executeUpdate();
 
@@ -15655,11 +15577,7 @@ public class ApiMgtDAO {
                         uriTemplate.setAuthType(rs.getString(2));
                         uriTemplate.setUriTemplate(rs.getString(3));
                         uriTemplate.setThrottlingTier(rs.getString(4));
-                        InputStream mediationScriptBlob = rs.getBinaryStream(5);
-                        if (mediationScriptBlob != null) {
-                            script = APIMgtDBUtil.getStringFromInputStream(mediationScriptBlob);
-                        }
-                        uriTemplate.setMediationScript(script);
+
                         if (!StringUtils.isEmpty(rs.getString(6))) {
                             Scope scope = new Scope();
                             scope.setKey(rs.getString(6));
@@ -15795,7 +15713,7 @@ public class ApiMgtDAO {
 
                 // Restoring AM_API_CLIENT_CERTIFICATE table entries
                 PreparedStatement removeClientCertificatesStatement = connection.prepareStatement(SQLConstants
-                        .APIRevisionSqlConstants.REMOVE_CURRENT_API_ENTRIES_IN_AM_API_CLIENT_CERTIFICATE_BY_API_ID);
+                        .APIRevisionSqlConstants.REMOVE_CURRENT_API_ENTRIES_IN_API_CLIENT_CERTIFICATE_BY_API_ID);
                 removeClientCertificatesStatement.setInt(1, apiId);
                 removeClientCertificatesStatement.executeUpdate();
 
@@ -15830,7 +15748,7 @@ public class ApiMgtDAO {
 
                 // Restoring AM_GRAPHQL_COMPLEXITY table
                 PreparedStatement removeGraphQLComplexityStatement = connection.prepareStatement(SQLConstants
-                        .APIRevisionSqlConstants.REMOVE_CURRENT_API_ENTRIES_IN_AM_GRAPHQL_COMPLEXITY_BY_API_ID);
+                        .APIRevisionSqlConstants.REMOVE_CURRENT_API_ENTRIES_IN_GRAPHQL_COMPLEXITY_BY_API_ID);
                 removeGraphQLComplexityStatement.setInt(1, apiId);
                 removeGraphQLComplexityStatement.executeUpdate();
 
@@ -15899,21 +15817,21 @@ public class ApiMgtDAO {
                 // Removing related revision entries from AM_API_URL_MAPPING table
                 // This will cascade remove entries from AM_API_RESOURCE_SCOPE_MAPPING and AM_API_PRODUCT_MAPPING tables
                 PreparedStatement removeURLMappingsStatement = connection.prepareStatement(SQLConstants
-                        .APIRevisionSqlConstants.REMOVE_REVISION_ENTRIES_IN_AM_API_URL_MAPPING_BY_REVISION_UUID);
+                        .APIRevisionSqlConstants.REMOVE_REVISION_ENTRIES_IN_API_URL_MAPPING_BY_REVISION_UUID);
                 removeURLMappingsStatement.setInt(1, apiId);
                 removeURLMappingsStatement.setString(2, apiRevision.getRevisionUUID());
                 removeURLMappingsStatement.executeUpdate();
 
                 // Removing related revision entries from AM_API_CLIENT_CERTIFICATE table
                 PreparedStatement removeClientCertificatesStatement = connection.prepareStatement(SQLConstants
-                        .APIRevisionSqlConstants.REMOVE_REVISION_ENTRIES_IN_AM_API_CLIENT_CERTIFICATE_BY_REVISION_UUID);
+                        .APIRevisionSqlConstants.REMOVE_REVISION_ENTRIES_IN_API_CLIENT_CERTIFICATE_BY_REVISION_UUID);
                 removeClientCertificatesStatement.setInt(1, apiId);
                 removeClientCertificatesStatement.setString(2, apiRevision.getRevisionUUID());
                 removeClientCertificatesStatement.executeUpdate();
 
                 // Removing related revision entries from AM_GRAPHQL_COMPLEXITY table
                 PreparedStatement removeGraphQLComplexityStatement = connection.prepareStatement(SQLConstants
-                        .APIRevisionSqlConstants.REMOVE_REVISION_ENTRIES_IN_AM_GRAPHQL_COMPLEXITY_BY_REVISION_UUID);
+                        .APIRevisionSqlConstants.REMOVE_REVISION_ENTRIES_IN_GRAPHQL_COMPLEXITY_BY_REVISION_UUID);
                 removeGraphQLComplexityStatement.setInt(1, apiId);
                 removeGraphQLComplexityStatement.setString(2, apiRevision.getRevisionUUID());
                 removeGraphQLComplexityStatement.executeUpdate();
@@ -15977,11 +15895,6 @@ public class ApiMgtDAO {
                         uriTemplate.setAuthType(rs.getString(2));
                         uriTemplate.setUriTemplate(rs.getString(3));
                         uriTemplate.setThrottlingTier(rs.getString(4));
-                        InputStream mediationScriptBlob = rs.getBinaryStream(5);
-                        if (mediationScriptBlob != null) {
-                            script = APIMgtDBUtil.getStringFromInputStream(mediationScriptBlob);
-                        }
-                        uriTemplate.setMediationScript(script);
                         if (!StringUtils.isEmpty(rs.getString(6))) {
                             Scope scope = new Scope();
                             scope.setKey(rs.getString(6));
@@ -16195,7 +16108,7 @@ public class ApiMgtDAO {
 
                 //Remove Current API Product entries from AM_API_URL_MAPPING table
                 PreparedStatement removeURLMappingsFromCurrentAPIProduct = connection.prepareStatement(
-                        SQLConstants.APIRevisionSqlConstants.REMOVE_CURRENT_API_PRODUCT_ENTRIES_IN_AM_API_URL_MAPPING);
+                        SQLConstants.APIRevisionSqlConstants.REMOVE_CURRENT_API_PRODUCT_ENTRIES_IN_API_URL_MAPPING);
                 removeURLMappingsFromCurrentAPIProduct.setString(1, Integer.toString(apiId));
                 removeURLMappingsFromCurrentAPIProduct.executeUpdate();
 
@@ -16215,11 +16128,7 @@ public class ApiMgtDAO {
                         uriTemplate.setAuthType(rs.getString("AUTH_SCHEME"));
                         uriTemplate.setUriTemplate(rs.getString("URL_PATTERN"));
                         uriTemplate.setThrottlingTier(rs.getString("THROTTLING_TIER"));
-                        InputStream mediationScriptBlob = rs.getBinaryStream("MEDIATION_SCRIPT");
-                        if (mediationScriptBlob != null) {
-                            script = APIMgtDBUtil.getStringFromInputStream(mediationScriptBlob);
-                        }
-                        uriTemplate.setMediationScript(script);
+
                         if (rs.getInt("API_ID") != 0) {
                             // Adding product id to uri template id just to store value
                             uriTemplate.setId(rs.getInt("API_ID"));
@@ -16337,7 +16246,7 @@ public class ApiMgtDAO {
 
                 // Restoring AM_API_CLIENT_CERTIFICATE table entries
                 PreparedStatement removeClientCertificatesStatement = connection.prepareStatement(SQLConstants
-                        .APIRevisionSqlConstants.REMOVE_CURRENT_API_ENTRIES_IN_AM_API_CLIENT_CERTIFICATE_BY_API_ID);
+                        .APIRevisionSqlConstants.REMOVE_CURRENT_API_ENTRIES_IN_API_CLIENT_CERTIFICATE_BY_API_ID);
                 removeClientCertificatesStatement.setInt(1, apiId);
                 removeClientCertificatesStatement.executeUpdate();
 
@@ -16372,7 +16281,7 @@ public class ApiMgtDAO {
 
                 // Restoring AM_GRAPHQL_COMPLEXITY table
                 PreparedStatement removeGraphQLComplexityStatement = connection.prepareStatement(SQLConstants
-                        .APIRevisionSqlConstants.REMOVE_CURRENT_API_ENTRIES_IN_AM_GRAPHQL_COMPLEXITY_BY_API_ID);
+                        .APIRevisionSqlConstants.REMOVE_CURRENT_API_ENTRIES_IN_GRAPHQL_COMPLEXITY_BY_API_ID);
                 removeGraphQLComplexityStatement.setInt(1, apiId);
                 removeGraphQLComplexityStatement.executeUpdate();
 
@@ -16441,27 +16350,27 @@ public class ApiMgtDAO {
 
                 // Removing related revision entries from AM_API_PRODUCT_MAPPING table
                 PreparedStatement removeProductMappingsStatement = connection.prepareStatement(SQLConstants
-                        .APIRevisionSqlConstants.REMOVE_REVISION_ENTRIES_IN_AM_API_PRODUCT_MAPPING_BY_REVISION_UUID);
+                        .APIRevisionSqlConstants.REMOVE_REVISION_ENTRIES_IN_API_PRODUCT_MAPPING_BY_REVISION_UUID);
                 removeProductMappingsStatement.setInt(1, apiId);
                 removeProductMappingsStatement.setString(2, apiRevision.getRevisionUUID());
                 removeProductMappingsStatement.executeUpdate();
 
                 // Removing related revision entries from AM_API_URL_MAPPING table
                 PreparedStatement removeURLMappingsStatement = connection.prepareStatement(SQLConstants
-                        .APIRevisionSqlConstants.REMOVE_PRODUCT_REVISION_ENTRIES_IN_AM_API_URL_MAPPING_BY_REVISION_UUID);
+                        .APIRevisionSqlConstants.REMOVE_PRODUCT_REVISION_ENTRIES_IN_API_URL_MAPPING_BY_REVISION_UUID);
                 removeURLMappingsStatement.setString(1, apiRevision.getRevisionUUID());
                 removeURLMappingsStatement.executeUpdate();
 
                 // Removing related revision entries from AM_API_CLIENT_CERTIFICATE table
                 PreparedStatement removeClientCertificatesStatement = connection.prepareStatement(SQLConstants
-                        .APIRevisionSqlConstants.REMOVE_REVISION_ENTRIES_IN_AM_API_CLIENT_CERTIFICATE_BY_REVISION_UUID);
+                        .APIRevisionSqlConstants.REMOVE_REVISION_ENTRIES_IN_API_CLIENT_CERTIFICATE_BY_REVISION_UUID);
                 removeClientCertificatesStatement.setInt(1, apiId);
                 removeClientCertificatesStatement.setString(2, apiRevision.getRevisionUUID());
                 removeClientCertificatesStatement.executeUpdate();
 
                 // Removing related revision entries from AM_GRAPHQL_COMPLEXITY table
                 PreparedStatement removeGraphQLComplexityStatement = connection.prepareStatement(SQLConstants
-                        .APIRevisionSqlConstants.REMOVE_REVISION_ENTRIES_IN_AM_GRAPHQL_COMPLEXITY_BY_REVISION_UUID);
+                        .APIRevisionSqlConstants.REMOVE_REVISION_ENTRIES_IN_GRAPHQL_COMPLEXITY_BY_REVISION_UUID);
                 removeGraphQLComplexityStatement.setInt(1, apiId);
                 removeGraphQLComplexityStatement.setString(2, apiRevision.getRevisionUUID());
                 removeGraphQLComplexityStatement.executeUpdate();

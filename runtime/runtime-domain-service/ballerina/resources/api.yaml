@@ -221,18 +221,6 @@ paths:
                 description: The specified resource does not exist
                 moreInfo: ""
                 error: []
-        "406":
-          description: Not Acceptable. The requested media type is not supported.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 406
-                message: Not Acceptable
-                description: The requested media type is not supported
-                moreInfo: ""
-                error: []
     put:
       tags:
         - APIs
@@ -412,6 +400,33 @@ paths:
                 description: The request has not been performed because one of the preconditions is not met
                 moreInfo: ""
                 error: []
+  /apis/{apiId}/generate-key:
+    post:
+      tags:
+        - APIs
+      summary: Generate internal API Key to invoke APIS.
+      description: |
+        This operation can be used to generate internal API key which used to invoke API.
+      operationId: generateInternalAPIKey
+      parameters:
+        - $ref: "#/components/parameters/apiId"
+      responses:
+        200:
+          description: |
+            OK.
+            apikey generated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIKey"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        404:
+          $ref: "#/components/responses/NotFound"
+      security:
+        - OAuth2Security:
+            - apim:api_generate_key
+            - apim:api_manage
   /apis/import-service:
     post:
       tags:
@@ -1561,9 +1576,6 @@ components:
       title: Operation
       type: object
       properties:
-        id:
-          type: string
-          example: postapiresource
         target:
           type: string
           example: /order/{orderId}
@@ -1575,12 +1587,6 @@ components:
           example: []
           items:
             type: string
-        payloadSchema:
-          type: string
-          example: ""
-        uriMapping:
-          type: string
-          example: ""
         operationPolicies:
           $ref: "#/components/schemas/APIOperationPolicies"
     APIOperationPolicies:
@@ -1952,6 +1958,18 @@ components:
           items:
             type: string
             example: https://localhost:9443/am/sample/pizzashack/v3/api/
+    APIKey:
+      title: API Key details to invoke APIs
+      type: object
+      properties:
+        apikey:
+          type: string
+          description: API Key
+          example: eyJoZWxsbyI6IndvcmxkIn0=.eyJ3c28yIjoiYXBpbSJ9.eyJ3c28yIjoic2lnbmF0dXJlIn0=
+        validityTime:
+          type: integer
+          format: int32
+          example: 3600
   responses:
     BadRequest:
       description: Bad Request. Invalid request or validation error.

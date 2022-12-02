@@ -32,7 +32,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "constraint"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
@@ -65,7 +65,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "http"
-version = "2.4.4"
+version = "2.4.5"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "cache"},
@@ -96,7 +96,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "io"
-version = "1.3.0"
+version = "1.3.1"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "lang.value"}
@@ -109,6 +109,20 @@ modules = [
 org = "ballerina"
 name = "jballerina.java"
 version = "0.0.0"
+modules = [
+	{org = "ballerina", packageName = "jballerina.java", moduleName = "jballerina.java"}
+]
+
+[[package]]
+org = "ballerina"
+name = "jballerina.java.arrays"
+version = "1.2.3"
+dependencies = [
+	{org = "ballerina", name = "jballerina.java"}
+]
+modules = [
+	{org = "ballerina", packageName = "jballerina.java.arrays", moduleName = "jballerina.java.arrays"}
+]
 
 [[package]]
 org = "ballerina"
@@ -123,6 +137,9 @@ dependencies = [
 	{org = "ballerina", name = "log"},
 	{org = "ballerina", name = "regex"},
 	{org = "ballerina", name = "time"}
+]
+modules = [
+	{org = "ballerina", packageName = "jwt", moduleName = "jwt"}
 ]
 
 [[package]]
@@ -170,6 +187,9 @@ name = "lang.runtime"
 version = "0.0.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
+]
+modules = [
+	{org = "ballerina", packageName = "lang.runtime", moduleName = "lang.runtime"}
 ]
 
 [[package]]
@@ -230,7 +250,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "observe"
-version = "1.0.5"
+version = "1.0.6"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
@@ -247,7 +267,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "regex"
-version = "1.3.0"
+version = "1.3.2"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "lang.string"}
@@ -261,14 +281,11 @@ dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "time"}
 ]
-modules = [
-	{org = "ballerina", packageName = "task", moduleName = "task"}
-]
 
 [[package]]
 org = "ballerina"
 name = "time"
-version = "2.2.2"
+version = "2.2.3"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
@@ -276,9 +293,24 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "url"
-version = "2.2.2"
+version = "2.2.3"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
+]
+
+[[package]]
+org = "ballerina"
+name = "uuid"
+version = "1.3.0"
+dependencies = [
+	{org = "ballerina", name = "crypto"},
+	{org = "ballerina", name = "jballerina.java"},
+	{org = "ballerina", name = "lang.int"},
+	{org = "ballerina", name = "regex"},
+	{org = "ballerina", name = "time"}
+]
+modules = [
+	{org = "ballerina", packageName = "uuid", moduleName = "uuid"}
 ]
 
 [[package]]
@@ -325,15 +357,27 @@ dependencies = [
 	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "http"},
 	{org = "ballerina", name = "io"},
+	{org = "ballerina", name = "jballerina.java"},
+	{org = "ballerina", name = "jballerina.java.arrays"},
+	{org = "ballerina", name = "jwt"},
+	{org = "ballerina", name = "lang.runtime"},
 	{org = "ballerina", name = "lang.value"},
 	{org = "ballerina", name = "log"},
-	{org = "ballerina", name = "task"},
+	{org = "ballerina", name = "uuid"},
 	{org = "ballerina", name = "websocket"},
 	{org = "ballerinai", name = "observe"}
 ]
 modules = [
 	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service"},
-	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service.model"}
+	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service.java.lang"},
+	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service.java.util"},
+	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service.java.util.function"},
+	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service.java.util.stream"},
+	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service.model"},
+	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service.org.wso2.apk.apimgt.api"},
+	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service.org.wso2.apk.apimgt.api.model"},
+	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service.org.wso2.apk.runtime"},
+	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service.org.wso2.apk.runtime.model"}
 ]
 
 

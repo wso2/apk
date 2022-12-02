@@ -22,7 +22,40 @@
 # + apiCreationNamespace - Field Description
 public type RuntimeConfiguratation record {|
 
-    string[] & readonly serviceListingNamespaces = [ALL_NAMESPACES];
-    string apiCreationNamespace;
-
+    (string[] & readonly) serviceListingNamespaces = [ALL_NAMESPACES];
+    string apiCreationNamespace = CURRENT_NAMESPACE;
+    (TokenIssuerConfiguration & readonly) tokenIssuerConfiguration = {};
+    KeyStores keyStores;
+    (K8sConfigurations & readonly) k8sConfiguration = {};
 |};
+
+public type TokenIssuerConfiguration record {|
+    string issuer = "https://localhost:9443/oauth2/token";
+    string audience = "https://localhost:9443/oauth2/token";
+    string keyId = "gateway_certificate_alias";
+    decimal expTime = 3600;
+|};
+
+public type KeyStores record {|
+    KeyStore signing;
+    KeyStore tls;
+|};
+
+public type KeyStore record {|
+    string path;
+    string keyPassword?;
+|};
+
+public type K8sConfigurations record {|
+    string host = "kubernetes.default";
+    string serviceAccountPath = "/var/run/secrets/kubernetes.io/serviceaccount";
+    decimal readTimeout = 5;
+|};
+
+function getNameSpace(string namespace) returns string {
+    if namespace == CURRENT_NAMESPACE {
+        return currentNameSpace;
+    } else {
+        return namespace;
+    }
+}

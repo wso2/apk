@@ -25,17 +25,42 @@ spec:
   apiVersion: 1.0.8
   context: /http-bin-api/1.0.8
   definitionFileRef: swagger-definition-http-bin-api
-  prodHTTPRouteRef: http-route-http-bin-api
+  prodHTTPRouteRef: prod-http-route-http-bin-api
+  sandHTTPRouteRef: sand-http-route-http-bin-api
   organization: carbon.super
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: HTTPRoute
 metadata:
-  name: http-route-http-bin-api
+  name: prod-http-route-http-bin-api
   namespace: apk
 spec:
   hostnames:
-  - gw.wso2.com
+  - prod.gw.wso2.com
+  parentRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: Default
+  rules:
+  - backendRefs:
+    - group: ""
+      kind: Service
+      name: backend
+      port: 80
+      weight: 1
+    matches:
+    - path:
+        type: PathPrefix
+        value: /http-bin-api/1.0.8/get
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: sand-http-route-http-bin-api
+  namespace: apk
+spec:
+  hostnames:
+  - sand.gw.wso2.com
   parentRefs:
   - group: gateway.networking.k8s.io
     kind: Gateway

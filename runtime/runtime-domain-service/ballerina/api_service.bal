@@ -23,12 +23,15 @@ import ballerina/http;
     id: "runtime-api-service"
 }
 
-service /api/am/runtime on ep0 {
+http:Service runtimeService = service object {
+    APIClient apiService = new ();
     resource function get apis(string? query, int 'limit = 25, int offset = 0, string sortBy = "createdTime", string sortOrder = "desc", @http:Header string? accept = "application/json") returns APIList|BadRequestError|UnauthorizedError|InternalServerErrorError|error {
-        return getAPIList();
+        APIClient apiService = new ();
+        return apiService.getAPIList();
     }
-    resource function get apis/[string apiId]() returns API|BadRequestError|UnauthorizedError|InternalServerErrorError|NotFoundError|error {
-        return getAPIById(apiId);
+    resource function get apis/[string apiId]() returns API|BadRequestError|InternalServerErrorError|NotFoundError {
+        APIClient apiService = new ();
+        return apiService.getAPIById(apiId);
     }
     resource function post apis(@http:Payload API payload) returns CreatedAPI|BadRequestError|UnsupportedMediaTypeError|http:NotImplemented {
         http:NotImplemented notImplementedError = {body: {code: 900910, message: "Not implemented"}};
@@ -39,11 +42,12 @@ service /api/am/runtime on ep0 {
         return notImplementedError;
     }
     resource function delete apis/[string apiId]() returns http:Ok|ForbiddenError|NotFoundError|ConflictError|PreconditionFailedError {
-        return deleteAPIById(apiId);
+        APIClient apiService = new ();
+        return apiService.deleteAPIById(apiId);
     }
-    resource function post apis/'import\-service(string serviceKey, @http:Payload API payload) returns CreatedAPI|NotFoundError|InternalServerErrorError|http:NotImplemented {
-        http:NotImplemented notImplementedError = {body: {code: 900910, message: "Not implemented"}};
-        return notImplementedError;
+    resource function post apis/'import\-service(string serviceKey, @http:Payload API payload) returns CreatedAPI|NotFoundError|InternalServerErrorError|ConflictError {
+        APIClient apiService = new ();
+        return apiService.createAPIFromService(serviceKey, payload);
     }
     resource function post apis/'import\-definition(@http:Payload json payload) returns CreatedAPI|BadRequestError|UnsupportedMediaTypeError|http:NotImplemented {
         http:NotImplemented notImplementedError = {body: {code: 900910, message: "Not implemented"}};
@@ -58,7 +62,8 @@ service /api/am/runtime on ep0 {
         return notImplementedError;
     }
     resource function get apis/[string apiId]/definition() returns string|NotFoundError|NotAcceptableError {
-        return getAPIDefinitionByID(apiId);
+        APIClient apiService = new ();
+        return apiService.getAPIDefinitionByID(apiId);
     }
     resource function put apis/[string apiId]/definition(@http:Payload json payload) returns string|BadRequestError|ForbiddenError|NotFoundError|PreconditionFailedError|http:NotImplemented {
         http:NotImplemented notImplementedError = {body: {code: 900910, message: "Not implemented"}};
@@ -73,41 +78,14 @@ service /api/am/runtime on ep0 {
         return notImplementedError;
     }
     resource function get services(string? name, string? namespace, string sortBy = "createdTime", string sortOrder = "desc", int 'limit = 25, int offset = 0) returns ServiceList|BadRequestError|UnauthorizedError|InternalServerErrorError {
-        boolean serviceNameAvailable = name == () ? false : true;
-        boolean nameSpaceAvailable = namespace == () ? false : true;
-        if (nameSpaceAvailable && string:length(namespace.toString()) > 0) {
-            if (serviceNameAvailable && string:length(name.toString()) > 0) {
-                ServiceList|error serviceList = getServiceFromK8s(name.toString(), namespace.toString());
-                if serviceList is error {
-                    InternalServerErrorError internalError = {body: {code: 900910, message: serviceList.message()}};
-                    return internalError;
-                } else {
-                    return serviceList;
-                }
-            } else {
-                ServiceList|error serviceList = getServicesListInNamespace(namespace.toString());
-                if serviceList is error {
-                    InternalServerErrorError internalError = {body: {code: 900910, message: serviceList.message()}};
-                    return internalError;
-                } else {
-                    return serviceList;
-                }
-            }
-        }
-        ServiceList|error serviceList = getServicesListFromK8s();
-        if serviceList is error {
-            InternalServerErrorError internalError = {body: {code: 900910, message: serviceList.message()}};
-            return internalError;
-        } else {
-            return serviceList;
-        }
-
+        ServiceClient serviceClient = new ();
+        return serviceClient.getServices(name, namespace, sortBy, sortOrder, 'limit, offset);
     }
-    resource function get services/[string serviceId](string? namespace) returns Service|BadRequestError|UnauthorizedError|NotFoundError|InternalServerErrorError|http:NotImplemented {
-        http:NotImplemented notImplementedError = {body: {code: 900910, message: "Not implemented"}};
-        return notImplementedError;
-
+    resource function get services/[string serviceId](string? namespace) returns Service|BadRequestError|NotFoundError|InternalServerErrorError {
+        ServiceClient serviceClient = new ();
+        return serviceClient.getServiceById(serviceId);
     }
+
     resource function get services/[string serviceId]/usage(string? namespace) returns APIList|BadRequestError|UnauthorizedError|NotFoundError|InternalServerErrorError|http:NotImplemented {
         http:NotImplemented notImplementedError = {body: {code: 900910, message: "Not implemented"}};
         return notImplementedError;
@@ -122,5 +100,10 @@ service /api/am/runtime on ep0 {
         http:NotImplemented notImplementedError = {body: {code: 900910, message: "Not implemented"}};
         return notImplementedError;
     }
-}
+    resource function post apis/[string apiId]/'generate\-key() returns APIKey|BadRequestError|NotFoundError|InternalServerErrorError {
+        APIClient apiService = new ();
+        return apiService.generateAPIKey(apiId);
+    }
+
+};
 

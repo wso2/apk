@@ -62,7 +62,7 @@ public type BackendObjectReference record {
     string kind;
     string name;
     string namespace;
-    string port;
+    int port;
 };
 
 public type HTTPRequestMirrorFilter record {
@@ -118,7 +118,7 @@ public type HTTPBackendRef record {
 public type HTTPRouteRule record {
     HTTPRouteMatch[] matches?;
     HTTPRouteFilter[] filters?;
-    HTTPBackendRef backendRefs?;
+    HTTPBackendRef[] backendRefs?;
 };
 
 public type HTTPRouteSpec record {

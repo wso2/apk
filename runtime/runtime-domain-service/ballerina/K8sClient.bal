@@ -17,19 +17,20 @@
 //
 
 import ballerina/io;
+import runtime_domain_service.model;
 import ballerina/http;
 
 const string K8S_API_ENDPOINT = "/api/v1";
+final string token = check io:fileReadString(runtimeConfiguration.k8sConfiguration.serviceAccountPath + "/token");
+final string caCertPath = runtimeConfiguration.k8sConfiguration.serviceAccountPath + "/ca.crt";
+string namespaceFile = runtimeConfiguration.k8sConfiguration.serviceAccountPath + "/namespace";
+string currentNameSpace = check io:fileReadString(namespaceFile);
 final http:Client k8sApiServerEp = check initializeK8sClient();
-configurable string k8sHost = "kubernetes.default";
-configurable string saTokenPath = "/var/run/secrets/kubernetes.io/serviceaccount/token";
-string token = check io:fileReadString(saTokenPath);
-configurable string caCertPath = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt";
 
 # This initialize the k8s Client.
 # + return - k8s http client
 function initializeK8sClient() returns http:Client|error {
-    http:Client k8sApiClient = check new ("https://" + k8sHost,
+    http:Client k8sApiClient = check new ("https://" + runtimeConfiguration.k8sConfiguration.host,
     auth = {
         token: token
     },
@@ -49,3 +50,76 @@ function getConfigMapValueFromNameAndNamespace(string name, string namespace) re
     string endpoint = "/api/v1/namespaces/" + namespace + "/configmaps/" + name;
     return k8sApiServerEp->get(endpoint, targetType = json);
 }
+
+function deleteAPICR(string name, string namespace) returns json|http:ClientError {
+    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/apis/" + name;
+    return k8sApiServerEp->delete(endpoint, targetType = json);
+}
+
+function deleteHttpRoute(string name, string namespace) returns json|http:ClientError {
+    string endpoint = "/apis/gateway.networking.k8s.io/v1beta1/namespaces/" + namespace + "/httproutes/" + name;
+    return k8sApiServerEp->delete(endpoint, targetType = json);
+}
+
+function deleteConfigMap(string name, string namespace) returns json|http:ClientError {
+    string endpoint = "/api/v1/namespaces/" + namespace + "/configmaps/" + name;
+    return k8sApiServerEp->delete(endpoint, targetType = json);
+}
+
+function deployAPICR(model:API api, string namespace) returns json|http:ClientError {
+    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/apis";
+    return k8sApiServerEp->post(endpoint, api, targetType = json);
+}
+
+function deployConfigMap(model:ConfigMap configMap, string namespace) returns json|http:ClientError {
+    string endpoint = "/api/v1/namespaces/" + namespace + "/configmaps";
+    return k8sApiServerEp->post(endpoint, configMap, targetType = json);
+}
+
+function deployHttpRoute(model:Httproute httproute, string namespace) returns json|http:ClientError {
+    string endpoint = "/apis/gateway.networking.k8s.io/v1beta1/namespaces/" + namespace + "/httproutes";
+    return k8sApiServerEp->post(endpoint, httproute, targetType = json);
+}
+
+function retrieveAllAPIS(string? continueToken) returns json|http:ClientError {
+    string? continueTokenValue = continueToken;
+    string endpoint = "/apis/dp.wso2.com/v1alpha1/apis";
+    if continueTokenValue is string {
+        if continueTokenValue.length() > 0 {
+            int? questionMarkIndex = endpoint.lastIndexOf("?");
+            if questionMarkIndex is int {
+                if questionMarkIndex > 0 {
+                    endpoint = endpoint + "&continue=" + continueTokenValue;
+                } else {
+                    endpoint = endpoint + "?continue=" + continueTokenValue;
+                }
+            } else {
+                endpoint = endpoint + "?continue=" + continueTokenValue;
+            }
+        }
+    }
+
+    return k8sApiServerEp->get(endpoint, targetType = json);
+}
+
+function retrieveAllServices(string? continueToken) returns json|http:ClientError {
+    string? continueTokenValue = continueToken;
+    string endpoint = "/api/v1/services?limit=4";
+    if continueTokenValue is string {
+        if continueTokenValue.length() > 0 {
+            int? questionMarkIndex = endpoint.lastIndexOf("?");
+            if questionMarkIndex is int {
+                if questionMarkIndex > 0 {
+                    endpoint = endpoint + "&continue=" + continueTokenValue;
+                } else {
+                    endpoint = endpoint + "?continue=" + continueTokenValue;
+                }
+            } else {
+                endpoint = endpoint + "?continue=" + continueTokenValue;
+            }
+        }
+    }
+
+    return k8sApiServerEp->get(endpoint, targetType = json);
+}
+

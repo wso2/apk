@@ -25,8 +25,8 @@ const (
 		"   APP.ORGANIZATION ORGANIZATION," +
 		"   SUB.USER_ID " +
 		" FROM " +
-		"   AM_SUBSCRIBER SUB," +
-		"   AM_APPLICATION APP " +
+		"   SUBSCRIBER SUB," +
+		"   APPLICATION APP " +
 		" WHERE " +
 		"   APP.UUID = $1 " +
 		"   AND APP.SUBSCRIBER_ID = SUB.SUBSCRIBER_ID"
@@ -39,7 +39,7 @@ const (
 		"	APP.organization as ORGANIZATION, " +
 		"	SUB.created_by as CREATED_BY " +
 		" FROM " +
-		" AM_APPLICATION APP, AM_SUBSCRIPTION SUB, AM_API API " +
+		" APPLICATION APP, SUBSCRIPTION SUB, API API " +
 		" where 1 = 1 " +
 		"	AND APP.application_id = SUB.application_id " +
 		"	AND SUB.api_id = API.api_id " +
@@ -49,8 +49,8 @@ const (
 		"	APPKEY.consumer_key, " +
 		"	APPKEY.key_manager " +
 		" from " +
-		"	am_application_key_mapping APPKEY, " +
-		"	am_application APP " +
+		"	application_key_mapping APPKEY, " +
+		"	application APP " +
 		" where 1=1 " +
 		"	AND APP.application_id = APPKEY.application_id " +
 		"	AND APP.UUID = $1"
@@ -62,22 +62,22 @@ const (
 		"	API.organization, " +
 		"	SUB.created_by " +
 		" from " +
-		"	am_subscription SUB, " +
-		"	am_api API " +
+		"	subscription SUB, " +
+		"	api API " +
 		" where 1=1 " +
 		"	AND SUB.api_id = API.api_id " +
 		"	AND SUB.uuid = $1"
 
-	QueryCreateAPI string = "INSERT INTO AM_API " +
+	QueryCreateAPI string = "INSERT INTO API " +
 		"(API_UUID, API_NAME, API_PROVIDER, API_VERSION," +
 		"CONTEXT, ORGANIZATION, CREATED_BY, CREATED_TIME, API_TYPE, ARTIFACT, STATUS)" +
 		" VALUES " + "($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)"
 
-	QueryDeleteAPI string = "DELETE FROM AM_API" +
+	QueryDeleteAPI string = "DELETE FROM API" +
 		" WHERE " +
 		"API_UUID = $1"
 
-	QueryUpdateAPI string = "UPDATE AM_API SET " +
+	QueryUpdateAPI string = "UPDATE API SET " +
 		"API_NAME = $2, " +
 		"API_PROVIDER = $3, " +
 		"API_VERSION = $4, " +

@@ -17,108 +17,143 @@
 //
 
 import ballerina/http;
-import ballerina/io;
+import ballerina/log;
 import ballerina/lang.value;
-import admin_service.org.wso2.apk.apimgt.api as api;
-import admin_service.org.wso2.apk.apimgt.admin.impl as admin;
 
-service /api/am/admin/v3 on ep0 {
+service /api/am/admin on ep0 {
     // resource function get throttling/policies/search(string? query) returns ThrottlePolicyDetailsList {
     // }
-    resource function get throttling/policies/application(@http:Header string? accept = "application/json") returns ApplicationThrottlePolicyList|NotAcceptableError|error {
-        string?|api:APIManagementException appPolicyList = admin:ThrottlingCommonImpl_getApplicationThrottlePolicies();
+    resource function get throttling/policies/application(@http:Header string? accept = "application/json") returns ApplicationThrottlePolicyList|NotAcceptableError|InternalServerErrorError|error{
+        string?|ApplicationThrottlePolicyList|error appPolicyList = getApplicationUsagePlans();
         if appPolicyList is string {
             json j = check value:fromJsonString(appPolicyList);
             ApplicationThrottlePolicyList polList = check j.cloneWithType(ApplicationThrottlePolicyList);
             return polList;
+        } else if appPolicyList is ApplicationThrottlePolicyList {
+            log:printDebug(appPolicyList.toString());
+            return appPolicyList;
+        } else {
+            InternalServerErrorError internalError = {body: {code: 90900, message: "Internal Error while retrieving all Application Usage Plans"}};
+            return internalError;
         }
-        io:print(appPolicyList);
-        return {};
     }
-    resource function post throttling/policies/application(@http:Payload ApplicationThrottlePolicy payload, @http:Header string 'content\-type = "application/json") returns CreatedApplicationThrottlePolicy|BadRequestError|UnsupportedMediaTypeError|error {
-        string|api:APIManagementException? createdAppPol = admin:ThrottlingCommonImpl_addApplicationThrottlePolicy(payload.toJsonString());
+    resource function post throttling/policies/application(@http:Payload ApplicationThrottlePolicy payload, @http:Header string 'content\-type = "application/json") returns CreatedApplicationThrottlePolicy|BadRequestError|UnsupportedMediaTypeError|InternalServerErrorError|error {
+        string?|ApplicationThrottlePolicy|error createdAppPol = addApplicationUsagePlan(payload);
         if createdAppPol is string {
             json j = check value:fromJsonString(createdAppPol);
             CreatedApplicationThrottlePolicy crPol = {body: check j.cloneWithType(ApplicationThrottlePolicy)};
             return crPol;
+        } else if createdAppPol is ApplicationThrottlePolicy {
+            log:printDebug(createdAppPol.toString());
+            CreatedApplicationThrottlePolicy crPol = {body: check createdAppPol.cloneWithType(ApplicationThrottlePolicy)};
+            return crPol;
+        } else {
+            InternalServerErrorError internalError = {body: {code: 90900, message: "Internal Error while generating Application Usage Plan"}};
+            return internalError;
         }
-        io:println(createdAppPol);
-        return error("Error while adding Application Policy");
     }
-    resource function get throttling/policies/application/[string policyId]() returns ApplicationThrottlePolicy|NotFoundError|NotAcceptableError|error {
-        string|api:APIManagementException? appPolicy = admin:ThrottlingCommonImpl_getApplicationThrottlePolicyById(policyId);
+    resource function get throttling/policies/application/[string policyId]() returns ApplicationThrottlePolicy|NotFoundError|NotAcceptableError|InternalServerErrorError|error  {
+        string?|ApplicationThrottlePolicy|error appPolicy = getApplicationUsagePlanById(policyId);
         if appPolicy is string {
             json j = check value:fromJsonString(appPolicy);
             ApplicationThrottlePolicy policy = check j.cloneWithType(ApplicationThrottlePolicy);
             return policy;
+        } else if appPolicy is ApplicationThrottlePolicy {
+            log:printDebug(appPolicy.toString());
+            return appPolicy;
+        } else {
+            InternalServerErrorError internalError = {body: {code: 90900, message: "Internal Error while retrieving Application Usage Plan By Id"}};
+            return internalError;
         }
-        io:println(appPolicy);
-        return error("Error while gettting Application Policy");
     }
-    resource function put throttling/policies/application/[string policyId](@http:Payload ApplicationThrottlePolicy payload, @http:Header string 'content\-type = "application/json") returns ApplicationThrottlePolicy|BadRequestError|NotFoundError|error {
-        string|api:APIManagementException? appPolicy = admin:ThrottlingCommonImpl_updateApplicationThrottlePolicy(policyId, payload.toJsonString());
+    resource function put throttling/policies/application/[string policyId](@http:Payload ApplicationThrottlePolicy payload, @http:Header string 'content\-type = "application/json") returns ApplicationThrottlePolicy|BadRequestError|NotFoundError|InternalServerErrorError|error {
+        string?|ApplicationThrottlePolicy|NotFoundError|error appPolicy = updateApplicationUsagePlan(policyId, payload);
         if appPolicy is string {
             json j = check value:fromJsonString(appPolicy);
             ApplicationThrottlePolicy updatedPolicy = check j.cloneWithType(ApplicationThrottlePolicy);
             return updatedPolicy;
+        } else if appPolicy is ApplicationThrottlePolicy|NotFoundError {
+            log:printDebug(appPolicy.toString());
+            return appPolicy;
+        } else {
+            InternalServerErrorError internalError = {body: {code: 90900, message: "Internal Error while updating Application Usage Plan By Id"}};
+            return internalError;
         }
-        io:println(appPolicy);
-        return error("Error while updating Application Policy");
     }
-    resource function delete throttling/policies/application/[string policyId]() returns http:Ok|NotFoundError|error {
-        api:APIManagementException? ex = admin:ThrottlingCommonImpl_removeApplicationThrottlePolicy(policyId, "carbon.super");
-        if ex !is api:APIManagementException {
+    resource function delete throttling/policies/application/[string policyId]() returns http:Ok|NotFoundError|InternalServerErrorError|error {
+        string|error? ex = removeApplicationUsagePlan(policyId);
+        if ex is error {
+            InternalServerErrorError internalError = {body: {code: 90900, message: "Internal Error while deleting Application Usage Plan By Id"}};
+            return internalError;
+        } else {
             return http:OK;
         }
-        return error(ex.detail().toString());
     }
-    resource function get throttling/policies/subscription(@http:Header string? accept = "application/json") returns SubscriptionThrottlePolicyList|NotAcceptableError|error {
-        string?|api:APIManagementException subPolicyList = admin:ThrottlingCommonImpl_getAllSubscriptionThrottlePolicies();
+    resource function get throttling/policies/subscription(@http:Header string? accept = "application/json") returns SubscriptionThrottlePolicyList|NotAcceptableError|InternalServerErrorError|error {
+        string?|SubscriptionThrottlePolicyList|error subPolicyList = getBusinessPlans();
         if subPolicyList is string {
             json j = check value:fromJsonString(subPolicyList);
             SubscriptionThrottlePolicyList polList = check j.cloneWithType(SubscriptionThrottlePolicyList);
             return polList;
+        } else  if subPolicyList is SubscriptionThrottlePolicyList {
+            log:printDebug(subPolicyList.toString());
+            return subPolicyList;
+        } else {
+            InternalServerErrorError internalError = {body: {code: 90900, message: "Internal Error while retrieving list of Business Plans"}};
+            return internalError;
         }
-        io:print(subPolicyList);
-        return error("Error while getting subsciption policies");
     }
-    resource function post throttling/policies/subscription(@http:Payload SubscriptionThrottlePolicy payload, @http:Header string 'content\-type = "application/json") returns CreatedSubscriptionThrottlePolicy|BadRequestError|UnsupportedMediaTypeError|error {
-        string|api:APIManagementException? createdSubPol = admin:ThrottlingCommonImpl_addSubscriptionThrottlePolicy(payload.toJsonString());
+    resource function post throttling/policies/subscription(@http:Payload SubscriptionThrottlePolicy payload, @http:Header string 'content\-type = "application/json") returns CreatedSubscriptionThrottlePolicy|BadRequestError|UnsupportedMediaTypeError|InternalServerErrorError|error {
+        string?|SubscriptionThrottlePolicy|error createdSubPol = addBusinessPlan(payload);
         if createdSubPol is string {
             json j = check value:fromJsonString(createdSubPol);
             CreatedSubscriptionThrottlePolicy crPol = {body: check j.cloneWithType(SubscriptionThrottlePolicy)};
             return crPol;
+        } else if createdSubPol is SubscriptionThrottlePolicy {
+            log:printDebug(createdSubPol.toString());
+            CreatedSubscriptionThrottlePolicy crPol = {body: check createdSubPol.cloneWithType(SubscriptionThrottlePolicy)};
+            return crPol;
+        } else {
+            InternalServerErrorError internalError = {body: {code: 90900, message: "Internal Error while adding Business Plan"}};
+            return internalError;
         }
-        io:println(createdSubPol);
-        return error("Error while adding Application Policy");
     }
-    resource function get throttling/policies/subscription/[string policyId]() returns SubscriptionThrottlePolicy|NotFoundError|NotAcceptableError|error {
-        string|api:APIManagementException? subPolicy = admin:ThrottlingCommonImpl_getSubscriptionThrottlePolicyById(policyId);
+    resource function get throttling/policies/subscription/[string policyId]() returns SubscriptionThrottlePolicy|NotFoundError|NotAcceptableError|InternalServerErrorError|error {
+        string?|SubscriptionThrottlePolicy|error subPolicy = getBusinessPlanById(policyId);
         if subPolicy is string {
             json j = check value:fromJsonString(subPolicy);
             SubscriptionThrottlePolicy policy = check j.cloneWithType(SubscriptionThrottlePolicy);
             return policy;
+        } else if subPolicy is SubscriptionThrottlePolicy {
+            log:printDebug(subPolicy.toString());
+            return subPolicy;
+        } else {
+            InternalServerErrorError internalError = {body: {code: 90900, message: "Internal Error while retrieving Business Plan by Id"}};
+            return internalError;
         }
-        io:println(subPolicy);
-        return error("Error while gettting Subscription Policy");
     }
-    resource function put throttling/policies/subscription/[string policyId](@http:Payload SubscriptionThrottlePolicy payload, @http:Header string 'content\-type = "application/json") returns SubscriptionThrottlePolicy|BadRequestError|NotFoundError|error {
-        string|api:APIManagementException? subPolicy = admin:ThrottlingCommonImpl_updateSubscriptionThrottlePolicy(policyId, payload.toJsonString());
+    resource function put throttling/policies/subscription/[string policyId](@http:Payload SubscriptionThrottlePolicy payload, @http:Header string 'content\-type = "application/json") returns SubscriptionThrottlePolicy|BadRequestError|NotFoundError|InternalServerErrorError|error {
+        string?|SubscriptionThrottlePolicy|NotFoundError|error  subPolicy = updateBusinessPlan(policyId, payload);
         if subPolicy is string {
             json j = check value:fromJsonString(subPolicy);
             SubscriptionThrottlePolicy updatedPolicy = check j.cloneWithType(SubscriptionThrottlePolicy);
             return updatedPolicy;
+        } else if subPolicy is SubscriptionThrottlePolicy | NotFoundError {
+            return subPolicy;
+        } else {
+            InternalServerErrorError internalError = {body: {code: 90900, message: "Internal Error while updating Business Plan by Id"}};
+            return internalError;
         }
-        io:println(subPolicy);
-        return error("Error while updating Subscription Policy");
     }
-    // resource function delete throttling/policies/subscription/[string policyId]() returns http:Ok|NotFoundError|error {
-    //     api:APIManagementException? ex = admin:ThrottlingCommonImpl_removeSubscriptionThrottlePolicy(policyId, "carbon.super");
-    //     if ex !is api:APIManagementException {
-    //         return http:OK;
-    //     }
-    //     return error(ex.detail().toString());
-    // }
+    resource function delete throttling/policies/subscription/[string policyId]() returns http:Ok|NotFoundError|InternalServerErrorError|error {
+        string|error? ex = removeBusinessPlan(policyId);
+        if ex is error {
+            InternalServerErrorError internalError = {body: {code: 90900, message: "Internal Error while deleting Business Plan by Id"}};
+            return internalError;
+        } else {
+            return http:OK;
+        }
+    }
     // resource function get throttling/policies/advanced(@http:Header string? accept = "application/json") returns AdvancedThrottlePolicyList|NotAcceptableError {
     //     return advancedPolicyList;
     // }
@@ -136,53 +171,70 @@ service /api/am/admin/v3 on ep0 {
     // }
     // resource function post throttling/policies/'import(boolean? overwrite, @http:Payload json payload) returns http:Ok|ForbiddenError|NotFoundError|ConflictError|InternalServerErrorError {
     // }
-    resource function get throttling/'deny\-policies(@http:Header string? accept = "application/json") returns BlockingConditionList|NotAcceptableError|error {
-        string|api:APIManagementException? conditionList = admin:ThrottlingCommonImpl_getAllDenyPolicies();
+    resource function get throttling/'deny\-policies(@http:Header string? accept = "application/json") returns BlockingConditionList|NotAcceptableError|InternalServerErrorError|error {
+        string?|BlockingConditionList|error conditionList = getAllDenyPolicies();
         if conditionList is string {
             json j = check value:fromJsonString(conditionList);
             BlockingConditionList list = check j.cloneWithType(BlockingConditionList);
             return list;
+        } else if conditionList is BlockingConditionList {
+            return conditionList;
+        } else {
+            InternalServerErrorError internalError = {body: {code: 90900, message: "Internal Error while retrieving all Deny Policies"}};
+            return internalError;
         }
-        io:println(conditionList);
-        return error("Error while getting block conditions");
     }
-    resource function post throttling/'deny\-policies(@http:Payload BlockingCondition payload, @http:Header string 'content\-type = "application/json") returns CreatedBlockingCondition|BadRequestError|UnsupportedMediaTypeError|error {
-        string|api:APIManagementException? createdDenyPol = admin:ThrottlingCommonImpl_addDenyPolicy(payload.toJsonString());
+    resource function post throttling/'deny\-policies(@http:Payload BlockingCondition payload, @http:Header string 'content\-type = "application/json") returns CreatedBlockingCondition|BadRequestError|UnsupportedMediaTypeError|InternalServerErrorError|error {
+        string?|BlockingCondition|error createdDenyPol = addDenyPolicy(payload);
         if createdDenyPol is string {
             json j = check value:fromJsonString(createdDenyPol);
             CreatedBlockingCondition condition = {body: check j.cloneWithType(BlockingCondition)};
             return condition;
+        } else if createdDenyPol is BlockingCondition {
+            log:printDebug(createdDenyPol.toString());
+            CreatedBlockingCondition condition = {body: check createdDenyPol.cloneWithType(BlockingCondition)};
+            return condition;
+        } else {
+            InternalServerErrorError internalError = {body: {code: 90900, message: "Internal Error while adding Deny Policy"}};
+            return internalError;
         }
-        io:println(createdDenyPol);
-        return error("Error while adding deny policy");
     }
-    resource function get throttling/'deny\-policy/[string conditionId]() returns BlockingCondition|NotFoundError|NotAcceptableError|error {
-        string|api:APIManagementException? denyPolicy = admin:ThrottlingCommonImpl_getDenyPolicyById(conditionId);
+    resource function get throttling/'deny\-policy/[string conditionId]() returns BlockingCondition|NotFoundError|NotAcceptableError|InternalServerErrorError|error {
+        string?|BlockingCondition|error denyPolicy = getDenyPolicyById(conditionId);
         if denyPolicy is string {
             json j = check value:fromJsonString(denyPolicy);
             BlockingCondition condition = check j.cloneWithType(BlockingCondition);
             return condition;
+        } else if denyPolicy is BlockingCondition {
+            log:printDebug(denyPolicy.toString());
+            return denyPolicy;
+        } else {
+            InternalServerErrorError internalError = {body: {code: 90900, message: "Internal Error while retrieving Deny Policy by Id"}};
+            return internalError;
         }
-        io:println(denyPolicy);
-        return error("Error while getting deny policy");
     }
-    resource function delete throttling/'deny\-policy/[string conditionId]() returns http:Ok|NotFoundError|error {
-        api:APIManagementException? ex = admin:ThrottlingCommonImpl_removeDenyPolicy(conditionId);
-        if ex !is api:APIManagementException {
+    resource function delete throttling/'deny\-policy/[string conditionId]() returns http:Ok|NotFoundError|InternalServerErrorError|error {
+        string|error? ex = removeDenyPolicy(conditionId);
+        if ex is error {
+            InternalServerErrorError internalError = {body: {code: 90900, message: "Internal Error while deleting Deny Policy by Id"}};
+            return internalError;
+        } else {
             return http:OK;
         }
-        io:println(ex);
-        return error("Error while deleting deny policy");
     }
-    resource function patch throttling/'deny\-policy/[string conditionId](@http:Payload BlockingConditionStatus payload, @http:Header string 'content\-type = "application/json") returns BlockingCondition|BadRequestError|NotFoundError|error {
-        string|api:APIManagementException? updatedPolicy = admin:ThrottlingCommonImpl_updateDenyPolicy(conditionId, payload.toJsonString());
+    resource function patch throttling/'deny\-policy/[string conditionId](@http:Payload BlockingConditionStatus payload, @http:Header string 'content\-type = "application/json") returns BlockingCondition|BadRequestError|NotFoundError|InternalServerErrorError|error {
+        string?|BlockingCondition|NotFoundError|error updatedPolicy = updateDenyPolicy(conditionId, payload);
         if updatedPolicy is string {
             json j = check value:fromJsonString(updatedPolicy);
             BlockingCondition condition = check j.cloneWithType(BlockingCondition);
             return condition;
+        } else if updatedPolicy is BlockingCondition|NotFoundError {
+            log:printDebug(updatedPolicy.toString());
+            return updatedPolicy;
+        } else {
+            InternalServerErrorError internalError = {body: {code: 90900, message: "Internal Error while updating Deny Policy Status by Id"}};
+            return internalError;
         }
-        io:println(updatedPolicy);
-        return error("Error while updating deny policy");
     }
     // resource function get applications(string? user, string? name, string? tenantDomain, int 'limit = 25, int offset = 0, @http:Header string? accept = "application/json", string sortBy = "name", string sortOrder = "asc") returns ApplicationList|BadRequestError|NotAcceptableError {
     // }

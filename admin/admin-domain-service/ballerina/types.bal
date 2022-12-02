@@ -105,7 +105,7 @@ public type BlockingCondition record {
     # Type of the blocking condition
     string conditionType;
     # Value of the blocking condition
-    record {} conditionValue;
+    string conditionValue;
     # Status of the blocking condition
     boolean conditionStatus?;
 };

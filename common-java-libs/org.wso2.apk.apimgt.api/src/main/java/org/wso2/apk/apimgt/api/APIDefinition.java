@@ -64,14 +64,7 @@ public abstract class APIDefinition {
      */
     public abstract Set<Scope> getScopes(String resourceConfigsJSON) throws APIManagementException;
 
-    /**
-     * This method generates API definition to the given api
-     *
-     * @param swaggerData api
-     * @return API definition in string format
-     * @throws APIManagementException
-     */
-    public abstract String generateAPIDefinition(SwaggerData swaggerData) throws APIManagementException;
+    public abstract String generateAPIDefinition(API api) throws APIManagementException;
 
     /**
      * This method generates API definition using the given api's URI templates and the swagger.
@@ -85,7 +78,7 @@ public abstract class APIDefinition {
      * @return API definition in string format
      * @throws APIManagementException if error occurred when generating API Definition
      */
-    public abstract String generateAPIDefinition(SwaggerData swaggerData, String swagger) throws APIManagementException;
+    public abstract String generateAPIDefinition(API api, String swagger) throws APIManagementException;
 
     /**
      * Extract and return path parameters in the given URI template
@@ -112,7 +105,8 @@ public abstract class APIDefinition {
      * @param swaggerData Swagger Data object
      * @return a structured uri template map using provided Swagger Data Resource Paths
      */
-    public Map<String, Map<String, SwaggerData.Resource>> getResourceMap(SwaggerData swaggerData) {
+    public Map<String, Map<String, SwaggerData.Resource>> getResourceMap(API api) {
+        SwaggerData swaggerData = new SwaggerData(api);
         Map<String, Map<String, SwaggerData.Resource>> uriTemplateMap = new LinkedHashMap<>();
         for (SwaggerData.Resource resource : swaggerData.getResources()) {
             Map<String, SwaggerData.Resource> resources = uriTemplateMap.get(resource.getPath());
@@ -150,11 +144,11 @@ public abstract class APIDefinition {
      * Populate definition with wso2 APIM specific information
      *
      * @param oasDefinition OAS definition
-     * @param swaggerData   API
+     * @param api   API
      * @return Generated OAS definition
      * @throws APIManagementException If an error occurred
      */
-    public abstract String populateCustomManagementInfo(String oasDefinition, SwaggerData swaggerData)
+    public abstract String populateCustomManagementInfo(String oasDefinition, API api)
             throws APIManagementException;
 
     /**
@@ -191,8 +185,6 @@ public abstract class APIDefinition {
      */
     public abstract String getOASDefinitionForPublisher(API api, String oasDefinition)
             throws APIManagementException;
-
-    public abstract String getOASVersion(String oasDefinition) throws APIManagementException;
 
     public abstract String getOASDefinitionWithTierContentAwareProperty(String oasDefinition,
             List<String> contentAwareTiersList, String apiLevelTier) throws APIManagementException;
@@ -262,4 +254,5 @@ public abstract class APIDefinition {
      * @return String parserType
      */
     public abstract String getType();
+    public abstract boolean canHandleDefinition(String definition);
 }

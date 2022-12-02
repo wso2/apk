@@ -17,23 +17,45 @@
 //
 import ballerina/log;
 import ballerina/http;
-import ballerina/task;
-import ballerina/io;
+import ballerina/lang.runtime;
+import ballerina/uuid;
 
-listener http:Listener ep0 = new (9444);
-configurable string namespaceFile = "/var/run/secrets/kubernetes.io/serviceaccount/namespace";
-string namespace = check io:fileReadString(namespaceFile);
+listener http:Listener ep0 = new (9443);
+string kid = uuid:createType1AsString();
 
-configurable RuntimeConfiguratation runtimeConfiguration = {serviceListingNamespaces: [ALL_NAMESPACES], apiCreationNamespace: namespace};
+configurable RuntimeConfiguratation runtimeConfiguration = {
+    keyStores: {
+        signing: {
+            path: "/home/wso2apk/runtime/security/wso2carbon.key"
+        },
+        tls: {
+            path: "/home/wso2apk/runtime/security/wso2carbon.key"
+        }
+    }
+};
 
 # Initializing method for runtime
-isolated function init() {
-    do {
-        _ = check task:scheduleJobRecurByFrequency(new ServiceTask(), 1);
-        _ = check task:scheduleJobRecurByFrequency(new APIListingTask(), 1);
-    } on fail var e {
-        log:printError("Error initializing Task", e);
+function init() returns error? {
+    APIClient apiService = new ();
+    error? retrieveAllApisAtStartup = apiService.retrieveAllApisAtStartup(());
+    if retrieveAllApisAtStartup is error {
+        log:printError("Error occured while retrieving API List", retrieveAllApisAtStartup);
     }
+
+    ServiceClient servicesService = new ();
+    error? retrieveAllServicesAtStartup = servicesService.retrieveAllServicesAtStartup(());
+    if retrieveAllServicesAtStartup is error {
+        log:printError("Error occured while retrieving Service List", retrieveAllServicesAtStartup);
+    }
+
+    APIListingTask apiListingTask = new (resourceVersion);
+    _ = check apiListingTask.startListening();
+    ServiceTask serviceTask = new (servicesResourceVersion);
+    _ = check serviceTask.startListening();
+    check ep0.attach(healthService, "/");
+    check ep0.attach(runtimeService, "/api/am/runtime");
+    check ep0.'start();
+    runtime:registerListener(ep0);
     log:printInfo("Initializing Runtime Domain Service..");
 }
 

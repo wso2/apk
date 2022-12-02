@@ -26,6 +26,9 @@ wso2:
         enabled: true
         driver: "org.postgresql.Driver"
         url: "jdbc:postgresql://wso2apk-db-service:5432/WSO2AM_DB"
+        host: "wso2apk-db-service"
+        port: 5432
+        databaseName: "WSO2AM_DB"
         username: "wso2carbon"
         password: "wso2carbon"
         validationQuery: "SELECT 1"
@@ -103,10 +106,10 @@ wso2:
             nginx.ingress.kubernetes.io/affinity: "cookie"
             nginx.ingress.kubernetes.io/session-cookie-name: "route"
             nginx.ingress.kubernetes.io/session-cookie-hash: "sha1"
-      publisher:
-        appName: "publisher-ds"
+      backoffice:
+        appName: "backoffice-ds"
         deployment:
-          npi: publisher-ds-npi
+          npi: backoffice-ds-npi
           resources:
             requests:
               memory: "128Mi"
@@ -132,6 +135,41 @@ wso2:
           image: backoffice_service:0.1.0-SNAPSHOT
         ingress:
           path: /api/am/backoffice
+          className: ""
+          annotations:
+            kubernetes.io/ingress.class: "nginx"
+            nginx.ingress.kubernetes.io/affinity: "cookie"
+            nginx.ingress.kubernetes.io/session-cookie-name: "route"
+            nginx.ingress.kubernetes.io/session-cookie-hash: "sha1"
+      backofficeInternal:
+        appName: "backoffice-internal-ds"
+        deployment:
+          npi: backoffice-internal-ds-npi
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "1028Mi"
+              cpu: "1000m"
+          readinessProbe:
+            path: /health
+            port: 9443
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 5
+          livenessProbe:
+            path: /health
+            port: 9443
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 5
+          strategy: Recreate
+          replicas: 1
+          imagePullPolicy: IfNotPresent
+          image: backoffice_internal_service:0.1.0-SNAPSHOT
+        ingress:
+          path: /api/am/backoffice/internal
           className: ""
           annotations:
             kubernetes.io/ingress.class: "nginx"
