@@ -219,6 +219,7 @@ public class APIClient {
         if serviceRetrieved is Service {
             model:Httproute prodHttpRoute = self.retrieveHttpRoute(api, serviceRetrieved, uniqueId, "production");
             model:API k8sAPI = self.generateAPICRArtifact(api, (), prodHttpRoute, uniqueId);
+            model:K8sServiceMapping k8sServiceMapping = self.generateK8sServiceMapping(k8sAPI, serviceRetrieved, getNameSpace(runtimeConfiguration.apiCreationNamespace), uniqueId);
             string|error generatedSwaggerDefinition = self.retrieveGeneratedSwaggerDefinition(api);
             model:ConfigMap definitionConnfigMap;
             if generatedSwaggerDefinition is string {
@@ -248,17 +249,27 @@ public class APIClient {
             json|http:ClientError deployAPICRResult = deployAPICR(k8sAPI, getNameSpace(runtimeConfiguration.apiCreationNamespace));
             if deployAPICRResult is json {
                 log:printDebug("Deployed K8sAPI Successfully" + deployAPICRResult.toJsonString());
-                CreatedAPI createdAPI = {body: {name: api.name, context: self.returnFullContext(api.context, api.'version), 'version: api.'version}};
-                return createdAPI;
             } else {
                 log:printError("Error while deploying API", deployAPICRResult);
                 InternalServerErrorError internalEror = {body: {code: 90900, message: "Internal Error while Deploying K8sAPI"}};
                 return internalEror;
             }
+
+            json|http:ClientError deployServiceMappingCRResult = deployServiceMappingCR(k8sServiceMapping, getNameSpace(runtimeConfiguration.apiCreationNamespace));
+            if deployServiceMappingCRResult is json {
+                log:printDebug("Deployed K8sAPI Successfully" + deployServiceMappingCRResult.toJsonString());
+            } else {
+                log:printError("Error while deploying API", deployServiceMappingCRResult);
+                InternalServerErrorError internalEror = {body: {code: 90900, message: "Internal Error while Deploying K8sAPI"}};
+                return internalEror;
+            }
+
         } else {
             NotFoundError notfound = {body: {code: 90913, message: "Service from " + serviceKey + " not found."}};
             return notfound;
         }
+        CreatedAPI createdAPI = {body: {name: api.name, context: self.returnFullContext(api.context, api.'version), 'version: api.'version}};
+        return createdAPI;
 
     }
 
@@ -475,4 +486,28 @@ public class APIClient {
             setResourceVersion(resourceVersion);
         }
     }
+    function generateK8sServiceMapping(model:API api, Service serviceEntry, string namespace, string uniqueId) returns model:K8sServiceMapping {
+        model:K8sServiceMapping k8sServiceMapping = {
+            metadata: {
+                name: self.getServiceMappingEntryName(uniqueId),
+                namespace: namespace
+            },
+            spec: {
+                serviceRef: {
+                    namespace: serviceEntry.namespace,
+                    name: serviceEntry.name
+                },
+                apiRef: {
+                    namespace: api.metadata.namespace,
+                    name: api.metadata.name
+                }
+            }
+        };
+        return k8sServiceMapping;
+
+    }
+    function getServiceMappingEntryName(string uniqueId) returns string {
+        return uniqueId + "-servicemapping";
+    }
 }
+

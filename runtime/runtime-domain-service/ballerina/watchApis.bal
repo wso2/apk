@@ -159,3 +159,21 @@ function readAPIEvent(websocket:Client apiWebsocketClient) returns error? {
     }
 
 }
+
+function getAPIByNameAndNamespace(string name, string namespace) returns model:K8sAPI? {
+    foreach model:K8sAPI api in getAPIs() {
+        if (api.k8sName == name && api.namespace == namespace) {
+            return api;
+        }
+    }
+    json|error k8sAPIByNameAndNamespace = getK8sAPIByNameAndNamespace(name, namespace);
+    if k8sAPIByNameAndNamespace is json {
+        model:K8sAPI|error k8sAPI = createAPImodel(k8sAPIByNameAndNamespace);
+        if k8sAPI is model:K8sAPI {
+            return k8sAPI;
+        } else {
+            log:printError("Error occued while converting json", k8sAPI);
+        }
+    }
+    return;
+}

@@ -71,6 +71,12 @@ function deployAPICR(model:API api, string namespace) returns json|http:ClientEr
     return k8sApiServerEp->post(endpoint, api, targetType = json);
 }
 
+function deployServiceMappingCR(model:K8sServiceMapping serviceMapping, string namespace) returns json|http:ClientError {
+    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/servicemappings";
+    return k8sApiServerEp->post(endpoint, serviceMapping, targetType = json);
+
+}
+
 function deployConfigMap(model:ConfigMap configMap, string namespace) returns json|http:ClientError {
     string endpoint = "/api/v1/namespaces/" + namespace + "/configmaps";
     return k8sApiServerEp->post(endpoint, configMap, targetType = json);
@@ -104,7 +110,58 @@ function retrieveAllAPIS(string? continueToken) returns json|http:ClientError {
 
 function retrieveAllServices(string? continueToken) returns json|http:ClientError {
     string? continueTokenValue = continueToken;
-    string endpoint = "/api/v1/services?limit=4";
+    string endpoint = "/api/v1/services";
+    if continueTokenValue is string {
+        if continueTokenValue.length() > 0 {
+            int? questionMarkIndex = endpoint.lastIndexOf("?");
+            if questionMarkIndex is int {
+                if questionMarkIndex > 0 {
+                    endpoint = endpoint + "&continue=" + continueTokenValue;
+                } else {
+                    endpoint = endpoint + "?continue=" + continueTokenValue;
+                }
+            } else {
+                endpoint = endpoint + "?continue=" + continueTokenValue;
+            }
+        }
+    }
+
+    return k8sApiServerEp->get(endpoint, targetType = json);
+}
+
+function getServiceByNameAndNamespace(string name, string namespace) returns json|error {
+    string endpoint = "/api/v1/namespaces/" + namespace + "/services/" + name;
+    http:Response|http:ClientError response = k8sApiServerEp->get(endpoint);
+    if response is http:Response {
+        if response.statusCode == 200 {
+            return response.getJsonPayload();
+        } else if (response.statusCode == 404) {
+            return error("Service not found");
+        }
+    }
+    if response is http:ClientError {
+        return error(response.message());
+    }
+}
+
+function getK8sAPIByNameAndNamespace(string name, string namespace) returns json|error {
+    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/apis/" + name;
+    http:Response|http:ClientError response = k8sApiServerEp->get(endpoint);
+    if response is http:Response {
+        if response.statusCode == 200 {
+            return response.getJsonPayload();
+        } else if (response.statusCode == 404) {
+            return error("Service not found");
+        }
+    }
+    if response is http:ClientError {
+        return error(response.message());
+    }
+}
+
+function retrieveAllServiceMappings(string? continueToken) returns json|http:ClientError {
+    string? continueTokenValue = continueToken;
+    string endpoint = "/apis/dp.wso2.com/v1alpha1/servicemappings?limit=4";
     if continueTokenValue is string {
         if continueTokenValue.length() > 0 {
             int? questionMarkIndex = endpoint.lastIndexOf("?");
