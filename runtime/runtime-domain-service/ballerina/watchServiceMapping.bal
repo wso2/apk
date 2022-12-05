@@ -22,6 +22,7 @@ import ballerina/log;
 
 map<map<model:K8sAPI>> serviceMappings = {};
 string serviceMappingResourceVersion = "";
+map<model:K8sServiceMapping> k8sServiceMappings = {};
 websocket:Client|error|() serviceMappingClient = ();
 
 class ServiceMappingTask {
@@ -128,44 +129,11 @@ function readServiceMappingEvent(websocket:Client apiWebsocketClient) returns er
 }
 
 function addServiceMapping(map<map<model:K8sAPI>> serviceMappings, model:K8sServiceMapping serviceMapping) {
-    model:ServiceReference serviceRef = serviceMapping.spec.serviceRef;
-    Service? serviceResult = getService(serviceRef.name, serviceRef.namespace);
-    if serviceResult is Service {
-        map<model:K8sAPI>? apiList = serviceMappings[serviceResult.id];
-        map<model:K8sAPI> apis;
-        if apiList is map<model:K8sAPI> {
-            apis = apilist;
-        } else {
-            apis = {};
-        }
-        serviceMappings[serviceResult.id] = apis;
-
-        model:APIReference apiRef = serviceMapping.spec.apiRef;
-        model:K8sAPI? api = getAPIByNameAndNamespace(apiRef.name, apiRef.namespace);
-        if api is model:K8sAPI {
-            apis[api.uuid] = api;
-        }
-    }
+    k8sServiceMappings[serviceMapping.metadata.uid ?: ""] = serviceMapping;
 }
 
 function deleteServiceMapping(map<map<model:K8sAPI>> serviceMappings, model:K8sServiceMapping serviceMapping) {
-    model:ServiceReference serviceRef = serviceMapping.spec.serviceRef;
-    Service? serviceResult = getService(serviceRef.name, serviceRef.namespace);
-    if serviceResult is Service {
-        map<model:K8sAPI>? apiList = serviceMappings[serviceResult.id];
-        map<model:K8sAPI> apis;
-        if apiList is map<model:K8sAPI> {
-            apis = apilist;
-        } else {
-            apis = {};
-        }
-        serviceMappings[serviceResult.id] = apis;
-        model:APIReference apiRef = serviceMapping.spec.apiRef;
-        model:K8sAPI? api = getAPIByNameAndNamespace(apiRef.name, apiRef.namespace);
-        if api is model:K8sAPI {
-            _ = apis.remove(api.uuid);
-        }
-    }
+    _ = k8sServiceMappings.remove(serviceMapping.metadata.uid ?: "");
 }
 
 function putAllServiceMappings(json[] events) returns error? {
@@ -176,4 +144,34 @@ function putAllServiceMappings(json[] events) returns error? {
             addServiceMapping(serviceMappings, serviceMapping);
         }
     }
+}
+
+function retrieveAPIMappingsForService(Service serviceEntry) returns model:K8sAPI[] {
+    string[] keys = k8sServiceMappings.keys();
+    model:K8sAPI[] apis = [];
+    foreach string key in keys {
+        model:K8sServiceMapping serviceMapping = k8sServiceMappings.get(key);
+        model:ServiceReference serviceRef = serviceMapping.spec.serviceRef;
+        if (serviceRef.name == serviceEntry.name && serviceRef.namespace == serviceEntry.namespace) {
+            model:APIReference apiRef = serviceMapping.spec.apiRef;
+            model:K8sAPI? k8sAPI = getAPIByNameAndNamespace(apiRef.name, apiRef.namespace);
+            if k8sAPI is model:K8sAPI {
+                apis.push(k8sAPI);
+            }
+        }
+    }
+    return apis;
+}
+
+function retrieveServiceMappingsForAPI(model:K8sAPI api) returns model:K8sServiceMapping[] {
+    string[] keys = k8sServiceMappings.keys();
+    model:K8sServiceMapping[] serviceMappings = [];
+    foreach string key in keys {
+        model:K8sServiceMapping serviceMapping = k8sServiceMappings.get(key);
+        model:APIReference apiRef = serviceMapping.spec.apiRef;
+        if (apiRef.name == api.k8sName && apiRef.namespace == api.namespace) {
+            serviceMappings.push(serviceMapping);
+        }
+    }
+    return serviceMappings;
 }
