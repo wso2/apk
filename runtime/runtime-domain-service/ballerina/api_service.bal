@@ -86,10 +86,9 @@ http:Service runtimeService = service object {
         return serviceClient.getServiceById(serviceId);
     }
 
-    resource function get services/[string serviceId]/usage(string? namespace) returns APIList|BadRequestError|UnauthorizedError|NotFoundError|InternalServerErrorError|http:NotImplemented {
-        http:NotImplemented notImplementedError = {body: {code: 900910, message: "Not implemented"}};
-        return notImplementedError;
-
+    resource function get services/[string serviceId]/usage(string? namespace) returns APIList|BadRequestError|NotFoundError|InternalServerErrorError {
+        ServiceClient serviceClient = new ();
+        return serviceClient.getServiceUsageByServiceId(serviceId);
     }
     resource function get policies(string? query, int 'limit = 25, int offset = 0, string sortBy = "createdTime", string sortOrder = "desc", @http:Header string? accept = "application/json") returns MediationPolicyList|NotAcceptableError|http:NotImplemented {
         http:NotImplemented notImplementedError = {body: {code: 900910, message: "Not implemented"}};
