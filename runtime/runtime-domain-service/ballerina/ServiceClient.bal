@@ -150,11 +150,10 @@ public class ServiceClient {
     }
     public function getServiceUsageByServiceId(string serviceId) returns APIList|BadRequestError|NotFoundError|InternalServerErrorError {
         APIInfo[] apiInfos = [];
-        map<model:K8sAPI>|error retrievedUsage = trap serviceMappings.get(serviceId);
-        if retrievedUsage is map<model:K8sAPI> {
-            string[] keys = retrievedUsage.keys();
-            foreach string key in keys {
-                model:K8sAPI k8sAPI = retrievedUsage.get(key);
+        Service|BadRequestError|NotFoundError|InternalServerErrorError serviceEntry = self.getServiceById(serviceId);
+        if serviceEntry is Service {
+            model:K8sAPI[] k8sAPIS = retrieveAPIMappingsForService(serviceEntry);
+            foreach model:K8sAPI k8sAPI in k8sAPIS {
                 apiInfos.push({
                     context: k8sAPI.context,
                     createdTime: k8sAPI.creationTimestamp,
@@ -164,8 +163,10 @@ public class ServiceClient {
                     'version: k8sAPI.apiVersion
                 });
             }
+            APIList apiList = {list: apiInfos, count: apiInfos.length(), pagination: {total: apiInfos.length()}};
+            return apiList;
+        } else {
+            return serviceEntry;
         }
-        APIList apiList = {list: apiInfos, count: apiInfos.length(), pagination: {total: apiInfos.length()}};
-        return apiList;
     }
 }

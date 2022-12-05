@@ -116,13 +116,13 @@ public class APIClient {
                         log:printError("Error while undeploying prod http route ", sandHttpRouteDeletionResponse);
                     }
                 }
+                self.deleteServiceMappings(api);
             } else {
                 NotFoundError apiNotfound = {body: {code: 900910, description: "API with " + id + " not found", message: "API not found"}};
                 return apiNotfound;
             }
         }
-        PreconditionFailedError badRequestError = {body: {code: 900910, message: "missing required attributes"}};
-        return badRequestError;
+        return http:OK;
     }
 
     //Get all deployed APIs in namespace with specific search query
@@ -190,7 +190,11 @@ public class APIClient {
 
     function convertK8sCrAPI(API api) returns model:API {
         model:API apispec = {
-            metadata: {name: api.name.concat(api.'version), namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace)},
+            metadata: {
+                name: api.name.concat(api.'version),
+                namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace),
+                uid: ()
+            },
             spec: {
                 apiDisplayName: api.name,
                 apiType: api.'type,
@@ -281,7 +285,8 @@ public class APIClient {
         model:ConfigMap configMap = {
             metadata: {
                 name: self.retrieveDefinitionName(api, uniqueId),
-                namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace)
+                namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace),
+                uid: ()
             },
             data: configMapData
         };
@@ -312,7 +317,8 @@ public class APIClient {
         model:API k8sAPI = {
             metadata: {
                 name: uniqueId,
-                namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace)
+                namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace),
+                uid: ()
             },
             spec: {
                 apiDisplayName: api.name,
@@ -344,7 +350,8 @@ public class APIClient {
             metadata:
                 {
                 name: self.retrieveHttpRouteRefName(api, uniqueId, 'type),
-                namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace)
+                namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace),
+                uid: ()
             },
             spec: {
                 parentRefs: self.generateAndRetrieveParentRefs(api, serviceEntry, uniqueId),
@@ -490,7 +497,8 @@ public class APIClient {
         model:K8sServiceMapping k8sServiceMapping = {
             metadata: {
                 name: self.getServiceMappingEntryName(uniqueId),
-                namespace: namespace
+                namespace: namespace,
+                uid: ()
             },
             spec: {
                 serviceRef: {
@@ -508,6 +516,15 @@ public class APIClient {
     }
     function getServiceMappingEntryName(string uniqueId) returns string {
         return uniqueId + "-servicemapping";
+    }
+    function deleteServiceMappings(model:K8sAPI api) {
+        model:K8sServiceMapping[] retrieveServiceMappingsForAPIResult = retrieveServiceMappingsForAPI(api);
+        foreach model:K8sServiceMapping serviceMapping in retrieveServiceMappingsForAPIResult {
+            json|http:ClientError k8ServiceMapping = deleteK8ServiceMapping(serviceMapping.metadata.name, serviceMapping.metadata.namespace);
+            if k8ServiceMapping is http:ClientError {
+                log:printError("Error occured while deleting service mapping", k8ServiceMapping);
+            }
+        }
     }
 }
 
