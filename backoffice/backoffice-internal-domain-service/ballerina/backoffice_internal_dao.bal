@@ -36,11 +36,56 @@ public function db_createAPI(API api) returns API | error {
 
         sql:ExecutionResult | sql:Error result = db_client->execute(sqlQuery);
         
-        check db_client.close();
         if result is sql:ExecutionResult {
             return api;
         } else {
             return error("Error while inserting data into Database");  
+        }
+    }
+}
+
+
+# Update API details to the database 
+#
+# + api - API Parameter
+# + apiId - API Id parameter
+# + return - API | error
+public function db_updateAPI(string apiId, API api) returns API | error {
+    postgresql:Client | error db_client  = getConnection();
+    if db_client is error {
+        return error("Issue while conecting to databse");
+    } else {
+        sql:ParameterizedQuery values = ` api_name = ${api.name}
+        WHERE api_uuid = ${apiId}`;
+        sql:ParameterizedQuery sqlQuery = sql:queryConcat(UPDATE_API_Suffix, values);
+
+        sql:ExecutionResult | sql:Error result = db_client->execute(sqlQuery);
+        
+        if result is sql:ExecutionResult {
+            return api;
+        } else {
+            return error("Error while updating data into Database");  
+        }
+    }
+}
+
+# Delete API details from the database 
+#
+# + apiId - API Id parameter
+# + return - string | error
+public function db_deleteAPI(string apiId) returns string | error? {
+    postgresql:Client | error db_client  = getConnection();
+    if db_client is error {
+        return error("Issue while conecting to databse");
+    } else {
+        sql:ParameterizedQuery values = `${apiId}`;
+        sql:ParameterizedQuery sqlQuery = sql:queryConcat(DELETE_API_Suffix, values);
+        sql:ExecutionResult | sql:Error result =  db_client->execute(sqlQuery);
+        
+        if result is sql:ExecutionResult {
+            return "deleted";
+        } else {
+            return error("Error while deleting data record in the Database");  
         }
     }
 }

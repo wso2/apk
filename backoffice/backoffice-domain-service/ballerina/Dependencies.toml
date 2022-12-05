@@ -106,20 +106,6 @@ dependencies = [
 org = "ballerina"
 name = "jballerina.java"
 version = "0.0.0"
-modules = [
-	{org = "ballerina", packageName = "jballerina.java", moduleName = "jballerina.java"}
-]
-
-[[package]]
-org = "ballerina"
-name = "jballerina.java.arrays"
-version = "1.2.3"
-dependencies = [
-	{org = "ballerina", name = "jballerina.java"}
-]
-modules = [
-	{org = "ballerina", packageName = "jballerina.java.arrays", moduleName = "jballerina.java.arrays"}
-]
 
 [[package]]
 org = "ballerina"
@@ -266,6 +252,20 @@ dependencies = [
 
 [[package]]
 org = "ballerina"
+name = "sql"
+version = "1.5.0"
+dependencies = [
+	{org = "ballerina", name = "io"},
+	{org = "ballerina", name = "jballerina.java"},
+	{org = "ballerina", name = "lang.object"},
+	{org = "ballerina", name = "time"}
+]
+modules = [
+	{org = "ballerina", packageName = "sql", moduleName = "sql"}
+]
+
+[[package]]
+org = "ballerina"
 name = "task"
 version = "2.2.2"
 dependencies = [
@@ -302,27 +302,36 @@ modules = [
 ]
 
 [[package]]
+org = "ballerinax"
+name = "postgresql"
+version = "1.5.0"
+dependencies = [
+	{org = "ballerina", name = "crypto"},
+	{org = "ballerina", name = "io"},
+	{org = "ballerina", name = "jballerina.java"},
+	{org = "ballerina", name = "sql"},
+	{org = "ballerina", name = "time"}
+]
+modules = [
+	{org = "ballerinax", packageName = "postgresql", moduleName = "postgresql"}
+]
+
+[[package]]
 org = "wso2"
 name = "backoffice_service"
 version = "0.1.0"
 dependencies = [
 	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "http"},
-	{org = "ballerina", name = "jballerina.java"},
-	{org = "ballerina", name = "jballerina.java.arrays"},
 	{org = "ballerina", name = "lang.value"},
 	{org = "ballerina", name = "log"},
-	{org = "ballerinai", name = "observe"}
+	{org = "ballerina", name = "sql"},
+	{org = "ballerinai", name = "observe"},
+	{org = "ballerinax", name = "postgresql"}
 ]
 modules = [
 	{org = "wso2", packageName = "backoffice_service", moduleName = "backoffice_service"},
-	{org = "wso2", packageName = "backoffice_service", moduleName = "backoffice_service.backoffice"},
-	{org = "wso2", packageName = "backoffice_service", moduleName = "backoffice_service.java.io"},
-	{org = "wso2", packageName = "backoffice_service", moduleName = "backoffice_service.java.lang"},
-	{org = "wso2", packageName = "backoffice_service", moduleName = "backoffice_service.org.wso2.apk.apimgt.api"},
-	{org = "wso2", packageName = "backoffice_service", moduleName = "backoffice_service.org.wso2.apk.apimgt.api.model"},
-	{org = "wso2", packageName = "backoffice_service", moduleName = "backoffice_service.org.wso2.apk.apimgt.backoffice.impl"},
-	{org = "wso2", packageName = "backoffice_service", moduleName = "backoffice_service.org.wso2.apk.apimgt.init"}
+	{org = "wso2", packageName = "backoffice_service", moduleName = "backoffice_service.backoffice"}
 ]
 
 
