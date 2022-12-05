@@ -882,9 +882,6 @@ func UpdateAPICache(vHost string, newLabels []string, mgwSwagger model.MgwSwagge
 	apiIdentifier := GenerateIdentifierForAPIWithUUID(vHost, mgwSwagger.UUID)
 	oldLabels := orgIDOpenAPIEnvoyMap[mgwSwagger.GetOrganizationID()][apiIdentifier]
 
-	logger.LoggerAPI.Error("adding to orgIDAPIMgwSwaggerMap")
-	logger.LoggerAPI.Error(mgwSwagger.OrganizationID)
-	logger.LoggerAPI.Error(apiIdentifier)
 	if _, ok := orgIDAPIMgwSwaggerMap[mgwSwagger.OrganizationID]; ok {
 		orgIDAPIMgwSwaggerMap[mgwSwagger.GetOrganizationID()][apiIdentifier] = mgwSwagger
 	} else {

@@ -138,8 +138,8 @@ func (swagger *MgwSwagger) ValidateIR() error {
 	if swagger.xWso2Basepath == "" {
 		errs = multierror.Append(errs, errors.New("api basepath not found"))
 	}
-	if (swagger.productionEndpoints != nil && len(swagger.productionEndpoints.Endpoints) == 0) ||
-		(swagger.sandboxEndpoints != nil && len(swagger.sandboxEndpoints.Endpoints) == 0) {
+	if (swagger.productionEndpoints == nil || len(swagger.productionEndpoints.Endpoints) == 0) &&
+		(swagger.sandboxEndpoints == nil || len(swagger.sandboxEndpoints.Endpoints) == 0) {
 		errs = multierror.Append(errs, errors.New("no endpoints provided"))
 	}
 	if len(swagger.resources) == 0 {
