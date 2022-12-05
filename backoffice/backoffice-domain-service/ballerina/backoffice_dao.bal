@@ -16,24 +16,18 @@
 // under the License.
 //
 
-type DatasourceConfiguration record {
-    string name = "jdbc/apkdb";
-    string description;
-    string url;
-    string username;
-    string password;
-    string host;
-    int port;
-    string databaseName;
-    int maxPoolSize = 50;
-    int minIdle = 20;
-    int maxLifeTime = 60000;
-    int validationTimeout;
-    boolean autoCommit = true;
-    string testQuery;
-    string driver;
-};
+import ballerina/sql;
+import ballerinax/postgresql;
 
-type APKConfiguration record {
-    DatasourceConfiguration datasourceConfiguration;
-};
+function getAPIsDAO() returns API[]|error? {
+    postgresql:Client | error db_Client  = getConnection();
+    if db_Client is error {
+        return error("Error while retrieving connection", db_Client);
+    } else {
+        sql:ParameterizedQuery query = `SELECT * FROM am_api`;
+        stream<API, sql:Error?> apisStream = db_Client->query(query);
+        API[]? apis = check from API api in apisStream select api;
+        check apisStream.close();
+        return apis;
+    }
+}

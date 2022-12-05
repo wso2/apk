@@ -36,7 +36,6 @@ public function db_createAPI(API api) returns API | error {
 
         sql:ExecutionResult | sql:Error result = db_client->execute(sqlQuery);
         
-        check db_client.close();
         if result is sql:ExecutionResult {
             return api;
         } else {
@@ -62,7 +61,6 @@ public function db_updateAPI(string apiId, API api) returns API | error {
 
         sql:ExecutionResult | sql:Error result = db_client->execute(sqlQuery);
         
-        check db_client.close();
         if result is sql:ExecutionResult {
             return api;
         } else {
@@ -83,7 +81,7 @@ public function db_deleteAPI(string apiId) returns string | error? {
         sql:ParameterizedQuery values = `${apiId}`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(DELETE_API_Suffix, values);
         sql:ExecutionResult | sql:Error result =  db_client->execute(sqlQuery);
-        check db_client.close();
+        
         if result is sql:ExecutionResult {
             return "deleted";
         } else {
