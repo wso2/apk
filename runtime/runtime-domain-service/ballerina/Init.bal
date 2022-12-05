@@ -51,7 +51,10 @@ function init() returns error? {
     APIListingTask apiListingTask = new (resourceVersion);
     _ = check apiListingTask.startListening();
     ServiceTask serviceTask = new (servicesResourceVersion);
-    _ = check serviceTask.startListening();
+    _ = serviceTask.startListening();
+    _ = check servicesService.retrieveAllServiceMappingsAtStartup(());
+    ServiceMappingTask serviceMappingTask = new (serviceMappingResourceVersion);
+    _ = check serviceMappingTask.startListening();
     check ep0.attach(healthService, "/");
     check ep0.attach(runtimeService, "/api/am/runtime");
     check ep0.'start();

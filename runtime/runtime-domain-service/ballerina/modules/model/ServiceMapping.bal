@@ -15,7 +15,25 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-public type Metadata record {
+public type K8sServiceMapping record {
+    string kind = "ServiceMapping";
+    string apiVersion = "dp.wso2.com/v1alpha1";
+    Metadata metadata;
+    ServiceMappingSpec spec;
+
+};
+
+public type ServiceMappingSpec record {
+    ServiceReference serviceRef;
+    APIReference apiRef;
+};
+
+public type ServiceReference record {
+    string name;
+    string namespace;
+};
+
+public type APIReference record {
     string name;
     string namespace;
 };

@@ -116,7 +116,10 @@ function getService(string name, string namespace) returns Service? {
             return s;
         }
     }
-
+    Service|error retrieveK8sServiceMapping = new ServiceClient().retrieveK8sServiceMapping(name, namespace);
+    if retrieveK8sServiceMapping is Service {
+        return retrieveK8sServiceMapping;
+    }
     return;
 }
 
@@ -146,10 +149,9 @@ isolated function getServiceClient(string resourceVersion) returns websocket:Cli
     auth = {
         token: token
     },
-    secureSocket = {
-        cert: caCertPath
-    },
-        readTimeout = runtimeConfiguration.k8sConfiguration.readTimeout
+        secureSocket = {
+            cert: caCertPath
+        }
     );
 }
 
