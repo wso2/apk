@@ -24,7 +24,6 @@ import org.wso2.apk.apimgt.api.MonetizationException;
 import org.wso2.apk.apimgt.api.model.Monetization;
 import org.wso2.apk.apimgt.api.model.MonetizationUsagePublishInfo;
 import org.wso2.apk.apimgt.api.model.policy.SubscriptionPolicy;
-import org.wso2.apk.apimgt.impl.APIAdminImpl;
 import org.wso2.apk.apimgt.impl.APIConstants;
 
 import java.text.DateFormat;
@@ -59,22 +58,6 @@ public class DefaultMonetizationImpl implements Monetization {
     @Override
     public boolean publishMonetizationUsageRecords(MonetizationUsagePublishInfo monetizationUsagePublishInfo)
             throws MonetizationException {
-
-        APIAdmin apiAdmin = new APIAdminImpl();
-        monetizationUsagePublishInfo.setState(APIConstants.Monetization.COMPLETED);
-        monetizationUsagePublishInfo.setStatus(APIConstants.Monetization.SUCCESSFULL);
-        DateFormat df = new SimpleDateFormat(APIConstants.Monetization.USAGE_PUBLISH_TIME_FORMAT);
-        Date dateobj = new Date();
-        //get the time in UTC format
-        df.setTimeZone(TimeZone.getTimeZone(APIConstants.Monetization.USAGE_PUBLISH_TIME_ZONE));
-        String currentDate = df.format(dateobj);
-        long currentTimestamp = apiAdmin.getTimestamp(currentDate);
-        monetizationUsagePublishInfo.setLastPublishTime(currentTimestamp);
-        try {
-            apiAdmin.updateMonetizationUsagePublishInfo(monetizationUsagePublishInfo);
-        } catch (APIManagementException e) {
-            throw new MonetizationException("Failed to update the monetization usage publish info", e);
-        }
         return true;
     }
 
