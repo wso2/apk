@@ -44,4 +44,8 @@ var defaultConfig = &Config{
 			Ttl:             "1h",
 		},
 	},
+	BackOffice: backOffice{
+		Host: "host.docker.internal",
+		Port: 9445,
+	},
 }

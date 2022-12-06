@@ -27,6 +27,7 @@ import (
 	apiProtos "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/apkmgt"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	"github.com/wso2/apk/adapter/pkg/tlsutils"
+	"github.com/wso2/apk/management-server/internal/backoffice"
 	"github.com/wso2/apk/management-server/internal/config"
 	"github.com/wso2/apk/management-server/internal/database"
 	"github.com/wso2/apk/management-server/internal/logger"
@@ -45,7 +46,7 @@ func NewApiService() *apiService {
 
 func (s *apiService) CreateAPI(ctx context.Context, api *apiProtos.API) (*apiProtos.Response, error) {
 	logger.LoggerMGTServer.Infof("Message received : %q", api)
-	database.CreateAPI(api)
+	backoffice.CreateAPI(api)
 	return &apiProtos.Response{Result: true}, nil
 }
 
