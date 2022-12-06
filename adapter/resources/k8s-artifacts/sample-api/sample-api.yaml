@@ -75,4 +75,10 @@ spec:
     matches:
     - path:
         type: PathPrefix
-        value: /http-bin-api/1.0.8/get
+        value: /http-bin-api/1.0.8
+    filters:
+      - type: URLRewrite
+        urlRewrite:
+          path:
+            type: ReplacePrefixMatch
+            replacePrefixMatch: /
