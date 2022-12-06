@@ -25,6 +25,7 @@ import runtime_domain_service.org.wso2.apk.apimgt.api.model as apkAPis;
 import runtime_domain_service.java.util as utilapis;
 import runtime_domain_service.org.wso2.apk.apimgt.api;
 import ballerina/jwt;
+import ballerina/regex;
 import runtime_domain_service.org.wso2.apk.runtime as runtimeUtil;
 
 public class APIClient {
@@ -133,19 +134,95 @@ public class APIClient {
 
     # This returns list of APIS.
     #
+    # + query - Parameter Description  
+    # + 'limit - Parameter Description  
+    # + offset - Parameter Description  
+    # + sortBy - Parameter Description  
+    # + sortOrder - Parameter Description
     # + return - Return list of APIS in namsepace.
-    public function getAPIList() returns APIList|error {
+    public function getAPIList(string? query, int 'limit, int offset, string sortBy, string sortOrder) returns BadRequestError|APIList {
         API[] apilist = [];
         foreach model:K8sAPI api in getAPIs() {
             API convertedModel = convertK8sAPItoAPI(api);
             apilist.push(convertedModel);
         }
-        APIList APIList = {
-            list: apilist
-        };
-        return APIList;
+        if query is string {
+            return self.filterAPISBasedOnQuery(apilist, query, 'limit, offset, sortBy, sortOrder);
+        } else {
+            return self.filterAPIS(apilist, 'limit, offset, sortBy, sortOrder);
+        }
     }
+    private function filterAPISBasedOnQuery(API[] apilist, string query, int 'limit, int offset, string sortBy, string sortOrder) returns APIList|BadRequestError {
+        API[] filteredList = [];
+        if query.length() > 0 {
+            int? semiCollonIndex = string:indexOf(query, ":", 0);
+            if semiCollonIndex is int {
+                if semiCollonIndex > 0 {
+                    string keyWord = query.substring(0, semiCollonIndex);
+                    string keyWordValue = query.substring(keyWord.length() + 1, query.length());
+                    if keyWord.trim() == SEARCH_CRITERIA_NAME {
+                        foreach API api in apilist {
+                            if (regex:matches(api.name, keyWordValue)) {
+                                filteredList.push(api);
+                            }
+                        }
+                    } else if keyWord.trim() == SEARCH_CRITERIA_TYPE {
+                        foreach API api in apilist {
+                            if (regex:matches(api.'type, keyWordValue)) {
+                                filteredList.push(api);
+                            }
+                        }
+                    } else {
+                        BadRequestError badRequest = {body: {code: 90912, message: "Invalid KeyWord " + keyWord}};
+                        return badRequest;
+                    }
+                }
+            } else {
+                foreach API api in apilist {
+                    if (regex:matches(api.name, query)) {
+                        filteredList.push(api);
+                    }
+                }
+            }
+        } else {
+            filteredList = apilist;
+        }
+        return self.filterAPIS(filteredList, 'limit, offset, sortBy, sortOrder);
+    }
+    private function filterAPIS(API[] apiList, int 'limit, int offset, string sortBy, string sortOrder) returns APIList|BadRequestError {
+        API[] clonedAPIList = apiList.clone();
+        API[] sortedAPIS = [];
+        if sortBy == SORT_BY_API_NAME && sortOrder == SORT_ORDER_ASC {
+            sortedAPIS = from var api in clonedAPIList
+                order by api.name ascending
+                select api;
+        } else if sortBy == SORT_BY_API_NAME && sortOrder == SORT_ORDER_DESC {
+            sortedAPIS = from var api in clonedAPIList
+                order by api.name descending
+                select api;
+        } else if sortBy == SORT_BY_CREATED_TIME && sortOrder == SORT_ORDER_ASC {
+            sortedAPIS = from var api in clonedAPIList
+                order by api.createdTime ascending
+                select api;
+        } else if sortBy == SORT_BY_CREATED_TIME && sortOrder == SORT_ORDER_DESC {
+            sortedAPIS = from var api in clonedAPIList
+                order by api.createdTime descending
+                select api;
+        } else {
+            BadRequestError badRequest = {body: {code: 90912, message: "Invalid Sort By/Sort Order Value "}};
+            return badRequest;
+        }
+        API[] limitSet = [];
+        if sortedAPIS.length() >= offset {
+            foreach int i in offset ... (sortedAPIS.length() - 1) {
+                if limitSet.length() < 'limit {
+                    limitSet.push(sortedAPIS[i]);
+                }
+            }
+        }
+        return {list: limitSet, count: limitSet.length(), pagination: {total: apiList.length(), 'limit: 'limit, offset: offset}};
 
+    }
     public function createAPI(API api) returns string|Error {
         if (self.validateName(api.name)) {
             return {code: 90911, message: "API Name `${api.name}` already exist.", description: "API Name `${api.name}` already exist."};

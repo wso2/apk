@@ -15,3 +15,10 @@ const string API_TYPE_WS = "WS";
 const string API_TYPE_WEBSUB = "WEBSUB";
 const string APK_USER = "apkuser";
 const string CURRENT_NAMESPACE = "CURRENT_NAME_SPACE";
+
+const string SORT_BY_API_NAME = "apiName";
+const string SORT_BY_CREATED_TIME = "createdTime";
+const string SORT_ORDER_ASC = "asc";
+const string SORT_ORDER_DESC = "desc";
+const string SEARCH_CRITERIA_NAME = "name";
+const string SEARCH_CRITERIA_TYPE = "type";
