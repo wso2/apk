@@ -35,7 +35,6 @@ public class APIManagerFactory {
     private static final APIManagerFactory instance = new APIManagerFactory();
 
     private APIManagerCache<APIProvider> providers = new APIManagerCache<APIProvider>(50);
-    private APIManagerCache<APIConsumer> consumers = new APIManagerCache<APIConsumer>(500);
 
     private APIManagerFactory() {
 
@@ -56,69 +55,9 @@ public class APIManagerFactory {
     }
 
 
-    private APIConsumer newConsumer(String username) throws APIManagementException {
-        if (username.equals(ANONYMOUS_USER)) {
-            username = null;
-        }
-        //TODO: APK
-//        return new UserAwareAPIConsumer(username);
-        return new APIConsumerImpl(username);
 
-    }
-
-    private APIConsumer newConsumer(String username, String organization) throws APIManagementException {
-        if (username.equals(ANONYMOUS_USER)) {
-            username = null;
-        }
-        //TODO: APK
-//        return new UserAwareAPIConsumer(username, organization);
-        return new APIConsumerImpl(username, organization);
-    }
-
-    public APIConsumer getAPIConsumer() throws APIManagementException {
-        return getAPIConsumerFromCache(ANONYMOUS_USER, () -> newConsumer(ANONYMOUS_USER));
-    }
-
-    public APIConsumer getAPIConsumer(String username) throws APIManagementException {
-        return getAPIConsumerFromCache(username, () -> newConsumer(username));
-    }
-
-    public APIConsumer getAPIConsumer(String username, String organization) throws APIManagementException {
-        String cacheKey = username + UserConstants.TENANT_DOMAIN_COMBINER + organization;
-        return getAPIConsumerFromCache(cacheKey, () -> newConsumer(username, organization));
-    }
-
-    public APIConsumer getAPIConsumerFromCache(String key, ConsumerCreator consumerCreator)
-            throws APIManagementException {
-        APIConsumer consumer = consumers.get(key);
-        if (consumer == null) {
-            synchronized (key.intern()) {
-                consumer = consumers.get(key);
-                if (consumer != null) {
-                    return consumer;
-                }
-
-                consumer = consumerCreator.create();
-                consumers.put(key, consumer);
-            }
-        }
-        return consumer;
-    }
-
-    interface ConsumerCreator {
-        APIConsumer create() throws APIManagementException;
-    }
 
     public void clearAll() {
-        consumers.exclusiveLock();
-        try {
-            for (APIConsumer consumer : consumers.values()) {
-                cleanupSilently(consumer);
-            }
-            consumers.clear();
-        } finally {
-            consumers.release();
-        }
 
         providers.exclusiveLock();
         try {
