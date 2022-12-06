@@ -19,3 +19,5 @@
 import ballerina/sql;
 
 sql:ParameterizedQuery ADD_API_Suffix = `INSERT INTO am_api(api_uuid, api_name, api_version,context,api_provider,status,artifact) VALUES (`;
+sql:ParameterizedQuery UPDATE_API_Suffix = `UPDATE am_api SET`;
+sql:ParameterizedQuery DELETE_API_Suffix = `DELETE FROM am_api WHERE api_uuid = `;

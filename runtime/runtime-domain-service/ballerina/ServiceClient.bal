@@ -1,3 +1,4 @@
+import runtime_domain_service.model;
 import ballerina/http;
 
 //
@@ -117,6 +118,55 @@ public class ServiceClient {
             }
             string resourceVersion = <string>check metadata.'resourceVersion;
             setServicesResourceVersion(resourceVersion);
+        }
+    }
+    public function retrieveAllServiceMappingsAtStartup(string? continueValue) returns error? {
+        string? resultValue = continueValue;
+        json|http:ClientError retrieveAllServiceMappingResult;
+        if resultValue is string {
+            retrieveAllServiceMappingResult = retrieveAllServiceMappings(resultValue);
+        } else {
+            retrieveAllServiceMappingResult = retrieveAllServiceMappings(());
+        }
+
+        if retrieveAllServiceMappingResult is json {
+            json metadata = check retrieveAllServiceMappingResult.metadata;
+            json[] items = <json[]>check retrieveAllServiceMappingResult.items;
+            _ = check putAllServiceMappings(items);
+
+            json|error continueElement = metadata.'continue;
+            if continueElement is json {
+                if (<string>continueElement).length() > 0 {
+                    _ = check self.retrieveAllServicesAtStartup(<string?>continueElement);
+                }
+            }
+            string resourceVersion = <string>check metadata.'resourceVersion;
+            setServiceMappingResourceVersion(resourceVersion);
+        }
+    }
+    public function retrieveK8sServiceMapping(string name, string namespace) returns Service|error {
+        json serviceByNameAndNamespace = check getServiceByNameAndNamespace(name, namespace);
+        return createServiceModel(serviceByNameAndNamespace);
+    }
+    public function getServiceUsageByServiceId(string serviceId) returns APIList|BadRequestError|NotFoundError|InternalServerErrorError {
+        APIInfo[] apiInfos = [];
+        Service|BadRequestError|NotFoundError|InternalServerErrorError serviceEntry = self.getServiceById(serviceId);
+        if serviceEntry is Service {
+            model:K8sAPI[] k8sAPIS = retrieveAPIMappingsForService(serviceEntry);
+            foreach model:K8sAPI k8sAPI in k8sAPIS {
+                apiInfos.push({
+                    context: k8sAPI.context,
+                    createdTime: k8sAPI.creationTimestamp,
+                    name: k8sAPI.apiDisplayName,
+                    id: k8sAPI.uuid,
+                    'type: k8sAPI.apiType,
+                    'version: k8sAPI.apiVersion
+                });
+            }
+            APIList apiList = {list: apiInfos, count: apiInfos.length(), pagination: {total: apiInfos.length()}};
+            return apiList;
+        } else {
+            return serviceEntry;
         }
     }
 }

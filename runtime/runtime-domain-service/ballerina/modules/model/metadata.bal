@@ -15,7 +15,8 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-public type Metadata record {|
+public type Metadata record {
     string name;
     string namespace;
-|};
+    string|() uid;
+};

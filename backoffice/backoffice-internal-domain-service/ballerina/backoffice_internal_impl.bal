@@ -25,6 +25,25 @@ public function createAPI(API body) returns API | error{
     return db;
 }
 
+# This function used to connect API update service to database
+#
+# + body - API parameter
+# + apiId - API Id parameter
+# + return - Return Value API | error
+public function updateAPI(string apiId, API body) returns API | error {
+    API | error db = db_updateAPI(apiId, body);
+    return db;
+}
+
+# This function used to connect API update service to database
+#
+# + apiId - API Id parameter
+# + return - Return Value string | error
+public function deleteAPI(string apiId) returns string|error? {
+    error?|string status = db_deleteAPI(apiId);
+    return status;
+}
+
 # This function used to create artifact from API
 #
 # + apiID - API Id parameter

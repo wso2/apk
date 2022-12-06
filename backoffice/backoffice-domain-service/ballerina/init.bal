@@ -17,20 +17,23 @@
 //
 
 import ballerina/log;
-import backoffice_service.org.wso2.apk.apimgt.api as api;
-import backoffice_service.org.wso2.apk.apimgt.init as apkinit;
+import ballerinax/postgresql;
+import ballerina/sql;
 
 configurable DatasourceConfiguration datasourceConfiguration = ?;
-
+postgresql:Client|sql:Error dbClient;
 function init() {
-    log:printInfo("Starting APK Backoffice Domain Service...");
-    APKConfiguration apkConfig = {
-        datasourceConfiguration: datasourceConfiguration
-    };
-    string configJson = apkConfig.toJson().toJsonString();
-    // Pass the configurations to java init component
-    api:APIManagementException? err = apkinit:APKComponent_activate(configJson);
-    if (err != ()) {
-        log:printError("Erorr while processing the configs", err);
-    }
+    log:printInfo("Starting APK Backoffice internal Domain Service...");
+
+    dbClient = 
+        new (host = datasourceConfiguration.host,
+            username = datasourceConfiguration.username, 
+            password = datasourceConfiguration.password, 
+            database = datasourceConfiguration.databaseName, 
+            port = datasourceConfiguration.port,
+            connectionPool = {maxOpenConnections: datasourceConfiguration.maxPoolSize}
+            );
+}
+public function getConnection() returns postgresql:Client | error {
+    return dbClient;  
 }

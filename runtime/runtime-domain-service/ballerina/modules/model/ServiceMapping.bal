@@ -15,17 +15,25 @@
 // specific language governing permissions and limitations
 // under the License.
 //
+public type K8sServiceMapping record {
+    string kind = "ServiceMapping";
+    string apiVersion = "dp.wso2.com/v1alpha1";
+    Metadata metadata;
+    ServiceMappingSpec spec;
 
-apply from: "$rootDir/../../common-gradle-scripts/ballerina.gradle"
+};
 
-tasks.register('build') {
-    group 'build'
-    description 'Build ballerina component'
-    dependsOn 'bal_build'
-}
+public type ServiceMappingSpec record {
+    ServiceReference serviceRef;
+    APIReference apiRef;
+};
 
-tasks.register('test') {
-    group 'test'
-    description 'Test ballerina component'
-    dependsOn 'bal_test'
-}
+public type ServiceReference record {
+    string name;
+    string namespace;
+};
+
+public type APIReference record {
+    string name;
+    string namespace;
+};

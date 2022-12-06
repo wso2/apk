@@ -16,16 +16,18 @@
 // under the License.
 //
 
-apply from: "$rootDir/../../common-gradle-scripts/ballerina.gradle"
+import ballerina/sql;
+import ballerinax/postgresql;
 
-tasks.register('build') {
-    group 'build'
-    description 'Build ballerina component'
-    dependsOn 'bal_build'
-}
-
-tasks.register('test') {
-    group 'test'
-    description 'Test ballerina component'
-    dependsOn 'bal_test'
+function getAPIsDAO() returns API[]|error? {
+    postgresql:Client | error db_Client  = getConnection();
+    if db_Client is error {
+        return error("Error while retrieving connection", db_Client);
+    } else {
+        sql:ParameterizedQuery query = `SELECT * FROM am_api`;
+        stream<API, sql:Error?> apisStream = db_Client->query(query);
+        API[]? apis = check from API api in apisStream select api;
+        check apisStream.close();
+        return apis;
+    }
 }
