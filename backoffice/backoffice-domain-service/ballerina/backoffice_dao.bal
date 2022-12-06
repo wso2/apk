@@ -24,7 +24,7 @@ function getAPIsDAO() returns API[]|error? {
     if db_Client is error {
         return error("Error while retrieving connection", db_Client);
     } else {
-        sql:ParameterizedQuery query = `SELECT * FROM am_api`;
+        sql:ParameterizedQuery query = `SELECT * FROM api`;
         stream<API, sql:Error?> apisStream = db_Client->query(query);
         API[]? apis = check from API api in apisStream select api;
         check apisStream.close();
