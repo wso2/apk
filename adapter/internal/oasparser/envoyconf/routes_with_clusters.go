@@ -1328,14 +1328,6 @@ func generateRoutePathForReWrite(basePath, resourcePath string, pathMatchType gw
 	}
 }
 
-// replacePathParamsWithCaptureGroups updates paths like /pet/{petId} to /pet/([^/]+)
-func replacePathParamsWithCaptureGroups(resourcePath string) string {
-	pathParaRegex := "([^/]+)"
-	matcher := regexp.MustCompile(`{([^}]+)}`)
-	resourceRegex := matcher.ReplaceAllString(resourcePath, pathParaRegex)
-	return resourceRegex
-}
-
 // generateSubstitutionString returns a regex that has indexes to place the path variables extracted by capture groups
 func generateSubstitutionString(resourcePath string, pathMatchType gwapiv1b1.PathMatchType) string {
 	var resourceRegex string
