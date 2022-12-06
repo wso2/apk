@@ -1,0 +1,12 @@
+[wso2.admin_service]
+ADMIN_PORT = 9444
+[wso2.admin_service.datasourceConfiguration]
+description = "Database for admin"
+url = "jdbc:postgresql://localhost:5432/apk"
+username = "admin"
+password = "1234"
+validationTimeout = 250
+testQuery = "SELECT 1"
+driver = "org.postgresql.Driver"
+[wso2.admin_service.throttleConfig.blockCondition]
+enabled = true
