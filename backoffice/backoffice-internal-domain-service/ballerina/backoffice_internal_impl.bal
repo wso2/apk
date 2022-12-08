@@ -76,7 +76,7 @@ public function deleteAPI(string apiId) returns string|error? {
 public function updateDefinition(APIDefinition apiBody, string apiId) returns APIDefinition|error? {
     APIDefinition | error apiUp = db_updateDefinitionbyId(apiId, apiBody);
     if apiUp is error {
-        return error("Error while updating API data");
+        return error("Error while updating API definition data");
     }
     return apiUp;
 }

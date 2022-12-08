@@ -43,6 +43,6 @@ service /api/am/backoffice/internal on ep0 {
             APIDefinition crAPI = check updateDef.cloneWithType(APIDefinition);
             return crAPI.Definition;
         }
-        return error("Error while adding API");
+        return error("Error while updating API definition");
     }
 }
