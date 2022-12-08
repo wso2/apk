@@ -29,6 +29,11 @@ release {
     tagTemplate = '${project.name}-${project.version}'
 }
 
+tasks.named('go_lint_run').configure { 
+    dependsOn go_lint_install
+    finalizedBy go_tidy
+}
+
 tasks.named('go_build').configure {
     dependsOn go_lint_run
     dependsOn go_vet

@@ -27,7 +27,7 @@ tasks.register('go_clean', Exec) {
 tasks.register('go_lint_install', Exec) {
     group 'go'
     description 'Installing golint.'
-    commandLine 'go', 'install', 'golint@latest'
+    commandLine 'go', 'get', 'golang.org/x/lint/golint'
 }
 
 tasks.register('go_lint_run', Exec) {
@@ -38,15 +38,20 @@ tasks.register('go_lint_run', Exec) {
 
 tasks.register('go_vet', Exec) {
     group 'go'
-    description 'Running golint.'
+    description 'Running go vet.'
     commandLine 'go', 'vet', '-c=5', './...'
-
 }
 
 tasks.register('go_test', Exec) {
     group 'go'
     description 'Automates testing the packages named by the import paths.'
     commandLine 'go', 'test'
+}
+
+tasks.register('go_tidy', Exec) {
+    group 'go'
+    description 'Running go mod tidy.'
+    commandLine 'go', 'mod', 'tidy'
 }
 
 tasks.register('go_build', Exec) {
