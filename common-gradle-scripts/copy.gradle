@@ -1,0 +1,7 @@
+tasks.register('copy_dist', Copy) {
+    group 'docker'
+    description 'Copy the distribution to docker context'
+    from "$projectDir/../ballerina/target/bin/" + project.jar_name
+    into "$projectDir/$project.dist_name"
+    include "*.jar"
+}

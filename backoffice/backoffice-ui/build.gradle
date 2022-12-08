@@ -19,7 +19,7 @@ plugins {
     id 'net.researchgate.release' version '3.0.2'
 }
 
-apply from: "$rootDir/../common-gradle-scripts/docker.gradle"
+apply from: "$rootDir/../../common-gradle-scripts/docker.gradle"
 
 release {
     // TODO: finalize release version and rules
@@ -27,5 +27,3 @@ release {
     // failOnUpdateNeeded = false
     tagTemplate = '${project.name}-${project.version}'
 }
-
-afterReleaseBuild.dependsOn docker_push
