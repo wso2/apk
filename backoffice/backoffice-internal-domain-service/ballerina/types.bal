@@ -36,23 +36,15 @@ public type BadRequestError record {|
     Error body;
 |};
 
-public type ApiidDefinitionBody record {
-    # Swagger definition of the API
-    string apiDefinition?;
-    # Swagger definition URL of the API
-    string url?;
-    # Swagger definitio as a file
-    string file?;
+public type APIBody record {
+    API apiProperties;
+    # Content of the definition
+    string Definition;
 };
 
-public type ApisValidategraphqlschemaBody record {
-    # Definition to upload as a file
-    string file;
-};
-
-# Summary of the GraphQL including the basic information
-public type GraphqlvalidationresponseGraphqlinfo record {
-    GraphQLSchema graphQLSchema?;
+public type WSDLInfo record {
+    # Indicates whether the WSDL is a single WSDL or an archive in ZIP format
+    string 'type?;
 };
 
 public type ErrorListItem record {
@@ -63,15 +55,9 @@ public type ErrorListItem record {
     string description?;
 };
 
-public type AsyncAPISpecificationValidationResponse record {
-    # This attribute declares whether this definition is valid or not.
-    boolean isValid;
-    # AsyncAPI specification content
-    string content?;
-    # API definition information
-    AsyncapispecificationvalidationresponseInfo info?;
-    # If there are more than one error list them out. For example, list out validation error by each field.
-    ErrorListItem[] errors?;
+public type APIDefinition record {
+    # Content of the definition
+    string Definition;
 };
 
 public type ApiAdditionalpropertiesmap record {
@@ -91,94 +77,6 @@ public type Error record {
     # If there are more than one error list them out.
     # For example, list out validation errors by each field.
     ErrorListItem[] 'error?;
-};
-
-public type ApiServiceinfo record {
-    string 'key?;
-    string name?;
-    string 'version?;
-    boolean outdated?;
-};
-
-public type GraphQLSchema record {
-    string name;
-    string schemaDefinition?;
-};
-
-public type ApisValidateopenapiBody record {
-    # OpenAPI definition url
-    string url?;
-    # OpenAPI definition as a file
-    string file?;
-    # Inline content of the OpenAPI definition
-    string inlineAPIDefinition?;
-};
-
-public type ApisValidatewsdlBody record {
-    # Definition url
-    string url?;
-    # Definition to upload as a file
-    string file?;
-};
-
-# API definition information
-public type AsyncapispecificationvalidationresponseInfo record {
-    string name?;
-    string 'version?;
-    string context?;
-    string description?;
-    string asyncAPIVersion?;
-    string protocol?;
-    # contains host/servers specified in the AsyncAPI file/URL
-    string[] endpoints?;
-    string gatewayVendor?;
-    # contains available transports for an async API
-    string[] asyncTransportProtocols?;
-};
-
-# API definition information
-public type OpenapidefinitionvalidationresponseInfo record {
-    string name?;
-    string 'version?;
-    string context?;
-    string description?;
-    string openAPIVersion?;
-    # contains host/servers specified in the OpenAPI file/URL
-    string[] endpoints?;
-};
-
-public type WSDLInfo record {
-    # Indicates whether the WSDL is a single WSDL or an archive in ZIP format
-    string 'type?;
-};
-
-public type OpenAPIDefinitionValidationResponse record {
-    # This attribute declares whether this definition is valid or not.
-    boolean isValid;
-    # OpenAPI definition content.
-    string content?;
-    # API definition information
-    OpenapidefinitionvalidationresponseInfo info?;
-    # If there are more than one error list them out.
-    # For example, list out validation errors by each field.
-    ErrorListItem[] errors?;
-};
-
-public type WsdlvalidationresponseWsdlinfoEndpoints record {
-    # Name of the endpoint
-    string name?;
-    # Endpoint URL
-    string location?;
-};
-
-public type WSDLValidationResponse record {
-    # This attribute declares whether this definition is valid or not.
-    boolean isValid;
-    # If there are more than one error list them out.
-    # For example, list out validation errors by each field.
-    ErrorListItem[] errors?;
-    # Summary of the WSDL including the basic information
-    WsdlvalidationresponseWsdlinfo wsdlInfo?;
 };
 
 public type API record {
@@ -345,21 +243,11 @@ public type API record {
     string[] asyncTransportProtocols?;
 };
 
-# Summary of the WSDL including the basic information
-public type WsdlvalidationresponseWsdlinfo record {
-    # WSDL version
+public type ApiServiceinfo record {
+    string 'key?;
+    string name?;
     string 'version?;
-    # A list of endpoints the service exposes
-    WsdlvalidationresponseWsdlinfoEndpoints[] endpoints?;
-};
-
-public type GraphQLValidationResponse record {
-    # This attribute declares whether this definition is valid or not.
-    boolean isValid;
-    # This attribute declares the validation error message
-    string errorMessage;
-    # Summary of the GraphQL including the basic information
-    GraphqlvalidationresponseGraphqlinfo graphQLInfo?;
+    boolean outdated?;
 };
 
 public type ApiThreatprotectionpoliciesList record {
