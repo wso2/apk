@@ -30,7 +30,7 @@ import (
 
 // CachedApplication is an application with an expiry timestamp
 type CachedApplication struct {
-	application       apkmgt.Application
+	application       *apkmgt.Application
 	expireAtTimestamp int64
 }
 
@@ -99,7 +99,7 @@ func (lc *ApplicationLocalCache) Update(u *apkmgt.Application, expireAtTimestamp
 	defer lc.mu.Unlock()
 
 	lc.apps[u.Uuid] = CachedApplication{
-		application:       *u,
+		application:       u,
 		expireAtTimestamp: expireAtTimestamp,
 	}
 	logger.LoggerDatabase.Infof("Cache updated successfully.. cache: %v", lc.apps)
@@ -156,21 +156,21 @@ var (
 )
 
 // Read returns an applicaiton found in the in the cache with the given application id
-func (lc *ApplicationLocalCache) Read(id string) (apkmgt.Application, error) {
+func (lc *ApplicationLocalCache) Read(id string) (*apkmgt.Application, error) {
 	lc.mu.RLock()
 	defer lc.mu.RUnlock()
 
 	cu, ok := lc.apps[id]
 	if !ok {
-		return apkmgt.Application{}, ErrApplicationNotInCache
+		return &apkmgt.Application{}, ErrApplicationNotInCache
 	}
 
 	return cu.application, nil
 }
 
 // ReadAll returns all the applications in the cache
-func (lc *ApplicationLocalCache) ReadAll() ([]apkmgt.Application, error) {
-	var apps []apkmgt.Application
+func (lc *ApplicationLocalCache) ReadAll() ([]*apkmgt.Application, error) {
+	var apps []*apkmgt.Application
 
 	for _, app := range lc.apps {
 		apps = append(apps, app.application)

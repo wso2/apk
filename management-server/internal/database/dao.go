@@ -72,7 +72,7 @@ func GetApplicationByUUID(uuid string) (*apkmgt.Application, error) {
 // If the application is not available in the cache, it will fetch the application from DB.
 func GetCachedApplicationByUUID(uuid string) (*apkmgt.Application, error) {
 	if app, ok := DbCache.Read(uuid); ok == nil {
-		return &app, nil
+		return app, nil
 	}
 	return GetApplicationByUUID(uuid)
 }

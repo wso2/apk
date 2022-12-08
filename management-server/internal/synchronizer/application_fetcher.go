@@ -82,7 +82,7 @@ func ProcessSubscriptionEvents() {
 				database.GetApplicationByUUID(e.AppUUID)
 			}
 			app, _ := database.DbCache.Read(e.AppUUID)
-			xds.AddSingleApplication(e.Label, &app)
+			xds.AddSingleApplication(e.Label, app)
 		} else if e.IsUpdateEvent {
 			sub, _ := database.GetSubscriptionByUUID(e.UUID)
 			err := database.DbCache.UpdateSubscriptionInApplication(e.AppUUID, sub)
@@ -90,7 +90,7 @@ func ProcessSubscriptionEvents() {
 				database.GetApplicationByUUID(e.AppUUID)
 			}
 			app, _ := database.DbCache.Read(e.AppUUID)
-			xds.AddSingleApplication(e.Label, &app)
+			xds.AddSingleApplication(e.Label, app)
 		} else {
 			sub, _ := database.GetSubscriptionByUUID(e.UUID)
 			err := database.DbCache.AddSubscriptionForApplication(e.AppUUID, sub)
@@ -98,7 +98,7 @@ func ProcessSubscriptionEvents() {
 				database.GetApplicationByUUID(e.AppUUID)
 			}
 			app, _ := database.DbCache.Read(e.AppUUID)
-			xds.AddSingleApplication(e.Label, &app)
+			xds.AddSingleApplication(e.Label, app)
 		}
 	}
 }
