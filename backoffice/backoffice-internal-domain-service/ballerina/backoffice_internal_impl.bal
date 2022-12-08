@@ -19,20 +19,37 @@
 # This function used to connect API create service to database
 #
 # + body - API parameter
+# + organization - organization
 # + return - Return Value API | error
-public function createAPI(API body) returns API | error{
-    API | error db = db_createAPI(body);
-    return db;
+public function createAPI(APIBody body, string organization) returns API | error{
+    API | error apiCr = db_createAPI(body, organization);
+    if apiCr is error {
+        return error("Error while adding API data");
+    }
+    API | error defCr = db_AddDefinition(body, organization);
+    if defCr is error {
+        return error("Error while adding API definition");
+    }
+    return apiCr;
+    
 }
 
 # This function used to connect API update service to database
 #
 # + body - API parameter
 # + apiId - API Id parameter
+# + organization - organization
 # + return - Return Value API | error
-public function updateAPI(string apiId, API body) returns API | error {
-    API | error db = db_updateAPI(apiId, body);
-    return db;
+public function updateAPI(string apiId, APIBody body, string organization) returns API | error {
+    API | error apiUp = db_updateAPI(apiId, body, organization);
+    if apiUp is error {
+        return error("Error while updating API data");
+    }
+    API | error defUp = db_updateDefinition(apiId, body);
+    if defUp is error {
+        return error("Error while updating API definition");
+    }
+    return apiUp;
 }
 
 # This function used to connect API update service to database
@@ -40,8 +57,28 @@ public function updateAPI(string apiId, API body) returns API | error {
 # + apiId - API Id parameter
 # + return - Return Value string | error
 public function deleteAPI(string apiId) returns string|error? {
-    error?|string status = db_deleteAPI(apiId);
-    return status;
+    error?|string apiDel = db_deleteAPI(apiId);
+    if apiDel is error {
+        return error("Error while deleting API data");
+    }
+    error?|string defDel = db_deleteDefinition(apiId);
+    if defDel is error {
+        return error("Error while deleting API definition data");
+    }
+    return apiDel;
+}
+
+# This function used to connect API update service to database
+#
+# + apiId - API Id parameter
+# + apiBody - ApiidDefinitionBody 
+# + return - Return Value string | error
+public function updateDefinition(APIDefinition apiBody, string apiId) returns APIDefinition|error? {
+    APIDefinition | error apiUp = db_updateDefinitionbyId(apiId, apiBody);
+    if apiUp is error {
+        return error("Error while updating API data");
+    }
+    return apiUp;
 }
 
 # This function used to create artifact from API
@@ -49,7 +86,7 @@ public function deleteAPI(string apiId) returns string|error? {
 # + apiID - API Id parameter
 # + api - api object
 # + return - Return Value json
-function createArtifact(string apiID, API api) returns json {
+function createArtifact(string? apiID, API api) returns json {
     Artifact artifact = {
                     id: apiID,
                     apiName : api.name,

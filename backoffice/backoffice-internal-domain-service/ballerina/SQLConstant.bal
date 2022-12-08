@@ -18,6 +18,9 @@
 
 import ballerina/sql;
 
-sql:ParameterizedQuery ADD_API_Suffix = `INSERT INTO api(api_uuid, api_name, api_version,context,api_provider,status,artifact) VALUES (`;
+sql:ParameterizedQuery ADD_API_Suffix = `INSERT INTO api(api_uuid, api_name, api_version,context,api_provider,status,organization,artifact) VALUES (`;
+sql:ParameterizedQuery ADD_API_DEFINITION_Suffix = `INSERT INTO api_artifact(organization, api_uuid, api_definition,media_type) VALUES (`;
 sql:ParameterizedQuery UPDATE_API_Suffix = `UPDATE api SET`;
+sql:ParameterizedQuery UPDATE_API_DEFINITION_Suffix = `UPDATE api_artifact SET`;
 sql:ParameterizedQuery DELETE_API_Suffix = `DELETE FROM api WHERE api_uuid = `;
+sql:ParameterizedQuery DELETE_API_DEFINITION_Suffix = `DELETE FROM api_artifact WHERE api_uuid = `;
