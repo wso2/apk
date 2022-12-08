@@ -1,0 +1,13 @@
+{{- if .Values.wso2.apk.cp.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "apk-helm.resource.prefix" . }}-management-server-config-toml
+  namespace: {{ .Release.Namespace }}
+data:
+  config.toml: | 
+    [backOffice]
+      host = "{{ template "apk-helm.resource.prefix" . }}-backoffice-internal-ds-service"
+      port = 9443
+      serviceBasePath = "/api/am/backoffice/internal/apis"
+{{- end -}}

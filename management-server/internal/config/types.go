@@ -22,6 +22,7 @@ package config
 type Config struct {
 	ManagementServer managementServer
 	Database         database
+	BackOffice       backOffice
 }
 
 type managementServer struct {
@@ -30,6 +31,13 @@ type managementServer struct {
 	GRPCPort         uint     `toml:"gRPCPort"`
 	NotificationPort uint     `toml:"notificationPort"`
 }
+
+type backOffice struct {
+	Host            string
+	Port            int
+	ServiceBasePath string
+}
+
 type database struct {
 	Name        string
 	Username    string
