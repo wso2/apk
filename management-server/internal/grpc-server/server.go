@@ -29,7 +29,6 @@ import (
 	"github.com/wso2/apk/adapter/pkg/tlsutils"
 	"github.com/wso2/apk/management-server/internal/backoffice"
 	"github.com/wso2/apk/management-server/internal/config"
-	"github.com/wso2/apk/management-server/internal/database"
 	"github.com/wso2/apk/management-server/internal/logger"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -56,7 +55,7 @@ func (s *apiService) CreateAPI(ctx context.Context, api *apiProtos.API) (*apiPro
 
 func (s *apiService) UpdateAPI(ctx context.Context, api *apiProtos.API) (*apiProtos.Response, error) {
 	logger.LoggerMGTServer.Infof("Update Message received : %q", api)
-	err := database.UpdateAPI(api)
+	err := backoffice.UpdateAPI(api)
 	if err != nil {
 		logger.LoggerMGTServer.Errorf("Error Updating API : %v", err.Error())
 		return &apiProtos.Response{Result: false}, err
@@ -66,7 +65,7 @@ func (s *apiService) UpdateAPI(ctx context.Context, api *apiProtos.API) (*apiPro
 
 func (s *apiService) DeleteAPI(ctx context.Context, api *apiProtos.API) (*apiProtos.Response, error) {
 	logger.LoggerMGTServer.Infof("Delete Message received : %q", api)
-	err := database.DeleteAPI(api)
+	err := backoffice.DeleteAPI(api)
 	if err != nil {
 		logger.LoggerMGTServer.Errorf("Error Deleting API : %v", err.Error())
 		return &apiProtos.Response{Result: false}, err
