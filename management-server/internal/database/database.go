@@ -30,6 +30,7 @@ import (
 
 var dbPool *pgxpool.Pool
 
+// ConnectToDB creates the DB connection
 func ConnectToDB() {
 	conf := config.ReadConfigs()
 	var err error
@@ -56,6 +57,7 @@ func ConnectToDB() {
 	}
 }
 
+// ExecDBQuery executes a given database query with the arguments provided
 func ExecDBQuery(query string, args ...interface{}) (pgx.Rows, error) {
 	rows, err := dbPool.Query(context.Background(), query, args...)
 	if err != nil {
@@ -64,6 +66,7 @@ func ExecDBQuery(query string, args ...interface{}) (pgx.Rows, error) {
 	return rows, nil
 }
 
+// IsAliveConn checks whether the DB connections pool is alive
 func IsAliveConn(ctx context.Context) (isAlive bool) {
 	if err := dbPool.Ping(ctx); err != nil {
 		return true
@@ -71,6 +74,7 @@ func IsAliveConn(ctx context.Context) (isAlive bool) {
 	return isAlive
 }
 
+// CloseDBConn closes the DB connections pool
 func CloseDBConn() {
 	dbPool.Close()
 }

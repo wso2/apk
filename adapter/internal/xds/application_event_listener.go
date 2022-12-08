@@ -19,8 +19,8 @@ import (
 func HandleApplicationEventsFromMgtServer(c client.Client, cReader client.Reader) {
 	for applicationEvent := range applicationChannel {
 		switch applicationEvent.Type {
-		case APPLICATION_CREATE:
-			if err, found, _ := checkApplicationExists(applicationEvent.Application, c, cReader); err == nil && !found {
+		case ApplicationCreate:
+			if found, _, err := checkApplicationExists(applicationEvent.Application, c, cReader); err == nil && !found {
 				if err := c.Create(context.Background(), *&applicationEvent.Application); err != nil {
 					loggers.LoggerXds.ErrorC(logging.ErrorDetails{
 						Message:   fmt.Sprint("Error creating application: ", err.Error()),
@@ -32,8 +32,8 @@ func HandleApplicationEventsFromMgtServer(c client.Client, cReader client.Reader
 				}
 			}
 			break
-		case APPLICATION_UPDATE:
-			if err, found, application := checkApplicationExists(applicationEvent.Application, c, cReader); err == nil && found {
+		case ApplicationUpdate:
+			if found, application, err := checkApplicationExists(applicationEvent.Application, c, cReader); err == nil && found {
 				application.Spec = applicationEvent.Application.Spec
 				err := c.Update(context.Background(), application)
 				if err != nil {
@@ -47,7 +47,7 @@ func HandleApplicationEventsFromMgtServer(c client.Client, cReader client.Reader
 				}
 			}
 			break
-		case APPLICATION_DELETE:
+		case ApplicationDelete:
 			err := c.Delete(context.Background(), *&applicationEvent.Application)
 			if err != nil {
 				loggers.LoggerXds.ErrorC(logging.ErrorDetails{
@@ -65,7 +65,7 @@ func HandleApplicationEventsFromMgtServer(c client.Client, cReader client.Reader
 	}
 }
 
-func checkApplicationExists(application *cpv1alpha1.Application, c client.Client, cReader client.Reader) (error, bool, *cpv1alpha1.Application) {
+func checkApplicationExists(application *cpv1alpha1.Application, c client.Client, cReader client.Reader) (bool, *cpv1alpha1.Application, error) {
 	var retrivedApplication = new(cpv1alpha1.Application)
 	// Try reading from cache
 	if err := c.Get(context.Background(), types.NamespacedName{
@@ -85,9 +85,9 @@ func checkApplicationExists(application *cpv1alpha1.Application, c client.Client
 						Severity:  logging.CRITICAL,
 						ErrorCode: 1711,
 					})
-					return err, false, nil
+					return false, nil, err
 				}
-				return nil, false, nil
+				return false, nil, nil
 			}
 		} else if !apierrors.IsNotFound(err) {
 			loggers.LoggerXds.ErrorC(logging.ErrorDetails{
@@ -95,10 +95,10 @@ func checkApplicationExists(application *cpv1alpha1.Application, c client.Client
 				Severity:  logging.CRITICAL,
 				ErrorCode: 1712,
 			})
-			return err, false, nil
+			return false, nil, err
 		} else {
-			return nil, false, nil
+			return false, nil, nil
 		}
 	}
-	return nil, true, retrivedApplication
+	return true, retrivedApplication, nil
 }

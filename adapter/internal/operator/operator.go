@@ -113,7 +113,7 @@ func InitOperator() {
 		loggers.LoggerAPKOperator.Errorf("Error creating API controller: %v", err)
 	}
 
-	if err := dpcontrollers.NewHttpRouteController(mgr, operatorDataStore); err != nil {
+	if err := dpcontrollers.NewHTTPRouteController(mgr, operatorDataStore); err != nil {
 		loggers.LoggerAPKOperator.Errorf("Error creating HttpRoute controller: %v", err)
 	}
 

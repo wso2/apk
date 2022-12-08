@@ -54,7 +54,7 @@ func GetNamespace(namespace *v1beta1.Namespace, defaultNamespace string) string 
 	return defaultNamespace
 }
 
-// Returns the namesapce of the operator pod
+// GetOperatorPodNamespace returns the namesapce of the operator pod
 func GetOperatorPodNamespace() string {
 	return envutils.GetEnv(constants.OperatorPodNamespace,
 		constants.OperatorPodNamespaceDefaultValue)

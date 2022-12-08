@@ -20,6 +20,7 @@ package synchronizer
 
 import (
 	"fmt"
+
 	"github.com/wso2/apk/adapter/pkg/logging"
 	"github.com/wso2/apk/management-server/internal/database"
 	"github.com/wso2/apk/management-server/internal/logger"
@@ -27,23 +28,30 @@ import (
 	"github.com/wso2/apk/management-server/internal/xds"
 )
 
-// ApplicationCreateAndDeleteEventChannel represents the channel for writing Application events
+// ApplicationCreateAndDeleteEventChannel represents the channel to send/receive Application events
 var ApplicationCreateAndDeleteEventChannel chan types.ApplicationEvent
+
+// SubscriptionCreateAndDeleteEventChannel represents the channel to send/receive Subscription events
 var SubscriptionCreateAndDeleteEventChannel chan types.SubscriptionEvent
 
 func init() {
+	// Channel to handle application create and delete events
 	ApplicationCreateAndDeleteEventChannel = make(chan types.ApplicationEvent)
+	// Channel to handle subscription create and delete events
 	SubscriptionCreateAndDeleteEventChannel = make(chan types.SubscriptionEvent)
 }
 
+// AddApplicationEventsToChannel adds the application event to the channel
 func AddApplicationEventsToChannel(event types.ApplicationEvent) {
 	ApplicationCreateAndDeleteEventChannel <- event
 }
 
+// AddSubscriptionEventsToChannel adds the subscription event to the channel
 func AddSubscriptionEventsToChannel(event types.SubscriptionEvent) {
 	SubscriptionCreateAndDeleteEventChannel <- event
 }
 
+// ProcessApplicationEvents processes the application event
 func ProcessApplicationEvents() {
 	for e := range ApplicationCreateAndDeleteEventChannel {
 		if e.IsRemoveEvent {
@@ -65,6 +73,7 @@ func ProcessApplicationEvents() {
 	}
 }
 
+// ProcessSubscriptionEvents processes the subscription event
 func ProcessSubscriptionEvents() {
 	for e := range SubscriptionCreateAndDeleteEventChannel {
 		if e.IsRemoveEvent {

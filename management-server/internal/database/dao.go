@@ -28,13 +28,14 @@ import (
 	"github.com/wso2/apk/management-server/internal/logger"
 )
 
+// DbCache is a pointer to an ApplicationLocalCache
 var DbCache *ApplicationLocalCache
 
 func init() {
 	DbCache = NewApplicationLocalCache(cleanupInterval)
 }
 
-type Artifact struct {
+type artifact struct {
 	APIName      string `json:"apiName"`
 	ID           string `json:"id"`
 	Context      string `json:"context"`
@@ -43,28 +44,28 @@ type Artifact struct {
 	Status       string `json:"status"`
 }
 
+// GetApplicationByUUID retrives an application using uuid and returns it
 func GetApplicationByUUID(uuid string) (*apkmgt.Application, error) {
-	rows, _ := ExecDBQuery(QueryGetApplicationByUUID, uuid)
+	rows, _ := ExecDBQuery(queryGetApplicationByUUID, uuid)
 	rows.Next()
 	values, err := rows.Values()
 	if err != nil {
 		return nil, err
-	} else {
-		subs, _ := getSubscriptionsForApplication(uuid)
-		keys, _ := getConsumerKeysForApplication(uuid)
-		application := &apkmgt.Application{
-			Uuid:          values[0].(string),
-			Name:          values[1].(string),
-			Owner:         "",  //ToDo : Check how to get Owner from db
-			Attributes:    nil, //ToDo : check the values for Attributes
-			Subscriber:    "",
-			Organization:  values[3].(string),
-			Subscriptions: subs,
-			ConsumerKeys:  keys,
-		}
-		DbCache.Update(application, time.Now().Unix()+ttl.Microseconds())
-		return application, nil
 	}
+	subs, _ := getSubscriptionsForApplication(uuid)
+	keys, _ := getConsumerKeysForApplication(uuid)
+	application := &apkmgt.Application{
+		Uuid:          values[0].(string),
+		Name:          values[1].(string),
+		Owner:         "",  //ToDo : Check how to get Owner from db
+		Attributes:    nil, //ToDo : check the values for Attributes
+		Subscriber:    "",
+		Organization:  values[3].(string),
+		Subscriptions: subs,
+		ConsumerKeys:  keys,
+	}
+	DbCache.Update(application, time.Now().Unix()+ttl.Microseconds())
+	return application, nil
 }
 
 // GetCachedApplicationByUUID returns the Application details from the cache.
@@ -72,14 +73,13 @@ func GetApplicationByUUID(uuid string) (*apkmgt.Application, error) {
 func GetCachedApplicationByUUID(uuid string) (*apkmgt.Application, error) {
 	if app, ok := DbCache.Read(uuid); ok == nil {
 		return &app, nil
-	} else {
-		return GetApplicationByUUID(uuid)
 	}
+	return GetApplicationByUUID(uuid)
 }
 
 // getSubscriptionsForApplication returns all subscriptions from DB, for a given application.
-func getSubscriptionsForApplication(appUuid string) ([]*apkmgt.Subscription, error) {
-	rows, err := ExecDBQuery(QueryGetAllSubscriptionsForApplication, appUuid)
+func getSubscriptionsForApplication(appUUID string) ([]*apkmgt.Subscription, error) {
+	rows, err := ExecDBQuery(queryGetAllSubscriptionsForApplication, appUUID)
 	if err != nil {
 	}
 	var subs []*apkmgt.Subscription
@@ -87,23 +87,22 @@ func getSubscriptionsForApplication(appUuid string) ([]*apkmgt.Subscription, err
 		values, err := rows.Values()
 		if err != nil {
 			return nil, err
-		} else {
-			subs = append(subs, &apkmgt.Subscription{
-				Uuid:               values[0].(string),
-				ApiUuid:            values[1].(string),
-				PolicyId:           "",
-				SubscriptionStatus: values[3].(string),
-				Organization:       values[4].(string),
-				CreatedBy:          values[5].(string),
-			})
 		}
+		subs = append(subs, &apkmgt.Subscription{
+			Uuid:               values[0].(string),
+			ApiUuid:            values[1].(string),
+			PolicyId:           "",
+			SubscriptionStatus: values[3].(string),
+			Organization:       values[4].(string),
+			CreatedBy:          values[5].(string),
+		})
 	}
 	return subs, nil
 }
 
 // getConsumerKeysForApplication returns all Consumer Keys from DB, for a given application.
 func getConsumerKeysForApplication(appUUID string) ([]*apkmgt.ConsumerKey, error) {
-	rows, err := ExecDBQuery(QueryConsumerKeysForApplication, appUUID)
+	rows, err := ExecDBQuery(queryConsumerKeysForApplication, appUUID)
 	if err != nil {
 	}
 	var keys []*apkmgt.ConsumerKey
@@ -111,37 +110,36 @@ func getConsumerKeysForApplication(appUUID string) ([]*apkmgt.ConsumerKey, error
 		values, err := rows.Values()
 		if err != nil {
 			return nil, err
-		} else {
-			keys = append(keys, &apkmgt.ConsumerKey{
-				Key:        values[0].(string),
-				KeyManager: values[1].(string),
-			})
 		}
+		keys = append(keys, &apkmgt.ConsumerKey{
+			Key:        values[0].(string),
+			KeyManager: values[1].(string),
+		})
 	}
 	return keys, nil
 }
 
 // GetSubscriptionByUUID returns the Application details from the DB for a given subscription UUID.
 func GetSubscriptionByUUID(subUUID string) (*apkmgt.Subscription, error) {
-	rows, _ := ExecDBQuery(QuerySubscriptionByUUID, subUUID)
+	rows, _ := ExecDBQuery(querySubscriptionByUUID, subUUID)
 	rows.Next()
 	values, err := rows.Values()
 	if err != nil {
 		return nil, err
-	} else {
-		return &apkmgt.Subscription{
-			Uuid:               values[0].(string),
-			ApiUuid:            values[1].(string),
-			PolicyId:           "",
-			SubscriptionStatus: values[2].(string),
-			Organization:       values[3].(string),
-			CreatedBy:          values[4].(string),
-		}, nil
 	}
+	return &apkmgt.Subscription{
+		Uuid:               values[0].(string),
+		ApiUuid:            values[1].(string),
+		PolicyId:           "",
+		SubscriptionStatus: values[2].(string),
+		Organization:       values[3].(string),
+		CreatedBy:          values[4].(string),
+	}, nil
 }
 
+// CreateAPI creates an API in the DB
 func CreateAPI(api *apiProtos.API) error {
-	_, err := ExecDBQuery(QueryCreateAPI, &api.Uuid, &api.Name, &api.Provider,
+	_, err := ExecDBQuery(queryCreateAPI, &api.Uuid, &api.Name, &api.Provider,
 		&api.Version, &api.Context, &api.OrganizationId, &api.CreatedBy, time.Now(), &api.Type, marshalArtifact(api), "PUBLISHED")
 
 	if err != nil {
@@ -155,8 +153,9 @@ func CreateAPI(api *apiProtos.API) error {
 	return nil
 }
 
+// UpdateAPI updates the given API in the DB
 func UpdateAPI(api *apiProtos.API) error {
-	_, err := ExecDBQuery(QueryUpdateAPI, &api.Uuid, &api.Name, &api.Provider,
+	_, err := ExecDBQuery(queryUpdateAPI, &api.Uuid, &api.Name, &api.Provider,
 		&api.Version, &api.Context, &api.OrganizationId, &api.UpdatedBy, time.Now(), &api.Type, marshalArtifact(api), "PUBLISHED")
 	if err != nil {
 		logger.LoggerDatabase.ErrorC(logging.ErrorDetails{
@@ -169,8 +168,9 @@ func UpdateAPI(api *apiProtos.API) error {
 	return nil
 }
 
+// DeleteAPI deletes the given API in the DB
 func DeleteAPI(api *apiProtos.API) error {
-	_, err := ExecDBQuery(QueryDeleteAPI, api.Uuid)
+	_, err := ExecDBQuery(queryDeleteAPI, api.Uuid)
 	if err != nil {
 		logger.LoggerDatabase.ErrorC(logging.ErrorDetails{
 			Message:   fmt.Sprintf("Error deleting API %q, Error: %v", api.Uuid, err.Error()),
@@ -183,7 +183,7 @@ func DeleteAPI(api *apiProtos.API) error {
 }
 
 func marshalArtifact(api *apiProtos.API) string {
-	artifact := &Artifact{APIName: api.Name,
+	artifact := &artifact{APIName: api.Name,
 		ID:           api.Uuid,
 		Context:      api.Context,
 		Version:      api.Version,

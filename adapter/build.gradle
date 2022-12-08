@@ -30,6 +30,8 @@ release {
 }
 
 tasks.named('go_build').configure {
+    dependsOn go_lint_run
+    dependsOn go_vet
     finalizedBy docker_build
 } 
 

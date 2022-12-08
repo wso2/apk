@@ -37,15 +37,15 @@ import (
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
-// HttpRouteReconciler reconciles a HTTPRoute object.
-type HttpRouteReconciler struct {
+// HTTPRouteReconciler reconciles a HTTPRoute object.
+type HTTPRouteReconciler struct {
 	client client.Client
 	ods    *synchronizer.OperatorDataStore
 }
 
-// NewHttpRouteController creates a new HTTPRoute controller.
-func NewHttpRouteController(mgr manager.Manager, ods *synchronizer.OperatorDataStore) error {
-	r := &HttpRouteReconciler{
+// NewHTTPRouteController creates a new HTTPRoute controller.
+func NewHTTPRouteController(mgr manager.Manager, ods *synchronizer.OperatorDataStore) error {
+	r := &HTTPRouteReconciler{
 		client: mgr.GetClient(),
 		ods:    ods,
 	}
@@ -75,7 +75,7 @@ func NewHttpRouteController(mgr manager.Manager, ods *synchronizer.OperatorDataS
 }
 
 // Reconcile gets triggered when a HTTPRoute object gets changed.
-func (r *HttpRouteReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *HTTPRouteReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	var httpRoute gwapiv1b1.HTTPRoute
 	if err := r.client.Get(ctx, req.NamespacedName, &httpRoute); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{

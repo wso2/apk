@@ -32,6 +32,7 @@ import (
 	grpcStatus "google.golang.org/grpc/status"
 )
 
+// RetryPolicy holds configuration for grpc connection retries
 type RetryPolicy struct {
 	// Maximum number of time a failed grpc call will be retried. Set negative value to try indefinitely.
 	MaxAttempts int
@@ -39,12 +40,14 @@ type RetryPolicy struct {
 	BackOffInMilliSeconds int
 }
 
+// GetConnection creates and returns a grpc client connection
 func GetConnection(address string) (*grpc.ClientConn, error) {
 	transportCredentials, err := generateTLSCredentials()
 	if err != nil {
 		return nil, err
 	}
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 	return grpc.DialContext(ctx, address, grpc.WithTransportCredentials(transportCredentials), grpc.WithBlock())
 }
 
@@ -68,6 +71,7 @@ func generateTLSCredentials() (credentials.TransportCredentials, error) {
 	return credentials.NewTLS(tlsConfig), nil
 }
 
+// ExecuteGRPCCall executes a grpc call
 func ExecuteGRPCCall(connection *grpc.ClientConn, call func() (interface{}, error)) (interface{}, error) {
 	conf := config.ReadConfigs()
 	maxAttempts := conf.Adapter.GRPCClient.MaxAttempts

@@ -9,6 +9,7 @@ import (
 
 	apiProtos "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/apkmgt"
 	"github.com/wso2/apk/management-server/internal/config"
+	"github.com/wso2/apk/management-server/internal/logger"
 )
 
 // Back Office client connetion
@@ -25,11 +26,13 @@ func init() {
 
 func getBackOfficeURL() string {
 	conf := config.ReadConfigs()
+	logger.LoggerMGTServer.Infof("backoffice service: http://%s:%d%s", conf.BackOffice.Host, conf.BackOffice.Port, conf.BackOffice.ServiceBasePath)
 	return fmt.Sprintf("http://%s:%d%s", conf.BackOffice.Host, conf.BackOffice.Port, conf.BackOffice.ServiceBasePath)
 }
 
+// CreateAPI creates an API by invoking backoffice service
 func CreateAPI(api *apiProtos.API) error {
-	postBody, _ := json.Marshal(*api)
+	postBody, _ := json.Marshal(api)
 	requestBody := bytes.NewBuffer(postBody)
 	_, err := backOfficeClient.Post(getBackOfficeURL(), "application/json", requestBody)
 	if err != nil {
@@ -38,8 +41,9 @@ func CreateAPI(api *apiProtos.API) error {
 	return nil
 }
 
+// UpdateAPI updates an API by invoking backoffice service
 func UpdateAPI(api *apiProtos.API) error {
-	putBody, _ := json.Marshal(*api)
+	putBody, _ := json.Marshal(api)
 	requestBody := bytes.NewBuffer(putBody)
 	putRequest, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/%s", getBackOfficeURL(), api.Uuid), requestBody)
 	_, err = backOfficeClient.Do(putRequest)
@@ -49,6 +53,7 @@ func UpdateAPI(api *apiProtos.API) error {
 	return nil
 }
 
+// DeleteAPI deletes an API by invoking backoffice service
 func DeleteAPI(api *apiProtos.API) error {
 	deleteRequest, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/%s", getBackOfficeURL(), api.Uuid), nil)
 	_, err = backOfficeClient.Do(deleteRequest)

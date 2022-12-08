@@ -117,7 +117,7 @@ func (swagger *MgwSwagger) SetInfoAPICR(api dpv1alpha1.API) error {
 	return nil
 }
 
-// Validate validates the mgwSwagger based on the data required for xDS update.
+// ValidateIR validates the mgwSwagger based on the data required for xDS update.
 func (swagger *MgwSwagger) ValidateIR() error {
 	var errs error
 
