@@ -33,8 +33,9 @@ type managementServer struct {
 }
 
 type backOffice struct {
-	Host string
-	Port int
+	Host            string
+	Port            int
+	ServiceBasePath string
 }
 
 type database struct {

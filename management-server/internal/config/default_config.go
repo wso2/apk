@@ -45,7 +45,8 @@ var defaultConfig = &Config{
 		},
 	},
 	BackOffice: backOffice{
-		Host: "host.docker.internal",
-		Port: 9445,
+		Host:            "localhost",
+		Port:            9443,
+		ServiceBasePath: "/api/am/backoffice/internal/apis",
 	},
 }

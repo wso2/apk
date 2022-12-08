@@ -42,6 +42,8 @@ spec:
               name: management-server-keystore-secret-volume
             - mountPath: /home/wso2/security/truststore
               name:  management-server-truststore-secret-volume
+            - name: management-server-config-toml-volume
+              mountPath: /home/wso2/conf/
           ports:
             - containerPort: 18000
             - containerPort: 8765
@@ -53,4 +55,7 @@ spec:
         - name: management-server-truststore-secret-volume
           secret: 
             secretName: {{ template "apk-helm.resource.prefix" . }}-management-server-truststore-secret
+        - name: management-server-config-toml-volume
+          configMap: 
+            name: {{ template "apk-helm.resource.prefix" . }}-management-server-config-toml
 {{- end -}}
