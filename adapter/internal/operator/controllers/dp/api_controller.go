@@ -81,7 +81,6 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 		return err
 	}
 
-	// TODO(amali) why is this returning API CR for HttpRoute not found always?
 	if err := c.Watch(&source.Kind{Type: &gwapiv1b1.HTTPRoute{}}, handler.EnqueueRequestsFromMapFunc(r.getAPIForHTTPRoute),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
@@ -114,14 +113,17 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 			event := *apiState
 			// The api doesn't exist in the api Cache, remove it
 			delete(apiReconciler.ods.APIStore, req.NamespacedName)
-			delete(apiReconciler.ods.APIToHTTPRouteRefs, req.NamespacedName)
-			loggers.LoggerAPKOperator.Infof("API : %s deleted from API cache", req.NamespacedName.String())
+			loggers.LoggerAPKOperator.Infof("Delete event has received for API : %s, hence deleted from API cache", req.NamespacedName.String())
 			*apiReconciler.ch <- synchronizer.APIEvent{EventType: constants.Delete, Event: event}
 			return ctrl.Result{}, nil
 		}
-		loggers.LoggerAPKOperator.Warnf("api CR related to the reconcile request with key: %s returned error : %v."+
-			" Hence assume that it has been already deleted.",
-			req.NamespacedName.String(), err)
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message: fmt.Sprintf("Api CR related to the reconcile request with key: %s returned error."+
+				" Assuming API is already deleted, hence ignoring the error : %v",
+				req.NamespacedName.String(), err),
+			Severity:  logging.TRIVIAL,
+			ErrorCode: 2604,
+		})
 		return ctrl.Result{}, nil
 	}
 
@@ -142,15 +144,7 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	cachedAPI, found := apiReconciler.ods.GetAPI(utils.NamespacedName(&apiDef))
 
 	if !found {
-		apiState, err := apiReconciler.ods.AddNewAPI(apiDef, prodHTTPRoute, sandHTTPRoute)
-		if err != nil {
-			loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-				Message:   fmt.Sprintf("error storing the new API in operator data store: %v", err),
-				Severity:  logging.TRIVIAL,
-				ErrorCode: 2605,
-			})
-			return ctrl.Result{}, err
-		}
+		apiState := apiReconciler.ods.AddNewAPI(apiDef, prodHTTPRoute, sandHTTPRoute)
 		*apiReconciler.ch <- synchronizer.APIEvent{EventType: constants.Create, Event: apiState}
 		return ctrl.Result{}, nil
 	}
@@ -167,7 +161,7 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		}
 		apiState = apiStateUpdate
 	}
-	if prodHTTPRoute != nil && prodHTTPRoute.Generation > cachedAPI.ProdHTTPRoute.Generation {
+	if prodHTTPRoute != nil && (prodHTTPRoute.UID != cachedAPI.ProdHTTPRoute.UID || prodHTTPRoute.Generation > cachedAPI.ProdHTTPRoute.Generation) {
 		apiStateUpdate, err := apiReconciler.ods.UpdateHTTPRoute(utils.NamespacedName(&apiDef), prodHTTPRoute, true)
 		if err != nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
@@ -179,7 +173,7 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		}
 		apiState = apiStateUpdate
 	}
-	if sandHTTPRoute != nil && sandHTTPRoute.Generation > cachedAPI.SandHTTPRoute.Generation {
+	if sandHTTPRoute != nil && (sandHTTPRoute.UID != cachedAPI.SandHTTPRoute.UID || sandHTTPRoute.Generation > cachedAPI.SandHTTPRoute.Generation) {
 		apiStateUpdate, err := apiReconciler.ods.UpdateHTTPRoute(utils.NamespacedName(&apiDef), sandHTTPRoute, false)
 		if err != nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
@@ -234,31 +228,27 @@ func validateHTTPRouteRefs(ctx context.Context, client client.Client, namespace 
 // a new reconcile event will be created and added to the reconcile event queue.
 func (r *APIReconciler) getAPIForHTTPRoute(obj client.Object) []reconcile.Request {
 	httpRoute, ok := obj.(*gwapiv1b1.HTTPRoute)
-	requests := []reconcile.Request{}
 	if !ok {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
 			Message:   fmt.Sprintf("unexpected object type, bypassing reconciliation: %v", httpRoute),
 			Severity:  logging.TRIVIAL,
 			ErrorCode: 2608,
 		})
-		return requests
+		return []reconcile.Request{}
 	}
 
 	apiRef, found := r.ods.HTTPRouteToAPIRefs[utils.NamespacedName(httpRoute)]
 	if !found {
-		loggers.LoggerAPKOperator.Warnf("API CR for HttpRoute not found in HTTPRouteToAPIRefs map: %v", httpRoute.Name)
-		return requests
+		loggers.LoggerAPKOperator.Infof("API CR for HttpRoute not found: %v", httpRoute.Name)
+		return []reconcile.Request{}
 	}
-	loggers.LoggerAPKOperator.Debugf("API CR for HttpRoute has found in HTTPRouteToAPIRefs map: %v", httpRoute.Name)
-
+	requests := []reconcile.Request{}
 	req := reconcile.Request{
 		NamespacedName: types.NamespacedName{
 			Name:      apiRef.Name,
 			Namespace: apiRef.Namespace},
 	}
-	if _, found := r.ods.APIStore[apiRef]; found {
-		loggers.LoggerAPKOperator.Infof("Adding reconcile request in API controller's HTTPRoute watcher for API : %s", req.NamespacedName)
-		requests = append(requests, req)
-	}
+	loggers.LoggerAPKOperator.Infof("Adding reconcile request: %v", req.NamespacedName)
+	requests = append(requests, req)
 	return requests
 }

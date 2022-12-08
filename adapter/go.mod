@@ -17,7 +17,7 @@ require (
 	github.com/pelletier/go-toml v1.8.1
 	github.com/sirupsen/logrus v1.9.0
 	github.com/tetratelabs/multierror v1.1.1
-	google.golang.org/genproto v0.0.0-20220502173005-c8bf987b8c21
+	google.golang.org/genproto v0.0.0-20220505152158-f39f71e6c8f3
 	google.golang.org/grpc v1.50.1
 	google.golang.org/protobuf v1.28.1
 	gopkg.in/yaml.v2 v2.4.0

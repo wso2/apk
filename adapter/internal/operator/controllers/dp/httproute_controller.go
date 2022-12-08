@@ -79,15 +79,12 @@ func NewHTTPRouteController(mgr manager.Manager, ods *synchronizer.OperatorDataS
 func (r *HTTPRouteReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	var httpRoute gwapiv1b1.HTTPRoute
 	if err := r.client.Get(ctx, req.NamespacedName, &httpRoute); err != nil {
-		apiRef, found := r.ods.HTTPRouteToAPIRefs[req.NamespacedName]
-		if found && k8error.IsNotFound(err) {
-			// The route doesn't exist in the route Cache, remove it
-			delete(r.ods.HTTPRouteToAPIRefs, req.NamespacedName)
-			loggers.LoggerAPKOperator.Infof("HTTPRoute : %s for API : %s deleted from HTTPRouteToAPIRefs cache",
-				req.NamespacedName.String(), apiRef)
+		if k8error.IsNotFound(err) {
+			loggers.LoggerAPKOperator.Infof("HTTPRoute : %s deleted from HTTPRoutes cache", req.NamespacedName.String())
 			return ctrl.Result{}, nil
 		}
-		loggers.LoggerAPKOperator.Errorf("httpRoute : %v reconcile request not found. Error : %v.",
+		loggers.LoggerAPKOperator.Errorf("httpRoute : %v reconcile request not found."+
+			" Assuming API is already deleted, hence ignoring the Error : %v.",
 			req.NamespacedName, err)
 		return ctrl.Result{}, err
 	}

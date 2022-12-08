@@ -31,29 +31,20 @@ import (
 // OperatorDataStore holds the APIStore and API, HttpRoute mappings
 type OperatorDataStore struct {
 	APIStore           map[types.NamespacedName]*APIState
-	APIToHTTPRouteRefs map[types.NamespacedName]HTTPRouteRefs
 	HTTPRouteToAPIRefs map[types.NamespacedName]types.NamespacedName
-
-	mu sync.Mutex
-}
-
-// HTTPRouteRefs holds ProdHttpRouteRef and SandHttpRouteRef
-type HTTPRouteRefs struct {
-	ProdHTTPRouteRef string
-	SandHTTPRouteRef string
+	mu                 sync.Mutex
 }
 
 // CreateNewOperatorDataStore creates a new OperatorDataStore.
 func CreateNewOperatorDataStore() *OperatorDataStore {
 	return &OperatorDataStore{
 		APIStore:           map[types.NamespacedName]*APIState{},
-		APIToHTTPRouteRefs: map[types.NamespacedName]HTTPRouteRefs{},
 		HTTPRouteToAPIRefs: map[types.NamespacedName]types.NamespacedName{},
 	}
 }
 
 // AddNewAPI stores a new API in the OperatorDataStore.
-func (ods *OperatorDataStore) AddNewAPI(api dpv1alpha1.API, prodHTTPRoute *gwapiv1b1.HTTPRoute, sandHTTPRoute *gwapiv1b1.HTTPRoute) (APIState, error) {
+func (ods *OperatorDataStore) AddNewAPI(api dpv1alpha1.API, prodHTTPRoute *gwapiv1b1.HTTPRoute, sandHTTPRoute *gwapiv1b1.HTTPRoute) APIState {
 	ods.mu.Lock()
 	defer ods.mu.Unlock()
 
@@ -62,18 +53,13 @@ func (ods *OperatorDataStore) AddNewAPI(api dpv1alpha1.API, prodHTTPRoute *gwapi
 		ProdHTTPRoute: prodHTTPRoute,
 		SandHTTPRoute: sandHTTPRoute}
 
-	prodHTTPRouteRef := ""
-	sandHTTPRouteRef := ""
 	if prodHTTPRoute != nil {
 		ods.HTTPRouteToAPIRefs[utils.NamespacedName(prodHTTPRoute)] = utils.NamespacedName(&api)
-		prodHTTPRouteRef = prodHTTPRoute.Name
 	}
 	if sandHTTPRoute != nil {
 		ods.HTTPRouteToAPIRefs[utils.NamespacedName(sandHTTPRoute)] = utils.NamespacedName(&api)
-		sandHTTPRouteRef = sandHTTPRoute.Name
 	}
-	ods.APIToHTTPRouteRefs[utils.NamespacedName(&api)] = HTTPRouteRefs{ProdHTTPRouteRef: prodHTTPRouteRef, SandHTTPRouteRef: sandHTTPRouteRef}
-	return *ods.APIStore[utils.NamespacedName(&api)], nil
+	return *ods.APIStore[utils.NamespacedName(&api)]
 }
 
 // UpdateHTTPRoute updates the HttpRoute of a stored API.
@@ -111,5 +97,4 @@ func (ods *OperatorDataStore) GetAPI(apiName types.NamespacedName) (APIState, bo
 		return APIState{}, found
 	}
 	return *api, found
-
 }

@@ -64,7 +64,7 @@ func HandleAPILifeCycleEvents(ch *chan APIEvent) {
 				Severity:  logging.MAJOR,
 			})
 		} else {
-			//TODO (amali) don't create go routine per event
+			//TODO (amali) fix creating go routine per event
 			go sendAPIToAPKMgtServer(event)
 		}
 	}
