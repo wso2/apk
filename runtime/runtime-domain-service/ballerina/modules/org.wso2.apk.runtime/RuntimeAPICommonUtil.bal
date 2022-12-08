@@ -1,7 +1,8 @@
 import ballerina/jballerina.java;
-import runtime_domain_service.org.wso2.apk.apimgt.api as orgwso2apkapimgtapi;
+import runtime_domain_service.org.wso2.apk.runtime.api as orgwso2apkruntimeapi;
 import runtime_domain_service.java.lang as javalang;
 import runtime_domain_service.org.wso2.apk.runtime.model as orgwso2apkruntimemodel;
+import runtime_domain_service.java.util as javautil;
 
 # Ballerina class mapping for the Java `org.wso2.apk.runtime.RuntimeAPICommonUtil` class.
 @java:Binding {'class: "org.wso2.apk.runtime.RuntimeAPICommonUtil"}
@@ -98,26 +99,49 @@ public distinct class RuntimeAPICommonUtil {
 
 }
 
-# The constructor function to generate an object of `org.wso2.apk.runtime.RuntimeAPICommonUtil`.
-#
-# + return - The new `RuntimeAPICommonUtil` class generated.
-public function newRuntimeAPICommonUtil1() returns RuntimeAPICommonUtil {
-    handle externalObj = org_wso2_apk_runtime_RuntimeAPICommonUtil_newRuntimeAPICommonUtil1();
-    RuntimeAPICommonUtil newObj = new (externalObj);
-    return newObj;
-}
-
 # The function that maps to the `generateDefinition` method of `org.wso2.apk.runtime.RuntimeAPICommonUtil`.
 #
 # + arg0 - The `orgwso2apkruntimemodel:API` value required to map with the Java method parameter.
-# + return - The `string` or the `orgwso2apkapimgtapi:APIManagementException` value returning from the Java mapping.
-public function RuntimeAPICommonUtil_generateDefinition(orgwso2apkruntimemodel:API arg0) returns string?|orgwso2apkapimgtapi:APIManagementException {
+# + return - The `string` or the `orgwso2apkruntimeapi:APIManagementException` value returning from the Java mapping.
+public function RuntimeAPICommonUtil_generateDefinition(orgwso2apkruntimemodel:API arg0) returns string?|orgwso2apkruntimeapi:APIManagementException {
     handle|error externalObj = org_wso2_apk_runtime_RuntimeAPICommonUtil_generateDefinition(arg0.jObj);
     if (externalObj is error) {
-        orgwso2apkapimgtapi:APIManagementException e = error orgwso2apkapimgtapi:APIManagementException(orgwso2apkapimgtapi:APIMANAGEMENTEXCEPTION, externalObj, message = externalObj.message());
+        orgwso2apkruntimeapi:APIManagementException e = error orgwso2apkruntimeapi:APIManagementException(orgwso2apkruntimeapi:APIMANAGEMENTEXCEPTION, externalObj, message = externalObj.message());
         return e;
     } else {
         return java:toString(externalObj);
+    }
+}
+
+# The function that maps to the `generateUriTemplatesFromAPIDefinition` method of `org.wso2.apk.runtime.RuntimeAPICommonUtil`.
+#
+# + arg0 - The `string` value required to map with the Java method parameter.
+# + arg1 - The `string` value required to map with the Java method parameter.
+# + return - The `javautil:Set` or the `orgwso2apkruntimeapi:APIManagementException` value returning from the Java mapping.
+public function RuntimeAPICommonUtil_generateUriTemplatesFromAPIDefinition(string arg0, string arg1) returns javautil:Set|orgwso2apkruntimeapi:APIManagementException {
+    handle|error externalObj = org_wso2_apk_runtime_RuntimeAPICommonUtil_generateUriTemplatesFromAPIDefinition(java:fromString(arg0), java:fromString(arg1));
+    if (externalObj is error) {
+        orgwso2apkruntimeapi:APIManagementException e = error orgwso2apkruntimeapi:APIManagementException(orgwso2apkruntimeapi:APIMANAGEMENTEXCEPTION, externalObj, message = externalObj.message());
+        return e;
+    } else {
+        javautil:Set newObj = new (externalObj);
+        return newObj;
+    }
+}
+
+# The function that maps to the `validateDefinition` method of `org.wso2.apk.runtime.RuntimeAPICommonUtil`.
+#
+# + arg0 - The `string` value required to map with the Java method parameter.
+# + arg1 - The `boolean` value required to map with the Java method parameter.
+# + return - The `orgwso2apkruntimeapi:APIDefinitionValidationResponse` or the `orgwso2apkruntimeapi:APIManagementException` value returning from the Java mapping.
+public function RuntimeAPICommonUtil_validateDefinition(string arg0, boolean arg1) returns orgwso2apkruntimeapi:APIDefinitionValidationResponse|orgwso2apkruntimeapi:APIManagementException {
+    handle|error externalObj = org_wso2_apk_runtime_RuntimeAPICommonUtil_validateDefinition(java:fromString(arg0), arg1);
+    if (externalObj is error) {
+        orgwso2apkruntimeapi:APIManagementException e = error orgwso2apkruntimeapi:APIManagementException(orgwso2apkruntimeapi:APIMANAGEMENTEXCEPTION, externalObj, message = externalObj.message());
+        return e;
+    } else {
+        orgwso2apkruntimeapi:APIDefinitionValidationResponse newObj = new (externalObj);
+        return newObj;
     }
 }
 
@@ -131,6 +155,12 @@ function org_wso2_apk_runtime_RuntimeAPICommonUtil_generateDefinition(handle arg
     name: "generateDefinition",
     'class: "org.wso2.apk.runtime.RuntimeAPICommonUtil",
     paramTypes: ["org.wso2.apk.runtime.model.API"]
+} external;
+
+function org_wso2_apk_runtime_RuntimeAPICommonUtil_generateUriTemplatesFromAPIDefinition(handle arg0, handle arg1) returns handle|error = @java:Method {
+    name: "generateUriTemplatesFromAPIDefinition",
+    'class: "org.wso2.apk.runtime.RuntimeAPICommonUtil",
+    paramTypes: ["java.lang.String", "java.lang.String"]
 } external;
 
 function org_wso2_apk_runtime_RuntimeAPICommonUtil_getClass(handle receiver) returns handle = @java:Method {
@@ -157,6 +187,12 @@ function org_wso2_apk_runtime_RuntimeAPICommonUtil_notifyAll(handle receiver) = 
     paramTypes: []
 } external;
 
+function org_wso2_apk_runtime_RuntimeAPICommonUtil_validateDefinition(handle arg0, boolean arg1) returns handle|error = @java:Method {
+    name: "validateDefinition",
+    'class: "org.wso2.apk.runtime.RuntimeAPICommonUtil",
+    paramTypes: ["java.lang.String", "boolean"]
+} external;
+
 function org_wso2_apk_runtime_RuntimeAPICommonUtil_wait(handle receiver) returns error? = @java:Method {
     name: "wait",
     'class: "org.wso2.apk.runtime.RuntimeAPICommonUtil",
@@ -173,10 +209,5 @@ function org_wso2_apk_runtime_RuntimeAPICommonUtil_wait3(handle receiver, int ar
     name: "wait",
     'class: "org.wso2.apk.runtime.RuntimeAPICommonUtil",
     paramTypes: ["long", "int"]
-} external;
-
-function org_wso2_apk_runtime_RuntimeAPICommonUtil_newRuntimeAPICommonUtil1() returns handle = @java:Constructor {
-    'class: "org.wso2.apk.runtime.RuntimeAPICommonUtil",
-    paramTypes: []
 } external;
 

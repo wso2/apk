@@ -1,4 +1,4 @@
-// Ballerina error type for `org.wso2.apk.apimgt.api.APIManagementException`.
+// Ballerina error type for `org.wso2.apk.runtime.api.APIManagementException`.
 
 public const APIMANAGEMENTEXCEPTION = "APIManagementException";
 

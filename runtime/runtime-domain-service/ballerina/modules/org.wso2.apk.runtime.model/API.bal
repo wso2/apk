@@ -33,6 +33,13 @@ public distinct class API {
         return org_wso2_apk_runtime_model_API_equals(self.jObj, arg0.jObj);
     }
 
+    # The function that maps to the `getApiSecurity` method of `org.wso2.apk.runtime.model.API`.
+    #
+    # + return - The `string` value returning from the Java mapping.
+    public function getApiSecurity() returns string? {
+        return java:toString(org_wso2_apk_runtime_model_API_getApiSecurity(self.jObj));
+    }
+
     # The function that maps to the `getClass` method of `org.wso2.apk.runtime.model.API`.
     #
     # + return - The `javalang:Class` value returning from the Java mapping.
@@ -42,11 +49,34 @@ public distinct class API {
         return newObj;
     }
 
+    # The function that maps to the `getGraphQLSchema` method of `org.wso2.apk.runtime.model.API`.
+    #
+    # + return - The `string` value returning from the Java mapping.
+    public function getGraphQLSchema() returns string? {
+        return java:toString(org_wso2_apk_runtime_model_API_getGraphQLSchema(self.jObj));
+    }
+
     # The function that maps to the `getName` method of `org.wso2.apk.runtime.model.API`.
     #
     # + return - The `string` value returning from the Java mapping.
     public function getName() returns string? {
         return java:toString(org_wso2_apk_runtime_model_API_getName(self.jObj));
+    }
+
+    # The function that maps to the `getScopes` method of `org.wso2.apk.runtime.model.API`.
+    #
+    # + return - The `javautil:Set` value returning from the Java mapping.
+    public function getScopes() returns javautil:Set {
+        handle externalObj = org_wso2_apk_runtime_model_API_getScopes(self.jObj);
+        javautil:Set newObj = new (externalObj);
+        return newObj;
+    }
+
+    # The function that maps to the `getSwaggerDefinition` method of `org.wso2.apk.runtime.model.API`.
+    #
+    # + return - The `string` value returning from the Java mapping.
+    public function getSwaggerDefinition() returns string? {
+        return java:toString(org_wso2_apk_runtime_model_API_getSwaggerDefinition(self.jObj));
     }
 
     # The function that maps to the `getType` method of `org.wso2.apk.runtime.model.API`.
@@ -89,11 +119,39 @@ public distinct class API {
         org_wso2_apk_runtime_model_API_notifyAll(self.jObj);
     }
 
+    # The function that maps to the `setApiSecurity` method of `org.wso2.apk.runtime.model.API`.
+    #
+    # + arg0 - The `string` value required to map with the Java method parameter.
+    public function setApiSecurity(string arg0) {
+        org_wso2_apk_runtime_model_API_setApiSecurity(self.jObj, java:fromString(arg0));
+    }
+
+    # The function that maps to the `setGraphQLSchema` method of `org.wso2.apk.runtime.model.API`.
+    #
+    # + arg0 - The `string` value required to map with the Java method parameter.
+    public function setGraphQLSchema(string arg0) {
+        org_wso2_apk_runtime_model_API_setGraphQLSchema(self.jObj, java:fromString(arg0));
+    }
+
     # The function that maps to the `setName` method of `org.wso2.apk.runtime.model.API`.
     #
     # + arg0 - The `string` value required to map with the Java method parameter.
     public function setName(string arg0) {
         org_wso2_apk_runtime_model_API_setName(self.jObj, java:fromString(arg0));
+    }
+
+    # The function that maps to the `setScopes` method of `org.wso2.apk.runtime.model.API`.
+    #
+    # + arg0 - The `javautil:Set` value required to map with the Java method parameter.
+    public function setScopes(javautil:Set arg0) {
+        org_wso2_apk_runtime_model_API_setScopes(self.jObj, arg0.jObj);
+    }
+
+    # The function that maps to the `setSwaggerDefinition` method of `org.wso2.apk.runtime.model.API`.
+    #
+    # + arg0 - The `string` value required to map with the Java method parameter.
+    public function setSwaggerDefinition(string arg0) {
+        org_wso2_apk_runtime_model_API_setSwaggerDefinition(self.jObj, java:fromString(arg0));
     }
 
     # The function that maps to the `setType` method of `org.wso2.apk.runtime.model.API`.
@@ -182,14 +240,38 @@ function org_wso2_apk_runtime_model_API_equals(handle receiver, handle arg0) ret
     paramTypes: ["java.lang.Object"]
 } external;
 
+function org_wso2_apk_runtime_model_API_getApiSecurity(handle receiver) returns handle = @java:Method {
+    name: "getApiSecurity",
+    'class: "org.wso2.apk.runtime.model.API",
+    paramTypes: []
+} external;
+
 function org_wso2_apk_runtime_model_API_getClass(handle receiver) returns handle = @java:Method {
     name: "getClass",
     'class: "org.wso2.apk.runtime.model.API",
     paramTypes: []
 } external;
 
+function org_wso2_apk_runtime_model_API_getGraphQLSchema(handle receiver) returns handle = @java:Method {
+    name: "getGraphQLSchema",
+    'class: "org.wso2.apk.runtime.model.API",
+    paramTypes: []
+} external;
+
 function org_wso2_apk_runtime_model_API_getName(handle receiver) returns handle = @java:Method {
     name: "getName",
+    'class: "org.wso2.apk.runtime.model.API",
+    paramTypes: []
+} external;
+
+function org_wso2_apk_runtime_model_API_getScopes(handle receiver) returns handle = @java:Method {
+    name: "getScopes",
+    'class: "org.wso2.apk.runtime.model.API",
+    paramTypes: []
+} external;
+
+function org_wso2_apk_runtime_model_API_getSwaggerDefinition(handle receiver) returns handle = @java:Method {
+    name: "getSwaggerDefinition",
     'class: "org.wso2.apk.runtime.model.API",
     paramTypes: []
 } external;
@@ -230,8 +312,32 @@ function org_wso2_apk_runtime_model_API_notifyAll(handle receiver) = @java:Metho
     paramTypes: []
 } external;
 
+function org_wso2_apk_runtime_model_API_setApiSecurity(handle receiver, handle arg0) = @java:Method {
+    name: "setApiSecurity",
+    'class: "org.wso2.apk.runtime.model.API",
+    paramTypes: ["java.lang.String"]
+} external;
+
+function org_wso2_apk_runtime_model_API_setGraphQLSchema(handle receiver, handle arg0) = @java:Method {
+    name: "setGraphQLSchema",
+    'class: "org.wso2.apk.runtime.model.API",
+    paramTypes: ["java.lang.String"]
+} external;
+
 function org_wso2_apk_runtime_model_API_setName(handle receiver, handle arg0) = @java:Method {
     name: "setName",
+    'class: "org.wso2.apk.runtime.model.API",
+    paramTypes: ["java.lang.String"]
+} external;
+
+function org_wso2_apk_runtime_model_API_setScopes(handle receiver, handle arg0) = @java:Method {
+    name: "setScopes",
+    'class: "org.wso2.apk.runtime.model.API",
+    paramTypes: ["java.util.Set"]
+} external;
+
+function org_wso2_apk_runtime_model_API_setSwaggerDefinition(handle receiver, handle arg0) = @java:Method {
+    name: "setSwaggerDefinition",
     'class: "org.wso2.apk.runtime.model.API",
     paramTypes: ["java.lang.String"]
 } external;
