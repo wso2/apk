@@ -22,9 +22,6 @@ include ':docker'
 project(':ballerina').projectDir = file('ballerina')
 project(':docker').projectDir = file('docker')
 
-if(!isRelease.toBoolean()){
-    includeBuild "$rootDir/../../common-java-libs"
-}
 dependencyResolutionManagement {
     versionCatalogs {
         libs {
