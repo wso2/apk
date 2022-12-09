@@ -38,8 +38,8 @@ public class ServiceClient {
 
     # This returns list of services in all namespaces.
     # + return - list of services in namespaces.
-    public function getServicesListFromK8s() returns ServiceList|error {
-        return {list: getServicesList(), pagination: {total: getServicesList().length()}};
+    public function getServicesListFromK8s(string sortBy, string sortOrder, int 'limit, int offset) returns ServiceList|BadRequestError {
+        return self.sortAndLimitServices(getServicesList(), sortBy, sortOrder, 'limit, offset);
     }
 
     # This retrieve specific service from name space.
@@ -56,7 +56,7 @@ public class ServiceClient {
         }
     }
 
-    public function getServices(string? name, string? namespace, string sortBy, string sortOrder, int 'limit, int offset) returns ServiceList|BadRequestError|UnauthorizedError|InternalServerErrorError {
+    public function getServices(string? name, string? namespace, string sortBy, string sortOrder, int 'limit, int offset) returns ServiceList|BadRequestError|InternalServerErrorError {
         boolean serviceNameAvailable = name == () ? false : true;
         boolean nameSpaceAvailable = namespace == () ? false : true;
         if (nameSpaceAvailable && string:length(namespace.toString()) > 0) {
@@ -77,14 +77,12 @@ public class ServiceClient {
                     return serviceList;
                 }
             }
-        }
-        ServiceList|error serviceList = self.getServicesListFromK8s();
-        if serviceList is error {
-            InternalServerErrorError internalError = {body: {code: 900910, message: serviceList.message()}};
-            return internalError;
         } else {
-            return serviceList;
+            if (serviceNameAvailable && string:length(name.toString()) > 0) {
+                return self.getServicesListFromK8sSearchByName(name.toString(), sortBy, sortOrder, 'limit, offset);
+            }
         }
+        return self.getServicesListFromK8s(sortBy, sortOrder, 'limit, offset);
     }
 
     public function getServiceById(string serviceId) returns Service|BadRequestError|NotFoundError|InternalServerErrorError {
@@ -168,5 +166,49 @@ public class ServiceClient {
         } else {
             return serviceEntry;
         }
+    }
+    private function getServicesListFromK8sSearchByName(string name, string sortBy, string sortOrder, int 'limit, int offset) returns ServiceList|BadRequestError {
+        Service[] servicesList = getServicesList().cloneReadOnly();
+        Service[] filteredList = [];
+        foreach Service 'service in servicesList {
+            if 'service.name == name {
+                filteredList.push('service);
+            }
+        }
+        return self.sortAndLimitServices(filteredList, sortBy, sortOrder, 'limit, offset);
+    }
+    private function sortAndLimitServices(Service[] servicesList, string sortBy, string sortOrder, int 'limit, int offset) returns ServiceList|BadRequestError {
+        Service[] clonedServiceList = servicesList.clone();
+        Service[] sortedServices = [];
+        if sortBy == SORT_BY_SERVICE_NAME && sortOrder == SORT_ORDER_ASC {
+            sortedServices = from var 'service in clonedServiceList
+                order by 'service.name ascending
+                select 'service;
+        } else if sortBy == SORT_BY_SERVICE_NAME && sortOrder == SORT_ORDER_DESC {
+            sortedServices = from var 'service in clonedServiceList
+                order by 'service.name descending
+                select 'service;
+        } else if sortBy == SORT_BY_CREATED_TIME && sortOrder == SORT_ORDER_ASC {
+            sortedServices = from var 'service in clonedServiceList
+                order by 'service.createdTime ascending
+                select 'service;
+        } else if sortBy == SORT_BY_CREATED_TIME && sortOrder == SORT_ORDER_DESC {
+            sortedServices = from var 'service in clonedServiceList
+                order by 'service.createdTime descending
+                select 'service;
+        } else {
+            BadRequestError badRequest = {body: {code: 90912, message: "Invalid Sort By/Sort Order Value "}};
+            return badRequest;
+        }
+        Service[] limitedServices = [];
+        if sortedServices.length() >= offset {
+            foreach int i in offset ... (sortedServices.length() - 1) {
+                if limitedServices.length() < 'limit {
+                    limitedServices.push(sortedServices[i]);
+                }
+            }
+        }
+        ServiceList serviceList = {list: limitedServices, pagination: {offset: offset, 'limit: 'limit, total: sortedServices.length()}};
+        return serviceList;
     }
 }

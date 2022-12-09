@@ -87,17 +87,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/APIList"
         "500":
-          description: Internal Server Error.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 500
-                message: Internal Server Error
-                description: The server encountered an internal error. Please contact administrator.
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/InternalServerError"
+        "400":
+          $ref: "#/components/responses/BadRequest"
     post:
       tags:
         - APIs
@@ -138,29 +130,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/API"
         "400":
-          description: Bad Request. Invalid request or validation error.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 400
-                message: Bad Request
-                description: Invalid request or validation error
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/BadRequest"
         "500":
-          description: Internal Server Error.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 500
-                message: Internal Server Error
-                description: The server encountered an internal error. Please contact administrator.
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/InternalServerError"
   /apis/{apiId}:
     get:
       tags:
@@ -197,29 +169,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/API"
         "404":
-          description: Not Found. The specified resource does not exist.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 404
-                message: Not Found
-                description: The specified resource does not exist
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/NotFound"
         "500":
-          description: Internal Server Error.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 500
-                message: Internal Server Error
-                description: The server encountered an internal error. Please contact administrator.
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/InternalServerError"
     put:
       tags:
         - APIs
@@ -269,65 +221,16 @@ paths:
               schema:
                 $ref: "#/components/schemas/API"
         "400":
-          description: Bad Request. Invalid request or validation error.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 400
-                message: Bad Request
-                description: Invalid request or validation error
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/BadRequest"
         "403":
-          description: Forbidden. The request must be conditional but no condition has been specified.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 403
-                message: Forbidden
-                description: The request must be conditional but no condition has been specified
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/Forbidden"
         "404":
-          description: Not Found. The specified resource does not exist.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 404
-                message: Not Found
-                description: The specified resource does not exist
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/NotFound"
         "412":
-          description: Precondition Failed. The request has not been performed because one of the preconditions is not met.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 412
-                message: Precondition Failed
-                description: The request has not been performed because one of the preconditions is not met
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/PreconditionFailed"
+
         "500":
-          description: Internal Server Error.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 500
-                message: Internal Server Error
-                description: The server encountered an internal error. Please contact administrator.
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/InternalServerError"
     delete:
       tags:
         - APIs
@@ -352,41 +255,11 @@ paths:
             Resource successfully deleted.
           content: {}
         "403":
-          description: Forbidden. The request must be conditional but no condition has been specified.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 403
-                message: Forbidden
-                description: The request must be conditional but no condition has been specified
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/Forbidden"
         "404":
-          description: Not Found. The specified resource does not exist.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 404
-                message: Not Found
-                description: The specified resource does not exist
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/NotFound"
         "500":
-          description: Internal Server Error.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 500
-                message: Internal Server Error
-                description: The server encountered an internal error. Please contact administrator.
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/InternalServerError"
   /apis/{apiId}/generate-key:
     post:
       tags:
@@ -410,30 +283,10 @@ paths:
           $ref: "#/components/responses/BadRequest"
         404:
           $ref: "#/components/responses/NotFound"
-        403:
-          description: Forbidden. The request must be conditional but no condition has been specified.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 403
-                message: Forbidden
-                description: The request must be conditional but no condition has been specified
-                moreInfo: ""
-                error: []
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "500":
-          description: Internal Server Error.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 500
-                message: Internal Server Error
-                description: The server encountered an internal error. Please contact administrator.
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/InternalServerError"
   /apis/import-service:
     post:
       tags:
@@ -481,20 +334,11 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/API"
-        400:
+        "400":
           $ref: "#/components/responses/BadRequest"
         "500":
-          description: Internal Server Error.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 500
-                message: Internal Server Error
-                description: The server encountered an internal error. Please contact administrator.
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/InternalServerError"
+
   /apis/import-definition:
     post:
       tags:
@@ -537,41 +381,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/API"
         "400":
-          description: Bad Request. Invalid request or validation error.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 400
-                message: Bad Request
-                description: Invalid request or validation error
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/BadRequest"
         "412":
-          description: Precondition Failed. The request has not been performed because one of the preconditions is not met.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 412
-                message: Precondition Failed
-                description: The request has not been performed because one of the preconditions is not met
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/PreconditionFailed"
+
         "500":
-          description: Internal Server Error.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 500
-                message: Internal Server Error
-                description: The server encountered an internal error. Please contact administrator.
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/InternalServerError"
   /apis/validate-definition:
     post:
       tags:
@@ -616,29 +431,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/APIDefinitionValidationResponse"
         "400":
-          description: Bad Request. Invalid request or validation error.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 400
-                message: Bad Request
-                description: Invalid request or validation error
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/BadRequest"
         "404":
-          description: Not Found. The specified resource does not exist.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 404
-                message: Not Found
-                description: The specified resource does not exist
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/NotFound"
   /apis/validate:
     post:
       tags:
@@ -662,41 +457,12 @@ paths:
                 type: string
           content: {}
         "400":
-          description: Bad Request. Invalid request or validation error.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 400
-                message: Bad Request
-                description: Invalid request or validation error
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/BadRequest"
         "412":
-          description: Precondition Failed. The request has not been performed because one of the preconditions is not met.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 412
-                message: Precondition Failed
-                description: The request has not been performed because one of the preconditions is not met
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/PreconditionFailed"
+
         "500":
-          description: Internal Server Error.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 500
-                message: Internal Server Error
-                description: The server encountered an internal error. Please contact administrator.
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/InternalServerError"
   /apis/{apiId}/definition:
     get:
       tags:
@@ -734,41 +500,12 @@ paths:
                 type: string
                 example: ""
         "404":
-          description: Not Found. The specified resource does not exist.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 404
-                message: Not Found
-                description: The specified resource does not exist
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/NotFound"
         "412":
-          description: Precondition Failed. The request has not been performed because one of the preconditions is not met.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 412
-                message: Precondition Failed
-                description: The request has not been performed because one of the preconditions is not met
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/PreconditionFailed"
+
         "500":
-          description: Internal Server Error.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 500
-                message: Internal Server Error
-                description: The server encountered an internal error. Please contact administrator.
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/InternalServerError"
     put:
       tags:
         - APIs
@@ -817,65 +554,16 @@ paths:
                 type: string
                 example: ""
         "400":
-          description: Bad Request. Invalid request or validation error.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 400
-                message: Bad Request
-                description: Invalid request or validation error
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/BadRequest"
         "403":
-          description: Forbidden. The request must be conditional but no condition has been specified.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 403
-                message: Forbidden
-                description: The request must be conditional but no condition has been specified
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/Forbidden"
         "404":
-          description: Not Found. The specified resource does not exist.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 404
-                message: Not Found
-                description: The specified resource does not exist
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/NotFound"
         "412":
-          description: Precondition Failed. The request has not been performed because one of the preconditions is not met.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 412
-                message: Precondition Failed
-                description: The request has not been performed because one of the preconditions is not met
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/PreconditionFailed"
+
         "500":
-          description: Internal Server Error.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 500
-                message: Internal Server Error
-                description: The server encountered an internal error. Please contact administrator.
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/InternalServerError"
   /apis/export:
     get:
       tags:
@@ -942,29 +630,9 @@ paths:
                 type: string
                 format: binary
         "404":
-          description: Not Found. The specified resource does not exist.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 404
-                message: Not Found
-                description: The specified resource does not exist
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/NotFound"
         "500":
-          description: Internal Server Error.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 500
-                message: Internal Server Error
-                description: The server encountered an internal error. Please contact administrator.
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/InternalServerError"
   /apis/import:
     post:
       tags:
@@ -994,53 +662,15 @@ paths:
             Created.
             API Imported Successfully.
         "403":
-          description: Forbidden. The request must be conditional but no condition has been specified.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 403
-                message: Forbidden
-                description: The request must be conditional but no condition has been specified
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/Forbidden"
         "409":
-          description: Conflict. Specified resource already exists.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 409
-                message: Conflict
-                description: Specified resource already exists
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/Conflict"
+
         "412":
-          description: Precondition Failed. The request has not been performed because one of the preconditions is not met.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 412
-                message: Precondition Failed
-                description: The request has not been performed because one of the preconditions is not met
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/PreconditionFailed"
+
         "500":
-          description: Internal Server Error.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 500
-                message: Internal Server Error
-                description: The server encountered an internal error. Please contact administrator.
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/InternalServerError"
   /services:
     get:
       tags:
@@ -1125,29 +755,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ServiceList"
         "400":
-          description: Bad Request. Invalid request or validation error.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 400
-                message: Bad Request
-                description: Invalid request or validation error
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/BadRequest"
         "500":
-          description: Internal Server Error.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 500
-                message: Internal Server Error
-                description: The server encountered an internal error. Please contact administrator.
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/InternalServerError"
   /services/{serviceId}:
     get:
       tags:
@@ -1174,41 +784,11 @@ paths:
               schema:
                 $ref: "#/components/schemas/Service"
         "400":
-          description: Bad Request. Invalid request or validation error.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 400
-                message: Bad Request
-                description: Invalid request or validation error
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/BadRequest"
         "404":
-          description: Not Found. The specified resource does not exist.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 404
-                message: Not Found
-                description: The specified resource does not exist
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/NotFound"
         "500":
-          description: Internal Server Error.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 500
-                message: Internal Server Error
-                description: The server encountered an internal error. Please contact administrator.
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/InternalServerError"
   /services/{serviceId}/usage:
     get:
       tags:
@@ -1235,41 +815,11 @@ paths:
               schema:
                 $ref: "#/components/schemas/APIList"
         "400":
-          description: Bad Request. Invalid request or validation error.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 400
-                message: Bad Request
-                description: Invalid request or validation error
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/BadRequest"
         "404":
-          description: Not Found. The specified resource does not exist.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 404
-                message: Not Found
-                description: The specified resource does not exist
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/NotFound"
         "500":
-          description: Internal Server Error.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 500
-                message: Internal Server Error
-                description: The server encountered an internal error. Please contact administrator.
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/InternalServerError"
   /policies:
     get:
       tags:
@@ -1360,17 +910,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/MediationPolicyList"
         "500":
-          description: Internal Server Error.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 500
-                message: Internal Server Error
-                description: The server encountered an internal error. Please contact administrator.
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/InternalServerError"
   /policies/{policyId}:
     get:
       tags:
@@ -1406,29 +946,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/MediationPolicy"
         "404":
-          description: Not Found. The specified resource does not exist.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 404
-                message: Not Found
-                description: The specified resource does not exist
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/NotFound"
         "500":
-          description: Internal Server Error.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                code: 500
-                message: Internal Server Error
-                description: The server encountered an internal error. Please contact administrator.
-                moreInfo: ""
-                error: []
+          $ref: "#/components/responses/InternalServerError"
 components:
   schemas:
     APIList:
@@ -1793,6 +1313,10 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/PortMapping"
+        createdTime:
+          type: string
+          example: 2021-02-11 09:57:25
+
     PortMapping:
       title: The PortMapping Object
       required:
