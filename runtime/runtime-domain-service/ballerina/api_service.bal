@@ -27,7 +27,7 @@ http:Service runtimeService = service object {
     APIClient apiService = new ();
     resource function get apis(string? query, int 'limit = 25, int offset = 0, string sortBy = "createdTime", string sortOrder = "desc", @http:Header string? accept = "application/json") returns APIList|BadRequestError|UnauthorizedError|InternalServerErrorError|error {
         APIClient apiService = new ();
-        return apiService.getAPIList();
+        return apiService.getAPIList(query, 'limit, offset, sortBy, sortOrder);
     }
     resource function get apis/[string apiId]() returns API|BadRequestError|InternalServerErrorError|NotFoundError {
         APIClient apiService = new ();

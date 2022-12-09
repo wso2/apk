@@ -106,14 +106,10 @@ public abstract class AbstractAPIManager implements APIManager {
     protected ApiMgtDAO apiMgtDAO;
     protected ApiDAOImpl apiDAOImpl;
     protected EnvironmentDAOImpl environmentDAO;
-    protected ApplicationDAOImpl applicationDAOImpl;
     protected TierDAOImpl tierDAOImpl;
     protected WorkflowDAOImpl workflowDAOImpl;
-    protected PolicyDAOImpl policyDAOImpl;
-    protected BlockConditionDAOImpl blockConditionDAOImpl;
     protected ScopeDAOImpl scopeDAOImpl;
     protected CommentDAOImpl commentDAOImpl;
-    protected ConsumerDAOImpl consumerDAOImpl;
     protected KeyManagerDAOImpl keyManagerDAOImpl;
     protected EnvironmentSpecificAPIPropertyDAO environmentSpecificAPIPropertyDAO;
     protected ScopesDAO scopesDAO;
@@ -142,14 +138,10 @@ public abstract class AbstractAPIManager implements APIManager {
         scopesDAO = ScopesDAO.getInstance();
         environmentSpecificAPIPropertyDAO = EnvironmentSpecificAPIPropertyDAO.getInstance();
         environmentDAO = EnvironmentDAOImpl.getInstance();
-        applicationDAOImpl = ApplicationDAOImpl.getInstance();
         tierDAOImpl = TierDAOImpl.getInstance();
         workflowDAOImpl = WorkflowDAOImpl.getInstance();
-        policyDAOImpl = PolicyDAOImpl.getInstance();
-        blockConditionDAOImpl = BlockConditionDAOImpl.getInstance();
         scopeDAOImpl = ScopeDAOImpl.getInstance();
         commentDAOImpl = CommentDAOImpl.getInstance();
-        consumerDAOImpl = ConsumerDAOImpl.getInstance();
         keyManagerDAOImpl = KeyManagerDAOImpl.getInstance();
 
         try {
@@ -577,60 +569,6 @@ public abstract class AbstractAPIManager implements APIManager {
             throws APIManagementException {
 
         return apiMgtDAO.getSubscriber(subscriberId);
-    }
-
-    /**
-     * Returns the corresponding application given the uuid.
-     *
-     * @param uuid uuid of the Application.
-     * @return it will return Application corresponds to the uuid provided.
-     * @throws APIManagementException
-     */
-    public Application getApplicationByUUID(String uuid) throws APIManagementException {
-
-        Application application = applicationDAOImpl.getApplicationByUUID(uuid);
-        if (application != null) {
-            Set<APIKey> keys = getApplicationKeys(application.getId());
-            for (APIKey key : keys) {
-                if (APIConstants.JWT.equals(application.getTokenType())) {
-                    key.setAccessToken("");
-                }
-                application.addKey(key);
-            }
-        }
-        return application;
-    }
-
-    /**
-     * Returns the corresponding application given the uuid with keys for a specific tenant.
-     *
-     * @param uuid         uuid of the Application.
-     * @param tenantDomain domain of the accessed store.
-     * @return it will return Application corresponds to the uuid provided.
-     * @throws APIManagementException
-     */
-    public Application getApplicationByUUID(String uuid, String tenantDomain) throws APIManagementException {
-
-        Application application = applicationDAOImpl.getApplicationByUUID(uuid);
-        if (application != null) {
-            Set<APIKey> keys = getApplicationKeys(application.getId(), tenantDomain);
-            for (APIKey key : keys) {
-                if (APIConstants.JWT.equals(application.getTokenType())) {
-                    key.setAccessToken("");
-                }
-                application.addKey(key);
-            }
-            int subscriptionCount = applicationDAOImpl.getSubscriptionCountByApplicationId(application, tenantDomain);
-            application.setSubscriptionCount(subscriptionCount);
-
-        }
-        return application;
-    }
-
-    @Override
-    public Application getLightweightApplicationByUUID(String uuid) throws APIManagementException {
-
-        return applicationDAOImpl.getApplicationByUUID(uuid);
     }
 
     /**

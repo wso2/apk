@@ -19,8 +19,6 @@
 import ballerina/http;
 import ballerina/log;
 import ballerina/lang.value;
-import backoffice_service.org.wso2.apk.apimgt.api as api;
-import backoffice_service.org.wso2.apk.apimgt.backoffice.impl as backoffice;
 
 configurable int BACKOFFICE_PORT = 9443;
 
@@ -38,21 +36,19 @@ listener http:Listener ep0 = new (BACKOFFICE_PORT);
 
 service /api/am/backoffice on ep0 {
     
-    resource function get apis(string? query, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0, string sortBy = "createdTime", string sortOrder = "desc", @http:Header string? accept = "application/json") returns APIList|http:NotModified|NotAcceptableError {
-        string? | api:APIManagementException apiList = backoffice:ApisApiCommonImpl_getAllAPIs('limit, offset, sortBy, sortOrder, "", "carbon.super");
-        do {
-            if apiList is string {
-                json j = check value:fromJsonString(apiList);
-                APIList apiListObj = check j.cloneWithType(APIList);
-                return apiListObj;
-            }
+    resource function get apis(string? query, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0, string sortBy = "createdTime", string sortOrder = "desc", @http:Header string? accept = "application/json") returns APIList|http:NotModified|NotAcceptableError|InternalServerErrorError|error {
+        string?| APIList | error apiList = check getAPIList();
+        if apiList is string {
+            json j = check value:fromJsonString(apiList);
+            APIList apiListObj = check j.cloneWithType(APIList);
+            return apiListObj;
+        } else if apiList is APIList {
+            log:printDebug(apiList.toString());
+            return apiList;
+        } else {
+            InternalServerErrorError internalError = {body: {code: 90914, message: "Internal Error while retrieving all APIs"}};
+            return internalError;
         }
-
-        on fail var e {
-            log:printError("Error occured while processing the API List", e);
-            return {count: 0};
-        }
-        return {count: 0};
     }
     // resource function get apis/[string apiId](@http:Header string? 'if\-none\-match) returns API|http:NotModified|NotFoundError|NotAcceptableError {
     // }

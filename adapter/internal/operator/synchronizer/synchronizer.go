@@ -200,7 +200,14 @@ func getResourcesForAPI(api APIState) []*apiProtos.Resource {
 	}
 	for _, rule := range httpRoute.Spec.Rules {
 		for _, match := range rule.Matches {
-			resources = append(resources, &apiProtos.Resource{Path: *match.Path.Value, Hostname: hostNames})
+			resource := &apiProtos.Resource{
+				Path:     *match.Path.Value,
+				Hostname: hostNames,
+			}
+			if match.Method != nil {
+				resource.Verb = string(*match.Method)
+			}
+			resources = append(resources, resource)
 		}
 	}
 	return resources

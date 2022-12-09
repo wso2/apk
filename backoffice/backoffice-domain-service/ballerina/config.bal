@@ -22,6 +22,9 @@ type DatasourceConfiguration record {
     string url;
     string username;
     string password;
+    string host;
+    int port;
+    string databaseName;
     int maxPoolSize = 50;
     int minIdle = 20;
     int maxLifeTime = 60000;

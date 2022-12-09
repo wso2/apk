@@ -17,10 +17,17 @@
 //
 
 import ballerina/sql;
+import ballerinax/postgresql;
 
-sql:ParameterizedQuery ADD_API_Suffix = `INSERT INTO api(api_uuid, api_name, api_version,context,api_provider,status,organization,artifact) VALUES (`;
-sql:ParameterizedQuery ADD_API_DEFINITION_Suffix = `INSERT INTO api_artifact(organization, api_uuid, api_definition,media_type) VALUES (`;
-sql:ParameterizedQuery UPDATE_API_Suffix = `UPDATE api SET`;
-sql:ParameterizedQuery UPDATE_API_DEFINITION_Suffix = `UPDATE api_artifact SET`;
-sql:ParameterizedQuery DELETE_API_Suffix = `DELETE FROM api WHERE api_uuid = `;
-sql:ParameterizedQuery DELETE_API_DEFINITION_Suffix = `DELETE FROM api_artifact WHERE api_uuid = `;
+function getAPIsDAO() returns API[]|error? {
+    postgresql:Client | error db_Client  = getConnection();
+    if db_Client is error {
+        return error("Error while retrieving connection", db_Client);
+    } else {
+        sql:ParameterizedQuery query = `SELECT * FROM api`;
+        stream<API, sql:Error?> apisStream = db_Client->query(query);
+        API[]? apis = check from API api in apisStream select api;
+        check apisStream.close();
+        return apis;
+    }
+}

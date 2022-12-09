@@ -38,6 +38,7 @@ import (
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
+	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
 func generateRouteConfig(routeName string, match *routev3.RouteMatch, action *routev3.Route_Route,
@@ -167,9 +168,9 @@ func generateHeaderMatcher(headerName, valueRegex string) *routev3.HeaderMatcher
 }
 
 func generateRegexMatchAndSubstitute(routePath, endpointBasePath,
-	endpointResourcePath string) *envoy_type_matcherv3.RegexMatchAndSubstitute {
+	endpointResourcePath string, pathMatchType gwapiv1b1.PathMatchType) *envoy_type_matcherv3.RegexMatchAndSubstitute {
 
-	substitutionString := generateSubstitutionString(endpointBasePath, endpointResourcePath)
+	substitutionString := generateSubstitutionString(endpointResourcePath, pathMatchType)
 
 	return &envoy_type_matcherv3.RegexMatchAndSubstitute{
 		Pattern: &envoy_type_matcherv3.RegexMatcher{
@@ -227,11 +228,12 @@ func generateHeaderToRemoveString(policyParams interface{}) (string, error) {
 }
 
 func generateRewritePathRouteConfig(routePath, resourcePath, endpointBasepath string,
-	policyParams interface{}) (*envoy_type_matcherv3.RegexMatchAndSubstitute, error) {
+	policyParams interface{}, pathMatchType gwapiv1b1.PathMatchType) (*envoy_type_matcherv3.RegexMatchAndSubstitute, error) {
 
 	var paramsToSetHeader map[string]interface{}
 	var ok bool
 	var rewritePath string
+	var rewritePathType gwapiv1b1.HTTPPathModifierType
 	if paramsToSetHeader, ok = policyParams.(map[string]interface{}); !ok {
 		return nil, fmt.Errorf("Error while processing policy parameter map. Map: %v", policyParams)
 	}
@@ -239,13 +241,51 @@ func generateRewritePathRouteConfig(routePath, resourcePath, endpointBasepath st
 		strings.TrimSpace(rewritePath) == "" {
 		return nil, errors.New("Policy parameter map must include rewritePath")
 	}
-
+	if rewritePathType, ok = paramsToSetHeader[constants.RewritePathType].(gwapiv1b1.HTTPPathModifierType); !ok ||
+		string(rewritePathType) == "" {
+		return nil, errors.New("Policy parameter map must include rewritePathType")
+	}
 	rewritePathIndexedWrtResourcePath, err := getRewriteRegexFromPathTemplate(resourcePath, rewritePath)
 	if err != nil {
 		return nil, err
 	}
-	rewriteRegex := generateRegexMatchAndSubstitute(routePath, endpointBasepath, rewritePathIndexedWrtResourcePath)
-	return rewriteRegex, nil
+
+	substitutionString := generateSubstitutionStringWithRewritePathType(endpointBasepath, rewritePathIndexedWrtResourcePath,
+		pathMatchType, rewritePathType)
+
+	return &envoy_type_matcherv3.RegexMatchAndSubstitute{
+		Pattern: &envoy_type_matcherv3.RegexMatcher{
+			EngineType: &envoy_type_matcherv3.RegexMatcher_GoogleRe2{
+				GoogleRe2: &envoy_type_matcherv3.RegexMatcher_GoogleRE2{
+					MaxProgramSize: nil,
+				},
+			},
+			Regex: routePath,
+		},
+		Substitution: substitutionString,
+	}, nil
+}
+
+func generateSubstitutionStringWithRewritePathType(endpointBasepath string, resourcePath string,
+	pathMatchType gwapiv1b1.PathMatchType, rewritePathType gwapiv1b1.HTTPPathModifierType) string {
+	var resourceRegex string
+	switch pathMatchType {
+	case gwapiv1b1.PathMatchExact:
+		resourceRegex = resourcePath
+	case gwapiv1b1.PathMatchPathPrefix:
+		switch rewritePathType {
+		case gwapiv1b1.FullPathHTTPPathModifier:
+			resourceRegex = fmt.Sprintf("%s", strings.TrimSuffix(resourcePath, "/"))
+			break
+		case gwapiv1b1.PrefixMatchHTTPPathModifier:
+			resourceRegex = fmt.Sprintf("%s\\1", strings.TrimSuffix(resourcePath, "/"))
+			break
+		}
+		break
+	case gwapiv1b1.PathMatchRegularExpression:
+		resourceRegex = resourcePath
+	}
+	return endpointBasepath + resourceRegex
 }
 
 func generateFilterConfigToSkipEnforcer() map[string]*anypb.Any {

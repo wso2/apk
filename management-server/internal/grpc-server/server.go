@@ -27,8 +27,8 @@ import (
 	apiProtos "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/apkmgt"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	"github.com/wso2/apk/adapter/pkg/tlsutils"
+	"github.com/wso2/apk/management-server/internal/backoffice"
 	"github.com/wso2/apk/management-server/internal/config"
-	"github.com/wso2/apk/management-server/internal/database"
 	"github.com/wso2/apk/management-server/internal/logger"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -44,20 +44,32 @@ func NewApiService() *apiService {
 }
 
 func (s *apiService) CreateAPI(ctx context.Context, api *apiProtos.API) (*apiProtos.Response, error) {
-	logger.LoggerMGTServer.Infof("Message received : %q", api)
-	database.CreateAPI(api)
+	logger.LoggerMGTServer.Infof("Create Message received : %q", api)
+	err := backoffice.CreateAPI(api)
+	if err != nil {
+		logger.LoggerMGTServer.Errorf("Error Creating API : %v", err.Error())
+		return &apiProtos.Response{Result: false}, err
+	}
 	return &apiProtos.Response{Result: true}, nil
 }
 
 func (s *apiService) UpdateAPI(ctx context.Context, api *apiProtos.API) (*apiProtos.Response, error) {
-	logger.LoggerMGTServer.Infof("Message received : %q", api)
-	database.UpdateAPI(api)
+	logger.LoggerMGTServer.Infof("Update Message received : %q", api)
+	err := backoffice.UpdateAPI(api)
+	if err != nil {
+		logger.LoggerMGTServer.Errorf("Error Updating API : %v", err.Error())
+		return &apiProtos.Response{Result: false}, err
+	}
 	return &apiProtos.Response{Result: true}, nil
 }
 
 func (s *apiService) DeleteAPI(ctx context.Context, api *apiProtos.API) (*apiProtos.Response, error) {
-	logger.LoggerMGTServer.Infof("Message received : %q", api)
-	database.DeleteAPI(api)
+	logger.LoggerMGTServer.Infof("Delete Message received : %q", api)
+	err := backoffice.DeleteAPI(api)
+	if err != nil {
+		logger.LoggerMGTServer.Errorf("Error Deleting API : %v", err.Error())
+		return &apiProtos.Response{Result: false}, err
+	}
 	return &apiProtos.Response{Result: true}, nil
 }
 

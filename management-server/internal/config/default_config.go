@@ -44,4 +44,9 @@ var defaultConfig = &Config{
 			Ttl:             "1h",
 		},
 	},
+	BackOffice: backOffice{
+		Host:            "localhost",
+		Port:            9443,
+		ServiceBasePath: "/api/am/backoffice/internal/apis",
+	},
 }

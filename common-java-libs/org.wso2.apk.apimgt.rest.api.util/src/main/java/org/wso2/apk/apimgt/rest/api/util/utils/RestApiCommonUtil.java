@@ -187,27 +187,6 @@ public class RestApiCommonUtil {
         return paginatedURL;
     }
 
-    /**
-     * Returns an APIConsumer which is corresponding to the current logged in user taken from the carbon context
-     *
-     * @return an APIConsumer which is corresponding to the current logged in user
-     * @throws APIManagementException
-     */
-    public static APIConsumer getLoggedInUserConsumer() throws APIManagementException {
-
-        return APIManagerFactory.getInstance().getAPIConsumer(getLoggedInUsername());
-    }
-
-    public static APIConsumer getConsumer(String subscriberName) throws APIManagementException {
-
-        return APIManagerFactory.getInstance().getAPIConsumer(subscriberName);
-    }
-
-    public static APIConsumer getConsumer(String subscriberName, String organization) throws APIManagementException {
-
-        return APIManagerFactory.getInstance().getAPIConsumer(subscriberName, organization);
-    }
-
     public static String getSubscriptionPaginatedURLForAPIId(Integer offset, Integer limit, String apiId,
                                                              String groupId) {
 

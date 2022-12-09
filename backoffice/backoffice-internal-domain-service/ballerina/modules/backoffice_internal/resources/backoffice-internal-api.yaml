@@ -40,22 +40,12 @@ paths:
         This operation can be used to create a new API specifying the details of the API in the payload. The new API will be in `CREATED` state.
 
         There is a special capability for a user who has `APIM Admin` permission such that he can create APIs on behalf of other users. For that he can to specify `"provider" : "some_other_user"` in the payload so that the API's creator will be shown as `some_other_user` in the UI.
-      parameters:
-        - name: openAPIVersion
-          in: query
-          description: Open api version
-          schema:
-            type: string
-            default: v3
-            enum:
-              - v2
-              - v3
+      operationId: createAPI
       requestBody:
-        description: API object that needs to be added
         content:
-          application/json:
+          multipart/form-data:
             schema:
-              $ref: '#/components/schemas/API'
+              $ref: '#/components/schemas/APIBody'
         required: true
       responses:
         201:
@@ -89,9 +79,8 @@ paths:
           $ref: '#/components/responses/UnsupportedMediaType'
       x-code-samples:
         - lang: Curl
-          source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/publisher/v3/apis"'
-      operationId: createAPI
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -F file=@openapi.json -F additionalProperties=@data.json "https://127.0.0.1:9443/api/am/publisher/v3/apis/import-openapi"'
 
   ######################################################
   # The "Individual API" resource APIs
@@ -108,11 +97,10 @@ paths:
         - $ref: '#/components/parameters/apiId'
         - $ref: '#/components/parameters/If-Match'
       requestBody:
-        description: API object that needs to be added
         content:
-          application/json:
+          multipart/form-data:
             schema:
-              $ref: '#/components/schemas/API'
+              $ref: '#/components/schemas/APIBody'
         required: true
       responses:
         200:
@@ -202,19 +190,10 @@ paths:
         - $ref: '#/components/parameters/If-Match'
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
-              properties:
-                apiDefinition:
-                  type: string
-                  description: Swagger definition of the API
-                url:
-                  type: string
-                  description: Swagger definition URL of the API
-                file:
-                  type: string
-                  description: Swagger definitio as a file
-                  format: binary
+              $ref: '#/components/schemas/APIDefinition'
+        required: true
       responses:
         200:
           description: |
@@ -260,154 +239,6 @@ paths:
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -F apiDefinition=@swagger.json "https://127.0.0.1:9443/api/am/publisher/v3/apis/96077508-fd01-4fae-bc64-5de0e2baf43c/swagger"'
       operationId: updateAPISwagger
-
-  
-  /apis/validate-openapi:
-    post:
-      tags:
-        - Validation
-      summary: Validate an OpenAPI Definition
-      description: |
-        This operation can be used to validate an OpenAPI definition and retrieve a summary. Provide either `url`
-        or `file` to specify the definition.
-      operationId: validateOpenAPIDefinition
-      parameters:
-        - name: returnContent
-          in: query
-          description: |
-            Specify whether to return the full content of the OpenAPI definition in the response. This is only
-            applicable when using url based validation
-          schema:
-            type: boolean
-            default: false
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              properties:
-                url:
-                  type: string
-                  description: OpenAPI definition url
-                file:
-                  type: string
-                  description: OpenAPI definition as a file
-                  format: binary
-                inlineAPIDefinition:
-                  type: string
-                  description: Inline content of the OpenAPI definition
-      responses:
-        200:
-          description: |
-            OK.
-            API definition validation information is returned
-          headers:
-            Content-Type:
-              description: |
-                The content type of the body.
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OpenAPIDefinitionValidationResponse'
-        400:
-          $ref: '#/components/responses/BadRequest'
-        404:
-          $ref: '#/components/responses/NotFound'
-      x-code-samples:
-        - lang: Curl
-          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -F file=@openapi.json "https://127.0.0.1:9443/api/am/publisher/v3/apis/validate-openapi"'
-
-  
-  /apis/validate-wsdl:
-    post:
-      tags:
-        - Validation
-      summary: Validate a WSDL Definition
-      description: |
-        This operation can be used to validate a WSDL definition and retrieve a summary. Provide either `url`
-        or `file` to specify the definition.
-      operationId: validateWSDLDefinition
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              properties:
-                url:
-                  type: string
-                  description: Definition url
-                file:
-                  type: string
-                  description: Definition to upload as a file
-                  format: binary
-      responses:
-        200:
-          description: |
-            OK.
-            API definition validation information is returned
-          headers:
-            Content-Type:
-              description: |
-                The content type of the body.
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/WSDLValidationResponse'
-        400:
-          $ref: '#/components/responses/BadRequest'
-        404:
-          $ref: '#/components/responses/NotFound'
-      x-code-samples:
-        - lang: Curl
-          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -F file=@api.wsdl "https://127.0.0.1:9443/api/am/publisher/v3/apis/validate-wsdl"'
-
-  /apis/validate-graphql-schema:
-    post:
-      tags:
-        - Validation
-      summary: Validate a GraphQL SDL
-      description: |
-        This operation can be used to validate a graphQL definition and retrieve a summary.
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              required:
-                - file
-              properties:
-                file:
-                  type: string
-                  description: Definition to upload as a file
-                  format: binary
-        required: true
-      responses:
-        200:
-          description: |
-            OK.
-            API definition validation information is returned
-          headers:
-            Content-Type:
-              description: |
-                The content type of the body.
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GraphQLValidationResponse'
-        400:
-          $ref: '#/components/responses/BadRequest'
-        404:
-          $ref: '#/components/responses/NotFound'
-      x-code-samples:
-        - lang: Curl
-          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -F file=@schema.graphql "https://127.0.0.1:9443/api/am/publisher/v3/apis/validate-graphql-schema"'
-      operationId: validateGraphQLSchema
 
   
 components:
@@ -852,17 +683,27 @@ components:
           enum:
             - WSDL
             - ZIP
-    GraphQLSchema:
-      title: GraphQL Schema
-      required:
-        - name
+    APIBody:
+      title: APIBody object
       type: object
+      required:
+        - apiProperties
+        - Definition
       properties:
-        name:
+        apiProperties:
+          $ref: '#/components/schemas/API'
+        Definition:
           type: string
-          example: admin--HackerNewsAPI.graphql
-        schemaDefinition:
+          description: Content of the definition
+    APIDefinition:
+      title: APIDefinition object
+      type: object
+      required:
+        - Definition
+      properties:
+        Definition:
           type: string
+          description: Content of the definition
     Error:
       title: Error object returned with 4XX HTTP Status
       required:
@@ -908,181 +749,6 @@ components:
           type: string
           description: |
             A detail description about the error message.
-    OpenAPIDefinitionValidationResponse:
-      title: OpenAPI Definition Validation Response
-      required:
-        - isValid
-      type: object
-      properties:
-        isValid:
-          type: boolean
-          description: |
-            This attribute declares whether this definition is valid or not.
-          example: true
-        content:
-          type: string
-          description: |
-            OpenAPI definition content.
-        info:
-          type: object
-          properties:
-            name:
-              type: string
-              example: PetStore
-            version:
-              type: string
-              example: 1.0.0
-            context:
-              type: string
-              example: /petstore
-            description:
-              type: string
-              example: A sample API that uses a petstore as an example to demonstrate
-                swagger-2.0 specification
-            openAPIVersion:
-              type: string
-              example: 3.0.0
-            endpoints:
-              type: array
-              description: |
-                contains host/servers specified in the OpenAPI file/URL
-              items:
-                type: string
-                example: https://localhost:9443/am/sample/pizzashack/v3/api/
-          description: |
-            API definition information
-        errors:
-          type: array
-          description: |
-            If there are more than one error list them out.
-            For example, list out validation errors by each field.
-          items:
-            $ref: '#/components/schemas/ErrorListItem'
-    WSDLValidationResponse:
-      title: WSDL Definition Validation Response
-      required:
-        - isValid
-      type: object
-      properties:
-        isValid:
-          type: boolean
-          description: |
-            This attribute declares whether this definition is valid or not.
-          example: true
-        errors:
-          type: array
-          description: |
-            If there are more than one error list them out.
-            For example, list out validation errors by each field.
-          items:
-            $ref: '#/components/schemas/ErrorListItem'
-        wsdlInfo:
-          type: object
-          properties:
-            version:
-              type: string
-              description: |
-                WSDL version
-              example: "1.1"
-            endpoints:
-              type: array
-              description: |
-                A list of endpoints the service exposes
-              items:
-                type: object
-                properties:
-                  name:
-                    type: string
-                    description: Name of the endpoint
-                    example: StockQuoteSoap
-                  location:
-                    type: string
-                    description: Endpoint URL
-                    example: http://www.webservicex.net/stockquote.asmx
-          description: Summary of the WSDL including the basic information
-    GraphQLValidationResponse:
-      title: GraphQL API definition validation Response
-      required:
-        - errorMessage
-        - isValid
-      type: object
-      properties:
-        isValid:
-          type: boolean
-          description: |
-            This attribute declares whether this definition is valid or not.
-          example: true
-        errorMessage:
-          type: string
-          description: |
-            This attribute declares the validation error message
-        graphQLInfo:
-          type: object
-          properties:
-            graphQLSchema:
-              $ref: '#/components/schemas/GraphQLSchema'
-          description: Summary of the GraphQL including the basic information
-    AsyncAPISpecificationValidationResponse:
-      title: AsyncAPI Specification Validation Response
-      required:
-        - isValid
-      type: object
-      properties:
-        isValid:
-          type: boolean
-          description:
-            This attribute declares whether this definition is valid or not.
-          example: true
-        content:
-          type: string
-          description:
-            AsyncAPI specification content
-        info:
-          type: object
-          properties:
-            name:
-              type: string
-              example: Streetlights
-            version:
-              type: string
-              example: 1.0.0
-            context:
-              type: string
-              example: /streetlights
-            description:
-              type: string
-              example: A sample API that uses a streetlights as an example to demonstrate AsyncAPI specifications
-            asyncAPIVersion:
-              type: string
-              example: 2.0
-            protocol:
-              type: string
-              example: WEBSUB
-            endpoints:
-              type: array
-              description:
-                contains host/servers specified in the AsyncAPI file/URL
-              items:
-                type: string
-                example: "https://localhost:9443/am/sample/pizzashack/v3/api/"
-            gatewayVendor:
-              type: string
-              example: wso2
-            asyncTransportProtocols:
-              type: array
-              description: contains available transports for an async API
-              items:
-                type: string
-                example: http
-          description:
-            API definition information
-        errors:
-          type: array
-          description:
-            If there are more than one error list them out.
-            For example, list out validation error by each field.
-          items:
-            $ref: '#/components/schemas/ErrorListItem'
  
   responses:
     BadRequest:

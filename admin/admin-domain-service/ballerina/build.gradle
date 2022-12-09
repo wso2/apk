@@ -23,3 +23,9 @@ tasks.register('build') {
     description 'Build ballerina component'
     dependsOn 'bal_build'
 }
+
+tasks.register('test') {
+    group 'test'
+    description 'Test ballerina component'
+    dependsOn 'bal_test'
+}

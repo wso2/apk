@@ -25,6 +25,7 @@ import runtime_domain_service.org.wso2.apk.apimgt.api.model as apkAPis;
 import runtime_domain_service.java.util as utilapis;
 import runtime_domain_service.org.wso2.apk.apimgt.api;
 import ballerina/jwt;
+import ballerina/regex;
 import runtime_domain_service.org.wso2.apk.runtime as runtimeUtil;
 
 public class APIClient {
@@ -116,13 +117,13 @@ public class APIClient {
                         log:printError("Error while undeploying prod http route ", sandHttpRouteDeletionResponse);
                     }
                 }
+                self.deleteServiceMappings(api);
             } else {
                 NotFoundError apiNotfound = {body: {code: 900910, description: "API with " + id + " not found", message: "API not found"}};
                 return apiNotfound;
             }
         }
-        PreconditionFailedError badRequestError = {body: {code: 900910, message: "missing required attributes"}};
-        return badRequestError;
+        return http:OK;
     }
 
     //Get all deployed APIs in namespace with specific search query
@@ -133,19 +134,95 @@ public class APIClient {
 
     # This returns list of APIS.
     #
+    # + query - Parameter Description  
+    # + 'limit - Parameter Description  
+    # + offset - Parameter Description  
+    # + sortBy - Parameter Description  
+    # + sortOrder - Parameter Description
     # + return - Return list of APIS in namsepace.
-    public function getAPIList() returns APIList|error {
+    public function getAPIList(string? query, int 'limit, int offset, string sortBy, string sortOrder) returns BadRequestError|APIList {
         API[] apilist = [];
         foreach model:K8sAPI api in getAPIs() {
             API convertedModel = convertK8sAPItoAPI(api);
             apilist.push(convertedModel);
         }
-        APIList APIList = {
-            list: apilist
-        };
-        return APIList;
+        if query is string {
+            return self.filterAPISBasedOnQuery(apilist, query, 'limit, offset, sortBy, sortOrder);
+        } else {
+            return self.filterAPIS(apilist, 'limit, offset, sortBy, sortOrder);
+        }
     }
+    private function filterAPISBasedOnQuery(API[] apilist, string query, int 'limit, int offset, string sortBy, string sortOrder) returns APIList|BadRequestError {
+        API[] filteredList = [];
+        if query.length() > 0 {
+            int? semiCollonIndex = string:indexOf(query, ":", 0);
+            if semiCollonIndex is int {
+                if semiCollonIndex > 0 {
+                    string keyWord = query.substring(0, semiCollonIndex);
+                    string keyWordValue = query.substring(keyWord.length() + 1, query.length());
+                    if keyWord.trim() == SEARCH_CRITERIA_NAME {
+                        foreach API api in apilist {
+                            if (regex:matches(api.name, keyWordValue)) {
+                                filteredList.push(api);
+                            }
+                        }
+                    } else if keyWord.trim() == SEARCH_CRITERIA_TYPE {
+                        foreach API api in apilist {
+                            if (regex:matches(api.'type, keyWordValue)) {
+                                filteredList.push(api);
+                            }
+                        }
+                    } else {
+                        BadRequestError badRequest = {body: {code: 90912, message: "Invalid KeyWord " + keyWord}};
+                        return badRequest;
+                    }
+                }
+            } else {
+                foreach API api in apilist {
+                    if (regex:matches(api.name, query)) {
+                        filteredList.push(api);
+                    }
+                }
+            }
+        } else {
+            filteredList = apilist;
+        }
+        return self.filterAPIS(filteredList, 'limit, offset, sortBy, sortOrder);
+    }
+    private function filterAPIS(API[] apiList, int 'limit, int offset, string sortBy, string sortOrder) returns APIList|BadRequestError {
+        API[] clonedAPIList = apiList.clone();
+        API[] sortedAPIS = [];
+        if sortBy == SORT_BY_API_NAME && sortOrder == SORT_ORDER_ASC {
+            sortedAPIS = from var api in clonedAPIList
+                order by api.name ascending
+                select api;
+        } else if sortBy == SORT_BY_API_NAME && sortOrder == SORT_ORDER_DESC {
+            sortedAPIS = from var api in clonedAPIList
+                order by api.name descending
+                select api;
+        } else if sortBy == SORT_BY_CREATED_TIME && sortOrder == SORT_ORDER_ASC {
+            sortedAPIS = from var api in clonedAPIList
+                order by api.createdTime ascending
+                select api;
+        } else if sortBy == SORT_BY_CREATED_TIME && sortOrder == SORT_ORDER_DESC {
+            sortedAPIS = from var api in clonedAPIList
+                order by api.createdTime descending
+                select api;
+        } else {
+            BadRequestError badRequest = {body: {code: 90912, message: "Invalid Sort By/Sort Order Value "}};
+            return badRequest;
+        }
+        API[] limitSet = [];
+        if sortedAPIS.length() >= offset {
+            foreach int i in offset ... (sortedAPIS.length() - 1) {
+                if limitSet.length() < 'limit {
+                    limitSet.push(sortedAPIS[i]);
+                }
+            }
+        }
+        return {list: limitSet, count: limitSet.length(), pagination: {total: apiList.length(), 'limit: 'limit, offset: offset}};
 
+    }
     public function createAPI(API api) returns string|Error {
         if (self.validateName(api.name)) {
             return {code: 90911, message: "API Name `${api.name}` already exist.", description: "API Name `${api.name}` already exist."};
@@ -190,7 +267,11 @@ public class APIClient {
 
     function convertK8sCrAPI(API api) returns model:API {
         model:API apispec = {
-            metadata: {name: api.name.concat(api.'version), namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace)},
+            metadata: {
+                name: api.name.concat(api.'version),
+                namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace),
+                uid: ()
+            },
             spec: {
                 apiDisplayName: api.name,
                 apiType: api.'type,
@@ -281,7 +362,8 @@ public class APIClient {
         model:ConfigMap configMap = {
             metadata: {
                 name: self.retrieveDefinitionName(api, uniqueId),
-                namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace)
+                namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace),
+                uid: ()
             },
             data: configMapData
         };
@@ -312,7 +394,8 @@ public class APIClient {
         model:API k8sAPI = {
             metadata: {
                 name: uniqueId,
-                namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace)
+                namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace),
+                uid: ()
             },
             spec: {
                 apiDisplayName: api.name,
@@ -344,7 +427,8 @@ public class APIClient {
             metadata:
                 {
                 name: self.retrieveHttpRouteRefName(api, uniqueId, 'type),
-                namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace)
+                namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace),
+                uid: ()
             },
             spec: {
                 parentRefs: self.generateAndRetrieveParentRefs(api, serviceEntry, uniqueId),
@@ -490,7 +574,8 @@ public class APIClient {
         model:K8sServiceMapping k8sServiceMapping = {
             metadata: {
                 name: self.getServiceMappingEntryName(uniqueId),
-                namespace: namespace
+                namespace: namespace,
+                uid: ()
             },
             spec: {
                 serviceRef: {
@@ -508,6 +593,15 @@ public class APIClient {
     }
     function getServiceMappingEntryName(string uniqueId) returns string {
         return uniqueId + "-servicemapping";
+    }
+    function deleteServiceMappings(model:K8sAPI api) {
+        model:K8sServiceMapping[] retrieveServiceMappingsForAPIResult = retrieveServiceMappingsForAPI(api);
+        foreach model:K8sServiceMapping serviceMapping in retrieveServiceMappingsForAPIResult {
+            json|http:ClientError k8ServiceMapping = deleteK8ServiceMapping(serviceMapping.metadata.name, serviceMapping.metadata.namespace);
+            if k8ServiceMapping is http:ClientError {
+                log:printError("Error occured while deleting service mapping", k8ServiceMapping);
+            }
+        }
     }
 }
 

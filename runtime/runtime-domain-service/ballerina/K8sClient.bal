@@ -161,7 +161,7 @@ function getK8sAPIByNameAndNamespace(string name, string namespace) returns json
 
 function retrieveAllServiceMappings(string? continueToken) returns json|http:ClientError {
     string? continueTokenValue = continueToken;
-    string endpoint = "/apis/dp.wso2.com/v1alpha1/servicemappings?limit=4";
+    string endpoint = "/apis/dp.wso2.com/v1alpha1/servicemappings";
     if continueTokenValue is string {
         if continueTokenValue.length() > 0 {
             int? questionMarkIndex = endpoint.lastIndexOf("?");
@@ -178,5 +178,10 @@ function retrieveAllServiceMappings(string? continueToken) returns json|http:Cli
     }
 
     return k8sApiServerEp->get(endpoint, targetType = json);
+}
+
+function deleteK8ServiceMapping(string name, string namespace) returns json|http:ClientError {
+    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/servicemappings/" + name;
+    return k8sApiServerEp->delete(endpoint, targetType = json);
 }
 

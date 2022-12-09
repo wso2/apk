@@ -24,7 +24,6 @@ import org.wso2.apk.apimgt.api.APIAdmin;
 import org.wso2.apk.apimgt.api.APIManagementException;
 import org.wso2.apk.apimgt.api.model.Monetization;
 import org.wso2.apk.apimgt.api.model.MonetizationUsagePublishInfo;
-import org.wso2.apk.apimgt.impl.APIAdminImpl;
 import org.wso2.apk.apimgt.impl.APIConstants;
 
 import java.text.DateFormat;
@@ -43,35 +42,5 @@ public class MonetizationUsagePublishAgent implements Runnable {
 
     @Override
     public void run() {
-
-        Monetization monetizationImpl = null;
-        APIAdmin apiAdmin = null;
-        try {
-            apiAdmin = new APIAdminImpl();
-            monetizationImpl = apiAdmin.getMonetizationImplClass();
-            monetizationUsagePublishInfo.setState(APIConstants.Monetization.RUNNING);
-            monetizationUsagePublishInfo.setStatus(APIConstants.Monetization.INPROGRESS);
-            DateFormat df = new SimpleDateFormat(APIConstants.Monetization.USAGE_PUBLISH_TIME_FORMAT);
-            Date dateobj = new Date();
-            df.setTimeZone(TimeZone.getTimeZone(APIConstants.Monetization.USAGE_PUBLISH_TIME_ZONE));
-            String currentDate = df.format(dateobj);
-            long currentTimestamp = apiAdmin.getTimestamp(currentDate);
-            //set the current time as starting time of the job
-            monetizationUsagePublishInfo.setStartedTime(currentTimestamp);
-            apiAdmin.updateMonetizationUsagePublishInfo(monetizationUsagePublishInfo);
-            monetizationImpl.publishMonetizationUsageRecords(monetizationUsagePublishInfo);
-        } catch (Exception e) {
-            try {
-                //update the state and status of the job incase of any execptions
-                monetizationUsagePublishInfo.setState(APIConstants.Monetization.COMPLETED);
-                monetizationUsagePublishInfo.setStatus(APIConstants.Monetization.FAILED);
-                apiAdmin.updateMonetizationUsagePublishInfo(monetizationUsagePublishInfo);
-            } catch (APIManagementException ex) {
-                String errorMsg = "Failed to update the state of monetization ussge publisher";
-                log.error(errorMsg, ex);
-            }
-            String errorMsg = "Failed to publish monetization usage to billing Engine";
-            log.error(errorMsg, e);
-        }
     }
 }
