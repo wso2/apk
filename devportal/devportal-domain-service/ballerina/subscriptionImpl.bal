@@ -74,3 +74,18 @@ function getBusinessPlanByName(string policyName) returns string?|error {
     string?|error policy = getBusinessPlanByNameDAO(policyName);
     return policy;
 }
+
+function addMultipleSubscriptions(Subscription[] subscriptions, string org, string user) returns Subscription[]|error? {
+    Subscription[]|error? addedSubs = [];
+    foreach Subscription sub in subscriptions {
+        string?|Subscription|error subscriptionResponse = check addSubscription(sub, org, user);
+        if subscriptionResponse is Subscription {
+            if addedSubs is Subscription[] {
+                addedSubs.push(subscriptionResponse);
+            }
+        } else if subscriptionResponse is error {
+            return subscriptionResponse;
+        }
+    }
+    return addedSubs;
+}

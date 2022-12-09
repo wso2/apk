@@ -221,8 +221,16 @@ service /api/am/devportal on ep0 {
             return internalError;
         }
     }
-    // resource function post subscriptions/multiple(@http:Header string? 'x\-wso2\-tenant, @http:Payload Subscription[] payload) returns Subscription[]|BadRequestError|UnsupportedMediaTypeError {
-    // }
+    resource function post subscriptions/multiple(@http:Header string? 'x\-wso2\-tenant, @http:Payload Subscription[] payload) returns Subscription[]|BadRequestError|UnsupportedMediaTypeError|InternalServerErrorError|error {
+        Subscription[]|error? subscriptions = check addMultipleSubscriptions(payload, "carbon.super", "apkuser");
+        if subscriptions is Subscription[]  {
+            log:printDebug(subscriptions.toString());
+            return subscriptions;
+        } else {
+            InternalServerErrorError internalError = {body: {code: 90921, message: "Internal Error while adding Subscriptions"}};
+            return internalError;
+        }
+    }
     // resource function get subscriptions/[string apiId]/additionalInfo(string? groupId, @http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match, int offset = 0, int 'limit = 25) returns AdditionalSubscriptionInfoList|http:NotFound {
     // }
     // resource function get subscriptions/[string subscriptionId](@http:Header string? 'if\-none\-match) returns Subscription|http:NotModified|NotFoundError {
