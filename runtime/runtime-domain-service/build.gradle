@@ -16,7 +16,7 @@
  */
 
 plugins {
-    id 'net.researchgate.release' version '3.0.2'
+    id 'net.researchgate.release' version '2.8.0'
 }
 allprojects {
     group = project.group
@@ -26,16 +26,14 @@ def moduleVersion = project.version.replace("-SNAPSHOT", "")
 
 release {
     failOnPublishNeeded = false
-    pushReleaseVersionBranch = "true"
-    buildTasks = ['build']
     failOnSnapshotDependencies = true
-    versionPropertyFile = 'gradle.properties'
     tagTemplate = 'runtime-domain-service-$version'
 
     git {
-        requireBranch.set('main')
-        pushToRemote.set('origin')
-        pushToBranchPrefix.set('')
+        requireBranch= "main"
+        pushToRemote= "origin"
     }
 }
-build.dependsOn 'docker:build' 
+task build{
+ dependsOn("docker:build")
+}
