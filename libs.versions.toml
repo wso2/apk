@@ -40,13 +40,13 @@ cxf-rt-rs-service-description = {module = "org.apache.cxf:cxf-rt-rs-service-desc
 envoyproxy-controlplane = {module = "io.envoyproxy.controlplane:api", version.ref = "envoyproxy"}
 everit-json-schema = {module = "org.wso2.orbit.org.everit.json:org.everit.json.schema", version.ref = "everit"}
 geronimo = {module = "org.wso2.orbit.org.apache.geronimo.specs:geronimo-jms_1.1_spec", version.ref = "geronimo"}
-graphql = {module = "org.wso2.orbit.graphQL:graphQL", version.ref = "graphql"}
+graphql = {module = "com.graphql-java:graphql-java", version.ref = "graphql"}
 grpc-netty = {module = "io.grpc:grpc-netty-shaded", version.ref = "grpc"}
 grpc-protobuf = {module = "io.grpc:grpc-protobuf", version.ref = "grpc"}
 grpc-stub = {module = "io.grpc:grpc-stub", version.ref = "grpc"}
 gson = {module = "com.google.code.gson:gson", version.ref = "gson"}
 guava = {module = "com.google.guava:guava", version.ref = "guava"}
-handy-uri-templates = {module = "com.damnhandy.wso2:handy-uri-templates", version.ref = "wso2-damnhandy"}
+handy-uri-templates = {module = "com.damnhandy:handy-uri-templates", version.ref = "damnhandy"}
 hibernate-validator = {module = "org.hibernate:hibernate-validator", version.ref = "hibernate-validator"}
 hikaricp = {module = "com.zaxxer:HikariCP", version.ref = "hikari"}
 httpcomponents-client = {module = "org.apache.httpcomponents:httpclient", version.ref = "httpcomponents"}
@@ -58,7 +58,7 @@ jackson-datatype-guava = {module = "com.fasterxml.jackson.datatype:jackson-datat
 javax-cache = {module = "javax.cache:cache-api", version.ref = "javax-cache"}
 javax-validation-api = {module = "javax.validation:validation-api", version.ref = "javax-validation-api"}
 javax-xml-soap = {module = "javax.xml.soap:javax.xml.soap-api", version.ref = "javax-xml-soap"}
-json = {module = "org.json.wso2:json", version.ref = "org-json-wso2"}
+json = {module = "org.json:json", version.ref = "org-json"}
 json-simple = {module = "com.googlecode.json-simple.wso2:json-simple", version.ref = "json-simple-wso2"}
 junit = {module = "junit:junit", version.ref = "junit"}
 lmax-disruptor = {module = "org.wso2.orbit.com.lmax:disruptor", version.ref = "lmax"}
@@ -97,13 +97,10 @@ sun-saaj-impl = {module = "com.sun.xml.messaging.saaj:saaj-impl", version.ref = 
 swagger-annotations = {module = "io.swagger:swagger-annotations", version.ref = "io-swagger"}
 swagger-codegen = {module = "io.swagger:swagger-codegen", version.ref = "swagger-codegen"}
 swagger-core-v3 = {module = "io.swagger.core.v3:swagger-core", version.ref = "io-swagger-v3"}
-swagger-inflector = {module = "org.wso2.orbit.io.swagger:swagger-inflector", version.ref = "swagger-inflector"}
-swagger-inflector-oas3 = {module = "org.wso2.orbit.io.swagger:swagger-inflector-oas3", version.ref = "swagger-inflector-v3"}
+swagger-inflector-oas3 = {module = "io.swagger:swagger-inflector", version.ref = "swagger-inflector-v3"}
 swagger-jaxrs = {module = "io.swagger:swagger-jaxrs", version.ref = "swagger-jaxrs"}
-swagger-models = {module = "io.swagger:swagger-models", version.ref = "io-swagger"}
 swagger-models-v3 = {module = "io.swagger.core.v3:swagger-models", version.ref = "io-swagger-v3"}
-swagger-parser = {module = "org.wso2.orbit.io.swagger:swagger-parser", version.ref = "swagger-parser"}
-swagger-parser-v3 = {module = "org.wso2.orbit.io.swagger.v3:swagger-parser", version.ref = "swagger-parser-v3"}
+swagger-parser-v3 = {module = "io.swagger.parser.v3:swagger-parser", version.ref = "swagger-parser-v3"}
 tomcat = {module = "org.apache.tomcat:annotations-api", version.ref = "tomcat"}
 toml = {module = "com.moandjiezana.toml:toml4j", version.ref = "moandjiezana"}
 websocket = {module = "org.java-websocket:Java-WebSocket", version.ref = "websocket"}
@@ -146,7 +143,7 @@ cxf = "3.5.4"
 envoyproxy = "0.1.28"
 everit = "1.5.0.wso2.v2"
 geronimo = "1.1.1.wso2v1"
-graphql = "17.3.wso2v1"
+graphql = "19.2"
 grpc = "1.45.1"
 gson = "2.8.5"
 guava = "31.0.1-jre"
@@ -176,22 +173,20 @@ openapi-generator = "4.3.1.wso2v4"
 opentelemetry = "1.18.0"
 opentelemetry-jaeger-thrift = "1.6.0"
 opentelemetry-semconv = "1.18.0-alpha"
-org-json-wso2 = "3.0.0.wso2v1"
+org-json = "20220924"
 postgresql = "42.5.0"
 slf4j-ext = "1.7.29"
 snakeyaml = "1.28"
 sun = "1.5.3"
 swagger-codegen = "2.4.11"
-swagger-inflector = "1.0.16.wso2v1"
-swagger-inflector-v3 = "2.0.5.wso2v2"
+swagger-inflector-v3 = "2.0.8"
 swagger-jaxrs = "1.6.1"
-swagger-parser = "1.0.57.wso2v1"
-swagger-parser-v3 = "2.0.29.wso2v1"
+swagger-parser-v3 = "2.1.9"
 tomcat = "6.0.53"
 websocket = "1.5.3"
 wsdl4j = "1.6.3.wso2v3"
 wso2-analytics = "6.1.60"
-wso2-damnhandy = "2.1.6.wso2v2"
+damnhandy = "2.1.8"
 wso2-uri-templates = "1.6.5"
 xerces = "2.8.1.wso2v2"
 #Test dependencies

@@ -6,9 +6,6 @@ project(':ballerina').projectDir = file('ballerina')
 project(':docker').projectDir = file('docker')
 project(':java').projectDir = file('java')
 project(':java').name = "org.wso2.apk.runtime"
-if (!isRelease.toBoolean()) {
-    includeBuild '../../common-java-libs'
-}
 
 dependencyResolutionManagement {
     versionCatalogs {

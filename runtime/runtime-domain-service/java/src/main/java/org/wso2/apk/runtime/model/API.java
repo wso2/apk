@@ -1,6 +1,5 @@
 package org.wso2.apk.runtime.model;
 
-import org.wso2.apk.apimgt.api.model.URITemplate;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -12,6 +11,10 @@ public class API {
     private String version;
     private String type;
     private Set<URITemplate> uriTemplates = new HashSet<>();
+    private String apiSecurity;
+    private Set<Scope> scopes;
+    private String graphQLSchema;
+    private String swaggerDefinition;
 
     public String getType() {
         return type;
@@ -52,5 +55,37 @@ public class API {
     }
 
     public API() {
+    }
+
+    public void setApiSecurity(String apiSecurity) {
+        this.apiSecurity = apiSecurity;
+    }
+
+    public String getApiSecurity() {
+        return apiSecurity;
+    }
+
+    public Set<Scope> getScopes() {
+        return scopes;
+    }
+
+    public void setScopes(Set<Scope> scopes) {
+        this.scopes = scopes;
+    }
+
+    public String getGraphQLSchema() {
+        return graphQLSchema;
+    }
+
+    public void setGraphQLSchema(String graphQLSchema) {
+        this.graphQLSchema = graphQLSchema;
+    }
+
+    public String getSwaggerDefinition() {
+        return swaggerDefinition;
+    }
+
+    public void setSwaggerDefinition(String swaggerDefinition) {
+        this.swaggerDefinition = swaggerDefinition;
     }
 }
