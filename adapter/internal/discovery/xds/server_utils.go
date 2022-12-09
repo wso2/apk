@@ -34,7 +34,7 @@ func getEnvironmentsToBeDeleted(existingEnvs, deleteEnvs []string) (toBeDel []st
 	}
 	// otherwise delete env if it wished to
 	for _, existingEnv := range existingEnvs {
-		if stringutils.ArrayContains(deleteEnvs, existingEnv) {
+		if stringutils.StringInSlice(existingEnv, deleteEnvs) {
 			toBeDel = append(toBeDel, existingEnv)
 		} else {
 			toBeKept = append(toBeKept, existingEnv)

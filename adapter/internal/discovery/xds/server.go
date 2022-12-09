@@ -265,7 +265,7 @@ func deleteAPI(apiIdentifier string, environments []string, organizationID strin
 	toBeDelEnvs, toBeKeptEnvs := getEnvironmentsToBeDeleted(existingLabels, environments)
 
 	for _, val := range toBeDelEnvs {
-		isAllowedToDelete := stringutils.ArrayContains(existingLabels, val)
+		isAllowedToDelete := stringutils.StringInSlice(val, existingLabels)
 		if isAllowedToDelete {
 			// do not delete from all environments, hence do not clear routes, clusters, endpoints, enforcerAPIs
 			orgIDOpenAPIEnvoyMap[organizationID][apiIdentifier] = toBeKeptEnvs
@@ -335,7 +335,7 @@ func updateXdsCacheOnAPIChange(oldLabels []string, newLabels []string) bool {
 		}
 	}
 	for _, oldLabel := range oldLabels {
-		if !stringutils.ArrayContains(newLabels, oldLabel) {
+		if !stringutils.StringInSlice(oldLabel, newLabels) {
 			listeners, clusters, routes, endpoints, apis := GenerateEnvoyResoucesForLabel(oldLabel)
 			UpdateEnforcerApis(oldLabel, apis, "")
 			UpdateXdsCacheWithLock(oldLabel, endpoints, clusters, routes, listeners)
@@ -356,7 +356,7 @@ func GenerateEnvoyResoucesForLabel(label string) ([]types.Resource, []types.Reso
 
 	for organizationID, entityMap := range orgIDOpenAPIEnvoyMap {
 		for apiKey, labels := range entityMap {
-			if stringutils.ArrayContains(labels, label) {
+			if stringutils.StringInSlice(label, labels) {
 				vhost, err := ExtractVhostFromAPIIdentifier(apiKey)
 				if err != nil {
 					logger.LoggerXds.ErrorC(logging.ErrorDetails{
