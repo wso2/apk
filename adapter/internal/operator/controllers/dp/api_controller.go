@@ -226,7 +226,7 @@ func validateHTTPRouteRefs(ctx context.Context, client client.Client, namespace 
 // getAPIForHTTPRoute triggers the API controller reconcile method based on the changes detected
 // from HTTPRoute objects. If the changes are done for an API stored in the Operator Data store,
 // a new reconcile event will be created and added to the reconcile event queue.
-func (r *APIReconciler) getAPIForHTTPRoute(obj client.Object) []reconcile.Request {
+func (apiReconciler *APIReconciler) getAPIForHTTPRoute(obj client.Object) []reconcile.Request {
 	httpRoute, ok := obj.(*gwapiv1b1.HTTPRoute)
 	if !ok {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
@@ -237,7 +237,7 @@ func (r *APIReconciler) getAPIForHTTPRoute(obj client.Object) []reconcile.Reques
 		return []reconcile.Request{}
 	}
 
-	apiRef, found := r.ods.HTTPRouteToAPIRefs[utils.NamespacedName(httpRoute)]
+	apiRef, found := apiReconciler.ods.HTTPRouteToAPIRefs[utils.NamespacedName(httpRoute)]
 	if !found {
 		loggers.LoggerAPKOperator.Infof("API CR for HttpRoute not found: %v", httpRoute.Name)
 		return []reconcile.Request{}

@@ -225,12 +225,12 @@ func GetEnforcerThrottleDataCache() wso2_cache.SnapshotCache {
 	return enforcerThrottleDataCache
 }
 
-// DeleteAPIWithAPIMEvent deletes API with the given UUID from the given gw environments
-func DeleteAPICREvent(vHosts, labels []string, apiUuid string, organizationID string) error {
+// DeleteAPICREvent deletes API with the given UUID from the given gw environments
+func DeleteAPICREvent(vHosts, labels []string, apiUUID string, organizationID string) error {
 	mutexForInternalMapUpdate.Lock()
 	defer mutexForInternalMapUpdate.Unlock()
 	for _, vhost := range vHosts {
-		apiIdentifier := GenerateIdentifierForAPIWithUUID(vhost, apiUuid)
+		apiIdentifier := GenerateIdentifierForAPIWithUUID(vhost, apiUUID)
 		if err := deleteAPI(apiIdentifier, labels, organizationID); err != nil {
 			logger.LoggerXds.ErrorC(logging.ErrorDetails{
 				Message: fmt.Sprintf("Error undeploying API %v of Organization %v from environments %v",
@@ -239,15 +239,14 @@ func DeleteAPICREvent(vHosts, labels []string, apiUuid string, organizationID st
 				ErrorCode: 1410,
 			})
 			return err
-		} else {
-			// if no error, update internal vhost maps
-			// error only happens when API not found in deleteAPI func
-			logger.LoggerXds.Infof("Successfully undeployed the API %v under Organization %s and environment %s ",
-				apiIdentifier, organizationID, labels)
-			for _, environment := range labels {
-				// delete environment if exists
-				delete(apiUUIDToGatewayToVhosts[apiUuid], environment)
-			}
+		}
+		// if no error, update internal vhost maps
+		// error only happens when API not found in deleteAPI func
+		logger.LoggerXds.Infof("Successfully undeployed the API %v under Organization %s and environment %s ",
+			apiIdentifier, organizationID, labels)
+		for _, environment := range labels {
+			// delete environment if exists
+			delete(apiUUIDToGatewayToVhosts[apiUUID], environment)
 		}
 	}
 	return nil
