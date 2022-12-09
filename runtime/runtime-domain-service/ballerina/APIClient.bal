@@ -21,12 +21,11 @@ import ballerina/log;
 import ballerina/uuid;
 import runtime_domain_service.model;
 import runtime_domain_service.org.wso2.apk.runtime.model as runtimeModels;
-import runtime_domain_service.org.wso2.apk.apimgt.api.model as apkAPis;
 import runtime_domain_service.java.util as utilapis;
-import runtime_domain_service.org.wso2.apk.apimgt.api;
 import ballerina/jwt;
 import ballerina/regex;
 import runtime_domain_service.org.wso2.apk.runtime as runtimeUtil;
+import runtime_domain_service.org.wso2.apk.runtime.api as runtimeapi;
 
 public class APIClient {
 
@@ -507,7 +506,7 @@ public class APIClient {
         utilapis:Set uritemplatesSet = utilapis:newHashSet1();
         if api.operations is APIOperations[] {
             foreach APIOperations apiOperation in <APIOperations[]>api.operations {
-                apkAPis:URITemplate uriTemplate = apkAPis:newURITemplate1();
+                runtimeModels:URITemplate uriTemplate = runtimeModels:newURITemplate1();
                 uriTemplate.setUriTemplate(<string>apiOperation.target);
                 string? verb = apiOperation.verb;
                 if verb is string {
@@ -517,7 +516,7 @@ public class APIClient {
             }
         }
         api1.setUriTemplates(uritemplatesSet);
-        string?|api:APIManagementException retrievedDefinition = runtimeUtil:RuntimeAPICommonUtil_generateDefinition(api1);
+        string?|runtimeapi:APIManagementException retrievedDefinition = runtimeUtil:RuntimeAPICommonUtil_generateDefinition(api1);
         if retrievedDefinition is string {
             return retrievedDefinition;
         } else if retrievedDefinition is () {

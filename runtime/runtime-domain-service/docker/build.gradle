@@ -1,4 +1,5 @@
 apply from: "$projectDir/../../../common-gradle-scripts/docker.gradle"
+apply from: "$rootDir/../../common-gradle-scripts/copy.gradle"
 
 
 tasks.named('copy_dist').configure{

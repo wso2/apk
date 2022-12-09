@@ -1,9 +1,8 @@
 package org.wso2.apk.runtime;
 
-import org.wso2.apk.apimgt.api.APIDefinition;
-import org.wso2.apk.apimgt.impl.definitions.AsyncApiParser;
-import org.wso2.apk.apimgt.impl.definitions.OAS2Parser;
-import org.wso2.apk.apimgt.impl.definitions.OAS3Parser;
+import org.wso2.apk.runtime.api.APIDefinition;
+import org.wso2.apk.runtime.definitions.AsyncApiParser;
+import org.wso2.apk.runtime.definitions.OAS3Parser;
 import org.wso2.apk.runtime.model.API;
 
 import java.util.ArrayList;
@@ -18,16 +17,24 @@ public class DefinitionParserFactory {
     static {
         parsers.add(new AsyncApiParser());
         parsers.add(new OAS3Parser());
-        parsers.add(new OAS2Parser());
 
     }
 
     public static APIDefinition getParser(API api) {
         if ("HTTP".equals(api.getType())) {
             return new OAS3Parser();
-        } else {
+        } else if ("ASYNC".equals(api.getType())){
             return new AsyncApiParser();
         }
+        return null;
+    }
+    public static APIDefinition getParser(String apiType) {
+        if ("HTTP".equals(apiType)) {
+            return new OAS3Parser();
+        } else if ("ASYNC".equals(apiType)){
+            return new AsyncApiParser();
+        }
+        return null;
     }
 
     public static APIDefinition getValidatedParser(String definition) {

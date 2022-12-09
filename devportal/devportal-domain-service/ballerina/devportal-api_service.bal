@@ -206,8 +206,21 @@ service /api/am/devportal on ep0 {
     // }
     // resource function get subscriptions(string? apiId, string? applicationId, string? groupId, @http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match, int offset = 0, int 'limit = 25) returns SubscriptionList|http:NotModified|NotAcceptableError {
     // }
-    // resource function post subscriptions(@http:Header string? 'x\-wso2\-tenant, @http:Payload Subscription payload) returns CreatedSubscription|AcceptedWorkflowResponse|BadRequestError|UnsupportedMediaTypeError {
-    // }
+    resource function post subscriptions(@http:Header string? 'x\-wso2\-tenant, @http:Payload Subscription payload) returns CreatedSubscription|AcceptedWorkflowResponse|BadRequestError|UnsupportedMediaTypeError|InternalServerErrorError|error {
+        string?|Subscription|error subscription = check addSubscription(payload, "carbon.super", "apkuser");
+        if subscription is string {
+            json j = check value:fromJsonString(subscription);
+            CreatedSubscription createdSub = {body: check j.cloneWithType(Subscription)};
+            return createdSub;
+        } else if subscription is Subscription  {
+            CreatedSubscription createdSub = {body: check subscription.cloneWithType(Subscription)};
+            log:printDebug(subscription.toString());
+            return createdSub;
+        } else {
+            InternalServerErrorError internalError = {body: {code: 90921, message: "Internal Error while adding Subscription"}};
+            return internalError;
+        }
+    }
     // resource function post subscriptions/multiple(@http:Header string? 'x\-wso2\-tenant, @http:Payload Subscription[] payload) returns Subscription[]|BadRequestError|UnsupportedMediaTypeError {
     // }
     // resource function get subscriptions/[string apiId]/additionalInfo(string? groupId, @http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match, int offset = 0, int 'limit = 25) returns AdditionalSubscriptionInfoList|http:NotFound {
