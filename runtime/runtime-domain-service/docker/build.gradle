@@ -6,9 +6,12 @@ tasks.named('copy_dist').configure{
     finalizedBy docker_build
 }
 
-tasks.register('build') {
+task build{
     group 'build'
     description 'Build docker image'
     dependsOn 'copy_dist'
     dependsOn 'docker_build'
 }
+
+build.dependsOn ":org.wso2.apk.runtime:build"
+build.dependsOn ":ballerina:build"

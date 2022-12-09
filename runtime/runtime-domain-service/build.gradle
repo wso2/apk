@@ -18,11 +18,24 @@
 plugins {
     id 'net.researchgate.release' version '3.0.2'
 }
+allprojects {
+    group = project.group
+    version = project.version
+}
+def moduleVersion = project.version.replace("-SNAPSHOT", "")
 
-// apply from: "$rootDir/../common-gradle-scripts/docker.gradle"
+release {
+    failOnPublishNeeded = false
+    pushReleaseVersionBranch = "true"
+    buildTasks = ['build']
+    failOnSnapshotDependencies = true
+    versionPropertyFile = 'gradle.properties'
+    tagTemplate = 'runtime-domain-service-$version'
 
-// release {
-//     tagTemplate = '${project.name}-${project.version}'
-// }
-
-// afterReleaseBuild.dependsOn docker_push
+    git {
+        requireBranch.set('main')
+        pushToRemote.set('origin')
+        pushToBranchPrefix.set('')
+    }
+}
+build.dependsOn 'docker:build' 
