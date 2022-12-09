@@ -19,13 +19,8 @@
 import ballerina/http;
 import ballerina/constraint;
 
-public type NotAcceptableError record {|
-    *http:NotAcceptable;
-    Error body;
-|};
-
-public type UnsupportedMediaTypeError record {|
-    *http:UnsupportedMediaType;
+public type InternalServerErrorError record {|
+    *http:InternalServerError;
     Error body;
 |};
 
@@ -36,11 +31,6 @@ public type ForbiddenError record {|
 
 public type ConflictError record {|
     *http:Conflict;
-    Error body;
-|};
-
-public type InternalServerErrorError record {|
-    *http:InternalServerError;
     Error body;
 |};
 
@@ -64,11 +54,6 @@ public type BadRequestError record {|
     Error body;
 |};
 
-public type UnauthorizedError record {|
-    *http:Unauthorized;
-    Error body;
-|};
-
 public type ErrorListItem record {
     string code;
     # Description about individual errors occurred
@@ -82,8 +67,26 @@ public type MediationPolicy record {
     string 'type?;
 };
 
-public type ApiServiceinfo record {
-    string name?;
+public type Apis_importdefinition_body record {
+    # Definition to upload as a file
+    string file?;
+    # Definition url
+    string url?;
+    # Additional attributes specified as a stringified JSON with API's schema
+    string additionalProperties?;
+    # Inline content of the API definition
+    string inlineAPIDefinition?;
+};
+
+public type Apis_validatedefinition_body record {
+    # API definition definition url
+    string url?;
+    # API definition as a file
+    string file?;
+    # API definition type - OpenAPI/AsyncAPI/GraphQL
+    string 'type?;
+    # Inline content of the API definition
+    string inlineAPIDefinition?;
 };
 
 public type Pagination record {
@@ -101,6 +104,15 @@ public type Pagination record {
 public type GatewayList record {
     Gateway[] list?;
     Pagination pagination?;
+};
+
+public type ApiId_definition_body record {
+    # API definition of the API
+    string apiDefinition?;
+    # API definition URL of the API
+    string url?;
+    # API definitio as a file
+    string file?;
 };
 
 public type Gateway record {
@@ -147,40 +159,29 @@ public type PortMapping record {
     int port;
 };
 
-public type ApisImportdefinitionBody record {
-    # Definition to upload as a file
-    string file?;
-    # Definition url
-    string url?;
-    # Additional attributes specified as a stringified JSON with API's schema
-    string additionalProperties?;
-    # Inline content of the API definition
-    string inlineAPIDefinition?;
-};
-
-public type ApiidDefinitionBody record {
-    # API definition of the API
-    string apiDefinition?;
-    # API definition URL of the API
-    string url?;
-    # API definitio as a file
-    string file?;
-};
-
-public type ApisValidatedefinitionBody record {
-    # API definition definition url
-    string url?;
-    # API definition as a file
-    string file?;
-    # API definition type - OpenAPI/AsyncAPI/GraphQL
-    string 'type?;
-    # Inline content of the API definition
-    string inlineAPIDefinition?;
+# API definition information
+public type APIDefinitionValidationResponse_info record {
+    # Name of the API
+    string name?;
+    # Version of the API
+    string 'version?;
+    # Context of the API
+    string context?;
+    # Description of the API
+    string description?;
+    # OpenAPI Version.
+    string openAPIVersion?;
+    # contains host/servers specified in the API definition file/URL
+    string[] endpoints?;
 };
 
 public type ServiceList record {
     Service[] list?;
     Pagination pagination?;
+};
+
+public type API_serviceInfo record {
+    string name?;
 };
 
 public type APIInfo record {
@@ -216,6 +217,7 @@ public type Service record {
     string namespace;
     string 'type;
     PortMapping[] portmapping?;
+    string createdTime?;
 };
 
 public type SearchResult record {
@@ -236,7 +238,7 @@ public type APIDefinitionValidationResponse record {
     # OpenAPI definition content.
     string content?;
     # API definition information
-    ApidefinitionvalidationresponseInfo info?;
+    APIDefinitionValidationResponse_info info?;
     # If there are more than one error list them out.
     # For example, list out validation errors by each field.
     ErrorListItem[] errors?;
@@ -248,16 +250,16 @@ public type APIKey record {
     int validityTime?;
 };
 
-public type ApisImportBody record {
-    # Zip archive consisting on exported API configuration
-    string file;
-};
-
 public type OperationPolicy record {
     string policyName;
     string policyVersion = "v1";
     string policyId?;
     record {} parameters?;
+};
+
+public type Apis_import_body record {
+    # Zip archive consisting on exported API configuration
+    string file;
 };
 
 public type API record {
@@ -285,23 +287,7 @@ public type API record {
     #   }
     record {} endpointConfig?;
     APIOperations[] operations?;
-    ApiServiceinfo serviceInfo?;
+    API_serviceInfo serviceInfo?;
     string createdTime?;
     string lastUpdatedTime?;
-};
-
-# API definition information
-public type ApidefinitionvalidationresponseInfo record {
-    # Name of the API
-    string name?;
-    # Version of the API
-    string 'version?;
-    # Context of the API
-    string context?;
-    # Description of the API
-    string description?;
-    # OpenAPI Version.
-    string openAPIVersion?;
-    # contains host/servers specified in the API definition file/URL
-    string[] endpoints?;
 };
