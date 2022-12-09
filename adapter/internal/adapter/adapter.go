@@ -37,7 +37,7 @@ import (
 	"github.com/wso2/apk/adapter/pkg/health"
 	healthservice "github.com/wso2/apk/adapter/pkg/health/api/wso2/health/service"
 	"github.com/wso2/apk/adapter/pkg/logging"
-	"github.com/wso2/apk/adapter/pkg/tlsutils"
+	"github.com/wso2/apk/adapter/pkg/utils/tlsutils"
 
 	"context"
 	"flag"

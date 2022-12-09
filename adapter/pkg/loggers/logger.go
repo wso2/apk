@@ -34,9 +34,9 @@ When you add a new logger instance add the related package name as a constant
 const (
 	pkgAuth      = "github.com/wso2/apk/adapter/pkg/auth"
 	pkgSync      = "github.com/wso2/apk/adapter/pkg/synchronizer"
-	pkgTLSUtils  = "github.com/wso2/apk/adapter/pkg/tlsutils"
+	pkgTLSUtils  = "github.com/wso2/apk/adapter/pkg/utils/tlsutils"
 	pkgHealth    = "github.com/wso2/apk/adapter/pkg/health"
-	pkgSoapUtils = "github.com/wso2/apk/adapter/pkg/soaputils"
+	pkgSoapUtils = "github.com/wso2/apk/adapter/pkg/utils/soaputils"
 )
 
 // logger package references

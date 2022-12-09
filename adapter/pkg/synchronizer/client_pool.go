@@ -24,7 +24,7 @@ import (
 	"time"
 
 	"github.com/wso2/apk/adapter/pkg/loggers"
-	"github.com/wso2/apk/adapter/pkg/tlsutils"
+	"github.com/wso2/apk/adapter/pkg/utils/tlsutils"
 )
 
 type worker struct {

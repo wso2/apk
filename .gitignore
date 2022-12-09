@@ -47,6 +47,7 @@ adapter/internal/operator/bin/*
 helm-charts/charts/
 
 # Adapter API temporary target
-Adapter/api/target
+adapter/api/target
+adapter/main
 
 .java-version

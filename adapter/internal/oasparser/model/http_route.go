@@ -109,7 +109,9 @@ func getAllowedOperations(httpMethod *gwapiv1b1.HTTPMethod, policies OperationPo
 // SetInfoAPICR populates ID, ApiType, Version and XWso2BasePath of mgwSwagger.
 func (swagger *MgwSwagger) SetInfoAPICR(api dpv1alpha1.API) error {
 	swagger.UUID = string(api.ObjectMeta.UID)
+	//TODO (amali) why id = APIDisplayName?
 	swagger.id = api.Spec.APIDisplayName
+	swagger.title = api.Spec.APIDisplayName
 	swagger.apiType = api.Spec.APIType
 	swagger.version = api.Spec.APIVersion
 	swagger.xWso2Basepath = api.Spec.Context
@@ -136,8 +138,8 @@ func (swagger *MgwSwagger) ValidateIR() error {
 	if swagger.xWso2Basepath == "" {
 		errs = multierror.Append(errs, errors.New("api basepath not found"))
 	}
-	if (swagger.productionEndpoints != nil && len(swagger.productionEndpoints.Endpoints) == 0) ||
-		(swagger.sandboxEndpoints != nil && len(swagger.sandboxEndpoints.Endpoints) == 0) {
+	if (swagger.productionEndpoints == nil || len(swagger.productionEndpoints.Endpoints) == 0) &&
+		(swagger.sandboxEndpoints == nil || len(swagger.sandboxEndpoints.Endpoints) == 0) {
 		errs = multierror.Append(errs, errors.New("no endpoints provided"))
 	}
 	if len(swagger.resources) == 0 {

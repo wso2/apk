@@ -24,7 +24,7 @@ import (
 	"github.com/wso2/apk/adapter/internal/discovery/xds"
 	"github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/pkg/logging"
-	"k8s.io/apimachinery/pkg/api/errors"
+	k8error "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -102,7 +102,7 @@ func (applicationReconciler *ApplicationReconciler) Reconcile(ctx context.Contex
 	applicationKey := req.NamespacedName
 	var application = new(cpv1alpha1.Application)
 	if err := applicationReconciler.client.Get(ctx, applicationKey, application); err != nil {
-		if errors.IsNotFound(err) {
+		if k8error.IsNotFound(err) {
 			// The application doesn't exist in the applicationCache, remove it
 			delete(applicationReconciler.applicationCache, applicationKey)
 			loggers.LoggerAPKOperator.Info("Application deleted from application cache")

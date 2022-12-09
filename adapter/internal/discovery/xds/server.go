@@ -40,27 +40,22 @@ import (
 	"github.com/wso2/apk/adapter/config"
 	apiModel "github.com/wso2/apk/adapter/internal/api/models"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
-	"github.com/wso2/apk/adapter/internal/notifier"
 	oasParser "github.com/wso2/apk/adapter/internal/oasparser"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
 	"github.com/wso2/apk/adapter/internal/oasparser/envoyconf"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
-	"github.com/wso2/apk/adapter/internal/svcdiscovery"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/subscription"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/throttle"
 	wso2_cache "github.com/wso2/apk/adapter/pkg/discovery/protocol/cache/v3"
 	wso2_resource "github.com/wso2/apk/adapter/pkg/discovery/protocol/resource/v3"
 	eventhubTypes "github.com/wso2/apk/adapter/pkg/eventhub/types"
 	"github.com/wso2/apk/adapter/pkg/logging"
-	"github.com/wso2/apk/adapter/pkg/synchronizer"
+	"github.com/wso2/apk/adapter/pkg/utils/stringutils"
 )
 
 var (
-	version int32
 	// TODO: (VirajSalaka) Remove Unused mutexes.
-	mutexForXdsUpdate   sync.Mutex
-	mutexForCacheUpdate sync.Mutex
-
+	mutexForXdsUpdate         sync.Mutex
 	mutexForInternalMapUpdate sync.Mutex
 
 	cache                              envoy_cachev3.SnapshotCache
@@ -87,8 +82,6 @@ var (
 	orgIDOpenAPIEndpointsMap    map[string]map[string][]*corev3.Address    // organizationID -> Vhost:API_UUID -> Envoy Endpoints map
 	orgIDOpenAPIEnforcerApisMap map[string]map[string]types.Resource       // organizationID -> Vhost:API_UUID -> API Resource map
 	orgIDvHostBasepathMap       map[string]map[string]string               // organizationID -> Vhost:basepath -> Vhost:API_UUID
-
-	reverseAPINameVersionMap map[string]string
 
 	// Envoy Label as map key
 	envoyListenerConfigMap map[string][]*listenerv3.Listener      // GW-Label -> Listener Configuration map
@@ -163,8 +156,6 @@ func init() {
 	orgIDOpenAPIEnforcerApisMap = make(map[string]map[string]types.Resource)   // organizationID -> Vhost:API_UUID -> API Resource map
 	orgIDvHostBasepathMap = make(map[string]map[string]string)
 
-	reverseAPINameVersionMap = make(map[string]string)
-
 	enforcerConfigMap = make(map[string][]types.Resource)
 	enforcerKeyManagerMap = make(map[string][]types.Resource)
 	enforcerSubscriptionMap = make(map[string][]types.Resource)
@@ -234,526 +225,31 @@ func GetEnforcerThrottleDataCache() wso2_cache.SnapshotCache {
 	return enforcerThrottleDataCache
 }
 
-// DeployReadinessAPI Method to set the status after the last api is fected and updated in router.
-func DeployReadinessAPI(envs []string) {
-	logger.LoggerXds.Infof("Finished fetching APIs from the Control Plane. Deploying the readiness endpoint...")
-	isReady = true
-	for _, env := range envs {
-		listeners, clusters, routes, endpoints, apis := GenerateEnvoyResoucesForLabel(env)
-		UpdateXdsCacheWithLock(env, endpoints, clusters, routes, listeners)
-		UpdateEnforcerApis(env, apis, "")
-	}
-}
-
-// UpdateAPI updates the Xds Cache when OpenAPI Json content is provided
-func UpdateAPI(vHost string, apiProject model.ProjectAPI, environments []string) (*notifier.DeployedAPIRevision, error) {
-	var mgwSwagger model.MgwSwagger
-	var deployedRevision *notifier.DeployedAPIRevision
-	var err error
-	var newLabels []string
-	apiYaml := apiProject.APIYaml.Data
-
-	// handle panic
-	defer func() {
-		if r := recover(); r != nil {
-			panic(fmt.Sprintf("Error encountered while applying API %v:%v to %v.", apiYaml.Name, apiYaml.Version, vHost))
-		}
-	}()
-
-	if len(environments) == 0 {
-		environments = []string{config.DefaultGatewayName}
-	}
-
-	var apiEnvProps synchronizer.APIEnvProps
-
-	// TODO(amali) under the assumption vhost has one environment at the moment
-	if apiEnvPropsV, found := apiProject.APIEnvProps[environments[0]]; found {
-		apiEnvProps = apiEnvPropsV
-	}
-
-	err = apiProject.APIYaml.ValidateAPIType()
-	if err != nil {
-		logger.LoggerXds.Error("Error while populating swagger from api.yaml. ", err)
-		return nil, err
-	}
-
-	err = mgwSwagger.PopulateFromAPIYaml(apiProject.APIYaml)
-	if err != nil {
-		return nil, err
-	}
-
-	err = mgwSwagger.GetMgwSwagger(apiProject.APIDefinition)
-	if err != nil {
-		logger.LoggerXds.Error("Error while populating swagger from api definition. ", err)
-		return nil, err
-	}
-
-	// Set the following in case they were overridden by the above line
-	mgwSwagger.SetID(apiYaml.ID)
-	mgwSwagger.SetName(apiYaml.Name)
-	mgwSwagger.SetVersion(apiYaml.Version)
-
-	if apiYaml.APIType == constants.HTTP {
-		// avoid the following for AsyncAPI types
-		// the following will be used for APIM specific security config.
-		// it will enable folowing securities globally for the API, overriding swagger securities.
-		isYamlAPIKey := false
-		isYamlOauth := false
-		isYamlMutualssl := false
-		isYamlMutualsslMandatory := false
-		isYamlOauthBasicAuthAPIKeyMandatory := false
-		for _, value := range apiYaml.SecurityScheme {
-			switch value {
-			case constants.APIMAPIKeyType:
-				logger.LoggerXds.Debugf("API key is enabled in api.yaml for API %v:%v", apiYaml.Name, apiYaml.Version)
-				isYamlAPIKey = true
-			case constants.APIMOauth2Type:
-				logger.LoggerXds.Debugf("Oauth2 is enabled in api.yaml for API %v:%v", apiYaml.Name, apiYaml.Version)
-				isYamlOauth = true
-			case constants.APIMMutualSSLType:
-				logger.LoggerXds.Debugf("Mutual SSL is enabled in api.yaml for API %v:%v", apiYaml.Name, apiYaml.Version)
-				isYamlMutualssl = true
-			case constants.APIMMutualSSLMandatoryType:
-				logger.LoggerXds.Debugf("Mutual SSL Mandatory is enabled in api.yaml for API %v:%v", apiYaml.Name, apiYaml.Version)
-				isYamlMutualsslMandatory = true
-			case constants.APIOauthBasicAuthAPIKeyMandatoryType:
-				isYamlOauthBasicAuthAPIKeyMandatory = true
-			}
-		}
-		mgwSwagger.SanitizeAPISecurity(isYamlAPIKey, isYamlOauth, isYamlMutualssl, isYamlMutualsslMandatory, isYamlOauthBasicAuthAPIKeyMandatory)
-		err = mgwSwagger.SetOperationPolicies(apiProject)
-		if err != nil {
-			logger.LoggerOasparser.ErrorC(logging.ErrorDetails{
-				Message: fmt.Sprintf("Error while populating operational policies for the API %s:%s of Organization %s. %s",
-					apiYaml.Name, apiYaml.Version, apiYaml.OrganizationID, err),
-				Severity:  logging.MINOR,
-				ErrorCode: 1416,
-			})
-			return nil, err
-		}
-	}
-
-	if apiYaml.APIType == constants.GRAPHQL {
-		mgwSwagger.GraphQLComplexities = apiProject.GraphQLComplexities
-	}
-	mgwSwagger.SetXWso2AuthHeader(apiYaml.AuthorizationHeader)
-	mgwSwagger.SetEnvLabelProperties(apiEnvProps)
-	mgwSwagger.OrganizationID = apiYaml.OrganizationID
-	organizationID := apiYaml.OrganizationID
-	apiHashValue := generateHashValue(apiYaml.Name, apiYaml.Version)
-
-	if mgwSwagger.GetProdEndpoints() != nil {
-		mgwSwagger.GetProdEndpoints().SetEndpointsConfig(apiYaml.EndpointConfig.ProductionEndpoints)
-		if !mgwSwagger.GetProdEndpoints().SecurityConfig.Enabled && apiYaml.EndpointConfig.APIEndpointSecurity.Production.Enabled {
-			mgwSwagger.GetProdEndpoints().SecurityConfig = apiYaml.EndpointConfig.APIEndpointSecurity.Production
-		}
-	}
-
-	if mgwSwagger.GetSandEndpoints() != nil {
-		mgwSwagger.GetSandEndpoints().SetEndpointsConfig(apiYaml.EndpointConfig.SandBoxEndpoints)
-		if !mgwSwagger.GetSandEndpoints().SecurityConfig.Enabled && apiYaml.EndpointConfig.APIEndpointSecurity.Sandbox.Enabled {
-			mgwSwagger.GetSandEndpoints().SecurityConfig = apiYaml.EndpointConfig.APIEndpointSecurity.Sandbox
-		}
-	}
-
-	mgwSwagger.SetEnvVariables(apiHashValue)
-
-	validationErr := mgwSwagger.Validate()
-	if validationErr != nil {
-		logger.LoggerOasparser.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("Swagger validation failed for the API %s:%s of Organization %s", apiYaml.Name, apiYaml.Version, organizationID),
-			Severity:  logging.MINOR,
-			ErrorCode: 1405,
-		})
-		return nil, validationErr
-	}
-
-	// create client map for API
-	var clientCerts []model.Certificate
-	if len(apiProject.ClientCerts) > 0 && len(apiProject.DownstreamCerts) > 0 {
-		for _, certFile := range apiProject.ClientCerts {
-			var certificate model.Certificate
-			if certBytes, found := apiProject.DownstreamCerts[certFile.CertificateName]; found {
-				certificate.Alias = certFile.Alias
-				certificate.Tier = certFile.Tier
-				certificate.Content = certBytes
-				clientCerts = append(clientCerts, certificate)
-				delete(apiProject.DownstreamCerts, certFile.CertificateName)
-			} else {
-				logger.LoggerXds.ErrorC(logging.ErrorDetails{
-					Message: fmt.Sprintf("Certificate file %v not found for the alias %v in the API %s - %s:%s", certFile.CertificateName,
-						certFile.Alias, apiYaml.ID, apiYaml.Name, apiYaml.Version),
-					Severity:  logging.MINOR,
-					ErrorCode: 1415,
-				})
-			}
-		}
-	}
-
-	mgwSwagger.SetClientCerts(clientCerts)
-
-	// -------- Finished updating mgwSwagger struct
-
-	uniqueIdentifier := apiYaml.ID
-
-	if uniqueIdentifier == "" {
-		// If API is imported from apictl generate hash as the unique ID
-		uniqueIdentifier = GenerateHashedAPINameVersionIDWithoutVhost(apiYaml.Name, apiYaml.Version)
-	}
-
-	reverseAPINameVersionMap[GenerateIdentifierForAPIWithoutVhost(apiYaml.Name, apiYaml.Version)] = uniqueIdentifier
-	apiIdentifier := GenerateIdentifierForAPIWithUUID(vHost, uniqueIdentifier)
-
+// DeleteAPICREvent deletes API with the given UUID from the given gw environments
+func DeleteAPICREvent(vHosts, labels []string, apiUUID string, organizationID string) error {
 	mutexForInternalMapUpdate.Lock()
 	defer mutexForInternalMapUpdate.Unlock()
-
-	// -------- Begin updating maps
-
-	err = addBasepathToMap(mgwSwagger, organizationID, vHost, apiIdentifier)
-	if err != nil {
-		return nil, err
-	}
-
-	// Get the map from organizationID map.
-	if _, ok := orgIDAPIMgwSwaggerMap[organizationID]; ok {
-		orgIDAPIMgwSwaggerMap[organizationID][apiIdentifier] = mgwSwagger
-	} else {
-		mgwSwaggerMap := make(map[string]model.MgwSwagger)
-		mgwSwaggerMap[apiIdentifier] = mgwSwagger
-		orgIDAPIMgwSwaggerMap[organizationID] = mgwSwaggerMap
-	}
-
-	//TODO: (VirajSalaka) Handle OpenAPIs which does not have label (Current Impl , it will be labelled as default)
-	// TODO: commented the following line as the implementation is not supported yet.
-	//newLabels = model.GetXWso2Label(openAPIV3Struct.ExtensionProps)
-	//:TODO: since currently labels are not taking from x-wso2-label, I have made it to be taken from the method
-	// argument.
-	newLabels = environments
-	logger.LoggerXds.Infof("Added/Updated the content for Organization : %v under OpenAPI Key : %v", organizationID, apiIdentifier)
-	logger.LoggerXds.Debugf("Newly added labels for Organization : %v for the OpenAPI Key : %v are %v", organizationID, apiIdentifier, newLabels)
-	oldLabels, _ := orgIDOpenAPIEnvoyMap[organizationID][apiIdentifier]
-	logger.LoggerXds.Debugf("Already existing labels for the OpenAPI Key : %v are %v", apiIdentifier, oldLabels)
-
-	if _, ok := orgIDOpenAPIEnvoyMap[organizationID]; ok {
-		orgIDOpenAPIEnvoyMap[organizationID][apiIdentifier] = newLabels
-	} else {
-		openAPIEnvoyMap := make(map[string][]string)
-		openAPIEnvoyMap[apiIdentifier] = newLabels
-		orgIDOpenAPIEnvoyMap[organizationID] = openAPIEnvoyMap
-	}
-	updateVhostInternalMaps(apiYaml.ID, apiYaml.Name, apiYaml.Version, vHost, newLabels)
-
-	// create cert map for API
-	certMap := make(map[string][]byte)
-	interceptCertMap := make(map[string][]byte)
-	if len(apiProject.EndpointCerts) > 0 && len(apiProject.UpstreamCerts) > 0 {
-		for url, certFile := range apiProject.EndpointCerts {
-			if certBytes, found := apiProject.UpstreamCerts[certFile]; found {
-				certMap[url] = certBytes
-				interceptCertMap[url] = certBytes
-				delete(apiProject.UpstreamCerts, certFile)
-			} else {
-				logger.LoggerXds.ErrorC(logging.ErrorDetails{
-					Message:   fmt.Sprintf("Certificate file %v not found for the url %v", certFile, url),
-					Severity:  logging.MAJOR,
-					ErrorCode: 1406,
-				})
-			}
-		}
-	}
-	newLineByteArray := []byte("\n")
-	for _, certBytes := range apiProject.UpstreamCerts {
-		certMap["default"] = append(certMap["default"], certBytes...)
-		certMap["default"] = append(certMap["default"], newLineByteArray...)
-	}
-	interceptCertMap["default"] = apiProject.InterceptorCerts
-
-	routes, clusters, endpoints, err := oasParser.GetRoutesClustersEndpoints(mgwSwagger, certMap,
-		interceptCertMap, vHost, organizationID)
-	if err != nil {
-		return nil, fmt.Errorf("Error while deploying API. Name: %s Version: %s, OrgID: %s, Error: %s",
-			mgwSwagger.GetTitle(), mgwSwagger.GetVersion(), organizationID, err.Error())
-	}
-
-	if _, ok := orgIDOpenAPIRoutesMap[organizationID]; ok {
-		orgIDOpenAPIRoutesMap[organizationID][apiIdentifier] = routes
-	} else {
-		routesMap := make(map[string][]*routev3.Route)
-		routesMap[apiIdentifier] = routes
-		orgIDOpenAPIRoutesMap[organizationID] = routesMap
-	}
-
-	if _, ok := orgIDOpenAPIClustersMap[organizationID]; ok {
-		orgIDOpenAPIClustersMap[organizationID][apiIdentifier] = clusters
-	} else {
-		clustersMap := make(map[string][]*clusterv3.Cluster)
-		clustersMap[apiIdentifier] = clusters
-		orgIDOpenAPIClustersMap[organizationID] = clustersMap
-	}
-
-	if _, ok := orgIDOpenAPIEndpointsMap[organizationID]; ok {
-		orgIDOpenAPIEndpointsMap[organizationID][apiIdentifier] = endpoints
-	} else {
-		endpointMap := make(map[string][]*corev3.Address)
-		endpointMap[apiIdentifier] = endpoints
-		orgIDOpenAPIEndpointsMap[organizationID] = endpointMap
-	}
-
-	if _, ok := orgIDOpenAPIEnforcerApisMap[organizationID]; ok {
-		orgIDOpenAPIEnforcerApisMap[organizationID][apiIdentifier] = oasParser.GetEnforcerAPI(mgwSwagger, vHost)
-	} else {
-		enforcerAPIMap := make(map[string]types.Resource)
-		enforcerAPIMap[apiIdentifier] = oasParser.GetEnforcerAPI(mgwSwagger, vHost)
-		orgIDOpenAPIEnforcerApisMap[organizationID] = enforcerAPIMap
-	}
-
-	// TODO: (VirajSalaka) Fault tolerance mechanism implementation
-	revisionStatus := updateXdsCacheOnAPIAdd(oldLabels, newLabels)
-	if revisionStatus {
-		// send updated revision to control plane
-		deployedRevision = notifier.UpdateDeployedRevisions(apiYaml.ID, apiYaml.RevisionID, environments,
-			vHost)
-	}
-	if svcdiscovery.IsServiceDiscoveryEnabled {
-		startConsulServiceDiscovery(organizationID) //consul service discovery starting point
-	}
-	return deployedRevision, nil
-}
-
-// GetAllEnvironments returns all the environments merging new environments with already deployed environments
-// of the given vhost of the API
-func GetAllEnvironments(apiUUID, vhost string, newEnvironments []string) []string {
-	// allEnvironments represent all the environments the API should be deployed
-	allEnvironments := newEnvironments
-	if existingEnvs, exists := apiUUIDToGatewayToVhosts[apiUUID]; exists {
-		for env, vh := range existingEnvs {
-			// update allEnvironments with already existing environments
-			if vh == vhost && !arrayContains(allEnvironments, env) {
-				allEnvironments = append(allEnvironments, env)
-			}
-		}
-	}
-	return allEnvironments
-}
-
-// GetDeployedEnvironments returns all the environments the API with `apiUUID` is deployed to
-func GetDeployedEnvironments(apiUUID string) []string {
-	var envs []string
-	if envMap, ok := apiUUIDToGatewayToVhosts[apiUUID]; ok {
-		envs = make([]string, 0, len(envMap))
-		for k := range envMap {
-			envs = append(envs, k)
-		}
-	}
-	return envs
-}
-
-// GetVhostOfAPI returns the vhost of API deployed in the given gateway environment
-func GetVhostOfAPI(apiUUID, environment string) (vhost string, exists bool) {
-	if envToVhost, ok := apiUUIDToGatewayToVhosts[apiUUID]; ok {
-		vhost, exists = envToVhost[environment]
-		return
-	}
-	return "", false
-}
-
-func addBasepathToMap(mgwSwagger model.MgwSwagger, organizationID, vHost, apiIdentifier string) error {
-	newBasepath := mgwSwagger.GetXWso2Basepath()
-
-	// Check if the basepath exists
-	if existingAPIIdentifier, ok := orgIDvHostBasepathMap[organizationID][vHost+":"+newBasepath]; ok {
-		// Check if it is NOT just an update for the already existing API
-		if existingAPIIdentifier != apiIdentifier {
+	for _, vhost := range vHosts {
+		apiIdentifier := GenerateIdentifierForAPIWithUUID(vhost, apiUUID)
+		if err := deleteAPI(apiIdentifier, labels, organizationID); err != nil {
 			logger.LoggerXds.ErrorC(logging.ErrorDetails{
-				Message:   fmt.Sprintf("An API exists with the same basepath. Basepath: %v Existing_API: %v New_API: %v orgID: %v VHost: %v", newBasepath, existingAPIIdentifier, apiIdentifier, organizationID, vHost),
-				Severity:  logging.MINOR,
-				ErrorCode: 1407,
-			})
-			err := errors.New("An API exists with the same basepath. Existing_API: " + existingAPIIdentifier + "New_API:" + apiIdentifier +
-				" orgID: " + organizationID + " VHost: " + vHost)
-			return err
-		}
-	}
-
-	// Remove the old basepath anyway
-	if oldMgwSwagger, ok := orgIDAPIMgwSwaggerMap[organizationID][apiIdentifier]; ok {
-		oldBasepath := oldMgwSwagger.GetXWso2Basepath()
-		delete(orgIDvHostBasepathMap[organizationID], vHost+":"+oldBasepath)
-	}
-
-	// Add the new basepath
-	if _, ok := orgIDvHostBasepathMap[organizationID]; ok {
-		orgIDvHostBasepathMap[organizationID][vHost+":"+newBasepath] = apiIdentifier
-	} else {
-		vHostBasepathMap := make(map[string]string)
-		vHostBasepathMap[vHost+":"+newBasepath] = apiIdentifier
-		orgIDvHostBasepathMap[organizationID] = vHostBasepathMap
-	}
-	return nil
-}
-
-// DeleteAPIs deletes an API, its resources and updates the caches of given environments
-func DeleteAPIs(vhost, apiName, version string, environments []string, organizationID string) error {
-	apiNameVersionID := GenerateIdentifierForAPIWithoutVhost(apiName, version)
-	apiNameVersionHashedID := reverseAPINameVersionMap[apiNameVersionID]
-
-	mutexForInternalMapUpdate.Lock()
-	defer mutexForInternalMapUpdate.Unlock()
-
-	vhosts, found := apiToVhostsMap[apiNameVersionHashedID]
-	if !found {
-		logger.LoggerXds.Infof("Unable to delete API %v from Organization %v. API does not exist.", apiNameVersionID, organizationID)
-		return errors.New(constants.NotFound)
-	}
-
-	if vhost == "" {
-		// vhost is not defined, delete all vhosts
-		logger.LoggerXds.Infof("No vhost is specified for the API %v in Organizaion %v deleting from all vhosts", apiNameVersionID, organizationID)
-		deletedVhosts := make(map[string]struct{})
-		for vh := range vhosts {
-			apiIdentifier := GenerateIdentifierForAPIWithUUID(vh, apiNameVersionHashedID)
-			// Updating cache one API by one API, if one API failed to update cache continue with others.
-			if err := deleteAPI(apiIdentifier, environments, organizationID); err != nil {
-				// Update apiToVhostsMap with already deleted vhosts in the loop
-				logger.LoggerXds.ErrorC(logging.ErrorDetails{
-					Message:   fmt.Sprintf("Error deleting API: %v of organization: %v", apiIdentifier, organizationID),
-					Severity:  logging.MAJOR,
-					ErrorCode: 1408,
-				})
-				logger.LoggerXds.Debugf("Update map apiToVhostsMap with deleting already deleted vhosts for API %v in organization: %v",
-					apiIdentifier, organizationID)
-				remainingVhosts := make(map[string]struct{})
-				for v := range vhosts {
-					if _, ok := deletedVhosts[v]; ok {
-						remainingVhosts[v] = void
-					}
-				}
-				apiToVhostsMap[apiNameVersionHashedID] = remainingVhosts
-				return err
-			}
-			deletedVhosts[vh] = void
-
-			for val := range deletedVhosts {
-				existingLabels := orgIDOpenAPIEnvoyMap[organizationID][apiIdentifier]
-				if val == vh && len(existingLabels) == 0 {
-					logger.LoggerXds.Infof("Vhost : %v  deleted since there is no gateways assigned to it.", vh)
-					delete(apiToVhostsMap[apiNameVersionHashedID], val)
-				}
-			}
-		}
-		return nil
-	}
-
-	apiIdentifier := GenerateIdentifierForAPIWithUUID(vhost, apiNameVersionHashedID)
-	if err := deleteAPI(apiIdentifier, environments, organizationID); err != nil {
-		return err
-	}
-
-	if _, ok := vhosts[vhost]; ok {
-		if len(vhosts) == 1 {
-			// if this is the final vhost delete map entry
-			logger.LoggerXds.Debugf("The API %v is not exists with any vhost. Hence clean vhost entry from the map 'apiToVhostsMap'",
-				apiNameVersionID)
-			delete(apiToVhostsMap, apiNameVersionHashedID)
-		} else {
-			delete(apiToVhostsMap[apiNameVersionHashedID], vhost)
-		}
-	}
-	return nil
-}
-
-// DeleteAPIsWithUUID deletes an API, its resources and updates the caches of given environments
-func DeleteAPIsWithUUID(vhost, uuid string, environments []string, organizationID string) error {
-
-	mutexForInternalMapUpdate.Lock()
-	defer mutexForInternalMapUpdate.Unlock()
-
-	vhosts, found := apiToVhostsMap[uuid]
-	if !found {
-		logger.LoggerXds.Infof("Unable to delete API with UUID %v from Organization %v. API does not exist.", uuid, organizationID)
-		return errors.New(constants.NotFound)
-	}
-
-	if vhost == "" {
-		// vhost is not defined, delete all vhosts
-		logger.LoggerXds.Infof("No vhost is specified for the API with UUID %v in Organizaion %v deleting from all vhosts", uuid, organizationID)
-		deletedVhosts := make(map[string]struct{})
-		for vh := range vhosts {
-			apiIdentifier := GenerateIdentifierForAPIWithUUID(vh, uuid)
-			// Updating cache one API by one API, if one API failed to update cache continue with others.
-			if err := deleteAPI(apiIdentifier, environments, organizationID); err != nil {
-				// Update apiToVhostsMap with already deleted vhosts in the loop
-				logger.LoggerXds.ErrorC(logging.ErrorDetails{
-					Message:   fmt.Sprintf("Error deleting API: %v of organization: %v", apiIdentifier, organizationID),
-					Severity:  logging.MAJOR,
-					ErrorCode: 1409,
-				})
-				logger.LoggerXds.Debugf("Update map apiToVhostsMap with deleting already deleted vhosts for API %v in organization: %v",
-					apiIdentifier, organizationID)
-				remainingVhosts := make(map[string]struct{})
-				for v := range vhosts {
-					if _, ok := deletedVhosts[v]; ok {
-						remainingVhosts[v] = void
-					}
-				}
-				apiToVhostsMap[uuid] = remainingVhosts
-				return err
-			}
-			deletedVhosts[vh] = void
-		}
-		delete(apiToVhostsMap, uuid)
-		return nil
-	}
-
-	apiIdentifier := GenerateIdentifierForAPIWithUUID(vhost, uuid)
-	if err := deleteAPI(apiIdentifier, environments, organizationID); err != nil {
-		return err
-	}
-
-	if _, ok := vhosts[vhost]; ok {
-		if len(vhosts) == 1 {
-			// if this is the final vhost delete map entry
-			logger.LoggerXds.Debugf("The API with UUID %v is not exists with any vhost. Hence clean vhost entry from the map 'apiToVhostsMap'",
-				uuid)
-			delete(apiToVhostsMap, uuid)
-		} else {
-			delete(apiToVhostsMap[uuid], vhost)
-		}
-	}
-	return nil
-}
-
-// DeleteAPIWithAPIMEvent deletes API with the given UUID from the given gw environments
-func DeleteAPIWithAPIMEvent(uuid, organizationID string, environments []string, revisionUUID string) {
-	apiIdentifiers := make(map[string]struct{})
-	mutexForInternalMapUpdate.Lock()
-	defer mutexForInternalMapUpdate.Unlock()
-
-	for gw, vhost := range apiUUIDToGatewayToVhosts[uuid] {
-		// delete from only specified environments
-		if arrayContains(environments, gw) {
-			id := GenerateIdentifierForAPIWithUUID(vhost, uuid)
-			apiIdentifiers[id] = void
-		}
-	}
-	for apiIdentifier := range apiIdentifiers {
-		if err := deleteAPI(apiIdentifier, environments, organizationID); err != nil {
-			logger.LoggerXds.ErrorC(logging.ErrorDetails{
-				Message:   fmt.Sprintf("Error undeploying API %v of Organization %v from environments %v", apiIdentifier, organizationID, environments),
+				Message: fmt.Sprintf("Error undeploying API %v of Organization %v from environments %v",
+					apiIdentifier, organizationID, labels),
 				Severity:  logging.MAJOR,
 				ErrorCode: 1410,
 			})
-		} else {
-			// if no error, update internal vhost maps
-			// error only happens when API not found in deleteAPI func
-			logger.LoggerXds.Infof("Successfully undeployed the revision %s of API %v under Organization %s and environment %s ", revisionUUID, apiIdentifier, organizationID, environments)
-			for _, environment := range environments {
-				// delete environment if exists
-				delete(apiUUIDToGatewayToVhosts[uuid], environment)
-				notifier.SendRevisionUndeployAck(uuid, revisionUUID, environment)
-			}
+			return err
+		}
+		// if no error, update internal vhost maps
+		// error only happens when API not found in deleteAPI func
+		logger.LoggerXds.Infof("Successfully undeployed the API %v under Organization %s and environment %s ",
+			apiIdentifier, organizationID, labels)
+		for _, environment := range labels {
+			// delete environment if exists
+			delete(apiUUIDToGatewayToVhosts[apiUUID], environment)
 		}
 	}
+	return nil
 }
 
 // deleteAPI deletes an API, its resources and updates the caches of given environments
@@ -768,16 +264,17 @@ func deleteAPI(apiIdentifier string, environments []string, organizationID strin
 	toBeDelEnvs, toBeKeptEnvs := getEnvironmentsToBeDeleted(existingLabels, environments)
 
 	for _, val := range toBeDelEnvs {
-		isAllowedToDelete := arrayContains(existingLabels, val)
+		isAllowedToDelete := stringutils.StringInSlice(val, existingLabels)
 		if isAllowedToDelete {
 			// do not delete from all environments, hence do not clear routes, clusters, endpoints, enforcerAPIs
 			orgIDOpenAPIEnvoyMap[organizationID][apiIdentifier] = toBeKeptEnvs
-			updateXdsCacheOnAPIAdd(toBeDelEnvs, []string{})
+			updateXdsCacheOnAPIChange(toBeDelEnvs, []string{})
 			existingLabels = orgIDOpenAPIEnvoyMap[organizationID][apiIdentifier]
 			if len(existingLabels) != 0 {
 				return nil
 			}
-			logger.LoggerXds.Infof("API identifier: %v does not have any gateways. Hence deleting the API.", apiIdentifier)
+			logger.LoggerXds.Infof("API identifier: %v does not have any gateways. Hence deleting the API from label : %s.",
+				apiIdentifier, val)
 			cleanMapResources(apiIdentifier, organizationID, toBeDelEnvs)
 			return nil
 		}
@@ -799,7 +296,7 @@ func cleanMapResources(apiIdentifier string, organizationID string, toBeDelEnvs 
 	//updateXdsCacheOnAPIAdd is called after cleaning maps of routes, clusters, endpoints, enforcerAPIs.
 	//Therefore resources that belongs to the deleting API do not exist. Caches updated only with
 	//resources that belongs to the remaining APIs
-	updateXdsCacheOnAPIAdd(toBeDelEnvs, []string{})
+	updateXdsCacheOnAPIChange(toBeDelEnvs, []string{})
 
 	deleteBasepathForVHost(organizationID, apiIdentifier)
 	delete(orgIDOpenAPIEnvoyMap[organizationID], apiIdentifier)  //delete labels
@@ -818,36 +315,10 @@ func deleteBasepathForVHost(organizationID, apiIdentifier string) {
 	}
 }
 
-func arrayContains(a []string, x string) bool {
-	for _, n := range a {
-		if x == n {
-			return true
-		}
-	}
-	return false
-}
-
-func mergeResourceArrays(resourceArrays [][]types.Resource) []types.Resource {
-	var totalLength int
-	var compositeArray []types.Resource
-	for _, resourceArray := range resourceArrays {
-		totalLength += len(resourceArray)
-	}
-	compositeArray = make([]types.Resource, totalLength)
-	startingIndex := 0
-	lastIndex := 0
-	for _, resourceArray := range resourceArrays {
-		lastIndex += len(resourceArray)
-		copy(compositeArray[startingIndex:lastIndex], resourceArray)
-		startingIndex = lastIndex
-	}
-	return compositeArray
-}
-
 // when this method is called, openAPIEnvoy map is updated.
 // Old labels refers to the previously assigned labels
 // New labels refers to the the updated labels
-func updateXdsCacheOnAPIAdd(oldLabels []string, newLabels []string) bool {
+func updateXdsCacheOnAPIChange(oldLabels []string, newLabels []string) bool {
 	revisionStatus := false
 	// TODO: (VirajSalaka) check possible optimizations, Since the number of labels are low by design it should not be an issue
 	for _, newLabel := range newLabels {
@@ -863,7 +334,7 @@ func updateXdsCacheOnAPIAdd(oldLabels []string, newLabels []string) bool {
 		}
 	}
 	for _, oldLabel := range oldLabels {
-		if !arrayContains(newLabels, oldLabel) {
+		if !stringutils.StringInSlice(oldLabel, newLabels) {
 			listeners, clusters, routes, endpoints, apis := GenerateEnvoyResoucesForLabel(oldLabel)
 			UpdateEnforcerApis(oldLabel, apis, "")
 			UpdateXdsCacheWithLock(oldLabel, endpoints, clusters, routes, listeners)
@@ -884,7 +355,7 @@ func GenerateEnvoyResoucesForLabel(label string) ([]types.Resource, []types.Reso
 
 	for organizationID, entityMap := range orgIDOpenAPIEnvoyMap {
 		for apiKey, labels := range entityMap {
-			if arrayContains(labels, label) {
+			if stringutils.StringInSlice(label, labels) {
 				vhost, err := ExtractVhostFromAPIIdentifier(apiKey)
 				if err != nil {
 					logger.LoggerXds.ErrorC(logging.ErrorDetails{
@@ -1468,7 +939,7 @@ func UpdateAPICache(vHost string, newLabels []string, mgwSwagger model.MgwSwagge
 		orgIDOpenAPIEnforcerApisMap[mgwSwagger.GetOrganizationID()] = enforcerAPIMap
 	}
 
-	revisionStatus := updateXdsCacheOnAPIAdd(oldLabels, newLabels)
+	revisionStatus := updateXdsCacheOnAPIChange(oldLabels, newLabels)
 	logger.LoggerXds.Infof("Deployed Revision: %v:%v", apiIdentifier, revisionStatus)
 	return nil
 }

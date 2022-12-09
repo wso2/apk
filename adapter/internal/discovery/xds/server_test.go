@@ -18,54 +18,8 @@
 package xds
 
 import (
-	"reflect"
-	"sort"
 	"testing"
 )
-
-func TestGetVhostOfAPI(t *testing.T) {
-	setupInternalMemoryMapsWithTestSamples()
-	tests := []struct {
-		name              string
-		uuid, environment string
-		vhost             string
-		exists            bool
-	}{
-		{
-			name:        "Get_vhost_of_existing_uuid_and_environment",
-			uuid:        "222-PetStore-org2",
-			environment: "Default",
-			vhost:       "org2.foo.com",
-			exists:      true,
-		},
-		{
-			name:        "Get_vhost_of_existing_uuid_and_not_existing_environment",
-			uuid:        "222-PetStore-org2",
-			environment: "us-region",
-			vhost:       "",
-			exists:      false,
-		},
-		{
-			name:        "Get_vhost_of_not_existing_uuid",
-			uuid:        "xxx",
-			environment: "us-region",
-			vhost:       "",
-			exists:      false,
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			vhost, exists := GetVhostOfAPI(test.uuid, test.environment)
-			if vhost != test.vhost {
-				t.Errorf("expected vhost %v but found %v", test.vhost, vhost)
-			}
-			if exists != test.exists {
-				t.Errorf("expected existing bool value %v but found %v", test.exists, exists)
-			}
-		})
-	}
-}
 
 func TestGenerateIdentifierForAPIWithUUID(t *testing.T) {
 	setupInternalMemoryMapsWithTestSamples()
@@ -86,65 +40,6 @@ func TestGenerateIdentifierForAPIWithUUID(t *testing.T) {
 			identifier := GenerateIdentifierForAPIWithUUID(test.vhost, test.uuid)
 			if identifier != test.vhost+":"+test.uuid {
 				t.Errorf("expected identifier %v but found %v", test.vhost+":"+test.uuid, identifier)
-			}
-		})
-	}
-}
-
-func TestGetAllEnvironments(t *testing.T) {
-	setupInternalMemoryMapsWithTestSamples()
-
-	tests := []struct {
-		name            string
-		uuid, vhost     string
-		newEnvironment  []string
-		allEnvironments []string
-	}{
-		{
-			name:            "No_existing_environments_new_API",
-			uuid:            "new-uuid-xxxxx",
-			vhost:           "us.wso2.com",
-			newEnvironment:  []string{"Default", "eu-region"},
-			allEnvironments: []string{"Default", "eu-region"},
-		},
-		{
-			name:            "Existing_API_new_vhost",
-			uuid:            "333-Pizza-org1",
-			vhost:           "new.vhost",
-			newEnvironment:  []string{"Default", "eu-region"},
-			allEnvironments: []string{"Default", "eu-region"},
-		},
-		{
-			name:            "Some_existing_environments",
-			uuid:            "222-PetStore-org2",
-			vhost:           "org2.foo.com",
-			newEnvironment:  []string{"eu-region"},
-			allEnvironments: []string{"Default", "eu-region"},
-		},
-
-		{
-			name:            "new_environments",
-			uuid:            "222-PetStore-org2",
-			vhost:           "org2.foo.com",
-			newEnvironment:  []string{"Default", "eu-region"},
-			allEnvironments: []string{"Default", "eu-region"},
-		},
-		{
-			name:            "All_existing_environments",
-			uuid:            "111-PetStore-org",
-			vhost:           "org2.foo.com",
-			newEnvironment:  []string{"Default", "us-region"},
-			allEnvironments: []string{"Default", "us-region"},
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			allEnvironments := GetAllEnvironments(test.uuid, test.vhost, test.newEnvironment)
-			sort.Strings(allEnvironments)
-			sort.Strings(test.allEnvironments)
-			if !reflect.DeepEqual(test.allEnvironments, allEnvironments) {
-				t.Errorf("expected environments %v but found %v", test.allEnvironments, allEnvironments)
 			}
 		})
 	}

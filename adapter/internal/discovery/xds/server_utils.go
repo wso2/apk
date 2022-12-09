@@ -19,6 +19,7 @@ package xds
 
 import (
 	logger "github.com/wso2/apk/adapter/internal/loggers"
+	"github.com/wso2/apk/adapter/pkg/utils/stringutils"
 )
 
 // getEnvironmentsToBeDeleted returns an slice of environments APIs to be u-deployed from
@@ -33,7 +34,7 @@ func getEnvironmentsToBeDeleted(existingEnvs, deleteEnvs []string) (toBeDel []st
 	}
 	// otherwise delete env if it wished to
 	for _, existingEnv := range existingEnvs {
-		if arrayContains(deleteEnvs, existingEnv) {
+		if stringutils.StringInSlice(existingEnv, deleteEnvs) {
 			toBeDel = append(toBeDel, existingEnv)
 		} else {
 			toBeKept = append(toBeKept, existingEnv)

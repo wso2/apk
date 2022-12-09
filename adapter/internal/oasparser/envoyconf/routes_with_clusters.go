@@ -743,7 +743,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 	responseInterceptor := params.responseInterceptor
 	isDefaultVersion := params.isDefaultVersion
 
-	logger.LoggerOasparser.Debug("creating a route....")
+	logger.LoggerOasparser.Debugf("creating routes for API %s ....", title)
 	var (
 		// The following are common to all routes and does not get updated per operation
 		decorator *routev3.Decorator
@@ -886,7 +886,7 @@ end`
 		wellknown.Lua:                       luaFilter,
 	}
 
-	logger.LoggerOasparser.Debug("adding route ", resourcePath)
+	logger.LoggerOasparser.Debugf("adding route : %s for API : %s", resourcePath, title)
 
 	if resource != nil && resource.HasPolicies() {
 		logger.LoggerOasparser.Debug("Start creating routes for resource with policies")
@@ -1045,7 +1045,7 @@ end`
 
 		}
 	} else {
-		logger.LoggerOasparser.Debug("Creating routes for resource that has no policies")
+		logger.LoggerOasparser.Debugf("Creating routes for resource : %s that has no policies", resourcePath)
 		// No policies defined for the resource. Therefore, create one route for all operations.
 		methodRegex := strings.Join(resourceMethods, "|")
 		if !strings.Contains(methodRegex, "OPTIONS") {
