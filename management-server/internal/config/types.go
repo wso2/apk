@@ -50,7 +50,7 @@ type database struct {
 
 type dbCache struct {
 	CleanupInterval string
-	Ttl             string
+	TTL             string
 }
 
 type dbPool struct {

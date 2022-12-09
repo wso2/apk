@@ -39,10 +39,11 @@ type apiService struct {
 	apiProtos.UnimplementedAPIServiceServer
 }
 
-func NewApiService() *apiService {
+func newAPIService() *apiService {
 	return &apiService{}
 }
 
+// CreateAPI creates an API
 func (s *apiService) CreateAPI(ctx context.Context, api *apiProtos.API) (*apiProtos.Response, error) {
 	logger.LoggerMGTServer.Infof("Create Message received : %q", api)
 	err := backoffice.CreateAPI(api)
@@ -53,6 +54,7 @@ func (s *apiService) CreateAPI(ctx context.Context, api *apiProtos.API) (*apiPro
 	return &apiProtos.Response{Result: true}, nil
 }
 
+// UpdateAPI updates an API
 func (s *apiService) UpdateAPI(ctx context.Context, api *apiProtos.API) (*apiProtos.Response, error) {
 	logger.LoggerMGTServer.Infof("Update Message received : %q", api)
 	err := backoffice.UpdateAPI(api)
@@ -63,6 +65,7 @@ func (s *apiService) UpdateAPI(ctx context.Context, api *apiProtos.API) (*apiPro
 	return &apiProtos.Response{Result: true}, nil
 }
 
+// DeleteAPI deletes an API
 func (s *apiService) DeleteAPI(ctx context.Context, api *apiProtos.API) (*apiProtos.Response, error) {
 	logger.LoggerMGTServer.Infof("Delete Message received : %q", api)
 	err := backoffice.DeleteAPI(api)
@@ -73,6 +76,7 @@ func (s *apiService) DeleteAPI(ctx context.Context, api *apiProtos.API) (*apiPro
 	return &apiProtos.Response{Result: true}, nil
 }
 
+// StartGRPCServer start the GRPC server
 func StartGRPCServer() {
 	var grpcOptions []grpc.ServerOption
 	publicKeyLocation, privateKeyLocation, truststoreLocation := tlsutils.GetKeyLocations()
@@ -111,7 +115,7 @@ func StartGRPCServer() {
 		})
 	}
 	// register services
-	apiService := NewApiService()
+	apiService := newAPIService()
 	apiProtos.RegisterAPIServiceServer(grpcServer, apiService)
 	logger.LoggerMGTServer.Infof("Management server is listening for GRPC connections on port: %v.", port)
 	grpcServer.Serve(lis)

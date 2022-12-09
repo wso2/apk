@@ -9,6 +9,7 @@ require (
 	github.com/sirupsen/logrus v1.9.0
 	github.com/wso2/apk/adapter v0.0.0-20221109134906-6472d67fda07
 	google.golang.org/grpc v1.50.1
+	google.golang.org/protobuf v1.28.1
 )
 
 require (
@@ -24,6 +25,5 @@ require (
 	golang.org/x/sys v0.0.0-20220728004956-3c1f35247d10 // indirect
 	golang.org/x/text v0.3.8 // indirect
 	google.golang.org/genproto v0.0.0-20220502173005-c8bf987b8c21 // indirect
-	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 )

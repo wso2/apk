@@ -39,10 +39,11 @@ type notificationService struct {
 	notificationService UnimplementedNotificationServiceServer
 }
 
-func NewnotificationService() *notificationService {
+func newnotificationService() *notificationService {
 	return &notificationService{}
 }
 
+// CreateApplication sends an application create event
 func (s *notificationService) CreateApplication(ctx context.Context, application *Application) (*NotificationResponse, error) {
 	logger.LoggerNotificationServer.Infof("Message received : %q", &application)
 	var event = internal_types.ApplicationEvent{
@@ -54,6 +55,7 @@ func (s *notificationService) CreateApplication(ctx context.Context, application
 	return &NotificationResponse{Code: NotificationResponse_OK}, nil
 }
 
+// UpdateApplication sends an application update event
 func (s *notificationService) UpdateApplication(ctx context.Context, application *Application) (*NotificationResponse, error) {
 	logger.LoggerNotificationServer.Infof("Message received : %q", &application)
 	var event = internal_types.ApplicationEvent{
@@ -65,6 +67,7 @@ func (s *notificationService) UpdateApplication(ctx context.Context, application
 	return &NotificationResponse{Code: NotificationResponse_OK}, nil
 }
 
+// DeleteApplication sends an application delete event
 func (s *notificationService) DeleteApplication(ctx context.Context, application *Application) (*NotificationResponse, error) {
 	logger.LoggerNotificationServer.Infof("Message received : %q", &application)
 	var event = internal_types.ApplicationEvent{
@@ -76,6 +79,7 @@ func (s *notificationService) DeleteApplication(ctx context.Context, application
 	return &NotificationResponse{Code: NotificationResponse_OK}, nil
 }
 
+// CreateSubscription sends a subscription create event
 func (s *notificationService) CreateSubscription(ctx context.Context, subscription *Subscription) (*NotificationResponse, error) {
 	logger.LoggerNotificationServer.Infof("Message received : %q", &subscription)
 	var event = internal_types.SubscriptionEvent{
@@ -87,6 +91,7 @@ func (s *notificationService) CreateSubscription(ctx context.Context, subscripti
 	return &NotificationResponse{Code: NotificationResponse_OK}, nil
 }
 
+// UpdateSubscription sends a subscription update event
 func (s *notificationService) UpdateSubscription(ctx context.Context, subscription *Subscription) (*NotificationResponse, error) {
 	logger.LoggerNotificationServer.Infof("Message received : %q", &subscription)
 	var event = internal_types.SubscriptionEvent{
@@ -98,6 +103,7 @@ func (s *notificationService) UpdateSubscription(ctx context.Context, subscripti
 	return &NotificationResponse{Code: NotificationResponse_OK}, nil
 }
 
+// DeleteSubscription sends a subscription delete event
 func (s *notificationService) DeleteSubscription(ctx context.Context, subscription *Subscription) (*NotificationResponse, error) {
 	logger.LoggerNotificationServer.Infof("Message received : %q", &subscription)
 	var event = internal_types.SubscriptionEvent{
@@ -109,6 +115,7 @@ func (s *notificationService) DeleteSubscription(ctx context.Context, subscripti
 	return &NotificationResponse{Code: NotificationResponse_OK}, nil
 }
 
+// StartGRPCServer starts the GRPC server for notifications
 func StartGRPCServer() {
 	var grpcOptions []grpc.ServerOption
 	publicKeyLocation, privateKeyLocation, truststoreLocation := tlsutils.GetKeyLocations()
@@ -147,7 +154,7 @@ func StartGRPCServer() {
 		})
 	}
 	// register services
-	notificationService := NewnotificationService()
+	notificationService := newnotificationService()
 	RegisterNotificationServiceServer(grpcServer, notificationService)
 	logger.LoggerNotificationServer.Infof("Management server is listening for GRPC connections on port: %v.", port)
 	grpcServer.Serve(lis)

@@ -58,14 +58,19 @@ var (
 	applicationChannel chan ApplicationEvent
 )
 
+// EventType is the type of the event
 type EventType int
 
 const (
-	APPLICATION_CREATE = 0
-	APPLICATION_UPDATE = 1
-	APPLICATION_DELETE = 2
+	// ApplicationCreate is application create event type
+	ApplicationCreate = 0
+	// ApplicationUpdate is application update event type
+	ApplicationUpdate = 1
+	// ApplicationDelete is application delete event type
+	ApplicationDelete = 2
 )
 
+// ApplicationEvent is the application event data holder
 type ApplicationEvent struct {
 	Type        EventType
 	Application *cpv1alpha1.Application
@@ -260,14 +265,14 @@ func addApplicationsToChannel(resp *discovery.DiscoveryResponse) {
 			}
 			// Application update event
 			event = ApplicationEvent{
-				Type:        APPLICATION_UPDATE,
+				Type:        ApplicationUpdate,
 				Application: applicationResource,
 			}
 			applicationMap[applicationUUID] = *applicationResource
 		} else {
 			// Application create event
 			event = ApplicationEvent{
-				Type:        APPLICATION_CREATE,
+				Type:        ApplicationCreate,
 				Application: applicationResource,
 			}
 			applicationMap[applicationUUID] = *applicationResource
@@ -281,7 +286,7 @@ func addApplicationsToChannel(resp *discovery.DiscoveryResponse) {
 		if !stringutils.StringInSlice(application.Name, newApplicationUUIDs) {
 			// Application delete event
 			event := ApplicationEvent{
-				Type:        APPLICATION_DELETE,
+				Type:        ApplicationDelete,
 				Application: &application,
 			}
 			applicationChannel <- event

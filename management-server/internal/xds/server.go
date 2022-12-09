@@ -20,12 +20,13 @@ package xds
 import (
 	"context"
 	"fmt"
-	"github.com/wso2/apk/management-server/internal/database"
 	"math/rand"
 	"net"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/wso2/apk/management-server/internal/database"
 
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
@@ -46,7 +47,6 @@ var (
 	applicationCache      wso2_cache.SnapshotCache
 	applicationCacheMutex sync.Mutex
 	introducedLabels      map[string]bool
-	Sent                  bool = true
 )
 
 const (
@@ -250,6 +250,7 @@ func SetEmptySnapshot(label string) error {
 	return nil
 }
 
+// InitAPKMgtServer initializes the APK management server
 func InitAPKMgtServer() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

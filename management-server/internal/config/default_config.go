@@ -41,7 +41,7 @@ var defaultConfig = &Config{
 		},
 		DbCache: dbCache{
 			CleanupInterval: "1h",
-			Ttl:             "1h",
+			TTL:             "1h",
 		},
 	},
 	BackOffice: backOffice{
