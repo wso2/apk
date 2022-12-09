@@ -24,12 +24,6 @@ tasks.register('go_clean', Exec) {
     commandLine 'go', 'clean'
 }
 
-tasks.register('go_lint_install', Exec) {
-    group 'go'
-    description 'Installing golint.'
-    commandLine 'go', 'install', 'golang.org/x/lint/golint@latest'
-}
-
 tasks.register('go_lint_run', Exec) {
     group 'go'
     description 'Running golint.'

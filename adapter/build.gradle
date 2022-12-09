@@ -30,7 +30,6 @@ release {
 }
 
 tasks.named('go_lint_run').configure { 
-    dependsOn go_lint_install
     finalizedBy go_tidy
 }
 
