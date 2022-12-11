@@ -12,6 +12,7 @@ observabilityIncluded = true
 groupId = "org.wso2.apk"
 artifactId = "org.wso2.apk.runtime"
 version = "RUNTIME_VERSION"
+path = "../java/build/libs/org.wso2.apk.runtime-RUNTIME_VERSION.jar"
 
 # transitive dependency of org.wso2.apk:org.wso2.apk.runtime:0.0.1-SNAPSHOT
 [[platform.java11.dependency]]

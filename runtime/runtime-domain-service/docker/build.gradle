@@ -13,5 +13,5 @@ task build{
     dependsOn 'docker_build'
 }
 
-build.dependsOn ":org.wso2.apk.runtime:build"
+build.mustRunAfter ":ballerina:build"
 build.dependsOn ":ballerina:build"

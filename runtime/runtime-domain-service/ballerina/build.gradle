@@ -20,7 +20,6 @@ import org.apache.tools.ant.taskdefs.condition.Os
 
 apply from: "$projectDir/../../../common-gradle-scripts/ballerina.gradle"
 task build{
-    mustRunAfter 'updateTomlFiles'
     dependsOn 'bal_build'
 }
 task clean{
@@ -28,23 +27,33 @@ task clean{
 }
 
 task updateTomlFiles {
-        println 'applying Ballerina.toml.template'
-        def runtimeVersion = project.version
-        def ballerinaTomlFilePlaceHolder = new File("${projectDir}/Ballerina.toml.template")
-        def newBallerinaToml = ballerinaTomlFilePlaceHolder.text.replace("RUNTIME_VERSION", runtimeVersion);
-        def ballerinaTomlFile = new File("$project.projectDir/Ballerina.toml");
-        ballerinaTomlFile.text = newBallerinaToml;
-}
-task commitTomlFiles {
     doLast {
-        project.exec {
-            ignoreExitValue true
-            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                commandLine 'cmd', '/c', "git commit -m \"[Automated] Update the native jar versions\" Ballerina.toml "
-            } else {
-                commandLine 'sh', '-c', "git commit -m '[Automated] Update the native jar versions' Ballerina.toml"
-            }
-        }
+        def moduleVersion = project.version
+        println 'applying Ballerina.toml.template and Dependencies.toml.template  with version ' + moduleVersion
+        def ballerinaTomlFilePlaceHolder = new File("${projectDir}/Ballerina.toml.template")
+        def dependencyTomlFilePlaceHolder = new File("${projectDir}/Dependencies.toml.template")
+        def newBallerinaToml = ballerinaTomlFilePlaceHolder.text.replace("RUNTIME_VERSION", moduleVersion);
+        def newDependenciesToml = dependencyTomlFilePlaceHolder.text.replace("RUNTIME_VERSION", moduleVersion);
+        def ballerinaTomlFile = new File("$project.projectDir/Ballerina.toml");
+        def dependenciesTomlFile = new File("$project.projectDir/Dependencies.toml");
+        ballerinaTomlFile.text = newBallerinaToml;
+        dependenciesTomlFile.text = newDependenciesToml;
     }
 }
+task commitTomlFiles {
+    dependsOn "updateTomlFiles"
+        doLast {
+            println 'committing Dependencies.toml and Ballerina.toml'
+            project.exec {
+                ignoreExitValue true
+                if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                    commandLine 'cmd', '/c', "git commit -m \"[Automated] Update the native jar versions\" Ballerina.toml Dependencies.toml"
+                } else {
+                    commandLine 'sh', '-c', "git commit -m '[Automated] Update the native jar versions' Ballerina.toml Dependencies.toml"
+                }
+            }
+        }
+}
+
 build.mustRunAfter ":org.wso2.apk.runtime:build"
+build.dependsOn ":org.wso2.apk.runtime:build"

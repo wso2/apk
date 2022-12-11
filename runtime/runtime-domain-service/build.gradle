@@ -22,7 +22,6 @@ allprojects {
     group = project.group
     version = project.version
 }
-def moduleVersion = project.version.replace("-SNAPSHOT", "")
 
 release {
     tagTemplate = 'runtime-domain-service-$version'
@@ -32,8 +31,10 @@ release {
         pushToRemote= "origin"
     }
 }
+
+unSnapshotVersion.finalizedBy ":ballerina:commitTomlFiles"
+commitNewVersion.mustRunAfter ":ballerina:commitTomlFiles"
 afterReleaseBuild.dependsOn ":docker:docker_push"
-beforeReleaseBuild.dependsOn ":ballerina:commitTomlFiles"
 task build{
  dependsOn("docker:build")
 }
