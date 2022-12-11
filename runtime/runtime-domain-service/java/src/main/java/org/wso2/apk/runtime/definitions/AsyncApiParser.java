@@ -18,7 +18,6 @@ import org.everit.json.schema.ValidationException;
 import org.everit.json.schema.loader.SchemaLoader;
 import org.json.JSONObject;
 import org.wso2.apk.runtime.APIConstants;
-import org.wso2.apk.runtime.RuntimeAPICommonUtil;
 import org.wso2.apk.runtime.api.APIDefinition;
 import org.wso2.apk.runtime.api.APIDefinitionValidationResponse;
 import org.wso2.apk.runtime.api.APIManagementException;
@@ -27,7 +26,6 @@ import org.wso2.apk.runtime.model.API;
 import org.wso2.apk.runtime.model.Scope;
 import org.wso2.apk.runtime.model.URITemplate;
 
-import javax.swing.text.html.parser.Parser;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
@@ -1559,11 +1557,6 @@ public class AsyncApiParser extends APIDefinition {
     }
     public void setOtherSchemes(List<String> otherSchemes) {
         this.otherSchemes = otherSchemes;
-    }
-
-    @Override
-    public Map<String, Object> generateExample(String apiDefinition) throws APIManagementException{
-        return null;
     }
 
     @Override

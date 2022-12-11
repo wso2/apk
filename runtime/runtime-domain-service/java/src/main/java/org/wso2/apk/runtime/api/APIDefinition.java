@@ -38,14 +38,6 @@ public abstract class APIDefinition {
     private static final Pattern CURLY_BRACES_PATTERN = Pattern.compile("(?<=\\{)(?!\\s*\\{)[^{}]+");
 
     /**
-     * This method generates Mock/Sample payloads for API prototyping
-     *
-     * @param apiDefinition
-     * @return
-     */
-    public abstract Map<String, Object> generateExample(String apiDefinition) throws APIManagementException;
-
-    /**
      * This method extracts the URI templates from the API definition
      *
      * @return URI templates

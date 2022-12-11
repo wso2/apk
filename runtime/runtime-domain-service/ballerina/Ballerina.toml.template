@@ -1,7 +1,7 @@
 [package]
 org = "wso2"
 name = "runtime_domain_service"
-version = "0.0.1-SNAPSHOT"
+version = "RUNTIME_VERSION"
 distribution = "2201.2.3"
 
 [build-options]
@@ -11,7 +11,7 @@ observabilityIncluded = true
 [[platform.java11.dependency]]
 groupId = "org.wso2.apk"
 artifactId = "org.wso2.apk.runtime"
-version = "0.0.1-SNAPSHOT"
+version = "RUNTIME_VERSION"
 
 # transitive dependency of org.wso2.apk:org.wso2.apk.runtime:0.0.1-SNAPSHOT
 [[platform.java11.dependency]]

@@ -97,7 +97,6 @@ sun-saaj-impl = {module = "com.sun.xml.messaging.saaj:saaj-impl", version.ref = 
 swagger-annotations = {module = "io.swagger:swagger-annotations", version.ref = "io-swagger"}
 swagger-codegen = {module = "io.swagger:swagger-codegen", version.ref = "swagger-codegen"}
 swagger-core-v3 = {module = "io.swagger.core.v3:swagger-core", version.ref = "io-swagger-v3"}
-swagger-inflector-oas3 = {module = "io.swagger:swagger-inflector", version.ref = "swagger-inflector-v3"}
 swagger-jaxrs = {module = "io.swagger:swagger-jaxrs", version.ref = "swagger-jaxrs"}
 swagger-models-v3 = {module = "io.swagger.core.v3:swagger-models", version.ref = "io-swagger-v3"}
 swagger-parser-v3 = {module = "io.swagger.parser.v3:swagger-parser", version.ref = "swagger-parser-v3"}
@@ -145,15 +144,15 @@ everit = "1.5.0.wso2.v2"
 geronimo = "1.1.1.wso2v1"
 graphql = "19.2"
 grpc = "1.45.1"
-gson = "2.8.5"
+gson = "2.10"
 guava = "31.0.1-jre"
 hibernate-validator = "5.4.3.Final"
 hikari = "5.0.1"
 httpcomponents = "4.5.13"
 io-github-openfeign = "11.0"
-io-swagger = "1.6.5"
-io-swagger-v3 = "2.1.12"
-jackson = "2.13.1"
+io-swagger = "1.6.9"
+io-swagger-v3 = "2.2.7"
+jackson = "2.14.0"
 javax-cache = "1.1.1"
 javax-validation = "2.0.1.Final"
 javax-validation-api = "1.1.0.Final"
@@ -176,10 +175,9 @@ opentelemetry-semconv = "1.18.0-alpha"
 org-json = "20220924"
 postgresql = "42.5.0"
 slf4j-ext = "1.7.29"
-snakeyaml = "1.28"
+snakeyaml = "1.33"
 sun = "1.5.3"
 swagger-codegen = "2.4.11"
-swagger-inflector-v3 = "2.0.8"
 swagger-jaxrs = "1.6.1"
 swagger-parser-v3 = "2.1.9"
 tomcat = "6.0.53"

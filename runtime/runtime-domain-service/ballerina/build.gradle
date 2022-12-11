@@ -16,10 +16,35 @@
 // under the License.
 //
 
+import org.apache.tools.ant.taskdefs.condition.Os
 
 apply from: "$projectDir/../../../common-gradle-scripts/ballerina.gradle"
 task build{
+    mustRunAfter 'updateTomlFiles'
     dependsOn 'bal_build'
+}
+task clean{
+    dependsOn 'bal_clean'
+}
 
+task updateTomlFiles {
+        println 'applying Ballerina.toml.template'
+        def runtimeVersion = project.version
+        def ballerinaTomlFilePlaceHolder = new File("${projectDir}/Ballerina.toml.template")
+        def newBallerinaToml = ballerinaTomlFilePlaceHolder.text.replace("RUNTIME_VERSION", runtimeVersion);
+        def ballerinaTomlFile = new File("$project.projectDir/Ballerina.toml");
+        ballerinaTomlFile.text = newBallerinaToml;
+}
+task commitTomlFiles {
+    doLast {
+        project.exec {
+            ignoreExitValue true
+            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                commandLine 'cmd', '/c', "git commit -m \"[Automated] Update the native jar versions\" Ballerina.toml "
+            } else {
+                commandLine 'sh', '-c', "git commit -m '[Automated] Update the native jar versions' Ballerina.toml"
+            }
+        }
+    }
 }
 build.mustRunAfter ":org.wso2.apk.runtime:build"
