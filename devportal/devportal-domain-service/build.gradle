@@ -17,5 +17,24 @@
 //
 
 plugins {
-    id 'net.researchgate.release' version '3.0.2'
+    id 'net.researchgate.release' version '2.8.0'
+}
+allprojects {
+    group = project.group
+    version = project.version
+}
+
+release {
+    tagTemplate = 'devportal-domain-service-$version'
+
+    git {
+        requireBranch= "main"
+        pushToRemote= "origin"
+    }
+}
+
+unSnapshotVersion.finalizedBy ":ballerina:commit_toml_files"
+afterReleaseBuild.dependsOn ":docker:docker_push"
+task build{
+    dependsOn("docker:build")
 }
