@@ -48,3 +48,5 @@ jobs:
         run: |
           cd apk-repo/runtime/runtime-domain-service
           gradle release -Prelease.useAutomaticVersion=true -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }}
+          gradle :ballerina:commitTomlFiles
+          git push

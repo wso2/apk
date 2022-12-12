@@ -33,7 +33,6 @@ release {
 }
 
 unSnapshotVersion.finalizedBy ":ballerina:commitTomlFiles"
-afterReleaseBuild.finalizedBy ":ballerina:commitTomlFiles"
 afterReleaseBuild.dependsOn ":docker:docker_push"
 task build{
  dependsOn("docker:build")
