@@ -204,8 +204,21 @@ service /api/am/devportal on ep0 {
     // }
     // resource function post applications/'import(boolean? preserveOwner, boolean? skipSubscriptions, string? appOwner, boolean? skipApplicationKeys, boolean? update, @http:Payload json payload) returns ApplicationInfo|BadRequestError|NotAcceptableError {
     // }
-    // resource function get subscriptions(string? apiId, string? applicationId, string? groupId, @http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match, int offset = 0, int 'limit = 25) returns SubscriptionList|http:NotModified|NotAcceptableError {
-    // }
+    resource function get subscriptions(string? apiId, string? applicationId, string? groupId, @http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match, int offset = 0, int 'limit = 25) returns SubscriptionList|http:NotModified|NotAcceptableError|InternalServerErrorError|error {
+        string?|SubscriptionList|error subscriptionList = check getSubscriptions(apiId, applicationId, groupId, offset, 'limit, "carbon.super");
+        if subscriptionList is string {
+            json j = check value:fromJsonString(subscriptionList);
+            SubscriptionList sub = check j.cloneWithType(SubscriptionList);
+            log:printDebug(sub.toString());
+            return sub;
+        } else if subscriptionList is SubscriptionList {
+            log:printDebug(subscriptionList.toString());
+            return subscriptionList;
+        } else {
+            InternalServerErrorError internalError = {body: {code: 90922, message: "Internal Error while retrieving All Subscriptions of an API or Application or both"}};
+            return internalError;
+        }
+    }
     resource function post subscriptions(@http:Header string? 'x\-wso2\-tenant, @http:Payload Subscription payload) returns CreatedSubscription|AcceptedWorkflowResponse|BadRequestError|UnsupportedMediaTypeError|InternalServerErrorError|error {
         string?|Subscription|error subscription = check addSubscription(payload, "carbon.super", "apkuser");
         if subscription is string {
@@ -221,16 +234,57 @@ service /api/am/devportal on ep0 {
             return internalError;
         }
     }
-    // resource function post subscriptions/multiple(@http:Header string? 'x\-wso2\-tenant, @http:Payload Subscription[] payload) returns Subscription[]|BadRequestError|UnsupportedMediaTypeError {
-    // }
+    resource function post subscriptions/multiple(@http:Header string? 'x\-wso2\-tenant, @http:Payload Subscription[] payload) returns Subscription[]|BadRequestError|UnsupportedMediaTypeError|InternalServerErrorError|error {
+        Subscription[]|error? subscriptions = check addMultipleSubscriptions(payload, "carbon.super", "apkuser");
+        if subscriptions is Subscription[]  {
+            log:printDebug(subscriptions.toString());
+            return subscriptions;
+        } else {
+            InternalServerErrorError internalError = {body: {code: 90921, message: "Internal Error while adding Subscriptions"}};
+            return internalError;
+        }
+    }
     // resource function get subscriptions/[string apiId]/additionalInfo(string? groupId, @http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match, int offset = 0, int 'limit = 25) returns AdditionalSubscriptionInfoList|http:NotFound {
     // }
-    // resource function get subscriptions/[string subscriptionId](@http:Header string? 'if\-none\-match) returns Subscription|http:NotModified|NotFoundError {
-    // }
-    // resource function put subscriptions/[string subscriptionId](@http:Header string? 'x\-wso2\-tenant, @http:Payload Subscription payload) returns Subscription|AcceptedWorkflowResponse|http:NotModified|BadRequestError|http:NotFound|http:UnsupportedMediaType {
-    // }
-    // resource function delete subscriptions/[string subscriptionId](@http:Header string? 'if\-match) returns http:Ok|AcceptedWorkflowResponse|NotFoundError|PreconditionFailedError {
-    // }
+    resource function get subscriptions/[string subscriptionId](@http:Header string? 'if\-none\-match) returns Subscription|http:NotModified|NotFoundError|InternalServerErrorError|error {
+        string?|Subscription|error subscription = check getSubscriptionById(subscriptionId, "carbon.super");
+        if subscription  is string {
+            json j = check value:fromJsonString(subscription );
+            Subscription sub = check j.cloneWithType(Subscription);
+            log:printDebug(sub.toString());
+            return sub;
+        } else if subscription is Subscription {
+            log:printDebug(subscription.toString());
+            return subscription;
+        } else {
+            InternalServerErrorError internalError = {body: {code: 90922, message: "Internal Error while retrieving Subscription By Id"}};
+            return internalError;
+        }
+    }
+    resource function put subscriptions/[string subscriptionId](@http:Header string? 'x\-wso2\-tenant, @http:Payload Subscription payload) returns Subscription|AcceptedWorkflowResponse|http:NotModified|BadRequestError|NotFoundError|http:UnsupportedMediaType|InternalServerErrorError|error {
+        string?|Subscription|NotFoundError|error subscription = check updateSubscription(subscriptionId, payload, "carbon.super", "apkuser");
+        if subscription is string {
+            json j = check value:fromJsonString(subscription);
+            Subscription updatedSub = check j.cloneWithType(Subscription);
+            return updatedSub;
+        } else if subscription is Subscription  {
+            log:printDebug(subscription.toString());
+            return subscription;
+        } else {
+            InternalServerErrorError internalError = {body: {code: 90921, message: "Internal Error while updating Subscription Tier"}};
+            return internalError;
+        }
+    }
+    resource function delete subscriptions/[string subscriptionId](@http:Header string? 'if\-match) returns http:Ok|AcceptedWorkflowResponse|NotFoundError|PreconditionFailedError|InternalServerErrorError|error{
+        string organization = "carbon.super";
+        string|error? response = check deleteSubscription(subscriptionId,organization);
+        if response is error {
+            InternalServerErrorError internalError = {body: {code: 90923, message: "Internal Error while deleting Subscription By Id"}};
+            return internalError;
+        } else {
+            return http:OK;
+        }
+    }
     // resource function get subscriptions/[string subscriptionId]/usage() returns APIMonetizationUsage|http:NotModified|NotFoundError {
     // }
     // resource function get 'throttling\-policies/[string policyLevel](@http:Header string? 'if\-none\-match, @http:Header string? 'x\-wso2\-tenant, int 'limit = 25, int offset = 0) returns ThrottlingPolicyList|http:NotModified|NotAcceptableError {

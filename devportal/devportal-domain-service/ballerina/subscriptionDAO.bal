@@ -77,3 +77,211 @@ function addSubscriptionDAO(Subscription sub, string user, int apiId, int appId)
         }
     }
 }
+
+function getSubscriptionByIdDAO(string subId, string org) returns string?|Subscription|error {
+    jdbc:Client | error dbClient  = getConnection();
+    if dbClient is error {
+        return error("Error while retrieving connection");
+    } else {
+        sql:ParameterizedQuery query = `SELECT 
+        SUBS.SUBSCRIPTION_ID AS SUBSCRIPTION_ID, 
+        API.API_PROVIDER AS API_PROVIDER, 
+        API.API_NAME AS API_NAME, 
+        API.API_VERSION AS API_VERSION, 
+        API.API_TYPE AS API_TYPE, 
+        API.ORGANIZATION AS ORGANIZATION, 
+        APP.UUID AS APPLICATIONID, 
+        SUBS.TIER_ID AS THROTTLINGPOLICY, 
+        SUBS.TIER_ID_PENDING AS TIER_ID_PENDING, 
+        SUBS.SUB_STATUS AS SUB_STATUS, 
+        SUBS.SUBS_CREATE_STATE AS SUBS_CREATE_STATE, 
+        SUBS.UUID AS UUID, 
+        SUBS.CREATED_TIME AS CREATED_TIME, 
+        SUBS.UPDATED_TIME AS UPDATED_TIME, 
+        API.API_UUID AS APIID
+        FROM SUBSCRIPTION SUBS, API API, APPLICATION APP 
+        WHERE APP.APPLICATION_ID=SUBS.APPLICATION_ID AND API.API_ID = SUBS.API_ID AND SUBS.UUID =${subId}`;
+        Subscription | sql:Error result =  dbClient->queryRow(query);
+        check dbClient.close();
+        if result is sql:NoRowsError {
+            log:printInfo(result.toString());
+            return error("Not Found");
+        } else if result is Subscription {
+            log:printInfo(result.toString());
+            return result;
+        } else {
+            log:printInfo(result.toString());
+            return error("Error while retrieving Subscription");
+        }
+    }
+}
+
+function deleteSubscriptionDAO(string subId, string org) returns error?|string {
+    jdbc:Client | error dbClient  = getConnection();
+    if dbClient is error {
+        return error("Error while retrieving connection");
+    } else {
+        sql:ParameterizedQuery query = `DELETE FROM SUBSCRIPTION WHERE UUID = ${subId}`;
+        sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
+        check dbClient.close();
+        if result is sql:ExecutionResult {
+            return "deleted";
+        } else {
+            log:printDebug(result.toString());
+            return error("Error while deleting data record in the Database");  
+        }
+    }
+}
+
+function updateSubscriptionDAO(Subscription sub, string user, int apiId, int appId) returns string?|Subscription|error {
+    jdbc:Client | error dbClient  = getConnection();
+    if dbClient is error {
+        return error("Error while retrieving connection");
+    } else {
+        // Update Policy of a subscription in SUBSCRIPTION table
+        sql:ParameterizedQuery query = ` UPDATE SUBSCRIPTION SET TIER_ID_PENDING = ${sub.requestedThrottlingPolicy} 
+        , TIER_ID = ${sub.throttlingPolicy} , SUB_STATUS = ${sub.status}
+        WHERE UUID = ${sub.subscriptionId}`;
+        sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
+        check dbClient.close();
+        if result is sql:ExecutionResult {
+            log:printDebug(result.toString());
+            return sub;
+        } else {
+            log:printError(result.toString());
+            return error("Error while updating data record in Database");  
+        }
+    }
+}
+
+function getSubscriptionByAPIandAppIdDAO(string apiId, string appId, string org) returns string?|Subscription|error {
+    jdbc:Client | error dbClient  = getConnection();
+    if dbClient is error {
+        return error("Error while retrieving connection");
+    } else {
+        sql:ParameterizedQuery query = `SELECT 
+        SUBS.SUBSCRIPTION_ID AS SUBSCRIPTION_ID, 
+        API.API_PROVIDER AS API_PROVIDER, 
+        API.API_NAME AS API_NAME, 
+        API.API_VERSION AS API_VERSION, 
+        API.API_TYPE AS API_TYPE, 
+        API.ORGANIZATION AS ORGANIZATION, 
+        APP.UUID AS APPLICATIONID, 
+        SUBS.TIER_ID AS THROTTLINGPOLICY, 
+        SUBS.TIER_ID_PENDING AS TIER_ID_PENDING, 
+        SUBS.SUB_STATUS AS SUB_STATUS, 
+        SUBS.SUBS_CREATE_STATE AS SUBS_CREATE_STATE, 
+        SUBS.UUID AS UUID, 
+        SUBS.CREATED_TIME AS CREATED_TIME, 
+        SUBS.UPDATED_TIME AS UPDATED_TIME, 
+        API.API_UUID AS APIID
+        FROM SUBSCRIPTION SUBS, API API, APPLICATION APP 
+        WHERE APP.APPLICATION_ID=SUBS.APPLICATION_ID AND API.API_ID = SUBS.API_ID AND API.API_UUID =${apiId} AND APP.UUID=${appId}`;
+        Subscription | sql:Error result =  dbClient->queryRow(query);
+        check dbClient.close();
+        if result is sql:NoRowsError {
+            log:printInfo(result.toString());
+            return error("Not Found");
+        } else if result is Subscription {
+            log:printInfo(result.toString());
+            return result;
+        } else {
+            log:printInfo(result.toString());
+            return error("Error while retrieving Subscription");
+        }
+    }
+}
+
+function getSubscriptionsByAPIIdDAO(string apiId, string org) returns Subscription[]|error? {
+    jdbc:Client | error dbClient  = getConnection();
+    if dbClient is error {
+        return error("Error while retrieving connection");
+    } else {
+        sql:ParameterizedQuery query = `SELECT 
+        SUBS.SUBSCRIPTION_ID AS SUBSCRIPTION_ID, 
+        API.API_PROVIDER AS API_PROVIDER, 
+        API.API_NAME AS API_NAME, 
+        API.API_VERSION AS API_VERSION, 
+        API.API_TYPE AS API_TYPE, 
+        API.ORGANIZATION AS ORGANIZATION, 
+        APP.UUID AS APPLICATIONID, 
+        SUBS.TIER_ID AS THROTTLINGPOLICY, 
+        SUBS.TIER_ID_PENDING AS TIER_ID_PENDING, 
+        SUBS.SUB_STATUS AS SUB_STATUS, 
+        SUBS.SUBS_CREATE_STATE AS SUBS_CREATE_STATE, 
+        SUBS.UUID AS UUID, 
+        SUBS.CREATED_TIME AS CREATED_TIME, 
+        SUBS.UPDATED_TIME AS UPDATED_TIME, 
+        API.API_UUID AS APIID
+        FROM SUBSCRIPTION SUBS, API API, APPLICATION APP 
+        WHERE APP.APPLICATION_ID=SUBS.APPLICATION_ID AND API.API_ID = SUBS.API_ID AND API.API_UUID =${apiId}`;
+        stream<Subscription, sql:Error?> subscriptionStream = dbClient->query(query);
+        Subscription[]? subscriptions = check from Subscription subscription in subscriptionStream select subscription;
+        check subscriptionStream.close();
+        check dbClient.close();
+        return subscriptions;
+    }
+}
+
+function getSubscriptionsByAPPIdDAO(string appId, string org) returns Subscription[]|error? {
+    jdbc:Client | error dbClient  = getConnection();
+    if dbClient is error {
+        return error("Error while retrieving connection");
+    } else {
+        sql:ParameterizedQuery query = `SELECT 
+        SUBS.SUBSCRIPTION_ID AS SUBSCRIPTION_ID, 
+        API.API_PROVIDER AS API_PROVIDER, 
+        API.API_NAME AS API_NAME, 
+        API.API_VERSION AS API_VERSION, 
+        API.API_TYPE AS API_TYPE, 
+        API.ORGANIZATION AS ORGANIZATION, 
+        APP.UUID AS APPLICATIONID, 
+        SUBS.TIER_ID AS THROTTLINGPOLICY, 
+        SUBS.TIER_ID_PENDING AS TIER_ID_PENDING, 
+        SUBS.SUB_STATUS AS SUB_STATUS, 
+        SUBS.SUBS_CREATE_STATE AS SUBS_CREATE_STATE, 
+        SUBS.UUID AS UUID, 
+        SUBS.CREATED_TIME AS CREATED_TIME, 
+        SUBS.UPDATED_TIME AS UPDATED_TIME, 
+        API.API_UUID AS APIID
+        FROM SUBSCRIPTION SUBS, API API, APPLICATION APP 
+        WHERE APP.APPLICATION_ID=SUBS.APPLICATION_ID AND API.API_ID = SUBS.API_ID AND APP.UUID=${appId}`;
+        stream<Subscription, sql:Error?> subscriptionStream = dbClient->query(query);
+        Subscription[]? subscriptions = check from Subscription subscription in subscriptionStream select subscription;
+        check subscriptionStream.close();
+        check dbClient.close();
+        return subscriptions;
+    }
+}
+
+function getSubscriptionsList(string org) returns Subscription[]|error? {
+    jdbc:Client | error dbClient  = getConnection();
+    if dbClient is error {
+        return error("Error while retrieving connection");
+    } else {
+        sql:ParameterizedQuery query = `SELECT 
+        SUBS.SUBSCRIPTION_ID AS SUBSCRIPTION_ID, 
+        API.API_PROVIDER AS API_PROVIDER, 
+        API.API_NAME AS API_NAME, 
+        API.API_VERSION AS API_VERSION, 
+        API.API_TYPE AS API_TYPE, 
+        API.ORGANIZATION AS ORGANIZATION, 
+        APP.UUID AS APPLICATIONID, 
+        SUBS.TIER_ID AS THROTTLINGPOLICY, 
+        SUBS.TIER_ID_PENDING AS TIER_ID_PENDING, 
+        SUBS.SUB_STATUS AS SUB_STATUS, 
+        SUBS.SUBS_CREATE_STATE AS SUBS_CREATE_STATE, 
+        SUBS.UUID AS UUID, 
+        SUBS.CREATED_TIME AS CREATED_TIME, 
+        SUBS.UPDATED_TIME AS UPDATED_TIME, 
+        API.API_UUID AS APIID
+        FROM SUBSCRIPTION SUBS, API API, APPLICATION APP 
+        WHERE APP.APPLICATION_ID=SUBS.APPLICATION_ID AND API.API_ID = SUBS.API_ID`;
+        stream<Subscription, sql:Error?> subscriptionStream = dbClient->query(query);
+        Subscription[]? subscriptions = check from Subscription subscription in subscriptionStream select subscription;
+        check subscriptionStream.close();
+        check dbClient.close();
+        return subscriptions;
+    }
+}
+
