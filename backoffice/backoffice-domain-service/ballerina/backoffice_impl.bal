@@ -28,24 +28,27 @@ function getAPIList() returns string?|APIList|error {
 }
 
 function changeLifeCyleState(string action, string apiId, string organization) returns LifecycleState|error {
+    string|error? lcState = db_changeLCState(action, apiId, organization);
+    if lcState is string {
+            LifecycleState lcStateCr = {state: lcState, availableTransitions: [
+                {event: "", targetState: ""}
+            ]};
+            return lcStateCr;
+    } else {
+        return error("error while updating LC state");
+    }
+} 
+
+
+function getLifeCyleState(string apiId, string organization) returns LifecycleState|error {
     string|error? currentLCState = db_getCurrentLCStatus(apiId, organization);
     if currentLCState is string {
-        string|error? lcState = db_changeLCState(action, apiId, organization);
-        if lcState is string {
-            string|error? updatedLCState = db_getCurrentLCStatus(apiId, organization);
-                if updatedLCState is string {
-                LifecycleState lcStateCr = {state: currentLCState, availableTransitions: [
-                    {event: action, targetState: updatedLCState}
-                ]};
-                return lcStateCr;
-            } else {
-            return error("Error while getting updated the LC state");
-            }
-        } else {
-            return error("error while updating LC state");
-        }
+            LifecycleState lcStateCr = {state: currentLCState, availableTransitions: [
+                {event: "", targetState: ""}
+            ]};
+        return lcStateCr;
     } else {
-        return error("error while getting currnt LC state");
+        return error("error while updating LC state");
     }
 }
 
