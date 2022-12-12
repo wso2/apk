@@ -29,6 +29,7 @@ import (
 
 	cpcontrollers "github.com/wso2/apk/adapter/internal/operator/controllers/cp"
 	dpcontrollers "github.com/wso2/apk/adapter/internal/operator/controllers/dp"
+	"github.com/wso2/apk/adapter/internal/operator/status"
 	"github.com/wso2/apk/adapter/internal/operator/synchronizer"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
@@ -113,7 +114,12 @@ func InitOperator() {
 	// TODO: Decide on a buffer size and add to config.
 	ch := make(chan synchronizer.APIEvent, 10)
 
-	if err := dpcontrollers.NewAPIController(mgr, operatorDataStore, &ch); err != nil {
+	updateHandler := status.NewUpdateHandler(mgr.GetClient())
+	if err := mgr.Add(updateHandler); err != nil {
+		loggers.LoggerAPKOperator.Errorf("Failed to add status update handler %v", err)
+	}
+
+	if err := dpcontrollers.NewAPIController(mgr, operatorDataStore, updateHandler, &ch); err != nil {
 		loggers.LoggerAPKOperator.Errorf("Error creating API controller: %v", err)
 	}
 
