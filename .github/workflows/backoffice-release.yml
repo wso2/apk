@@ -29,8 +29,8 @@ jobs:
         name: Set release username and email
         shell: sh
         run: |
-          git config --global user.name tharindu1st
-          git config --global user.email ghtd.dharmarathna@gmail.com
+          git config --global user.name ${{ secrets.WSO2_BOT_USER }}
+          git config --global user.email ${{ secrets.WSO2_BOT_EMAIL }}
       -
         name: Checkout Product-APIM
         uses: actions/checkout@v3
