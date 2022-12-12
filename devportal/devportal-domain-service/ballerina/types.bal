@@ -394,6 +394,7 @@ public type CommentList record {
 
 public type Application record {
     string applicationId?;
+    int id?;
     @constraint:String {maxLength: 100, minLength: 1}
     string name;
     @constraint:String {minLength: 1}
@@ -817,6 +818,8 @@ public type WorkflowResponse record {
 public type API record {
     # UUID of the api
     string id?;
+    # ID of the api
+    int apiId?;
     # Name of the API
     string name;
     # A brief description about the API
