@@ -23,16 +23,18 @@ import ballerina/sql;
 configurable DatasourceConfiguration datasourceConfiguration = ?;
 configurable ThrottlingConfiguration throttleConfig = ?;
 jdbc:Client|sql:Error dbClient;
+sql:ConnectionPool connPool;
 
 function init() {
     log:printInfo("Starting APK Devportal Domain Service...");
-    APKConfiguration apkConfig = {
-        throttlingConfiguration: throttleConfig,
-        datasourceConfiguration: datasourceConfiguration
-    };
+    // APKConfiguration apkConfig = {
+    //     throttlingConfiguration: throttleConfig,
+    //     datasourceConfiguration: datasourceConfiguration
+    // };
+    connPool = {maxOpenConnections: datasourceConfiguration.maxPoolSize};
     dbClient = new(datasourceConfiguration.url, datasourceConfiguration.username, 
         datasourceConfiguration.password,
-        connectionPool = { maxOpenConnections: datasourceConfiguration.maxPoolSize });
+        connectionPool = connPool);
     jdbc:Client | error dbClient  = getConnection();
     if dbClient is error {
         return log:printError("Error while connecting to database");
@@ -42,6 +44,6 @@ function init() {
 public function getConnection() returns jdbc:Client | error {
     dbClient = new(datasourceConfiguration.url, datasourceConfiguration.username, 
         datasourceConfiguration.password,
-        connectionPool = { maxOpenConnections: datasourceConfiguration.maxPoolSize });
+        connectionPool = connPool);
     return dbClient;  
 }

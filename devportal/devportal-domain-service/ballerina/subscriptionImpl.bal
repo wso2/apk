@@ -39,7 +39,7 @@ function addSubscription(Subscription payload, string org, string user) returns 
         }
         string apiInString = api.toJsonString();
         json j = check value:fromJsonString(apiInString);
-        apiId = check j.api_id.ensureType();
+        apiId = check j.apiId.ensureType();
     }
     string? appUUID = payload.applicationId;
     if appUUID is string {
@@ -51,7 +51,7 @@ function addSubscription(Subscription payload, string org, string user) returns 
         }
         string appInString = application.toJsonString();
         json j = check value:fromJsonString(appInString);
-        appId = check j.application_id.ensureType();
+        appId = check j.id.ensureType();
     }
     string? businessPlan = payload.throttlingPolicy;
     if businessPlan is string {
@@ -127,7 +127,7 @@ function updateSubscription(string subId, Subscription payload, string org, stri
         }
         string apiInString = api.toJsonString();
         json j = check value:fromJsonString(apiInString);
-        apiId = check j.api_id.ensureType();
+        apiId = check j.apiId.ensureType();
     }
     string? appUUID = payload.applicationId;
     if appUUID is string {
@@ -139,7 +139,7 @@ function updateSubscription(string subId, Subscription payload, string org, stri
         }
         string appInString = application.toJsonString();
         json j = check value:fromJsonString(appInString);
-        appId = check j.application_id.ensureType();
+        appId = check j.id.ensureType();
     }
     string? businessPlan = payload.throttlingPolicy;
     if businessPlan is string {
