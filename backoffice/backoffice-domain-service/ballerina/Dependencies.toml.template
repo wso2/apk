@@ -9,7 +9,7 @@ dependencies-toml-version = "2"
 [[package]]
 org = "ballerina"
 name = "auth"
-version = "2.5.0"
+version = "2.4.0"
 dependencies = [
 	{org = "ballerina", name = "crypto"},
 	{org = "ballerina", name = "jballerina.java"},
@@ -22,9 +22,8 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "cache"
-version = "3.3.0"
+version = "3.2.2"
 dependencies = [
-	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "task"},
 	{org = "ballerina", name = "time"}
@@ -44,7 +43,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "crypto"
-version = "2.3.0"
+version = "2.2.2"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "time"}
@@ -53,7 +52,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "file"
-version = "1.5.0"
+version = "1.4.0"
 dependencies = [
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"},
@@ -66,7 +65,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "http"
-version = "2.5.1"
+version = "2.4.6"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "cache"},
@@ -102,33 +101,16 @@ dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "lang.value"}
 ]
-modules = [
-	{org = "ballerina", packageName = "io", moduleName = "io"}
-]
 
 [[package]]
 org = "ballerina"
 name = "jballerina.java"
 version = "0.0.0"
-modules = [
-	{org = "ballerina", packageName = "jballerina.java", moduleName = "jballerina.java"}
-]
-
-[[package]]
-org = "ballerina"
-name = "jballerina.java.arrays"
-version = "1.2.3"
-dependencies = [
-	{org = "ballerina", name = "jballerina.java"}
-]
-modules = [
-	{org = "ballerina", packageName = "jballerina.java.arrays", moduleName = "jballerina.java.arrays"}
-]
 
 [[package]]
 org = "ballerina"
 name = "jwt"
-version = "2.5.0"
+version = "2.4.0"
 dependencies = [
 	{org = "ballerina", name = "cache"},
 	{org = "ballerina", name = "crypto"},
@@ -138,9 +120,6 @@ dependencies = [
 	{org = "ballerina", name = "log"},
 	{org = "ballerina", name = "regex"},
 	{org = "ballerina", name = "time"}
-]
-modules = [
-	{org = "ballerina", packageName = "jwt", moduleName = "jwt"}
 ]
 
 [[package]]
@@ -184,21 +163,10 @@ version = "0.0.0"
 
 [[package]]
 org = "ballerina"
-name = "lang.regexp"
-version = "0.0.0"
-dependencies = [
-	{org = "ballerina", name = "jballerina.java"}
-]
-
-[[package]]
-org = "ballerina"
 name = "lang.runtime"
 version = "0.0.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
-]
-modules = [
-	{org = "ballerina", packageName = "lang.runtime", moduleName = "lang.runtime"}
 ]
 
 [[package]]
@@ -206,8 +174,7 @@ org = "ballerina"
 name = "lang.string"
 version = "0.0.0"
 dependencies = [
-	{org = "ballerina", name = "jballerina.java"},
-	{org = "ballerina", name = "lang.regexp"}
+	{org = "ballerina", name = "jballerina.java"}
 ]
 
 [[package]]
@@ -224,7 +191,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "log"
-version = "2.5.0"
+version = "2.4.1"
 dependencies = [
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"},
@@ -238,7 +205,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "mime"
-version = "2.5.0"
+version = "2.4.0"
 dependencies = [
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"},
@@ -248,7 +215,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "oauth2"
-version = "2.5.0"
+version = "2.4.1"
 dependencies = [
 	{org = "ballerina", name = "cache"},
 	{org = "ballerina", name = "crypto"},
@@ -268,7 +235,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "os"
-version = "1.5.0"
+version = "1.4.0"
 dependencies = [
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"}
@@ -282,14 +249,25 @@ dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "lang.string"}
 ]
+
+[[package]]
+org = "ballerina"
+name = "sql"
+version = "1.5.0"
+dependencies = [
+	{org = "ballerina", name = "io"},
+	{org = "ballerina", name = "jballerina.java"},
+	{org = "ballerina", name = "lang.object"},
+	{org = "ballerina", name = "time"}
+]
 modules = [
-	{org = "ballerina", packageName = "regex", moduleName = "regex"}
+	{org = "ballerina", packageName = "sql", moduleName = "sql"}
 ]
 
 [[package]]
 org = "ballerina"
 name = "task"
-version = "2.3.0"
+version = "2.2.2"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "time"}
@@ -312,45 +290,6 @@ dependencies = [
 ]
 
 [[package]]
-org = "ballerina"
-name = "uuid"
-version = "1.4.0"
-dependencies = [
-	{org = "ballerina", name = "crypto"},
-	{org = "ballerina", name = "jballerina.java"},
-	{org = "ballerina", name = "lang.int"},
-	{org = "ballerina", name = "regex"},
-	{org = "ballerina", name = "time"}
-]
-modules = [
-	{org = "ballerina", packageName = "uuid", moduleName = "uuid"}
-]
-
-[[package]]
-org = "ballerina"
-name = "websocket"
-version = "2.5.0"
-dependencies = [
-	{org = "ballerina", name = "auth"},
-	{org = "ballerina", name = "constraint"},
-	{org = "ballerina", name = "http"},
-	{org = "ballerina", name = "io"},
-	{org = "ballerina", name = "jballerina.java"},
-	{org = "ballerina", name = "jwt"},
-	{org = "ballerina", name = "lang.array"},
-	{org = "ballerina", name = "lang.runtime"},
-	{org = "ballerina", name = "lang.string"},
-	{org = "ballerina", name = "lang.value"},
-	{org = "ballerina", name = "log"},
-	{org = "ballerina", name = "oauth2"},
-	{org = "ballerina", name = "regex"},
-	{org = "ballerina", name = "time"}
-]
-modules = [
-	{org = "ballerina", packageName = "websocket", moduleName = "websocket"}
-]
-
-[[package]]
 org = "ballerinai"
 name = "observe"
 version = "0.0.0"
@@ -363,34 +302,36 @@ modules = [
 ]
 
 [[package]]
+org = "ballerinax"
+name = "postgresql"
+version = "1.5.0"
+dependencies = [
+	{org = "ballerina", name = "crypto"},
+	{org = "ballerina", name = "io"},
+	{org = "ballerina", name = "jballerina.java"},
+	{org = "ballerina", name = "sql"},
+	{org = "ballerina", name = "time"}
+]
+modules = [
+	{org = "ballerinax", packageName = "postgresql", moduleName = "postgresql"}
+]
+
+[[package]]
 org = "wso2"
-name = "runtime_domain_service"
+name = "backoffice_service"
 version = "PROJECT_VERSION"
 dependencies = [
 	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "http"},
-	{org = "ballerina", name = "io"},
-	{org = "ballerina", name = "jballerina.java"},
-	{org = "ballerina", name = "jballerina.java.arrays"},
-	{org = "ballerina", name = "jwt"},
-	{org = "ballerina", name = "lang.runtime"},
 	{org = "ballerina", name = "lang.value"},
 	{org = "ballerina", name = "log"},
-	{org = "ballerina", name = "regex"},
-	{org = "ballerina", name = "uuid"},
-	{org = "ballerina", name = "websocket"},
-	{org = "ballerinai", name = "observe"}
+	{org = "ballerina", name = "sql"},
+	{org = "ballerinai", name = "observe"},
+	{org = "ballerinax", name = "postgresql"}
 ]
 modules = [
-	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service"},
-	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service.java.lang"},
-	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service.java.util"},
-	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service.java.util.function"},
-	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service.java.util.stream"},
-	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service.model"},
-	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service.org.wso2.apk.runtime"},
-	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service.org.wso2.apk.runtime.api"},
-	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service.org.wso2.apk.runtime.model"}
+	{org = "wso2", packageName = "backoffice_service", moduleName = "backoffice_service"},
+	{org = "wso2", packageName = "backoffice_service", moduleName = "backoffice_service.backoffice"}
 ]
 
 

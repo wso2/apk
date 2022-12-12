@@ -1,4 +1,4 @@
-name: Release Runtime-domain-service.
+name: Release Backoffice-domain-service.
 on:
   workflow_dispatch:
 jobs:
@@ -46,7 +46,7 @@ jobs:
       -
         name: Run Gradle build
         run: |
-          cd apk-repo/runtime/runtime-domain-service
+          cd apk-repo/backoffice/backoffice-domain-service
           gradle release -Prelease.useAutomaticVersion=true -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }}
           gradle :ballerina:commit_toml_files
           git push
