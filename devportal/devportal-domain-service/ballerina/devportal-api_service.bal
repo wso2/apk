@@ -204,8 +204,21 @@ service /api/am/devportal on ep0 {
     // }
     // resource function post applications/'import(boolean? preserveOwner, boolean? skipSubscriptions, string? appOwner, boolean? skipApplicationKeys, boolean? update, @http:Payload json payload) returns ApplicationInfo|BadRequestError|NotAcceptableError {
     // }
-    // resource function get subscriptions(string? apiId, string? applicationId, string? groupId, @http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match, int offset = 0, int 'limit = 25) returns SubscriptionList|http:NotModified|NotAcceptableError {
-    // }
+    resource function get subscriptions(string? apiId, string? applicationId, string? groupId, @http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match, int offset = 0, int 'limit = 25) returns SubscriptionList|http:NotModified|NotAcceptableError|InternalServerErrorError|error {
+        string?|SubscriptionList|error subscriptionList = check getSubscriptions(apiId, applicationId, groupId, offset, 'limit, "carbon.super");
+        if subscriptionList is string {
+            json j = check value:fromJsonString(subscriptionList);
+            SubscriptionList sub = check j.cloneWithType(SubscriptionList);
+            log:printDebug(sub.toString());
+            return sub;
+        } else if subscriptionList is SubscriptionList {
+            log:printDebug(subscriptionList.toString());
+            return subscriptionList;
+        } else {
+            InternalServerErrorError internalError = {body: {code: 90922, message: "Internal Error while retrieving All Subscriptions of an API or Application or both"}};
+            return internalError;
+        }
+    }
     resource function post subscriptions(@http:Header string? 'x\-wso2\-tenant, @http:Payload Subscription payload) returns CreatedSubscription|AcceptedWorkflowResponse|BadRequestError|UnsupportedMediaTypeError|InternalServerErrorError|error {
         string?|Subscription|error subscription = check addSubscription(payload, "carbon.super", "apkuser");
         if subscription is string {

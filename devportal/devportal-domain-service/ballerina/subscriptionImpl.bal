@@ -155,3 +155,48 @@ function updateSubscription(string subId, Subscription payload, string org, stri
     string?|Subscription|error createdSub = updateSubscriptionDAO(payload,user,apiId,appId);
     return createdSub;
 }
+
+function getSubscriptions(string? apiId, string? applicationId, string? groupId, int offset, int limitCount, string org) returns string?|SubscriptionList|error {
+    if apiId is string && applicationId is string {
+        // Retrieve Subscriptions per given API Id and App Id
+        string?|Subscription|error subscription = getSubscriptionByAPIandAppIdDAO(apiId,applicationId,org);
+        if subscription is Subscription {
+            Subscription[] subs = [subscription];
+            int count = subs.length();
+            SubscriptionList subList = {count: count, list: subs};
+            return subList;
+        } else {
+            return subscription;
+        }
+    } else if apiId is string {
+        // Retrieve Subscriptions per given API Id
+        Subscription[]|error? subs = getSubscriptionsByAPIIdDAO(apiId,org);
+        if subs is Subscription[] {
+            int count = subs.length();
+            SubscriptionList subList = {count: count, list: subs};
+            return subList;
+        } else {
+            return subs;
+        }
+    } else if applicationId is string {
+        // Retrieve Subscriptions per given APP Id
+        Subscription[]|error? subs = getSubscriptionsByAPPIdDAO(applicationId,org);
+        if subs is Subscription[] {
+            int count = subs.length();
+            SubscriptionList subList = {count: count, list: subs};
+            return subList;
+        } else {
+            return subs;
+        }
+    } else {
+        // Retrieve All Subscriptions
+        Subscription[]|error? subs = getSubscriptionsList(org);
+        if subs is Subscription[] {
+            int count = subs.length();
+            SubscriptionList subList = {count: count, list: subs};
+            return subList;
+        } else {
+            return subs;
+        }
+    }
+}
