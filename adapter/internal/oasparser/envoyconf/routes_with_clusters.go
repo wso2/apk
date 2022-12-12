@@ -1505,7 +1505,7 @@ func createAddress(remoteHost string, port uint32) *corev3.Address {
 
 // getMaxStreamDuration configures a maximum duration for a websocket route.
 func getMaxStreamDuration(apiType string) *routev3.RouteAction_MaxStreamDuration {
-	var maxStreamDuration *routev3.RouteAction_MaxStreamDuration = nil
+	var maxStreamDuration *routev3.RouteAction_MaxStreamDuration
 	if apiType == constants.WS {
 		maxStreamDuration = &routev3.RouteAction_MaxStreamDuration{
 			MaxStreamDuration: &durationpb.Duration{

@@ -94,7 +94,7 @@ func (swagger *MgwSwagger) SetInfoGraphQLAPI(apiYaml APIYaml) error {
 	}
 	swagger.resources = resources
 
-	var corsConfig *CorsConfig = generateGlobalCors()
+	var corsConfig = generateGlobalCors()
 	if apiYaml.Data.CorsConfiguration.CorsConfigurationEnabled == true {
 		corsConfig.AccessControlAllowOrigins = apiYaml.Data.CorsConfiguration.AccessControlAllowOrigins
 		corsConfig.AccessControlAllowCredentials = apiYaml.Data.CorsConfiguration.AccessControlAllowCredentials

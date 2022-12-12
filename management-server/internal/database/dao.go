@@ -79,9 +79,7 @@ func GetCachedApplicationByUUID(uuid string) (*apkmgt.Application, error) {
 
 // getSubscriptionsForApplication returns all subscriptions from DB, for a given application.
 func getSubscriptionsForApplication(appUUID string) ([]*apkmgt.Subscription, error) {
-	rows, err := ExecDBQuery(queryGetAllSubscriptionsForApplication, appUUID)
-	if err != nil {
-	}
+	rows, _ := ExecDBQuery(queryGetAllSubscriptionsForApplication, appUUID)
 	var subs []*apkmgt.Subscription
 	for rows.Next() {
 		values, err := rows.Values()
@@ -102,9 +100,7 @@ func getSubscriptionsForApplication(appUUID string) ([]*apkmgt.Subscription, err
 
 // getConsumerKeysForApplication returns all Consumer Keys from DB, for a given application.
 func getConsumerKeysForApplication(appUUID string) ([]*apkmgt.ConsumerKey, error) {
-	rows, err := ExecDBQuery(queryConsumerKeysForApplication, appUUID)
-	if err != nil {
-	}
+	rows, _ := ExecDBQuery(queryConsumerKeysForApplication, appUUID)
 	var keys []*apkmgt.ConsumerKey
 	for rows.Next() {
 		values, err := rows.Values()
