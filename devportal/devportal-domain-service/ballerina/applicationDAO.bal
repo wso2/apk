@@ -99,7 +99,7 @@ function getApplicationByIdDAO(string appId, string org) returns string?|Applica
             log:printDebug(result.toString());
             return result;
         } else {
-            log:printInfo(result.toString());
+            log:printDebug(result.toString());
             return error("Error while retrieving Application");
         }
     }

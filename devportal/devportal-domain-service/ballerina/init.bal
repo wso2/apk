@@ -27,10 +27,10 @@ sql:ConnectionPool connPool;
 
 function init() {
     log:printInfo("Starting APK Devportal Domain Service...");
-    // APKConfiguration apkConfig = {
-    //     throttlingConfiguration: throttleConfig,
-    //     datasourceConfiguration: datasourceConfiguration
-    // };
+    APKConfiguration apkConfig = {
+        throttlingConfiguration: throttleConfig,
+        datasourceConfiguration: datasourceConfiguration
+    };
     connPool = {maxOpenConnections: datasourceConfiguration.maxPoolSize};
     dbClient = new(datasourceConfiguration.url, datasourceConfiguration.username, 
         datasourceConfiguration.password,
