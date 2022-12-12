@@ -1926,7 +1926,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkflowResponse'
+                $ref: '#/components/schemas/LifecycleState'
         400:
           $ref: '#/components/responses/BadRequest'
         401:
