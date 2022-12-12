@@ -26,3 +26,8 @@ task bal_test(type: Exec) {
     description 'Run ballerina tests'
     commandLine 'bal', 'test'
 }
+task bal_clean(type: Exec) {
+    group 'ballerina'
+    description 'Run ballerina clean'
+    commandLine 'bal', 'clean'
+}

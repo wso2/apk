@@ -22,11 +22,9 @@ apply from: "$projectDir/../../../common-gradle-scripts/java.gradle"
 dependencies {
     implementation libs.commons.logging
     implementation libs.gson
-    implementation libs.swagger.inflector.oas3
     implementation libs.swagger.parser.v3
     implementation libs.swagger.models.v3
     implementation libs.swagger.core.v3
-    implementation libs.slf4j.ext
     implementation libs.jackson.dataformat.yaml
     implementation libs.graphql
     implementation libs.jackson.annotations

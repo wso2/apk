@@ -16,15 +16,20 @@
  */
 
 def imageName = docker_image_name + ':' + project.version
+if (project.hasProperty("docker_organization")) {
+    imageName = docker_organization+'/'+imageName
+}
 def platforms = 'linux/amd64,linux/arm64'
 
 
 
-// tasks.register('docker_login', Exec) {
-//     group 'docker'
-//     description 'Log in to a Docker registry.'
-//     commandLine 'docker', 'login', '--username', System.getenv('docker_username'), '--password', System.getenv('docker_password')
-// }
+tasks.register('docker_login', Exec) {
+    group 'docker'
+    description 'Log in to a Docker registry.'
+    if (project.hasProperty("docker_username")&& project.hasProperty("docker_password")) {
+        commandLine 'docker', 'login', '--username', docker_username, '--password', docker_password
+    }
+}
 
 tasks.register('docker_build', Exec) {
     group 'docker'
@@ -32,13 +37,13 @@ tasks.register('docker_build', Exec) {
     commandLine 'docker', 'build', '-t', imageName, '.'
 }
 
-// tasks.register('docker_push', Exec) {
-//     group 'docker'
-//     description 'Push an image or a repository to a registry.'
-//     dependsOn docker_login
-//     dependsOn docker_build
-//     commandLine 'docker', 'push', imageName
-// }
+tasks.register('docker_push', Exec) {
+    group 'docker'
+    description 'Push an image or a repository to a registry.'
+    dependsOn docker_login
+    dependsOn docker_build
+    commandLine 'docker', 'push', imageName
+}
 
 // Following tasks are required only if you need to make multi architecture docker images
 tasks.register('setup_arch', Exec) {

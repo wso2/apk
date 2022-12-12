@@ -16,13 +16,24 @@
  */
 
 plugins {
-    id 'net.researchgate.release' version '3.0.2'
+    id 'net.researchgate.release' version '2.8.0'
+}
+allprojects {
+    group = project.group
+    version = project.version
 }
 
-// apply from: "$rootDir/../common-gradle-scripts/docker.gradle"
+release {
+    tagTemplate = 'runtime-domain-service-$version'
 
-// release {
-//     tagTemplate = '${project.name}-${project.version}'
-// }
+    git {
+        requireBranch= "main"
+        pushToRemote= "origin"
+    }
+}
 
-// afterReleaseBuild.dependsOn docker_push
+unSnapshotVersion.finalizedBy ":ballerina:commitTomlFiles"
+afterReleaseBuild.dependsOn ":docker:docker_push"
+task build{
+ dependsOn("docker:build")
+}
