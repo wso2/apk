@@ -1,0 +1,13 @@
+[package]
+org = "wso2"
+name = "backoffice_service"
+version = "PROJECT_VERSION"
+distribution = "2201.2.0"
+
+[build-options]
+observabilityIncluded = true
+
+[[platform.java11.dependency]]
+groupId = "org.postgresql"
+artifactId = "postgresql"
+version = "42.5.0"

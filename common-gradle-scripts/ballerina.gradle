@@ -14,6 +14,7 @@
  * limitations under the License.
  *
  */
+import org.apache.tools.ant.taskdefs.condition.*
 
 task bal_build(type: Exec) {
     group 'ballerina'
@@ -30,4 +31,36 @@ task bal_clean(type: Exec) {
     group 'ballerina'
     description 'Run ballerina clean'
     commandLine 'bal', 'clean'
+}
+task update_toml_files {
+    group 'ballerina'
+    description 'Update Ballerina.toml and Dependencies.toml'
+    doLast {
+        def moduleVersion = project.version
+        println 'applying Ballerina.toml.template and Dependencies.toml.template  with version ' + moduleVersion
+        def ballerinaTomlFilePlaceHolder = new File("${projectDir}/Ballerina.toml.template")
+        def dependencyTomlFilePlaceHolder = new File("${projectDir}/Dependencies.toml.template")
+        def newBallerinaToml = ballerinaTomlFilePlaceHolder.text.replace("PROJECT_VERSION", moduleVersion);
+        def newDependenciesToml = dependencyTomlFilePlaceHolder.text.replace("PROJECT_VERSION", moduleVersion);
+        def ballerinaTomlFile = new File("$project.projectDir/Ballerina.toml");
+        def dependenciesTomlFile = new File("$project.projectDir/Dependencies.toml");
+        ballerinaTomlFile.text = newBallerinaToml;
+        dependenciesTomlFile.text = newDependenciesToml;
+    }
+}
+task commit_toml_files {
+    group 'ballerina'
+    description 'Commit updated toml files'
+    dependsOn "update_toml_files"
+    doLast {
+        println 'committing Dependencies.toml and Ballerina.toml'
+        project.exec {
+            ignoreExitValue true
+            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                commandLine 'cmd', '/c', "git commit -m \"[Automated] Update the native jar versions\" Ballerina.toml Dependencies.toml"
+            } else {
+                commandLine 'sh', '-c', "git commit -m '[Automated] Update the native jar versions' Ballerina.toml Dependencies.toml"
+            }
+        }
+    }
 }
