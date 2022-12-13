@@ -131,7 +131,6 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		})
 		return ctrl.Result{}, nil
 	}
-	loggers.LoggerAPI.Debugf("=========== %v", apiDef.Status)
 
 	// Reject invalid API
 	if apiDef.Status.Status == constants.InvalidState {
