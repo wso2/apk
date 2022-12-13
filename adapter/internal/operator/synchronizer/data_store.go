@@ -30,16 +30,14 @@ import (
 
 // OperatorDataStore holds the APIStore and API, HttpRoute mappings
 type OperatorDataStore struct {
-	APIStore           map[types.NamespacedName]*APIState
-	HTTPRouteToAPIRefs map[types.NamespacedName]types.NamespacedName
-	mu                 sync.Mutex
+	APIStore map[types.NamespacedName]*APIState
+	mu       sync.Mutex
 }
 
 // CreateNewOperatorDataStore creates a new OperatorDataStore.
 func CreateNewOperatorDataStore() *OperatorDataStore {
 	return &OperatorDataStore{
-		APIStore:           map[types.NamespacedName]*APIState{},
-		HTTPRouteToAPIRefs: map[types.NamespacedName]types.NamespacedName{},
+		APIStore: map[types.NamespacedName]*APIState{},
 	}
 }
 
@@ -53,12 +51,6 @@ func (ods *OperatorDataStore) AddNewAPI(api dpv1alpha1.API, prodHTTPRoute *gwapi
 		ProdHTTPRoute: prodHTTPRoute,
 		SandHTTPRoute: sandHTTPRoute}
 
-	if prodHTTPRoute != nil {
-		ods.HTTPRouteToAPIRefs[utils.NamespacedName(prodHTTPRoute)] = utils.NamespacedName(&api)
-	}
-	if sandHTTPRoute != nil {
-		ods.HTTPRouteToAPIRefs[utils.NamespacedName(sandHTTPRoute)] = utils.NamespacedName(&api)
-	}
 	return *ods.APIStore[utils.NamespacedName(&api)]
 }
 

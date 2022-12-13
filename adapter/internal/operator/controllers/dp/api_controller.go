@@ -29,6 +29,7 @@ import (
 	"github.com/wso2/apk/adapter/internal/operator/utils"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	k8error "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -43,6 +44,8 @@ import (
 
 	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
 )
+
+const httpRouteAPIIndex = "httpRouteAPIIndex"
 
 // APIReconciler reconciles a API object
 type APIReconciler struct {
@@ -67,6 +70,7 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 		})
 		return err
 	}
+	ctx := context.Background()
 
 	conf := config.ReadConfigs()
 	predicates := []predicate.Predicate{predicate.NewPredicateFuncs(utils.FilterByNamespaces(conf.Adapter.Operator.Namespaces))}
@@ -78,6 +82,9 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 			Severity:  logging.BLOCKER,
 			ErrorCode: 2601,
 		})
+		return err
+	}
+	if err := addAPIIndexers(ctx, mgr); err != nil {
 		return err
 	}
 
@@ -161,7 +168,7 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		}
 		apiState = apiStateUpdate
 	}
-	if prodHTTPRoute != nil && (prodHTTPRoute.UID != cachedAPI.ProdHTTPRoute.UID || prodHTTPRoute.Generation > cachedAPI.ProdHTTPRoute.Generation) {
+	if prodHTTPRoute != nil && (cachedAPI.ProdHTTPRoute == nil || prodHTTPRoute.UID != cachedAPI.ProdHTTPRoute.UID || prodHTTPRoute.Generation > cachedAPI.ProdHTTPRoute.Generation) {
 		apiStateUpdate, err := apiReconciler.ods.UpdateHTTPRoute(utils.NamespacedName(&apiDef), prodHTTPRoute, true)
 		if err != nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
@@ -173,7 +180,7 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		}
 		apiState = apiStateUpdate
 	}
-	if sandHTTPRoute != nil && (sandHTTPRoute.UID != cachedAPI.SandHTTPRoute.UID || sandHTTPRoute.Generation > cachedAPI.SandHTTPRoute.Generation) {
+	if sandHTTPRoute != nil && (cachedAPI.SandHTTPRoute == nil || sandHTTPRoute.UID != cachedAPI.SandHTTPRoute.UID || sandHTTPRoute.Generation > cachedAPI.SandHTTPRoute.Generation) {
 		apiStateUpdate, err := apiReconciler.ods.UpdateHTTPRoute(utils.NamespacedName(&apiDef), sandHTTPRoute, false)
 		if err != nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
@@ -185,9 +192,10 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		}
 		apiState = apiStateUpdate
 	}
-	*apiReconciler.ch <- synchronizer.APIEvent{EventType: constants.Update, Event: apiState}
+	if (synchronizer.APIState{}) != apiState {
+		*apiReconciler.ch <- synchronizer.APIEvent{EventType: constants.Update, Event: apiState}
+	}
 	return ctrl.Result{}, nil
-
 }
 
 // validateHTTPRouteRefs validates the HTTPRouteRefs related to a particular API by checking whether the
@@ -227,28 +235,71 @@ func validateHTTPRouteRefs(ctx context.Context, client client.Client, namespace 
 // from HTTPRoute objects. If the changes are done for an API stored in the Operator Data store,
 // a new reconcile event will be created and added to the reconcile event queue.
 func (apiReconciler *APIReconciler) getAPIForHTTPRoute(obj client.Object) []reconcile.Request {
+	ctx := context.Background()
 	httpRoute, ok := obj.(*gwapiv1b1.HTTPRoute)
 	if !ok {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("unexpected object type, bypassing reconciliation: %v", httpRoute),
+			Message:   fmt.Sprintf("Unexpected object type, bypassing reconciliation: %v", httpRoute),
 			Severity:  logging.TRIVIAL,
 			ErrorCode: 2608,
 		})
 		return []reconcile.Request{}
 	}
 
-	apiRef, found := apiReconciler.ods.HTTPRouteToAPIRefs[utils.NamespacedName(httpRoute)]
-	if !found {
-		loggers.LoggerAPKOperator.Infof("API CR for HttpRoute not found: %v", httpRoute.Name)
+	apiList := &dpv1alpha1.APIList{}
+	if err := apiReconciler.client.List(ctx, apiList, &client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(httpRouteAPIIndex, utils.NamespacedName(httpRoute).String()),
+	}); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("Unable to find associated APIs: %s", utils.NamespacedName(httpRoute).String()),
+			Severity:  logging.CRITICAL,
+			ErrorCode: 2610,
+		})
 		return []reconcile.Request{}
 	}
-	requests := []reconcile.Request{}
-	req := reconcile.Request{
-		NamespacedName: types.NamespacedName{
-			Name:      apiRef.Name,
-			Namespace: apiRef.Namespace},
+
+	if len(apiList.Items) == 0 {
+		loggers.LoggerAPKOperator.Debugf("APIs for HTTPRoute not found: %s", utils.NamespacedName(httpRoute).String())
+		return []reconcile.Request{}
 	}
-	loggers.LoggerAPKOperator.Infof("Adding reconcile request: %v", req.NamespacedName)
-	requests = append(requests, req)
+
+	requests := []reconcile.Request{}
+	for _, api := range apiList.Items {
+		req := reconcile.Request{
+			NamespacedName: types.NamespacedName{
+				Name:      api.Name,
+				Namespace: api.Namespace},
+		}
+		requests = append(requests, req)
+		loggers.LoggerAPKOperator.Infof("Adding reconcile request for API: %s/%s", api.Namespace, api.Name)
+
+	}
+
 	return requests
+}
+
+// addAPIIndexers adds indexing on API, for prodution and sandbox HTTPRoutes
+// referenced in API objects via `.spec.prodHTTPRouteRef` and `.spec.sandHTTPRouteRef`.
+// This helps to find APIs that are affected by a HTTPRoute CRUD operation.
+func addAPIIndexers(ctx context.Context, mgr manager.Manager) error {
+	err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.API{}, httpRouteAPIIndex, func(rawObj client.Object) []string {
+		api := rawObj.(*dpv1alpha1.API)
+		var httpRoutes []string
+		if api.Spec.ProdHTTPRouteRef != "" {
+			httpRoutes = append(httpRoutes,
+				types.NamespacedName{
+					Namespace: api.Namespace,
+					Name:      api.Spec.ProdHTTPRouteRef,
+				}.String())
+		}
+		if api.Spec.SandHTTPRouteRef != "" {
+			httpRoutes = append(httpRoutes,
+				types.NamespacedName{
+					Namespace: api.Namespace,
+					Name:      api.Spec.SandHTTPRouteRef,
+				}.String())
+		}
+		return httpRoutes
+	})
+	return err
 }
