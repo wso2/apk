@@ -96,7 +96,7 @@ function updateApplicationTest() {
 @test:Config {}
 function deleteApplicationTest(){
     test:when(deleteApplicationDAOMock).withArguments("12sqwsq", "carbon.super").thenReturn("");
-    error?|string status = deleteApplicationDAO("12sqwsq", "carbon.super");
+    error?|string status = deleteApplication("12sqwsq", "carbon.super");
     if status is string {
     test:assertTrue(true, "Successfully deleted application");
     } else if status is  error {
