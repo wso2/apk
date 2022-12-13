@@ -30,7 +30,7 @@ func retrieveEndpointsFromEnv(apiHashValue string) ([]Endpoint, []Endpoint) {
 	// set production Endpoints
 	i := 0
 	for {
-		var productionEndpointURL string = resolveEnvValueForEndpointConfig("api_"+apiHashValue+"_prod_endpoint_"+strconv.Itoa(i), "")
+		var productionEndpointURL = resolveEnvValueForEndpointConfig("api_"+apiHashValue+"_prod_endpoint_"+strconv.Itoa(i), "")
 		if productionEndpointURL == "" {
 			break
 		}
@@ -47,7 +47,7 @@ func retrieveEndpointsFromEnv(apiHashValue string) ([]Endpoint, []Endpoint) {
 	// set sandbox Endpoints
 	j := 0
 	for {
-		var sandboxEndpointURL string = resolveEnvValueForEndpointConfig("api_"+apiHashValue+"_sand_endpoint_"+strconv.Itoa(j), "")
+		var sandboxEndpointURL = resolveEnvValueForEndpointConfig("api_"+apiHashValue+"_sand_endpoint_"+strconv.Itoa(j), "")
 		if sandboxEndpointURL == "" {
 			break
 		}
@@ -64,7 +64,7 @@ func retrieveEndpointsFromEnv(apiHashValue string) ([]Endpoint, []Endpoint) {
 	return productionEndpoints, sandboxEndpoints
 }
 
-//RetrieveEndpointBasicAuthCredentialsFromEnv retrieve endpoint security credentials from env variables
+// RetrieveEndpointBasicAuthCredentialsFromEnv retrieve endpoint security credentials from env variables
 func RetrieveEndpointBasicAuthCredentialsFromEnv(apiHashValue string, keyType string, endpointSecurity EndpointSecurity) EndpointSecurity {
 	// production Endpoint security
 	endpointSecurity.Username = resolveEnvValueForEndpointConfig("api_"+apiHashValue+"_"+keyType+

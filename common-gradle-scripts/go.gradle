@@ -24,10 +24,10 @@ tasks.register('go_clean', Exec) {
     commandLine 'go', 'clean'
 }
 
-tasks.register('go_lint_run', Exec) {
+tasks.register('go_revive_run', Exec) {
     group 'go'
-    description 'Running golint.'
-    commandLine 'golint', '-set_exit_status', './...'
+    description 'Running revive.'
+    commandLine 'revive', '-config', 'revive.toml', '-set_exit_status', './...'
 }
 
 tasks.register('go_vet', Exec) {
