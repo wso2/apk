@@ -19,17 +19,31 @@
 import ballerina/log;
 import ballerinax/java.jdbc;
 import ballerina/sql;
+import ballerina/uuid;
 
 configurable DatasourceConfiguration datasourceConfiguration = ?;
 configurable ThrottlingConfiguration throttleConfig = ?;
+string kid = uuid:createType1AsString();
+
 jdbc:Client|sql:Error dbClient;
 sql:ConnectionPool connPool;
 
+APKConfiguration apkConfig;
+
 function init() {
     log:printInfo("Starting APK Devportal Domain Service...");
-    APKConfiguration apkConfig = {
+    apkConfig = {
         throttlingConfiguration: throttleConfig,
-        datasourceConfiguration: datasourceConfiguration
+        datasourceConfiguration: datasourceConfiguration,
+        tokenIssuerConfiguration: {},
+        keyStores: {
+        signing: {
+            path: "/home/wso2apk/devportal/security/wso2carbon.key"
+        },
+        tls: {
+            path: "/home/wso2apk/devportal/security/wso2carbon.key"
+        }
+    }
     };
     connPool = {maxOpenConnections: datasourceConfiguration.maxPoolSize};
     dbClient = new(datasourceConfiguration.url, datasourceConfiguration.username, 

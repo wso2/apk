@@ -49,4 +49,23 @@ type DatasourceConfiguration record {
 type APKConfiguration record {
     ThrottlingConfiguration throttlingConfiguration;
     DatasourceConfiguration datasourceConfiguration;
+    TokenIssuerConfiguration tokenIssuerConfiguration;
+    KeyStores keyStores;
 };
+
+public type TokenIssuerConfiguration record {|
+    string issuer = "https://localhost:9443/oauth2/token";
+    string audience = "https://localhost:9443/oauth2/token";
+    string keyId = "gateway_certificate_alias";
+    decimal expTime = 3600;
+|};
+
+public type KeyStores record {|
+    KeyStore signing;
+    KeyStore tls;
+|};
+
+public type KeyStore record {|
+    string path;
+    string keyPassword?;
+|};
