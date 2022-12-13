@@ -16,6 +16,8 @@
 // under the License.
 //
 
+import ballerina/io;
+
 # This function used to connect API create service to database
 #
 # + body - API parameter
@@ -24,11 +26,18 @@
 public function createAPI(APIBody body, string organization) returns API | error{
     API | error apiCr = db_createAPI(body, organization);
     if apiCr is error {
+        io:println(apiCr);
         return error("Error while adding API data");
     }
     API | error defCr = db_AddDefinition(body, organization);
     if defCr is error {
+        io:println(defCr);
         return error("Error while adding API definition");
+    }
+    string|error ss = db_AddLCEvent(body.apiProperties.id, "carbon.super");
+    if ss is error {
+        io:println(ss);
+        return error("Error while adding API LC EVrnr");
     }
     return apiCr;
     
