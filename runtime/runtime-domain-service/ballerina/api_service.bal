@@ -25,84 +25,81 @@ import ballerina/http;
 
 http:Service runtimeService = service object {
     APIClient apiService = new ();
-    resource function get apis(string? query, int 'limit = 25, int offset = 0, string sortBy = "createdTime", string sortOrder = "desc", @http:Header string? accept = "application/json") returns APIList|BadRequestError|UnauthorizedError|InternalServerErrorError|error {
+
+    resource function get apis(string? query, int 'limit = 25, int offset = 0, string sortBy = "createdTime", string sortOrder = "desc") returns APIList|InternalServerErrorError|BadRequestError {
         APIClient apiService = new ();
         return apiService.getAPIList(query, 'limit, offset, sortBy, sortOrder);
     }
-    resource function get apis/[string apiId]() returns API|BadRequestError|InternalServerErrorError|NotFoundError {
+    resource function post apis(@http:Payload API payload) returns CreatedAPI|BadRequestError|InternalServerErrorError {
+        BadRequestError notImplementedError = {body: {code: 900910, message: "Not implemented"}};
+        return notImplementedError;
+    }
+    resource function get apis/[string apiId]() returns API|NotFoundError|InternalServerErrorError {
         APIClient apiService = new ();
         return apiService.getAPIById(apiId);
     }
-    resource function post apis(@http:Payload API payload) returns CreatedAPI|BadRequestError|UnsupportedMediaTypeError|http:NotImplemented {
-        http:NotImplemented notImplementedError = {body: {code: 900910, message: "Not implemented"}};
-        return notImplementedError;
+    resource function put apis/[string apiId](@http:Payload API payload) returns API|BadRequestError|ForbiddenError|NotFoundError|PreconditionFailedError|InternalServerErrorError {
+        BadRequestError badRequest = {body: {code: 900910, message: "Not implemented"}};
+        return badRequest;
     }
-    resource function put apis/[string apiId](@http:Payload API payload) returns http:NotImplemented|API|BadRequestError|ForbiddenError|NotFoundError|ConflictError|PreconditionFailedError {
-        http:NotImplemented notImplementedError = {body: {code: 900910, message: "Not implemented"}};
-        return notImplementedError;
-    }
-    resource function delete apis/[string apiId]() returns http:Ok|ForbiddenError|NotFoundError|ConflictError|PreconditionFailedError {
+    resource function delete apis/[string apiId]() returns http:Ok|ForbiddenError|NotFoundError|InternalServerErrorError {
         APIClient apiService = new ();
         return apiService.deleteAPIById(apiId);
     }
-    resource function post apis/'import\-service(string serviceKey, @http:Payload API payload) returns CreatedAPI|NotFoundError|InternalServerErrorError|ConflictError {
-        APIClient apiService = new ();
-        return apiService.createAPIFromService(serviceKey, payload);
-    }
-    resource function post apis/'import\-definition(@http:Payload json payload) returns CreatedAPI|BadRequestError|UnsupportedMediaTypeError|http:NotImplemented {
-        http:NotImplemented notImplementedError = {body: {code: 900910, message: "Not implemented"}};
-        return notImplementedError;
-    }
-    resource function post apis/'validate\-definition(@http:Payload json payload, boolean returnContent = false) returns APIDefinitionValidationResponse|BadRequestError|NotFoundError|http:NotImplemented {
-        http:NotImplemented notImplementedError = {body: {code: 900910, message: "Not implemented"}};
-        return notImplementedError;
-    }
-    resource function post apis/validate() returns http:Ok|BadRequestError|NotFoundError|http:NotImplemented {
-        http:NotImplemented notImplementedError = {body: {code: 900910, message: "Not implemented"}};
-        return notImplementedError;
-    }
-    resource function get apis/[string apiId]/definition() returns string|NotFoundError|NotAcceptableError {
-        APIClient apiService = new ();
-        return apiService.getAPIDefinitionByID(apiId);
-    }
-    resource function put apis/[string apiId]/definition(@http:Payload json payload) returns string|BadRequestError|ForbiddenError|NotFoundError|PreconditionFailedError|http:NotImplemented {
-        http:NotImplemented notImplementedError = {body: {code: 900910, message: "Not implemented"}};
-        return notImplementedError;
-    }
-    resource function get apis/export(string? apiId, string? name, string? 'version, string? format) returns json|NotFoundError|InternalServerErrorError|http:NotImplemented {
-        http:NotImplemented notImplementedError = {body: {code: 900910, message: "Not implemented"}};
-        return notImplementedError;
-    }
-    resource function post apis/'import(boolean? overwrite, @http:Payload json payload) returns http:Ok|ForbiddenError|NotFoundError|ConflictError|InternalServerErrorError|http:NotImplemented {
-        http:NotImplemented notImplementedError = {body: {code: 900910, message: "Not implemented"}};
-        return notImplementedError;
-    }
-    resource function get services(string? name, string? namespace, string sortBy = "createdTime", string sortOrder = "desc", int 'limit = 25, int offset = 0) returns ServiceList|BadRequestError|UnauthorizedError|InternalServerErrorError {
-        ServiceClient serviceClient = new ();
-        return serviceClient.getServices(name, namespace, sortBy, sortOrder, 'limit, offset);
-    }
-    resource function get services/[string serviceId](string? namespace) returns Service|BadRequestError|NotFoundError|InternalServerErrorError {
-        ServiceClient serviceClient = new ();
-        return serviceClient.getServiceById(serviceId);
-    }
-
-    resource function get services/[string serviceId]/usage(string? namespace) returns APIList|BadRequestError|NotFoundError|InternalServerErrorError {
-        ServiceClient serviceClient = new ();
-        return serviceClient.getServiceUsageByServiceId(serviceId);
-    }
-    resource function get policies(string? query, int 'limit = 25, int offset = 0, string sortBy = "createdTime", string sortOrder = "desc", @http:Header string? accept = "application/json") returns MediationPolicyList|NotAcceptableError|http:NotImplemented {
-        http:NotImplemented notImplementedError = {body: {code: 900910, message: "Not implemented"}};
-        return notImplementedError;
-
-    }
-    resource function get policies/[string policyId]() returns MediationPolicy|NotFoundError|NotAcceptableError|http:NotImplemented {
-        http:NotImplemented notImplementedError = {body: {code: 900910, message: "Not implemented"}};
-        return notImplementedError;
-    }
-    resource function post apis/[string apiId]/'generate\-key() returns APIKey|BadRequestError|NotFoundError|InternalServerErrorError {
+    resource function post apis/[string apiId]/'generate\-key() returns APIKey|BadRequestError|NotFoundError|ForbiddenError|InternalServerErrorError {
         APIClient apiService = new ();
         return apiService.generateAPIKey(apiId);
     }
-
+    resource function post apis/'import\-service(string serviceKey, @http:Payload API payload) returns CreatedAPI|BadRequestError|InternalServerErrorError {
+        APIClient apiService = new ();
+        return apiService.createAPIFromService(serviceKey, payload);
+    }
+    resource function post apis/'import\-definition(@http:Payload json payload) returns CreatedAPI|BadRequestError|PreconditionFailedError|InternalServerErrorError {
+        BadRequestError badRequest = {body: {code: 900910, message: "Not implemented"}};
+        return badRequest;
+    }
+    resource function post apis/'validate\-definition(@http:Payload json payload, boolean returnContent = false) returns APIDefinitionValidationResponse|BadRequestError|NotFoundError {
+        BadRequestError badRequest = {body: {code: 900910, message: "Not implemented"}};
+        return badRequest;
+    }
+    resource function post apis/validate() returns http:Ok|BadRequestError|PreconditionFailedError|InternalServerErrorError {
+        BadRequestError badRequest = {body: {code: 900910, message: "Not implemented"}};
+        return badRequest;
+    }
+    resource function get apis/[string apiId]/definition() returns string|NotFoundError|PreconditionFailedError|InternalServerErrorError {
+        APIClient apiService = new ();
+        return apiService.getAPIDefinitionByID(apiId);
+    }
+    resource function put apis/[string apiId]/definition(@http:Payload json payload) returns string|BadRequestError|ForbiddenError|NotFoundError|PreconditionFailedError|InternalServerErrorError {
+        BadRequestError badRequest = {body: {code: 900910, message: "Not implemented"}};
+        return badRequest;
+    }
+    resource function get apis/export(string? apiId, string? name, string? 'version, string? format) returns json|NotFoundError|InternalServerErrorError {
+        InternalServerErrorError internalError = {body: {code: 900910, message: "Not implemented"}};
+        return internalError;
+    }
+    resource function post apis/'import(boolean? overwrite, @http:Payload json payload) returns http:Ok|ForbiddenError|ConflictError|PreconditionFailedError|InternalServerErrorError {
+        InternalServerErrorError internalError = {body: {code: 900910, message: "Not implemented"}};
+        return internalError;
+    }
+    resource function get services(string? name, string? namespace, string sortBy = "createdTime", string sortOrder = "desc", int 'limit = 25, int offset = 0) returns ServiceList|BadRequestError|InternalServerErrorError {
+        ServiceClient serviceClient = new ();
+        return serviceClient.getServices(name, namespace, sortBy, sortOrder, 'limit, offset);
+    }
+    resource function get services/[string serviceId]() returns Service|BadRequestError|NotFoundError|InternalServerErrorError {
+        ServiceClient serviceClient = new ();
+        return serviceClient.getServiceById(serviceId);
+    }
+    resource function get services/[string serviceId]/usage() returns APIList|BadRequestError|NotFoundError|InternalServerErrorError {
+        ServiceClient serviceClient = new ();
+        return serviceClient.getServiceUsageByServiceId(serviceId);
+    }
+    resource function get policies(string? query, int 'limit = 25, int offset = 0, string sortBy = "createdTime", string sortOrder = "desc", @http:Header string? accept = "application/json") returns MediationPolicyList|InternalServerErrorError {
+        InternalServerErrorError internalError = {body: {code: 900910, message: "Not implemented"}};
+        return internalError;
+    }
+    resource function get policies/[string policyId]() returns MediationPolicy|NotFoundError|InternalServerErrorError {
+        InternalServerErrorError internalError = {body: {code: 900910, message: "Not implemented"}};
+        return internalError;
+    }
 };
-

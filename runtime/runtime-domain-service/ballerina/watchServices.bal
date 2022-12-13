@@ -79,7 +79,8 @@ public function createServiceModel(json event) returns Service|error {
         name: <string>check event.metadata.name,
         namespace: <string>check event.metadata.namespace,
         'type: <string>check event.spec.'type,
-        portmapping: check mapPortMapping(event)
+        portmapping: check mapPortMapping(event),
+        createdTime: <string>check event.metadata.creationTimestamp
     };
     return serviceData;
 }
@@ -150,8 +151,8 @@ isolated function getServiceClient(string resourceVersion) returns websocket:Cli
         token: token
     },
         secureSocket = {
-            cert: caCertPath
-        }
+        cert: caCertPath
+    }
     );
 }
 

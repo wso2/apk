@@ -23,3 +23,6 @@ tasks.register('build') {
     description 'Build ballerina component'
     dependsOn 'bal_build'
 }
+task clean{
+    dependsOn 'bal_clean'
+}

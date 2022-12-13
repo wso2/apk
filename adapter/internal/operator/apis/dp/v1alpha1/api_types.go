@@ -91,7 +91,7 @@ type APISpec struct {
 type APIStatus struct {
 
 	// Status denotes the state of the API in its lifecycle.
-	// Possible values could be Accepted, Invalid etc.
+	// Possible values could be Accepted, Invalid, Deploy etc.
 	//
 	//
 	// +kubebuilder:validation:MinLength=4

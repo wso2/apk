@@ -19,8 +19,8 @@ package utils
 
 import (
 	constants "github.com/wso2/apk/adapter/internal/operator/constants"
-	envutils "github.com/wso2/apk/adapter/internal/utils/env"
-	stringutils "github.com/wso2/apk/adapter/internal/utils/string"
+	"github.com/wso2/apk/adapter/pkg/utils/envutils"
+	"github.com/wso2/apk/adapter/pkg/utils/stringutils"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/gateway-api/apis/v1beta1"
@@ -54,7 +54,7 @@ func GetNamespace(namespace *v1beta1.Namespace, defaultNamespace string) string 
 	return defaultNamespace
 }
 
-// Returns the namesapce of the operator pod
+// GetOperatorPodNamespace returns the namesapce of the operator pod
 func GetOperatorPodNamespace() string {
 	return envutils.GetEnv(constants.OperatorPodNamespace,
 		constants.OperatorPodNamespaceDefaultValue)

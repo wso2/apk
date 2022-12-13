@@ -24,10 +24,28 @@ tasks.register('go_clean', Exec) {
     commandLine 'go', 'clean'
 }
 
+tasks.register('go_revive_run', Exec) {
+    group 'go'
+    description 'Running revive.'
+    commandLine 'revive', '-config', 'revive.toml', '-set_exit_status', './...'
+}
+
+tasks.register('go_vet', Exec) {
+    group 'go'
+    description 'Running go vet.'
+    commandLine 'go', 'vet', '-c=5', './...'
+}
+
 tasks.register('go_test', Exec) {
     group 'go'
     description 'Automates testing the packages named by the import paths.'
     commandLine 'go', 'test'
+}
+
+tasks.register('go_tidy', Exec) {
+    group 'go'
+    description 'Running go mod tidy.'
+    commandLine 'go', 'mod', 'tidy'
 }
 
 tasks.register('go_build', Exec) {

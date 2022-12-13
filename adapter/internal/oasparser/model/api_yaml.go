@@ -179,9 +179,9 @@ func (apiYaml *APIYaml) FormatAndUpdateInfo() {
 
 // ValidateMandatoryFields check and populates the mandatory fields if null
 func (apiYaml *APIYaml) ValidateMandatoryFields() error {
-	var errMsg string = ""
-	var apiName string = apiYaml.Data.Name
-	var apiVersion string = apiYaml.Data.Version
+	var errMsg string
+	var apiName = apiYaml.Data.Name
+	var apiVersion = apiYaml.Data.Version
 
 	if apiName == "" {
 		apiName = "unknownAPIName"

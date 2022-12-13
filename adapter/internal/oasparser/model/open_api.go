@@ -134,7 +134,7 @@ func setResourcesOpenAPI(openAPI openapi3.T) ([]*Resource, error) {
 			// Checks for resource level security. (security is disabled in resource level using x-wso2-disable-security extension)
 			isResourceLvlSecurityDisabled, foundInResourceLevel := resolveDisableSecurity(pathItem.ExtensionProps)
 			methodsArray := make([]*Operation, len(pathItem.Operations()))
-			var arrayIndex int = 0
+			var arrayIndex int
 			for httpMethod, operation := range pathItem.Operations() {
 				if operation != nil {
 					if foundInResourceLevel {

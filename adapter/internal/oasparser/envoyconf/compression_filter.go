@@ -164,8 +164,8 @@ func getCompressorFilter() (*hcmv3.HttpFilter, error) {
 }
 
 func getUInt32Value(s interface{}) (uint32, error) {
-	if v, ok := s.(int64); ok {
-		return uint32(v), nil
+	if v, ok := s.(uint32); ok {
+		return v, nil
 	}
 	return 0, errors.New("error occurred while processing gzip configuration value")
 }

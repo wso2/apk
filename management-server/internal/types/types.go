@@ -17,12 +17,14 @@
 
 package types
 
+// ApplicationEvent is a data holder for an application event
 type ApplicationEvent struct {
 	Label         string
 	UUID          string
 	IsRemoveEvent bool
 }
 
+// SubscriptionEvent is a data holder for a subscription event
 type SubscriptionEvent struct {
 	Label         string
 	UUID          string

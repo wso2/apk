@@ -19,10 +19,11 @@ package operator
 
 import (
 	"flag"
-	"os"
+	"fmt"
 
 	"github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/xds"
+	"github.com/wso2/apk/adapter/pkg/logging"
 	gwapiv1a2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 
@@ -102,8 +103,11 @@ func InitOperator() {
 		// LeaderElectionReleaseOnCancel: true,
 	})
 	if err != nil {
-		loggers.LoggerAPKOperator.Errorf("unable to start manager: %v", err)
-		os.Exit(1)
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("unable to start manager: %v", err),
+			Severity:  logging.BLOCKER,
+			ErrorCode: 2600,
+		})
 	}
 
 	// TODO: Decide on a buffer size and add to config.
@@ -113,7 +117,7 @@ func InitOperator() {
 		loggers.LoggerAPKOperator.Errorf("Error creating API controller: %v", err)
 	}
 
-	if err := dpcontrollers.NewHttpRouteController(mgr, operatorDataStore); err != nil {
+	if err := dpcontrollers.NewHTTPRouteController(mgr, operatorDataStore); err != nil {
 		loggers.LoggerAPKOperator.Errorf("Error creating HttpRoute controller: %v", err)
 	}
 
@@ -122,19 +126,28 @@ func InitOperator() {
 	}
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
-		loggers.LoggerAPKOperator.Errorf("unable to set up health check: %v", err)
-		os.Exit(1)
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("unable to set up health check: %v", err),
+			Severity:  logging.BLOCKER,
+			ErrorCode: 2600,
+		})
 	}
 	if err := mgr.AddReadyzCheck("readyz", healthz.Ping); err != nil {
-		loggers.LoggerAPKOperator.Errorf("unable to set up ready check: %v", err)
-		os.Exit(1)
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("unable to set up ready check: %v", err),
+			Severity:  logging.BLOCKER,
+			ErrorCode: 2600,
+		})
 	}
 
 	go synchronizer.HandleAPILifeCycleEvents(&ch)
 	go xds.HandleApplicationEventsFromMgtServer(mgr.GetClient(), mgr.GetAPIReader())
 
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
-		loggers.LoggerAPKOperator.Errorf("problem running manager", err)
-		os.Exit(1)
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("problem running manager: %v", err),
+			Severity:  logging.BLOCKER,
+			ErrorCode: 2600,
+		})
 	}
 }

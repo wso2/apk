@@ -25,7 +25,9 @@ function getAPIByIdDAO(string apiId, string org) returns string?|API|error {
     if dbClient is error {
         return error("Error while retrieving connection");
     } else {
-        sql:ParameterizedQuery query = `SELECT * FROM API WHERE API_UUID =${apiId} AND ORGANIZATION =${org}`;
+        sql:ParameterizedQuery query = `SELECT API_UUID AS ID, API_ID as APIID,
+        API_PROVIDER as PROVIDER, API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS, API_TYPE as TYPE, ARTIFACT as ARTIFACT
+        FROM API WHERE API_UUID =${apiId} AND ORGANIZATION =${org}`;
         API | sql:Error result =  dbClient->queryRow(query);
         check dbClient.close();
         if result is sql:NoRowsError {
@@ -46,7 +48,8 @@ function getAPIsDAO(string org) returns API[]|error? {
     if dbClient is error {
         return error("Error while retrieving connection");
     } else {
-        sql:ParameterizedQuery query = `SELECT * FROM API WHERE ORGANIZATION =${org}`;
+        sql:ParameterizedQuery query = `SELECT API_UUID AS ID, API_ID as APIID,
+        API_PROVIDER as PROVIDER, API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS, API_TYPE as TYPE, ARTIFACT as ARTIFACT FROM API WHERE ORGANIZATION =${org}`;
         stream<API, sql:Error?> apisStream = dbClient->query(query);
         API[]? apis = check from API api in apisStream select api;
         check apisStream.close();

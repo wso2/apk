@@ -30,7 +30,7 @@ import (
 
 func main() {
 	logger.LoggerServer.Info("Starting Management server ...")
-	sig := make(chan os.Signal)
+	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt)
 	// connect to the postgres database
 	database.ConnectToDB()

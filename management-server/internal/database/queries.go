@@ -18,7 +18,7 @@
 package database
 
 const (
-	QueryGetApplicationByUUID string = " SELECT " +
+	queryGetApplicationByUUID string = " SELECT " +
 		"   APP.UUID," +
 		"   APP.NAME," +
 		"   APP.SUBSCRIBER_ID," +
@@ -31,7 +31,7 @@ const (
 		"   APP.UUID = $1 " +
 		"   AND APP.SUBSCRIBER_ID = SUB.SUBSCRIBER_ID"
 
-	QueryGetAllSubscriptionsForApplication string = "select " +
+	queryGetAllSubscriptionsForApplication string = "select " +
 		"	SUB.uuid as UUID, " +
 		"	API.api_uuid as API_UUID, " +
 		"	API.api_version as API_VERSION, " +
@@ -45,7 +45,7 @@ const (
 		"	AND SUB.api_id = API.api_id " +
 		"	AND APP.uuid = $1"
 
-	QueryConsumerKeysForApplication string = "select " +
+	queryConsumerKeysForApplication string = "select " +
 		"	APPKEY.consumer_key, " +
 		"	APPKEY.key_manager " +
 		" from " +
@@ -55,7 +55,7 @@ const (
 		"	AND APP.application_id = APPKEY.application_id " +
 		"	AND APP.UUID = $1"
 
-	QuerySubscriptionByUUID string = "select " +
+	querySubscriptionByUUID string = "select " +
 		"	SUB.uuid, " +
 		"	API.api_uuid, " +
 		"	SUB.sub_status, " +
@@ -68,16 +68,16 @@ const (
 		"	AND SUB.api_id = API.api_id " +
 		"	AND SUB.uuid = $1"
 
-	QueryCreateAPI string = "INSERT INTO API " +
+	queryCreateAPI string = "INSERT INTO API " +
 		"(API_UUID, API_NAME, API_PROVIDER, API_VERSION," +
 		"CONTEXT, ORGANIZATION, CREATED_BY, CREATED_TIME, API_TYPE, ARTIFACT, STATUS)" +
 		" VALUES " + "($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)"
 
-	QueryDeleteAPI string = "DELETE FROM API" +
+	queryDeleteAPI string = "DELETE FROM API" +
 		" WHERE " +
 		"API_UUID = $1"
 
-	QueryUpdateAPI string = "UPDATE API SET " +
+	queryUpdateAPI string = "UPDATE API SET " +
 		"API_NAME = $2, " +
 		"API_PROVIDER = $3, " +
 		"API_VERSION = $4, " +

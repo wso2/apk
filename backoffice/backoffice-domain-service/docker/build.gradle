@@ -17,6 +17,7 @@
 //
 
 apply from: "$rootDir/../../common-gradle-scripts/docker.gradle"
+apply from: "$rootDir/../../common-gradle-scripts/copy.gradle"
 
 tasks.named('copy_dist').configure{
     finalizedBy docker_build
@@ -28,3 +29,6 @@ tasks.register('build') {
     dependsOn 'copy_dist'
     dependsOn 'docker_build'
 }
+
+build.mustRunAfter ":ballerina:build"
+build.dependsOn ":ballerina:build"

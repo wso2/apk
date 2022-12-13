@@ -27,6 +27,7 @@ import (
 	"github.com/wso2/apk/adapter/internal/operator/synchronizer"
 	"github.com/wso2/apk/adapter/internal/operator/utils"
 	"github.com/wso2/apk/adapter/pkg/logging"
+	k8error "k8s.io/apimachinery/pkg/api/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -37,15 +38,15 @@ import (
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
-// HttpRouteReconciler reconciles a HTTPRoute object.
-type HttpRouteReconciler struct {
+// HTTPRouteReconciler reconciles a HTTPRoute object.
+type HTTPRouteReconciler struct {
 	client client.Client
 	ods    *synchronizer.OperatorDataStore
 }
 
-// NewHttpRouteController creates a new HTTPRoute controller.
-func NewHttpRouteController(mgr manager.Manager, ods *synchronizer.OperatorDataStore) error {
-	r := &HttpRouteReconciler{
+// NewHTTPRouteController creates a new HTTPRoute controller.
+func NewHTTPRouteController(mgr manager.Manager, ods *synchronizer.OperatorDataStore) error {
+	r := &HTTPRouteReconciler{
 		client: mgr.GetClient(),
 		ods:    ods,
 	}
@@ -75,18 +76,19 @@ func NewHttpRouteController(mgr manager.Manager, ods *synchronizer.OperatorDataS
 }
 
 // Reconcile gets triggered when a HTTPRoute object gets changed.
-func (r *HttpRouteReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *HTTPRouteReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	var httpRoute gwapiv1b1.HTTPRoute
 	if err := r.client.Get(ctx, req.NamespacedName, &httpRoute); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("httpRoute related to reconcile request with key : %v not found", req.NamespacedName),
-			Severity:  logging.TRIVIAL,
-			ErrorCode: 2611,
-		})
-		// TODO: Handle HttpRoute delete event.
+		if k8error.IsNotFound(err) {
+			loggers.LoggerAPKOperator.Infof("HTTPRoute : %s deleted from HTTPRoutes cache", req.NamespacedName.String())
+			return ctrl.Result{}, nil
+		}
+		loggers.LoggerAPKOperator.Errorf("httpRoute : %v reconcile request not found."+
+			" Assuming API is already deleted, hence ignoring the Error : %v.",
+			req.NamespacedName, err)
 		return ctrl.Result{}, err
 	}
 	// TODO: Add validation for backendRefs and HttpRoute status.
-	loggers.LoggerAPKOperator.Infof("Reconciled HTTPRoute: %v", httpRoute.Name)
+	loggers.LoggerAPKOperator.Debugf("Reconciled HTTPRoute : %s successfully", httpRoute.Name)
 	return ctrl.Result{}, nil
 }

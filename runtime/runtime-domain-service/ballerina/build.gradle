@@ -16,12 +16,16 @@
 // under the License.
 //
 
-plugins {
-    id 'net.researchgate.release' version '3.0.2'
-}
+import org.apache.tools.ant.taskdefs.condition.Os
 
 apply from: "$projectDir/../../../common-gradle-scripts/ballerina.gradle"
-
-tasks.named('build').configure {
+task build{
     dependsOn 'bal_build'
 }
+task clean{
+    dependsOn 'bal_clean'
+}
+
+
+build.mustRunAfter ":org.wso2.apk.runtime:build"
+build.dependsOn ":org.wso2.apk.runtime:build"

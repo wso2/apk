@@ -88,7 +88,8 @@ function getApplicationByIdDAO(string appId, string org) returns string?|Applica
     if dbClient is error {
         return error("Error while retrieving connection");
     } else {
-        sql:ParameterizedQuery query = `SELECT * FROM APPLICATION WHERE UUID =${appId} AND ORGANIZATION =${org}`;
+        sql:ParameterizedQuery query = `SELECT NAME, APPLICATION_ID as ID, UUID as APPLICATIONID, DESCRIPTION, APPLICATION_TIER as THROTTLINGPOLICY, TOKEN_TYPE as TOKENTYPE, ORGANIZATION,
+        APPLICATION_STATUS as STATUS FROM APPLICATION WHERE UUID =${appId} AND ORGANIZATION =${org}`;
         Application | sql:Error result =  dbClient->queryRow(query);
         check dbClient.close();
         if result is sql:NoRowsError {
@@ -109,7 +110,8 @@ function getApplicationsDAO(string org) returns Application[]|error? {
     if dbClient is error {
         return error("Error while retrieving connection");
     } else {
-        sql:ParameterizedQuery query = `SELECT * FROM APPLICATION WHERE ORGANIZATION =${org}`;
+        sql:ParameterizedQuery query = `SELECT NAME, APPLICATION_ID as ID, UUID as APPLICATIONID, DESCRIPTION, APPLICATION_TIER as THROTTLINGPOLICY, TOKEN_TYPE as TOKENTYPE, ORGANIZATION,
+        APPLICATION_STATUS as STATUS  FROM APPLICATION WHERE ORGANIZATION =${org}`;
         stream<Application, sql:Error?> applicationStream = dbClient->query(query);
         Application[]? applications = check from Application application in applicationStream select application;
         check applicationStream.close();

@@ -29,7 +29,7 @@ import runtime_domain_service.org.wso2.apk.runtime.api as runtimeapi;
 
 public class APIClient {
 
-    public function getAPIDefinitionByID(string id) returns string|NotFoundError|NotAcceptableError {
+    public function getAPIDefinitionByID(string id) returns string|NotFoundError|PreconditionFailedError|InternalServerErrorError {
         model:K8sAPI|error api = getAPI(id);
         if api is model:K8sAPI {
             if api.definitionFileRef.length() > 0 {
@@ -70,7 +70,7 @@ public class APIClient {
     }
 
     //Get APIs deployed in default namespace by APIId.
-    public function getAPIById(string id) returns API|NotFoundError|BadRequestError {
+    public function getAPIById(string id) returns API|NotFoundError|InternalServerErrorError {
         boolean APIIDAvailable = id.length() > 0 ? true : false;
         if (APIIDAvailable && string:length(id.toString()) > 0)
         {
@@ -78,17 +78,14 @@ public class APIClient {
             if api != null {
                 API detailedAPI = convertK8sAPItoAPI(api);
                 return detailedAPI;
-            } else {
-                NotFoundError notfound = {body: {code: 909100, message: id + "not found."}};
-                return notfound;
             }
         }
-        BadRequestError badRequestError = {body: {code: 900910, message: "missing required attributes"}};
-        return badRequestError;
+        NotFoundError notfound = {body: {code: 909100, message: id + "not found."}};
+        return notfound;
     }
 
     //Delete APIs deployed in a namespace by APIId.
-    public function deleteAPIById(string id) returns http:Ok|ForbiddenError|NotFoundError|ConflictError|PreconditionFailedError {
+    public function deleteAPIById(string id) returns http:Ok|ForbiddenError|NotFoundError|InternalServerErrorError {
         boolean APIIDAvailable = id.length() > 0 ? true : false;
         if (APIIDAvailable && string:length(id.toString()) > 0)
         {
@@ -139,7 +136,7 @@ public class APIClient {
     # + sortBy - Parameter Description  
     # + sortOrder - Parameter Description
     # + return - Return list of APIS in namsepace.
-    public function getAPIList(string? query, int 'limit, int offset, string sortBy, string sortOrder) returns BadRequestError|APIList {
+    public function getAPIList(string? query, int 'limit, int offset, string sortBy, string sortOrder) returns APIList|InternalServerErrorError {
         API[] apilist = [];
         foreach model:K8sAPI api in getAPIs() {
             API convertedModel = convertK8sAPItoAPI(api);
@@ -151,7 +148,7 @@ public class APIClient {
             return self.filterAPIS(apilist, 'limit, offset, sortBy, sortOrder);
         }
     }
-    private function filterAPISBasedOnQuery(API[] apilist, string query, int 'limit, int offset, string sortBy, string sortOrder) returns APIList|BadRequestError {
+    private function filterAPISBasedOnQuery(API[] apilist, string query, int 'limit, int offset, string sortBy, string sortOrder) returns APIList|InternalServerErrorError {
         API[] filteredList = [];
         if query.length() > 0 {
             int? semiCollonIndex = string:indexOf(query, ":", 0);
@@ -172,8 +169,8 @@ public class APIClient {
                             }
                         }
                     } else {
-                        BadRequestError badRequest = {body: {code: 90912, message: "Invalid KeyWord " + keyWord}};
-                        return badRequest;
+                        // BadRequestError badRequest = {body: {code: 90912, message: "Invalid KeyWord " + keyWord}};
+                        // return badRequest;
                     }
                 }
             } else {
@@ -188,7 +185,7 @@ public class APIClient {
         }
         return self.filterAPIS(filteredList, 'limit, offset, sortBy, sortOrder);
     }
-    private function filterAPIS(API[] apiList, int 'limit, int offset, string sortBy, string sortOrder) returns APIList|BadRequestError {
+    private function filterAPIS(API[] apiList, int 'limit, int offset, string sortBy, string sortOrder) returns APIList|InternalServerErrorError {
         API[] clonedAPIList = apiList.clone();
         API[] sortedAPIS = [];
         if sortBy == SORT_BY_API_NAME && sortOrder == SORT_ORDER_ASC {
@@ -208,8 +205,8 @@ public class APIClient {
                 order by api.createdTime descending
                 select api;
         } else {
-            BadRequestError badRequest = {body: {code: 90912, message: "Invalid Sort By/Sort Order Value "}};
-            return badRequest;
+            // BadRequestError badRequest = {body: {code: 90912, message: "Invalid Sort By/Sort Order Value "}};
+            // return badRequest;
         }
         API[] limitSet = [];
         if sortedAPIS.length() >= offset {
@@ -284,14 +281,14 @@ public class APIClient {
         return apispec;
     }
 
-    function createAPIFromService(string serviceKey, API api) returns CreatedAPI|NotFoundError|InternalServerErrorError|ConflictError {
+    function createAPIFromService(string serviceKey, API api) returns CreatedAPI|BadRequestError|InternalServerErrorError {
         if (self.validateName(api.name)) {
-            ConflictError conflictError = {body: {code: 90911, message: "API Name `${api.name}` already exist.", description: "API Name `${api.name}` already exist."}};
-            return conflictError;
+            BadRequestError badRequest = {body: {code: 90911, message: "API Name `${api.name}` already exist.", description: "API Name `${api.name}` already exist."}};
+            return badRequest;
         }
         if self.validateContextAndVersion(api.context, api.'version) {
-            ConflictError conflictError = {body: {code: 90911, message: "API Name `${api.context}` already exist.", description: "API Name `${api.name}` already exist."}};
-            return conflictError;
+            BadRequestError badRequest = {body: {code: 90911, message: "API Name `${api.context}` already exist.", description: "API Name `${api.name}` already exist."}};
+            return badRequest;
         }
         self.setDefaultOperationsIfNotExist(api);
         Service|error serviceRetrieved = grtServiceById(serviceKey);
@@ -345,8 +342,8 @@ public class APIClient {
             }
 
         } else {
-            NotFoundError notfound = {body: {code: 90913, message: "Service from " + serviceKey + " not found."}};
-            return notfound;
+            BadRequestError badRequest = {body: {code: 90913, message: "Service from " + serviceKey + " not found."}};
+            return badRequest;
         }
         CreatedAPI createdAPI = {body: {name: api.name, context: self.returnFullContext(api.context, api.'version), 'version: api.'version}};
         return createdAPI;
