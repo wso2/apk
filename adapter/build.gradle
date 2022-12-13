@@ -16,19 +16,25 @@
  */
 
 plugins {
-    id 'net.researchgate.release' version '3.0.2'
+    id 'net.researchgate.release' version '2.8.0'
 }
 
 apply from: "$rootDir/../common-gradle-scripts/docker.gradle"
 apply from: "$rootDir/../common-gradle-scripts/go.gradle"
 
 release {
-    // TODO: finalize release version and rules
-    // failOnCommitNeeded = false
-    // failOnUpdateNeeded = false
-    tagTemplate = '${project.name}-${project.version}'
+    tagTemplate = 'adapter-$version'
+
+    git {
+        requireBranch= "main"
+        pushToRemote= "origin"
+    }
 }
 
+allprojects {
+    group = project.group
+    version = project.version
+}
 tasks.named('go_revive_run').configure { 
     finalizedBy go_tidy
 }
@@ -39,9 +45,9 @@ tasks.named('go_build').configure {
     finalizedBy docker_build
 }
 
-tasks.named('build').configure {
+task build{
     dependsOn go_build
     dependsOn docker_build
 }
 
-// afterReleaseBuild.dependsOn docker_push
+afterReleaseBuild.dependsOn "docker_push"
