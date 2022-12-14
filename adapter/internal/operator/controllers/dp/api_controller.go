@@ -298,7 +298,6 @@ func (apiReconciler *APIReconciler) getAPIForHTTPRoute(obj client.Object) []reco
 	return requests
 }
 
-
 // addAPIIndexers adds indexing on API, for prodution and sandbox HTTPRoutes
 // referenced in API objects via `.spec.prodHTTPRouteRef` and `.spec.sandHTTPRouteRef`.
 // This helps to find APIs that are affected by a HTTPRoute CRUD operation.
