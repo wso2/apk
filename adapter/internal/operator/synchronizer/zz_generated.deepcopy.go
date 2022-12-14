@@ -24,6 +24,7 @@ package synchronizer
 
 import (
 	"github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
+	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
@@ -44,6 +45,21 @@ func (in *APIState) DeepCopyInto(out *APIState) {
 		in, out := &in.SandHTTPRoute, &out.SandHTTPRoute
 		*out = new(v1beta1.HTTPRoute)
 		(*in).DeepCopyInto(*out)
+	}
+	if in.Authentications != nil {
+		in, out := &in.Authentications, &out.Authentications
+		*out = make(map[types.NamespacedName]*v1alpha1.Authentication, len(*in))
+		for key, val := range *in {
+			var outVal *v1alpha1.Authentication
+			if val == nil {
+				(*out)[key] = nil
+			} else {
+				in, out := &val, &outVal
+				*out = new(v1alpha1.Authentication)
+				(*in).DeepCopyInto(*out)
+			}
+			(*out)[key] = outVal
+		}
 	}
 }
 

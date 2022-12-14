@@ -102,6 +102,17 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 		})
 		return err
 	}
+
+	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.Authentication{}}, handler.EnqueueRequestsFromMapFunc(r.getAPIForAuthentication),
+		predicates...); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("Error watching Authentication resources: %v", err),
+			Severity:  logging.BLOCKER,
+			ErrorCode: 2612,
+		})
+		return err
+	}
+
 	loggers.LoggerAPKOperator.Info("API Controller successfully started. Watching API Objects....")
 	return nil
 }
@@ -120,13 +131,12 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	// Check whether the API CR exist, if not consider as a DELETE event.
 	var apiDef dpv1alpha1.API
 	if err := apiReconciler.client.Get(ctx, req.NamespacedName, &apiDef); err != nil {
-		apiState, found := apiReconciler.ods.APIStore[req.NamespacedName]
+		apiState, found := apiReconciler.ods.GetCachedAPI(req.NamespacedName)
 		if found && k8error.IsNotFound(err) {
-			event := *apiState
 			// The api doesn't exist in the api Cache, remove it
-			delete(apiReconciler.ods.APIStore, req.NamespacedName)
+			apiReconciler.ods.DeleteCachedAPI(req.NamespacedName)
 			loggers.LoggerAPKOperator.Infof("Delete event has received for API : %s, hence deleted from API cache", req.NamespacedName.String())
-			*apiReconciler.ch <- synchronizer.APIEvent{EventType: constants.Delete, Event: event}
+			*apiReconciler.ch <- synchronizer.APIEvent{EventType: constants.Delete, Event: apiState}
 			return ctrl.Result{}, nil
 		}
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
@@ -162,11 +172,11 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	}
 
 	// Retrieve HTTPRoutes
-	prodHTTPRoute, sandHTTPRoute, err := getHTTPRoutes(ctx, apiReconciler.client, req.Namespace,
+	prodHTTPRoute, sandHTTPRoute, authentications, err := resolveAPIRefs(ctx, apiReconciler.client, req.Namespace,
 		apiDef.Spec.ProdHTTPRouteRef, apiDef.Spec.SandHTTPRouteRef)
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("Error retrieving HttpRoute CRs in namespace : %s, %v", req.NamespacedName.String(), err),
+			Message:   fmt.Sprintf("Error retrieving ref CRs for API in namespace : %s, %v", req.NamespacedName.String(), err),
 			Severity:  logging.TRIVIAL,
 			ErrorCode: 2604,
 		})
@@ -175,19 +185,18 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	loggers.LoggerAPKOperator.Debugf("HTTPRoutes are retrieved successfully for API CR %s", req.NamespacedName.String())
 
 	// Check whether the Operator Data store contains the received API.
-	cachedAPI, found := apiReconciler.ods.APIStore[req.NamespacedName]
+	cachedAPI, found := apiReconciler.ods.GetCachedAPI(req.NamespacedName)
 
 	if !found {
-		apiState := apiReconciler.ods.AddNewAPI(apiDef, prodHTTPRoute, sandHTTPRoute)
+		apiState := apiReconciler.ods.AddNewAPItoODS(apiDef, prodHTTPRoute, sandHTTPRoute, authentications)
 		*apiReconciler.ch <- synchronizer.APIEvent{EventType: constants.Create, Event: apiState}
 		apiReconciler.handleStatus(req.NamespacedName, constants.DeployedState, []string{})
-		return ctrl.Result{}, nil
-	}
-
-	if events, updated := updateAPIState(&apiDef, cachedAPI, prodHTTPRoute, sandHTTPRoute); updated {
-		*apiReconciler.ch <- synchronizer.APIEvent{EventType: constants.Update, Event: *cachedAPI}
+	} else if events, updated :=
+		apiReconciler.ods.UpdateAPIState(&apiDef, prodHTTPRoute, sandHTTPRoute, authentications); updated {
+		*apiReconciler.ch <- synchronizer.APIEvent{EventType: constants.Update, Event: cachedAPI}
 		apiReconciler.handleStatus(req.NamespacedName, constants.UpdatedState, events)
 	}
+	apiReconciler.ods.UpdateRefMaps(req.NamespacedName, prodHTTPRoute, sandHTTPRoute)
 	return ctrl.Result{}, nil
 }
 
@@ -200,57 +209,47 @@ func validateAPICR(apiSpec dpv1alpha1.APISpec) (bool, error) {
 	return true, nil
 }
 
-// getHTTPRoutes validates the HTTPRouteRefs related to a particular API by checking whether the
-// HTTPRoutes exists in the controller cache or not.
-func getHTTPRoutes(ctx context.Context, client client.Client, namespace string,
-	prodHTTPRouteRef string, sandHTTPRouteRef string) (*gwapiv1b1.HTTPRoute, *gwapiv1b1.HTTPRoute, error) {
+// resolveAPIRefs validates following references related to the API
+// - HTTPRoutes
+// - Authentications
+func resolveAPIRefs(ctx context.Context, client client.Client, namespace string,
+	prodHTTPRouteRef string, sandHTTPRouteRef string) (*gwapiv1b1.HTTPRoute, *gwapiv1b1.HTTPRoute,
+	map[types.NamespacedName]*dpv1alpha1.Authentication, error) {
 	var prodHTTPRoute *gwapiv1b1.HTTPRoute
 	var sandHTTPRoute *gwapiv1b1.HTTPRoute
+	authentications := make(map[types.NamespacedName]*dpv1alpha1.Authentication)
+	authenticationNames := []types.NamespacedName{}
 
 	if prodHTTPRouteRef != "" {
 		httpRoute := gwapiv1b1.HTTPRoute{}
 		if err := client.Get(ctx, types.NamespacedName{Namespace: namespace, Name: prodHTTPRouteRef}, &httpRoute); err != nil {
-			return nil, nil, fmt.Errorf("production HttpRoute %s in namespace :%s has not found. %s",
+			return nil, nil, nil, fmt.Errorf("production HttpRoute %s in namespace :%s has not found. %s",
 				prodHTTPRouteRef, namespace, err.Error())
 		}
 		prodHTTPRoute = &httpRoute
+		authenticationNames = append(authenticationNames, utils.ExtractExtensions(prodHTTPRoute)...)
 	}
 
 	if sandHTTPRouteRef != "" {
 		httpRoute := gwapiv1b1.HTTPRoute{}
 		if err := client.Get(ctx, types.NamespacedName{Namespace: namespace, Name: sandHTTPRouteRef}, &httpRoute); err != nil {
-			return nil, nil, fmt.Errorf("error fetching SandHTTPRoute: %s in namespace : %s. %v",
+			return nil, nil, nil, fmt.Errorf("error fetching SandHTTPRoute: %s in namespace : %s. %v",
 				sandHTTPRouteRef, namespace, err)
 		}
 		sandHTTPRoute = &httpRoute
+		authenticationNames = append(authenticationNames, utils.ExtractExtensions(sandHTTPRoute)...)
 	}
 
-	return prodHTTPRoute, sandHTTPRoute, nil
-}
+	for _, name := range authenticationNames {
+		authentication := dpv1alpha1.Authentication{}
+		if err := client.Get(ctx, name, &authentication); err != nil {
+			return nil, nil, nil, fmt.Errorf("error fetching Authentication: %s in namespace : %s. %v",
+				sandHTTPRouteRef, namespace, err)
+		}
+		authentications[name] = &authentication
+	}
 
-// updateAPIState update the APIState on ref updates
-func updateAPIState(apiDef *dpv1alpha1.API, cachedAPI *synchronizer.APIState, prodHTTPRoute *gwapiv1b1.HTTPRoute,
-	sandHTTPRoute *gwapiv1b1.HTTPRoute) ([]string, bool) {
-	var updated bool
-	events := []string{}
-	if apiDef.Generation > cachedAPI.APIDefinition.Generation {
-		cachedAPI.APIDefinition = apiDef
-		updated = true
-		events = append(events, "API Definition")
-	}
-	if prodHTTPRoute != nil && (prodHTTPRoute.UID != cachedAPI.ProdHTTPRoute.UID ||
-		prodHTTPRoute.Generation > cachedAPI.ProdHTTPRoute.Generation) {
-		cachedAPI.ProdHTTPRoute = prodHTTPRoute
-		updated = true
-		events = append(events, "Production Endpoint")
-	}
-	if sandHTTPRoute != nil && (sandHTTPRoute.UID != cachedAPI.SandHTTPRoute.UID ||
-		sandHTTPRoute.Generation > cachedAPI.SandHTTPRoute.Generation) {
-		cachedAPI.SandHTTPRoute = sandHTTPRoute
-		updated = true
-		events = append(events, "Sandbox Endpoint")
-	}
-	return events, updated
+	return prodHTTPRoute, sandHTTPRoute, authentications, nil
 }
 
 // getAPIForHTTPRoute triggers the API controller reconcile method based on the changes detected
@@ -322,6 +321,38 @@ func addAPIIndexers(ctx context.Context, mgr manager.Manager) error {
 		return httpRoutes
 	})
 	return err
+}
+
+// getAPIForAuthentication triggers the API controller reconcile method based on the changes detected
+// from Authentication objects. If the changes are done for an API stored in the Operator Data store,
+// a new reconcile event will be created and added to the reconcile event queue.
+func (apiReconciler *APIReconciler) getAPIForAuthentication(obj client.Object) []reconcile.Request {
+	authentication, ok := obj.(*dpv1alpha1.Authentication)
+	if !ok {
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("unexpected object type, bypassing reconciliation: %v", authentication),
+			Severity:  logging.TRIVIAL,
+			ErrorCode: 2608,
+		})
+		return []reconcile.Request{}
+	}
+
+	apiRefs, found := apiReconciler.ods.GetAuthenticationToAPIRefs(utils.NamespacedName(authentication))
+	if !found {
+		loggers.LoggerAPKOperator.Errorf("API CR for HttpRoute not found: %v", authentication.Name)
+		return []reconcile.Request{}
+	}
+	requests := []reconcile.Request{}
+	for _, apiRef := range apiRefs {
+		req := reconcile.Request{
+			NamespacedName: types.NamespacedName{
+				Name:      apiRef.Name,
+				Namespace: apiRef.Namespace},
+		}
+		loggers.LoggerAPKOperator.Infof("Adding reconcile request: %v", req.NamespacedName)
+		requests = append(requests, req)
+	}
+	return requests
 }
 
 // handleStatus updates the API CR update

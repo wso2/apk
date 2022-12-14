@@ -49,8 +49,7 @@ import (
 )
 
 var (
-	scheme   = runtime.NewScheme()
-	setupLog = ctrl.Log.WithName("setup")
+	scheme = runtime.NewScheme()
 )
 
 func init() {
@@ -121,10 +120,6 @@ func InitOperator() {
 
 	if err := dpcontrollers.NewAPIController(mgr, operatorDataStore, updateHandler, &ch); err != nil {
 		loggers.LoggerAPKOperator.Errorf("Error creating API controller: %v", err)
-	}
-
-	if err := dpcontrollers.NewHTTPRouteController(mgr, operatorDataStore); err != nil {
-		loggers.LoggerAPKOperator.Errorf("Error creating HttpRoute controller: %v", err)
 	}
 
 	if err := cpcontrollers.NewApplicationController(mgr); err != nil {

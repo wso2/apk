@@ -28,26 +28,132 @@ import (
 
 // OperatorDataStore holds the APIStore and API, HttpRoute mappings
 type OperatorDataStore struct {
-	APIStore map[types.NamespacedName]*APIState
-	mu       sync.Mutex
+	apiStore                map[types.NamespacedName]*APIState
+	authenticationToAPIRefs map[types.NamespacedName][]types.NamespacedName
+	mu                      sync.Mutex
 }
 
 // CreateNewOperatorDataStore creates a new OperatorDataStore.
 func CreateNewOperatorDataStore() *OperatorDataStore {
 	return &OperatorDataStore{
-		APIStore: map[types.NamespacedName]*APIState{},
+		apiStore:                map[types.NamespacedName]*APIState{},
+		authenticationToAPIRefs: map[types.NamespacedName][]types.NamespacedName{},
 	}
 }
 
-// AddNewAPI stores a new API in the OperatorDataStore.
-func (ods *OperatorDataStore) AddNewAPI(api dpv1alpha1.API, prodHTTPRoute *gwapiv1b1.HTTPRoute, sandHTTPRoute *gwapiv1b1.HTTPRoute) APIState {
+// AddNewAPItoODS stores a new API in the OperatorDataStore.
+func (ods *OperatorDataStore) AddNewAPItoODS(api dpv1alpha1.API, prodHTTPRoute *gwapiv1b1.HTTPRoute,
+	sandHTTPRoute *gwapiv1b1.HTTPRoute, authentications map[types.NamespacedName]*dpv1alpha1.Authentication) APIState {
 	ods.mu.Lock()
 	defer ods.mu.Unlock()
 
-	ods.APIStore[utils.NamespacedName(&api)] = &APIState{
-		APIDefinition: &api,
-		ProdHTTPRoute: prodHTTPRoute,
-		SandHTTPRoute: sandHTTPRoute}
+	apiNamespacedName := utils.NamespacedName(&api)
+	ods.apiStore[apiNamespacedName] = &APIState{
+		APIDefinition:   &api,
+		ProdHTTPRoute:   prodHTTPRoute,
+		SandHTTPRoute:   sandHTTPRoute,
+		Authentications: authentications,
+	}
+	return *ods.apiStore[apiNamespacedName]
+}
 
-	return *ods.APIStore[utils.NamespacedName(&api)]
+// UpdateRefMaps updating api related reference maps. Following is updated
+// - httpRouteToAPIRefs
+// - authenticationToAPIRefs
+func (ods *OperatorDataStore) UpdateRefMaps(apiNamespacedName types.NamespacedName, prodHTTPRoute *gwapiv1b1.HTTPRoute,
+	sandHTTPRoute *gwapiv1b1.HTTPRoute) {
+	if prodHTTPRoute != nil {
+		ods.AddAuthenticationtoODS(prodHTTPRoute, apiNamespacedName)
+	}
+	if sandHTTPRoute != nil {
+		ods.AddAuthenticationtoODS(sandHTTPRoute, apiNamespacedName)
+	}
+}
+
+// UpdateAPIState update the APIState on ref updates
+func (ods *OperatorDataStore) UpdateAPIState(apiDef *dpv1alpha1.API, prodHTTPRoute *gwapiv1b1.HTTPRoute,
+	sandHTTPRoute *gwapiv1b1.HTTPRoute, authentications map[types.NamespacedName]*dpv1alpha1.Authentication) ([]string, bool) {
+	ods.mu.Lock()
+	defer ods.mu.Unlock()
+	var updated bool
+	events := []string{}
+	cachedAPI := ods.apiStore[utils.NamespacedName(apiDef)]
+	if apiDef.Generation > cachedAPI.APIDefinition.Generation {
+		cachedAPI.APIDefinition = apiDef
+		updated = true
+		events = append(events, "API Definition")
+	}
+	//TODO(amali) remove extensions map related to old routes
+	if prodHTTPRoute != nil && (prodHTTPRoute.UID != cachedAPI.ProdHTTPRoute.UID ||
+		prodHTTPRoute.Generation > cachedAPI.ProdHTTPRoute.Generation) {
+		cachedAPI.ProdHTTPRoute = prodHTTPRoute
+		updated = true
+		events = append(events, "Production Endpoint")
+	}
+	if sandHTTPRoute != nil && (sandHTTPRoute.UID != cachedAPI.SandHTTPRoute.UID ||
+		sandHTTPRoute.Generation > cachedAPI.SandHTTPRoute.Generation) {
+		cachedAPI.SandHTTPRoute = sandHTTPRoute
+		updated = true
+		events = append(events, "Sandbox Endpoint")
+	}
+	for name, authentication := range authentications {
+		// if existing map has more recent values for auth cr, then keep them
+		if existingAuth, found := cachedAPI.Authentications[name]; found &&
+			(existingAuth.UID == authentication.UID || existingAuth.Generation >= authentication.Generation) {
+			authentications[name] = existingAuth
+		}
+		updated = true
+		events = append(events, "API Authentication Schemes")
+	}
+	return events, updated
+}
+
+// AddAuthenticationtoODS stores a new Auth in the OperatorDataStore.
+func (ods *OperatorDataStore) AddAuthenticationtoODS(httpRoute *gwapiv1b1.HTTPRoute, api types.NamespacedName) {
+	ods.mu.Lock()
+	defer ods.mu.Unlock()
+
+	authentications := utils.ExtractExtensions(httpRoute)
+	for _, authentication := range authentications {
+		if existingAPINamespaces, found := ods.authenticationToAPIRefs[authentication]; found {
+			if !namespaceIsExists(api, existingAPINamespaces) {
+				ods.authenticationToAPIRefs[authentication] = append(existingAPINamespaces, api)
+			}
+		} else {
+			ods.authenticationToAPIRefs[authentication] = []types.NamespacedName{api}
+		}
+	}
+}
+
+// GetCachedAPI get cached apistate
+func (ods *OperatorDataStore) GetCachedAPI(apiName types.NamespacedName) (APIState, bool) {
+	if cachedAPI, found := ods.apiStore[apiName]; found {
+		return *cachedAPI, true
+	}
+	return APIState{}, false
+}
+
+// GetAuthenticationToAPIRefs get cached api ref for auth
+func (ods *OperatorDataStore) GetAuthenticationToAPIRefs(httpRouteName types.NamespacedName) ([]types.NamespacedName, bool) {
+	if apiRef, found := ods.authenticationToAPIRefs[httpRouteName]; found {
+		return apiRef, true
+	}
+	return []types.NamespacedName{}, false
+}
+
+// DeleteCachedAPI delete from apistate cache
+func (ods *OperatorDataStore) DeleteCachedAPI(apiName types.NamespacedName) {
+	ods.mu.Lock()
+	defer ods.mu.Unlock()
+	delete(ods.apiStore, apiName)
+	//TODO(amali) remove entry from HTTPRouteToAPIRefs and AuthenticationToAPIRefs
+}
+
+func namespaceIsExists(namespace types.NamespacedName, namespaces []types.NamespacedName) bool {
+	for _, namespaceFromList := range namespaces {
+		if namespace == namespaceFromList {
+			return true
+		}
+	}
+	return false
 }
