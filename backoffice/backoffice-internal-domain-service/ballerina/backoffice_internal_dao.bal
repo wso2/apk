@@ -18,6 +18,7 @@
 
 import ballerina/sql;
 import ballerinax/postgresql;
+import ballerina/time;
 
 # Add API details to the database 
 #
@@ -190,6 +191,36 @@ public function db_updateDefinitionbyId(string apiId, APIDefinition api) returns
             return api;
         } else {
             return error("Error while updating definition into Database");  
+        }
+    }
+}
+
+# Add LC event to the database 
+#
+# + apiId - API id Parameter
+# + organization - organization
+# + return - API | error
+public function db_AddLCEvent(string? apiId, string organization) returns string | error {
+    postgresql:Client | error db_client  = getConnection();
+    time:Utc utc = time:utcNow();
+    if db_client is error {
+        return error("Issue while conecting to databse");
+    } else {
+        sql:ParameterizedQuery values = `${apiId},
+                                        null, 
+                                        'CREATED',
+                                        'apkuser',
+                                        ${organization},
+                                        ${utc}
+                                    )`;
+        sql:ParameterizedQuery sqlQuery = sql:queryConcat(ADD_LC_EVENT_Prefix, values);
+
+        sql:ExecutionResult | sql:Error result = db_client->execute(sqlQuery);
+        
+        if result is sql:ExecutionResult {
+            return result.toString();
+        } else {
+            return error("Error while inserting data into Database");  
         }
     }
 }

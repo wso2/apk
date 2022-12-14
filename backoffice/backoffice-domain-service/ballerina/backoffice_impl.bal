@@ -28,12 +28,18 @@ function getAPIList() returns string?|APIList|error {
 }
 
 function changeLifeCyleState(string action, string apiId, string organization) returns LifecycleState|error {
+    string? prevLCState = check db_getCurrentLCStatus(apiId, organization);
     string|error? lcState = db_changeLCState(action, apiId, organization);
     if lcState is string {
-            LifecycleState lcStateCr = {state: lcState, availableTransitions: [
-                {event: "", targetState: ""}
-            ]};
-            return lcStateCr;
+            string? newvLCState = check db_getCurrentLCStatus(apiId, organization);
+            string|error? lcEvent = db_AddLCEvent(apiId, prevLCState, newvLCState, organization);
+            if lcEvent is string {
+                json lcPayload = check getActionTransitionsFromState(action);
+                LifecycleState lcCr = check lcPayload.cloneWithType(LifecycleState);
+                return lcCr;
+            } else {
+                return error("error while adding LC event");
+            }
     } else {
         return error("error while updating LC state");
     }
@@ -43,24 +49,55 @@ function changeLifeCyleState(string action, string apiId, string organization) r
 function getLifeCyleState(string apiId, string organization) returns LifecycleState|error {
     string|error? currentLCState = db_getCurrentLCStatus(apiId, organization);
     if currentLCState is string {
-            LifecycleState lcStateCr = {state: currentLCState, availableTransitions: [
-                {event: "", targetState: ""}
-            ]};
-        return lcStateCr;
+        json lcPayload = check getTransitionsFromState(currentLCState);
+        LifecycleState lcGet = check lcPayload.cloneWithType(LifecycleState);
+        return lcGet;
     } else {
-        return error("error while updating LC state");
+        return error("error while Getting LC state");
     }
 }
 
 function actionToLCState(any v) returns string {
 
     match v {
-        "Demote to Created" => { return "Created"; }
-        "Publish" => { return "Published"; }
-        "Block" => { return "Blocked"; }
-        "Deprecate" => { return "Deprecateed"; }
-        "Retire" => { return "Retired"; }
-        "Re-Publish" => { return "Published"; }
+        "Demote to Created" => { return "CREATED"; }
+        "Publish" => { return "PUBLISHED"; }
+        "Block" => { return "BLOCKED"; }
+        "Deprecate" => { return "DEPRECATED"; }
+        "Retire" => { return "RETIRED"; }
+        "Re-Publish" => { return "PUBLISHED"; }
         _ => { return "any"; }
+    }
+}
+
+function getActionTransitionsFromState(string state) returns json|error {
+    string actionState = actionToLCState(state);
+    StatesList c =  check lifeCycleStateTransitions.cloneWithType(StatesList);
+    foreach States x in c.States {
+        if(actionState.equalsIgnoreCaseAscii(x.State)) {
+            return x.toJson();
+        }
+    }
+    
+}
+
+function getTransitionsFromState(string state) returns json|error {
+    StatesList c =  check lifeCycleStateTransitions.cloneWithType(StatesList);
+    foreach States x in c.States {
+        if(state.equalsIgnoreCaseAscii(x.State)) {
+            return x.toJson();
+        }
+    }
+    
+}
+
+function getLcEventHistory(string apiId) returns LifecycleHistory|error {
+    LifecycleHistoryItem[]|error? lcHistory = getLCEventHistory(apiId);
+    if lcHistory is LifecycleHistoryItem[] {
+        int count = lcHistory.length();
+        LifecycleHistory eventList = {count: count, list: lcHistory};
+        return eventList;
+    } else {
+        return error("Error while retriving LC events");
     }
 }

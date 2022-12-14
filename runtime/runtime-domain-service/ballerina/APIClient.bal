@@ -221,10 +221,10 @@ public class APIClient {
     }
     public function createAPI(API api) returns string|Error {
         if (self.validateName(api.name)) {
-            return {code: 90911, message: "API Name `${api.name}` already exist.", description: "API Name `${api.name}` already exist."};
+            return {code: 90911, message: "API Name - " + api.name + " already exist.", description: "API Name - " + api.name+ " already exist."};
         }
         if self.validateContextAndVersion(api.context, api.'version) {
-            return {code: 90912, message: "API Context `${api.context}` already exist.", description: "API Context `${api.context}` already exist."};
+            return {code: 90912, message: "API Context - " + api.context +" already exist.", description: "API Context - " + api.context + "already exist."};
         }
         return "created";
     }
@@ -283,11 +283,11 @@ public class APIClient {
 
     function createAPIFromService(string serviceKey, API api) returns CreatedAPI|BadRequestError|InternalServerErrorError {
         if (self.validateName(api.name)) {
-            BadRequestError badRequest = {body: {code: 90911, message: "API Name `${api.name}` already exist.", description: "API Name `${api.name}` already exist."}};
+            BadRequestError badRequest = {body: {code: 90911, message: "API Name - " + api.name + " already exist.", description: "API Name - " +api.name+ " already exist."}};
             return badRequest;
         }
         if self.validateContextAndVersion(api.context, api.'version) {
-            BadRequestError badRequest = {body: {code: 90911, message: "API Name `${api.context}` already exist.", description: "API Name `${api.name}` already exist."}};
+            BadRequestError badRequest = {body: {code: 90911, message: "API Name - " +api.context+ " already exist.", description: "API Name - " +api.name+ " already exist."}};
             return badRequest;
         }
         self.setDefaultOperationsIfNotExist(api);
@@ -372,7 +372,7 @@ public class APIClient {
         if operations is APIOperations[] && operations.length() == 0 {
             operationsAvailable = false;
         } else {
-            operationsAvailable = false;
+            operationsAvailable = true;
         }
         if operationsAvailable == false {
             APIOperations[] apiOperations = [];
@@ -418,18 +418,18 @@ public class APIClient {
         return uniqueId + "-" + 'type;
     }
 
-    private function retrieveHttpRoute(API api, Service? serviceEntry, string uniqueId, string 'type) returns model:Httproute {
+    private function retrieveHttpRoute(API api, Service? serviceEntry, string uniqueId, string endpointType) returns model:Httproute {
         model:Httproute httpRoute = {
             metadata:
                 {
-                name: self.retrieveHttpRouteRefName(api, uniqueId, 'type),
+                name: self.retrieveHttpRouteRefName(api, uniqueId, endpointType),
                 namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace),
                 uid: ()
             },
             spec: {
                 parentRefs: self.generateAndRetrieveParentRefs(api, serviceEntry, uniqueId),
-                rules: self.generateHttpRouteRules(api, serviceEntry),
-                hostnames: self.getHostNames(api, uniqueId, 'type)
+                rules: self.generateHttpRouteRules(api, serviceEntry, endpointType),
+                hostnames: self.getHostNames(api, uniqueId, endpointType)
             }
         };
         return httpRoute;
@@ -446,14 +446,78 @@ public class APIClient {
         return parentRefs;
     }
 
-    private function generateHttpRouteRules(API api, Service? serviceEntry) returns model:HTTPRouteRule[] {
+    private function generateHttpRouteRules(API api, Service? serviceEntry, string endpointType) returns model:HTTPRouteRule[] {
         model:HTTPRouteRule[] httpRouteRules = [];
-        model:HTTPRouteRule httpRouteRule = {matches: self.retrieveMatches(api), backendRefs: self.retrieveGeneratedBackend(api, serviceEntry)};
-        httpRouteRules.push(httpRouteRule);
+        APIOperations[]? operations = api.operations;
+        if operations is APIOperations[] {
+            foreach APIOperations operation in operations {
+                model:HTTPRouteRule httpRouteRule = self.generateHttpRouteRule(api, serviceEntry, operation, endpointType);
+                httpRouteRules.push(httpRouteRule);
+            }
+        }
         return httpRouteRules;
     }
+    private function generateHttpRouteRule(API api, Service? serviceEntry, APIOperations operation, string endpointType) returns model:HTTPRouteRule {
+        model:HTTPRouteRule httpRouteRule = {matches: self.retrieveMatches(api, operation), backendRefs: self.retrieveGeneratedBackend(api, serviceEntry, endpointType), filters: self.generateFilters(api, serviceEntry, operation, endpointType)};
+        return httpRouteRule;
+    }
+    private function generateFilters(API api, Service? serviceEntry, APIOperations operation, string endpointType) returns model:HTTPRouteFilter[] {
+        model:HTTPRouteFilter[] routeFilters = [];
+        model:HTTPRouteFilter replacePathFilter = {'type: "URLRewrite", urlRewrite: {path: {'type: "ReplacePrefixMatch", replacePrefixMatch: self.generatePrefixMatch(api, serviceEntry, operation, endpointType)}}};
+        routeFilters.push(replacePathFilter);
+        return routeFilters;
+    }
+    private function generatePrefixMatch(API api, Service? serviceEntry, APIOperations operation, string endpointType) returns string {
+        string target = operation.target ?: "/*";
+        string generatedPath = "";
+        if target == "/*" {
+            generatedPath = "/";
+        } else {
+            string[] splitValues = regex:split(target, "/");
+            foreach string pathPart in splitValues {
+                if pathPart.indexOf("{", 0) >= 0 || pathPart.indexOf("*", 0) >= 0 {
+                    break;
+                }
+                if pathPart.trim().length() > 0 {
+                    generatedPath = generatedPath + "/" + pathPart;
+                }
+            }
+        }
+        if serviceEntry is Service {
+            return generatedPath.trim();
+        }
+        return generatedPath.trim();
+    }
+    public function retrievePathPrefix(string context, string 'version, string operation) returns string {
+        string fullContext = self.returnFullContext(context, 'version);
+        string[] splitValues = regex:split(operation, "/");
+        string generatedPath = fullContext;
+        if (operation == "/*") {
+            return generatedPath;
+        }
+        foreach int i in 0 ... splitValues.length() - 1 {
+            string pathPart = splitValues[i];
+            if pathPart.trim().length() > 0 {
+                // path contains path param
+                if regex:matches(pathPart, "\\{.*\\}") {
+                    // check element is last element
+                    if i != splitValues.length() - 1 {
+                        generatedPath = generatedPath + "/" + regex:replaceAll(pathPart.trim(), "\\{.*\\}", ".*");
+                    }
+                } else {
+                    generatedPath = generatedPath + "/" + pathPart;
+                }
+            }
+        }
 
-    private function retrieveGeneratedBackend(API api, Service? serviceEntry) returns model:HTTPBackendRef[] {
+        if generatedPath.endsWith("/.*") || generatedPath.endsWith("/*") {
+            int lastSlashIndex = <int>generatedPath.lastIndexOf("/", generatedPath.length() - 1);
+            generatedPath = generatedPath.substring(0, lastSlashIndex + 1);
+        }
+        return generatedPath.trim();
+    }
+
+    private function retrieveGeneratedBackend(API api, Service? serviceEntry, string endpointType) returns model:HTTPBackendRef[] {
         if serviceEntry is Service {
             model:HTTPBackendRef httpBackend = {
                 namespace:
@@ -483,15 +547,10 @@ public class APIClient {
         return 80;
     }
 
-    private function retrieveMatches(API api) returns model:HTTPRouteMatch[] {
+    private function retrieveMatches(API api, APIOperations apiOperation) returns model:HTTPRouteMatch[] {
         model:HTTPRouteMatch[] httpRouteMatch = [];
-        APIOperations[]? operations = api.operations;
-        if operations is APIOperations[] {
-            foreach APIOperations operation in operations {
-                model:HTTPRouteMatch httpRoute = {method: <string>operation.verb, path: {'type: "PathPrefix", value: self.returnFullContext(api.context, api.'version) + <string>operation.target}};
-                httpRouteMatch.push(httpRoute);
-            }
-        }
+        model:HTTPRouteMatch httpRoute = {method: <string>apiOperation.verb, path: {'type: "PathPrefix", value: self.retrievePathPrefix(api.context, api.'version, apiOperation.target ?: "/*")}};
+        httpRouteMatch.push(httpRoute);
         return httpRouteMatch;
     }
 
