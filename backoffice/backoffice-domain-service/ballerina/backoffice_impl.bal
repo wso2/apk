@@ -28,11 +28,18 @@ function getAPIList() returns string?|APIList|error {
 }
 
 function changeLifeCyleState(string action, string apiId, string organization) returns LifecycleState|error {
+    string? prevLCState = check db_getCurrentLCStatus(apiId, organization);
     string|error? lcState = db_changeLCState(action, apiId, organization);
     if lcState is string {
-            json lcPayload = check getActionTransitionsFromState(action);
-            LifecycleState lcCr = check lcPayload.cloneWithType(LifecycleState);
-            return lcCr;
+            string? newvLCState = check db_getCurrentLCStatus(apiId, organization);
+            string|error? lcEvent = db_AddLCEvent(apiId, prevLCState, newvLCState, organization);
+            if lcEvent is string {
+                json lcPayload = check getActionTransitionsFromState(action);
+                LifecycleState lcCr = check lcPayload.cloneWithType(LifecycleState);
+                return lcCr;
+            } else {
+                return error("error while adding LC event");
+            }
     } else {
         return error("error while updating LC state");
     }
@@ -82,4 +89,15 @@ function getTransitionsFromState(string state) returns json|error {
         }
     }
     
+}
+
+function getLcEventHistory(string apiId) returns LifecycleHistory|error {
+    LifecycleHistoryItem[]|error? lcHistory = getLCEventHistory(apiId);
+    if lcHistory is LifecycleHistoryItem[] {
+        int count = lcHistory.length();
+        LifecycleHistory eventList = {count: count, list: lcHistory};
+        return eventList;
+    } else {
+        return error("Error while retriving LC events");
+    }
 }
