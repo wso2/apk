@@ -125,8 +125,15 @@ service /api/am/backoffice on ep0 {
         }
         return error("Error while updating LC state of API");
     }
-    // resource function get apis/[string apiId]/'lifecycle\-history(@http:Header string? 'if\-none\-match) returns LifecycleHistory|UnauthorizedError|NotFoundError|InternalServerErrorError {
-    // }
+    resource function get apis/[string apiId]/'lifecycle\-history(@http:Header string? 'if\-none\-match) returns LifecycleHistory|UnauthorizedError|NotFoundError|InternalServerErrorError {
+        LifecycleHistory|error lcList = getLcEventHistory(apiId);
+        if lcList is LifecycleHistory {
+            return lcList;
+        } else {
+            InternalServerErrorError internalError = {body: {code: 90900, message: "Internal Error while retrieving LC events"}};
+            return internalError;
+        }
+    }
     resource function get apis/[string apiId]/'lifecycle\-state(@http:Header string? 'if\-none\-match) returns LifecycleState|UnauthorizedError|NotFoundError|InternalServerErrorError|error {
         LifecycleState | error ? currentState = getLifeCyleState(apiId, "carbon.super");
             if currentState is LifecycleState {

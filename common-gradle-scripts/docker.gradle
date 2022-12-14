@@ -34,7 +34,12 @@ tasks.register('docker_login', Exec) {
 tasks.register('docker_build', Exec) {
     group 'docker'
     description 'Build an image from a Dockerfile.'
-    commandLine 'docker', 'build', '-t', imageName, '.'
+    def osName = System.getProperty("os.name").toLowerCase(Locale.ENGLISH)
+    if (osName.contains("mac")){
+        commandLine 'docker', 'build', '--build-arg', ' TARGETARCH=arm64','-t', imageName, '.'
+    }else{
+        commandLine 'docker', 'build', '--build-arg', 'TARGETARCH=amd64','-t', imageName, '.'
+    }
 }
 
 tasks.register('docker_push', Exec) {

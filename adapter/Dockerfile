@@ -14,7 +14,7 @@
 # limitations under the License.
 # -----------------------------------------------------------------------
 
-FROM --platform=linux/x86_64 alpine:3.15.4
+FROM alpine:3.15.4
 LABEL maintainer="WSO2 Docker Maintainers <wso2.com>"
 
 RUN apk update && apk upgrade --no-cache
@@ -28,7 +28,7 @@ ARG APK_USER_GROUP=wso2
 ARG APK_USER_GROUP_ID=802
 ARG APK_USER_HOME=/home/${APK_USER}
 ARG GRPC_HEALTH_PROBE_PATH=/bin/grpc_health_probe
-
+ARG TARGETARCH
 ENV ADAPTER_PRIVATE_KEY_PATH=/home/wso2/security/keystore/mg.key
 ENV ADAPTER_PUBLIC_CERT_PATH=/home/wso2/security/keystore/mg.pem
 
@@ -52,6 +52,6 @@ USER ${APK_USER}
 COPY resources/security security
 COPY resources/conf/config.toml conf/
 COPY resources/conf/log_config.toml conf/
-COPY ./main adapter
+COPY ./${TARGETARCH}/main adapter
 
 CMD ./adapter
