@@ -62,7 +62,7 @@ class APIListingTask {
     }
 }
 
-isolated function getClient(string resourceVersion) returns websocket:Client|error|() {
+public isolated function getClient(string resourceVersion) returns websocket:Client|error|() {
     string requestURl = "wss://" + runtimeConfiguration.k8sConfiguration.host + "/apis/dp.wso2.com/v1alpha1/watch/apis";
     if resourceVersion.length() > 0 {
         requestURl = requestURl + "?resourceVersion=" + resourceVersion.toString();
@@ -72,8 +72,8 @@ isolated function getClient(string resourceVersion) returns websocket:Client|err
         token: token
     },
         secureSocket = {
-            cert: caCertPath
-        }
+        cert: caCertPath
+    }
     );
 }
 

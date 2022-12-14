@@ -141,7 +141,7 @@ function setServicesResourceVersion(string resourceVersionValue) {
     servicesResourceVersion = resourceVersionValue;
 }
 
-isolated function getServiceClient(string resourceVersion) returns websocket:Client|error|() {
+public isolated function getServiceClient(string resourceVersion) returns websocket:Client|error|() {
     string requestURl = "wss://" + runtimeConfiguration.k8sConfiguration.host + "/api/v1/watch/services";
     if resourceVersion.length() > 0 {
         requestURl = requestURl + "?resourceVersion=" + resourceVersion.toString();

@@ -289,7 +289,7 @@ public class APIClient {
             return badRequest;
         }
         if self.validateContextAndVersion(api.context, api.'version) {
-            BadRequestError badRequest = {body: {code: 90911, message: "API Name - " + api.context + " already exist.", description: "API Name - " + api.name + " already exist."}};
+            BadRequestError badRequest = {body: {code: 90911, message: "API Name `${api.context}` already exist.", description: "API Name `${api.name}` already exist."}};
             return badRequest;
         }
         self.setDefaultOperationsIfNotExist(api);
