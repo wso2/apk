@@ -28,16 +28,14 @@ import (
 
 // OperatorDataStore holds the APIStore and API, HttpRoute mappings
 type OperatorDataStore struct {
-	apiStore                map[types.NamespacedName]*APIState
-	authenticationToAPIRefs map[types.NamespacedName][]types.NamespacedName
-	mu                      sync.Mutex
+	apiStore map[types.NamespacedName]*APIState
+	mu       sync.Mutex
 }
 
 // CreateNewOperatorDataStore creates a new OperatorDataStore.
 func CreateNewOperatorDataStore() *OperatorDataStore {
 	return &OperatorDataStore{
-		apiStore:                map[types.NamespacedName]*APIState{},
-		authenticationToAPIRefs: map[types.NamespacedName][]types.NamespacedName{},
+		apiStore: map[types.NamespacedName]*APIState{},
 	}
 }
 
@@ -55,19 +53,6 @@ func (ods *OperatorDataStore) AddNewAPItoODS(api dpv1alpha1.API, prodHTTPRoute *
 		Authentications: authentications,
 	}
 	return *ods.apiStore[apiNamespacedName]
-}
-
-// UpdateRefMaps updating api related reference maps. Following is updated
-// - httpRouteToAPIRefs
-// - authenticationToAPIRefs
-func (ods *OperatorDataStore) UpdateRefMaps(apiNamespacedName types.NamespacedName, prodHTTPRoute *gwapiv1b1.HTTPRoute,
-	sandHTTPRoute *gwapiv1b1.HTTPRoute) {
-	if prodHTTPRoute != nil {
-		ods.AddAuthenticationtoODS(prodHTTPRoute, apiNamespacedName)
-	}
-	if sandHTTPRoute != nil {
-		ods.AddAuthenticationtoODS(sandHTTPRoute, apiNamespacedName)
-	}
 }
 
 // UpdateAPIState update the APIState on ref updates
@@ -108,23 +93,6 @@ func (ods *OperatorDataStore) UpdateAPIState(apiDef *dpv1alpha1.API, prodHTTPRou
 	return events, updated
 }
 
-// AddAuthenticationtoODS stores a new Auth in the OperatorDataStore.
-func (ods *OperatorDataStore) AddAuthenticationtoODS(httpRoute *gwapiv1b1.HTTPRoute, api types.NamespacedName) {
-	ods.mu.Lock()
-	defer ods.mu.Unlock()
-
-	authentications := utils.ExtractExtensions(httpRoute)
-	for _, authentication := range authentications {
-		if existingAPINamespaces, found := ods.authenticationToAPIRefs[authentication]; found {
-			if !namespaceIsExists(api, existingAPINamespaces) {
-				ods.authenticationToAPIRefs[authentication] = append(existingAPINamespaces, api)
-			}
-		} else {
-			ods.authenticationToAPIRefs[authentication] = []types.NamespacedName{api}
-		}
-	}
-}
-
 // GetCachedAPI get cached apistate
 func (ods *OperatorDataStore) GetCachedAPI(apiName types.NamespacedName) (APIState, bool) {
 	if cachedAPI, found := ods.apiStore[apiName]; found {
@@ -133,27 +101,10 @@ func (ods *OperatorDataStore) GetCachedAPI(apiName types.NamespacedName) (APISta
 	return APIState{}, false
 }
 
-// GetAuthenticationToAPIRefs get cached api ref for auth
-func (ods *OperatorDataStore) GetAuthenticationToAPIRefs(httpRouteName types.NamespacedName) ([]types.NamespacedName, bool) {
-	if apiRef, found := ods.authenticationToAPIRefs[httpRouteName]; found {
-		return apiRef, true
-	}
-	return []types.NamespacedName{}, false
-}
-
 // DeleteCachedAPI delete from apistate cache
 func (ods *OperatorDataStore) DeleteCachedAPI(apiName types.NamespacedName) {
 	ods.mu.Lock()
 	defer ods.mu.Unlock()
 	delete(ods.apiStore, apiName)
 	//TODO(amali) remove entry from HTTPRouteToAPIRefs and AuthenticationToAPIRefs
-}
-
-func namespaceIsExists(namespace types.NamespacedName, namespaces []types.NamespacedName) bool {
-	for _, namespaceFromList := range namespaces {
-		if namespace == namespaceFromList {
-			return true
-		}
-	}
-	return false
 }

@@ -47,7 +47,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-const httpRouteAPIIndex = "httpRouteAPIIndex"
+const (
+	httpRouteAPIIndex      = "httpRouteAPIIndex"
+	authenticationAPIIndex = "authenticationAPIIndex"
+)
 
 // APIReconciler reconciles a API object
 type APIReconciler struct {
@@ -89,7 +92,12 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 		})
 		return err
 	}
-	if err := addAPIIndexers(ctx, mgr); err != nil {
+	if err := addIndexes(ctx, mgr); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("Error adding indexes: %v", err),
+			Severity:  logging.BLOCKER,
+			ErrorCode: 2601,
+		})
 		return err
 	}
 
@@ -196,7 +204,6 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		*apiReconciler.ch <- synchronizer.APIEvent{EventType: constants.Update, Event: cachedAPI}
 		apiReconciler.handleStatus(req.NamespacedName, constants.UpdatedState, events)
 	}
-	apiReconciler.ods.UpdateRefMaps(req.NamespacedName, prodHTTPRoute, sandHTTPRoute)
 	return ctrl.Result{}, nil
 }
 
@@ -297,36 +304,11 @@ func (apiReconciler *APIReconciler) getAPIForHTTPRoute(obj client.Object) []reco
 	return requests
 }
 
-// addAPIIndexers adds indexing on API, for prodution and sandbox HTTPRoutes
-// referenced in API objects via `.spec.prodHTTPRouteRef` and `.spec.sandHTTPRouteRef`.
-// This helps to find APIs that are affected by a HTTPRoute CRUD operation.
-func addAPIIndexers(ctx context.Context, mgr manager.Manager) error {
-	err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.API{}, httpRouteAPIIndex, func(rawObj client.Object) []string {
-		api := rawObj.(*dpv1alpha1.API)
-		var httpRoutes []string
-		if api.Spec.ProdHTTPRouteRef != "" {
-			httpRoutes = append(httpRoutes,
-				types.NamespacedName{
-					Namespace: api.Namespace,
-					Name:      api.Spec.ProdHTTPRouteRef,
-				}.String())
-		}
-		if api.Spec.SandHTTPRouteRef != "" {
-			httpRoutes = append(httpRoutes,
-				types.NamespacedName{
-					Namespace: api.Namespace,
-					Name:      api.Spec.SandHTTPRouteRef,
-				}.String())
-		}
-		return httpRoutes
-	})
-	return err
-}
-
 // getAPIForAuthentication triggers the API controller reconcile method based on the changes detected
 // from Authentication objects. If the changes are done for an API stored in the Operator Data store,
 // a new reconcile event will be created and added to the reconcile event queue.
 func (apiReconciler *APIReconciler) getAPIForAuthentication(obj client.Object) []reconcile.Request {
+	ctx := context.Background()
 	authentication, ok := obj.(*dpv1alpha1.Authentication)
 	if !ok {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
@@ -337,13 +319,51 @@ func (apiReconciler *APIReconciler) getAPIForAuthentication(obj client.Object) [
 		return []reconcile.Request{}
 	}
 
-	apiRefs, found := apiReconciler.ods.GetAuthenticationToAPIRefs(utils.NamespacedName(authentication))
-	if !found {
-		loggers.LoggerAPKOperator.Errorf("API CR for HttpRoute not found: %v", authentication.Name)
+	// get related httproutes
+	httpRouteList := &gwapiv1b1.HTTPRouteList{}
+	if err := apiReconciler.client.List(ctx, httpRouteList, &client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(httpRouteAPIIndex, utils.NamespacedName(authentication).String()),
+	}); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("Unable to find associated Http routes: %s", utils.NamespacedName(authentication).String()),
+			Severity:  logging.CRITICAL,
+			ErrorCode: 2610,
+		})
 		return []reconcile.Request{}
 	}
+
+	if len(httpRouteList.Items) == 0 {
+		loggers.LoggerAPKOperator.Debugf("HttpRoutes for Authentication not found: %s",
+			utils.NamespacedName(authentication).String())
+		return []reconcile.Request{}
+	}
+
+	// get related api list for above httproute list
+	apis := []dpv1alpha1.API{}
+
+	for _, httpRoute := range httpRouteList.Items {
+		apiList := &dpv1alpha1.APIList{}
+		if err := apiReconciler.client.List(ctx, apiList, &client.ListOptions{
+			FieldSelector: fields.OneTermEqualSelector(httpRouteAPIIndex, utils.NamespacedName(&httpRoute).String()),
+		}); err != nil {
+			loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+				Message:   fmt.Sprintf("Unable to find associated APIs: %s", utils.NamespacedName(&httpRoute).String()),
+				Severity:  logging.CRITICAL,
+				ErrorCode: 2610,
+			})
+			return []reconcile.Request{}
+		}
+		apis = append(apis, apiList.Items...)
+	}
+
+	if len(apis) == 0 {
+		loggers.LoggerAPKOperator.Debugf("APIs for Authentication not found: %s",
+			utils.NamespacedName(authentication).String())
+		return []reconcile.Request{}
+	}
+
 	requests := []reconcile.Request{}
-	for _, apiRef := range apiRefs {
+	for _, apiRef := range apis {
 		req := reconcile.Request{
 			NamespacedName: types.NamespacedName{
 				Name:      apiRef.Name,
@@ -353,6 +373,44 @@ func (apiReconciler *APIReconciler) getAPIForAuthentication(obj client.Object) [
 		requests = append(requests, req)
 	}
 	return requests
+}
+
+// addIndexes adds indexing on API, for
+//   - prodution and sandbox HTTPRoutes
+//     referenced in API objects via `.spec.prodHTTPRouteRef` and `.spec.sandHTTPRouteRef`
+//     This helps to find APIs that are affected by a HTTPRoute CRUD operation.
+//   - authentications
+//     authentication schemes related to httproutes
+//     This helps to find authentication schemes binded to HTTPRoute.
+func addIndexes(ctx context.Context, mgr manager.Manager) error {
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.API{}, httpRouteAPIIndex,
+		func(rawObj client.Object) []string {
+			api := rawObj.(*dpv1alpha1.API)
+			var httpRoutes []string
+			if api.Spec.ProdHTTPRouteRef != "" {
+				httpRoutes = append(httpRoutes,
+					types.NamespacedName{
+						Namespace: api.Namespace,
+						Name:      api.Spec.ProdHTTPRouteRef,
+					}.String())
+			}
+			if api.Spec.SandHTTPRouteRef != "" {
+				httpRoutes = append(httpRoutes,
+					types.NamespacedName{
+						Namespace: api.Namespace,
+						Name:      api.Spec.SandHTTPRouteRef,
+					}.String())
+			}
+			return httpRoutes
+		}); err != nil {
+		return err
+	}
+	err := mgr.GetFieldIndexer().IndexField(ctx, &gwapiv1b1.HTTPRoute{}, authenticationAPIIndex,
+		func(rawObj client.Object) []string {
+			httpRoute := rawObj.(*gwapiv1b1.HTTPRoute)
+			return utils.ExtractExtensionStrings(httpRoute)
+		})
+	return err
 }
 
 // handleStatus updates the API CR update
