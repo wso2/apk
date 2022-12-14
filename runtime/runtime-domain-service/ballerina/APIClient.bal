@@ -345,7 +345,7 @@ public class APIClient {
             BadRequestError badRequest = {body: {code: 90913, message: "Service from " + serviceKey + " not found."}};
             return badRequest;
         }
-        CreatedAPI createdAPI = {body: {name: api.name, context: self.returnFullContext(api.context, api.'version), 'version: api.'version}};
+        CreatedAPI createdAPI = {body: {name: api.name, context: self.returnFullContext(api.context, api.'version), id: uniqueId, 'version: api.'version}};
         return createdAPI;
 
     }
