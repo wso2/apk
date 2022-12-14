@@ -908,7 +908,7 @@ end`
 				switch requestPolicy.Action {
 
 				case constants.ActionHeaderAdd:
-					logger.LoggerOasparser.Debug("Adding %s policy to request flow for %s %s",
+					logger.LoggerOasparser.Debugf("Adding %s policy to request flow for %s %s",
 						constants.ActionHeaderAdd, resourcePath, operation.GetMethod())
 					requestHeaderToAdd, err := generateHeaderToAddRouteConfig(requestPolicy.Parameters)
 					if err != nil {
@@ -918,7 +918,7 @@ end`
 					requestHeadersToAdd = append(requestHeadersToAdd, requestHeaderToAdd)
 
 				case constants.ActionHeaderRemove:
-					logger.LoggerOasparser.Debug("Adding %s policy to request flow for %s %s",
+					logger.LoggerOasparser.Debugf("Adding %s policy to request flow for %s %s",
 						constants.ActionHeaderRemove, resourcePath, operation.GetMethod())
 					requestHeaderToRemove, err := generateHeaderToRemoveString(requestPolicy.Parameters)
 					if err != nil {
@@ -928,7 +928,7 @@ end`
 					requestHeadersToRemove = append(requestHeadersToRemove, requestHeaderToRemove)
 
 				case constants.ActionRewritePath:
-					logger.LoggerOasparser.Debug("Adding %s policy to request flow for %s %s",
+					logger.LoggerOasparser.Debugf("Adding %s policy to request flow for %s %s",
 						constants.ActionRewritePath, resourcePath, operation.GetMethod())
 					regexRewrite, err := generateRewritePathRouteConfig(routePath, resourcePath, endpointBasepath,
 						requestPolicy.Parameters, pathMatchType)
@@ -945,7 +945,7 @@ end`
 					pathRewriteConfig = regexRewrite
 
 				case constants.ActionRewriteMethod:
-					logger.LoggerOasparser.Debug("Adding %s policy to request flow for %s %s",
+					logger.LoggerOasparser.Debugf("Adding %s policy to request flow for %s %s",
 						constants.ActionRewriteMethod, resourcePath, operation.GetMethod())
 					hasMethodRewritePolicy, err = isMethodRewrite(resourcePath, operation.GetMethod(), requestPolicy.Parameters)
 					if err != nil {
@@ -967,7 +967,7 @@ end`
 				switch responsePolicy.Action {
 
 				case constants.ActionHeaderAdd:
-					logger.LoggerOasparser.Debug("Adding %s policy to response flow for %s %s",
+					logger.LoggerOasparser.Debugf("Adding %s policy to response flow for %s %s",
 						constants.ActionHeaderAdd, resourcePath, operation.GetMethod())
 					responseHeaderToAdd, err := generateHeaderToAddRouteConfig(responsePolicy.Parameters)
 					if err != nil {
@@ -977,7 +977,7 @@ end`
 					responseHeadersToAdd = append(responseHeadersToAdd, responseHeaderToAdd)
 
 				case constants.ActionHeaderRemove:
-					logger.LoggerOasparser.Debug("Adding %s policy to response flow for %s %s",
+					logger.LoggerOasparser.Debugf("Adding %s policy to response flow for %s %s",
 						constants.ActionHeaderRemove, resourcePath, operation.GetMethod())
 					responseHeaderToRemove, err := generateHeaderToRemoveString(responsePolicy.Parameters)
 					if err != nil {
@@ -990,7 +990,7 @@ end`
 
 			// TODO: (suksw) preserve header key case?
 			if hasMethodRewritePolicy {
-				logger.LoggerOasparser.Debug("Creating two routes to support method rewrite for %s %s. New method: %s",
+				logger.LoggerOasparser.Debugf("Creating two routes to support method rewrite for %s %s. New method: %s",
 					resourcePath, operation.GetMethod(), newMethod)
 				match1 := generateRouteMatch(routePath)
 				match1.Headers = generateHTTPMethodMatcher(operation.GetMethod(), params.isSandbox, sandClusterName)
