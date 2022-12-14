@@ -30,6 +30,10 @@ public function createAPI(APIBody body, string organization) returns API | error
     if defCr is error {
         return error("Error while adding API definition");
     }
+    string|error ss = db_AddLCEvent(body.apiProperties.id, "carbon.super");
+    if ss is error {
+        return error("Error while adding API LC event");
+    }
     return apiCr;
     
 }

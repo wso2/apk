@@ -14,7 +14,7 @@
 # limitations under the License.
 # -----------------------------------------------------------------------
 
-FROM --platform=linux/x86_64 alpine:3.15.4
+FROM alpine:3.15.4
 LABEL maintainer="WSO2 Docker Maintainers <wso2.com>"
 
 RUN apk update && apk upgrade --no-cache
@@ -28,16 +28,16 @@ ARG APK_USER_GROUP=wso2
 ARG APK_USER_GROUP_ID=802
 ARG APK_USER_HOME=/home/${APK_USER}
 ARG GRPC_HEALTH_PROBE_PATH=/bin/grpc_health_probe
-
+ARG TARGETARCH
 ENV MGT_SERVER_PRIVATE_KEY_PATH=/home/wso2/security/keystore/mg.key
 ENV MGT_SERVER_PUBLIC_CERT_PATH=/home/wso2/security/keystore/mg.pem
 
 ARG MOTD="\n\
- Welcome to WSO2 Docker Resources \n\
- --------------------------------- \n\
- This Docker container comprises of a WSO2 product, running with its latest GA release \n\
- which is under the Apache License, Version 2.0. \n\
- Read more about Apache License, Version 2.0 here @ http://www.apache.org/licenses/LICENSE-2.0.\n"
+    Welcome to WSO2 Docker Resources \n\
+    --------------------------------- \n\
+    This Docker container comprises of a WSO2 product, running with its latest GA release \n\
+    which is under the Apache License, Version 2.0. \n\
+    Read more about Apache License, Version 2.0 here @ http://www.apache.org/licenses/LICENSE-2.0.\n"
 
 RUN \
     addgroup -S -g ${APK_USER_GROUP_ID} ${APK_USER_GROUP} \
@@ -51,6 +51,6 @@ USER ${APK_USER}
 
 COPY resources/conf/config.toml conf/
 COPY resources/conf/log_config.toml conf/
-COPY ./main mgt_server
+COPY ./${TARGETARCH}/main mgt_server
 
 CMD ./mgt_server

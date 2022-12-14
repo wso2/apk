@@ -24,3 +24,4 @@ sql:ParameterizedQuery UPDATE_API_Suffix = `UPDATE api SET`;
 sql:ParameterizedQuery UPDATE_API_DEFINITION_Suffix = `UPDATE api_artifact SET`;
 sql:ParameterizedQuery DELETE_API_Suffix = `DELETE FROM api WHERE api_uuid = `;
 sql:ParameterizedQuery DELETE_API_DEFINITION_Suffix = `DELETE FROM api_artifact WHERE api_uuid = `;
+sql:ParameterizedQuery ADD_LC_EVENT_Prefix = `INSERT INTO api_lc_event (api_id,previous_state,new_state,user_id,organization,event_date) VALUES (`;
