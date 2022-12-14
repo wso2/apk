@@ -18,8 +18,6 @@
 package synchronizer
 
 import (
-	"fmt"
-
 	"sync"
 
 	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
@@ -60,41 +58,4 @@ func (ods *OperatorDataStore) AddNewAPI(api dpv1alpha1.API, prodHTTPRoute *gwapi
 		ods.HTTPRouteToAPIRefs[utils.NamespacedName(sandHTTPRoute)] = utils.NamespacedName(&api)
 	}
 	return *ods.APIStore[utils.NamespacedName(&api)]
-}
-
-// UpdateHTTPRoute updates the HttpRoute of a stored API.
-func (ods *OperatorDataStore) UpdateHTTPRoute(apiName types.NamespacedName, httpRoute *gwapiv1b1.HTTPRoute, production bool) (APIState, error) {
-	ods.mu.Lock()
-	defer ods.mu.Unlock()
-
-	apiState, found := ods.APIStore[apiName]
-	if !found {
-		return APIState{}, fmt.Errorf("error: No API found for the key: %v", apiName.String())
-	}
-
-	if production {
-		apiState.ProdHTTPRoute = httpRoute
-	} else {
-		apiState.SandHTTPRoute = httpRoute
-	}
-	return *ods.APIStore[apiName], nil
-}
-
-// UpdateAPIDef updates the APIDef of a stored API.
-func (ods *OperatorDataStore) UpdateAPIDef(apiDef dpv1alpha1.API) (APIState, error) {
-	api, found := ods.APIStore[utils.NamespacedName(&apiDef)]
-	if !found {
-		return APIState{}, fmt.Errorf("API not found in the Operator Data store: %v", apiDef.Spec.APIDisplayName)
-	}
-	api.APIDefinition = &apiDef
-	return *ods.APIStore[utils.NamespacedName(&apiDef)], nil
-}
-
-// GetAPI returns the APIState for a given key if exists.
-func (ods *OperatorDataStore) GetAPI(apiName types.NamespacedName) (APIState, bool) {
-	api, found := ods.APIStore[apiName]
-	if !found {
-		return APIState{}, found
-	}
-	return *api, found
 }

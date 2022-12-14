@@ -35,3 +35,11 @@ const (
 	OperatorPodNamespace             string = "OPERATOR_POD_NAMESPACE"
 	OperatorPodNamespaceDefaultValue string = "default"
 )
+
+// CR Statuses
+const (
+	ValidatedState = "Validated"
+	InvalidState   = "Invalid"
+	DeployedState  = "Deployed"
+	UpdatedState   = "Updated"
+)
