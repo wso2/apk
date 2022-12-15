@@ -119,14 +119,15 @@ service /api/am/backoffice on ep0 {
     // resource function get 'api\-categories() returns APICategoryList {
     // }
     resource function post apis/'change\-lifecycle(string action, string apiId, @http:Header string? 'if\-match) returns LifecycleState|BadRequestError|UnauthorizedError|NotFoundError|ConflictError|InternalServerErrorError|error {
-        LifecycleState | error ? changeState = changeLifeCyleState(action, apiId, "carbon.super");
+        LifecycleState | error  changeState = changeLifeCyleState(action, apiId, "carbon.super");
         if changeState is LifecycleState {
             return changeState;
+        } else {
+            return error("Error while updating LC state of API" + changeState.message());
         }
-        return error("Error while updating LC state of API");
     }
     resource function get apis/[string apiId]/'lifecycle\-history(@http:Header string? 'if\-none\-match) returns LifecycleHistory|UnauthorizedError|NotFoundError|InternalServerErrorError {
-        LifecycleHistory|error lcList = getLcEventHistory(apiId);
+        LifecycleHistory|error? lcList = getLcEventHistory(apiId);
         if lcList is LifecycleHistory {
             return lcList;
         } else {
@@ -135,12 +136,11 @@ service /api/am/backoffice on ep0 {
         }
     }
     resource function get apis/[string apiId]/'lifecycle\-state(@http:Header string? 'if\-none\-match) returns LifecycleState|UnauthorizedError|NotFoundError|InternalServerErrorError|error {
-        LifecycleState | error ? currentState = getLifeCyleState(apiId, "carbon.super");
+        LifecycleState | error currentState = getLifeCyleState(apiId, "carbon.super");
             if currentState is LifecycleState {
                 return currentState;
+        } else {
+            return error("Error while getting LC state of API" + currentState.message());
         }
-        return error("Error while getting LC state of API");
     }
-    // resource function delete apis/[string apiId]/'lifecycle\-state/'pending\-tasks() returns http:Ok|UnauthorizedError|NotFoundError|InternalServerErrorError {
-    // }
 }

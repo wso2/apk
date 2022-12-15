@@ -273,12 +273,27 @@ dependencies = [
 	{org = "ballerina", name = "time"}
 ]
 
-[[package]]
-org = "ballerina"
-name = "time"
-version = "2.2.3"
-dependencies = [
-	{org = "ballerina", name = "jballerina.java"}
+[[package]]	
+org = "ballerina"	
+name = "test"	
+version = "0.0.0"	
+scope = "testOnly"	
+dependencies = [	
+	{org = "ballerina", name = "jballerina.java"}	
+]	
+modules = [	
+	{org = "ballerina", packageName = "test", moduleName = "test"}	
+]	
+
+[[package]]	
+org = "ballerina"	
+name = "time"	
+version = "2.2.3"	
+dependencies = [	
+	{org = "ballerina", name = "jballerina.java"}	
+]	
+modules = [	
+	{org = "ballerina", packageName = "time", moduleName = "time"}	
 ]
 
 [[package]]
@@ -287,6 +302,26 @@ name = "url"
 version = "2.2.3"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
+]
+
+[[package]]
+org = "ballerina"
+name = "lang.transaction"
+version = "0.0.0"
+dependencies = [
+	{org = "ballerina", name = "jballerina.java"}
+]
+
+[[package]]
+org = "ballerina"
+name = "uuid"
+version = "1.3.0"
+dependencies = [
+	{org = "ballerina", name = "crypto"},
+	{org = "ballerina", name = "jballerina.java"},
+	{org = "ballerina", name = "lang.int"},
+	{org = "ballerina", name = "regex"},
+	{org = "ballerina", name = "time"}
 ]
 
 [[package]]
@@ -299,6 +334,27 @@ dependencies = [
 ]
 modules = [
 	{org = "ballerinai", packageName = "observe", moduleName = "observe"}
+]
+
+[[package]]
+org = "ballerinai"
+name = "transaction"
+version = "0.0.0"
+dependencies = [
+	{org = "ballerina", name = "cache"},
+	{org = "ballerina", name = "http"},
+	{org = "ballerina", name = "io"},
+	{org = "ballerina", name = "jballerina.java"},
+	{org = "ballerina", name = "lang.runtime"},
+	{org = "ballerina", name = "lang.transaction"},
+	{org = "ballerina", name = "lang.value"},
+	{org = "ballerina", name = "log"},
+	{org = "ballerina", name = "task"},
+	{org = "ballerina", name = "time"},
+	{org = "ballerina", name = "uuid"}
+]
+modules = [
+	{org = "ballerinai", packageName = "transaction", moduleName = "transaction"}
 ]
 
 [[package]]
@@ -326,6 +382,9 @@ dependencies = [
 	{org = "ballerina", name = "lang.value"},
 	{org = "ballerina", name = "log"},
 	{org = "ballerina", name = "sql"},
+	{org = "ballerina", name = "test"},
+	{org = "ballerina", name = "time"},
+	{org = "ballerinai", name = "transaction"},
 	{org = "ballerinai", name = "observe"},
 	{org = "ballerinax", name = "postgresql"}
 ]

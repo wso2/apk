@@ -2018,37 +2018,6 @@ paths:
           "https://127.0.0.1:9443/api/apk/backoffice/v1/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/lifecycle-state"'
       operationId: getAPILifecycleState
 
-  /apis/{apiId}/lifecycle-state/pending-tasks:
-    delete:
-      tags:
-        - API Lifecycle
-      summary: Delete Pending Lifecycle State Change Tasks
-      description: |
-        This operation can be used to remove pending lifecycle state change requests that are in pending state
-      parameters:
-        - $ref: '#/components/parameters/apiId'
-      responses:
-        200:
-          description: |
-            OK.
-            Lifecycle state change pending task removed successfully.
-          content: {}
-        401:
-          $ref: '#/components/responses/Unauthorized'
-        404:
-          $ref: '#/components/responses/NotFound'
-        500:
-          $ref: '#/components/responses/InternalServerError'
-      security:
-        - OAuth2Security:
-            - apim:api_publish
-            - apim:api_manage
-      x-code-samples:
-        - lang: Curl
-          source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/apk/backoffice/v1/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/lifecycle-state/pending-tasks"'
-      operationId: deleteAPILifecycleStatePendingTasks
-
 components:
   schemas:
     APIDefinition:
