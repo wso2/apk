@@ -57,8 +57,8 @@ type APKConfiguration record {
 };
 
 public type TokenIssuerConfiguration record {|
-    string issuer = "https://localhost:9443/oauth2/token";
-    string audience = "https://localhost:9443/oauth2/token";
+    string issuer = "https://apim.wso2.com/oauth2/token";
+    string audience = "https://apim.wso2.com/oauth2/token";
     string keyId = "gateway_certificate_alias";
     decimal expTime = 3600;
 |};

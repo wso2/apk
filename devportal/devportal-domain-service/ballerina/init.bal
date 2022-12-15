@@ -33,7 +33,7 @@ function init() {
     apkConfig = {
         throttlingConfiguration: throttleConfig,
         datasourceConfiguration: datasourceConfiguration,
-        tokenIssuerConfiguration: {},
+        tokenIssuerConfiguration: {keyId: kid},
         keyStores: {
         signing: {
             path: "/home/wso2apk/devportal/security/wso2carbon.key"

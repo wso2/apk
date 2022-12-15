@@ -199,7 +199,6 @@ service /api/am/devportal on ep0 {
     resource function post applications/[string applicationId]/'api\-keys/[string keyType]/generate(@http:Header string? 'if\-match, @http:Payload APIKeyGenerateRequest payload) returns APIKey|BadRequestError|NotFoundError|PreconditionFailedError|InternalServerErrorError|error {
         APIKey|error apiKey = check generateAPIKey(payload, applicationId, keyType, "apkuser", "carbon.super");
         if apiKey is APIKey {
-            log:printDebug(apiKey.toString());
             return apiKey;
         } else {
             InternalServerErrorError internalError = {body: {code: 909123, message: "Internal Error while generating API Key"}};

@@ -98,15 +98,19 @@ function generateAPIKey(APIKeyGenerateRequest payload, string appId, string keyT
             int? payloadValPeriod = payload.validityPeriod;
             if payloadValPeriod is int {
                 validityPeriod = payloadValPeriod;
-            } 
+            } else {
+                return error("Invalid validity period");
+            }
             record {} addProperties = {};
             record {}? payloadAddProperties = payload.additionalProperties;
             if payloadAddProperties is record {} {
                 addProperties = payloadAddProperties;
+            } else {
+                return error("Invalid Additional Properties");
             }
 
             // retrieve subscribed APIs
-            string?|SubscriptionList|error subscriptions =  getSubscriptions(null,appId,null,0,0,org);
+            string?|SubscriptionList|error subscriptions =  getSubscriptions(null, appId, null, 0, 0, org);
             API[] apiList = [];
             if subscriptions is SubscriptionList {
                 Subscription[]? subArray = subscriptions.list;
@@ -114,12 +118,12 @@ function generateAPIKey(APIKeyGenerateRequest payload, string appId, string keyT
                     foreach Subscription item in subArray {
                         string? apiUUID = item.apiId;
                         if apiUUID is string {
-                            string?|API|error api = getAPIByAPIId(apiUUID,org);
+                            string?|API|error api = getAPIByAPIId(apiUUID, org);
                             if api is API {
                                 apiList.push(api);
                             }
                         } else {
-                            log:printDebug(apiUUID.toString());
+                            log:printDebug("Invalid API UUID found:" + apiUUID.toString());
                         }
                     }
                 }
@@ -129,8 +133,6 @@ function generateAPIKey(APIKeyGenerateRequest payload, string appId, string keyT
 
             APIKey|error apiKey = generateAPIKeyForApplication(user, application, apiList, keyType, validityPeriod, addProperties);
             return apiKey;
-
-            
         } else {
             return error("User:"+ user +" doesn't have permission to Application with application id:" + appId);
         }

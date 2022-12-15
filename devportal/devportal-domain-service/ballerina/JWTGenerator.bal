@@ -84,16 +84,16 @@ function createSubscribedAPIJSON(API[] apis) returns json {
 function createApplicationJSON(Application app) returns json {
     map<string> application = {};
     string? uuid = app.applicationId;
-    //int? id = app.id;
+    int? id = app.id;
     string? owner = app.owner;
     string? tier = app.throttlingPolicy;
     application["name"] = app.name;
     if uuid is string{
         application["uuid"] = uuid;
     }
-    // if id is int {
-    //     application["id"] = id;
-    // }
+    if id is int {
+        application["id"] = id.toString();
+    }
     if owner is string {
         application["owner"] = owner;
     }
