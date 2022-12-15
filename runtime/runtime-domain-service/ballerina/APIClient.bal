@@ -221,10 +221,10 @@ public class APIClient {
     }
     public function createAPI(API api) returns string|Error {
         if (self.validateName(api.name)) {
-            return {code: 90911, message: "API Name - " + api.name + " already exist.", description: "API Name - " + api.name+ " already exist."};
+            return {code: 90911, message: "API Name - " + api.name + " already exist.", description: "API Name - " + api.name + " already exist."};
         }
         if self.validateContextAndVersion(api.context, api.'version) {
-            return {code: 90912, message: "API Context - " + api.context +" already exist.", description: "API Context - " + api.context + "already exist."};
+            return {code: 90912, message: "API Context - " + api.context + " already exist.", description: "API Context - " + api.context + "already exist."};
         }
         return "created";
     }
@@ -283,11 +283,11 @@ public class APIClient {
 
     function createAPIFromService(string serviceKey, API api) returns CreatedAPI|BadRequestError|InternalServerErrorError {
         if (self.validateName(api.name)) {
-            BadRequestError badRequest = {body: {code: 90911, message: "API Name - " + api.name + " already exist.", description: "API Name - " +api.name+ " already exist."}};
+            BadRequestError badRequest = {body: {code: 90911, message: "API Name - " + api.name + " already exist.", description: "API Name - " + api.name + " already exist."}};
             return badRequest;
         }
         if self.validateContextAndVersion(api.context, api.'version) {
-            BadRequestError badRequest = {body: {code: 90911, message: "API Name - " +api.context+ " already exist.", description: "API Name - " +api.name+ " already exist."}};
+            BadRequestError badRequest = {body: {code: 90911, message: "API Name - " + api.context + " already exist.", description: "API Name - " + api.name + " already exist."}};
             return badRequest;
         }
         self.setDefaultOperationsIfNotExist(api);
@@ -368,11 +368,9 @@ public class APIClient {
 
     private function setDefaultOperationsIfNotExist(API api) {
         APIOperations[]? operations = api.operations;
-        boolean operationsAvailable;
-        if operations is APIOperations[] && operations.length() == 0 {
-            operationsAvailable = false;
-        } else {
-            operationsAvailable = true;
+        boolean operationsAvailable = false;
+        if operations is APIOperations[] {
+            operationsAvailable = operations.length() > 0;
         }
         if operationsAvailable == false {
             APIOperations[] apiOperations = [];
