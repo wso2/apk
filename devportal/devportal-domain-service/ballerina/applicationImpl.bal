@@ -124,11 +124,13 @@ function generateAPIKey(APIKeyGenerateRequest payload, string appId, string keyT
                             }
                         } else {
                             log:printDebug("Invalid API UUID found:" + apiUUID.toString());
+                            return error("Invalid API UUID found:" + apiUUID.toString());
                         }
                     }
                 }
             } else if subscriptions is error {
                 log:printDebug(subscriptions.message());
+                return error(subscriptions.message());
             }
 
             APIKey|error apiKey = generateAPIKeyForApplication(user, application, apiList, keyType, validityPeriod, addProperties);
@@ -143,7 +145,7 @@ function generateAPIKeyForApplication(string username, Application application, 
     if keyType !is "PRODUCTION" | "SANDBOX" {
         return error("Invalid Key Type:" + keyType);
     }
-    JWTTokenInfo jwtTokenInfoPayload = {application: application, subscriber: "", expireTime: "", keyType: keyType, permittedIP: "", permittedReferrer: "", subscribedAPIs: apiList };
+    JWTTokenInfo jwtTokenInfoPayload = {application: application, subscriber: username, expireTime: "", keyType: keyType, permittedIP: "", permittedReferrer: "", subscribedAPIs: apiList };
     string|error token = generateToken(jwtTokenInfoPayload);
     if token is string {
         APIKey apiKey = {apikey:token,validityTime:3600};

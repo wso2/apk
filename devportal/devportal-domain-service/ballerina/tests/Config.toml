@@ -1,10 +1,28 @@
+[wso2.devportal_service]
+DEVPORTAL_PORT = 9443
+
 [wso2.devportal_service.datasourceConfiguration]
-description = "Database for admin"
-url = "jdbc:postgresql://localhost:5432/APK_AM"
+description = "Database for devportal"
+url = "jdbc:postgresql://localhost:5432/APKDB"
+host = "localhost"
+port = 5432
+databaseName = "APKDB"
 username = "admin"
-password = "123"
+password = "admin"
 validationTimeout = 250
 testQuery = "SELECT 1"
 driver = "org.postgresql.Driver"
+
 [wso2.devportal_service.throttleConfig.blockCondition]
 enabled = true
+
+[wso2.devportal_service.keyStores.tls]
+path = "/home/wso2apk/devportal/security/wso2carbon.key"
+[wso2.devportal_service.keyStores.signing]
+path = "/home/wso2apk/devportal/security/wso2carbon.key"
+
+[wso2.devportal_service.issuerConfig]
+issuer = "https://apim.wso2.com/oauth2/token"
+audience = "https://apim.wso2.com/oauth2/token"
+keyId = "gateway_certificate_alias"
+expTime = 3600.0
