@@ -17,7 +17,7 @@
 //
 
 import ballerina/log;
-import ballerinax/java.jdbc;
+import ballerinax/postgresql;
 import ballerina/sql;
 import ballerina/uuid;
 
@@ -25,9 +25,7 @@ configurable DatasourceConfiguration datasourceConfiguration = ?;
 configurable ThrottlingConfiguration throttleConfig = ?;
 string kid = uuid:createType1AsString();
 
-jdbc:Client|sql:Error dbClient;
-sql:ConnectionPool connPool;
-
+postgresql:Client|sql:Error dbClient;
 APKConfiguration apkConfig;
 
 function init() {
@@ -45,19 +43,19 @@ function init() {
         }
     }
     };
-    connPool = {maxOpenConnections: datasourceConfiguration.maxPoolSize};
-    dbClient = new(datasourceConfiguration.url, datasourceConfiguration.username, 
-        datasourceConfiguration.password,
-        connectionPool = connPool);
-    jdbc:Client | error dbClient  = getConnection();
+    dbClient = 
+        new (host = datasourceConfiguration.host,
+            username = datasourceConfiguration.username, 
+            password = datasourceConfiguration.password, 
+            database = datasourceConfiguration.databaseName, 
+            port = datasourceConfiguration.port,
+            connectionPool = {maxOpenConnections: datasourceConfiguration.maxPoolSize}
+            );
     if dbClient is error {
         return log:printError("Error while connecting to database");
     }
 }
 
-public function getConnection() returns jdbc:Client | error {
-    dbClient = new(datasourceConfiguration.url, datasourceConfiguration.username, 
-        datasourceConfiguration.password,
-        connectionPool = connPool);
+public function getConnection() returns postgresql:Client | error {
     return dbClient;  
 }

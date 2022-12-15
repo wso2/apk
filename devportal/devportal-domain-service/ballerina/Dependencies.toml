@@ -343,16 +343,17 @@ modules = [
 
 [[package]]
 org = "ballerinax"
-name = "java.jdbc"
-version = "1.6.0"
+name = "postgresql"
+version = "1.5.0"
 dependencies = [
+	{org = "ballerina", name = "crypto"},
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "sql"},
 	{org = "ballerina", name = "time"}
 ]
 modules = [
-	{org = "ballerinax", packageName = "java.jdbc", moduleName = "java.jdbc"}
+	{org = "ballerinax", packageName = "postgresql", moduleName = "postgresql"}
 ]
 
 [[package]]
@@ -369,7 +370,7 @@ dependencies = [
 	{org = "ballerina", name = "test"},
 	{org = "ballerina", name = "uuid"},
 	{org = "ballerinai", name = "observe"},
-	{org = "ballerinax", name = "java.jdbc"}
+	{org = "ballerinax", name = "postgresql"}
 ]
 modules = [
 	{org = "wso2", packageName = "devportal_service", moduleName = "devportal_service"}

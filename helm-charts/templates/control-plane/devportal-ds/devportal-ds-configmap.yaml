@@ -26,6 +26,9 @@ data:
     [wso2.devportal_service.datasourceConfiguration]
     description = "Database for admin"
     url = "{{ .Values.wso2.apk.cp.database.url }}"
+    host = "{{ .Values.wso2.apk.cp.database.host }}"
+    port = {{ .Values.wso2.apk.cp.database.port }}
+    databaseName = "{{ .Values.wso2.apk.cp.database.databaseName }}"
     username = "{{ .Values.wso2.apk.cp.database.username }}"
     password = "{{ .Values.wso2.apk.cp.database.password }}"
     validationTimeout = {{ .Values.wso2.apk.cp.database.validationTimeout }}
