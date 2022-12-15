@@ -11,8 +11,6 @@ import io.apicurio.datamodels.asyncapi.models.AaiOperationBindings;
 import io.apicurio.datamodels.asyncapi.v2.models.*;
 import io.apicurio.datamodels.core.models.Extension;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.everit.json.schema.Schema;
 import org.everit.json.schema.ValidationException;
 import org.everit.json.schema.loader.SchemaLoader;
@@ -1550,7 +1548,6 @@ public class AsyncApiParser extends APIDefinition {
             "    }\n" +
             "  }\n" +
             "}";
-    private static final Log log = LogFactory.getLog(AsyncApiParser.class);
     private List<String> otherSchemes;
     public List<String> getOtherSchemes() {
         return otherSchemes;
@@ -1829,21 +1826,6 @@ public class AsyncApiParser extends APIDefinition {
 
     @Override
     public String processOtherSchemeScopes(String resourceConfigsJSON) throws APIManagementException {
-        return null;
-    }
-
-    @Override
-    public String copyVendorExtensions(String existingOASContent, String updatedOASContent) throws APIManagementException {
-        return null;
-    }
-
-    @Override
-    public String getVendorFromExtension(String swaggerContent) {
-        return APIConstants.WSO2_GATEWAY_ENVIRONMENT;
-    }
-
-    @Override
-    public String injectMgwThrottlingExtensionsToDefault(String swaggerContent) throws APIManagementException{
         return null;
     }
 

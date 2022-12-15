@@ -1,4 +1,5 @@
 import ballerina/jballerina.java;
+import ballerina/jballerina.java.arrays as jarrays;
 import runtime_domain_service.org.wso2.apk.runtime.api as orgwso2apkruntimeapi;
 import runtime_domain_service.java.lang as javalang;
 import runtime_domain_service.org.wso2.apk.runtime.model as orgwso2apkruntimemodel;
@@ -129,13 +130,16 @@ public function RuntimeAPICommonUtil_generateUriTemplatesFromAPIDefinition(strin
     }
 }
 
-# The function that maps to the `validateDefinition` method of `org.wso2.apk.runtime.RuntimeAPICommonUtil`.
+# The function that maps to the `validateOpenAPIDefinition` method of `org.wso2.apk.runtime.RuntimeAPICommonUtil`.
 #
 # + arg0 - The `string` value required to map with the Java method parameter.
-# + arg1 - The `boolean` value required to map with the Java method parameter.
+# + arg1 - The `byte[]` value required to map with the Java method parameter.
+# + arg2 - The `string` value required to map with the Java method parameter.
+# + arg3 - The `string` value required to map with the Java method parameter.
+# + arg4 - The `boolean` value required to map with the Java method parameter.
 # + return - The `orgwso2apkruntimeapi:APIDefinitionValidationResponse` or the `orgwso2apkruntimeapi:APIManagementException` value returning from the Java mapping.
-public function RuntimeAPICommonUtil_validateDefinition(string arg0, boolean arg1) returns orgwso2apkruntimeapi:APIDefinitionValidationResponse|orgwso2apkruntimeapi:APIManagementException {
-    handle|error externalObj = org_wso2_apk_runtime_RuntimeAPICommonUtil_validateDefinition(java:fromString(arg0), arg1);
+public function RuntimeAPICommonUtil_validateOpenAPIDefinition(string arg0, byte[] arg1, string arg2, string arg3, boolean arg4) returns orgwso2apkruntimeapi:APIDefinitionValidationResponse|orgwso2apkruntimeapi:APIManagementException|error {
+    handle|error externalObj = org_wso2_apk_runtime_RuntimeAPICommonUtil_validateOpenAPIDefinition(java:fromString(arg0), check jarrays:toHandle(arg1, "byte"), java:fromString(arg2), java:fromString(arg3), arg4);
     if (externalObj is error) {
         orgwso2apkruntimeapi:APIManagementException e = error orgwso2apkruntimeapi:APIManagementException(orgwso2apkruntimeapi:APIMANAGEMENTEXCEPTION, externalObj, message = externalObj.message());
         return e;
@@ -187,10 +191,10 @@ function org_wso2_apk_runtime_RuntimeAPICommonUtil_notifyAll(handle receiver) = 
     paramTypes: []
 } external;
 
-function org_wso2_apk_runtime_RuntimeAPICommonUtil_validateDefinition(handle arg0, boolean arg1) returns handle|error = @java:Method {
-    name: "validateDefinition",
+function org_wso2_apk_runtime_RuntimeAPICommonUtil_validateOpenAPIDefinition(handle arg0, handle arg1, handle arg2, handle arg3, boolean arg4) returns handle|error = @java:Method {
+    name: "validateOpenAPIDefinition",
     'class: "org.wso2.apk.runtime.RuntimeAPICommonUtil",
-    paramTypes: ["java.lang.String", "boolean"]
+    paramTypes: ["java.lang.String", "[B", "java.lang.String", "java.lang.String", "boolean"]
 } external;
 
 function org_wso2_apk_runtime_RuntimeAPICommonUtil_wait(handle receiver) returns error? = @java:Method {
