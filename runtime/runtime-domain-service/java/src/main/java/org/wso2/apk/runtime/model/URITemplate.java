@@ -146,10 +146,7 @@ public class URITemplate implements Serializable{
         if (scope != null ? !scope.equals(that.scope) : that.scope != null) {
             return false;
         }
-        if (scopes != null ? !scopes.equals(that.scopes) : that.scopes != null) {
-            return false;
-        }
-        return true;
+        return scopes != null ? scopes.equals(that.scopes) : that.scopes == null;
     }
 
     @Override

@@ -105,16 +105,16 @@ public class SwaggerData {
 
     }
 
-    private String title;
+    private final String title;
     private String description;
-    private String version;
+    private final String version;
     private String contactName;
     private String contactEmail;
-    private String transportType;
+    private final String transportType;
     private String security;
     private String apiLevelPolicy;
-    private Set<Resource> resources = new LinkedHashSet<>();
-    private Set<Scope> scopes = new HashSet<>();
+    private final Set<Resource> resources = new LinkedHashSet<>();
+    private final Set<Scope> scopes = new HashSet<>();
 
     public SwaggerData(API api) {
         title = api.getName();

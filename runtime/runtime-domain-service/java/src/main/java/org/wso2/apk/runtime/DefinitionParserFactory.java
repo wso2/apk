@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DefinitionParserFactory {
-    private static List<APIDefinition> parsers = new ArrayList<>();
+    private static final List<APIDefinition> parsers = new ArrayList<>();
 
     private DefinitionParserFactory() {
     }

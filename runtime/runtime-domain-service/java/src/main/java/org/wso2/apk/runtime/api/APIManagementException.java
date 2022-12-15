@@ -23,7 +23,7 @@ package org.wso2.apk.runtime.api;
  */
 public class APIManagementException extends Exception {
 
-    private ErrorHandler errorHandler;
+    private final ErrorHandler errorHandler;
 
     /**
      * Get error handler object.
