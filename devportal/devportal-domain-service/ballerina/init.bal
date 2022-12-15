@@ -19,11 +19,11 @@
 import ballerina/log;
 import ballerinax/postgresql;
 import ballerina/sql;
-import ballerina/uuid;
 
 configurable DatasourceConfiguration datasourceConfiguration = ?;
 configurable ThrottlingConfiguration throttleConfig = ?;
-string kid = uuid:createType1AsString();
+configurable TokenIssuerConfiguration issuerConfig = ?;
+configurable KeyStores keyStores = ?;
 
 postgresql:Client|sql:Error dbClient;
 APKConfiguration apkConfig;
@@ -33,15 +33,8 @@ function init() {
     apkConfig = {
         throttlingConfiguration: throttleConfig,
         datasourceConfiguration: datasourceConfiguration,
-        tokenIssuerConfiguration: {keyId: kid},
-        keyStores: {
-        signing: {
-            path: "/home/wso2apk/devportal/security/wso2carbon.key"
-        },
-        tls: {
-            path: "/home/wso2apk/devportal/security/wso2carbon.key"
-        }
-    }
+        tokenIssuerConfiguration: issuerConfig,
+        keyStores: keyStores
     };
     dbClient = 
         new (host = datasourceConfiguration.host,

@@ -36,4 +36,13 @@ data:
     driver = "{{ .Values.wso2.apk.cp.database.driver }}"
     [wso2.devportal_service.throttleConfig.blockCondition]
     enabled = true
+    [wso2.devportal_service.keyStores.tls]
+    path = "/home/wso2apk/devportal/security/wso2carbon.key"
+    [wso2.devportal_service.keyStores.signing]
+    path = "/home/wso2apk/devportal/security/wso2carbon.key"
+    [wso2.devportal_service.issuerConfig]
+    issuer = "https://apim.wso2.com/oauth2/token"
+    audience = "https://apim.wso2.com/oauth2/token"
+    keyId = "gateway_certificate_alias"
+    expTime = 3600.0
 {{- end -}}
