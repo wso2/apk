@@ -18,7 +18,12 @@
 package v1alpha1
 
 import (
+	"context"
+	"errors"
+	"fmt"
+
 	"github.com/wso2/apk/adapter/internal/loggers"
+	"github.com/wso2/apk/adapter/pkg/logging"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -89,9 +94,22 @@ func (r *API) validateAPI() error {
 }
 
 func (r *API) validateAPIContext() *field.Error {
-	// The field helpers from the kubernetes API machinery help us return nicely
-	// structured validation errors.
-
-	return field.Invalid(field.NewPath("spec").Child("context"),
-		r.Spec.Context, "there is already an API for this context")
+	ctx := context.Background()
+	apiList := &APIList{}
+	if err := c.List(ctx, apiList); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("Unable to list APIs for API context validation"),
+			Severity:  logging.CRITICAL,
+			ErrorCode: 2900,
+		})
+		return field.InternalError(field.NewPath("spec").Child("context"),
+			errors.New("Unable to list APIs for API context validation"))
+	}
+	for _, api := range apiList.Items {
+		if api.Spec.Context == r.Spec.Context {
+			return field.Invalid(field.NewPath("spec").Child("context"),
+				r.Spec.Context, fmt.Sprintf("an API has been already created for the context: %s", r.Spec.Context))
+		}
+	}
+	return nil
 }

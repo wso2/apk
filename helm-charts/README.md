@@ -15,10 +15,6 @@
 
 ```HELM-HOME``` = APKCTL-demo/helm
 
-https://cert-manager.io/docs/installation/helm/
-```
-kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.10.1/cert-manager.crds.yaml
-```
 1. Execute ``` helm repo add bitnami https://charts.bitnami.com/bitnami ``` and ```helm repo add jetstack https://charts.jetstack.io```
 2. Make sure your local chartmuseum docker container is running and execute ``` helm repo add chartmuseum http://localhost:8080 ```
 3. Clone the repo and cd into the ```HELM-HOME``` folder.
