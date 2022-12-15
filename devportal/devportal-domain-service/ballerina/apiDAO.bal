@@ -17,11 +17,11 @@
 //
 
 import ballerina/log;
-import ballerinax/java.jdbc;
+import ballerinax/postgresql;
 import ballerina/sql;
 
 function getAPIByIdDAO(string apiId, string org) returns string?|API|error {
-        jdbc:Client | error dbClient  = getConnection();
+        postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
     } else {
@@ -29,7 +29,6 @@ function getAPIByIdDAO(string apiId, string org) returns string?|API|error {
         API_PROVIDER as PROVIDER, API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS, API_TYPE as TYPE, ARTIFACT as ARTIFACT
         FROM API WHERE API_UUID =${apiId} AND ORGANIZATION =${org}`;
         API | sql:Error result =  dbClient->queryRow(query);
-        check dbClient.close();
         if result is sql:NoRowsError {
             log:printDebug(result.toString());
             return error("Not Found");
@@ -44,7 +43,7 @@ function getAPIByIdDAO(string apiId, string org) returns string?|API|error {
 }
 
 function getAPIsDAO(string org) returns API[]|error? {
-    jdbc:Client | error dbClient  = getConnection();
+    postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
     } else {
@@ -53,7 +52,6 @@ function getAPIsDAO(string org) returns API[]|error? {
         stream<API, sql:Error?> apisStream = dbClient->query(query);
         API[]? apis = check from API api in apisStream select api;
         check apisStream.close();
-        check dbClient.close();
         return apis;
     }
 }

@@ -196,8 +196,15 @@ service /api/am/devportal on ep0 {
     // }
     // resource function post applications/[string applicationId]/'oauth\-keys/[string keyMappingId]/'generate\-token(@http:Header string? 'if\-match, @http:Payload ApplicationTokenGenerateRequest payload) returns ApplicationToken|BadRequestError|NotFoundError|PreconditionFailedError {
     // }
-    // resource function post applications/[string applicationId]/'api\-keys/[string keyType]/generate(@http:Header string? 'if\-match, @http:Payload APIKeyGenerateRequest payload) returns APIKey|BadRequestError|NotFoundError|PreconditionFailedError {
-    // }
+    resource function post applications/[string applicationId]/'api\-keys/[string keyType]/generate(@http:Header string? 'if\-match, @http:Payload APIKeyGenerateRequest payload) returns APIKey|BadRequestError|NotFoundError|PreconditionFailedError|InternalServerErrorError|error {
+        APIKey|error apiKey = check generateAPIKey(payload, applicationId, keyType, "apkuser", "carbon.super");
+        if apiKey is APIKey {
+            return apiKey;
+        } else {
+            InternalServerErrorError internalError = {body: {code: 909123, message: "Internal Error while generating API Key"}};
+            return internalError;
+        }
+    }
     // resource function post applications/[string applicationId]/'api\-keys/[string keyType]/revoke(@http:Header string? 'if\-match, @http:Payload APIKeyRevokeRequest payload) returns http:Ok|BadRequestError|PreconditionFailedError {
     // }
     // resource function get applications/export(string appName, string appOwner, boolean? withKeys, string? format) returns json|BadRequestError|NotFoundError|NotAcceptableError {

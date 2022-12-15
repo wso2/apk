@@ -6,5 +6,20 @@
     validationTimeout = 250
     testQuery = "SELECT 1"
     driver = "org.postgresql.Driver"
+    host = "10.102.56.192"
+    port = 5432
+    databaseName = "WSO2AM_DB"
+    
     [wso2.devportal_service.throttleConfig.blockCondition]
     enabled = true
+
+    [wso2.devportal_service.keyStores.tls]
+    path = "/home/wso2apk/devportal/security/wso2carbon.key"
+    [wso2.devportal_service.keyStores.signing]
+    path = "/home/wso2apk/devportal/security/wso2carbon.key"
+
+    [wso2.devportal_service.issuerConfig]
+    issuer = "https://apim.wso2.com/oauth2/token"
+    audience = "https://apim.wso2.com/oauth2/token"
+    keyId = "gateway_certificate_alias"
+    expTime = 3600.0
