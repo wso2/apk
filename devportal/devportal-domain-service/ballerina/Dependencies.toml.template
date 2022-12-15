@@ -122,6 +122,9 @@ dependencies = [
 	{org = "ballerina", name = "regex"},
 	{org = "ballerina", name = "time"}
 ]
+modules = [
+ 	{org = "ballerina", packageName = "jwt", moduleName = "jwt"}
+]
 
 [[package]]
 org = "ballerina"
@@ -340,16 +343,17 @@ modules = [
 
 [[package]]
 org = "ballerinax"
-name = "java.jdbc"
-version = "1.6.0"
+name = "postgresql"
+version = "1.5.0"
 dependencies = [
+	{org = "ballerina", name = "crypto"},
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "sql"},
 	{org = "ballerina", name = "time"}
 ]
 modules = [
-	{org = "ballerinax", packageName = "java.jdbc", moduleName = "java.jdbc"}
+	{org = "ballerinax", packageName = "postgresql", moduleName = "postgresql"}
 ]
 
 [[package]]
@@ -359,13 +363,14 @@ version = "PROJECT_VERSION"
 dependencies = [
 	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "http"},
+	{org = "ballerina", name = "jwt"},
 	{org = "ballerina", name = "lang.value"},
 	{org = "ballerina", name = "log"},
 	{org = "ballerina", name = "sql"},
 	{org = "ballerina", name = "test"},
 	{org = "ballerina", name = "uuid"},
 	{org = "ballerinai", name = "observe"},
-	{org = "ballerinax", name = "java.jdbc"}
+	{org = "ballerinax", name = "postgresql"}
 ]
 modules = [
 	{org = "wso2", packageName = "devportal_service", moduleName = "devportal_service"}
