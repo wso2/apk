@@ -223,7 +223,7 @@ function getSubscriptionListTest2() {
     { apiId: "8e3a1ca4-b649-4e57-9a57-e43b6b545af0",applicationId: "01ed716f-9f85-1ade-b634-be97dee7ceb4",throttlingPolicy: "MySubPol4"}];
     test:when(getSubscriptionsByAPIIdDAOMock).thenReturn(subList);
     // Providing only API ID
-    string?|SubscriptionList|error subscriptionList = getSubscriptions("8e3a1ca4-b649-4e57-9a57-e43b6b545af0","","",0,0,"carbon.super");
+    string?|SubscriptionList|error subscriptionList = getSubscriptions("8e3a1ca4-b649-4e57-9a57-e43b6b545af0",null,"",0,0,"carbon.super");
     if subscriptionList is ApplicationList {
     test:assertTrue(true, "Successfully retrieved all subscriptions by API ID and App ID");
     } else if subscriptionList is  error {
@@ -235,9 +235,9 @@ function getSubscriptionListTest2() {
 function getSubscriptionListTest3() {
     Subscription[] subList = [{ apiId: "8e3a1ca4-b649-4e57-9a57-e43b6b545af0",applicationId: "01ed716f-9f85-1ade-b634-be97dee7ceb4",throttlingPolicy: "MySubPol4"},
     { apiId: "8e3a1ca4-b649-4e57-9a57-e43b6b545af0",applicationId: "01ed716f-9f85-1ade-b634-be97dee7ceb4",throttlingPolicy: "MySubPol4"}];
-    test:when(getSubscriptionsByAPIIdDAOMock).thenReturn(subList);
+    test:when(getSubscriptionsByAPPIdDAOMock).thenReturn(subList);
     // Providing only App ID
-    string?|SubscriptionList|error subscriptionList = getSubscriptions("","01ed716f-9f85-1ade-b634-be97dee7ceb4","",0,0,"carbon.super");
+    string?|SubscriptionList|error subscriptionList = getSubscriptions(null,"01ed716f-9f85-1ade-b634-be97dee7ceb4","",0,0,"carbon.super");
     if subscriptionList is ApplicationList {
     test:assertTrue(true, "Successfully retrieved all subscriptions by API ID and App ID");
     } else if subscriptionList is  error {
@@ -249,9 +249,9 @@ function getSubscriptionListTest3() {
 function getSubscriptionListTest4() {
     Subscription[] subList = [{ apiId: "8e3a1ca4-b649-4e57-9a57-e43b6b545af0",applicationId: "01ed716f-9f85-1ade-b634-be97dee7ceb4",throttlingPolicy: "MySubPol4"},
     { apiId: "8e3a1ca4-b649-4e57-9a57-e43b6b545af0",applicationId: "01ed716f-9f85-1ade-b634-be97dee7ceb4",throttlingPolicy: "MySubPol4"}];
-    test:when(getSubscriptionsByAPIIdDAOMock).thenReturn(subList);
+    test:when(getSubscriptionsListMock).thenReturn(subList);
     // Providing nothing and retrieving all subscriptions
-    string?|SubscriptionList|error subscriptionList = getSubscriptions("","","",0,0,"carbon.super");
+    string?|SubscriptionList|error subscriptionList = getSubscriptions(null,null,"",0,0,"carbon.super");
     if subscriptionList is ApplicationList {
     test:assertTrue(true, "Successfully retrieved all subscriptions by API ID and App ID");
     } else if subscriptionList is  error {
