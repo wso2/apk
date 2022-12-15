@@ -38,6 +38,9 @@ function db_changeLCState(string action, string apiId, string organization) retu
         return error("Error while retrieving connection", db_Client);
     } else {
         string newState = actionToLCState(action);
+        if newState.equalsIgnoreCaseAscii("any") {
+            return error(" Invalid Lifecycle action"); 
+        }
         sql:ParameterizedQuery values = `${newState}
         WHERE api_uuid = ${apiId}`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(UPDATE_API_LifeCycle_Prefix, values);

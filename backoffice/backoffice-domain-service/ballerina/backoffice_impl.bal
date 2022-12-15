@@ -29,22 +29,26 @@ function getAPIList() returns string?|APIList|error {
 
 function changeLifeCyleState(string action, string apiId, string organization) returns LifecycleState|error {
     string prevLCState = check db_getCurrentLCStatus(apiId, organization);
-    string|error lcState = db_changeLCState(action, apiId, organization);
-    if lcState is string {
-            string newvLCState = check db_getCurrentLCStatus(apiId, organization);
-            string|error lcEvent = db_AddLCEvent(apiId, prevLCState, newvLCState, organization);
-            if lcEvent is string {
-                json lcPayload = check getActionTransitionsFromState(action);
-                LifecycleState lcCr = check lcPayload.cloneWithType(LifecycleState);
-                return lcCr;
-            } else {
-                return error("error while adding LC event" + lcEvent.message());
-            }
-    } else {
-        return error("error while updating LC state" + lcState.message());
-    }
-} 
-
+    transaction {
+        string|error lcState = db_changeLCState(action, apiId, organization);
+        if lcState is string {
+                string newvLCState = check db_getCurrentLCStatus(apiId, organization);
+                string|error lcEvent = db_AddLCEvent(apiId, prevLCState, newvLCState, organization);
+                if lcEvent is string {
+                    check commit;
+                    json lcPayload = check getActionTransitionsFromState(action);
+                    LifecycleState lcCr = check lcPayload.cloneWithType(LifecycleState);
+                    return lcCr;
+                } else {
+                    rollback;
+                    return error("error while adding LC event" + lcEvent.message());
+                }
+        } else {
+            rollback;
+            return error("error while updating LC state" + lcState.message());
+        }
+    } 
+}
 
 function getLifeCyleState(string apiId, string organization) returns LifecycleState|error {
     string|error currentLCState = db_getCurrentLCStatus(apiId, organization);
