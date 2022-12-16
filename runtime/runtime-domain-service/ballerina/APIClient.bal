@@ -231,7 +231,7 @@ public class APIClient {
         return "created";
     }
 
-    private function validateContextAndVersion(string context, string 'version) returns boolean {
+    function validateContextAndVersion(string context, string 'version) returns boolean {
 
         foreach model:K8sAPI k8sAPI in getAPIs() {
             if k8sAPI.context == self.returnFullContext(context, 'version) {
@@ -289,7 +289,7 @@ public class APIClient {
             return badRequest;
         }
         if self.validateContextAndVersion(api.context, api.'version) {
-            BadRequestError badRequest = {body: {code: 90911, message: "API Name - " + api.context + " already exist.", description: "API Name - " + api.name + " already exist."}};
+            BadRequestError badRequest = {body: {code: 90911, message: "API Name `${api.context}` already exist.", description: "API Name `${api.name}` already exist."}};
             return badRequest;
         }
         self.setDefaultOperationsIfNotExist(api);
@@ -368,7 +368,7 @@ public class APIClient {
         return configMap;
     }
 
-    private function setDefaultOperationsIfNotExist(API api) {
+    function setDefaultOperationsIfNotExist(API api) {
         APIOperations[]? operations = api.operations;
         boolean operationsAvailable = false;
         if operations is APIOperations[] {
@@ -495,24 +495,20 @@ public class APIClient {
         if (operation == "/*") {
             return generatedPath;
         }
-        foreach int i in 0 ... splitValues.length() - 1 {
-            string pathPart = splitValues[i];
+        foreach string pathPart in splitValues {
             if pathPart.trim().length() > 0 {
                 // path contains path param
                 if regex:matches(pathPart, "\\{.*\\}") {
-                    // check element is last element
-                    if i != splitValues.length() - 1 {
-                        generatedPath = generatedPath + "/" + regex:replaceAll(pathPart.trim(), "\\{.*\\}", ".*");
-                    }
+                    generatedPath = generatedPath + "/" + regex:replaceAll(pathPart.trim(), "\\{.*\\}", ".*");
                 } else {
                     generatedPath = generatedPath + "/" + pathPart;
                 }
             }
         }
 
-        if generatedPath.endsWith("/.*") || generatedPath.endsWith("/*") {
-            int lastSlashIndex = <int>generatedPath.lastIndexOf("/", generatedPath.length() - 1);
-            generatedPath = generatedPath.substring(0, lastSlashIndex + 1);
+        if generatedPath.endsWith("/*") {
+            int lastSlashIndex = <int>generatedPath.lastIndexOf("/", generatedPath.length());
+            generatedPath = generatedPath.substring(0, lastSlashIndex);
         }
         return generatedPath.trim();
     }
@@ -659,7 +655,7 @@ public class APIClient {
         }
     }
     public function validateDefinition(http:Request message, boolean returnContent) returns InternalServerErrorError|error|BadRequestError|APIDefinitionValidationResponse {
-        DefinitionValidationRequest|error definitionValidationRequest = self.mapApidfinitionPayload(message);
+        DefinitionValidationRequest|BadRequestError|error definitionValidationRequest = self.mapApiDefinitionPayload(message);
         if definitionValidationRequest is DefinitionValidationRequest {
             boolean inlineApiDefinitionAvailable = definitionValidationRequest.inlineAPIDefinition is string;
             boolean fileAvailable = definitionValidationRequest.fileName is string && definitionValidationRequest.content is byte[];
@@ -739,12 +735,14 @@ public class APIClient {
                 BadRequestError badeRequest = {body: {code: errorHandler.getErrorCode(), message: errorHandler.getErrorMessage().toString()}};
                 return badeRequest;
             }
+        } else if definitionValidationRequest is BadRequestError {
+            return definitionValidationRequest;
         } else {
             InternalServerErrorError internalError = {body: {code: 90900, message: "InternalServerError"}};
             return internalError;
         }
     }
-    private function mapApidfinitionPayload(http:Request message) returns DefinitionValidationRequest|error {
+    private function mapApiDefinitionPayload(http:Request message) returns DefinitionValidationRequest|BadRequestError|error {
         string|() url = ();
         string|() fileName = ();
         byte[]|() fileContent = ();
@@ -768,16 +766,29 @@ public class APIClient {
                 }
             }
         }
-        DefinitionValidationRequest definitionValidationRequest = {content: fileContent, fileName: fileName, inlineAPIDefinition: inlineAPIDefinition, url: url, 'type: definitionType ?: "OAS3"};
-        return definitionValidationRequest;
+        if definitionType is () {
+            BadRequestError badeRequest = {body: {code: 90914, message: "type not specified in Request"}};
+            return badeRequest;
+        }
+        return {
+            content: fileContent,
+            fileName: fileName,
+            inlineAPIDefinition: inlineAPIDefinition,
+            url: url,
+            'type: definitionType
+        };
     }
 
     private function retrieveDefinitionFromUrl(string url) returns string|error {
         string domain = self.getDomain(url);
         string path = self.getPath(url);
-        http:Client httpClient = check new (domain);
-        http:Response response = check httpClient->get(path, targetType = http:Response);
-        return response.getTextPayload();
+        if domain.length() > 0 {
+            http:Client httpClient = check new (domain);
+            http:Response response = check httpClient->get(path, targetType = http:Response);
+            return response.getTextPayload();
+        } else {
+            return error("invalid url " + url);
+        }
     }
     function getDomain(string url) returns string {
         string hostPort = "";
@@ -788,6 +799,8 @@ public class APIClient {
         } else if url.startsWith("http://") {
             hostPort = url.substring(7, url.length());
             protocol = "http";
+        } else {
+            return "";
         }
         int? indexOfSlash = hostPort.indexOf("/", 0);
         if indexOfSlash is int {
@@ -803,6 +816,8 @@ public class APIClient {
             hostPort = url.substring(8, url.length());
         } else if url.startsWith("http://") {
             hostPort = url.substring(7, url.length());
+        } else {
+            return "";
         }
         int? indexOfSlash = hostPort.indexOf("/", 0);
         if indexOfSlash is int {

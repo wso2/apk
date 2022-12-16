@@ -35,19 +35,22 @@ class ServiceTask {
                 do {
                     websocket:Client|error|() serviceClientResult = servicesClient;
                     if serviceClientResult is websocket:Client {
-                        if !serviceClientResult.isOpen() {
+                        boolean connectionOpen = serviceClientResult.isOpen();
+
+                        if !connectionOpen {
                             log:printDebug("ServiceWebsocket Client connection closed conectionId: " + serviceClientResult.getConnectionId());
                             servicesClient = getServiceClient(servicesResourceVersion);
                             websocket:Client|error|() retryClient = servicesClient;
                             if retryClient is websocket:Client {
                                 log:printDebug("Reinitializing client..");
-                                log:printDebug("Intializd new Client Connection conectionId: " + retryClient.getConnectionId() + " state: " + retryClient.isOpen().toString());
+                                connectionOpen = retryClient.isOpen();
+                                log:printDebug("Intializd new Client Connection conectionId: " + retryClient.getConnectionId() + " state: " + connectionOpen.toString());
                                 _ = check readServiceEvents(retryClient);
                             } else if retryClient is error {
                                 log:printError("error while reading message", retryClient);
                             }
                         } else {
-                            log:printDebug("Intializd new Client Connection conectionId: " + serviceClientResult.getConnectionId() + " state: " + serviceClientResult.isOpen().toString());
+                            log:printDebug("Intializd new Client Connection conectionId: " + serviceClientResult.getConnectionId() + " state: " + connectionOpen.toString());
                             _ = check readServiceEvents(serviceClientResult);
                         }
 
@@ -141,7 +144,7 @@ function setServicesResourceVersion(string resourceVersionValue) {
     servicesResourceVersion = resourceVersionValue;
 }
 
-isolated function getServiceClient(string resourceVersion) returns websocket:Client|error|() {
+public function getServiceClient(string resourceVersion) returns websocket:Client|error|() {
     string requestURl = "wss://" + runtimeConfiguration.k8sConfiguration.host + "/api/v1/watch/services";
     if resourceVersion.length() > 0 {
         requestURl = requestURl + "?resourceVersion=" + resourceVersion.toString();
@@ -157,15 +160,17 @@ isolated function getServiceClient(string resourceVersion) returns websocket:Cli
 }
 
 function readServiceEvents(websocket:Client serviceWebSocketClient) returns error? {
-    log:printDebug("Using Client Connection conectionId: " + serviceWebSocketClient.getConnectionId() + " state: " + serviceWebSocketClient.isOpen().toString());
-    if !serviceWebSocketClient.isOpen() {
+    boolean connectionOpen = serviceWebSocketClient.isOpen();
+
+    log:printDebug("Using Client Connection conectionId: " + serviceWebSocketClient.getConnectionId() + " state: " + connectionOpen.toString());
+    if !connectionOpen {
         error err = error("connection closed");
         return err;
     }
     string|error message = check serviceWebSocketClient->readMessage();
     if message is string {
+        log:printDebug(message);
         json value = check value:fromJsonString(message);
-        log:printInfo(value:toJsonString(value));
         string eventType = <string>check value.'type;
         json eventValue = <json>check value.'object;
         json metadata = <json>check eventValue.metadata;
