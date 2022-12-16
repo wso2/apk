@@ -51,3 +51,7 @@ adapter/api/target
 adapter/main
 
 .java-version
+test-target
+amd64
+arm64
+bin

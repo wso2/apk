@@ -26,6 +26,11 @@ task clean{
     dependsOn 'bal_clean'
 }
 
+tasks.register('test') {
+    group 'test'
+    description 'Test ballerina component'
+    dependsOn 'bal_test'
+}
 
 build.mustRunAfter ":org.wso2.apk.runtime:build"
 build.dependsOn ":org.wso2.apk.runtime:build"

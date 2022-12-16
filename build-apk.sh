@@ -1,3 +1,4 @@
+set -e
 #This is a sample script to build APK. When you build project please run this script in project root level.
 #All relative paths etc designed from root directory. Users can customize this as per demand. Ex: If you wish to 
 #build and run runtime domain service then can build it alone and do deployment.
