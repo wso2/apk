@@ -693,7 +693,7 @@ components:
         apiProperties:
           $ref: '#/components/schemas/API'
         Definition:
-          type: string
+          type: object
           description: Content of the definition
     APIDefinition:
       title: APIDefinition object
@@ -702,7 +702,7 @@ components:
         - Definition
       properties:
         Definition:
-          type: string
+          type: object
           description: Content of the definition
     Error:
       title: Error object returned with 4XX HTTP Status

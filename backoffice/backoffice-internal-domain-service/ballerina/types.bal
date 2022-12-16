@@ -39,12 +39,23 @@ public type BadRequestError record {|
 public type APIBody record {
     API apiProperties;
     # Content of the definition
-    string Definition;
+    record {} Definition;
+};
+
+public type API_additionalProperties record {
+    string name?;
+    string value?;
+    boolean display?;
 };
 
 public type WSDLInfo record {
     # Indicates whether the WSDL is a single WSDL or an archive in ZIP format
     string 'type?;
+};
+
+public type API_threatProtectionPolicies_list record {
+    string policyId?;
+    int priority?;
 };
 
 public type ErrorListItem record {
@@ -55,15 +66,16 @@ public type ErrorListItem record {
     string description?;
 };
 
-public type APIDefinition record {
-    # Content of the definition
-    string Definition;
+public type API_serviceInfo record {
+    string 'key?;
+    string name?;
+    string 'version?;
+    boolean outdated?;
 };
 
-public type ApiAdditionalpropertiesmap record {
-    string name?;
-    string value?;
-    boolean display?;
+public type APIDefinition record {
+    # Content of the definition
+    record {} Definition;
 };
 
 public type Error record {
@@ -130,7 +142,7 @@ public type API record {
     string subscriptionAvailability = "CURRENT_TENANT";
     string[] subscriptionAvailableTenants?;
     # Map of custom properties of API
-    ApiAdditionalproperties[] additionalProperties?;
+    API_additionalProperties[] additionalProperties?;
     record {} additionalPropertiesMap?;
     # Is the API is restricted to certain set of publishers or creators or is it visible to all the
     # publishers and creators. If the accessControl restriction is none, this API can be modified by all the
@@ -230,12 +242,12 @@ public type API record {
     #   }
     record {} endpointConfig?;
     string endpointImplementationType = "ENDPOINT";
-    ApiThreatprotectionpolicies threatProtectionPolicies?;
+    API_threatProtectionPolicies threatProtectionPolicies?;
     # API categories
     string[] categories?;
     # API Key Managers
     record {} keyManagers?;
-    ApiServiceinfo serviceInfo?;
+    API_serviceInfo serviceInfo?;
     string gatewayVendor?;
     # The gateway type selected for the API policies. Accepts one of the following. wso2/synapse, wso2/choreo-connect.
     string gatewayType?;
@@ -243,24 +255,12 @@ public type API record {
     string[] asyncTransportProtocols?;
 };
 
-public type ApiServiceinfo record {
-    string 'key?;
-    string name?;
-    string 'version?;
-    boolean outdated?;
-};
-
-public type ApiThreatprotectionpoliciesList record {
-    string policyId?;
-    int priority?;
-};
-
-public type ApiAdditionalproperties record {
+public type API_additionalPropertiesMap record {
     string name?;
     string value?;
     boolean display?;
 };
 
-public type ApiThreatprotectionpolicies record {
-    ApiThreatprotectionpoliciesList[] list?;
+public type API_threatProtectionPolicies record {
+    API_threatProtectionPolicies_list[] list?;
 };
