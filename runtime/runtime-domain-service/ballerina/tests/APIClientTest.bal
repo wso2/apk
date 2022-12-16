@@ -1,3 +1,20 @@
+//
+// Copyright (c) 2022, WSO2 LLC. (http://www.wso2.com).
+//
+// WSO2 LLC. licenses this file to you under the Apache License,
+// Version 2.0 (the "License"); you may not use this file except
+// in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+//
 import ballerina/test;
 import ballerina/websocket;
 import ballerina/uuid;
@@ -75,7 +92,7 @@ function getMockClient(string resourceVersion) returns websocket:Client|error {
 @test:Mock {
     functionName: "initializeK8sClient"
 }
-function getMockK8sClient() returns http:Client|error {
+function getMockK8sClient() returns http:Client {
     http:Client mock = test:mock(http:Client);
     test:prepare(mock).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/apis")
         .thenReturn(getMockAPIList());
@@ -83,6 +100,8 @@ function getMockK8sClient() returns http:Client|error {
         .thenReturn(getMockServiceList());
     test:prepare(mock).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/servicemappings")
         .thenReturn(getMockServiceMappings());
+    test:prepare(mock).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis/01ed7b08-f2b1-1166-82d5-649ae706d29e").thenReturn(mock404Response());
+    test:prepare(mock).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk/apis/pizzashackAPI1").thenReturn(mock404Response());
     return mock;
 }
 
@@ -165,13 +184,13 @@ function hostnameDataProvider() returns map<[string, string, string]>|error {
 }
 
 @test:Config {dataProvider: apiNameDataProvider}
-public function testGetAPIByNameAndNamespace(string name, string namespace, model:K8sAPI? expected) {
+public function testGetAPIByNameAndNamespace(string name, string namespace, model:K8sAPI|() expected) {
     test:assertEquals(getAPIByNameAndNamespace(name, namespace), expected);
 }
 
-function apiNameDataProvider() returns map<[string, string, model:K8sAPI?]>|error {
+function apiNameDataProvider() returns map<[string, string, model:K8sAPI|()]>|error {
     map<[string, string, model:K8sAPI?]> dataSet = {
-        "1": ["01ed7b08-f2b1-1166-82d5-649ae706d29d", "apk-platform", getMockPizzaShakK8sAPI()],
+        "1": ["01ed7aca-eb6b-1178-a200-f604a4ce114a", "apk-platform", getMockPizzaShakK8sAPI()],
         "2": ["01ed7b08-f2b1-1166-82d5-649ae706d29e", "apk-platform", ()],
         "3": ["pizzashackAPI1", "apk", ()]
     };

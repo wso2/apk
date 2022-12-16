@@ -151,7 +151,7 @@ function getK8sAPIByNameAndNamespace(string name, string namespace) returns json
         if response.statusCode == 200 {
             return response.getJsonPayload();
         } else if (response.statusCode == 404) {
-            return error("Service not found");
+            return error("API not found");
         }
     }
     if response is http:ClientError {

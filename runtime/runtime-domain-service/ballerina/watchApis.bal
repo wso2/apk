@@ -168,7 +168,7 @@ function readAPIEvent(websocket:Client apiWebsocketClient) returns error? {
 
 }
 
-function getAPIByNameAndNamespace(string name, string namespace) returns model:K8sAPI? {
+function getAPIByNameAndNamespace(string name, string namespace) returns model:K8sAPI|() {
     foreach model:K8sAPI api in getAPIs() {
         if (api.k8sName == name && api.namespace == namespace) {
             return api;
@@ -183,5 +183,5 @@ function getAPIByNameAndNamespace(string name, string namespace) returns model:K
             log:printError("Error occued while converting json", k8sAPI);
         }
     }
-    return;
+    return ();
 }
