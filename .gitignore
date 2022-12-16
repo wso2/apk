@@ -51,4 +51,7 @@ adapter/api/target
 adapter/arm64/main
 adapter/amd64/main
 
+management-server/arm64/main
+management-server/amd64/main
+
 .java-version

@@ -41,7 +41,7 @@ import (
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+	k8client "sigs.k8s.io/controller-runtime/pkg/client"
 
 	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -54,7 +54,7 @@ const (
 
 // APIReconciler reconciles a API object
 type APIReconciler struct {
-	client        client.Client
+	client        k8client.Client
 	ods           *synchronizer.OperatorDataStore
 	ch            *chan synchronizer.APIEvent
 	statusUpdater *status.UpdateHandler
@@ -111,7 +111,9 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 		return err
 	}
 
-	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.Authentication{}}, handler.EnqueueRequestsFromMapFunc(r.getAPIForAuthentication),
+	//todo(amali) check if the api get reconciled if auth gets changed, because we only triggered httproutes here.
+	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.Authentication{}},
+		handler.EnqueueRequestsFromMapFunc(r.getHTTPRouteForAuthentication),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
 			Message:   fmt.Sprintf("Error watching Authentication resources: %v", err),
@@ -125,9 +127,15 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 	return nil
 }
 
-//+kubebuilder:rbac:groups=*,resources=apis,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=*,resources=apis/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=*,resources=apis/finalizers,verbs=update
+//+kubebuilder:rbac:groups=dp.wso2.com,resources=apis,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=dp.wso2.com,resources=apis/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=dp.wso2.com,resources=apis/finalizers,verbs=update
+//+kubebuilder:rbac:groups=dp.wso2.com,resources=httproutes,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=dp.wso2.com,resources=httproutes/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=dp.wso2.com,resources=httproutes/finalizers,verbs=update
+//+kubebuilder:rbac:groups=dp.wso2.com,resources=authentications,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=dp.wso2.com,resources=authentications/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=dp.wso2.com,resources=authentications/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -180,8 +188,8 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	}
 
 	// Retrieve HTTPRoutes
-	prodHTTPRoute, sandHTTPRoute, authentications, err := resolveAPIRefs(ctx, apiReconciler.client, req.Namespace,
-		apiDef.Spec.ProdHTTPRouteRef, apiDef.Spec.SandHTTPRouteRef)
+	prodHTTPRoute, sandHTTPRoute, err := apiReconciler.resolveAPIRefs(ctx, req.Namespace, apiDef.Spec.ProdHTTPRouteRef,
+		apiDef.Spec.SandHTTPRouteRef)
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
 			Message:   fmt.Sprintf("Error retrieving ref CRs for API in namespace : %s, %v", req.NamespacedName.String(), err),
@@ -196,11 +204,11 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	cachedAPI, found := apiReconciler.ods.GetCachedAPI(req.NamespacedName)
 
 	if !found {
-		apiState := apiReconciler.ods.AddNewAPItoODS(apiDef, prodHTTPRoute, sandHTTPRoute, authentications)
+		apiState := apiReconciler.ods.AddNewAPItoODS(apiDef, prodHTTPRoute, sandHTTPRoute)
 		*apiReconciler.ch <- synchronizer.APIEvent{EventType: constants.Create, Event: apiState}
 		apiReconciler.handleStatus(req.NamespacedName, constants.DeployedState, []string{})
 	} else if events, updated :=
-		apiReconciler.ods.UpdateAPIState(&apiDef, prodHTTPRoute, sandHTTPRoute, authentications); updated {
+		apiReconciler.ods.UpdateAPIState(&apiDef, prodHTTPRoute, sandHTTPRoute); updated {
 		*apiReconciler.ch <- synchronizer.APIEvent{EventType: constants.Update, Event: cachedAPI}
 		apiReconciler.handleStatus(req.NamespacedName, constants.UpdatedState, events)
 	}
@@ -218,51 +226,86 @@ func validateAPICR(apiSpec dpv1alpha1.APISpec) (bool, error) {
 
 // resolveAPIRefs validates following references related to the API
 // - HTTPRoutes
-// - Authentications
-func resolveAPIRefs(ctx context.Context, client client.Client, namespace string,
-	prodHTTPRouteRef string, sandHTTPRouteRef string) (*gwapiv1b1.HTTPRoute, *gwapiv1b1.HTTPRoute,
-	map[types.NamespacedName]*dpv1alpha1.Authentication, error) {
-	var prodHTTPRoute *gwapiv1b1.HTTPRoute
-	var sandHTTPRoute *gwapiv1b1.HTTPRoute
-	authentications := make(map[types.NamespacedName]*dpv1alpha1.Authentication)
-	authenticationNames := []types.NamespacedName{}
+func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, namespace string,
+	prodHTTPRouteRef string, sandHTTPRouteRef string) (*synchronizer.HTTPRouteState, *synchronizer.HTTPRouteState, error) {
+	var prodHTTPRoute *synchronizer.HTTPRouteState
+	var sandHTTPRoute *synchronizer.HTTPRouteState
+	var err error
 
 	if prodHTTPRouteRef != "" {
-		httpRoute := gwapiv1b1.HTTPRoute{}
-		if err := client.Get(ctx, types.NamespacedName{Namespace: namespace, Name: prodHTTPRouteRef}, &httpRoute); err != nil {
-			return nil, nil, nil, fmt.Errorf("production HttpRoute %s in namespace :%s has not found. %s",
+		if prodHTTPRoute, err = apiReconciler.resolveHTTPRouteRefs(ctx, namespace, prodHTTPRouteRef); err != nil {
+			return nil, nil, fmt.Errorf("error while resolving production httpRouteref %s in namespace :%s has not found. %s",
 				prodHTTPRouteRef, namespace, err.Error())
 		}
-		prodHTTPRoute = &httpRoute
-		authenticationNames = append(authenticationNames, utils.ExtractExtensions(prodHTTPRoute)...)
 	}
 
 	if sandHTTPRouteRef != "" {
-		httpRoute := gwapiv1b1.HTTPRoute{}
-		if err := client.Get(ctx, types.NamespacedName{Namespace: namespace, Name: sandHTTPRouteRef}, &httpRoute); err != nil {
-			return nil, nil, nil, fmt.Errorf("error fetching SandHTTPRoute: %s in namespace : %s. %v",
-				sandHTTPRouteRef, namespace, err)
+		if sandHTTPRoute, err = apiReconciler.resolveHTTPRouteRefs(ctx, namespace, sandHTTPRouteRef); err != nil {
+			return nil, nil, fmt.Errorf("error while resolving sandbox httpRouteref %s in namespace :%s has not found. %s",
+				sandHTTPRouteRef, namespace, err.Error())
 		}
-		sandHTTPRoute = &httpRoute
-		authenticationNames = append(authenticationNames, utils.ExtractExtensions(sandHTTPRoute)...)
 	}
+	return prodHTTPRoute, sandHTTPRoute, nil
+}
 
+// resolveHTTPRouteRefs validates following references related to the API
+// - Authentications
+func (apiReconciler *APIReconciler) resolveHTTPRouteRefs(ctx context.Context, namespace string,
+	httpRouteRef string) (*synchronizer.HTTPRouteState, error) {
+	httpRoute := gwapiv1b1.HTTPRoute{}
+	authentications := make(map[types.NamespacedName]*dpv1alpha1.Authentication)
+	if err := apiReconciler.client.Get(ctx, types.NamespacedName{Namespace: namespace, Name: httpRouteRef}, &httpRoute); err != nil {
+		return nil, fmt.Errorf("error while getting httproute %s in namespace :%s, %s", httpRouteRef, namespace, err.Error())
+	}
+	if err := apiReconciler.getOverrideAuthentications(ctx, authentications, &httpRoute); err != nil {
+		return nil, fmt.Errorf("error while getting httproute auth overrides %s in namespace :%s, %s", httpRouteRef,
+			namespace, err.Error())
+	}
+	if err := apiReconciler.getDefaultAuthentications(ctx, authentications, &httpRoute); err != nil {
+		return nil, fmt.Errorf("error while getting httproute auth defaults %s in namespace :%s, %s", httpRouteRef,
+			namespace, err.Error())
+	}
+	return &synchronizer.HTTPRouteState{
+		HTTPRoute:       &httpRoute,
+		Authentications: authentications,
+	}, nil
+}
+
+// getOverrideAuthentications iterate over http route's extensionrefs and retrieve authentications
+func (apiReconciler *APIReconciler) getOverrideAuthentications(ctx context.Context,
+	authentications map[types.NamespacedName]*dpv1alpha1.Authentication, httpRoute *gwapiv1b1.HTTPRoute) error {
+	authenticationNames := utils.ExtractExtensions(httpRoute, constants.KindAuthentication)
 	for _, name := range authenticationNames {
 		authentication := dpv1alpha1.Authentication{}
-		if err := client.Get(ctx, name, &authentication); err != nil {
-			return nil, nil, nil, fmt.Errorf("error fetching Authentication: %s in namespace : %s. %v",
-				sandHTTPRouteRef, namespace, err)
+		if err := apiReconciler.client.Get(ctx, name, &authentication); err != nil {
+			return fmt.Errorf("error fetching Authentication: %s, %s", name.String(), err.Error())
 		}
 		authentications[name] = &authentication
 	}
+	return nil
+}
 
-	return prodHTTPRoute, sandHTTPRoute, authentications, nil
+func (apiReconciler *APIReconciler) getDefaultAuthentications(ctx context.Context,
+	authentications map[types.NamespacedName]*dpv1alpha1.Authentication, httpRoute *gwapiv1b1.HTTPRoute) error {
+	authenticationList := &dpv1alpha1.AuthenticationList{}
+	if err := apiReconciler.client.List(ctx, authenticationList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(authenticationAPIIndex, utils.NamespacedName(httpRoute).String()),
+	}); err != nil {
+		return err
+	}
+	for _, item := range authenticationList.Items {
+		authentications[types.NamespacedName{
+			Name:      item.Name,
+			Namespace: item.Namespace,
+		}] = &item
+	}
+	return nil
 }
 
 // getAPIForHTTPRoute triggers the API controller reconcile method based on the changes detected
 // from HTTPRoute objects. If the changes are done for an API stored in the Operator Data store,
 // a new reconcile event will be created and added to the reconcile event queue.
-func (apiReconciler *APIReconciler) getAPIForHTTPRoute(obj client.Object) []reconcile.Request {
+func (apiReconciler *APIReconciler) getAPIForHTTPRoute(obj k8client.Object) []reconcile.Request {
 	ctx := context.Background()
 	httpRoute, ok := obj.(*gwapiv1b1.HTTPRoute)
 	if !ok {
@@ -275,7 +318,7 @@ func (apiReconciler *APIReconciler) getAPIForHTTPRoute(obj client.Object) []reco
 	}
 
 	apiList := &dpv1alpha1.APIList{}
-	if err := apiReconciler.client.List(ctx, apiList, &client.ListOptions{
+	if err := apiReconciler.client.List(ctx, apiList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(httpRouteAPIIndex, utils.NamespacedName(httpRoute).String()),
 	}); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
@@ -307,8 +350,7 @@ func (apiReconciler *APIReconciler) getAPIForHTTPRoute(obj client.Object) []reco
 // getAPIForAuthentication triggers the API controller reconcile method based on the changes detected
 // from Authentication objects. If the changes are done for an API stored in the Operator Data store,
 // a new reconcile event will be created and added to the reconcile event queue.
-func (apiReconciler *APIReconciler) getAPIForAuthentication(obj client.Object) []reconcile.Request {
-	ctx := context.Background()
+func (apiReconciler *APIReconciler) getHTTPRouteForAuthentication(obj k8client.Object) []reconcile.Request {
 	authentication, ok := obj.(*dpv1alpha1.Authentication)
 	if !ok {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
@@ -319,55 +361,13 @@ func (apiReconciler *APIReconciler) getAPIForAuthentication(obj client.Object) [
 		return []reconcile.Request{}
 	}
 
-	// get related httproutes
-	httpRouteList := &gwapiv1b1.HTTPRouteList{}
-	if err := apiReconciler.client.List(ctx, httpRouteList, &client.ListOptions{
-		FieldSelector: fields.OneTermEqualSelector(httpRouteAPIIndex, utils.NamespacedName(authentication).String()),
-	}); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("Unable to find associated Http routes: %s", utils.NamespacedName(authentication).String()),
-			Severity:  logging.CRITICAL,
-			ErrorCode: 2610,
-		})
-		return []reconcile.Request{}
-	}
-
-	if len(httpRouteList.Items) == 0 {
-		loggers.LoggerAPKOperator.Debugf("HttpRoutes for Authentication not found: %s",
-			utils.NamespacedName(authentication).String())
-		return []reconcile.Request{}
-	}
-
-	// get related api list for above httproute list
-	apis := []dpv1alpha1.API{}
-
-	for _, httpRoute := range httpRouteList.Items {
-		apiList := &dpv1alpha1.APIList{}
-		if err := apiReconciler.client.List(ctx, apiList, &client.ListOptions{
-			FieldSelector: fields.OneTermEqualSelector(httpRouteAPIIndex, utils.NamespacedName(&httpRoute).String()),
-		}); err != nil {
-			loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-				Message:   fmt.Sprintf("Unable to find associated APIs: %s", utils.NamespacedName(&httpRoute).String()),
-				Severity:  logging.CRITICAL,
-				ErrorCode: 2610,
-			})
-			return []reconcile.Request{}
-		}
-		apis = append(apis, apiList.Items...)
-	}
-
-	if len(apis) == 0 {
-		loggers.LoggerAPKOperator.Debugf("APIs for Authentication not found: %s",
-			utils.NamespacedName(authentication).String())
-		return []reconcile.Request{}
-	}
-
 	requests := []reconcile.Request{}
-	for _, apiRef := range apis {
+
+	if authentication.Spec.TargetRef.Kind == constants.KindHTTPRoute {
 		req := reconcile.Request{
 			NamespacedName: types.NamespacedName{
-				Name:      apiRef.Name,
-				Namespace: apiRef.Namespace},
+				Name:      string(authentication.Spec.TargetRef.Name),
+				Namespace: authentication.Namespace},
 		}
 		loggers.LoggerAPKOperator.Infof("Adding reconcile request: %v", req.NamespacedName)
 		requests = append(requests, req)
@@ -384,7 +384,7 @@ func (apiReconciler *APIReconciler) getAPIForAuthentication(obj client.Object) [
 //     This helps to find authentication schemes binded to HTTPRoute.
 func addIndexes(ctx context.Context, mgr manager.Manager) error {
 	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.API{}, httpRouteAPIIndex,
-		func(rawObj client.Object) []string {
+		func(rawObj k8client.Object) []string {
 			api := rawObj.(*dpv1alpha1.API)
 			var httpRoutes []string
 			if api.Spec.ProdHTTPRouteRef != "" {
@@ -405,10 +405,19 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 		}); err != nil {
 		return err
 	}
-	err := mgr.GetFieldIndexer().IndexField(ctx, &gwapiv1b1.HTTPRoute{}, authenticationAPIIndex,
-		func(rawObj client.Object) []string {
-			httpRoute := rawObj.(*gwapiv1b1.HTTPRoute)
-			return utils.ExtractExtensionStrings(httpRoute)
+
+	err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.Authentication{}, authenticationAPIIndex,
+		func(rawObj k8client.Object) []string {
+			authentication := rawObj.(*dpv1alpha1.Authentication)
+			var httpRoutes []string
+			if authentication.Spec.TargetRef.Kind == constants.KindHTTPRoute {
+				httpRoutes = append(httpRoutes,
+					types.NamespacedName{
+						Namespace: authentication.Namespace,
+						Name:      string(authentication.Spec.TargetRef.Name),
+					}.String())
+			}
+			return httpRoutes
 		})
 	return err
 }
@@ -428,7 +437,7 @@ func (apiReconciler *APIReconciler) handleStatus(apiKey types.NamespacedName, st
 		message = "Rejected due to invalid data."
 	case constants.ValidatedState:
 		accept = true
-		message = "Successfully validated."
+		message = "Successfully validated. Waiting for references to be resolved ..."
 	case constants.UpdatedState:
 		accept = true
 		message = fmt.Sprintf("API update is deployed to the gateway. %v Updated", events)
@@ -439,7 +448,7 @@ func (apiReconciler *APIReconciler) handleStatus(apiKey types.NamespacedName, st
 	apiReconciler.statusUpdater.Send(status.Update{
 		NamespacedName: apiKey,
 		Resource:       new(dpv1alpha1.API),
-		UpdateStatus: func(obj client.Object) client.Object {
+		UpdateStatus: func(obj k8client.Object) k8client.Object {
 			h, ok := obj.(*dpv1alpha1.API)
 			if !ok {
 				loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{

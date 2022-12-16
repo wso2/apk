@@ -23,7 +23,6 @@ import (
 	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
 	"github.com/wso2/apk/adapter/internal/operator/utils"
 	"k8s.io/apimachinery/pkg/types"
-	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
 // OperatorDataStore holds the APIStore and API, HttpRoute mappings
@@ -40,24 +39,23 @@ func CreateNewOperatorDataStore() *OperatorDataStore {
 }
 
 // AddNewAPItoODS stores a new API in the OperatorDataStore.
-func (ods *OperatorDataStore) AddNewAPItoODS(api dpv1alpha1.API, prodHTTPRoute *gwapiv1b1.HTTPRoute,
-	sandHTTPRoute *gwapiv1b1.HTTPRoute, authentications map[types.NamespacedName]*dpv1alpha1.Authentication) APIState {
+func (ods *OperatorDataStore) AddNewAPItoODS(api dpv1alpha1.API, prodHTTPRouteState *HTTPRouteState,
+	sandHTTPRouteState *HTTPRouteState) APIState {
 	ods.mu.Lock()
 	defer ods.mu.Unlock()
 
 	apiNamespacedName := utils.NamespacedName(&api)
 	ods.apiStore[apiNamespacedName] = &APIState{
-		APIDefinition:   &api,
-		ProdHTTPRoute:   prodHTTPRoute,
-		SandHTTPRoute:   sandHTTPRoute,
-		Authentications: authentications,
+		APIDefinition: &api,
+		ProdHTTPRoute: prodHTTPRouteState,
+		SandHTTPRoute: sandHTTPRouteState,
 	}
 	return *ods.apiStore[apiNamespacedName]
 }
 
 // UpdateAPIState update the APIState on ref updates
-func (ods *OperatorDataStore) UpdateAPIState(apiDef *dpv1alpha1.API, prodHTTPRoute *gwapiv1b1.HTTPRoute,
-	sandHTTPRoute *gwapiv1b1.HTTPRoute, authentications map[types.NamespacedName]*dpv1alpha1.Authentication) ([]string, bool) {
+func (ods *OperatorDataStore) UpdateAPIState(apiDef *dpv1alpha1.API, prodHTTPRoute *HTTPRouteState,
+	sandHTTPRoute *HTTPRouteState) ([]string, bool) {
 	ods.mu.Lock()
 	defer ods.mu.Unlock()
 	var updated bool
@@ -68,28 +66,51 @@ func (ods *OperatorDataStore) UpdateAPIState(apiDef *dpv1alpha1.API, prodHTTPRou
 		updated = true
 		events = append(events, "API Definition")
 	}
-	//TODO(amali) remove extensions map related to old routes
-	if prodHTTPRoute != nil && (prodHTTPRoute.UID != cachedAPI.ProdHTTPRoute.UID ||
-		prodHTTPRoute.Generation > cachedAPI.ProdHTTPRoute.Generation) {
-		cachedAPI.ProdHTTPRoute = prodHTTPRoute
-		updated = true
-		events = append(events, "Production Endpoint")
-	}
-	if sandHTTPRoute != nil && (sandHTTPRoute.UID != cachedAPI.SandHTTPRoute.UID ||
-		sandHTTPRoute.Generation > cachedAPI.SandHTTPRoute.Generation) {
-		cachedAPI.SandHTTPRoute = sandHTTPRoute
-		updated = true
-		events = append(events, "Sandbox Endpoint")
-	}
-	for name, authentication := range authentications {
-		// if existing map has more recent values for auth cr, then keep them
-		if existingAuth, found := cachedAPI.Authentications[name]; found &&
-			(existingAuth.UID == authentication.UID || existingAuth.Generation >= authentication.Generation) {
-			authentications[name] = existingAuth
+	if prodHTTPRoute != nil {
+		if prodHTTPRoute.HTTPRoute.UID != cachedAPI.ProdHTTPRoute.HTTPRoute.UID ||
+			prodHTTPRoute.HTTPRoute.Generation > cachedAPI.ProdHTTPRoute.HTTPRoute.Generation {
+			cachedAPI.ProdHTTPRoute.HTTPRoute = prodHTTPRoute.HTTPRoute
+			updated = true
+			events = append(events, "Production Endpoint")
 		}
-		updated = true
-		events = append(events, "API Authentication Schemes")
+		var authUpdated bool
+		for name, authentication := range prodHTTPRoute.Authentications {
+			// if existing map has more recent values for auth cr, then keep them
+			if existingAuth, found := cachedAPI.ProdHTTPRoute.Authentications[name]; found &&
+				(existingAuth.UID == authentication.UID || existingAuth.Generation >= authentication.Generation) {
+				prodHTTPRoute.Authentications[name] = existingAuth
+			}
+			updated = true
+			authUpdated = true
+		}
+		if authUpdated {
+			events = append(events, "API Authentication Schemes of production")
+		}
+		cachedAPI.ProdHTTPRoute.Authentications = prodHTTPRoute.Authentications
 	}
+	if sandHTTPRoute != nil {
+		if sandHTTPRoute.HTTPRoute.UID != cachedAPI.SandHTTPRoute.HTTPRoute.UID ||
+			sandHTTPRoute.HTTPRoute.Generation > cachedAPI.SandHTTPRoute.HTTPRoute.Generation {
+			cachedAPI.SandHTTPRoute.HTTPRoute = sandHTTPRoute.HTTPRoute
+			updated = true
+			events = append(events, "Sandbox Endpoint")
+		}
+		var authUpdated bool
+		for name, authentication := range sandHTTPRoute.Authentications {
+			// if existing map has more recent values for auth cr, then keep them
+			if existingAuth, found := cachedAPI.SandHTTPRoute.Authentications[name]; found &&
+				(existingAuth.UID == authentication.UID || existingAuth.Generation >= authentication.Generation) {
+				sandHTTPRoute.Authentications[name] = existingAuth
+			}
+			updated = true
+			authUpdated = true
+		}
+		if authUpdated {
+			events = append(events, "API Authentication Schemes of sandbox")
+		}
+		cachedAPI.SandHTTPRoute.Authentications = sandHTTPRoute.Authentications
+	}
+
 	return events, updated
 }
 
@@ -106,5 +127,4 @@ func (ods *OperatorDataStore) DeleteCachedAPI(apiName types.NamespacedName) {
 	ods.mu.Lock()
 	defer ods.mu.Unlock()
 	delete(ods.apiStore, apiName)
-	//TODO(amali) remove entry from HTTPRouteToAPIRefs and AuthenticationToAPIRefs
 }

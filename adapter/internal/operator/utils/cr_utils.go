@@ -23,30 +23,14 @@ import (
 )
 
 // ExtractExtensions extract extensions of the http route.
-func ExtractExtensions(httpRoute *gwapiv1b1.HTTPRoute) []types.NamespacedName {
+func ExtractExtensions(httpRoute *gwapiv1b1.HTTPRoute, kindType string) []types.NamespacedName {
 	authentications := []types.NamespacedName{}
 	for _, rule := range httpRoute.Spec.Rules {
 		for _, filter := range rule.Filters {
-			if filter.ExtensionRef != nil && filter.ExtensionRef.Kind == "Authentication" {
+			if filter.ExtensionRef != nil && filter.ExtensionRef.Kind == gwapiv1b1.Kind(kindType) {
 				namespacedName := types.NamespacedName{
 					Name:      string(filter.ExtensionRef.Name),
 					Namespace: httpRoute.Namespace}
-				authentications = append(authentications, namespacedName)
-			}
-		}
-	}
-	return authentications
-}
-
-// ExtractExtensionStrings extract extensions of the http route as namespaced strings.
-func ExtractExtensionStrings(httpRoute *gwapiv1b1.HTTPRoute) []string {
-	authentications := []string{}
-	for _, rule := range httpRoute.Spec.Rules {
-		for _, filter := range rule.Filters {
-			if filter.ExtensionRef != nil && filter.ExtensionRef.Kind == "Authentication" {
-				namespacedName := types.NamespacedName{
-					Name:      string(filter.ExtensionRef.Name),
-					Namespace: httpRoute.Namespace}.String()
 				authentications = append(authentications, namespacedName)
 			}
 		}

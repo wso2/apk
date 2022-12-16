@@ -6,32 +6,6 @@ metadata:
   name: manager-role
 rules:
 - apiGroups:
-  - '*'
-  resources:
-  - apis
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - '*'
-  resources:
-  - apis/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - '*'
-  resources:
-  - apis/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
   - cp.wso2.com
   resources:
   - applications
@@ -60,6 +34,32 @@ rules:
 - apiGroups:
   - dp.wso2.com
   resources:
+  - apis
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - dp.wso2.com
+  resources:
+  - apis/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - dp.wso2.com
+  resources:
+  - apis/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - dp.wso2.com
+  resources:
   - authentications
   verbs:
   - create
@@ -79,6 +79,32 @@ rules:
   - dp.wso2.com
   resources:
   - authentications/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - dp.wso2.com
+  resources:
+  - httproutes
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - dp.wso2.com
+  resources:
+  - httproutes/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - dp.wso2.com
+  resources:
+  - httproutes/status
   verbs:
   - get
   - patch

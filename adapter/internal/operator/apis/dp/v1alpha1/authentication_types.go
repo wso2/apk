@@ -19,14 +19,16 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1alpha2"
 )
 
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
 // AuthenticationSpec defines the desired state of Authentication
 type AuthenticationSpec struct {
-	Default  AuthSpec `json:"default,omitempty"`
-	Override AuthSpec `json:"override,omitempty"`
+	Default   AuthSpec                        `json:"default,omitempty"`
+	Override  AuthSpec                        `json:"override,omitempty"`
+	TargetRef gwapiv1b1.PolicyTargetReference `json:"targetRef,omitempty"`
 }
 
 // AuthSpec specification of the authentication service

@@ -43,3 +43,9 @@ const (
 	DeployedState  = "Deployed"
 	UpdatedState   = "Updated"
 )
+
+// CRD Kinds
+const (
+	KindAuthentication = "Authentication"
+	KindHTTPRoute      = "HttpRoute"
+)
