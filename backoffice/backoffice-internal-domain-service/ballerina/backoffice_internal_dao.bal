@@ -46,7 +46,7 @@ public function db_createAPI(APIBody apiBody, string organization) returns API |
         if result is sql:ExecutionResult {
             return apiBody.apiProperties;
         } else {
-            return error("Error while inserting data into Database");  
+            return error("Error while inserting data into Database", result);  
         }
     }
 }
@@ -63,7 +63,7 @@ public function db_AddDefinition(APIBody apiBody, string organization) returns A
     } else {
         sql:ParameterizedQuery values = `${organization},
                                         ${apiBody.apiProperties.id},
-                                        ${apiBody.Definition.toBytes()}, 
+                                        ${apiBody.Definition.toString().toBytes()}, 
                                         ${apiBody.apiProperties.'type}
                                     )`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(ADD_API_DEFINITION_Suffix, values);
@@ -114,7 +114,7 @@ public function db_updateDefinition(string apiId, APIBody api) returns API | err
     if db_client is error {
         return error("Issue while conecting to databse");
     } else {
-        sql:ParameterizedQuery values = ` api_definition = ${api.Definition.toBytes()}
+        sql:ParameterizedQuery values = ` api_definition = ${api.Definition.toString().toBytes()}
         WHERE api_uuid = ${apiId}`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(UPDATE_API_DEFINITION_Suffix, values);
 
@@ -181,7 +181,7 @@ public function db_updateDefinitionbyId(string apiId, APIDefinition api) returns
     if db_client is error {
         return error("Issue while conecting to databse");
     } else {
-        sql:ParameterizedQuery values = ` api_definition = ${api.Definition.toBytes()}
+        sql:ParameterizedQuery values = ` api_definition = ${api.Definition.toString().toBytes()}
         WHERE api_uuid = ${apiId}`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(UPDATE_API_DEFINITION_Suffix, values);
 
