@@ -55,10 +55,18 @@ function init() returns error? {
     _ = check servicesService.retrieveAllServiceMappingsAtStartup(());
     ServiceMappingTask serviceMappingTask = new (serviceMappingResourceVersion);
     _ = check serviceMappingTask.startListening();
+    _ = check startAndAttachServices();
+    log:printInfo("Initializing Runtime Domain Service..");
+}
+
+public function deRegisterep() returns error? {
+    _ = check ep0.gracefulStop();
+}
+
+function startAndAttachServices() returns error? {
     check ep0.attach(healthService, "/");
     check ep0.attach(runtimeService, "/api/am/runtime");
     check ep0.'start();
     runtime:registerListener(ep0);
-    log:printInfo("Initializing Runtime Domain Service..");
+    runtime:onGracefulStop(deRegisterep);
 }
-
