@@ -15,7 +15,7 @@
 
 ```HELM-HOME``` = APKCTL-demo/helm
 
-1. Execute ``` helm repo add bitnami https://charts.bitnami.com/bitnami ```
+1. Execute ``` helm repo add bitnami https://charts.bitnami.com/bitnami ``` and ```helm repo add jetstack https://charts.jetstack.io```
 2. Make sure your local chartmuseum docker container is running and execute ``` helm repo add chartmuseum http://localhost:8080 ```
 3. Clone the repo and cd into the ```HELM-HOME``` folder.
 4. Execute ``` helm dependency build ``` command to download the dependent charts.
@@ -25,3 +25,4 @@
 8. To deploy control plane components only use ``` --set wso2.apk.dp.enabled=false ```
 9. To deploy data plane components only use ``` --set wso2.apk.cp.enabled=false --set wso2.apk.cp.database.enabled=false --set wso2.apk.cp.ipk.enabled=false ```
 10. 
+

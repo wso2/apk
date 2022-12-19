@@ -122,6 +122,14 @@ func InitOperator() {
 		loggers.LoggerAPKOperator.Errorf("Error creating API controller: %v", err)
 	}
 
+	if err = (&dpv1alpha1.API{}).SetupWebhookWithManager(mgr); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("Unable to create webhook API: %v", err),
+			Severity:  logging.BLOCKER,
+			ErrorCode: 2600,
+		})
+	}
+
 	if err := cpcontrollers.NewApplicationController(mgr); err != nil {
 		loggers.LoggerAPKOperator.Errorf("Error creating Application controller: %v", err)
 	}

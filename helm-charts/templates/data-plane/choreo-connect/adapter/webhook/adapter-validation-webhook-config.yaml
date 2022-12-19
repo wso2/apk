@@ -15,24 +15,32 @@
 # under the License.
 
 {{- if .Values.wso2.apk.dp.enabled }}
-apiVersion: v1
-kind: Service
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-cc-adapter-service
+  name: {{ template "apk-helm.resource.prefix" . }}-validating-webhook-configuration
   namespace : {{ .Release.Namespace }}
-spec:
-  # label keys and values that must match in order to receive traffic for this service
-  selector:
-{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.wso2.apk.dp.cc.adapter.appName ) | indent 4}}
-  ports:
-    - name: endpoint1
-      protocol: TCP
-      port: 8765
-    - name: endpoint2
-      protocol: TCP
-      port: 18000
-    - name: webhook-server
-      protocol: TCP
-      port: 443
-      targetPort: 9443
+  annotations:
+    cert-manager.io/inject-ca-from: {{ .Release.Namespace }}/{{ template "apk-helm.resource.prefix" . }}-webhook-server-cert
+webhooks:
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: {{ template "apk-helm.resource.prefix" . }}-cc-adapter-service
+      namespace: {{ .Release.Namespace }}
+      path: /validate-dp-wso2-com-v1alpha1-api
+  failurePolicy: Fail
+  name: vapi.kb.io
+  rules:
+  - apiGroups:
+    - dp.wso2.com
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - apis
+  sideEffects: None
 {{- end -}}

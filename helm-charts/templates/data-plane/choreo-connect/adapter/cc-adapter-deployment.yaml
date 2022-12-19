@@ -62,6 +62,9 @@ spec:
             - mountPath: /home/wso2/check_health.sh
               name: cc-adapter-grpc-probe-script-conf-volume
               subPath: "check_health.sh"
+            - mountPath: /tmp/k8s-webhook-server/serving-certs
+              name: cc-adapter-webhook-server-cert
+              readOnly: true
           # readinessProbe:
           #   exec:
           #     command: [ "sh", "check_health.sh" ]
@@ -84,4 +87,8 @@ spec:
           configMap: 
             name: {{ template "apk-helm.resource.prefix" . }}-cc-adapter-grpc-probe-script-conf
             defaultMode: 0777
+        - name: cc-adapter-webhook-server-cert
+          secret:
+            secretName: {{ template "apk-helm.resource.prefix" . }}-webhook-server-cert
+            defaultMode: 420
 {{- end -}}

@@ -14,25 +14,21 @@
 # specific language governing permissions and limitations
 # under the License.
 
+# The following manifests contain a self-signed issuer CR and a certificate CR.
+# More document can be found at https://docs.cert-manager.io
+
 {{- if .Values.wso2.apk.dp.enabled }}
-apiVersion: v1
-kind: Service
+apiVersion: cert-manager.io/v1
+kind: Certificate
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-cc-adapter-service
-  namespace : {{ .Release.Namespace }}
+  name: {{ template "apk-helm.resource.prefix" . }}-webhook-server-cert
+  namespace: {{ .Release.Namespace }}
 spec:
-  # label keys and values that must match in order to receive traffic for this service
-  selector:
-{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.wso2.apk.dp.cc.adapter.appName ) | indent 4}}
-  ports:
-    - name: endpoint1
-      protocol: TCP
-      port: 8765
-    - name: endpoint2
-      protocol: TCP
-      port: 18000
-    - name: webhook-server
-      protocol: TCP
-      port: 443
-      targetPort: 9443
+  dnsNames:
+  - {{ template "apk-helm.resource.prefix" . }}-cc-adapter-service.{{ .Release.Namespace }}.svc
+  - {{ template "apk-helm.resource.prefix" . }}-cc-adapter-service.{{ .Release.Namespace }}.svc.cluster.local
+  issuerRef:
+    kind: Issuer
+    name: selfsigned-issuer
+  secretName: {{ template "apk-helm.resource.prefix" . }}-webhook-server-cert
 {{- end -}}
