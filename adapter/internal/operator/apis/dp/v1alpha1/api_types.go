@@ -46,7 +46,7 @@ type APISpec struct {
 	// definition of the API in a ConfigMap.
 	//
 	//
-	// +kubebuilder:validation:MinLength=4
+	// +optional
 	DefinitionFileRef string `json:"definitionFileRef"`
 
 	// ProdHTTPRouteRefs contains a list of references to HttpRoutes
@@ -54,7 +54,6 @@ type APISpec struct {
 	// xref: https://github.com/kubernetes-sigs/gateway-api/blob/main/apis/v1beta1/httproute_types.go
 	//
 	//
-	// +kubebuilder:validation:MinLength=4
 	// +optional
 	ProdHTTPRouteRef string `json:"prodHTTPRouteRef"`
 
@@ -63,7 +62,6 @@ type APISpec struct {
 	// xref: https://github.com/kubernetes-sigs/gateway-api/blob/main/apis/v1beta1/httproute_types.go
 	//
 	//
-	// +kubebuilder:validation:MinLength=4
 	// +optional
 	SandHTTPRouteRef string `json:"sandHTTPRouteRef"`
 
@@ -82,7 +80,6 @@ type APISpec struct {
 	// Organization denotes the organization
 	// related to the API
 	//
-	// +kubebuilder:validation:MinLength=4
 	// +optional
 	Organization string `json:"organization"`
 }
