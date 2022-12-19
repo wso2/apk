@@ -114,7 +114,7 @@ spec:
                 type: string
               status:
                 description: Status denotes the state of the API in its lifecycle.
-                  Possible values could be Accepted, Invalid etc.
+                  Possible values could be Accepted, Invalid, Deploy etc.
                 minLength: 4
                 type: string
               transitionTime:

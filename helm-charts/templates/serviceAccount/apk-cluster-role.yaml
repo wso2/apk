@@ -44,4 +44,13 @@ rules:
   - apiGroups: ["cp.wso2.com"]
     resources: ["applications/status"]
     verbs: ["get","patch","update"]
+  - apiGroups: ["dp.wso2.com"]
+    resources: ["authentications"]
+    verbs: ["get","list","watch","update","delete","create"]
+  - apiGroups: ["dp.wso2.com"]
+    resources: ["authentications/finalizers"]
+    verbs: ["update"]
+  - apiGroups: ["dp.wso2.com"]
+    resources: ["authentications/status"]
+    verbs: ["get","patch","update"]
 {{- end -}}

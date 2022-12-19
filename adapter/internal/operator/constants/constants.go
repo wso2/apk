@@ -19,8 +19,8 @@ package constants
 
 // Controller related constants
 const (
-	APIController       string = "APIController"
-	HTTPRouteController string = "HTTPRouteController"
+	APIController         string = "APIController"
+	ApplicationController string = "ApplicationController"
 )
 
 // API events related constants
@@ -42,4 +42,10 @@ const (
 	InvalidState   = "Invalid"
 	DeployedState  = "Deployed"
 	UpdatedState   = "Updated"
+)
+
+// CRD Kinds
+const (
+	KindAuthentication = "Authentication"
+	KindHTTPRoute      = "HttpRoute"
 )

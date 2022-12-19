@@ -15,27 +15,25 @@
  *
  */
 
-package synchronizer
+package utils
 
 import (
-	"github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
 	"k8s.io/apimachinery/pkg/types"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
-// APIState holds the state of the deployed APIs. This state is compared with
-// the state of the Kubernetes controller cache to detect updates.
-// +k8s:deepcopy-gen=true
-type APIState struct {
-	APIDefinition *v1alpha1.API
-	ProdHTTPRoute *HTTPRouteState
-	SandHTTPRoute *HTTPRouteState
-}
-
-// HTTPRouteState holds the state of the deployed httpRoutes. This state is compared with
-// the state of the Kubernetes controller cache to detect updates.
-// +k8s:deepcopy-gen=true
-type HTTPRouteState struct {
-	HTTPRoute       *gwapiv1b1.HTTPRoute
-	Authentications map[types.NamespacedName]*v1alpha1.Authentication
+// ExtractExtensions extract extensions of the http route.
+func ExtractExtensions(httpRoute *gwapiv1b1.HTTPRoute, kindType string) []types.NamespacedName {
+	authentications := []types.NamespacedName{}
+	for _, rule := range httpRoute.Spec.Rules {
+		for _, filter := range rule.Filters {
+			if filter.ExtensionRef != nil && filter.ExtensionRef.Kind == gwapiv1b1.Kind(kindType) {
+				namespacedName := types.NamespacedName{
+					Name:      string(filter.ExtensionRef.Name),
+					Namespace: httpRoute.Namespace}
+				authentications = append(authentications, namespacedName)
+			}
+		}
+	}
+	return authentications
 }

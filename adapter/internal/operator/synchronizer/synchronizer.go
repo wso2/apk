@@ -74,21 +74,21 @@ func HandleAPILifeCycleEvents(ch *chan APIEvent) {
 func undeployAPIInGateway(apiState APIState) error {
 	var err error
 	if apiState.ProdHTTPRoute != nil {
-		err = deleteAPIFromEnv(apiState.ProdHTTPRoute, apiState)
+		err = deleteAPIFromEnv(apiState.ProdHTTPRoute.HTTPRoute, apiState)
 	}
 	if err != nil {
 		loggers.LoggerXds.ErrorC(logging.ErrorDetails{
 			Message: fmt.Sprintf("Error undeploying prod httpRoute of API : %v in Organization %v from environments %v."+
 				" Hence not checking on deleting the sand httpRoute of the API",
 				string(apiState.APIDefinition.ObjectMeta.UID), apiState.APIDefinition.Spec.Organization,
-				getLabelsForAPI(apiState.ProdHTTPRoute)),
+				getLabelsForAPI(apiState.ProdHTTPRoute.HTTPRoute)),
 			Severity:  logging.MAJOR,
 			ErrorCode: 1415,
 		})
 		return err
 	}
 	if apiState.SandHTTPRoute != nil {
-		err = deleteAPIFromEnv(apiState.SandHTTPRoute, apiState)
+		err = deleteAPIFromEnv(apiState.SandHTTPRoute.HTTPRoute, apiState)
 	}
 	return err
 }
@@ -105,13 +105,13 @@ func deleteAPIFromEnv(httpRoute *gwapiv1b1.HTTPRoute, apiState APIState) error {
 func deployAPIInGateway(apiState APIState) error {
 	var err error
 	if apiState.ProdHTTPRoute != nil {
-		err = generateMGWSwagger(apiState, apiState.ProdHTTPRoute, true)
+		err = generateMGWSwagger(apiState, apiState.ProdHTTPRoute.HTTPRoute, true)
 	}
 	if err != nil {
 		return err
 	}
 	if apiState.SandHTTPRoute != nil {
-		err = generateMGWSwagger(apiState, apiState.SandHTTPRoute, false)
+		err = generateMGWSwagger(apiState, apiState.SandHTTPRoute.HTTPRoute, false)
 	}
 	return err
 }
@@ -245,10 +245,10 @@ func getResourcesForAPI(api APIState) []*apiProtos.Resource {
 	if httpRoute == nil {
 		httpRoute = api.SandHTTPRoute
 	}
-	for _, hostName := range httpRoute.Spec.Hostnames {
+	for _, hostName := range httpRoute.HTTPRoute.Spec.Hostnames {
 		hostNames = append(hostNames, string(hostName))
 	}
-	for _, rule := range httpRoute.Spec.Rules {
+	for _, rule := range httpRoute.HTTPRoute.Spec.Rules {
 		for _, match := range rule.Matches {
 			resource := &apiProtos.Resource{
 				Path:     *match.Path.Value,
