@@ -27,6 +27,7 @@ tasks.register('docker_login', Exec) {
     group 'docker'
     description 'Log in to a Docker registry.'
     if (project.hasProperty("docker_username")&& project.hasProperty("docker_password")) {
+        println 'Log in to a Docker registry.'
         commandLine 'docker', 'login', '--username', docker_username, '--password', docker_password
     }
 }
@@ -45,12 +46,14 @@ tasks.register('docker_build', Exec) {
 tasks.register('docker_push', Exec) {
     group 'docker'
     description 'Push an image or a repository to a registry.'
-    dependsOn docker_login
-    if(project.hasProperty("release")){
+    if(project.hasProperty("multiArch")){
+        dependsOn 'docker_login'
         dependsOn 'docker_buildx'
         commandLine 'echo', 'Image',imageName,' pushed to the docker registry.'
     }else{
+        dependsOn docker_login
         dependsOn docker_build
+
         commandLine 'docker', 'push', imageName
     }
 }
@@ -80,5 +83,6 @@ tasks.register('docker_buildx', Exec) {
     group 'docker'
     description 'Build a multiarch image using docker buildx buildkit'
     dependsOn start_builder
+    mustRunAfter docker_login
     commandLine 'docker', 'buildx', 'build', '--platform', platforms, '-t', imageName, '--push', '.'
 }

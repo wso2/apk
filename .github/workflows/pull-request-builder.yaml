@@ -37,7 +37,7 @@ jobs:
         run: |
           go install github.com/mgechev/revive@latest
 
-      - name: Checkout apk repo.
+      - name: Checkout apk-repo
         uses: actions/checkout@v3
         with:
           fetch-depth: "0"
