@@ -46,8 +46,13 @@ tasks.register('docker_push', Exec) {
     group 'docker'
     description 'Push an image or a repository to a registry.'
     dependsOn docker_login
-    dependsOn docker_build
-    commandLine 'docker', 'push', imageName
+    if(project.hasProperty("release")){
+        dependsOn 'docker_buildx'
+        commandLine 'echo', 'Image',imageName,' pushed to the docker registry.'
+    }else{
+        dependsOn docker_build
+        commandLine 'docker', 'push', imageName
+    }
 }
 
 // Following tasks are required only if you need to make multi architecture docker images
