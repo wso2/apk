@@ -17,18 +17,17 @@
 //
 
 import ballerina/log;
-import ballerinax/java.jdbc;
+import ballerinax/postgresql;
 import ballerina/sql;
 
 public function getBusinessPlanByNameDAO(string policyName) returns string?|error {
-    jdbc:Client | error dbClient  = getConnection();
+    postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
     } else {
         string org = "carbon.super";
         sql:ParameterizedQuery query = `SELECT UUID FROM BUSINESS_PLAN WHERE NAME =${policyName} AND ORGANIZATION =${org}`;
         string| sql:Error result =  dbClient->queryRow(query);
-        check dbClient.close();
         if result is sql:NoRowsError {
             log:printDebug(result.toString());
             return error("Not Found");
@@ -43,7 +42,7 @@ public function getBusinessPlanByNameDAO(string policyName) returns string?|erro
 }
 
 function addSubscriptionDAO(Subscription sub, string user, int apiId, int appId) returns string?|Subscription|error {
-    jdbc:Client | error dbClient  = getConnection();
+    postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
     } else {
@@ -67,7 +66,6 @@ function addSubscriptionDAO(Subscription sub, string user, int apiId, int appId)
         VALUES (${sub.throttlingPolicy},${apiId},${appId},
         ${sub.status},${user},${sub.subscriptionId},${sub.requestedThrottlingPolicy})`;
         sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
-        check dbClient.close();
         if result is sql:ExecutionResult {
             log:printDebug(result.toString());
             return sub;
@@ -79,7 +77,7 @@ function addSubscriptionDAO(Subscription sub, string user, int apiId, int appId)
 }
 
 function getSubscriptionByIdDAO(string subId, string org) returns string?|Subscription|error {
-    jdbc:Client | error dbClient  = getConnection();
+    postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
     } else {
@@ -102,7 +100,6 @@ function getSubscriptionByIdDAO(string subId, string org) returns string?|Subscr
         FROM SUBSCRIPTION SUBS, API API, APPLICATION APP 
         WHERE APP.APPLICATION_ID=SUBS.APPLICATION_ID AND API.API_ID = SUBS.API_ID AND SUBS.UUID =${subId}`;
         Subscription | sql:Error result =  dbClient->queryRow(query);
-        check dbClient.close();
         if result is sql:NoRowsError {
             log:printInfo(result.toString());
             return error("Not Found");
@@ -117,13 +114,12 @@ function getSubscriptionByIdDAO(string subId, string org) returns string?|Subscr
 }
 
 function deleteSubscriptionDAO(string subId, string org) returns error?|string {
-    jdbc:Client | error dbClient  = getConnection();
+    postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
     } else {
         sql:ParameterizedQuery query = `DELETE FROM SUBSCRIPTION WHERE UUID = ${subId}`;
         sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
-        check dbClient.close();
         if result is sql:ExecutionResult {
             return "deleted";
         } else {
@@ -134,7 +130,7 @@ function deleteSubscriptionDAO(string subId, string org) returns error?|string {
 }
 
 function updateSubscriptionDAO(Subscription sub, string user, int apiId, int appId) returns string?|Subscription|error {
-    jdbc:Client | error dbClient  = getConnection();
+    postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
     } else {
@@ -143,7 +139,6 @@ function updateSubscriptionDAO(Subscription sub, string user, int apiId, int app
         , TIER_ID = ${sub.throttlingPolicy} , SUB_STATUS = ${sub.status}
         WHERE UUID = ${sub.subscriptionId}`;
         sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
-        check dbClient.close();
         if result is sql:ExecutionResult {
             log:printDebug(result.toString());
             return sub;
@@ -155,7 +150,7 @@ function updateSubscriptionDAO(Subscription sub, string user, int apiId, int app
 }
 
 function getSubscriptionByAPIandAppIdDAO(string apiId, string appId, string org) returns string?|Subscription|error {
-    jdbc:Client | error dbClient  = getConnection();
+    postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
     } else {
@@ -178,7 +173,6 @@ function getSubscriptionByAPIandAppIdDAO(string apiId, string appId, string org)
         FROM SUBSCRIPTION SUBS, API API, APPLICATION APP 
         WHERE APP.APPLICATION_ID=SUBS.APPLICATION_ID AND API.API_ID = SUBS.API_ID AND API.API_UUID =${apiId} AND APP.UUID=${appId}`;
         Subscription | sql:Error result =  dbClient->queryRow(query);
-        check dbClient.close();
         if result is sql:NoRowsError {
             log:printInfo(result.toString());
             return error("Not Found");
@@ -193,7 +187,7 @@ function getSubscriptionByAPIandAppIdDAO(string apiId, string appId, string org)
 }
 
 function getSubscriptionsByAPIIdDAO(string apiId, string org) returns Subscription[]|error? {
-    jdbc:Client | error dbClient  = getConnection();
+    postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
     } else {
@@ -218,13 +212,12 @@ function getSubscriptionsByAPIIdDAO(string apiId, string org) returns Subscripti
         stream<Subscription, sql:Error?> subscriptionStream = dbClient->query(query);
         Subscription[]? subscriptions = check from Subscription subscription in subscriptionStream select subscription;
         check subscriptionStream.close();
-        check dbClient.close();
         return subscriptions;
     }
 }
 
 function getSubscriptionsByAPPIdDAO(string appId, string org) returns Subscription[]|error? {
-    jdbc:Client | error dbClient  = getConnection();
+    postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
     } else {
@@ -249,13 +242,12 @@ function getSubscriptionsByAPPIdDAO(string appId, string org) returns Subscripti
         stream<Subscription, sql:Error?> subscriptionStream = dbClient->query(query);
         Subscription[]? subscriptions = check from Subscription subscription in subscriptionStream select subscription;
         check subscriptionStream.close();
-        check dbClient.close();
         return subscriptions;
     }
 }
 
 function getSubscriptionsList(string org) returns Subscription[]|error? {
-    jdbc:Client | error dbClient  = getConnection();
+    postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
     } else {
@@ -280,7 +272,6 @@ function getSubscriptionsList(string org) returns Subscription[]|error? {
         stream<Subscription, sql:Error?> subscriptionStream = dbClient->query(query);
         Subscription[]? subscriptions = check from Subscription subscription in subscriptionStream select subscription;
         check subscriptionStream.close();
-        check dbClient.close();
         return subscriptions;
     }
 }

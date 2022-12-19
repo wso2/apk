@@ -244,6 +244,9 @@ dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "lang.int"}
 ]
+modules = [
+	{org = "ballerina", packageName = "mime", moduleName = "mime"}
+]
 
 [[package]]
 org = "ballerina"
@@ -293,6 +296,18 @@ version = "2.3.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "time"}
+]
+
+[[package]]
+org = "ballerina"
+name = "test"
+version = "0.0.0"
+scope = "testOnly"
+dependencies = [
+	{org = "ballerina", name = "jballerina.java"}
+]
+modules = [
+	{org = "ballerina", packageName = "test", moduleName = "test"}
 ]
 
 [[package]]
@@ -376,14 +391,18 @@ dependencies = [
 	{org = "ballerina", name = "lang.runtime"},
 	{org = "ballerina", name = "lang.value"},
 	{org = "ballerina", name = "log"},
+	{org = "ballerina", name = "mime"},
 	{org = "ballerina", name = "regex"},
+	{org = "ballerina", name = "test"},
 	{org = "ballerina", name = "uuid"},
 	{org = "ballerina", name = "websocket"},
 	{org = "ballerinai", name = "observe"}
 ]
 modules = [
 	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service"},
+	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service.java.io"},
 	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service.java.lang"},
+	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service.java.nio.charset"},
 	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service.java.util"},
 	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service.java.util.function"},
 	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service.java.util.stream"},

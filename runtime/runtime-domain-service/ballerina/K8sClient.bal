@@ -29,15 +29,15 @@ final http:Client k8sApiServerEp = check initializeK8sClient();
 
 # This initialize the k8s Client.
 # + return - k8s http client
-function initializeK8sClient() returns http:Client|error {
+public function initializeK8sClient() returns http:Client|error {
     http:Client k8sApiClient = check new ("https://" + runtimeConfiguration.k8sConfiguration.host,
     auth = {
         token: token
     },
         secureSocket = {
-            cert: caCertPath
+        cert: caCertPath
 
-        }
+    }
     );
     return k8sApiClient;
 }
@@ -151,7 +151,7 @@ function getK8sAPIByNameAndNamespace(string name, string namespace) returns json
         if response.statusCode == 200 {
             return response.getJsonPayload();
         } else if (response.statusCode == 404) {
-            return error("Service not found");
+            return error("API not found");
         }
     }
     if response is http:ClientError {

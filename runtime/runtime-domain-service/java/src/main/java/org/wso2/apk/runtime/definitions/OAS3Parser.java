@@ -472,23 +472,6 @@ public class OAS3Parser extends APIDefinition {
     }
 
     /**
-     * Remove MG related information
-     *
-     * @param openAPI OpenAPI
-     */
-    private void removePublisherSpecificInfo(OpenAPI openAPI) {
-        Map<String, Object> extensions = openAPI.getExtensions();
-        OASParserUtil.removePublisherSpecificInfo(extensions);
-        for (String pathKey : openAPI.getPaths().keySet()) {
-            PathItem pathItem = openAPI.getPaths().get(pathKey);
-            for (Map.Entry<PathItem.HttpMethod, Operation> entry : pathItem.readOperationsMap().entrySet()) {
-                Operation operation = entry.getValue();
-                OASParserUtil.removePublisherSpecificInfofromOperation(operation.getExtensions());
-            }
-        }
-    }
-
-    /**
      * Gets a list of scopes using the security requirements
      *
      * @param oauth2SchemeKey OAuth2 security element key
@@ -615,7 +598,7 @@ public class OAS3Parser extends APIDefinition {
     private void updateLegacyScopesFromSwagger(OpenAPI openAPI, SwaggerData swaggerData) {
 
         Map<String, Object> extensions = openAPI.getExtensions();
-        if (extensions != null && extensions.containsKey(APIConstants.SWAGGER_X_WSO2_SECURITY)) {
+        if (extensions != null) {
             extensions.remove(APIConstants.SWAGGER_X_WSO2_SECURITY);
         }
     }
@@ -702,17 +685,11 @@ public class OAS3Parser extends APIDefinition {
         if (APIConstants.AUTH_APPLICATION_OR_USER_LEVEL_TOKEN.equals(authType)) {
             authType = "Application & Application User";
         }
-        if (APIConstants.AUTH_APPLICATION_USER_LEVEL_TOKEN.equals(authType)) {
-            authType = "Application User";
-        }
-        if (APIConstants.AUTH_APPLICATION_LEVEL_TOKEN.equals(authType)) {
-            authType = "Application";
-        }
         operation.addExtension(APIConstants.SWAGGER_X_AUTH_TYPE, authType);
         if (resource.getPolicy() != null) {
             operation.addExtension(APIConstants.SWAGGER_X_THROTTLING_TIER, resource.getPolicy());
         } else {
-            operation.addExtension(APIConstants.SWAGGER_X_THROTTLING_TIER, APIConstants.DEFAULT_API_POLICY_UNLIMITED);
+            operation.addExtension(APIConstants.SWAGGER_X_THROTTLING_TIER, APIConstants.DEFAULT_SUB_POLICY_UNLIMITED);
         }
         // AWS Lambda: set arn & timeout to swagger
         if (resource.getAmznResourceName() != null) {
@@ -759,7 +736,7 @@ public class OAS3Parser extends APIDefinition {
     private void updateLegacyScopesFromOperation(SwaggerData.Resource resource, Operation operation) {
 
         Map<String, Object> extensions = operation.getExtensions();
-        if (extensions != null && extensions.containsKey(APIConstants.SWAGGER_X_SCOPE)) {
+        if (extensions != null) {
             extensions.remove(APIConstants.SWAGGER_X_SCOPE);
         }
     }
@@ -898,10 +875,7 @@ public class OAS3Parser extends APIDefinition {
             return false;
         }
         SecurityScheme checkDefault = openAPI.getComponents().getSecuritySchemes().get(OPENAPI_SECURITY_SCHEMA_KEY);
-        if (checkDefault == null) {
-            return false;
-        }
-        return true;
+        return checkDefault != null;
     }
 
     /**
@@ -949,91 +923,6 @@ public class OAS3Parser extends APIDefinition {
     }
 
     /**
-     * This method returns openAPI definition which replaced X-WSO2-throttling-tier extension comes from
-     * mgw with X-throttling-tier extensions in openAPI file(openAPI version 3)
-     *
-     * @param swaggerContent String
-     * @return String
-     * @throws APIManagementException
-     */
-    @Override
-    public String injectMgwThrottlingExtensionsToDefault(String swaggerContent) {
-        OpenAPI openAPI = getOpenAPI(swaggerContent);
-        Paths paths = openAPI.getPaths();
-        for (String pathKey : paths.keySet()) {
-            Map<PathItem.HttpMethod, Operation> operationsMap = paths.get(pathKey).readOperationsMap();
-            for (Map.Entry<PathItem.HttpMethod, Operation> entry : operationsMap.entrySet()) {
-                Operation operation = entry.getValue();
-                Map<String, Object> extensions = operation.getExtensions();
-                if (extensions != null && extensions.containsKey(APIConstants.X_WSO2_THROTTLING_TIER)) {
-                    Object tier = extensions.get(APIConstants.X_WSO2_THROTTLING_TIER);
-                    extensions.remove(APIConstants.X_WSO2_THROTTLING_TIER);
-                    extensions.put(APIConstants.SWAGGER_X_THROTTLING_TIER, tier);
-                }
-            }
-        }
-        return Json.pretty(openAPI);
-    }
-
-    @Override
-    public String copyVendorExtensions(String existingOASContent, String updatedOASContent) {
-
-        OpenAPI existingOpenAPI = getOpenAPI(existingOASContent);
-        OpenAPI updatedOpenAPI = getOpenAPI(updatedOASContent);
-        Paths updatedPaths = updatedOpenAPI.getPaths();
-        Paths existingPaths = existingOpenAPI.getPaths();
-
-        // Merge Security Schemes
-        if (existingOpenAPI.getComponents().getSecuritySchemes() != null) {
-            if (updatedOpenAPI.getComponents() != null) {
-                updatedOpenAPI.getComponents().setSecuritySchemes(existingOpenAPI.getComponents().getSecuritySchemes());
-            } else {
-                Components components = new Components();
-                components.setSecuritySchemes(existingOpenAPI.getComponents().getSecuritySchemes());
-                updatedOpenAPI.setComponents(components);
-            }
-        }
-
-        // Merge Operation specific vendor extensions
-        for (String pathKey : updatedPaths.keySet()) {
-            Map<PathItem.HttpMethod, Operation> operationsMap = updatedPaths.get(pathKey).readOperationsMap();
-            for (Map.Entry<PathItem.HttpMethod, Operation> updatedEntry : operationsMap.entrySet()) {
-                if (existingPaths.keySet().contains(pathKey)) {
-                    for (Map.Entry<PathItem.HttpMethod, Operation> existingEntry : existingPaths.get(pathKey)
-                            .readOperationsMap().entrySet()) {
-                        if (updatedEntry.getKey().equals(existingEntry.getKey())) {
-                            Map<String, Object> vendorExtensions = updatedEntry.getValue().getExtensions();
-                            Map<String, Object> existingExtensions = existingEntry.getValue().getExtensions();
-                            boolean extensionsAreEmpty = false;
-                            if (vendorExtensions == null) {
-                                vendorExtensions = new HashMap<>();
-                                extensionsAreEmpty = true;
-                            }
-                            OASParserUtil.copyOperationVendorExtensions(existingExtensions, vendorExtensions);
-                            if (extensionsAreEmpty) {
-                                updatedEntry.getValue().setExtensions(existingExtensions);
-                            }
-                            List<SecurityRequirement> securityRequirements = existingEntry.getValue().getSecurity();
-                            List<SecurityRequirement> updatedRequirements = new ArrayList<>();
-                            if (securityRequirements != null) {
-                                for (SecurityRequirement requirement : securityRequirements) {
-                                    List<String> scopes = requirement.get(OAS3Parser.OPENAPI_SECURITY_SCHEMA_KEY);
-                                    if (scopes != null) {
-                                        updatedRequirements.add(requirement);
-                                    }
-                                }
-                                updatedEntry.getValue().setSecurity(updatedRequirements);
-                            }
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        return Json.pretty(updatedOpenAPI);
-    }
-
-    /**
      * This method will extract scopes from legacy x-wso2-security and add them to default scheme
      * @param openAPI openAPI definition
      * @return
@@ -1076,7 +965,7 @@ public class OAS3Parser extends APIDefinition {
                 Map<String, String> scopeBindings = new HashMap<>();
                 if (oAuthFlow.getExtensions() != null) {
                     scopeBindings =
-                            (Map<String, String>) oAuthFlow.getExtensions().get(APIConstants.SWAGGER_X_SCOPES_BINDINGS)
+                            oAuthFlow.getExtensions().get(APIConstants.SWAGGER_X_SCOPES_BINDINGS)
                                     != null ?
                                     (Map<String, String>) oAuthFlow.getExtensions()
                                             .get(APIConstants.SWAGGER_X_SCOPES_BINDINGS) :
@@ -1293,8 +1182,8 @@ public class OAS3Parser extends APIDefinition {
                 String path = entry.getKey();
                 List<Operation> operations = openAPI.getPaths().get(path).readOperations();
                 for (Operation operation : operations) {
-                    if (operation.getExtensions() != null && operation.getExtensions().keySet()
-                            .contains(APIConstants.SWAGGER_X_EXAMPLES)) {
+                    if (operation.getExtensions() != null && operation.getExtensions()
+                            .containsKey(APIConstants.SWAGGER_X_EXAMPLES)) {
                         operation.getExtensions().remove(APIConstants.SWAGGER_X_EXAMPLES);
                     }
                 }
@@ -1304,11 +1193,6 @@ public class OAS3Parser extends APIDefinition {
             throw new APIManagementException("Error while removing examples from OpenAPI definition", e,
                     ExceptionCodes.ERROR_REMOVING_EXAMPLES);
         }
-    }
-
-    @Override
-    public String getVendorFromExtension(String swaggerContent) {
-        return null;
     }
 
     @Override

@@ -58,9 +58,17 @@ http:Service runtimeService = service object {
         BadRequestError badRequest = {body: {code: 900910, message: "Not implemented"}};
         return badRequest;
     }
-    resource function post apis/'validate\-definition(@http:Payload json payload, boolean returnContent = false) returns APIDefinitionValidationResponse|BadRequestError|NotFoundError {
-        BadRequestError badRequest = {body: {code: 900910, message: "Not implemented"}};
-        return badRequest;
+    resource function post apis/'validate\-definition(http:Request message, boolean returnContent = false) returns APIDefinitionValidationResponse|BadRequestError|NotFoundError|InternalServerErrorError {
+        APIClient apiService = new ();
+        do {
+            APIDefinitionValidationResponse|BadRequestError|NotFoundError|InternalServerErrorError|error validateDefinition = apiService.validateDefinition(message, returnContent);
+            if validateDefinition is APIDefinitionValidationResponse|BadRequestError|NotFoundError|InternalServerErrorError {
+                return validateDefinition;
+            } else {
+                InternalServerErrorError internalError = {body: {code: 90900, message: ""}};
+                return internalError;
+            }
+        }
     }
     resource function post apis/validate() returns http:Ok|BadRequestError|PreconditionFailedError|InternalServerErrorError {
         BadRequestError badRequest = {body: {code: 900910, message: "Not implemented"}};

@@ -27,7 +27,7 @@ websocket:Client|error|() serviceMappingClient = ();
 
 class ServiceMappingTask {
     function init(string resourceVersion) {
-        serviceMappingClient = getServiceMappingClient(resourceVersion);
+        serviceMappingClient = getServiceMappingClient(serviceMappingResourceVersion);
     }
 
     public function startListening() returns error? {
@@ -37,13 +37,15 @@ class ServiceMappingTask {
                 do {
                     websocket:Client|error|() apiClientResult = serviceMappingClient;
                     if apiClientResult is websocket:Client {
-                        if !apiClientResult.isOpen() {
-                            log:printDebug("Websocket Client connection closed conectionId: " + apiClientResult.getConnectionId() + " state: " + apiClientResult.isOpen().toString());
-                            serviceMappingClient = getServiceMappingClient(resourceVersion);
+                        boolean connectionOpen = apiClientResult.isOpen();
+                        if !connectionOpen {
+                            log:printDebug("Websocket Client connection closed conectionId: " + apiClientResult.getConnectionId() + " state: " + connectionOpen.toString());
+                            serviceMappingClient = getServiceMappingClient(serviceMappingResourceVersion);
                             websocket:Client|error|() retryClient = serviceMappingClient;
                             if retryClient is websocket:Client {
                                 log:printDebug("Reinitializing client..");
-                                log:printDebug("Intializd new Client Connection conectionId: " + retryClient.getConnectionId() + " state: " + retryClient.isOpen().toString());
+                                connectionOpen = retryClient.isOpen();
+                                log:printDebug("Intializd new Client Connection conectionId: " + retryClient.getConnectionId() + " state: " + connectionOpen.toString());
                                 _ = check readServiceMappingEvent(retryClient);
                             } else if retryClient is error {
                                 log:printError("error while reading message", retryClient);
@@ -63,7 +65,7 @@ class ServiceMappingTask {
     }
 }
 
-function getServiceMappingClient(string resourceVersion) returns websocket:Client|error|() {
+public function getServiceMappingClient(string resourceVersion) returns websocket:Client|error|() {
     string requestURl = "wss://" + runtimeConfiguration.k8sConfiguration.host + "/apis/dp.wso2.com/v1alpha1/watch/servicemappings";
     if resourceVersion.length() > 0 {
         requestURl = requestURl + "?resourceVersion=" + resourceVersion.toString();
@@ -73,18 +75,9 @@ function getServiceMappingClient(string resourceVersion) returns websocket:Clien
         token: token
     },
         secureSocket = {
-            cert: caCertPath
-        }
-    );
-}
-
-function putallServiceMappings(json[] apiData) {
-    foreach json api in apiData {
-        model:K8sAPI|error k8sAPI = createAPImodel(api);
-        if k8sAPI is model:K8sAPI {
-            apilist[k8sAPI.uuid] = k8sAPI;
-        }
+        cert: caCertPath
     }
+    );
 }
 
 function setServiceMappingResourceVersion(string resourceVersionValue) {
@@ -92,10 +85,10 @@ function setServiceMappingResourceVersion(string resourceVersionValue) {
 }
 
 function readServiceMappingEvent(websocket:Client apiWebsocketClient) returns error? {
-    log:printDebug("Using Client Connection conectionId: " + apiWebsocketClient.getConnectionId() + " state: " + apiWebsocketClient.isOpen().toString());
-    if !apiWebsocketClient.isOpen() {
-        error err = error("connection closed");
-        return err;
+    boolean connectionOpen = apiWebsocketClient.isOpen();
+    log:printDebug("Using Client Connection conectionId: " + apiWebsocketClient.getConnectionId() + " state: " + connectionOpen.toString());
+    if !connectionOpen {
+        return error("connection closed");
     }
     string|error message = check apiWebsocketClient->readMessage();
     if message is string {

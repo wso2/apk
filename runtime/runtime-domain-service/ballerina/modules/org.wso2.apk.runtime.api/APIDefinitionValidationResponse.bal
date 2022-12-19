@@ -317,7 +317,7 @@ function org_wso2_apk_runtime_api_APIDefinitionValidationResponse_setErrorItems(
 function org_wso2_apk_runtime_api_APIDefinitionValidationResponse_setInfo(handle receiver, handle arg0) = @java:Method {
     name: "setInfo",
     'class: "org.wso2.apk.runtime.api.APIDefinitionValidationResponse",
-    paramTypes: ["org.wso2.apk.runtime.api.APIDefinitionValidationResponse$Info"]
+    paramTypes: ["org.wso2.apk.runtime.api.Info"]
 } external;
 
 function org_wso2_apk_runtime_api_APIDefinitionValidationResponse_setInit(handle receiver, boolean arg0) = @java:Method {

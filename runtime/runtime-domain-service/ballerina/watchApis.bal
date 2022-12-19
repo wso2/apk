@@ -36,13 +36,15 @@ class APIListingTask {
                 do {
                     websocket:Client|error|() apiClientResult = apiClient;
                     if apiClientResult is websocket:Client {
-                        if !apiClientResult.isOpen() {
-                            log:printDebug("Websocket Client connection closed conectionId: " + apiClientResult.getConnectionId() + " state: " + apiClientResult.isOpen().toString());
+                        boolean connectionOpen = apiClientResult.isOpen();
+                        if !connectionOpen {
+                            log:printDebug("Websocket Client connection closed conectionId: " + apiClientResult.getConnectionId() + " state: " + connectionOpen.toString());
                             apiClient = getClient(resourceVersion);
                             websocket:Client|error|() retryClient = apiClient;
                             if retryClient is websocket:Client {
                                 log:printDebug("Reinitializing client..");
-                                log:printDebug("Intializd new Client Connection conectionId: " + retryClient.getConnectionId() + " state: " + apiClientResult.isOpen().toString());
+                                connectionOpen = retryClient.isOpen();
+                                log:printDebug("Intializd new Client Connection conectionId: " + retryClient.getConnectionId() + " state: " + connectionOpen.toString());
                                 _ = check readAPIEvent(retryClient);
                             } else if retryClient is error {
                                 log:printError("error while reading message", retryClient);
@@ -62,7 +64,11 @@ class APIListingTask {
     }
 }
 
-isolated function getClient(string resourceVersion) returns websocket:Client|error|() {
+# Description Retrieve Websocket client for watch API event.
+#
+# + resourceVersion - resource Version to watch after.
+# + return - Return websocket Client.
+public function getClient(string resourceVersion) returns websocket:Client|error {
     string requestURl = "wss://" + runtimeConfiguration.k8sConfiguration.host + "/apis/dp.wso2.com/v1alpha1/watch/apis";
     if resourceVersion.length() > 0 {
         requestURl = requestURl + "?resourceVersion=" + resourceVersion.toString();
@@ -72,8 +78,8 @@ isolated function getClient(string resourceVersion) returns websocket:Client|err
         token: token
     },
         secureSocket = {
-            cert: caCertPath
-        }
+        cert: caCertPath
+    }
     );
 }
 
@@ -125,8 +131,10 @@ function setResourceVersion(string resourceVersionValue) {
 }
 
 function readAPIEvent(websocket:Client apiWebsocketClient) returns error? {
-    log:printDebug("Using Client Connection conectionId: " + apiWebsocketClient.getConnectionId() + " state: " + apiWebsocketClient.isOpen().toString());
-    if !apiWebsocketClient.isOpen() {
+    boolean connectionOpen = apiWebsocketClient.isOpen();
+
+    log:printDebug("Using Client Connection conectionId: " + apiWebsocketClient.getConnectionId() + " state: " + connectionOpen.toString());
+    if !connectionOpen {
         error err = error("connection closed");
         return err;
     }
@@ -160,7 +168,7 @@ function readAPIEvent(websocket:Client apiWebsocketClient) returns error? {
 
 }
 
-function getAPIByNameAndNamespace(string name, string namespace) returns model:K8sAPI? {
+function getAPIByNameAndNamespace(string name, string namespace) returns model:K8sAPI|() {
     foreach model:K8sAPI api in getAPIs() {
         if (api.k8sName == name && api.namespace == namespace) {
             return api;
@@ -175,5 +183,5 @@ function getAPIByNameAndNamespace(string name, string namespace) returns model:K
             log:printError("Error occued while converting json", k8sAPI);
         }
     }
-    return;
+    return ();
 }

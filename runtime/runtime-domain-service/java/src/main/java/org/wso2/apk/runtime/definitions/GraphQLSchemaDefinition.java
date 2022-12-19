@@ -187,7 +187,7 @@ public class GraphQLSchemaDefinition {
                             base64EncodedURLOperationKey + "{\n" + base64EncodedURLScope + ": String\n}\n";
                     operationScopeMappingBuilder.append(operationScopeType);
                 }
-                schemaDefinitionBuilder.append(operationScopeMappingBuilder.toString());
+                schemaDefinitionBuilder.append(operationScopeMappingBuilder);
             }
 
             if (scopeRoleMap.size() > 0) {
@@ -216,11 +216,11 @@ public class GraphQLSchemaDefinition {
                     }
 
                     if (scopeRoles.size() > 0 && !StringUtils.isEmpty(scopeRoleBuilder.toString())) {
-                        scopeRoleMappingType = scopeRoleBuilder.toString() + "}\n";
+                        scopeRoleMappingType = scopeRoleBuilder + "}\n";
                         scopeRoleMappingBuilder.append(scopeRoleMappingType);
                     }
                 }
-                schemaDefinitionBuilder.append(scopeRoleMappingBuilder.toString());
+                schemaDefinitionBuilder.append(scopeRoleMappingBuilder);
             }
             if (operationThrottlingMap.size() > 0) {
                 String operationThrottlingType;
@@ -233,7 +233,7 @@ public class GraphQLSchemaDefinition {
                             base64EncodedURLOperationKey + "{\n" + base64EncodedURLThrottilingTier + ": String\n}\n";
                     operationThrottlingMappingBuilder.append(operationThrottlingType);
                 }
-                schemaDefinitionBuilder.append(operationThrottlingMappingBuilder.toString());
+                schemaDefinitionBuilder.append(operationThrottlingMappingBuilder);
             }
 
             if (operationAuthSchemeMap.size() > 0) {
@@ -251,7 +251,7 @@ public class GraphQLSchemaDefinition {
                             base64EncodedURLOperationKey + "{\n" + isSecurityEnabled + ": String\n}\n";
                     operationAuthSchemeMappingBuilder.append(operationAuthSchemeType);
                 }
-                schemaDefinitionBuilder.append(operationAuthSchemeMappingBuilder.toString());
+                schemaDefinitionBuilder.append(operationAuthSchemeMappingBuilder);
             }
 
             if (operationAuthSchemeMap.size() > 0) {
@@ -262,7 +262,7 @@ public class GraphQLSchemaDefinition {
                 String policyDefinition = "type " + APIConstants.GRAPHQL_ACCESS_CONTROL_POLICY + " {\n" +
                         base64EncodedPolicyDefinition + ": String\n}\n";
                 policyBuilder.append(policyDefinition);
-                schemaDefinitionBuilder.append(policyBuilder.toString());
+                schemaDefinitionBuilder.append(policyBuilder);
             }
         }
         return schemaDefinitionBuilder.toString();

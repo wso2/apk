@@ -47,11 +47,19 @@ spec:
 {{ include "apk-helm.deployment.livenessProbe.http" .Values.wso2.apk.cp.devportal.deployment | indent 10 }}
 {{ include "apk-helm.deployment.resources" .Values.wso2.apk.cp.devportal.deployment.resources | indent 10 }}
           volumeMounts:
+            - mountPath: /home/wso2apk/devportal/security/wso2carbon.key
+              name: devportal-signing-keystore-volume
+              subPath: wso2carbon.key
             - mountPath: /home/wso2apk/devportal/conf/Config.toml
               name: config-toml-volume
               subPath: Config.toml
+
       volumes:
+        - name: devportal-signing-keystore-volume
+          secret:
+            secretName: {{ template "apk-helm.resource.prefix" . }}-signing-keystore-secret
         - name: config-toml-volume
           configMap:
             name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-configmap
+
 {{- end -}}

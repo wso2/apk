@@ -49,8 +49,7 @@ import (
 )
 
 var (
-	scheme   = runtime.NewScheme()
-	setupLog = ctrl.Log.WithName("setup")
+	scheme = runtime.NewScheme()
 )
 
 func init() {
@@ -129,10 +128,6 @@ func InitOperator() {
 			Severity:  logging.BLOCKER,
 			ErrorCode: 2600,
 		})
-	}
-
-	if err := dpcontrollers.NewHTTPRouteController(mgr, operatorDataStore); err != nil {
-		loggers.LoggerAPKOperator.Errorf("Error creating HttpRoute controller: %v", err)
 	}
 
 	if err := cpcontrollers.NewApplicationController(mgr); err != nil {

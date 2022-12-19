@@ -25,6 +25,8 @@ import runtime_domain_service.java.util as utilapis;
 import ballerina/jwt;
 import ballerina/regex;
 import runtime_domain_service.org.wso2.apk.runtime as runtimeUtil;
+import ballerina/mime;
+import ballerina/jballerina.java;
 import runtime_domain_service.org.wso2.apk.runtime.api as runtimeapi;
 
 public class APIClient {
@@ -221,15 +223,15 @@ public class APIClient {
     }
     public function createAPI(API api) returns string|Error {
         if (self.validateName(api.name)) {
-            return {code: 90911, message: "API Name - " + api.name + " already exist.", description: "API Name - " + api.name+ " already exist."};
+            return {code: 90911, message: "API Name - " + api.name + " already exist.", description: "API Name - " + api.name + " already exist."};
         }
         if self.validateContextAndVersion(api.context, api.'version) {
-            return {code: 90912, message: "API Context - " + api.context +" already exist.", description: "API Context - " + api.context + "already exist."};
+            return {code: 90912, message: "API Context - " + api.context + " already exist.", description: "API Context - " + api.context + "already exist."};
         }
         return "created";
     }
 
-    private function validateContextAndVersion(string context, string 'version) returns boolean {
+    function validateContextAndVersion(string context, string 'version) returns boolean {
 
         foreach model:K8sAPI k8sAPI in getAPIs() {
             if k8sAPI.context == self.returnFullContext(context, 'version) {
@@ -283,11 +285,11 @@ public class APIClient {
 
     function createAPIFromService(string serviceKey, API api) returns CreatedAPI|BadRequestError|InternalServerErrorError {
         if (self.validateName(api.name)) {
-            BadRequestError badRequest = {body: {code: 90911, message: "API Name - " + api.name + " already exist.", description: "API Name - " +api.name+ " already exist."}};
+            BadRequestError badRequest = {body: {code: 90911, message: "API Name - " + api.name + " already exist.", description: "API Name - " + api.name + " already exist."}};
             return badRequest;
         }
         if self.validateContextAndVersion(api.context, api.'version) {
-            BadRequestError badRequest = {body: {code: 90911, message: "API Name - " +api.context+ " already exist.", description: "API Name - " +api.name+ " already exist."}};
+            BadRequestError badRequest = {body: {code: 90911, message: "API Name `${api.context}` already exist.", description: "API Name `${api.name}` already exist."}};
             return badRequest;
         }
         self.setDefaultOperationsIfNotExist(api);
@@ -366,13 +368,11 @@ public class APIClient {
         return configMap;
     }
 
-    private function setDefaultOperationsIfNotExist(API api) {
+    function setDefaultOperationsIfNotExist(API api) {
         APIOperations[]? operations = api.operations;
-        boolean operationsAvailable;
-        if operations is APIOperations[] && operations.length() == 0 {
-            operationsAvailable = false;
-        } else {
-            operationsAvailable = true;
+        boolean operationsAvailable = false;
+        if operations is APIOperations[] {
+            operationsAvailable = operations.length() > 0;
         }
         if operationsAvailable == false {
             APIOperations[] apiOperations = [];
@@ -495,24 +495,20 @@ public class APIClient {
         if (operation == "/*") {
             return generatedPath;
         }
-        foreach int i in 0 ... splitValues.length() - 1 {
-            string pathPart = splitValues[i];
+        foreach string pathPart in splitValues {
             if pathPart.trim().length() > 0 {
                 // path contains path param
                 if regex:matches(pathPart, "\\{.*\\}") {
-                    // check element is last element
-                    if i != splitValues.length() - 1 {
-                        generatedPath = generatedPath + "/" + regex:replaceAll(pathPart.trim(), "\\{.*\\}", ".*");
-                    }
+                    generatedPath = generatedPath + "/" + regex:replaceAll(pathPart.trim(), "\\{.*\\}", ".*");
                 } else {
                     generatedPath = generatedPath + "/" + pathPart;
                 }
             }
         }
 
-        if generatedPath.endsWith("/.*") || generatedPath.endsWith("/*") {
-            int lastSlashIndex = <int>generatedPath.lastIndexOf("/", generatedPath.length() - 1);
-            generatedPath = generatedPath.substring(0, lastSlashIndex + 1);
+        if generatedPath.endsWith("/*") {
+            int lastSlashIndex = <int>generatedPath.lastIndexOf("/", generatedPath.length());
+            generatedPath = generatedPath.substring(0, lastSlashIndex);
         }
         return generatedPath.trim();
     }
@@ -658,5 +654,186 @@ public class APIClient {
             }
         }
     }
+    public function validateDefinition(http:Request message, boolean returnContent) returns InternalServerErrorError|error|BadRequestError|APIDefinitionValidationResponse {
+        DefinitionValidationRequest|BadRequestError|error definitionValidationRequest = self.mapApiDefinitionPayload(message);
+        if definitionValidationRequest is DefinitionValidationRequest {
+            boolean inlineApiDefinitionAvailable = definitionValidationRequest.inlineAPIDefinition is string;
+            boolean fileAvailable = definitionValidationRequest.fileName is string && definitionValidationRequest.content is byte[];
+            boolean urlAvailble = definitionValidationRequest.url is string;
+            boolean typeAvailable = definitionValidationRequest.'type is string;
+            if (!inlineApiDefinitionAvailable && !fileAvailable && !urlAvailble && !typeAvailable) {
+                BadRequestError badRequest = {body: {code: 90914, message: "atleast one of the field required"}};
+                return badRequest;
+            }
+            runtimeapi:APIDefinitionValidationResponse|runtimeapi:APIManagementException validationResponse;
+            if !typeAvailable {
+                BadRequestError badRequest = {body: {code: 90914, message: "type field unavailable"}};
+                return badRequest;
+            }
+            string? url = definitionValidationRequest.url;
+            if url is string {
+                if (fileAvailable || inlineApiDefinitionAvailable) {
+                    BadRequestError badRequest = {body: {code: 90914, message: "multiple fields of  url,file,inlineAPIDefinition given"}};
+                    return badRequest;
+                }
+                string|error retrieveDefinitionFromUrlResult = self.retrieveDefinitionFromUrl(url);
+                if retrieveDefinitionFromUrlResult is string {
+                    validationResponse = check runtimeUtil:RuntimeAPICommonUtil_validateOpenAPIDefinition(definitionValidationRequest.'type, [], retrieveDefinitionFromUrlResult, definitionValidationRequest.fileName ?: "", returnContent);
+                } else {
+                    log:printError("Error occured while retrieving definition from url", retrieveDefinitionFromUrlResult);
+                    BadRequestError badRequest = {body: {code: 900900, message: "retrieveDefinitionFromUrlResult"}};
+                    return badRequest;
+                }
+            } else if definitionValidationRequest.fileName is string && definitionValidationRequest.content is byte[] {
+                if (urlAvailble || inlineApiDefinitionAvailable) {
+                    BadRequestError badRequest = {body: {code: 90914, message: "multiple fields of  url,file,inlineAPIDefinition given"}};
+                    return badRequest;
+                }
+                validationResponse = check runtimeUtil:RuntimeAPICommonUtil_validateOpenAPIDefinition(definitionValidationRequest.'type, <byte[]>definitionValidationRequest.content, "", <string>definitionValidationRequest.fileName, returnContent);
+            } else if definitionValidationRequest.inlineAPIDefinition is string {
+                if (fileAvailable || urlAvailble) {
+                    BadRequestError badRequest = {body: {code: 90914, message: "multiple fields of  url,file,inlineAPIDefinition given"}};
+                    return badRequest;
+                }
+                validationResponse = check runtimeUtil:RuntimeAPICommonUtil_validateOpenAPIDefinition(definitionValidationRequest.'type, [], <string>definitionValidationRequest.inlineAPIDefinition, "", returnContent);
+            } else {
+                BadRequestError badRequest = {body: {code: 90914, message: "atleast one of the field required"}};
+                return badRequest;
+            }
+            if validationResponse is runtimeapi:APIDefinitionValidationResponse {
+
+                string[] endpoints = [];
+                ErrorListItem[] errorItems = [];
+                if validationResponse.isValid() {
+                    runtimeapi:Info info = validationResponse.getInfo();
+                    utilapis:List endpointList = info.getEndpoints();
+                    foreach int i in 0 ... endpointList.size() - 1 {
+                        endpoints.push(endpointList.get(i).toString());
+                    }
+                    APIDefinitionValidationResponse_info validationResponseInfo = {
+                        context: info.getContext(),
+                        description: info.getDescription(),
+                        name: info.getName(),
+                        'version: info.getVersion(),
+                        openAPIVersion: info.getOpenAPIVersion(),
+                        endpoints: endpoints
+                    };
+                    APIDefinitionValidationResponse response = {content: validationResponse.getContent(), isValid: validationResponse.isValid(), info: validationResponseInfo, errors: errorItems};
+                    return response;
+                }
+                utilapis:ArrayList errorItemsResult = validationResponse.getErrorItems();
+                foreach int i in 0 ... errorItemsResult.size() - 1 {
+                    runtimeapi:ErrorItem errorItem = check java:cast(errorItemsResult.get(i));
+                    ErrorListItem errorListItem = {code: errorItem.getErrorCode().toString(), message: <string>errorItem.getErrorMessage(), description: errorItem.getErrorDescription()};
+                    errorItems.push(errorListItem);
+                    APIDefinitionValidationResponse response = {content: validationResponse.getContent(), isValid: validationResponse.isValid(), info: {}, errors: errorItems};
+                    return response;
+                }
+            } else if validationResponse is runtimeapi:APIManagementException {
+                runtimeapi:JAPIManagementException excetion = check validationResponse.ensureType(runtimeapi:JAPIManagementException);
+                runtimeapi:ErrorHandler errorHandler = excetion.getErrorHandler();
+                BadRequestError badeRequest = {body: {code: errorHandler.getErrorCode(), message: errorHandler.getErrorMessage().toString()}};
+                return badeRequest;
+            }
+        } else if definitionValidationRequest is BadRequestError {
+            return definitionValidationRequest;
+        } else {
+            InternalServerErrorError internalError = {body: {code: 90900, message: "InternalServerError"}};
+            return internalError;
+        }
+    }
+    private function mapApiDefinitionPayload(http:Request message) returns DefinitionValidationRequest|BadRequestError|error {
+        string|() url = ();
+        string|() fileName = ();
+        byte[]|() fileContent = ();
+        string|() definitionType = ();
+        string|() inlineAPIDefinition = ();
+        mime:Entity[]|http:ClientError payLoadParts = message.getBodyParts();
+        if payLoadParts is mime:Entity[] {
+            foreach mime:Entity payLoadPart in payLoadParts {
+                mime:ContentDisposition contentDisposition = payLoadPart.getContentDisposition();
+                string fieldName = contentDisposition.name;
+                if fieldName == "url" {
+                    url = check payLoadPart.getText();
+                }
+                else if fieldName == "file" {
+                    fileName = contentDisposition.fileName;
+                    fileContent = check payLoadPart.getByteArray();
+                } else if fieldName == "type" {
+                    definitionType = check payLoadPart.getText();
+                } else if fieldName == "inlineAPIDefinition" {
+                    inlineAPIDefinition = check payLoadPart.getText();
+                }
+            }
+        }
+        if definitionType is () {
+            BadRequestError badeRequest = {body: {code: 90914, message: "type not specified in Request"}};
+            return badeRequest;
+        }
+        return {
+            content: fileContent,
+            fileName: fileName,
+            inlineAPIDefinition: inlineAPIDefinition,
+            url: url,
+            'type: definitionType
+        };
+    }
+
+    private function retrieveDefinitionFromUrl(string url) returns string|error {
+        string domain = self.getDomain(url);
+        string path = self.getPath(url);
+        if domain.length() > 0 {
+            http:Client httpClient = check new (domain);
+            http:Response response = check httpClient->get(path, targetType = http:Response);
+            return response.getTextPayload();
+        } else {
+            return error("invalid url " + url);
+        }
+    }
+    function getDomain(string url) returns string {
+        string hostPort = "";
+        string protocol = "";
+        if url.startsWith("https://") {
+            hostPort = url.substring(8, url.length());
+            protocol = "https";
+        } else if url.startsWith("http://") {
+            hostPort = url.substring(7, url.length());
+            protocol = "http";
+        } else {
+            return "";
+        }
+        int? indexOfSlash = hostPort.indexOf("/", 0);
+        if indexOfSlash is int {
+            return protocol + "://" + hostPort.substring(0, indexOfSlash);
+        } else {
+            return protocol + "://" + hostPort;
+        }
+    }
+
+    function getPath(string url) returns string {
+        string hostPort = "";
+        if url.startsWith("https://") {
+            hostPort = url.substring(8, url.length());
+        } else if url.startsWith("http://") {
+            hostPort = url.substring(7, url.length());
+        } else {
+            return "";
+        }
+        int? indexOfSlash = hostPort.indexOf("/", 0);
+        if indexOfSlash is int {
+            return hostPort.substring(indexOfSlash, hostPort.length());
+        } else {
+            return "";
+        }
+    }
 }
+
+type DefinitionValidationRequest record {|
+    string? url;
+    string? fileName;
+    byte[]? content;
+    string? inlineAPIDefinition;
+    string 'type;
+
+|};
 

@@ -38,6 +38,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	cpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/cp/v1alpha1"
+	"github.com/wso2/apk/adapter/internal/operator/constants"
 	"github.com/wso2/apk/adapter/internal/operator/utils"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/subscription"
 )
@@ -57,7 +58,7 @@ func NewApplicationController(mgr manager.Manager) error {
 		client:           mgr.GetClient(),
 		applicationCache: applicationCache{},
 	}
-	c, err := controller.New("Application", mgr, controller.Options{Reconciler: r})
+	c, err := controller.New(constants.ApplicationController, mgr, controller.Options{Reconciler: r})
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
 			Message:   fmt.Sprintf("Error creating Application controller: %v", err.Error()),
@@ -77,7 +78,7 @@ func NewApplicationController(mgr manager.Manager) error {
 		return err
 	}
 
-	loggers.LoggerAPKOperator.Info("Application Controller successfully started. Watching Application Objects...")
+	loggers.LoggerAPKOperator.Debug("Application Controller successfully started. Watching Application Objects...")
 	return nil
 }
 
@@ -97,7 +98,7 @@ func NewApplicationController(mgr manager.Manager) error {
 func (applicationReconciler *ApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
 
-	loggers.LoggerAPKOperator.Info("Reconciling application: " + req.NamespacedName.String())
+	loggers.LoggerAPKOperator.Debugf("Reconciling application: %v", req.NamespacedName.String())
 
 	applicationKey := req.NamespacedName
 	var application = new(cpv1alpha1.Application)
@@ -105,12 +106,12 @@ func (applicationReconciler *ApplicationReconciler) Reconcile(ctx context.Contex
 		if k8error.IsNotFound(err) {
 			// The application doesn't exist in the applicationCache, remove it
 			delete(applicationReconciler.applicationCache, applicationKey)
-			loggers.LoggerAPKOperator.Info("Application deleted from application cache")
+			loggers.LoggerAPKOperator.Debug("Application deleted from application cache")
 
 			sendUpdates(applicationReconciler.applicationCache)
 			return ctrl.Result{}, nil
 		}
-		return reconcile.Result{}, fmt.Errorf("Failed to get application %s/%s",
+		return reconcile.Result{}, fmt.Errorf("failed to get application %s/%s",
 			applicationKey.Namespace, applicationKey.Name)
 	}
 	// The application created / updated, add to the map

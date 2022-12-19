@@ -17,11 +17,11 @@
 //
 
 import ballerina/log;
-import ballerinax/java.jdbc;
+import ballerinax/postgresql;
 import ballerina/sql;
 
 function addApplicationDAO(Application application,int subscriberId, string org) returns string?|Application|error {
-    jdbc:Client | error dbClient  = getConnection();
+    postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
     } else {
@@ -31,7 +31,6 @@ function addApplicationDAO(Application application,int subscriberId, string org)
         ${application.description},${application.status},${application.groups},${application.owner},${application.createdTime},
         ${application.updatedTime},${application.applicationId},${application.tokenType},${org})`;
         sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
-        check dbClient.close();
         if result is sql:ExecutionResult {
             return application;
         } else {
@@ -42,13 +41,12 @@ function addApplicationDAO(Application application,int subscriberId, string org)
 }
 
 public function getSubscriberIdDAO(string user, string org) returns int?|error {
-    jdbc:Client | error dbClient  = getConnection();
+    postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
     } else {
         sql:ParameterizedQuery query = `SELECT SUBSCRIBER_ID FROM SUBSCRIBER WHERE USER_ID =${user} AND ORGANIZATION =${org}`;
         int|sql:Error result =  dbClient->queryRow(query);
-        check dbClient.close();
         if result is sql:NoRowsError {
             log:printDebug(result.toString());
             return error("Not Found");
@@ -63,13 +61,12 @@ public function getSubscriberIdDAO(string user, string org) returns int?|error {
 }
 
 public function getApplicationUsagePlanByNameDAO(string policyName, string org) returns string?|error {
-    jdbc:Client | error dbClient  = getConnection();
+    postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
     } else {
         sql:ParameterizedQuery query = `SELECT POLICY_ID FROM APPLICATION_USAGE_PLAN WHERE NAME =${policyName} AND ORGANIZATION =${org}`;
         string | sql:Error result =  dbClient->queryRow(query);
-        check dbClient.close();
         if result is sql:NoRowsError {
             log:printDebug(result.toString());
             return error("Not Found");
@@ -84,14 +81,13 @@ public function getApplicationUsagePlanByNameDAO(string policyName, string org) 
 }
 
 function getApplicationByIdDAO(string appId, string org) returns string?|Application|error {
-    jdbc:Client | error dbClient  = getConnection();
+    postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
     } else {
         sql:ParameterizedQuery query = `SELECT NAME, APPLICATION_ID as ID, UUID as APPLICATIONID, DESCRIPTION, APPLICATION_TIER as THROTTLINGPOLICY, TOKEN_TYPE as TOKENTYPE, ORGANIZATION,
         APPLICATION_STATUS as STATUS FROM APPLICATION WHERE UUID =${appId} AND ORGANIZATION =${org}`;
         Application | sql:Error result =  dbClient->queryRow(query);
-        check dbClient.close();
         if result is sql:NoRowsError {
             log:printDebug(result.toString());
             return error("Not Found");
@@ -106,7 +102,7 @@ function getApplicationByIdDAO(string appId, string org) returns string?|Applica
 }
 
 function getApplicationsDAO(string org) returns Application[]|error? {
-    jdbc:Client | error dbClient  = getConnection();
+    postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
     } else {
@@ -115,13 +111,12 @@ function getApplicationsDAO(string org) returns Application[]|error? {
         stream<Application, sql:Error?> applicationStream = dbClient->query(query);
         Application[]? applications = check from Application application in applicationStream select application;
         check applicationStream.close();
-        check dbClient.close();
         return applications;
     }
 }
 
 function updateApplicationDAO(Application application,int subscriberId, string org) returns string?|Application|error {
-    jdbc:Client | error dbClient  = getConnection();
+    postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
     } else {
@@ -131,7 +126,6 @@ function updateApplicationDAO(Application application,int subscriberId, string o
          CREATED_TIME = ${application.createdTime}, UPDATED_TIME = ${application.updatedTime}, TOKEN_TYPE = ${application.tokenType} 
          WHERE UUID = ${application.applicationId} AND ORGANIZATION = ${org}`;
         sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
-        check dbClient.close();
         if result is sql:ExecutionResult {
             return application;
         } else {
@@ -142,13 +136,12 @@ function updateApplicationDAO(Application application,int subscriberId, string o
 }
 
 function deleteApplicationDAO(string appId, string org) returns error?|string {
-    jdbc:Client | error dbClient  = getConnection();
+    postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
     } else {
         sql:ParameterizedQuery query = `DELETE FROM APPLICATION WHERE UUID = ${appId} AND ORGANIZATION = ${org}`;
         sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
-        check dbClient.close();
         if result is sql:ExecutionResult {
             return "deleted";
         } else {

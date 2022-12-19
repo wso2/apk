@@ -32,12 +32,15 @@ function db_getAPIsDAO() returns API[]|error? {
     }
 }
 
-function db_changeLCState(string action, string apiId, string organization) returns string|error? {
+function db_changeLCState(string action, string apiId, string organization) returns string|error {
     postgresql:Client | error db_Client  = getConnection();
     if db_Client is error {
         return error("Error while retrieving connection", db_Client);
     } else {
         string newState = actionToLCState(action);
+        if newState.equalsIgnoreCaseAscii("any") {
+            return error(" Invalid Lifecycle action"); 
+        }
         sql:ParameterizedQuery values = `${newState}
         WHERE api_uuid = ${apiId}`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(UPDATE_API_LifeCycle_Prefix, values);
@@ -47,12 +50,12 @@ function db_changeLCState(string action, string apiId, string organization) retu
         if result is sql:ExecutionResult {
             return action;
         } else {
-            return error("Error while updating LC state into Database");  
+            return error("Error while updating LC state into Database" + result.message());  
         }
     }
 }
 
-function db_getCurrentLCStatus(string apiId, string organization) returns string|error? {
+function db_getCurrentLCStatus(string apiId, string organization) returns string|error {
     postgresql:Client | error db_Client  = getConnection();
     if db_Client is error {
         return error("Error while retrieving connection", db_Client);
@@ -65,7 +68,7 @@ function db_getCurrentLCStatus(string apiId, string organization) returns string
         if result is string {
             return result;
         } else {
-            return error("Error while geting LC state from Database");  
+            return error("Error while geting LC state from Database" + result.message());  
         }
     }
 }
@@ -81,7 +84,7 @@ public function db_AddLCEvent(string? apiId, string? prev_state, string? new_sta
     postgresql:Client | error db_client  = getConnection();
     time:Utc utc = time:utcNow();
     if db_client is error {
-        return error("Issue while conecting to databse");
+        return error("Issue while conecting to databse", db_client);
     } else {
         sql:ParameterizedQuery values = `${apiId},
                                         ${prev_state}, 
@@ -97,15 +100,15 @@ public function db_AddLCEvent(string? apiId, string? prev_state, string? new_sta
         if result is sql:ExecutionResult {
             return result.toString();
         } else {
-            return error("Error while inserting data into Database");  
+            return error("Error while inserting data into Database" + result.message());  
         }
     }
 }
 
-public function getLCEventHistory(string apiId) returns LifecycleHistoryItem[]?|error {
+public function db_getLCEventHistory(string apiId) returns LifecycleHistoryItem[]?|error {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
-        return error("Error while retrieving connection");
+        return error("Error while retrieving connection", dbClient);
     } else {
         sql:ParameterizedQuery query = `SELECT previous_state, new_state, user_id, event_date FROM api_lc_event WHERE api_id =${apiId}`;
         stream<LifecycleHistoryItem, sql:Error?> lcStream = dbClient->query(query);

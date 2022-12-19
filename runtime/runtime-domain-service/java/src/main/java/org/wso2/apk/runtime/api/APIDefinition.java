@@ -127,36 +127,6 @@ public abstract class APIDefinition {
             throws APIManagementException;
 
     /**
-     * This method returns OAS definition which replaced X-WSO2-throttling-tier extension comes from
-     * mgw with X-throttling-tier extensions in OAS file
-     *
-     * @param swaggerContent String
-     * @return OpenAPI
-     * @throws APIManagementException
-     */
-    public abstract String injectMgwThrottlingExtensionsToDefault(String swaggerContent)
-            throws APIManagementException;
-
-    /**
-     * This method copy the vendor extensions from Existing OAS to the updated OAS
-     *
-     * @param existingOASContent Current OAS Content
-     * @param updatedOASContent Updated OAS Content
-     * @return OAS content
-     * @throws APIManagementException
-     */
-    public abstract String copyVendorExtensions(String existingOASContent, String updatedOASContent)
-            throws APIManagementException;
-
-    /**
-     * This method will extract the vendor provider or the API specification form the extensions list
-     *
-     * @param swaggerContent String
-     * @return String
-     */
-    public abstract String getVendorFromExtension(String swaggerContent);
-
-    /**
      * Get parser Type
      *
      * @return String parserType

@@ -22,11 +22,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.models.*;
 import io.swagger.models.parameters.RefParameter;
 import io.swagger.models.properties.RefProperty;
+import io.swagger.parser.SwaggerParser;
+import io.swagger.parser.util.DeserializationUtils;
+import io.swagger.parser.util.SwaggerDeserializationResult;
+import io.swagger.v3.core.util.Json;
+import io.swagger.v3.core.util.Yaml;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.*;
 import io.swagger.v3.oas.models.headers.Header;
@@ -40,28 +44,38 @@ import io.swagger.v3.oas.models.security.Scopes;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.parser.ObjectMapperFactory;
+import io.swagger.v3.parser.OpenAPIV3Parser;
 import io.swagger.v3.parser.converter.SwaggerConverter;
+import io.swagger.v3.parser.core.models.ParseOptions;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONObject;
 import org.wso2.apk.runtime.APIConstants;
-import org.wso2.apk.runtime.RuntimeAPICommonUtil;
 import org.wso2.apk.runtime.api.*;
+import org.wso2.apk.runtime.api.Info;
 import org.wso2.apk.runtime.model.Scope;
 import org.wso2.apk.runtime.model.URITemplate;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * Provide common functions related to OAS
  */
 public class OASParserUtil {
     private static final Log log = LogFactory.getLog(OASParserUtil.class);
-    private static ObjectMapper objectMapper = new ObjectMapper();
-    private static SwaggerConverter swaggerConverter = new SwaggerConverter();
+    private static final String OPENAPI_RESOURCE_KEY = "paths";
+    private static final String[] UNSUPPORTED_RESOURCE_BLOCKS = new String[]{"servers"};
+    private static final SwaggerConverter swaggerConverter = new SwaggerConverter();
+    private static final APIDefinition oas3Parser = new OAS3Parser();
 
     public enum SwaggerVersion {
         SWAGGER,
@@ -548,7 +562,7 @@ public class OASParserUtil {
             String description, List<String> endpoints) {
         validationResponse.setValid(true);
         validationResponse.setContent(originalAPIDefinition);
-        APIDefinitionValidationResponse.Info info = new APIDefinitionValidationResponse.Info();
+        Info info = new Info();
         info.setOpenAPIVersion(openAPIVersion);
         info.setName(title);
         info.setVersion(version);
@@ -628,96 +642,6 @@ public class OASParserUtil {
     }
 
     /**
-     * remove publisher/MG related extension from OAS
-     *
-     * @param extensions extensions
-     */
-    public static void removePublisherSpecificInfo(Map<String, Object> extensions) {
-        if (extensions == null) {
-            return;
-        }
-        extensions.remove(APIConstants.X_WSO2_CORS);
-        extensions.remove(APIConstants.X_WSO2_AUTH_HEADER);
-        extensions.remove(APIConstants.X_WSO2_THROTTLING_TIER);
-        extensions.remove(APIConstants.X_THROTTLING_TIER);
-        extensions.remove(APIConstants.X_WSO2_PRODUCTION_ENDPOINTS);
-        extensions.remove(APIConstants.X_WSO2_SANDBOX_ENDPOINTS);
-        extensions.remove(APIConstants.X_WSO2_BASEPATH);
-        extensions.remove(APIConstants.X_WSO2_TRANSPORTS);
-        extensions.remove(APIConstants.X_WSO2_APP_SECURITY);
-        extensions.remove(APIConstants.X_WSO2_RESPONSE_CACHE);
-        extensions.remove(APIConstants.X_WSO2_MUTUAL_SSL);
-    }
-
-    /**
-     * remove publisher/MG related extension from OAS
-     *
-     * @param extensions extensions
-     */
-    public static void removePublisherSpecificInfofromOperation(Map<String, Object> extensions) {
-        if (extensions == null) {
-            return;
-        }
-        extensions.remove(APIConstants.X_WSO2_APP_SECURITY);
-        extensions.remove(APIConstants.X_WSO2_SANDBOX_ENDPOINTS);
-        extensions.remove(APIConstants.X_WSO2_PRODUCTION_ENDPOINTS);
-        extensions.remove(APIConstants.X_WSO2_DISABLE_SECURITY);
-        extensions.remove(APIConstants.X_WSO2_THROTTLING_TIER);
-    }
-
-    /**
-     * Get Application level security types
-     *
-     * @param security list of security types
-     * @return List of api security
-     */
-    private static List<String> getAPISecurity(List<String> security) {
-        List<String> apiSecurityList = new ArrayList<>();
-        for (String securityType : security) {
-            if (APIConstants.APPLICATION_LEVEL_SECURITY.contains(securityType)) {
-                apiSecurityList.add(securityType);
-            }
-        }
-        return apiSecurityList;
-    }
-
-    /**
-     * generate app security information for OAS definition
-     *
-     * @param security application security
-     * @return JsonNode
-     */
-    static JsonNode getAppSecurity(String security) {
-        List<String> appSecurityList = new ArrayList<>();
-        ObjectNode endpointResult = objectMapper.createObjectNode();
-        boolean appSecurityOptional = false;
-        if (security != null) {
-            List<String> securityList = Arrays.asList(security.split(","));
-            appSecurityList = getAPISecurity(securityList);
-            appSecurityOptional = !securityList.contains(APIConstants.API_SECURITY_OAUTH_BASIC_AUTH_API_KEY_MANDATORY);
-        }
-        ArrayNode appSecurityTypes = objectMapper.valueToTree(appSecurityList);
-        endpointResult.set(APIConstants.WSO2_APP_SECURITY_TYPES, appSecurityTypes);
-        endpointResult.put(APIConstants.OPTIONAL, appSecurityOptional);
-        return endpointResult;
-    }
-
-    /**
-     * generate response cache configuration for OAS definition.
-     *
-     * @param responseCache response cache Enabled/Disabled
-     * @param cacheTimeout  cache timeout in seconds
-     * @return JsonNode
-     */
-    static JsonNode getResponseCacheConfig(String responseCache, int cacheTimeout) {
-        ObjectNode responseCacheConfig = objectMapper.createObjectNode();
-        boolean enabled = APIConstants.ENABLED.equalsIgnoreCase(responseCache);
-        responseCacheConfig.put(APIConstants.RESPONSE_CACHING_ENABLED, enabled);
-        responseCacheConfig.put(APIConstants.RESPONSE_CACHING_TIMEOUT, cacheTimeout);
-        return responseCacheConfig;
-    }
-
-    /**
      * Sort scopes by name.
      * This method was added to display scopes in publisher in a sorted manner.
      *
@@ -764,10 +688,307 @@ public class OASParserUtil {
             updatedVendorExtensions.put(APIConstants.SWAGGER_X_AMZN_RESOURCE_TIMEOUT, existingExtensions
                     .get(APIConstants.SWAGGER_X_AMZN_RESOURCE_TIMEOUT));
         }
-        if (existingExtensions.get(APIConstants.X_WSO2_APP_SECURITY) != null) {
-            updatedVendorExtensions.put(APIConstants.X_WSO2_APP_SECURITY, existingExtensions
-                    .get(APIConstants.X_WSO2_APP_SECURITY));
+    }
+    /**
+     * Extract the archive file and validates the openAPI definition
+     *
+     * @param inputByteArray   file as input stream
+     * @param returnContent whether to return the content of the definition in the response DTO
+     * @return APIDefinitionValidationResponse
+     * @throws APIManagementException if error occurred while parsing definition
+     */
+    public static APIDefinitionValidationResponse extractAndValidateOpenAPIArchive(byte[] inputByteArray,
+                                                                                   boolean returnContent) throws APIManagementException {
+        String path = System.getProperty(APIConstants.JAVA_IO_TMPDIR) + File.separator +
+                APIConstants.OPENAPI_ARCHIVES_TEMP_FOLDER + File.separator + UUID.randomUUID();
+        String archivePath = path + File.separator + APIConstants.OPENAPI_ARCHIVE_ZIP_FILE;
+        String extractedLocation = OASParserUtil.extractUploadedArchive(inputByteArray, APIConstants.OPENAPI_EXTRACTED_DIRECTORY, archivePath, path);
+        File[] listOfFiles = new File(extractedLocation).listFiles();
+        File archiveDirectory = null;
+        if (listOfFiles != null) {
+            if (listOfFiles.length > 1) {
+                throw new APIManagementException("Swagger Definitions should be placed under one root folder.");
+            }
+            for (File file: listOfFiles) {
+                if (file.isDirectory()) {
+                    archiveDirectory = file.getAbsoluteFile();
+                    break;
+                }
+            }
+        }
+        //Verify whether the zipped input is archive or file.
+        //If it is a single  swagger file without remote references it can be imported directly, without zipping.
+        if (archiveDirectory == null) {
+            throw new APIManagementException("Could not find an archive in the given ZIP file.");
+        }
+        File masterSwagger = checkMasterSwagger(archiveDirectory);
+        String content;
+        try {
+            InputStream masterInputStream = new FileInputStream(masterSwagger);
+            content = IOUtils.toString(masterInputStream, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new APIManagementException("Error reading master swagger file" + e);
+        }
+        String openAPIContent = "";
+        SwaggerVersion version;
+        version = getSwaggerVersion(content);
+        String filePath = masterSwagger.getAbsolutePath();
+        if (SwaggerVersion.OPEN_API.equals(version)) {
+            OpenAPIV3Parser openAPIV3Parser = new OpenAPIV3Parser();
+            ParseOptions options = new ParseOptions();
+            options.setResolve(true);
+            OpenAPI openAPI = openAPIV3Parser.read(filePath, null, options);
+            openAPIContent = Json.pretty(openAPI);
+        } else if (SwaggerVersion.SWAGGER.equals(version)) {
+            SwaggerParser parser = new SwaggerParser();
+            Swagger swagger = parser.read(filePath, null, true);
+            try {
+                openAPIContent = Yaml.pretty().writeValueAsString(swagger);
+            } catch (IOException e) {
+                throw new APIManagementException("Error in converting swagger to openAPI content. " + e);
+            }
+        }
+        APIDefinitionValidationResponse apiDefinitionValidationResponse;
+        apiDefinitionValidationResponse = OASParserUtil.validateAPIDefinition(openAPIContent, returnContent);
+        return apiDefinitionValidationResponse;
+    }
+    public static String extractUploadedArchive(byte[] byteArray, String importedDirectoryName,
+                                                String apiArchiveLocation, String extractLocation) throws APIManagementException {
+        String archiveExtractLocation;
+
+        try (ByteArrayInputStream uploadedApiArchiveInputStream = new ByteArrayInputStream(byteArray)) {
+            // create api import directory structure
+            createDirectory(extractLocation);
+            // create archive
+            createArchiveFromInputStream(uploadedApiArchiveInputStream, apiArchiveLocation);
+            // extract the archive
+            archiveExtractLocation = extractLocation + File.separator + importedDirectoryName;
+            extractArchive(apiArchiveLocation, archiveExtractLocation);
+
+        } catch (APIManagementException | IOException e) {
+            deleteDirectory(extractLocation);
+            String errorMsg = "Error in accessing uploaded API archive";
+            log.error(errorMsg, e);
+            throw new APIManagementException(errorMsg, e);
+        }
+        return archiveExtractLocation;
+    }
+    /**
+     * Delete a given directory
+     *
+     * @param path Path to the directory to be deleted
+     * @throws APIManagementException if unable to delete the directory
+     */
+    public static void deleteDirectory(String path) throws APIManagementException {
+        try {
+            FileUtils.deleteDirectory(new File(path));
+        } catch (IOException e) {
+            String errorMsg = "Error while deleting directory : " + path;
+            log.error(errorMsg, e);
+            throw new APIManagementException(errorMsg, e);
         }
     }
 
+    /**
+     * Extracts a a given zip archive
+     *
+     * @param archiveFilePath path of the zip archive
+     * @param destination     extract location
+     * @return name of the extracted zip archive
+     * @throws APIManagementException if an error occurs while extracting the archive
+     */
+    public static String extractArchive(String archiveFilePath, String destination)
+            throws APIManagementException {
+        int bufferSize = 512;
+        long sizeLimit = 0x6400000; // Max size of unzipped data, 100MB
+        int maxEntryCount = 1024;
+        String archiveName = null;
+
+        try {
+            FileInputStream fis = new FileInputStream(archiveFilePath);
+            ZipInputStream zis = new ZipInputStream(new BufferedInputStream(fis));
+            ZipEntry entry;
+            int entries = 0;
+            long total = 0;
+
+            // Process each entry
+            while ((entry = zis.getNextEntry()) != null) {
+                String currentEntry = entry.getName();
+                int index = 0;
+                //This index variable is used to get the extracted folder name; that is root directory
+                if (index == 0 && currentEntry.indexOf('/') != -1) {
+                    archiveName = currentEntry.substring(0, currentEntry.indexOf('/'));
+                    --index;
+                }
+
+                File destinationFile = new File(destination, currentEntry);
+                File destinationParent = destinationFile.getParentFile();
+                String canonicalizedDestinationFilePath = destinationFile.getCanonicalPath();
+
+                if (!canonicalizedDestinationFilePath.startsWith(new File(destination).getCanonicalPath())) {
+                    String errorMessage = "Attempt to upload invalid zip archive with file at " + currentEntry +
+                            ". File path is outside target directory";
+                    log.error(errorMessage);
+                    throw new APIManagementException(errorMessage);
+                }
+                if (entry.isDirectory()) {
+                    log.debug("Creating directory " + destinationFile.getAbsolutePath());
+                    destinationFile.mkdir();
+                    continue;
+                }
+
+                // create the parent directory structure
+                if (destinationParent.mkdirs()) {
+                    log.debug("Creation of folder is successful. Directory Name : " + destinationParent.getName());
+                }
+
+                int count;
+                byte[] data = new byte[bufferSize];
+                FileOutputStream fos = new FileOutputStream(destinationFile);
+                BufferedOutputStream dest = new BufferedOutputStream(fos, bufferSize);
+                while (total + bufferSize <= sizeLimit && (count = zis.read(data, 0, bufferSize)) != -1) {
+                    dest.write(data, 0, count);
+                    total += count;
+                }
+                dest.flush();
+                dest.close();
+                zis.closeEntry();
+                entries++;
+                if (entries > maxEntryCount) {
+                    throw new APIManagementException("Too many files to unzip.");
+                }
+                if (total + bufferSize > sizeLimit) {
+                    throw new APIManagementException("File being unzipped is too big.");
+                }
+            }
+            return archiveName;
+        } catch (IOException e) {
+            String errorMsg = "Failed to extract archive file: " + archiveFilePath + " to destination: " + destination;
+            log.error(errorMsg, e);
+            throw new APIManagementException(errorMsg, e);
+        }
+    }
+    /**
+     * Creates a zip archive from the given {@link InputStream} inputStream
+     *
+     * @param inputStream {@link InputStream} instance
+     * @param archivePath path to create the zip archive
+     * @throws APIManagementException if an error occurs while creating the archive
+     */
+    public static void createArchiveFromInputStream(InputStream inputStream, String archivePath)
+            throws APIManagementException {
+        try (FileOutputStream outFileStream = new FileOutputStream(new File(archivePath))) {
+            IOUtils.copy(inputStream, outFileStream);
+        } catch (IOException e) {
+            String errorMsg = "Error in Creating archive from data.";
+            log.error(errorMsg, e);
+            throw new APIManagementException(errorMsg, e);
+        }
+    }
+    /**
+     * Creates a directory
+     *
+     * @param path path of the directory to create
+     * @throws APIManagementException if an error occurs while creating the directory
+     */
+    public static void createDirectory(String path) throws APIManagementException {
+        try {
+            Files.createDirectories(java.nio.file.Paths.get(path));
+        } catch (IOException e) {
+            String msg = "Error in creating directory at: " + path;
+            log.error(msg, e);
+            throw new APIManagementException(msg, e);
+        }
+    }
+
+
+    /**
+     * Try to validate a give openAPI definition using OpenAPI 3 parser
+     *
+     * @param apiDefinition     definition
+     * @param returnJsonContent whether to return definition as a json content
+     * @return APIDefinitionValidationResponse
+     * @throws APIManagementException if error occurred while parsing definition
+     */
+    public static APIDefinitionValidationResponse validateAPIDefinition(String apiDefinition, boolean returnJsonContent)
+            throws APIManagementException {
+        String apiDefinitionProcessed = apiDefinition;
+        if (!apiDefinition.trim().startsWith("{")) {
+            try {
+                JsonNode jsonNode = DeserializationUtils.readYamlTree(apiDefinition, new SwaggerDeserializationResult());
+                apiDefinitionProcessed = jsonNode.toString();
+            } catch (IOException e) {
+                throw new APIManagementException("Error while reading API definition yaml", e);
+            }
+        }
+        apiDefinitionProcessed = removeUnsupportedBlocksFromResources(apiDefinitionProcessed);
+        if (apiDefinitionProcessed != null) {
+            apiDefinition = apiDefinitionProcessed;
+        }
+        APIDefinitionValidationResponse validationResponse =
+                oas3Parser.validateAPIDefinition(apiDefinition, returnJsonContent);
+        if (!validationResponse.isValid()) {
+//            for (ErrorHandler handler : validationResponse.getErrorItems()) {
+//                if (ExceptionCodes.INVALID_OAS3_FOUND.getErrorCode() == handler.getErrorCode()) {
+//                    return tryOAS2Validation(apiDefinition, returnJsonContent);
+//                }
+//            }
+        }
+        return validationResponse;
+    }
+    /**
+     * This method removes the unsupported json blocks from the given json string.
+     *
+     * @param jsonString Open api specification from which unsupported blocks must be removed.
+     * @return String open api specification without unsupported blocks. Null value if there is no unsupported blocks.
+     */
+    public static String removeUnsupportedBlocksFromResources(String jsonString) {
+        JSONObject jsonObject = new JSONObject(jsonString);
+        boolean definitionUpdated = false;
+        if (jsonObject.has(OPENAPI_RESOURCE_KEY)) {
+            JSONObject paths = jsonObject.optJSONObject(OPENAPI_RESOURCE_KEY);
+            if (paths != null ) {
+                for (String unsupportedBlockKey : UNSUPPORTED_RESOURCE_BLOCKS) {
+                    boolean result = removeBlocksRecursivelyFromJsonObject(unsupportedBlockKey, paths, false);
+                    definitionUpdated = definitionUpdated  || result;
+                }
+            }
+        }
+        if (definitionUpdated) {
+            ObjectMapper om = new ObjectMapper();
+            om.configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true);
+            try {
+                Map<String, Object> map = om.readValue(jsonObject.toString(), HashMap.class);
+                String json = om.writeValueAsString(map);
+                return json;
+            } catch (JsonProcessingException e) {
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
+    /**
+     * This method removes provided key from the json object recursively.
+     *
+     * @param keyToBeRemoved, Key to remove from open api spec.
+     * @param jsonObject, Open api spec as json object.
+     */
+    private static boolean removeBlocksRecursivelyFromJsonObject(String keyToBeRemoved, JSONObject jsonObject, boolean definitionUpdated) {
+        if (jsonObject == null) {
+            return definitionUpdated;
+        }
+        if (jsonObject.has(keyToBeRemoved)) {
+            jsonObject.remove(keyToBeRemoved);
+            definitionUpdated = true;
+        }
+        for (Object key : jsonObject.keySet()) {
+            JSONObject subObj = jsonObject.optJSONObject(key.toString());
+            if (subObj != null) {
+                boolean result = removeBlocksRecursivelyFromJsonObject(keyToBeRemoved, subObj, definitionUpdated);
+                definitionUpdated = definitionUpdated || result;
+            }
+        }
+        return definitionUpdated;
+    }
 }

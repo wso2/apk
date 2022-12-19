@@ -20,12 +20,13 @@ task bal_build(type: Exec) {
     group 'ballerina'
     description 'Build ballerina code'
     commandLine 'bal', 'build'
+    dependsOn 'bal_test'
 }
 
 task bal_test(type: Exec) {
     group 'ballerina'
     description 'Run ballerina tests'
-    commandLine 'bal', 'test'
+    commandLine 'bal', 'test', '--code-coverage','--coverage-format=xml',"--target-dir=${projectDir}/test-target"
 }
 task bal_clean(type: Exec) {
     group 'ballerina'

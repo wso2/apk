@@ -40,7 +40,7 @@ public function createAPI(APIBody body, string organization) returns API | error
             }
         } else {
             rollback;
-            return error("Error while adding API data");
+            return error("Error while adding API data", apiCr);
         }
         return apiCr;
     }    

@@ -42,7 +42,7 @@ public class AsyncApiParserUtil {
     ) {
         validationResponse.setValid(true);
         validationResponse.setContent(originalAPIDefinition);
-        APIDefinitionValidationResponse.Info info = new APIDefinitionValidationResponse.Info();
+        Info info = new Info();
         info.setOpenAPIVersion(asyncAPIVersion);
         info.setName(title);
         info.setVersion(version);
