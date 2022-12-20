@@ -57,29 +57,24 @@ spec:
               definitionFileRef:
                 description: DefinitionFileRef contains the OpenAPI 3 or Swagger definition
                   of the API in a ConfigMap.
-                minLength: 4
                 type: string
               organization:
                 description: Organization denotes the organization related to the
                   API
-                minLength: 4
                 type: string
               prodHTTPRouteRef:
                 description: 'ProdHTTPRouteRefs contains a list of references to HttpRoutes
                   of type HttpRoute. xref: https://github.com/kubernetes-sigs/gateway-api/blob/main/apis/v1beta1/httproute_types.go'
-                minLength: 4
                 type: string
               sandHTTPRouteRef:
                 description: 'SandHTTPRouteRef contains a list of references to HttpRoutes
                   of type HttpRoute. xref: https://github.com/kubernetes-sigs/gateway-api/blob/main/apis/v1beta1/httproute_types.go'
-                minLength: 4
                 type: string
             required:
             - apiDisplayName
             - apiType
             - apiVersion
             - context
-            - definitionFileRef
             type: object
           status:
             description: APIStatus defines the observed state of API
