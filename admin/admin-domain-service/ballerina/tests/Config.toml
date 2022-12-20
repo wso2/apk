@@ -3,6 +3,9 @@ ADMIN_PORT = 9444
 [wso2.admin_service.datasourceConfiguration]
 description = "Database for admin"
 url = "jdbc:postgresql://localhost:5432/apk"
+host = "localhost"
+port = 5432
+databaseName = "apk"
 username = "admin"
 password = "1234"
 validationTimeout = 250

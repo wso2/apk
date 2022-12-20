@@ -1,12 +1,18 @@
-[wso2.admin_service.admin]
+[wso2.admin_service]
 ADMIN_PORT = 9443
 
 # Sample configurations
-[wso2.admin_service.admin.datasourceConfiguration]
+[wso2.admin_service.datasourceConfiguration]
 description = ""
 url = ""
+host = ""
+port = 0
+databaseName = ""
 username = ""
 password = ""
 validationTimeout = 0
 testQuery = ""
 driver=""
+
+[wso2.admin_service.throttleConfig.blockCondition]
+enabled = true
