@@ -20,7 +20,7 @@ import ballerina/log;
 import ballerinax/postgresql;
 import ballerina/sql;
 
-public function getBusinessPlanByNameDAO(string policyName) returns string?|error {
+public isolated function getBusinessPlanByNameDAO(string policyName) returns string?|error {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
@@ -41,7 +41,7 @@ public function getBusinessPlanByNameDAO(string policyName) returns string?|erro
     }
 }
 
-function addSubscriptionDAO(Subscription sub, string user, int apiId, int appId) returns string?|Subscription|error {
+isolated function addSubscriptionDAO(Subscription sub, string user, int apiId, int appId) returns string?|Subscription|error {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
@@ -76,7 +76,7 @@ function addSubscriptionDAO(Subscription sub, string user, int apiId, int appId)
     }
 }
 
-function getSubscriptionByIdDAO(string subId, string org) returns string?|Subscription|error {
+isolated function getSubscriptionByIdDAO(string subId, string org) returns string?|Subscription|error {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
@@ -113,7 +113,7 @@ function getSubscriptionByIdDAO(string subId, string org) returns string?|Subscr
     }
 }
 
-function deleteSubscriptionDAO(string subId, string org) returns error?|string {
+isolated function deleteSubscriptionDAO(string subId, string org) returns error?|string {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
@@ -129,7 +129,7 @@ function deleteSubscriptionDAO(string subId, string org) returns error?|string {
     }
 }
 
-function updateSubscriptionDAO(Subscription sub, string user, int apiId, int appId) returns string?|Subscription|error {
+isolated function updateSubscriptionDAO(Subscription sub, string user, int apiId, int appId) returns string?|Subscription|error {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
@@ -149,7 +149,7 @@ function updateSubscriptionDAO(Subscription sub, string user, int apiId, int app
     }
 }
 
-function getSubscriptionByAPIandAppIdDAO(string apiId, string appId, string org) returns string?|Subscription|error {
+isolated function getSubscriptionByAPIandAppIdDAO(string apiId, string appId, string org) returns string?|Subscription|error {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
@@ -186,7 +186,7 @@ function getSubscriptionByAPIandAppIdDAO(string apiId, string appId, string org)
     }
 }
 
-function getSubscriptionsByAPIIdDAO(string apiId, string org) returns Subscription[]|error? {
+isolated function getSubscriptionsByAPIIdDAO(string apiId, string org) returns Subscription[]|error? {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
@@ -216,7 +216,7 @@ function getSubscriptionsByAPIIdDAO(string apiId, string org) returns Subscripti
     }
 }
 
-function getSubscriptionsByAPPIdDAO(string appId, string org) returns Subscription[]|error? {
+isolated function getSubscriptionsByAPPIdDAO(string appId, string org) returns Subscription[]|error? {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
@@ -246,7 +246,7 @@ function getSubscriptionsByAPPIdDAO(string appId, string org) returns Subscripti
     }
 }
 
-function getSubscriptionsList(string org) returns Subscription[]|error? {
+isolated function getSubscriptionsList(string org) returns Subscription[]|error? {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");

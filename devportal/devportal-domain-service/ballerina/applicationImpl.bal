@@ -19,7 +19,7 @@
 import ballerina/log;
 import ballerina/uuid;
 
-function addApplication(Application application, string org, string user) returns string?|Application|error {
+isolated function addApplication(Application application, string org, string user) returns string?|Application|error {
     string applicationId = uuid:createType1AsString();
     application.applicationId = applicationId;
     string?|error policyId = validateApplicationUsagePolicy(application.throttlingPolicy, org);
@@ -37,17 +37,17 @@ function addApplication(Application application, string org, string user) return
     }
 }
 
-function validateApplicationUsagePolicy(string policyName, string org) returns string?|error {
+isolated function validateApplicationUsagePolicy(string policyName, string org) returns string?|error {
     string?|error policy = getApplicationUsagePlanByNameDAO(policyName,org);
     return policy;
 }
 
-function getApplicationById(string appId, string org) returns string?|Application|error {
+isolated function getApplicationById(string appId, string org) returns string?|Application|error {
     string?|Application|error application = getApplicationByIdDAO(appId, org);
     return application;
 }
 
-function getApplicationList(string? sortBy, string? groupId, string? query, string? sortOrder, int 'limit, int offset, string org) returns string?|ApplicationList|error {
+isolated function getApplicationList(string? sortBy, string? groupId, string? query, string? sortOrder, int 'limit, int offset, string org) returns string?|ApplicationList|error {
     Application[]|error? applications = getApplicationsDAO(org);
     if applications is Application[] {
         int count = applications.length();
@@ -58,7 +58,7 @@ function getApplicationList(string? sortBy, string? groupId, string? query, stri
     }
 }
 
-function updateApplication(string appId, Application application, string org, string user) returns string?|Application|NotFoundError|error {
+isolated function updateApplication(string appId, Application application, string org, string user) returns string?|Application|NotFoundError|error {
     string?|Application|error existingApp = getApplicationByIdDAO(appId, org);
     if existingApp is Application {
         application.applicationId = appId;
@@ -82,12 +82,12 @@ function updateApplication(string appId, Application application, string org, st
     }
 }
 
-function deleteApplication(string appId, string organization) returns string|error? {
+isolated function deleteApplication(string appId, string organization) returns string|error? {
     error?|string status = deleteApplicationDAO(appId,organization);
     return status;
 }
 
-function generateAPIKey(APIKeyGenerateRequest payload, string appId, string keyType, string user, string org) returns APIKey|error {
+isolated function generateAPIKey(APIKeyGenerateRequest payload, string appId, string keyType, string user, string org) returns APIKey|error {
     string?|Application|error application = getApplicationById(appId, org);
     if application !is Application {
         return error("Invalid Application. Application with application id:" + appId + " not found");
@@ -141,7 +141,7 @@ function generateAPIKey(APIKeyGenerateRequest payload, string appId, string keyT
     }
 }
 
-function generateAPIKeyForApplication(string username, Application application, API[] apiList, string keyType, int validityPeriod, record {} addProperties) returns APIKey|error {
+isolated function generateAPIKeyForApplication(string username, Application application, API[] apiList, string keyType, int validityPeriod, record {} addProperties) returns APIKey|error {
     if keyType !is "PRODUCTION" | "SANDBOX" {
         return error("Invalid Key Type:" + keyType);
     }
@@ -156,6 +156,6 @@ function generateAPIKeyForApplication(string username, Application application, 
     }
 }
 
-function checkUserAccessAllowedForApplication(Application application, string user) returns boolean {
+isolated function checkUserAccessAllowedForApplication(Application application, string user) returns boolean {
     return true;
 }

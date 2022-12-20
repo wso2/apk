@@ -20,7 +20,7 @@ import ballerina/log;
 import ballerinax/postgresql;
 import ballerina/sql;
 
-function getAPIByIdDAO(string apiId, string org) returns string?|API|error {
+isolated function getAPIByIdDAO(string apiId, string org) returns string?|API|error {
         postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
@@ -42,7 +42,7 @@ function getAPIByIdDAO(string apiId, string org) returns string?|API|error {
     }
 }
 
-function getAPIsDAO(string org) returns API[]|error? {
+isolated function getAPIsDAO(string org) returns API[]|error? {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
