@@ -198,7 +198,7 @@ func getSecurityArray(vendorExtensions map[string]interface{}) (security []map[s
 		for _, rawScope := range rawScopes {
 			scopes = append(scopes, rawScope.(string))
 		}
-		securityItem[constants.APIMOauth2Type] = scopes
+		securityItem[constants.Oauth2TypeInOAS] = scopes
 		security = append(security, securityItem)
 	}
 	return security

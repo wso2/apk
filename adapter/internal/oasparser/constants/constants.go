@@ -61,7 +61,7 @@ const (
 	APIMAPIKeyType                       string = "api_key"
 	APIKeyNameWithApim                   string = "apikey"
 	APIKeyTypeInOAS                      string = "apiKey"
-	APIMOauth2Type                       string = "oauth2"
+	Oauth2TypeInOAS                      string = "oauth2"
 	APIMDefaultOauth2Security            string = "default"
 	APIKeyInHeaderOAS                    string = "header"
 	APIKeyInQueryOAS                     string = "query"
@@ -70,6 +70,7 @@ const (
 	APIMMutualSSLType                    string = "mutualssl"
 	APIMMutualSSLMandatoryType           string = "mutualssl_mandatory"
 	APIOauthBasicAuthAPIKeyMandatoryType string = "oauth_basic_auth_api_key_mandatory"
+	JWTAuth                              string = "JWT"
 )
 
 // sub-property keys mentioned under x-wso2-request-interceptor and x-wso2-response-interceptor
@@ -138,4 +139,9 @@ const (
 const (
 	Mandatory string = "mandatory"
 	Optional  string = "optional"
+)
+
+// CRD Kinds
+const (
+	KindAuthentication = "Authentication"
 )

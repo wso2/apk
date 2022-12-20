@@ -47,6 +47,13 @@ type APIEvent struct {
 func HandleAPILifeCycleEvents(ch *chan APIEvent) {
 	loggers.LoggerAPKOperator.Info("Operator synchronizer listening for API lifecycle events...")
 	for event := range *ch {
+		if event.Event.APIDefinition == nil {
+			loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+				Message:   "API Event is nil",
+				Severity:  logging.BLOCKER,
+				ErrorCode: 2600,
+			})
+		}
 		loggers.LoggerAPKOperator.Infof("%s event received for %v", event.EventType, event.Event.APIDefinition.Name)
 		var err error
 		switch event.EventType {
@@ -105,29 +112,23 @@ func deleteAPIFromEnv(httpRoute *gwapiv1b1.HTTPRoute, apiState APIState) error {
 func deployAPIInGateway(apiState APIState) error {
 	var err error
 	if apiState.ProdHTTPRoute != nil {
-		err = generateMGWSwagger(apiState, apiState.ProdHTTPRoute.HTTPRoute, true)
+		err = generateMGWSwagger(apiState, apiState.ProdHTTPRoute, true)
 	}
 	if err != nil {
 		return err
 	}
 	if apiState.SandHTTPRoute != nil {
-		err = generateMGWSwagger(apiState, apiState.SandHTTPRoute.HTTPRoute, false)
+		err = generateMGWSwagger(apiState, apiState.SandHTTPRoute, false)
 	}
 	return err
 }
 
 // generateMGWSwagger this will populate a mgwswagger representation for an HTTPRoute
-func generateMGWSwagger(apiState APIState, httpRoute *gwapiv1b1.HTTPRoute, isProd bool) error {
+func generateMGWSwagger(apiState APIState, httpRoute *HTTPRouteState, isProd bool) error {
 	var mgwSwagger model.MgwSwagger
-	if err := mgwSwagger.SetInfoAPICR(*apiState.APIDefinition); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("error setting API CR info to mgwSwagger: %v", err),
-			Severity:  logging.MAJOR,
-			ErrorCode: 2612,
-		})
-		return err
-	}
-	if err := mgwSwagger.SetInfoHTTPRouteCR(httpRoute, isProd); err != nil {
+	mgwSwagger.SetInfoAPICR(*apiState.APIDefinition)
+	if err := mgwSwagger.SetInfoHTTPRouteCR(httpRoute.HTTPRoute, httpRoute.Authentications, httpRoute.ResourceAuthentications,
+		isProd); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
 			Message:   fmt.Sprintf("error setting HttpRoute CR info to mgwSwagger for isProdEndpoint: %v. %v", isProd, err),
 			Severity:  logging.MAJOR,
@@ -135,7 +136,7 @@ func generateMGWSwagger(apiState APIState, httpRoute *gwapiv1b1.HTTPRoute, isPro
 		})
 		return err
 	}
-	if err := mgwSwagger.ValidateIR(); err != nil {
+	if err := mgwSwagger.Validate(); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
 			Message: fmt.Sprintf("error validating mgwSwagger intermediate representation for isProdEndpoint: %v. %v",
 				isProd, err),
@@ -144,8 +145,8 @@ func generateMGWSwagger(apiState APIState, httpRoute *gwapiv1b1.HTTPRoute, isPro
 		})
 		return err
 	}
-	vHosts := getVhostsForAPI(httpRoute)
-	labels := getLabelsForAPI(httpRoute)
+	vHosts := getVhostsForAPI(httpRoute.HTTPRoute)
+	labels := getLabelsForAPI(httpRoute.HTTPRoute)
 	for _, vHost := range vHosts {
 		err := xds.UpdateAPICache(vHost, labels, mgwSwagger)
 		if err != nil {

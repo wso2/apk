@@ -48,4 +48,6 @@ const (
 const (
 	KindAuthentication = "Authentication"
 	KindHTTPRoute      = "HttpRoute"
+	//TODO(amali) remove this after fixing the
+	KindResource = "Resource"
 )

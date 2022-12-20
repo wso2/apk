@@ -37,8 +37,9 @@ import (
 
 // Operation type object holds data about each http method in the REST API.
 type Operation struct {
-	iD               string
-	method           string
+	iD     string
+	method string
+	//security map of security scheme names -> list of scopes
 	security         []map[string][]string
 	tier             string
 	disableSecurity  bool

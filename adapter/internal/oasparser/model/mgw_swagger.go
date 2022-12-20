@@ -38,7 +38,6 @@ import (
 	"github.com/wso2/apk/adapter/internal/oasparser/utils"
 	"github.com/wso2/apk/adapter/internal/svcdiscovery"
 	"github.com/wso2/apk/adapter/pkg/logging"
-	"github.com/wso2/apk/adapter/pkg/synchronizer"
 )
 
 // MgwSwagger represents the object structure holding the information related to the
@@ -347,129 +346,6 @@ func (swagger *MgwSwagger) GetOrganizationID() string {
 	return swagger.OrganizationID
 }
 
-// SetOperationPolicies this will merge operation level policies provided in api yaml
-func (swagger *MgwSwagger) SetOperationPolicies(apiProject ProjectAPI) (err error) {
-	for _, resource := range swagger.resources {
-		path := strings.TrimSuffix(resource.path, "/")
-		for _, operation := range resource.methods {
-			method := operation.method
-			for _, yamlOperation := range apiProject.APIYaml.Data.Operations {
-				if strings.TrimSuffix(yamlOperation.Target, "/") == path && strings.EqualFold(method, yamlOperation.Verb) {
-					operation.policies, err = apiProject.Policies.GetFormattedOperationalPolicies(yamlOperation.OperationPolicies, swagger)
-					if err != nil {
-						return err
-					}
-					if operation.policies.Request != nil || operation.policies.Response != nil || operation.policies.Fault != nil {
-						resource.hasPolicies = true
-					}
-					break
-				}
-			}
-		}
-	}
-	return nil
-}
-
-// SanitizeAPISecurity this will validate api level and operation level swagger security
-// if apiyaml security is provided swagger security will be removed accordingly
-func (swagger *MgwSwagger) SanitizeAPISecurity(isYamlAPIKey bool, isYamlOauth bool, isYamlMutualssl bool, isYamlMutualsslMandatory bool, isYamlOauthBasicAuthAPIKeyMandatory bool) {
-	isOverrideSecurityByYaml := isYamlAPIKey || isYamlOauth
-	apiSecurityDefinitionNames := []string{}
-	overridenAPISecurityDefinitions := []SecurityScheme{}
-
-	if isYamlAPIKey {
-		//creating security definition for apikey in header in behalf of apim yaml security
-		overridenAPISecurityDefinitions = append(overridenAPISecurityDefinitions,
-			SecurityScheme{DefinitionName: constants.APIMAPIKeyInHeader,
-				Type: constants.APIKeyTypeInOAS, Name: constants.APIKeyNameWithApim, In: constants.APIKeyInHeaderOAS})
-
-		//creating security definition for apikey in query in behalf of apim yaml security
-		overridenAPISecurityDefinitions = append(overridenAPISecurityDefinitions,
-			SecurityScheme{DefinitionName: constants.APIMAPIKeyInQuery, Type: constants.APIKeyTypeInOAS,
-				Name: constants.APIKeyNameWithApim, In: constants.APIKeyInQueryOAS})
-	}
-
-	for _, securityDef := range swagger.securityScheme {
-		//read default oauth2 security with scopes when oauth2 enabled
-		if isYamlOauth && securityDef.DefinitionName == constants.APIMDefaultOauth2Security {
-			overridenAPISecurityDefinitions = append(overridenAPISecurityDefinitions, securityDef)
-			apiSecurityDefinitionNames = append(apiSecurityDefinitionNames, securityDef.DefinitionName)
-		} else if !isOverrideSecurityByYaml {
-			apiSecurityDefinitionNames = append(apiSecurityDefinitionNames, securityDef.DefinitionName)
-		}
-	}
-	if isOverrideSecurityByYaml {
-		logger.LoggerXds.Debugf("Security definitions are overriden according to api.yaml for API %v:%v",
-			swagger.title, swagger.version)
-		swagger.SetSecurityScheme(overridenAPISecurityDefinitions)
-	}
-	logger.LoggerXds.Debugf("Security definitions for API %v:%v : %v", swagger.title, swagger.version,
-		swagger.securityScheme)
-
-	//sanitize API level security
-	sanitizedAPISecurity := []map[string][]string{}
-	for _, security := range swagger.security {
-		for securityDefName := range security {
-			if arrayContains(apiSecurityDefinitionNames, securityDefName) {
-				sanitizedAPISecurity = append(sanitizedAPISecurity, security)
-			} else {
-				logger.LoggerXds.Warnf("A security definition for %v has not found in API %v:%v",
-					securityDefName, swagger.title, swagger.version)
-			}
-		}
-	}
-	// Adding api level security when api.yaml apikey security is provided
-	if isYamlAPIKey {
-		sanitizedAPISecurity = append(sanitizedAPISecurity, map[string][]string{constants.APIMAPIKeyInHeader: {}})
-		sanitizedAPISecurity = append(sanitizedAPISecurity, map[string][]string{constants.APIMAPIKeyInQuery: {}})
-	}
-	swagger.security = sanitizedAPISecurity
-
-	//sanitize operation level security
-	for _, resource := range swagger.resources {
-		for _, operation := range resource.GetMethod() {
-			sanitizedOperationSecurity := []map[string][]string{}
-			for _, security := range operation.GetSecurity() {
-				for securityDefName := range security {
-					if arrayContains(apiSecurityDefinitionNames, securityDefName) {
-						sanitizedOperationSecurity = append(sanitizedOperationSecurity, security)
-					} else {
-						logger.LoggerXds.Warnf("A security definition for %v has not found in API %v:%v",
-							securityDefName, swagger.title, swagger.version)
-					}
-				}
-			}
-			// has do the following to enable apikey as well when default oauth2 security is in operation level
-			if isOverrideSecurityByYaml && isYamlOauth && isYamlAPIKey {
-				sanitizedOperationSecurity = append(sanitizedOperationSecurity, map[string][]string{constants.APIMAPIKeyInHeader: {}})
-				sanitizedOperationSecurity = append(sanitizedOperationSecurity, map[string][]string{constants.APIMAPIKeyInQuery: {}})
-			}
-			operation.SetSecurity(sanitizedOperationSecurity)
-		}
-	}
-
-	// Adding api level application and transport securities optional or mandatory
-	var mutualSSL string
-	var applicationSecurity bool
-
-	if isYamlMutualssl && isYamlMutualsslMandatory {
-		mutualSSL = constants.Mandatory
-	} else if isYamlMutualssl && !isYamlMutualsslMandatory {
-		mutualSSL = constants.Optional
-	} else {
-		mutualSSL = constants.NotDefined
-	}
-
-	if isYamlOauthBasicAuthAPIKeyMandatory {
-		applicationSecurity = true
-	} else {
-		applicationSecurity = false
-	}
-
-	swagger.SetXWSO2MutualSSL(mutualSSL)
-	swagger.SetXWSO2ApplicationSecurity(applicationSecurity)
-}
-
 // SetXWso2Extensions set the MgwSwagger object with the properties
 // extracted from vendor extensions.
 // xWso2Basepath, xWso2ProductionEndpoints, and xWso2SandboxEndpoints are assigned
@@ -512,73 +388,6 @@ func (swagger *MgwSwagger) SetXWso2Extensions() error {
 
 	// Error nil for successful execution
 	return nil
-}
-
-// SetEnvLabelProperties sets environment specific values
-func (swagger *MgwSwagger) SetEnvLabelProperties(envProps synchronizer.APIEnvProps) {
-	var productionUrls []Endpoint
-	var sandboxUrls []Endpoint
-
-	if envProps.APIConfigs.ProductionEndpoint != "" {
-		logger.LoggerOasparser.Infof("Production endpoints are found in env properties for %v : %v",
-			swagger.title, swagger.version)
-		endpoint, err := getHTTPEndpoint(envProps.APIConfigs.ProductionEndpoint)
-		if err == nil {
-			productionUrls = append(productionUrls, *endpoint)
-		} else {
-			logger.LoggerOasparser.Errorf("Error encountered when parsing the production endpoints in env properties for %v : %v. %v",
-				swagger.title, swagger.version, err.Error())
-		}
-	}
-
-	if len(productionUrls) > 0 {
-		logger.LoggerOasparser.Infof("Production endpoints is overridden by env properties %v : %v", swagger.title, swagger.version)
-		swagger.productionEndpoints = generateEndpointCluster(constants.ProdClustersConfigNamePrefix, productionUrls, constants.LoadBalance)
-	}
-
-	if envProps.APIConfigs.SandBoxEndpoint != "" {
-		logger.LoggerOasparser.Infof("Sandbox endpoints are found in env properties %v : %v", swagger.title, swagger.version)
-		endpoint, err := getHTTPEndpoint(envProps.APIConfigs.SandBoxEndpoint)
-		if err == nil {
-			sandboxUrls = append(sandboxUrls, *endpoint)
-		} else {
-			logger.LoggerOasparser.Errorf("Error encountered when parsing the production endpoints in env properties %v : %v. %v",
-				swagger.title, swagger.version, err.Error())
-		}
-	}
-
-	if len(sandboxUrls) > 0 {
-		logger.LoggerOasparser.Infof("Sandbox endpoints is overridden by env properties %v : %v", swagger.title, swagger.version)
-		swagger.sandboxEndpoints = generateEndpointCluster(constants.SandClustersConfigNamePrefix, sandboxUrls, constants.LoadBalance)
-	}
-}
-
-// SetEnvVariables sets environment specific values to the mgwswagger
-func (swagger *MgwSwagger) SetEnvVariables(apiHashValue string) {
-	productionEndpoints, sandboxEndpoints := retrieveEndpointsFromEnv(apiHashValue)
-	if len(productionEndpoints) > 0 {
-		logger.LoggerOasparser.Infof("Applying production endpoints provided in env variables for API %v : %v", swagger.title, swagger.version)
-		swagger.productionEndpoints.EndpointPrefix = constants.ProdClustersConfigNamePrefix
-		swagger.productionEndpoints.Endpoints = productionEndpoints
-		swagger.productionEndpoints.EndpointType = constants.LoadBalance
-
-	}
-	if len(sandboxEndpoints) > 0 {
-		logger.LoggerOasparser.Infof("Applying sandbox endpoints provided in env variables for API %v : %v", swagger.title, swagger.version)
-		swagger.sandboxEndpoints.EndpointPrefix = constants.SandClustersConfigNamePrefix
-		swagger.sandboxEndpoints.Endpoints = sandboxEndpoints
-		swagger.sandboxEndpoints.EndpointType = constants.LoadBalance
-	}
-
-	// retrieving security credentials from environment variables
-	if swagger.productionEndpoints != nil && swagger.productionEndpoints.SecurityConfig.Enabled {
-		swagger.productionEndpoints.SecurityConfig = RetrieveEndpointBasicAuthCredentialsFromEnv(apiHashValue,
-			"prod", swagger.productionEndpoints.SecurityConfig)
-	}
-	if swagger.sandboxEndpoints != nil && swagger.sandboxEndpoints.SecurityConfig.Enabled {
-		swagger.sandboxEndpoints.SecurityConfig = RetrieveEndpointBasicAuthCredentialsFromEnv(apiHashValue, "sand",
-			swagger.sandboxEndpoints.SecurityConfig)
-	}
 }
 
 // SetSandboxEndpoints set the MgwSwagger object with the SandboxEndpoint when
@@ -1179,14 +988,13 @@ func GenerateInterceptorIncludes(includes []string) *interceptor.RequestInclusio
 // GetMgwSwagger converts/handles the openAPI v3, v2, asyncAPI and GraphQL content
 // To MgwSwagger objects
 func (swagger *MgwSwagger) GetMgwSwagger(apiContent []byte) error {
-	definitionJsn := make([]byte, 0)
 	var err error
 	if swagger.GetAPIType() == constants.GRAPHQL {
 		// sets API definition for GraphQL APIs. This will be passed to the enforcer
 		swagger.GraphQLSchema = string(apiContent)
 		return nil
 	}
-	definitionJsn, err = utils.ToJSON(apiContent)
+	definitionJsn, err := utils.ToJSON(apiContent)
 	if err != nil {
 		logger.LoggerOasparser.Error("Error converting api file to json", err)
 		return err
