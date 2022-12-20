@@ -1,5 +1,5 @@
 const string ALL_NAMESPACES = "*";
-public final string[] HTTP_DEFAULT_METHODS = ["get", "put", "post", "delete", "patch"];
+public final string[] & readonly HTTP_DEFAULT_METHODS = ["get", "put", "post", "delete", "patch"];
 public final string[] SOAP_DEFAULT_METHODS = ["post"];
 public final string[] SSE_DEFAULT_METHODS = ["get"];
 public final string[] WS_DEFAULT_METHODS = ["post"];

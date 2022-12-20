@@ -22,9 +22,11 @@ public distinct class OperationPolicy {
     # The function to retrieve the string representation of the Ballerina class mapping the `org.wso2.apk.runtime.model.OperationPolicy` Java class.
     #
     # + return - The `string` form of the Java object instance.
-    public function toString() returns string {
-        return java:toString(self.jObj) ?: "null";
+    public isolated function toString() returns string {
+        return java:toString(self.jObj) ?: "null"
+    ;
     }
+
     # The function that maps to the `compareTo` method of `org.wso2.apk.runtime.model.OperationPolicy`.
     #
     # + arg0 - The `OperationPolicy` value required to map with the Java method parameter.

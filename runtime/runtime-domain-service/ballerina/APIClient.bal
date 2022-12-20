@@ -31,7 +31,7 @@ import runtime_domain_service.org.wso2.apk.runtime.api as runtimeapi;
 
 public class APIClient {
 
-    public function getAPIDefinitionByID(string id) returns string|NotFoundError|PreconditionFailedError|InternalServerErrorError {
+    public isolated function getAPIDefinitionByID(string id) returns string|NotFoundError|PreconditionFailedError|InternalServerErrorError {
         model:K8sAPI|error api = getAPI(id);
         if api is model:K8sAPI {
             if api.definitionFileRef.length() > 0 {
@@ -47,7 +47,7 @@ public class APIClient {
         return notfound;
     }
 
-    private function getDefinition(model:K8sAPI api) returns string|error {
+    private isolated function getDefinition(model:K8sAPI api) returns string|error {
         json|error configMapValue = getConfigMapValueFromNameAndNamespace(api.definitionFileRef, api.namespace);
         if configMapValue is json {
             json|error data = configMapValue.data;
@@ -72,14 +72,16 @@ public class APIClient {
     }
 
     //Get APIs deployed in default namespace by APIId.
-    public function getAPIById(string id) returns API|NotFoundError|InternalServerErrorError {
+    public isolated function getAPIById(string id) returns API|NotFoundError|InternalServerErrorError {
         boolean APIIDAvailable = id.length() > 0 ? true : false;
         if (APIIDAvailable && string:length(id.toString()) > 0)
         {
-            model:K8sAPI? api = apilist[id];
-            if api != null {
-                API detailedAPI = convertK8sAPItoAPI(api);
-                return detailedAPI;
+            lock {
+                model:K8sAPI? api = apilist[id];
+                if api != null {
+                    API detailedAPI = convertK8sAPItoAPI(api);
+                    return detailedAPI.cloneReadOnly();
+                }
             }
         }
         NotFoundError notfound = {body: {code: 909100, message: id + "not found."}};
@@ -87,7 +89,7 @@ public class APIClient {
     }
 
     //Delete APIs deployed in a namespace by APIId.
-    public function deleteAPIById(string id) returns http:Ok|ForbiddenError|NotFoundError|InternalServerErrorError {
+    public isolated function deleteAPIById(string id) returns http:Ok|ForbiddenError|NotFoundError|InternalServerErrorError {
         boolean APIIDAvailable = id.length() > 0 ? true : false;
         if (APIIDAvailable && string:length(id.toString()) > 0)
         {
@@ -126,8 +128,10 @@ public class APIClient {
 
     //Get all deployed APIs in namespace with specific search query
     public function getAPIListInNamespaceWithQuery(string? query, int 'limit = 25, int offset = 0, string sortBy = "createdTime", string sortOrder = "desc") returns APIList|InternalServerErrorError|BadRequestError|error {
-        APIInfo[] apiNames = map:toArray(apilist);
-        return {list: apiNames, count: apiNames.length(), pagination: {total: apilist.length()}};
+        lock {
+            APIInfo[] apiNames = map:toArray(apilist);
+            return {list: apiNames.clone(), count: apiNames.length(), pagination: {total: apilist.length()}};
+        }
     }
 
     # This returns list of APIS.
@@ -138,7 +142,7 @@ public class APIClient {
     # + sortBy - Parameter Description  
     # + sortOrder - Parameter Description
     # + return - Return list of APIS in namsepace.
-    public function getAPIList(string? query, int 'limit, int offset, string sortBy, string sortOrder) returns APIList|InternalServerErrorError {
+    public isolated function getAPIList(string? query, int 'limit, int offset, string sortBy, string sortOrder) returns APIList|InternalServerErrorError {
         API[] apilist = [];
         foreach model:K8sAPI api in getAPIs() {
             API convertedModel = convertK8sAPItoAPI(api);
@@ -150,7 +154,7 @@ public class APIClient {
             return self.filterAPIS(apilist, 'limit, offset, sortBy, sortOrder);
         }
     }
-    private function filterAPISBasedOnQuery(API[] apilist, string query, int 'limit, int offset, string sortBy, string sortOrder) returns APIList|InternalServerErrorError {
+    private isolated function filterAPISBasedOnQuery(API[] apilist, string query, int 'limit, int offset, string sortBy, string sortOrder) returns APIList|InternalServerErrorError {
         API[] filteredList = [];
         if query.length() > 0 {
             int? semiCollonIndex = string:indexOf(query, ":", 0);
@@ -187,7 +191,7 @@ public class APIClient {
         }
         return self.filterAPIS(filteredList, 'limit, offset, sortBy, sortOrder);
     }
-    private function filterAPIS(API[] apiList, int 'limit, int offset, string sortBy, string sortOrder) returns APIList|InternalServerErrorError {
+    private isolated function filterAPIS(API[] apiList, int 'limit, int offset, string sortBy, string sortOrder) returns APIList|InternalServerErrorError {
         API[] clonedAPIList = apiList.clone();
         API[] sortedAPIS = [];
         if sortBy == SORT_BY_API_NAME && sortOrder == SORT_ORDER_ASC {
@@ -231,7 +235,7 @@ public class APIClient {
         return "created";
     }
 
-    function validateContextAndVersion(string context, string 'version) returns boolean {
+    isolated function validateContextAndVersion(string context, string 'version) returns boolean {
 
         foreach model:K8sAPI k8sAPI in getAPIs() {
             if k8sAPI.context == self.returnFullContext(context, 'version) {
@@ -241,7 +245,7 @@ public class APIClient {
         return false;
     }
 
-    private function returnFullContext(string context, string 'version) returns string {
+    private isolated function returnFullContext(string context, string 'version) returns string {
         string fullContext = context;
         if (!string:endsWith(context, 'version)) {
             fullContext = string:'join("/", context, 'version);
@@ -249,7 +253,7 @@ public class APIClient {
         return fullContext;
     }
 
-    function validateName(string name) returns boolean {
+    isolated function validateName(string name) returns boolean {
         foreach model:K8sAPI k8sAPI in getAPIs() {
             if k8sAPI.apiDisplayName == name {
                 return true;
@@ -283,7 +287,7 @@ public class APIClient {
         return apispec;
     }
 
-    function createAPIFromService(string serviceKey, API api) returns CreatedAPI|BadRequestError|InternalServerErrorError {
+    isolated function createAPIFromService(string serviceKey, API api) returns CreatedAPI|BadRequestError|InternalServerErrorError {
         if (self.validateName(api.name)) {
             BadRequestError badRequest = {body: {code: 90911, message: "API Name - " + api.name + " already exist.", description: "API Name - " + api.name + " already exist."}};
             return badRequest;
@@ -352,7 +356,7 @@ public class APIClient {
 
     }
 
-    private function retrieveGeneratedConfigmapForDefinition(API api, string generatedSwaggerDefinition, string uniqueId) returns model:ConfigMap {
+    private isolated function retrieveGeneratedConfigmapForDefinition(API api, string generatedSwaggerDefinition, string uniqueId) returns model:ConfigMap {
         map<string> configMapData = {};
         if api.'type == API_TYPE_HTTP {
             configMapData["openapi.json"] = generatedSwaggerDefinition;
@@ -368,7 +372,7 @@ public class APIClient {
         return configMap;
     }
 
-    function setDefaultOperationsIfNotExist(API api) {
+    isolated function setDefaultOperationsIfNotExist(API api) {
         APIOperations[]? operations = api.operations;
         boolean operationsAvailable = false;
         if operations is APIOperations[] {
@@ -386,7 +390,7 @@ public class APIClient {
         }
     }
 
-    private function generateAPICRArtifact(API api, model:Httproute? sandboxHttp, model:Httproute? prodHttp, string uniqueId) returns model:API {
+    private isolated function generateAPICRArtifact(API api, model:Httproute? sandboxHttp, model:Httproute? prodHttp, string uniqueId) returns model:API {
         model:API k8sAPI = {
             metadata: {
                 name: uniqueId,
@@ -410,15 +414,15 @@ public class APIClient {
         return k8sAPI;
     }
 
-    private function retrieveDefinitionName(API api, string uniqueId) returns string {
+    private isolated function retrieveDefinitionName(API api, string uniqueId) returns string {
         return uniqueId + "-definition";
     }
 
-    private function retrieveHttpRouteRefName(API api, string uniqueId, string 'type) returns string {
+    private isolated function retrieveHttpRouteRefName(API api, string uniqueId, string 'type) returns string {
         return uniqueId + "-" + 'type;
     }
 
-    private function retrieveHttpRoute(API api, Service? serviceEntry, string uniqueId, string endpointType) returns model:Httproute {
+    private isolated function retrieveHttpRoute(API api, Service? serviceEntry, string uniqueId, string endpointType) returns model:Httproute {
         model:Httproute httpRoute = {
             metadata:
                 {
@@ -435,18 +439,18 @@ public class APIClient {
         return httpRoute;
     }
 
-    private function getHostNames(API api, string unoqueId, string 'type) returns string[] {
+    private isolated function getHostNames(API api, string unoqueId, string 'type) returns string[] {
         return ["gw.wso2.com"];
     }
 
-    private function generateAndRetrieveParentRefs(API api, Service? serviceEntry, string uniqueId) returns model:ParentReference[] {
+    private isolated function generateAndRetrieveParentRefs(API api, Service? serviceEntry, string uniqueId) returns model:ParentReference[] {
         model:ParentReference[] parentRefs = [];
         model:ParentReference parentRef = {group: "gateway.networking.k8s.io", kind: "Gateway", name: "Default"};
         parentRefs.push(parentRef);
         return parentRefs;
     }
 
-    private function generateHttpRouteRules(API api, Service? serviceEntry, string endpointType) returns model:HTTPRouteRule[] {
+    private isolated function generateHttpRouteRules(API api, Service? serviceEntry, string endpointType) returns model:HTTPRouteRule[] {
         model:HTTPRouteRule[] httpRouteRules = [];
         APIOperations[]? operations = api.operations;
         if operations is APIOperations[] {
@@ -457,17 +461,17 @@ public class APIClient {
         }
         return httpRouteRules;
     }
-    private function generateHttpRouteRule(API api, Service? serviceEntry, APIOperations operation, string endpointType) returns model:HTTPRouteRule {
+    private isolated function generateHttpRouteRule(API api, Service? serviceEntry, APIOperations operation, string endpointType) returns model:HTTPRouteRule {
         model:HTTPRouteRule httpRouteRule = {matches: self.retrieveMatches(api, operation), backendRefs: self.retrieveGeneratedBackend(api, serviceEntry, endpointType), filters: self.generateFilters(api, serviceEntry, operation, endpointType)};
         return httpRouteRule;
     }
-    private function generateFilters(API api, Service? serviceEntry, APIOperations operation, string endpointType) returns model:HTTPRouteFilter[] {
+    private isolated function generateFilters(API api, Service? serviceEntry, APIOperations operation, string endpointType) returns model:HTTPRouteFilter[] {
         model:HTTPRouteFilter[] routeFilters = [];
         model:HTTPRouteFilter replacePathFilter = {'type: "URLRewrite", urlRewrite: {path: {'type: "ReplacePrefixMatch", replacePrefixMatch: self.generatePrefixMatch(api, serviceEntry, operation, endpointType)}}};
         routeFilters.push(replacePathFilter);
         return routeFilters;
     }
-    private function generatePrefixMatch(API api, Service? serviceEntry, APIOperations operation, string endpointType) returns string {
+    private isolated function generatePrefixMatch(API api, Service? serviceEntry, APIOperations operation, string endpointType) returns string {
         string target = operation.target ?: "/*";
         string generatedPath = "";
         if target == "/*" {
@@ -488,7 +492,7 @@ public class APIClient {
         }
         return generatedPath.trim();
     }
-    public function retrievePathPrefix(string context, string 'version, string operation) returns string {
+    public isolated function retrievePathPrefix(string context, string 'version, string operation) returns string {
         string fullContext = self.returnFullContext(context, 'version);
         string[] splitValues = regex:split(operation, "/");
         string generatedPath = fullContext;
@@ -513,7 +517,7 @@ public class APIClient {
         return generatedPath.trim();
     }
 
-    private function retrieveGeneratedBackend(API api, Service? serviceEntry, string endpointType) returns model:HTTPBackendRef[] {
+    private isolated function retrieveGeneratedBackend(API api, Service? serviceEntry, string endpointType) returns model:HTTPBackendRef[] {
         if serviceEntry is Service {
             model:HTTPBackendRef httpBackend = {
                 namespace:
@@ -532,7 +536,7 @@ public class APIClient {
         }
     }
 
-    private function retrievePort(Service serviceEntry) returns int {
+    private isolated function retrievePort(Service serviceEntry) returns int {
         PortMapping[]? portmappings = serviceEntry.portmapping;
         if portmappings is PortMapping[] {
             if portmappings.length() > 0 {
@@ -543,14 +547,14 @@ public class APIClient {
         return 80;
     }
 
-    private function retrieveMatches(API api, APIOperations apiOperation) returns model:HTTPRouteMatch[] {
+    private isolated function retrieveMatches(API api, APIOperations apiOperation) returns model:HTTPRouteMatch[] {
         model:HTTPRouteMatch[] httpRouteMatch = [];
         model:HTTPRouteMatch httpRoute = {method: <string>apiOperation.verb, path: {'type: "PathPrefix", value: self.retrievePathPrefix(api.context, api.'version, apiOperation.target ?: "/*")}};
         httpRouteMatch.push(httpRoute);
         return httpRouteMatch;
     }
 
-    private function retrieveGeneratedSwaggerDefinition(API api) returns string|error {
+    private isolated function retrieveGeneratedSwaggerDefinition(API api) returns string|error {
         runtimeModels:API api1 = runtimeModels:newAPI1();
         api1.setName(api.name);
         api1.setType(api.'type);
@@ -578,7 +582,7 @@ public class APIClient {
         }
     }
 
-    public function generateAPIKey(string apiId) returns APIKey|BadRequestError|NotFoundError|InternalServerErrorError {
+    public isolated function generateAPIKey(string apiId) returns APIKey|BadRequestError|NotFoundError|InternalServerErrorError {
         model:K8sAPI|error api = getAPI(apiId);
         if api is model:K8sAPI {
             InternalTokenGenerator tokenGenerator = new ();
@@ -621,7 +625,7 @@ public class APIClient {
             setResourceVersion(resourceVersion);
         }
     }
-    function generateK8sServiceMapping(model:API api, Service serviceEntry, string namespace, string uniqueId) returns model:K8sServiceMapping {
+    isolated function generateK8sServiceMapping(model:API api, Service serviceEntry, string namespace, string uniqueId) returns model:K8sServiceMapping {
         model:K8sServiceMapping k8sServiceMapping = {
             metadata: {
                 name: self.getServiceMappingEntryName(uniqueId),
@@ -642,10 +646,10 @@ public class APIClient {
         return k8sServiceMapping;
 
     }
-    function getServiceMappingEntryName(string uniqueId) returns string {
+    isolated function getServiceMappingEntryName(string uniqueId) returns string {
         return uniqueId + "-servicemapping";
     }
-    function deleteServiceMappings(model:K8sAPI api) {
+    isolated function deleteServiceMappings(model:K8sAPI api) {
         model:K8sServiceMapping[] retrieveServiceMappingsForAPIResult = retrieveServiceMappingsForAPI(api);
         foreach model:K8sServiceMapping serviceMapping in retrieveServiceMappingsForAPIResult {
             json|http:ClientError k8ServiceMapping = deleteK8ServiceMapping(serviceMapping.metadata.name, serviceMapping.metadata.namespace);
@@ -654,13 +658,13 @@ public class APIClient {
             }
         }
     }
-    public function validateDefinition(http:Request message, boolean returnContent) returns InternalServerErrorError|error|BadRequestError|APIDefinitionValidationResponse {
+    public isolated function validateDefinition(http:Request message, boolean returnContent) returns InternalServerErrorError|error|BadRequestError|APIDefinitionValidationResponse {
         DefinitionValidationRequest|BadRequestError|error definitionValidationRequest = self.mapApiDefinitionPayload(message);
         if definitionValidationRequest is DefinitionValidationRequest {
             boolean inlineApiDefinitionAvailable = definitionValidationRequest.inlineAPIDefinition is string;
             boolean fileAvailable = definitionValidationRequest.fileName is string && definitionValidationRequest.content is byte[];
             boolean urlAvailble = definitionValidationRequest.url is string;
-            boolean typeAvailable = definitionValidationRequest.'type is string;
+            boolean typeAvailable = definitionValidationRequest.'type.length() > 0;
             if (!inlineApiDefinitionAvailable && !fileAvailable && !urlAvailble && !typeAvailable) {
                 BadRequestError badRequest = {body: {code: 90914, message: "atleast one of the field required"}};
                 return badRequest;
@@ -726,23 +730,28 @@ public class APIClient {
                     runtimeapi:ErrorItem errorItem = check java:cast(errorItemsResult.get(i));
                     ErrorListItem errorListItem = {code: errorItem.getErrorCode().toString(), message: <string>errorItem.getErrorMessage(), description: errorItem.getErrorDescription()};
                     errorItems.push(errorListItem);
-                    APIDefinitionValidationResponse response = {content: validationResponse.getContent(), isValid: validationResponse.isValid(), info: {}, errors: errorItems};
-                    return response;
                 }
-            } else if validationResponse is runtimeapi:APIManagementException {
+                APIDefinitionValidationResponse response = {content: validationResponse.getContent(), isValid: validationResponse.isValid(), info: {}, errors: errorItems};
+                return response;
+
+            } else {
                 runtimeapi:JAPIManagementException excetion = check validationResponse.ensureType(runtimeapi:JAPIManagementException);
                 runtimeapi:ErrorHandler errorHandler = excetion.getErrorHandler();
                 BadRequestError badeRequest = {body: {code: errorHandler.getErrorCode(), message: errorHandler.getErrorMessage().toString()}};
                 return badeRequest;
             }
-        } else if definitionValidationRequest is BadRequestError {
-            return definitionValidationRequest;
-        } else {
+        }
+        else if definitionValidationRequest is BadRequestError {
+            return definitionValidationRequest
+    ;
+        }
+
+        else {
             InternalServerErrorError internalError = {body: {code: 90900, message: "InternalServerError"}};
             return internalError;
         }
     }
-    private function mapApiDefinitionPayload(http:Request message) returns DefinitionValidationRequest|BadRequestError|error {
+    private isolated function mapApiDefinitionPayload(http:Request message) returns DefinitionValidationRequest|BadRequestError|error {
         string|() url = ();
         string|() fileName = ();
         byte[]|() fileContent = ();
@@ -779,7 +788,7 @@ public class APIClient {
         };
     }
 
-    private function retrieveDefinitionFromUrl(string url) returns string|error {
+    private isolated function retrieveDefinitionFromUrl(string url) returns string|error {
         string domain = self.getDomain(url);
         string path = self.getPath(url);
         if domain.length() > 0 {
@@ -790,7 +799,7 @@ public class APIClient {
             return error("invalid url " + url);
         }
     }
-    function getDomain(string url) returns string {
+    isolated function getDomain(string url) returns string {
         string hostPort = "";
         string protocol = "";
         if url.startsWith("https://") {
@@ -810,7 +819,7 @@ public class APIClient {
         }
     }
 
-    function getPath(string url) returns string {
+    isolated function getPath(string url) returns string {
         string hostPort = "";
         if url.startsWith("https://") {
             hostPort = url.substring(8, url.length());

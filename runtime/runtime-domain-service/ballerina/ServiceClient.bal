@@ -25,7 +25,7 @@ public class ServiceClient {
     #
     # + namespace - namespace value
     # + return - list of services in namespace.
-    public function getServicesListInNamespace(string namespace) returns ServiceList|error {
+    public isolated function getServicesListInNamespace(string namespace) returns ServiceList|error {
         Service[] servicesList = getServicesList();
         Service[] filteredList = [];
         foreach Service item in servicesList {
@@ -37,8 +37,13 @@ public class ServiceClient {
     }
 
     # This returns list of services in all namespaces.
+    #
+    # + sortBy - sort by to sort services (name,createdTime)  
+    # + sortOrder - Order to sort (asc,desc) 
+    # + 'limit - no of services to return  
+    # + offset - offset value
     # + return - list of services in namespaces.
-    public function getServicesListFromK8s(string sortBy, string sortOrder, int 'limit, int offset) returns ServiceList|BadRequestError {
+    public isolated function getServicesListFromK8s(string sortBy, string sortOrder, int 'limit, int offset) returns ServiceList|BadRequestError {
         return self.sortAndLimitServices(getServicesList(), sortBy, sortOrder, 'limit, offset);
     }
 
@@ -47,7 +52,7 @@ public class ServiceClient {
     # + name - name of service.
     # + namespace - namespace of service.
     # + return - service in namespace.
-    public function getServiceFromK8s(string name, string namespace) returns ServiceList|error {
+    public isolated function getServiceFromK8s(string name, string namespace) returns ServiceList|error {
         Service? serviceResult = getService(name, namespace);
         if serviceResult is null {
             return {list: []};
@@ -56,7 +61,7 @@ public class ServiceClient {
         }
     }
 
-    public function getServices(string? name, string? namespace, string sortBy, string sortOrder, int 'limit, int offset) returns ServiceList|BadRequestError|InternalServerErrorError {
+    public isolated function getServices(string? name, string? namespace, string sortBy, string sortOrder, int 'limit, int offset) returns ServiceList|BadRequestError|InternalServerErrorError {
         boolean serviceNameAvailable = name == () ? false : true;
         boolean nameSpaceAvailable = namespace == () ? false : true;
         if (nameSpaceAvailable && string:length(namespace.toString()) > 0) {
@@ -85,7 +90,7 @@ public class ServiceClient {
         return self.getServicesListFromK8s(sortBy, sortOrder, 'limit, offset);
     }
 
-    public function getServiceById(string serviceId) returns Service|BadRequestError|NotFoundError|InternalServerErrorError {
+    public isolated function getServiceById(string serviceId) returns Service|BadRequestError|NotFoundError|InternalServerErrorError {
         Service|error retrievedService = grtServiceById(serviceId);
         if retrievedService is Service {
             return retrievedService;
@@ -94,6 +99,7 @@ public class ServiceClient {
             return notfound;
         }
     }
+
     public function retrieveAllServicesAtStartup(string? continueValue) returns error? {
         string? resultValue = continueValue;
         json|http:ClientError retrieveAllServicesResult;
@@ -118,6 +124,7 @@ public class ServiceClient {
             setServicesResourceVersion(resourceVersion);
         }
     }
+
     public function retrieveAllServiceMappingsAtStartup(string? continueValue) returns error? {
         string? resultValue = continueValue;
         json|http:ClientError retrieveAllServiceMappingResult;
@@ -142,11 +149,13 @@ public class ServiceClient {
             setServiceMappingResourceVersion(resourceVersion);
         }
     }
-    public function retrieveK8sServiceMapping(string name, string namespace) returns Service|error {
+
+    public isolated function retrieveK8sServiceMapping(string name, string namespace) returns Service|error {
         json serviceByNameAndNamespace = check getServiceByNameAndNamespace(name, namespace);
         return createServiceModel(serviceByNameAndNamespace);
     }
-    public function getServiceUsageByServiceId(string serviceId) returns APIList|BadRequestError|NotFoundError|InternalServerErrorError {
+
+    public isolated function getServiceUsageByServiceId(string serviceId) returns APIList|BadRequestError|NotFoundError|InternalServerErrorError {
         APIInfo[] apiInfos = [];
         Service|BadRequestError|NotFoundError|InternalServerErrorError serviceEntry = self.getServiceById(serviceId);
         if serviceEntry is Service {
@@ -167,7 +176,8 @@ public class ServiceClient {
             return serviceEntry;
         }
     }
-    private function getServicesListFromK8sSearchByName(string name, string sortBy, string sortOrder, int 'limit, int offset) returns ServiceList|BadRequestError {
+
+    private isolated function getServicesListFromK8sSearchByName(string name, string sortBy, string sortOrder, int 'limit, int offset) returns ServiceList|BadRequestError {
         Service[] servicesList = getServicesList().cloneReadOnly();
         Service[] filteredList = [];
         foreach Service 'service in servicesList {
@@ -177,7 +187,8 @@ public class ServiceClient {
         }
         return self.sortAndLimitServices(filteredList, sortBy, sortOrder, 'limit, offset);
     }
-    private function sortAndLimitServices(Service[] servicesList, string sortBy, string sortOrder, int 'limit, int offset) returns ServiceList|BadRequestError {
+
+    private isolated function sortAndLimitServices(Service[] servicesList, string sortBy, string sortOrder, int 'limit, int offset) returns ServiceList|BadRequestError {
         Service[] clonedServiceList = servicesList.clone();
         Service[] sortedServices = [];
         if sortBy == SORT_BY_SERVICE_NAME && sortOrder == SORT_ORDER_ASC {

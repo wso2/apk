@@ -17,7 +17,7 @@
 //
 import runtime_domain_service.model;
 
-function convertK8sAPItoAPI(model:K8sAPI api) returns API {
+isolated function convertK8sAPItoAPI(model:K8sAPI api) returns API {
     API convetedModel = {
         id: api.uuid,
         name: api.apiDisplayName,

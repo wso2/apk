@@ -15,14 +15,14 @@ public distinct class URITemplate {
     # The init function of the Ballerina class mapping the `org.wso2.apk.runtime.model.URITemplate` Java class.
     #
     # + obj - The `handle` value containing the Java reference of the object.
-    public function init(handle obj) {
+    public isolated function init(handle obj) {
         self.jObj = obj;
     }
 
     # The function to retrieve the string representation of the Ballerina class mapping the `org.wso2.apk.runtime.model.URITemplate` Java class.
     #
     # + return - The `string` form of the Java object instance.
-    public function toString() returns string {
+    public isolated function toString() returns string {
         return java:toString(self.jObj) ?: "null";
     }
     # The function that maps to the `addAllScopes` method of `org.wso2.apk.runtime.model.URITemplate`.
@@ -210,7 +210,7 @@ public distinct class URITemplate {
     # The function that maps to the `setHTTPVerb` method of `org.wso2.apk.runtime.model.URITemplate`.
     #
     # + arg0 - The `string` value required to map with the Java method parameter.
-    public function setHTTPVerb(string arg0) {
+    public isolated function setHTTPVerb(string arg0) {
         org_wso2_apk_runtime_model_URITemplate_setHTTPVerb(self.jObj, java:fromString(arg0));
     }
 
@@ -224,7 +224,7 @@ public distinct class URITemplate {
     # The function that maps to the `setOperationPolicies` method of `org.wso2.apk.runtime.model.URITemplate`.
     #
     # + arg0 - The `javautil:List` value required to map with the Java method parameter.
-    public function setOperationPolicies(javautil:List arg0) {
+    public isolated function setOperationPolicies(javautil:List arg0) {
         org_wso2_apk_runtime_model_URITemplate_setOperationPolicies(self.jObj, arg0.jObj);
     }
 
@@ -252,21 +252,21 @@ public distinct class URITemplate {
     # The function that maps to the `setScopes` method of `org.wso2.apk.runtime.model.URITemplate`.
     #
     # + arg0 - The `Scope` value required to map with the Java method parameter.
-    public function setScopes(Scope arg0) {
+    public isolated function setScopes(Scope arg0) {
         org_wso2_apk_runtime_model_URITemplate_setScopes(self.jObj, arg0.jObj);
     }
 
     # The function that maps to the `setThrottlingTier` method of `org.wso2.apk.runtime.model.URITemplate`.
     #
     # + arg0 - The `string` value required to map with the Java method parameter.
-    public function setThrottlingTier(string arg0) {
+    public isolated function setThrottlingTier(string arg0) {
         org_wso2_apk_runtime_model_URITemplate_setThrottlingTier(self.jObj, java:fromString(arg0));
     }
 
     # The function that maps to the `setUriTemplate` method of `org.wso2.apk.runtime.model.URITemplate`.
     #
     # + arg0 - The `string` value required to map with the Java method parameter.
-    public function setUriTemplate(string arg0) {
+    public isolated function setUriTemplate(string arg0) {
         org_wso2_apk_runtime_model_URITemplate_setUriTemplate(self.jObj, java:fromString(arg0));
     }
 
@@ -311,10 +311,12 @@ public distinct class URITemplate {
 # The constructor function to generate an object of `org.wso2.apk.runtime.model.URITemplate`.
 #
 # + return - The new `URITemplate` class generated.
-public function newURITemplate1() returns URITemplate {
-    handle externalObj = org_wso2_apk_runtime_model_URITemplate_newURITemplate1();
-    URITemplate newObj = new (externalObj);
-    return newObj;
+public isolated function newURITemplate1() returns URITemplate {
+    lock {
+        handle externalObj = org_wso2_apk_runtime_model_URITemplate_newURITemplate1();
+        URITemplate newObj = new (externalObj);
+        return newObj;
+    }
 }
 
 function org_wso2_apk_runtime_model_URITemplate_addAllScopes(handle receiver, handle arg0) = @java:Method {
@@ -467,7 +469,7 @@ function org_wso2_apk_runtime_model_URITemplate_setAuthType(handle receiver, han
     paramTypes: ["java.lang.String"]
 } external;
 
-function org_wso2_apk_runtime_model_URITemplate_setHTTPVerb(handle receiver, handle arg0) = @java:Method {
+isolated function org_wso2_apk_runtime_model_URITemplate_setHTTPVerb(handle receiver, handle arg0) = @java:Method {
     name: "setHTTPVerb",
     'class: "org.wso2.apk.runtime.model.URITemplate",
     paramTypes: ["java.lang.String"]
@@ -479,7 +481,7 @@ function org_wso2_apk_runtime_model_URITemplate_setId(handle receiver, int arg0)
     paramTypes: ["int"]
 } external;
 
-function org_wso2_apk_runtime_model_URITemplate_setOperationPolicies(handle receiver, handle arg0) = @java:Method {
+isolated function org_wso2_apk_runtime_model_URITemplate_setOperationPolicies(handle receiver, handle arg0) = @java:Method {
     name: "setOperationPolicies",
     'class: "org.wso2.apk.runtime.model.URITemplate",
     paramTypes: ["java.util.List"]
@@ -503,19 +505,19 @@ function org_wso2_apk_runtime_model_URITemplate_setScope(handle receiver, handle
     paramTypes: ["org.wso2.apk.runtime.model.Scope"]
 } external;
 
-function org_wso2_apk_runtime_model_URITemplate_setScopes(handle receiver, handle arg0) = @java:Method {
+isolated function org_wso2_apk_runtime_model_URITemplate_setScopes(handle receiver, handle arg0) = @java:Method {
     name: "setScopes",
     'class: "org.wso2.apk.runtime.model.URITemplate",
     paramTypes: ["org.wso2.apk.runtime.model.Scope"]
 } external;
 
-function org_wso2_apk_runtime_model_URITemplate_setThrottlingTier(handle receiver, handle arg0) = @java:Method {
+isolated function org_wso2_apk_runtime_model_URITemplate_setThrottlingTier(handle receiver, handle arg0) = @java:Method {
     name: "setThrottlingTier",
     'class: "org.wso2.apk.runtime.model.URITemplate",
     paramTypes: ["java.lang.String"]
 } external;
 
-function org_wso2_apk_runtime_model_URITemplate_setUriTemplate(handle receiver, handle arg0) = @java:Method {
+isolated function org_wso2_apk_runtime_model_URITemplate_setUriTemplate(handle receiver, handle arg0) = @java:Method {
     name: "setUriTemplate",
     'class: "org.wso2.apk.runtime.model.URITemplate",
     paramTypes: ["java.lang.String"]
@@ -539,7 +541,7 @@ function org_wso2_apk_runtime_model_URITemplate_wait3(handle receiver, int arg0,
     paramTypes: ["long", "int"]
 } external;
 
-function org_wso2_apk_runtime_model_URITemplate_newURITemplate1() returns handle = @java:Constructor {
+isolated function org_wso2_apk_runtime_model_URITemplate_newURITemplate1() returns handle = @java:Constructor {
     'class: "org.wso2.apk.runtime.model.URITemplate",
     paramTypes: []
 } external;

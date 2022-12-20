@@ -23,7 +23,7 @@ public distinct class JAPIManagementException {
     # The function to retrieve the string representation of the Ballerina class mapping the `org.wso2.apk.runtime.api.APIManagementException` Java class.
     #
     # + return - The `string` form of the Java object instance.
-    public function toString() returns string {
+    public isolated function toString() returns string {
         return java:toString(self.jObj) ?: "null";
     }
     # The function that maps to the `addSuppressed` method of `org.wso2.apk.runtime.api.APIManagementException`.
@@ -71,7 +71,7 @@ public distinct class JAPIManagementException {
     # The function that maps to the `getErrorHandler` method of `org.wso2.apk.runtime.api.APIManagementException`.
     #
     # + return - The `ErrorHandler` value returning from the Java mapping.
-    public function getErrorHandler() returns ErrorHandler {
+    public isolated function getErrorHandler() returns ErrorHandler {
         handle externalObj = org_wso2_apk_runtime_api_APIManagementException_getErrorHandler(self.jObj);
         ErrorHandler newObj = new (externalObj);
         return newObj;
@@ -80,21 +80,21 @@ public distinct class JAPIManagementException {
     # The function that maps to the `getLocalizedMessage` method of `org.wso2.apk.runtime.api.APIManagementException`.
     #
     # + return - The `string` value returning from the Java mapping.
-    public function getLocalizedMessage() returns string? {
+    public isolated function getLocalizedMessage() returns string? {
         return java:toString(org_wso2_apk_runtime_api_APIManagementException_getLocalizedMessage(self.jObj));
     }
 
     # The function that maps to the `getMessage` method of `org.wso2.apk.runtime.api.APIManagementException`.
     #
     # + return - The `string` value returning from the Java mapping.
-    public function getMessage() returns string? {
+    public isolated function getMessage() returns string? {
         return java:toString(org_wso2_apk_runtime_api_APIManagementException_getMessage(self.jObj));
     }
 
     # The function that maps to the `getStackTrace` method of `org.wso2.apk.runtime.api.APIManagementException`.
     #
     # + return - The `javalang:StackTraceElement[]` value returning from the Java mapping.
-    public function getStackTrace() returns javalang:StackTraceElement[]|error {
+    public isolated function getStackTrace() returns javalang:StackTraceElement[]|error {
         handle externalObj = org_wso2_apk_runtime_api_APIManagementException_getStackTrace(self.jObj);
         javalang:StackTraceElement[] newObj = [];
         handle[] anyObj = <handle[]>check jarrays:fromHandle(externalObj, "handle");
@@ -307,25 +307,25 @@ function org_wso2_apk_runtime_api_APIManagementException_getClass(handle receive
     paramTypes: []
 } external;
 
-function org_wso2_apk_runtime_api_APIManagementException_getErrorHandler(handle receiver) returns handle = @java:Method {
+isolated function org_wso2_apk_runtime_api_APIManagementException_getErrorHandler(handle receiver) returns handle = @java:Method {
     name: "getErrorHandler",
     'class: "org.wso2.apk.runtime.api.APIManagementException",
     paramTypes: []
 } external;
 
-function org_wso2_apk_runtime_api_APIManagementException_getLocalizedMessage(handle receiver) returns handle = @java:Method {
+isolated function org_wso2_apk_runtime_api_APIManagementException_getLocalizedMessage(handle receiver) returns handle = @java:Method {
     name: "getLocalizedMessage",
     'class: "org.wso2.apk.runtime.api.APIManagementException",
     paramTypes: []
 } external;
 
-function org_wso2_apk_runtime_api_APIManagementException_getMessage(handle receiver) returns handle = @java:Method {
+isolated function org_wso2_apk_runtime_api_APIManagementException_getMessage(handle receiver) returns handle = @java:Method {
     name: "getMessage",
     'class: "org.wso2.apk.runtime.api.APIManagementException",
     paramTypes: []
 } external;
 
-function org_wso2_apk_runtime_api_APIManagementException_getStackTrace(handle receiver) returns handle = @java:Method {
+isolated function org_wso2_apk_runtime_api_APIManagementException_getStackTrace(handle receiver) returns handle = @java:Method {
     name: "getStackTrace",
     'class: "org.wso2.apk.runtime.api.APIManagementException",
     paramTypes: []

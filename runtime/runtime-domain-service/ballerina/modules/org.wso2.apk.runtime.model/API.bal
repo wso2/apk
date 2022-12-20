@@ -15,14 +15,14 @@ public distinct class API {
     # The init function of the Ballerina class mapping the `org.wso2.apk.runtime.model.API` Java class.
     #
     # + obj - The `handle` value containing the Java reference of the object.
-    public function init(handle obj) {
+    public isolated function init(handle obj) {
         self.jObj = obj;
     }
 
     # The function to retrieve the string representation of the Ballerina class mapping the `org.wso2.apk.runtime.model.API` Java class.
     #
     # + return - The `string` form of the Java object instance.
-    public function toString() returns string {
+    public isolated function toString() returns string {
         return java:toString(self.jObj) ?: "null";
     }
     # The function that maps to the `equals` method of `org.wso2.apk.runtime.model.API`.
@@ -136,7 +136,7 @@ public distinct class API {
     # The function that maps to the `setName` method of `org.wso2.apk.runtime.model.API`.
     #
     # + arg0 - The `string` value required to map with the Java method parameter.
-    public function setName(string arg0) {
+    public isolated function setName(string arg0) {
         org_wso2_apk_runtime_model_API_setName(self.jObj, java:fromString(arg0));
     }
 
@@ -157,21 +157,21 @@ public distinct class API {
     # The function that maps to the `setType` method of `org.wso2.apk.runtime.model.API`.
     #
     # + arg0 - The `string` value required to map with the Java method parameter.
-    public function setType(string arg0) {
+    public isolated function setType(string arg0) {
         org_wso2_apk_runtime_model_API_setType(self.jObj, java:fromString(arg0));
     }
 
     # The function that maps to the `setUriTemplates` method of `org.wso2.apk.runtime.model.API`.
     #
     # + arg0 - The `javautil:Set` value required to map with the Java method parameter.
-    public function setUriTemplates(javautil:Set arg0) {
+    public isolated function setUriTemplates(javautil:Set arg0) {
         org_wso2_apk_runtime_model_API_setUriTemplates(self.jObj, arg0.jObj);
     }
 
     # The function that maps to the `setVersion` method of `org.wso2.apk.runtime.model.API`.
     #
     # + arg0 - The `string` value required to map with the Java method parameter.
-    public function setVersion(string arg0) {
+    public isolated function setVersion(string arg0) {
         org_wso2_apk_runtime_model_API_setVersion(self.jObj, java:fromString(arg0));
     }
 
@@ -216,7 +216,7 @@ public distinct class API {
 # The constructor function to generate an object of `org.wso2.apk.runtime.model.API`.
 #
 # + return - The new `API` class generated.
-public function newAPI1() returns API {
+public isolated function newAPI1() returns API {
     handle externalObj = org_wso2_apk_runtime_model_API_newAPI1();
     API newObj = new (externalObj);
     return newObj;
@@ -324,7 +324,7 @@ function org_wso2_apk_runtime_model_API_setGraphQLSchema(handle receiver, handle
     paramTypes: ["java.lang.String"]
 } external;
 
-function org_wso2_apk_runtime_model_API_setName(handle receiver, handle arg0) = @java:Method {
+isolated function org_wso2_apk_runtime_model_API_setName(handle receiver, handle arg0) = @java:Method {
     name: "setName",
     'class: "org.wso2.apk.runtime.model.API",
     paramTypes: ["java.lang.String"]
@@ -342,19 +342,19 @@ function org_wso2_apk_runtime_model_API_setSwaggerDefinition(handle receiver, ha
     paramTypes: ["java.lang.String"]
 } external;
 
-function org_wso2_apk_runtime_model_API_setType(handle receiver, handle arg0) = @java:Method {
+isolated function org_wso2_apk_runtime_model_API_setType(handle receiver, handle arg0) = @java:Method {
     name: "setType",
     'class: "org.wso2.apk.runtime.model.API",
     paramTypes: ["java.lang.String"]
 } external;
 
-function org_wso2_apk_runtime_model_API_setUriTemplates(handle receiver, handle arg0) = @java:Method {
+isolated function org_wso2_apk_runtime_model_API_setUriTemplates(handle receiver, handle arg0) = @java:Method {
     name: "setUriTemplates",
     'class: "org.wso2.apk.runtime.model.API",
     paramTypes: ["java.util.Set"]
 } external;
 
-function org_wso2_apk_runtime_model_API_setVersion(handle receiver, handle arg0) = @java:Method {
+isolated function org_wso2_apk_runtime_model_API_setVersion(handle receiver, handle arg0) = @java:Method {
     name: "setVersion",
     'class: "org.wso2.apk.runtime.model.API",
     paramTypes: ["java.lang.String"]
@@ -378,7 +378,7 @@ function org_wso2_apk_runtime_model_API_wait3(handle receiver, int arg0, int arg
     paramTypes: ["long", "int"]
 } external;
 
-function org_wso2_apk_runtime_model_API_newAPI1() returns handle = @java:Constructor {
+isolated function org_wso2_apk_runtime_model_API_newAPI1() returns handle = @java:Constructor {
     'class: "org.wso2.apk.runtime.model.API",
     paramTypes: []
 } external;

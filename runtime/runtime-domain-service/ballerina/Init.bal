@@ -23,7 +23,7 @@ import ballerina/uuid;
 listener http:Listener ep0 = new (9443);
 string kid = uuid:createType1AsString();
 
-configurable RuntimeConfiguratation runtimeConfiguration = {
+configurable RuntimeConfiguratation & readonly runtimeConfiguration = {
     keyStores: {
         signing: {
             path: "/home/wso2apk/runtime/security/wso2carbon.key"
@@ -35,6 +35,7 @@ configurable RuntimeConfiguratation runtimeConfiguration = {
 };
 
 # Initializing method for runtime
+# + return - Return Error if error occured at initialization.
 function init() returns error? {
     APIClient apiService = new ();
     error? retrieveAllApisAtStartup = apiService.retrieveAllApisAtStartup(());
