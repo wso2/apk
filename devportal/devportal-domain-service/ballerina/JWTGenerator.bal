@@ -19,9 +19,9 @@
 import ballerina/jwt;
 import ballerina/uuid;
 
-function generateToken(JWTTokenInfo jwtInfo) returns string|error {
-        TokenIssuerConfiguration issuerConfiguration = apkConfig.tokenIssuerConfiguration;
-        KeyStore signingCert = apkConfig.keyStores.signing;
+isolated function generateToken(JWTTokenInfo jwtInfo) returns string|error {
+        TokenIssuerConfiguration & readonly issuerConfiguration = apkConfig.tokenIssuerConfiguration;
+        KeyStore & readonly signingCert = apkConfig.keyStores.signing;
         string jwtid = uuid:createType1AsString();
         jwt:IssuerConfig issuerConfig = {
             issuer: issuerConfiguration.issuer,
@@ -43,7 +43,7 @@ function generateToken(JWTTokenInfo jwtInfo) returns string|error {
 #
 # + jwtInfo- invoked API
 # + return - Return list of custom claims
-function handleCustomClaims(JWTTokenInfo jwtInfo) returns map<json> {
+isolated function handleCustomClaims(JWTTokenInfo jwtInfo) returns map<json> {
     map<json> claims = {};
     claims["keytype"] = jwtInfo.keyType;
     claims["permittedReferer"] = jwtInfo.permittedReferrer;
@@ -59,7 +59,7 @@ function handleCustomClaims(JWTTokenInfo jwtInfo) returns map<json> {
 #
 # + apis - subscribed APIs.
 # + return - Return SubscribedAPI.
-function createSubscribedAPIJSON(API[] apis) returns json {
+isolated function createSubscribedAPIJSON(API[] apis) returns json {
     //return apis.toJson();
     map<string>[] strippedAPIs = [];
     foreach API api in apis {
@@ -81,7 +81,7 @@ function createSubscribedAPIJSON(API[] apis) returns json {
 #
 # + app - Application.
 # + return - Return Application.
-function createApplicationJSON(Application app) returns json {
+isolated function createApplicationJSON(Application app) returns json {
     map<string> application = {};
     string? uuid = app.applicationId;
     int? id = app.id;

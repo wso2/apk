@@ -20,7 +20,7 @@ import ballerina/log;
 import ballerina/uuid;
 import ballerina/lang.value;
 
-function addSubscription(Subscription payload, string org, string user) returns string?|Subscription|error {
+isolated function addSubscription(Subscription payload, string org, string user) returns string?|Subscription|error {
     int apiId = 0;
     int appId = 0;
     int|error? subscriberId = getSubscriberIdDAO(user,org);
@@ -70,12 +70,12 @@ function addSubscription(Subscription payload, string org, string user) returns 
     return createdSub;
 }
 
-function getBusinessPlanByName(string policyName) returns string?|error {
+isolated function getBusinessPlanByName(string policyName) returns string?|error {
     string?|error policy = getBusinessPlanByNameDAO(policyName);
     return policy;
 }
 
-function addMultipleSubscriptions(Subscription[] subscriptions, string org, string user) returns Subscription[]|error? {
+isolated function addMultipleSubscriptions(Subscription[] subscriptions, string org, string user) returns Subscription[]|error? {
     Subscription[]|error? addedSubs = [];
     foreach Subscription sub in subscriptions {
         string?|Subscription|error subscriptionResponse = check addSubscription(sub, org, user);
@@ -90,17 +90,17 @@ function addMultipleSubscriptions(Subscription[] subscriptions, string org, stri
     return addedSubs;
 }
 
-function getSubscriptionById(string subId, string org) returns string?|Subscription|error {
+isolated function getSubscriptionById(string subId, string org) returns string?|Subscription|error {
     string?|Subscription|error subscription = getSubscriptionByIdDAO(subId, org);
     return subscription;
 }
 
-function deleteSubscription(string subId, string organization) returns string|error? {
+isolated function deleteSubscription(string subId, string organization) returns string|error? {
     error?|string status = deleteSubscriptionDAO(subId,organization);
     return status;
 }
 
-function updateSubscription(string subId, Subscription payload, string org, string user) returns string?|Subscription|NotFoundError|error {
+isolated function updateSubscription(string subId, Subscription payload, string org, string user) returns string?|Subscription|NotFoundError|error {
     string?|Subscription|error existingSub = getSubscriptionByIdDAO(subId, org);
     if existingSub is Subscription {
         payload.subscriptionId = subId;
@@ -156,7 +156,7 @@ function updateSubscription(string subId, Subscription payload, string org, stri
     return createdSub;
 }
 
-function getSubscriptions(string? apiId, string? applicationId, string? groupId, int offset, int limitCount, string org) returns string?|SubscriptionList|error {
+isolated function getSubscriptions(string? apiId, string? applicationId, string? groupId, int offset, int limitCount, string org) returns string?|SubscriptionList|error {
     if apiId is string && applicationId is string {
         // Retrieve Subscriptions per given API Id and App Id
         string?|Subscription|error subscription = getSubscriptionByAPIandAppIdDAO(apiId,applicationId,org);

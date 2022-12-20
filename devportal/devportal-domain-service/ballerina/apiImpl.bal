@@ -16,12 +16,12 @@
 // under the License.
 //
 
-function getAPIByAPIId(string apiId, string organization) returns string?|API|error {
+isolated function getAPIByAPIId(string apiId, string organization) returns string?|API|error {
     string?|API|error api = getAPIByIdDAO(apiId, organization);
     return api;
 }
 
-function getAPIList(int 'limit, int  offset, string? query, string organization) returns string?|APIList|error {
+isolated function getAPIList(int 'limit, int  offset, string? query, string organization) returns string?|APIList|error {
     API[]|error? apis = getAPIsDAO(organization);
     if apis is API[] {
         int count = apis.length();
