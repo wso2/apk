@@ -1,0 +1,45 @@
+{
+	"id": "800a5bc5-48cb-4526-83b2-037f7d057487",
+	"name": "LocalMinikube",
+	"values": [
+		{
+			"key": "runtimeAPIServerBaseURL",
+			"value": "http://localhost",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "serviceUUID",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		},
+		{
+			"key": "gatewayBaseURL",
+			"value": "https://127.0.0.1:9095",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "adminAPIServerBaseURL",
+			"value": "http://localhost",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "backOfficeAPIServerBaseURL",
+			"value": "http://localhost",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "internalBackOfficeAPIServerBaseURL",
+			"value": "http://localhost",
+			"type": "default",
+			"enabled": true
+		}
+	],
+	"_postman_variable_scope": "environment",
+	"_postman_exported_at": "2022-12-20T10:32:24.843Z",
+	"_postman_exported_using": "Postman/10.5.8"
+}
