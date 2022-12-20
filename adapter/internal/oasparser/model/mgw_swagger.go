@@ -536,34 +536,23 @@ func (swagger *MgwSwagger) setDisableSecurity() {
 // This needs to be checked prior to generate router/enforcer related resources.
 func (swagger *MgwSwagger) Validate() error {
 	if swagger.EndpointImplementationType != constants.MockedOASEndpointType {
-		if (swagger.productionEndpoints == nil || len(swagger.productionEndpoints.Endpoints) == 0) &&
-			(swagger.sandboxEndpoints == nil || len(swagger.sandboxEndpoints.Endpoints) == 0) {
-
-			logger.LoggerOasparser.Errorf("No Endpoints are provided for the API %s:%s",
-				swagger.title, swagger.version)
-			return errors.New("no endpoints are provided for the API")
-		}
-		err := swagger.productionEndpoints.validateEndpointCluster("API level production")
-		if err != nil {
-			logger.LoggerOasparser.Errorf("Error while parsing the production endpoints of the API %s:%s - %v",
-				swagger.title, swagger.version, err)
-			return err
-		}
-		err = swagger.sandboxEndpoints.validateEndpointCluster("API level sandbox")
-		if err != nil {
-			logger.LoggerOasparser.Errorf("Error while parsing the sandbox endpoints of the API %s:%s - %v",
-				swagger.title, swagger.version, err)
-			return err
-		}
-
+		// we no longer have api level endpoints in apk, it is set in resource level always.
+		// todo(amali) remove all api level endpoints from mgwswagger
 		for _, res := range swagger.resources {
-			err := res.productionEndpoints.validateEndpointCluster("Resource level production")
+			if (res.productionEndpoints == nil || len(res.productionEndpoints.Endpoints) == 0) &&
+				(res.sandboxEndpoints == nil || len(res.sandboxEndpoints.Endpoints) == 0) {
+
+				logger.LoggerOasparser.Errorf("No Endpoints are provided for the resources in %s:%s",
+					swagger.title, swagger.version)
+				return errors.New("no endpoints are provided for the API")
+			}
+			err := res.productionEndpoints.validateEndpointCluster()
 			if err != nil {
 				logger.LoggerOasparser.Errorf("Error while parsing the production endpoints of the API %s:%s - %v",
 					swagger.title, swagger.version, err)
 				return err
 			}
-			err = res.sandboxEndpoints.validateEndpointCluster("Resource level sandbox")
+			err = res.sandboxEndpoints.validateEndpointCluster()
 			if err != nil {
 				logger.LoggerOasparser.Errorf("Error while parsing the sandbox endpoints of the API %s:%s - %v",
 					swagger.title, swagger.version, err)
@@ -635,14 +624,13 @@ func (retryConfig *RetryConfig) validateRetryConfig() {
 	retryConfig.StatusCodes = validStatusCodes
 }
 
-func (endpointCluster *EndpointCluster) validateEndpointCluster(endpointName string) error {
+func (endpointCluster *EndpointCluster) validateEndpointCluster() error {
 	if endpointCluster != nil && len(endpointCluster.Endpoints) > 0 {
 		var err error
 		for _, endpoint := range endpointCluster.Endpoints {
 			err = endpoint.validateEndpoint()
 			if err != nil {
-				logger.LoggerOasparser.Errorf("Error while parsing the %s endpoints. %v",
-					endpointName, err)
+				logger.LoggerOasparser.Errorf("Error while parsing the endpoint. %v", err)
 				return err
 			}
 		}

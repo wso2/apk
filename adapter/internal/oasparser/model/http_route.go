@@ -22,6 +22,7 @@ import (
 	"math/rand"
 
 	"github.com/google/uuid"
+	"github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
 	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
 	"github.com/wso2/apk/adapter/internal/operator/utils"
@@ -34,7 +35,7 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, au
 	resourceAuthSchemes map[string]dpv1alpha1.Authentication, isProd bool) error {
 	var resources []*Resource
 	var securitySchemes []SecurityScheme
-	//TODO(amali) add gateway level securities
+	//TODO(amali) add gateway level securities after gateway crd has implemented
 	authScheme := selectAuthScheme(authSchemes)
 	for _, rule := range httpRoute.Spec.Rules {
 		var endPoints []Endpoint
@@ -71,13 +72,18 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, au
 				}
 			}
 		}
-		securities, securityDefinitions, disabledSecurity := getSecurity(resourceAuthScheme)
+		loggers.LoggerOasparser.Debug("Calculating auths for API")
+		securities, securityDefinitions, disabledSecurity := getSecurity(concatAuthScheme(resourceAuthScheme))
 		securitySchemes = append(securitySchemes, securityDefinitions...)
+		if len(rule.BackendRefs) < 1 {
+			return fmt.Errorf("no backendref were provided")
+		}
 		for _, backend := range rule.BackendRefs {
 			endPoints = append(endPoints,
 				Endpoint{Host: fmt.Sprintf("%s.%s", backend.Name,
 					utils.GetNamespace(backend.Namespace, httpRoute.Namespace)),
-					Port: uint32(*backend.Port)})
+					URLType: "http",
+					Port:    uint32(*backend.Port)})
 		}
 
 		for _, match := range rule.Matches {
@@ -120,8 +126,8 @@ func concatAuthSchemes(schemeUp *dpv1alpha1.Authentication, schemeDown *dpv1alph
 
 	finalAuth := dpv1alpha1.Authentication{}
 	var jwtConfigured bool
-	finalAuth.Spec.Default.ExternalService.Disabled = schemeUp.Spec.Override.ExternalService.Disabled
 
+	finalAuth.Spec.Override.ExternalService.Disabled = schemeUp.Spec.Override.ExternalService.Disabled
 	for _, auth := range schemeUp.Spec.Override.ExternalService.AuthTypes {
 		switch auth.AuthType {
 		case constants.JWTAuth:
@@ -130,6 +136,9 @@ func concatAuthSchemes(schemeUp *dpv1alpha1.Authentication, schemeDown *dpv1alph
 		}
 	}
 
+	if !finalAuth.Spec.Override.ExternalService.Disabled {
+		finalAuth.Spec.Override.ExternalService.Disabled = schemeDown.Spec.Override.ExternalService.Disabled
+	}
 	for _, auth := range schemeDown.Spec.Override.ExternalService.AuthTypes {
 		switch auth.AuthType {
 		case constants.JWTAuth:
@@ -140,6 +149,9 @@ func concatAuthSchemes(schemeUp *dpv1alpha1.Authentication, schemeDown *dpv1alph
 		}
 	}
 
+	if !finalAuth.Spec.Override.ExternalService.Disabled {
+		finalAuth.Spec.Override.ExternalService.Disabled = schemeDown.Spec.Default.ExternalService.Disabled
+	}
 	for _, auth := range schemeDown.Spec.Default.ExternalService.AuthTypes {
 		switch auth.AuthType {
 		case constants.JWTAuth:
@@ -150,7 +162,41 @@ func concatAuthSchemes(schemeUp *dpv1alpha1.Authentication, schemeDown *dpv1alph
 		}
 	}
 
+	if !finalAuth.Spec.Override.ExternalService.Disabled {
+		finalAuth.Spec.Override.ExternalService.Disabled = schemeUp.Spec.Default.ExternalService.Disabled
+	}
 	for _, auth := range schemeUp.Spec.Default.ExternalService.AuthTypes {
+		switch auth.AuthType {
+		case constants.JWTAuth:
+			if !jwtConfigured {
+				finalAuth.Spec.Override.ExternalService.AuthTypes = append(finalAuth.Spec.Override.ExternalService.AuthTypes, auth)
+				jwtConfigured = true
+			}
+		}
+	}
+	return &finalAuth
+}
+
+// concatAuthScheme concat override and default auth policies of an authentication CR
+// folowing the hierarchy described in the https://gateway-api.sigs.k8s.io/references/policy-attachment/#hierarchy
+func concatAuthScheme(scheme *dpv1alpha1.Authentication) *dpv1alpha1.Authentication {
+	if scheme == nil || (!scheme.Spec.Default.ExternalService.Disabled && len(scheme.Spec.Default.ExternalService.AuthTypes) < 1) {
+		return scheme
+	}
+	finalAuth := dpv1alpha1.Authentication{}
+	var jwtConfigured bool
+	finalAuth.Spec.Override.ExternalService.Disabled = scheme.Spec.Override.ExternalService.Disabled
+	for _, auth := range scheme.Spec.Override.ExternalService.AuthTypes {
+		switch auth.AuthType {
+		case constants.JWTAuth:
+			finalAuth.Spec.Override.ExternalService.AuthTypes = append(finalAuth.Spec.Override.ExternalService.AuthTypes, auth)
+			jwtConfigured = true
+		}
+	}
+	if !finalAuth.Spec.Override.ExternalService.Disabled {
+		finalAuth.Spec.Override.ExternalService.Disabled = scheme.Spec.Default.ExternalService.Disabled
+	}
+	for _, auth := range scheme.Spec.Default.ExternalService.AuthTypes {
 		switch auth.AuthType {
 		case constants.JWTAuth:
 			if !jwtConfigured {
@@ -180,11 +226,14 @@ func selectAuthScheme(authSchemes []dpv1alpha1.Authentication) *dpv1alpha1.Authe
 }
 
 // getSecurity returns security schemes and it's definitions with flag to indicate if security is disabled
+// make sure authscheme only has external service override values. (i.e. empty default values)
+// tip: use concatScheme method
 func getSecurity(authScheme *dpv1alpha1.Authentication) ([]map[string][]string, []SecurityScheme, bool) {
 	authSecurities := []map[string][]string{}
 	securitySchemes := []SecurityScheme{}
 	if authScheme != nil {
-		if !authScheme.Spec.Override.ExternalService.Disabled {
+		if authScheme.Spec.Override.ExternalService.Disabled {
+			loggers.LoggerOasparser.Debug("Disabled security")
 			return authSecurities, securitySchemes, true
 		}
 		for _, auth := range authScheme.Spec.Override.ExternalService.AuthTypes {
@@ -195,6 +244,8 @@ func getSecurity(authScheme *dpv1alpha1.Authentication) ([]map[string][]string, 
 				securitySchemes = append(securitySchemes, SecurityScheme{DefinitionName: securityName, Type: constants.Oauth2TypeInOAS})
 			}
 		}
+	} else {
+		loggers.LoggerOasparser.Debug("No auths were provided")
 	}
 	return authSecurities, securitySchemes, false
 }

@@ -130,7 +130,7 @@ func generateMGWSwagger(apiState APIState, httpRoute *HTTPRouteState, isProd boo
 	if err := mgwSwagger.SetInfoHTTPRouteCR(httpRoute.HTTPRoute, httpRoute.Authentications, httpRoute.ResourceAuthentications,
 		isProd); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("error setting HttpRoute CR info to mgwSwagger for isProdEndpoint: %v. %v", isProd, err),
+			Message:   fmt.Sprintf("Error setting HttpRoute CR info to mgwSwagger for isProdEndpoint: %v. %v", isProd, err),
 			Severity:  logging.MAJOR,
 			ErrorCode: 2613,
 		})
@@ -138,7 +138,7 @@ func generateMGWSwagger(apiState APIState, httpRoute *HTTPRouteState, isProd boo
 	}
 	if err := mgwSwagger.Validate(); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-			Message: fmt.Sprintf("error validating mgwSwagger intermediate representation for isProdEndpoint: %v. %v",
+			Message: fmt.Sprintf("Error validating mgwSwagger intermediate representation for isProdEndpoint: %v. %v",
 				isProd, err),
 			Severity:  logging.MAJOR,
 			ErrorCode: 2615,
@@ -151,7 +151,7 @@ func generateMGWSwagger(apiState APIState, httpRoute *HTTPRouteState, isProd boo
 		err := xds.UpdateAPICache(vHost, labels, mgwSwagger)
 		if err != nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-				Message: fmt.Sprintf("error updating the API : %s:%s in vhost: %s. %v",
+				Message: fmt.Sprintf("Error updating the API : %s:%s in vhost: %s. %v",
 					mgwSwagger.GetTitle(), mgwSwagger.GetVersion(), vHost, err),
 				Severity:  logging.MAJOR,
 				ErrorCode: 2614,
@@ -188,7 +188,7 @@ func sendAPIToAPKMgtServer(apiEvent APIEvent) {
 	api := apiEvent.Event
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("error creating connection for %v : %v", address, err),
+			Message:   fmt.Sprintf("Error creating connection for %v : %v", address, err),
 			ErrorCode: 6000,
 			Severity:  logging.BLOCKER,
 		})

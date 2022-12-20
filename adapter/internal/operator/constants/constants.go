@@ -47,7 +47,7 @@ const (
 // CRD Kinds
 const (
 	KindAuthentication = "Authentication"
-	KindHTTPRoute      = "HttpRoute"
-	//TODO(amali) remove this after fixing the
+	KindHTTPRoute      = "HTTPRoute"
+	//TODO(amali) remove this after fixing the issue in https://github.com/wso2/apk/issues/383
 	KindResource = "Resource"
 )

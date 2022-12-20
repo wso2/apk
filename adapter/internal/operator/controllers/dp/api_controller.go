@@ -253,17 +253,19 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, namespac
 // - Authentications
 func (apiReconciler *APIReconciler) resolveHTTPRouteRefs(ctx context.Context, namespace string,
 	httpRouteRef string) (*synchronizer.HTTPRouteState, error) {
-	httpRouteState := &synchronizer.HTTPRouteState{}
-	httpRoute := gwapiv1b1.HTTPRoute{}
+	httpRouteState := &synchronizer.HTTPRouteState{
+		HTTPRoute: &gwapiv1b1.HTTPRoute{},
+	}
 	var err error
-	if err := apiReconciler.client.Get(ctx, types.NamespacedName{Namespace: namespace, Name: httpRouteRef}, &httpRoute); err != nil {
+	if err := apiReconciler.client.Get(ctx, types.NamespacedName{Namespace: namespace, Name: httpRouteRef},
+		httpRouteState.HTTPRoute); err != nil {
 		return nil, fmt.Errorf("error while getting httproute %s in namespace :%s, %s", httpRouteRef, namespace, err.Error())
 	}
-	if httpRouteState.Authentications, err = apiReconciler.getAuthenticationsForHTTPRoute(ctx, &httpRoute); err != nil {
+	if httpRouteState.Authentications, err = apiReconciler.getAuthenticationsForHTTPRoute(ctx, httpRouteState.HTTPRoute); err != nil {
 		return nil, fmt.Errorf("error while getting httproute auth defaults %s in namespace :%s, %s", httpRouteRef,
 			namespace, err.Error())
 	}
-	if httpRouteState.ResourceAuthentications, err = apiReconciler.getAuthenticationsForResources(ctx, &httpRoute); err != nil {
+	if httpRouteState.ResourceAuthentications, err = apiReconciler.getAuthenticationsForResources(ctx, httpRouteState.HTTPRoute); err != nil {
 		return nil, fmt.Errorf("error while getting httproute auth defaults %s in namespace :%s, %s", httpRouteRef,
 			namespace, err.Error())
 	}
@@ -346,6 +348,7 @@ func (apiReconciler *APIReconciler) getAPIForHTTPRoute(obj k8client.Object) []re
 // a new reconcile event will be created and added to the reconcile event queue.
 func (apiReconciler *APIReconciler) getHTTPRoutesForAuthentication(obj k8client.Object) []reconcile.Request {
 	authentication, ok := obj.(*dpv1alpha1.Authentication)
+	ctx := context.Background()
 	if !ok {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
 			Message:   fmt.Sprintf("unexpected object type, bypassing reconciliation: %v", authentication),
@@ -357,14 +360,43 @@ func (apiReconciler *APIReconciler) getHTTPRoutesForAuthentication(obj k8client.
 
 	requests := []reconcile.Request{}
 
-	if authentication.Spec.TargetRef.Kind == constants.KindHTTPRoute {
+	if !(authentication.Spec.TargetRef.Kind == constants.KindHTTPRoute || authentication.Spec.TargetRef.Kind == constants.KindResource) {
+		loggers.LoggerAPKOperator.Errorf("Unsupported target ref kind : %s was given for authentication: %s",
+			authentication.Spec.TargetRef.Kind, authentication.Name)
+		return requests
+	}
+	loggers.LoggerAPKOperator.Debugf("Finding reconcile API requests for httpRoute: %s in namespace : %s",
+		authentication.Spec.TargetRef.Name, authentication.Namespace)
+
+	apiList := &dpv1alpha1.APIList{}
+
+	namespacedName := types.NamespacedName{
+		Name:      string(authentication.Spec.TargetRef.Name),
+		Namespace: authentication.Namespace}.String()
+
+	if err := apiReconciler.client.List(ctx, apiList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(httpRouteAPIIndex, namespacedName)}); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("Unable to find associated APIs: %s", namespacedName),
+			Severity:  logging.CRITICAL,
+			ErrorCode: 2610,
+		})
+		return []reconcile.Request{}
+	}
+
+	if len(apiList.Items) == 0 {
+		loggers.LoggerAPKOperator.Debugf("APIs for HTTPRoute not found: %s", namespacedName)
+		return []reconcile.Request{}
+	}
+
+	for _, api := range apiList.Items {
 		req := reconcile.Request{
 			NamespacedName: types.NamespacedName{
-				Name:      string(authentication.Spec.TargetRef.Name),
-				Namespace: authentication.Namespace},
+				Name:      api.Name,
+				Namespace: api.Namespace},
 		}
-		loggers.LoggerAPKOperator.Infof("Adding reconcile request: %v", req.NamespacedName)
 		requests = append(requests, req)
+		loggers.LoggerAPKOperator.Infof("Adding reconcile request for API: %s/%s", api.Namespace, api.Name)
 	}
 	return requests
 }
@@ -400,7 +432,7 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 		return err
 	}
 
-	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.Authentication{}, authenticationResourceIndex,
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.Authentication{}, authenticationAPIIndex,
 		func(rawObj k8client.Object) []string {
 			authentication := rawObj.(*dpv1alpha1.Authentication)
 			var httpRoutes []string
@@ -420,7 +452,7 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 	// https://gateway-api.sigs.k8s.io/geps/gep-713/?h=multiple+targetrefs#apply-policies-to-sections-of-a-resource-future-extension
 	// we will use a temporary kindName called Resource for policy attachments
 	// TODO(amali) Fix after the official support is available
-	err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.Authentication{}, authenticationAPIIndex,
+	err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.Authentication{}, authenticationResourceIndex,
 		func(rawObj k8client.Object) []string {
 			authentication := rawObj.(*dpv1alpha1.Authentication)
 			var httpRoutes []string
