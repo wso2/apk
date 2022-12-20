@@ -17,18 +17,17 @@
 //
 
 import ballerina/log;
-import ballerinax/java.jdbc;
+import ballerinax/postgresql;
 import ballerina/sql;
 import ballerina/http;
 
 configurable DatasourceConfiguration datasourceConfiguration = ?;
-final jdbc:Client|sql:Error dbClient;
+final postgresql:Client|sql:Error dbClient;
 configurable ThrottlingConfiguration throttleConfig = ?;
 
 configurable int ADMIN_PORT = 9443;
 
 listener http:Listener ep0 = new (ADMIN_PORT);
-
 
 function init() {
     log:printInfo("Starting APK Admin Domain Service...");
@@ -36,16 +35,20 @@ function init() {
         throttlingConfiguration: throttleConfig,
         datasourceConfiguration: datasourceConfiguration
     };
-    dbClient = new(datasourceConfiguration.url, datasourceConfiguration.username, 
-        datasourceConfiguration.password,
-        connectionPool = { maxOpenConnections: datasourceConfiguration.maxPoolSize });
-    jdbc:Client | error dbClient  = getConnection();
+    dbClient = 
+        new (host = datasourceConfiguration.host,
+            username = datasourceConfiguration.username, 
+            password = datasourceConfiguration.password, 
+            database = datasourceConfiguration.databaseName, 
+            port = datasourceConfiguration.port,
+            connectionPool = {maxOpenConnections: datasourceConfiguration.maxPoolSize}
+            );
     if dbClient is error {
         return log:printError("Error while connecting to database");
     }
 }
 
-public isolated function getConnection() returns jdbc:Client | error {
+public isolated function getConnection() returns postgresql:Client | error {
     return dbClient;  
  }
 
