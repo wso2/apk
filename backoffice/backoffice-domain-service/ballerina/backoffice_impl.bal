@@ -32,20 +32,20 @@ function getAPIList() returns string?|APIList|error {
 
 # This function used to change the lifecycle of API
 #
-# + action - lifecycle action
+# + targetState - lifecycle action
 # + apiId - API Id
 # + organization - organization
 # + return - Return Value LifecycleState|error
-function changeLifeCyleState(string action, string apiId, string organization) returns LifecycleState|error {
+function changeLifeCyleState(string targetState, string apiId, string organization) returns LifecycleState|error {
     string prevLCState = check db_getCurrentLCStatus(apiId, organization);
     transaction {
-        string|error lcState = db_changeLCState(action, apiId, organization);
+        string|error lcState = db_changeLCState(targetState, apiId, organization);
         if lcState is string {
                 string newvLCState = check db_getCurrentLCStatus(apiId, organization);
                 string|error lcEvent = db_AddLCEvent(apiId, prevLCState, newvLCState, organization);
                 if lcEvent is string {
                     check commit;
-                    json lcPayload = check getActionTransitionsFromState(action);
+                    json lcPayload = check getTransitionsFromState(targetState);
                     LifecycleState lcCr = check lcPayload.cloneWithType(LifecycleState);
                     return lcCr;
                 } else {
@@ -80,30 +80,21 @@ function getLifeCyleState(string apiId, string organization) returns LifecycleSt
 # + v - any parameter object
 # + return - Return LC state
 function actionToLCState(any v) returns string {
-
-    match v {
-        "Demote to Created" => { return "CREATED"; }
-        "Publish" => { return "PUBLISHED"; }
-        "Block" => { return "BLOCKED"; }
-        "Deprecate" => { return "DEPRECATED"; }
-        "Retire" => { return "RETIRED"; }
-        "Re-Publish" => { return "PUBLISHED"; }
-        _ => { return "any"; }
+    if(v.toString().equalsIgnoreCaseAscii("published")){
+        return "PUBLISHED";
+    } else if(v.toString().equalsIgnoreCaseAscii("created")){
+        return "CREATED";
+    } else if(v.toString().equalsIgnoreCaseAscii("blocked")){
+        return "BLOCKED";
+    } else if(v.toString().equalsIgnoreCaseAscii("deprecated")){
+        return "DEPRECATED";
+    } else if(v.toString().equalsIgnoreCaseAscii("prototyped")){
+        return "PROTOTYPED";
+    } else if(v.toString().equalsIgnoreCaseAscii("retired")){
+        return "RETIRED";
+    } else {
+        return "any";   
     }
-}
-
-# This function used to get the availble event transitions from action state
-# + state - state parameter
-# + return - Return Value jsons
-function getActionTransitionsFromState(string state) returns json|error {
-    string actionState = actionToLCState(state);
-    StatesList c =  check lifeCycleStateTransitions.cloneWithType(StatesList);
-    foreach States x in c.States {
-        if(actionState.equalsIgnoreCaseAscii(x.State)) {
-            return x.toJson();
-        }
-    }
-    
 }
 
 # This function used to get the availble event transitions from state
