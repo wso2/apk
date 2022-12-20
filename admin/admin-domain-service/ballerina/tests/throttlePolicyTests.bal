@@ -65,11 +65,11 @@ test:MockFunction deleteDenyPolicyDAOMock = new();
 
 @test:Config {}
 function addApplicationUsagePlanTest() {
-    string?|ApplicationThrottlePolicy|error  applicationUsagePlan = {policyName: "15PerMin", description: "15 Per Minute",'type:"ApplicationThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"}};
-    ApplicationThrottlePolicy payload = {policyName: "15PerMin", description: "15 Per Minute",'type:"ApplicationThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"},policyId: "1234455"};
+    string?|ApplicationRatePlan|error  applicationUsagePlan = {policyName: "15PerMin", description: "15 Per Minute",'type:"ApplicationThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"}};
+    ApplicationRatePlan payload = {policyName: "15PerMin", description: "15 Per Minute",'type:"ApplicationThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"},policyId: "1234455"};
     test:when(addApplicationUsagePlanDAOMock).thenReturn(applicationUsagePlan);
-    string?|ApplicationThrottlePolicy|error createdAppPol = addApplicationUsagePlan(payload);
-    if createdAppPol is ApplicationThrottlePolicy {
+    string?|ApplicationRatePlan|error createdAppPol = addApplicationUsagePlan(payload);
+    if createdAppPol is ApplicationRatePlan {
         test:assertTrue(true,"Application usage plan added successfully");
     } else if createdAppPol is error {
         test:assertFail("Error occured while adding Application Usage Plan");
@@ -78,10 +78,10 @@ function addApplicationUsagePlanTest() {
 
 @test:Config {}
 function getApplicationUsagePlanByIdTest(){
-    ApplicationThrottlePolicy aup = {policyName: "15PerMin", description: "15 Per Minute",'type:"ApplicationThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"},policyId: "1234455"};
+    ApplicationRatePlan aup = {policyName: "15PerMin", description: "15 Per Minute",'type:"ApplicationThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"},policyId: "1234455"};
     test:when(getApplicationUsagePlanByIdDAOMock).withArguments("1234455").thenReturn(aup);
-    string?|ApplicationThrottlePolicy|error policy = getApplicationUsagePlanByIdDAO("1234455");
-    if policy is ApplicationThrottlePolicy {
+    string?|ApplicationRatePlan|error policy = getApplicationUsagePlanByIdDAO("1234455");
+    if policy is ApplicationRatePlan {
         test:assertTrue(true, "Successfully retrieved Application Usage Plan");
     } else if policy is  error {
         test:assertFail("Error occured while retrieving Application Usage Plan");
@@ -90,11 +90,11 @@ function getApplicationUsagePlanByIdTest(){
 
 @test:Config {}
 function getApplicationUsagePlansTest(){
-    ApplicationThrottlePolicy[] aupList = [{policyName: "15PerMin", description: "15 Per Minute",'type:"ApplicationThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"},policyId: "1234455"},
+    ApplicationRatePlan[] aupList = [{policyName: "15PerMin", description: "15 Per Minute",'type:"ApplicationThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"},policyId: "1234455"},
     {policyName: "30PerMin", description: "30 Per Minute",'type:"ApplicationThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"},policyId: "asqw1234dsd"}];
     test:when(getApplicationUsagePlansDAOMock).withArguments("carbon.super").thenReturn(aupList);
-    string?|ApplicationThrottlePolicyList|error appPolicyList = getApplicationUsagePlans();
-    if appPolicyList is ApplicationThrottlePolicyList {
+    string?|ApplicationRatePlanList|error appPolicyList = getApplicationUsagePlans();
+    if appPolicyList is ApplicationRatePlanList {
     test:assertTrue(true, "Successfully retrieved all Application Usage Plans");
     } else if appPolicyList is  error {
         test:assertFail("Error occured while retrieving all Application Usage Plans");
@@ -103,12 +103,12 @@ function getApplicationUsagePlansTest(){
 
 @test:Config {}
 function updateApplicationUsagePlanTest() {
-    string?|ApplicationThrottlePolicy|error  applicationUsagePlan = {policyName: "15PerMin", description: "15 Per Minute",'type:"ApplicationThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"},policyId: "1234455"};
-    ApplicationThrottlePolicy payload = {policyName: "15PerMin", description: "15 Per Minute New",'type:"ApplicationThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"},policyId: "1234455"};
+    string?|ApplicationRatePlan|error  applicationUsagePlan = {policyName: "15PerMin", description: "15 Per Minute",'type:"ApplicationThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"},policyId: "1234455"};
+    ApplicationRatePlan payload = {policyName: "15PerMin", description: "15 Per Minute New",'type:"ApplicationThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"},policyId: "1234455"};
     test:when(getApplicationUsagePlanByIdDAOMock).withArguments("1234455").thenReturn(applicationUsagePlan);
     test:when(updateApplicationUsagePlanDAOMock).thenReturn(payload);
-    string?|ApplicationThrottlePolicy|error createdAppPol = updateApplicationUsagePlanDAO(payload);
-    if createdAppPol is ApplicationThrottlePolicy {
+    string?|ApplicationRatePlan|error createdAppPol = updateApplicationUsagePlanDAO(payload);
+    if createdAppPol is ApplicationRatePlan {
         test:assertTrue(true,"Application usage plan updated successfully");
     } else if createdAppPol is error {
         test:assertFail("Error occured while updating Application Usage Plan");
@@ -128,13 +128,13 @@ function removeApplicationUsagePlanTest(){
 
 @test:Config {}
 function addBusinessPlanTest() {
-    string?|SubscriptionThrottlePolicy|error  businessPlan = {policyName: "MySubPol1", description: "test sub pol",'type:"SubscriptionThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"}, 
+    string?|BusinessPlan|error  businessPlan = {policyName: "MySubPol1", description: "test sub pol",'type:"SubscriptionThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"}, 
     subscriberCount: 12, rateLimitCount: 10,rateLimitTimeUnit: "sec", stopOnQuotaReach:true};
-    SubscriptionThrottlePolicy payload = {policyName: "MySubPol1", description: "test sub pol",'type:"SubscriptionThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"}, 
+    BusinessPlan payload = {policyName: "MySubPol1", description: "test sub pol",'type:"SubscriptionThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"}, 
     subscriberCount: 12, rateLimitCount: 10,rateLimitTimeUnit: "sec", stopOnQuotaReach:true, policyId: "123456"};
     test:when(addBusinessPlanDAOMock).thenReturn(businessPlan);
-    string?|SubscriptionThrottlePolicy|error createdBusinessPlan = addBusinessPlan(payload);
-    if createdBusinessPlan is SubscriptionThrottlePolicy {
+    string?|BusinessPlan|error createdBusinessPlan = addBusinessPlan(payload);
+    if createdBusinessPlan is BusinessPlan {
         test:assertTrue(true,"Business Plan added successfully");
     } else if createdBusinessPlan is error {
         test:assertFail("Error occured while adding Business Plan");
@@ -143,11 +143,11 @@ function addBusinessPlanTest() {
 
 @test:Config {}
 function getBusinessPlanByIdTest() {
-    string?|SubscriptionThrottlePolicy|error  businessPlan = {policyName: "MySubPol1", description: "test sub pol",'type:"SubscriptionThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"}, 
+    string?|BusinessPlan|error  businessPlan = {policyName: "MySubPol1", description: "test sub pol",'type:"SubscriptionThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"}, 
     subscriberCount: 12, rateLimitCount: 10,rateLimitTimeUnit: "sec", stopOnQuotaReach:true, policyId: "123456"};
     test:when(getBusinessPlanByIdDAOMock).thenReturn(businessPlan);
-    string?|SubscriptionThrottlePolicy|error businessPlanResponse = getBusinessPlanById("123456");
-    if businessPlanResponse is SubscriptionThrottlePolicy {
+    string?|BusinessPlan|error businessPlanResponse = getBusinessPlanById("123456");
+    if businessPlanResponse is BusinessPlan {
         test:assertTrue(true,"Successfully retrieved Business Plan");
     } else if businessPlanResponse is error {
         test:assertFail("Error occured while retrieving Business Plan");
@@ -156,12 +156,12 @@ function getBusinessPlanByIdTest() {
 
 @test:Config {}
 function getBusinessPlansTest() {
-    SubscriptionThrottlePolicy[]  businessPlans = [{policyName: "MySubPol1", description: "test sub pol",'type:"SubscriptionThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"}, 
+    BusinessPlan[]  businessPlans = [{policyName: "MySubPol1", description: "test sub pol",'type:"SubscriptionThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"}, 
     subscriberCount: 12, rateLimitCount: 10,rateLimitTimeUnit: "sec", stopOnQuotaReach:true, policyId: "123456"},{policyName: "MySubPol2", description: "test sub pol 2",'type:"SubscriptionThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"}, 
     subscriberCount: 15, rateLimitCount: 14,rateLimitTimeUnit: "sec", stopOnQuotaReach:true, policyId: "qwe13123456asd"}];
     test:when(getBusinessPlansDAOMock).withArguments("carbon.super").thenReturn(businessPlans);
-    string?|SubscriptionThrottlePolicyList|error businessPlansResponse = getBusinessPlans();
-    if businessPlansResponse is SubscriptionThrottlePolicyList {
+    string?|BusinessPlanList|error businessPlansResponse = getBusinessPlans();
+    if businessPlansResponse is BusinessPlanList {
         test:assertTrue(true,"Successfully retrieved all Business Plans");
     } else if businessPlansResponse is error {
         test:assertFail("Error occured while retrieving all Business Plans");
@@ -170,14 +170,14 @@ function getBusinessPlansTest() {
 
 @test:Config {}
 function updateBusinessPlanTest() {
-    string?|SubscriptionThrottlePolicy|error  businessPlan = {policyName: "MySubPol1", description: "test sub pol",'type:"SubscriptionThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"}, 
+    string?|BusinessPlan|error  businessPlan = {policyName: "MySubPol1", description: "test sub pol",'type:"SubscriptionThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"}, 
     subscriberCount: 12, rateLimitCount: 10,rateLimitTimeUnit: "sec", stopOnQuotaReach:true};
-    SubscriptionThrottlePolicy payload = {policyName: "MySubPol1", description: "test sub pol New",'type:"SubscriptionThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"}, 
+    BusinessPlan payload = {policyName: "MySubPol1", description: "test sub pol New",'type:"SubscriptionThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"}, 
     subscriberCount: 12, rateLimitCount: 5,rateLimitTimeUnit: "sec", stopOnQuotaReach:true, policyId: "123456"};
      test:when(getBusinessPlanByIdDAOMock).thenReturn(businessPlan);
     test:when(updateBusinessPlanDAOMock).thenReturn(payload);
-    string?|SubscriptionThrottlePolicy|NotFoundError|error updatedBusinessPlan = updateBusinessPlan("123456",payload);
-    if updatedBusinessPlan is SubscriptionThrottlePolicy {
+    string?|BusinessPlan|NotFoundError|error updatedBusinessPlan = updateBusinessPlan("123456",payload);
+    if updatedBusinessPlan is BusinessPlan {
         test:assertTrue(true,"Business Plan updated successfully");
     } else if updatedBusinessPlan is error {
         test:assertFail("Error occured while updating Business Plan");

@@ -51,9 +51,19 @@ public type CreatedAPICategory record {|
     APICategory body;
 |};
 
+public type CreatedApplicationRatePlan record {|
+    *http:Created;
+    ApplicationRatePlan body;
+|};
+
 public type NotAcceptableError record {|
     *http:NotAcceptable;
     Error body;
+|};
+
+public type CreatedBusinessPlan record {|
+    *http:Created;
+    BusinessPlan body;
 |};
 
 public type CreatedBlockingCondition record {|
@@ -76,20 +86,22 @@ public type ForbiddenError record {|
     Error body;
 |};
 
-public type CreatedSubscriptionThrottlePolicy record {|
-    *http:Created;
-    SubscriptionThrottlePolicy body;
-|};
-
-public type CreatedApplicationThrottlePolicy record {|
-    *http:Created;
-    ApplicationThrottlePolicy body;
-|};
-
-public type SubscriptionThrottlePolicyList record {
-    # Number of Subscription Throttling Policies returned.
-    int count?;
-    SubscriptionThrottlePolicy[] list?;
+public type Policy record {
+    # Id of policy
+    string policyId?;
+    # Name of policy
+    @constraint:String {maxLength: 60, minLength: 1}
+    string policyName;
+    # Display name of the policy
+    @constraint:String {maxLength: 512}
+    string displayName?;
+    # Description of the policy
+    @constraint:String {maxLength: 1024}
+    string description?;
+    # Indicates whether the policy is deployed successfully or not.
+    boolean isDeployed = false;
+    # Indicates the type of throttle policy
+    string 'type?;
 };
 
 public type EnvironmentList record {
@@ -110,10 +122,9 @@ public type BlockingCondition record {
     boolean conditionStatus?;
 };
 
-public type ApplicationThrottlePolicyList record {
-    # Number of Application Throttling Policies returned.
-    int count?;
-    ApplicationThrottlePolicy[] list?;
+public type ApplicationRatePlan record {
+    *Policy;
+    ThrottleLimit defaultLimit;
 };
 
 public type Pagination record {
@@ -150,13 +161,6 @@ public type RoleAlias record {
     string[] aliases?;
 };
 
-public type ThrottlePolicyList record {
-    # Number of Throttling Policies returned.
-    int count?;
-    ThrottlePolicy[] list?;
-    Pagination pagination?;
-};
-
 public type ThrottleLimitBase record {
     # Unit of the time. Allowed values are "sec", "min", "hour", "day"
     string timeUnit;
@@ -175,18 +179,49 @@ public type ClaimMappingEntry record {
     string localClaim?;
 };
 
+public type BusinessPlan record {
+    *Policy;
+    *GraphQLQuery;
+    ThrottleLimit defaultLimit;
+    MonetizationInfo monetization?;
+    # Burst control request count
+    int rateLimitCount?;
+    # Burst control time unit
+    string rateLimitTimeUnit?;
+    # Number of subscriptions allowed
+    int subscriberCount?;
+    # Custom attributes added to the Subscription Throttling Policy
+    CustomAttribute[] customAttributes?;
+    # This indicates the action to be taken when a user goes beyond the allocated quota. If checked, the user's requests will be dropped. If unchecked, the requests will be allowed to pass through.
+    boolean stopOnQuotaReach = false;
+    # define whether this is Paid or a Free plan. Allowed values are FREE or COMMERCIAL.
+    string billingPlan?;
+    BusinessPlanPermission permissions?;
+};
+
+public type PolicyDetails record {
+    # Id of policy
+    int policyId?;
+    # UUId of policy
+    string uuid?;
+    # Name of policy
+    @constraint:String {maxLength: 60, minLength: 1}
+    string policyName;
+    # Display name of the policy
+    @constraint:String {maxLength: 512}
+    string displayName?;
+    # Description of the policy
+    @constraint:String {maxLength: 1024}
+    string description?;
+    # Indicates whether the policy is deployed successfully or not.
+    boolean isDeployed = false;
+    # Indicates the type of throttle policy
+    string 'type?;
+};
+
 public type KeyManagerWellKnownResponse record {
     boolean valid?;
     KeyManager value?;
-};
-
-public type SettingsKeymanagerconfiguration record {
-    string 'type?;
-    string displayName?;
-    string defaultConsumerKeyClaim?;
-    string defaultScopesClaim?;
-    KeyManagerConfiguration[] configurations?;
-    KeyManagerConfiguration[] endpointConfigurations?;
 };
 
 public type KeyManager record {
@@ -211,7 +246,7 @@ public type KeyManager record {
     string userInfoEndpoint?;
     string authorizeEndpoint?;
     KeyManagerEndpoint[] endpoints?;
-    KeymanagerCertificates certificates?;
+    KeyManager_certificates certificates?;
     string issuer?;
     # The alias of Identity Provider.
     # If the tokenType is EXCHANGED, the alias value should be inclusive in the audience values of the JWT token
@@ -234,9 +269,13 @@ public type KeyManager record {
     string tokenType = "DIRECT";
 };
 
+public type CustomUrlInfo_devPortal record {
+    string url?;
+};
+
 public type Settings record {
     string[] scopes?;
-    SettingsKeymanagerconfiguration[] keyManagerConfiguration?;
+    Settings_keyManagerConfiguration[] keyManagerConfiguration?;
     # To determine whether analytics is enabled or not
     boolean analyticsEnabled?;
 };
@@ -253,21 +292,14 @@ public type KeyManagerConfiguration record {
     record {}[] values?;
 };
 
-public type KeymanagersDiscoverBody record {
-    # Well-Known Endpoint
-    string url?;
-    # Key Manager Type
-    string 'type?;
-};
-
 public type ScopeSettings record {
     string name?;
 };
 
-public type ThrottlePolicyDetailsList record {
-    # Number of Throttling Policies returned.
+public type BusinessPlanList record {
+    # Number of Business Plans returned.
     int count?;
-    ThrottlePolicyDetails[] list?;
+    BusinessPlan[] list?;
 };
 
 public type HeaderCondition record {
@@ -277,7 +309,13 @@ public type HeaderCondition record {
     string headerValue;
 };
 
-public type TenantthemeBody record {
+public type ApplicationRatePlanList record {
+    # Number of Application Rate Plans returned.
+    int count?;
+    ApplicationRatePlan[] list?;
+};
+
+public type Tenanttheme_body record {
     # Zip archive consisting of tenant theme configuration
     string file;
 };
@@ -288,24 +326,6 @@ public type Workflow record {
     # Custom attributes to complete the workflow task
     record {} attributes?;
     string description?;
-};
-
-public type ThrottlePolicy record {
-    # Id of policy
-    string policyId?;
-    # Name of policy
-    @constraint:String {maxLength: 60, minLength: 1}
-    string policyName;
-    # Display name of the policy
-    @constraint:String {maxLength: 512}
-    string displayName?;
-    # Description of the policy
-    @constraint:String {maxLength: 1024}
-    string description?;
-    # Indicates whether the policy is deployed successfully or not.
-    boolean isDeployed = false;
-    # Indicates the type of throttle policy
-    string 'type?;
 };
 
 public type BotDetectionData record {
@@ -340,29 +360,11 @@ public type TokenValidation record {
     record {} value?;
 };
 
-public type SubscriptionThrottlePolicy record {
-    *ThrottlePolicy;
-    *GraphQLQuery;
-    ThrottleLimit defaultLimit;
-    MonetizationInfo monetization?;
-    # Burst control request count
-    int rateLimitCount?;
-    # Burst control time unit
-    string rateLimitTimeUnit?;
-    # Number of subscriptions allowed
-    int subscriberCount?;
-    # Custom attributes added to the Subscription Throttling Policy
-    CustomAttribute[] customAttributes?;
-    # This indicates the action to be taken when a user goes beyond the allocated quota. If checked, the user's requests will be dropped. If unchecked, the requests will be allowed to pass through.
-    boolean stopOnQuotaReach = false;
-    # define whether this is Paid or a Free plan. Allowed values are FREE or COMMERCIAL.
-    string billingPlan?;
-    SubscriptionThrottlePolicyPermission permissions?;
-};
-
-public type ApplicationThrottlePolicy record {
-    *ThrottlePolicy;
-    ThrottleLimit defaultLimit;
+public type Keymanagers_discover_body record {
+    # Well-Known Endpoint
+    string url?;
+    # Key Manager Type
+    string 'type?;
 };
 
 public type Environment record {
@@ -381,24 +383,9 @@ public type Environment record {
     AdditionalProperty[] additionalProperties?;
 };
 
-public type ThrottlePolicyDetails record {
-    # Id of policy
-    int policyId?;
-    # UUId of policy
-    string uuid?;
-    # Name of policy
-    @constraint:String {maxLength: 60, minLength: 1}
-    string policyName;
-    # Display name of the policy
-    @constraint:String {maxLength: 512}
-    string displayName?;
-    # Description of the policy
-    @constraint:String {maxLength: 1024}
-    string description?;
-    # Indicates whether the policy is deployed successfully or not.
-    boolean isDeployed = false;
-    # Indicates the type of throttle policy
-    string 'type?;
+public type BusinessPlanPermission record {
+    string permissionType;
+    string[] roles;
 };
 
 # Conditions used for Throttling
@@ -407,7 +394,7 @@ public type ThrottleCondition record {
     # and "QUERYPARAMETERCONDITION".
     string 'type;
     # Specifies whether inversion of the condition to be matched against the request.
-    #
+    # 
     # **Note:** When you add conditional groups for advanced throttling policies, this paramater should have the
     # same value ('true' or 'false') for the same type of conditional group.
     boolean invertCondition = false;
@@ -493,10 +480,6 @@ public type CustomAttribute record {
     string value;
 };
 
-public type CustomurlinfoDevportal record {
-    string url?;
-};
-
 public type APICategoryList record {
     # Number of API categories returned.
     int count?;
@@ -531,6 +514,11 @@ public type QueryParameterCondition record {
     string parameterValue;
 };
 
+public type Policies_import_body record {
+    # Json File
+    string file;
+};
+
 # Blocking Conditions Status
 public type BlockingConditionStatus record {
     # Id of the blocking condition
@@ -539,14 +527,18 @@ public type BlockingConditionStatus record {
     boolean conditionStatus;
 };
 
-public type SubscriptionThrottlePolicyPermission record {
-    string permissionType;
-    string[] roles;
-};
-
 public type KeyManagerEndpoint record {
     string name;
     string value;
+};
+
+public type Settings_keyManagerConfiguration record {
+    string 'type?;
+    string displayName?;
+    string defaultConsumerKeyClaim?;
+    string defaultScopesClaim?;
+    KeyManagerConfiguration[] configurations?;
+    KeyManagerConfiguration[] endpointConfigurations?;
 };
 
 public type WorkflowList record {
@@ -565,6 +557,13 @@ public type RoleAliasList record {
     # The number of role aliases
     int count?;
     RoleAlias[] list?;
+};
+
+public type PolicyList record {
+    # Number of Policies returned.
+    int count?;
+    Policy[] list?;
+    Pagination pagination?;
 };
 
 public type ApplicationList record {
@@ -593,6 +592,11 @@ public type RequestCountLimit record {
     int requestCount;
 };
 
+public type KeyManager_certificates record {
+    string 'type?;
+    string value?;
+};
+
 public type KeyManagerInfo record {
     string id?;
     string name;
@@ -601,16 +605,6 @@ public type KeyManagerInfo record {
     boolean enabled?;
     # The type of the tokens to be used (exchanged or without exchanged). Accepted values are EXCHANGED, DIRECT and BOTH.
     string tokenType = "DIRECT";
-};
-
-public type KeymanagerCertificates record {
-    string 'type?;
-    string value?;
-};
-
-public type PoliciesImportBody record {
-    # Json File
-    string file;
 };
 
 public type WorkflowInfo record {
@@ -629,6 +623,13 @@ public type WorkflowInfo record {
     string description?;
 };
 
+public type ExportPolicy record {
+    string 'type?;
+    string subtype?;
+    string 'version?;
+    record {} data?;
+};
+
 public type Error record {
     # Error code
     int code;
@@ -644,7 +645,7 @@ public type Error record {
 };
 
 public type AdvancedThrottlePolicy record {
-    *ThrottlePolicy;
+    *Policy;
     ThrottleLimit defaultLimit;
     # Group of conditions which allow adding different parameter conditions to the throttling limit.
     ConditionalGroup[] conditionalGroups?;
@@ -671,6 +672,12 @@ public type GraphQLQuery record {
     int graphQLMaxDepth?;
 };
 
+public type PolicyDetailsList record {
+    # Number of Throttling Policies returned.
+    int count?;
+    PolicyDetails[] list?;
+};
+
 public type IPCondition record {
     # Type of the IP condition. Allowed values are "IPRANGE" and "IPSPECIFIC"
     string ipConditionType?;
@@ -683,7 +690,7 @@ public type IPCondition record {
 };
 
 public type AdvancedThrottlePolicyInfo record {
-    *ThrottlePolicy;
+    *Policy;
     ThrottleLimit defaultLimit?;
 };
 
@@ -703,7 +710,7 @@ public type CustomUrlInfo record {
     string tenantDomain?;
     string tenantAdminUsername?;
     boolean enabled?;
-    CustomurlinfoDevportal devPortal?;
+    CustomUrlInfo_devPortal devPortal?;
 };
 
 public type WorkflowResponse record {
@@ -738,13 +745,6 @@ public type APICategory record {
     @constraint:String {maxLength: 1024}
     string description?;
     int numberOfAPIs?;
-};
-
-public type ExportThrottlePolicy record {
-    string 'type?;
-    string subtype?;
-    string 'version?;
-    record {} data?;
 };
 
 public type BandwidthLimit record {
