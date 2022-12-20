@@ -68,7 +68,7 @@ You can install Testkube on your command line to create, manage, and run your AP
 
 
 If you are interested please read more about 
-[running APK postmen tests USING Testkube](https://testkube.io/blog/api-testing-in-kubernetes-with-postman).
+[running APK postmen tests using Testkube](https://testkube.io/blog/api-testing-in-kubernetes-with-postman).
 
 
 
