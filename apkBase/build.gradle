@@ -1,8 +1,23 @@
 plugins {
-    id 'net.researchgate.release' version '3.0.2'
+    id 'net.researchgate.release' version '2.8.0'
 }
 apply from: "$projectDir/../common-gradle-scripts/docker.gradle"
 
-tasks.named('build').configure {
+task build{
     dependsOn docker_build
+}
+
+
+allprojects {
+    group = project.group
+    version = project.version
+}
+
+release {
+    tagTemplate = 'apkbase-$version'
+
+    git {
+        requireBranch= "main"
+        pushToRemote= "origin"
+    }
 }

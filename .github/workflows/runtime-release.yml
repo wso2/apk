@@ -28,19 +28,14 @@ jobs:
         run: |
           git config --global user.name ${{ secrets.WSO2_BOT_USER }}
           git config --global user.email ${{ secrets.WSO2_BOT_EMAIL }}
-      - name: Checkout Product-APIM
+      - name: Checkout apk-repo
         uses: actions/checkout@v3
         with:
           fetch-depth: "0"
           path: apk-repo
-      - name: Build APKBase Temporarily
-        run: |
-          cd apk-repo/apkBase
-          gradle build
-
       - name: Run Gradle build
         run: |
           cd apk-repo/runtime/runtime-domain-service
-          gradle release -Prelease.useAutomaticVersion=true -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }}
+          gradle release -Prelease.useAutomaticVersion=true -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -PmultiArch=true
           gradle :ballerina:commit_toml_files
           git push

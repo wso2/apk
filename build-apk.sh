@@ -3,8 +3,6 @@ set -e
 #All relative paths etc designed from root directory. Users can customize this as per demand. Ex: If you wish to 
 #build and run runtime domain service then can build it alone and do deployment.
 current_dir=$PWD;
-#Component build sample. You can build any component with this
-cd apkBase;gradle build;
 cd $current_dir;
 cd backoffice/backoffice-domain-service;gradle build;
 cd $current_dir;
