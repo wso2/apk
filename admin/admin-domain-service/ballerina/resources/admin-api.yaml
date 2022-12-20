@@ -104,21 +104,21 @@ info:
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
-  version: v3
+  version: v1
 servers:
-  - url: https://apis.wso2.com/api/am/admin/v3
+  - url: https://apis.wso2.com/api/am/admin/v1
 paths:
   ######################################################
   # The "Content Search Results" Throttling Policies
   ######################################################
-  /throttling/policies/search:
+  /policies/search:
     get:
       tags:
         - Unified Search
       summary: |
-        Retrieve/Search Throttling Policies
+        Retrieve/Search Policies
       description: |
-        This operation provides you a list of available Throttling Policies qualifying the given keyword match.
+        This operation provides you a list of available Policies qualifying the given keyword match.
       parameters:
         - name: query
           in: query
@@ -131,7 +131,7 @@ paths:
         200:
           description: |
             OK.
-            List of qualifying Throttling Policies is returned.
+            List of qualifying Policies is returned.
           headers:
             Content-Type:
               description: The content type of the body.
@@ -140,7 +140,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ThrottlePolicyDetailsList'
+                $ref: '#/components/schemas/PolicyDetailsList'
       security:
         - OAuth2Security:
             - apim:admin
@@ -150,18 +150,18 @@ paths:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/v3/throttling/policies/search?query=type:sub"'
-      operationId: throttlingPolicySearch
+      operationId: policySearch
 
   ######################################################
-  # The "Application Throttling Policy Collection" resource API
+  # The "Application Rate Plans Collection" resource API
   ######################################################
-  /throttling/policies/application:
+  /application-rate-plans:
     get:
       tags:
-        - Application Policy (Collection)
-      summary: Get all Application Throttling Policies
+        - Application Rate Plan (Collection)
+      summary: Get all Application Rate Plans
       description: |
-        Retrieves all existing application throttling policies.
+        Retrieves all existing application rate plans.
       parameters:
         - $ref: '#/components/parameters/Accept'
       responses:
@@ -178,7 +178,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApplicationThrottlePolicyList'
+                $ref: '#/components/schemas/ApplicationRatePlanList'
         406:
           $ref: '#/components/responses/NotAcceptable'
       security:
@@ -188,15 +188,15 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/v3/throttling/policies/application"'
-      operationId: getApplicationThrottlePolicies
+          "https://127.0.0.1:9443/api/am/admin/application-rate-plans"'
+      operationId: getApplicationRatePlans
 
     post:
       tags:
-        - Application Policy (Collection)
-      summary: Add an Application Throttling Policy
+        - Application Rate Plan (Collection)
+      summary: Add an Application Rate Plan
       description: |
-        This operation can be used to add a new application level throttling policy.
+        This operation can be used to add a new application level rate plan.
       parameters:
         - $ref: '#/components/parameters/Content-Type'
       requestBody:
@@ -205,7 +205,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ApplicationThrottlePolicy'
+              $ref: '#/components/schemas/ApplicationRatePlan'
         required: true
       responses:
         201:
@@ -227,14 +227,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApplicationThrottlePolicy'
+                $ref: '#/components/schemas/ApplicationRatePlan'
               example:
                 policyId: e0fd4a15-969e-4056-94c8-8a7b56f8103f
                 policyName: 20PerMin
                 displayName: 20PerMin
                 description: Allows 20 request per minute
                 isDeployed: true
-                type: ApplicationThrottlePolicy
                 defaultLimit:
                   type: REQUESTCOUNTLIMIT
                   requestCount:
@@ -252,26 +251,26 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v3/throttling/policies/application"'
-      operationId: addApplicationThrottlePolicy
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/application-rate-plans"'
+      operationId: addApplicationRatePlan
 
   ######################################################
-  # The "Individual Application Throttling Policy" resource API
+  # The "Individual Application Rate Plan" resource API
   ######################################################
-  /throttling/policies/application/{policyId}:
+  /application-rate-plans/{planId}:
     get:
       tags:
-        - Application Policy (Individual)
-      summary: Get an Application Throttling Policy
+        - Application Rate Plan (Individual)
+      summary: Get an Application Rate Plan
       description: |
-        Retrieves an application throttling policy.
+        Retrieves an application rate plan.
       parameters:
-        - $ref: '#/components/parameters/policyId'
+        - $ref: '#/components/parameters/planId'
       responses:
         200:
           description: |
             OK.
-            Policy returned
+            Plan returned
           headers:
             Content-Type:
               description: |
@@ -281,14 +280,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApplicationThrottlePolicy'
+                $ref: '#/components/schemas/ApplicationRatePlan'
               example:
                 policyId: e0fd4a15-969e-4056-94c8-8a7b56f8103f
                 policyName: 20PerMin
                 displayName: 20PerMin
                 description: Allows 20 request per minute
                 isDeployed: true
-                type: ApplicationThrottlePolicy
                 defaultLimit:
                   type: REQUESTCOUNTLIMIT
                   requestCount:
@@ -306,17 +304,17 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/v3/throttling/policies/application/4e098fff-7f94-459a-981f-d257332f69d0"'
-      operationId: getApplicationThrottlePolicyById
+          "https://127.0.0.1:9443/api/am/admin/application-rate-plans/4e098fff-7f94-459a-981f-d257332f69d0"'
+      operationId: getApplicationRatePlanById
 
     put:
       tags:
-        - Application Policy (Individual)
-      summary: Update an Application Throttling policy
+        - Application Rate Plan (Individual)
+      summary: Update an Application Rate Plan
       description: |
-        Updates an existing application level throttling policy. Upon a succesfull update, you will receive the updated application policy as the response.
+        Updates an existing application level rate plan. Upon a succesfull update, you will receive the updated application plan as the response.
       parameters:
-        - $ref: '#/components/parameters/policyId'
+        - $ref: '#/components/parameters/planId'
         - $ref: '#/components/parameters/Content-Type'
       requestBody:
         description: |
@@ -324,13 +322,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ApplicationThrottlePolicy'
+              $ref: '#/components/schemas/ApplicationRatePlan'
         required: true
       responses:
         200:
           description: |
             OK.
-            Policy updated.
+            Plan updated.
           headers:
             Location:
               description: |
@@ -345,14 +343,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApplicationThrottlePolicy'
+                $ref: '#/components/schemas/ApplicationRatePlan'
               example:
                 policyId: e0fd4a15-969e-4056-94c8-8a7b56f8103f
                 policyName: 20PerMin
                 displayName: 20PerMin
                 description: Allows 20 request per minute
                 isDeployed: true
-                type: ApplicationThrottlePolicy
                 defaultLimit:
                   type: REQUESTCOUNTLIMIT
                   requestCount:
@@ -370,17 +367,17 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v3/throttling/policies/application/4e098fff-7f94-459a-981f-d257332f69d0"'
-      operationId: updateApplicationThrottlePolicy
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/application-rate-plans/4e098fff-7f94-459a-981f-d257332f69d0"'
+      operationId: updateApplicationRatePlan
 
     delete:
       tags:
-        - Application Policy (Individual)
-      summary: Delete an Application Throttling policy
+        - Application Rate Plan (Individual)
+      summary: Delete an Application Rate Plan
       description: |
-        Deletes an application level throttling policy.
+        Deletes an application level rate plan.
       parameters:
-        - $ref: '#/components/parameters/policyId'
+        - $ref: '#/components/parameters/planId'
       responses:
         200:
           description: |
@@ -397,27 +394,27 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/v3/throttling/policies/application/4e098fff-7f94-459a-981f-d257332f69d0"'
-      operationId: removeApplicationThrottlePolicy
+          "https://127.0.0.1:9443/api/am/admin/application-rate-plans/4e098fff-7f94-459a-981f-d257332f69d0"'
+      operationId: removeApplicationRatePlan
 
 
   ######################################################
-  # The "Subscription Throttling Policy Collection" resource API
+  # The "Business Plans Collection" resource API
   ######################################################
-  /throttling/policies/subscription:
+  /business-plans:
     get:
       tags:
-        - Subscription Policy (Collection)
-      summary: Get all Subscription Throttling Policies
+        - Business Plan (Collection)
+      summary: Get all Business Plans
       description: |
-        This operation can be used to retrieve all Subscription level throttling policies.
+        This operation can be used to retrieve all Business Plans.
       parameters:
         - $ref: '#/components/parameters/Accept'
       responses:
         200:
           description: |
             OK.
-            Policies returned
+            Plans returned
           headers:
             Content-Type:
               description: |
@@ -427,7 +424,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SubscriptionThrottlePolicyList'
+                $ref: '#/components/schemas/BusinessPlanList'
         406:
           $ref: '#/components/responses/NotAcceptable'
       security:
@@ -437,24 +434,24 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/v3/throttling/policies/subscription"'
-      operationId: getAllSubscriptionThrottlePolicies
+          "https://127.0.0.1:9443/api/am/admin/business-plans"'
+      operationId: getAllBusinessPlans
 
     post:
       tags:
-        - Subscription Policy (Collection)
-      summary: Add a Subscription Throttling Policy
+        -  Business Plan (Collection)
+      summary: Add a Business Plan
       description: |
-        This operation can be used to add a Subscription level throttling policy specifying the details of the policy in the payload.
+        This operation can be used to add a  Business Plan specifying the details of the plan in the payload.
       parameters:
         - $ref: '#/components/parameters/Content-Type'
       requestBody:
         description: |
-          Subscripion level policy object that should to be added
+           Business Plan object that should to be added
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SubscriptionThrottlePolicy'
+              $ref: '#/components/schemas/BusinessPlan'
         required: true
       responses:
         201:
@@ -465,7 +462,7 @@ paths:
           headers:
             Location:
               description: |
-                Location of the newly created Policy object.
+                Location of the newly created Plan object.
               schema:
                 type: string
             Content-Type:
@@ -476,15 +473,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SubscriptionThrottlePolicy'
+                $ref: '#/components/schemas/BusinessPlan'
               example:
                 policyId: 78c3ebff-176d-40d8-9377-fb3276528291
                 policyName: Gold
                 displayName: Gold
                 description: Allows 5000 requests per minute
                 isDeployed: true
-                graphQLMaxComplexity: 0
-                graphQLMaxDepth: 0
                 defaultLimit:
                   type: REQUESTCOUNTLIMIT
                   requestCount:
@@ -506,26 +501,26 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v3/throttling/policies/subscription"'
-      operationId: addSubscriptionThrottlePolicy
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/business-plans"'
+      operationId: addBusinessPlan
 
   ######################################################
-  # The "Individual Subscription Throttling Policy" resource API
+  # The "Individual Business Plan" resource API
   ######################################################
-  /throttling/policies/subscription/{policyId}:
+  /business-plans/{planId}:
     get:
       tags:
-        - Subscription Policy (Individual)
-      summary: Get a Subscription Policy
+        - Business Plan (Individual)
+      summary: Get a Business Plan
       description: |
-        This operation can be used to retrieves subscription level throttling policy by specifying the Id of the policy as a path paramter
+        This operation can be used to retrieves Business Plan by specifying the Id of the plan as a path paramter
       parameters:
-        - $ref: '#/components/parameters/policyId'
+        - $ref: '#/components/parameters/planId'
       responses:
         200:
           description: |
             OK.
-            Policy returned
+            Plan returned
           headers:
             Content-Type:
               description: |
@@ -535,15 +530,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SubscriptionThrottlePolicy'
+                $ref: '#/components/schemas/BusinessPlan'
               example:
                 policyId: 78c3ebff-176d-40d8-9377-fb3276528291
                 policyName: Gold
                 displayName: Gold
                 description: Allows 5000 requests per minute
                 isDeployed: true
-                graphQLMaxComplexity: 0
-                graphQLMaxDepth: 0
                 defaultLimit:
                   type: REQUESTCOUNTLIMIT
                   requestCount:
@@ -565,31 +558,31 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/v3/throttling/policies/subscription/c948c723-71dd-4d50-8c77-0a0e99c8cbb1"'
-      operationId: getSubscriptionThrottlePolicyById
+          "https://127.0.0.1:9443/api/am/admin/business-plans/c948c723-71dd-4d50-8c77-0a0e99c8cbb1"'
+      operationId: getBusinessPlanById
 
     put:
       tags:
-        - Subscription Policy (Individual)
-      summary: Update a Subscription Policy
+        - Business Plan (Individual)
+      summary: Update a Business Plan
       description: |
-        Updates an existing subscription level throttling policy.
+        Updates an existing Business Plan.
       parameters:
-        - $ref: '#/components/parameters/policyId'
+        - $ref: '#/components/parameters/planId'
         - $ref: '#/components/parameters/Content-Type'
       requestBody:
         description: |
-          Policy object that needs to be modified
+          Plan object that needs to be modified
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SubscriptionThrottlePolicy'
+              $ref: '#/components/schemas/BusinessPlan'
         required: true
       responses:
         200:
           description: |
             OK.
-            Policy updated.
+            Plan updated.
           headers:
             Location:
               description: |
@@ -604,15 +597,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SubscriptionThrottlePolicy'
+                $ref: '#/components/schemas/BusinessPlan'
               example:
                 policyId: 78c3ebff-176d-40d8-9377-fb3276528291
                 policyName: Gold
                 displayName: Gold
                 description: Allows 5000 requests per minute
                 isDeployed: true
-                graphQLMaxComplexity: 0
-                graphQLMaxDepth: 0
                 defaultLimit:
                   type: REQUESTCOUNTLIMIT
                   requestCount:
@@ -634,17 +625,17 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/v3/throttling/policies/subscription/c948c723-71dd-4d50-8c77-0a0e99c8cbb1"'
-      operationId: updateSubscriptionThrottlePolicy
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/business-plans/c948c723-71dd-4d50-8c77-0a0e99c8cbb1"'
+      operationId: updateBusinessPlan
 
     delete:
       tags:
-        - Subscription Policy (Individual)
-      summary: Delete a Subscription Policy
+        - Business Plan (Individual)
+      summary: Delete a Business Plan
       description: |
-        This operation can be used to delete a subscription level throttling policy by specifying the Id of the policy as a path paramter.
+        This operation can be used to delete a business plan by specifying the Id of the plan as a path paramter.
       parameters:
-        - $ref: '#/components/parameters/policyId'
+        - $ref: '#/components/parameters/planId'
       responses:
         200:
           description: |
@@ -661,8 +652,8 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/v3/throttling/policies/subscription/c948c723-71dd-4d50-8c77-0a0e99c8cbb1"'
-      operationId: removeSubscriptionThrottlePolicy
+          "https://127.0.0.1:9443/api/am/admin/business-plans/c948c723-71dd-4d50-8c77-0a0e99c8cbb1"'
+      operationId: removeBusinessPlan
 
   ######################################################
   # The "Advanced Throttling Policy Collection" resource API
@@ -968,7 +959,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ExportThrottlePolicy'
+                $ref: '#/components/schemas/ExportPolicy'
               example:
                 type: rate-limiting policy
                 subtype: application
@@ -1065,7 +1056,7 @@ paths:
   ######################################################
   # The "Deny Policy Collection" resource API
   ######################################################
-  /throttling/deny-policies:
+  /deny-policies:
     get:
       tags:
         - Deny Policies (Collection)
@@ -1155,7 +1146,7 @@ paths:
   ######################################################
   # The "Individual Deny Policy" resource API
   ######################################################
-  /throttling/deny-policy/{conditionId}:
+  /deny-policy/{conditionId}:
     get:
       tags:
         - Deny Policy (Individual)
@@ -2773,22 +2764,22 @@ components:
           type: string
           description: |
             Description about individual errors occurred
-    ThrottlePolicyList:
-      title: Throttle Policy List
+    PolicyList:
+      title: Policy List
       type: object
       properties:
         count:
           type: integer
           description: |
-            Number of Throttling Policies returned.
+            Number of Policies returned.
           example: 1
         list:
           type: array
           items:
-            $ref: '#/components/schemas/ThrottlePolicy'
+            $ref: '#/components/schemas/Policy'
         pagination:
           $ref: '#/components/schemas/Pagination'
-    ThrottlePolicyDetailsList:
+    PolicyDetailsList:
       title: Policy List
       type: object
       properties:
@@ -2800,8 +2791,8 @@ components:
         list:
           type: array
           items:
-            $ref: '#/components/schemas/ThrottlePolicyDetails'
-    ThrottlePolicyDetails:
+            $ref: '#/components/schemas/PolicyDetails'
+    PolicyDetails:
       title: Generic Policy
       required:
         - policyName
@@ -2840,7 +2831,7 @@ components:
         type:
           type: string
           description: Indicates the type of throttle policy
-    ThrottlePolicy:
+    Policy:
       title: Generic Throttling Policy
       required:
         - policyName
@@ -2876,8 +2867,8 @@ components:
           description: Indicates the type of throttle policy
       discriminator:
         propertyName: type
-    ExportThrottlePolicy:
-      title: Export Throttling Policy
+    ExportPolicy:
+      title: Export Policy
       type : object
       properties:
         type:
@@ -2891,7 +2882,7 @@ components:
     AdvancedThrottlePolicyInfo:
       title: Advanced Throttling Policy
       allOf:
-        - $ref: '#/components/schemas/ThrottlePolicy'
+        - $ref: '#/components/schemas/Policy'
         - type: object
           properties:
             defaultLimit:
@@ -2899,7 +2890,7 @@ components:
     AdvancedThrottlePolicy:
       title: Advanced Throttling Policy
       allOf:
-        - $ref: '#/components/schemas/ThrottlePolicy'
+        - $ref: '#/components/schemas/Policy'
         - required:
             - defaultLimit
           type: object
@@ -2925,33 +2916,33 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AdvancedThrottlePolicyInfo'
-    ApplicationThrottlePolicy:
+    ApplicationRatePlan:
       title: Application Throttling Policy
       allOf:
-        - $ref: '#/components/schemas/ThrottlePolicy'
+        - $ref: '#/components/schemas/Policy'
         - required:
             - defaultLimit
           type: object
           properties:
             defaultLimit:
               $ref: '#/components/schemas/ThrottleLimit'
-    ApplicationThrottlePolicyList:
-      title: Application Level Throttling Policy List
+    ApplicationRatePlanList:
+      title: Application level Rate Plan List
       type: object
       properties:
         count:
           type: integer
           description: |
-            Number of Application Throttling Policies returned.
+            Number of Application Rate Plans returned.
           example: 1
         list:
           type: array
           items:
-            $ref: '#/components/schemas/ApplicationThrottlePolicy'
-    SubscriptionThrottlePolicy:
-      title: Subscription Throttling Policy
+            $ref: '#/components/schemas/ApplicationRatePlan'
+    BusinessPlan:
+      title: Business Plan
       allOf:
-        - $ref: '#/components/schemas/ThrottlePolicy'
+        - $ref: '#/components/schemas/Policy'
         - $ref: '#/components/schemas/GraphQLQuery'
         - required:
             - defaultLimit
@@ -2991,9 +2982,9 @@ components:
                 define whether this is Paid or a Free plan. Allowed values are FREE or COMMERCIAL.
               example: FREE
             permissions:
-              $ref: '#/components/schemas/SubscriptionThrottlePolicyPermission'
-    SubscriptionThrottlePolicyPermission:
-      title: SubscriptionThrottlePolicyPermission
+              $ref: '#/components/schemas/BusinessPlanPermission'
+    BusinessPlanPermission:
+      title: Business Plan Permission
       required:
         - permissionType
         - roles
@@ -3023,19 +3014,19 @@ components:
           type: integer
           description: Maximum Depth of the GraphQL query
           example: 10
-    SubscriptionThrottlePolicyList:
-      title: Subscription Level Throttling Policy List
+    BusinessPlanList:
+      title: Business Plan List
       type: object
       properties:
         count:
           type: integer
           description: |
-            Number of Subscription Throttling Policies returned.
+            Number of Business Plans returned.
           example: 1
         list:
           type: array
           items:
-            $ref: '#/components/schemas/SubscriptionThrottlePolicy'
+            $ref: '#/components/schemas/BusinessPlan'
     ConditionalGroup:
       title: Conditional Groups for Throttling
       required:
@@ -4488,7 +4479,15 @@ components:
       name: policyId
       in: path
       description: |
-        Thorttle policy UUID
+        Policy UUID
+      required: true
+      schema:
+        type: string
+    planId:
+      name: planId
+      in: path
+      description: |
+        Policy UUID
       required: true
       schema:
         type: string
