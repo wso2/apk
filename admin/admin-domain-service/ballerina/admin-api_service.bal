@@ -23,7 +23,7 @@ import ballerina/lang.value;
 service /api/am/admin on ep0 {
     // resource function get policies/search(string? query) returns PolicyDetailsList {
     // }
-    resource function get 'application\-rate\-plans(@http:Header string? accept = "application/json") returns ApplicationRatePlanList|NotAcceptableError|InternalServerErrorError|error {
+    isolated resource function get 'application\-rate\-plans(@http:Header string? accept = "application/json") returns ApplicationRatePlanList|NotAcceptableError|InternalServerErrorError|error {
         string?|ApplicationRatePlanList|error appPolicyList = getApplicationUsagePlans();
         if appPolicyList is string {
             json j = check value:fromJsonString(appPolicyList);
@@ -37,7 +37,7 @@ service /api/am/admin on ep0 {
             return internalError;
         }
     }
-    resource function post 'application\-rate\-plans(@http:Payload ApplicationRatePlan payload, @http:Header string 'content\-type = "application/json") returns CreatedApplicationRatePlan|BadRequestError|UnsupportedMediaTypeError|InternalServerErrorError|error {
+    isolated resource function post 'application\-rate\-plans(@http:Payload ApplicationRatePlan payload, @http:Header string 'content\-type = "application/json") returns CreatedApplicationRatePlan|BadRequestError|UnsupportedMediaTypeError|InternalServerErrorError|error {
         string?|ApplicationRatePlan|error createdAppPol = addApplicationUsagePlan(payload);
         if createdAppPol is string {
             json j = check value:fromJsonString(createdAppPol);
@@ -52,7 +52,7 @@ service /api/am/admin on ep0 {
             return internalError;
         }
     }
-    resource function get 'application\-rate\-plans/[string planId]() returns ApplicationRatePlan|NotFoundError|NotAcceptableError|InternalServerErrorError|error {
+    isolated resource function get 'application\-rate\-plans/[string planId]() returns ApplicationRatePlan|NotFoundError|NotAcceptableError|InternalServerErrorError|error {
         string?|ApplicationRatePlan|error appPolicy = getApplicationUsagePlanById(planId);
         if appPolicy is string {
             json j = check value:fromJsonString(appPolicy);
@@ -66,7 +66,7 @@ service /api/am/admin on ep0 {
             return internalError;
         }
     }
-    resource function put 'application\-rate\-plans/[string planId](@http:Payload ApplicationRatePlan payload, @http:Header string 'content\-type = "application/json") returns ApplicationRatePlan|BadRequestError|NotFoundError|InternalServerErrorError|error {
+    isolated resource function put 'application\-rate\-plans/[string planId](@http:Payload ApplicationRatePlan payload, @http:Header string 'content\-type = "application/json") returns ApplicationRatePlan|BadRequestError|NotFoundError|InternalServerErrorError|error {
         string?|ApplicationRatePlan|NotFoundError|error appPolicy = updateApplicationUsagePlan(planId, payload);
         if appPolicy is string {
             json j = check value:fromJsonString(appPolicy);
@@ -80,7 +80,7 @@ service /api/am/admin on ep0 {
             return internalError;
         }
     }
-    resource function delete 'application\-rate\-plans/[string planId]() returns http:Ok|NotFoundError|InternalServerErrorError|error {
+    isolated resource function delete 'application\-rate\-plans/[string planId]() returns http:Ok|NotFoundError|InternalServerErrorError|error {
         string|error? ex = removeApplicationUsagePlan(planId);
         if ex is error {
             InternalServerErrorError internalError = {body: {code: 90900, message: "Internal Error while deleting Application Rate Plan By Id"}};
@@ -89,7 +89,7 @@ service /api/am/admin on ep0 {
             return http:OK;
         }
     }
-    resource function get 'business\-plans(@http:Header string? accept = "application/json") returns BusinessPlanList|NotAcceptableError|InternalServerErrorError|error {
+    isolated resource function get 'business\-plans(@http:Header string? accept = "application/json") returns BusinessPlanList|NotAcceptableError|InternalServerErrorError|error {
         string?|BusinessPlanList|error subPolicyList = getBusinessPlans();
         if subPolicyList is string {
             json j = check value:fromJsonString(subPolicyList);
@@ -103,7 +103,7 @@ service /api/am/admin on ep0 {
             return internalError;
         }
     }
-    resource function post 'business\-plans(@http:Payload BusinessPlan payload, @http:Header string 'content\-type = "application/json") returns CreatedBusinessPlan|BadRequestError|UnsupportedMediaTypeError|InternalServerErrorError|error {
+    isolated resource function post 'business\-plans(@http:Payload BusinessPlan payload, @http:Header string 'content\-type = "application/json") returns CreatedBusinessPlan|BadRequestError|UnsupportedMediaTypeError|InternalServerErrorError|error {
         string?|BusinessPlan|error createdSubPol = addBusinessPlan(payload);
         if createdSubPol is string {
             json j = check value:fromJsonString(createdSubPol);
@@ -118,7 +118,7 @@ service /api/am/admin on ep0 {
             return internalError;
         }
     }
-    resource function get 'business\-plans/[string planId]() returns BusinessPlan|NotFoundError|NotAcceptableError|InternalServerErrorError|error {
+    isolated resource function get 'business\-plans/[string planId]() returns BusinessPlan|NotFoundError|NotAcceptableError|InternalServerErrorError|error {
         string?|BusinessPlan|error subPolicy = getBusinessPlanById(planId);
         if subPolicy is string {
             json j = check value:fromJsonString(subPolicy);
@@ -132,7 +132,7 @@ service /api/am/admin on ep0 {
             return internalError;
         }
     }
-    resource function put 'business\-plans/[string planId](@http:Payload BusinessPlan payload, @http:Header string 'content\-type = "application/json") returns BusinessPlan|BadRequestError|NotFoundError|InternalServerErrorError|error {
+    isolated resource function put 'business\-plans/[string planId](@http:Payload BusinessPlan payload, @http:Header string 'content\-type = "application/json") returns BusinessPlan|BadRequestError|NotFoundError|InternalServerErrorError|error {
         string?|BusinessPlan|NotFoundError|error  subPolicy = updateBusinessPlan(planId, payload);
         if subPolicy is string {
             json j = check value:fromJsonString(subPolicy);
@@ -145,7 +145,7 @@ service /api/am/admin on ep0 {
             return internalError;
         }
     }
-    resource function delete 'business\-plans/[string planId]() returns http:Ok|NotFoundError|InternalServerErrorError|error{
+    isolated resource function delete 'business\-plans/[string planId]() returns http:Ok|NotFoundError|InternalServerErrorError|error{
         string|error? ex = removeBusinessPlan(planId);
         if ex is error {
             InternalServerErrorError internalError = {body: {code: 90900, message: "Internal Error while deleting Business Plan by Id"}};
@@ -168,7 +168,7 @@ service /api/am/admin on ep0 {
     // }
     // resource function post throttling/policies/'import(boolean? overwrite, @http:Payload json payload) returns http:Ok|ForbiddenError|NotFoundError|ConflictError|InternalServerErrorError {
     // }
-    resource function get 'deny\-policies(@http:Header string? accept = "application/json") returns BlockingConditionList|NotAcceptableError|InternalServerErrorError|error {
+    isolated resource function get 'deny\-policies(@http:Header string? accept = "application/json") returns BlockingConditionList|NotAcceptableError|InternalServerErrorError|error {
         string?|BlockingConditionList|error conditionList = getAllDenyPolicies();
         if conditionList is string {
             json j = check value:fromJsonString(conditionList);
@@ -181,7 +181,7 @@ service /api/am/admin on ep0 {
             return internalError;
         }
     }
-    resource function post 'deny\-policies(@http:Payload BlockingCondition payload, @http:Header string 'content\-type = "application/json") returns CreatedBlockingCondition|BadRequestError|UnsupportedMediaTypeError|InternalServerErrorError|error {
+    isolated resource function post 'deny\-policies(@http:Payload BlockingCondition payload, @http:Header string 'content\-type = "application/json") returns CreatedBlockingCondition|BadRequestError|UnsupportedMediaTypeError|InternalServerErrorError|error {
         string?|BlockingCondition|error createdDenyPol = addDenyPolicy(payload);
         if createdDenyPol is string {
             json j = check value:fromJsonString(createdDenyPol);
@@ -196,7 +196,7 @@ service /api/am/admin on ep0 {
             return internalError;
         }
     }
-    resource function get 'deny\-policy/[string conditionId]() returns BlockingCondition|NotFoundError|NotAcceptableError|InternalServerErrorError|error {
+    isolated resource function get 'deny\-policy/[string conditionId]() returns BlockingCondition|NotFoundError|NotAcceptableError|InternalServerErrorError|error {
         string?|BlockingCondition|error denyPolicy = getDenyPolicyById(conditionId);
         if denyPolicy is string {
             json j = check value:fromJsonString(denyPolicy);
@@ -210,7 +210,7 @@ service /api/am/admin on ep0 {
             return internalError;
         }
     }
-    resource function delete 'deny\-policy/[string conditionId]() returns http:Ok|NotFoundError|InternalServerErrorError|error {
+    isolated resource function delete 'deny\-policy/[string conditionId]() returns http:Ok|NotFoundError|InternalServerErrorError|error {
         string|error? ex = removeDenyPolicy(conditionId);
         if ex is error {
             InternalServerErrorError internalError = {body: {code: 90900, message: "Internal Error while deleting Deny Policy by Id"}};
@@ -219,7 +219,7 @@ service /api/am/admin on ep0 {
             return http:OK;
         }
     }
-    resource function patch 'deny\-policy/[string conditionId](@http:Payload BlockingConditionStatus payload, @http:Header string 'content\-type = "application/json") returns BlockingCondition|BadRequestError|NotFoundError|InternalServerErrorError|error {
+    isolated resource function patch 'deny\-policy/[string conditionId](@http:Payload BlockingConditionStatus payload, @http:Header string 'content\-type = "application/json") returns BlockingCondition|BadRequestError|NotFoundError|InternalServerErrorError|error {
         string?|BlockingCondition|NotFoundError|error updatedPolicy = updateDenyPolicy(conditionId, payload);
         if updatedPolicy is string {
             json j = check value:fromJsonString(updatedPolicy);

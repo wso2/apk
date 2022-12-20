@@ -22,7 +22,7 @@ import ballerina/sql;
 import ballerina/http;
 
 configurable DatasourceConfiguration datasourceConfiguration = ?;
-jdbc:Client|sql:Error dbClient;
+final jdbc:Client|sql:Error dbClient;
 configurable ThrottlingConfiguration throttleConfig = ?;
 
 configurable int ADMIN_PORT = 9443;
@@ -45,10 +45,7 @@ function init() {
     }
 }
 
-public function getConnection() returns jdbc:Client | error {
-    dbClient = new(datasourceConfiguration.url, datasourceConfiguration.username, 
-        datasourceConfiguration.password,
-        connectionPool = { maxOpenConnections: datasourceConfiguration.maxPoolSize });
+public isolated function getConnection() returns jdbc:Client | error {
     return dbClient;  
  }
 

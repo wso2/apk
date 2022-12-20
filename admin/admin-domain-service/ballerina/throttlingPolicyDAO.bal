@@ -20,7 +20,7 @@ import ballerina/log;
 import ballerinax/java.jdbc;
 import ballerina/sql;
 
-public function addApplicationUsagePlanDAO(ApplicationRatePlan atp) returns string?|ApplicationRatePlan|error {
+public isolated function addApplicationUsagePlanDAO(ApplicationRatePlan atp) returns string?|ApplicationRatePlan|error {
     jdbc:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
@@ -42,7 +42,7 @@ public function addApplicationUsagePlanDAO(ApplicationRatePlan atp) returns stri
     }
 }
 
-public function getApplicationUsagePlanByIdDAO(string policyId) returns string?|ApplicationRatePlan|error {
+public isolated function getApplicationUsagePlanByIdDAO(string policyId) returns string?|ApplicationRatePlan|error {
     jdbc:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
@@ -64,7 +64,7 @@ public function getApplicationUsagePlanByIdDAO(string policyId) returns string?|
     }
 }
 
-public function getApplicationUsagePlansDAO(string org) returns ApplicationRatePlan[]|error? {
+public isolated function getApplicationUsagePlansDAO(string org) returns ApplicationRatePlan[]|error? {
     jdbc:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
@@ -78,7 +78,7 @@ public function getApplicationUsagePlansDAO(string org) returns ApplicationRateP
     }
 }
 
-public function updateApplicationUsagePlanDAO(ApplicationRatePlan atp) returns string?|ApplicationRatePlan|error {
+public isolated function updateApplicationUsagePlanDAO(ApplicationRatePlan atp) returns string?|ApplicationRatePlan|error {
     jdbc:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
@@ -99,7 +99,7 @@ public function updateApplicationUsagePlanDAO(ApplicationRatePlan atp) returns s
     }
 }
 
-public function deleteApplicationUsagePlanDAO(string policyId) returns string?|error {
+public isolated function deleteApplicationUsagePlanDAO(string policyId) returns string?|error {
     jdbc:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
@@ -117,7 +117,7 @@ public function deleteApplicationUsagePlanDAO(string policyId) returns string?|e
     }
 }
 
-public function addBusinessPlanDAO(BusinessPlan stp) returns string?|BusinessPlan|error {
+public isolated function addBusinessPlanDAO(BusinessPlan stp) returns string?|BusinessPlan|error {
     jdbc:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
@@ -142,7 +142,7 @@ public function addBusinessPlanDAO(BusinessPlan stp) returns string?|BusinessPla
     }
 }
 
-public function getBusinessPlanByIdDAO(string policyId) returns string?|BusinessPlan|error {
+public isolated function getBusinessPlanByIdDAO(string policyId) returns string?|BusinessPlan|error {
     jdbc:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
@@ -164,7 +164,7 @@ public function getBusinessPlanByIdDAO(string policyId) returns string?|Business
     }
 }
 
-public function getBusinessPlansDAO(string org) returns BusinessPlan[]|error? {
+public isolated function getBusinessPlansDAO(string org) returns BusinessPlan[]|error? {
     jdbc:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
@@ -178,7 +178,7 @@ public function getBusinessPlansDAO(string org) returns BusinessPlan[]|error? {
     }
 }
 
-public function updateBusinessPlanDAO(BusinessPlan stp) returns string?|BusinessPlan|error {
+public isolated function updateBusinessPlanDAO(BusinessPlan stp) returns string?|BusinessPlan|error {
     jdbc:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
@@ -202,7 +202,7 @@ public function updateBusinessPlanDAO(BusinessPlan stp) returns string?|Business
     }
 }
 
-public function deleteBusinessPlanDAO(string policyId) returns string?|error {
+public isolated function deleteBusinessPlanDAO(string policyId) returns string?|error {
     jdbc:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
@@ -220,7 +220,7 @@ public function deleteBusinessPlanDAO(string policyId) returns string?|error {
     }
 }
 
-public function addDenyPolicyDAO(BlockingCondition bc) returns string?|BlockingCondition|error {
+public isolated function addDenyPolicyDAO(BlockingCondition bc) returns string?|BlockingCondition|error {
     jdbc:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
@@ -239,7 +239,7 @@ public function addDenyPolicyDAO(BlockingCondition bc) returns string?|BlockingC
     }
 }
 
-public function getDenyPolicyByIdDAO(string policyId) returns string?|BlockingCondition|error {
+public isolated function getDenyPolicyByIdDAO(string policyId) returns string?|BlockingCondition|error {
     jdbc:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
@@ -261,7 +261,7 @@ public function getDenyPolicyByIdDAO(string policyId) returns string?|BlockingCo
     }
 }
 
-public function getDenyPoliciesDAO(string org) returns BlockingCondition[]|error? {
+public isolated function getDenyPoliciesDAO(string org) returns BlockingCondition[]|error? {
     jdbc:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
@@ -275,7 +275,7 @@ public function getDenyPoliciesDAO(string org) returns BlockingCondition[]|error
     }
 }
 
-public function updateDenyPolicyDAO(BlockingConditionStatus status) returns string?|error {
+public isolated function updateDenyPolicyDAO(BlockingConditionStatus status) returns string?|error {
     jdbc:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
@@ -292,7 +292,7 @@ public function updateDenyPolicyDAO(BlockingConditionStatus status) returns stri
     }
 }
 
-public function deleteDenyPolicyDAO(string policyId) returns string?|error {
+public isolated function deleteDenyPolicyDAO(string policyId) returns string?|error {
     jdbc:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
