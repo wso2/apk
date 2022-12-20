@@ -1,12 +1,12 @@
-# WSO2 API Postmen Based Integration Tests
+# WSO2 API Postman Based Integration Tests
 
-This folder contains APK postmen integration tests that use the test APK product capabilities
+This folder contains APK postman integration tests that use the test APK product capabilities
 
 ## Table of Contents
 
 1. [Overview](#overview)
-1. [Using Postman Tests](#using-postmen-tests)
-    1. [Load Environment into Postmen](#adding-an-environment-to-postman)
+1. [Using Postman Tests](#using-postman-tests)
+    1. [Load Environment into Postman](#adding-an-environment-to-postman)
     1. [Add Collection to Postman](#add-collection-to-postman)
     1. [Run Tests](#run-tests)
 1. [Modifying Tests](#modifying-tests)
@@ -20,9 +20,9 @@ The goal of the framework is to make it as easy as possible to author and run te
 
 ## Using Postman Tests
 
-To use these postmen tests users need to install postmen in their local machines or integrate postman collections via Testkube. In this part of the document we will be discussing how to test product APIs with locally installed postment scripts.
+To use these postman tests users need to install postman in their local machines or integrate postman collections via Testkube. In this part of the document we will be discussing how to test product APIs with locally installed postman scripts.
 
-### Adding an Environment to Postmen
+### Adding an Environment to Postman
 
 An environment is a set of variables you can use in your Postman requests. You can use environments to group related sets of values together and manage access to shared Postman data if you are working as part of a team.
 
@@ -33,7 +33,7 @@ An environment is a set of variables you can use in your Postman requests. You c
 
 
 If you are interested please read more about 
-[postmen environments](https://learning.postman.com/docs/sending-requests/managing-environments/).
+[postman environments](https://learning.postman.com/docs/sending-requests/managing-environments/).
 
 
 ### Adding Collection to Postman
@@ -68,7 +68,7 @@ You can install Testkube on your command line to create, manage, and run your AP
 
 
 If you are interested please read more about 
-[running APK postmen tests using Testkube](https://testkube.io/blog/api-testing-in-kubernetes-with-postman).
+[running APK postman tests using Testkube](https://testkube.io/blog/api-testing-in-kubernetes-with-postman).
 
 
 
