@@ -15,14 +15,14 @@ public distinct class APIDefinitionValidationResponse {
     # The init function of the Ballerina class mapping the `org.wso2.apk.runtime.api.APIDefinitionValidationResponse` Java class.
     #
     # + obj - The `handle` value containing the Java reference of the object.
-    public function init(handle obj) {
+    public isolated function init(handle obj) {
         self.jObj = obj;
     }
 
     # The function to retrieve the string representation of the Ballerina class mapping the `org.wso2.apk.runtime.api.APIDefinitionValidationResponse` Java class.
     #
     # + return - The `string` form of the Java object instance.
-    public function toString() returns string {
+    public isolated function toString() returns string {
         return java:toString(self.jObj) ?: "null";
     }
     # The function that maps to the `equals` method of `org.wso2.apk.runtime.api.APIDefinitionValidationResponse`.
@@ -45,14 +45,14 @@ public distinct class APIDefinitionValidationResponse {
     # The function that maps to the `getContent` method of `org.wso2.apk.runtime.api.APIDefinitionValidationResponse`.
     #
     # + return - The `string` value returning from the Java mapping.
-    public function getContent() returns string? {
+    public isolated function getContent() returns string? {
         return java:toString(org_wso2_apk_runtime_api_APIDefinitionValidationResponse_getContent(self.jObj));
     }
 
     # The function that maps to the `getErrorItems` method of `org.wso2.apk.runtime.api.APIDefinitionValidationResponse`.
     #
     # + return - The `javautil:ArrayList` value returning from the Java mapping.
-    public function getErrorItems() returns javautil:ArrayList {
+    public isolated function getErrorItems() returns javautil:ArrayList {
         handle externalObj = org_wso2_apk_runtime_api_APIDefinitionValidationResponse_getErrorItems(self.jObj);
         javautil:ArrayList newObj = new (externalObj);
         return newObj;
@@ -61,7 +61,7 @@ public distinct class APIDefinitionValidationResponse {
     # The function that maps to the `getInfo` method of `org.wso2.apk.runtime.api.APIDefinitionValidationResponse`.
     #
     # + return - The `Info` value returning from the Java mapping.
-    public function getInfo() returns Info {
+    public isolated function getInfo() returns Info {
         handle externalObj = org_wso2_apk_runtime_api_APIDefinitionValidationResponse_getInfo(self.jObj);
         Info newObj = new (externalObj);
         return newObj;
@@ -107,7 +107,7 @@ public distinct class APIDefinitionValidationResponse {
     # The function that maps to the `isValid` method of `org.wso2.apk.runtime.api.APIDefinitionValidationResponse`.
     #
     # + return - The `boolean` value returning from the Java mapping.
-    public function isValid() returns boolean {
+    public isolated function isValid() returns boolean {
         return org_wso2_apk_runtime_api_APIDefinitionValidationResponse_isValid(self.jObj);
     }
 
@@ -236,19 +236,19 @@ function org_wso2_apk_runtime_api_APIDefinitionValidationResponse_getClass(handl
     paramTypes: []
 } external;
 
-function org_wso2_apk_runtime_api_APIDefinitionValidationResponse_getContent(handle receiver) returns handle = @java:Method {
+isolated function org_wso2_apk_runtime_api_APIDefinitionValidationResponse_getContent(handle receiver) returns handle = @java:Method {
     name: "getContent",
     'class: "org.wso2.apk.runtime.api.APIDefinitionValidationResponse",
     paramTypes: []
 } external;
 
-function org_wso2_apk_runtime_api_APIDefinitionValidationResponse_getErrorItems(handle receiver) returns handle = @java:Method {
+isolated function org_wso2_apk_runtime_api_APIDefinitionValidationResponse_getErrorItems(handle receiver) returns handle = @java:Method {
     name: "getErrorItems",
     'class: "org.wso2.apk.runtime.api.APIDefinitionValidationResponse",
     paramTypes: []
 } external;
 
-function org_wso2_apk_runtime_api_APIDefinitionValidationResponse_getInfo(handle receiver) returns handle = @java:Method {
+isolated function org_wso2_apk_runtime_api_APIDefinitionValidationResponse_getInfo(handle receiver) returns handle = @java:Method {
     name: "getInfo",
     'class: "org.wso2.apk.runtime.api.APIDefinitionValidationResponse",
     paramTypes: []
@@ -284,7 +284,7 @@ function org_wso2_apk_runtime_api_APIDefinitionValidationResponse_isInit(handle 
     paramTypes: []
 } external;
 
-function org_wso2_apk_runtime_api_APIDefinitionValidationResponse_isValid(handle receiver) returns boolean = @java:Method {
+isolated function org_wso2_apk_runtime_api_APIDefinitionValidationResponse_isValid(handle receiver) returns boolean = @java:Method {
     name: "isValid",
     'class: "org.wso2.apk.runtime.api.APIDefinitionValidationResponse",
     paramTypes: []

@@ -12,14 +12,14 @@ public distinct class Object {
     # The init function of the Ballerina class mapping the `java.lang.Object` Java class.
     #
     # + obj - The `handle` value containing the Java reference of the object.
-    public function init(handle obj) {
+    public isolated function init(handle obj) {
         self.jObj = obj;
     }
 
     # The function to retrieve the string representation of the Ballerina class mapping the `java.lang.Object` Java class.
     #
     # + return - The `string` form of the Java object instance.
-    public function toString() returns string {
+    public isolated function toString() returns string {
         return java:toString(self.jObj) ?: "null";
     }
     # The function that maps to the `equals` method of `java.lang.Object`.

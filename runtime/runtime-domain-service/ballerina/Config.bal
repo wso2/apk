@@ -18,8 +18,11 @@
 
 # This Record contains the Runtime related configurations
 #
-# + serviceListingNamespaces - Field Description  
-# + apiCreationNamespace - Field Description
+# + serviceListingNamespaces - Namespaces for List Services
+# + apiCreationNamespace - Namespace for API creation.  
+# + tokenIssuerConfiguration - Token Issuer Configuration for APIKey.  
+# + keyStores - KeyStore Configuration
+# + k8sConfiguration - K8s Configuration (debug purpose only.)
 public type RuntimeConfiguratation record {|
 
     (string[] & readonly) serviceListingNamespaces = [ALL_NAMESPACES];
@@ -52,7 +55,7 @@ public type K8sConfigurations record {|
     decimal readTimeout = 5;
 |};
 
-function getNameSpace(string namespace) returns string {
+isolated function getNameSpace(string namespace) returns string {
     if namespace == CURRENT_NAMESPACE {
         return currentNameSpace;
     } else {

@@ -20,7 +20,7 @@ import ballerina/lang.value;
 import runtime_domain_service.model as model;
 import ballerina/log;
 
-map<model:K8sAPI> apilist = {};
+isolated map<model:K8sAPI> apilist = {};
 string resourceVersion = "";
 websocket:Client|error|() apiClient = ();
 
@@ -83,7 +83,7 @@ public function getClient(string resourceVersion) returns websocket:Client|error
     );
 }
 
-public function createAPImodel(json event) returns model:K8sAPI|error {
+public isolated function createAPImodel(json event) returns model:K8sAPI|error {
     model:K8sAPI apiInfo = {
         uuid: <string>check event.metadata.uid,
         apiDisplayName: <string>check event.spec.apiDisplayName,
@@ -100,7 +100,7 @@ public function createAPImodel(json event) returns model:K8sAPI|error {
     return apiInfo;
 }
 
-function getValue(json|error value) returns string {
+isolated function getValue(json|error value) returns string {
     if value is json {
         return value.toString();
     } else {
@@ -109,19 +109,27 @@ function getValue(json|error value) returns string {
     }
 }
 
-function getAPIs() returns model:K8sAPI[] {
-    return apilist.toArray();
+isolated function getAPIs() returns model:K8sAPI[] {
+    lock {
+        model:K8sAPI[] & readonly readOnlyAPIList = apilist.toArray().cloneReadOnly();
+        return readOnlyAPIList;
+    }
 }
 
-function getAPI(string id) returns model:K8sAPI|error {
-    return check trap apilist.get(id);
+isolated function getAPI(string id) returns model:K8sAPI|error {
+    lock {
+        map<model:K8sAPI> & readonly readOnlyAPIMap = apilist.cloneReadOnly();
+        return check trap readOnlyAPIMap.get(id);
+    }
 }
 
 function putallAPIS(json[] apiData) {
     foreach json api in apiData {
         model:K8sAPI|error k8sAPI = createAPImodel(api);
         if k8sAPI is model:K8sAPI {
-            apilist[k8sAPI.uuid] = k8sAPI;
+            lock {
+                apilist[k8sAPI.uuid] = k8sAPI.clone();
+            }
         }
     }
 }
@@ -151,12 +159,18 @@ function readAPIEvent(websocket:Client apiWebsocketClient) returns error? {
         if apiModel is model:K8sAPI {
             if apiModel.namespace == getNameSpace(runtimeConfiguration.apiCreationNamespace) {
                 if eventType == "ADDED" {
-                    apilist[apiModel.uuid] = apiModel;
+                    lock {
+                        apilist[apiModel.uuid] = apiModel.clone();
+                    }
                 } else if (eventType == "MODIFIED") {
-                    _ = apilist.remove(apiModel.uuid);
-                    apilist[apiModel.uuid] = apiModel;
+                    lock {
+                        _ = apilist.remove(apiModel.uuid);
+                        apilist[apiModel.uuid] = apiModel.clone();
+                    }
                 } else if (eventType == "DELETED") {
-                    _ = apilist.remove(apiModel.uuid);
+                    lock {
+                        _ = apilist.remove(apiModel.uuid);
+                    }
                 }
             }
         } else {
@@ -168,7 +182,7 @@ function readAPIEvent(websocket:Client apiWebsocketClient) returns error? {
 
 }
 
-function getAPIByNameAndNamespace(string name, string namespace) returns model:K8sAPI|() {
+isolated function getAPIByNameAndNamespace(string name, string namespace) returns model:K8sAPI|() {
     foreach model:K8sAPI api in getAPIs() {
         if (api.k8sName == name && api.namespace == namespace) {
             return api;

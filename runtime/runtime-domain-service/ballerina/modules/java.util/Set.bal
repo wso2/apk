@@ -30,7 +30,7 @@ public distinct class Set {
     #
     # + arg0 - The `javalang:Object` value required to map with the Java method parameter.
     # + return - The `boolean` value returning from the Java mapping.
-    public function add(javalang:Object arg0) returns boolean {
+    public isolated function add(javalang:Object arg0) returns boolean {
         return java_util_Set_add(self.jObj, arg0.jObj);
     }
 
@@ -390,7 +390,7 @@ public function Set_of9(javalang:Object arg0, javalang:Object arg1, javalang:Obj
     return newObj;
 }
 
-function java_util_Set_add(handle receiver, handle arg0) returns boolean = @java:Method {
+isolated function java_util_Set_add(handle receiver, handle arg0) returns boolean = @java:Method {
     name: "add",
     'class: "java.util.Set",
     paramTypes: ["java.lang.Object"]

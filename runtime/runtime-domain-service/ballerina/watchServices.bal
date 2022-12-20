@@ -19,7 +19,7 @@ import ballerina/websocket;
 import ballerina/lang.value;
 import ballerina/log;
 
-map<Service> services = {};
+isolated map<Service> services = {};
 string servicesResourceVersion = "";
 websocket:Client|error|() servicesClient = ();
 
@@ -76,7 +76,7 @@ function containsNamespace(string namespace) returns boolean {
     return false;
 }
 
-public function createServiceModel(json event) returns Service|error {
+public isolated function createServiceModel(json event) returns Service|error {
     Service serviceData = {
         id: <string>check event.metadata.uid,
         name: <string>check event.metadata.name,
@@ -88,7 +88,7 @@ public function createServiceModel(json event) returns Service|error {
     return serviceData;
 }
 
-function mapPortMapping(json event) returns PortMapping[]|error {
+isolated function mapPortMapping(json event) returns PortMapping[]|error {
     json[] ports = <json[]>check event.spec.ports;
     PortMapping[] portmappings = [];
 
@@ -105,8 +105,10 @@ function mapPortMapping(json event) returns PortMapping[]|error {
     return portmappings;
 }
 
-function getServicesList() returns Service[] {
-    return services.toArray();
+isolated function getServicesList() returns Service[] {
+    lock {
+        return services.clone().toArray();
+    }
 }
 
 # This retrieve specific service from name space.
@@ -114,7 +116,7 @@ function getServicesList() returns Service[] {
 # + name - name of service.
 # + namespace - namespace of service.
 # + return - service in namespace.
-function getService(string name, string namespace) returns Service? {
+isolated function getService(string name, string namespace) returns Service? {
     foreach Service s in getServicesList() {
         if (s.name == name && s.namespace == namespace) {
             return s;
@@ -127,15 +129,19 @@ function getService(string name, string namespace) returns Service? {
     return;
 }
 
-function grtServiceById(string id) returns Service|error {
-    return trap services.get(id);
+isolated function grtServiceById(string id) returns Service|error {
+    lock {
+        return trap services.cloneReadOnly().get(id);
+    }
 }
 
 function putAllServices(json[] servicesEntries) {
     foreach json serviceData in servicesEntries {
-        Service|error serviceEntry = createServiceModel(serviceData);
-        if serviceEntry is Service {
-            services[serviceEntry.id] = serviceEntry;
+        lock {
+            Service|error serviceEntry = createServiceModel(serviceData.clone());
+            if serviceEntry is Service {
+                services[serviceEntry.id] = serviceEntry;
+            }
         }
     }
 }
@@ -180,12 +186,18 @@ function readServiceEvents(websocket:Client serviceWebSocketClient) returns erro
         if serviceModel is Service {
             if containsNamespace(serviceModel.namespace) {
                 if eventType == "ADDED" {
-                    services[serviceModel.id] = serviceModel;
+                    lock {
+                        services[serviceModel.id] = serviceModel.clone();
+                    }
                 } else if (eventType == "MODIFIED") {
-                    _ = services.remove(serviceModel.id);
-                    services[serviceModel.id] = serviceModel;
+                    lock {
+                        _ = services.remove(serviceModel.id);
+                        services[serviceModel.id] = serviceModel.clone();
+                    }
                 } else if (eventType == "DELETED") {
-                    _ = services.remove(serviceModel.id);
+                    lock {
+                        _ = services.remove(serviceModel.id);
+                    }
                 }
             }
         } else {

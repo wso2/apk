@@ -17,14 +17,14 @@ public distinct class ArrayList {
     # The init function of the Ballerina class mapping the `java.util.ArrayList` Java class.
     #
     # + obj - The `handle` value containing the Java reference of the object.
-    public function init(handle obj) {
+    public isolated function init(handle obj) {
         self.jObj = obj;
     }
 
     # The function to retrieve the string representation of the Ballerina class mapping the `java.util.ArrayList` Java class.
     #
     # + return - The `string` form of the Java object instance.
-    public function toString() returns string {
+    public isolated function toString() returns string {
         return java:toString(self.jObj) ?: "null";
     }
     # The function that maps to the `add` method of `java.util.ArrayList`.
@@ -116,7 +116,7 @@ public distinct class ArrayList {
     #
     # + arg0 - The `int` value required to map with the Java method parameter.
     # + return - The `javalang:Object` value returning from the Java mapping.
-    public function get(int arg0) returns javalang:Object {
+    public isolated function get(int arg0) returns javalang:Object {
         handle externalObj = java_util_ArrayList_get(self.jObj, arg0);
         javalang:Object newObj = new (externalObj);
         return newObj;
@@ -271,7 +271,7 @@ public distinct class ArrayList {
     # The function that maps to the `size` method of `java.util.ArrayList`.
     #
     # + return - The `int` value returning from the Java mapping.
-    public function size() returns int {
+    public isolated function size() returns int {
         return java_util_ArrayList_size(self.jObj);
     }
 
@@ -496,7 +496,7 @@ function java_util_ArrayList_forEach(handle receiver, handle arg0) = @java:Metho
     paramTypes: ["java.util.function.Consumer"]
 } external;
 
-function java_util_ArrayList_get(handle receiver, int arg0) returns handle = @java:Method {
+isolated function java_util_ArrayList_get(handle receiver, int arg0) returns handle = @java:Method {
     name: "get",
     'class: "java.util.ArrayList",
     paramTypes: ["int"]
@@ -610,7 +610,7 @@ function java_util_ArrayList_set(handle receiver, int arg0, handle arg1) returns
     paramTypes: ["int", "java.lang.Object"]
 } external;
 
-function java_util_ArrayList_size(handle receiver) returns int = @java:Method {
+isolated function java_util_ArrayList_size(handle receiver) returns int = @java:Method {
     name: "size",
     'class: "java.util.ArrayList",
     paramTypes: []
