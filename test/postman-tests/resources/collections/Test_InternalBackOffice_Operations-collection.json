@@ -1,0 +1,346 @@
+{
+	"info": {
+		"_postman_id": "6a6196db-95d7-4869-9183-05287c30611d",
+		"name": "Test InternalBackOffice Operations",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "16040063"
+	},
+	"item": [
+		{
+			"name": "Internal BackOffice Add API",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"  pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Assert Internal BackOffice API creation response\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.id).equals(pm.collectionVariables.get('idTest1'));",
+							"    pm.expect(responseJson.name).equals(pm.collectionVariables.get('APINameTest1'));",
+							"    pm.expect(responseJson.version).equals(pm.collectionVariables.get('versionTest1'));",
+							"    pm.expect(responseJson.type).equals(pm.collectionVariables.get('typeTest1'));",
+							"    pm.expect(responseJson.context).equals(pm.collectionVariables.get('contextTest1'));",
+							"    pm.expect(responseJson.provider).equals(pm.collectionVariables.get('providerTest1'));",
+							"    pm.expect(responseJson.lifeCycleStatus).equals(pm.collectionVariables.get('lifeCycleStatusTest1'));",
+							"    pm.expect(responseJson.visibility).equals(pm.collectionVariables.get('visibilityTest1'));",
+							"    pm.expect(responseJson.subscriptionAvailability).equals(pm.collectionVariables.get('subscriptionAvailabilityTest1'));",
+							"    pm.expect(responseJson.accessControl).equals(pm.collectionVariables.get('accessControlTest1'));",
+							"    pm.expect(responseJson.endpointImplementationType).equals(pm.collectionVariables.get('endpointImplementationTypeTest1'))",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"apiProperties\":{\n\t\t\"id\": \"{{idTest1}}\",\n\t\t\"name\":\"{{APINameTest1}}\",\n\t\t\"context\":\"{{contextTest1}}\",\n\t\t\"version\":\"{{versionTest1}}\",\n\t\t\"provider\":\"{{providerTest1}}\",\n        \"visibility\": \"{{visibilityTest1}}\",\n        \"subscriptionAvailability\" : \"{{subscriptionAvailabilityTest1}}\",\n\t\t\"lifeCycleStatus\":\"{{lifeCycleStatusTest1}}\"\n\t},\n\t\"Definition\" : {\t  \n\t  \"openapi\": \"3.0.0\",\n\t  \"info\": {\n\t    \"title\": \"Sample API\",\n\t    \"description\": \"Optional multiline or single-line description in [CommonMark](http://commonmark.org/help/) or HTML.\",\n\t    \"version\": \"0.1.9\"\n\t  },\n\t  \"servers\": [\n\t    {\n\t      \"url\": \"http://api.example.com/v1\",\n\t      \"description\": \"Optional server description, e.g. Main (production) server\"\n\t    },\n\t    {\n\t      \"url\": \"http://staging-api.example.com\",\n\t      \"description\": \"Optional server description, e.g. Internal staging server for testing\"\n\t    }\n\t  ],\n\t  \"paths\": {\n\t    \"/users\": {\n\t      \"get\": {\n\t\t\"summary\": \"Returns a list of users.\",\n\t\t\"description\": \"Optional extended description in CommonMark or HTML.\",\n\t\t\"responses\": {\n\t\t  \"200\": {\n\t\t    \"description\": \"A JSON array of user names\",\n\t\t    \"content\": {\n\t\t      \"application/json\": {\n\t\t        \"schema\": {\n\t\t          \"type\": \"array\",\n\t\t          \"items\": {\n\t\t            \"type\": \"string\"\n\t\t          }\n\t\t        }\n\t\t      }\n\t\t    }\n\t\t  }\n\t\t}\n\t      }\n\t    }\n\t  }\n\t}\n}"
+				},
+				"url": {
+					"raw": "{{internalBackOfficeAPIServerBaseURL}}/api/am/backoffice/internal/apis",
+					"host": [
+						"{{internalBackOfficeAPIServerBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"backoffice",
+						"internal",
+						"apis"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Internal BackOffice Update Definition",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"Definition\" : {\t  \n\t  \"openapi\": \"3.0.0\",\n\t  \"info\": {\n\t    \"title\": \"Sample API\",\n\t    \"description\": \"Optional multiline or single-line description in [CommonMark](http://commonmark.org/help/) or HTML.\",\n\t    \"version\": \"0.1.9\"\n\t  },\n\t  \"servers\": [\n\t    {\n\t      \"url\": \"http://api.example.com/v1\",\n\t      \"description\": \"Optional server description, e.g. Main (production) server\"\n\t    },\n\t    {\n\t      \"url\": \"http://staging-api.example.com\",\n\t      \"description\": \"Optional server description, e.g. Internal staging server for testing\"\n\t    }\n\t  ],\n\t  \"paths\": {\n\t    \"/users\": {\n\t      \"get\": {\n\t\t\"summary\": \"Returns a list of users.\",\n\t\t\"description\": \"Optional extended description in CommonMark or HTML.\",\n\t\t\"responses\": {\n\t\t  \"200\": {\n\t\t    \"description\": \"A JSON array of user names\",\n\t\t    \"content\": {\n\t\t      \"application/json\": {\n\t\t        \"schema\": {\n\t\t          \"type\": \"array\",\n\t\t          \"items\": {\n\t\t            \"type\": \"string\"\n\t\t          }\n\t\t        }\n\t\t      }\n\t\t    }\n\t\t  }\n\t\t}\n\t      }\n\t    }\n\t  }\n\t}\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{internalBackOfficeAPIServerBaseURL}}/api/am/backoffice/internal/apis/{{idTest1}}/definition",
+					"host": [
+						"{{internalBackOfficeAPIServerBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"backoffice",
+						"internal",
+						"apis",
+						"{{idTest1}}",
+						"definition"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Internal BackOffice Update API",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Assert Internal BackOffice API creation response\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.id).equals(pm.collectionVariables.get('idTest1'));",
+							"    pm.expect(responseJson.name).equals(pm.collectionVariables.get('APINameTest2'));",
+							"    pm.expect(responseJson.version).equals(pm.collectionVariables.get('versionTest2'));",
+							"    pm.expect(responseJson.type).equals(pm.collectionVariables.get('typeTest2'));",
+							"    pm.expect(responseJson.context).equals(pm.collectionVariables.get('contextTest2'));",
+							"    pm.expect(responseJson.provider).equals(pm.collectionVariables.get('providerTest2'));",
+							"    pm.expect(responseJson.lifeCycleStatus).equals(pm.collectionVariables.get('lifeCycleStatusTest2'));",
+							"    pm.expect(responseJson.visibility).equals(pm.collectionVariables.get('visibilityTest2'));",
+							"    pm.expect(responseJson.subscriptionAvailability).equals(pm.collectionVariables.get('subscriptionAvailabilityTest2'));",
+							"    pm.expect(responseJson.accessControl).equals(pm.collectionVariables.get('accessControlTest2'));",
+							"    pm.expect(responseJson.endpointImplementationType).equals(pm.collectionVariables.get('endpointImplementationTypeTest2'))",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"apiProperties\":{\n\t\t\"id\": \"{{idTest1}}\",\n\t\t\"name\": \"{{APINameTest2}}\",\n\t\t\"context\": \"{{contextTest2}}\",\n\t\t\"version\": \"{{versionTest2}}\",\n\t\t\"provider\": \"{{providerTest2}}\",\n\t\t\"lifeCycleStatus\": \"{{lifeCycleStatusTest2}}\",\n        \"type\": \"{{typeTest2}}\",\n        \"visibility\": \"{{visibilityTest2}}\",\n        \"subscriptionAvailability\": \"{{subscriptionAvailabilityTest2}}\",\n        \"accessControl\": \"{{accessControlTest2}}\",\n        \"endpointImplementationType\": \"{{endpointImplementationTypeTest2}}\"\n\t},\n\t\"Definition\" : {\t  \n\t  \"openapi\": \"3.0.0\",\n\t  \"info\": {\n\t    \"title\": \"Sample API\",\n\t    \"description\": \"Optional multiline or single-line description in [CommonMark](http://commonmark.org/help/) or HTML.\",\n\t    \"version\": \"0.1.9\"\n\t  },\n\t  \"servers\": [\n\t    {\n\t      \"url\": \"http://api.example.com/v1\",\n\t      \"description\": \"Optional server description, e.g. Main (production) server\"\n\t    },\n\t    {\n\t      \"url\": \"http://staging-api.example.com\",\n\t      \"description\": \"Optional server description, e.g. Internal staging server for testing\"\n\t    }\n\t  ],\n\t  \"paths\": {\n\t    \"/users\": {\n\t      \"get\": {\n\t\t\"summary\": \"Returns a list of users.\",\n\t\t\"description\": \"Optional extended description in CommonMark or HTML.\",\n\t\t\"responses\": {\n\t\t  \"200\": {\n\t\t    \"description\": \"A JSON array of user names\",\n\t\t    \"content\": {\n\t\t      \"application/json\": {\n\t\t        \"schema\": {\n\t\t          \"type\": \"array\",\n\t\t          \"items\": {\n\t\t            \"type\": \"string\"\n\t\t          }\n\t\t        }\n\t\t      }\n\t\t    }\n\t\t  }\n\t\t}\n\t      }\n\t    }\n\t  }\n\t}\n}"
+				},
+				"url": {
+					"raw": "{{internalBackOfficeAPIServerBaseURL}}/api/am/backoffice/internal/apis/{{idTest1}}",
+					"host": [
+						"{{internalBackOfficeAPIServerBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"backoffice",
+						"internal",
+						"apis",
+						"{{idTest1}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Internal BackOffice Delete API",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{internalBackOfficeAPIServerBaseURL}}/api/am/backoffice/internal/apis/{{idTest1}}",
+					"host": [
+						"{{internalBackOfficeAPIServerBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"backoffice",
+						"internal",
+						"apis",
+						"{{idTest1}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "APINameTest1",
+			"value": "PizzaShask",
+			"type": "string"
+		},
+		{
+			"key": "contextTest1",
+			"value": "pizzashack",
+			"type": "string"
+		},
+		{
+			"key": "versionTest1",
+			"value": "1.0.0",
+			"type": "string"
+		},
+		{
+			"key": "providerTest1",
+			"value": "admin",
+			"type": "string"
+		},
+		{
+			"key": "lifeCycleStatusTest1",
+			"value": "CREATED",
+			"type": "string"
+		},
+		{
+			"key": "typeTest1",
+			"value": "HTTP",
+			"type": "string"
+		},
+		{
+			"key": "visibilityTest1",
+			"value": "PUBLIC",
+			"type": "string"
+		},
+		{
+			"key": "subscriptionAvailabilityTest1",
+			"value": "All",
+			"type": "string"
+		},
+		{
+			"key": "accessControlTest1",
+			"value": "NONE",
+			"type": "string"
+		},
+		{
+			"key": "endpointImplementationTypeTest1",
+			"value": "ENDPOINT",
+			"type": "string"
+		},
+		{
+			"key": "idTest1",
+			"value": "01ed75e2-b30b-18c8-wwf2-25da7edd2231",
+			"type": "string"
+		},
+		{
+			"key": "APINameTest2",
+			"value": "NewPizzaAPI",
+			"type": "string"
+		},
+		{
+			"key": "contextTest2",
+			"value": "new-pizzacontext",
+			"type": "string"
+		},
+		{
+			"key": "lifeCycleStatusTest2",
+			"value": "PUBLISHED",
+			"type": "string"
+		},
+		{
+			"key": "endpointImplementationTypeTest2",
+			"value": "ENDPOINT",
+			"type": "string"
+		},
+		{
+			"key": "visibilityTest2",
+			"value": "PRIVATE",
+			"type": "string"
+		},
+		{
+			"key": "versionTest2",
+			"value": "2.0.0",
+			"type": "string"
+		},
+		{
+			"key": "providerTest2",
+			"value": "provider",
+			"type": "string"
+		},
+		{
+			"key": "typeTest2",
+			"value": "HTTP",
+			"type": "string"
+		},
+		{
+			"key": "subscriptionAvailabilityTest2",
+			"value": "ALL",
+			"type": "string"
+		},
+		{
+			"key": "accessControlTest2",
+			"value": "NONE",
+			"type": "string"
+		}
+	]
+}
