@@ -128,11 +128,10 @@ public type ResourcePath record {
     string httpVerb?;
 };
 
-public type DocumentidContentBody record {
-    # Document to upload
-    string file?;
-    # Inline content of the document
-    string inlineContent?;
+public type API_additionalProperties record {
+    string name?;
+    string value?;
+    boolean display?;
 };
 
 public type FileInfo record {
@@ -215,11 +214,6 @@ public type APIMonetizationInfo record {
     boolean enabled;
     # Map of custom properties related to monetization
     record {} properties?;
-};
-
-public type ApiidThumbnailBody record {
-    # Image to upload
-    string file;
 };
 
 public type LifecycleHistoryItem record {
@@ -314,6 +308,13 @@ public type APICategoryList record {
     APICategory[] list?;
 };
 
+public type DocumentId_content_body record {
+    # Document to upload
+    string file?;
+    # Inline content of the document
+    string inlineContent?;
+};
+
 public type ApplicationInfo record {
     string applicationId?;
     string name?;
@@ -345,7 +346,12 @@ public type ModifiableAPI record {
 
 public type LifecycleState record {
     string state?;
-    LifecyclestateAvailabletransitions[] availableTransitions?;
+    LifecycleState_availableTransitions[] availableTransitions?;
+};
+
+public type ApiId_thumbnail_body record {
+    # Image to upload
+    string file;
 };
 
 public type SubscriptionThrottlePolicyPermission record {
@@ -365,7 +371,7 @@ public type LifecycleHistory record {
     LifecycleHistoryItem[] list?;
 };
 
-public type LifecyclestateAvailabletransitions record {
+public type LifecycleState_availableTransitions record {
     string event?;
     string targetState?;
 };
@@ -599,10 +605,4 @@ public type BandwidthLimit record {
     int dataAmount;
     # Unit of data allowed to be transfered. Allowed values are "KB", "MB" and "GB"
     string dataUnit;
-};
-
-public type ApiAdditionalproperties record {
-    string name?;
-    string value?;
-    boolean display?;
 };

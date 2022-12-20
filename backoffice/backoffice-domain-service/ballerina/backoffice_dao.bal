@@ -32,14 +32,14 @@ function db_getAPIsDAO() returns API[]|error? {
     }
 }
 
-function db_changeLCState(string action, string apiId, string organization) returns string|error {
+function db_changeLCState(string targetState, string apiId, string organization) returns string|error {
     postgresql:Client | error db_Client  = getConnection();
     if db_Client is error {
         return error("Error while retrieving connection", db_Client);
     } else {
-        string newState = actionToLCState(action);
+        string newState = actionToLCState(targetState);
         if newState.equalsIgnoreCaseAscii("any") {
-            return error(" Invalid Lifecycle action"); 
+            return error(" Invalid Lifecycle targetState"); 
         }
         sql:ParameterizedQuery values = `${newState}
         WHERE api_uuid = ${apiId}`;
@@ -48,7 +48,7 @@ function db_changeLCState(string action, string apiId, string organization) retu
         sql:ExecutionResult | sql:Error result = db_Client->execute(sqlQuery);
         
         if result is sql:ExecutionResult {
-            return action;
+            return targetState;
         } else {
             return error("Error while updating LC state into Database" + result.message());  
         }

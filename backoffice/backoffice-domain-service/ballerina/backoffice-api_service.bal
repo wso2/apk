@@ -118,8 +118,8 @@ service /api/am/backoffice on ep0 {
     // }
     // resource function get 'api\-categories() returns APICategoryList {
     // }
-    resource function post apis/'change\-lifecycle(string action, string apiId, @http:Header string? 'if\-match) returns LifecycleState|BadRequestError|UnauthorizedError|NotFoundError|ConflictError|InternalServerErrorError|error {
-        LifecycleState | error  changeState = changeLifeCyleState(action, apiId, "carbon.super");
+    resource function post apis/'change\-lifecycle(string targetState, string apiId, @http:Header string? 'if\-match) returns LifecycleState|BadRequestError|UnauthorizedError|NotFoundError|ConflictError|InternalServerErrorError|error {
+        LifecycleState | error  changeState = changeLifeCyleState(targetState, apiId, "carbon.super");
         if changeState is LifecycleState {
             return changeState;
         } else {
