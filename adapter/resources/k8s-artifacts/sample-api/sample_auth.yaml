@@ -1,0 +1,23 @@
+apiVersion: dp.wso2.com/v1alpha1
+kind: Authentication
+metadata:
+  name: sand-http-bin-authentication
+spec:
+  override:
+    type: ext
+    ext:
+      disabled: true            
+  default:
+    type: ext
+    ext:
+      serviceRef: 
+        group: wso2/v1alpha2
+        kind: Backend
+        name: ext_authz-server
+        port: 1234
+      authTypes:
+        - type: jwt
+  targetRef:
+    kind: HTTPRoute 
+    name: sand-http-route-http-bin-api
+    group: gateway.networking.k8s.io

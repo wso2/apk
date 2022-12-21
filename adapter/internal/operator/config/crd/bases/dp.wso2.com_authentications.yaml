@@ -45,12 +45,20 @@ spec:
                         items:
                           description: Auth Authentication scheme type and details
                           properties:
+                            jwt:
+                              description: JWTAuth JWT Authentication scheme details
+                              properties:
+                                authorizationHeader:
+                                  type: string
+                              type: object
                             type:
                               description: AuthType is an enum {"jwt", "apikey", "basic",
                                 "mtls"}
                               type: string
                           type: object
                         type: array
+                      disabled:
+                        type: boolean
                       serviceRef:
                         description: ServiceRef service using for Authentication
                         properties:
@@ -78,12 +86,20 @@ spec:
                         items:
                           description: Auth Authentication scheme type and details
                           properties:
+                            jwt:
+                              description: JWTAuth JWT Authentication scheme details
+                              properties:
+                                authorizationHeader:
+                                  type: string
+                              type: object
                             type:
                               description: AuthType is an enum {"jwt", "apikey", "basic",
                                 "mtls"}
                               type: string
                           type: object
                         type: array
+                      disabled:
+                        type: boolean
                       serviceRef:
                         description: ServiceRef service using for Authentication
                         properties:

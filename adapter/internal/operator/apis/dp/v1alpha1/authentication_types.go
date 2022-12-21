@@ -40,6 +40,7 @@ type AuthSpec struct {
 // ExtAuthService external authentication related information
 type ExtAuthService struct {
 	ServiceRef ServiceRef `json:"serviceRef,omitempty"`
+	Disabled   bool       `json:"disabled,omitempty"`
 	AuthTypes  []Auth     `json:"authTypes,omitempty"`
 }
 
@@ -54,7 +55,13 @@ type ServiceRef struct {
 // Auth Authentication scheme type and details
 type Auth struct {
 	// AuthType is an enum {"jwt", "apikey", "basic", "mtls"}
-	AuthType string `json:"type,omitempty"`
+	AuthType string  `json:"type,omitempty"`
+	JWT      JWTAuth `json:"jwt,omitempty"`
+}
+
+// JWTAuth JWT Authentication scheme details
+type JWTAuth struct {
+	AuthorizationHeader string `json:"authorizationHeader,omitempty"`
 }
 
 // AuthenticationStatus defines the observed state of Authentication
