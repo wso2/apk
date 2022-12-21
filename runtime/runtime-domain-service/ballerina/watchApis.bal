@@ -20,7 +20,7 @@ import ballerina/lang.value;
 import runtime_domain_service.model as model;
 import ballerina/log;
 
-isolated map<model:K8sAPI> apilist = {};
+isolated map<model:API> apilist = {};
 string resourceVersion = "";
 websocket:Client|error|() apiClient = ();
 
@@ -83,52 +83,26 @@ public function getClient(string resourceVersion) returns websocket:Client|error
     );
 }
 
-public isolated function createAPImodel(json event) returns model:K8sAPI|error {
-    model:K8sAPI apiInfo = {
-        uuid: <string>check event.metadata.uid,
-        apiDisplayName: <string>check event.spec.apiDisplayName,
-        apiType: <string>check event.spec.apiType,
-        apiVersion: <string>check event.spec.apiVersion,
-        context: <string>check event.spec.context,
-        creationTimestamp: <string>check event.metadata.creationTimestamp,
-        definitionFileRef: getValue(event.spec.definitionFileRef),
-        sandHTTPRouteRef: getValue(event.spec.sandHTTPRouteRef),
-        prodHTTPRouteRef: getValue(event.spec.prodHTTPRouteRef),
-        namespace: <string>check event.metadata.namespace,
-        k8sName: <string>check event.metadata.name
-    };
-    return apiInfo;
-}
-
-isolated function getValue(json|error value) returns string {
-    if value is json {
-        return value.toString();
-    } else {
-        return "";
-
-    }
-}
-
-isolated function getAPIs() returns model:K8sAPI[] {
+isolated function getAPIs() returns model:API[] {
     lock {
-        model:K8sAPI[] & readonly readOnlyAPIList = apilist.toArray().cloneReadOnly();
+        model:API[] & readonly readOnlyAPIList = apilist.toArray().cloneReadOnly();
         return readOnlyAPIList;
     }
 }
 
-isolated function getAPI(string id) returns model:K8sAPI|error {
+isolated function getAPI(string id) returns model:API|error {
     lock {
-        map<model:K8sAPI> & readonly readOnlyAPIMap = apilist.cloneReadOnly();
+        map<model:API> & readonly readOnlyAPIMap = apilist.cloneReadOnly();
         return check trap readOnlyAPIMap.get(id);
     }
 }
 
 function putallAPIS(json[] apiData) {
     foreach json api in apiData {
-        model:K8sAPI|error k8sAPI = createAPImodel(api);
-        if k8sAPI is model:K8sAPI {
+        model:API|error k8sAPI = api.cloneWithType(model:API);
+        if k8sAPI is model:API {
             lock {
-                apilist[k8sAPI.uuid] = k8sAPI.clone();
+                apilist[<string>k8sAPI.metadata.uid] = k8sAPI.clone();
             }
         }
     }
@@ -155,21 +129,21 @@ function readAPIEvent(websocket:Client apiWebsocketClient) returns error? {
         json metadata = <json>check eventValue.metadata;
         string latestResourceVersion = <string>check metadata.resourceVersion;
         setResourceVersion(latestResourceVersion);
-        APIInfo|error apiModel = createAPImodel(eventValue);
-        if apiModel is model:K8sAPI {
-            if apiModel.namespace == getNameSpace(runtimeConfiguration.apiCreationNamespace) {
+        model:API|error apiModel = eventValue.cloneWithType(model:API);
+        if apiModel is model:API {
+            if apiModel.metadata.namespace == getNameSpace(runtimeConfiguration.apiCreationNamespace) {
                 if eventType == "ADDED" {
                     lock {
-                        apilist[apiModel.uuid] = apiModel.clone();
+                        apilist[<string>apiModel.metadata.uid] = apiModel.clone();
                     }
                 } else if (eventType == "MODIFIED") {
                     lock {
-                        _ = apilist.remove(apiModel.uuid);
-                        apilist[apiModel.uuid] = apiModel.clone();
+                        _ = apilist.remove(<string>apiModel.metadata.uid);
+                        apilist[<string>apiModel.metadata.uid] = apiModel.clone();
                     }
                 } else if (eventType == "DELETED") {
                     lock {
-                        _ = apilist.remove(apiModel.uuid);
+                        _ = apilist.remove(<string>apiModel.metadata.uid);
                     }
                 }
             }
@@ -182,16 +156,16 @@ function readAPIEvent(websocket:Client apiWebsocketClient) returns error? {
 
 }
 
-isolated function getAPIByNameAndNamespace(string name, string namespace) returns model:K8sAPI|() {
-    foreach model:K8sAPI api in getAPIs() {
-        if (api.k8sName == name && api.namespace == namespace) {
+isolated function getAPIByNameAndNamespace(string name, string namespace) returns model:API|() {
+    foreach model:API api in getAPIs() {
+        if (api.metadata.name == name && api.metadata.namespace == namespace) {
             return api;
         }
     }
     json|error k8sAPIByNameAndNamespace = getK8sAPIByNameAndNamespace(name, namespace);
     if k8sAPIByNameAndNamespace is json {
-        model:K8sAPI|error k8sAPI = createAPImodel(k8sAPIByNameAndNamespace);
-        if k8sAPI is model:K8sAPI {
+        model:API|error k8sAPI = k8sAPIByNameAndNamespace.cloneWithType(model:API);
+        if k8sAPI is model:API {
             return k8sAPI;
         } else {
             log:printError("Error occued while converting json", k8sAPI);

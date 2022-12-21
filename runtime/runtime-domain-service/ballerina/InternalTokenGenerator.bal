@@ -23,7 +23,7 @@ import runtime_domain_service.model;
 # This Class used to generate Runtime Token
 public class InternalTokenGenerator {
 
-    public isolated function generateToken(model:K8sAPI api, string username) returns string|jwt:Error {
+    public isolated function generateToken(model:API api, string username) returns string|jwt:Error {
         TokenIssuerConfiguration issuerConfiguration = runtimeConfiguration.tokenIssuerConfiguration;
         KeyStore & readonly signingCert = runtimeConfiguration.keyStores.signing;
         string jwtid = uuid:createType1AsString();
@@ -48,10 +48,10 @@ public class InternalTokenGenerator {
     #
     # + api - invoked API
     # + return - Return list of custom claims
-    private isolated function handleCustomClaims(model:K8sAPI api) returns map<json> {
+    private isolated function handleCustomClaims(model:API api) returns map<json> {
         map<json> claims = {};
         claims["keytype"] = "PRODUCTION";
-        claims["uuid"] = api.uuid;
+        claims["uuid"] = api.metadata.uid;
         claims["token_type"] = "InternalKey";
         claims["subscribedAPIs"] = [self.createSubscribedAPIJSON(api)];
         return claims;
@@ -60,13 +60,13 @@ public class InternalTokenGenerator {
     #
     # + api - Invoke API.
     # + return - Return SubscribedAPI.
-    private isolated function createSubscribedAPIJSON(model:K8sAPI api) returns json {
+    private isolated function createSubscribedAPIJSON(model:API api) returns json {
         map<string> subscribedAPIs = {};
-        subscribedAPIs["name"] = api.apiDisplayName;
-        subscribedAPIs["context"] = api.context;
-        subscribedAPIs["version"] = api.apiVersion;
+        subscribedAPIs["name"] = api.spec.apiDisplayName;
+        subscribedAPIs["context"] = api.spec.context;
+        subscribedAPIs["version"] = api.spec.apiVersion;
         subscribedAPIs["publisher"] = APK_USER;
-        subscribedAPIs["uuid"] = api.uuid;
+        subscribedAPIs["uuid"] = <string>api.metadata.uid;
         return subscribedAPIs;
     }
 }
