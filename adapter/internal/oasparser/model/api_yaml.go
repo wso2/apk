@@ -260,18 +260,3 @@ func (apiYaml *APIYaml) PopulateEndpointsInfo() {
 		}
 	}
 }
-
-// ValidateAPIType checks if the apiProject is properly assigned with the type.
-func (apiYaml APIYaml) ValidateAPIType() (err error) {
-	apiType := apiYaml.Data.APIType
-	if apiType == "" {
-		// If no api.yaml file is included in the zip folder, return with error.
-		err = errors.New("could not find api.yaml or api.json")
-		return err
-	} else if apiType != constants.HTTP && apiType != constants.WS && apiType != constants.SOAP && apiType != constants.GRAPHQL {
-		errMsg := "The given API type is currently not supported in Choreo Connect. API type: " + apiType
-		err = errors.New(errMsg)
-		return err
-	}
-	return nil
-}

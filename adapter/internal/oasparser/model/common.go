@@ -126,7 +126,7 @@ func ResolveDisableSecurity(vendorExtensions map[string]interface{}) bool {
 }
 
 func getHTTPEndpoint(rawURL string) (*Endpoint, error) {
-	return getHostandBasepathandPort(constants.HTTP, rawURL)
+	return getHostandBasepathandPort(constants.REST, rawURL)
 }
 
 func getWebSocketEndpoint(rawURL string) (*Endpoint, error) {
@@ -145,7 +145,7 @@ func getHostandBasepathandPort(apiType string, rawURL string) (*Endpoint, error)
 	rawURL = strings.Trim(rawURL, " ")
 
 	if !strings.Contains(rawURL, "://") {
-		if apiType == constants.HTTP || apiType == constants.GRAPHQL {
+		if apiType == constants.REST || apiType == constants.GRAPHQL {
 			rawURL = "http://" + rawURL
 		} else if apiType == constants.WS {
 			rawURL = "ws://" + rawURL

@@ -38,10 +38,8 @@ const (
 
 // CR Statuses
 const (
-	ValidatedState = "Validated"
-	InvalidState   = "Invalid"
-	DeployedState  = "Deployed"
-	UpdatedState   = "Updated"
+	DeployedState = "Deployed"
+	UpdatedState  = "Updated"
 )
 
 // CRD Kinds

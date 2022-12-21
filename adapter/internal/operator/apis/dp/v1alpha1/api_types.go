@@ -33,13 +33,11 @@ type APISpec struct {
 	// be used to uniquely identify an API.
 	//
 	//
-	// +kubebuilder:validation:MinLength=4
 	APIDisplayName string `json:"apiDisplayName"`
 
 	// APIVersion is the version number of the API.
 	//
 	//
-	// +kubebuilder:validation:MinLength=2
 	APIVersion string `json:"apiVersion"`
 
 	// DefinitionFileRef contains the OpenAPI 3 or Swagger
@@ -68,13 +66,11 @@ type APISpec struct {
 	// APIType denotes the type of the API.
 	// Possible values could be REST, GraphQL, Async
 	//
-	// +kubebuilder:validation:MinLength=2
 	APIType string `json:"apiType"`
 
 	// Context denotes the context of the API.
 	// e.g: /pet-store-api/1.0.6
 	//
-	// +kubebuilder:validation:MinLength=2
 	Context string `json:"context"`
 
 	// Organization denotes the organization
@@ -91,14 +87,12 @@ type APIStatus struct {
 	// Possible values could be Accepted, Invalid, Deploy etc.
 	//
 	//
-	// +kubebuilder:validation:MinLength=4
 	Status string `json:"status"`
 
 	// Message represents a user friendly message that explains the
 	// current state of the API.
 	//
 	//
-	// +kubebuilder:validation:MinLength=4
 	// +optional
 	Message string `json:"message"`
 

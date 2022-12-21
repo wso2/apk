@@ -21,6 +21,7 @@ package constants
 const (
 	Urls                  string = "urls"
 	Type                  string = "type"
+	HTTP                  string = "http"
 	LoadBalance           string = "load_balance"
 	FailOver              string = "failover"
 	AdvanceEndpointConfig string = "advanceEndpointConfig"
@@ -109,9 +110,10 @@ const (
 	UpdatedMethod              string = "updatedMethod"
 )
 
-// Constants that occur as values in api.yaml
+// API Type Constants
 const (
-	HTTP                  string = "HTTP"
+	//todo(amali) change to REST
+	REST                  string = "HTTP"
 	SOAP                  string = "SOAP"
 	WS                    string = "WS"
 	GRAPHQL               string = "GRAPHQL"

@@ -20,7 +20,7 @@ package v1alpha1
 import (
 	"context"
 	"errors"
-	"fmt"
+	"regexp"
 
 	"github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/pkg/logging"
@@ -81,35 +81,88 @@ func (r *API) ValidateDelete() error {
 
 func (r *API) validateAPI() error {
 	var allErrs field.ErrorList
+	if err := r.validateMandatoryFields(); err != nil {
+		allErrs = append(allErrs, err)
+	}
+	if err := r.validateFormats(); err != nil {
+		allErrs = append(allErrs, err)
+	}
 	if err := r.validateAPIContext(); err != nil {
 		allErrs = append(allErrs, err)
 	}
 	if len(allErrs) == 0 {
 		return nil
 	}
-
 	return apierrors.NewInvalid(
 		schema.GroupKind{Group: "dp.wso2.com", Kind: "API"},
 		r.Name, allErrs)
 }
 
+// validateAPIContext check for duplicate api contexts
 func (r *API) validateAPIContext() *field.Error {
 	ctx := context.Background()
 	apiList := &APIList{}
 	if err := c.List(ctx, apiList); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("Unable to list APIs for API context validation"),
+			Message:   "unable to list APIs for API context validation",
 			Severity:  logging.CRITICAL,
 			ErrorCode: 2900,
 		})
 		return field.InternalError(field.NewPath("spec").Child("context"),
-			errors.New("Unable to list APIs for API context validation"))
+			errors.New("unable to list APIs for API context validation"))
 	}
 	for _, api := range apiList.Items {
-		if api.Spec.Context == r.Spec.Context {
-			return field.Invalid(field.NewPath("spec").Child("context"),
-				r.Spec.Context, fmt.Sprintf("an API has been already created for the context: %s", r.Spec.Context))
+		if r.Name != api.Name && api.Spec.Context == r.Spec.Context {
+			return &field.Error{
+				Type:     field.ErrorTypeDuplicate,
+				Field:    field.NewPath("spec").Child("context").String(),
+				BadValue: r.Spec.Context,
+				Detail:   "an API has been already created for the context"}
 		}
 	}
 	return nil
+}
+
+// validateMandatoryFields check mandatory fields
+func (r *API) validateMandatoryFields() *field.Error {
+	var errMsg string
+
+	if r.Spec.APIDisplayName == "" {
+		errMsg = "API display name "
+	}
+
+	if r.Spec.APIVersion == "" {
+		errMsg = errMsg + "API version "
+	}
+
+	if r.Spec.Context == "" {
+		errMsg = errMsg + "API context "
+	}
+	if r.Spec.APIType == "" {
+		errMsg = errMsg + "API type "
+	}
+
+	if r.Spec.ProdHTTPRouteRef == "" && r.Spec.SandHTTPRouteRef == "" {
+		errMsg = errMsg + "both API production and sandbox endpoint references "
+	}
+
+	if errMsg != "" {
+		errMsg = errMsg + "fields cannot be empty."
+		return field.Required(field.NewPath("spec"), errMsg)
+	}
+	return nil
+}
+
+func (r *API) validateFormats() *field.Error {
+	if errMsg := validateContext(r.Spec.Context); errMsg != "" {
+		return field.Invalid(field.NewPath("spec").Child("context"), r.Spec.Context, errMsg)
+	}
+	return nil
+}
+
+func validateContext(context string) string {
+	if match, _ := regexp.MatchString("^[/][a-zA-Z0-9~/_.-]*$", context); !match {
+		return "invalid basepath. Does not start with / or includes invalid characters."
+	}
+	return ""
 }
