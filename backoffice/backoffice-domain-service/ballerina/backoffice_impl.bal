@@ -125,3 +125,17 @@ function getLcEventHistory(string apiId) returns LifecycleHistory|error? {
         return error("Error while retriving LC events", lcHistory);
     }
 }
+
+
+
+function getSubscriptions(string? apiId) returns SubscriptionList|error {
+    Subscription[]|error subcriptions;
+        subcriptions = check db_getSubscriptionsForAPI(apiId.toString());
+        if subcriptions is Subscription[] {
+            int count = subcriptions.length();
+            SubscriptionList subsList = {count: count, list: subcriptions};
+            return subsList;
+        } else {
+            return error(subcriptions.message());
+        } 
+}

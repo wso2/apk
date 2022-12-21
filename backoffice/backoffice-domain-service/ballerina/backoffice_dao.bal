@@ -117,3 +117,37 @@ public function db_getLCEventHistory(string apiId) returns LifecycleHistoryItem[
         return lcItems;
     }
 }
+
+
+public function db_getSubscriptionsForAPI(string apiId) returns Subscription[]|error {
+    postgresql:Client | error dbClient  = getConnection();
+    if dbClient is error {
+        return error("Error while retrieving connection", dbClient);
+    } else {
+        sql:ParameterizedQuery query = `SELECT api_id FROM api WHERE api_uuid =${apiId}`;
+        int | sql:Error result =  dbClient->queryRow(query);
+        
+        if result is int {
+            sql:ParameterizedQuery query1 = `SELECT 
+                SUBS.SUBSCRIPTION_ID AS subscriptionId, 
+                APP.UUID AS applicationId,
+                APP.name AS name,
+                SUBS.TIER_ID AS THROTTLINGPOLICY, 
+                SUBS.sub_status AS subscriptionStatus
+                FROM SUBSCRIPTION SUBS, API API, APPLICATION APP 
+                WHERE APP.APPLICATION_ID=SUBS.APPLICATION_ID AND API.API_ID = SUBS.API_ID AND API.API_UUID = ${apiId}`;
+            stream<Subscription, sql:Error?> result1 =  dbClient->query(query1);
+            Subscription[] subsList = [];
+            check from Subscription subitem in result1 do {
+                Subscription sub = {applicationInfo: {},subscriptionId: "",subscriptionStatus: "",usagePlan: ""};
+                sub.subscriptionId =subitem.subscriptionId;
+                sub.subscriptionStatus = subitem.subscriptionStatus;
+                subsList.push(sub);
+            };
+            return subsList;
+            
+        } else {
+            return error("Error while geting subscription infomation" + result.message());  
+        }
+    }
+}
