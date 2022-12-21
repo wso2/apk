@@ -69,46 +69,18 @@ func (ods *OperatorDataStore) UpdateAPIState(apiDef *dpv1alpha1.API, prodHTTPRou
 	if prodHTTPRoute != nil {
 		if prodHTTPRoute.HTTPRoute.UID != cachedAPI.ProdHTTPRoute.HTTPRoute.UID ||
 			prodHTTPRoute.HTTPRoute.Generation > cachedAPI.ProdHTTPRoute.HTTPRoute.Generation {
-			cachedAPI.ProdHTTPRoute.HTTPRoute = prodHTTPRoute.HTTPRoute
+			cachedAPI.ProdHTTPRoute = prodHTTPRoute
 			updated = true
 			events = append(events, "Production Endpoint")
 		}
-		var authUpdated bool
-		for name, authentication := range prodHTTPRoute.Authentications {
-			// if existing map has more recent values for auth cr, then keep them
-			if existingAuth, found := cachedAPI.ProdHTTPRoute.Authentications[name]; found &&
-				(existingAuth.UID == authentication.UID || existingAuth.Generation >= authentication.Generation) {
-				prodHTTPRoute.Authentications[name] = existingAuth
-			}
-			updated = true
-			authUpdated = true
-		}
-		if authUpdated {
-			events = append(events, "API Authentication Schemes of production")
-		}
-		cachedAPI.ProdHTTPRoute.Authentications = prodHTTPRoute.Authentications
 	}
 	if sandHTTPRoute != nil {
 		if sandHTTPRoute.HTTPRoute.UID != cachedAPI.SandHTTPRoute.HTTPRoute.UID ||
 			sandHTTPRoute.HTTPRoute.Generation > cachedAPI.SandHTTPRoute.HTTPRoute.Generation {
-			cachedAPI.SandHTTPRoute.HTTPRoute = sandHTTPRoute.HTTPRoute
+			cachedAPI.SandHTTPRoute = sandHTTPRoute
 			updated = true
 			events = append(events, "Sandbox Endpoint")
 		}
-		var authUpdated bool
-		for name, authentication := range sandHTTPRoute.Authentications {
-			// if existing map has more recent values for auth cr, then keep them
-			if existingAuth, found := cachedAPI.SandHTTPRoute.Authentications[name]; found &&
-				(existingAuth.UID == authentication.UID || existingAuth.Generation >= authentication.Generation) {
-				sandHTTPRoute.Authentications[name] = existingAuth
-			}
-			updated = true
-			authUpdated = true
-		}
-		if authUpdated {
-			events = append(events, "API Authentication Schemes of sandbox")
-		}
-		cachedAPI.SandHTTPRoute.Authentications = sandHTTPRoute.Authentications
 	}
 
 	return events, updated
