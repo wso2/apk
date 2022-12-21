@@ -16,19 +16,29 @@
 // under the License.
 //
 
-public type API record {|
+public type API record {
     string kind = "API";
     string apiVersion = "dp.wso2.com/v1alpha1";
     Metadata metadata;
     APISpec spec;
-|};
+    APIStatus? status = ();
+};
 
 public type APISpec record {|
     string apiDisplayName;
     string apiType;
     string apiVersion;
     string context;
-    string definitionFileRef;
+    string organization;
+    string definitionFileRef?;
     string prodHTTPRouteRef?;
     string sandHTTPRouteRef?;
 |};
+
+public type APIStatus record {
+    boolean accepted;
+    string[] events;
+    string message;
+    string status;
+    string transitionTime;
+};

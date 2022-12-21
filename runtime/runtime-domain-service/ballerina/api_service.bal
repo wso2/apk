@@ -17,6 +17,7 @@
 //
 
 import ballerina/http;
+import ballerina/log;
 
 @display {
     label: "runtime-api-service",
@@ -43,7 +44,14 @@ http:Service runtimeService = service object {
     }
     isolated resource function delete apis/[string apiId]() returns http:Ok|ForbiddenError|NotFoundError|InternalServerErrorError {
         APIClient apiService = new ();
-        return apiService.deleteAPIById(apiId);
+        http:Ok|ForbiddenError|NotFoundError|InternalServerErrorError|error apiDeletionResponse = apiService.deleteAPIById(apiId);
+        if apiDeletionResponse is http:Ok|ForbiddenError|NotFoundError|InternalServerErrorError {
+            return apiDeletionResponse;
+        } else {
+            log:printError("Internal Error occured deleting API", apiDeletionResponse);
+            InternalServerErrorError internalEror = {body: {code: 90900, message: "Internal Error occured deleting API"}};
+            return internalEror;
+        }
     }
     isolated resource function post apis/[string apiId]/'generate\-key() returns APIKey|BadRequestError|NotFoundError|ForbiddenError|InternalServerErrorError {
         APIClient apiService = new ();
@@ -51,7 +59,16 @@ http:Service runtimeService = service object {
     }
     isolated resource function post apis/'import\-service(string serviceKey, @http:Payload API payload) returns CreatedAPI|BadRequestError|InternalServerErrorError {
         APIClient apiService = new ();
-        return apiService.createAPIFromService(serviceKey, payload);
+        CreatedAPI|BadRequestError|InternalServerErrorError|error aPIFromService = apiService.createAPIFromService(serviceKey, payload);
+        if aPIFromService is CreatedAPI|BadRequestError|InternalServerErrorError {
+            return aPIFromService;
+        } else {
+            log:printError("Internal Error occured deploying API", aPIFromService);
+            InternalServerErrorError internalEror = {body: {code: 90900, message: "Internal Error occured deploying API"}};
+            return internalEror;
+
+        }
+
     }
     isolated resource function post apis/'import\-definition(@http:Payload json payload) returns CreatedAPI|BadRequestError|PreconditionFailedError|InternalServerErrorError {
         BadRequestError badRequest = {body: {code: 900910, message: "Not implemented"}};

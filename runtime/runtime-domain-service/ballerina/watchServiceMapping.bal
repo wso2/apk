@@ -20,7 +20,7 @@ import ballerina/lang.value;
 import runtime_domain_service.model as model;
 import ballerina/log;
 
-map<map<model:K8sAPI>> serviceMappings = {};
+map<map<model:API>> serviceMappings = {};
 string serviceMappingResourceVersion = "";
 isolated map<model:K8sServiceMapping> k8sServiceMappings = {};
 websocket:Client|error|() serviceMappingClient = ();
@@ -121,13 +121,13 @@ function readServiceMappingEvent(websocket:Client apiWebsocketClient) returns er
 
 }
 
-function addServiceMapping(map<map<model:K8sAPI>> serviceMappings, model:K8sServiceMapping serviceMapping) {
+function addServiceMapping(map<map<model:API>> serviceMappings, model:K8sServiceMapping serviceMapping) {
     lock {
         k8sServiceMappings[serviceMapping.metadata.uid ?: ""] = serviceMapping.clone();
     }
 }
 
-function deleteServiceMapping(map<map<model:K8sAPI>> serviceMappings, model:K8sServiceMapping serviceMapping) {
+function deleteServiceMapping(map<map<model:API>> serviceMappings, model:K8sServiceMapping serviceMapping) {
     lock {
         _ = k8sServiceMappings.remove(serviceMapping.metadata.uid ?: "");
     }
@@ -143,17 +143,17 @@ function putAllServiceMappings(json[] events) returns error? {
     }
 }
 
-isolated function retrieveAPIMappingsForService(Service serviceEntry) returns model:K8sAPI[] {
+isolated function retrieveAPIMappingsForService(Service serviceEntry) returns model:API[] {
     lock {
         string[] keys = k8sServiceMappings.keys();
-        model:K8sAPI[] apis = [];
+        model:API[] apis = [];
         foreach string key in keys {
             model:K8sServiceMapping serviceMapping = k8sServiceMappings.get(key);
             model:ServiceReference serviceRef = serviceMapping.spec.serviceRef;
             if (serviceRef.name == serviceEntry.name && serviceRef.namespace == serviceEntry.namespace) {
                 model:APIReference apiRef = serviceMapping.spec.apiRef;
-                model:K8sAPI? k8sAPI = getAPIByNameAndNamespace(apiRef.name, apiRef.namespace);
-                if k8sAPI is model:K8sAPI {
+                model:API? k8sAPI = getAPIByNameAndNamespace(apiRef.name, apiRef.namespace);
+                if k8sAPI is model:API {
                     apis.push(k8sAPI);
                 }
             }
@@ -162,14 +162,14 @@ isolated function retrieveAPIMappingsForService(Service serviceEntry) returns mo
     }
 }
 
-isolated function retrieveServiceMappingsForAPI(model:K8sAPI api) returns model:K8sServiceMapping[] {
+isolated function retrieveServiceMappingsForAPI(model:API api) returns model:K8sServiceMapping[] {
     lock {
         string[] keys = k8sServiceMappings.keys();
         model:K8sServiceMapping[] serviceMappings = [];
         foreach string key in keys {
             model:K8sServiceMapping serviceMapping = k8sServiceMappings.get(key);
             model:APIReference apiRef = serviceMapping.spec.apiRef;
-            if (apiRef.name == api.k8sName && apiRef.namespace == api.namespace) {
+            if (apiRef.name == api.metadata.name && apiRef.namespace == api.metadata.namespace) {
                 serviceMappings.push(serviceMapping);
             }
         }

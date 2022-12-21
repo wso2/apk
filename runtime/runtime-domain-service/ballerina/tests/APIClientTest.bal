@@ -184,12 +184,12 @@ function hostnameDataProvider() returns map<[string, string, string]>|error {
 }
 
 @test:Config {dataProvider: apiNameDataProvider}
-public function testGetAPIByNameAndNamespace(string name, string namespace, model:K8sAPI|() expected) {
+public function testGetAPIByNameAndNamespace(string name, string namespace, model:API & readonly|() expected) {
     test:assertEquals(getAPIByNameAndNamespace(name, namespace), expected);
 }
 
-function apiNameDataProvider() returns map<[string, string, model:K8sAPI|()]>|error {
-    map<[string, string, model:K8sAPI?]> dataSet = {
+function apiNameDataProvider() returns map<[string, string, model:API & readonly|()]>|error {
+    map<[string, string, model:API & readonly|()]> dataSet = {
         "1": ["01ed7aca-eb6b-1178-a200-f604a4ce114a", "apk-platform", getMockPizzaShakK8sAPI()],
         "2": ["01ed7b08-f2b1-1166-82d5-649ae706d29e", "apk-platform", ()],
         "3": ["pizzashackAPI1", "apk", ()]
@@ -198,12 +198,12 @@ function apiNameDataProvider() returns map<[string, string, model:K8sAPI|()]>|er
 }
 
 @test:Config {dataProvider: apiIDDataprovider}
-public function testGetAPIById(string id, model:K8sAPI|error expected) returns error? {
+public function testGetAPIById(string id, model:API & readonly|error expected) returns error? {
     test:assertEquals(getAPI(id), check expected);
 }
 
-function apiIDDataprovider() returns map<[string, model:K8sAPI|error]>|error {
-    map<[string, model:K8sAPI|error]> dataSet = {
+function apiIDDataprovider() returns map<[string, model:API & readonly|error]>|error {
+    map<[string, model:API & readonly|error]> dataSet = {
         "1": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e8", getMockPizzaShakK8sAPI()]
     };
     return dataSet;

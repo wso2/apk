@@ -159,14 +159,14 @@ public class ServiceClient {
         APIInfo[] apiInfos = [];
         Service|BadRequestError|NotFoundError|InternalServerErrorError serviceEntry = self.getServiceById(serviceId);
         if serviceEntry is Service {
-            model:K8sAPI[] k8sAPIS = retrieveAPIMappingsForService(serviceEntry);
-            foreach model:K8sAPI k8sAPI in k8sAPIS {
+            model:API[] k8sAPIS = retrieveAPIMappingsForService(serviceEntry);
+            foreach model:API k8sAPI in k8sAPIS {
                 apiInfos.push({
-                    context: k8sAPI.context,
-                    createdTime: k8sAPI.creationTimestamp,
-                    name: k8sAPI.apiDisplayName,
-                    id: k8sAPI.uuid,
-                    'type: k8sAPI.apiType,
+                    context: k8sAPI.spec.context,
+                    createdTime: k8sAPI.metadata.creationTimestamp,
+                    name: k8sAPI.spec.apiDisplayName,
+                    id: k8sAPI.metadata.uid,
+                    'type: k8sAPI.spec.apiType,
                     'version: k8sAPI.apiVersion
                 });
             }

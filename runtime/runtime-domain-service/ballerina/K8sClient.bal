@@ -52,40 +52,40 @@ isolated function getConfigMapValueFromNameAndNamespace(string name, string name
     return k8sApiServerEp->get(endpoint, targetType = json);
 }
 
-isolated function deleteAPICR(string name, string namespace) returns json|http:ClientError {
+isolated function deleteAPICR(string name, string namespace) returns http:Response|http:ClientError {
     string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/apis/" + name;
-    return k8sApiServerEp->delete(endpoint, targetType = json);
+    return k8sApiServerEp->delete(endpoint, targetType = http:Response);
 }
 
-isolated function deleteHttpRoute(string name, string namespace) returns json|http:ClientError {
+isolated function deleteHttpRoute(string name, string namespace) returns http:Response|http:ClientError {
     string endpoint = "/apis/gateway.networking.k8s.io/v1beta1/namespaces/" + namespace + "/httproutes/" + name;
-    return k8sApiServerEp->delete(endpoint, targetType = json);
+    return k8sApiServerEp->delete(endpoint, targetType = http:Response);
 }
 
-isolated function deleteConfigMap(string name, string namespace) returns json|http:ClientError {
+isolated function deleteConfigMap(string name, string namespace) returns http:Response|http:ClientError {
     string endpoint = "/api/v1/namespaces/" + namespace + "/configmaps/" + name;
-    return k8sApiServerEp->delete(endpoint, targetType = json);
+    return k8sApiServerEp->delete(endpoint, targetType = http:Response);
 }
 
-isolated function deployAPICR(model:API api, string namespace) returns json|http:ClientError {
+isolated function deployAPICR(model:API api, string namespace) returns http:Response|http:ClientError {
     string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/apis";
-    return k8sApiServerEp->post(endpoint, api, targetType = json);
+    return k8sApiServerEp->post(endpoint, api, targetType = http:Response);
 }
 
-isolated function deployServiceMappingCR(model:K8sServiceMapping serviceMapping, string namespace) returns json|http:ClientError {
+isolated function deployServiceMappingCR(model:K8sServiceMapping serviceMapping, string namespace) returns http:Response|http:ClientError {
     string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/servicemappings";
-    return k8sApiServerEp->post(endpoint, serviceMapping, targetType = json);
+    return k8sApiServerEp->post(endpoint, serviceMapping, targetType = http:Response);
 
 }
 
-isolated function deployConfigMap(model:ConfigMap configMap, string namespace) returns json|http:ClientError {
+isolated function deployConfigMap(model:ConfigMap configMap, string namespace) returns http:Response|http:ClientError {
     string endpoint = "/api/v1/namespaces/" + namespace + "/configmaps";
-    return k8sApiServerEp->post(endpoint, configMap, targetType = json);
+    return k8sApiServerEp->post(endpoint, configMap, targetType = http:Response);
 }
 
-isolated function deployHttpRoute(model:Httproute httproute, string namespace) returns json|http:ClientError {
+isolated function deployHttpRoute(model:Httproute httproute, string namespace) returns http:Response|http:ClientError {
     string endpoint = "/apis/gateway.networking.k8s.io/v1beta1/namespaces/" + namespace + "/httproutes";
-    return k8sApiServerEp->post(endpoint, httproute, targetType = json);
+    return k8sApiServerEp->post(endpoint, httproute, targetType = http:Response);
 }
 
 isolated function retrieveAllAPIS(string? continueToken) returns json|http:ClientError {
@@ -179,8 +179,8 @@ function retrieveAllServiceMappings(string? continueToken) returns json|http:Cli
     return k8sApiServerEp->get(endpoint, targetType = json);
 }
 
-isolated function deleteK8ServiceMapping(string name, string namespace) returns json|http:ClientError {
+isolated function deleteK8ServiceMapping(string name, string namespace) returns http:Response|http:ClientError {
     string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/servicemappings/" + name;
-    return k8sApiServerEp->delete(endpoint, targetType = json);
+    return k8sApiServerEp->delete(endpoint, targetType = http:Response);
 }
 
