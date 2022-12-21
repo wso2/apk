@@ -196,8 +196,8 @@ service /api/am/admin on ep0 {
             return internalError;
         }
     }
-    isolated resource function get 'deny\-policy/[string conditionId]() returns BlockingCondition|NotFoundError|NotAcceptableError|InternalServerErrorError|error {
-        string?|BlockingCondition|error denyPolicy = getDenyPolicyById(conditionId);
+    isolated resource function get 'deny\-policies/[string policyId]() returns BlockingCondition|NotFoundError|NotAcceptableError|InternalServerErrorError|error {
+        string?|BlockingCondition|error denyPolicy = getDenyPolicyById(policyId);
         if denyPolicy is string {
             json j = check value:fromJsonString(denyPolicy);
             BlockingCondition condition = check j.cloneWithType(BlockingCondition);
@@ -210,8 +210,8 @@ service /api/am/admin on ep0 {
             return internalError;
         }
     }
-    isolated resource function delete 'deny\-policy/[string conditionId]() returns http:Ok|NotFoundError|InternalServerErrorError|error {
-        string|error? ex = removeDenyPolicy(conditionId);
+    isolated resource function delete 'deny\-policies/[string policyId]() returns http:Ok|NotFoundError|InternalServerErrorError|error {
+        string|error? ex = removeDenyPolicy(policyId);
         if ex is error {
             InternalServerErrorError internalError = {body: {code: 90900, message: "Internal Error while deleting Deny Policy by Id"}};
             return internalError;
@@ -219,8 +219,8 @@ service /api/am/admin on ep0 {
             return http:OK;
         }
     }
-    isolated resource function patch 'deny\-policy/[string conditionId](@http:Payload BlockingConditionStatus payload, @http:Header string 'content\-type = "application/json") returns BlockingCondition|BadRequestError|NotFoundError|InternalServerErrorError|error {
-        string?|BlockingCondition|NotFoundError|error updatedPolicy = updateDenyPolicy(conditionId, payload);
+    isolated resource function patch 'deny\-policies/[string policyId](@http:Payload BlockingConditionStatus payload, @http:Header string 'content\-type = "application/json") returns BlockingCondition|BadRequestError|NotFoundError|InternalServerErrorError|error {
+        string?|BlockingCondition|NotFoundError|error updatedPolicy = updateDenyPolicy(policyId, payload);
         if updatedPolicy is string {
             json j = check value:fromJsonString(updatedPolicy);
             BlockingCondition condition = check j.cloneWithType(BlockingCondition);

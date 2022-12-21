@@ -87,11 +87,11 @@ public type ForbiddenError record {|
 |};
 
 public type Policy record {
-    # Id of policy
-    string policyId?;
-    # Name of policy
+    # Id of plan
+    string planId?;
+    # Name of plan
     @constraint:String {maxLength: 60, minLength: 1}
-    string policyName;
+    string planName;
     # Display name of the policy
     @constraint:String {maxLength: 512}
     string displayName?;
@@ -113,7 +113,7 @@ public type EnvironmentList record {
 # Blocking Conditions
 public type BlockingCondition record {
     # Id of the blocking condition
-    string conditionId?;
+    string policyId?;
     # Type of the blocking condition
     string conditionType;
     # Value of the blocking condition
@@ -183,7 +183,6 @@ public type BusinessPlan record {
     *Policy;
     *GraphQLQuery;
     ThrottleLimit defaultLimit;
-    MonetizationInfo monetization?;
     # Burst control request count
     int rateLimitCount?;
     # Burst control time unit
@@ -192,10 +191,6 @@ public type BusinessPlan record {
     int subscriberCount?;
     # Custom attributes added to the Subscription Throttling Policy
     CustomAttribute[] customAttributes?;
-    # This indicates the action to be taken when a user goes beyond the allocated quota. If checked, the user's requests will be dropped. If unchecked, the requests will be allowed to pass through.
-    boolean stopOnQuotaReach = false;
-    # define whether this is Paid or a Free plan. Allowed values are FREE or COMMERCIAL.
-    string billingPlan?;
     BusinessPlanPermission permissions?;
 };
 
@@ -522,7 +517,7 @@ public type Policies_import_body record {
 # Blocking Conditions Status
 public type BlockingConditionStatus record {
     # Id of the blocking condition
-    string conditionId?;
+    string policyId?;
     # Status of the blocking condition
     boolean conditionStatus;
 };

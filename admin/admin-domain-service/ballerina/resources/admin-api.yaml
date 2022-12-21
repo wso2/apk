@@ -1146,15 +1146,15 @@ paths:
   ######################################################
   # The "Individual Deny Policy" resource API
   ######################################################
-  /deny-policy/{conditionId}:
+  /deny-policies/{policyId}:
     get:
       tags:
         - Deny Policy (Individual)
       summary: Get a Deny Policy
       description: |
-        Retrieves a Deny policy providing the condition Id
+        Retrieves a Deny policy providing the policy Id
       parameters:
-        - $ref: '#/components/parameters/conditionId'
+        - $ref: '#/components/parameters/policyId'
       responses:
         200:
           description: |
@@ -1191,7 +1191,7 @@ paths:
       description: |
         Deletes an existing deny policy
       parameters:
-        - $ref: '#/components/parameters/conditionId'
+        - $ref: '#/components/parameters/policyId'
       responses:
         200:
           description: |
@@ -1217,7 +1217,7 @@ paths:
       description: |
         Update a deny policy by Id
       parameters:
-        - $ref: '#/components/parameters/conditionId'
+        - $ref: '#/components/parameters/policyId'
         - $ref: '#/components/parameters/Content-Type'
       requestBody:
         description: |
@@ -2834,19 +2834,19 @@ components:
     Policy:
       title: Generic Throttling Policy
       required:
-        - policyName
+        - planName
       type: object
       properties:
-        policyId:
+        planId:
           type: string
-          description: Id of policy
+          description: Id of plan
           readOnly: true
           example: 0c6439fd-9b16-3c2e-be6e-1086e0b9aa93
-        policyName:
+        planName:
           maxLength: 60
           minLength: 1
           type: string
-          description: Name of policy
+          description: Name of plan
           example: 30PerMin
         displayName:
           type: string
@@ -2950,8 +2950,6 @@ components:
           properties:
             defaultLimit:
               $ref: '#/components/schemas/ThrottleLimit'
-            monetization:
-              $ref: '#/components/schemas/MonetizationInfo'
             rateLimitCount:
               type: integer
               description: Burst control request count
@@ -2971,16 +2969,6 @@ components:
               example: []
               items:
                 $ref: '#/components/schemas/CustomAttribute'
-            stopOnQuotaReach:
-              type: boolean
-              description: |
-                This indicates the action to be taken when a user goes beyond the allocated quota. If checked, the user's requests will be dropped. If unchecked, the requests will be allowed to pass through.
-              default: false
-            billingPlan:
-              type: string
-              description: |
-                define whether this is Paid or a Free plan. Allowed values are FREE or COMMERCIAL.
-              example: FREE
             permissions:
               $ref: '#/components/schemas/BusinessPlanPermission'
     BusinessPlanPermission:
@@ -3288,7 +3276,7 @@ components:
         - conditionValue
       type: object
       properties:
-        conditionId:
+        policyId:
           type: string
           description: Id of the blocking condition
           example: b513eb68-69e8-4c32-92cf-852c101363cf
@@ -3333,7 +3321,7 @@ components:
         - conditionStatus
       type: object
       properties:
-        conditionId:
+        policyId:
           type: string
           description: Id of the blocking condition
           example: b513eb68-69e8-4c32-92cf-852c101363cf
@@ -4504,14 +4492,6 @@ components:
       in: path
       description: |
         Application UUID
-      required: true
-      schema:
-        type: string
-    conditionId:
-      name: conditionId
-      in: path
-      description: |
-        Blocking condition identifier
       required: true
       schema:
         type: string

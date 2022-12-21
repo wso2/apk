@@ -21,7 +21,7 @@ import ballerina/uuid;
 
 isolated function addApplicationUsagePlan(ApplicationRatePlan body) returns string?|ApplicationRatePlan|error {
     string policyId = uuid:createType1AsString();
-    body.policyId = policyId;
+    body.planId = policyId;
     match body.defaultLimit.'type {
         "REQUESTCOUNTLIMIT" => {
             body.defaultLimit.'type = "requestCount";
@@ -57,7 +57,7 @@ isolated function getApplicationUsagePlans() returns string?|ApplicationRatePlan
 isolated function updateApplicationUsagePlan(string policyId, ApplicationRatePlan body) returns string?|ApplicationRatePlan|NotFoundError|error {
     string?|ApplicationRatePlan|error existingPolicy = getApplicationUsagePlanByIdDAO(policyId);
     if existingPolicy is ApplicationRatePlan {
-        body.policyId = policyId;
+        body.planId = policyId;
         //body.policyName = existingPolicy.name;
     } else {
         Error err = {code:9010101, message:"Policy Not Found"};
@@ -87,7 +87,7 @@ isolated function removeApplicationUsagePlan(string policyId) returns error?|str
 
 isolated function addBusinessPlan(BusinessPlan body) returns string?|BusinessPlan|error {
     string policyId = uuid:createType1AsString();
-    body.policyId = policyId;
+    body.planId = policyId;
     match body.defaultLimit.'type {
         "REQUESTCOUNTLIMIT" => {
             body.defaultLimit.'type = "requestCount";
@@ -123,7 +123,7 @@ isolated function getBusinessPlans() returns string?|BusinessPlanList|error {
 isolated function updateBusinessPlan(string policyId, BusinessPlan body) returns string?|BusinessPlan|NotFoundError|error {
     string?|BusinessPlan|error existingPolicy = getBusinessPlanByIdDAO(policyId);
     if existingPolicy is BusinessPlan {
-        body.policyId = policyId;
+        body.planId = policyId;
         //body.policyName = existingPolicy.name;
     } else {
         Error err = {code:9010101, message:"Policy Not Found"};
@@ -153,7 +153,7 @@ isolated function removeBusinessPlan(string policyId) returns error?|string {
 
 isolated function addDenyPolicy(BlockingCondition body) returns string?|BlockingCondition|error {
     string policyId = uuid:createType1AsString();
-    body.conditionId = policyId;
+    body.policyId = policyId;
     //Todo : need to validate each type
     match body.conditionType {
         "APPLICATION" => {
@@ -196,7 +196,7 @@ isolated function updateDenyPolicy(string policyId, BlockingConditionStatus stat
         NotFoundError nfe = {body: err};
         return nfe;
     } else {
-        status.conditionId = policyId;
+        status.policyId = policyId;
     }
     string?|error response = updateDenyPolicyDAO(status);
     if response is error {

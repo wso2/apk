@@ -65,8 +65,8 @@ test:MockFunction deleteDenyPolicyDAOMock = new();
 
 @test:Config {}
 function addApplicationUsagePlanTest() {
-    string?|ApplicationRatePlan|error  applicationUsagePlan = {policyName: "15PerMin", description: "15 Per Minute",'type:"ApplicationThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"}};
-    ApplicationRatePlan payload = {policyName: "15PerMin", description: "15 Per Minute",'type:"ApplicationThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"},policyId: "1234455"};
+    string?|ApplicationRatePlan|error  applicationUsagePlan = {planName: "15PerMin", description: "15 Per Minute",'type:"ApplicationThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"}};
+    ApplicationRatePlan payload = {planName: "15PerMin", description: "15 Per Minute",'type:"ApplicationThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"},planId: "1234455"};
     test:when(addApplicationUsagePlanDAOMock).thenReturn(applicationUsagePlan);
     string?|ApplicationRatePlan|error createdAppPol = addApplicationUsagePlan(payload);
     if createdAppPol is ApplicationRatePlan {
@@ -78,7 +78,7 @@ function addApplicationUsagePlanTest() {
 
 @test:Config {}
 function getApplicationUsagePlanByIdTest(){
-    ApplicationRatePlan aup = {policyName: "15PerMin", description: "15 Per Minute",'type:"ApplicationThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"},policyId: "1234455"};
+    ApplicationRatePlan aup = {planName: "15PerMin", description: "15 Per Minute",'type:"ApplicationThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"},planId: "1234455"};
     test:when(getApplicationUsagePlanByIdDAOMock).withArguments("1234455").thenReturn(aup);
     string?|ApplicationRatePlan|error policy = getApplicationUsagePlanByIdDAO("1234455");
     if policy is ApplicationRatePlan {
@@ -90,8 +90,8 @@ function getApplicationUsagePlanByIdTest(){
 
 @test:Config {}
 function getApplicationUsagePlansTest(){
-    ApplicationRatePlan[] aupList = [{policyName: "15PerMin", description: "15 Per Minute",'type:"ApplicationThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"},policyId: "1234455"},
-    {policyName: "30PerMin", description: "30 Per Minute",'type:"ApplicationThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"},policyId: "asqw1234dsd"}];
+    ApplicationRatePlan[] aupList = [{planName: "15PerMin", description: "15 Per Minute",'type:"ApplicationThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"},planId: "1234455"},
+    {planName: "30PerMin", description: "30 Per Minute",'type:"ApplicationThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"},planId: "asqw1234dsd"}];
     test:when(getApplicationUsagePlansDAOMock).withArguments("carbon.super").thenReturn(aupList);
     string?|ApplicationRatePlanList|error appPolicyList = getApplicationUsagePlans();
     if appPolicyList is ApplicationRatePlanList {
@@ -103,8 +103,8 @@ function getApplicationUsagePlansTest(){
 
 @test:Config {}
 function updateApplicationUsagePlanTest() {
-    string?|ApplicationRatePlan|error  applicationUsagePlan = {policyName: "15PerMin", description: "15 Per Minute",'type:"ApplicationThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"},policyId: "1234455"};
-    ApplicationRatePlan payload = {policyName: "15PerMin", description: "15 Per Minute New",'type:"ApplicationThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"},policyId: "1234455"};
+    string?|ApplicationRatePlan|error  applicationUsagePlan = {planName: "15PerMin", description: "15 Per Minute",'type:"ApplicationThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"},planId: "1234455"};
+    ApplicationRatePlan payload = {planName: "15PerMin", description: "15 Per Minute New",'type:"ApplicationThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"},planId: "1234455"};
     test:when(getApplicationUsagePlanByIdDAOMock).withArguments("1234455").thenReturn(applicationUsagePlan);
     test:when(updateApplicationUsagePlanDAOMock).thenReturn(payload);
     string?|ApplicationRatePlan|error createdAppPol = updateApplicationUsagePlanDAO(payload);
@@ -128,10 +128,10 @@ function removeApplicationUsagePlanTest(){
 
 @test:Config {}
 function addBusinessPlanTest() {
-    string?|BusinessPlan|error  businessPlan = {policyName: "MySubPol1", description: "test sub pol",'type:"SubscriptionThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"}, 
-    subscriberCount: 12, rateLimitCount: 10,rateLimitTimeUnit: "sec", stopOnQuotaReach:true};
-    BusinessPlan payload = {policyName: "MySubPol1", description: "test sub pol",'type:"SubscriptionThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"}, 
-    subscriberCount: 12, rateLimitCount: 10,rateLimitTimeUnit: "sec", stopOnQuotaReach:true, policyId: "123456"};
+    string?|BusinessPlan|error  businessPlan = {planName: "MySubPol1", description: "test sub pol",'type:"SubscriptionThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"}, 
+    subscriberCount: 12, rateLimitCount: 10,rateLimitTimeUnit: "sec"};
+    BusinessPlan payload = {planName: "MySubPol1", description: "test sub pol",'type:"SubscriptionThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"}, 
+    subscriberCount: 12, rateLimitCount: 10,rateLimitTimeUnit: "sec", planId: "123456"};
     test:when(addBusinessPlanDAOMock).thenReturn(businessPlan);
     string?|BusinessPlan|error createdBusinessPlan = addBusinessPlan(payload);
     if createdBusinessPlan is BusinessPlan {
@@ -143,8 +143,8 @@ function addBusinessPlanTest() {
 
 @test:Config {}
 function getBusinessPlanByIdTest() {
-    string?|BusinessPlan|error  businessPlan = {policyName: "MySubPol1", description: "test sub pol",'type:"SubscriptionThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"}, 
-    subscriberCount: 12, rateLimitCount: 10,rateLimitTimeUnit: "sec", stopOnQuotaReach:true, policyId: "123456"};
+    string?|BusinessPlan|error  businessPlan = {planName: "MySubPol1", description: "test sub pol",'type:"SubscriptionThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"}, 
+    subscriberCount: 12, rateLimitCount: 10,rateLimitTimeUnit: "sec", planId: "123456"};
     test:when(getBusinessPlanByIdDAOMock).thenReturn(businessPlan);
     string?|BusinessPlan|error businessPlanResponse = getBusinessPlanById("123456");
     if businessPlanResponse is BusinessPlan {
@@ -156,9 +156,9 @@ function getBusinessPlanByIdTest() {
 
 @test:Config {}
 function getBusinessPlansTest() {
-    BusinessPlan[]  businessPlans = [{policyName: "MySubPol1", description: "test sub pol",'type:"SubscriptionThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"}, 
-    subscriberCount: 12, rateLimitCount: 10,rateLimitTimeUnit: "sec", stopOnQuotaReach:true, policyId: "123456"},{policyName: "MySubPol2", description: "test sub pol 2",'type:"SubscriptionThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"}, 
-    subscriberCount: 15, rateLimitCount: 14,rateLimitTimeUnit: "sec", stopOnQuotaReach:true, policyId: "qwe13123456asd"}];
+    BusinessPlan[]  businessPlans = [{planName: "MySubPol1", description: "test sub pol",'type:"SubscriptionThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"}, 
+    subscriberCount: 12, rateLimitCount: 10,rateLimitTimeUnit: "sec", planId: "123456"},{planName: "MySubPol2", description: "test sub pol 2",'type:"SubscriptionThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"}, 
+    subscriberCount: 15, rateLimitCount: 14,rateLimitTimeUnit: "sec", planId: "qwe13123456asd"}];
     test:when(getBusinessPlansDAOMock).withArguments("carbon.super").thenReturn(businessPlans);
     string?|BusinessPlanList|error businessPlansResponse = getBusinessPlans();
     if businessPlansResponse is BusinessPlanList {
@@ -170,10 +170,10 @@ function getBusinessPlansTest() {
 
 @test:Config {}
 function updateBusinessPlanTest() {
-    string?|BusinessPlan|error  businessPlan = {policyName: "MySubPol1", description: "test sub pol",'type:"SubscriptionThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"}, 
-    subscriberCount: 12, rateLimitCount: 10,rateLimitTimeUnit: "sec", stopOnQuotaReach:true};
-    BusinessPlan payload = {policyName: "MySubPol1", description: "test sub pol New",'type:"SubscriptionThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"}, 
-    subscriberCount: 12, rateLimitCount: 5,rateLimitTimeUnit: "sec", stopOnQuotaReach:true, policyId: "123456"};
+    string?|BusinessPlan|error  businessPlan = {planName: "MySubPol1", description: "test sub pol",'type:"SubscriptionThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"}, 
+    subscriberCount: 12, rateLimitCount: 10,rateLimitTimeUnit: "sec"};
+    BusinessPlan payload = {planName: "MySubPol1", description: "test sub pol New",'type:"SubscriptionThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"}, 
+    subscriberCount: 12, rateLimitCount: 5,rateLimitTimeUnit: "sec", planId: "123456"};
      test:when(getBusinessPlanByIdDAOMock).thenReturn(businessPlan);
     test:when(updateBusinessPlanDAOMock).thenReturn(payload);
     string?|BusinessPlan|NotFoundError|error updatedBusinessPlan = updateBusinessPlan("123456",payload);
@@ -197,8 +197,8 @@ function removeBusinessPlanTest(){
 
 @test:Config {}
 function addDenyPolicyTest() {
-    string?|BlockingCondition|error  denyPolicy = {conditionId: "123456",conditionType: "APPLICATION",conditionValue: "admin:MyApp5",conditionStatus: true};
-    BlockingCondition payload = {conditionId: "123456",conditionType: "APPLICATION",conditionValue: "admin:MyApp5",conditionStatus: true};
+    string?|BlockingCondition|error  denyPolicy = {policyId: "123456",conditionType: "APPLICATION",conditionValue: "admin:MyApp5",conditionStatus: true};
+    BlockingCondition payload = {policyId: "123456",conditionType: "APPLICATION",conditionValue: "admin:MyApp5",conditionStatus: true};
     test:when(addDenyPolicyDAOMock).thenReturn(denyPolicy);
     string?|BlockingCondition|error createdDenyPolicy = addDenyPolicy(payload);
     if createdDenyPolicy is BlockingCondition {
@@ -210,7 +210,7 @@ function addDenyPolicyTest() {
 
 @test:Config {}
 function getDenyPolicyByIdTest() {
-    BlockingCondition denyPolicy = {conditionId: "123456",conditionType: "APPLICATION",conditionValue: "admin:MyApp5",conditionStatus: true};
+    BlockingCondition denyPolicy = {policyId: "123456",conditionType: "APPLICATION",conditionValue: "admin:MyApp5",conditionStatus: true};
     test:when(getDenyPolicyByIdDAOMock).withArguments("123456").thenReturn(denyPolicy);
     string?|BlockingCondition|error denyPolicyResponse = getDenyPolicyById("123456");
     if denyPolicyResponse is BlockingCondition {
@@ -222,8 +222,8 @@ function getDenyPolicyByIdTest() {
 
 @test:Config {}
 function getAllDenyPoliciesTest() {
-    BlockingCondition[] denyPolicies = [{conditionId: "123456",conditionType: "APPLICATION",conditionValue: "admin:MyApp5",conditionStatus: true},
-    {conditionId: "asqe123456ad",conditionType: "APPLICATION",conditionValue: "admin:MyApp5",conditionStatus: true}];
+    BlockingCondition[] denyPolicies = [{policyId: "123456",conditionType: "APPLICATION",conditionValue: "admin:MyApp5",conditionStatus: true},
+    {policyId: "asqe123456ad",conditionType: "APPLICATION",conditionValue: "admin:MyApp5",conditionStatus: true}];
     test:when(getDenyPoliciesDAOMock).withArguments("carbon.super").thenReturn(denyPolicies);
     string?|BlockingConditionList|error denyPoliciesResponse = getAllDenyPolicies();
     if denyPoliciesResponse is BlockingConditionList {
@@ -235,8 +235,8 @@ function getAllDenyPoliciesTest() {
 
 @test:Config {}
 function updateDenyPolicyTest() {
-    BlockingCondition denyPolicy = {conditionId: "123456",conditionType: "APPLICATION",conditionValue: "admin:MyApp5",conditionStatus: true};
-    BlockingConditionStatus status = {conditionStatus: false, conditionId: "123456"};
+    BlockingCondition denyPolicy = {policyId: "123456",conditionType: "APPLICATION",conditionValue: "admin:MyApp5",conditionStatus: true};
+    BlockingConditionStatus status = {conditionStatus: false, policyId: "123456"};
     test:when(getDenyPolicyByIdDAOMock).withArguments("123456").thenReturn(denyPolicy);
     test:when(updateDenyPolicyDAOMock).withArguments(status).thenReturn("");
     string?|BlockingCondition|NotFoundError|error denyPolicyResponse = updateDenyPolicy("123456", status);
