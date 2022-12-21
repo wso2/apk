@@ -7,7 +7,7 @@ This folder contains APK postman integration tests that use the test APK product
 1. [Overview](#overview)
 1. [Using Postman Tests](#using-postman-tests)
     1. [Load Environment into Postman](#adding-an-environment-to-postman)
-    1. [Add Collection to Postman](#add-collection-to-postman)
+    1. [Add Collection to Postman](#adding-collection-to-postman)
     1. [Run Tests](#run-tests)
 1. [Modifying Tests](#modifying-tests)
 1. [Diagnosing Failures](#diagnosing-failures)
@@ -50,7 +50,7 @@ Postman `Collections` are a group of saved requests. Every request you send in P
 ### Run Tests
 Select `Collections` in the sidebar and select the collection you want to run.
 
-In APK tests you will need to run collection  with an environment as it need some varables from environment. You can select environment using the environment selector at the top right of Postman. You can also select Environments in the sidebar, then select the environment you want to use.
+In APK tests you will need to run a collection with an environment as it needs some variables from the environment. You can select the environment using the environment selector at the top right of Postman. You can also select Environments in the sidebar, then select the environment you want to use.
 
 On the overview tab, select `Runner` icon Run.
 
