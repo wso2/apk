@@ -9,6 +9,9 @@ on:
       next_version:
         type: string
         description: "Next Development Version"
+      docker_tag_version:
+        type: string
+        description: Docker tag Version.
 jobs:
   build:
     runs-on: ubuntu-latest
