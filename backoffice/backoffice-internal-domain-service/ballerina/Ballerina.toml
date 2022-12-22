@@ -1,7 +1,7 @@
 [package]
 org = "wso2"
 name = "backoffice_internal_service"
-version = "0.0.1-SNAPSHOT"
+version = "0.0.1"
 distribution = "2201.2.2"
 
 [build-options]
