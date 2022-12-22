@@ -22,9 +22,10 @@ allprojects {
     group = project.group
     version = project.version
 }
+def releaseVersion = version.replace("_","-");
 
 release {
-    tagTemplate = 'runtime-domain-service-$version'
+    tagTemplate = 'runtime-domain-service-$releaseVersion'
 
     git {
         requireBranch= "main"

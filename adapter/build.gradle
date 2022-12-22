@@ -22,8 +22,9 @@ plugins {
 apply from: "$rootDir/../common-gradle-scripts/docker.gradle"
 apply from: "$rootDir/../common-gradle-scripts/go.gradle"
 
+def releaseVersion = version.replace("_","-");
 release {
-    tagTemplate = 'adapter-$version'
+    tagTemplate = 'adapter-$releaseVersion'
 
     git {
         requireBranch= "main"
