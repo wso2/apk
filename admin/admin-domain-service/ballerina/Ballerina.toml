@@ -1,7 +1,7 @@
 [package]
 org = "wso2"
 name = "admin_service"
-version = "0.0.1-SNAPSHOT"
+version = "0.0.1"
 distribution = "2201.2.0"
 
 [build-options]
@@ -10,4 +10,4 @@ observabilityIncluded = true
 [[platform.java11.dependency]]
 groupId = "org.postgresql"
 artifactId = "postgresql"
-version = "42.5.0"
+version = "42.2.20"
