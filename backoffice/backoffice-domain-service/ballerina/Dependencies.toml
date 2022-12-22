@@ -6,28 +6,28 @@
 [ballerina]
 dependencies-toml-version = "2"
 
-[[package]]
-org = "ballerina"
-name = "auth"
-version = "2.5.0"
-dependencies = [
-	{org = "ballerina", name = "crypto"},
-	{org = "ballerina", name = "jballerina.java"},
-	{org = "ballerina", name = "lang.array"},
-	{org = "ballerina", name = "lang.string"},
-	{org = "ballerina", name = "log"},
-	{org = "ballerina", name = "regex"}
+[[package]]	
+org = "ballerina"	
+name = "auth"	
+version = "2.5.0"	
+dependencies = [	
+	{org = "ballerina", name = "crypto"},	
+	{org = "ballerina", name = "jballerina.java"},	
+	{org = "ballerina", name = "lang.array"},	
+	{org = "ballerina", name = "lang.string"},	
+	{org = "ballerina", name = "log"},	
+	{org = "ballerina", name = "regex"}	
 ]
 
-[[package]]
-org = "ballerina"
-name = "cache"
-version = "3.3.0"
-dependencies = [
-	{org = "ballerina", name = "constraint"},
-	{org = "ballerina", name = "jballerina.java"},
-	{org = "ballerina", name = "task"},
-	{org = "ballerina", name = "time"}
+[[package]]	
+org = "ballerina"	
+name = "cache"	
+version = "3.3.0"	
+dependencies = [	
+	{org = "ballerina", name = "constraint"},	
+	{org = "ballerina", name = "jballerina.java"},	
+	{org = "ballerina", name = "task"},	
+	{org = "ballerina", name = "time"}	
 ]
 
 [[package]]
@@ -44,7 +44,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "crypto"
-version = "2.3.0"
+version = "2.3.2"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "time"}
@@ -164,35 +164,27 @@ version = "0.0.0"
 
 [[package]]
 org = "ballerina"
-name = "lang.regexp"
-version = "0.0.0"
-dependencies = [
-	{org = "ballerina", name = "jballerina.java"}
-]
-
-[[package]]
-org = "ballerina"
 name = "lang.runtime"
 version = "0.0.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
 
-[[package]]
-org = "ballerina"
-name = "lang.string"
-version = "0.0.0"
-dependencies = [
-	{org = "ballerina", name = "jballerina.java"},
-	{org = "ballerina", name = "lang.regexp"}
+[[package]]	
+org = "ballerina"	
+name = "lang.regexp"	
+version = "0.0.0"	
+dependencies = [	
+	{org = "ballerina", name = "jballerina.java"}	
 ]
 
-[[package]]
-org = "ballerina"
-name = "lang.transaction"
-version = "0.0.0"
-dependencies = [
-	{org = "ballerina", name = "jballerina.java"}
+[[package]]	
+org = "ballerina"	
+name = "lang.string"	
+version = "0.0.0"	
+dependencies = [	
+	{org = "ballerina", name = "jballerina.java"},	
+	{org = "ballerina", name = "lang.regexp"}	
 ]
 
 [[package]]
@@ -291,33 +283,41 @@ dependencies = [
 	{org = "ballerina", name = "time"}
 ]
 
-[[package]]
-org = "ballerina"
-name = "test"
-version = "0.0.0"
-scope = "testOnly"
-dependencies = [
-	{org = "ballerina", name = "jballerina.java"}
-]
-modules = [
-	{org = "ballerina", packageName = "test", moduleName = "test"}
-]
+[[package]]	
+org = "ballerina"	
+name = "test"	
+version = "0.0.0"	
+scope = "testOnly"	
+dependencies = [	
+	{org = "ballerina", name = "jballerina.java"}	
+]	
+modules = [	
+	{org = "ballerina", packageName = "test", moduleName = "test"}	
+]	
 
-[[package]]
-org = "ballerina"
-name = "time"
-version = "2.2.3"
-dependencies = [
-	{org = "ballerina", name = "jballerina.java"}
-]
-modules = [
-	{org = "ballerina", packageName = "time", moduleName = "time"}
+[[package]]	
+org = "ballerina"	
+name = "time"	
+version = "2.2.3"	
+dependencies = [	
+	{org = "ballerina", name = "jballerina.java"}	
+]	
+modules = [	
+	{org = "ballerina", packageName = "time", moduleName = "time"}	
 ]
 
 [[package]]
 org = "ballerina"
 name = "url"
 version = "2.2.3"
+dependencies = [
+	{org = "ballerina", name = "jballerina.java"}
+]
+
+[[package]]
+org = "ballerina"
+name = "lang.transaction"
+version = "0.0.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
@@ -385,7 +385,7 @@ modules = [
 [[package]]
 org = "wso2"
 name = "backoffice_service"
-version = "0.0.1-SNAPSHOT"
+version = "0.0.1"
 dependencies = [
 	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "http"},
@@ -394,8 +394,8 @@ dependencies = [
 	{org = "ballerina", name = "sql"},
 	{org = "ballerina", name = "test"},
 	{org = "ballerina", name = "time"},
-	{org = "ballerinai", name = "observe"},
 	{org = "ballerinai", name = "transaction"},
+	{org = "ballerinai", name = "observe"},
 	{org = "ballerinax", name = "postgresql"}
 ]
 modules = [
