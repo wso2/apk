@@ -44,7 +44,7 @@ func (swagger *MgwSwagger) SetInfoSwagger(swagger2 spec.Swagger) error {
 	swagger.vendorExtensions = swagger2.VendorExtensible.Extensions
 	swagger.securityScheme = setSecurityDefinitions(swagger2)
 	swagger.security = swagger2.Security
-	swagger.apiType = constants.HTTP
+	swagger.apiType = constants.REST
 	swagger.resources = getResourcesSwagger(swagger2)
 
 	swagger.xWso2RequestBodyPass = getRequestBodyBufferConfig(swagger.vendorExtensions)

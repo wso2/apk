@@ -39,20 +39,16 @@ spec:
                 description: APIDisplayName is the unique name of the API in the namespace
                   defined. "Namespace/APIDisplayName" can be used to uniquely identify
                   an API.
-                minLength: 4
                 type: string
               apiType:
                 description: APIType denotes the type of the API. Possible values
                   could be REST, GraphQL, Async
-                minLength: 2
                 type: string
               apiVersion:
                 description: APIVersion is the version number of the API.
-                minLength: 2
                 type: string
               context:
                 description: 'Context denotes the context of the API. e.g: /pet-store-api/1.0.6'
-                minLength: 2
                 type: string
               definitionFileRef:
                 description: DefinitionFileRef contains the OpenAPI 3 or Swagger definition
@@ -90,12 +86,10 @@ spec:
               message:
                 description: Message represents a user friendly message that explains
                   the current state of the API.
-                minLength: 4
                 type: string
               status:
                 description: Status denotes the state of the API in its lifecycle.
                   Possible values could be Accepted, Invalid, Deploy etc.
-                minLength: 4
                 type: string
               transitionTime:
                 description: TransitionTime represents the last known transition timestamp.

@@ -19,7 +19,6 @@ package controllers
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/wso2/apk/adapter/config"
@@ -166,28 +165,6 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		return ctrl.Result{}, nil
 	}
 
-	// Reject invalid API
-	if apiDef.Status.Status == constants.InvalidState {
-		loggers.LoggerAPKOperator.Debugf("API CR is rejected as it has been invalidated already.")
-		return ctrl.Result{}, nil
-	}
-
-	// Validate API CR
-	if apiDef.Status.Status == "" {
-		if valid, err := validateAPICR(apiDef.Spec); !valid {
-			apiReconciler.handleStatus(req.NamespacedName, constants.InvalidState, []string{})
-			if err != nil {
-				loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-					Message:   fmt.Sprintf("Error validating API CR in namespace : %s, %v", req.NamespacedName.String(), err),
-					Severity:  logging.TRIVIAL,
-					ErrorCode: 2604,
-				})
-				return ctrl.Result{}, err
-			}
-		}
-		apiReconciler.handleStatus(req.NamespacedName, constants.ValidatedState, []string{})
-	}
-
 	// Retrieve HTTPRoutes
 	prodHTTPRoute, sandHTTPRoute, err := apiReconciler.resolveAPIRefs(ctx, req.Namespace, apiDef.Spec.ProdHTTPRouteRef,
 		apiDef.Spec.SandHTTPRouteRef)
@@ -214,15 +191,6 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		apiReconciler.handleStatus(req.NamespacedName, constants.UpdatedState, events)
 	}
 	return ctrl.Result{}, nil
-}
-
-// validateAPICR validates fields in API
-// TODO(amali) Add validations for all fields
-func validateAPICR(apiSpec dpv1alpha1.APISpec) (bool, error) {
-	if apiSpec.ProdHTTPRouteRef == "" && apiSpec.SandHTTPRouteRef == "" {
-		return false, errors.New("an endpoint should have given for the API")
-	}
-	return true, nil
 }
 
 // resolveAPIRefs validates following references related to the API
@@ -478,12 +446,6 @@ func (apiReconciler *APIReconciler) handleStatus(apiKey types.NamespacedName, st
 	case constants.DeployedState:
 		accept = true
 		message = "API is deployed to the gateway."
-	case constants.InvalidState:
-		accept = false
-		message = "Rejected due to invalid data."
-	case constants.ValidatedState:
-		accept = true
-		message = "Successfully validated. Waiting for references to be resolved ..."
 	case constants.UpdatedState:
 		accept = true
 		message = fmt.Sprintf("API update is deployed to the gateway. %v Updated", events)

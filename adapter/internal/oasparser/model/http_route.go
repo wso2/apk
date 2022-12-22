@@ -82,7 +82,7 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, au
 			endPoints = append(endPoints,
 				Endpoint{Host: fmt.Sprintf("%s.%s", backend.Name,
 					utils.GetNamespace(backend.Namespace, httpRoute.Namespace)),
-					URLType: "http",
+					URLType: constants.HTTP,
 					Port:    uint32(*backend.Port)})
 		}
 
