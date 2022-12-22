@@ -28,6 +28,7 @@ To learn how to participate in our overall community, visit [our community page]
 
 In this README:
 - [Introduction](#introduction)
+- [Getting Started](#getting-started)
 - [Issue management](#issue-management)
 
 You'll find many other useful documents on our [Documentation](https://wso2.com/documentation/).
@@ -68,6 +69,49 @@ ___
 WSO2 APK comes with Postman collections to test product APIs and developers can use collection of API requests and configure them to test different scenarios. For example, they can reuse available requests to verify that the API returns the correct responses for different requests.
 These tests will users t identify potential issues or bugs that may need to be addressed before using it. 
 Please refer [Postman Tests](https://github.com/wso2/apk/tree/main/test/postman-tests) section of the repo for more information about tests and test artifacts.
+
+## Getting Started
+
+WSO2 API Kubernetes Platform has released following docker images in the WSO2 public docker hub.
+
+Adapter: [wso2/adapter:0.0.1-m1](https://hub.docker.com/r/wso2/adapter)
+Gateway Enforcer: [wso2/choreo-connect-enforcer:1.1.0-ubuntu](https://hub.docker.com/r/wso2/choreo-connect-enforcer)
+Gatewary Router: [wso2/choreo-connect-router:1.1.0](https://hub.docker.com/r/wso2/choreo-connect-router)
+Management Server: [wso2/management-server:0.0.1-m1](https://hub.docker.com/r/wso2/management-server)
+Runtime DS: wso2/runtime-domain-service:0.0.1-m1
+Admin DS: [wso2/admin-domain-service:0.0.1-m1](https://hub.docker.com/r/wso2/admin-domain-service)
+BackOffice DS: [wso2/backoffice-domain-service:0.0.1-m1](https://hub.docker.com/r/wso2/backoffice-domain-service)
+BackOffice Internal DS: [wso2/backoffice-internal-domain-service:0.0.1-m1](https://hub.docker.com/r/wso2/backoffice-internal-domain-service)
+Devportal DS: [wso2/devportal-domain-service:0.0.1-m1](https://hub.docker.com/r/wso2/devportal-domain-service)
+
+### Before you begin...
+
+* Install [Helm](https://helm.sh/docs/intro/install/)
+  and [Kubernetes client](https://kubernetes.io/docs/tasks/tools/install-kubectl/) <br><br>
+
+* An already setup [Kubernetes cluster](https://kubernetes.io/docs/setup). If you want to run it on the local you can use Minikube or Kind or a similar software.<br><br>
+
+* Install [NGINX Ingress Controller](https://kubernetes.github.io/ingress-nginx/deploy/). If you are using Minikube you can install ingress by running ```minikube addons enable ingress```<br><br>
+
+### Steps to deploy APK DS servers and CloudNativePG
+
+```HELM-HOME``` = apk/helm
+
+1. Execute ``` helm repo add bitnami https://charts.bitnami.com/bitnami ``` and ```helm repo add jetstack https://charts.jetstack.io```
+2. Clone the repo and cd into the ```HELM-HOME``` folder.
+3. Execute ``` helm dependency build ``` command to download the dependent charts.
+4. Now execute ```helm install apk-test . -n apk``` to install the APK components.
+5. Verify the deployment by executing ```kubectl get pods -n apk```
+
+### To Access Deployment through local machine
+
+#### Using ingress
+   Execute ``` kubectl get ing -n apk ``` command
+
+#### Minikube Flow
+   Execute ``` minikube tunnel ``` command
+
+#### Rancher Flow
 
 ## Issue management
 We use GitHub to track all of our bugs and feature requests. Each issue we track has a variety of metadata:
