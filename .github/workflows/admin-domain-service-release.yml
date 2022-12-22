@@ -31,16 +31,17 @@ jobs:
       - name: Verify Ballerina Version
         shell: sh
         run: "bal -v"
-      - name: Set release username and email
-        shell: sh
-        run: |
-          git config --global user.name ${{ secrets.WSO2_BOT_USER }}
-          git config --global user.email ${{ secrets.WSO2_BOT_EMAIL }}
       - name: Checkout apk-repo
         uses: actions/checkout@v3
         with:
           fetch-depth: "0"
           path: apk-repo
+          token: ${{ secrets.WSO2_BOT_TOKEN }}
+      - name: Set release username and email
+        shell: sh
+        run: |
+          git config --global user.name ${{ secrets.WSO2_BOT_USER }}
+          git config --global user.email ${{ secrets.WSO2_BOT_EMAIL }}
       - name: Run Gradle build
         run: |
           cd apk-repo/admin/admin-domain-service
