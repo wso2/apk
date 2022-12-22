@@ -23,10 +23,9 @@ allprojects {
     group = project.group
     version = project.version
 }
-def releaseVersion = version.replace("_","-");
 
 release {
-    tagTemplate = 'backoffice-internal-domain-service-$releaseVersion'
+    tagTemplate = 'backoffice-internal-domain-service-$version'
 
     git {
         requireBranch= "main"
