@@ -14,8 +14,12 @@
  * limitations under the License.
  *
  */
-
-def imageName = docker_image_name + ':' + project.version
+def imageName = docker_image_name;
+if (project.hasProperty("docker_tag_version")){
+     imageName = docker_image_name + ':'+docker_tag_version
+}else{
+    imageName = docker_image_name + ':' + project.version
+}
 if (project.hasProperty("docker_organization")) {
     imageName = docker_organization+'/'+imageName
 }
