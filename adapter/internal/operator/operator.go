@@ -150,6 +150,7 @@ func InitOperator() {
 	}
 
 	go synchronizer.HandleAPILifeCycleEvents(&ch)
+	go synchronizer.SendAPIToAPKMgtServer()
 	go xds.HandleApplicationEventsFromMgtServer(mgr.GetClient(), mgr.GetAPIReader())
 
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {

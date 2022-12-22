@@ -36,6 +36,6 @@ type APIState struct {
 // +k8s:deepcopy-gen=true
 type HTTPRouteState struct {
 	HTTPRoute               *gwapiv1b1.HTTPRoute
-	Authentications         []v1alpha1.Authentication
+	Authentications         map[string]v1alpha1.Authentication
 	ResourceAuthentications map[string]v1alpha1.Authentication
 }

@@ -15,6 +15,7 @@ require (
 	github.com/onsi/gomega v1.19.0
 	github.com/pelletier/go-toml v1.8.1
 	github.com/sirupsen/logrus v1.9.0
+	golang.org/x/exp v0.0.0-20220407100705-7b9b53b0aca4
 	google.golang.org/genproto v0.0.0-20220505152158-f39f71e6c8f3
 	google.golang.org/grpc v1.50.1
 	google.golang.org/protobuf v1.28.1

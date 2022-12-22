@@ -43,6 +43,15 @@ type APIEvent struct {
 	Event     APIState
 }
 
+var (
+	// TODO: Decide on a buffer size and add to config.
+	mgtServerCh chan APIEvent
+)
+
+func init() {
+	mgtServerCh = make(chan APIEvent, 10)
+}
+
 // HandleAPILifeCycleEvents handles the API events generated from OperatorDataStore
 func HandleAPILifeCycleEvents(ch *chan APIEvent) {
 	loggers.LoggerAPKOperator.Info("Operator synchronizer listening for API lifecycle events...")
@@ -71,8 +80,7 @@ func HandleAPILifeCycleEvents(ch *chan APIEvent) {
 				Severity:  logging.MAJOR,
 			})
 		} else {
-			//TODO (amali) fix creating go routine per event
-			go sendAPIToAPKMgtServer(event)
+			mgtServerCh <- event
 		}
 	}
 }
@@ -179,61 +187,64 @@ func getLabelsForAPI(httpRoute *gwapiv1b1.HTTPRoute) []string {
 	return labels
 }
 
-// sendAPIToAPKMgtServer sends the API create/update/delete event to the APK management server.
-func sendAPIToAPKMgtServer(apiEvent APIEvent) {
-	loggers.LoggerAPKOperator.Infof("Sending API to APK management server: %v", apiEvent.Event.APIDefinition.Spec.APIDisplayName)
-	conf := config.ReadConfigs()
-	address := conf.Adapter.GRPCClient.ManagementServerAddress
-	conn, err := client.GetConnection(address)
-	api := apiEvent.Event
-	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("Error creating connection for %v : %v", address, err),
-			ErrorCode: 6000,
-			Severity:  logging.BLOCKER,
-		})
-	}
-	_, err = client.ExecuteGRPCCall(conn, func() (interface{}, error) {
-		apiClient := apiProtos.NewAPIServiceClient(conn)
-		if strings.Compare(apiEvent.EventType, constants.Create) == 0 {
-			return apiClient.CreateAPI(context.Background(), &apiProtos.API{
-				Uuid:           string(api.APIDefinition.GetUID()),
-				Version:        api.APIDefinition.Spec.APIVersion,
-				Name:           api.APIDefinition.Spec.APIDisplayName,
-				Context:        api.APIDefinition.Spec.Context,
-				Type:           api.APIDefinition.Spec.APIType,
-				OrganizationId: api.APIDefinition.Spec.Organization,
-				Resources:      getResourcesForAPI(api),
-			})
-		} else if strings.Compare(apiEvent.EventType, constants.Update) == 0 {
-			return apiClient.UpdateAPI(context.Background(), &apiProtos.API{
-				Uuid:           string(api.APIDefinition.GetUID()),
-				Version:        api.APIDefinition.Spec.APIVersion,
-				Name:           api.APIDefinition.Spec.APIDisplayName,
-				Context:        api.APIDefinition.Spec.Context,
-				Type:           api.APIDefinition.Spec.APIType,
-				OrganizationId: api.APIDefinition.Spec.Organization,
-				Resources:      getResourcesForAPI(api),
-			})
-		} else if strings.Compare(apiEvent.EventType, constants.Delete) == 0 {
-			return apiClient.DeleteAPI(context.Background(), &apiProtos.API{
-				Uuid:           string(api.APIDefinition.GetUID()),
-				Version:        api.APIDefinition.Spec.APIVersion,
-				Name:           api.APIDefinition.Spec.APIDisplayName,
-				Context:        api.APIDefinition.Spec.Context,
-				Type:           api.APIDefinition.Spec.APIType,
-				OrganizationId: api.APIDefinition.Spec.Organization,
-				Resources:      getResourcesForAPI(api),
+// SendAPIToAPKMgtServer sends the API create/update/delete event to the APK management server.
+func SendAPIToAPKMgtServer() {
+	loggers.LoggerAPKOperator.Info("Start listening for API to APK management server events")
+	for apiEvent := range mgtServerCh {
+		loggers.LoggerAPKOperator.Infof("Sending API to APK management server: %v", apiEvent.Event.APIDefinition.Spec.APIDisplayName)
+		conf := config.ReadConfigs()
+		address := conf.Adapter.GRPCClient.ManagementServerAddress
+		conn, err := client.GetConnection(address)
+		api := apiEvent.Event
+		if err != nil {
+			loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+				Message:   fmt.Sprintf("Error creating connection for %v : %v", address, err),
+				ErrorCode: 6000,
+				Severity:  logging.BLOCKER,
 			})
 		}
-		return nil, nil
-	})
-	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("Error sending API to APK management server : %v", err),
-			ErrorCode: 6001,
-			Severity:  logging.MAJOR,
+		_, err = client.ExecuteGRPCCall(conn, func() (interface{}, error) {
+			apiClient := apiProtos.NewAPIServiceClient(conn)
+			if strings.Compare(apiEvent.EventType, constants.Create) == 0 {
+				return apiClient.CreateAPI(context.Background(), &apiProtos.API{
+					Uuid:           string(api.APIDefinition.GetUID()),
+					Version:        api.APIDefinition.Spec.APIVersion,
+					Name:           api.APIDefinition.Spec.APIDisplayName,
+					Context:        api.APIDefinition.Spec.Context,
+					Type:           api.APIDefinition.Spec.APIType,
+					OrganizationId: api.APIDefinition.Spec.Organization,
+					Resources:      getResourcesForAPI(api),
+				})
+			} else if strings.Compare(apiEvent.EventType, constants.Update) == 0 {
+				return apiClient.UpdateAPI(context.Background(), &apiProtos.API{
+					Uuid:           string(api.APIDefinition.GetUID()),
+					Version:        api.APIDefinition.Spec.APIVersion,
+					Name:           api.APIDefinition.Spec.APIDisplayName,
+					Context:        api.APIDefinition.Spec.Context,
+					Type:           api.APIDefinition.Spec.APIType,
+					OrganizationId: api.APIDefinition.Spec.Organization,
+					Resources:      getResourcesForAPI(api),
+				})
+			} else if strings.Compare(apiEvent.EventType, constants.Delete) == 0 {
+				return apiClient.DeleteAPI(context.Background(), &apiProtos.API{
+					Uuid:           string(api.APIDefinition.GetUID()),
+					Version:        api.APIDefinition.Spec.APIVersion,
+					Name:           api.APIDefinition.Spec.APIDisplayName,
+					Context:        api.APIDefinition.Spec.Context,
+					Type:           api.APIDefinition.Spec.APIType,
+					OrganizationId: api.APIDefinition.Spec.Organization,
+					Resources:      getResourcesForAPI(api),
+				})
+			}
+			return nil, nil
 		})
+		if err != nil {
+			loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+				Message:   fmt.Sprintf("Error sending API to APK management server : %v", err),
+				ErrorCode: 6001,
+				Severity:  logging.MAJOR,
+			})
+		}
 	}
 }
 
