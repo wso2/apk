@@ -1,6 +1,14 @@
 name: Release Adapter.
 on:
   workflow_dispatch:
+    inputs:
+      release_version:
+        required: true
+        type: string
+        description: "Release Version"
+      next_version:
+        type: string
+        description: "Next Development Version"
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -26,4 +34,4 @@ jobs:
       - name: Run Gradle build
         run: |
           cd apk-repo/adapter
-          gradle release -Prelease.useAutomaticVersion=true -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -PmultiArch=true
+          gradle release -Prelease.useAutomaticVersion=true -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Prelease.releaseVersion=${{ github.event.inputs.release_version }} -Prelease.newVersion=${{ github.event.inputs.next_version }} -PmultiArch=true
