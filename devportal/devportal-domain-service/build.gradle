@@ -23,9 +23,9 @@ allprojects {
     group = project.group
     version = project.version
 }
-
+def releaseVersion = version.replace("_","-");
 release {
-    tagTemplate = 'devportal-domain-service-$version'
+    tagTemplate = 'devportal-domain-service-$releaseVersion'
 
     git {
         requireBranch= "main"

@@ -9,6 +9,9 @@ on:
       next_version:
         type: string
         description: "Next Development Version"
+      docker_tag_version:
+        type: string
+        description: Docker tag Version.
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -35,4 +38,4 @@ jobs:
       - name: Run Gradle build
         run: |
           cd apk-repo/adapter
-          gradle release -Prelease.useAutomaticVersion=true -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Prelease.releaseVersion=${{ github.event.inputs.release_version }} -Prelease.newVersion=${{ github.event.inputs.next_version }} -PmultiArch=true
+          gradle release -Prelease.useAutomaticVersion=true -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Prelease.releaseVersion=${{ github.event.inputs.release_version }} -Prelease.newVersion=${{ github.event.inputs.next_version }} -PmultiArch=true -Pdocker_tag_version=${{ github.event.inputs.docker_tag_version }}
