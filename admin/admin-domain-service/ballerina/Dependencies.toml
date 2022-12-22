@@ -215,7 +215,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "mime"
-version = "2.5.1"
+version = "2.5.0"
 dependencies = [
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"},
@@ -356,7 +356,7 @@ modules = [
 [[package]]
 org = "wso2"
 name = "admin_service"
-version = "0.0.1"
+version = "0.0.1-SNAPSHOT"
 dependencies = [
 	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "http"},
