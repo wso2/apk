@@ -66,7 +66,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "http"
-version = "2.5.2"
+version = "2.5.1"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "cache"},
@@ -238,7 +238,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "mime"
-version = "2.5.1"
+version = "2.5.0"
 dependencies = [
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"},
@@ -344,7 +344,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "websocket"
-version = "2.5.1"
+version = "2.5.0"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "constraint"},
@@ -380,7 +380,7 @@ modules = [
 [[package]]
 org = "wso2"
 name = "runtime_domain_service"
-version = "0.0.1-m1"
+version = "0.0.1-SNAPSHOT"
 dependencies = [
 	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "http"},
