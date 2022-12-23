@@ -37,7 +37,12 @@ task update_toml_files {
     group 'ballerina'
     description 'Update Ballerina.toml and Dependencies.toml'
     doLast {
-        def moduleVersion = project.property("release.releaseVersion");
+        def moduleVersion;
+        if (project.hasProperty("release.releaseVersion")) {
+                moduleVersion = project.property("release.releaseVersion");
+        }else {
+            moduleVersion = project.version;
+        }
 	println 'applying Ballerina.toml.template and Dependencies.toml.template  with version ' + moduleVersion
         def ballerinaTomlFilePlaceHolder = new File("${projectDir}/Ballerina.toml.template")
         def dependencyTomlFilePlaceHolder = new File("${projectDir}/Dependencies.toml.template")
