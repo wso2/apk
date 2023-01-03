@@ -19,7 +19,7 @@
 # This function used to get API from database
 #
 # + return - Return Value string?|APIList|error
-function getAPIList() returns string?|APIList|error {
+isolated function getAPIList() returns string?|APIList|error {
     API[]|error? apis = db_getAPIsDAO();
     if apis is API[] {
         int count = apis.length();
@@ -36,7 +36,7 @@ function getAPIList() returns string?|APIList|error {
 # + apiId - API Id
 # + organization - organization
 # + return - Return Value LifecycleState|error
-function changeLifeCyleState(string targetState, string apiId, string organization) returns LifecycleState|error {
+isolated function changeLifeCyleState(string targetState, string apiId, string organization) returns LifecycleState|error {
     string prevLCState = check db_getCurrentLCStatus(apiId, organization);
     transaction {
         string|error lcState = db_changeLCState(targetState, apiId, organization);
@@ -64,7 +64,7 @@ function changeLifeCyleState(string targetState, string apiId, string organizati
 # + apiId - API Id parameter
 # + organization - organization
 # + return - Return Value LifecycleState|error
-function getLifeCyleState(string apiId, string organization) returns LifecycleState|error {
+isolated function getLifeCyleState(string apiId, string organization) returns LifecycleState|error {
     string|error currentLCState = db_getCurrentLCStatus(apiId, organization);
     if currentLCState is string {
         json lcPayload = check getTransitionsFromState(currentLCState);
@@ -79,7 +79,7 @@ function getLifeCyleState(string apiId, string organization) returns LifecycleSt
 #
 # + v - any parameter object
 # + return - Return LC state
-function actionToLCState(any v) returns string {
+isolated function actionToLCState(any v) returns string {
     if(v.toString().equalsIgnoreCaseAscii("published")){
         return "PUBLISHED";
     } else if(v.toString().equalsIgnoreCaseAscii("created")){
@@ -101,7 +101,7 @@ function actionToLCState(any v) returns string {
 #
 # + state - state parameter
 # + return - Return Value jsons
-function getTransitionsFromState(string state) returns json|error {
+isolated function getTransitionsFromState(string state) returns json|error {
     StatesList c =  check lifeCycleStateTransitions.cloneWithType(StatesList);
     foreach States x in c.States {
         if(state.equalsIgnoreCaseAscii(x.State)) {
@@ -115,7 +115,7 @@ function getTransitionsFromState(string state) returns json|error {
 #
 # + apiId - API Id parameter
 # + return - Return Value LifecycleHistory
-function getLcEventHistory(string apiId) returns LifecycleHistory|error? {
+isolated function getLcEventHistory(string apiId) returns LifecycleHistory|error? {
     LifecycleHistoryItem[]|error? lcHistory = db_getLCEventHistory(apiId);
     if lcHistory is LifecycleHistoryItem[] {
         int count = lcHistory.length();
@@ -128,7 +128,7 @@ function getLcEventHistory(string apiId) returns LifecycleHistory|error? {
 
 
 
-function getSubscriptions(string? apiId) returns SubscriptionList|error {
+isolated function getSubscriptions(string? apiId) returns SubscriptionList|error {
     Subscription[]|error subcriptions;
         subcriptions = check db_getSubscriptionsForAPI(apiId.toString());
         if subcriptions is Subscription[] {
@@ -141,7 +141,7 @@ function getSubscriptions(string? apiId) returns SubscriptionList|error {
 }
 
 
-function blockSubscription(string subscriptionId, string blockState) returns string|error {
+isolated function blockSubscription(string subscriptionId, string blockState) returns string|error {
     if ("blocked".equalsIgnoreCaseAscii(blockState) || "prod_only_blocked".equalsIgnoreCaseAscii(blockState)) {
         error|string blockSub = db_blockSubscription(subscriptionId, blockState);
         if blockSub is error {
@@ -154,7 +154,7 @@ function blockSubscription(string subscriptionId, string blockState) returns str
     }
 }
 
-function unblockSubscription(string subscriptionId) returns string|error {
+isolated function unblockSubscription(string subscriptionId) returns string|error {
     error|string unblockSub = db_unblockSubscription(subscriptionId);
     if unblockSub is error {
         return error("Error while unblocking subscription");
