@@ -49,15 +49,38 @@ public isolated function getApplicationUsagePlanByIdDAO(string policyId) returns
         string org = "carbon.super";
         sql:ParameterizedQuery query = `SELECT NAME as PLANNAME, DISPLAY_NAME as DISPLAYNAME, DESCRIPTION, 
         UUID as PLANID, IS_DEPLOYED as ISDEPLOYED, 
-        QUOTA_TYPE as TYPE, QUOTA as REQUESTCOUNT, TIME_UNIT as TIMEUNIT, UNIT_TIME as 
-        UNITTIME  FROM APPLICATION_USAGE_PLAN WHERE UUID =${policyId} AND ORGANIZATION =${org}`;
-        ApplicationRatePlan | sql:Error result =  dbClient->queryRow(query);
+        QUOTA_TYPE as DefaulLimitType, QUOTA , TIME_UNIT as TIMEUNIT, UNIT_TIME as 
+        UNITTIME, QUOTA_UNIT as DATAUNIT FROM APPLICATION_USAGE_PLAN WHERE UUID =${policyId} AND ORGANIZATION =${org}`;
+        ApplicationRatePlanDAO | sql:Error result =  dbClient->queryRow(query);
         if result is sql:NoRowsError {
             log:printDebug(result.toString());
             return error("Not Found");
-        } else if result is ApplicationRatePlan {
-            log:printDebug(result.toString());
-            return result;
+        } else if result is ApplicationRatePlanDAO {
+            if result.defaulLimitType == "requestCount" {
+                ApplicationRatePlan arp = {planName: result.planName, displayName: result.displayName, 
+                description: result.description, planId: result.planId, isDeployed: result.isDeployed, 
+                defaultLimit: {'type: result.defaulLimitType, requestCount: 
+                {requestCount: result.quota, timeUnit: result.timeUnit, unitTime: result.unitTime}
+                }};
+                log:printDebug(arp.toString());
+                return arp;
+            } else if result.defaulLimitType == "bandwidth" {
+                ApplicationRatePlan arp = {planName: result.planName, displayName: result.displayName, 
+                description: result.description, planId: result.planId, isDeployed: result.isDeployed, 
+                defaultLimit: {'type: result.defaulLimitType, bandwidth: 
+                {dataAmount: result.quota, dataUnit: <string>result.dataUnit, timeUnit: result.timeUnit, unitTime: result.unitTime}
+                }};
+                log:printDebug(arp.toString());
+                return arp;
+            } else {
+                ApplicationRatePlan arp = {planName: result.planName, displayName: result.displayName, 
+                description: result.description, planId: result.planId, isDeployed: result.isDeployed, 
+                defaultLimit: {'type: result.defaulLimitType, eventCount: 
+                {eventCount:result.quota, timeUnit: result.timeUnit, unitTime: result.unitTime}
+                }};
+                log:printDebug(arp.toString());
+                return arp;
+            }
         } else {
             log:printInfo(result.toString());
             return error("Error while retrieving Application Usage Plan");
@@ -72,11 +95,38 @@ public isolated function getApplicationUsagePlansDAO(string org) returns Applica
     } else {
         sql:ParameterizedQuery query = `SELECT NAME as PLANNAME, DISPLAY_NAME as DISPLAYNAME, DESCRIPTION, 
         UUID as PLANID, IS_DEPLOYED as ISDEPLOYED, 
-        QUOTA_TYPE as TYPE, QUOTA as REQUESTCOUNT, TIME_UNIT as TIMEUNIT, UNIT_TIME as 
-        UNITTIME FROM APPLICATION_USAGE_PLAN WHERE ORGANIZATION =${org}`;
-        stream<ApplicationRatePlan, sql:Error?> usagePlanStream = dbClient->query(query);
-        ApplicationRatePlan[]? usagePlans = check from ApplicationRatePlan usagePlan in usagePlanStream select usagePlan;
+        QUOTA_TYPE as DefaulLimitType, QUOTA , TIME_UNIT as TIMEUNIT, UNIT_TIME as 
+        UNITTIME, QUOTA_UNIT as DATAUNIT FROM APPLICATION_USAGE_PLAN WHERE ORGANIZATION =${org}`;
+        stream<ApplicationRatePlanDAO, sql:Error?> usagePlanStream = dbClient->query(query);
+        ApplicationRatePlanDAO[]? usagePlansDAO = check from ApplicationRatePlanDAO usagePlan in usagePlanStream select usagePlan;
         check usagePlanStream.close();
+        ApplicationRatePlan[] usagePlans = [];
+        if usagePlansDAO is ApplicationRatePlanDAO[]{
+            foreach ApplicationRatePlanDAO result in usagePlansDAO {
+                if result.defaulLimitType == "requestCount" {
+                    ApplicationRatePlan arp = {planName: result.planName, displayName: result.displayName, 
+                    description: result.description, planId: result.planId, isDeployed: result.isDeployed, 
+                    defaultLimit: {'type: result.defaulLimitType, requestCount: 
+                    {requestCount: result.quota, timeUnit: result.timeUnit, unitTime: result.unitTime}
+                    }};
+                    usagePlans.push(arp);
+                } else if result.defaulLimitType == "bandwidth" {
+                    ApplicationRatePlan arp = {planName: result.planName, displayName: result.displayName, 
+                    description: result.description, planId: result.planId, isDeployed: result.isDeployed, 
+                    defaultLimit: {'type: result.defaulLimitType, bandwidth: 
+                    {dataAmount: result.quota, dataUnit: <string>result.dataUnit, timeUnit: result.timeUnit, unitTime: result.unitTime}
+                    }};
+                    usagePlans.push(arp);
+                } else {
+                    ApplicationRatePlan arp = {planName: result.planName, displayName: result.displayName, 
+                    description: result.description, planId: result.planId, isDeployed: result.isDeployed, 
+                    defaultLimit: {'type: result.defaulLimitType, eventCount: 
+                    {eventCount:result.quota, timeUnit: result.timeUnit, unitTime: result.unitTime}
+                    }};
+                    usagePlans.push(arp);
+                }
+            }
+        }
         return usagePlans;
     }
 }
@@ -150,15 +200,41 @@ public isolated function getBusinessPlanByIdDAO(string policyId) returns string?
         string org = "carbon.super";
         sql:ParameterizedQuery query = `SELECT NAME as PLANNAME, DISPLAY_NAME as DISPLAYNAME, DESCRIPTION, 
         UUID as PLANID, IS_DEPLOYED as ISDEPLOYED, 
-        QUOTA_TYPE as TYPE, QUOTA as REQUESTCOUNT, TIME_UNIT as TIMEUNIT, UNIT_TIME as 
+        QUOTA_TYPE as DefaulLimitType, QUOTA , TIME_UNIT as TIMEUNIT, UNIT_TIME as 
         UNITTIME, RATE_LIMIT_COUNT as RATELIMITCOUNT, RATE_LIMIT_TIME_UNIT as RATELIMITTIMEUNIT FROM BUSINESS_PLAN WHERE UUID =${policyId} AND ORGANIZATION =${org}`;
-        BusinessPlan | sql:Error result =  dbClient->queryRow(query);
+        BusinessPlanDAO | sql:Error result =  dbClient->queryRow(query);
         if result is sql:NoRowsError {
             log:printDebug(result.toString());
             return error("Not Found");
-        } else if result is BusinessPlan {
-            log:printDebug(result.toString());
-            return result;
+        } else if result is BusinessPlanDAO {
+            if result.defaulLimitType == "requestCount" {
+                BusinessPlan bp = {planName: result.planName, displayName: result.displayName, 
+                description: result.description, planId: result.planId, isDeployed: result.isDeployed, 
+                rateLimitCount: result.rateLimitCount, rateLimitTimeUnit: result.rateLimitTimeUnit,
+                defaultLimit: {'type: result.defaulLimitType, requestCount: 
+                {requestCount: result.quota, timeUnit: result.timeUnit, unitTime: result.unitTime}
+                }};
+                log:printDebug(bp.toString());
+                return bp;
+            } else if result.defaulLimitType == "bandwidth" {
+                BusinessPlan bp = {planName: result.planName, displayName: result.displayName, 
+                description: result.description, planId: result.planId, isDeployed: result.isDeployed, 
+                rateLimitCount: result.rateLimitCount, rateLimitTimeUnit: result.rateLimitTimeUnit,
+                defaultLimit: {'type: result.defaulLimitType, bandwidth: 
+                {dataAmount: result.quota, dataUnit: <string>result.dataUnit, timeUnit: result.timeUnit, unitTime: result.unitTime}
+                }};
+                log:printDebug(bp.toString());
+                return bp;
+            } else {
+                BusinessPlan bp = {planName: result.planName, displayName: result.displayName, 
+                description: result.description, planId: result.planId, isDeployed: result.isDeployed, 
+                rateLimitCount: result.rateLimitCount, rateLimitTimeUnit: result.rateLimitTimeUnit,
+                defaultLimit: {'type: result.defaulLimitType, eventCount: 
+                {eventCount:result.quota, timeUnit: result.timeUnit, unitTime: result.unitTime}
+                }};
+                log:printDebug(bp.toString());
+                return bp;
+            }
         } else {
             log:printDebug(result.toString());
             return error("Error while retrieving Business Plan");
@@ -173,11 +249,41 @@ public isolated function getBusinessPlansDAO(string org) returns BusinessPlan[]|
     } else {
         sql:ParameterizedQuery query = `SELECT NAME as PLANNAME, DISPLAY_NAME as DISPLAYNAME, DESCRIPTION, 
         UUID as PLANID, IS_DEPLOYED as ISDEPLOYED, 
-        QUOTA_TYPE as TYPE, QUOTA as REQUESTCOUNT, TIME_UNIT as TIMEUNIT, UNIT_TIME as 
+        QUOTA_TYPE as DefaulLimitType, QUOTA , TIME_UNIT as TIMEUNIT, UNIT_TIME as 
         UNITTIME, RATE_LIMIT_COUNT as RATELIMITCOUNT, RATE_LIMIT_TIME_UNIT as RATELIMITTIMEUNIT FROM BUSINESS_PLAN WHERE ORGANIZATION =${org}`;
-        stream<BusinessPlan, sql:Error?> businessPlanStream = dbClient->query(query);
-        BusinessPlan[]? businessPlans = check from BusinessPlan businessPlan in businessPlanStream select businessPlan;
+        stream<BusinessPlanDAO, sql:Error?> businessPlanStream = dbClient->query(query);
+        BusinessPlanDAO[]? businessPlansDAO = check from BusinessPlanDAO businessPlan in businessPlanStream select businessPlan;
         check businessPlanStream.close();
+        BusinessPlan[] businessPlans =[];
+        if businessPlansDAO is BusinessPlanDAO[] {
+            foreach BusinessPlanDAO result in businessPlansDAO {
+                if result.defaulLimitType == "requestCount" {
+                    BusinessPlan bp = {planName: result.planName, displayName: result.displayName, 
+                    description: result.description, planId: result.planId, isDeployed: result.isDeployed, 
+                    rateLimitCount: result.rateLimitCount, rateLimitTimeUnit: result.rateLimitTimeUnit,
+                    defaultLimit: {'type: result.defaulLimitType, requestCount: 
+                    {requestCount: result.quota, timeUnit: result.timeUnit, unitTime: result.unitTime}
+                    }};
+                    businessPlans.push(bp);
+                } else if result.defaulLimitType == "bandwidth" {
+                    BusinessPlan bp = {planName: result.planName, displayName: result.displayName, 
+                    description: result.description, planId: result.planId, isDeployed: result.isDeployed, 
+                    rateLimitCount: result.rateLimitCount, rateLimitTimeUnit: result.rateLimitTimeUnit,
+                    defaultLimit: {'type: result.defaulLimitType, bandwidth: 
+                    {dataAmount: result.quota, dataUnit: <string>result.dataUnit, timeUnit: result.timeUnit, unitTime: result.unitTime}
+                    }};
+                    businessPlans.push(bp);
+                } else {
+                    BusinessPlan bp = {planName: result.planName, displayName: result.displayName, 
+                    description: result.description, planId: result.planId, isDeployed: result.isDeployed, 
+                    rateLimitCount: result.rateLimitCount, rateLimitTimeUnit: result.rateLimitTimeUnit,
+                    defaultLimit: {'type: result.defaulLimitType, eventCount: 
+                    {eventCount:result.quota, timeUnit: result.timeUnit, unitTime: result.unitTime}
+                    }};
+                    businessPlans.push(bp);
+                }
+            }
+        }
         return businessPlans;
     }
 }

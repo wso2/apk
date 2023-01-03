@@ -20,11 +20,14 @@ import ballerina/sql;
 import ballerina/time;
 import ballerinax/postgresql;
 
-function db_getAPIsDAO() returns API[]|error? {
+isolated function db_getAPIsDAO() returns API[]|error? {
     postgresql:Client | error db_Client  = getConnection();
     if db_Client is error {
         return error("Error while retrieving connection", db_Client);
     } else {
+        sql:ParameterizedQuery GET_API = `SELECT API_UUID AS ID, API_ID as APIID,
+        API_PROVIDER as PROVIDER, API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS, ARTIFACT as ARTIFACT
+        FROM API `;
         stream<API, sql:Error?> apisStream = db_Client->query(GET_API);
         API[]? apis = check from API api in apisStream select api;
         check apisStream.close();
@@ -32,7 +35,7 @@ function db_getAPIsDAO() returns API[]|error? {
     }
 }
 
-function db_changeLCState(string targetState, string apiId, string organization) returns string|error {
+isolated function db_changeLCState(string targetState, string apiId, string organization) returns string|error {
     postgresql:Client | error db_Client  = getConnection();
     if db_Client is error {
         return error("Error while retrieving connection", db_Client);
@@ -41,6 +44,7 @@ function db_changeLCState(string targetState, string apiId, string organization)
         if newState.equalsIgnoreCaseAscii("any") {
             return error(" Invalid Lifecycle targetState"); 
         }
+        sql:ParameterizedQuery UPDATE_API_LifeCycle_Prefix = `UPDATE api SET status = `;
         sql:ParameterizedQuery values = `${newState}
         WHERE api_uuid = ${apiId}`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(UPDATE_API_LifeCycle_Prefix, values);
@@ -55,11 +59,12 @@ function db_changeLCState(string targetState, string apiId, string organization)
     }
 }
 
-function db_getCurrentLCStatus(string apiId, string organization) returns string|error {
+isolated function db_getCurrentLCStatus(string apiId, string organization) returns string|error {
     postgresql:Client | error db_Client  = getConnection();
     if db_Client is error {
         return error("Error while retrieving connection", db_Client);
     } else {
+        sql:ParameterizedQuery GET_API_LifeCycle_Prefix = `SELECT status from api where api_uuid = `;
         sql:ParameterizedQuery values = `${apiId}`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(GET_API_LifeCycle_Prefix, values);
 
@@ -80,7 +85,7 @@ function db_getCurrentLCStatus(string apiId, string organization) returns string
 # + prev_state - prev_state 
 # + new_state - new_state
 # + return - API | error
-public function db_AddLCEvent(string? apiId, string? prev_state, string? new_state, string organization) returns string | error {
+isolated function db_AddLCEvent(string? apiId, string? prev_state, string? new_state, string organization) returns string | error {
     postgresql:Client | error db_client  = getConnection();
     time:Utc utc = time:utcNow();
     if db_client is error {
@@ -93,6 +98,7 @@ public function db_AddLCEvent(string? apiId, string? prev_state, string? new_sta
                                         ${organization},
                                         ${utc}
                                     )`;
+        sql:ParameterizedQuery ADD_LC_EVENT_Prefix = `INSERT INTO api_lc_event (api_id,previous_state,new_state,user_id,organization,event_date) VALUES (`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(ADD_LC_EVENT_Prefix, values);
 
         sql:ExecutionResult | sql:Error result = db_client->execute(sqlQuery);
@@ -105,7 +111,7 @@ public function db_AddLCEvent(string? apiId, string? prev_state, string? new_sta
     }
 }
 
-public function db_getLCEventHistory(string apiId) returns LifecycleHistoryItem[]?|error {
+isolated function db_getLCEventHistory(string apiId) returns LifecycleHistoryItem[]?|error {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection", dbClient);
@@ -119,7 +125,7 @@ public function db_getLCEventHistory(string apiId) returns LifecycleHistoryItem[
 }
 
 
-public function db_getSubscriptionsForAPI(string apiId) returns Subscription[]|error {
+isolated function db_getSubscriptionsForAPI(string apiId) returns Subscription[]|error {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection", dbClient);
@@ -132,22 +138,62 @@ public function db_getSubscriptionsForAPI(string apiId) returns Subscription[]|e
                 SUBS.SUBSCRIPTION_ID AS subscriptionId, 
                 APP.UUID AS applicationId,
                 APP.name AS name,
-                SUBS.TIER_ID AS THROTTLINGPOLICY, 
+                SUBS.TIER_ID AS usagePlan, 
                 SUBS.sub_status AS subscriptionStatus
                 FROM SUBSCRIPTION SUBS, API API, APPLICATION APP 
                 WHERE APP.APPLICATION_ID=SUBS.APPLICATION_ID AND API.API_ID = SUBS.API_ID AND API.API_UUID = ${apiId}`;
-            stream<Subscription, sql:Error?> result1 =  dbClient->query(query1);
+            stream<Subscriptions, sql:Error?> result1 =  dbClient->query(query1);
             Subscription[] subsList = [];
-            check from Subscription subitem in result1 do {
+            check from Subscriptions subitem in result1 do {
                 Subscription sub = {applicationInfo: {},subscriptionId: "",subscriptionStatus: "",usagePlan: ""};
                 sub.subscriptionId =subitem.subscriptionId;
                 sub.subscriptionStatus = subitem.subscriptionStatus;
+                sub.applicationInfo.applicationId = subitem.applicationId;
+                sub.usagePlan = subitem.usagePlan;
+                sub.applicationInfo.name = subitem.name;
                 subsList.push(sub);
             };
             return subsList;
             
         } else {
             return error("Error while geting subscription infomation" + result.message());  
+        }
+    }
+}
+
+
+isolated function db_blockSubscription(string subscriptionId, string blockState) returns error|string{
+    postgresql:Client | error db_client  = getConnection();
+    if db_client is error {
+        return error("Issue while conecting to databse");
+    } else {
+        sql:ParameterizedQuery SUBSCRIPTION_BLOCK_Prefix = `UPDATE subscription set sub_status = `; 
+        sql:ParameterizedQuery values = `${blockState} where uuid = ${subscriptionId}`;
+        sql:ParameterizedQuery sqlQuery = sql:queryConcat(SUBSCRIPTION_BLOCK_Prefix, values);
+        sql:ExecutionResult | sql:Error result =  db_client->execute(sqlQuery);
+        
+        if result is sql:ExecutionResult {
+            return "blocked";
+        } else {
+            return error("Error while changing status of the subscription in the Database");  
+        }
+    }
+}
+
+isolated function db_unblockSubscription(string subscriptionId) returns error|string{
+    postgresql:Client | error db_client  = getConnection();
+    if db_client is error {
+        return error("Issue while conecting to databse");
+    } else {
+        sql:ParameterizedQuery SUBSCRIPTION_UNBLOCK_Prefix = `UPDATE subscription set sub_status = 'UNBLOCKED'`; 
+        sql:ParameterizedQuery values = ` where uuid = ${subscriptionId}`;
+        sql:ParameterizedQuery sqlQuery = sql:queryConcat(SUBSCRIPTION_UNBLOCK_Prefix, values);
+        sql:ExecutionResult | sql:Error result =  db_client->execute(sqlQuery);
+        
+        if result is sql:ExecutionResult {
+            return "Unblocked";
+        } else {
+            return error("Error while changing status of the subscription in the Database");  
         }
     }
 }
