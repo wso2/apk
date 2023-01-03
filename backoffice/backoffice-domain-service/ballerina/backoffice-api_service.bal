@@ -36,7 +36,7 @@ listener http:Listener ep0 = new (BACKOFFICE_PORT);
 
 service /api/am/backoffice on ep0 {
     
-    resource function get apis(string? query, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0, string sortBy = "createdTime", string sortOrder = "desc", @http:Header string? accept = "application/json") returns APIList|http:NotModified|NotAcceptableError|InternalServerErrorError|error {
+    isolated resource function get apis(string? query, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0, string sortBy = "createdTime", string sortOrder = "desc", @http:Header string? accept = "application/json") returns APIList|http:NotModified|NotAcceptableError|InternalServerErrorError|error {
         string?| APIList | error apiList = check getAPIList();
         if apiList is string {
             json j = check value:fromJsonString(apiList);
@@ -98,7 +98,7 @@ service /api/am/backoffice on ep0 {
     // }
     // resource function post apis/[string apiId]/'publish\-to\-external\-stores(string? externalStoreIds, @http:Header string? 'if\-match) returns APIExternalStoreList|NotFoundError|InternalServerErrorError {
     // }
-    resource function get subscriptions(string? apiId, @http:Header string? 'if\-none\-match, string? query, int 'limit = 25, int offset = 0) returns SubscriptionList|http:NotModified|NotAcceptableError|InternalServerErrorError|error {
+    isolated resource function get subscriptions(string? apiId, @http:Header string? 'if\-none\-match, string? query, int 'limit = 25, int offset = 0) returns SubscriptionList|http:NotModified|NotAcceptableError|InternalServerErrorError|error {
         SubscriptionList|error subList = getSubscriptions(apiId);
         if subList is SubscriptionList {
             return subList;
@@ -110,7 +110,7 @@ service /api/am/backoffice on ep0 {
     // }
     // resource function get subscriptions/[string subscriptionId]/'subscriber\-info() returns SubscriberInfo|NotFoundError {
     // }
-    resource function post subscriptions/'block\-subscription(string subscriptionId, string blockState, @http:Header string? 'if\-match) returns http:Ok|BadRequestError|NotFoundError|PreconditionFailedError| InternalServerErrorError {
+    isolated resource function post subscriptions/'block\-subscription(string subscriptionId, string blockState, @http:Header string? 'if\-match) returns http:Ok|BadRequestError|NotFoundError|PreconditionFailedError| InternalServerErrorError {
         string|error response = blockSubscription(subscriptionId, blockState);
         if response is error {
             InternalServerErrorError internalError = {body: {code: 90912, message: response.message()}};
@@ -119,7 +119,7 @@ service /api/am/backoffice on ep0 {
             return http:OK;
         }
     }
-    resource function post subscriptions/'unblock\-subscription(string subscriptionId, @http:Header string? 'if\-match) returns http:Ok|BadRequestError|NotFoundError|PreconditionFailedError| InternalServerErrorError {
+    isolated resource function post subscriptions/'unblock\-subscription(string subscriptionId, @http:Header string? 'if\-match) returns http:Ok|BadRequestError|NotFoundError|PreconditionFailedError| InternalServerErrorError {
         string|error response = unblockSubscription(subscriptionId);
         if response is error {
             InternalServerErrorError internalError = {body: {code: 90912, message: response.message()}};
@@ -138,7 +138,7 @@ service /api/am/backoffice on ep0 {
     // }
     // resource function get 'api\-categories() returns APICategoryList {
     // }
-    resource function post apis/'change\-lifecycle(string targetState, string apiId, @http:Header string? 'if\-match) returns LifecycleState|BadRequestError|UnauthorizedError|NotFoundError|ConflictError|InternalServerErrorError|error {
+    isolated resource function post apis/'change\-lifecycle(string targetState, string apiId, @http:Header string? 'if\-match) returns LifecycleState|BadRequestError|UnauthorizedError|NotFoundError|ConflictError|InternalServerErrorError|error {
         LifecycleState | error  changeState = changeLifeCyleState(targetState, apiId, "carbon.super");
         if changeState is LifecycleState {
             return changeState;
@@ -146,7 +146,7 @@ service /api/am/backoffice on ep0 {
             return error("Error while updating LC state of API" + changeState.message());
         }
     }
-    resource function get apis/[string apiId]/'lifecycle\-history(@http:Header string? 'if\-none\-match) returns LifecycleHistory|UnauthorizedError|NotFoundError|InternalServerErrorError {
+    isolated resource function get apis/[string apiId]/'lifecycle\-history(@http:Header string? 'if\-none\-match) returns LifecycleHistory|UnauthorizedError|NotFoundError|InternalServerErrorError {
         LifecycleHistory|error? lcList = getLcEventHistory(apiId);
         if lcList is LifecycleHistory {
             return lcList;
@@ -155,7 +155,7 @@ service /api/am/backoffice on ep0 {
             return internalError;
         }
     }
-    resource function get apis/[string apiId]/'lifecycle\-state(@http:Header string? 'if\-none\-match) returns LifecycleState|UnauthorizedError|NotFoundError|InternalServerErrorError|error {
+    isolated resource function get apis/[string apiId]/'lifecycle\-state(@http:Header string? 'if\-none\-match) returns LifecycleState|UnauthorizedError|NotFoundError|InternalServerErrorError|error {
         LifecycleState | error currentState = getLifeCyleState(apiId, "carbon.super");
             if currentState is LifecycleState {
                 return currentState;

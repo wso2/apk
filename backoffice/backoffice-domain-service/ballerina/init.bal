@@ -21,7 +21,7 @@ import ballerinax/postgresql;
 import ballerina/sql;
 
 configurable DatasourceConfiguration datasourceConfiguration = ?;
-postgresql:Client|sql:Error dbClient;
+final postgresql:Client|sql:Error dbClient;
 function init() {
     log:printInfo("Starting APK Backoffice internal Domain Service...");
 
@@ -34,6 +34,6 @@ function init() {
             connectionPool = {maxOpenConnections: datasourceConfiguration.maxPoolSize}
             );
 }
-public function getConnection() returns postgresql:Client | error {
+public isolated function getConnection() returns postgresql:Client | error {
     return dbClient;  
 }
