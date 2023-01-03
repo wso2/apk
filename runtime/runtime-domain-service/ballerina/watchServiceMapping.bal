@@ -20,14 +20,14 @@ import ballerina/lang.value;
 import runtime_domain_service.model as model;
 import ballerina/log;
 
-map<map<model:K8sAPI>> serviceMappings = {};
+map<map<model:API>> serviceMappings = {};
 string serviceMappingResourceVersion = "";
-map<model:K8sServiceMapping> k8sServiceMappings = {};
+isolated map<model:K8sServiceMapping> k8sServiceMappings = {};
 websocket:Client|error|() serviceMappingClient = ();
 
 class ServiceMappingTask {
     function init(string resourceVersion) {
-        serviceMappingClient = getServiceMappingClient(resourceVersion);
+        serviceMappingClient = getServiceMappingClient(serviceMappingResourceVersion);
     }
 
     public function startListening() returns error? {
@@ -37,13 +37,15 @@ class ServiceMappingTask {
                 do {
                     websocket:Client|error|() apiClientResult = serviceMappingClient;
                     if apiClientResult is websocket:Client {
-                        if !apiClientResult.isOpen() {
-                            log:printDebug("Websocket Client connection closed conectionId: " + apiClientResult.getConnectionId() + " state: " + apiClientResult.isOpen().toString());
-                            serviceMappingClient = getServiceMappingClient(resourceVersion);
+                        boolean connectionOpen = apiClientResult.isOpen();
+                        if !connectionOpen {
+                            log:printDebug("Websocket Client connection closed conectionId: " + apiClientResult.getConnectionId() + " state: " + connectionOpen.toString());
+                            serviceMappingClient = getServiceMappingClient(serviceMappingResourceVersion);
                             websocket:Client|error|() retryClient = serviceMappingClient;
                             if retryClient is websocket:Client {
                                 log:printDebug("Reinitializing client..");
-                                log:printDebug("Intializd new Client Connection conectionId: " + retryClient.getConnectionId() + " state: " + retryClient.isOpen().toString());
+                                connectionOpen = retryClient.isOpen();
+                                log:printDebug("Intializd new Client Connection conectionId: " + retryClient.getConnectionId() + " state: " + connectionOpen.toString());
                                 _ = check readServiceMappingEvent(retryClient);
                             } else if retryClient is error {
                                 log:printError("error while reading message", retryClient);
@@ -63,7 +65,7 @@ class ServiceMappingTask {
     }
 }
 
-function getServiceMappingClient(string resourceVersion) returns websocket:Client|error|() {
+public function getServiceMappingClient(string resourceVersion) returns websocket:Client|error|() {
     string requestURl = "wss://" + runtimeConfiguration.k8sConfiguration.host + "/apis/dp.wso2.com/v1alpha1/watch/servicemappings";
     if resourceVersion.length() > 0 {
         requestURl = requestURl + "?resourceVersion=" + resourceVersion.toString();
@@ -73,18 +75,9 @@ function getServiceMappingClient(string resourceVersion) returns websocket:Clien
         token: token
     },
         secureSocket = {
-            cert: caCertPath
-        }
-    );
-}
-
-function putallServiceMappings(json[] apiData) {
-    foreach json api in apiData {
-        model:K8sAPI|error k8sAPI = createAPImodel(api);
-        if k8sAPI is model:K8sAPI {
-            apilist[k8sAPI.uuid] = k8sAPI;
-        }
+        cert: caCertPath
     }
+    );
 }
 
 function setServiceMappingResourceVersion(string resourceVersionValue) {
@@ -92,10 +85,10 @@ function setServiceMappingResourceVersion(string resourceVersionValue) {
 }
 
 function readServiceMappingEvent(websocket:Client apiWebsocketClient) returns error? {
-    log:printDebug("Using Client Connection conectionId: " + apiWebsocketClient.getConnectionId() + " state: " + apiWebsocketClient.isOpen().toString());
-    if !apiWebsocketClient.isOpen() {
-        error err = error("connection closed");
-        return err;
+    boolean connectionOpen = apiWebsocketClient.isOpen();
+    log:printDebug("Using Client Connection conectionId: " + apiWebsocketClient.getConnectionId() + " state: " + connectionOpen.toString());
+    if !connectionOpen {
+        return error("connection closed");
     }
     string|error message = check apiWebsocketClient->readMessage();
     if message is string {
@@ -128,12 +121,16 @@ function readServiceMappingEvent(websocket:Client apiWebsocketClient) returns er
 
 }
 
-function addServiceMapping(map<map<model:K8sAPI>> serviceMappings, model:K8sServiceMapping serviceMapping) {
-    k8sServiceMappings[serviceMapping.metadata.uid ?: ""] = serviceMapping;
+function addServiceMapping(map<map<model:API>> serviceMappings, model:K8sServiceMapping serviceMapping) {
+    lock {
+        k8sServiceMappings[serviceMapping.metadata.uid ?: ""] = serviceMapping.clone();
+    }
 }
 
-function deleteServiceMapping(map<map<model:K8sAPI>> serviceMappings, model:K8sServiceMapping serviceMapping) {
-    _ = k8sServiceMappings.remove(serviceMapping.metadata.uid ?: "");
+function deleteServiceMapping(map<map<model:API>> serviceMappings, model:K8sServiceMapping serviceMapping) {
+    lock {
+        _ = k8sServiceMappings.remove(serviceMapping.metadata.uid ?: "");
+    }
 }
 
 function putAllServiceMappings(json[] events) returns error? {
@@ -146,32 +143,36 @@ function putAllServiceMappings(json[] events) returns error? {
     }
 }
 
-function retrieveAPIMappingsForService(Service serviceEntry) returns model:K8sAPI[] {
-    string[] keys = k8sServiceMappings.keys();
-    model:K8sAPI[] apis = [];
-    foreach string key in keys {
-        model:K8sServiceMapping serviceMapping = k8sServiceMappings.get(key);
-        model:ServiceReference serviceRef = serviceMapping.spec.serviceRef;
-        if (serviceRef.name == serviceEntry.name && serviceRef.namespace == serviceEntry.namespace) {
-            model:APIReference apiRef = serviceMapping.spec.apiRef;
-            model:K8sAPI? k8sAPI = getAPIByNameAndNamespace(apiRef.name, apiRef.namespace);
-            if k8sAPI is model:K8sAPI {
-                apis.push(k8sAPI);
+isolated function retrieveAPIMappingsForService(Service serviceEntry) returns model:API[] {
+    lock {
+        string[] keys = k8sServiceMappings.keys();
+        model:API[] apis = [];
+        foreach string key in keys {
+            model:K8sServiceMapping serviceMapping = k8sServiceMappings.get(key);
+            model:ServiceReference serviceRef = serviceMapping.spec.serviceRef;
+            if (serviceRef.name == serviceEntry.name && serviceRef.namespace == serviceEntry.namespace) {
+                model:APIReference apiRef = serviceMapping.spec.apiRef;
+                model:API? k8sAPI = getAPIByNameAndNamespace(apiRef.name, apiRef.namespace);
+                if k8sAPI is model:API {
+                    apis.push(k8sAPI);
+                }
             }
         }
+        return apis.clone();
     }
-    return apis;
 }
 
-function retrieveServiceMappingsForAPI(model:K8sAPI api) returns model:K8sServiceMapping[] {
-    string[] keys = k8sServiceMappings.keys();
-    model:K8sServiceMapping[] serviceMappings = [];
-    foreach string key in keys {
-        model:K8sServiceMapping serviceMapping = k8sServiceMappings.get(key);
-        model:APIReference apiRef = serviceMapping.spec.apiRef;
-        if (apiRef.name == api.k8sName && apiRef.namespace == api.namespace) {
-            serviceMappings.push(serviceMapping);
+isolated function retrieveServiceMappingsForAPI(model:API api) returns model:K8sServiceMapping[] {
+    lock {
+        string[] keys = k8sServiceMappings.keys();
+        model:K8sServiceMapping[] serviceMappings = [];
+        foreach string key in keys {
+            model:K8sServiceMapping serviceMapping = k8sServiceMappings.get(key);
+            model:APIReference apiRef = serviceMapping.spec.apiRef;
+            if (apiRef.name == api.metadata.name && apiRef.namespace == api.metadata.namespace) {
+                serviceMappings.push(serviceMapping);
+            }
         }
+        return serviceMappings.clone();
     }
-    return serviceMappings;
 }

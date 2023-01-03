@@ -19,8 +19,8 @@ package constants
 
 // Controller related constants
 const (
-	APIController       string = "APIController"
-	HTTPRouteController string = "HTTPRouteController"
+	APIController         string = "APIController"
+	ApplicationController string = "ApplicationController"
 )
 
 // API events related constants
@@ -38,8 +38,14 @@ const (
 
 // CR Statuses
 const (
-	ValidatedState = "Validated"
-	InvalidState   = "Invalid"
-	DeployedState  = "Deployed"
-	UpdatedState   = "Updated"
+	DeployedState = "Deployed"
+	UpdatedState  = "Updated"
+)
+
+// CRD Kinds
+const (
+	KindAuthentication = "Authentication"
+	KindHTTPRoute      = "HTTPRoute"
+	//TODO(amali) remove this after fixing the issue in https://github.com/wso2/apk/issues/383
+	KindResource = "Resource"
 )

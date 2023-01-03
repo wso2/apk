@@ -16,7 +16,7 @@ public distinct class HashSet {
     # The init function of the Ballerina class mapping the `java.util.HashSet` Java class.
     #
     # + obj - The `handle` value containing the Java reference of the object.
-    public function init(handle obj) {
+    public isolated function init(handle obj) {
         self.jObj = obj;
     }
 
@@ -30,7 +30,7 @@ public distinct class HashSet {
     #
     # + arg0 - The `javalang:Object` value required to map with the Java method parameter.
     # + return - The `boolean` value returning from the Java mapping.
-    public function add(javalang:Object arg0) returns boolean {
+    public isolated function add(javalang:Object arg0) returns boolean {
         return java_util_HashSet_add(self.jObj, arg0.jObj);
     }
 
@@ -283,10 +283,12 @@ public distinct class HashSet {
 # The constructor function to generate an object of `java.util.HashSet`.
 #
 # + return - The new `HashSet` class generated.
-public function newHashSet1() returns HashSet {
+public isolated function newHashSet1() returns HashSet {
     handle externalObj = java_util_HashSet_newHashSet1();
-    HashSet newObj = new (externalObj);
-    return newObj;
+    lock {
+        HashSet newObj = new (externalObj);
+        return newObj;
+    }
 }
 
 # The constructor function to generate an object of `java.util.HashSet`.
@@ -320,7 +322,7 @@ public function newHashSet4(int arg0, float arg1) returns HashSet {
     return newObj;
 }
 
-function java_util_HashSet_add(handle receiver, handle arg0) returns boolean = @java:Method {
+isolated function java_util_HashSet_add(handle receiver, handle arg0) returns boolean = @java:Method {
     name: "add",
     'class: "java.util.HashSet",
     paramTypes: ["java.lang.Object"]
@@ -488,7 +490,7 @@ function java_util_HashSet_wait3(handle receiver, int arg0, int arg1) returns er
     paramTypes: ["long", "int"]
 } external;
 
-function java_util_HashSet_newHashSet1() returns handle = @java:Constructor {
+isolated function java_util_HashSet_newHashSet1() returns handle = @java:Constructor {
     'class: "java.util.HashSet",
     paramTypes: []
 } external;

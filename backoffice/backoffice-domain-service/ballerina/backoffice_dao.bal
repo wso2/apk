@@ -32,14 +32,14 @@ function db_getAPIsDAO() returns API[]|error? {
     }
 }
 
-function db_changeLCState(string action, string apiId, string organization) returns string|error {
+function db_changeLCState(string targetState, string apiId, string organization) returns string|error {
     postgresql:Client | error db_Client  = getConnection();
     if db_Client is error {
         return error("Error while retrieving connection", db_Client);
     } else {
-        string newState = actionToLCState(action);
+        string newState = actionToLCState(targetState);
         if newState.equalsIgnoreCaseAscii("any") {
-            return error(" Invalid Lifecycle action"); 
+            return error(" Invalid Lifecycle targetState"); 
         }
         sql:ParameterizedQuery values = `${newState}
         WHERE api_uuid = ${apiId}`;
@@ -48,7 +48,7 @@ function db_changeLCState(string action, string apiId, string organization) retu
         sql:ExecutionResult | sql:Error result = db_Client->execute(sqlQuery);
         
         if result is sql:ExecutionResult {
-            return action;
+            return targetState;
         } else {
             return error("Error while updating LC state into Database" + result.message());  
         }
@@ -115,5 +115,39 @@ public function db_getLCEventHistory(string apiId) returns LifecycleHistoryItem[
         LifecycleHistoryItem[]? lcItems = check from LifecycleHistoryItem lcitem in lcStream select lcitem;
         check lcStream.close();
         return lcItems;
+    }
+}
+
+
+public function db_getSubscriptionsForAPI(string apiId) returns Subscription[]|error {
+    postgresql:Client | error dbClient  = getConnection();
+    if dbClient is error {
+        return error("Error while retrieving connection", dbClient);
+    } else {
+        sql:ParameterizedQuery query = `SELECT api_id FROM api WHERE api_uuid =${apiId}`;
+        int | sql:Error result =  dbClient->queryRow(query);
+        
+        if result is int {
+            sql:ParameterizedQuery query1 = `SELECT 
+                SUBS.SUBSCRIPTION_ID AS subscriptionId, 
+                APP.UUID AS applicationId,
+                APP.name AS name,
+                SUBS.TIER_ID AS THROTTLINGPOLICY, 
+                SUBS.sub_status AS subscriptionStatus
+                FROM SUBSCRIPTION SUBS, API API, APPLICATION APP 
+                WHERE APP.APPLICATION_ID=SUBS.APPLICATION_ID AND API.API_ID = SUBS.API_ID AND API.API_UUID = ${apiId}`;
+            stream<Subscription, sql:Error?> result1 =  dbClient->query(query1);
+            Subscription[] subsList = [];
+            check from Subscription subitem in result1 do {
+                Subscription sub = {applicationInfo: {},subscriptionId: "",subscriptionStatus: "",usagePlan: ""};
+                sub.subscriptionId =subitem.subscriptionId;
+                sub.subscriptionStatus = subitem.subscriptionStatus;
+                subsList.push(sub);
+            };
+            return subsList;
+            
+        } else {
+            return error("Error while geting subscription infomation" + result.message());  
+        }
     }
 }

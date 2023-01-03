@@ -21,7 +21,7 @@ public distinct class Scope {
     # The function to retrieve the string representation of the Ballerina class mapping the `org.wso2.apk.runtime.model.Scope` Java class.
     #
     # + return - The `string` form of the Java object instance.
-    public function toString() returns string {
+    public isolated function toString() returns string {
         return java:toString(self.jObj) ?: "null";
     }
     # The function that maps to the `equals` method of `org.wso2.apk.runtime.model.Scope`.

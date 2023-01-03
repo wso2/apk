@@ -25,7 +25,7 @@ configurable int DEVPORTAL_PORT = 9443;
 listener http:Listener ep0 = new (DEVPORTAL_PORT);
 
 service /api/am/devportal on ep0 {
-    resource function get apis(@http:Header string? 'x\-wso2\-tenant, string? query, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0) returns APIList|NotAcceptableError|InternalServerErrorError|error {
+    isolated resource function get apis(@http:Header string? 'x\-wso2\-tenant, string? query, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0) returns APIList|NotAcceptableError|InternalServerErrorError|error {
         string organization = "carbon.super";
         string?| APIList | error apiList = check getAPIList('limit, offset, query, organization);
         if apiList is string {
@@ -40,7 +40,7 @@ service /api/am/devportal on ep0 {
             return internalError;
         }
     }
-    resource function get apis/[string apiId](@http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match) returns API|http:NotModified|NotFoundError|NotAcceptableError|InternalServerErrorError|error|json {
+    isolated resource function get apis/[string apiId](@http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match) returns API|http:NotModified|NotFoundError|NotAcceptableError|InternalServerErrorError|error|json {
         string organization = "carbon.super";
         string?|API|error api = check getAPIByAPIId(apiId, organization);
         if api is string {
@@ -96,7 +96,7 @@ service /api/am/devportal on ep0 {
     // }
     // resource function get apis/[string apiId]/'subscription\-policies(@http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match) returns ThrottlingPolicy|http:NotModified|NotFoundError|NotAcceptableError {
     // }
-    resource function get applications(string? groupId, string? query, string? sortBy, string? sortOrder, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0) returns ApplicationList|http:NotModified|BadRequestError|NotAcceptableError|InternalServerErrorError|error{
+    isolated resource function get applications(string? groupId, string? query, string? sortBy, string? sortOrder, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0) returns ApplicationList|http:NotModified|BadRequestError|NotAcceptableError|InternalServerErrorError|error{
         string organization = "carbon.super";
         string?|ApplicationList|error applicationList = check getApplicationList(sortBy, groupId, query, sortOrder, 'limit, offset, organization);
         if applicationList is string {
@@ -112,7 +112,7 @@ service /api/am/devportal on ep0 {
             return internalError;
         }
     }
-    resource function post applications(@http:Payload Application payload) returns CreatedApplication|AcceptedWorkflowResponse|BadRequestError|ConflictError|UnsupportedMediaTypeError|InternalServerErrorError|error {
+    isolated resource function post applications(@http:Payload Application payload) returns CreatedApplication|AcceptedWorkflowResponse|BadRequestError|ConflictError|UnsupportedMediaTypeError|InternalServerErrorError|error {
         string?|Application|error application = check addApplication(payload, "carbon.super", "apkuser");
         if application is string {
             json j = check value:fromJsonString(application);
@@ -127,7 +127,7 @@ service /api/am/devportal on ep0 {
             return internalError;
         }
     }
-    resource function get applications/[string applicationId](@http:Header string? 'if\-none\-match, @http:Header string? 'x\-wso2\-tenant) returns Application|http:NotModified|NotFoundError|NotAcceptableError|InternalServerErrorError|error {
+    isolated resource function get applications/[string applicationId](@http:Header string? 'if\-none\-match, @http:Header string? 'x\-wso2\-tenant) returns Application|http:NotModified|NotFoundError|NotAcceptableError|InternalServerErrorError|error {
         string?|Application|error application = check getApplicationById(applicationId, "carbon.super");
         if application is string {
             json j = check value:fromJsonString(application);
@@ -142,7 +142,7 @@ service /api/am/devportal on ep0 {
             return internalError;
         }
     }
-    resource function put applications/[string applicationId](@http:Header string? 'if\-match, @http:Payload Application payload) returns Application|BadRequestError|NotFoundError|PreconditionFailedError|InternalServerErrorError|error {
+    isolated resource function put applications/[string applicationId](@http:Header string? 'if\-match, @http:Payload Application payload) returns Application|BadRequestError|NotFoundError|PreconditionFailedError|InternalServerErrorError|error {
         string organization = "carbon.super";
         string?|Application|NotFoundError|error application = check updateApplication(applicationId, payload, organization,"apkuser");
         if application is string {
@@ -158,7 +158,7 @@ service /api/am/devportal on ep0 {
             return internalError;
         }
     }
-    resource function delete applications/[string applicationId](@http:Header string? 'if\-match) returns http:Ok|AcceptedWorkflowResponse|NotFoundError|PreconditionFailedError|InternalServerErrorError|error {
+    isolated resource function delete applications/[string applicationId](@http:Header string? 'if\-match) returns http:Ok|AcceptedWorkflowResponse|NotFoundError|PreconditionFailedError|InternalServerErrorError|error {
         string organization = "carbon.super";
         string|error? response = check deleteApplication(applicationId,organization);
         if response is error {
@@ -196,7 +196,7 @@ service /api/am/devportal on ep0 {
     // }
     // resource function post applications/[string applicationId]/'oauth\-keys/[string keyMappingId]/'generate\-token(@http:Header string? 'if\-match, @http:Payload ApplicationTokenGenerateRequest payload) returns ApplicationToken|BadRequestError|NotFoundError|PreconditionFailedError {
     // }
-    resource function post applications/[string applicationId]/'api\-keys/[string keyType]/generate(@http:Header string? 'if\-match, @http:Payload APIKeyGenerateRequest payload) returns APIKey|BadRequestError|NotFoundError|PreconditionFailedError|InternalServerErrorError|error {
+    isolated resource function post applications/[string applicationId]/'api\-keys/[string keyType]/generate(@http:Header string? 'if\-match, @http:Payload APIKeyGenerateRequest payload) returns APIKey|BadRequestError|NotFoundError|PreconditionFailedError|InternalServerErrorError|error {
         APIKey|error apiKey = check generateAPIKey(payload, applicationId, keyType, "apkuser", "carbon.super");
         if apiKey is APIKey {
             return apiKey;
@@ -211,7 +211,7 @@ service /api/am/devportal on ep0 {
     // }
     // resource function post applications/'import(boolean? preserveOwner, boolean? skipSubscriptions, string? appOwner, boolean? skipApplicationKeys, boolean? update, @http:Payload json payload) returns ApplicationInfo|BadRequestError|NotAcceptableError {
     // }
-    resource function get subscriptions(string? apiId, string? applicationId, string? groupId, @http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match, int offset = 0, int 'limit = 25) returns SubscriptionList|http:NotModified|NotAcceptableError|InternalServerErrorError|error {
+    isolated resource function get subscriptions(string? apiId, string? applicationId, string? groupId, @http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match, int offset = 0, int 'limit = 25) returns SubscriptionList|http:NotModified|NotAcceptableError|InternalServerErrorError|error {
         string?|SubscriptionList|error subscriptionList = check getSubscriptions(apiId, applicationId, groupId, offset, 'limit, "carbon.super");
         if subscriptionList is string {
             json j = check value:fromJsonString(subscriptionList);
@@ -226,7 +226,7 @@ service /api/am/devportal on ep0 {
             return internalError;
         }
     }
-    resource function post subscriptions(@http:Header string? 'x\-wso2\-tenant, @http:Payload Subscription payload) returns CreatedSubscription|AcceptedWorkflowResponse|BadRequestError|UnsupportedMediaTypeError|InternalServerErrorError|error {
+    isolated resource function post subscriptions(@http:Header string? 'x\-wso2\-tenant, @http:Payload Subscription payload) returns CreatedSubscription|AcceptedWorkflowResponse|BadRequestError|UnsupportedMediaTypeError|InternalServerErrorError|error {
         string?|Subscription|error subscription = check addSubscription(payload, "carbon.super", "apkuser");
         if subscription is string {
             json j = check value:fromJsonString(subscription);
@@ -241,7 +241,7 @@ service /api/am/devportal on ep0 {
             return internalError;
         }
     }
-    resource function post subscriptions/multiple(@http:Header string? 'x\-wso2\-tenant, @http:Payload Subscription[] payload) returns Subscription[]|BadRequestError|UnsupportedMediaTypeError|InternalServerErrorError|error {
+    isolated resource function post subscriptions/multiple(@http:Header string? 'x\-wso2\-tenant, @http:Payload Subscription[] payload) returns Subscription[]|BadRequestError|UnsupportedMediaTypeError|InternalServerErrorError|error {
         Subscription[]|error? subscriptions = check addMultipleSubscriptions(payload, "carbon.super", "apkuser");
         if subscriptions is Subscription[]  {
             log:printDebug(subscriptions.toString());
@@ -253,7 +253,7 @@ service /api/am/devportal on ep0 {
     }
     // resource function get subscriptions/[string apiId]/additionalInfo(string? groupId, @http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match, int offset = 0, int 'limit = 25) returns AdditionalSubscriptionInfoList|http:NotFound {
     // }
-    resource function get subscriptions/[string subscriptionId](@http:Header string? 'if\-none\-match) returns Subscription|http:NotModified|NotFoundError|InternalServerErrorError|error {
+    isolated resource function get subscriptions/[string subscriptionId](@http:Header string? 'if\-none\-match) returns Subscription|http:NotModified|NotFoundError|InternalServerErrorError|error {
         string?|Subscription|error subscription = check getSubscriptionById(subscriptionId, "carbon.super");
         if subscription  is string {
             json j = check value:fromJsonString(subscription );
@@ -268,7 +268,7 @@ service /api/am/devportal on ep0 {
             return internalError;
         }
     }
-    resource function put subscriptions/[string subscriptionId](@http:Header string? 'x\-wso2\-tenant, @http:Payload Subscription payload) returns Subscription|AcceptedWorkflowResponse|http:NotModified|BadRequestError|NotFoundError|http:UnsupportedMediaType|InternalServerErrorError|error {
+    isolated resource function put subscriptions/[string subscriptionId](@http:Header string? 'x\-wso2\-tenant, @http:Payload Subscription payload) returns Subscription|AcceptedWorkflowResponse|http:NotModified|BadRequestError|NotFoundError|http:UnsupportedMediaType|InternalServerErrorError|error {
         string?|Subscription|NotFoundError|error subscription = check updateSubscription(subscriptionId, payload, "carbon.super", "apkuser");
         if subscription is string {
             json j = check value:fromJsonString(subscription);
@@ -282,7 +282,7 @@ service /api/am/devportal on ep0 {
             return internalError;
         }
     }
-    resource function delete subscriptions/[string subscriptionId](@http:Header string? 'if\-match) returns http:Ok|AcceptedWorkflowResponse|NotFoundError|PreconditionFailedError|InternalServerErrorError|error{
+    isolated resource function delete subscriptions/[string subscriptionId](@http:Header string? 'if\-match) returns http:Ok|AcceptedWorkflowResponse|NotFoundError|PreconditionFailedError|InternalServerErrorError|error{
         string organization = "carbon.super";
         string|error? response = check deleteSubscription(subscriptionId,organization);
         if response is error {

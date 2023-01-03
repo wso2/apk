@@ -18,7 +18,7 @@ apiVersion: dp.wso2.com/v1alpha1
 kind: API
 metadata:
   name: http-bin-api
-  namespace: apk
+  namespace: apk-platform
 spec:
   apiDisplayName: http-bin-api
   apiType: REST
@@ -33,7 +33,7 @@ apiVersion: gateway.networking.k8s.io/v1beta1
 kind: HTTPRoute
 metadata:
   name: prod-http-route-http-bin-api
-  namespace: apk
+  namespace: apk-platform
 spec:
   hostnames:
   - prod.gw.wso2.com
@@ -52,12 +52,18 @@ spec:
     - path:
         type: PathPrefix
         value: /http-bin-api/1.0.8/get
+    filters:
+      - type: URLRewrite
+        urlRewrite:
+          path:
+            type: ReplacePrefixMatch
+            replacePrefixMatch: /get
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: HTTPRoute
 metadata:
   name: sand-http-route-http-bin-api
-  namespace: apk
+  namespace: apk-platform
 spec:
   hostnames:
   - sand.gw.wso2.com
@@ -75,10 +81,10 @@ spec:
     matches:
     - path:
         type: PathPrefix
-        value: /http-bin-api/1.0.8
+        value: /http-bin-api/1.0.8/get
     filters:
       - type: URLRewrite
         urlRewrite:
           path:
             type: ReplacePrefixMatch
-            replacePrefixMatch: /
+            replacePrefixMatch: /get

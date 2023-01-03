@@ -20,7 +20,7 @@ import ballerina/log;
 import ballerinax/postgresql;
 import ballerina/sql;
 
-function addApplicationDAO(Application application,int subscriberId, string org) returns string?|Application|error {
+isolated function addApplicationDAO(Application application,int subscriberId, string org) returns string?|Application|error {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
@@ -40,7 +40,7 @@ function addApplicationDAO(Application application,int subscriberId, string org)
     }
 }
 
-public function getSubscriberIdDAO(string user, string org) returns int?|error {
+isolated function getSubscriberIdDAO(string user, string org) returns int?|error {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
@@ -60,7 +60,7 @@ public function getSubscriberIdDAO(string user, string org) returns int?|error {
     }
 }
 
-public function getApplicationUsagePlanByNameDAO(string policyName, string org) returns string?|error {
+isolated function getApplicationUsagePlanByNameDAO(string policyName, string org) returns string?|error {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
@@ -80,7 +80,7 @@ public function getApplicationUsagePlanByNameDAO(string policyName, string org) 
     }
 }
 
-function getApplicationByIdDAO(string appId, string org) returns string?|Application|error {
+isolated function getApplicationByIdDAO(string appId, string org) returns string?|Application|error {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
@@ -101,7 +101,7 @@ function getApplicationByIdDAO(string appId, string org) returns string?|Applica
     }
 }
 
-function getApplicationsDAO(string org) returns Application[]|error? {
+isolated function getApplicationsDAO(string org) returns Application[]|error? {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
@@ -115,7 +115,7 @@ function getApplicationsDAO(string org) returns Application[]|error? {
     }
 }
 
-function updateApplicationDAO(Application application,int subscriberId, string org) returns string?|Application|error {
+isolated function updateApplicationDAO(Application application,int subscriberId, string org) returns string?|Application|error {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
@@ -135,7 +135,7 @@ function updateApplicationDAO(Application application,int subscriberId, string o
     }
 }
 
-function deleteApplicationDAO(string appId, string org) returns error?|string {
+isolated function deleteApplicationDAO(string appId, string org) returns error?|string {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");

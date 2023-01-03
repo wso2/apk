@@ -23,7 +23,7 @@ import ballerina/uuid;
 listener http:Listener ep0 = new (9443);
 string kid = uuid:createType1AsString();
 
-configurable RuntimeConfiguratation runtimeConfiguration = {
+configurable RuntimeConfiguratation & readonly runtimeConfiguration = {
     keyStores: {
         signing: {
             path: "/home/wso2apk/runtime/security/wso2carbon.key"
@@ -35,6 +35,7 @@ configurable RuntimeConfiguratation runtimeConfiguration = {
 };
 
 # Initializing method for runtime
+# + return - Return Error if error occured at initialization.
 function init() returns error? {
     APIClient apiService = new ();
     error? retrieveAllApisAtStartup = apiService.retrieveAllApisAtStartup(());
@@ -55,10 +56,18 @@ function init() returns error? {
     _ = check servicesService.retrieveAllServiceMappingsAtStartup(());
     ServiceMappingTask serviceMappingTask = new (serviceMappingResourceVersion);
     _ = check serviceMappingTask.startListening();
+    _ = check startAndAttachServices();
+    log:printInfo("Initializing Runtime Domain Service..");
+}
+
+public function deRegisterep() returns error? {
+    _ = check ep0.gracefulStop();
+}
+
+function startAndAttachServices() returns error? {
     check ep0.attach(healthService, "/");
     check ep0.attach(runtimeService, "/api/am/runtime");
     check ep0.'start();
     runtime:registerListener(ep0);
-    log:printInfo("Initializing Runtime Domain Service..");
+    runtime:onGracefulStop(deRegisterep);
 }
-

@@ -1,0 +1,209 @@
+# --------------------------------------------------------------------
+# Copyright (c) 2022, WSO2 LLC. (http://wso2.com) All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# -----------------------------------------------------------------------
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.9.2
+  creationTimestamp: null
+  name: authentications.dp.wso2.com
+spec:
+  group: dp.wso2.com
+  names:
+    kind: Authentication
+    listKind: AuthenticationList
+    plural: authentications
+    singular: authentication
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: Authentication is the Schema for the authentications API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: AuthenticationSpec defines the desired state of Authentication
+            properties:
+              default:
+                description: AuthSpec specification of the authentication service
+                properties:
+                  ext:
+                    description: ExtAuthService external authentication related information
+                    properties:
+                      authTypes:
+                        items:
+                          description: Auth Authentication scheme type and details
+                          properties:
+                            jwt:
+                              description: JWTAuth JWT Authentication scheme details
+                              properties:
+                                authorizationHeader:
+                                  type: string
+                              type: object
+                            type:
+                              description: AuthType is an enum {"jwt", "apikey", "basic",
+                                "mtls"}
+                              type: string
+                          type: object
+                        type: array
+                      disabled:
+                        type: boolean
+                      serviceRef:
+                        description: ServiceRef service using for Authentication
+                        properties:
+                          group:
+                            type: string
+                          kind:
+                            type: string
+                          name:
+                            type: string
+                          port:
+                            format: int32
+                            type: integer
+                        type: object
+                    type: object
+                  type:
+                    type: string
+                type: object
+              override:
+                description: AuthSpec specification of the authentication service
+                properties:
+                  ext:
+                    description: ExtAuthService external authentication related information
+                    properties:
+                      authTypes:
+                        items:
+                          description: Auth Authentication scheme type and details
+                          properties:
+                            jwt:
+                              description: JWTAuth JWT Authentication scheme details
+                              properties:
+                                authorizationHeader:
+                                  type: string
+                              type: object
+                            type:
+                              description: AuthType is an enum {"jwt", "apikey", "basic",
+                                "mtls"}
+                              type: string
+                          type: object
+                        type: array
+                      disabled:
+                        type: boolean
+                      serviceRef:
+                        description: ServiceRef service using for Authentication
+                        properties:
+                          group:
+                            type: string
+                          kind:
+                            type: string
+                          name:
+                            type: string
+                          port:
+                            format: int32
+                            type: integer
+                        type: object
+                    type: object
+                  type:
+                    type: string
+                type: object
+              targetRef:
+                description: PolicyTargetReference identifies an API object to apply
+                  policy to. This should be used as part of Policy resources that
+                  can target Gateway API resources. For more information on how this
+                  policy attachment model works, and a sample Policy resource, refer
+                  to the policy attachment documentation for Gateway API.
+                properties:
+                  group:
+                    description: Group is the group of the target resource.
+                    maxLength: 253
+                    pattern: ^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                    type: string
+                  kind:
+                    description: Kind is kind of the target resource.
+                    maxLength: 63
+                    minLength: 1
+                    pattern: ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$
+                    type: string
+                  name:
+                    description: Name is the name of the target resource.
+                    maxLength: 253
+                    minLength: 1
+                    type: string
+                  namespace:
+                    description: Namespace is the namespace of the referent. When
+                      unspecified, the local namespace is inferred. Even when policy
+                      targets a resource in a different namespace, it MUST only apply
+                      to traffic originating from the same namespace as the policy.
+                    maxLength: 63
+                    minLength: 1
+                    pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+                    type: string
+                required:
+                - group
+                - kind
+                - name
+                type: object
+            type: object
+          status:
+            description: AuthenticationStatus defines the observed state of Authentication
+            properties:
+              accepted:
+                description: Accepted represents whether the Authentication is accepted
+                  or not.
+                type: boolean
+              events:
+                description: Events contains a list of events related to the Authentication.
+                items:
+                  type: string
+                type: array
+              message:
+                description: Message represents a user friendly message that explains
+                  the current state of the Authentication.
+                minLength: 4
+                type: string
+              status:
+                description: Status denotes the state of the Authentication in its
+                  lifecycle. Possible values could be Accepted, Invalid, Deploy etc.
+                minLength: 4
+                type: string
+              transitionTime:
+                description: TransitionTime represents the last known transition timestamp.
+                format: date-time
+                type: string
+            required:
+            - accepted
+            - status
+            - transitionTime
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

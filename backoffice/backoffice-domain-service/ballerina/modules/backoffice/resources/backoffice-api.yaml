@@ -1904,7 +1904,7 @@ paths:
         For example, to Publish an API, `action` should be `Publish`.
 
       parameters:
-        - name: action
+        - name: targetState
           in: query
           description: |
             The action to demote or promote the state of the API.

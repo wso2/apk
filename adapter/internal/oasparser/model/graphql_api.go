@@ -40,7 +40,7 @@ func (swagger *MgwSwagger) SetInfoGraphQLAPI(apiYaml APIYaml) error {
 
 	// assigns mgw security schemes
 	for _, securitySchemeValue := range apiYaml.Data.SecurityScheme {
-		if securitySchemeValue == constants.APIMOauth2Type {
+		if securitySchemeValue == constants.Oauth2TypeInOAS {
 			securitySchemes = append(securitySchemes, SecurityScheme{DefinitionName: "default", Type: securitySchemeValue})
 		} else if securitySchemeValue == constants.APIMAPIKeyType {
 			isAPIKeyEnabled = true
@@ -54,7 +54,7 @@ func (swagger *MgwSwagger) SetInfoGraphQLAPI(apiYaml APIYaml) error {
 
 	// sets resources relevant to the GraphQL API considering api.yaml
 	var resources []*Resource
-	if len(apiYaml.Data.Operations) < 0 {
+	if len(apiYaml.Data.Operations) < 1 {
 		return errors.New("cannot process api.yaml since operations not defined in the api.yaml")
 	}
 
@@ -74,9 +74,7 @@ func (swagger *MgwSwagger) SetInfoGraphQLAPI(apiYaml APIYaml) error {
 		resourceMethod.tier = operation.ThrottlingPolicy
 		resourceMethod.iD = operation.ID
 
-		for _, scope := range operation.Scopes {
-			scopes = append(scopes, scope)
-		}
+		scopes = append(scopes, operation.Scopes...)
 		if operation.AuthType == "None" {
 			resourceMethod.disableSecurity = true
 		} else {
@@ -95,7 +93,7 @@ func (swagger *MgwSwagger) SetInfoGraphQLAPI(apiYaml APIYaml) error {
 	swagger.resources = resources
 
 	var corsConfig = generateGlobalCors()
-	if apiYaml.Data.CorsConfiguration.CorsConfigurationEnabled == true {
+	if apiYaml.Data.CorsConfiguration.CorsConfigurationEnabled {
 		corsConfig.AccessControlAllowOrigins = apiYaml.Data.CorsConfiguration.AccessControlAllowOrigins
 		corsConfig.AccessControlAllowCredentials = apiYaml.Data.CorsConfiguration.AccessControlAllowCredentials
 		corsConfig.AccessControlAllowHeaders = apiYaml.Data.CorsConfiguration.AccessControlAllowHeaders

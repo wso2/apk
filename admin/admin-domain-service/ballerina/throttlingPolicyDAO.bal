@@ -17,22 +17,21 @@
 //
 
 import ballerina/log;
-import ballerinax/java.jdbc;
+import ballerinax/postgresql;
 import ballerina/sql;
 
-public function addApplicationUsagePlanDAO(ApplicationThrottlePolicy atp) returns string?|ApplicationThrottlePolicy|error {
-    jdbc:Client | error dbClient  = getConnection();
+public isolated function addApplicationUsagePlanDAO(ApplicationRatePlan atp) returns string?|ApplicationRatePlan|error {
+    postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
     } else {
         string org = "carbon.super";
         sql:ParameterizedQuery query = `INSERT INTO APPLICATION_USAGE_PLAN (NAME, DISPLAY_NAME, 
         ORGANIZATION, DESCRIPTION, QUOTA_TYPE, QUOTA, UNIT_TIME, TIME_UNIT, IS_DEPLOYED, UUID) 
-        VALUES (${atp.policyName},${atp.displayName},${org},${atp.description},${atp.defaultLimit.'type},
+        VALUES (${atp.planName},${atp.displayName},${org},${atp.description},${atp.defaultLimit.'type},
         ${atp.defaultLimit.requestCount?.requestCount},${atp.defaultLimit.requestCount?.unitTime},
-        ${atp.defaultLimit.requestCount?.timeUnit},${atp.isDeployed},${atp.policyId})`;
+        ${atp.defaultLimit.requestCount?.timeUnit},${atp.isDeployed},${atp.planId})`;
         sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
-        check dbClient.close();
         if result is sql:ExecutionResult {
             return atp;
         } else {
@@ -42,44 +41,48 @@ public function addApplicationUsagePlanDAO(ApplicationThrottlePolicy atp) return
     }
 }
 
-public function getApplicationUsagePlanByIdDAO(string policyId) returns string?|ApplicationThrottlePolicy|error {
-    jdbc:Client | error dbClient  = getConnection();
+public isolated function getApplicationUsagePlanByIdDAO(string policyId) returns string?|ApplicationRatePlan|error {
+    postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
     } else {
         string org = "carbon.super";
-        sql:ParameterizedQuery query = `SELECT * FROM APPLICATION_USAGE_PLAN WHERE UUID =${policyId} AND ORGANIZATION =${org}`;
-        ApplicationThrottlePolicy | sql:Error result =  dbClient->queryRow(query);
-        check dbClient.close();
+        sql:ParameterizedQuery query = `SELECT NAME as PLANNAME, DISPLAY_NAME as DISPLAYNAME, DESCRIPTION, 
+        UUID as PLANID, IS_DEPLOYED as ISDEPLOYED, 
+        QUOTA_TYPE as TYPE, QUOTA as REQUESTCOUNT, TIME_UNIT as TIMEUNIT, UNIT_TIME as 
+        UNITTIME  FROM APPLICATION_USAGE_PLAN WHERE UUID =${policyId} AND ORGANIZATION =${org}`;
+        ApplicationRatePlan | sql:Error result =  dbClient->queryRow(query);
         if result is sql:NoRowsError {
             log:printDebug(result.toString());
             return error("Not Found");
-        } else if result is ApplicationThrottlePolicy {
+        } else if result is ApplicationRatePlan {
             log:printDebug(result.toString());
             return result;
         } else {
-            log:printDebug(result.toString());
+            log:printInfo(result.toString());
             return error("Error while retrieving Application Usage Plan");
         }
     }
 }
 
-public function getApplicationUsagePlansDAO(string org) returns ApplicationThrottlePolicy[]|error? {
-    jdbc:Client | error dbClient  = getConnection();
+public isolated function getApplicationUsagePlansDAO(string org) returns ApplicationRatePlan[]|error? {
+    postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
     } else {
-        sql:ParameterizedQuery query = `SELECT * FROM APPLICATION_USAGE_PLAN WHERE ORGANIZATION =${org}`;
-        stream<ApplicationThrottlePolicy, sql:Error?> usagePlanStream = dbClient->query(query);
-        ApplicationThrottlePolicy[]? usagePlans = check from ApplicationThrottlePolicy usagePlan in usagePlanStream select usagePlan;
+        sql:ParameterizedQuery query = `SELECT NAME as PLANNAME, DISPLAY_NAME as DISPLAYNAME, DESCRIPTION, 
+        UUID as PLANID, IS_DEPLOYED as ISDEPLOYED, 
+        QUOTA_TYPE as TYPE, QUOTA as REQUESTCOUNT, TIME_UNIT as TIMEUNIT, UNIT_TIME as 
+        UNITTIME FROM APPLICATION_USAGE_PLAN WHERE ORGANIZATION =${org}`;
+        stream<ApplicationRatePlan, sql:Error?> usagePlanStream = dbClient->query(query);
+        ApplicationRatePlan[]? usagePlans = check from ApplicationRatePlan usagePlan in usagePlanStream select usagePlan;
         check usagePlanStream.close();
-        check dbClient.close();
         return usagePlans;
     }
 }
 
-public function updateApplicationUsagePlanDAO(ApplicationThrottlePolicy atp) returns string?|ApplicationThrottlePolicy|error {
-    jdbc:Client | error dbClient  = getConnection();
+public isolated function updateApplicationUsagePlanDAO(ApplicationRatePlan atp) returns string?|ApplicationRatePlan|error {
+    postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
     } else {
@@ -87,9 +90,8 @@ public function updateApplicationUsagePlanDAO(ApplicationThrottlePolicy atp) ret
         sql:ParameterizedQuery query = `UPDATE APPLICATION_USAGE_PLAN SET DISPLAY_NAME = ${atp.displayName},
          DESCRIPTION = ${atp.description}, QUOTA_TYPE = ${atp.defaultLimit.'type}, QUOTA = ${atp.defaultLimit.requestCount?.requestCount}, 
          UNIT_TIME = ${atp.defaultLimit.requestCount?.unitTime}, TIME_UNIT = ${atp.defaultLimit.requestCount?.timeUnit} 
-         WHERE UUID = ${atp.policyId} AND ORGANIZATION = ${org}`;
+         WHERE UUID = ${atp.planId} AND ORGANIZATION = ${org}`;
         sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
-        check dbClient.close();
         if result is sql:ExecutionResult {
             return atp;
         } else {
@@ -99,15 +101,14 @@ public function updateApplicationUsagePlanDAO(ApplicationThrottlePolicy atp) ret
     }
 }
 
-public function deleteApplicationUsagePlanDAO(string policyId) returns string?|error {
-    jdbc:Client | error dbClient  = getConnection();
+public isolated function deleteApplicationUsagePlanDAO(string policyId) returns string?|error {
+    postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
     } else {
         string org = "carbon.super";
         sql:ParameterizedQuery query = `DELETE FROM APPLICATION_USAGE_PLAN WHERE UUID = ${policyId} AND ORGANIZATION = ${org}`;
         sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
-        check dbClient.close();
         if result is sql:ExecutionResult {
             return "deleted";
         } else {
@@ -117,44 +118,45 @@ public function deleteApplicationUsagePlanDAO(string policyId) returns string?|e
     }
 }
 
-public function addBusinessPlanDAO(SubscriptionThrottlePolicy stp) returns string?|SubscriptionThrottlePolicy|error {
-    jdbc:Client | error dbClient  = getConnection();
+public isolated function addBusinessPlanDAO(BusinessPlan stp) returns string?|BusinessPlan|error {
+    postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
     } else {
         string org = "carbon.super";
         sql:ParameterizedQuery query = `INSERT INTO BUSINESS_PLAN (NAME, DISPLAY_NAME, ORGANIZATION, DESCRIPTION, 
         QUOTA_TYPE, QUOTA, UNIT_TIME, TIME_UNIT, IS_DEPLOYED, UUID, 
-        RATE_LIMIT_COUNT,RATE_LIMIT_TIME_UNIT,STOP_ON_QUOTA_REACH,MAX_DEPTH, MAX_COMPLEXITY,
-        BILLING_PLAN,MONETIZATION_PLAN,CONNECTIONS_COUNT) VALUES (${stp.policyName},${stp.displayName},${org},${stp.description},${stp.defaultLimit.'type},
+        RATE_LIMIT_COUNT,RATE_LIMIT_TIME_UNIT,MAX_DEPTH, MAX_COMPLEXITY,
+        BILLING_PLAN,CONNECTIONS_COUNT) VALUES (${stp.planName},${stp.displayName},${org},${stp.description},${stp.defaultLimit.'type},
         ${stp.defaultLimit.requestCount?.requestCount},${stp.defaultLimit.requestCount?.unitTime},${stp.defaultLimit.requestCount?.timeUnit},
-        ${stp.isDeployed},${stp.policyId},${stp.rateLimitCount},${stp.rateLimitTimeUnit},${stp.stopOnQuotaReach},${stp.graphQLMaxDepth},
-        ${stp.graphQLMaxComplexity},${stp.billingPlan},${stp.monetization?.monetizationPlan},${stp.subscriberCount})`;
+        ${stp.isDeployed},${stp.planId},${stp.rateLimitCount},${stp.rateLimitTimeUnit},0,
+        0,'FREE',0)`;
         sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
-        check dbClient.close();
         if result is sql:ExecutionResult {
             log:printDebug(result.toString());
             return stp;
         } else {
-            log:printDebug(result.toString());
+            log:printInfo(result.toString());
             return error("Error while inserting data into Database");  
         }
     }
 }
 
-public function getBusinessPlanByIdDAO(string policyId) returns string?|SubscriptionThrottlePolicy|error {
-    jdbc:Client | error dbClient  = getConnection();
+public isolated function getBusinessPlanByIdDAO(string policyId) returns string?|BusinessPlan|error {
+    postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
     } else {
         string org = "carbon.super";
-        sql:ParameterizedQuery query = `SELECT * FROM BUSINESS_PLAN WHERE UUID =${policyId} AND ORGANIZATION =${org}`;
-        SubscriptionThrottlePolicy | sql:Error result =  dbClient->queryRow(query);
-        check dbClient.close();
+        sql:ParameterizedQuery query = `SELECT NAME as PLANNAME, DISPLAY_NAME as DISPLAYNAME, DESCRIPTION, 
+        UUID as PLANID, IS_DEPLOYED as ISDEPLOYED, 
+        QUOTA_TYPE as TYPE, QUOTA as REQUESTCOUNT, TIME_UNIT as TIMEUNIT, UNIT_TIME as 
+        UNITTIME, RATE_LIMIT_COUNT as RATELIMITCOUNT, RATE_LIMIT_TIME_UNIT as RATELIMITTIMEUNIT FROM BUSINESS_PLAN WHERE UUID =${policyId} AND ORGANIZATION =${org}`;
+        BusinessPlan | sql:Error result =  dbClient->queryRow(query);
         if result is sql:NoRowsError {
             log:printDebug(result.toString());
             return error("Not Found");
-        } else if result is SubscriptionThrottlePolicy {
+        } else if result is BusinessPlan {
             log:printDebug(result.toString());
             return result;
         } else {
@@ -164,22 +166,24 @@ public function getBusinessPlanByIdDAO(string policyId) returns string?|Subscrip
     }
 }
 
-public function getBusinessPlansDAO(string org) returns SubscriptionThrottlePolicy[]|error? {
-    jdbc:Client | error dbClient  = getConnection();
+public isolated function getBusinessPlansDAO(string org) returns BusinessPlan[]|error? {
+    postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
     } else {
-        sql:ParameterizedQuery query = `SELECT * FROM BUSINESS_PLAN WHERE ORGANIZATION =${org}`;
-        stream<SubscriptionThrottlePolicy, sql:Error?> businessPlanStream = dbClient->query(query);
-        SubscriptionThrottlePolicy[]? businessPlans = check from SubscriptionThrottlePolicy businessPlan in businessPlanStream select businessPlan;
+        sql:ParameterizedQuery query = `SELECT NAME as PLANNAME, DISPLAY_NAME as DISPLAYNAME, DESCRIPTION, 
+        UUID as PLANID, IS_DEPLOYED as ISDEPLOYED, 
+        QUOTA_TYPE as TYPE, QUOTA as REQUESTCOUNT, TIME_UNIT as TIMEUNIT, UNIT_TIME as 
+        UNITTIME, RATE_LIMIT_COUNT as RATELIMITCOUNT, RATE_LIMIT_TIME_UNIT as RATELIMITTIMEUNIT FROM BUSINESS_PLAN WHERE ORGANIZATION =${org}`;
+        stream<BusinessPlan, sql:Error?> businessPlanStream = dbClient->query(query);
+        BusinessPlan[]? businessPlans = check from BusinessPlan businessPlan in businessPlanStream select businessPlan;
         check businessPlanStream.close();
-        check dbClient.close();
         return businessPlans;
     }
 }
 
-public function updateBusinessPlanDAO(SubscriptionThrottlePolicy stp) returns string?|SubscriptionThrottlePolicy|error {
-    jdbc:Client | error dbClient  = getConnection();
+public isolated function updateBusinessPlanDAO(BusinessPlan stp) returns string?|BusinessPlan|error {
+    postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
     } else {
@@ -187,12 +191,9 @@ public function updateBusinessPlanDAO(SubscriptionThrottlePolicy stp) returns st
         sql:ParameterizedQuery query = `UPDATE BUSINESS_PLAN SET DISPLAY_NAME = ${stp.displayName},
          DESCRIPTION = ${stp.description}, QUOTA_TYPE = ${stp.defaultLimit.'type}, QUOTA = ${stp.defaultLimit.requestCount?.requestCount}, 
          UNIT_TIME = ${stp.defaultLimit.requestCount?.unitTime}, TIME_UNIT = ${stp.defaultLimit.requestCount?.timeUnit},
-         RATE_LIMIT_COUNT = ${stp.rateLimitCount} , RATE_LIMIT_TIME_UNIT = ${stp.rateLimitTimeUnit} ,STOP_ON_QUOTA_REACH = ${stp.stopOnQuotaReach},
-         MAX_DEPTH = ${stp.graphQLMaxDepth}, MAX_COMPLEXITY = ${stp.graphQLMaxComplexity}, BILLING_PLAN = ${stp.billingPlan}, 
-         MONETIZATION_PLAN = ${stp.monetization?.monetizationPlan}, CONNECTIONS_COUNT = ${stp.subscriberCount}  
-         WHERE UUID = ${stp.policyId} AND ORGANIZATION = ${org}`;
+         RATE_LIMIT_COUNT = ${stp.rateLimitCount} , RATE_LIMIT_TIME_UNIT = ${stp.rateLimitTimeUnit}, CONNECTIONS_COUNT = 0  
+         WHERE UUID = ${stp.planId} AND ORGANIZATION = ${org}`;
         sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
-        check dbClient.close();
         if result is sql:ExecutionResult {
             return stp;
         } else {
@@ -202,15 +203,14 @@ public function updateBusinessPlanDAO(SubscriptionThrottlePolicy stp) returns st
     }
 }
 
-public function deleteBusinessPlanDAO(string policyId) returns string?|error {
-    jdbc:Client | error dbClient  = getConnection();
+public isolated function deleteBusinessPlanDAO(string policyId) returns string?|error {
+    postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
     } else {
         string org = "carbon.super";
         sql:ParameterizedQuery query = `DELETE FROM BUSINESS_PLAN WHERE UUID = ${policyId} AND ORGANIZATION = ${org}`;
         sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
-        check dbClient.close();
         if result is sql:ExecutionResult {
             return ();
         } else {
@@ -220,16 +220,15 @@ public function deleteBusinessPlanDAO(string policyId) returns string?|error {
     }
 }
 
-public function addDenyPolicyDAO(BlockingCondition bc) returns string?|BlockingCondition|error {
-    jdbc:Client | error dbClient  = getConnection();
+public isolated function addDenyPolicyDAO(BlockingCondition bc) returns string?|BlockingCondition|error {
+    postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
     } else {
         string org = "carbon.super";
         sql:ParameterizedQuery query = `INSERT INTO BLOCK_CONDITION (TYPE,BLOCK_CONDITION,ENABLED,ORGANIZATION,UUID) 
-        VALUES (${bc.conditionType},${bc.conditionValue},${bc.conditionStatus},${org},${bc.conditionId})`;
+        VALUES (${bc.conditionType},${bc.conditionValue},${bc.conditionStatus},${org},${bc.policyId})`;
         sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
-        check dbClient.close();
         if result is sql:ExecutionResult {
             return bc;
         } else {
@@ -239,15 +238,14 @@ public function addDenyPolicyDAO(BlockingCondition bc) returns string?|BlockingC
     }
 }
 
-public function getDenyPolicyByIdDAO(string policyId) returns string?|BlockingCondition|error {
-    jdbc:Client | error dbClient  = getConnection();
+public isolated function getDenyPolicyByIdDAO(string policyId) returns string?|BlockingCondition|error {
+    postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
     } else {
         string org = "carbon.super";
-        sql:ParameterizedQuery query = `SELECT * FROM BLOCK_CONDITION WHERE UUID =${policyId} AND ORGANIZATION =${org}`;
+        sql:ParameterizedQuery query = `SELECT UUID as POLICYID, TYPE as CONDITIONTYPE, BLOCK_CONDITION as CONDITIONVALUE, ENABLED::BOOLEAN as CONDITIONSTATUS FROM BLOCK_CONDITION WHERE UUID =${policyId} AND ORGANIZATION =${org}`;
         BlockingCondition | sql:Error result =  dbClient->queryRow(query);
-        check dbClient.close();
         if result is sql:NoRowsError {
             log:printDebug(result.toString());
             return error("Not Found");
@@ -261,30 +259,28 @@ public function getDenyPolicyByIdDAO(string policyId) returns string?|BlockingCo
     }
 }
 
-public function getDenyPoliciesDAO(string org) returns BlockingCondition[]|error? {
-    jdbc:Client | error dbClient  = getConnection();
+public isolated function getDenyPoliciesDAO(string org) returns BlockingCondition[]|error? {
+    postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
     } else {
-        sql:ParameterizedQuery query = `SELECT * FROM BLOCK_CONDITION WHERE ORGANIZATION =${org}`;
+        sql:ParameterizedQuery query = `SELECT UUID as POLICYID, TYPE as CONDITIONTYPE, BLOCK_CONDITION as CONDITIONVALUE, ENABLED::BOOLEAN as CONDITIONSTATUS FROM BLOCK_CONDITION WHERE ORGANIZATION =${org}`;
         stream<BlockingCondition, sql:Error?> denyPoliciesStream = dbClient->query(query);
         BlockingCondition[]? denyPolicies = check from BlockingCondition denyPolicy in denyPoliciesStream select denyPolicy;
         check denyPoliciesStream.close();
-        check dbClient.close();
         return denyPolicies;
     }
 }
 
-public function updateDenyPolicyDAO(BlockingConditionStatus status) returns string?|error {
-    jdbc:Client | error dbClient  = getConnection();
+public isolated function updateDenyPolicyDAO(BlockingConditionStatus status) returns string?|error {
+    postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
     } else {
-        sql:ParameterizedQuery query = `UPDATE BLOCK_CONDITION SET ENABLED = ${status.conditionStatus} WHERE UUID = ${status.conditionId}`;
+        sql:ParameterizedQuery query = `UPDATE BLOCK_CONDITION SET ENABLED = ${status.conditionStatus} WHERE UUID = ${status.policyId}`;
         sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
-        check dbClient.close();
         if result is sql:ExecutionResult {
-            return status.conditionId;
+            return status.policyId;
         } else {
             log:printDebug(result.toString());
             return error("Error while inserting data into Database");  
@@ -292,15 +288,14 @@ public function updateDenyPolicyDAO(BlockingConditionStatus status) returns stri
     }
 }
 
-public function deleteDenyPolicyDAO(string policyId) returns string?|error {
-    jdbc:Client | error dbClient  = getConnection();
+public isolated function deleteDenyPolicyDAO(string policyId) returns string?|error {
+    postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
     } else {
         string org = "carbon.super";
         sql:ParameterizedQuery query = `DELETE FROM BLOCK_CONDITION WHERE UUID = ${policyId} AND ORGANIZATION = ${org}`;
         sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
-        check dbClient.close();
         if result is sql:ExecutionResult {
             return ();
         } else {

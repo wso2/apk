@@ -40,11 +40,11 @@ json lifeCycleStateTransitions = {
       "State": "Created",
       "Transitions": [
         {
-          "event": "Publish",
+          "event": "Published",
           "targetState": "Published"
         },
         {
-          "event": "Deploy as a Prototype",
+          "event": "Prototyped",
           "targetState": "Prototyped"
         }
       ]
@@ -53,15 +53,15 @@ json lifeCycleStateTransitions = {
       "State": "Prototyped",
       "Transitions": [
         {
-          "event": "Publish",
+          "event": "Published",
           "targetState": "Published"
         },
         {
-          "event": "Demote to Created",
+          "event": "Created",
           "targetState": "Created"
         },
         {
-          "event": "Deploy as a Prototype",
+          "event": "Prototyped",
           "targetState": "Prototyped"
         }
       ]
@@ -70,23 +70,23 @@ json lifeCycleStateTransitions = {
       "State": "Published",
       "Transitions": [
         {
-          "event": "Block",
+          "event": "Blocked",
           "targetState": "Blocked"
         },
         {
-          "event": "Deploy as a Prototype",
+          "event": "Prototyped",
           "targetState": "Prototyped"
         },
         {
-          "event": "Demote to Created",
+          "event": "Created",
           "targetState": "Created"
         },
         {
-          "event": "Deprecate",
+          "event": "Deprecated",
           "targetState": "Deprecated"
         },
         {
-          "Event": "Publish",
+          "Event": "Published",
           "targetState": "Published"
         }
       ]
@@ -95,11 +95,11 @@ json lifeCycleStateTransitions = {
       "State": "Blocked",
       "Transitions": [
         {
-          "event": "Deprecate",
+          "event": "Deprecated",
           "targetState": "Deprecated"
         },
         {
-          "event": "Re-Publish",
+          "event": "Published",
           "targetState": "Published"
         }
       ]

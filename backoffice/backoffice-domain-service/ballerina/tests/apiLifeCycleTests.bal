@@ -35,9 +35,9 @@ test:MockFunction db_getLCEventHistoryMock = new();
 @test:Config {}
 function changeLCStateTest() {
     test:when(db_getCurrentLCStatusMock).thenReturn("CREATED");
-    test:when(db_changeLCStateMock).thenReturn("Publish");
-    test:when(db_AddLCEventMock).thenReturn("Publish");
-    LifecycleState|error lcState1 = changeLifeCyleState("Publish", "ap01ed7552-b30b-18c8-wwf2-25da7a7c46ceiId", "carbon.super");
+    test:when(db_changeLCStateMock).thenReturn("PUBLISHED");
+    test:when(db_AddLCEventMock).thenReturn("PUBLISHED");
+    LifecycleState|error lcState1 = changeLifeCyleState("PUBLISHED", "ap01ed7552-b30b-18c8-wwf2-25da7a7c46ceiId", "carbon.super");
     if lcState1 is LifecycleState {
         test:assertTrue(true, "Successfully change the LC state");
     } else {

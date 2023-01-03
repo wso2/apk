@@ -20,7 +20,7 @@ import ballerina/lang.value;
 import runtime_domain_service.model as model;
 import ballerina/log;
 
-map<model:K8sAPI> apilist = {};
+isolated map<model:API> apilist = {};
 string resourceVersion = "";
 websocket:Client|error|() apiClient = ();
 
@@ -36,13 +36,15 @@ class APIListingTask {
                 do {
                     websocket:Client|error|() apiClientResult = apiClient;
                     if apiClientResult is websocket:Client {
-                        if !apiClientResult.isOpen() {
-                            log:printDebug("Websocket Client connection closed conectionId: " + apiClientResult.getConnectionId() + " state: " + apiClientResult.isOpen().toString());
+                        boolean connectionOpen = apiClientResult.isOpen();
+                        if !connectionOpen {
+                            log:printDebug("Websocket Client connection closed conectionId: " + apiClientResult.getConnectionId() + " state: " + connectionOpen.toString());
                             apiClient = getClient(resourceVersion);
                             websocket:Client|error|() retryClient = apiClient;
                             if retryClient is websocket:Client {
                                 log:printDebug("Reinitializing client..");
-                                log:printDebug("Intializd new Client Connection conectionId: " + retryClient.getConnectionId() + " state: " + apiClientResult.isOpen().toString());
+                                connectionOpen = retryClient.isOpen();
+                                log:printDebug("Intializd new Client Connection conectionId: " + retryClient.getConnectionId() + " state: " + connectionOpen.toString());
                                 _ = check readAPIEvent(retryClient);
                             } else if retryClient is error {
                                 log:printError("error while reading message", retryClient);
@@ -62,7 +64,11 @@ class APIListingTask {
     }
 }
 
-isolated function getClient(string resourceVersion) returns websocket:Client|error|() {
+# Description Retrieve Websocket client for watch API event.
+#
+# + resourceVersion - resource Version to watch after.
+# + return - Return websocket Client.
+public function getClient(string resourceVersion) returns websocket:Client|error {
     string requestURl = "wss://" + runtimeConfiguration.k8sConfiguration.host + "/apis/dp.wso2.com/v1alpha1/watch/apis";
     if resourceVersion.length() > 0 {
         requestURl = requestURl + "?resourceVersion=" + resourceVersion.toString();
@@ -72,50 +78,32 @@ isolated function getClient(string resourceVersion) returns websocket:Client|err
         token: token
     },
         secureSocket = {
-            cert: caCertPath
-        }
+        cert: caCertPath
+    }
     );
 }
 
-public function createAPImodel(json event) returns model:K8sAPI|error {
-    model:K8sAPI apiInfo = {
-        uuid: <string>check event.metadata.uid,
-        apiDisplayName: <string>check event.spec.apiDisplayName,
-        apiType: <string>check event.spec.apiType,
-        apiVersion: <string>check event.spec.apiVersion,
-        context: <string>check event.spec.context,
-        creationTimestamp: <string>check event.metadata.creationTimestamp,
-        definitionFileRef: getValue(event.spec.definitionFileRef),
-        sandHTTPRouteRef: getValue(event.spec.sandHTTPRouteRef),
-        prodHTTPRouteRef: getValue(event.spec.prodHTTPRouteRef),
-        namespace: <string>check event.metadata.namespace,
-        k8sName: <string>check event.metadata.name
-    };
-    return apiInfo;
-}
-
-function getValue(json|error value) returns string {
-    if value is json {
-        return value.toString();
-    } else {
-        return "";
-
+isolated function getAPIs() returns model:API[] {
+    lock {
+        model:API[] & readonly readOnlyAPIList = apilist.toArray().cloneReadOnly();
+        return readOnlyAPIList;
     }
 }
 
-function getAPIs() returns model:K8sAPI[] {
-    return apilist.toArray();
-}
-
-function getAPI(string id) returns model:K8sAPI|error {
-    return check trap apilist.get(id);
+isolated function getAPI(string id) returns model:API|error {
+    lock {
+        map<model:API> & readonly readOnlyAPIMap = apilist.cloneReadOnly();
+        return check trap readOnlyAPIMap.get(id);
+    }
 }
 
 function putallAPIS(json[] apiData) {
     foreach json api in apiData {
-        model:K8sAPI|error k8sAPI = createAPImodel(api);
-        if k8sAPI is model:K8sAPI {
-            apilist[k8sAPI.uuid] = k8sAPI;
+        model:API|error k8sAPI = api.cloneWithType(model:API);
+        if k8sAPI is model:API {
+            lock {
+                apilist[<string>k8sAPI.metadata.uid] = k8sAPI.clone();
+            }
         }
     }
 }
@@ -125,8 +113,10 @@ function setResourceVersion(string resourceVersionValue) {
 }
 
 function readAPIEvent(websocket:Client apiWebsocketClient) returns error? {
-    log:printDebug("Using Client Connection conectionId: " + apiWebsocketClient.getConnectionId() + " state: " + apiWebsocketClient.isOpen().toString());
-    if !apiWebsocketClient.isOpen() {
+    boolean connectionOpen = apiWebsocketClient.isOpen();
+
+    log:printDebug("Using Client Connection conectionId: " + apiWebsocketClient.getConnectionId() + " state: " + connectionOpen.toString());
+    if !connectionOpen {
         error err = error("connection closed");
         return err;
     }
@@ -139,16 +129,22 @@ function readAPIEvent(websocket:Client apiWebsocketClient) returns error? {
         json metadata = <json>check eventValue.metadata;
         string latestResourceVersion = <string>check metadata.resourceVersion;
         setResourceVersion(latestResourceVersion);
-        APIInfo|error apiModel = createAPImodel(eventValue);
-        if apiModel is model:K8sAPI {
-            if apiModel.namespace == getNameSpace(runtimeConfiguration.apiCreationNamespace) {
+        model:API|error apiModel = eventValue.cloneWithType(model:API);
+        if apiModel is model:API {
+            if apiModel.metadata.namespace == getNameSpace(runtimeConfiguration.apiCreationNamespace) {
                 if eventType == "ADDED" {
-                    apilist[apiModel.uuid] = apiModel;
+                    lock {
+                        apilist[<string>apiModel.metadata.uid] = apiModel.clone();
+                    }
                 } else if (eventType == "MODIFIED") {
-                    _ = apilist.remove(apiModel.uuid);
-                    apilist[apiModel.uuid] = apiModel;
+                    lock {
+                        _ = apilist.remove(<string>apiModel.metadata.uid);
+                        apilist[<string>apiModel.metadata.uid] = apiModel.clone();
+                    }
                 } else if (eventType == "DELETED") {
-                    _ = apilist.remove(apiModel.uuid);
+                    lock {
+                        _ = apilist.remove(<string>apiModel.metadata.uid);
+                    }
                 }
             }
         } else {
@@ -160,20 +156,20 @@ function readAPIEvent(websocket:Client apiWebsocketClient) returns error? {
 
 }
 
-function getAPIByNameAndNamespace(string name, string namespace) returns model:K8sAPI? {
-    foreach model:K8sAPI api in getAPIs() {
-        if (api.k8sName == name && api.namespace == namespace) {
+isolated function getAPIByNameAndNamespace(string name, string namespace) returns model:API|() {
+    foreach model:API api in getAPIs() {
+        if (api.metadata.name == name && api.metadata.namespace == namespace) {
             return api;
         }
     }
     json|error k8sAPIByNameAndNamespace = getK8sAPIByNameAndNamespace(name, namespace);
     if k8sAPIByNameAndNamespace is json {
-        model:K8sAPI|error k8sAPI = createAPImodel(k8sAPIByNameAndNamespace);
-        if k8sAPI is model:K8sAPI {
+        model:API|error k8sAPI = k8sAPIByNameAndNamespace.cloneWithType(model:API);
+        if k8sAPI is model:API {
             return k8sAPI;
         } else {
             log:printError("Error occued while converting json", k8sAPI);
         }
     }
-    return;
+    return ();
 }

@@ -1,5 +1,5 @@
 const string ALL_NAMESPACES = "*";
-public final string[] HTTP_DEFAULT_METHODS = ["get", "put", "post", "delete", "patch"];
+public final string[] & readonly HTTP_DEFAULT_METHODS = ["get", "put", "post", "delete", "patch"];
 public final string[] SOAP_DEFAULT_METHODS = ["post"];
 public final string[] SSE_DEFAULT_METHODS = ["get"];
 public final string[] WS_DEFAULT_METHODS = ["post"];
@@ -24,3 +24,5 @@ const string SEARCH_CRITERIA_NAME = "name";
 const string SEARCH_CRITERIA_TYPE = "type";
 const string SORT_BY_SERVICE_NAME = "serviceName";
 const string SORT_BY_SERVICE_CREATED_TIME = "createdTime";
+
+const string CONTEXT_ALREADY_EXIST_K8s_VALIDATION_MESSAGE = "an API has been already created for the context";

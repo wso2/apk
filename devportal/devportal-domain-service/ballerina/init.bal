@@ -25,8 +25,8 @@ configurable ThrottlingConfiguration throttleConfig = ?;
 configurable TokenIssuerConfiguration issuerConfig = ?;
 configurable KeyStores keyStores = ?;
 
-postgresql:Client|sql:Error dbClient;
-APKConfiguration apkConfig;
+final postgresql:Client|sql:Error dbClient;
+final APKConfiguration & readonly apkConfig;
 
 function init() {
     log:printInfo("Starting APK Devportal Domain Service...");
@@ -49,6 +49,6 @@ function init() {
     }
 }
 
-public function getConnection() returns postgresql:Client | error {
+public isolated function getConnection() returns postgresql:Client | error {
     return dbClient;  
 }

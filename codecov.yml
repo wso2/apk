@@ -5,9 +5,28 @@ coverage:
 
 flag_management:
   individual_flags:
-    - name: common-java-libs
+    - name: adapter
       paths:
-        - common-java-libs/
+        - adapter/
+    - name: admin-domain-service
+      paths:
+        - admin/admin-domain-service
+    - name: backoffice-domain-service
+      paths:
+        - backoffice/backoffice-domain-service
+    - name: backoffice-internal-domain-service
+      paths:
+        - backoffice/backoffice-internal-domain-service
+    - name: devportal-domain-service
+      paths:
+        - devportal/devportal-domain-service
+    - name: management-server
+      paths:
+        - management-server
+    - name: runtime-domain-service
+      paths:
+        - runtime-domain-service
+
       statuses:
         - type: project
           target: 75%

@@ -20,12 +20,13 @@ task bal_build(type: Exec) {
     group 'ballerina'
     description 'Build ballerina code'
     commandLine 'bal', 'build'
+    dependsOn 'bal_test'
 }
 
 task bal_test(type: Exec) {
     group 'ballerina'
     description 'Run ballerina tests'
-    commandLine 'bal', 'test'
+    commandLine 'bal', 'test', '--code-coverage','--coverage-format=xml',"--target-dir=${projectDir}/test-target"
 }
 task bal_clean(type: Exec) {
     group 'ballerina'
@@ -36,8 +37,13 @@ task update_toml_files {
     group 'ballerina'
     description 'Update Ballerina.toml and Dependencies.toml'
     doLast {
-        def moduleVersion = project.version
-        println 'applying Ballerina.toml.template and Dependencies.toml.template  with version ' + moduleVersion
+        def moduleVersion;
+        if (project.hasProperty("release.releaseVersion")) {
+                moduleVersion = project.property("release.releaseVersion");
+        }else {
+            moduleVersion = project.version;
+        }
+	println 'applying Ballerina.toml.template and Dependencies.toml.template  with version ' + moduleVersion
         def ballerinaTomlFilePlaceHolder = new File("${projectDir}/Ballerina.toml.template")
         def dependencyTomlFilePlaceHolder = new File("${projectDir}/Dependencies.toml.template")
         def newBallerinaToml = ballerinaTomlFilePlaceHolder.text.replace("PROJECT_VERSION", moduleVersion);

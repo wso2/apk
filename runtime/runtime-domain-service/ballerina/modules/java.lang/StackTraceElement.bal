@@ -24,7 +24,7 @@ public distinct class StackTraceElement {
     # The init function of the Ballerina class mapping the `java.lang.StackTraceElement` Java class.
     #
     # + obj - The `handle` value containing the Java reference of the object.
-    public function init(handle obj) {
+    public isolated function init(handle obj) {
         self.jObj = obj;
     }
 

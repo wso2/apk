@@ -1,0 +1,675 @@
+{
+	"info": {
+		"_postman_id": "954cdcf1-3e97-404a-9b38-c4f23dbb425f",
+		"name": "Test Runtime API Operations",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "16040063"
+	},
+	"item": [
+		{
+			"name": "RuntimeAPI List Services",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Services available in k8s cluster\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.list.length).to.be.above(1);",
+							"});",
+							"console.log('Getting all services in namespace and find sample service required for test');",
+							"_.each(pm.response.json().list, (serviceEntry) => {",
+							"    if(serviceEntry.name === pm.collectionVariables.get('testServiceName')) {",
+							"        pm.environment.set('serviceUUID', serviceEntry.id)",
+							"        pm.collectionVariables.set('serviceUUID', serviceEntry.id)",
+							"        console.log(\"HTTP bin service found, serviceUUID is\", serviceEntry.id);",
+							"    }",
+							"})",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/services",
+					"host": [
+						"{{runtimeAPIServerBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"services"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "RuntimeAPI Create API from Service",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.variables.set(\"serviceUUID\",pm.collectionVariables.get('serviceUUID'))",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"  pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Assert API creation response\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.name).equals(pm.collectionVariables.get('testAPIName'));",
+							"    pm.expect(responseJson.context).equals(pm.collectionVariables.get('testAPIContext'));",
+							"    pm.expect(responseJson.version).equals(\"1.0.0\");",
+							"    pm.expect(responseJson.type).equals(\"HTTP\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"context\": \"{{testAPIContext}}\" ,\n    \"name\": \"{{testAPIName}}\" ,\n    \"version\": \"1.0.0\",\n    \"type\": \"HTTP\"\n}"
+				},
+				"url": {
+					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/apis/import-service?serviceKey={{serviceUUID}}",
+					"host": [
+						"{{runtimeAPIServerBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"import-service"
+					],
+					"query": [
+						{
+							"key": "serviceKey",
+							"value": "{{serviceUUID}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "RuntimeAPI List APIs",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Services available in k8s cluster\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.list.length).to.be.above(0);",
+							"});",
+							"",
+							"console.log('Getting all APIs in namespace and find sample service required for test');",
+							"_.each(pm.response.json().list, (APIEntry) => {",
+							"    if(APIEntry.name === pm.collectionVariables.get('testAPIName')) {",
+							"    pm.expect(APIEntry.context).equals( pm.collectionVariables.get('testAPIContext'));",
+							"    pm.expect(APIEntry.version).equals(\"1.0.0\");",
+							"    pm.expect(APIEntry.type).equals(\"HTTP\");",
+							"    pm.collectionVariables.set(\"APIUUID\",APIEntry.id)",
+							"    console.log(\"API entry found and verified details\");",
+							"    }",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/apis",
+					"host": [
+						"{{runtimeAPIServerBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "RuntimeAPI GET API by ID",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.variables.set(\"APIUUID\",pm.collectionVariables.get('APIUUID'))",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/apis/{{APIUUID}}",
+					"host": [
+						"{{runtimeAPIServerBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIUUID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "RuntimeAPI Delete API",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.variables.set(\"APIUUID\",pm.collectionVariables.get('APIUUID'))",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/apis/{{APIUUID}}",
+					"host": [
+						"{{runtimeAPIServerBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIUUID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "RuntimeAPI GET Deleted API to verify",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.variables.set(\"APIUUID\",pm.collectionVariables.get('APIUUID'))",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Checking for 404 for deleted API\", function () {",
+							"    pm.response.to.have.status(404);",
+							"    pm.collectionVariables.set(\"APIUUID\",\"\")",
+							"",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/apis/{{APIUUID}}",
+					"host": [
+						"{{runtimeAPIServerBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIUUID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "RuntimeAPI Create APIV2 for runtime test",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.variables.set(\"serviceUUID\",pm.collectionVariables.get('serviceUUID'))",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"  pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Assert API creation response\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.name).equals(pm.collectionVariables.get('testAPIV2Name'));",
+							"    pm.expect(responseJson.context).equals(pm.collectionVariables.get('testAPIV2Context'));",
+							"    pm.expect(responseJson.version).equals(\"1.0.0\");",
+							"    pm.expect(responseJson.type).equals(\"HTTP\");",
+							"    pm.collectionVariables.set(\"APIUUID\",responseJson.id)",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"context\": \"{{testAPIV2Context}}\" ,\n    \"name\": \"{{testAPIV2Name}}\" ,\n    \"version\": \"1.0.0\",\n    \"type\": \"HTTP\"\n}"
+				},
+				"url": {
+					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/apis/import-service?serviceKey={{serviceUUID}}",
+					"host": [
+						"{{runtimeAPIServerBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"import-service"
+					],
+					"query": [
+						{
+							"key": "serviceKey",
+							"value": "{{serviceUUID}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "RuntimeAPI List APIs",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"APIs available in k8s cluster\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.list.length).to.be.above(0);",
+							"});",
+							"",
+							"console.log('Getting all APIs in namespace and find sample service required for test');",
+							"_.each(pm.response.json().list, (APIEntry) => {",
+							"    if(APIEntry.name === pm.collectionVariables.get('testAPIV2Name')) {",
+							"    pm.expect(APIEntry.context).equals(pm.collectionVariables.get('testAPIV2Context'));",
+							"    pm.expect(APIEntry.version).equals(\"1.0.0\");",
+							"    pm.expect(APIEntry.type).equals(\"HTTP\");",
+							"    pm.collectionVariables.set(\"APIV2UUID\",APIEntry.id)",
+							"    console.log(\"API entry found and verified details\");",
+							"    }",
+							"",
+							"    // var settings = {",
+							"    // async: false,",
+							"    // crossDomain: true,",
+							"    // url: \"http://localhost/api/am/runtime/apis/\" + APIEntry.id,",
+							"    // method: 'DELETE',};",
+							"    // pm.sendRequest(settings, (err, res) => { ",
+							"    // eval(res.text()); });",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/apis",
+					"host": [
+						"{{runtimeAPIServerBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "RuntimeAPI Create Access Key for APIV2",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"  pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Assert token generation response\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(parseInt(responseJson.validityTime)).greaterThan(100);",
+							"    pm.collectionVariables.set('APITestKey', responseJson.apikey);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"context\": \"/{{testAPIV2Context}}\" ,\n    \"name\": \"{{testAPIV2Name}}\" ,\n    \"version\": \"1.0.0\",\n    \"type\": \"HTTP\"\n}\n"
+				},
+				"url": {
+					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/apis/{{APIV2UUID}}/generate-key",
+					"host": [
+						"{{runtimeAPIServerBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIV2UUID}}",
+						"generate-key"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Runtime Call careated API using APIKey",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Check API response and status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "HOST",
+						"value": "gw.wso2.com",
+						"type": "text"
+					},
+					{
+						"key": "Internal-Key",
+						"value": "{{APITestKey}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURL}}{{testAPIV2Context}}/get",
+					"host": [
+						"{{gatewayBaseURL}}{{testAPIV2Context}}"
+					],
+					"path": [
+						"get"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "RuntimeAPI Delete API",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.variables.set(\"APIUUID\",pm.collectionVariables.get('APIUUID'))",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/apis/{{APIV2UUID}}",
+					"host": [
+						"{{runtimeAPIServerBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIV2UUID}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "serviceUUID",
+			"value": ""
+		},
+		{
+			"key": "APIUUID",
+			"value": ""
+		},
+		{
+			"key": "testAPIName",
+			"value": "testAPI",
+			"type": "string"
+		},
+		{
+			"key": "testAPIContext",
+			"value": "/testAPI/1.0.0",
+			"type": "string"
+		},
+		{
+			"key": "testServiceName",
+			"value": "backend",
+			"type": "string"
+		},
+		{
+			"key": "testAPIV2Name",
+			"value": "testAPIV2",
+			"type": "string"
+		},
+		{
+			"key": "testAPIV2Context",
+			"value": "/testAPIV2/1.0.0",
+			"type": "string"
+		},
+		{
+			"key": "APITestKey",
+			"value": ""
+		},
+		{
+			"key": "APIV2UUID",
+			"value": ""
+		}
+	]
+}

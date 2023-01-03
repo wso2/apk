@@ -22,7 +22,7 @@ public distinct class JException {
     # The function to retrieve the string representation of the Ballerina class mapping the `java.lang.Exception` Java class.
     #
     # + return - The `string` form of the Java object instance.
-    public function toString() returns string {
+    public isolated function toString() returns string {
         return java:toString(self.jObj) ?: "null";
     }
     # The function that maps to the `addSuppressed` method of `java.lang.Exception`.

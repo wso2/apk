@@ -78,7 +78,7 @@ func (swagger *MgwSwagger) SetInfoOpenAPI(swagger3 openapi3.T) error {
 
 	swagger.xWso2RequestBodyPass = getRequestBodyBufferConfig(swagger.vendorExtensions)
 
-	swagger.apiType = constants.HTTP
+	swagger.apiType = constants.REST
 	var productionUrls []Endpoint
 	// For prototyped APIs, the prototype endpoint is only assigned from api.Yaml. Hence,
 	// an exception is made where servers url is not processed when the API is prototyped.

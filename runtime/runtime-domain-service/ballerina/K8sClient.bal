@@ -24,70 +24,71 @@ const string K8S_API_ENDPOINT = "/api/v1";
 final string token = check io:fileReadString(runtimeConfiguration.k8sConfiguration.serviceAccountPath + "/token");
 final string caCertPath = runtimeConfiguration.k8sConfiguration.serviceAccountPath + "/ca.crt";
 string namespaceFile = runtimeConfiguration.k8sConfiguration.serviceAccountPath + "/namespace";
-string currentNameSpace = check io:fileReadString(namespaceFile);
+final string currentNameSpace = check io:fileReadString(namespaceFile);
 final http:Client k8sApiServerEp = check initializeK8sClient();
 
 # This initialize the k8s Client.
 # + return - k8s http client
-function initializeK8sClient() returns http:Client|error {
+public function initializeK8sClient() returns http:Client|error {
     http:Client k8sApiClient = check new ("https://" + runtimeConfiguration.k8sConfiguration.host,
     auth = {
         token: token
     },
         secureSocket = {
-            cert: caCertPath
+        cert: caCertPath
 
-        }
+    }
     );
     return k8sApiClient;
 }
 
 # This returns ConfigMap value according to name and namespace.
 #
-# + name - Name of ConfigMap
+# + name - Name of ConfigMap  
 # + namespace - Namespace of Configmap
-function getConfigMapValueFromNameAndNamespace(string name, string namespace) returns json|error {
+# + return - Return configmap value for name and namespace
+isolated function getConfigMapValueFromNameAndNamespace(string name, string namespace) returns json|error {
     string endpoint = "/api/v1/namespaces/" + namespace + "/configmaps/" + name;
     return k8sApiServerEp->get(endpoint, targetType = json);
 }
 
-function deleteAPICR(string name, string namespace) returns json|http:ClientError {
+isolated function deleteAPICR(string name, string namespace) returns http:Response|http:ClientError {
     string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/apis/" + name;
-    return k8sApiServerEp->delete(endpoint, targetType = json);
+    return k8sApiServerEp->delete(endpoint, targetType = http:Response);
 }
 
-function deleteHttpRoute(string name, string namespace) returns json|http:ClientError {
+isolated function deleteHttpRoute(string name, string namespace) returns http:Response|http:ClientError {
     string endpoint = "/apis/gateway.networking.k8s.io/v1beta1/namespaces/" + namespace + "/httproutes/" + name;
-    return k8sApiServerEp->delete(endpoint, targetType = json);
+    return k8sApiServerEp->delete(endpoint, targetType = http:Response);
 }
 
-function deleteConfigMap(string name, string namespace) returns json|http:ClientError {
+isolated function deleteConfigMap(string name, string namespace) returns http:Response|http:ClientError {
     string endpoint = "/api/v1/namespaces/" + namespace + "/configmaps/" + name;
-    return k8sApiServerEp->delete(endpoint, targetType = json);
+    return k8sApiServerEp->delete(endpoint, targetType = http:Response);
 }
 
-function deployAPICR(model:API api, string namespace) returns json|http:ClientError {
+isolated function deployAPICR(model:API api, string namespace) returns http:Response|http:ClientError {
     string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/apis";
-    return k8sApiServerEp->post(endpoint, api, targetType = json);
+    return k8sApiServerEp->post(endpoint, api, targetType = http:Response);
 }
 
-function deployServiceMappingCR(model:K8sServiceMapping serviceMapping, string namespace) returns json|http:ClientError {
+isolated function deployServiceMappingCR(model:K8sServiceMapping serviceMapping, string namespace) returns http:Response|http:ClientError {
     string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/servicemappings";
-    return k8sApiServerEp->post(endpoint, serviceMapping, targetType = json);
+    return k8sApiServerEp->post(endpoint, serviceMapping, targetType = http:Response);
 
 }
 
-function deployConfigMap(model:ConfigMap configMap, string namespace) returns json|http:ClientError {
+isolated function deployConfigMap(model:ConfigMap configMap, string namespace) returns http:Response|http:ClientError {
     string endpoint = "/api/v1/namespaces/" + namespace + "/configmaps";
-    return k8sApiServerEp->post(endpoint, configMap, targetType = json);
+    return k8sApiServerEp->post(endpoint, configMap, targetType = http:Response);
 }
 
-function deployHttpRoute(model:Httproute httproute, string namespace) returns json|http:ClientError {
+isolated function deployHttpRoute(model:Httproute httproute, string namespace) returns http:Response|http:ClientError {
     string endpoint = "/apis/gateway.networking.k8s.io/v1beta1/namespaces/" + namespace + "/httproutes";
-    return k8sApiServerEp->post(endpoint, httproute, targetType = json);
+    return k8sApiServerEp->post(endpoint, httproute, targetType = http:Response);
 }
 
-function retrieveAllAPIS(string? continueToken) returns json|http:ClientError {
+isolated function retrieveAllAPIS(string? continueToken) returns json|http:ClientError {
     string? continueTokenValue = continueToken;
     string endpoint = "/apis/dp.wso2.com/v1alpha1/apis";
     if continueTokenValue is string {
@@ -129,7 +130,7 @@ function retrieveAllServices(string? continueToken) returns json|http:ClientErro
     return k8sApiServerEp->get(endpoint, targetType = json);
 }
 
-function getServiceByNameAndNamespace(string name, string namespace) returns json|error {
+isolated function getServiceByNameAndNamespace(string name, string namespace) returns json|error {
     string endpoint = "/api/v1/namespaces/" + namespace + "/services/" + name;
     http:Response|http:ClientError response = k8sApiServerEp->get(endpoint);
     if response is http:Response {
@@ -138,23 +139,21 @@ function getServiceByNameAndNamespace(string name, string namespace) returns jso
         } else if (response.statusCode == 404) {
             return error("Service not found");
         }
-    }
-    if response is http:ClientError {
+    } else {
         return error(response.message());
     }
 }
 
-function getK8sAPIByNameAndNamespace(string name, string namespace) returns json|error {
+isolated function getK8sAPIByNameAndNamespace(string name, string namespace) returns json|error {
     string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/apis/" + name;
     http:Response|http:ClientError response = k8sApiServerEp->get(endpoint);
     if response is http:Response {
         if response.statusCode == 200 {
             return response.getJsonPayload();
         } else if (response.statusCode == 404) {
-            return error("Service not found");
+            return error("API not found");
         }
-    }
-    if response is http:ClientError {
+    } else {
         return error(response.message());
     }
 }
@@ -180,8 +179,8 @@ function retrieveAllServiceMappings(string? continueToken) returns json|http:Cli
     return k8sApiServerEp->get(endpoint, targetType = json);
 }
 
-function deleteK8ServiceMapping(string name, string namespace) returns json|http:ClientError {
+isolated function deleteK8ServiceMapping(string name, string namespace) returns http:Response|http:ClientError {
     string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/servicemappings/" + name;
-    return k8sApiServerEp->delete(endpoint, targetType = json);
+    return k8sApiServerEp->delete(endpoint, targetType = http:Response);
 }
 

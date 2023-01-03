@@ -15,14 +15,14 @@ public distinct class Info {
     # The init function of the Ballerina class mapping the `org.wso2.apk.runtime.api.Info` Java class.
     #
     # + obj - The `handle` value containing the Java reference of the object.
-    public function init(handle obj) {
+    public isolated function init(handle obj) {
         self.jObj = obj;
     }
 
     # The function to retrieve the string representation of the Ballerina class mapping the `org.wso2.apk.runtime.api.Info` Java class.
     #
     # + return - The `string` form of the Java object instance.
-    public function toString() returns string {
+    public isolated function toString() returns string {
         return java:toString(self.jObj) ?: "null";
     }
     # The function that maps to the `equals` method of `org.wso2.apk.runtime.api.Info`.
@@ -45,21 +45,21 @@ public distinct class Info {
     # The function that maps to the `getContext` method of `org.wso2.apk.runtime.api.Info`.
     #
     # + return - The `string` value returning from the Java mapping.
-    public function getContext() returns string? {
+    public isolated function getContext() returns string? {
         return java:toString(org_wso2_apk_runtime_api_Info_getContext(self.jObj));
     }
 
     # The function that maps to the `getDescription` method of `org.wso2.apk.runtime.api.Info`.
     #
     # + return - The `string` value returning from the Java mapping.
-    public function getDescription() returns string? {
+    public isolated function getDescription() returns string? {
         return java:toString(org_wso2_apk_runtime_api_Info_getDescription(self.jObj));
     }
 
     # The function that maps to the `getEndpoints` method of `org.wso2.apk.runtime.api.Info`.
     #
     # + return - The `javautil:List` value returning from the Java mapping.
-    public function getEndpoints() returns javautil:List {
+    public isolated function getEndpoints() returns javautil:List {
         handle externalObj = org_wso2_apk_runtime_api_Info_getEndpoints(self.jObj);
         javautil:List newObj = new (externalObj);
         return newObj;
@@ -68,21 +68,21 @@ public distinct class Info {
     # The function that maps to the `getName` method of `org.wso2.apk.runtime.api.Info`.
     #
     # + return - The `string` value returning from the Java mapping.
-    public function getName() returns string? {
+    public isolated function getName() returns string? {
         return java:toString(org_wso2_apk_runtime_api_Info_getName(self.jObj));
     }
 
     # The function that maps to the `getOpenAPIVersion` method of `org.wso2.apk.runtime.api.Info`.
     #
     # + return - The `string` value returning from the Java mapping.
-    public function getOpenAPIVersion() returns string? {
+    public isolated function getOpenAPIVersion() returns string? {
         return java:toString(org_wso2_apk_runtime_api_Info_getOpenAPIVersion(self.jObj));
     }
 
     # The function that maps to the `getVersion` method of `org.wso2.apk.runtime.api.Info`.
     #
     # + return - The `string` value returning from the Java mapping.
-    public function getVersion() returns string? {
+    public isolated function getVersion() returns string? {
         return java:toString(org_wso2_apk_runtime_api_Info_getVersion(self.jObj));
     }
 
@@ -204,37 +204,37 @@ function org_wso2_apk_runtime_api_Info_getClass(handle receiver) returns handle 
     paramTypes: []
 } external;
 
-function org_wso2_apk_runtime_api_Info_getContext(handle receiver) returns handle = @java:Method {
+isolated function org_wso2_apk_runtime_api_Info_getContext(handle receiver) returns handle = @java:Method {
     name: "getContext",
     'class: "org.wso2.apk.runtime.api.Info",
     paramTypes: []
 } external;
 
-function org_wso2_apk_runtime_api_Info_getDescription(handle receiver) returns handle = @java:Method {
+isolated function org_wso2_apk_runtime_api_Info_getDescription(handle receiver) returns handle = @java:Method {
     name: "getDescription",
     'class: "org.wso2.apk.runtime.api.Info",
     paramTypes: []
 } external;
 
-function org_wso2_apk_runtime_api_Info_getEndpoints(handle receiver) returns handle = @java:Method {
+isolated function org_wso2_apk_runtime_api_Info_getEndpoints(handle receiver) returns handle = @java:Method {
     name: "getEndpoints",
     'class: "org.wso2.apk.runtime.api.Info",
     paramTypes: []
 } external;
 
-function org_wso2_apk_runtime_api_Info_getName(handle receiver) returns handle = @java:Method {
+isolated function org_wso2_apk_runtime_api_Info_getName(handle receiver) returns handle = @java:Method {
     name: "getName",
     'class: "org.wso2.apk.runtime.api.Info",
     paramTypes: []
 } external;
 
-function org_wso2_apk_runtime_api_Info_getOpenAPIVersion(handle receiver) returns handle = @java:Method {
+isolated function org_wso2_apk_runtime_api_Info_getOpenAPIVersion(handle receiver) returns handle = @java:Method {
     name: "getOpenAPIVersion",
     'class: "org.wso2.apk.runtime.api.Info",
     paramTypes: []
 } external;
 
-function org_wso2_apk_runtime_api_Info_getVersion(handle receiver) returns handle = @java:Method {
+isolated function org_wso2_apk_runtime_api_Info_getVersion(handle receiver) returns handle = @java:Method {
     name: "getVersion",
     'class: "org.wso2.apk.runtime.api.Info",
     paramTypes: []

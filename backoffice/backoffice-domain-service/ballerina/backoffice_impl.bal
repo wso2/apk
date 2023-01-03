@@ -16,6 +16,9 @@
 // under the License.
 //
 
+# This function used to get API from database
+#
+# + return - Return Value string?|APIList|error
 function getAPIList() returns string?|APIList|error {
     API[]|error? apis = db_getAPIsDAO();
     if apis is API[] {
@@ -27,16 +30,22 @@ function getAPIList() returns string?|APIList|error {
     }
 }
 
-function changeLifeCyleState(string action, string apiId, string organization) returns LifecycleState|error {
+# This function used to change the lifecycle of API
+#
+# + targetState - lifecycle action
+# + apiId - API Id
+# + organization - organization
+# + return - Return Value LifecycleState|error
+function changeLifeCyleState(string targetState, string apiId, string organization) returns LifecycleState|error {
     string prevLCState = check db_getCurrentLCStatus(apiId, organization);
     transaction {
-        string|error lcState = db_changeLCState(action, apiId, organization);
+        string|error lcState = db_changeLCState(targetState, apiId, organization);
         if lcState is string {
                 string newvLCState = check db_getCurrentLCStatus(apiId, organization);
                 string|error lcEvent = db_AddLCEvent(apiId, prevLCState, newvLCState, organization);
                 if lcEvent is string {
                     check commit;
-                    json lcPayload = check getActionTransitionsFromState(action);
+                    json lcPayload = check getTransitionsFromState(targetState);
                     LifecycleState lcCr = check lcPayload.cloneWithType(LifecycleState);
                     return lcCr;
                 } else {
@@ -50,6 +59,11 @@ function changeLifeCyleState(string action, string apiId, string organization) r
     } 
 }
 
+# This function used to get current state of the API.
+#
+# + apiId - API Id parameter
+# + organization - organization
+# + return - Return Value LifecycleState|error
 function getLifeCyleState(string apiId, string organization) returns LifecycleState|error {
     string|error currentLCState = db_getCurrentLCStatus(apiId, organization);
     if currentLCState is string {
@@ -61,30 +75,32 @@ function getLifeCyleState(string apiId, string organization) returns LifecycleSt
     }
 }
 
+# This function used to map user action to LC state
+#
+# + v - any parameter object
+# + return - Return LC state
 function actionToLCState(any v) returns string {
-
-    match v {
-        "Demote to Created" => { return "CREATED"; }
-        "Publish" => { return "PUBLISHED"; }
-        "Block" => { return "BLOCKED"; }
-        "Deprecate" => { return "DEPRECATED"; }
-        "Retire" => { return "RETIRED"; }
-        "Re-Publish" => { return "PUBLISHED"; }
-        _ => { return "any"; }
+    if(v.toString().equalsIgnoreCaseAscii("published")){
+        return "PUBLISHED";
+    } else if(v.toString().equalsIgnoreCaseAscii("created")){
+        return "CREATED";
+    } else if(v.toString().equalsIgnoreCaseAscii("blocked")){
+        return "BLOCKED";
+    } else if(v.toString().equalsIgnoreCaseAscii("deprecated")){
+        return "DEPRECATED";
+    } else if(v.toString().equalsIgnoreCaseAscii("prototyped")){
+        return "PROTOTYPED";
+    } else if(v.toString().equalsIgnoreCaseAscii("retired")){
+        return "RETIRED";
+    } else {
+        return "any";   
     }
 }
 
-function getActionTransitionsFromState(string state) returns json|error {
-    string actionState = actionToLCState(state);
-    StatesList c =  check lifeCycleStateTransitions.cloneWithType(StatesList);
-    foreach States x in c.States {
-        if(actionState.equalsIgnoreCaseAscii(x.State)) {
-            return x.toJson();
-        }
-    }
-    
-}
-
+# This function used to get the availble event transitions from state
+#
+# + state - state parameter
+# + return - Return Value jsons
 function getTransitionsFromState(string state) returns json|error {
     StatesList c =  check lifeCycleStateTransitions.cloneWithType(StatesList);
     foreach States x in c.States {
@@ -95,6 +111,10 @@ function getTransitionsFromState(string state) returns json|error {
     
 }
 
+# This function used to connect API create service to database
+#
+# + apiId - API Id parameter
+# + return - Return Value LifecycleHistory
 function getLcEventHistory(string apiId) returns LifecycleHistory|error? {
     LifecycleHistoryItem[]|error? lcHistory = db_getLCEventHistory(apiId);
     if lcHistory is LifecycleHistoryItem[] {
@@ -104,4 +124,18 @@ function getLcEventHistory(string apiId) returns LifecycleHistory|error? {
     } else {
         return error("Error while retriving LC events", lcHistory);
     }
+}
+
+
+
+function getSubscriptions(string? apiId) returns SubscriptionList|error {
+    Subscription[]|error subcriptions;
+        subcriptions = check db_getSubscriptionsForAPI(apiId.toString());
+        if subcriptions is Subscription[] {
+            int count = subcriptions.length();
+            SubscriptionList subsList = {count: count, list: subcriptions};
+            return subsList;
+        } else {
+            return error(subcriptions.message());
+        } 
 }

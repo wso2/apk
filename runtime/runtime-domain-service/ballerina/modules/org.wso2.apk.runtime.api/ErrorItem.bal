@@ -21,7 +21,7 @@ public distinct class ErrorItem {
     # The function to retrieve the string representation of the Ballerina class mapping the `org.wso2.apk.runtime.api.ErrorItem` Java class.
     #
     # + return - The `string` form of the Java object instance.
-    public function toString() returns string {
+    public isolated function toString() returns string {
         return java:toString(self.jObj) ?: "null";
     }
     # The function that maps to the `equals` method of `org.wso2.apk.runtime.api.ErrorItem`.
@@ -44,28 +44,29 @@ public distinct class ErrorItem {
     # The function that maps to the `getErrorCode` method of `org.wso2.apk.runtime.api.ErrorItem`.
     #
     # + return - The `int` value returning from the Java mapping.
-    public function getErrorCode() returns int {
-        return org_wso2_apk_runtime_api_ErrorItem_getErrorCode(self.jObj);
+    public isolated function getErrorCode() returns int {
+        return org_wso2_apk_runtime_api_ErrorItem_getErrorCode(self.jObj)
+    ;
     }
 
     # The function that maps to the `getErrorDescription` method of `org.wso2.apk.runtime.api.ErrorItem`.
     #
     # + return - The `string` value returning from the Java mapping.
-    public function getErrorDescription() returns string? {
+    public isolated function getErrorDescription() returns string? {
         return java:toString(org_wso2_apk_runtime_api_ErrorItem_getErrorDescription(self.jObj));
     }
 
     # The function that maps to the `getErrorMessage` method of `org.wso2.apk.runtime.api.ErrorItem`.
     #
     # + return - The `string` value returning from the Java mapping.
-    public function getErrorMessage() returns string? {
+    public isolated function getErrorMessage() returns string? {
         return java:toString(org_wso2_apk_runtime_api_ErrorItem_getErrorMessage(self.jObj));
     }
 
     # The function that maps to the `getHttpStatusCode` method of `org.wso2.apk.runtime.api.ErrorItem`.
     #
     # + return - The `int` value returning from the Java mapping.
-    public function getHttpStatusCode() returns int {
+    public isolated function getHttpStatusCode() returns int {
         return org_wso2_apk_runtime_api_ErrorItem_getHttpStatusCode(self.jObj);
     }
 
@@ -207,25 +208,25 @@ function org_wso2_apk_runtime_api_ErrorItem_getClass(handle receiver) returns ha
     paramTypes: []
 } external;
 
-function org_wso2_apk_runtime_api_ErrorItem_getErrorCode(handle receiver) returns int = @java:Method {
+isolated function org_wso2_apk_runtime_api_ErrorItem_getErrorCode(handle receiver) returns int = @java:Method {
     name: "getErrorCode",
     'class: "org.wso2.apk.runtime.api.ErrorItem",
     paramTypes: []
 } external;
 
-function org_wso2_apk_runtime_api_ErrorItem_getErrorDescription(handle receiver) returns handle = @java:Method {
+isolated function org_wso2_apk_runtime_api_ErrorItem_getErrorDescription(handle receiver) returns handle = @java:Method {
     name: "getErrorDescription",
     'class: "org.wso2.apk.runtime.api.ErrorItem",
     paramTypes: []
 } external;
 
-function org_wso2_apk_runtime_api_ErrorItem_getErrorMessage(handle receiver) returns handle = @java:Method {
+isolated function org_wso2_apk_runtime_api_ErrorItem_getErrorMessage(handle receiver) returns handle = @java:Method {
     name: "getErrorMessage",
     'class: "org.wso2.apk.runtime.api.ErrorItem",
     paramTypes: []
 } external;
 
-function org_wso2_apk_runtime_api_ErrorItem_getHttpStatusCode(handle receiver) returns int = @java:Method {
+isolated function org_wso2_apk_runtime_api_ErrorItem_getHttpStatusCode(handle receiver) returns int = @java:Method {
     name: "getHttpStatusCode",
     'class: "org.wso2.apk.runtime.api.ErrorItem",
     paramTypes: []

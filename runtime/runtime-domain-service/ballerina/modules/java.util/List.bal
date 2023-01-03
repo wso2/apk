@@ -16,7 +16,7 @@ public distinct class List {
     # The init function of the Ballerina class mapping the `java.util.List` Java interface.
     #
     # + obj - The `handle` value containing the Java reference of the object.
-    public function init(handle obj) {
+    public isolated function init(handle obj) {
         self.jObj = obj;
     }
 
@@ -99,7 +99,7 @@ public distinct class List {
     #
     # + arg0 - The `int` value required to map with the Java method parameter.
     # + return - The `javalang:Object` value returning from the Java mapping.
-    public function get(int arg0) returns javalang:Object {
+    public isolated function get(int arg0) returns javalang:Object {
         handle externalObj = java_util_List_get(self.jObj, arg0);
         javalang:Object newObj = new (externalObj);
         return newObj;
@@ -235,8 +235,9 @@ public distinct class List {
     # The function that maps to the `size` method of `java.util.List`.
     #
     # + return - The `int` value returning from the Java mapping.
-    public function size() returns int {
-        return java_util_List_size(self.jObj);
+    public isolated function size() returns int {
+        return java_util_List_size(self.jObj)
+    ;
     }
 
     # The function that maps to the `sort` method of `java.util.List`.
@@ -558,7 +559,7 @@ function java_util_List_forEach(handle receiver, handle arg0) = @java:Method {
     paramTypes: ["java.util.function.Consumer"]
 } external;
 
-function java_util_List_get(handle receiver, int arg0) returns handle = @java:Method {
+isolated function java_util_List_get(handle receiver, int arg0) returns handle = @java:Method {
     name: "get",
     'class: "java.util.List",
     paramTypes: ["int"]
@@ -726,7 +727,7 @@ function java_util_List_set(handle receiver, int arg0, handle arg1) returns hand
     paramTypes: ["int", "java.lang.Object"]
 } external;
 
-function java_util_List_size(handle receiver) returns int = @java:Method {
+isolated function java_util_List_size(handle receiver) returns int = @java:Method {
     name: "size",
     'class: "java.util.List",
     paramTypes: []

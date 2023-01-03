@@ -98,8 +98,14 @@ service /api/am/backoffice on ep0 {
     // }
     // resource function post apis/[string apiId]/'publish\-to\-external\-stores(string? externalStoreIds, @http:Header string? 'if\-match) returns APIExternalStoreList|NotFoundError|InternalServerErrorError {
     // }
-    // resource function get subscriptions(string? apiId, @http:Header string? 'if\-none\-match, string? query, int 'limit = 25, int offset = 0) returns SubscriptionList|http:NotModified|NotAcceptableError {
-    // }
+    resource function get subscriptions(string? apiId, @http:Header string? 'if\-none\-match, string? query, int 'limit = 25, int offset = 0) returns SubscriptionList|http:NotModified|NotAcceptableError|InternalServerErrorError|error {
+        SubscriptionList|error subList = getSubscriptions(apiId);
+        if subList is SubscriptionList {
+            return subList;
+        } else {
+           return  error(subList.message());
+        }
+    }
     // resource function get subscriptions/[string subscriptionId]/usage() returns APIMonetizationUsage|http:NotModified|NotFoundError {
     // }
     // resource function get subscriptions/[string subscriptionId]/'subscriber\-info() returns SubscriberInfo|NotFoundError {
@@ -118,8 +124,8 @@ service /api/am/backoffice on ep0 {
     // }
     // resource function get 'api\-categories() returns APICategoryList {
     // }
-    resource function post apis/'change\-lifecycle(string action, string apiId, @http:Header string? 'if\-match) returns LifecycleState|BadRequestError|UnauthorizedError|NotFoundError|ConflictError|InternalServerErrorError|error {
-        LifecycleState | error  changeState = changeLifeCyleState(action, apiId, "carbon.super");
+    resource function post apis/'change\-lifecycle(string targetState, string apiId, @http:Header string? 'if\-match) returns LifecycleState|BadRequestError|UnauthorizedError|NotFoundError|ConflictError|InternalServerErrorError|error {
+        LifecycleState | error  changeState = changeLifeCyleState(targetState, apiId, "carbon.super");
         if changeState is LifecycleState {
             return changeState;
         } else {

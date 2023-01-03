@@ -23,31 +23,80 @@ import (
 	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
 	"github.com/wso2/apk/adapter/internal/operator/utils"
 	"k8s.io/apimachinery/pkg/types"
-	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
 // OperatorDataStore holds the APIStore and API, HttpRoute mappings
 type OperatorDataStore struct {
-	APIStore map[types.NamespacedName]*APIState
+	apiStore map[types.NamespacedName]*APIState
 	mu       sync.Mutex
 }
 
 // CreateNewOperatorDataStore creates a new OperatorDataStore.
 func CreateNewOperatorDataStore() *OperatorDataStore {
 	return &OperatorDataStore{
-		APIStore: map[types.NamespacedName]*APIState{},
+		apiStore: map[types.NamespacedName]*APIState{},
 	}
 }
 
-// AddNewAPI stores a new API in the OperatorDataStore.
-func (ods *OperatorDataStore) AddNewAPI(api dpv1alpha1.API, prodHTTPRoute *gwapiv1b1.HTTPRoute, sandHTTPRoute *gwapiv1b1.HTTPRoute) APIState {
+// AddNewAPItoODS stores a new API in the OperatorDataStore.
+func (ods *OperatorDataStore) AddNewAPItoODS(api dpv1alpha1.API, prodHTTPRouteState *HTTPRouteState,
+	sandHTTPRouteState *HTTPRouteState) APIState {
 	ods.mu.Lock()
 	defer ods.mu.Unlock()
 
-	ods.APIStore[utils.NamespacedName(&api)] = &APIState{
+	apiNamespacedName := utils.NamespacedName(&api)
+	ods.apiStore[apiNamespacedName] = &APIState{
 		APIDefinition: &api,
-		ProdHTTPRoute: prodHTTPRoute,
-		SandHTTPRoute: sandHTTPRoute}
+		ProdHTTPRoute: prodHTTPRouteState,
+		SandHTTPRoute: sandHTTPRouteState,
+	}
+	return *ods.apiStore[apiNamespacedName]
+}
 
-	return *ods.APIStore[utils.NamespacedName(&api)]
+// UpdateAPIState update the APIState on ref updates
+func (ods *OperatorDataStore) UpdateAPIState(apiDef *dpv1alpha1.API, prodHTTPRoute *HTTPRouteState,
+	sandHTTPRoute *HTTPRouteState) ([]string, bool) {
+	ods.mu.Lock()
+	defer ods.mu.Unlock()
+	var updated bool
+	events := []string{}
+	cachedAPI := ods.apiStore[utils.NamespacedName(apiDef)]
+	if apiDef.Generation > cachedAPI.APIDefinition.Generation {
+		cachedAPI.APIDefinition = apiDef
+		updated = true
+		events = append(events, "API Definition")
+	}
+	if prodHTTPRoute != nil {
+		if prodHTTPRoute.HTTPRoute.UID != cachedAPI.ProdHTTPRoute.HTTPRoute.UID ||
+			prodHTTPRoute.HTTPRoute.Generation > cachedAPI.ProdHTTPRoute.HTTPRoute.Generation {
+			cachedAPI.ProdHTTPRoute = prodHTTPRoute
+			updated = true
+			events = append(events, "Production Endpoint")
+		}
+	}
+	if sandHTTPRoute != nil {
+		if sandHTTPRoute.HTTPRoute.UID != cachedAPI.SandHTTPRoute.HTTPRoute.UID ||
+			sandHTTPRoute.HTTPRoute.Generation > cachedAPI.SandHTTPRoute.HTTPRoute.Generation {
+			cachedAPI.SandHTTPRoute = sandHTTPRoute
+			updated = true
+			events = append(events, "Sandbox Endpoint")
+		}
+	}
+
+	return events, updated
+}
+
+// GetCachedAPI get cached apistate
+func (ods *OperatorDataStore) GetCachedAPI(apiName types.NamespacedName) (APIState, bool) {
+	if cachedAPI, found := ods.apiStore[apiName]; found {
+		return *cachedAPI, true
+	}
+	return APIState{}, false
+}
+
+// DeleteCachedAPI delete from apistate cache
+func (ods *OperatorDataStore) DeleteCachedAPI(apiName types.NamespacedName) {
+	ods.mu.Lock()
+	defer ods.mu.Unlock()
+	delete(ods.apiStore, apiName)
 }

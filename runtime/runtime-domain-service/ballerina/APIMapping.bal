@@ -17,14 +17,14 @@
 //
 import runtime_domain_service.model;
 
-function convertK8sAPItoAPI(model:K8sAPI api) returns API {
+isolated function convertK8sAPItoAPI(model:API api) returns API {
     API convetedModel = {
-        id: api.uuid,
-        name: api.apiDisplayName,
-        context: api.context,
-        'version: api.apiVersion,
-        'type: api.apiType,
-        createdTime: api.creationTimestamp
+        id: api.metadata.uid,
+        name: api.spec.apiDisplayName,
+        context: api.spec.context,
+        'version: api.spec.apiVersion,
+        'type: api.spec.apiType,
+        createdTime: api.metadata.creationTimestamp
     };
     return convetedModel;
 }

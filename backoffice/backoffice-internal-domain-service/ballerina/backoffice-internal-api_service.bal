@@ -13,7 +13,7 @@ service /api/am/backoffice/internal on ep0 {
             CreatedAPI crAPI = {body: check createdApi.cloneWithType(API)};
             return crAPI;
         }
-        return error("Error while adding API");
+        return error("Error while adding API", createdApi);
     }
 
 
@@ -41,7 +41,7 @@ service /api/am/backoffice/internal on ep0 {
         APIDefinition | error ? updateDef = updateDefinition(payload, apiId);
         if updateDef is APIDefinition {
             APIDefinition crAPI = check updateDef.cloneWithType(APIDefinition);
-            return crAPI.Definition;
+            return crAPI.Definition.toString();
         }
         return error("Error while updating API definition");
     }

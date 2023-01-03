@@ -19,7 +19,7 @@ import ballerina/websocket;
 import ballerina/lang.value;
 import ballerina/log;
 
-map<Service> services = {};
+isolated map<Service> services = {};
 string servicesResourceVersion = "";
 websocket:Client|error|() servicesClient = ();
 
@@ -35,19 +35,22 @@ class ServiceTask {
                 do {
                     websocket:Client|error|() serviceClientResult = servicesClient;
                     if serviceClientResult is websocket:Client {
-                        if !serviceClientResult.isOpen() {
+                        boolean connectionOpen = serviceClientResult.isOpen();
+
+                        if !connectionOpen {
                             log:printDebug("ServiceWebsocket Client connection closed conectionId: " + serviceClientResult.getConnectionId());
                             servicesClient = getServiceClient(servicesResourceVersion);
                             websocket:Client|error|() retryClient = servicesClient;
                             if retryClient is websocket:Client {
                                 log:printDebug("Reinitializing client..");
-                                log:printDebug("Intializd new Client Connection conectionId: " + retryClient.getConnectionId() + " state: " + retryClient.isOpen().toString());
+                                connectionOpen = retryClient.isOpen();
+                                log:printDebug("Intializd new Client Connection conectionId: " + retryClient.getConnectionId() + " state: " + connectionOpen.toString());
                                 _ = check readServiceEvents(retryClient);
                             } else if retryClient is error {
                                 log:printError("error while reading message", retryClient);
                             }
                         } else {
-                            log:printDebug("Intializd new Client Connection conectionId: " + serviceClientResult.getConnectionId() + " state: " + serviceClientResult.isOpen().toString());
+                            log:printDebug("Intializd new Client Connection conectionId: " + serviceClientResult.getConnectionId() + " state: " + connectionOpen.toString());
                             _ = check readServiceEvents(serviceClientResult);
                         }
 
@@ -73,7 +76,7 @@ function containsNamespace(string namespace) returns boolean {
     return false;
 }
 
-public function createServiceModel(json event) returns Service|error {
+public isolated function createServiceModel(json event) returns Service|error {
     Service serviceData = {
         id: <string>check event.metadata.uid,
         name: <string>check event.metadata.name,
@@ -85,7 +88,7 @@ public function createServiceModel(json event) returns Service|error {
     return serviceData;
 }
 
-function mapPortMapping(json event) returns PortMapping[]|error {
+isolated function mapPortMapping(json event) returns PortMapping[]|error {
     json[] ports = <json[]>check event.spec.ports;
     PortMapping[] portmappings = [];
 
@@ -102,8 +105,10 @@ function mapPortMapping(json event) returns PortMapping[]|error {
     return portmappings;
 }
 
-function getServicesList() returns Service[] {
-    return services.toArray();
+isolated function getServicesList() returns Service[] {
+    lock {
+        return services.clone().toArray();
+    }
 }
 
 # This retrieve specific service from name space.
@@ -111,7 +116,7 @@ function getServicesList() returns Service[] {
 # + name - name of service.
 # + namespace - namespace of service.
 # + return - service in namespace.
-function getService(string name, string namespace) returns Service? {
+isolated function getService(string name, string namespace) returns Service? {
     foreach Service s in getServicesList() {
         if (s.name == name && s.namespace == namespace) {
             return s;
@@ -124,15 +129,19 @@ function getService(string name, string namespace) returns Service? {
     return;
 }
 
-function grtServiceById(string id) returns Service|error {
-    return trap services.get(id);
+isolated function grtServiceById(string id) returns Service|error {
+    lock {
+        return trap services.cloneReadOnly().get(id);
+    }
 }
 
 function putAllServices(json[] servicesEntries) {
     foreach json serviceData in servicesEntries {
-        Service|error serviceEntry = createServiceModel(serviceData);
-        if serviceEntry is Service {
-            services[serviceEntry.id] = serviceEntry;
+        lock {
+            Service|error serviceEntry = createServiceModel(serviceData.clone());
+            if serviceEntry is Service {
+                services[serviceEntry.id] = serviceEntry;
+            }
         }
     }
 }
@@ -141,7 +150,7 @@ function setServicesResourceVersion(string resourceVersionValue) {
     servicesResourceVersion = resourceVersionValue;
 }
 
-isolated function getServiceClient(string resourceVersion) returns websocket:Client|error|() {
+public function getServiceClient(string resourceVersion) returns websocket:Client|error|() {
     string requestURl = "wss://" + runtimeConfiguration.k8sConfiguration.host + "/api/v1/watch/services";
     if resourceVersion.length() > 0 {
         requestURl = requestURl + "?resourceVersion=" + resourceVersion.toString();
@@ -157,15 +166,17 @@ isolated function getServiceClient(string resourceVersion) returns websocket:Cli
 }
 
 function readServiceEvents(websocket:Client serviceWebSocketClient) returns error? {
-    log:printDebug("Using Client Connection conectionId: " + serviceWebSocketClient.getConnectionId() + " state: " + serviceWebSocketClient.isOpen().toString());
-    if !serviceWebSocketClient.isOpen() {
+    boolean connectionOpen = serviceWebSocketClient.isOpen();
+
+    log:printDebug("Using Client Connection conectionId: " + serviceWebSocketClient.getConnectionId() + " state: " + connectionOpen.toString());
+    if !connectionOpen {
         error err = error("connection closed");
         return err;
     }
     string|error message = check serviceWebSocketClient->readMessage();
     if message is string {
+        log:printDebug(message);
         json value = check value:fromJsonString(message);
-        log:printInfo(value:toJsonString(value));
         string eventType = <string>check value.'type;
         json eventValue = <json>check value.'object;
         json metadata = <json>check eventValue.metadata;
@@ -175,12 +186,18 @@ function readServiceEvents(websocket:Client serviceWebSocketClient) returns erro
         if serviceModel is Service {
             if containsNamespace(serviceModel.namespace) {
                 if eventType == "ADDED" {
-                    services[serviceModel.id] = serviceModel;
+                    lock {
+                        services[serviceModel.id] = serviceModel.clone();
+                    }
                 } else if (eventType == "MODIFIED") {
-                    _ = services.remove(serviceModel.id);
-                    services[serviceModel.id] = serviceModel;
+                    lock {
+                        _ = services.remove(serviceModel.id);
+                        services[serviceModel.id] = serviceModel.clone();
+                    }
                 } else if (eventType == "DELETED") {
-                    _ = services.remove(serviceModel.id);
+                    lock {
+                        _ = services.remove(serviceModel.id);
+                    }
                 }
             }
         } else {
