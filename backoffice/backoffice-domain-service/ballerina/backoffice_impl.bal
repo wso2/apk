@@ -139,3 +139,26 @@ function getSubscriptions(string? apiId) returns SubscriptionList|error {
             return error(subcriptions.message());
         } 
 }
+
+
+function blockSubscription(string subscriptionId, string blockState) returns string|error {
+    if ("blocked".equalsIgnoreCaseAscii(blockState) || "prod_only_blocked".equalsIgnoreCaseAscii(blockState)) {
+        error|string blockSub = db_blockSubscription(subscriptionId, blockState);
+        if blockSub is error {
+            return error("Error while blocking subscription");
+        } else {
+            return  blockSub;
+        }
+    } else {
+        return error("Invalid block state provided");
+    }
+}
+
+function unblockSubscription(string subscriptionId) returns string|error {
+    error|string unblockSub = db_unblockSubscription(subscriptionId);
+    if unblockSub is error {
+        return error("Error while unblocking subscription");
+    } else {
+        return  unblockSub;
+    }
+}

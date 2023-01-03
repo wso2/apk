@@ -110,10 +110,24 @@ service /api/am/backoffice on ep0 {
     // }
     // resource function get subscriptions/[string subscriptionId]/'subscriber\-info() returns SubscriberInfo|NotFoundError {
     // }
-    // resource function post subscriptions/'block\-subscription(string subscriptionId, string blockState, @http:Header string? 'if\-match) returns http:Ok|BadRequestError|NotFoundError|PreconditionFailedError {
-    // }
-    // resource function post subscriptions/'unblock\-subscription(string subscriptionId, @http:Header string? 'if\-match) returns http:Ok|BadRequestError|NotFoundError|PreconditionFailedError {
-    // }
+    resource function post subscriptions/'block\-subscription(string subscriptionId, string blockState, @http:Header string? 'if\-match) returns http:Ok|BadRequestError|NotFoundError|PreconditionFailedError| InternalServerErrorError {
+        string|error response = blockSubscription(subscriptionId, blockState);
+        if response is error {
+            InternalServerErrorError internalError = {body: {code: 90912, message: response.message()}};
+            return internalError;
+        } else {
+            return http:OK;
+        }
+    }
+    resource function post subscriptions/'unblock\-subscription(string subscriptionId, @http:Header string? 'if\-match) returns http:Ok|BadRequestError|NotFoundError|PreconditionFailedError| InternalServerErrorError {
+        string|error response = unblockSubscription(subscriptionId);
+        if response is error {
+            InternalServerErrorError internalError = {body: {code: 90912, message: response.message()}};
+            return internalError;
+        } else {
+            return http:OK;
+        }
+    }
     // resource function get 'usage\-plans(@http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0) returns UsagePlanList|http:NotModified|NotAcceptableError {
     // }
     // resource function get search(string? query, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0) returns SearchResultList|http:NotModified|NotAcceptableError {

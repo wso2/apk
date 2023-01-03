@@ -132,22 +132,60 @@ public function db_getSubscriptionsForAPI(string apiId) returns Subscription[]|e
                 SUBS.SUBSCRIPTION_ID AS subscriptionId, 
                 APP.UUID AS applicationId,
                 APP.name AS name,
-                SUBS.TIER_ID AS THROTTLINGPOLICY, 
+                SUBS.TIER_ID AS usagePlan, 
                 SUBS.sub_status AS subscriptionStatus
                 FROM SUBSCRIPTION SUBS, API API, APPLICATION APP 
                 WHERE APP.APPLICATION_ID=SUBS.APPLICATION_ID AND API.API_ID = SUBS.API_ID AND API.API_UUID = ${apiId}`;
-            stream<Subscription, sql:Error?> result1 =  dbClient->query(query1);
+            stream<Subscriptions, sql:Error?> result1 =  dbClient->query(query1);
             Subscription[] subsList = [];
-            check from Subscription subitem in result1 do {
+            check from Subscriptions subitem in result1 do {
                 Subscription sub = {applicationInfo: {},subscriptionId: "",subscriptionStatus: "",usagePlan: ""};
                 sub.subscriptionId =subitem.subscriptionId;
                 sub.subscriptionStatus = subitem.subscriptionStatus;
+                sub.applicationInfo.applicationId = subitem.applicationId;
+                sub.usagePlan = subitem.usagePlan;
+                sub.applicationInfo.name = subitem.name;
                 subsList.push(sub);
             };
             return subsList;
             
         } else {
             return error("Error while geting subscription infomation" + result.message());  
+        }
+    }
+}
+
+
+function db_blockSubscription(string subscriptionId, string blockState) returns error|string{
+    postgresql:Client | error db_client  = getConnection();
+    if db_client is error {
+        return error("Issue while conecting to databse");
+    } else {
+        sql:ParameterizedQuery values = `${blockState} where uuid = ${subscriptionId}`;
+        sql:ParameterizedQuery sqlQuery = sql:queryConcat(SUBSCRIPTION_BLOCK_Prefix, values);
+        sql:ExecutionResult | sql:Error result =  db_client->execute(sqlQuery);
+        
+        if result is sql:ExecutionResult {
+            return "blocked";
+        } else {
+            return error("Error while changing status of the subscription in the Database");  
+        }
+    }
+}
+
+function db_unblockSubscription(string subscriptionId) returns error|string{
+    postgresql:Client | error db_client  = getConnection();
+    if db_client is error {
+        return error("Issue while conecting to databse");
+    } else {
+        sql:ParameterizedQuery values = ` where uuid = ${subscriptionId}`;
+        sql:ParameterizedQuery sqlQuery = sql:queryConcat(SUBSCRIPTION_UNBLOCK_Prefix, values);
+        sql:ExecutionResult | sql:Error result =  db_client->execute(sqlQuery);
+        
+        if result is sql:ExecutionResult {
+            return "Unblocked";
+        } else {
+            return error("Error while changing status of the subscription in the Database");  
         }
     }
 }
