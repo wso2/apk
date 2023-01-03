@@ -66,7 +66,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "http"
-version = "2.5.1"
+version = "2.5.2"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "cache"},
@@ -215,7 +215,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "mime"
-version = "2.5.0"
+version = "2.5.1"
 dependencies = [
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"},
@@ -263,7 +263,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "sql"
-version = "1.6.0"
+version = "1.6.1"
 dependencies = [
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"},
@@ -341,7 +341,7 @@ modules = [
 [[package]]
 org = "ballerinax"
 name = "postgresql"
-version = "1.5.0"
+version = "1.6.1"
 dependencies = [
 	{org = "ballerina", name = "crypto"},
 	{org = "ballerina", name = "io"},
