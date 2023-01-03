@@ -23,6 +23,19 @@ task bal_build(type: Exec) {
     dependsOn 'bal_test'
 }
 
+task bal_build_only(type: Exec) {
+    group 'ballerina'
+    description 'Build ballerina code'
+    commandLine 'bal', 'build'
+    dependsOn 'bal_test_initial'
+}
+
+task bal_test_initial(type: Exec) {
+    group 'ballerina'
+    description 'Run ballerina tests'
+    commandLine 'bal', 'test',"--target-dir=${projectDir}/test-target"
+}
+
 task bal_test(type: Exec) {
     group 'ballerina'
     description 'Run ballerina tests'

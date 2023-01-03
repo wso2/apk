@@ -34,7 +34,7 @@ public type Transitions record {
 
 
 
-json lifeCycleStateTransitions = {
+final readonly & json lifeCycleStateTransitions = {
   "States": [
     {
       "State": "Created",

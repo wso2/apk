@@ -16,12 +16,10 @@
 // under the License.
 //
 
-
-import ballerina/sql;
-
-sql:ParameterizedQuery GET_API = `SELECT API_UUID AS ID, API_ID as APIID,
-        API_PROVIDER as PROVIDER, API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS, ARTIFACT as ARTIFACT
-        FROM API `;
-sql:ParameterizedQuery GET_API_LifeCycle_Prefix = `SELECT status from api where api_uuid = `;
-sql:ParameterizedQuery UPDATE_API_LifeCycle_Prefix = `UPDATE api SET status = `;
-sql:ParameterizedQuery ADD_LC_EVENT_Prefix = `INSERT INTO api_lc_event (api_id,previous_state,new_state,user_id,organization,event_date) VALUES (`;
+public type Subscriptions record {
+    string subscriptionId;
+    string applicationId;
+    string name;
+    string usagePlan;
+    string subscriptionStatus;
+};
