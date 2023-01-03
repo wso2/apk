@@ -38,7 +38,7 @@ allprojects {
 tasks.register('envoy_filter_build', Exec) {
     group 'envoy-filter'
     description 'Building websocket.wasm.'
-    commandLine 'sh', "$rootDir/envoy-filters/mgw-source/filters/http/mgw-wasm-websocket/build.sh"
+    commandLine "$rootDir/envoy-filters/mgw-source/filters/http/mgw-wasm-websocket/build.sh"
 }
 
 tasks.named('docker_build').configure {
