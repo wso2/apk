@@ -44,7 +44,7 @@ function init() {
             connectionPool = {maxOpenConnections: datasourceConfiguration.maxPoolSize}
             );
     if dbClient is error {
-        return log:printError("Error while connecting to database");
+        log:printError("Error while connecting to database");
     }
 }
 
