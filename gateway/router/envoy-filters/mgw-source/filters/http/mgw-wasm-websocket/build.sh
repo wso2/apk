@@ -13,7 +13,7 @@ SOURCE_DIR_MOUNT_DEST=/source/mgw-source/filters/http/mgw-wasm-websocket
 SOURCE_DIR_API="${PWD}"/../../../../mgw-api/extensions/filters/http/mgw-wasm-websocket/v3/
 SOURCE_DIR_MOUNT_API=/source/mgw-api/extensions/filters/http/mgw-wasm-websocket/v3/
 
-BUILD_DIR="${PWD}"/../../../../../router/target/mgw-wasm/
+BUILD_DIR="${PWD}"/../../../../../resources/wasm/websocket/
 BUILD_DIR_MOUNT_DEST=/build
 
 ENVOY_BUILD_IMAGE=envoyproxy/envoy-build-ubuntu:3f6b1b096f2c0652ed270c5564b292bdd9a520f6
@@ -43,4 +43,4 @@ docker run --rm \
     "${START_COMMAND[@]}"
 
 
-chmod a+rwx "${PWD}"/../../../../../router/target/mgw-wasm/mgw-websocket.wasm
+chmod a+rwx "${PWD}"/../../../../../resources/wasm/websocket/mgw-websocket.wasm
