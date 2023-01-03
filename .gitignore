@@ -59,3 +59,8 @@ test-target
 amd64
 arm64
 bin
+
+# envoy filters
+gateway/router/envoy-filters/**/bazel-*
+gateway/router/envoy-filters/.vscode
+gateway/router/envoy-filters/.idea
