@@ -16,7 +16,7 @@
 // under the License.
 //
 
-import ballerina/log;
+// import ballerina/log;
 import ballerinax/postgresql;
 import ballerina/sql;
 import ballerina/http;
@@ -30,7 +30,7 @@ configurable int ADMIN_PORT = 9443;
 listener http:Listener ep0 = new (ADMIN_PORT);
 
 function init() {
-    log:printInfo("Starting APK Admin Domain Service...");
+    // log:printInfo("Starting APK Admin Domain Service...");
     APKConfiguration apkConfig = {
         throttlingConfiguration: throttleConfig,
         datasourceConfiguration: datasourceConfiguration
@@ -44,7 +44,7 @@ function init() {
             connectionPool = {maxOpenConnections: datasourceConfiguration.maxPoolSize}
             );
     if dbClient is error {
-        log:printError("Error while connecting to database");
+        // log:printError("Error while connecting to database");
     }
 }
 

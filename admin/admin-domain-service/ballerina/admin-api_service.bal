@@ -17,7 +17,7 @@
 //
 
 import ballerina/http;
-import ballerina/log;
+// import ballerina/log;
 import ballerina/lang.value;
 
 service /api/am/admin on ep0 {
@@ -30,7 +30,7 @@ service /api/am/admin on ep0 {
             ApplicationRatePlanList polList = check j.cloneWithType(ApplicationRatePlanList);
             return polList;
         } else if appPolicyList is ApplicationRatePlanList {
-            log:printDebug(appPolicyList.toString());
+            // log:printDebug(appPolicyList.toString());
             return appPolicyList;
         } else {
             InternalServerErrorError internalError = {body: {code: 90900, message: "Internal Error while retrieving all Application Rate Plans"}};
@@ -44,7 +44,7 @@ service /api/am/admin on ep0 {
             CreatedApplicationRatePlan crPol = {body: check j.cloneWithType(ApplicationRatePlan)};
             return crPol;
         } else if createdAppPol is ApplicationRatePlan {
-            log:printDebug(createdAppPol.toString());
+            // log:printDebug(createdAppPol.toString());
             CreatedApplicationRatePlan crPol = {body: check createdAppPol.cloneWithType(ApplicationRatePlan)};
             return crPol;
         } else {
@@ -59,7 +59,7 @@ service /api/am/admin on ep0 {
             ApplicationRatePlan policy = check j.cloneWithType(ApplicationRatePlan);
             return policy;
         } else if appPolicy is ApplicationRatePlan {
-            log:printDebug(appPolicy.toString());
+            // log:printDebug(appPolicy.toString());
             return appPolicy;
         } else {
             InternalServerErrorError internalError = {body: {code: 90900, message: "Internal Error while retrieving Application Rate Plan By Id"}};
@@ -73,7 +73,7 @@ service /api/am/admin on ep0 {
             ApplicationRatePlan updatedPolicy = check j.cloneWithType(ApplicationRatePlan);
             return updatedPolicy;
         } else if appPolicy is ApplicationRatePlan|NotFoundError {
-            log:printDebug(appPolicy.toString());
+            // log:printDebug(appPolicy.toString());
             return appPolicy;
         } else {
             InternalServerErrorError internalError = {body: {code: 90900, message: "Internal Error while updating Application Rate Plan By Id"}};
@@ -96,7 +96,7 @@ service /api/am/admin on ep0 {
             BusinessPlanList polList = check j.cloneWithType(BusinessPlanList);
             return polList;
         } else  if subPolicyList is BusinessPlanList {
-            log:printDebug(subPolicyList.toString());
+            // log:printDebug(subPolicyList.toString());
             return subPolicyList;
         } else {
             InternalServerErrorError internalError = {body: {code: 90900, message: "Internal Error while retrieving list of Business Plans"}};
@@ -110,7 +110,7 @@ service /api/am/admin on ep0 {
             CreatedBusinessPlan crPol = {body: check j.cloneWithType(BusinessPlan)};
             return crPol;
         } else if createdSubPol is BusinessPlan {
-            log:printDebug(createdSubPol.toString());
+            // log:printDebug(createdSubPol.toString());
             CreatedBusinessPlan crPol = {body: check createdSubPol.cloneWithType(BusinessPlan)};
             return crPol;
         } else {
@@ -125,7 +125,7 @@ service /api/am/admin on ep0 {
             BusinessPlan policy = check j.cloneWithType(BusinessPlan);
             return policy;
         } else if subPolicy is BusinessPlan {
-            log:printDebug(subPolicy.toString());
+            // log:printDebug(subPolicy.toString());
             return subPolicy;
         } else {
             InternalServerErrorError internalError = {body: {code: 90900, message: "Internal Error while retrieving Business Plan by Id"}};
@@ -188,7 +188,7 @@ service /api/am/admin on ep0 {
             CreatedBlockingCondition condition = {body: check j.cloneWithType(BlockingCondition)};
             return condition;
         } else if createdDenyPol is BlockingCondition {
-            log:printDebug(createdDenyPol.toString());
+            // log:printDebug(createdDenyPol.toString());
             CreatedBlockingCondition condition = {body: check createdDenyPol.cloneWithType(BlockingCondition)};
             return condition;
         } else {
@@ -203,7 +203,7 @@ service /api/am/admin on ep0 {
             BlockingCondition condition = check j.cloneWithType(BlockingCondition);
             return condition;
         } else if denyPolicy is BlockingCondition {
-            log:printDebug(denyPolicy.toString());
+            // log:printDebug(denyPolicy.toString());
             return denyPolicy;
         } else {
             InternalServerErrorError internalError = {body: {code: 90900, message: "Internal Error while retrieving Deny Policy by Id"}};
@@ -226,7 +226,7 @@ service /api/am/admin on ep0 {
             BlockingCondition condition = check j.cloneWithType(BlockingCondition);
             return condition;
         } else if updatedPolicy is BlockingCondition|NotFoundError {
-            log:printDebug(updatedPolicy.toString());
+            // log:printDebug(updatedPolicy.toString());
             return updatedPolicy;
         } else {
             InternalServerErrorError internalError = {body: {code: 90900, message: "Internal Error while updating Deny Policy Status by Id"}};
