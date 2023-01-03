@@ -43,7 +43,7 @@ jobs:
           fetch-depth: "0"
       - name: Copy ballerina-lang patch
         shell: sh
-        run: "cp ballerina-lang-2201.3.0.jar $(bal home)/bre/lib/"
+        run: "sudo cp ballerina-lang-2201.3.0.jar $(bal home)/bre/lib/"
       - name: Run build-apk.sh
         run: |
           sh build-apk.sh
