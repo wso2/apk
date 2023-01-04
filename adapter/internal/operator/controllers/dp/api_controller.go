@@ -179,15 +179,15 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	loggers.LoggerAPKOperator.Debugf("HTTPRoutes are retrieved successfully for API CR %s", req.NamespacedName.String())
 
 	// Check whether the Operator Data store contains the received API.
-	cachedAPI, found := apiReconciler.ods.GetCachedAPI(req.NamespacedName)
+	_, found := apiReconciler.ods.GetCachedAPI(req.NamespacedName)
 
 	if !found {
 		apiState := apiReconciler.ods.AddNewAPItoODS(apiDef, prodHTTPRoute, sandHTTPRoute)
 		*apiReconciler.ch <- synchronizer.APIEvent{EventType: constants.Create, Event: apiState}
 		apiReconciler.handleStatus(req.NamespacedName, constants.DeployedState, []string{})
-	} else if events, updated :=
+	} else if events, updatedAPI, updated :=
 		apiReconciler.ods.UpdateAPIState(&apiDef, prodHTTPRoute, sandHTTPRoute); updated {
-		*apiReconciler.ch <- synchronizer.APIEvent{EventType: constants.Update, Event: cachedAPI}
+		*apiReconciler.ch <- synchronizer.APIEvent{EventType: constants.Update, Event: updatedAPI}
 		apiReconciler.handleStatus(req.NamespacedName, constants.UpdatedState, events)
 	}
 	return ctrl.Result{}, nil
