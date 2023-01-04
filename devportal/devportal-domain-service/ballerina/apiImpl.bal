@@ -31,3 +31,8 @@ isolated function getAPIList(int 'limit, int  offset, string? query, string orga
         return apis;
     }
 }
+
+isolated function getAPIDefinition(string apiId, string organization) returns APIDefinition|NotFoundError|error {
+    APIDefinition|NotFoundError|error apiDefinition = getAPIDefinitionDAO(apiId,organization);
+    return apiDefinition;
+}
