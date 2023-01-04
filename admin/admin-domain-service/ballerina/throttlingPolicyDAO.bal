@@ -16,7 +16,7 @@
 // under the License.
 //
 
-// import ballerina/log;
+import ballerina/log;
 import ballerinax/postgresql;
 import ballerina/sql;
 
@@ -35,7 +35,7 @@ public isolated function addApplicationUsagePlanDAO(ApplicationRatePlan atp) ret
         if result is sql:ExecutionResult {
             return atp;
         } else {
-            // log:printDebug(result.toString());
+            log:printDebug(result.toString());
             return error("Error while inserting data into Database");  
         }
     }
