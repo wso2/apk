@@ -27,7 +27,7 @@ webhooks:
   - v1
   clientConfig:
     service:
-      name: {{ template "apk-helm.resource.prefix" . }}-cc-adapter-service
+      name: {{ template "apk-helm.resource.prefix" . }}-adapter-service
       namespace: {{ .Release.Namespace }}
       path: /mutate-dp-wso2-com-v1alpha1-api
   failurePolicy: Fail

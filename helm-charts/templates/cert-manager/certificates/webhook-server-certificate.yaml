@@ -25,8 +25,8 @@ metadata:
   namespace: {{ .Release.Namespace }}
 spec:
   dnsNames:
-  - {{ template "apk-helm.resource.prefix" . }}-cc-adapter-service.{{ .Release.Namespace }}.svc
-  - {{ template "apk-helm.resource.prefix" . }}-cc-adapter-service.{{ .Release.Namespace }}.svc.cluster.local
+  - {{ template "apk-helm.resource.prefix" . }}-adapter-service.{{ .Release.Namespace }}.svc
+  - {{ template "apk-helm.resource.prefix" . }}-adapter-service.{{ .Release.Namespace }}.svc.cluster.local
   issuerRef:
     kind: Issuer
     name: selfsigned-issuer
