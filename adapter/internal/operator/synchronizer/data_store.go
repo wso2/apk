@@ -20,6 +20,7 @@ package synchronizer
 import (
 	"sync"
 
+	"github.com/wso2/apk/adapter/internal/loggers"
 	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
 	"github.com/wso2/apk/adapter/internal/operator/utils"
 	"k8s.io/apimachinery/pkg/types"
@@ -38,8 +39,8 @@ func CreateNewOperatorDataStore() *OperatorDataStore {
 	}
 }
 
-// AddNewAPItoODS stores a new API in the OperatorDataStore.
-func (ods *OperatorDataStore) AddNewAPItoODS(api dpv1alpha1.API, prodHTTPRouteState *HTTPRouteState,
+// AddAPIState stores a new API in the OperatorDataStore.
+func (ods *OperatorDataStore) AddAPIState(api dpv1alpha1.API, prodHTTPRouteState *HTTPRouteState,
 	sandHTTPRouteState *HTTPRouteState) APIState {
 	ods.mu.Lock()
 	defer ods.mu.Unlock()
@@ -55,35 +56,91 @@ func (ods *OperatorDataStore) AddNewAPItoODS(api dpv1alpha1.API, prodHTTPRouteSt
 
 // UpdateAPIState update the APIState on ref updates
 func (ods *OperatorDataStore) UpdateAPIState(apiDef *dpv1alpha1.API, prodHTTPRoute *HTTPRouteState,
-	sandHTTPRoute *HTTPRouteState) ([]string, APIState, bool) {
+	sandHTTPRoute *HTTPRouteState) (APIState, []string, bool) {
 	ods.mu.Lock()
 	defer ods.mu.Unlock()
 	var updated bool
 	events := []string{}
-	cachedAPI := ods.apiStore[utils.NamespacedName(apiDef)]
+	cachedAPI, found := ods.apiStore[utils.NamespacedName(apiDef)]
+	if !found {
+		loggers.LoggerAPKOperator.Infof("Adding new apistate as API : %s has not found in memory datastore.", apiDef.Spec.APIDisplayName)
+		apiState := ods.AddAPIState(*apiDef, prodHTTPRoute, sandHTTPRoute)
+		return apiState, []string{"API"}, true
+	}
 	if apiDef.Generation > cachedAPI.APIDefinition.Generation {
 		cachedAPI.APIDefinition = apiDef
 		updated = true
 		events = append(events, "API Definition")
 	}
 	if prodHTTPRoute != nil {
-		if prodHTTPRoute.HTTPRoute.UID != cachedAPI.ProdHTTPRoute.HTTPRoute.UID ||
-			prodHTTPRoute.HTTPRoute.Generation > cachedAPI.ProdHTTPRoute.HTTPRoute.Generation {
-			cachedAPI.ProdHTTPRoute = prodHTTPRoute
+		if routeEvents, routesUpdated := updateHTTPRoute(prodHTTPRoute, cachedAPI.ProdHTTPRoute, "Production"); routesUpdated {
 			updated = true
-			events = append(events, "Production Endpoint")
+			events = append(events, routeEvents...)
 		}
 	}
 	if sandHTTPRoute != nil {
-		if sandHTTPRoute.HTTPRoute.UID != cachedAPI.SandHTTPRoute.HTTPRoute.UID ||
-			sandHTTPRoute.HTTPRoute.Generation > cachedAPI.SandHTTPRoute.HTTPRoute.Generation {
-			cachedAPI.SandHTTPRoute = sandHTTPRoute
+		if routeEvents, routesUpdated := updateHTTPRoute(sandHTTPRoute, cachedAPI.SandHTTPRoute, "Sandbox"); routesUpdated {
 			updated = true
-			events = append(events, "Sandbox Endpoint")
+			events = append(events, routeEvents...)
 		}
 	}
 
-	return events, *cachedAPI, updated
+	return *cachedAPI, events, updated
+}
+
+// UpdateAPIState update the APIState on ref updates
+func updateHTTPRoute(httpRoute *HTTPRouteState, cachedHTTPRoute *HTTPRouteState, endpointType string) ([]string, bool) {
+	var updated bool
+	events := []string{}
+	if httpRoute.HTTPRoute.UID != cachedHTTPRoute.HTTPRoute.UID ||
+		httpRoute.HTTPRoute.Generation > cachedHTTPRoute.HTTPRoute.Generation {
+		cachedHTTPRoute.HTTPRoute = httpRoute.HTTPRoute
+		updated = true
+		events = append(events, endpointType+" Endpoint")
+	}
+	if len(httpRoute.Authentications) != len(cachedHTTPRoute.Authentications) {
+		cachedHTTPRoute.Authentications = httpRoute.Authentications
+		updated = true
+		events = append(events, endpointType+" Endpoint Authentications")
+	} else {
+		for key, auth := range httpRoute.Authentications {
+			if existingAuth, found := cachedHTTPRoute.Authentications[key]; found {
+				if auth.UID != existingAuth.UID || auth.Generation > existingAuth.Generation {
+					cachedHTTPRoute.Authentications = httpRoute.Authentications
+					updated = true
+					events = append(events, endpointType+" Endpoint Authentications")
+					break
+				}
+			} else {
+				cachedHTTPRoute.Authentications = httpRoute.Authentications
+				updated = true
+				events = append(events, endpointType+" Endpoint Authentications")
+				break
+			}
+		}
+	}
+	if len(httpRoute.ResourceAuthentications) != len(cachedHTTPRoute.ResourceAuthentications) {
+		cachedHTTPRoute.ResourceAuthentications = httpRoute.ResourceAuthentications
+		updated = true
+		events = append(events, endpointType+" Endpoint Resource Authentications")
+	} else {
+		for key, auth := range httpRoute.ResourceAuthentications {
+			if existingAuth, found := cachedHTTPRoute.ResourceAuthentications[key]; found {
+				if auth.UID != existingAuth.UID || auth.Generation > existingAuth.Generation {
+					cachedHTTPRoute.ResourceAuthentications = httpRoute.ResourceAuthentications
+					updated = true
+					events = append(events, endpointType+" Endpoint Resource Authentications")
+					break
+				}
+			} else {
+				cachedHTTPRoute.ResourceAuthentications = httpRoute.ResourceAuthentications
+				updated = true
+				events = append(events, endpointType+" Endpoint Resource Authentications")
+				break
+			}
+		}
+	}
+	return events, updated
 }
 
 // GetCachedAPI get cached apistate

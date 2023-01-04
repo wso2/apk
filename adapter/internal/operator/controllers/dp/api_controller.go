@@ -111,9 +111,7 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 		return err
 	}
 
-	//todo(amali) check if the api get reconciled if auth gets changed, because we only triggered httproutes here.
-	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.Authentication{}},
-		handler.EnqueueRequestsFromMapFunc(r.getHTTPRoutesForAuthentication),
+	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.Authentication{}}, handler.EnqueueRequestsFromMapFunc(r.getAPIsForAuthentication),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
 			Message:   fmt.Sprintf("Error watching Authentication resources: %v", err),
@@ -178,16 +176,14 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	}
 	loggers.LoggerAPKOperator.Debugf("HTTPRoutes are retrieved successfully for API CR %s", req.NamespacedName.String())
 
-	// Check whether the Operator Data store contains the received API.
-	_, found := apiReconciler.ods.GetCachedAPI(req.NamespacedName)
-
-	if !found {
-		apiState := apiReconciler.ods.AddNewAPItoODS(apiDef, prodHTTPRoute, sandHTTPRoute)
+	if !apiDef.Status.Accepted {
+		apiState := apiReconciler.ods.AddAPIState(apiDef, prodHTTPRoute, sandHTTPRoute)
 		*apiReconciler.ch <- synchronizer.APIEvent{EventType: constants.Create, Event: apiState}
+		//TODO(amali) update status only after deployed without errors
 		apiReconciler.handleStatus(req.NamespacedName, constants.DeployedState, []string{})
-	} else if events, updatedAPI, updated :=
+	} else if cachedAPI, events, updated :=
 		apiReconciler.ods.UpdateAPIState(&apiDef, prodHTTPRoute, sandHTTPRoute); updated {
-		*apiReconciler.ch <- synchronizer.APIEvent{EventType: constants.Update, Event: updatedAPI}
+		*apiReconciler.ch <- synchronizer.APIEvent{EventType: constants.Update, Event: cachedAPI}
 		apiReconciler.handleStatus(req.NamespacedName, constants.UpdatedState, events)
 	}
 	return ctrl.Result{}, nil
@@ -241,14 +237,18 @@ func (apiReconciler *APIReconciler) resolveHTTPRouteRefs(ctx context.Context, na
 }
 
 func (apiReconciler *APIReconciler) getAuthenticationsForHTTPRoute(ctx context.Context,
-	httpRoute *gwapiv1b1.HTTPRoute) ([]dpv1alpha1.Authentication, error) {
+	httpRoute *gwapiv1b1.HTTPRoute) (map[string]dpv1alpha1.Authentication, error) {
+	authentications := make(map[string]dpv1alpha1.Authentication)
 	authenticationList := &dpv1alpha1.AuthenticationList{}
 	if err := apiReconciler.client.List(ctx, authenticationList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(authenticationAPIIndex, utils.NamespacedName(httpRoute).String()),
 	}); err != nil {
 		return nil, err
 	}
-	return authenticationList.Items, nil
+	for _, item := range authenticationList.Items {
+		authentications[utils.NamespacedName(&item).String()] = item
+	}
+	return authentications, nil
 }
 
 func (apiReconciler *APIReconciler) getAuthenticationsForResources(ctx context.Context,
@@ -314,7 +314,7 @@ func (apiReconciler *APIReconciler) getAPIForHTTPRoute(obj k8client.Object) []re
 // getAPIForAuthentication triggers the API controller reconcile method based on the changes detected
 // from Authentication objects. If the changes are done for an API stored in the Operator Data store,
 // a new reconcile event will be created and added to the reconcile event queue.
-func (apiReconciler *APIReconciler) getHTTPRoutesForAuthentication(obj k8client.Object) []reconcile.Request {
+func (apiReconciler *APIReconciler) getAPIsForAuthentication(obj k8client.Object) []reconcile.Request {
 	authentication, ok := obj.(*dpv1alpha1.Authentication)
 	ctx := context.Background()
 	if !ok {
@@ -328,6 +328,7 @@ func (apiReconciler *APIReconciler) getHTTPRoutesForAuthentication(obj k8client.
 
 	requests := []reconcile.Request{}
 
+	// todo(amali) move this validation to validation hook
 	if !(authentication.Spec.TargetRef.Kind == constants.KindHTTPRoute || authentication.Spec.TargetRef.Kind == constants.KindResource) {
 		loggers.LoggerAPKOperator.Errorf("Unsupported target ref kind : %s was given for authentication: %s",
 			authentication.Spec.TargetRef.Kind, authentication.Name)

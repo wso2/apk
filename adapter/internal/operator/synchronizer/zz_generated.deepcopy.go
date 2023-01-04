@@ -67,9 +67,9 @@ func (in *HTTPRouteState) DeepCopyInto(out *HTTPRouteState) {
 	}
 	if in.Authentications != nil {
 		in, out := &in.Authentications, &out.Authentications
-		*out = make([]v1alpha1.Authentication, len(*in))
-		for i := range *in {
-			(*in)[i].DeepCopyInto(&(*out)[i])
+		*out = make(map[string]v1alpha1.Authentication, len(*in))
+		for key, val := range *in {
+			(*out)[key] = *val.DeepCopy()
 		}
 	}
 	if in.ResourceAuthentications != nil {
