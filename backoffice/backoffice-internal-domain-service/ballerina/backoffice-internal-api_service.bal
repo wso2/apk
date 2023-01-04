@@ -5,7 +5,7 @@ configurable int BACKOFFICE_PORT = 9443;
 listener http:Listener ep0 = new (BACKOFFICE_PORT);
 
 service /api/am/backoffice/internal on ep0 {
-    resource function post apis(@http:Payload json payload) returns CreatedAPI|BadRequestError|UnsupportedMediaTypeError|error {
+    isolated resource function post apis(@http:Payload json payload) returns CreatedAPI|BadRequestError|UnsupportedMediaTypeError|error {
         APIBody apiBody = check payload.cloneWithType(APIBody);
          
         API | error ? createdApi = createAPI(apiBody, "carbon.super");
@@ -17,7 +17,7 @@ service /api/am/backoffice/internal on ep0 {
     }
 
 
-    resource function put apis/[string apiId](@http:Header string? 'if\-match, @http:Payload json payload) returns API|BadRequestError|ForbiddenError|NotFoundError|ConflictError|PreconditionFailedError|error {
+    isolated resource function put apis/[string apiId](@http:Header string? 'if\-match, @http:Payload json payload) returns API|BadRequestError|ForbiddenError|NotFoundError|ConflictError|PreconditionFailedError|error {
         APIBody apiUpdateBody = check payload.cloneWithType(APIBody);
         
         API | error ? updatedAPI = updateAPI(apiId, apiUpdateBody, "carbon.super");
@@ -28,7 +28,7 @@ service /api/am/backoffice/internal on ep0 {
         return error("Error while updating API");
     }
 
-    resource function delete apis/[string apiId](@http:Header string? 'if\-match) returns http:Ok|ForbiddenError|NotFoundError|ConflictError|PreconditionFailedError|http:InternalServerError {
+    isolated resource function delete apis/[string apiId](@http:Header string? 'if\-match) returns http:Ok|ForbiddenError|NotFoundError|ConflictError|PreconditionFailedError|http:InternalServerError {
         string|error? response = deleteAPI(apiId);
         if response is error {
             http:InternalServerError internalError = {body: {code: 90912, message: "Internal Error while deleting API By Id"}};
@@ -37,7 +37,7 @@ service /api/am/backoffice/internal on ep0 {
             return http:OK;
         }
     }
-    resource function put apis/[string apiId]/definition(@http:Header string? 'if\-match, @http:Payload APIDefinition payload) returns string|BadRequestError|ForbiddenError|NotFoundError|PreconditionFailedError|error { 
+    isolated resource function put apis/[string apiId]/definition(@http:Header string? 'if\-match, @http:Payload APIDefinition payload) returns string|BadRequestError|ForbiddenError|NotFoundError|PreconditionFailedError|error { 
         APIDefinition | error ? updateDef = updateDefinition(payload, apiId);
         if updateDef is APIDefinition {
             APIDefinition crAPI = check updateDef.cloneWithType(APIDefinition);

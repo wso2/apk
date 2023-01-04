@@ -21,7 +21,7 @@
 # + body - API parameter
 # + organization - organization
 # + return - Return Value API | error
-public function createAPI(APIBody body, string organization) returns API | error{
+isolated function createAPI(APIBody body, string organization) returns API | error{
     transaction {
         API | error apiCr = db_createAPI(body, organization);
         if apiCr is API {
@@ -52,7 +52,7 @@ public function createAPI(APIBody body, string organization) returns API | error
 # + apiId - API Id parameter
 # + organization - organization
 # + return - Return Value API | error
-public function updateAPI(string apiId, APIBody body, string organization) returns API | error {
+isolated function updateAPI(string apiId, APIBody body, string organization) returns API | error {
     API | error apiUp = db_updateAPI(apiId, body, organization);
     if apiUp is error {
         return error("Error while updating API data");
@@ -68,7 +68,7 @@ public function updateAPI(string apiId, APIBody body, string organization) retur
 #
 # + apiId - API Id parameter
 # + return - Return Value string | error
-public function deleteAPI(string apiId) returns string|error? {
+isolated function deleteAPI(string apiId) returns string|error? {
     error?|string apiDel = db_deleteAPI(apiId);
     if apiDel is error {
         return error("Error while deleting API data");
@@ -85,7 +85,7 @@ public function deleteAPI(string apiId) returns string|error? {
 # + apiId - API Id parameter
 # + apiBody - ApiidDefinitionBody 
 # + return - Return Value string | error
-public function updateDefinition(APIDefinition apiBody, string apiId) returns APIDefinition|error? {
+isolated function updateDefinition(APIDefinition apiBody, string apiId) returns APIDefinition|error? {
     APIDefinition | error apiUp = db_updateDefinitionbyId(apiId, apiBody);
     if apiUp is error {
         return error("Error while updating API definition data");
@@ -98,7 +98,7 @@ public function updateDefinition(APIDefinition apiBody, string apiId) returns AP
 # + apiID - API Id parameter
 # + api - api object
 # + return - Return Value json
-function createArtifact(string? apiID, API api) returns json {
+isolated function createArtifact(string? apiID, API api) returns json {
     Artifact artifact = {
                     id: apiID,
                     apiName : api.name,
