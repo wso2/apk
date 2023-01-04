@@ -15,6 +15,24 @@ import (
 // Back Office client connetion
 var backOfficeClient *http.Client
 
+type api struct {
+	ID              string `json:"id"`
+	Name            string `json:"name"`
+	Context         string `json:"context"`
+	Version         string `json:"version"`
+	Provider        string `json:"provider"`
+	LifeCycleStatus string `json:"LifeCycleStatus"`
+}
+
+type definetion struct {
+	openapi string
+}
+
+type requestData struct {
+	APIProperties api        `json:"apiProperties"`
+	Definition    definetion `json:"Definition"`
+}
+
 func init() {
 	transport := &http.Transport{
 		MaxIdleConns:    2,
@@ -30,9 +48,20 @@ func getBackOfficeURL() string {
 	return fmt.Sprintf("http://%s:%d%s", conf.BackOffice.Host, conf.BackOffice.Port, conf.BackOffice.ServiceBasePath)
 }
 
+func composeRequestBody(api *apiProtos.API) requestData {
+	request := new(requestData)
+	request.APIProperties.ID = api.Uuid
+	request.APIProperties.Name = api.Name
+	request.APIProperties.Context = api.Context
+	request.APIProperties.Version = api.Version
+	request.APIProperties.Provider = api.Provider
+
+	return *request
+}
+
 // CreateAPI creates an API by invoking backoffice service
 func CreateAPI(api *apiProtos.API) error {
-	postBody, _ := json.Marshal(api)
+	postBody, _ := json.Marshal(composeRequestBody(api))
 	requestBody := bytes.NewBuffer(postBody)
 	_, err := backOfficeClient.Post(getBackOfficeURL(), "application/json", requestBody)
 	if err != nil {
@@ -43,7 +72,7 @@ func CreateAPI(api *apiProtos.API) error {
 
 // UpdateAPI updates an API by invoking backoffice service
 func UpdateAPI(api *apiProtos.API) error {
-	putBody, _ := json.Marshal(api)
+	putBody, _ := json.Marshal(composeRequestBody(api))
 	requestBody := bytes.NewBuffer(putBody)
 	putRequest, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/%s", getBackOfficeURL(), api.Uuid), requestBody)
 	_, err = backOfficeClient.Do(putRequest)
