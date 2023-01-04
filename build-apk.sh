@@ -17,3 +17,5 @@ cd $current_dir;
 cd adapter;gradle build;
 cd $current_dir;
 cd management-server;gradle build;
+cd $current_dir;
+cd gateway/router;gradle build;
