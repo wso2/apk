@@ -230,30 +230,22 @@ paths:
       x-code-samples:
         - lang: Curl
           source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/c43a325c-260b-4302-81cb-768eafaa3aed"
-
-  /apis/{apiId}/swagger:
+  
+  /apis/{apiId}/definition:
     get:
       tags:
         - APIs
-      summary: |
-        Get Swagger Definition
+      summary: Get the API Definition
       description: |
-        You can use this operation to retrieve the swagger definition of an API.
-
-         `X-WSO2-Tenant` header can be used to retrieve the swagger definition an API of a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user's tenant associated with the access token will be used.
-
-        **NOTE:**
-        * This operation does not require an Authorization header by default. But in order to see a restricted API's swagger definition, you need to provide Authorization header.
+        This operation can be used to retrieve the definition of an API.
       parameters:
         - $ref: '#/components/parameters/apiId'
-        - $ref: '#/components/parameters/environmentName'
         - $ref: '#/components/parameters/If-None-Match'
-        - $ref: '#/components/parameters/requestedTenant'
       responses:
         200:
           description: |
             OK.
-            Requested swagger document of the API is returned
+            Requested definition document of the API is returned
           headers:
             ETag:
               description: |
@@ -266,24 +258,15 @@ paths:
                 Used by caches, or in conditional requests.
               schema:
                 type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
           content:
             application/json:
               schema:
-                type: string
-                example: '{ "swagger" : "2.0", "info" : { "version" : "1.0", "title"
-                  : "PhoneVerification" }, "host" : "localhost:8243", "basePath" :
-                  "/phoneverify/1.0", "schemes" : [ "https", "http" ], "security"
-                  : [ { "default" : [ ] } ], "paths" : { "/*" : { "post" : { "consumes"
-                  : [ "text/xml", "application/soap+xml" ], "parameters" : [ { "in"
-                  : "body", "name" : "SOAP Request", "description" : "SOAP request.",
-                  "required" : true, "schema" : { "type" : "string" } }, { "name"
-                  : "SOAPAction", "in" : "header", "description" : "SOAPAction header
-                  for soap 1.1", "required" : false, "type" : "string" } ], "responses"
-                  : { "200" : { "description" : "OK" } }, "security" : [ { "default"
-                  : [ ] } ], "x-auth-type" : "Application & Application User", "x-throttling-tier"
-                  : "Unlimited" } } }, "securityDefinitions" : { "default" : { "type"
-                  : "oauth2", "authorizationUrl" : "https://localhost:8243/authorize",
-                  "flow" : "implicit" } } }'
+                $ref: '#/components/schemas/APIDefinition'
         304:
           description: |
             Not Modified.
@@ -297,154 +280,9 @@ paths:
         - OAuth2Security: []
       x-code-samples:
         - lang: Curl
-          source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/c43a325c-260b-4302-81cb-768eafaa3aed/swagger"
-
-  /apis/{apiId}/graphql-schema:
-    get:
-      tags:
-        - APIs
-      summary: |
-        Get GraphQL Definition
-      description: |
-        You can use this operation to retrieve the GraphQL schema definition of a GraphQL API.
-
-         `X-WSO2-Tenant` header can be used to retrieve the swagger definition an API of a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user's tenant associated with the access token will be used.
-
-        **NOTE:**
-        * This operation does not require an Authorization header by default. But in order to see a restricted API's swagger definition, you need to provide Authorization header.
-      parameters:
-        - $ref: '#/components/parameters/apiId'
-        - $ref: '#/components/parameters/If-None-Match'
-        - $ref: '#/components/parameters/requestedTenant'
-      responses:
-        200:
-          description: |
-            OK.
-            Requested swagger document of the API is returned
-          headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource. Used by caches, or in conditional requests.
-              schema:
-                type: string
-            Last-Modified:
-              description: |
-                Date and time the resource has been modifed the last time.
-                Used by caches, or in conditional requests.
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                type: string
-                example: 'directive @cacheControl(
-                    maxAge: Int
-                    scope: CacheControlScope
-                  ) on FIELD_DEFINITION | OBJECT | INTERFACE
-                  enum CacheControlScope {
-                    PUBLIC
-                    PRIVATE
-                  }
-
-                  # A `Lift` is a chairlift, gondola, tram, funicular, pulley, rope tow, or other means of ascending a mountain.
-                  type Lift {
-                    # The unique identifier for a `Lift` (id: "panorama")
-                    id: ID!
-                    # The name of a `Lift`
-                    name: String!
-                    # The current status for a `Lift`: `OPEN`, `CLOSED`, `HOLD`
-                    status: LiftStatus
-                    # The number of people that a `Lift` can hold
-                    capacity: Int!
-                    # A boolean describing whether a `Lift` is open for night skiing
-                    night: Boolean!
-                    # The number of feet in elevation that a `Lift` ascends
-                    elevationGain: Int!
-                    # A list of trails that this `Lift` serves
-                    trailAccess: [Trail!]!
-                  }
-
-                  # An enum describing the options for `LiftStatus`: `OPEN`, `CLOSED`, `HOLD`
-                  enum LiftStatus {
-                    OPEN
-                    CLOSED
-                    HOLD
-                  }
-
-                  type Mutation {
-                    # Sets a `Lift` status by sending `id` and `status`
-                    setLiftStatus(id: ID!, status: LiftStatus!): Lift!
-                    # Sets a `Trail` status by sending `id` and `status`
-                    setTrailStatus(id: ID!, status: TrailStatus!): Trail!
-                  }
-
-                  type Query {
-                    # A list of all `Lift` objects
-                    allLifts(status: LiftStatus): [Lift!]!
-                    # A list of all `Trail` objects
-                    allTrails(status: TrailStatus): [Trail!]!
-                    # Returns a `Lift` by `id` (id: "panorama")
-                    Lift(id: ID!): Lift!
-                    # Returns a `Trail` by `id` (id: "old-witch")
-                    Trail(id: ID!): Trail!
-                    # Returns an `Int` of `Lift` objects with optional `LiftStatus` filter
-                    liftCount(status: LiftStatus): Int!
-                    # Returns an `Int` of `Trail` objects with optional `TrailStatus` filter
-                    trailCount(status: TrailStatus): Int!
-                    # Returns a list of `SearchResult` objects based on `term` or `status`
-                    search(term: String, status: LiftStatus): [SearchResult!]!
-                  }
-
-                  union SearchResult = Lift | Trail
-                  type Subscription {
-                    # Listens for changes in lift status
-                             liftStatusChange: Lift
-                    # Listens for changes in trail status
-                             trailStatusChange: Trail
-                  }
-
-                  # A `Trail` is a run at a ski resort
-                  type Trail {
-                    id: ID!
-                    # The name of a `Trail`
-                    name: String!
-                    # The current status for a `Trail`: OPEN, CLOSED
-                    status: TrailStatus
-                    # The difficulty rating for a `Trail`
-                    difficulty: String!
-                    # A boolean describing whether or not a `Trail` is groomed
-                    groomed: Boolean!
-                    # A boolean describing whether or not a `Trail` has trees
-                    trees: Boolean!
-                    # A boolean describing whether or not a `Trail` is open for night skiing
-                    night: Boolean!
-                    # A list of Lifts that provide access to this `Trail`
-                    accessedByLifts: [ Lift! ]!
-                  }
-
-                  # An enum describing the options for `TrailStatus`: `OPEN`, `CLOSED`
-                  enum TrailStatus {
-                  OPEN
-                  CLOSED
-                  }
-
-                  # The `Upload` scalar type
-                  represents a file upload.
-                  scalar Upload'
-        304:
-          description: |
-            Not Modified.
-            Empty body because the client has already the latest version of the requested resource.
-          content: {}
-        404:
-          $ref: '#/components/responses/NotFound'
-        406:
-          $ref: '#/components/responses/NotAcceptable'
-      security:
-        - OAuth2Security: []
-      x-code-samples:
-        - lang: Curl
-          source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/c43a325c-260b-4302-81cb-768eafaa3aed/graphql-schema"
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/apk/devportal/v1/apis/7a2298c4-c905-403f-8fac-38c73301631f/definition"'
+      operationId: getAPIDefinition
 
   /apis/{apiId}/sdks/{language}:
     get:
@@ -490,52 +328,6 @@ paths:
           source: curl -k -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
             "https://localhost:9443/api/am/devportal/v2/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/sdks/java"
             > Petstore_java_1.0.0.zip
-
-  /apis/{apiId}/wsdl:
-    get:
-      tags:
-        - APIs
-      summary: Get API WSDL definition
-      description: |
-        This operation can be used to retrieve the swagger definition of an API.
-      operationId: getWSDLOfAPI
-      parameters:
-        - $ref: '#/components/parameters/apiId'
-        - $ref: '#/components/parameters/environmentName'
-        - $ref: '#/components/parameters/If-None-Match'
-        - $ref: '#/components/parameters/requestedTenant'
-      responses:
-        200:
-          description: |
-            OK.
-            Requested WSDL document of the API is returned
-          headers:
-            ETag:
-              description: |
-                Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
-            Last-Modified:
-              description: |
-                Date and time the resource has been modifed the last time.
-                Used by caches, or in conditional requests (Will be supported in future).
-              schema:
-                type: string
-          content: {}
-        304:
-          description: |
-            Not Modified.
-            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
-          content: {}
-        404:
-          $ref: '#/components/responses/NotFound'
-        406:
-          $ref: '#/components/responses/NotAcceptable'
-      security:
-        - OAuth2Security: []
-      x-code-samples:
-        - lang: Curl
-          source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/c43a325c-260b-4302-81cb-768eafaa3aed/wsdl"
 
   ######################################################
   # The "Document Collection" resource APIs
@@ -3661,6 +3453,21 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/APIInfo'
+    APIDefinition:
+      title: API Schema
+      required:
+        - type
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - swagger
+            - graphql
+            - wsdl
+            - async
+        schemaDefinition:
+          type: string
     API:
       title: API object
       required:

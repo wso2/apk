@@ -24,6 +24,9 @@ test:MockFunction getAPIByIdDAOMock = new();
 @test:Mock { functionName: "getAPIsDAO" }
 test:MockFunction getAPIsDAOMock = new();
 
+@test:Mock { functionName: "getAPIDefinitionDAO" }
+test:MockFunction getAPIDefinitionDAOMock = new();
+
 @test:Config {}
 function getAPIByIdTest(){
     API api = {name: "MyAPI1", context: "/myapi", 'version: "1.0", provider: "apkuser", lifeCycleStatus: "PUBLISHED"};
@@ -46,5 +49,46 @@ function getAPIListTest(){
     test:assertTrue(true, "Successfully retrieved all APIs");
     } else if apiListReturned is  error {
         test:assertFail("Error occured while retrieving all APIs");
+    }
+}
+
+@test:Config {}
+function getAPIDefinitionByIdTest(){
+    APIDefinition apiDefinition = {'type: "swagger",schemaDefinition: ""};
+    test:when(getAPIDefinitionDAOMock).thenReturn(apiDefinition);
+    APIDefinition|NotFoundError|error apiDefResponse = getAPIDefinition("12sqwsqadasd","carbon.super");
+    if apiDefResponse is APIDefinition {
+        test:assertTrue(true, "Successfully retrieved API Definition");
+    } else if apiDefResponse is  error {
+        test:assertFail("Error occured while retrieving API");
+    } else if apiDefResponse is  NotFoundError {
+        test:assertFail("Definition Not Found Error");
+    }
+}
+
+@test:Config {}
+function getAPIDefinitionByIdNegativeTest(){
+    NotFoundError nfe = {body:{code: 90915, message: "API Definition Not Found for provided API ID"}};
+    test:when(getAPIDefinitionDAOMock).thenReturn(nfe);
+    APIDefinition|NotFoundError|error apiDefResponse = getAPIDefinition("12sqwsqadasd","carbon.super");
+    if apiDefResponse is APIDefinition {
+        test:assertFail("Successfully retrieved API Definition");
+    } else if apiDefResponse is  error {
+        test:assertFail("Error occured while retrieving API");
+    } else if apiDefResponse is  NotFoundError {
+        test:assertTrue(true,"Definition Not Found Error");
+    }
+}
+
+@test:Config {}
+function getAPIDefinitionByIdNegative2Test(){
+    test:when(getAPIDefinitionDAOMock).thenReturn(error("Internal Error while retrieving API Definition"));
+    APIDefinition|NotFoundError|error apiDefResponse = getAPIDefinition("12sqwsqadasd","carbon.super");
+    if apiDefResponse is APIDefinition {
+        test:assertFail("Successfully retrieved API Definition");
+    } else if apiDefResponse is  error {
+        test:assertTrue(true,"Error occured while retrieving API");
+    } else if apiDefResponse is  NotFoundError {
+        test:assertFail("Definition Not Found Error");
     }
 }

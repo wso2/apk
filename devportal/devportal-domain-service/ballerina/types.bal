@@ -370,6 +370,11 @@ public type ApplicationKeyList record {
     ApplicationKey[] list?;
 };
 
+public type APIDefinition record {
+    string 'type;
+    string schemaDefinition?;
+};
+
 public type CommenterInfo record {
     string firstName?;
     string lastName?;

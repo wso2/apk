@@ -21,7 +21,7 @@ import ballerinax/postgresql;
 import ballerina/sql;
 
 isolated function getAPIByIdDAO(string apiId, string org) returns string?|API|error {
-        postgresql:Client | error dbClient  = getConnection();
+    postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return error("Error while retrieving connection");
     } else {
@@ -53,5 +53,27 @@ isolated function getAPIsDAO(string org) returns API[]|error? {
         API[]? apis = check from API api in apisStream select api;
         check apisStream.close();
         return apis;
+    }
+}
+
+isolated function getAPIDefinitionDAO(string apiId, string org) returns APIDefinition|NotFoundError|error {
+    postgresql:Client | error dbClient  = getConnection();
+    if dbClient is error {
+        return error("Error while retrieving connection");
+    } else {
+        sql:ParameterizedQuery query = `SELECT encode(API_DEFINITION, 'escape')::text AS schemaDefinition, MEDIA_TYPE as type
+        FROM API_ARTIFACT WHERE API_UUID =${apiId} AND ORGANIZATION =${org}`;
+        APIDefinition | sql:Error result =  dbClient->queryRow(query);
+        if result is sql:NoRowsError {
+            log:printDebug(result.toString());
+            NotFoundError nfe = {body:{code: 90915, message: "API Definition Not Found for provided API ID"}};
+            return nfe;
+        } else if result is APIDefinition {
+            log:printDebug(result.toString());
+            return result;
+        } else {
+            log:printError(result.toString());
+            return error("Internal Error while retrieving API Definition");
+        }
     }
 }

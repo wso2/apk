@@ -56,13 +56,18 @@ service /api/am/devportal on ep0 {
             return internalError;
         }
     }
-    // resource function get apis/[string apiId]/swagger(string? environmentName, @http:Header string? 'if\-none\-match, @http:Header string? 'x\-wso2\-tenant) returns string|http:NotModified|NotFoundError|NotAcceptableError {
-    // }
-    // resource function get apis/[string apiId]/'graphql\-schema(@http:Header string? 'if\-none\-match, @http:Header string? 'x\-wso2\-tenant) returns string|http:NotModified|NotFoundError|NotAcceptableError {
-    // }
+    isolated resource function get apis/[string apiId]/definition(@http:Header string? 'if\-none\-match) returns APIDefinition|http:NotModified|NotFoundError|NotAcceptableError|InternalServerErrorError|error {
+        string organization = "carbon.super";
+        APIDefinition|NotFoundError|error apiDefinition = check getAPIDefinition(apiId, organization);
+        if apiDefinition is APIDefinition|NotFoundError {
+            log:printDebug(apiDefinition.toString());
+            return apiDefinition;
+        } else {
+            InternalServerErrorError internalError = {body: {code: 90914, message: "Internal Error while retrieving API Definition By API Id"}};
+            return internalError;
+        }
+    }
     // resource function get apis/[string apiId]/sdks/[string language](@http:Header string? 'x\-wso2\-tenant) returns json|BadRequestError|NotFoundError|InternalServerErrorError {
-    // }
-    // resource function get apis/[string apiId]/wsdl(string? environmentName, @http:Header string? 'if\-none\-match, @http:Header string? 'x\-wso2\-tenant) returns http:Ok|http:NotModified|NotFoundError|NotAcceptableError {
     // }
     // resource function get apis/[string apiId]/documents(@http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0) returns DocumentList|http:NotModified|NotFoundError|NotAcceptableError {
     // }
