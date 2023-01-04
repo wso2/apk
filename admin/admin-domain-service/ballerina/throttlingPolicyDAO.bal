@@ -82,7 +82,7 @@ public isolated function getApplicationUsagePlanByIdDAO(string policyId) returns
                 return arp;
             }
         } else {
-            // log:printInfo(result.toString());
+            //log:printInfo(result.toString());
             return error("Error while retrieving Application Usage Plan");
         }
     }
