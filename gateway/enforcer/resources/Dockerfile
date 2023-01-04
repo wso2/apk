@@ -1,5 +1,5 @@
 # --------------------------------------------------------------------
-# Copyright (c) 2020, WSO2 Inc. (http://wso2.com) All Rights Reserved.
+# Copyright (c) 2023, WSO2 Inc. (http://wso2.com) All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +14,13 @@
 # limitations under the License.
 # -----------------------------------------------------------------------
 
-FROM adoptopenjdk/openjdk11:jre-11.0.14.1_1-ubuntu
+FROM --platform=linux/x86_64 adoptopenjdk/openjdk11:jre-11.0.11_9-alpine
 LABEL maintainer="WSO2 Docker Maintainers <wso2.com>"
 
-RUN apt-get update && apt-get upgrade -y
+RUN apk update && apk upgrade --no-cache
+RUN apk add  --no-cache tzdata
+
+LABEL maintainer="WSO2 Docker Maintainers <dev@wso2.org>"
 
 ENV LANG=C.UTF-8
 
@@ -28,7 +31,6 @@ ARG MG_USER_GROUP_ID=10500
 ARG MG_USER_HOME=/home/${MG_USER}
 ARG MG_VERSION=1.0-SNAPSHOT
 ARG GRPC_HEALTH_PROBE_PATH=/bin/grpc_health_probe
-ARG TARGETARCH
 
 ENV VERSION=${MG_VERSION}
 ENV JAVA_OPTS=""
@@ -53,23 +55,22 @@ ARG MOTD="\n\
  Read more about Apache License, Version 2.0 here @ http://www.apache.org/licenses/LICENSE-2.0.\n"
 
 RUN \
-    groupadd --system -g ${MG_USER_GROUP_ID} ${MG_USER_GROUP} \
-    && useradd --system --create-home --home-dir ${MG_USER_HOME} --no-log-init -g ${MG_USER_GROUP_ID} -u ${MG_USER_ID} ${MG_USER} \
+    addgroup -S -g ${MG_USER_GROUP_ID} ${MG_USER_GROUP} \
+    && adduser -S -u ${MG_USER_ID} -h ${MG_USER_HOME} -G ${MG_USER_GROUP} ${MG_USER} \
     && mkdir ${MG_USER_HOME}/logs && mkdir -p ${MG_USER_HOME}/lib/dropins \
     && chown -R ${MG_USER}:${MG_USER_GROUP} ${MG_USER_HOME} \
     && echo '[ ! -z "${TERM}" -a -r /etc/motd ] && cat /etc/motd' >> /etc/bash.bashrc; echo "${MOTD}" > /etc/motd
 
-COPY maven/grpc_health_probe-linux-${TARGETARCH} ${GRPC_HEALTH_PROBE_PATH}
-RUN chmod +x ${GRPC_HEALTH_PROBE_PATH}
+#COPY maven/grpc_health_probe-linux-amd64 ${GRPC_HEALTH_PROBE_PATH}
+#RUN chmod +x ${GRPC_HEALTH_PROBE_PATH}
 
 WORKDIR ${MG_USER_HOME}
 USER ${MG_USER}
 
-COPY maven/lib lib/
-COPY maven/conf/log4j2.properties conf/log4j2.properties
-COPY maven/security security
-COPY maven/check_health.sh .
-COPY maven/LICENSE.txt .
+COPY lib/ lib/
+COPY conf/log4j2.properties conf/log4j2.properties
+COPY security security
+COPY check_health.sh .
 
 #todo add applicationinsights.json file and point it to the appInsightsAgent jar
 #Add the agent using JVM arg -javaagent:/home/wso2/conf/applicationinsights-agent-3.1.1.jar

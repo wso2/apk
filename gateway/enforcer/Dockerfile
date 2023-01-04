@@ -1,1 +1,0 @@
-FROM wso2/choreo-connect-enforcer:1.1.0-ubuntu
