@@ -16,7 +16,7 @@
 // under the License.
 //
 
-import ballerina/log;
+// import ballerina/log;
 import ballerina/uuid;
 
 isolated function addApplicationUsagePlan(ApplicationRatePlan body) returns string?|ApplicationRatePlan|error {
@@ -184,7 +184,7 @@ isolated function getAllDenyPolicies() returns string?|BlockingConditionList|err
         BlockingConditionList denyPoliciesList = {count: count, list: denyPolicies};
         return denyPoliciesList;
     } else {
-        log:printError("Error");
+        // log:printError("Error");
         return error("Error while retrieving all deny polcies from DB");
     }
 }
