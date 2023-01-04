@@ -25,12 +25,13 @@ import ballerina/time;
 # + apiBody - API Parameter
 # + organization - organization
 # + return - API | error
-public function db_createAPI(APIBody apiBody, string organization) returns API | error {
+isolated function db_createAPI(APIBody apiBody, string organization) returns API | error {
     postgresql:Client | error db_client  = getConnection();
     if db_client is error {
         return error("Issue while conecting to databse");
     } else {
         postgresql:JsonBinaryValue artifact = new (createArtifact(apiBody.apiProperties.id, apiBody.apiProperties));
+        sql:ParameterizedQuery ADD_API_Suffix = `INSERT INTO api(api_uuid, api_name, api_version,context,api_provider,status,organization,artifact) VALUES (`;
         sql:ParameterizedQuery values = `${apiBody.apiProperties.id},
                                             ${apiBody.apiProperties.name}, 
                                             ${apiBody.apiProperties.'version}, 
@@ -56,11 +57,12 @@ public function db_createAPI(APIBody apiBody, string organization) returns API |
 # + apiBody - API Parameter
 # + organization - organization
 # + return - API | error
-public function db_AddDefinition(APIBody apiBody, string organization) returns API | error {
+isolated function db_AddDefinition(APIBody apiBody, string organization) returns API | error {
     postgresql:Client | error db_client  = getConnection();
     if db_client is error {
         return error("Issue while conecting to databse");
     } else {
+        sql:ParameterizedQuery ADD_API_DEFINITION_Suffix = `INSERT INTO api_artifact(organization, api_uuid, api_definition,media_type) VALUES (`;
         sql:ParameterizedQuery values = `${organization},
                                         ${apiBody.apiProperties.id},
                                         ${apiBody.Definition.toString().toBytes()}, 
@@ -85,11 +87,12 @@ public function db_AddDefinition(APIBody apiBody, string organization) returns A
 # + apiId - API Id parameter
 # + organization - organization
 # + return - API | error
-public function db_updateAPI(string apiId, APIBody api, string organization) returns API | error {
+isolated function db_updateAPI(string apiId, APIBody api, string organization) returns API | error {
     postgresql:Client | error db_client  = getConnection();
     if db_client is error {
         return error("Issue while conecting to databse");
     } else {
+        sql:ParameterizedQuery UPDATE_API_Suffix = `UPDATE api SET`;
         sql:ParameterizedQuery values = ` api_name = ${api.apiProperties.name}
         WHERE api_uuid = ${apiId}`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(UPDATE_API_Suffix, values);
@@ -109,11 +112,12 @@ public function db_updateAPI(string apiId, APIBody api, string organization) ret
 # + api - API Parameter
 # + apiId - API Id parameter
 # + return - API | error
-public function db_updateDefinition(string apiId, APIBody api) returns API | error {
+isolated function db_updateDefinition(string apiId, APIBody api) returns API | error {
     postgresql:Client | error db_client  = getConnection();
     if db_client is error {
         return error("Issue while conecting to databse");
     } else {
+        sql:ParameterizedQuery UPDATE_API_DEFINITION_Suffix = `UPDATE api_artifact SET`;
         sql:ParameterizedQuery values = ` api_definition = ${api.Definition.toString().toBytes()}
         WHERE api_uuid = ${apiId}`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(UPDATE_API_DEFINITION_Suffix, values);
@@ -132,11 +136,12 @@ public function db_updateDefinition(string apiId, APIBody api) returns API | err
 #
 # + apiId - API Id parameter
 # + return - string | error
-public function db_deleteAPI(string apiId) returns string | error? {
+isolated function db_deleteAPI(string apiId) returns string | error? {
     postgresql:Client | error db_client  = getConnection();
     if db_client is error {
         return error("Issue while conecting to databse");
     } else {
+        sql:ParameterizedQuery DELETE_API_Suffix = `DELETE FROM api WHERE api_uuid = `;
         sql:ParameterizedQuery values = `${apiId}`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(DELETE_API_Suffix, values);
         sql:ExecutionResult | sql:Error result =  db_client->execute(sqlQuery);
@@ -153,11 +158,12 @@ public function db_deleteAPI(string apiId) returns string | error? {
 #
 # + apiId - API Id parameter
 # + return - string | error
-public function db_deleteDefinition(string apiId) returns string | error? {
+isolated function db_deleteDefinition(string apiId) returns string | error? {
     postgresql:Client | error db_client  = getConnection();
     if db_client is error {
         return error("Issue while conecting to databse");
     } else {
+        sql:ParameterizedQuery DELETE_API_DEFINITION_Suffix = `DELETE FROM api_artifact WHERE api_uuid = `;
         sql:ParameterizedQuery values = `${apiId}`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(DELETE_API_DEFINITION_Suffix, values);
         sql:ExecutionResult | sql:Error result =  db_client->execute(sqlQuery);
@@ -176,11 +182,12 @@ public function db_deleteDefinition(string apiId) returns string | error? {
 # + api - API Parameter
 # + apiId - API Id parameter
 # + return - API | error
-public function db_updateDefinitionbyId(string apiId, APIDefinition api) returns APIDefinition | error {
+isolated function db_updateDefinitionbyId(string apiId, APIDefinition api) returns APIDefinition | error {
     postgresql:Client | error db_client  = getConnection();
     if db_client is error {
         return error("Issue while conecting to databse");
     } else {
+        sql:ParameterizedQuery UPDATE_API_DEFINITION_Suffix = `UPDATE api_artifact SET`;
         sql:ParameterizedQuery values = ` api_definition = ${api.Definition.toString().toBytes()}
         WHERE api_uuid = ${apiId}`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(UPDATE_API_DEFINITION_Suffix, values);
@@ -200,7 +207,7 @@ public function db_updateDefinitionbyId(string apiId, APIDefinition api) returns
 # + apiId - API id Parameter
 # + organization - organization
 # + return - API | error
-public function db_AddLCEvent(string? apiId, string organization) returns string | error {
+isolated function db_AddLCEvent(string? apiId, string organization) returns string | error {
     postgresql:Client | error db_client  = getConnection();
     time:Utc utc = time:utcNow();
     if db_client is error {
@@ -213,6 +220,7 @@ public function db_AddLCEvent(string? apiId, string organization) returns string
                                         ${organization},
                                         ${utc}
                                     )`;
+        sql:ParameterizedQuery ADD_LC_EVENT_Prefix = `INSERT INTO api_lc_event (api_id,previous_state,new_state,user_id,organization,event_date) VALUES (`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(ADD_LC_EVENT_Prefix, values);
 
         sql:ExecutionResult | sql:Error result = db_client->execute(sqlQuery);
