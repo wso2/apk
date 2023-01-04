@@ -16,7 +16,7 @@
 // under the License.
 //
 
-// import ballerina/log;
+import ballerina/log;
 import ballerinax/postgresql;
 import ballerina/sql;
 
@@ -35,7 +35,7 @@ public isolated function addApplicationUsagePlanDAO(ApplicationRatePlan atp) ret
         if result is sql:ExecutionResult {
             return atp;
         } else {
-            // log:printDebug(result.toString());
+            log:printDebug(result.toString());
             return error("Error while inserting data into Database");  
         }
     }
@@ -53,7 +53,7 @@ public isolated function getApplicationUsagePlanByIdDAO(string policyId) returns
         UNITTIME, QUOTA_UNIT as DATAUNIT FROM APPLICATION_USAGE_PLAN WHERE UUID =${policyId} AND ORGANIZATION =${org}`;
         ApplicationRatePlanDAO | sql:Error result =  dbClient->queryRow(query);
         if result is sql:NoRowsError {
-            // log:printDebug(result.toString());
+            log:printDebug(result.toString());
             return error("Not Found");
         } else if result is ApplicationRatePlanDAO {
             if result.defaulLimitType == "requestCount" {
@@ -62,7 +62,7 @@ public isolated function getApplicationUsagePlanByIdDAO(string policyId) returns
                 defaultLimit: {'type: result.defaulLimitType, requestCount: 
                 {requestCount: result.quota, timeUnit: result.timeUnit, unitTime: result.unitTime}
                 }};
-                // log:printDebug(arp.toString());
+                log:printDebug(arp.toString());
                 return arp;
             } else if result.defaulLimitType == "bandwidth" {
                 ApplicationRatePlan arp = {planName: result.planName, displayName: result.displayName, 
@@ -70,7 +70,7 @@ public isolated function getApplicationUsagePlanByIdDAO(string policyId) returns
                 defaultLimit: {'type: result.defaulLimitType, bandwidth: 
                 {dataAmount: result.quota, dataUnit: <string>result.dataUnit, timeUnit: result.timeUnit, unitTime: result.unitTime}
                 }};
-                // log:printDebug(arp.toString());
+                log:printDebug(arp.toString());
                 return arp;
             } else {
                 ApplicationRatePlan arp = {planName: result.planName, displayName: result.displayName, 
@@ -78,11 +78,11 @@ public isolated function getApplicationUsagePlanByIdDAO(string policyId) returns
                 defaultLimit: {'type: result.defaulLimitType, eventCount: 
                 {eventCount:result.quota, timeUnit: result.timeUnit, unitTime: result.unitTime}
                 }};
-                // log:printDebug(arp.toString());
+                log:printDebug(arp.toString());
                 return arp;
             }
         } else {
-            // log:printInfo(result.toString());
+            log:printInfo(result.toString());
             return error("Error while retrieving Application Usage Plan");
         }
     }
@@ -145,7 +145,7 @@ public isolated function updateApplicationUsagePlanDAO(ApplicationRatePlan atp) 
         if result is sql:ExecutionResult {
             return atp;
         } else {
-            // log:printDebug(result.toString());
+            log:printDebug(result.toString());
             return error("Error while updating data record in the Database");  
         }
     }
@@ -162,7 +162,7 @@ public isolated function deleteApplicationUsagePlanDAO(string policyId) returns 
         if result is sql:ExecutionResult {
             return "deleted";
         } else {
-            // log:printDebug(result.toString());
+            log:printDebug(result.toString());
             return error("Error while deleting data record in the Database");  
         }
     }
@@ -183,10 +183,10 @@ public isolated function addBusinessPlanDAO(BusinessPlan stp) returns string?|Bu
         0,'FREE',0)`;
         sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
         if result is sql:ExecutionResult {
-            // log:printDebug(result.toString());
+            log:printDebug(result.toString());
             return stp;
         } else {
-            // log:printInfo(result.toString());
+            log:printInfo(result.toString());
             return error("Error while inserting data into Database");  
         }
     }
@@ -204,7 +204,7 @@ public isolated function getBusinessPlanByIdDAO(string policyId) returns string?
         UNITTIME, RATE_LIMIT_COUNT as RATELIMITCOUNT, RATE_LIMIT_TIME_UNIT as RATELIMITTIMEUNIT FROM BUSINESS_PLAN WHERE UUID =${policyId} AND ORGANIZATION =${org}`;
         BusinessPlanDAO | sql:Error result =  dbClient->queryRow(query);
         if result is sql:NoRowsError {
-            // log:printDebug(result.toString());
+            log:printDebug(result.toString());
             return error("Not Found");
         } else if result is BusinessPlanDAO {
             if result.defaulLimitType == "requestCount" {
@@ -214,7 +214,7 @@ public isolated function getBusinessPlanByIdDAO(string policyId) returns string?
                 defaultLimit: {'type: result.defaulLimitType, requestCount: 
                 {requestCount: result.quota, timeUnit: result.timeUnit, unitTime: result.unitTime}
                 }};
-                // log:printDebug(bp.toString());
+                log:printDebug(bp.toString());
                 return bp;
             } else if result.defaulLimitType == "bandwidth" {
                 BusinessPlan bp = {planName: result.planName, displayName: result.displayName, 
@@ -223,7 +223,7 @@ public isolated function getBusinessPlanByIdDAO(string policyId) returns string?
                 defaultLimit: {'type: result.defaulLimitType, bandwidth: 
                 {dataAmount: result.quota, dataUnit: <string>result.dataUnit, timeUnit: result.timeUnit, unitTime: result.unitTime}
                 }};
-                // log:printDebug(bp.toString());
+                log:printDebug(bp.toString());
                 return bp;
             } else {
                 BusinessPlan bp = {planName: result.planName, displayName: result.displayName, 
@@ -232,11 +232,11 @@ public isolated function getBusinessPlanByIdDAO(string policyId) returns string?
                 defaultLimit: {'type: result.defaulLimitType, eventCount: 
                 {eventCount:result.quota, timeUnit: result.timeUnit, unitTime: result.unitTime}
                 }};
-                // log:printDebug(bp.toString());
+                log:printDebug(bp.toString());
                 return bp;
             }
         } else {
-            // log:printDebug(result.toString());
+            log:printDebug(result.toString());
             return error("Error while retrieving Business Plan");
         }
     }
@@ -303,7 +303,7 @@ public isolated function updateBusinessPlanDAO(BusinessPlan stp) returns string?
         if result is sql:ExecutionResult {
             return stp;
         } else {
-            // log:printDebug(result.toString());
+            log:printDebug(result.toString());
             return error("Error while updating data record in the Database");  
         }
     }
@@ -320,7 +320,7 @@ public isolated function deleteBusinessPlanDAO(string policyId) returns string?|
         if result is sql:ExecutionResult {
             return ();
         } else {
-            // log:printDebug(result.toString());
+            log:printDebug(result.toString());
             return error("Error while deleting data record in the Database");  
         }
     }
@@ -338,7 +338,7 @@ public isolated function addDenyPolicyDAO(BlockingCondition bc) returns string?|
         if result is sql:ExecutionResult {
             return bc;
         } else {
-            // log:printDebug(result.toString());
+            log:printDebug(result.toString());
             return error("Error while inserting data into Database");  
         }
     }
@@ -353,13 +353,13 @@ public isolated function getDenyPolicyByIdDAO(string policyId) returns string?|B
         sql:ParameterizedQuery query = `SELECT UUID as POLICYID, TYPE as CONDITIONTYPE, BLOCK_CONDITION as CONDITIONVALUE, ENABLED::BOOLEAN as CONDITIONSTATUS FROM BLOCK_CONDITION WHERE UUID =${policyId} AND ORGANIZATION =${org}`;
         BlockingCondition | sql:Error result =  dbClient->queryRow(query);
         if result is sql:NoRowsError {
-            // log:printDebug(result.toString());
+            log:printDebug(result.toString());
             return error("Not Found");
         } else if result is BlockingCondition {
-            // log:printDebug(result.toString());
+            log:printDebug(result.toString());
             return result;
         } else {
-            // log:printDebug(result.toString());
+            log:printDebug(result.toString());
             return error("Error while retrieving Deny Policy from DB");
         }
     }
@@ -388,7 +388,7 @@ public isolated function updateDenyPolicyDAO(BlockingConditionStatus status) ret
         if result is sql:ExecutionResult {
             return status.policyId;
         } else {
-            // log:printDebug(result.toString());
+            log:printDebug(result.toString());
             return error("Error while inserting data into Database");  
         }
     }
@@ -405,7 +405,7 @@ public isolated function deleteDenyPolicyDAO(string policyId) returns string?|er
         if result is sql:ExecutionResult {
             return ();
         } else {
-            // log:printDebug(result.toString());
+            log:printDebug(result.toString());
             return error("Error while deleting data record in the Database");  
         }
     }
