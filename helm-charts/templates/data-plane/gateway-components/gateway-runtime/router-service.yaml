@@ -15,32 +15,24 @@
 # under the License.
 
 {{- if .Values.wso2.apk.dp.enabled }}
-apiVersion: admissionregistration.k8s.io/v1
-kind: MutatingWebhookConfiguration
+apiVersion: v1
+kind: Service
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-mutating-webhook-configuration
+  name: {{ template "apk-helm.resource.prefix" . }}-router-service
   namespace : {{ .Release.Namespace }}
-  annotations:
-    cert-manager.io/inject-ca-from: {{ .Release.Namespace }}/{{ template "apk-helm.resource.prefix" . }}-webhook-server-cert
-webhooks:
-- admissionReviewVersions:
-  - v1
-  clientConfig:
-    service:
-      name: {{ template "apk-helm.resource.prefix" . }}-cc-adapter-service
-      namespace: {{ .Release.Namespace }}
-      path: /mutate-dp-wso2-com-v1alpha1-api
-  failurePolicy: Fail
-  name: mapi.kb.io
-  rules:
-  - apiGroups:
-    - dp.wso2.com
-    apiVersions:
-    - v1alpha1
-    operations:
-    - CREATE
-    - UPDATE
-    resources:
-    - apis
-  sideEffects: None
+spec:
+  type: LoadBalancer
+  # label keys and values that must match in order to receive traffic for this service
+  selector:
+{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.wso2.apk.dp.gatewayRuntime.appName ) | indent 4}}
+  ports:
+    - name: endpoint1
+      protocol: TCP
+      port: 9095
+    - name: endpoint2
+      protocol: TCP
+      port: 9090
+    - name: endpoint3
+      protocol: TCP
+      port: 9000
 {{- end -}}

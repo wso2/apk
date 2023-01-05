@@ -18,52 +18,52 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-cc-adapter-deployment
+  name: {{ template "apk-helm.resource.prefix" . }}-adapter-deployment
   namespace: {{ .Release.Namespace }}
 spec:
-  replicas: {{ .Values.wso2.apk.dp.cc.adapter.deployment.replicas }}
+  replicas: {{ .Values.wso2.apk.dp.adapter.deployment.replicas }}
   strategy:
-    type: {{ .Values.wso2.apk.dp.cc.adapter.deployment.strategy }}
+    type: {{ .Values.wso2.apk.dp.adapter.deployment.strategy }}
   selector:
     matchLabels:
-{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.wso2.apk.dp.cc.adapter.appName ) | indent 6}}
+{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.wso2.apk.dp.adapter.appName ) | indent 6}}
   template:
     metadata:
       labels:
-        networkPolicyId: {{ .Values.wso2.apk.dp.cc.adapter.deployment.npi }}
-{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.wso2.apk.dp.cc.adapter.appName ) | indent 8}}
+        networkPolicyId: {{ .Values.wso2.apk.dp.adapter.deployment.npi }}
+{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.wso2.apk.dp.adapter.appName ) | indent 8}}
     spec:
       serviceAccountName: {{ .Values.wso2.apk.auth.serviceAccountName }}
       containers:
-        - name: cc-adapter
-          image: {{ .Values.wso2.apk.dp.cc.adapter.deployment.image }}
-          imagePullPolicy: {{ .Values.wso2.apk.dp.cc.adapter.deployment.imagePullPolicy }}
+        - name: adapter
+          image: {{ .Values.wso2.apk.dp.adapter.deployment.image }}
+          imagePullPolicy: {{ .Values.wso2.apk.dp.adapter.deployment.imagePullPolicy }}
           ports:
             - containerPort: 18000
               protocol: "TCP"
             - containerPort: 8765
               protocol: "TCP"
-{{ include "apk-helm.deployment.resources" .Values.wso2.apk.dp.cc.adapter.deployment.resources | indent 10 }}
-{{ include "apk-helm.deployment.env" .Values.wso2.apk.dp.cc.adapter.deployment.env | indent 10 }}
+{{ include "apk-helm.deployment.resources" .Values.wso2.apk.dp.adapter.deployment.resources | indent 10 }}
+{{ include "apk-helm.deployment.env" .Values.wso2.apk.dp.adapter.deployment.env | indent 10 }}
           env:
             - name: OPERATOR_POD_NAMESPACE
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
           volumeMounts:
-            - name: cc-adapter-keystore-secret-volume
+            - name: adapter-keystore-secret-volume
               mountPath: /home/wso2/security/keystore
-            - name: cc-adapter-truststore-secret-volume
+            - name: adapter-truststore-secret-volume
               mountPath: /home/wso2/security/truststore
-            - name: cc-adapter-truststore-consul-secret-volume
+            - name: adapter-truststore-consul-secret-volume
               mountPath: /home/wso2/security/truststore/consul
-            - name: cc-log-conf-volume
+            - name: log-conf-volume
               mountPath: /home/wso2/conf/
             - mountPath: /home/wso2/check_health.sh
-              name: cc-adapter-grpc-probe-script-conf-volume
+              name: adapter-grpc-probe-script-conf-volume
               subPath: "check_health.sh"
             - mountPath: /tmp/k8s-webhook-server/serving-certs
-              name: cc-adapter-webhook-server-cert
+              name: adapter-webhook-server-cert
               readOnly: true
           # readinessProbe:
           #   exec:
@@ -71,23 +71,23 @@ spec:
           #   initialDelaySeconds: 8
           #   periodSeconds: 5
       volumes: 
-        - name: cc-adapter-keystore-secret-volume
+        - name: adapter-keystore-secret-volume
           secret: 
-            secretName: {{ template "apk-helm.resource.prefix" . }}-cc-adapter-keystore-secret
-        - name: cc-adapter-truststore-secret-volume
+            secretName: {{ template "apk-helm.resource.prefix" . }}-adapter-keystore-secret
+        - name: adapter-truststore-secret-volume
           secret: 
-            secretName: {{ template "apk-helm.resource.prefix" . }}-cc-adapter-truststore-secret
-        - name: cc-adapter-truststore-consul-secret-volume
+            secretName: {{ template "apk-helm.resource.prefix" . }}-adapter-truststore-secret
+        - name: adapter-truststore-consul-secret-volume
           secret: 
-            secretName: {{ template "apk-helm.resource.prefix" . }}-cc-adapter-truststore-consul-secret
-        - name: cc-log-conf-volume
+            secretName: {{ template "apk-helm.resource.prefix" . }}-adapter-truststore-consul-secret
+        - name: log-conf-volume
           configMap: 
-            name: {{ template "apk-helm.resource.prefix" . }}-cc-log-conf
-        - name: cc-adapter-grpc-probe-script-conf-volume
+            name: {{ template "apk-helm.resource.prefix" . }}-log-conf
+        - name: adapter-grpc-probe-script-conf-volume
           configMap: 
-            name: {{ template "apk-helm.resource.prefix" . }}-cc-adapter-grpc-probe-script-conf
+            name: {{ template "apk-helm.resource.prefix" . }}-adapter-grpc-probe-script-conf
             defaultMode: 0777
-        - name: cc-adapter-webhook-server-cert
+        - name: adapter-webhook-server-cert
           secret:
             secretName: {{ template "apk-helm.resource.prefix" . }}-webhook-server-cert
             defaultMode: 420

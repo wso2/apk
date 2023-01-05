@@ -271,11 +271,46 @@ wso2:
             nginx.ingress.kubernetes.io/affinity: "cookie"
             nginx.ingress.kubernetes.io/session-cookie-name: "route"
             nginx.ingress.kubernetes.io/session-cookie-hash: "sha1"
-      cc:
-        adapter:
-          appName: "cc-adapter"
-          deployment:
-            npi: cc-adapter-npi
+      adapter:
+        appName: "adapter"
+        deployment:
+          npi: adapter-npi
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "1028Mi"
+              cpu: "1000m"
+          env:
+            ADAPTER_PRIVATE_KEY_PATH: /home/wso2/security/keystore/mg.key
+            ADAPTER_PUBLIC_CERT_PATH: /home/wso2/security/keystore/mg.pem
+            cp_admin_pwd: admin
+            adapter_admin_pwd: admin
+          readinessProbe:
+            path: /api/am/devportal/v2/apis?limit=2&offset=2
+            port: 9443
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 5
+          livenessProbe:
+            path: /api/am/devportal/v2/apis?limit=2&offset=2
+            port: 9443
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 5
+          strategy: Recreate
+          replicas: 1
+          imagePullPolicy: IfNotPresent
+          image: wso2/adapter:0.0.1-m1
+          security:
+            sslHostname: "adapter"
+      gatewayRuntime:
+        appName: "router"
+        deployment:
+          replicas: 1
+          router:
+            npi: router-npi
             resources:
               requests:
                 memory: "128Mi"
@@ -284,10 +319,18 @@ wso2:
                 memory: "1028Mi"
                 cpu: "1000m"
             env:
-              ADAPTER_PRIVATE_KEY_PATH: /home/wso2/security/keystore/mg.key
-              ADAPTER_PUBLIC_CERT_PATH: /home/wso2/security/keystore/mg.pem
-              cp_admin_pwd: admin
-              adapter_admin_pwd: admin
+              ROUTER_ADMIN_HOST: 0.0.0.0
+              ROUTER_ADMIN_PORT: "9000"
+              ROUTER_CLUSTER: default_cluster
+              ROUTER_LABEL: Default
+              ROUTER_PRIVATE_KEY_PATH: /home/wso2/security/keystore/mg.key
+              ROUTER_PUBLIC_CERT_PATH: /home/wso2/security/keystore/mg.pem
+              ADAPTER_PORT: "18000"
+              ADAPTER_CA_CERT_PATH: /home/wso2/security/truststore/mg.pem
+              ENFORCER_PORT: "8081"
+              ENFORCER_ANALYTICS_RECEIVER_PORT: "18090"
+              ENFORCER_CA_CERT_PATH: /home/wso2/security/truststore/mg.pem
+              CONCURRENCY: 2
             readinessProbe:
               path: /api/am/devportal/v2/apis?limit=2&offset=2
               port: 9443
@@ -301,93 +344,49 @@ wso2:
               periodSeconds: 20
               failureThreshold: 5
             strategy: Recreate
-            replicas: 1
             imagePullPolicy: IfNotPresent
-            image: wso2/adapter:0.0.1-m1
+            image: wso2/router:0.0.1-m1
+          enforcer:
+            npi: enforcer-npi
+            resources:
+              requests:
+                memory: "128Mi"
+                cpu: "100m"
+              limits:
+                memory: "1028Mi"
+                cpu: "1000m"
+            env:
+              ENFORCER_PRIVATE_KEY_PATH: /home/wso2/security/keystore/mg.key
+              ENFORCER_PUBLIC_CERT_PATH: /home/wso2/security/keystore/mg.pem
+              TRUSTED_CA_CERTS_PATH: /home/wso2/security/truststore
+              ADAPTER_XDS_PORT: "18000"
+              ENFORCER_LABEL: Default
+              ENFORCER_REGION: UNKNOWN
+              XDS_MAX_MSG_SIZE: "4194304"
+              XDS_MAX_RETRIES: "3"
+              apim_admin_pwd: admin
+              enforcer_admin_pwd: admin
+              tm_admin_pwd: admin
+              analytics_authURL: https://localhost:8080
+              analytics_authToken:
+              JAVA_OPTS: -Dhttpclient.hostnameVerifier=AllowAll -Xms512m -Xmx512m -XX:MaxRAMFraction=2
+            readinessProbe:
+              path: /api/am/devportal/v2/apis?limit=2&offset=2
+              port: 9443
+              initialDelaySeconds: 20
+              periodSeconds: 20
+              failureThreshold: 5
+            livenessProbe:
+              path: /api/am/devportal/v2/apis?limit=2&offset=2
+              port: 9443
+              initialDelaySeconds: 20
+              periodSeconds: 20
+              failureThreshold: 5
+            strategy: Recreate
+            imagePullPolicy: IfNotPresent
+            image: wso2/enforcer:0.0.1-m1
             security:
-              sslHostname: "adapter"
-        gatewayRuntime:
-          appName: "cc-router"
-          deployment:
-            replicas: 1
-            router:
-              npi: cc-router-npi
-              resources:
-                requests:
-                  memory: "128Mi"
-                  cpu: "100m"
-                limits:
-                  memory: "1028Mi"
-                  cpu: "1000m"
-              env:
-                ROUTER_ADMIN_HOST: 0.0.0.0
-                ROUTER_ADMIN_PORT: "9000"
-                ROUTER_CLUSTER: default_cluster
-                ROUTER_LABEL: Default
-                ROUTER_PRIVATE_KEY_PATH: /home/wso2/security/keystore/mg.key
-                ROUTER_PUBLIC_CERT_PATH: /home/wso2/security/keystore/mg.pem
-                ADAPTER_PORT: "18000"
-                ADAPTER_CA_CERT_PATH: /home/wso2/security/truststore/mg.pem
-                ENFORCER_PORT: "8081"
-                ENFORCER_ANALYTICS_RECEIVER_PORT: "18090"
-                ENFORCER_CA_CERT_PATH: /home/wso2/security/truststore/mg.pem
-                CONCURRENCY: 2
-              readinessProbe:
-                path: /api/am/devportal/v2/apis?limit=2&offset=2
-                port: 9443
-                initialDelaySeconds: 20
-                periodSeconds: 20
-                failureThreshold: 5
-              livenessProbe:
-                path: /api/am/devportal/v2/apis?limit=2&offset=2
-                port: 9443
-                initialDelaySeconds: 20
-                periodSeconds: 20
-                failureThreshold: 5
-              strategy: Recreate
-              imagePullPolicy: IfNotPresent
-              image: wso2/router:0.0.1-m1
-            enforcer:
-              npi: cc-enforcer-npi
-              resources:
-                requests:
-                  memory: "128Mi"
-                  cpu: "100m"
-                limits:
-                  memory: "1028Mi"
-                  cpu: "1000m"
-              env:
-                ENFORCER_PRIVATE_KEY_PATH: /home/wso2/security/keystore/mg.key
-                ENFORCER_PUBLIC_CERT_PATH: /home/wso2/security/keystore/mg.pem
-                TRUSTED_CA_CERTS_PATH: /home/wso2/security/truststore
-                ADAPTER_XDS_PORT: "18000"
-                ENFORCER_LABEL: Default
-                ENFORCER_REGION: UNKNOWN
-                XDS_MAX_MSG_SIZE: "4194304"
-                XDS_MAX_RETRIES: "3"
-                apim_admin_pwd: admin
-                enforcer_admin_pwd: admin
-                tm_admin_pwd: admin
-                analytics_authURL: https://localhost:8080
-                analytics_authToken:
-                JAVA_OPTS: -Dhttpclient.hostnameVerifier=AllowAll -Xms512m -Xmx512m -XX:MaxRAMFraction=2
-              readinessProbe:
-                path: /api/am/devportal/v2/apis?limit=2&offset=2
-                port: 9443
-                initialDelaySeconds: 20
-                periodSeconds: 20
-                failureThreshold: 5
-              livenessProbe:
-                path: /api/am/devportal/v2/apis?limit=2&offset=2
-                port: 9443
-                initialDelaySeconds: 20
-                periodSeconds: 20
-                failureThreshold: 5
-              strategy: Recreate
-              imagePullPolicy: IfNotPresent
-              image: wso2/enforcer:0.0.1-m1
-              security:
-                sslHostname: "enforcer"
+              sslHostname: "enforcer"
 
 postgresql:
   fullnameOverride: "wso2apk-db-service"

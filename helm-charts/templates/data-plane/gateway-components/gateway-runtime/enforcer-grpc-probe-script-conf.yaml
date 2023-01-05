@@ -17,7 +17,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-cc-enforcer-grpc-probe-script-conf
+  name: {{ template "apk-helm.resource.prefix" . }}-enforcer-grpc-probe-script-conf
   namespace: {{ .Release.Namespace }}
 data:
   check_health.sh: |
@@ -44,5 +44,5 @@ data:
         -tls-ca-cert "${ENFORCER_PUBLIC_CERT_PATH}" \
         -tls-client-cert "${ENFORCER_PUBLIC_CERT_PATH}" \
         -tls-client-key "${ENFORCER_PRIVATE_KEY_PATH}" \
-        -tls-server-name {{ .Values.wso2.apk.dp.cc.gatewayRuntime.deployment.enforcer.security.sslHostname }} \
+        -tls-server-name {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.security.sslHostname }} \
         -connect-timeout=3s
