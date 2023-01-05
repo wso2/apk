@@ -87,11 +87,11 @@ Devportal DS: [wso2/devportal-domain-service:0.0.1-m1](https://hub.docker.com/r/
 ### Before you begin...
 
 * Install [Helm](https://helm.sh/docs/intro/install/)
-  and [Kubernetes client](https://kubernetes.io/docs/tasks/tools/install-kubectl/) <br><br>
+  and [Kubernetes client](https://kubernetes.io/docs/tasks/tools/install-kubectl/) <br>
 
-* An already setup [Kubernetes cluster](https://kubernetes.io/docs/setup). If you want to run it on the local you can use Minikube or Kind or a similar software.<br><br>
+* An already setup [Kubernetes cluster](https://kubernetes.io/docs/setup). If you want to run it on the local you can use Minikube or Kind or a similar software.<br>
 
-* Install [NGINX Ingress Controller](https://kubernetes.github.io/ingress-nginx/deploy/). If you are using Minikube you can install ingress by running ```minikube addons enable ingress```<br><br>
+* Install [NGINX Ingress Controller](https://kubernetes.github.io/ingress-nginx/deploy/). If you are using Minikube you can install ingress by running ```minikube addons enable ingress```<br>
 
 ### Steps to deploy APK DS servers and CloudNativePG
 
