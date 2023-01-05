@@ -52,7 +52,7 @@ jobs:
           sh build-apk.sh
       - name: Get line number table
         shell: sh
-        run: "unzip admin/admin-domain-service/ballerinatarget/cache/wso2/admin_service/0.0.1-SNAPSHOT/java11/
+        run: "unzip admin/admin-domain-service/ballerina/target/cache/wso2/admin_service/0.0.1-SNAPSHOT/java11/
         wso2-admin_service-0.0.1-SNAPSHOT.jar -d /tmp; 
         javap -l /tmp/wso2/admin_service/0/throttlingPolicyDAO.class >> /tmp/lines.txt; cat /tmp/lines.txt"
       - name: Upload coverage to Codecov
