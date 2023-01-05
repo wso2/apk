@@ -47,9 +47,9 @@ public function initializeK8sClient() returns http:Client|error {
 # + name - Name of ConfigMap  
 # + namespace - Namespace of Configmap
 # + return - Return configmap value for name and namespace
-isolated function getConfigMapValueFromNameAndNamespace(string name, string namespace) returns json|error {
+isolated function getConfigMapValueFromNameAndNamespace(string name, string namespace) returns http:Response|error {
     string endpoint = "/api/v1/namespaces/" + namespace + "/configmaps/" + name;
-    return k8sApiServerEp->get(endpoint, targetType = json);
+    return k8sApiServerEp->get(endpoint, targetType = http:Response);
 }
 
 isolated function deleteAPICR(string name, string namespace) returns http:Response|http:ClientError {
@@ -81,6 +81,11 @@ isolated function deployServiceMappingCR(model:K8sServiceMapping serviceMapping,
 isolated function deployConfigMap(model:ConfigMap configMap, string namespace) returns http:Response|http:ClientError {
     string endpoint = "/api/v1/namespaces/" + namespace + "/configmaps";
     return k8sApiServerEp->post(endpoint, configMap, targetType = http:Response);
+}
+
+isolated function deployService(model:Service 'service, string namespace) returns http:Response|http:ClientError {
+    string endpoint = "/api/v1/namespaces/" + namespace + "/services";
+    return k8sApiServerEp->post(endpoint, 'service, targetType = http:Response);
 }
 
 isolated function deployHttpRoute(model:Httproute httproute, string namespace) returns http:Response|http:ClientError {

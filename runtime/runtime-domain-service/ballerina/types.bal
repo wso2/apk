@@ -129,6 +129,19 @@ public type Gateway record {
 public type APIOperations record {
     string target?;
     string verb?;
+    # Endpoint configuration of the API. This can be used to provide different types of endpoints including Simple REST Endpoints, Loadbalanced and Failover.
+    # 
+    # `Simple REST Endpoint`
+    #   {
+    #     "endpoint_type": "http",
+    #     "sandbox_endpoints":       {
+    #        "url": "https://pizzashack-service:8080/am/sample/pizzashack/v3/api/"
+    #     },
+    #     "production_endpoints":       {
+    #        "url": "https://pizzashack-service:8080/am/sample/pizzashack/v3/api/"
+    #     }
+    #   }
+    record {} endpointConfig?;
     string[] scopes?;
     APIOperationPolicies operationPolicies?;
 };

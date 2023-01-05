@@ -31,8 +31,13 @@ http:Service runtimeService = service object {
         return apiService.getAPIList(query, 'limit, offset, sortBy, sortOrder);
     }
     isolated resource function post apis(@http:Payload API payload) returns CreatedAPI|BadRequestError|InternalServerErrorError {
-        BadRequestError notImplementedError = {body: {code: 900910, message: "Not implemented"}};
-        return notImplementedError;
+        APIClient apiService = new();
+        APKError|CreatedAPI|BadRequestError createdAPI = apiService.createAPI(payload);
+        if createdAPI is APKError {
+           return  handleAPKError(createdAPI);
+        } else{
+            return createdAPI;
+        } 
     }
     isolated resource function get apis/[string apiId]() returns API|NotFoundError|InternalServerErrorError {
         APIClient apiService = new ();
@@ -42,16 +47,15 @@ http:Service runtimeService = service object {
         BadRequestError badRequest = {body: {code: 900910, message: "Not implemented"}};
         return badRequest;
     }
-    isolated resource function delete apis/[string apiId]() returns http:Ok|ForbiddenError|NotFoundError|InternalServerErrorError {
+    isolated resource function delete apis/[string apiId]() returns http:Ok|ForbiddenError|NotFoundError|InternalServerErrorError|BadRequestError {
         APIClient apiService = new ();
-        http:Ok|ForbiddenError|NotFoundError|InternalServerErrorError|error apiDeletionResponse = apiService.deleteAPIById(apiId);
+        http:Ok|ForbiddenError|NotFoundError|InternalServerErrorError|APKError apiDeletionResponse = apiService.deleteAPIById(apiId);
         if apiDeletionResponse is http:Ok|ForbiddenError|NotFoundError|InternalServerErrorError {
             return apiDeletionResponse;
         } else {
             log:printError("Internal Error occured deleting API", apiDeletionResponse);
-            InternalServerErrorError internalEror = {body: {code: 90900, message: "Internal Error occured deleting API"}};
-            return internalEror;
-        }
+            return handleAPKError(apiDeletionResponse);
+       }
     }
     isolated resource function post apis/[string apiId]/'generate\-key() returns APIKey|BadRequestError|NotFoundError|ForbiddenError|InternalServerErrorError {
         APIClient apiService = new ();
@@ -59,7 +63,7 @@ http:Service runtimeService = service object {
     }
     isolated resource function post apis/'import\-service(string serviceKey, @http:Payload API payload) returns CreatedAPI|BadRequestError|InternalServerErrorError {
         APIClient apiService = new ();
-        CreatedAPI|BadRequestError|InternalServerErrorError|error aPIFromService = apiService.createAPIFromService(serviceKey, payload);
+        CreatedAPI|BadRequestError|InternalServerErrorError|APKError aPIFromService = apiService.createAPIFromService(serviceKey, payload);
         if aPIFromService is CreatedAPI|BadRequestError|InternalServerErrorError {
             return aPIFromService;
         } else {
@@ -90,7 +94,7 @@ http:Service runtimeService = service object {
         BadRequestError badRequest = {body: {code: 900910, message: "Not implemented"}};
         return badRequest;
     }
-    isolated resource function get apis/[string apiId]/definition() returns string|NotFoundError|PreconditionFailedError|InternalServerErrorError {
+    isolated resource function get apis/[string apiId]/definition() returns json|NotFoundError|PreconditionFailedError|InternalServerErrorError {
         APIClient apiService = new ();
         return apiService.getAPIDefinitionByID(apiId);
     }
@@ -127,3 +131,13 @@ http:Service runtimeService = service object {
         return internalError;
     }
 };
+public isolated function handleAPKError(APKError errorDetail) returns InternalServerErrorError|BadRequestError{
+                ErrorHandler & readonly detail = errorDetail.detail();
+            if detail.statusCode=="400"{
+                BadRequestError badRequest = {body: {code: detail.code, message: detail.message}};
+                return badRequest;
+            }
+                InternalServerErrorError internalServerError = {body: {code: detail.code, message: detail.message}};
+                return internalServerError;
+
+}

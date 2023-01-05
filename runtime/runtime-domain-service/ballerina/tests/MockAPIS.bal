@@ -106,6 +106,131 @@ public function getMockAPIList() returns json {
                     "definitionFileRef": "01ed7b08-f2b1-1166-82d5-649ae706d29d-definition",
                     "prodHTTPRouteRef": "01ed7b08-f2b1-1166-82d5-649ae706d29d-production"
                 }
+            },
+            {
+                "apiVersion": "dp.wso2.com/v1alpha1",
+                "kind": "API",
+                "metadata": {
+                    "creationTimestamp": "2022-12-13T09:45:47Z",
+                    "generation": 1,
+                    "managedFields": [
+                        {
+                            "apiVersion": "dp.wso2.com/v1alpha1",
+                            "fieldsType": "FieldsV1",
+                            "fieldsV1": {
+                                "f:spec": {
+                                    ".": {},
+                                    "f:apiDisplayName": {},
+                                    "f:apiType": {},
+                                    "f:apiVersion": {},
+                                    "f:context": {},
+                                    "f:definitionFileRef": {},
+                                    "f:prodHTTPRouteRef": {}
+                                }
+                            },
+                            "manager": "ballerina",
+                            "operation": "Update",
+                            "time": "2022-12-13T09:45:47Z"
+                        }
+                    ],
+                    "name": "01ed7aca-eb6b-1178-a200-f604a4ce114a",
+                    "namespace": "apk-platform",
+                    "resourceVersion": "5833",
+                    "selfLink": "/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis/c5ab2423-b9e8-432b-92e8-35e6907ed5f9",
+                    "uid": "c5ab2423-b9e8-432b-92e8-35e6907ed5f9"
+                },
+                "spec": {
+                    "apiDisplayName": "pizzashackAPI11",
+                    "apiType": "HTTP",
+                    "apiVersion": "1.0.0",
+                    "context": "/pizzashack11/1.0.0",
+                    "organization": "carbon.super",
+                    "prodHTTPRouteRef": "01ed7aca-eb6b-1178-a200-f604a4ce114a-production"
+                }
+            },
+            {
+                "apiVersion": "dp.wso2.com/v1alpha1",
+                "kind": "API",
+                "metadata": {
+                    "creationTimestamp": "2022-12-13T09:45:47Z",
+                    "generation": 1,
+                    "managedFields": [
+                        {
+                            "apiVersion": "dp.wso2.com/v1alpha1",
+                            "fieldsType": "FieldsV1",
+                            "fieldsV1": {
+                                "f:spec": {
+                                    ".": {},
+                                    "f:apiDisplayName": {},
+                                    "f:apiType": {},
+                                    "f:apiVersion": {},
+                                    "f:context": {},
+                                    "f:definitionFileRef": {},
+                                    "f:prodHTTPRouteRef": {}
+                                }
+                            },
+                            "manager": "ballerina",
+                            "operation": "Update",
+                            "time": "2022-12-13T09:45:47Z"
+                        }
+                    ],
+                    "name": "01ed7aca-eb6b-1178-a200-f604a4ce114a",
+                    "namespace": "apk-platform",
+                    "resourceVersion": "5833",
+                    "selfLink": "/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis/c5ab2423-b9e8-432b-92e8-35e6907ed5f9",
+                    "uid": "c5ab2423-b9e8-432b-92e8-35e6907ed5f1"
+                },
+                "spec": {
+                    "apiDisplayName": "pizzashackAPI12",
+                    "apiType": "HTTP",
+                    "apiVersion": "1.0.0",
+                    "context": "/pizzashack12/1.0.0",
+                    "organization": "carbon.super",
+                    "prodHTTPRouteRef": "01ed7aca-eb6b-1178-a200-f604a4ce114a-production",
+                    "definitionFileRef": ""
+                }
+            },
+            {
+                "apiVersion": "dp.wso2.com/v1alpha1",
+                "kind": "API",
+                "metadata": {
+                    "creationTimestamp": "2022-12-13T09:45:47Z",
+                    "generation": 1,
+                    "managedFields": [
+                        {
+                            "apiVersion": "dp.wso2.com/v1alpha1",
+                            "fieldsType": "FieldsV1",
+                            "fieldsV1": {
+                                "f:spec": {
+                                    ".": {},
+                                    "f:apiDisplayName": {},
+                                    "f:apiType": {},
+                                    "f:apiVersion": {},
+                                    "f:context": {},
+                                    "f:definitionFileRef": {},
+                                    "f:prodHTTPRouteRef": {}
+                                }
+                            },
+                            "manager": "ballerina",
+                            "operation": "Update",
+                            "time": "2022-12-13T09:45:47Z"
+                        }
+                    ],
+                    "name": "01ed7aca-eb6b-1178-a200-f604a4ce114a",
+                    "namespace": "apk-platform",
+                    "resourceVersion": "5833",
+                    "selfLink": "/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis/c5ab2423-b9e8-432b-92e8-35e6907ed5f9",
+                    "uid": "c5ab2423-b9e8-432b-92e8-35e6907ed5f3"
+                },
+                "spec": {
+                    "apiDisplayName": "pizzashackAPI13",
+                    "apiType": "HTTP",
+                    "apiVersion": "1.0.0",
+                    "context": "/pizzashack13/1.0.0",
+                    "organization": "carbon.super",
+                    "prodHTTPRouteRef": "01ed7aca-eb6b-1178-a200-f604a4ce114a-production",
+                    "definitionFileRef": "01ed7aca-eb6b-1178-a200-f604a4ce114b-definition"
+                }
             }
         ],
         "kind": "APIList",
@@ -211,4 +336,181 @@ public function mock404Response() returns http:Response {
     http:Response response = new;
     response.statusCode = 404;
     return response;
+}
+
+public function mockConfigMaps() returns http:Response {
+    http:Response response = new;
+    json configmap = {
+        "apiVersion": "v1",
+        "data": {
+            "openapi.json": "{\"openapi\":\"3.0.1\", \"info\":{\"title\":\"pizza1234567\", \"version\":\"1.0.0\"}, \"security\":[{\"default\":[]}], \"paths\":{\"/menu\":{\"get\":{\"responses\":{\"200\":{\"description\":\"OK\"}}, \"security\":[{\"default\":[]}], \"x-throttling-tier\":\"Unlimited\"}}, \"/order/{orderId}\":{\"post\":{\"parameters\":[{\"name\":\"orderId\", \"in\":\"path\", \"required\":true, \"schema\":{\"type\":\"string\"}}], \"responses\":{\"200\":{\"description\":\"OK\"}}, \"security\":[{\"default\":[]}], \"x-throttling-tier\":\"Unlimited\"}}}, \"components\":{\"securitySchemes\":{\"default\":{\"type\":\"oauth2\", \"flows\":{\"implicit\":{\"authorizationUrl\":\"https://test.com\", \"scopes\":{}}}}}}}"
+        },
+        "kind": "ConfigMap",
+        "metadata": {
+            "creationTimestamp": "2023-01-05T05:34:44Z",
+            "name": "01ed7aca-eb6b-1178-a200-f604a4ce114a-definition",
+            "namespace": "apk-platform",
+            "resourceVersion": "113573",
+            "uid": "ce2915d6-cdeb-4c70-8cdd-e03c158105ba"
+        }
+    };
+    response.setJsonPayload(configmap);
+    response.statusCode = 200;
+    return response;
+}
+
+public function mock404ConfigMap() returns http:Response {
+    http:Response response = new;
+
+    json body = {
+        "kind": "Status",
+        "apiVersion": "v1"
+    ,
+        "metadata": {},
+        "status": "Failure",
+        "message": "configmaps \"01ed7b08-f2b1-1166-82d5-649ae706d29d-definition\" not found",
+        "reason": "NotFound",
+        "details": {"name": "01ed7b08-f2b1-1166-82d5-649ae706d29d-definition", "kind": "configmaps"},
+        "code": 404
+    };
+    response.setJsonPayload(body);
+    response.statusCode = 404;
+    return response;
+}
+
+public function mockOpenAPIJson() returns json {
+    json openapi = {
+        "openapi": "3.0.1",
+        "info": {
+            "title": "pizza1234567",
+            "version": "1.0.0"
+        },
+        "security": [
+            {
+                "default": []
+            }
+        ],
+        "paths": {
+            "/menu": {
+                "get": {
+                    "responses": {
+                        "200": {
+                            "description": "OK"
+                        }
+                    },
+                    "security": [
+                        {
+                            "default": []
+                        }
+                    ],
+                    "x-throttling-tier": "Unlimited"
+                }
+            },
+            "/order/{orderId}": {
+                "post": {
+                    "parameters": [
+                        {
+                            "name": "orderId",
+                            "in": "path",
+                            "required": true,
+                            "schema": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "OK"
+                        }
+                    },
+                    "security": [
+                        {
+                            "default": []
+                        }
+                    ],
+                    "x-throttling-tier": "Unlimited"
+                }
+            }
+        },
+        "components": {
+            "securitySchemes": {
+                "default": {
+                    "type": "oauth2",
+                    "flows": {
+                        "implicit": {
+                            "authorizationUrl": "https://test.com",
+                            "scopes": {}
+                        }
+                    }
+                }
+            }
+        }
+    };
+    return openapi;
+}
+
+public function mockpizzashackAPI11Definition() returns json {
+    model:API api = {
+        metadata: {
+            name: "01ed7aca-eb6b-1178-a200-f604a4ce114a",
+            namespace: "apk-platform",
+            uid: "c5ab2423-b9e8-432b-92e8-35e6907ed5f9",
+            creationTimestamp: ()
+        },
+        spec: {
+            apiDisplayName: "pizzashackAPI11",
+            apiType: "HTTP",
+            apiVersion: "1.0.0",
+            context: "/pizzashack11/1.0.0",
+            organization: "carbon.super",
+            prodHTTPRouteRef: "01ed7aca-eb6b-1178-a200-f604a4ce114a-production"
+        }
+    };
+    APIClient apiclient = new ();
+    return apiclient.retrieveDefaultDefinition(api);
+}
+
+public function mockPizzashackAPI12Definition() returns json {
+    model:API api = {
+        metadata: {
+            name: "01ed7aca-eb6b-1178-a200-f604a4ce114a",
+            namespace: "apk-platform",
+            uid: "c5ab2423-b9e8-432b-92e8-35e6907ed5f9",
+            creationTimestamp: ()
+        },
+        spec: {
+            apiDisplayName: "pizzashackAPI12",
+            apiType: "HTTP",
+            apiVersion: "1.0.0",
+            context: "/pizzashack12/1.0.0",
+            organization: "carbon.super",
+            prodHTTPRouteRef: "01ed7aca-eb6b-1178-a200-f604a4ce114a-production",
+            definitionFileRef: ""
+        }
+    };
+    APIClient apiclient = new ();
+    return apiclient.retrieveDefaultDefinition(api);
+}
+
+public function mockPizzaShackAPI1Definition() returns json {
+    model:API api = {
+        kind: "API",
+        metadata: {
+            creationTimestamp: "2022-12-13T17:09:49Z",
+            name: "01ed7b08-f2b1-1166-82d5-649ae706d29d",
+            namespace: "apk-platform",
+            uid: "7b7db1f0-0a9a-4f72-9f9d-5a1696d590c1"
+        },
+        spec: {
+            apiDisplayName: "pizzashackAPI1",
+            apiType: "HTTP",
+            apiVersion: "1.0.0",
+            context: "/pizzashack1/1.0.0",
+            organization: "carbon.super",
+            definitionFileRef: "01ed7b08-f2b1-1166-82d5-649ae706d29d-definition",
+            prodHTTPRouteRef: "01ed7b08-f2b1-1166-82d5-649ae706d29d-production"
+        }
+    };
+    APIClient apiclient = new ();
+    return apiclient.retrieveDefaultDefinition(api);
 }

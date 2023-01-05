@@ -102,6 +102,10 @@ function getMockK8sClient() returns http:Client {
         .thenReturn(getMockServiceMappings());
     test:prepare(mock).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis/01ed7b08-f2b1-1166-82d5-649ae706d29e").thenReturn(mock404Response());
     test:prepare(mock).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk/apis/pizzashackAPI1").thenReturn(mock404Response());
+    test:prepare(mock).when("get").withArguments("/api/v1/namespaces/apk-platform/configmaps/01ed7aca-eb6b-1178-a200-f604a4ce114a-definition").thenReturn(mockConfigMaps());
+    http:ClientError clientError = error("Backend Failure");
+    test:prepare(mock).when("get").withArguments("/api/v1/namespaces/apk-platform/configmaps/01ed7b08-f2b1-1166-82d5-649ae706d29d-definition").thenReturn(mock404ConfigMap());
+    test:prepare(mock).when("get").withArguments("/api/v1/namespaces/apk-platform/configmaps/01ed7aca-eb6b-1178-a200-f604a4ce114b-definition").thenReturn(clientError);
     return mock;
 }
 
@@ -162,23 +166,25 @@ function nameDataProvider() returns map<[string, boolean]>|error {
 }
 
 @test:Config {dataProvider: hostnameDataProvider}
-public function testGetDomainPath(string url, string expectedDomain, string expectedPath) {
+public function testGetDomainPath(string url, string expectedDomain, string expectedPath,int expectedPort,string expectedHost) {
     APIClient apiclient = new ();
     test:assertEquals(apiclient.getDomain(url), expectedDomain);
     test:assertEquals(apiclient.getPath(url), expectedPath);
+    test:assertEquals(apiclient.getPort(url), expectedPort);
+    test:assertEquals(apiclient.gethost(url), expectedHost);
 }
 
-function hostnameDataProvider() returns map<[string, string, string]>|error {
-    map<[string, string, string]> dataSet = {
-        "1": ["https://localhost/api.json", "https://localhost", "/api.json"],
-        "2": ["http://localhost/api.json", "http://localhost", "/api.json"],
-        "3": ["https://localhost:443/api.json", "https://localhost:443", "/api.json"],
-        "4": ["http://localhost:80/api.json", "http://localhost:80", "/api.json"],
-        "5": ["https://localhost", "https://localhost", ""],
-        "6": ["http://localhost", "http://localhost", ""],
-        "7": ["https://localhost:443", "https://localhost:443", ""],
-        "8": ["http://localhost:80", "http://localhost:80", ""],
-        "9": ["tcp://localhost:443", "", ""]
+function hostnameDataProvider() returns map<[string, string, string,int,string]>|error {
+    map<[string, string, string,int,string]> dataSet = {
+        "1": ["https://localhost/api.json", "https://localhost", "/api.json",443,"localhost"],
+        "2": ["http://localhost/api.json", "http://localhost", "/api.json",80,"localhost"],
+        "3": ["https://localhost:443/api.json", "https://localhost:443", "/api.json",443,"localhost"],
+        "4": ["http://localhost:80/api.json", "http://localhost:80", "/api.json",80,"localhost"],
+        "5": ["https://localhost", "https://localhost", "",443,"localhost"],
+        "6": ["http://localhost", "http://localhost", "",80,"localhost"],
+        "7": ["https://localhost:443", "https://localhost:443", "",443,"localhost"],
+        "8": ["http://localhost:80", "http://localhost:80", "",80,"localhost"],
+        "9": ["tcp://localhost:443", "", "",-1,""]
     };
     return dataSet;
 }
@@ -209,3 +215,40 @@ function apiIDDataprovider() returns map<[string, model:API & readonly|error]>|e
     return dataSet;
 }
 
+@test:Config{dataProvider:prefixMatchDataProvider}
+public function testGeneratePrefixMatch(API api,model:Endpoint endpoint,APIOperations apiOperation,string expected) {
+    APIClient apiclient = new ();
+    test:assertEquals(apiclient.generatePrefixMatch(api,endpoint,apiOperation,PRODUCTION_TYPE),expected);
+
+}
+function prefixMatchDataProvider() returns map<[API,model:Endpoint,APIOperations,string]>{
+map<[API,model:Endpoint,APIOperations,string]> dataSet = {
+    "1":[{name: "pizzaAPI",context: "/pizza1234",'version: "1.0.0"},{name: "service1",namespace: "apk-platform",port: 443,serviceEntry: false,url: "https://run.mocky.io/v3/f77cc767"},{target: "/order/{orderId}",verb: "POST"},"/v3/f77cc767/order"],
+    "2":[{name: "pizzaAPI",context: "/pizza1234",'version: "1.0.0"},{name: "service1",namespace: "apk-platform",port: 443,serviceEntry: false,url: "https://run.mocky.io/v3/f77cc767"},{target: "/menu",verb: "GET"},"/v3/f77cc767/menu"],
+    "3":[{name: "pizzaAPI",context: "/pizza1234",'version: "1.0.0"},{name: "service1",namespace: "apk-platform",port: 443,serviceEntry: false,url: "https://run.mocky.io/v3/f77cc767/"},{target: "/menu",verb: "GET"},"/v3/f77cc767/menu"],
+    "4":[{name: "pizzaAPI",context: "/pizza1234",'version: "1.0.0"},{name: "service1",namespace: "apk-platform",port: 443,serviceEntry: false,url: "https://run.mocky.io/v3/f77cc767/"},{target: "/*",verb: "GET"},"/v3/f77cc767/"],
+    "5":[{name: "pizzaAPI",context: "/pizza1234",'version: "1.0.0"},{name: "service1",namespace: "apk-platform",port: 443,serviceEntry: true,url: "https://run.mocky.io/v3/f77cc767/"},{target: "/*",verb: "GET"},"/"]
+};
+return dataSet;
+}
+
+@test:Config{dataProvider:apiDefinitionDataProvider}
+public function testGetAPIDefinitionByID(string apiid,anydata expectedResponse) returns error?{
+    APIClient apiclient = new ();
+    test:assertEquals(apiclient.getAPIDefinitionByID(apiid),expectedResponse);
+}
+public function apiDefinitionDataProvider() returns map<[string,json|NotFoundError|PreconditionFailedError|InternalServerErrorError]>{
+    NotFoundError notfound = {body: {code: 909100, message: "c5ab2423-b9e8-432b-92e8-35e6907ed5e9 not found."}};
+    InternalServerErrorError internalError = {body: {code: 90900, message: "Internal Error Occured while retrieving definition"}};
+
+    map<[string,json|NotFoundError|PreconditionFailedError|InternalServerErrorError]> dataSet = {
+        "1":["c5ab2423-b9e8-432b-92e8-35e6907ed5e8",mockOpenAPIJson()],
+        "2":["c5ab2423-b9e8-432b-92e8-35e6907ed5e9",notfound],
+        "3":["c5ab2423-b9e8-432b-92e8-35e6907ed5f9",mockpizzashackAPI11Definition()],
+        "4":["c5ab2423-b9e8-432b-92e8-35e6907ed5f1",mockPizzashackAPI12Definition()],
+        "5":["7b7db1f0-0a9a-4f72-9f9d-5a1696d590c1",mockPizzaShackAPI1Definition()],
+        "6":["c5ab2423-b9e8-432b-92e8-35e6907ed5f3",internalError]
+
+    };
+    return dataSet;
+}

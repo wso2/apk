@@ -2,11 +2,11 @@ public type Status record {
     string apiVersion;
     int code;
     string kind;
-    string message;
-    string reason;
-    string status;
-    StatusDetails details;
-    ListMeta metadata;
+    string message?;
+    string reason?;
+    string status?;
+    StatusDetails details?;
+    ListMeta metadata?;
 };
 
 public type StatusCause record {
