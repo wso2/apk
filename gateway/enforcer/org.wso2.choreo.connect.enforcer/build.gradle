@@ -53,12 +53,7 @@ dependencies {
     implementation libs.jackson.databind
     implementation libs.javax.validation.api
     implementation libs.javax.xml.soap
-    implementation libs.json
     implementation libs.lmax.disruptor
-    implementation libs.log4j.api
-    implementation libs.log4j.core
-    implementation libs.log4j.jcl
-    implementation libs.log4j.slf4j
     implementation libs.minidev.json
     implementation libs.netty.http
     implementation libs.netty.http2
@@ -78,21 +73,4 @@ dependencies {
     implementation project(':org.wso2.choreo.connect.enforcer.commons')
     implementation project(':org.wso2.choreo.connect.discovery')
     testImplementation libs.junit
-}
-
-task copyDependencies(type: Copy) {
-    from configurations.default
-    //todo(amali) check if we need json-wso2 jar
-    include("log4j-*")
-    into "$projectDir/../libs"
-}
-
-tasks.register('copy_enforcer_jar', Copy) {
-    from "$buildDir/libs"
-    into "$projectDir/../libs"
-}
-
-tasks.named('build').configure {
-    dependsOn copyDependencies
-    dependsOn copy_enforcer_jar
 }
