@@ -16,6 +16,8 @@
 // under the License.
 //
 
+import org.apache.tools.ant.taskdefs.condition.Os
+
 apply from: "$rootDir/../../common-gradle-scripts/ballerina.gradle"
 
 tasks.register('build') {
@@ -32,3 +34,6 @@ tasks.register('test') {
 task clean{
     dependsOn 'bal_clean'
 }
+
+build.mustRunAfter ":org.wso2.apk.devportal:build"
+build.dependsOn ":org.wso2.apk.devportal:build"

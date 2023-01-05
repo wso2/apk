@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
+ * Copyright (c) 2023, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,20 +15,11 @@
  *
  */
 
-rootProject.name = 'devportal-domain-service'
+apply from: "$projectDir/../../../common-gradle-scripts/java.gradle"
 
-include ':ballerina'
-include ':docker'
-include ':java'
-project(':ballerina').projectDir = file('ballerina')
-project(':docker').projectDir = file('docker')
-project(':java').projectDir = file('java')
-project(':java').name = "org.wso2.apk.devportal"
-
-dependencyResolutionManagement {
-    versionCatalogs {
-        libs {
-            from(files("$rootDir/../../libs.versions.toml"))
-        }
-    }
+dependencies {
+    implementation libs.commons.logging
+    implementation libs.commons.validator
+    implementation libs.openapi.generator
+    implementation libs.commons.lang
 }

@@ -19,6 +19,7 @@
 import ballerina/http;
 import ballerina/log;
 import ballerina/lang.value;
+import devportal_service.org.wso2.apk.devportal.sdk as sdk;
 
 configurable int DEVPORTAL_PORT = 9443;
 
@@ -67,8 +68,16 @@ service /api/am/devportal on ep0 {
             return internalError;
         }
     }
-    // resource function get apis/[string apiId]/sdks/[string language](@http:Header string? 'x\-wso2\-tenant) returns json|BadRequestError|NotFoundError|InternalServerErrorError {
-    // }
+    resource function get apis/[string apiId]/sdks/[string language](@http:Header string? 'x\-wso2\-tenant) returns http:Response|json|BadRequestError|NotFoundError|InternalServerErrorError|error {
+        string organization = "carbon.super";
+        string?|http:Response|sdk:APIClientGenerationException|error sdk = check generateSDK(apiId,language, organization);
+        if sdk is http:Response {
+            return sdk;
+        } else if sdk is sdk:APIClientGenerationException|error {
+            InternalServerErrorError internalError = {body: {code: 90931, message: "Internal Error while generating client SDK for given language:" + language}};
+            return internalError;
+        }
+    }
     // resource function get apis/[string apiId]/documents(@http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0) returns DocumentList|http:NotModified|NotFoundError|NotAcceptableError {
     // }
     // resource function get apis/[string apiId]/documents/[string documentId](@http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match) returns Document|http:NotModified|NotFoundError|NotAcceptableError {
@@ -307,8 +316,15 @@ service /api/am/devportal on ep0 {
     // }
     // resource function get search(@http:Header string? 'x\-wso2\-tenant, string? query, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0) returns SearchResultList|http:NotModified|NotAcceptableError {
     // }
-    // resource function get 'sdk\-gen/languages() returns json|NotFoundError|InternalServerErrorError {
-    // }
+    isolated resource function get 'sdk\-gen/languages() returns json|NotFoundError|InternalServerErrorError|error {
+        string|json|error sdkLanguages = check getSDKLanguages();
+        if sdkLanguages is string|json {
+            return sdkLanguages;
+        } else {
+            InternalServerErrorError internalError = {body: {code: 90931, message: "Internal Error while retrieving supported SDK languages"}};
+            return internalError;
+        }
+    }
     // resource function get webhooks/subscriptions(string? applicationId, string? apiId, @http:Header string? 'x\-wso2\-tenant) returns WebhookSubscriptionList|NotFoundError|InternalServerErrorError {
     // }
     // resource function get settings(@http:Header string? 'x\-wso2\-tenant) returns Settings|NotFoundError {
