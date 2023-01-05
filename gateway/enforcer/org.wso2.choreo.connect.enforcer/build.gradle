@@ -29,22 +29,39 @@ dependencies {
     compileOnly libs.tomcat
     implementation libs.analytic.databridge
     implementation libs.analytic.databridge.binary
-    implementation libs.analytic.publisher
-    implementation libs.andes
+    implementation(libs.analytic.publisher) {
+        exclude group: 'com.squareup.okhttp3', module: 'okhttp'
+    }
+    implementation(libs.andes) {
+        exclude group: 'org.codehaus.woodstox', module: 'wstx-asl'
+        exclude group: 'org.ops4j.pax.logging', module: 'pax-logging-api'
+    }
     implementation libs.azure.applicationinsights
-    implementation libs.azure.messaging
+    implementation(libs.azure.messaging) {
+        exclude group: 'org.codehaus.woodstox', module: 'woodstox-core'
+    }
     implementation libs.azure.monitor.opentelemetry
     implementation libs.azure.okhttp
-    implementation libs.carbon.apimgt.analytics
-    implementation libs.carbon.apimgt.gateway
-    implementation libs.carbon.apimgt.jms
+    implementation(libs.carbon.apimgt.analytics) {
+        exclude group: 'com.fasterxml.jackson.core', module: 'jackson-databind'
+    }
+    implementation(libs.carbon.apimgt.gateway) {
+        exclude group: 'com.fasterxml.jackson.core', module: 'jackson-databind'
+    }
+    implementation(libs.carbon.apimgt.jms) {
+        exclude group: 'org.wso2.orbit.commons-fileupload', module: 'commons-fileupload'
+        exclude group: 'org.codehaus.woodstox', module: 'wstx-asl'
+    }
     implementation libs.commons.lang3
     implementation libs.commons.pool
     implementation libs.envoyproxy.controlplane
+    implementation libs.fasterxml.woodstox
     implementation libs.geronimo
     implementation libs.graphql
     implementation libs.grpc.netty
-    implementation libs.grpc.protobuf
+    implementation(libs.grpc.protobuf) {
+        exclude group: 'com.google.protobuf', module: 'protobuf-java'
+    }
     implementation libs.grpc.stub
     implementation libs.gson
     implementation libs.guava
@@ -53,7 +70,12 @@ dependencies {
     implementation libs.jackson.databind
     implementation libs.javax.validation.api
     implementation libs.javax.xml.soap
+    implementation libs.json
     implementation libs.lmax.disruptor
+    implementation libs.log4j.api
+    implementation libs.log4j.core
+    implementation libs.log4j.jcl
+    implementation libs.log4j.slf4j
     implementation libs.minidev.json
     implementation libs.netty.http
     implementation libs.netty.http2
