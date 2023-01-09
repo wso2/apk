@@ -67,10 +67,10 @@ RUN \
 WORKDIR ${MG_USER_HOME}
 USER ${MG_USER}
 
-COPY lib/ lib/
-COPY conf/log4j2.properties conf/log4j2.properties
-COPY security security
-COPY check_health.sh .
+COPY resources/lib lib/
+COPY resources/conf/log4j2.properties conf/log4j2.properties
+COPY resources/security security
+COPY resources/check_health.sh .
 
 #todo add applicationinsights.json file and point it to the appInsightsAgent jar
 #Add the agent using JVM arg -javaagent:/home/wso2/conf/applicationinsights-agent-3.1.1.jar
