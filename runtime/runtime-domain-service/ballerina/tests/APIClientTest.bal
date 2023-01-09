@@ -166,7 +166,7 @@ function nameDataProvider() returns map<[string, boolean]>|error {
 }
 
 @test:Config {dataProvider: hostnameDataProvider}
-public function testGetDomainPath(string url, string expectedDomain, string expectedPath,int expectedPort,string expectedHost) {
+public function testGetDomainPath(string url, string expectedDomain, string expectedPath, int expectedPort, string expectedHost) {
     APIClient apiclient = new ();
     test:assertEquals(apiclient.getDomain(url), expectedDomain);
     test:assertEquals(apiclient.getPath(url), expectedPath);
@@ -174,17 +174,17 @@ public function testGetDomainPath(string url, string expectedDomain, string expe
     test:assertEquals(apiclient.gethost(url), expectedHost);
 }
 
-function hostnameDataProvider() returns map<[string, string, string,int,string]>|error {
-    map<[string, string, string,int,string]> dataSet = {
-        "1": ["https://localhost/api.json", "https://localhost", "/api.json",443,"localhost"],
-        "2": ["http://localhost/api.json", "http://localhost", "/api.json",80,"localhost"],
-        "3": ["https://localhost:443/api.json", "https://localhost:443", "/api.json",443,"localhost"],
-        "4": ["http://localhost:80/api.json", "http://localhost:80", "/api.json",80,"localhost"],
-        "5": ["https://localhost", "https://localhost", "",443,"localhost"],
-        "6": ["http://localhost", "http://localhost", "",80,"localhost"],
-        "7": ["https://localhost:443", "https://localhost:443", "",443,"localhost"],
-        "8": ["http://localhost:80", "http://localhost:80", "",80,"localhost"],
-        "9": ["tcp://localhost:443", "", "",-1,""]
+function hostnameDataProvider() returns map<[string, string, string, int, string]>|error {
+    map<[string, string, string, int, string]> dataSet = {
+        "1": ["https://localhost/api.json", "https://localhost", "/api.json", 443, "localhost"],
+        "2": ["http://localhost/api.json", "http://localhost", "/api.json", 80, "localhost"],
+        "3": ["https://localhost:443/api.json", "https://localhost:443", "/api.json", 443, "localhost"],
+        "4": ["http://localhost:80/api.json", "http://localhost:80", "/api.json", 80, "localhost"],
+        "5": ["https://localhost", "https://localhost", "", 443, "localhost"],
+        "6": ["http://localhost", "http://localhost", "", 80, "localhost"],
+        "7": ["https://localhost:443", "https://localhost:443", "", 443, "localhost"],
+        "8": ["http://localhost:80", "http://localhost:80", "", 80, "localhost"],
+        "9": ["tcp://localhost:443", "", "", -1, ""]
     };
     return dataSet;
 }
@@ -215,40 +215,635 @@ function apiIDDataprovider() returns map<[string, model:API & readonly|error]>|e
     return dataSet;
 }
 
-@test:Config{dataProvider:prefixMatchDataProvider}
-public function testGeneratePrefixMatch(API api,model:Endpoint endpoint,APIOperations apiOperation,string expected) {
+@test:Config {dataProvider: prefixMatchDataProvider}
+public function testGeneratePrefixMatch(API api, model:Endpoint endpoint, APIOperations apiOperation, string expected) {
     APIClient apiclient = new ();
-    test:assertEquals(apiclient.generatePrefixMatch(api,endpoint,apiOperation,PRODUCTION_TYPE),expected);
+    test:assertEquals(apiclient.generatePrefixMatch(api, endpoint, apiOperation, PRODUCTION_TYPE), expected);
 
 }
-function prefixMatchDataProvider() returns map<[API,model:Endpoint,APIOperations,string]>{
-map<[API,model:Endpoint,APIOperations,string]> dataSet = {
-    "1":[{name: "pizzaAPI",context: "/pizza1234",'version: "1.0.0"},{name: "service1",namespace: "apk-platform",port: 443,serviceEntry: false,url: "https://run.mocky.io/v3/f77cc767"},{target: "/order/{orderId}",verb: "POST"},"/v3/f77cc767/order"],
-    "2":[{name: "pizzaAPI",context: "/pizza1234",'version: "1.0.0"},{name: "service1",namespace: "apk-platform",port: 443,serviceEntry: false,url: "https://run.mocky.io/v3/f77cc767"},{target: "/menu",verb: "GET"},"/v3/f77cc767/menu"],
-    "3":[{name: "pizzaAPI",context: "/pizza1234",'version: "1.0.0"},{name: "service1",namespace: "apk-platform",port: 443,serviceEntry: false,url: "https://run.mocky.io/v3/f77cc767/"},{target: "/menu",verb: "GET"},"/v3/f77cc767/menu"],
-    "4":[{name: "pizzaAPI",context: "/pizza1234",'version: "1.0.0"},{name: "service1",namespace: "apk-platform",port: 443,serviceEntry: false,url: "https://run.mocky.io/v3/f77cc767/"},{target: "/*",verb: "GET"},"/v3/f77cc767/"],
-    "5":[{name: "pizzaAPI",context: "/pizza1234",'version: "1.0.0"},{name: "service1",namespace: "apk-platform",port: 443,serviceEntry: true,url: "https://run.mocky.io/v3/f77cc767/"},{target: "/*",verb: "GET"},"/"]
-};
-return dataSet;
+
+function prefixMatchDataProvider() returns map<[API, model:Endpoint, APIOperations, string]> {
+    map<[API, model:Endpoint, APIOperations, string]> dataSet = {
+        "1": [{name: "pizzaAPI", context: "/pizza1234", 'version: "1.0.0"}, {name: "service1", namespace: "apk-platform", port: 443, serviceEntry: false, url: "https://run.mocky.io/v3/f77cc767"}, {target: "/order/{orderId}", verb: "POST"}, "/v3/f77cc767/order"],
+        "2": [{name: "pizzaAPI", context: "/pizza1234", 'version: "1.0.0"}, {name: "service1", namespace: "apk-platform", port: 443, serviceEntry: false, url: "https://run.mocky.io/v3/f77cc767"}, {target: "/menu", verb: "GET"}, "/v3/f77cc767/menu"],
+        "3": [{name: "pizzaAPI", context: "/pizza1234", 'version: "1.0.0"}, {name: "service1", namespace: "apk-platform", port: 443, serviceEntry: false, url: "https://run.mocky.io/v3/f77cc767/"}, {target: "/menu", verb: "GET"}, "/v3/f77cc767/menu"],
+        "4": [{name: "pizzaAPI", context: "/pizza1234", 'version: "1.0.0"}, {name: "service1", namespace: "apk-platform", port: 443, serviceEntry: false, url: "https://run.mocky.io/v3/f77cc767/"}, {target: "/*", verb: "GET"}, "/v3/f77cc767/"],
+        "5": [{name: "pizzaAPI", context: "/pizza1234", 'version: "1.0.0"}, {name: "service1", namespace: "apk-platform", port: 443, serviceEntry: true, url: "https://run.mocky.io/v3/f77cc767/"}, {target: "/*", verb: "GET"}, "/"]
+    };
+    return dataSet;
 }
 
-@test:Config{dataProvider:apiDefinitionDataProvider}
-public function testGetAPIDefinitionByID(string apiid,anydata expectedResponse) returns error?{
+@test:Config {dataProvider: apiDefinitionDataProvider}
+public function testGetAPIDefinitionByID(string apiid, anydata expectedResponse) returns error? {
     APIClient apiclient = new ();
-    test:assertEquals(apiclient.getAPIDefinitionByID(apiid),expectedResponse);
+    test:assertEquals(apiclient.getAPIDefinitionByID(apiid), expectedResponse);
 }
-public function apiDefinitionDataProvider() returns map<[string,json|NotFoundError|PreconditionFailedError|InternalServerErrorError]>{
+
+public function apiDefinitionDataProvider() returns map<[string, json|NotFoundError|PreconditionFailedError|InternalServerErrorError]> {
     NotFoundError notfound = {body: {code: 909100, message: "c5ab2423-b9e8-432b-92e8-35e6907ed5e9 not found."}};
     InternalServerErrorError internalError = {body: {code: 90900, message: "Internal Error Occured while retrieving definition"}};
 
-    map<[string,json|NotFoundError|PreconditionFailedError|InternalServerErrorError]> dataSet = {
-        "1":["c5ab2423-b9e8-432b-92e8-35e6907ed5e8",mockOpenAPIJson()],
-        "2":["c5ab2423-b9e8-432b-92e8-35e6907ed5e9",notfound],
-        "3":["c5ab2423-b9e8-432b-92e8-35e6907ed5f9",mockpizzashackAPI11Definition()],
-        "4":["c5ab2423-b9e8-432b-92e8-35e6907ed5f1",mockPizzashackAPI12Definition()],
-        "5":["7b7db1f0-0a9a-4f72-9f9d-5a1696d590c1",mockPizzaShackAPI1Definition()],
-        "6":["c5ab2423-b9e8-432b-92e8-35e6907ed5f3",internalError]
+    map<[string, json|NotFoundError|PreconditionFailedError|InternalServerErrorError]> dataSet = {
+        "1": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e8", mockOpenAPIJson()],
+        "2": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e9", notfound],
+        "3": ["c5ab2423-b9e8-432b-92e8-35e6907ed5f9", mockpizzashackAPI11Definition()],
+        "4": ["c5ab2423-b9e8-432b-92e8-35e6907ed5f1", mockPizzashackAPI12Definition()],
+        "5": ["7b7db1f0-0a9a-4f72-9f9d-5a1696d590c1", mockPizzaShackAPI1Definition()],
+        "6": ["c5ab2423-b9e8-432b-92e8-35e6907ed5f3", internalError]
 
+    };
+    return dataSet;
+}
+
+@test:Config {dataProvider: apiByIdDataProvider}
+public function testgetApiById(string apiid, anydata expectedData) {
+    APIClient apiclient = new ();
+    test:assertEquals(apiclient.getAPIById(apiid), expectedData);
+}
+
+public function apiByIdDataProvider() returns map<[string, API|NotFoundError]> {
+    API & readonly api1 = {name: "pizzashackAPI", context: "/pizzashack/1.0.0", 'version: "1.0.0", id: "c5ab2423-b9e8-432b-92e8-35e6907ed5e8", createdTime: "2022-12-13T09:45:47Z"};
+    NotFoundError notfound = {body: {code: 909100, message: "c5ab2423-b9e8-432b-92e8-35e6907ed5e9 not found."}};
+    map<[string, API & readonly|NotFoundError]> dataset = {
+        "1": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e8", api1],
+        "2": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e9", notfound]
+    };
+    return dataset;
+}
+
+@test:Config {dataProvider: getApilistDataProvider}
+public function testGetAPIList(string? query, int 'limit, int offset, string sortBy, string sortOrder, anydata expected) {
+    APIClient apiclient = new ();
+    test:assertEquals(apiclient.getAPIList(query, 'limit, offset, sortBy, sortOrder), expected);
+}
+
+function getApilistDataProvider() returns map<[string?, int, int, string, string, APIList|InternalServerErrorError|BadRequestError]> {
+    BadRequestError badRequestError = {"body": {"code": 90912, "message": "Invalid Sort By/Sort Order Value "}};
+    BadRequestError badRequest = {body: {code: 90912, message: "Invalid KeyWord type1"}};
+
+    map<[string?, int, int, string, string, APIList|InternalServerErrorError|BadRequestError]> dataSet = {
+        "1": [
+            (),
+            10,
+            0,
+            SORT_BY_API_NAME,
+            SORT_ORDER_ASC,
+            {
+                "count": 6,
+                "list": [
+                    {
+                        "id": "8a1eb4f9-efab-4682-a051-4df4050812d2",
+                        "name": "DemoAPI",
+                        "context": "/demoapi/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-14T18:51:26Z"
+                    },
+                    {
+                        "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5e8",
+                        "name": "pizzashackAPI",
+                        "context": "/pizzashack/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-13T09:45:47Z"
+                    },
+                    {
+                        "id": "7b7db1f0-0a9a-4f72-9f9d-5a1696d590c1",
+                        "name": "pizzashackAPI1",
+                        "context": "/pizzashack1/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-13T17:09:49Z"
+                    },
+                    {
+                        "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f9",
+                        "name": "pizzashackAPI11",
+                        "context": "/pizzashack11/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-13T09:45:47Z"
+                    },
+                    {
+                        "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f1",
+                        "name": "pizzashackAPI12",
+                        "context": "/pizzashack12/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-13T09:45:47Z"
+                    },
+                    {
+                        "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f3",
+                        "name": "pizzashackAPI13",
+                        "context": "/pizzashack13/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-13T09:45:47Z"
+                    }
+                ],
+                "pagination": {
+                    "offset": 0,
+                    "limit": 10,
+                    "total": 6
+                }
+            }
+        ],
+        "2": [
+            (),
+            10,
+            0,
+            SORT_BY_API_NAME,
+            SORT_ORDER_DESC,
+            {
+                "count": 6,
+                "list": [
+                    {
+                        "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f3",
+                        "name": "pizzashackAPI13",
+                        "context": "/pizzashack13/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-13T09:45:47Z"
+                    },
+                    {
+                        "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f1",
+                        "name": "pizzashackAPI12",
+                        "context": "/pizzashack12/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-13T09:45:47Z"
+                    },
+                    {
+                        "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f9",
+                        "name": "pizzashackAPI11",
+                        "context": "/pizzashack11/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-13T09:45:47Z"
+                    },
+                    {
+                        "id": "7b7db1f0-0a9a-4f72-9f9d-5a1696d590c1",
+                        "name": "pizzashackAPI1",
+                        "context": "/pizzashack1/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-13T17:09:49Z"
+                    },
+                    {
+                        "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5e8",
+                        "name": "pizzashackAPI",
+                        "context": "/pizzashack/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-13T09:45:47Z"
+                    },
+                    {
+                        "id": "8a1eb4f9-efab-4682-a051-4df4050812d2",
+                        "name": "DemoAPI",
+                        "context": "/demoapi/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-14T18:51:26Z"
+                    }
+                ],
+                "pagination": {
+                    "offset": 0,
+                    "limit": 10,
+                    "total": 6
+                }
+            }
+        ],
+        "3": [
+            (),
+            10,
+            0,
+            SORT_BY_CREATED_TIME,
+            SORT_ORDER_ASC,
+            {
+                "count": 6,
+                "list": [
+                    {
+                        "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5e8",
+                        "name": "pizzashackAPI",
+                        "context": "/pizzashack/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-13T09:45:47Z"
+                    },
+                    {
+                        "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f9",
+                        "name": "pizzashackAPI11",
+                        "context": "/pizzashack11/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-13T09:45:47Z"
+                    },
+                    {
+                        "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f1",
+                        "name": "pizzashackAPI12",
+                        "context": "/pizzashack12/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-13T09:45:47Z"
+                    },
+                    {
+                        "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f3",
+                        "name": "pizzashackAPI13",
+                        "context": "/pizzashack13/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-13T09:45:47Z"
+                    },
+                    {
+                        "id": "7b7db1f0-0a9a-4f72-9f9d-5a1696d590c1",
+                        "name": "pizzashackAPI1",
+                        "context": "/pizzashack1/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-13T17:09:49Z"
+                    },
+                    {
+                        "id": "8a1eb4f9-efab-4682-a051-4df4050812d2",
+                        "name": "DemoAPI",
+                        "context": "/demoapi/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-14T18:51:26Z"
+                    }
+                ],
+                "pagination": {
+                    "offset": 0,
+                    "limit": 10,
+                    "total": 6
+                }
+            }
+        ],
+        "4": [
+            (),
+            10,
+            0,
+            SORT_BY_CREATED_TIME,
+            SORT_ORDER_DESC,
+            {
+                "count": 6,
+                "list": [
+                    {
+                        "id": "8a1eb4f9-efab-4682-a051-4df4050812d2",
+                        "name": "DemoAPI",
+                        "context": "/demoapi/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-14T18:51:26Z"
+                    },
+                    {
+                        "id": "7b7db1f0-0a9a-4f72-9f9d-5a1696d590c1",
+                        "name": "pizzashackAPI1",
+                        "context": "/pizzashack1/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-13T17:09:49Z"
+                    },
+                    {
+                        "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5e8",
+                        "name": "pizzashackAPI",
+                        "context": "/pizzashack/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-13T09:45:47Z"
+                    },
+                    {
+                        "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f9",
+                        "name": "pizzashackAPI11",
+                        "context": "/pizzashack11/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-13T09:45:47Z"
+                    },
+                    {
+                        "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f1",
+                        "name": "pizzashackAPI12",
+                        "context": "/pizzashack12/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-13T09:45:47Z"
+                    },
+                    {
+                        "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f3",
+                        "name": "pizzashackAPI13",
+                        "context": "/pizzashack13/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-13T09:45:47Z"
+                    }
+                ],
+                "pagination": {
+                    "offset": 0,
+                    "limit": 10,
+                    "total": 6
+                }
+            }
+        ],
+        "5": [(), 10, 0, "description", SORT_ORDER_DESC, badRequestError],
+        "6": [
+            (),
+            3,
+            0,
+            SORT_BY_API_NAME,
+            SORT_ORDER_ASC,
+            {
+                "count": 3,
+                "list": [
+                    {
+                        "id": "8a1eb4f9-efab-4682-a051-4df4050812d2",
+                        "name": "DemoAPI",
+                        "context": "/demoapi/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-14T18:51:26Z"
+                    },
+                    {
+                        "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5e8",
+                        "name": "pizzashackAPI",
+                        "context": "/pizzashack/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-13T09:45:47Z"
+                    },
+                    {
+                        "id": "7b7db1f0-0a9a-4f72-9f9d-5a1696d590c1",
+                        "name": "pizzashackAPI1",
+                        "context": "/pizzashack1/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-13T17:09:49Z"
+                    }
+                ],
+                "pagination": {
+                    "offset": 0,
+                    "limit": 3,
+                    "total": 6
+                }
+            }
+        ],
+        "7": [
+            (),
+            3,
+            3,
+            SORT_BY_API_NAME,
+            SORT_ORDER_ASC,
+            {
+                "count": 3,
+                "list": [
+                    {
+                        "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f9",
+                        "name": "pizzashackAPI11",
+                        "context": "/pizzashack11/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-13T09:45:47Z"
+                    },
+                    {
+                        "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f1",
+                        "name": "pizzashackAPI12",
+                        "context": "/pizzashack12/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-13T09:45:47Z"
+                    },
+                    {
+                        "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f3",
+                        "name": "pizzashackAPI13",
+                        "context": "/pizzashack13/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-13T09:45:47Z"
+                    }
+                ],
+                "pagination": {
+                    "offset": 3,
+                    "limit": 3,
+                    "total": 6
+                }
+            }
+        ],
+        "8": [
+            (),
+            3,
+            6,
+            SORT_BY_API_NAME,
+            SORT_ORDER_ASC,
+            {
+                "count": 0,
+                "list": [],
+                "pagination": {
+                    "offset": 6,
+                    "limit": 3,
+                    "total": 6
+                }
+            }
+        ],
+        "9": [
+            "name:pizzashackAPI",
+            10,
+            0,
+            SORT_BY_API_NAME,
+            SORT_ORDER_ASC,
+            {
+                "count": 5,
+                "list": [
+                    {
+                        "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5e8",
+                        "name": "pizzashackAPI",
+                        "context": "/pizzashack/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-13T09:45:47Z"
+                    },
+                    {
+                        "id": "7b7db1f0-0a9a-4f72-9f9d-5a1696d590c1",
+                        "name": "pizzashackAPI1",
+                        "context": "/pizzashack1/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-13T17:09:49Z"
+                    },
+                    {
+                        "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f9",
+                        "name": "pizzashackAPI11",
+                        "context": "/pizzashack11/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-13T09:45:47Z"
+                    },
+                    {
+                        "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f1",
+                        "name": "pizzashackAPI12",
+                        "context": "/pizzashack12/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-13T09:45:47Z"
+                    },
+                    {
+                        "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f3",
+                        "name": "pizzashackAPI13",
+                        "context": "/pizzashack13/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-13T09:45:47Z"
+                    }
+                ],
+                "pagination": {
+                    "offset": 0,
+                    "limit": 10,
+                    "total": 5
+                }
+            }
+        ],
+        "10": [
+            "pizzashackAPI",
+            10,
+            0,
+            SORT_BY_API_NAME,
+            SORT_ORDER_ASC,
+            {
+                "count": 5,
+                "list": [
+                    {
+                        "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5e8",
+                        "name": "pizzashackAPI",
+                        "context": "/pizzashack/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-13T09:45:47Z"
+                    },
+                    {
+                        "id": "7b7db1f0-0a9a-4f72-9f9d-5a1696d590c1",
+                        "name": "pizzashackAPI1",
+                        "context": "/pizzashack1/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-13T17:09:49Z"
+                    },
+                    {
+                        "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f9",
+                        "name": "pizzashackAPI11",
+                        "context": "/pizzashack11/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-13T09:45:47Z"
+                    },
+                    {
+                        "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f1",
+                        "name": "pizzashackAPI12",
+                        "context": "/pizzashack12/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-13T09:45:47Z"
+                    },
+                    {
+                        "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f3",
+                        "name": "pizzashackAPI13",
+                        "context": "/pizzashack13/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-13T09:45:47Z"
+                    }
+                ],
+                "pagination": {
+                    "offset": 0,
+                    "limit": 10,
+                    "total": 5
+                }
+            }
+        ],
+        "11": [
+            "type:HTTP",
+            10,
+            0,
+            SORT_BY_API_NAME,
+            SORT_ORDER_ASC,
+            {
+                "count": 6,
+                "list": [
+                    {
+                        "id": "8a1eb4f9-efab-4682-a051-4df4050812d2",
+                        "name": "DemoAPI",
+                        "context": "/demoapi/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-14T18:51:26Z"
+                    },
+                    {
+                        "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5e8",
+                        "name": "pizzashackAPI",
+                        "context": "/pizzashack/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-13T09:45:47Z"
+                    },
+                    {
+                        "id": "7b7db1f0-0a9a-4f72-9f9d-5a1696d590c1",
+                        "name": "pizzashackAPI1",
+                        "context": "/pizzashack1/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-13T17:09:49Z"
+                    },
+                    {
+                        "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f9",
+                        "name": "pizzashackAPI11",
+                        "context": "/pizzashack11/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-13T09:45:47Z"
+                    },
+                    {
+                        "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f1",
+                        "name": "pizzashackAPI12",
+                        "context": "/pizzashack12/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-13T09:45:47Z"
+                    },
+                    {
+                        "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f3",
+                        "name": "pizzashackAPI13",
+                        "context": "/pizzashack13/1.0.0",
+                        "version": "1.0.0",
+                        "type": "HTTP",
+                        "createdTime": "2022-12-13T09:45:47Z"
+                    }
+                ],
+                "pagination": {
+                    "offset": 0,
+                    "limit": 10,
+                    "total": 6
+                }
+            }
+        ],
+        "12": [
+            "type:WS",
+            10,
+            0,
+            SORT_BY_API_NAME,
+            SORT_ORDER_ASC,
+            {
+                "count": 0,
+                "list": [],
+                "pagination": {
+                    "offset": 0,
+                    "limit": 10,
+                    "total": 0
+                }
+            }
+        ],
+        "13": [
+            "type1:WS",
+            10,
+            0,
+            SORT_BY_API_NAME,
+            SORT_ORDER_ASC,
+            badRequest
+        ]
     };
     return dataSet;
 }

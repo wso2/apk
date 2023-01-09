@@ -75,7 +75,7 @@ public class APIClient {
     }
 
     //Get APIs deployed in default namespace by APIId.
-    public isolated function getAPIById(string id) returns API|NotFoundError|InternalServerErrorError {
+    public isolated function getAPIById(string id) returns API|NotFoundError {
         boolean APIIDAvailable = id.length() > 0 ? true : false;
         if (APIIDAvailable && string:length(id.toString()) > 0)
         {
@@ -87,7 +87,7 @@ public class APIClient {
                 }
             }
         }
-        NotFoundError notfound = {body: {code: 909100, message: id + "not found."}};
+        NotFoundError notfound = {body: {code: 909100, message: id + " not found."}};
         return notfound;
     }
 
@@ -135,13 +135,6 @@ public class APIClient {
         return http:OK;
     }
 
-    //Get all deployed APIs in namespace with specific search query
-    public function getAPIListInNamespaceWithQuery(string? query, int 'limit = 25, int offset = 0, string sortBy = "createdTime", string sortOrder = "desc") returns APIList|InternalServerErrorError|BadRequestError|error {
-        lock {
-            APIInfo[] apiNames = map:toArray(apilist);
-            return {list: apiNames.clone(), count: apiNames.length(), pagination: {total: apilist.length()}};
-        }
-    }
 
     # This returns list of APIS.
     #
@@ -151,19 +144,19 @@ public class APIClient {
     # + sortBy - Parameter Description  
     # + sortOrder - Parameter Description
     # + return - Return list of APIS in namsepace.
-    public isolated function getAPIList(string? query, int 'limit, int offset, string sortBy, string sortOrder) returns APIList|InternalServerErrorError {
+    public isolated function getAPIList(string? query, int 'limit, int offset, string sortBy, string sortOrder) returns APIList|BadRequestError {
         API[] apilist = [];
         foreach model:API api in getAPIs() {
             API convertedModel = convertK8sAPItoAPI(api);
             apilist.push(convertedModel);
         }
-        if query is string {
+        if query is string && query.toString().trim().length()>0{
             return self.filterAPISBasedOnQuery(apilist, query, 'limit, offset, sortBy, sortOrder);
         } else {
             return self.filterAPIS(apilist, 'limit, offset, sortBy, sortOrder);
         }
     }
-    private isolated function filterAPISBasedOnQuery(API[] apilist, string query, int 'limit, int offset, string sortBy, string sortOrder) returns APIList|InternalServerErrorError {
+    private isolated function filterAPISBasedOnQuery(API[] apilist, string query, int 'limit, int offset, string sortBy, string sortOrder) returns APIList|BadRequestError {
         API[] filteredList = [];
         if query.length() > 0 {
             int? semiCollonIndex = string:indexOf(query, ":", 0);
@@ -171,6 +164,7 @@ public class APIClient {
                 if semiCollonIndex > 0 {
                     string keyWord = query.substring(0, semiCollonIndex);
                     string keyWordValue = query.substring(keyWord.length() + 1, query.length());
+                    keyWordValue = keyWordValue+"|\\w+"+keyWordValue+"\\w+"+"|"+keyWordValue+"\\w+"+"|\\w+"+keyWordValue;
                     if keyWord.trim() == SEARCH_CRITERIA_NAME {
                         foreach API api in apilist {
                             if (regex:matches(api.name, keyWordValue)) {
@@ -184,13 +178,16 @@ public class APIClient {
                             }
                         }
                     } else {
-                        // BadRequestError badRequest = {body: {code: 90912, message: "Invalid KeyWord " + keyWord}};
-                        // return badRequest;
+                        BadRequestError badRequest = {body: {code: 90912, message: "Invalid KeyWord " + keyWord}};
+                        return badRequest;
                     }
                 }
             } else {
+                string keyWordValue = query+"|\\w+"+query+"\\w+"+"|"+query+"\\w+"+"|\\w+"+query;
+
                 foreach API api in apilist {
-                    if (regex:matches(api.name, query)) {
+                    
+                    if (regex:matches(api.name, keyWordValue)) {
                         filteredList.push(api);
                     }
                 }
@@ -200,7 +197,7 @@ public class APIClient {
         }
         return self.filterAPIS(filteredList, 'limit, offset, sortBy, sortOrder);
     }
-    private isolated function filterAPIS(API[] apiList, int 'limit, int offset, string sortBy, string sortOrder) returns APIList|InternalServerErrorError {
+    private isolated function filterAPIS(API[] apiList, int 'limit, int offset, string sortBy, string sortOrder) returns APIList|BadRequestError {
         API[] clonedAPIList = apiList.clone();
         API[] sortedAPIS = [];
         if sortBy == SORT_BY_API_NAME && sortOrder == SORT_ORDER_ASC {
@@ -220,12 +217,12 @@ public class APIClient {
                 order by api.createdTime descending
                 select api;
         } else {
-            // BadRequestError badRequest = {body: {code: 90912, message: "Invalid Sort By/Sort Order Value "}};
-            // return badRequest;
+            BadRequestError badRequest = {body: {code: 90912, message: "Invalid Sort By/Sort Order Value "}};
+            return badRequest;
         }
         API[] limitSet = [];
-        if sortedAPIS.length() >= offset {
-            foreach int i in offset ... (sortedAPIS.length() - 1) {
+        if sortedAPIS.length() > offset {
+            foreach int i in offset ... (sortedAPIS.length()-1) {
                 if limitSet.length() < 'limit {
                     limitSet.push(sortedAPIS[i]);
                 }
