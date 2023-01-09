@@ -29,6 +29,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: "0"
+          path: apk-repo
       - name: Build backoffice-domain-service.
         run: |
           cd apk-repo/backoffice/backoffice-domain-service
@@ -66,6 +67,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: "0"
+          path: apk-repo
       - name: Build backoffice-internal-domain-service.
         run: |
           cd apk-repo/backoffice/backoffice-internal-domain-service
@@ -103,9 +105,10 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: "0"
+          path: apk-repo
       - name: Build runtime-domain-service.
         run: |
-          cd apk-repo/backoffice/runtime-domain-service
+          cd apk-repo/runtime/runtime-domain-service
           gradle build
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
@@ -140,9 +143,10 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: "0"
+          path: apk-repo
       - name: Build admin-domain-service.
         run: |
-          cd apk-repo/backoffice/admin-domain-service
+          cd apk-repo/admin/admin-domain-service
           gradle build
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
@@ -177,9 +181,10 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: "0"
+          path: apk-repo
       - name: Build devportal-domain-service.
         run: |
-          cd apk-repo/backoffice/devportal-domain-service
+          cd apk-repo/devportal/devportal-domain-service
           gradle build
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
@@ -232,6 +237,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: "0"
+          path: apk-repo
       - name: Build management-server.
         run: |
           cd apk-repo/management-server
@@ -251,6 +257,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: "0"
+          path: apk-repo
       - name: Build router.
         run: |
           cd apk-repo/gateway/router
@@ -270,6 +277,7 @@ jobs:
           uses: actions/checkout@v3
           with:
             fetch-depth: "0"
+            path: apk-repo
         - name: Build enforcer.
           run: |
             cd apk-repo/gateway/enforcer
