@@ -102,6 +102,9 @@ dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "lang.value"}
 ]
+modules = [
+	{org = "ballerina", packageName = "io", moduleName = "io"}
+]
 
 [[package]]
 org = "ballerina"
@@ -209,7 +212,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "log"
-version = "2.5.0"
+version = "2.5.1"
 dependencies = [
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"},
@@ -389,6 +392,7 @@ version = "0.0.1-SNAPSHOT"
 dependencies = [
 	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "http"},
+	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "lang.value"},
 	{org = "ballerina", name = "log"},
 	{org = "ballerina", name = "sql"},

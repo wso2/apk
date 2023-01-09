@@ -50,8 +50,14 @@ service /api/am/backoffice on ep0 {
             return internalError;
         }
     }
-    // resource function get apis/[string apiId](@http:Header string? 'if\-none\-match) returns API|http:NotModified|NotFoundError|NotAcceptableError {
-    // }
+    isolated resource function get apis/[string apiId](@http:Header string? 'if\-none\-match) returns API|http:NotModified|NotFoundError|NotAcceptableError|error {
+        API|error response = getAPI(apiId);
+        if response is API {
+            return response;
+        } else {
+           return  error(response.message());
+        }
+    }
     // resource function put apis/[string apiId](@http:Header string? 'if\-none\-match, @http:Payload ModifiableAPI payload) returns API|BadRequestError|ForbiddenError|NotFoundError|PreconditionFailedError {
     // }
     // resource function get apis/[string apiId]/definition(@http:Header string? 'if\-none\-match) returns APIDefinition|http:NotModified|NotFoundError|NotAcceptableError {
@@ -88,16 +94,6 @@ service /api/am/backoffice on ep0 {
     // }
     // resource function get apis/[string apiId]/comments/[string commentId]/replies(@http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0, boolean includeCommenterInfo = false) returns CommentList|UnauthorizedError|NotFoundError|NotAcceptableError|InternalServerErrorError {
     // }
-    // resource function post apis/[string apiId]/monetize(@http:Payload APIMonetizationInfo payload) returns http:Created|BadRequestError|NotFoundError|NotAcceptableError {
-    // }
-    // resource function get apis/[string apiId]/monetization() returns http:Ok|BadRequestError|NotFoundError|NotAcceptableError {
-    // }
-    // resource function get apis/[string apiId]/revenue() returns APIRevenue|http:NotModified|NotFoundError {
-    // }
-    // resource function get apis/[string apiId]/'external\-stores(@http:Header string? 'if\-none\-match) returns APIExternalStoreList|NotFoundError|InternalServerErrorError {
-    // }
-    // resource function post apis/[string apiId]/'publish\-to\-external\-stores(string? externalStoreIds, @http:Header string? 'if\-match) returns APIExternalStoreList|NotFoundError|InternalServerErrorError {
-    // }
     isolated resource function get subscriptions(string? apiId, @http:Header string? 'if\-none\-match, string? query, int 'limit = 25, int offset = 0) returns SubscriptionList|http:NotModified|NotAcceptableError|InternalServerErrorError|error {
         SubscriptionList|error subList = getSubscriptions(apiId);
         if subList is SubscriptionList {
@@ -106,8 +102,6 @@ service /api/am/backoffice on ep0 {
            return  error(subList.message());
         }
     }
-    // resource function get subscriptions/[string subscriptionId]/usage() returns APIMonetizationUsage|http:NotModified|NotFoundError {
-    // }
     // resource function get subscriptions/[string subscriptionId]/'subscriber\-info() returns SubscriberInfo|NotFoundError {
     // }
     isolated resource function post subscriptions/'block\-subscription(string subscriptionId, string blockState, @http:Header string? 'if\-match) returns http:Ok|BadRequestError|NotFoundError|PreconditionFailedError| InternalServerErrorError {
@@ -131,8 +125,6 @@ service /api/am/backoffice on ep0 {
     // resource function get 'usage\-plans(@http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0) returns UsagePlanList|http:NotModified|NotAcceptableError {
     // }
     // resource function get search(string? query, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0) returns SearchResultList|http:NotModified|NotAcceptableError {
-    // }
-    // resource function get 'external\-stores() returns ExternalStore|InternalServerErrorError {
     // }
     // resource function get settings() returns Settings|NotFoundError {
     // }

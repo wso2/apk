@@ -197,3 +197,24 @@ isolated function db_unblockSubscription(string subscriptionId) returns error|st
         }
     }
 }
+
+isolated function db_getAPI(string apiId) returns API|error {
+    postgresql:Client | error db_Client  = getConnection();
+    if db_Client is error {
+        return error("Error while retrieving connection", db_Client);
+    } else {
+        sql:ParameterizedQuery GET_API_Prefix = `SELECT API_UUID AS ID, API_ID as APIID,
+        API_PROVIDER as PROVIDER, API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS, ARTIFACT as ARTIFACT
+        FROM API where API_UUID = `;
+        sql:ParameterizedQuery values = `${apiId}`;
+        sql:ParameterizedQuery sqlQuery = sql:queryConcat(GET_API_Prefix, values);
+
+        API | sql:Error result =  db_Client->queryRow(sqlQuery);
+        
+        if result is API {
+            return result;
+        } else {
+            return error("Error while retriving API" + result.message());  
+        }
+    }
+}

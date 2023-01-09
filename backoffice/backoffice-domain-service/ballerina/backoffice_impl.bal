@@ -162,3 +162,8 @@ isolated function unblockSubscription(string subscriptionId) returns string|erro
         return  unblockSub;
     }
 }
+
+isolated function getAPI(string apiId) returns API|error {
+    API|error getAPI = check db_getAPI(apiId);
+    return  getAPI;
+}
