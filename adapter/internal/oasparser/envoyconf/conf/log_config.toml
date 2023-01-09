@@ -2,7 +2,7 @@
 
 ## Adapter root Level configurations
 
-logfile = "adapter.log" # This file will be created inside adapter container.
+logfile = "/Users/amilase/Desktop/Repos/apk/adapter/internal/oasparser/envoyconf/conf/adapter.log" # This file will be created inside adapter container.
 logLevel = "INFO" # LogLevels can be "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC"
 LogFormat = "TEXT" # Values can be "JSON", "TEXT"
 

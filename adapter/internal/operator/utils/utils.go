@@ -59,3 +59,25 @@ func GetOperatorPodNamespace() string {
 	return envutils.GetEnv(constants.OperatorPodNamespace,
 		constants.OperatorPodNamespaceDefaultValue)
 }
+
+// GroupPtr returns pointer to created v1beta1.Group object
+func GroupPtr(name string) *v1beta1.Group {
+	group := v1beta1.Group(name)
+	return &group
+}
+
+// KindPtr returns a pointer to created v1beta1.Kind object
+func KindPtr(name string) *v1beta1.Kind {
+	kind := v1beta1.Kind(name)
+	return &kind
+}
+
+// PathMatchTypePtr returns a pointer to created v1beta1.PathMatchType object
+func PathMatchTypePtr(pType v1beta1.PathMatchType) *v1beta1.PathMatchType {
+	return &pType
+}
+
+// StringPtr returns a pointer to created string
+func StringPtr(val string) *string {
+	return &val
+}

@@ -202,7 +202,7 @@ func TestGetHostandBasepathandPort(t *testing.T) {
 func TestGetXWso2Label(t *testing.T) {
 	// TODO: (Vajira) add more test scenarios
 	//newLabels := GetXWso2Label(openAPIV3Struct.ExtensionProps)
-	apiYamlFilePath := config.GetMgwHome() + "/../adapter/test-resources/envoycodegen/openapi_with_xwso2label.yaml"
+	apiYamlFilePath := config.GetMgwHome() + "/test-resources/envoycodegen/openapi_with_xwso2label.yaml"
 	swagger, err := openapi3.NewLoader().LoadFromFile(apiYamlFilePath)
 	assert.Nil(t, err, "Swagger loader failed")
 
