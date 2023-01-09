@@ -1091,6 +1091,28 @@ components:
         verb:
           type: string
           example: POST
+        endpointConfig:
+          type: object
+          properties: {}
+          description: |
+            Endpoint configuration of the API. This can be used to provide different types of endpoints including Simple REST Endpoints, Loadbalanced and Failover.
+
+            `Simple REST Endpoint`
+              {
+                "endpoint_type": "http",
+                "sandbox_endpoints":       {
+                   "url": "https://pizzashack-service:8080/am/sample/pizzashack/v3/api/"
+                },
+                "production_endpoints":       {
+                   "url": "https://pizzashack-service:8080/am/sample/pizzashack/v3/api/"
+                }
+              }
+          example:
+            endpoint_type: http
+            sandbox_endpoints:
+              url: https://pizzashack-service:8080/am/sample/pizzashack/v3/api/
+            production_endpoints:
+              url: https://pizzashack-service:8080/am/sample/pizzashack/v3/api/
         scopes:
           type: array
           example: []
