@@ -1,0 +1,284 @@
+name: Trivy Scan
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 20 * * *"
+jobs:
+  scan-backoffice-domain-service:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cache Ballerina.
+        uses: actions/cache@v3
+        id: cache
+        with:
+          path: "ballerina-dist/*.deb"
+          key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+      - name: Download Ballerina distribution.
+        shell: sh
+        run: |
+          mkdir -p ballerina-dist
+          wget 'https://dist.ballerina.io/downloads/2201.3.0/ballerina-2201.3.0-swan-lake-linux-x64.deb' -P ballerina-dist
+        if: steps.cache.outputs.cache-hit != 'true'
+      - name: Install Ballerina distribution.
+        shell: sh
+        run: "sudo dpkg -i ballerina-dist/ballerina-2201.3.0-swan-lake-linux-x64.deb"
+      - name: Verify Ballerina Version
+        shell: sh
+        run: "bal -v"
+      - name: Checkout apk-repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: "0"
+      - name: Build backoffice-domain-service.
+        run: |
+          cd apk-repo/backoffice/backoffice-domain-service
+          gradle build
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'backoffice-domain-service:0.0.1-SNAPSHOT'
+          format: 'table'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+  scan-backoffice-internal-domain-service:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cache Ballerina.
+        uses: actions/cache@v3
+        id: cache
+        with:
+          path: "ballerina-dist/*.deb"
+          key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+      - name: Download Ballerina distribution.
+        shell: sh
+        run: |
+          mkdir -p ballerina-dist
+          wget 'https://dist.ballerina.io/downloads/2201.3.0/ballerina-2201.3.0-swan-lake-linux-x64.deb' -P ballerina-dist
+        if: steps.cache.outputs.cache-hit != 'true'
+      - name: Install Ballerina distribution.
+        shell: sh
+        run: "sudo dpkg -i ballerina-dist/ballerina-2201.3.0-swan-lake-linux-x64.deb"
+      - name: Verify Ballerina Version
+        shell: sh
+        run: "bal -v"
+      - name: Checkout apk-repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: "0"
+      - name: Build backoffice-internal-domain-service.
+        run: |
+          cd apk-repo/backoffice/backoffice-internal-domain-service
+          gradle build
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'backoffice-internal-domain-service:0.0.1-SNAPSHOT'
+          format: 'table'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+  scan-runtime-domain-service:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cache Ballerina.
+        uses: actions/cache@v3
+        id: cache
+        with:
+          path: "ballerina-dist/*.deb"
+          key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+      - name: Download Ballerina distribution.
+        shell: sh
+        run: |
+          mkdir -p ballerina-dist
+          wget 'https://dist.ballerina.io/downloads/2201.3.0/ballerina-2201.3.0-swan-lake-linux-x64.deb' -P ballerina-dist
+        if: steps.cache.outputs.cache-hit != 'true'
+      - name: Install Ballerina distribution.
+        shell: sh
+        run: "sudo dpkg -i ballerina-dist/ballerina-2201.3.0-swan-lake-linux-x64.deb"
+      - name: Verify Ballerina Version
+        shell: sh
+        run: "bal -v"
+      - name: Checkout apk-repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: "0"
+      - name: Build runtime-domain-service.
+        run: |
+          cd apk-repo/backoffice/runtime-domain-service
+          gradle build
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'runtime-domain-service:0.0.1-SNAPSHOT'
+          format: 'table'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'    
+  scan-admin-domain-service:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cache Ballerina.
+        uses: actions/cache@v3
+        id: cache
+        with:
+          path: "ballerina-dist/*.deb"
+          key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+      - name: Download Ballerina distribution.
+        shell: sh
+        run: |
+          mkdir -p ballerina-dist
+          wget 'https://dist.ballerina.io/downloads/2201.3.0/ballerina-2201.3.0-swan-lake-linux-x64.deb' -P ballerina-dist
+        if: steps.cache.outputs.cache-hit != 'true'
+      - name: Install Ballerina distribution.
+        shell: sh
+        run: "sudo dpkg -i ballerina-dist/ballerina-2201.3.0-swan-lake-linux-x64.deb"
+      - name: Verify Ballerina Version
+        shell: sh
+        run: "bal -v"
+      - name: Checkout apk-repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: "0"
+      - name: Build admin-domain-service.
+        run: |
+          cd apk-repo/backoffice/admin-domain-service
+          gradle build
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'admin-domain-service:0.0.1-SNAPSHOT'
+          format: 'table'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'                 
+  scan-devportal-domain-service:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cache Ballerina.
+        uses: actions/cache@v3
+        id: cache
+        with:
+          path: "ballerina-dist/*.deb"
+          key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+      - name: Download Ballerina distribution.
+        shell: sh
+        run: |
+          mkdir -p ballerina-dist
+          wget 'https://dist.ballerina.io/downloads/2201.3.0/ballerina-2201.3.0-swan-lake-linux-x64.deb' -P ballerina-dist
+        if: steps.cache.outputs.cache-hit != 'true'
+      - name: Install Ballerina distribution.
+        shell: sh
+        run: "sudo dpkg -i ballerina-dist/ballerina-2201.3.0-swan-lake-linux-x64.deb"
+      - name: Verify Ballerina Version
+        shell: sh
+        run: "bal -v"
+      - name: Checkout apk-repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: "0"
+      - name: Build devportal-domain-service.
+        run: |
+          cd apk-repo/backoffice/devportal-domain-service
+          gradle build
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'devportal-domain-service:0.0.1-SNAPSHOT'
+          format: 'table'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'                 
+  scan-adapter:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: "1.19"
+      - name: Install Revive
+        shell: sh
+        run: |
+          go install github.com/mgechev/revive@latest
+      - name: Checkout apk-repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: "0"
+          path: apk-repo
+      - name: Build adapter
+        run: |
+          cd apk-repo/adapter
+          gradle build
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'adapter:0.0.1-SNAPSHOT'
+          format: 'table'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'                 
+  scan-management-server:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: "1.19"
+      - name: Install Revive
+        shell: sh
+        run: |
+          go install github.com/mgechev/revive@latest
+      - name: Checkout apk-repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: "0"
+      - name: Build management-server.
+        run: |
+          cd apk-repo/management-server
+          gradle build
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'management-server:0.0.1-SNAPSHOT'
+          format: 'table'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'                 
+  scan-router:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout apk-repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: "0"
+      - name: Build router.
+        run: |
+          cd apk-repo/gateway/router
+          gradle build
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'router:0.0.1-SNAPSHOT'
+          format: 'table'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'                 
+  scan-enforcer:
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout apk-repo
+          uses: actions/checkout@v3
+          with:
+            fetch-depth: "0"
+        - name: Build enforcer.
+          run: |
+            cd apk-repo/gateway/enforcer
+            gradle build
+        - name: Run Trivy vulnerability scanner
+          uses: aquasecurity/trivy-action@master
+          with:
+            image-ref: 'enforcer:0.0.1-SNAPSHOT'
+            format: 'table'
+            ignore-unfixed: true
+            vuln-type: 'os,library'
+            severity: 'CRITICAL,HIGH'                 
