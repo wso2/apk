@@ -218,3 +218,22 @@ isolated function db_getAPI(string apiId) returns API|error {
         }
     }
 }
+
+isolated function db_getAPIDefinition(string apiId) returns APIDefinition|NotFoundError|error {
+    postgresql:Client | error dbClient  = getConnection();
+    if dbClient is error {
+        return error("Error while retrieving connection");
+    } else {
+        sql:ParameterizedQuery query = `SELECT encode(API_DEFINITION, 'escape')::text AS schemaDefinition, MEDIA_TYPE as type
+        FROM API_ARTIFACT WHERE API_UUID =${apiId}`;
+        APIDefinition | sql:Error result =  dbClient->queryRow(query);
+        if result is sql:NoRowsError {
+            NotFoundError nfe = {body:{code: 90915, message: "API Definition Not Found for provided API ID"}};
+            return nfe;
+        } else if result is APIDefinition {
+            return result;
+        } else {
+            return error("Internal Error while retrieving API Definition");
+        }
+    }
+}

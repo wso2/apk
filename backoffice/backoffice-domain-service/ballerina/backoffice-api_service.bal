@@ -60,8 +60,16 @@ service /api/am/backoffice on ep0 {
     }
     // resource function put apis/[string apiId](@http:Header string? 'if\-none\-match, @http:Payload ModifiableAPI payload) returns API|BadRequestError|ForbiddenError|NotFoundError|PreconditionFailedError {
     // }
-    // resource function get apis/[string apiId]/definition(@http:Header string? 'if\-none\-match) returns APIDefinition|http:NotModified|NotFoundError|NotAcceptableError {
-    // }
+    isolated resource function get apis/[string apiId]/definition(@http:Header string? 'if\-none\-match) returns APIDefinition|http:NotModified|NotFoundError|NotAcceptableError|InternalServerErrorError {
+        APIDefinition|NotFoundError|error apiDefinition = getAPIDefinition(apiId);
+        if apiDefinition is APIDefinition|NotFoundError {
+            log:printDebug(apiDefinition.toString());
+            return apiDefinition;
+        } else {
+            InternalServerErrorError internalError = {body: {code: 90914, message: "Internal Error while retrieving API Definition By API Id"}};
+            return internalError;
+        }
+    }
     // resource function get apis/[string apiId]/'resource\-paths(@http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0) returns ResourcePathList|http:NotModified|NotFoundError|NotAcceptableError {
     // }
     // resource function get apis/[string apiId]/thumbnail(@http:Header string? 'if\-none\-match, @http:Header string? accept = "application/json") returns http:Ok|http:NotModified|NotFoundError|NotAcceptableError {
