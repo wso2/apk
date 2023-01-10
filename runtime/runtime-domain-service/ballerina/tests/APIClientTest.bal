@@ -847,3 +847,113 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
     };
     return dataSet;
 }
+
+@test:Config {dataProvider: testDataGeneratedSwaggerDefinition}
+public function testRetrieveGeneratedSwaggerDefinition(API api, anydata expectedOutput) {
+    APIClient apiclient = new;
+    test:assertEquals(apiclient.retrieveGeneratedSwaggerDefinition(api), expectedOutput);
+}
+
+function testDataGeneratedSwaggerDefinition() returns map<[API, json|APKError]> {
+    map<[API, json|APKError]> data = {
+        "1": [
+            {
+                "name": "demoAPI",
+                "context": "/demoAPI/1.0.0",
+                "version": "1.0.0"
+            },
+            {
+                "openapi": "3.0.1",
+                "info": {"title": "demoAPI", "version": "1.0.0"},
+                "security": [{"default": []}],
+                "paths": {},
+                "components": {
+                    "securitySchemes": {
+                        "default": {
+                            "type": "oauth2",
+                            "flows": {"implicit": {"authorizationUrl": "https://test.com", "scopes": {}}}
+                        }
+                    }
+                }
+            }
+        ],
+        "2": [
+            {
+                "name": "demoAPI",
+                "context": "/demoAPI/1.0.0",
+                "version": "1.0.0",
+                "operations": [{target: "/*", verb: "GET"}, {target: "/*", verb: "POST"}, {target: "/*", verb: "DELETE"}]
+            },
+            {
+                "openapi": "3.0.1",
+                "info": {
+                    "title": "demoAPI",
+                    "version": "1.0.0"
+                },
+                "security": [
+                    {
+                        "default": []
+                    }
+                ],
+                "paths": {
+                    "/*": {
+                        "get": {
+                            "responses": {
+                                "200": {
+                                    "description": "OK"
+                                }
+                            },
+                            "security": [
+                                {
+                                    "default": []
+                                }
+                            ],
+                            "x-throttling-tier": "Unlimited"
+                        },
+                        "post": {
+                            "responses": {
+                                "200": {
+                                    "description": "OK"
+                                }
+                            },
+                            "security": [
+                                {
+                                    "default": []
+                                }
+                            ],
+                            "x-throttling-tier": "Unlimited"
+                        },
+                        "delete": {
+                            "responses": {
+                                "200": {
+                                    "description": "OK"
+                                }
+                            },
+                            "security": [
+                                {
+                                    "default": []
+                                }
+                            ],
+                            "x-throttling-tier": "Unlimited"
+                        }
+                    }
+                },
+                "components": {
+                    "securitySchemes": {
+                        "default": {
+                            "type": "oauth2",
+                            "flows": {
+                                "implicit": {
+                                    "authorizationUrl": "https://test.com",
+                                    "scopes": {}
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+    }
+;
+    return data;
+}

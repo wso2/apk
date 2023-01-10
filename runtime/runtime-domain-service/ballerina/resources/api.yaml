@@ -679,24 +679,12 @@ paths:
         - Services
       summary: Retrieve/search services
       description: |
-        Retrieve or search services in the Cluster. If namespace is not provided then this will return 
-        all services in default namespace to align with k8s API.
+        Retrieve or search services in the Cluster.
       operationId: searchServices
       parameters:
-        - name: name
+        - name: query
           in: query
-          description: |
-            Filter services by the name of the service
-          required: false
-          style: form
-          explode: true
-          schema:
-            type: string
-        - name: namespace
-          in: query
-          description: |
-            Required namespace in the K8s cluster. If namespace is not provided then this will return all services 
-            in default namespace to align with k8s API.
+          description: Search K8s Services based on namee or namespace.
           required: false
           style: form
           explode: true

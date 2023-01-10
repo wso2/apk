@@ -129,7 +129,7 @@ isolated function getService(string name, string namespace) returns Service? {
     return;
 }
 
-isolated function grtServiceById(string id) returns Service|error {
+isolated function getServiceById(string id) returns Service|error {
     lock {
         return trap services.cloneReadOnly().get(id);
     }

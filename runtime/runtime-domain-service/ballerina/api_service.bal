@@ -110,9 +110,9 @@ http:Service runtimeService = service object {
         InternalServerErrorError internalError = {body: {code: 900910, message: "Not implemented"}};
         return internalError;
     }
-    isolated resource function get services(string? name, string? namespace, string sortBy = "createdTime", string sortOrder = "desc", int 'limit = 25, int offset = 0) returns ServiceList|BadRequestError|InternalServerErrorError {
+    isolated resource function get services(string? query, string sortBy = "createdTime", string sortOrder = "desc", int 'limit = 25, int offset = 0) returns ServiceList|BadRequestError|InternalServerErrorError {
         ServiceClient serviceClient = new ();
-        return serviceClient.getServices(name, namespace, sortBy, sortOrder, 'limit, offset);
+        return serviceClient.getServices(query, sortBy, sortOrder, 'limit, offset);
     }
     isolated resource function get services/[string serviceId]() returns Service|BadRequestError|NotFoundError|InternalServerErrorError {
         ServiceClient serviceClient = new ();

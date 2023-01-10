@@ -372,11 +372,7 @@ public class APIClient {
         return false;
     }
 
-    function createAndDeployAPI(API api) {
-        model:API k8sAPI = self.convertK8sCrAPI(api);
-        log:printInfo(<string>k8sAPI.toJson());
-    }
-
+ 
     function convertK8sCrAPI(API api) returns model:API {
         model:API apispec = {
             metadata: {
@@ -409,7 +405,7 @@ public class APIClient {
             return badRequest;
         }
         self.setDefaultOperationsIfNotExist(api);
-        Service|error serviceRetrieved = grtServiceById(serviceKey);
+        Service|error serviceRetrieved = getServiceById(serviceKey);
         string uniqueId = uuid:createType1AsString();
         if serviceRetrieved is Service {
             model:APIArtifact apiArtifact = {uniqueId: uniqueId};
@@ -766,7 +762,7 @@ public class APIClient {
         return httpRouteMatch;
     }
 
-    private isolated function retrieveGeneratedSwaggerDefinition(API api) returns json|APKError {
+    isolated function retrieveGeneratedSwaggerDefinition(API api) returns json|APKError {
         runtimeModels:API api1 = runtimeModels:newAPI1();
         api1.setName(api.name);
         api1.setType(api.'type);

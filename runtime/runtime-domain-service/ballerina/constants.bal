@@ -22,6 +22,7 @@ const string SORT_ORDER_ASC = "asc";
 const string SORT_ORDER_DESC = "desc";
 const string SEARCH_CRITERIA_NAME = "name";
 const string SEARCH_CRITERIA_TYPE = "type";
+const string SEARCH_CRITERIA_NAMESPACE = "namespace";
 const string SORT_BY_SERVICE_NAME = "serviceName";
 const string SORT_BY_SERVICE_CREATED_TIME = "createdTime";
 
