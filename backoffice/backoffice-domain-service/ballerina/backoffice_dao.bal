@@ -197,3 +197,43 @@ isolated function db_unblockSubscription(string subscriptionId) returns error|st
         }
     }
 }
+
+isolated function db_getAPI(string apiId) returns API|error {
+    postgresql:Client | error db_Client  = getConnection();
+    if db_Client is error {
+        return error("Error while retrieving connection", db_Client);
+    } else {
+        sql:ParameterizedQuery GET_API_Prefix = `SELECT API_UUID AS ID, API_ID as APIID,
+        API_PROVIDER as PROVIDER, API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS, ARTIFACT as ARTIFACT
+        FROM API where API_UUID = `;
+        sql:ParameterizedQuery values = `${apiId}`;
+        sql:ParameterizedQuery sqlQuery = sql:queryConcat(GET_API_Prefix, values);
+
+        API | sql:Error result =  db_Client->queryRow(sqlQuery);
+        
+        if result is API {
+            return result;
+        } else {
+            return error("Error while retriving API" + result.message());  
+        }
+    }
+}
+
+isolated function db_getAPIDefinition(string apiId) returns APIDefinition|NotFoundError|error {
+    postgresql:Client | error dbClient  = getConnection();
+    if dbClient is error {
+        return error("Error while retrieving connection");
+    } else {
+        sql:ParameterizedQuery query = `SELECT encode(API_DEFINITION, 'escape')::text AS schemaDefinition, MEDIA_TYPE as type
+        FROM API_ARTIFACT WHERE API_UUID =${apiId}`;
+        APIDefinition | sql:Error result =  dbClient->queryRow(query);
+        if result is sql:NoRowsError {
+            NotFoundError nfe = {body:{code: 90915, message: "API Definition Not Found for provided API ID"}};
+            return nfe;
+        } else if result is APIDefinition {
+            return result;
+        } else {
+            return error("Internal Error while retrieving API Definition");
+        }
+    }
+}

@@ -162,3 +162,13 @@ isolated function unblockSubscription(string subscriptionId) returns string|erro
         return  unblockSub;
     }
 }
+
+isolated function getAPI(string apiId) returns API|error {
+    API|error getAPI = check db_getAPI(apiId);
+    return  getAPI;
+}
+
+isolated function getAPIDefinition(string apiId) returns APIDefinition|NotFoundError|error {
+    APIDefinition|NotFoundError|error apiDefinition = db_getAPIDefinition(apiId);
+    return apiDefinition;
+}
