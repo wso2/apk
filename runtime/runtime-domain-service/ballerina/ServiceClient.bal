@@ -110,7 +110,7 @@ public class ServiceClient {
                     name: k8sAPI.spec.apiDisplayName,
                     id: k8sAPI.metadata.uid,
                     'type: k8sAPI.spec.apiType,
-                    'version: k8sAPI.apiVersion
+                    'version: k8sAPI.spec.apiVersion
                 });
             }
             APIList apiList = {list: apiInfos, count: apiInfos.length(), pagination: {total: apiInfos.length()}};

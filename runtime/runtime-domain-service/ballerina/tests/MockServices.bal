@@ -164,20 +164,7 @@ public function getMockServiceList() returns json {
                     "selfLink": "/api/v1/namespaces/apk/services/backend",
                     "uid": "275b00d1-712c-4df2-b65a-9b14678abe5b",
                     "resourceVersion": "1514",
-                    "creationTimestamp": "2022-12-13T12:25:09Z",
-                    "annotations": {
-                        "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"Service\",\"metadata\":{\"annotations\":{},\"name\":\"backend\",\"namespace\":\"apk\"},\"spec\":{\"ports\":[{\"name\":\"http\",\"port\":80,\"targetPort\":80}],\"selector\":{\"app\":\"httpbin\"}}}"
-                    },
-                    "managedFields": [
-                        {
-                            "manager": "kubectl-client-side-apply",
-                            "operation": "Update",
-                            "apiVersion": "v1",
-                            "time": "2022-12-13T08:25:09Z",
-                            "fieldsType": "FieldsV1",
-                            "fieldsV1": {"f:metadata": {"f:annotations": {".": {}, "f:kubectl.kubernetes.io/last-applied-configuration": {}}}, "f:spec": {"f:ports": {".": {}, "k:{\"port\":80,\"protocol\":\"TCP\"}": {".": {}, "f:name": {}, "f:port": {}, "f:protocol": {}, "f:targetPort": {}}}, "f:selector": {".": {}, "f:app": {}}, "f:sessionAffinity": {}, "f:type": {}}}
-                        }
-                    ]
+                    "creationTimestamp": "2022-12-13T12:25:09Z"
                 },
                 "spec": {
                     "ports": [

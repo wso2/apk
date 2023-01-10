@@ -18,14 +18,14 @@
 public type Metadata record {
     string name;
     string namespace;
-    string? uid;
-    string? creationTimestamp;
-    string? selfLink = ();
-    string? resourceVersion = ();
-    OwnerReference[]? ownerReferences = ();
-    ManagedFieldsEntry[]? managedFields = ();
-    int? generation = ();
-    string? generateName = ();
+    string uid?;
+    string creationTimestamp?;
+    string selfLink?;
+    string resourceVersion?;
+    OwnerReference[] ownerReferences?;
+    ManagedFieldsEntry[] managedFields?;
+    int generation?;
+    string generateName?;
     map<string> labels?;
 };
 
