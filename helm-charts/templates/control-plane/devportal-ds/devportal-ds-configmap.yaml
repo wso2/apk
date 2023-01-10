@@ -45,4 +45,9 @@ data:
     audience = "https://apim.wso2.com/oauth2/token"
     keyId = "gateway_certificate_alias"
     expTime = 3600.0
+    [wso2.devportal_service.sdkConfig]
+    groupId = "org.wso2"
+    artifactId = "org.wso2.client."
+    modelPackage = "org.wso2.client.model."
+    apiPackage = "org.wso2.client.api."
 {{- end -}}

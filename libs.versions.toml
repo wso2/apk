@@ -74,7 +74,7 @@ netty-http2 = {module = "io.netty:netty-codec-http2", version.ref = "netty"}
 nimbus-jose-jwt = {module = "org.wso2.orbit.com.nimbusds:nimbus-jose-jwt", version.ref = "nimbus"}
 okhttp = {module = "org.wso2.orbit.com.squareup.okhttp:okhttp", version.ref = "okhttp"}
 okio = {module = "org.wso2.orbit.com.squareup.okio:okio", version.ref = "okio"}
-openapi-generator = {module = "org.wso2.orbit.org.openapitools:openapi-generator", version.ref = "openapi-generator"}
+openapi-generator = {module = "org.openapitools:openapi-generator", version.ref = "openapi-generator-plugin"}
 openfeign-feign-core = {module = "io.github.openfeign:feign-core", version.ref = "io-github-openfeign"}
 openfeign-feign-gson = {module = "io.github.openfeign:feign-gson", version.ref = "io-github-openfeign"}
 openfeign-feign-okhttp = {module = "io.github.openfeign:feign-okhttp", version.ref = "io-github-openfeign"}
@@ -168,7 +168,6 @@ netty = "4.1.77.Final"
 nimbus = "7.9.0.wso2v1"
 okhttp = "4.9.3.wso2v1"
 okio = "2.8.0.wso2v1"
-openapi-generator = "4.3.1.wso2v4"
 opentelemetry = "1.18.0"
 opentelemetry-jaeger-thrift = "1.6.0"
 opentelemetry-semconv = "1.18.0-alpha"

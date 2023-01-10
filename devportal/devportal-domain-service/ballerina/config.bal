@@ -72,3 +72,10 @@ public type KeyStore record {|
     string path;
     string keyPassword?;
 |};
+
+public type SDKConfiguration record {|
+    string groupId = "org.wso2";
+    string artifactId = "org.wso2.client.";
+    string modelPackage = "org.wso2.client.model.";
+    string apiPackage = "org.wso2.client.api.";
+|};
