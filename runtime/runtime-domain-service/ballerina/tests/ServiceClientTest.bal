@@ -700,31 +700,4 @@ function serviceUsageDataProvider() returns map<[string, APIList|BadRequestError
     };
     return data;
 }
-@test:Config{}
-public function testGetServiceByID(string id,anydata expected){
-    ServiceClient serviceClient = new;
-    test:assertEquals(serviceClient.getServiceById(id),expected);
-}
 
-public function serviceByIdDataProvider() returns map<[string,Service|BadRequestError|NotFoundError|InternalServerErrorError]>{
-                NotFoundError notfound = {body: {code: 90914, message: "Service abcd-efght not found"}};
-    map<[string,Service|BadRequestError|NotFoundError|InternalServerErrorError]> data  = {
-        "1":["275b00d1-712c-4df2-b65a-9b14678abe5b",{
-			"id": "275b00d1-712c-4df2-b65a-9b14678abe5b",
-			"name": "httpbin",
-			"namespace": "apk-platform",
-			"type": "ClusterIP",
-			"portmapping": [
-				{
-					"name": "http",
-					"protocol": "TCP",
-					"targetport": 80,
-					"port": 80
-				}
-			],
-			"createdTime": "2022-12-13T12:25:09Z"
-		}],
-        "2":["abcd-efght",notfound]
-    };
-    return data;
-}

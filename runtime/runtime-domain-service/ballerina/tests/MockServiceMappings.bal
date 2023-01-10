@@ -47,7 +47,6 @@ public function getMockServiceMappings() returns json {
                 "kind": "ServiceMapping",
                 "metadata": {
                     "creationTimestamp": "2022-12-13T18:07:58Z",
-                    "name": "01ed7b11-0b25-12ee-927c-cd10449788c2-servicemapping",
                     "name": "01ed7b08-f2b1-1166-82d5-649ae706d28d-servicemapping",
                     "namespace": "apk-platform",
                     "resourceVersion": "26482",
