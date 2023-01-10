@@ -78,11 +78,16 @@ public class APIClientGenerationManager {
      * @param apiName     name of the API
      * @param apiVersion  version of the API
      * @param swaggerAPIDefinition Swagger Definition of the API
+     * @param groupId  group id of the generated SDK
+     * @param artifactId  artifact id of the generated SDK
+     * @param modelPackage  model package name of the generated SDK
+     * @param apiPackage  api package name of the generated SDK
      * @return a map containing the zip file name and its' temporary location until it is downloaded
      * @throws APIClientGenerationException if failed to generate the SDK
      */
     public Map<String, String> generateSDK(String sdkLanguage, String apiName, String apiVersion,
-                                           String swaggerAPIDefinition)
+                                           String swaggerAPIDefinition, String groupId, String artifactId,
+                                           String modelPackage, String apiPackage)
             throws APIClientGenerationException {
 
         if (StringUtils.isBlank(sdkLanguage) || StringUtils.isBlank(apiName) || StringUtils.isBlank(apiVersion)) {
@@ -125,7 +130,8 @@ public class APIClientGenerationManager {
 
         String sdkDirectoryName = apiName + "_" + apiVersion + "_" + sdkLanguage;
         String temporaryOutputPath = tempDirectoryLocation + File.separator + sdkDirectoryName;
-        generateClient(apiName, specFileLocation, sdkLanguage, temporaryOutputPath);
+        generateClient(apiName, specFileLocation, sdkLanguage, temporaryOutputPath,
+                groupId, artifactId, modelPackage, apiPackage);
         String temporaryZipFilePath = temporaryOutputPath + SDKConstants.ZIP_FILE_EXTENSION;
         try {
             ZIPUtils.zipDir(temporaryOutputPath, temporaryZipFilePath);
@@ -173,14 +179,15 @@ public class APIClientGenerationManager {
      * @param sdkLanguage         preferred SDK language
      * @param temporaryOutputPath temporary location where the SDK archive is saved until downloaded
      */
-    private void generateClient(String apiName, String specLocation, String sdkLanguage, String temporaryOutputPath) {
+    private void generateClient(String apiName, String specLocation, String sdkLanguage, String temporaryOutputPath,
+                                String groupId, String artifactId, String modelPackage, String apiPackage ) {
 
         CodegenConfigurator codegenConfigurator = new CodegenConfigurator();
-        codegenConfigurator.setGroupId(SDKConstants.CLIENT_CODEGEN_GROUPID);
-        codegenConfigurator.setArtifactId(SDKConstants.CLIENT_CODEGEN_ARTIFACTID+ apiName);
+        codegenConfigurator.setGroupId(groupId);
+        codegenConfigurator.setArtifactId(artifactId + apiName);
         codegenConfigurator
-                .setModelPackage(SDKConstants.CLIENT_CODEGEN_MODAL_PACKAGE + apiName);
-        codegenConfigurator.setApiPackage(SDKConstants.CLIENT_CODEGEN_API_PACKAGE + apiName);
+                .setModelPackage(modelPackage + apiName);
+        codegenConfigurator.setApiPackage(apiPackage + apiName);
         codegenConfigurator.setInputSpec(specLocation);
         codegenConfigurator.setGeneratorName(sdkLanguage);
         codegenConfigurator.setOutputDir(temporaryOutputPath);

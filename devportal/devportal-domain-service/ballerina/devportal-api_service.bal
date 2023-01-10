@@ -70,7 +70,7 @@ service /api/am/devportal on ep0 {
     }
     resource function get apis/[string apiId]/sdks/[string language](@http:Header string? 'x\-wso2\-tenant) returns http:Response|json|BadRequestError|NotFoundError|InternalServerErrorError|error {
         string organization = "carbon.super";
-        string?|http:Response|sdk:APIClientGenerationException|error sdk = check generateSDK(apiId,language, organization);
+        string?|http:Response|sdk:APIClientGenerationException|error sdk = check generateSDKImpl(apiId,language, organization);
         if sdk is http:Response {
             return sdk;
         } else if sdk is sdk:APIClientGenerationException|error {

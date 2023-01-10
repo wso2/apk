@@ -43,7 +43,7 @@ isolated function getAPIDefinition(string apiId, string organization) returns AP
     return apiDefinition;
 }
 
-function generateSDK(string apiId, string language, string org) returns http:Response|sdk:APIClientGenerationException|string?|error {
+function generateSDKImpl(string apiId, string language, string org) returns http:Response|sdk:APIClientGenerationException|string?|error {
     sdk:APIClientGenerationManager sdkClient = new sdk:APIClientGenerationManager(newSDKClient());
     string apiName;
     string apiVersion;
@@ -55,7 +55,8 @@ function generateSDK(string apiId, string language, string org) returns http:Res
         if apiDefinition is APIDefinition {
             string? schema = apiDefinition.schemaDefinition;
             if schema is string {
-                javautil:Map|sdk:APIClientGenerationException sdkMap = sdkClient.generateSDK(language,apiName,apiVersion,schema);
+                javautil:Map|sdk:APIClientGenerationException sdkMap = sdkClient.generateSDK(language,apiName,apiVersion,schema,
+                sdkConfig.groupId, sdkConfig.artifactId, sdkConfig.modelPackage, sdkConfig.apiPackage);
                 if sdkMap is javautil:Map {
                     string path = readMap(sdkMap,"zipFilePath");
                     string fileName = readMap(sdkMap,"zipFileName");
