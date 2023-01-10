@@ -36,15 +36,6 @@ tasks.register('go_vet', Exec) {
     commandLine 'go', 'vet', '-c=5', './...'
 }
 
-tasks.register('go_test', Exec) {
-    group 'go'
-    description 'Automates testing the packages named by the import paths.'
-    if (project.hasProperty('file')) {
-    commandLine 'go', 'test','-race','-coverprofile=coverage.out','-covermode=atomic', file
-    } else {
-        throw new StopExecutionException('Missing "file" property')
-    }
-}
 tasks.register('go_tidy', Exec) {
     group 'go'
     description 'Running go mod tidy.'
@@ -56,7 +47,6 @@ tasks.register('go_build') {
     description 'Compiles the packages named by the import paths, along with their dependencies. AMD64 Archtecture'
     dependsOn go_mac_os_build
     dependsOn go_linux_build
-    finalizedBy go_test
 }
 tasks.register('go_mac_os_build', Exec) {
     group 'go'

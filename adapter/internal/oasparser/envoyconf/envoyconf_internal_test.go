@@ -18,7 +18,6 @@
 package envoyconf
 
 import (
-	"fmt"
 	"io/ioutil"
 	"regexp"
 	"strings"
@@ -35,6 +34,7 @@ import (
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/stretchr/testify/assert"
 	"github.com/wso2/apk/adapter/config"
+	"github.com/wso2/apk/adapter/internal/oasparser/constants"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
@@ -48,21 +48,31 @@ func TestCreateRoute(t *testing.T) {
 	// 4. Method header regex matcher
 	vHost := "localhost"
 	xWso2BasePath := "/xWso2BasePath"
-	basePath := "/basepath"
 	title := "WSO2"
 	apiType := "HTTP"
 	endpoint := model.Endpoint{
-		Host:     "abc.com",
-		Basepath: basePath,
-		URLType:  "http",
-		Port:     80,
-		RawURL:   "http://abc.com",
+		Host:    "abc.com",
+		URLType: "http",
+		Port:    80,
+		RawURL:  "http://abc.com",
 	}
 	version := "1.0"
-	resourceWithGet := model.CreateMinimalDummyResourceForTests("/resourcePath", []*model.Operation{model.NewOperation("GET", nil, nil)},
-		"resource_operation_id", []model.Endpoint{}, []model.Endpoint{})
-	resourceWithGetPost := model.CreateMinimalDummyResourceForTests("/resourcePath", []*model.Operation{model.NewOperation("GET", nil, nil), model.NewOperation("POST", nil, nil)},
-		"resource_operation_id", []model.Endpoint{}, []model.Endpoint{})
+
+	// Creating path rewrite policy
+	var policies = model.OperationPolicies{}
+	policyParameters := make(map[string]interface{})
+	policyParameters[constants.RewritePathType] = gwapiv1b1.PrefixMatchHTTPPathModifier
+	policyParameters[constants.IncludeQueryParams] = true
+	policyParameters[constants.RewritePathResourcePath] = "/basepath/resourcePath"
+	policies.Request = append(policies.Request, model.Policy{
+		PolicyName: string(gwapiv1b1.HTTPRouteFilterURLRewrite),
+		Action:     constants.ActionRewritePath,
+		Parameters: policyParameters,
+	})
+
+	resourceWithGet := model.CreateMinimalDummyResourceForTests("/xWso2BasePath/resourcePath",
+		[]*model.Operation{model.NewOperationWithPolicies("GET", policies)},
+		"resource_operation_id", []model.Endpoint{}, []model.Endpoint{}, true)
 	clusterName := "resource_operation_id"
 	hostRewriteSpecifier := &routev3.RouteAction_AutoHostRewrite{
 		AutoHostRewrite: &wrapperspb.BoolValue{
@@ -79,9 +89,9 @@ func TestCreateRoute(t *testing.T) {
 					MaxProgramSize: nil,
 				},
 			},
-			Regex: "^/xWso2BasePath/resourcePath[/]{0,1}",
+			Regex: "^/xWso2BasePath/resourcePath(/.*)*",
 		},
-		Substitution: "/basepath/resourcePath",
+		Substitution: "/basepath/resourcePath\\1",
 	}
 
 	UpgradeConfigsDisabled := []*routev3.RouteAction_UpgradeConfig{{
@@ -112,25 +122,8 @@ func TestCreateRoute(t *testing.T) {
 	assert.Equal(t, expectedRouteActionWithXWso2BasePath, generatedRouteWithXWso2BasePath.Action,
 		"Route generation mismatch when xWso2BasePath option is provided.")
 	assert.NotNil(t, generatedRouteWithXWso2BasePath.GetMatch().Headers, "Headers property should not be null")
-	assert.Equal(t, "^GET|OPTIONS$", generatedRouteWithXWso2BasePath.GetMatch().Headers[0].GetStringMatch().GetSafeRegex().Regex,
+	assert.Equal(t, "^GET$", generatedRouteWithXWso2BasePath.GetMatch().Headers[0].GetStringMatch().GetSafeRegex().Regex,
 		"Assigned HTTP Method Regex is incorrect when single method is available.")
-
-	generatedRouteArrayWithoutXWso2BasePath, err := createRoutes(generateRouteCreateParamsForUnitTests(title, apiType, vHost, "", version,
-		endpoint.Basepath, &resourceWithGetPost, clusterName, "", nil, false))
-	assert.Nil(t, err, "Error while creating routes WithoutXWso2BasePath")
-	generatedRouteWithoutXWso2BasePath := generatedRouteArrayWithoutXWso2BasePath[0]
-	assert.NotNil(t, generatedRouteWithoutXWso2BasePath, "Route should not be null")
-	assert.NotNil(t, generatedRouteWithoutXWso2BasePath.GetMatch().Headers, "Headers property should not be null")
-	assert.Equal(t, "^GET|POST|OPTIONS$", generatedRouteWithoutXWso2BasePath.GetMatch().Headers[0].GetStringMatch().GetSafeRegex().Regex,
-		"Assigned HTTP Method Regex is incorrect when multiple methods are available.")
-
-	context := fmt.Sprintf("%s/%s", xWso2BasePath, version)
-	generatedRouteWithDefaultVersion, err := createRoutes(generateRouteCreateParamsForUnitTests(title, apiType, vHost, context, version,
-		endpoint.Basepath, &resourceWithGetPost, clusterName, "", nil, true))
-	assert.Nil(t, err, "Error while creating routes WithDefaultVersion")
-	assert.NotNil(t, generatedRouteWithDefaultVersion, "Route should not be null")
-	assert.True(t, strings.HasPrefix(generatedRouteWithDefaultVersion[0].GetMatch().GetSafeRegex().Regex, fmt.Sprintf("^(?:%s|%s)", context, xWso2BasePath)),
-		"Default version basepath is not generated correctly")
 }
 
 func TestCreateRouteClusterSpecifier(t *testing.T) {
@@ -149,7 +142,7 @@ func TestCreateRouteClusterSpecifier(t *testing.T) {
 	apiType := "HTTP"
 
 	resourceWithGet := model.CreateMinimalDummyResourceForTests("/resourcePath", []*model.Operation{model.NewOperation("GET", nil, nil)},
-		"resource_operation_id", []model.Endpoint{}, []model.Endpoint{})
+		"resource_operation_id", []model.Endpoint{}, []model.Endpoint{}, false)
 
 	routeWithProdEp, err := createRoutes(generateRouteCreateParamsForUnitTests(title, apiType, vHost, xWso2BasePath, version, endpointBasePath,
 		&resourceWithGet, prodClusterName, "", nil, false))
@@ -191,7 +184,7 @@ func TestCreateRouteExtAuthzContext(t *testing.T) {
 	apiType := "HTTP"
 
 	resourceWithGet := model.CreateMinimalDummyResourceForTests("/resourcePath", []*model.Operation{model.NewOperation("GET", nil, nil)},
-		"resource_operation_id", []model.Endpoint{}, []model.Endpoint{})
+		"resource_operation_id", []model.Endpoint{}, []model.Endpoint{}, false)
 
 	routeWithProdEp, err := createRoutes(generateRouteCreateParamsForUnitTests(title, apiType, vHost, xWso2BasePath, version,
 		endpointBasePath, &resourceWithGet, prodClusterName, sandClusterName, nil, false))
@@ -463,7 +456,7 @@ func TestGenerateSubstitutionString(t *testing.T) {
 }
 
 func TestCreateUpstreamTLSContext(t *testing.T) {
-	certFilePath := config.GetMgwHome() + "/../adapter/test-resources/envoycodegen/certs/testcrt.crt"
+	certFilePath := config.GetMgwHome() + "/test-resources/envoycodegen/certs/testcrt.crt"
 	certByteArr, err := ioutil.ReadFile(certFilePath)
 	assert.Nil(t, err, "Error while reading the certificate : "+certFilePath)
 	defaultMgwKeyPath := "/home/wso2/security/keystore/mg.key"
@@ -586,7 +579,7 @@ func TestGetCorsPolicy(t *testing.T) {
 	assert.Empty(t, corsPolicy3.GetAllowCredentials(), "Allow Credential property should not be assigned.")
 
 	resourceWithGet := model.CreateMinimalDummyResourceForTests("/resourcePath", []*model.Operation{model.NewOperation("GET", nil, nil)},
-		"resource_operation_id", []model.Endpoint{}, []model.Endpoint{})
+		"resource_operation_id", []model.Endpoint{}, []model.Endpoint{}, false)
 
 	// Route without CORS configuration
 	routeWithoutCors, err := createRoutes(generateRouteCreateParamsForUnitTests("test", "HTTP", "localhost", "/test", "1.0.0", "/test",

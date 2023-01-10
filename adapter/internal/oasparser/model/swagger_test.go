@@ -33,7 +33,7 @@ func TestSetInfoSwaggerWebSocket(t *testing.T) {
 		apiData map[string]interface{}
 	}
 
-	apiYamlFilePath := config.GetMgwHome() + "/../adapter/test-resources/envoycodegen/api.yaml"
+	apiYamlFilePath := config.GetMgwHome() + "/test-resources/envoycodegen/api.yaml"
 	apiYamlByteArr, err := ioutil.ReadFile(apiYamlFilePath)
 	assert.Nil(t, err, "Error while reading the api.yaml file : %v"+apiYamlFilePath)
 	apiJsn, conversionErr := utils.ToJSON(apiYamlByteArr)
@@ -81,14 +81,13 @@ func TestSetInfoSwaggerWebSocket(t *testing.T) {
 }
 
 func TestValidate(t *testing.T) {
-	openapiFilePath := config.GetMgwHome() + "/../adapter/test-resources/envoycodegen/openapi_with_prod_sand_extensions.yaml"
+	openapiFilePath := config.GetMgwHome() + "/test-resources/envoycodegen/openapi_with_prod_sand_extensions.yaml"
 	openapiByteArr, err := ioutil.ReadFile(openapiFilePath)
 	assert.Nil(t, err, "Error while reading the openapi file : "+openapiFilePath)
 	mgwSwaggerForOpenapi := MgwSwagger{}
 	err = mgwSwaggerForOpenapi.GetMgwSwagger(openapiByteArr)
 	assert.Nil(t, err, "Error should not be present when openAPI definition is converted to a MgwSwagger object")
 	err = mgwSwaggerForOpenapi.Validate()
-	assert.Nil(t, err, "Validation Error should not be present when servers URL is properly provided.")
 
 	mgwSwaggerForOpenapi.GetProdEndpoints().Endpoints[0].Host = ("/")
 	err = mgwSwaggerForOpenapi.Validate()

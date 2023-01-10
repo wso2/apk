@@ -280,3 +280,8 @@ func NewOperation(method string, security []map[string][]string, extensions map[
 	id := uuid.New().String()
 	return &Operation{id, method, security, tier, disableSecurity, extensions, OperationPolicies{}, &api.MockedApiConfig{}}
 }
+
+// NewOperationWithPolicies Creates and returns operation with given method and policies
+func NewOperationWithPolicies(method string, policies OperationPolicies) *Operation {
+	return &Operation{iD: uuid.New().String(), method: method, policies: policies}
+}

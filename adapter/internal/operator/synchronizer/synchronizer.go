@@ -120,19 +120,19 @@ func deleteAPIFromEnv(httpRoute *gwapiv1b1.HTTPRoute, apiState APIState) error {
 func deployAPIInGateway(apiState APIState) error {
 	var err error
 	if apiState.ProdHTTPRoute != nil {
-		err = generateMGWSwagger(apiState, apiState.ProdHTTPRoute, true)
+		_, err = GenerateMGWSwagger(apiState, apiState.ProdHTTPRoute, true)
 	}
 	if err != nil {
 		return err
 	}
 	if apiState.SandHTTPRoute != nil {
-		err = generateMGWSwagger(apiState, apiState.SandHTTPRoute, false)
+		_, err = GenerateMGWSwagger(apiState, apiState.SandHTTPRoute, false)
 	}
 	return err
 }
 
-// generateMGWSwagger this will populate a mgwswagger representation for an HTTPRoute
-func generateMGWSwagger(apiState APIState, httpRoute *HTTPRouteState, isProd bool) error {
+// GenerateMGWSwagger this will populate a mgwswagger representation for an HTTPRoute
+func GenerateMGWSwagger(apiState APIState, httpRoute *HTTPRouteState, isProd bool) (*model.MgwSwagger, error) {
 	var mgwSwagger model.MgwSwagger
 	mgwSwagger.SetInfoAPICR(*apiState.APIDefinition)
 	if err := mgwSwagger.SetInfoHTTPRouteCR(httpRoute.HTTPRoute, httpRoute.Authentications, httpRoute.ResourceAuthentications,
@@ -142,7 +142,7 @@ func generateMGWSwagger(apiState APIState, httpRoute *HTTPRouteState, isProd boo
 			Severity:  logging.MAJOR,
 			ErrorCode: 2613,
 		})
-		return err
+		return nil, err
 	}
 	if err := mgwSwagger.Validate(); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
@@ -151,7 +151,7 @@ func generateMGWSwagger(apiState APIState, httpRoute *HTTPRouteState, isProd boo
 			Severity:  logging.MAJOR,
 			ErrorCode: 2615,
 		})
-		return err
+		return nil, err
 	}
 	vHosts := getVhostsForAPI(httpRoute.HTTPRoute)
 	labels := getLabelsForAPI(httpRoute.HTTPRoute)
@@ -166,7 +166,7 @@ func generateMGWSwagger(apiState APIState, httpRoute *HTTPRouteState, isProd boo
 			})
 		}
 	}
-	return nil
+	return &mgwSwagger, nil
 }
 
 // getVhostForAPI returns the vHosts related to an API.

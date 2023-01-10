@@ -97,7 +97,7 @@ func TestCreateRoutesConfigForRds(t *testing.T) {
 	}
 }
 
-//Create some routes to perform unit tests
+// Create some routes to perform unit tests
 func testCreateRoutesForUnitTests(t *testing.T) []*routev3.Route {
 	//cors configuration
 	corsConfigModel3 := &model.CorsConfig{
@@ -110,13 +110,13 @@ func testCreateRoutesForUnitTests(t *testing.T) []*routev3.Route {
 	operationPost := model.NewOperation("POST", nil, nil)
 	operationPut := model.NewOperation("PUT", nil, nil)
 	resourceWithGet := model.CreateMinimalDummyResourceForTests("/resourcePath", []*model.Operation{operationGet},
-		"resource_operation_id", []model.Endpoint{}, []model.Endpoint{})
+		"resource_operation_id", []model.Endpoint{}, []model.Endpoint{}, false)
 	resourceWithPost := model.CreateMinimalDummyResourceForTests("/resourcePath", []*model.Operation{operationPost},
-		"resource_operation_id", []model.Endpoint{}, []model.Endpoint{})
+		"resource_operation_id", []model.Endpoint{}, []model.Endpoint{}, false)
 	resourceWithPut := model.CreateMinimalDummyResourceForTests("/resourcePath", []*model.Operation{operationPut},
-		"resource_operation_id", []model.Endpoint{}, []model.Endpoint{})
+		"resource_operation_id", []model.Endpoint{}, []model.Endpoint{}, false)
 	resourceWithMultipleOperations := model.CreateMinimalDummyResourceForTests("/resourcePath", []*model.Operation{operationGet, operationPut},
-		"resource_operation_id", []model.Endpoint{}, []model.Endpoint{})
+		"resource_operation_id", []model.Endpoint{}, []model.Endpoint{}, false)
 
 	route1, err := createRoutes(generateRouteCreateParamsForUnitTests("test", "HTTP", "localhost", "/test", "1.0.0", "/test",
 		&resourceWithGet, "test-cluster", "", corsConfigModel3, false))

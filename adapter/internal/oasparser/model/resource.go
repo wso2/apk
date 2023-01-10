@@ -113,7 +113,7 @@ func (resource *Resource) HasPolicies() bool {
 // CreateMinimalDummyResourceForTests create a resource object with minimal required set of values
 // which could be used for unit tests.
 func CreateMinimalDummyResourceForTests(path string, methods []*Operation, id string, productionUrls,
-	sandboxUrls []Endpoint) Resource {
+	sandboxUrls []Endpoint, hasPolicies bool) Resource {
 
 	prodEndpints := generateEndpointCluster(constants.ProdClustersConfigNamePrefix, productionUrls, constants.LoadBalance)
 	sandboxEndpints := generateEndpointCluster(constants.SandClustersConfigNamePrefix, sandboxUrls, constants.LoadBalance)
@@ -124,6 +124,8 @@ func CreateMinimalDummyResourceForTests(path string, methods []*Operation, id st
 		iD:                  id,
 		productionEndpoints: prodEndpints,
 		sandboxEndpoints:    sandboxEndpints,
+		pathMatchType:       gwapiv1b1.PathMatchPathPrefix,
+		hasPolicies:         hasPolicies,
 	}
 }
 
