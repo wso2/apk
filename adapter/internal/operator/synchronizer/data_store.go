@@ -57,8 +57,6 @@ func (ods *OperatorDataStore) AddAPIState(api dpv1alpha1.API, prodHTTPRouteState
 // UpdateAPIState update the APIState on ref updates
 func (ods *OperatorDataStore) UpdateAPIState(apiDef *dpv1alpha1.API, prodHTTPRoute *HTTPRouteState,
 	sandHTTPRoute *HTTPRouteState) (APIState, []string, bool) {
-	ods.mu.Lock()
-	defer ods.mu.Unlock()
 	var updated bool
 	events := []string{}
 	cachedAPI, found := ods.apiStore[utils.NamespacedName(apiDef)]
