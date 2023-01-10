@@ -1,5 +1,6 @@
 import runtime_domain_service.model;
 import ballerina/http;
+import ballerina/regex;
 
 //
 // Copyright (c) 2022, WSO2 LLC. (http://www.wso2.com).
@@ -21,77 +22,19 @@ import ballerina/http;
 
 public class ServiceClient {
 
-    # This returns services in a namsepace.
-    #
-    # + namespace - namespace value
-    # + return - list of services in namespace.
-    public isolated function getServicesListInNamespace(string namespace) returns ServiceList|error {
-        Service[] servicesList = getServicesList();
-        Service[] filteredList = [];
-        foreach Service item in servicesList {
-            if item.namespace == namespace {
-                filteredList.push(item);
-            }
-        }
-        return {list: filteredList, pagination: {total: filteredList.length()}};
-    }
 
-    # This returns list of services in all namespaces.
-    #
-    # + sortBy - sort by to sort services (name,createdTime)  
-    # + sortOrder - Order to sort (asc,desc) 
-    # + 'limit - no of services to return  
-    # + offset - offset value
-    # + return - list of services in namespaces.
-    public isolated function getServicesListFromK8s(string sortBy, string sortOrder, int 'limit, int offset) returns ServiceList|BadRequestError {
-        return self.sortAndLimitServices(getServicesList(), sortBy, sortOrder, 'limit, offset);
-    }
 
-    # This retrieve specific service from name space.
-    #
-    # + name - name of service.
-    # + namespace - namespace of service.
-    # + return - service in namespace.
-    public isolated function getServiceFromK8s(string name, string namespace) returns ServiceList|error {
-        Service? serviceResult = getService(name, namespace);
-        if serviceResult is null {
-            return {list: []};
-        } else {
-            return {list: [serviceResult]};
+    public isolated function getServices(string? query, string sortBy, string sortOrder, int 'limit, int offset) returns ServiceList|BadRequestError|InternalServerErrorError {
+        Service[] serviceList = getServicesList().clone();
+        if query is string && query.toString().trim().length() > 0 {
+            return self.filterServicesBasedOnQuery(serviceList, query, sortBy, sortOrder, 'limit, offset);
         }
-    }
 
-    public isolated function getServices(string? name, string? namespace, string sortBy, string sortOrder, int 'limit, int offset) returns ServiceList|BadRequestError|InternalServerErrorError {
-        boolean serviceNameAvailable = name == () ? false : true;
-        boolean nameSpaceAvailable = namespace == () ? false : true;
-        if (nameSpaceAvailable && string:length(namespace.toString()) > 0) {
-            if (serviceNameAvailable && string:length(name.toString()) > 0) {
-                ServiceList|error serviceList = self.getServiceFromK8s(name.toString(), namespace.toString());
-                if serviceList is error {
-                    InternalServerErrorError internalError = {body: {code: 900910, message: serviceList.message()}};
-                    return internalError;
-                } else {
-                    return serviceList;
-                }
-            } else {
-                ServiceList|error serviceList = self.getServicesListInNamespace(namespace.toString());
-                if serviceList is error {
-                    InternalServerErrorError internalError = {body: {code: 900910, message: serviceList.message()}};
-                    return internalError;
-                } else {
-                    return serviceList;
-                }
-            }
-        } else {
-            if (serviceNameAvailable && string:length(name.toString()) > 0) {
-                return self.getServicesListFromK8sSearchByName(name.toString(), sortBy, sortOrder, 'limit, offset);
-            }
-        }
-        return self.getServicesListFromK8s(sortBy, sortOrder, 'limit, offset);
+        return self.sortAndLimitServices(serviceList, sortBy, sortOrder, 'limit, offset);
     }
 
     public isolated function getServiceById(string serviceId) returns Service|BadRequestError|NotFoundError|InternalServerErrorError {
-        Service|error retrievedService = grtServiceById(serviceId);
+        Service|error retrievedService = getServiceById(serviceId);
         if retrievedService is Service {
             return retrievedService;
         } else {
@@ -177,13 +120,42 @@ public class ServiceClient {
         }
     }
 
-    private isolated function getServicesListFromK8sSearchByName(string name, string sortBy, string sortOrder, int 'limit, int offset) returns ServiceList|BadRequestError {
-        Service[] servicesList = getServicesList().cloneReadOnly();
+    public isolated function filterServicesBasedOnQuery(Service[] servicesList, string query, string sortBy, string sortOrder, int 'limit, int offset) returns ServiceList|BadRequestError|InternalServerErrorError {
         Service[] filteredList = [];
-        foreach Service 'service in servicesList {
-            if 'service.name == name {
-                filteredList.push('service);
+        if query.length() > 0 {
+            int? semiCollonIndex = string:indexOf(query, ":", 0);
+            if semiCollonIndex is int {
+                if semiCollonIndex > 0 {
+                    string keyWord = query.substring(0, semiCollonIndex);
+                    string keyWordValue = query.substring(keyWord.length() + 1, query.length());
+                    if keyWord.trim() == SEARCH_CRITERIA_NAME {
+                        keyWordValue = keyWordValue + "|\\w+" + keyWordValue + "\\w+" + "|" + keyWordValue + "\\w+" + "|\\w+" + keyWordValue;
+                        foreach Service 'service in servicesList {
+                            if (regex:matches('service.name, keyWordValue)) {
+                                filteredList.push('service);
+                            }
+                        }
+                    } else if keyWord.trim() == SEARCH_CRITERIA_NAMESPACE {
+                        foreach Service 'service in servicesList {
+                            if (regex:matches('service.namespace, keyWordValue)) {
+                                filteredList.push('service);
+                            }
+                        }
+                    } else {
+                        BadRequestError badRequest = {body: {code: 90912, message: "Invalid KeyWord " + keyWord}};
+                        return badRequest;
+                    }
+                }
+            } else {
+                string keyWordValue = query + "|\\w+" + query + "\\w+" + "|" + query + "\\w+" + "|\\w+" + query;
+                foreach Service 'service in servicesList {
+                    if (regex:matches('service.name, keyWordValue)) {
+                        filteredList.push('service);
+                    }
+                }
             }
+        } else {
+            filteredList = servicesList;
         }
         return self.sortAndLimitServices(filteredList, sortBy, sortOrder, 'limit, offset);
     }
