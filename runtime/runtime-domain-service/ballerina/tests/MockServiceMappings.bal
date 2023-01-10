@@ -25,31 +25,6 @@ public function getMockServiceMappings() returns json {
                 "kind": "ServiceMapping",
                 "metadata": {
                     "creationTimestamp": "2022-12-13T17:09:49Z",
-                    "generation": 1,
-                    "managedFields": [
-                        {
-                            "apiVersion": "dp.wso2.com/v1alpha1",
-                            "fieldsType": "FieldsV1",
-                            "fieldsV1": {
-                                "f:spec": {
-                                    ".": {},
-                                    "f:apiRef": {
-                                        ".": {},
-                                        "f:name": {},
-                                        "f:namespace": {}
-                                    },
-                                    "f:serviceRef": {
-                                        ".": {},
-                                        "f:name": {},
-                                        "f:namespace": {}
-                                    }
-                                }
-                            },
-                            "manager": "ballerina",
-                            "operation": "Update",
-                            "time": "2022-12-13T17:09:49Z"
-                        }
-                    ],
                     "name": "01ed7b08-f2b1-1166-82d5-649ae706d29d-servicemapping",
                     "namespace": "apk-platform",
                     "resourceVersion": "23555",
@@ -72,31 +47,6 @@ public function getMockServiceMappings() returns json {
                 "kind": "ServiceMapping",
                 "metadata": {
                     "creationTimestamp": "2022-12-13T18:07:58Z",
-                    "generation": 1,
-                    "managedFields": [
-                        {
-                            "apiVersion": "dp.wso2.com/v1alpha1",
-                            "fieldsType": "FieldsV1",
-                            "fieldsV1": {
-                                "f:spec": {
-                                    ".": {},
-                                    "f:apiRef": {
-                                        ".": {},
-                                        "f:name": {},
-                                        "f:namespace": {}
-                                    },
-                                    "f:serviceRef": {
-                                        ".": {},
-                                        "f:name": {},
-                                        "f:namespace": {}
-                                    }
-                                }
-                            },
-                            "manager": "ballerina",
-                            "operation": "Update",
-                            "time": "2022-12-13T18:07:58Z"
-                        }
-                    ],
                     "name": "01ed7b11-0b25-12ee-927c-cd10449788c2-servicemapping",
                     "namespace": "apk-platform",
                     "resourceVersion": "26482",

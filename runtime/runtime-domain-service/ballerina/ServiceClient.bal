@@ -22,34 +22,7 @@ import ballerina/regex;
 
 public class ServiceClient {
 
-    # This returns services in a namsepace.
-    #
-    # + namespace - namespace value
-    # + return - list of services in namespace.
-    public isolated function getServicesListInNamespace(string namespace) returns ServiceList|error {
-        Service[] servicesList = getServicesList();
-        Service[] filteredList = [];
-        foreach Service item in servicesList {
-            if item.namespace == namespace {
-                filteredList.push(item);
-            }
-        }
-        return {list: filteredList, pagination: {total: filteredList.length()}};
-    }
 
-    # This retrieve specific service from name space.
-    #
-    # + name - name of service.
-    # + namespace - namespace of service.
-    # + return - service in namespace.
-    public isolated function getServiceFromK8s(string name, string namespace) returns ServiceList|error {
-        Service? serviceResult = getService(name, namespace);
-        if serviceResult is null {
-            return {list: []};
-        } else {
-            return {list: [serviceResult]};
-        }
-    }
 
     public isolated function getServices(string? query, string sortBy, string sortOrder, int 'limit, int offset) returns ServiceList|BadRequestError|InternalServerErrorError {
         Service[] serviceList = getServicesList().clone();
