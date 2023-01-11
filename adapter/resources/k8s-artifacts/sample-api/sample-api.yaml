@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # -----------------------------------------------------------------------
-
 apiVersion: dp.wso2.com/v1alpha1
 kind: API
 metadata:
@@ -49,7 +48,7 @@ spec:
     matches:
     - path:
         type: PathPrefix
-        value: /http-bin-api/1.0.8/get
+        value: /http-bin-api/1.0.8/get/
     filters:
       - type: URLRewrite
         urlRewrite:
