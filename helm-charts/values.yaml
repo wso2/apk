@@ -61,7 +61,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: IfNotPresent
-          image: wso2/devportal-domain-service:0.0.1-m1
+          image: devportal-domain-service:0.0.1-SNAPSHOT
         ingress:
           path: /api/am/devportal
           className: ""
@@ -96,7 +96,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: IfNotPresent
-          image: wso2/admin-domain-service:0.0.1-m1
+          image: admin-domain-service:0.0.1-SNAPSHOT
         ingress:
           path: /api/am/admin
           className: ""
@@ -131,7 +131,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: IfNotPresent
-          image: wso2/backoffice-domain-service:0.0.1-m1
+          image: backoffice-domain-service:0.0.1-SNAPSHOT
         ingress:
           path: /api/am/backoffice
           className: ""
@@ -166,7 +166,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: IfNotPresent
-          image: wso2/backoffice-internal-domain-service:0.0.1-m1
+          image: backoffice-internal-domain-service:0.0.1-SNAPSHOT
         ingress:
           path: /api/am/backoffice/internal
           className: ""
@@ -227,7 +227,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: IfNotPresent
-          image: wso2/management-server:0.0.1-m1
+          image: management-server:0.0.1-SNAPSHOT
       cnpg:
         npi: cnpg-npi
         instances: 1
@@ -262,7 +262,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: IfNotPresent
-          image: wso2/runtime-domain-service:0.0.1-m1
+          image: runtime-domain-service:0.0.1-SNAPSHOT
         ingress:
           path: /api/am/runtime
           className: ""
@@ -302,7 +302,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: IfNotPresent
-          image: wso2/adapter:0.0.1-m1
+          image: adapter:0.0.1-SNAPSHOT
           security:
             sslHostname: "adapter"
       gatewayRuntime:
@@ -345,7 +345,7 @@ wso2:
               failureThreshold: 5
             strategy: Recreate
             imagePullPolicy: IfNotPresent
-            image: wso2/router:0.0.1-m1
+            image: router:0.0.1-SNAPSHOT
           enforcer:
             npi: enforcer-npi
             resources:
@@ -384,7 +384,7 @@ wso2:
               failureThreshold: 5
             strategy: Recreate
             imagePullPolicy: IfNotPresent
-            image: wso2/enforcer:0.0.1-m1
+            image: enforcer:0.0.1-SNAPSHOT
             security:
               sslHostname: "enforcer"
 
