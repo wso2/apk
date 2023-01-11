@@ -1,0 +1,303 @@
+# --------------------------------------------------------------------
+# Copyright (c) 2023, WSO2 LLC. (http://wso2.com) All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# -----------------------------------------------------------------------
+apiVersion: dp.wso2.com/v1alpha1
+kind: API
+metadata:
+  name: http-bin-api
+spec:
+  apiDisplayName: http-bin-api
+  apiType: REST
+  apiVersion: 1.0.8
+  context: /http-bin-api/1.0.8
+  definitionFileRef: swagger-definition-http-bin-api
+  prodHTTPRouteRef: prod-http-route-http-bin-api
+  sandHTTPRouteRef: sand-http-route-http-bin-api
+  organization: carbon.super
+---
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: GatewayClass
+metadata:
+  name: gateway-class
+spec:
+  controllerName: wso2.com/gatewayclass-controller
+  parametersRef:
+    kind: ConfigMap
+    name: controller-config
+---
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: Gateway
+metadata:
+  name: my-gateway
+spec:
+  gatewayClassName: gateway-class
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 8080
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: swagger-definition-SwaggerPetstore
+data:
+  swagger.yaml: |
+    swagger: "2.0"
+    info:
+      description: "This is a sample server Petstore server."
+      version: 1.0.6
+      title: Swagger Petstore
+      license:
+        name: Apache 2.0
+        url: http://www.apache.org/licenses/LICENSE-2.0.html
+    host: petstore.swagger.io
+    basePath: /v2
+    schemes:
+     - https
+     - http
+    security:
+     -
+      default: []
+    paths:
+      /pet/findByStatus:
+        Get:
+          parameters:
+           -
+            name: status
+            in: query
+            required: true
+            type: array
+            items:
+              type: string
+              default: available
+              enum:
+               - available
+               - pending
+               - sold
+            collectionFormat: multi
+          responses:
+            "200":
+              description: successful operation
+            "400":
+              description: Invalid status value
+          security:
+           -
+            petstore_auth:
+             - write:pets
+             - read:pets
+           -
+            default:
+             - write:pets
+             - read:pets
+---
+apiVersion: wso2.com/v1beta1
+kind: Backend
+metadata:
+  name: petstore-service
+spec:
+  certificateName: petstore-service-crt
+  http2Enabled: false
+  timeout: 2000
+  credentials:
+    type: Basic
+    cred-secret: order-secret
+  retryConfig:
+    count: 3
+    statusCode: 503
+  circuitBreakers:
+    maxConnections: 4
+    maxRequests: 10
+    maxPendingRequests: 5
+    maxRetries: 4
+    maxConnectionPools: 4
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: prod-http-route-http-bin-api
+spec:
+  hostnames:
+    - prod.gw.wso2.com
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: Default
+  rules:
+    - backendRefs:
+        - group: ""
+          kind: Service
+          name: backend
+          port: 80
+          weight: 1
+      matches:
+        - path:
+            type: PathPrefix
+            value: /http-bin-api/1.0.8/get/
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /get
+        - type: RequestHeaderModifier
+          requestHeaderModifier:
+            add:
+              - name: "Host"
+                value: "backend"
+        - type: ExtensionRef
+          requestHeaderModifier:
+            add:
+              - name: "Host"
+                value: "backend"
+---
+apiVersion: wso2.com/v1beta1
+kind: APIPolicy
+metadata:
+  name: cors-policy-SwaggerPetstore
+spec:
+  default:
+    type: CORSPolicy
+    cORSPolicy:
+      corsConfigurationEnabled: true
+      accessControlAllowOrigins:
+        - '*'
+      accessControlAllowCredentials: true
+      accessControlAllowHeaders:
+        - authorization
+        - Access-Control-Allow-Origin
+        - Content-Type
+        - accept
+        - origin
+      accessControlAllowMethods:
+        - GET
+        - PUT
+        - POST
+        - DELETE
+        - PATCH
+        - OPTIONS
+  targetRef:
+    kind: HTTPRoute
+    name: http-route-SwaggerPetstore
+---
+apiVersion: dp.wso2.com/v1alpha1
+kind: Authentication
+metadata:
+  name: sand-http-bin-authentication
+spec:
+  override:
+    type: ext
+    ext:
+      disabled: true
+  targetRef:
+    kind: HTTPRoute
+    name: sand-http-route-http-bin-api
+    group: gateway.networking.k8s.io
+---
+apiVersion: wso2.com/v1beta1
+kind: Scope
+metadata:
+  name: pet-store-scope-1
+spec:
+  name: read:pets
+  displayName: read:pets
+  description: read your pets
+  roles:
+    - admin
+---
+apiVersion: gateway.envoy.io/v1alpha1
+kind: RateLimiter
+metadata:
+  name: productpage
+spec:
+  global:
+    rules:
+      - dimensions:
+          header:
+          name: x-user-id
+        limit:
+          requestsPerUnit: 100
+          unit: SECOND
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: RateLimitService
+metadata:
+  name: default
+spec:
+  hosts:
+    - ratelimit.prod.svc.cluster.local
+  protocol: GRPC
+  trafficPolicy:
+    loadBalancer:
+      simple: ROUND_ROBIN
+  targetRef: Gateway
+---
+apiVersion: wso2.com/v1beta1
+kind: RateLimiter
+metadata:
+  name: rate-limit-policy-1
+spec:
+  default:
+    type: API|APP|SUB
+    api:
+      limit: # Default rate limit
+        requestsPerUnit: 10
+        unitTime: 2
+        unit: HOUR
+      conditionalGroups:
+        - uuid: 1111
+          limit:
+            requestsPerUnit: 10
+            unitTime: 2
+            unit: HOUR
+          applicablePaths:
+            - path: /pets/v2/foo
+              method: POST
+            - path: /pets/v2/bar
+          conditions:
+            - type: IP_RANGE
+              ipRange:
+                from: 100.1.1.1
+                to: 102.1.1.1
+            - type: HEADER
+              requestHeader:
+                regex: ^foo$
+        - uuid: 2222
+          limit:
+            requestsPerUnit: 10
+            unitTime: 2
+            unit: MINUTE
+          applicablePaths:
+            - "*" # Apply to all paths (Default)
+          conditions:
+            - type: REQUEST_HEADER
+              requestHeader:
+                regex: ^foo$
+    app:
+      limit:
+        requestsPerUnit: 10
+        unit: HOUR
+    sub:
+      limit:
+        requestsPerUnit: 10
+        unit: HOUR
+      spikeArrest:
+        limit:
+          requestsPerUnit: 5
+          unitTime: 2
+          unit: Second
+  targetRef: # Only applicable for API rate limits. App and subscription level rate limits are defined in their CRDs
+    kind: HTTPRoute
+    name: http-route-SwaggerPetstore
+---
