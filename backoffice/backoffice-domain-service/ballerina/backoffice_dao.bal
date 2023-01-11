@@ -237,3 +237,23 @@ isolated function db_getAPIDefinition(string apiId) returns APIDefinition|NotFou
         }
     }
 }
+
+isolated function db_updateAPI(string apiId, ModifiableAPI payload, string organization) returns API|error {
+    postgresql:Client | error dbClient  = getConnection();
+    if dbClient is error {
+        return error("Error while retrieving connection");
+    } else {
+        sql:ParameterizedQuery UPDATE_API_Suffix = `UPDATE api SET`;
+        sql:ParameterizedQuery values = ` api_name = ${payload.name}
+        WHERE api_uuid = ${apiId}`;
+        sql:ParameterizedQuery sqlQuery = sql:queryConcat(UPDATE_API_Suffix, values);
+
+        sql:ExecutionResult | sql:Error result = dbClient->execute(sqlQuery);
+        
+        if result is sql:ExecutionResult {
+            return db_getAPI(apiId);
+        } else {
+            return error("Error while updating data into Database");  
+        }
+    }
+}

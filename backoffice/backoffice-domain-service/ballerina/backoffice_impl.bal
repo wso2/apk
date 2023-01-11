@@ -172,3 +172,9 @@ isolated function getAPIDefinition(string apiId) returns APIDefinition|NotFoundE
     APIDefinition|NotFoundError|error apiDefinition = db_getAPIDefinition(apiId);
     return apiDefinition;
 }
+
+
+isolated function updateAPI(string apiId, ModifiableAPI payload, string organization) returns API|error {
+    API|error api = db_updateAPI(apiId, payload, organization);
+    return api;
+}
