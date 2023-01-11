@@ -90,9 +90,9 @@ http:Service runtimeService = service object {
             }
         }
     }
-    isolated resource function post apis/validate() returns http:Ok|BadRequestError|PreconditionFailedError|InternalServerErrorError {
-        BadRequestError badRequest = {body: {code: 900910, message: "Not implemented"}};
-        return badRequest;
+    isolated resource function post apis/validate(string query) returns http:Ok|NotFoundError|BadRequestError|PreconditionFailedError|InternalServerErrorError {
+        APIClient apiService = new();
+        return apiService.validateAPIExistence(query);
     }
     isolated resource function get apis/[string apiId]/definition() returns json|NotFoundError|PreconditionFailedError|InternalServerErrorError {
         APIClient apiService = new ();

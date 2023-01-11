@@ -40,7 +40,7 @@ public class APIClient {
                 return definition;
             } else {
                 log:printError("Error while reading definition:", definition);
-                InternalServerErrorError internalError = {body: {code: 90900, message: "Internal Error Occured while retrieving definition"}};
+                InternalServerErrorError internalError = {body: {code: 909000, message: "Internal Error Occured while retrieving definition"}};
                 return internalError;
             }
         }
@@ -69,7 +69,7 @@ public class APIClient {
             return self.retrieveDefaultDefinition(api);
         } on fail var e {
             string message = "Internal Error occured while retrieving api Definition";
-            return error(message, e, message = message, description = message, code = 90900, statusCode = "500");
+            return error(message, e, message = message, description = message, code = 909000, statusCode = "500");
         }
 
     }
@@ -135,7 +135,6 @@ public class APIClient {
         return http:OK;
     }
 
-
     # This returns list of APIS.
     #
     # + query - Parameter Description  
@@ -150,7 +149,7 @@ public class APIClient {
             API convertedModel = convertK8sAPItoAPI(api);
             apilist.push(convertedModel);
         }
-        if query is string && query.toString().trim().length()>0{
+        if query is string && query.toString().trim().length() > 0 {
             return self.filterAPISBasedOnQuery(apilist, query, 'limit, offset, sortBy, sortOrder);
         } else {
             return self.filterAPIS(apilist, 'limit, offset, sortBy, sortOrder);
@@ -160,33 +159,31 @@ public class APIClient {
         API[] filteredList = [];
         if query.length() > 0 {
             int? semiCollonIndex = string:indexOf(query, ":", 0);
-            if semiCollonIndex is int {
-                if semiCollonIndex > 0 {
-                    string keyWord = query.substring(0, semiCollonIndex);
-                    string keyWordValue = query.substring(keyWord.length() + 1, query.length());
-                    keyWordValue = keyWordValue+"|\\w+"+keyWordValue+"\\w+"+"|"+keyWordValue+"\\w+"+"|\\w+"+keyWordValue;
-                    if keyWord.trim() == SEARCH_CRITERIA_NAME {
-                        foreach API api in apilist {
-                            if (regex:matches(api.name, keyWordValue)) {
-                                filteredList.push(api);
-                            }
+            if semiCollonIndex is int && semiCollonIndex > 0 {
+                string keyWord = query.substring(0, semiCollonIndex);
+                string keyWordValue = query.substring(keyWord.length() + 1, query.length());
+                keyWordValue = keyWordValue + "|\\w+" + keyWordValue + "\\w+" + "|" + keyWordValue + "\\w+" + "|\\w+" + keyWordValue;
+                if keyWord.trim() == SEARCH_CRITERIA_NAME {
+                    foreach API api in apilist {
+                        if (regex:matches(api.name, keyWordValue)) {
+                            filteredList.push(api);
                         }
-                    } else if keyWord.trim() == SEARCH_CRITERIA_TYPE {
-                        foreach API api in apilist {
-                            if (regex:matches(api.'type, keyWordValue)) {
-                                filteredList.push(api);
-                            }
-                        }
-                    } else {
-                        BadRequestError badRequest = {body: {code: 90912, message: "Invalid KeyWord " + keyWord}};
-                        return badRequest;
                     }
+                } else if keyWord.trim() == SEARCH_CRITERIA_TYPE {
+                    foreach API api in apilist {
+                        if (regex:matches(api.'type, keyWordValue)) {
+                            filteredList.push(api);
+                        }
+                    }
+                } else {
+                    BadRequestError badRequest = {body: {code: 90912, message: "Invalid KeyWord " + keyWord}};
+                    return badRequest;
                 }
             } else {
-                string keyWordValue = query+"|\\w+"+query+"\\w+"+"|"+query+"\\w+"+"|\\w+"+query;
+                string keyWordValue = query + "|\\w+" + query + "\\w+" + "|" + query + "\\w+" + "|\\w+" + query;
 
                 foreach API api in apilist {
-                    
+
                     if (regex:matches(api.name, keyWordValue)) {
                         filteredList.push(api);
                     }
@@ -222,7 +219,7 @@ public class APIClient {
         }
         API[] limitSet = [];
         if sortedAPIS.length() > offset {
-            foreach int i in offset ... (sortedAPIS.length()-1) {
+            foreach int i in offset ... (sortedAPIS.length() - 1) {
                 if limitSet.length() < 'limit {
                     limitSet.push(sortedAPIS[i]);
                 }
@@ -281,11 +278,11 @@ public class APIClient {
                 CreatedAPI createdAPI = {body: {name: api.name, context: self.returnFullContext(api.context, api.'version), 'version: api.'version, id: deployAPIToK8sResult.metadata.uid}};
                 return createdAPI;
             } else {
-                return error("Internal Error occured", code = 90900, message = "Internal Error occured", description = "Internal Error occured", statusCode = "500");
+                return error("Internal Error occured", code = 909000, message = "Internal Error occured", description = "Internal Error occured", statusCode = "500");
             }
         } on fail var e {
             log:printError("Internal Error occured", e);
-            return error("Internal Error occured", code = 90900, message = "Internal Error occured", description = "Internal Error occured", statusCode = "500");
+            return error("Internal Error occured", code = 909000, message = "Internal Error occured", description = "Internal Error occured", statusCode = "500");
         }
     }
 
@@ -354,7 +351,15 @@ public class APIClient {
         }
         return false;
     }
+    isolated function validateContext(string context) returns boolean {
 
+        foreach model:API k8sAPI in getAPIs() {
+            if k8sAPI.spec.context == context {
+                return true;
+            }
+        }
+        return false;
+    }
     private isolated function returnFullContext(string context, string 'version) returns string {
         string fullContext = context;
         if (!string:endsWith(context, 'version)) {
@@ -372,7 +377,6 @@ public class APIClient {
         return false;
     }
 
- 
     function convertK8sCrAPI(API api) returns model:API {
         model:API apispec = {
             metadata: {
@@ -424,7 +428,7 @@ public class APIClient {
             if deployAPIToK8sResult is model:API {
                 CreatedAPI createdAPI = {body: {name: api.name, context: self.returnFullContext(api.context, api.'version), 'version: api.'version, id: deployAPIToK8sResult.metadata.uid}};
                 return createdAPI;
-            } else  {
+            } else {
                 return deployAPIToK8sResult;
             }
 
@@ -515,11 +519,11 @@ public class APIClient {
                     return error("Invalid API Request", code = 90911, description = "Invalid API Request", message = "Invalid API Request", statusCode = "400");
                 }
             } else {
-                return error("Internal Error occured", code = 90900, message = "Internal Error occured", description = "Internal Error occured", statusCode = "500");
+                return error("Internal Error occured", code = 909000, message = "Internal Error occured", description = "Internal Error occured", statusCode = "500");
             }
         } on fail var e {
             log:printError("Internal Error occured while deploying API", e);
-            APKError internalError = error("Internal Error occured while deploying API", code = 90900, statusCode = "500", description = "Internal Error occured while deploying API", message = "Internal Error occured while deploying API");
+            APKError internalError = error("Internal Error occured while deploying API", code = 909000, statusCode = "500", description = "Internal Error occured while deploying API", message = "Internal Error occured while deploying API");
             return internalError;
         }
     }
@@ -661,7 +665,7 @@ public class APIClient {
             return httpRouteRule;
         } on fail var e {
             log:printError("Internal Error occured", e);
-            return error("Internal Error occured", code = 90900, message = "Internal Error occured", description = "Internal Error occured", statusCode = "500");
+            return error("Internal Error occured", code = 909000, message = "Internal Error occured", description = "Internal Error occured", statusCode = "500");
         }
     }
 
@@ -887,7 +891,7 @@ public class APIClient {
             return;
         } on fail var e {
             log:printError("Error occured deleting servicemapping", e);
-            return error("Error occured deleting servicemapping", message = "Internal Server Error", code = 90900, description = "Internal Server Error", statusCode = "500");
+            return error("Error occured deleting servicemapping", message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = "500");
         }
 
     }
@@ -980,7 +984,7 @@ public class APIClient {
         }
 
         else {
-            InternalServerErrorError internalError = {body: {code: 90900, message: "InternalServerError"}};
+            InternalServerErrorError internalError = {body: {code: 909000, message: "InternalServerError"}};
             return internalError;
         }
     }
@@ -1137,7 +1141,7 @@ public class APIClient {
             }
         } on fail var e {
             log:printError("Internal Error occcured on checking K8sTimeout", e);
-            return error("Internal Error occcured on checking K8sTimeout", code = 90900, statusCode = "500", message = "Internal Server Error", description = "Internal Server Error");
+            return error("Internal Error occcured on checking K8sTimeout", code = 909000, statusCode = "500", message = "Internal Server Error", description = "Internal Server Error");
         }
 
     }
@@ -1294,6 +1298,32 @@ public class APIClient {
             }
         };
         return defaultOpenApiDefinition;
+    }
+    public isolated function validateAPIExistence(string query) returns NotFoundError|BadRequestError|http:Ok {
+        int? indexOfColon = query.indexOf(":", 0);
+        boolean exist = false;
+        if indexOfColon is int && indexOfColon > 0 {
+            string keyWord = query.substring(0, indexOfColon);
+            string keyWordValue = query.substring(keyWord.length() + 1, query.length());
+            if keyWord == "name" {
+                exist = self.validateName(keyWordValue);
+            } else if keyWord == "context" {
+                exist = self.validateContext(keyWordValue);
+            } else {
+                BadRequestError badRequest = {body: {code: 90912, message: "Invalid KeyWord " + keyWord}};
+                return badRequest;
+            }
+        } else {
+            // Consider full string as name;
+            exist = self.validateName(query);
+        }
+        if exist {
+            http:Ok ok = {};
+            return ok;
+        } else {
+            NotFoundError notFound = {body: {code: 900914, message: "context/name doesn't exist"}};
+            return notFound;
+        }
     }
 }
 

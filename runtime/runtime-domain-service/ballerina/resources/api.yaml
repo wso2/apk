@@ -444,6 +444,20 @@ paths:
       description: |
         Using this operation, you can check a given API context is already used. You need to provide the context name you want to check.
       operationId: validateAPI
+      parameters:
+      - name: query
+        in: query
+        description: |
+          **Search condition**.
+          You can search in attributes by using an **"<attribute>:"** modifier.
+          Eg.
+          "name:wso2" will match an API if the provider of the API is exactly "wso2".
+          Supported attribute modifiers are [** version, context, name **]
+          If no advanced attribute modifier has been specified, search will match the
+          given query string against API Name.
+        required: true
+        schema:
+          type: string
       responses:
         "200":
           description: |
@@ -458,6 +472,8 @@ paths:
               schema:
                 type: string
           content: {}
+        "404":
+          $ref: "#/components/responses/NotFound"
         "400":
           $ref: "#/components/responses/BadRequest"
         "412":
