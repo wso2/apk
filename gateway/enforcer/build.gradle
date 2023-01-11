@@ -40,7 +40,6 @@ task build{
 allprojects {
     group = project.group
     version = project.version
-    apply from: "$rootDir/../../common-gradle-scripts/docker.gradle"
 }
 
 subprojects {
