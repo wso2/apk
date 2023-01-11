@@ -241,7 +241,7 @@ public function testGetAPIDefinitionByID(string apiid, anydata expectedResponse)
 
 public function apiDefinitionDataProvider() returns map<[string, json|NotFoundError|PreconditionFailedError|InternalServerErrorError]> {
     NotFoundError notfound = {body: {code: 909100, message: "c5ab2423-b9e8-432b-92e8-35e6907ed5e9 not found."}};
-    InternalServerErrorError internalError = {body: {code: 90900, message: "Internal Error Occured while retrieving definition"}};
+    InternalServerErrorError internalError = {body: {code: 909000, message: "Internal Error Occured while retrieving definition"}};
 
     map<[string, json|NotFoundError|PreconditionFailedError|InternalServerErrorError]> dataSet = {
         "1": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e8", mockOpenAPIJson()],
@@ -956,4 +956,24 @@ function testDataGeneratedSwaggerDefinition() returns map<[API, json|APKError]> 
     }
 ;
     return data;
+}
+
+@test:Config{dataProvider:validateExistenceDataProvider}
+function testValidateAPIExistence(string query,anydata expected) {
+    APIClient apiClient = new;
+    test:assertEquals(apiClient.validateAPIExistence(query),expected);
+}
+function validateExistenceDataProvider() returns map<[string,NotFoundError|BadRequestError|http:Ok]>{
+http:Ok ok = {};
+BadRequestError badRequest = {body: {code: 90912, message: "Invalid KeyWord type"}};
+NotFoundError notFound = {body: {code: 900914, message: "context/name doesn't exist"}};
+map<[string,NotFoundError|BadRequestError|http:Ok]> data = {
+"1":["name:pizzashackAPI",ok],
+"2":["name:mockapi",notFound],
+"3":["context:/api/v1",notFound],
+"4":["context:/pizzashack/1.0.0",ok],
+"5":["pizzashackAPI",ok],
+"6":["type:pizzashackAPI",badRequest]
+};
+return data;
 }
