@@ -193,13 +193,13 @@ func generateHeaderToAddRouteConfig(policyParams interface{}) (*corev3.HeaderVal
 	var ok bool
 	var headerName, headerValue string
 	if paramsToSetHeader, ok = policyParams.(map[string]interface{}); !ok {
-		return nil, fmt.Errorf("Error while processing policy parameter map. Map: %v", policyParams)
+		return nil, fmt.Errorf("error while processing policy parameter map. Map: %v", policyParams)
 	}
 	if headerName, ok = paramsToSetHeader[constants.HeaderName].(string); !ok || strings.TrimSpace(headerName) == "" {
-		return nil, errors.New("Policy parameter map must include headerName")
+		return nil, errors.New("policy parameter map must include headerName")
 	}
 	if headerValue, ok = paramsToSetHeader[constants.HeaderValue].(string); !ok || strings.TrimSpace(headerValue) == "" {
-		return nil, errors.New("Policy parameter map must include headerValue")
+		return nil, errors.New("policy parameter map must include headerValue")
 	}
 	headerToAdd := corev3.HeaderValueOption{
 		Header: &corev3.HeaderValue{
@@ -218,11 +218,11 @@ func generateHeaderToRemoveString(policyParams interface{}) (string, error) {
 	var ok bool
 	var requestHeaderToRemove string
 	if paramsToRemoveHeader, ok = policyParams.(map[string]interface{}); !ok {
-		return "", fmt.Errorf("Error while processing policy parameter map. Map: %v", policyParams)
+		return "", fmt.Errorf("error while processing policy parameter map. Map: %v", policyParams)
 	}
 	if requestHeaderToRemove, ok = paramsToRemoveHeader[constants.HeaderName].(string); !ok ||
 		requestHeaderToRemove == "" {
-		return "", errors.New("Policy parameter map must include headerName")
+		return "", errors.New("policy parameter map must include headerName")
 	}
 	return requestHeaderToRemove, nil
 }
@@ -235,15 +235,15 @@ func generateRewritePathRouteConfig(routePath, resourcePath, endpointBasepath st
 	var rewritePath string
 	var rewritePathType gwapiv1b1.HTTPPathModifierType
 	if paramsToSetHeader, ok = policyParams.(map[string]interface{}); !ok {
-		return nil, fmt.Errorf("Error while processing policy parameter map. Map: %v", policyParams)
+		return nil, fmt.Errorf("error while processing policy parameter map. Map: %v", policyParams)
 	}
 	if rewritePath, ok = paramsToSetHeader[constants.RewritePathResourcePath].(string); !ok ||
 		strings.TrimSpace(rewritePath) == "" {
-		return nil, errors.New("Policy parameter map must include rewritePath")
+		return nil, errors.New("policy parameter map must include rewritePath")
 	}
 	if rewritePathType, ok = paramsToSetHeader[constants.RewritePathType].(gwapiv1b1.HTTPPathModifierType); !ok ||
 		string(rewritePathType) == "" {
-		return nil, errors.New("Policy parameter map must include rewritePathType")
+		return nil, errors.New("policy parameter map must include rewritePathType")
 	}
 	rewritePathIndexedWrtResourcePath, err := getRewriteRegexFromPathTemplate(resourcePath, rewritePath)
 	if err != nil {
@@ -275,13 +275,10 @@ func generateSubstitutionStringWithRewritePathType(endpointBasepath string, reso
 	case gwapiv1b1.PathMatchPathPrefix:
 		switch rewritePathType {
 		case gwapiv1b1.FullPathHTTPPathModifier:
-			resourceRegex = fmt.Sprintf("%s", strings.TrimSuffix(resourcePath, "/"))
-			break
+			resourceRegex = strings.TrimSuffix(resourcePath, "/")
 		case gwapiv1b1.PrefixMatchHTTPPathModifier:
 			resourceRegex = fmt.Sprintf("%s\\1", strings.TrimSuffix(resourcePath, "/"))
-			break
 		}
-		break
 	case gwapiv1b1.PathMatchRegularExpression:
 		resourceRegex = resourcePath
 	}

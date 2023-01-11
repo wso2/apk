@@ -44,7 +44,6 @@ tasks.register('delete_lib', Delete) {
 
 tasks.named('build').configure {
     dependsOn copy_dependencies
-    finalizedBy docker_build
 }
 
 configurations.implementation {
