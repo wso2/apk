@@ -21,7 +21,7 @@ apply from: "$rootDir/../../common-gradle-scripts/ballerina.gradle"
 tasks.register('build') {
     group 'build'
     description 'Build ballerina component'
-    dependsOn 'bal_build_only'
+    dependsOn 'bal_build'
 }
 
 tasks.register('test') {
