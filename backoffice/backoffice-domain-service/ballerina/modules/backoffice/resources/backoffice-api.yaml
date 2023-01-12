@@ -1940,6 +1940,13 @@ components:
           example: []
           items:
             type: string
+        sdk:
+          type: array
+          description: |
+            Supported SDK
+          example: []
+          items:
+            type: string
         additionalProperties:
           type: object
           additionalProperties:
@@ -2104,6 +2111,13 @@ components:
           type: array
           description: |
             API categories
+          example: []
+          items:
+            type: string
+        sdk:
+          type: array
+          description: |
+            Supported SDK
           example: []
           items:
             type: string

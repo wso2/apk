@@ -58,8 +58,14 @@ service /api/am/backoffice on ep0 {
            return  error(response.message());
         }
     }
-    // resource function put apis/[string apiId](@http:Header string? 'if\-none\-match, @http:Payload ModifiableAPI payload) returns API|BadRequestError|ForbiddenError|NotFoundError|PreconditionFailedError {
-    // }
+    resource function put apis/[string apiId](@http:Header string? 'if\-none\-match, @http:Payload ModifiableAPI payload) returns API|BadRequestError|ForbiddenError|NotFoundError|PreconditionFailedError|error {
+      API | error updatedAPI = updateAPI(apiId, payload, "carbon.super");
+        if updatedAPI is API {
+            return updatedAPI;
+        }
+        return error("Error while updating API");
+    }
+
     isolated resource function get apis/[string apiId]/definition(@http:Header string? 'if\-none\-match) returns APIDefinition|http:NotModified|NotFoundError|NotAcceptableError|InternalServerErrorError {
         APIDefinition|NotFoundError|error apiDefinition = getAPIDefinition(apiId);
         if apiDefinition is APIDefinition|NotFoundError {
@@ -162,5 +168,15 @@ service /api/am/backoffice on ep0 {
         } else {
             return error("Error while getting LC state of API" + currentState.message());
         }
+    }
+
+    public isolated function handleAPKError(APKError errorDetail) returns InternalServerErrorError|BadRequestError{
+                ErrorHandler & readonly detail = errorDetail.detail();
+            if detail.statusCode == "400" {
+                BadRequestError badRequest = {body: {code: detail.code, message: detail.message}};
+                return badRequest;
+            }
+            InternalServerErrorError internalServerError = {body: {code: detail.code, message: detail.message}};
+            return internalServerError;
     }
 }
