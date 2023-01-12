@@ -16,6 +16,9 @@
  */
 
 def imageName = docker_image_name + ':' + project.version
+if (project.hasProperty("image_version")){
+imageName = docker_image_name + ':' + image_version
+}
 if (project.hasProperty("docker_organization")) {
     imageName = docker_organization+'/'+imageName
 }
