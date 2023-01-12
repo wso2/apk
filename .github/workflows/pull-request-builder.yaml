@@ -44,9 +44,9 @@ jobs:
       - name: Copy ballerina-lang patch
         shell: sh
         run: "sudo cp ballerina-lang-2201.3.0.jar $(bal home)/bre/lib/"
-      - name: testerina patch
-        shell: sh
-        run: "sudo cp testerina-runtime-2201.3.0.jar $(bal home)/bre/lib/"
+      # - name: testerina patch
+      #   shell: sh
+      #   run: "sudo cp testerina-runtime-2201.3.0.jar $(bal home)/bre/lib/"
       - name: Run build-apk.sh
         run: |
           sh build-apk.sh
