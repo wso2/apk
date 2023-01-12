@@ -172,7 +172,7 @@ public class GraphQLSchemaDefinition {
 
             for (URITemplate template : api.getUriTemplates()) {
                 operationThrottlingMap.put(template.getUriTemplate(), template.getThrottlingTier());
-                operationAuthSchemeMap.put(template.getUriTemplate(), template.getAuthType());
+                operationAuthSchemeMap.put(template.getUriTemplate(), Boolean.toString(template.isAuthEnabled()));
             }
 
             if (operationScopeMap.size() > 0) {

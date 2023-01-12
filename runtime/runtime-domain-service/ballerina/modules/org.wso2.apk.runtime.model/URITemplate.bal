@@ -61,13 +61,6 @@ public distinct class URITemplate {
         return org_wso2_apk_runtime_model_URITemplate_getAmznResourceTimeout(self.jObj);
     }
 
-    # The function that maps to the `getAuthType` method of `org.wso2.apk.runtime.model.URITemplate`.
-    #
-    # + return - The `string` value returning from the Java mapping.
-    public function getAuthType() returns string? {
-        return java:toString(org_wso2_apk_runtime_model_URITemplate_getAuthType(self.jObj));
-    }
-
     # The function that maps to the `getClass` method of `org.wso2.apk.runtime.model.URITemplate`.
     #
     # + return - The `javalang:Class` value returning from the Java mapping.
@@ -153,6 +146,13 @@ public distinct class URITemplate {
         return org_wso2_apk_runtime_model_URITemplate_hashCode(self.jObj);
     }
 
+    # The function that maps to the `isAuthEnabled` method of `org.wso2.apk.runtime.model.URITemplate`.
+    #
+    # + return - The `boolean` value returning from the Java mapping.
+    public function isAuthEnabled() returns boolean {
+        return org_wso2_apk_runtime_model_URITemplate_isAuthEnabled(self.jObj);
+    }
+
     # The function that maps to the `isResourceSandboxURIExist` method of `org.wso2.apk.runtime.model.URITemplate`.
     #
     # + return - The `boolean` value returning from the Java mapping.
@@ -200,11 +200,11 @@ public distinct class URITemplate {
         org_wso2_apk_runtime_model_URITemplate_setAmznResourceTimeout(self.jObj, arg0);
     }
 
-    # The function that maps to the `setAuthType` method of `org.wso2.apk.runtime.model.URITemplate`.
+    # The function that maps to the `setAuthEnabled` method of `org.wso2.apk.runtime.model.URITemplate`.
     #
-    # + arg0 - The `string` value required to map with the Java method parameter.
-    public function setAuthType(string arg0) {
-        org_wso2_apk_runtime_model_URITemplate_setAuthType(self.jObj, java:fromString(arg0));
+    # + arg0 - The `boolean` value required to map with the Java method parameter.
+    public isolated function setAuthEnabled(boolean arg0) {
+        org_wso2_apk_runtime_model_URITemplate_setAuthEnabled(self.jObj, arg0);
     }
 
     # The function that maps to the `setHTTPVerb` method of `org.wso2.apk.runtime.model.URITemplate`.
@@ -224,7 +224,7 @@ public distinct class URITemplate {
     # The function that maps to the `setOperationPolicies` method of `org.wso2.apk.runtime.model.URITemplate`.
     #
     # + arg0 - The `javautil:List` value required to map with the Java method parameter.
-    public isolated function setOperationPolicies(javautil:List arg0) {
+    public function setOperationPolicies(javautil:List arg0) {
         org_wso2_apk_runtime_model_URITemplate_setOperationPolicies(self.jObj, arg0.jObj);
     }
 
@@ -252,14 +252,14 @@ public distinct class URITemplate {
     # The function that maps to the `setScopes` method of `org.wso2.apk.runtime.model.URITemplate`.
     #
     # + arg0 - The `Scope` value required to map with the Java method parameter.
-    public isolated function setScopes(Scope arg0) {
+    public function setScopes(Scope arg0) {
         org_wso2_apk_runtime_model_URITemplate_setScopes(self.jObj, arg0.jObj);
     }
 
     # The function that maps to the `setThrottlingTier` method of `org.wso2.apk.runtime.model.URITemplate`.
     #
     # + arg0 - The `string` value required to map with the Java method parameter.
-    public isolated function setThrottlingTier(string arg0) {
+    public function setThrottlingTier(string arg0) {
         org_wso2_apk_runtime_model_URITemplate_setThrottlingTier(self.jObj, java:fromString(arg0));
     }
 
@@ -312,11 +312,9 @@ public distinct class URITemplate {
 #
 # + return - The new `URITemplate` class generated.
 public isolated function newURITemplate1() returns URITemplate {
-    lock {
-        handle externalObj = org_wso2_apk_runtime_model_URITemplate_newURITemplate1();
-        URITemplate newObj = new (externalObj);
-        return newObj;
-    }
+    handle externalObj = org_wso2_apk_runtime_model_URITemplate_newURITemplate1();
+    URITemplate newObj = new (externalObj);
+    return newObj;
 }
 
 function org_wso2_apk_runtime_model_URITemplate_addAllScopes(handle receiver, handle arg0) = @java:Method {
@@ -345,12 +343,6 @@ function org_wso2_apk_runtime_model_URITemplate_getAmznResourceName(handle recei
 
 function org_wso2_apk_runtime_model_URITemplate_getAmznResourceTimeout(handle receiver) returns int = @java:Method {
     name: "getAmznResourceTimeout",
-    'class: "org.wso2.apk.runtime.model.URITemplate",
-    paramTypes: []
-} external;
-
-function org_wso2_apk_runtime_model_URITemplate_getAuthType(handle receiver) returns handle = @java:Method {
-    name: "getAuthType",
     'class: "org.wso2.apk.runtime.model.URITemplate",
     paramTypes: []
 } external;
@@ -421,6 +413,12 @@ function org_wso2_apk_runtime_model_URITemplate_hashCode(handle receiver) return
     paramTypes: []
 } external;
 
+function org_wso2_apk_runtime_model_URITemplate_isAuthEnabled(handle receiver) returns boolean = @java:Method {
+    name: "isAuthEnabled",
+    'class: "org.wso2.apk.runtime.model.URITemplate",
+    paramTypes: []
+} external;
+
 function org_wso2_apk_runtime_model_URITemplate_isResourceSandboxURIExist(handle receiver) returns boolean = @java:Method {
     name: "isResourceSandboxURIExist",
     'class: "org.wso2.apk.runtime.model.URITemplate",
@@ -463,10 +461,10 @@ function org_wso2_apk_runtime_model_URITemplate_setAmznResourceTimeout(handle re
     paramTypes: ["int"]
 } external;
 
-function org_wso2_apk_runtime_model_URITemplate_setAuthType(handle receiver, handle arg0) = @java:Method {
-    name: "setAuthType",
+isolated function org_wso2_apk_runtime_model_URITemplate_setAuthEnabled(handle receiver, boolean arg0) = @java:Method {
+    name: "setAuthEnabled",
     'class: "org.wso2.apk.runtime.model.URITemplate",
-    paramTypes: ["java.lang.String"]
+    paramTypes: ["boolean"]
 } external;
 
 isolated function org_wso2_apk_runtime_model_URITemplate_setHTTPVerb(handle receiver, handle arg0) = @java:Method {
@@ -481,7 +479,7 @@ function org_wso2_apk_runtime_model_URITemplate_setId(handle receiver, int arg0)
     paramTypes: ["int"]
 } external;
 
-isolated function org_wso2_apk_runtime_model_URITemplate_setOperationPolicies(handle receiver, handle arg0) = @java:Method {
+function org_wso2_apk_runtime_model_URITemplate_setOperationPolicies(handle receiver, handle arg0) = @java:Method {
     name: "setOperationPolicies",
     'class: "org.wso2.apk.runtime.model.URITemplate",
     paramTypes: ["java.util.List"]
@@ -505,13 +503,13 @@ function org_wso2_apk_runtime_model_URITemplate_setScope(handle receiver, handle
     paramTypes: ["org.wso2.apk.runtime.model.Scope"]
 } external;
 
-isolated function org_wso2_apk_runtime_model_URITemplate_setScopes(handle receiver, handle arg0) = @java:Method {
+function org_wso2_apk_runtime_model_URITemplate_setScopes(handle receiver, handle arg0) = @java:Method {
     name: "setScopes",
     'class: "org.wso2.apk.runtime.model.URITemplate",
     paramTypes: ["org.wso2.apk.runtime.model.Scope"]
 } external;
 
-isolated function org_wso2_apk_runtime_model_URITemplate_setThrottlingTier(handle receiver, handle arg0) = @java:Method {
+function org_wso2_apk_runtime_model_URITemplate_setThrottlingTier(handle receiver, handle arg0) = @java:Method {
     name: "setThrottlingTier",
     'class: "org.wso2.apk.runtime.model.URITemplate",
     paramTypes: ["java.lang.String"]

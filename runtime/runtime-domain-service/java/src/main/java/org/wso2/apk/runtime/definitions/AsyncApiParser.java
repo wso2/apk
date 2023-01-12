@@ -1590,7 +1590,7 @@ public class AsyncApiParser extends APIDefinition {
 
         Extension authTypeExtension = channel.getExtension(APIConstants.SWAGGER_X_AUTH_TYPE);
         if (authTypeExtension != null && authTypeExtension.value instanceof String) {
-            template.setAuthType(authTypeExtension.value.toString());
+            template.setAuthEnabled(Boolean.parseBoolean(authTypeExtension.value.toString()));
         }
 
         List<String> opScopes = getScopeOfOperations(operation);

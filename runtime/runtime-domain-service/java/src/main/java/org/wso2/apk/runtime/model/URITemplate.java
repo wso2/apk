@@ -30,7 +30,7 @@ public class URITemplate implements Serializable{
     private String resourceURI;
     private String resourceSandboxURI;
     private String httpVerb;
-    private String authType;
+    private boolean authEnabled;
     private String throttlingTier;
     private Scope scope;
     private List<Scope> scopes = new ArrayList<Scope>();
@@ -56,13 +56,12 @@ public class URITemplate implements Serializable{
         this.httpVerb = httpVerb;
     }
 
-    public String getAuthType() {
-        return authType;
+    public boolean isAuthEnabled() {
+        return authEnabled;
     }
 
-    public void setAuthType(String authType) {
-        this.authType = authType;
-
+    public void setAuthEnabled(boolean authEnabled) {
+        this.authEnabled = authEnabled;
     }
 
     public String getResourceURI() {
@@ -136,7 +135,7 @@ public class URITemplate implements Serializable{
         if (!httpVerb.equals(that.httpVerb)) {
             return false;
         }
-        if (!authType.equals(that.authType)) {
+        if (!authEnabled==that.authEnabled) {
             return false;
         }
 
@@ -155,7 +154,6 @@ public class URITemplate implements Serializable{
         result = 31 * result + (resourceURI != null ? resourceURI.hashCode() : 0);
         result = 31 * result + (resourceSandboxURI != null ? resourceSandboxURI.hashCode() : 0);
         result = 31 * result + (httpVerb != null ? httpVerb.hashCode() : 0);
-        result = 31 * result + (authType != null ? authType.hashCode() : 0);
         result = 31 * result + (throttlingTier != null ? throttlingTier.hashCode() : 0);
         result = 31 * result + (scope != null ? scope.hashCode() : 0);
         result = 31 * result + (scopes != null ? scopes.hashCode() : 0);

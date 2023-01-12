@@ -133,13 +133,9 @@ function deleteServiceMapping(map<map<model:API>> serviceMappings, model:K8sServ
     }
 }
 
-function putAllServiceMappings(json[] events) returns error? {
-    foreach json event in events {
-        json clonedEvent = event.cloneReadOnly();
-        model:K8sServiceMapping|error serviceMapping = trap <model:K8sServiceMapping>clonedEvent;
-        if serviceMapping is model:K8sServiceMapping {
-            addServiceMapping(serviceMappings, serviceMapping);
-        }
+function putAllServiceMappings(model:K8sServiceMapping[] events) returns error? {
+    foreach model:K8sServiceMapping serviceMapping in events {
+        addServiceMapping(serviceMappings, serviceMapping);
     }
 }
 
@@ -162,17 +158,17 @@ isolated function retrieveAPIMappingsForService(Service serviceEntry) returns mo
     }
 }
 
-isolated function retrieveServiceMappingsForAPI(model:API api) returns model:K8sServiceMapping[] {
+isolated function retrieveServiceMappingsForAPI(model:API api) returns map<model:K8sServiceMapping> {
     lock {
+        map<model:K8sServiceMapping> sortedk8sServiceMappings = {};
         string[] keys = k8sServiceMappings.keys();
-        model:K8sServiceMapping[] serviceMappings = [];
         foreach string key in keys {
             model:K8sServiceMapping serviceMapping = k8sServiceMappings.get(key);
             model:APIReference apiRef = serviceMapping.spec.apiRef;
             if (apiRef.name == api.metadata.name && apiRef.namespace == api.metadata.namespace) {
-                serviceMappings.push(serviceMapping);
+                sortedk8sServiceMappings[<string>serviceMapping.metadata.uid] = serviceMapping;
             }
         }
-        return serviceMappings.clone();
+        return sortedk8sServiceMappings.clone();
     }
 }

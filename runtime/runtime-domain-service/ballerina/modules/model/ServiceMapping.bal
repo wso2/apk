@@ -37,3 +37,10 @@ public type APIReference record {
     string name;
     string namespace;
 };
+
+public type ServiceMappingList record {
+    string apiVersion = "dp.wso2.com/v1alpha1";
+    string kind = "ServiceMappingList";
+    ListMeta metadata;
+    K8sServiceMapping[] items;
+};

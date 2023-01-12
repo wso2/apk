@@ -129,6 +129,7 @@ public type Gateway record {
 public type APIOperations record {
     string target?;
     string verb?;
+    boolean authTypeEnabled = true;
     # Endpoint configuration of the API. This can be used to provide different types of endpoints including Simple REST Endpoints, Loadbalanced and Failover.
     # 
     # `Simple REST Endpoint`
