@@ -9,6 +9,11 @@ on:
       next_version:
         type: string
         description: "Next Development Version"
+  pull_request:
+    types:
+      - closed
+    paths:
+      - '**/gateway/router**'
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -25,6 +30,14 @@ jobs:
           git config --global user.name ${{ secrets.WSO2_BOT_USER }}
           git config --global user.email ${{ secrets.WSO2_BOT_EMAIL }}
       - name: Run Gradle build
+        if: github.event_name == 'workflow_run'
         run: |
           cd apk-repo/gateway/router
           gradle release -Prelease.useAutomaticVersion=true -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Prelease.releaseVersion=${{ github.event.inputs.release_version }} -Prelease.newVersion=${{ github.event.inputs.next_version }} -PmultiArch=true
+   
+      - name: Run Gradle Build
+        if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
+        run: |
+          cd apk-repo/gateway/router
+          gradle build -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Pimage_version=latest -PmultiArch=true
+          gradle docker_push -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Pimage_version=latest -PmultiArch=true
