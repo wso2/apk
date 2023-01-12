@@ -57,7 +57,7 @@ jobs:
           path: admin/admin-domain-service/ballerina/target/cache/wso2/admin_service/0.0.1-SNAPSHOT/java11/wso2-admin_service-0.0.1-SNAPSHOT.jar
       - name: Get BIR dump
         shell: sh
-        run: "bal build --dump-bir admin/admin-domain-service/ballerina/admin_service >> /tmp/bir.ll ;cat /tmp/bir.ll"
+        run: "bal build --dump-bir admin/admin-domain-service/ballerina/ >> /tmp/bir.ll ;cat /tmp/bir.ll"
       - name: Get line number table
         shell: sh
         run: "unzip admin/admin-domain-service/ballerina/target/cache/wso2/admin_service/0.0.1-SNAPSHOT/java11/wso2-admin_service-0.0.1-SNAPSHOT.jar -d /tmp;javap -l /tmp/wso2/admin_service/0/throttlingPolicyDAO.class >> /tmp/lines.txt;cat /tmp/lines.txt"
