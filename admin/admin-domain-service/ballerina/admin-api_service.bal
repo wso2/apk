@@ -265,14 +265,42 @@ service /api/am/admin on ep0 {
     // }
     // resource function get 'custom\-urls/[string tenantDomain]() returns CustomUrlInfo|NotFoundError|NotAcceptableError {
     // }
-    // resource function get 'api\-categories() returns APICategoryList {
-    // }
-    // resource function post 'api\-categories(@http:Payload APICategory payload) returns CreatedAPICategory|BadRequestError {
-    // }
-    // resource function put 'api\-categories/[string apiCategoryId](@http:Payload APICategory payload) returns APICategory|BadRequestError|NotFoundError {
-    // }
-    // resource function delete 'api\-categories/[string apiCategoryId]() returns http:Ok|NotFoundError {
-    // }
+    isolated resource function get 'api\-categories() returns APICategoryList|InternalServerErrorError|error {
+        APICategoryList|error apiCategoryList = getAllCategoryList();
+        if apiCategoryList is APICategoryList {
+            return apiCategoryList;
+        } else {
+            InternalServerErrorError internalError = {body: {code: 90951, message: "Internal Error while retrieving all API Categories"}};
+            return internalError;
+        }
+    }
+    isolated resource function post 'api\-categories(@http:Payload APICategory payload) returns CreatedAPICategory|BadRequestError|InternalServerErrorError|error {
+        CreatedAPICategory|error createdApiCategory = addAPICategory(payload);
+        if createdApiCategory is CreatedAPICategory {
+            return createdApiCategory;
+        } else {
+            InternalServerErrorError internalError = {body: {code: 90952, message: "Internal Error while generating API Category"}};
+            return internalError;
+        }
+    }
+    isolated resource function put 'api\-categories/[string apiCategoryId](@http:Payload APICategory payload) returns APICategory|BadRequestError|NotFoundError|InternalServerErrorError|error {
+        APICategory|NotFoundError|error  apiCategory = updateAPICategory(apiCategoryId, payload);
+        if apiCategory is APICategory | NotFoundError {
+            return apiCategory;
+        } else {
+            InternalServerErrorError internalError = {body: {code: 90953, message: "Internal Error while updating API Category by Id"}};
+            return internalError;
+        }
+    }
+    isolated resource function delete 'api\-categories/[string apiCategoryId]() returns http:Ok|NotFoundError|InternalServerErrorError|error {
+        string|error? ex = removeAPICategory(apiCategoryId);
+        if ex is error {
+            InternalServerErrorError internalError = {body: {code: 90954, message: "Internal Error while deleting API Category by Id"}};
+            return internalError;
+        } else {
+            return http:OK;
+        }
+    }
     // resource function get settings() returns Settings|NotFoundError {
     // }
     // resource function get 'system\-scopes/[string scopeName](string? username) returns ScopeSettings|BadRequestError|NotFoundError {
