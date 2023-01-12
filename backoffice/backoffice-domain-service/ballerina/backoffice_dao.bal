@@ -243,8 +243,9 @@ isolated function db_updateAPI(string apiId, ModifiableAPI payload, string organ
     if dbClient is error {
         return error("Error while retrieving connection");
     } else {
+        postgresql:JsonBinaryValue j = new (payload.sdk.toJson());
         sql:ParameterizedQuery UPDATE_API_Suffix = `UPDATE api SET`;
-        sql:ParameterizedQuery values = ` api_name = ${payload.name}
+        sql:ParameterizedQuery values = ` description = ${payload.description}, status= ${payload.state}, sdk = ${j}
         WHERE api_uuid = ${apiId}`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(UPDATE_API_Suffix, values);
 

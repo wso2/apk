@@ -342,6 +342,8 @@ public type ModifiableAPI record {
     APIBusinessInformation businessInformation?;
     # API categories
     string[] categories?;
+    # Supported SDK
+    string[] sdk?;
 };
 
 public type LifecycleState record {
@@ -572,6 +574,8 @@ public type API record {
     string[] tags?;
     # API categories
     string[] categories?;
+    # Supported SDK
+    string[] sdk?;
     record {} additionalProperties?;
     string createdTime?;
     string lastUpdatedTime?;
