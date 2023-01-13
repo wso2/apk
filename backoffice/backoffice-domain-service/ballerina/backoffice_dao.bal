@@ -254,7 +254,7 @@ isolated function db_updateAPI(string apiId, ModifiableAPI payload, string organ
         if result is sql:ExecutionResult {
             return db_getAPI(apiId);
         } else {
-            return error("Error while updating data into Database");  
+            return error("Error while updating API data into Database");  
         }
     }
 }
