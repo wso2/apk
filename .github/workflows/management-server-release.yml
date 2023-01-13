@@ -41,7 +41,7 @@ jobs:
           git config --global user.email ${{ secrets.WSO2_BOT_EMAIL }}
 
       - name: Run Gradle build
-        if: github.event_name == 'workflow_run'
+        if: github.event_name == 'workflow_dispatch'
         shell: sh
         run: |
           cd apk-repo/management-server
