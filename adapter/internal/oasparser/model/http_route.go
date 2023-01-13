@@ -106,7 +106,7 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, au
 				}
 			}
 		}
-		loggers.LoggerOasparser.Debug("Calculating auths for API")
+		loggers.LoggerOasparser.Debug("Calculating auths for API ...")
 		securities, securityDefinitions, disabledSecurity := getSecurity(concatAuthScheme(resourceAuthScheme))
 		securitySchemes = append(securitySchemes, securityDefinitions...)
 		if len(rule.BackendRefs) < 1 {

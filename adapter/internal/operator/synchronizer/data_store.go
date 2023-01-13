@@ -54,17 +54,27 @@ func (ods *OperatorDataStore) AddAPIState(api dpv1alpha1.API, prodHTTPRouteState
 	return *ods.apiStore[apiNamespacedName]
 }
 
-// UpdateAPIState update the APIState on ref updates
+// UpdateAPIState update/create the APIState on ref updates
 func (ods *OperatorDataStore) UpdateAPIState(apiDef *dpv1alpha1.API, prodHTTPRoute *HTTPRouteState,
 	sandHTTPRoute *HTTPRouteState) (APIState, []string, bool) {
-	var updated bool
-	events := []string{}
-	cachedAPI, found := ods.apiStore[utils.NamespacedName(apiDef)]
+	_, found := ods.apiStore[utils.NamespacedName(apiDef)]
 	if !found {
 		loggers.LoggerAPKOperator.Infof("Adding new apistate as API : %s has not found in memory datastore.", apiDef.Spec.APIDisplayName)
 		apiState := ods.AddAPIState(*apiDef, prodHTTPRoute, sandHTTPRoute)
 		return apiState, []string{"API"}, true
 	}
+	return ods.processAPIState(apiDef, prodHTTPRoute, sandHTTPRoute)
+}
+
+// processAPIState process and update the APIState on ref updates
+func (ods *OperatorDataStore) processAPIState(apiDef *dpv1alpha1.API, prodHTTPRoute *HTTPRouteState,
+	sandHTTPRoute *HTTPRouteState) (APIState, []string, bool) {
+	ods.mu.Lock()
+	defer ods.mu.Unlock()
+	var updated bool
+	events := []string{}
+	cachedAPI := ods.apiStore[utils.NamespacedName(apiDef)]
+
 	if apiDef.Generation > cachedAPI.APIDefinition.Generation {
 		cachedAPI.APIDefinition = apiDef
 		updated = true
