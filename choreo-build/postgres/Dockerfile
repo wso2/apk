@@ -23,6 +23,5 @@ FROM library/postgres
 ENV POSTGRES_USER wso2carbon
 ENV POSTGRES_PASSWORD wso2carbon
 ENV POSTGRES_DB WSO2AM_DB
-#COPY db.sql /docker-entrypoint-initdb.d/
+COPY db.sql /docker-entrypoint-initdb.d/
 
-USER 10014
