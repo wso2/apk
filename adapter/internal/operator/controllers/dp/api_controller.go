@@ -246,7 +246,7 @@ func (apiReconciler *APIReconciler) getAuthenticationsForHTTPRoute(ctx context.C
 		return nil, err
 	}
 	for _, item := range authenticationList.Items {
-		authentications[utils.NamespacedName(&item).String()] = item
+		authentications[utils.NamespacedName(&item).Name] = item
 	}
 	return authentications, nil
 }
@@ -261,7 +261,7 @@ func (apiReconciler *APIReconciler) getAuthenticationsForResources(ctx context.C
 		return nil, err
 	}
 	for _, item := range authenticationList.Items {
-		authentications[utils.NamespacedName(&item).String()] = item
+		authentications[utils.NamespacedName(&item).Name] = item
 	}
 	return authentications, nil
 }

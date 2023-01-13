@@ -18,7 +18,6 @@ apiVersion: dp.wso2.com/v1alpha1
 kind: API
 metadata:
   name: http-bin-api
-  namespace: apk-platform
 spec:
   apiDisplayName: http-bin-api
   apiType: REST
@@ -33,7 +32,6 @@ apiVersion: gateway.networking.k8s.io/v1beta1
 kind: HTTPRoute
 metadata:
   name: prod-http-route-http-bin-api
-  namespace: apk-platform
 spec:
   hostnames:
   - prod.gw.wso2.com
@@ -63,7 +61,6 @@ apiVersion: gateway.networking.k8s.io/v1beta1
 kind: HTTPRoute
 metadata:
   name: sand-http-route-http-bin-api
-  namespace: apk-platform
 spec:
   hostnames:
   - sand.gw.wso2.com
@@ -88,3 +85,8 @@ spec:
           path:
             type: ReplacePrefixMatch
             replacePrefixMatch: /get
+      - type: ExtensionRef
+        extensionRef:
+          group: dp.wso2.com
+          kind: Authentication
+          name: sand-http-bin-authentication
