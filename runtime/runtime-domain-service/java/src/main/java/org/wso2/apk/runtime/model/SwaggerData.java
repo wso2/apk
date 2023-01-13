@@ -30,7 +30,7 @@ public class SwaggerData {
     public static class Resource {
         private String path;
         private String verb;
-        private String authType;
+        private boolean authType;
         private String policy;
         private Scope scope;
         private List<Scope> scopes = new ArrayList<>();
@@ -53,11 +53,11 @@ public class SwaggerData {
             this.verb = verb;
         }
 
-        public String getAuthType() {
+        public boolean isAuthType() {
             return authType;
         }
 
-        public void setAuthType(String authType) {
+        public void setAuthType(boolean authType) {
             this.authType = authType;
         }
 
@@ -127,7 +127,7 @@ public class SwaggerData {
             Resource resource = new Resource();
             resource.path = uriTemplate.getUriTemplate();
             resource.verb = uriTemplate.getHTTPVerb();
-            resource.authType = uriTemplate.getAuthType();
+            resource.authType = uriTemplate.isAuthEnabled();
             resource.policy = uriTemplate.getThrottlingTier();
             resource.scope = uriTemplate.getScope();
             resource.scopes = uriTemplate.retrieveAllScopes();

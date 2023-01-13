@@ -25,8 +25,8 @@ public type StatusDetails record {
 };
 
 public type ListMeta record {
-    string 'continue;
-    int remainingItemCount;
-    string resourceVersion;
-    string selfLink;
+    string 'continue?;
+    int remainingItemCount?;
+    string resourceVersion?;
+    string selfLink?;
 };

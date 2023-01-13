@@ -70,16 +70,16 @@ public class ServiceClient {
 
     public function retrieveAllServiceMappingsAtStartup(string? continueValue) returns error? {
         string? resultValue = continueValue;
-        json|http:ClientError retrieveAllServiceMappingResult;
+        model:ServiceMappingList|http:ClientError retrieveAllServiceMappingResult;
         if resultValue is string {
             retrieveAllServiceMappingResult = retrieveAllServiceMappings(resultValue);
         } else {
             retrieveAllServiceMappingResult = retrieveAllServiceMappings(());
         }
 
-        if retrieveAllServiceMappingResult is json {
-            json metadata = check retrieveAllServiceMappingResult.metadata;
-            json[] items = <json[]>check retrieveAllServiceMappingResult.items;
+        if retrieveAllServiceMappingResult is model:ServiceMappingList {
+            model:ListMeta metadata = retrieveAllServiceMappingResult.metadata;
+            model:K8sServiceMapping[] items =  retrieveAllServiceMappingResult.items;
             _ = check putAllServiceMappings(items);
 
             json|error continueElement = metadata.'continue;
@@ -88,8 +88,10 @@ public class ServiceClient {
                     _ = check self.retrieveAllServicesAtStartup(<string?>continueElement);
                 }
             }
-            string resourceVersion = <string>check metadata.'resourceVersion;
-            setServiceMappingResourceVersion(resourceVersion);
+            string? resourceVersion =  metadata.'resourceVersion;
+            if resourceVersion is string{
+            setServiceMappingResourceVersion(resourceVersion);                
+            }
         }
     }
 

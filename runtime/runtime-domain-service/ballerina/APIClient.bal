@@ -127,12 +127,39 @@ public class APIClient {
                 if response is APKError {
                     return response;
                 }
+                response = self.deleteAuthneticationCRs(api);
+                if response is APKError {
+                    return response;
+                }
             } else {
                 NotFoundError apiNotfound = {body: {code: 900910, description: "API with " + id + " not found", message: "API not found"}};
                 return apiNotfound;
             }
         }
         return http:OK;
+    }
+    private isolated function deleteAuthneticationCRs(model:API api) returns APKError? {
+        do {
+            model:AuthenticationList|http:ClientError authenticationCrListResponse = check getAuthenticationCrsForAPI(api.spec.apiDisplayName, api.spec.apiVersion, api.metadata.namespace);
+            if authenticationCrListResponse is model:AuthenticationList {
+                foreach model:Authentication item in authenticationCrListResponse.items {
+                    http:Response|http:ClientError k8ServiceMappingDeletionResponse = deleteAuthenticationCR(item.metadata.name, item.metadata.namespace);
+                    if k8ServiceMappingDeletionResponse is http:Response {
+                        if k8ServiceMappingDeletionResponse.statusCode != http:STATUS_OK {
+                            json responsePayLoad = check k8ServiceMappingDeletionResponse.getJsonPayload();
+                            model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                            _ = check self.handleK8sTimeout(statusResponse);
+                        }
+                    } else {
+                        log:printError("Error occured while deleting service mapping");
+                    }
+                }
+                return;
+            }
+        } on fail var e {
+            log:printError("Error occured deleting servicemapping", e);
+            return error("Error occured deleting servicemapping", message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = "500");
+        }
     }
 
     # This returns list of APIS.
@@ -460,6 +487,18 @@ public class APIClient {
                     _ = check self.handleK8sTimeout(statusResponse);
                 }
             }
+            string[] keys = apiArtifact.authenticationMap.keys();
+            foreach string authenticationCrName in keys {
+                model:Authentication authenticationCr = apiArtifact.authenticationMap.get(authenticationCrName);
+                http:Response authenticationCrDeployResponse = check deployAuthenticationCR(authenticationCr, getNameSpace(runtimeConfiguration.apiCreationNamespace));
+                if authenticationCrDeployResponse.statusCode == http:STATUS_CREATED {
+                    log:printDebug("Deployed HttpRoute Successfully" + authenticationCr.toString());
+                } else {
+                    json responsePayLoad = check authenticationCrDeployResponse.getJsonPayload();
+                    model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                    _ = check self.handleK8sTimeout(statusResponse);
+                }
+            }
             model:Httproute? productionRoute = apiArtifact.productionRoute;
             if productionRoute is model:Httproute {
                 http:Response deployHttpRouteResult = check deployHttpRoute(productionRoute, getNameSpace(runtimeConfiguration.apiCreationNamespace));
@@ -538,7 +577,8 @@ public class APIClient {
                 name: self.retrieveDefinitionName(api, uniqueId),
                 namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace),
                 uid: (),
-                creationTimestamp: ()
+                creationTimestamp: (),
+                labels: self.getLabels(uniqueId, api, ())
 
             },
             data: configMapData
@@ -570,7 +610,8 @@ public class APIClient {
                 name: apiArtifact.uniqueId,
                 namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace),
                 uid: (),
-                creationTimestamp: ()
+                creationTimestamp: (),
+                labels: self.getLabels(apiArtifact.uniqueId, api, ())
             },
             spec: {
                 apiDisplayName: api.name,
@@ -602,6 +643,9 @@ public class APIClient {
     private isolated function retrieveHttpRouteRefName(API api, string uniqueId, string 'type) returns string {
         return uniqueId + "-" + 'type;
     }
+    private isolated function retrieveDisableAuthenticationRefName(API api, string uniqueId, string 'type) returns string {
+        return uniqueId + "-" + 'type + "-authentication";
+    }
 
     private isolated function setHttpRoute(model:APIArtifact apiArtifact, API api, model:Endpoint? endpoint, string uniqueId, string endpointType) returns APKError? {
         model:Httproute httpRoute = {
@@ -610,7 +654,8 @@ public class APIClient {
                 name: self.retrieveHttpRouteRefName(api, uniqueId, endpointType),
                 namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace),
                 uid: (),
-                creationTimestamp: ()
+                creationTimestamp: (),
+                labels: self.getLabels(uniqueId, api, ())
             },
             spec: {
                 parentRefs: self.generateAndRetrieveParentRefs(api, uniqueId),
@@ -642,10 +687,45 @@ public class APIClient {
         if operations is APIOperations[] {
             foreach APIOperations operation in operations {
                 model:HTTPRouteRule httpRouteRule = check self.generateHttpRouteRule(apiArtifact, api, endpoint, operation, endpointType);
+                if !operation.authTypeEnabled {
+                    string disableAuthenticationRefName = self.retrieveDisableAuthenticationRefName(api, apiArtifact.uniqueId, endpointType);
+                    if !apiArtifact.authenticationMap.hasKey(disableAuthenticationRefName) {
+                        model:Authentication generateDisableAuthenticationCR = self.generateDisableAuthenticationCR(apiArtifact, api, endpointType);
+                        apiArtifact.authenticationMap[disableAuthenticationRefName] = generateDisableAuthenticationCR;
+                    }
+                    model:HTTPRouteFilter disableAuthenticationFilter = {'type: "ExtensionRef", extensionRef: {group: "dp.wso2.com", kind: "Authentication", name: disableAuthenticationRefName}};
+                    model:HTTPRouteFilter[]? filters = httpRouteRule.filters;
+                    if filters is model:HTTPRouteFilter[] {
+                        filters.push(disableAuthenticationFilter);
+                    } else {
+                        filters = [disableAuthenticationFilter];
+                    }
+                }
                 httpRouteRules.push(httpRouteRule);
             }
         }
         return httpRouteRules;
+    }
+
+    private isolated function generateDisableAuthenticationCR(model:APIArtifact apiArtifact, API api, string endpointType) returns model:Authentication {
+        string retrieveDisableAuthenticationRefName = self.retrieveDisableAuthenticationRefName(api, apiArtifact.uniqueId, endpointType);
+        string nameSpace = getNameSpace(runtimeConfiguration.apiCreationNamespace);
+        model:Authentication authentication = {
+            metadata: {name: retrieveDisableAuthenticationRefName, namespace: nameSpace, labels: self.getLabels(apiArtifact.uniqueId, api, ())},
+            spec: {
+                targetRef: {
+                    group: "",
+                    kind: "Resource",
+                    name: self.retrieveHttpRouteRefName(api, apiArtifact.uniqueId, endpointType),
+                    namespace: nameSpace
+                },
+                override: {
+                    ext: {disabled: true},
+                    'type: "ext"
+                }
+            }
+        };
+        return authentication;
     }
 
     private isolated function generateHttpRouteRule(model:APIArtifact apiArtifact, API api, model:Endpoint? endpoint, APIOperations operation, string endpointType) returns APKError|model:HTTPRouteRule {
@@ -780,6 +860,13 @@ public class APIClient {
                 if verb is string {
                     uriTemplate.setHTTPVerb(verb.toUpperAscii());
                 }
+                boolean? authTypeEnabled = apiOperation.authTypeEnabled;
+                if authTypeEnabled is boolean {
+                    uriTemplate.setAuthEnabled(authTypeEnabled);
+                } else {
+                    uriTemplate.setAuthEnabled(true);
+                }
+
                 _ = uritemplatesSet.add(uriTemplate);
             }
         }
@@ -852,7 +939,8 @@ public class APIClient {
                     name: self.getServiceMappingEntryName(apiArtifact.uniqueId),
                     namespace: namespace,
                     uid: (),
-                    creationTimestamp: ()
+                    creationTimestamp: (),
+                    labels: self.getLabels(apiArtifact.uniqueId, api, ())
                 },
                 spec: {
                     serviceRef: {
@@ -875,8 +963,18 @@ public class APIClient {
 
     isolated function deleteServiceMappings(model:API api) returns APKError? {
         do {
-            model:K8sServiceMapping[] retrieveServiceMappingsForAPIResult = retrieveServiceMappingsForAPI(api);
-            foreach model:K8sServiceMapping serviceMapping in retrieveServiceMappingsForAPIResult {
+            map<model:K8sServiceMapping> retrieveServiceMappingsForAPIResult = retrieveServiceMappingsForAPI(api).clone();
+            model:ServiceMappingList|http:ClientError k8sServiceMapingsDeletionResponse = check getK8sServiceMapingsForAPI(api.spec.apiDisplayName, api.spec.apiVersion, api.metadata.namespace);
+            if k8sServiceMapingsDeletionResponse is model:ServiceMappingList {
+                foreach model:K8sServiceMapping item in k8sServiceMapingsDeletionResponse.items {
+                    retrieveServiceMappingsForAPIResult[<string>item.metadata.uid]=item;
+                }
+            } else {
+                log:printError("Error occured while deleting service mapping");
+            }
+            string[] keys = retrieveServiceMappingsForAPIResult.keys();
+            foreach string key in keys {
+                model:K8sServiceMapping  serviceMapping = retrieveServiceMappingsForAPIResult.get(key);
                 http:Response|http:ClientError k8ServiceMappingDeletionResponse = deleteK8ServiceMapping(serviceMapping.metadata.name, serviceMapping.metadata.namespace);
                 if k8ServiceMappingDeletionResponse is http:Response {
                     if k8ServiceMappingDeletionResponse.statusCode != http:STATUS_OK {
@@ -1079,6 +1177,7 @@ public class APIClient {
             }
         }
     }
+
     isolated function getPort(string url) returns int|error {
         string hostPort = "";
         string protocol = "";
@@ -1145,6 +1244,7 @@ public class APIClient {
         }
 
     }
+
     isolated function createBackendService(string url, map<string> labels) returns model:Service {
         string nameSpace = getNameSpace(runtimeConfiguration.apiCreationNamespace);
         model:Service backendService = {
@@ -1162,6 +1262,7 @@ public class APIClient {
         };
         return backendService;
     }
+
     public isolated function retrieveDefaultDefinition(model:API api) returns json {
         json defaultOpenApiDefinition = {
             "openapi": "3.0.1",
@@ -1299,6 +1400,7 @@ public class APIClient {
         };
         return defaultOpenApiDefinition;
     }
+
     public isolated function validateAPIExistence(string query) returns NotFoundError|BadRequestError|http:Ok {
         int? indexOfColon = query.indexOf(":", 0);
         boolean exist = false;
@@ -1325,6 +1427,7 @@ public class APIClient {
             return notFound;
         }
     }
+
 }
 
 type DefinitionValidationRequest record {|

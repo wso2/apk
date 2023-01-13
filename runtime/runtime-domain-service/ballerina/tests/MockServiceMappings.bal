@@ -1,3 +1,4 @@
+import runtime_domain_service.model;
 //
 // Copyright (c) 2022, WSO2 LLC. (http://www.wso2.com).
 //
@@ -16,8 +17,8 @@
 // under the License.
 //
 
-public function getMockServiceMappings() returns json {
-    json response = {
+public function getMockServiceMappings() returns model:ServiceMappingList {
+    model:ServiceMappingList response = {
         "apiVersion": "dp.wso2.com/v1alpha1",
         "items": [
             {

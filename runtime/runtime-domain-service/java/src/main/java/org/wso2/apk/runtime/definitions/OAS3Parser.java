@@ -124,22 +124,14 @@ public class OAS3Parser extends APIDefinition {
                     Map<String, Object> extensions = operation.getExtensions();
                     if (extensions != null) {
                         if (extensions.containsKey(APIConstants.SWAGGER_X_AUTH_TYPE)) {
-                            String scopeKey = (String) extensions.get(APIConstants.SWAGGER_X_AUTH_TYPE);
-                            template.setAuthType(scopeKey);
+                            Boolean authType = (Boolean) extensions.get(APIConstants.SWAGGER_X_AUTH_TYPE);
+                            template.setAuthEnabled(authType);
                         } else {
-                            template.setAuthType("Any");
+                            template.setAuthEnabled(true);
                         }
                         if (extensions.containsKey(APIConstants.SWAGGER_X_THROTTLING_TIER)) {
                             String throttlingTier = (String) extensions.get(APIConstants.SWAGGER_X_THROTTLING_TIER);
                             template.setThrottlingTier(throttlingTier);
-                        }
-                        if (extensions.containsKey(APIConstants.SWAGGER_X_AMZN_RESOURCE_NAME)) {
-                            template.setAmznResourceName((String)
-                                    extensions.get(APIConstants.SWAGGER_X_AMZN_RESOURCE_NAME));
-                        }
-                        if (extensions.containsKey(APIConstants.SWAGGER_X_AMZN_RESOURCE_TIMEOUT)) {
-                            template.setAmznResourceTimeout(((Number)
-                                    extensions.get(APIConstants.SWAGGER_X_AMZN_RESOURCE_TIMEOUT)).intValue());
                         }
                     }
                     urlTemplates.add(template);
@@ -681,10 +673,7 @@ public class OAS3Parser extends APIDefinition {
      * @param operation swagger operation
      */
     private void updateOperationManagedInfo(SwaggerData.Resource resource, Operation operation) {
-        String authType = resource.getAuthType();
-        if (APIConstants.AUTH_APPLICATION_OR_USER_LEVEL_TOKEN.equals(authType)) {
-            authType = "Application & Application User";
-        }
+        boolean authType = resource.isAuthType();
         operation.addExtension(APIConstants.SWAGGER_X_AUTH_TYPE, authType);
         if (resource.getPolicy() != null) {
             operation.addExtension(APIConstants.SWAGGER_X_THROTTLING_TIER, resource.getPolicy());
@@ -820,7 +809,7 @@ public class OAS3Parser extends APIDefinition {
      */
     private void modifyGraphQLSwagger(OpenAPI openAPI) {
         SwaggerData.Resource resource = new SwaggerData.Resource();
-        resource.setAuthType(APIConstants.AUTH_APPLICATION_OR_USER_LEVEL_TOKEN);
+        resource.setAuthType(true);
         resource.setPolicy(APIConstants.DEFAULT_SUB_POLICY_UNLIMITED);
         resource.setPath("/");
         resource.setVerb(APIConstants.HTTP_POST);

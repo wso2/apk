@@ -885,95 +885,99 @@ function testDataGeneratedSwaggerDefinition() returns map<[API, json|APKError]> 
                 "operations": [{target: "/*", verb: "GET"}, {target: "/*", verb: "POST"}, {target: "/*", verb: "DELETE"}]
             },
             {
-                "openapi": "3.0.1",
-                "info": {
-                    "title": "demoAPI",
-                    "version": "1.0.0"
-                },
-                "security": [
-                    {
-                        "default": []
-                    }
-                ],
-                "paths": {
-                    "/*": {
-                        "get": {
-                            "responses": {
-                                "200": {
-                                    "description": "OK"
-                                }
-                            },
-                            "security": [
-                                {
-                                    "default": []
-                                }
-                            ],
-                            "x-throttling-tier": "Unlimited"
-                        },
-                        "post": {
-                            "responses": {
-                                "200": {
-                                    "description": "OK"
-                                }
-                            },
-                            "security": [
-                                {
-                                    "default": []
-                                }
-                            ],
-                            "x-throttling-tier": "Unlimited"
-                        },
-                        "delete": {
-                            "responses": {
-                                "200": {
-                                    "description": "OK"
-                                }
-                            },
-                            "security": [
-                                {
-                                    "default": []
-                                }
-                            ],
-                            "x-throttling-tier": "Unlimited"
-                        }
-                    }
-                },
-                "components": {
-                    "securitySchemes": {
-                        "default": {
-                            "type": "oauth2",
-                            "flows": {
-                                "implicit": {
-                                    "authorizationUrl": "https://test.com",
-                                    "scopes": {}
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+	"openapi": "3.0.1",
+	"info": {
+		"title": "demoAPI",
+		"version": "1.0.0"
+	},
+	"security": [
+		{
+			"default": []
+		}
+	],
+	"paths": {
+		"/*": {
+			"get": {
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				},
+				"security": [
+					{
+						"default": []
+					}
+				],
+				"x-auth-type": true,
+				"x-throttling-tier": "Unlimited"
+			},
+			"post": {
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				},
+				"security": [
+					{
+						"default": []
+					}
+				],
+				"x-auth-type": true,
+				"x-throttling-tier": "Unlimited"
+			},
+			"delete": {
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				},
+				"security": [
+					{
+						"default": []
+					}
+				],
+				"x-auth-type": true,
+				"x-throttling-tier": "Unlimited"
+			}
+		}
+	},
+	"components": {
+		"securitySchemes": {
+			"default": {
+				"type": "oauth2",
+				"flows": {
+					"implicit": {
+						"authorizationUrl": "https://test.com",
+						"scopes": {}
+					}
+				}
+			}
+		}
+	}
+}
         ]
     }
 ;
     return data;
 }
 
-@test:Config{dataProvider:validateExistenceDataProvider}
-function testValidateAPIExistence(string query,anydata expected) {
+@test:Config {dataProvider: validateExistenceDataProvider}
+function testValidateAPIExistence(string query, anydata expected) {
     APIClient apiClient = new;
-    test:assertEquals(apiClient.validateAPIExistence(query),expected);
+    test:assertEquals(apiClient.validateAPIExistence(query), expected);
 }
-function validateExistenceDataProvider() returns map<[string,NotFoundError|BadRequestError|http:Ok]>{
-http:Ok ok = {};
-BadRequestError badRequest = {body: {code: 90912, message: "Invalid KeyWord type"}};
-NotFoundError notFound = {body: {code: 900914, message: "context/name doesn't exist"}};
-map<[string,NotFoundError|BadRequestError|http:Ok]> data = {
-"1":["name:pizzashackAPI",ok],
-"2":["name:mockapi",notFound],
-"3":["context:/api/v1",notFound],
-"4":["context:/pizzashack/1.0.0",ok],
-"5":["pizzashackAPI",ok],
-"6":["type:pizzashackAPI",badRequest]
-};
-return data;
+
+function validateExistenceDataProvider() returns map<[string, NotFoundError|BadRequestError|http:Ok]> {
+    http:Ok ok = {};
+    BadRequestError badRequest = {body: {code: 90912, message: "Invalid KeyWord type"}};
+    NotFoundError notFound = {body: {code: 900914, message: "context/name doesn't exist"}};
+    map<[string, NotFoundError|BadRequestError|http:Ok]> data = {
+        "1": ["name:pizzashackAPI", ok],
+        "2": ["name:mockapi", notFound],
+        "3": ["context:/api/v1", notFound],
+        "4": ["context:/pizzashack/1.0.0", ok],
+        "5": ["pizzashackAPI", ok],
+        "6": ["type:pizzashackAPI", badRequest]
+    };
+    return data;
 }
