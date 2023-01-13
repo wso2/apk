@@ -25,3 +25,4 @@ ENV POSTGRES_PASSWORD wso2carbon
 ENV POSTGRES_DB WSO2AM_DB
 COPY db.sql /docker-entrypoint-initdb.d/
 
+USER 999
