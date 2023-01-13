@@ -81,11 +81,17 @@ tasks.register('start_builder', Exec) {
     dependsOn setup_buildx
     commandLine 'docker', 'buildx', 'inspect', '--bootstrap'
 }
-
+tasks.register('stop_builder', Exec) {
+    group 'docker'
+    description 'Bootstrap buildx builder'
+    commandLine 'docker', 'buildx', 'stop', 'mybuilder'
+    commandLine 'docker', 'buildx', 'rm', 'mybuilder'
+}
 tasks.register('docker_buildx', Exec) {
     group 'docker'
     description 'Build a multiarch image using docker buildx buildkit'
     dependsOn start_builder
+    finalizedBy stop_builder
     mustRunAfter docker_login
     commandLine 'docker', 'buildx', 'build', '--platform', platforms, '-t', imageName, '--push', '.'
 }
