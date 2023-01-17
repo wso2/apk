@@ -19,10 +19,11 @@
 #---------------------------------------------------------------
 
 
-FROM library/postgres
+FROM bitnami/postgresql
 ENV POSTGRES_USER wso2carbon
 ENV POSTGRES_PASSWORD wso2carbon
 ENV POSTGRES_DB WSO2AM_DB
-#COPY db.sql /docker-entrypoint-initdb.d/
 
-USER 999
+#COPY db.sql /docker-entrypoint-initdb.d/
+# chown -R ${USER} /var/lib/postgresql/data
+USER 10001
