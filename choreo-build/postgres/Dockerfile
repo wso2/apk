@@ -23,7 +23,7 @@ FROM library/postgres
 ENV POSTGRES_USER wso2carbon
 ENV POSTGRES_PASSWORD wso2carbon
 ENV POSTGRES_DB WSO2AM_DB
-COPY db.sql /docker-entrypoint-initdb.d/
+#COPY db.sql /docker-entrypoint-initdb.d/
 
 USER root 
 
@@ -42,6 +42,6 @@ RUN mkdir -p "$PGDATA" && chown -R postgres:postgres "$PGDATA" && chmod 777 "$PG
 # # see https://github.com/docker-library/postgres/issues/274
 # chown -R 10001:10001 /var/lib/postgresql 
 
-# RUN chown -R 10001:10001 /var/lib/postgresql
+RUN chown -R 10001:10001 /var/lib/postgresql/data1
 
 USER 10001
