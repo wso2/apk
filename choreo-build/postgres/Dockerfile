@@ -19,11 +19,23 @@
 #---------------------------------------------------------------
 
 
-FROM bitnami/postgresql
+FROM library/postgres
 ENV POSTGRES_USER wso2carbon
 ENV POSTGRES_PASSWORD wso2carbon
 ENV POSTGRES_DB WSO2AM_DB
 
-#COPY db.sql /docker-entrypoint-initdb.d/
-# chown -R ${USER} /var/lib/postgresql/data
+USER root 
+
+RUN groupmod -g 10001 postgres
+RUN usermod -u 10001 postgres
+# RUN set -eux; \ 
+# groupadd -r postgres1 --gid=10001; \
+# # https://salsa.debian.org/postgresql/postgresql-common/blob/997d842ee744687d99a2b2d95c1083a2615c79e8/debian/postgresql-common.postinst#L32-35
+# useradd -r -g postgres1 --uid=10001 --home-dir=/var/lib/postgresql --shell=/bin/bash postgres1; \
+# # also create the postgres user's home directory with appropriate permissions
+# # see https://github.com/docker-library/postgres/issues/274
+# chown -R 10001:10001 /var/lib/postgresql 
+
+RUN chown -R 10001:10001 /var/lib/postgresql/data
+
 USER 10001
