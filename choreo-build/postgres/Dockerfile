@@ -23,6 +23,7 @@ FROM library/postgres
 ENV POSTGRES_USER wso2carbon
 ENV POSTGRES_PASSWORD wso2carbon
 ENV POSTGRES_DB WSO2AM_DB
+ENV PGDATA /var/lib/postgresql/data
 #COPY db.sql /docker-entrypoint-initdb.d/
 
 USER root 
@@ -30,7 +31,6 @@ USER root
 RUN groupmod -g 10001 postgres
 RUN usermod -u 10001 postgres
 
-ENV PGDATA /var/lib/postgresql/data1
 # this 777 will be replaced by 700 at runtime (allows semi-arbitrary "--user" values)
 RUN mkdir -p "$PGDATA" && chown -R postgres:postgres "$PGDATA" && chmod 777 "$PGDATA"
 
