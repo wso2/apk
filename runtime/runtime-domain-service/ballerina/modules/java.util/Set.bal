@@ -16,7 +16,7 @@ public distinct class Set {
     # The init function of the Ballerina class mapping the `java.util.Set` Java interface.
     #
     # + obj - The `handle` value containing the Java reference of the object.
-    public function init(handle obj) {
+    public isolated function init(handle obj) {
         self.jObj = obj;
     }
 
@@ -170,7 +170,7 @@ public distinct class Set {
     # The function that maps to the `toArray` method of `java.util.Set`.
     #
     # + return - The `javalang:Object[]` value returning from the Java mapping.
-    public function toArray() returns javalang:Object[]|error {
+    public isolated function toArray() returns javalang:Object[]|error {
         handle externalObj = java_util_Set_toArray(self.jObj);
         javalang:Object[] newObj = [];
         handle[] anyObj = <handle[]>check jarrays:fromHandle(externalObj, "handle");
@@ -576,7 +576,7 @@ function java_util_Set_stream(handle receiver) returns handle = @java:Method {
     paramTypes: []
 } external;
 
-function java_util_Set_toArray(handle receiver) returns handle = @java:Method {
+isolated function java_util_Set_toArray(handle receiver) returns handle = @java:Method {
     name: "toArray",
     'class: "java.util.Set",
     paramTypes: []
