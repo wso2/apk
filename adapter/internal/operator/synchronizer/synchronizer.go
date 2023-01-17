@@ -30,6 +30,7 @@ import (
 	"github.com/wso2/apk/adapter/internal/loggers"
 	model "github.com/wso2/apk/adapter/internal/oasparser/model"
 	"github.com/wso2/apk/adapter/internal/operator/constants"
+	"github.com/wso2/apk/adapter/internal/operator/services/runtime"
 	apiProtos "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/apkmgt"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
@@ -214,6 +215,7 @@ func SendAPIToAPKMgtServer() {
 					Type:           api.APIDefinition.Spec.APIType,
 					OrganizationId: api.APIDefinition.Spec.Organization,
 					Resources:      getResourcesForAPI(api),
+					Definition:     runtime.GetAPIDefinition(string(api.APIDefinition.GetUID())),
 				})
 			} else if strings.Compare(apiEvent.EventType, constants.Update) == 0 {
 				return apiClient.UpdateAPI(context.Background(), &apiProtos.API{
@@ -224,6 +226,7 @@ func SendAPIToAPKMgtServer() {
 					Type:           api.APIDefinition.Spec.APIType,
 					OrganizationId: api.APIDefinition.Spec.Organization,
 					Resources:      getResourcesForAPI(api),
+					Definition:     runtime.GetAPIDefinition(string(api.APIDefinition.GetUID())),
 				})
 			} else if strings.Compare(apiEvent.EventType, constants.Delete) == 0 {
 				return apiClient.DeleteAPI(context.Background(), &apiProtos.API{

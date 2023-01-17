@@ -77,6 +77,7 @@ type Config struct {
 	Envoy            envoy            `toml:"router"`
 	ControlPlane     controlPlane     `toml:"controlPlane"`
 	ManagementServer managementServer `toml:"managementServer"`
+	Runtime          runtime          `toml:"runtime"`
 	Analytics        analytics        `toml:"analytics"`
 	Tracing          tracing
 }
@@ -547,9 +548,9 @@ type mutualSSL struct {
 }
 
 type gRPCClient struct {
-	ManagementServerAddress string;
-	MaxAttempts int;
-	BackOffInMilliSeconds int;
+	ManagementServerAddress string
+	MaxAttempts             int
+	BackOffInMilliSeconds   int
 }
 
 type filters struct {
@@ -579,4 +580,10 @@ type responseDirection struct {
 
 type operator struct {
 	Namespaces []string
+}
+
+type runtime struct {
+	Host            string
+	Port            int
+	ServiceBasePath string
 }

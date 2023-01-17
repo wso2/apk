@@ -24,13 +24,11 @@ type api struct {
 	LifeCycleStatus string `json:"LifeCycleStatus"`
 }
 
-type definetion struct {
-	openapi string
-}
+type definition interface{}
 
 type requestData struct {
 	APIProperties api        `json:"apiProperties"`
-	Definition    definetion `json:"Definition"`
+	Definition    definition `json:"Definition"`
 }
 
 func init() {
@@ -55,7 +53,7 @@ func composeRequestBody(api *apiProtos.API) requestData {
 	request.APIProperties.Context = api.Context
 	request.APIProperties.Version = api.Version
 	request.APIProperties.Provider = api.Provider
-
+	json.Unmarshal([]byte(api.Definition), &request.Definition)
 	return *request
 }
 
