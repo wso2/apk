@@ -23,7 +23,7 @@ FROM library/postgres
 ENV POSTGRES_USER wso2carbon
 ENV POSTGRES_PASSWORD wso2carbon
 ENV POSTGRES_DB WSO2AM_DB
-ENV PGDATA /var/lib/postgresql/data
+ENV PGDATA /var/lib/postgresql/data1
 #COPY db.sql /docker-entrypoint-initdb.d/
 
 USER root 
@@ -31,8 +31,16 @@ USER root
 RUN groupmod -g 10001 postgres
 RUN usermod -u 10001 postgres
 
+RUN mkdir -p "$PGDATA"
+RUN chown -R postgres "$PGDATA"
+RUN chmod 777 "$PGDATA"
+
+RUN mkdir -p /var/run/postgresql1
+RUN chown -R postgres /var/run/postgresql1
+RUN chmod 775 /var/run/postgresql1
+
 # this 777 will be replaced by 700 at runtime (allows semi-arbitrary "--user" values)
-RUN mkdir -p "$PGDATA" && chown -R postgres:postgres "$PGDATA" && chmod 777 "$PGDATA"
+# RUN mkdir -p "$PGDATA" && chown -R postgres:postgres "$PGDATA" && chmod 777 "$PGDATA"
 
 # RUN set -eux; \ 
 # groupadd -r postgres1 --gid=10001; \
@@ -42,6 +50,6 @@ RUN mkdir -p "$PGDATA" && chown -R postgres:postgres "$PGDATA" && chmod 777 "$PG
 # # see https://github.com/docker-library/postgres/issues/274
 # chown -R 10001:10001 /var/lib/postgresql 
 
-RUN chown -R 10001:10001 /var/lib/postgresql/data1
+#RUN chown -R 10001:10001 /var/lib/postgresql/data1
 
 USER 10001
