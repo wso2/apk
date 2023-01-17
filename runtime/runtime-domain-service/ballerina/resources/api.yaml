@@ -1411,6 +1411,10 @@ components:
           example: 8080
     apis_importdefinition_body:
       properties:
+        type:
+          type: string
+          description: Type of Definition.
+          format: string
         file:
           type: string
           description: Definition to upload as a file

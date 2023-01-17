@@ -16,7 +16,7 @@ public distinct class APIDefinition {
     # The init function of the Ballerina class mapping the `org.wso2.apk.runtime.api.APIDefinition` Java class.
     #
     # + obj - The `handle` value containing the Java reference of the object.
-    public function init(handle obj) {
+    public isolated function init(handle obj) {
         self.jObj = obj;
     }
 
@@ -126,7 +126,7 @@ public distinct class APIDefinition {
     #
     # + arg0 - The `string` value required to map with the Java method parameter.
     # + return - The `javautil:Set` or the `APIManagementException` value returning from the Java mapping.
-    public function getURITemplates(string arg0) returns javautil:Set|APIManagementException {
+    public isolated function getURITemplates(string arg0) returns javautil:Set|APIManagementException {
         handle|error externalObj = org_wso2_apk_runtime_api_APIDefinition_getURITemplates(self.jObj, java:fromString(arg0));
         if (externalObj is error) {
             APIManagementException e = error APIManagementException(APIMANAGEMENTEXCEPTION, externalObj, message = externalObj.message());
@@ -285,7 +285,7 @@ function org_wso2_apk_runtime_api_APIDefinition_getType(handle receiver) returns
     paramTypes: []
 } external;
 
-function org_wso2_apk_runtime_api_APIDefinition_getURITemplates(handle receiver, handle arg0) returns handle|error = @java:Method {
+isolated function org_wso2_apk_runtime_api_APIDefinition_getURITemplates(handle receiver, handle arg0) returns handle|error = @java:Method {
     name: "getURITemplates",
     'class: "org.wso2.apk.runtime.api.APIDefinition",
     paramTypes: ["java.lang.String"]

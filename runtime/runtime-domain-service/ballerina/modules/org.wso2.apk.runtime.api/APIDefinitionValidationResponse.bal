@@ -77,7 +77,7 @@ public distinct class APIDefinitionValidationResponse {
     # The function that maps to the `getParser` method of `org.wso2.apk.runtime.api.APIDefinitionValidationResponse`.
     #
     # + return - The `APIDefinition` value returning from the Java mapping.
-    public function getParser() returns APIDefinition {
+    public isolated function getParser() returns APIDefinition {
         handle externalObj = org_wso2_apk_runtime_api_APIDefinitionValidationResponse_getParser(self.jObj);
         APIDefinition newObj = new (externalObj);
         return newObj;
@@ -260,7 +260,7 @@ function org_wso2_apk_runtime_api_APIDefinitionValidationResponse_getJsonContent
     paramTypes: []
 } external;
 
-function org_wso2_apk_runtime_api_APIDefinitionValidationResponse_getParser(handle receiver) returns handle = @java:Method {
+isolated function org_wso2_apk_runtime_api_APIDefinitionValidationResponse_getParser(handle receiver) returns handle = @java:Method {
     name: "getParser",
     'class: "org.wso2.apk.runtime.api.APIDefinitionValidationResponse",
     paramTypes: []

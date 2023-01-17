@@ -73,7 +73,7 @@ public distinct class URITemplate {
     # The function that maps to the `getHTTPVerb` method of `org.wso2.apk.runtime.model.URITemplate`.
     #
     # + return - The `string` value returning from the Java mapping.
-    public function getHTTPVerb() returns string? {
+    public isolated function getHTTPVerb() returns string? {
         return java:toString(org_wso2_apk_runtime_model_URITemplate_getHTTPVerb(self.jObj));
     }
 
@@ -135,7 +135,7 @@ public distinct class URITemplate {
     # The function that maps to the `getUriTemplate` method of `org.wso2.apk.runtime.model.URITemplate`.
     #
     # + return - The `string` value returning from the Java mapping.
-    public function getUriTemplate() returns string? {
+    public isolated function getUriTemplate() returns string? {
         return java:toString(org_wso2_apk_runtime_model_URITemplate_getUriTemplate(self.jObj));
     }
 
@@ -149,7 +149,7 @@ public distinct class URITemplate {
     # The function that maps to the `isAuthEnabled` method of `org.wso2.apk.runtime.model.URITemplate`.
     #
     # + return - The `boolean` value returning from the Java mapping.
-    public function isAuthEnabled() returns boolean {
+    public isolated function isAuthEnabled() returns boolean {
         return org_wso2_apk_runtime_model_URITemplate_isAuthEnabled(self.jObj);
     }
 
@@ -353,7 +353,7 @@ function org_wso2_apk_runtime_model_URITemplate_getClass(handle receiver) return
     paramTypes: []
 } external;
 
-function org_wso2_apk_runtime_model_URITemplate_getHTTPVerb(handle receiver) returns handle = @java:Method {
+isolated function org_wso2_apk_runtime_model_URITemplate_getHTTPVerb(handle receiver) returns handle = @java:Method {
     name: "getHTTPVerb",
     'class: "org.wso2.apk.runtime.model.URITemplate",
     paramTypes: []
@@ -401,7 +401,7 @@ function org_wso2_apk_runtime_model_URITemplate_getThrottlingTier(handle receive
     paramTypes: []
 } external;
 
-function org_wso2_apk_runtime_model_URITemplate_getUriTemplate(handle receiver) returns handle = @java:Method {
+isolated function org_wso2_apk_runtime_model_URITemplate_getUriTemplate(handle receiver) returns handle = @java:Method {
     name: "getUriTemplate",
     'class: "org.wso2.apk.runtime.model.URITemplate",
     paramTypes: []
@@ -413,7 +413,7 @@ function org_wso2_apk_runtime_model_URITemplate_hashCode(handle receiver) return
     paramTypes: []
 } external;
 
-function org_wso2_apk_runtime_model_URITemplate_isAuthEnabled(handle receiver) returns boolean = @java:Method {
+isolated function org_wso2_apk_runtime_model_URITemplate_isAuthEnabled(handle receiver) returns boolean = @java:Method {
     name: "isAuthEnabled",
     'class: "org.wso2.apk.runtime.model.URITemplate",
     paramTypes: []

@@ -28,6 +28,7 @@ import runtime_domain_service.org.wso2.apk.runtime as runtimeUtil;
 import ballerina/mime;
 import ballerina/jballerina.java;
 import ballerina/lang.value;
+import runtime_domain_service.java.lang;
 import runtime_domain_service.org.wso2.apk.runtime.api as runtimeapi;
 
 public class APIClient {
@@ -967,14 +968,14 @@ public class APIClient {
             model:ServiceMappingList|http:ClientError k8sServiceMapingsDeletionResponse = check getK8sServiceMapingsForAPI(api.spec.apiDisplayName, api.spec.apiVersion, api.metadata.namespace);
             if k8sServiceMapingsDeletionResponse is model:ServiceMappingList {
                 foreach model:K8sServiceMapping item in k8sServiceMapingsDeletionResponse.items {
-                    retrieveServiceMappingsForAPIResult[<string>item.metadata.uid]=item;
+                    retrieveServiceMappingsForAPIResult[<string>item.metadata.uid] = item;
                 }
             } else {
                 log:printError("Error occured while deleting service mapping");
             }
             string[] keys = retrieveServiceMappingsForAPIResult.keys();
             foreach string key in keys {
-                model:K8sServiceMapping  serviceMapping = retrieveServiceMappingsForAPIResult.get(key);
+                model:K8sServiceMapping serviceMapping = retrieveServiceMappingsForAPIResult.get(key);
                 http:Response|http:ClientError k8ServiceMappingDeletionResponse = deleteK8ServiceMapping(serviceMapping.metadata.name, serviceMapping.metadata.namespace);
                 if k8ServiceMappingDeletionResponse is http:Response {
                     if k8ServiceMappingDeletionResponse.statusCode != http:STATUS_OK {
@@ -997,51 +998,8 @@ public class APIClient {
     public isolated function validateDefinition(http:Request message, boolean returnContent) returns InternalServerErrorError|error|BadRequestError|APIDefinitionValidationResponse {
         DefinitionValidationRequest|BadRequestError|error definitionValidationRequest = self.mapApiDefinitionPayload(message);
         if definitionValidationRequest is DefinitionValidationRequest {
-            boolean inlineApiDefinitionAvailable = definitionValidationRequest.inlineAPIDefinition is string;
-            boolean fileAvailable = definitionValidationRequest.fileName is string && definitionValidationRequest.content is byte[];
-            boolean urlAvailble = definitionValidationRequest.url is string;
-            boolean typeAvailable = definitionValidationRequest.'type.length() > 0;
-            if (!inlineApiDefinitionAvailable && !fileAvailable && !urlAvailble && !typeAvailable) {
-                BadRequestError badRequest = {body: {code: 90914, message: "atleast one of the field required"}};
-                return badRequest;
-            }
-            runtimeapi:APIDefinitionValidationResponse|runtimeapi:APIManagementException validationResponse;
-            if !typeAvailable {
-                BadRequestError badRequest = {body: {code: 90914, message: "type field unavailable"}};
-                return badRequest;
-            }
-            string? url = definitionValidationRequest.url;
-            if url is string {
-                if (fileAvailable || inlineApiDefinitionAvailable) {
-                    BadRequestError badRequest = {body: {code: 90914, message: "multiple fields of  url,file,inlineAPIDefinition given"}};
-                    return badRequest;
-                }
-                string|error retrieveDefinitionFromUrlResult = self.retrieveDefinitionFromUrl(url);
-                if retrieveDefinitionFromUrlResult is string {
-                    validationResponse = check runtimeUtil:RuntimeAPICommonUtil_validateOpenAPIDefinition(definitionValidationRequest.'type, [], retrieveDefinitionFromUrlResult, definitionValidationRequest.fileName ?: "", returnContent);
-                } else {
-                    log:printError("Error occured while retrieving definition from url", retrieveDefinitionFromUrlResult);
-                    BadRequestError badRequest = {body: {code: 900900, message: "retrieveDefinitionFromUrlResult"}};
-                    return badRequest;
-                }
-            } else if definitionValidationRequest.fileName is string && definitionValidationRequest.content is byte[] {
-                if (urlAvailble || inlineApiDefinitionAvailable) {
-                    BadRequestError badRequest = {body: {code: 90914, message: "multiple fields of  url,file,inlineAPIDefinition given"}};
-                    return badRequest;
-                }
-                validationResponse = check runtimeUtil:RuntimeAPICommonUtil_validateOpenAPIDefinition(definitionValidationRequest.'type, <byte[]>definitionValidationRequest.content, "", <string>definitionValidationRequest.fileName, returnContent);
-            } else if definitionValidationRequest.inlineAPIDefinition is string {
-                if (fileAvailable || urlAvailble) {
-                    BadRequestError badRequest = {body: {code: 90914, message: "multiple fields of  url,file,inlineAPIDefinition given"}};
-                    return badRequest;
-                }
-                validationResponse = check runtimeUtil:RuntimeAPICommonUtil_validateOpenAPIDefinition(definitionValidationRequest.'type, [], <string>definitionValidationRequest.inlineAPIDefinition, "", returnContent);
-            } else {
-                BadRequestError badRequest = {body: {code: 90914, message: "atleast one of the field required"}};
-                return badRequest;
-            }
+            runtimeapi:APIDefinitionValidationResponse|runtimeapi:APIManagementException|error|BadRequestError validationResponse = self.validateAndRetrieveDefinition(definitionValidationRequest.'type, definitionValidationRequest.url, definitionValidationRequest.inlineAPIDefinition, definitionValidationRequest.content, definitionValidationRequest.fileName);
             if validationResponse is runtimeapi:APIDefinitionValidationResponse {
-
                 string[] endpoints = [];
                 ErrorListItem[] errorItems = [];
                 if validationResponse.isValid() {
@@ -1079,9 +1037,7 @@ public class APIClient {
         }
         else if definitionValidationRequest is BadRequestError {
             return definitionValidationRequest;
-        }
-
-        else {
+        } else {
             InternalServerErrorError internalError = {body: {code: 909000, message: "InternalServerError"}};
             return internalError;
         }
@@ -1428,7 +1384,166 @@ public class APIClient {
         }
     }
 
+    public isolated function importDefinition(http:Request payload) returns APKError|CreatedAPI|InternalServerErrorError|BadRequestError {
+        do {
+            ImportDefintionRequest|BadRequestError importDefinitionRequest = check self.mapImportDefinitionRequest(payload);
+            if importDefinitionRequest is ImportDefintionRequest {
+                runtimeapi:APIDefinitionValidationResponse|runtimeapi:APIManagementException|BadRequestError validateAndRetrieveDefinitionResult = check self.validateAndRetrieveDefinition(importDefinitionRequest.'type, importDefinitionRequest.url, importDefinitionRequest.inlineAPIDefinition, importDefinitionRequest.content, importDefinitionRequest.fileName);
+                if validateAndRetrieveDefinitionResult is runtimeapi:APIDefinitionValidationResponse {
+                    if validateAndRetrieveDefinitionResult.isValid() {
+                        runtimeapi:APIDefinition parser = validateAndRetrieveDefinitionResult.getParser();
+                        log:printInfo("content available ==",contentAvailable=(validateAndRetrieveDefinitionResult.getContent() is string));
+                        utilapis:Set|runtimeapi:APIManagementException uRITemplates = parser.getURITemplates(<string>validateAndRetrieveDefinitionResult.getContent());
+                        if uRITemplates is utilapis:Set {
+                            API additionalPropertes = importDefinitionRequest.additionalPropertes;
+                            APIOperations[]? operations = additionalPropertes.operations;
+                            if !(operations is APIOperations[]) {
+                                operations = [];
+                            }
+                            lang:Object[] uriTemplates = check uRITemplates.toArray();
+                            foreach lang:Object uritemplate in uriTemplates {
+                                runtimeModels:URITemplate template = check java:cast(uritemplate);
+                                operations.push({target: template.getUriTemplate(), authTypeEnabled: template.isAuthEnabled(), verb: template.getHTTPVerb().toString().toUpperAscii()});
+                            }
+                            return self.createAPI(additionalPropertes);
+                        }
+                        log:printError("Error occured retrieving uri templates from definition", uRITemplates);
+                        runtimeapi:JAPIManagementException excetion = check uRITemplates.ensureType(runtimeapi:JAPIManagementException);
+                        runtimeapi:ErrorHandler errorHandler = excetion.getErrorHandler();
+                        BadRequestError badeRequest = {body: {code: errorHandler.getErrorCode(), message: errorHandler.getErrorMessage().toString()}};
+                        return badeRequest;
+                    }
+                    // Error definition.
+                    ErrorListItem[] errorItems = [];
+                    utilapis:ArrayList errorItemsResult = validateAndRetrieveDefinitionResult.getErrorItems();
+                    foreach int i in 0 ... errorItemsResult.size() - 1 {
+                        runtimeapi:ErrorItem errorItem = check java:cast(errorItemsResult.get(i));
+                        ErrorListItem errorListItem = {code: errorItem.getErrorCode().toString(), message: <string>errorItem.getErrorMessage(), description: errorItem.getErrorDescription()};
+                        errorItems.push(errorListItem);
+                    }
+                    BadRequestError badRequest = {body: {code: 90091, message: "Invalid API Definition",'error:errorItems}};
+                    return badRequest;
+                } else if validateAndRetrieveDefinitionResult is BadRequestError {
+                    return validateAndRetrieveDefinitionResult;
+                } else {
+                    log:printError("Error occured creating api from defintion", validateAndRetrieveDefinitionResult);
+                    runtimeapi:JAPIManagementException excetion = check validateAndRetrieveDefinitionResult.ensureType(runtimeapi:JAPIManagementException);
+                    runtimeapi:ErrorHandler errorHandler = excetion.getErrorHandler();
+                    BadRequestError badeRequest = {body: {code: errorHandler.getErrorCode(), message: errorHandler.getErrorMessage().toString()}};
+                    return badeRequest;
+                }
+            } else {
+                return <BadRequestError>importDefinitionRequest;
+            }
+        } on fail var e {
+            log:printError("Error occured importing API", e);
+            InternalServerErrorError internalError = {body: {code: 900900, message: "Internal Error."}};
+            return internalError;
+        }
+    }
+    private isolated function validateAndRetrieveDefinition(string 'type, string? url, string? inlineAPIDefinition, byte[]? content, string? fileName) returns runtimeapi:APIDefinitionValidationResponse|runtimeapi:APIManagementException|error|BadRequestError {
+        runtimeapi:APIDefinitionValidationResponse|runtimeapi:APIManagementException|error validationResponse;
+        boolean inlineApiDefinitionAvailable = inlineAPIDefinition is string;
+        boolean fileAvailable = fileName is string && content is byte[];
+        boolean urlAvailble = url is string;
+        boolean typeAvailable = 'type.length() > 0;
+
+        if !typeAvailable {
+            BadRequestError badRequest = {body: {code: 90914, message: "type field unavailable"}};
+            return badRequest;
+        }
+        if url is string {
+            if (fileAvailable || inlineApiDefinitionAvailable) {
+                BadRequestError badRequest = {body: {code: 90914, message: "multiple fields of  url,file,inlineAPIDefinition given"}};
+                return badRequest;
+            }
+            string|error retrieveDefinitionFromUrlResult = self.retrieveDefinitionFromUrl(url);
+            if retrieveDefinitionFromUrlResult is string {
+                validationResponse = runtimeUtil:RuntimeAPICommonUtil_validateOpenAPIDefinition('type, [], retrieveDefinitionFromUrlResult, fileName ?: "", true);
+            } else {
+                log:printError("Error occured while retrieving definition from url", retrieveDefinitionFromUrlResult);
+                BadRequestError badRequest = {body: {code: 900900, message: "retrieveDefinitionFromUrlResult"}};
+                return badRequest;
+            }
+        } else if fileName is string && content is byte[] {
+            if (urlAvailble || inlineApiDefinitionAvailable) {
+                BadRequestError badRequest = {body: {code: 90914, message: "multiple fields of  url,file,inlineAPIDefinition given"}};
+                return badRequest;
+            }
+            validationResponse = runtimeUtil:RuntimeAPICommonUtil_validateOpenAPIDefinition('type, <byte[]>content, "", <string>fileName, true);
+        } else if inlineAPIDefinition is string {
+            if (fileAvailable || urlAvailble) {
+                BadRequestError badRequest = {body: {code: 90914, message: "multiple fields of  url,file,inlineAPIDefinition given"}};
+                return badRequest;
+            }
+            validationResponse = runtimeUtil:RuntimeAPICommonUtil_validateOpenAPIDefinition('type, <byte[]>[], <string>inlineAPIDefinition, "", true);
+        } else {
+            BadRequestError badRequest = {body: {code: 90914, message: "atleast one of the field required"}};
+            return badRequest;
+        }
+        return validationResponse;
+    }
+    private isolated function mapImportDefinitionRequest(http:Request message) returns ImportDefintionRequest|error|BadRequestError {
+        string|() url = ();
+        string|() fileName = ();
+        byte[]|() fileContent = ();
+        string|() inlineAPIDefinition = ();
+        string|() additinalProperties = ();
+        string|() 'type = ();
+        mime:Entity[]|http:ClientError payLoadParts = message.getBodyParts();
+        if payLoadParts is mime:Entity[] {
+            foreach mime:Entity payLoadPart in payLoadParts {
+                mime:ContentDisposition contentDisposition = payLoadPart.getContentDisposition();
+                string fieldName = contentDisposition.name;
+                if fieldName == "url" {
+                    url = check payLoadPart.getText();
+                }
+                else if fieldName == "file" {
+                    fileName = contentDisposition.fileName;
+                    fileContent = check payLoadPart.getByteArray();
+                } else if fieldName == "inlineAPIDefinition" {
+                    inlineAPIDefinition = check payLoadPart.getText();
+                } else if fieldName == "additinalProperties" {
+                    additinalProperties = check payLoadPart.getText();
+                }else if fieldName=="type"{
+                    'type = check payLoadPart.getText();
+                }
+            }
+        }
+        if 'type is (){
+            BadRequestError badRequest = {body: {code: 90914, message: "type field unavailable"}};
+            return badRequest;
+        }
+        if url is () && fileName is () && inlineAPIDefinition is () && fileContent is () {
+            BadRequestError badRequest = {body: {code: 90914, message: "atleast one of the field required (file,inlineApiDefinition,url)."}};
+            return badRequest;
+        }
+        if additinalProperties is () || additinalProperties.length() == 0 {
+            BadRequestError badRequest = {body: {code: 90914, message: "additionalProperties not provided."}};
+            return badRequest;
+        }
+        json apiObject = check value:fromJsonString(additinalProperties);
+        API api = check apiObject.cloneWithType(API);
+        ImportDefintionRequest importDefintionRequest = {
+            fileName: fileName,
+            inlineAPIDefinition: inlineAPIDefinition,
+            additionalPropertes: api,
+            url: url,
+            content: fileContent,
+            'type:'type
+        };
+        return importDefintionRequest;
+    }
 }
+
+type ImportDefintionRequest record {
+    string? url;
+    string? fileName;
+    byte[]? content;
+    string? inlineAPIDefinition;
+    API additionalPropertes;
+    string 'type;
+};
 
 type DefinitionValidationRequest record {|
     string? url;
