@@ -372,6 +372,11 @@ var defaultConfig = &Config{
 		ServiceURL: "management-server:18000",
 		NodeLabel:  "default",
 	},
+	Runtime: runtime{
+		Host:            "runtime-service",
+		Port:            9443,
+		ServiceBasePath: "/api/am/runtime",
+	},
 	Analytics: analytics{
 		Enabled: false,
 		Type:    "Default",

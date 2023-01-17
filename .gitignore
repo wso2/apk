@@ -51,6 +51,10 @@ adapter/api/target
 adapter/arm64/main
 adapter/amd64/main
 
+# generated coverage.out files
+adapter/coverage.out
+management-server/coverage.out
+
 management-server/arm64/main
 management-server/amd64/main
 

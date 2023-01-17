@@ -89,6 +89,10 @@ data:
     [enforcer.metrics]
       enabled = false
 
+    [runtime]
+      host = "{{ template "apk-helm.resource.prefix" . }}-runtime-ds-service"
+      port = 9443
+      serviceBasePath = "/api/am/runtime"
 
   config.toml.template: |
     # The configuration file for mgw
