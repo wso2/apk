@@ -23,11 +23,17 @@ FROM library/postgres
 ENV POSTGRES_USER wso2carbon
 ENV POSTGRES_PASSWORD wso2carbon
 ENV POSTGRES_DB WSO2AM_DB
+COPY db.sql /docker-entrypoint-initdb.d/
 
 USER root 
 
 RUN groupmod -g 10001 postgres
 RUN usermod -u 10001 postgres
+
+ENV PGDATA /var/lib/postgresql/data1
+# this 777 will be replaced by 700 at runtime (allows semi-arbitrary "--user" values)
+RUN mkdir -p "$PGDATA" && chown -R postgres:postgres "$PGDATA" && chmod 777 "$PGDATA"
+
 # RUN set -eux; \ 
 # groupadd -r postgres1 --gid=10001; \
 # # https://salsa.debian.org/postgresql/postgresql-common/blob/997d842ee744687d99a2b2d95c1083a2615c79e8/debian/postgresql-common.postinst#L32-35
@@ -36,6 +42,6 @@ RUN usermod -u 10001 postgres
 # # see https://github.com/docker-library/postgres/issues/274
 # chown -R 10001:10001 /var/lib/postgresql 
 
-RUN chown -R 10001:10001 /var/lib/postgresql/data
+# RUN chown -R 10001:10001 /var/lib/postgresql
 
 USER 10001
