@@ -31,13 +31,13 @@ http:Service runtimeService = service object {
         return apiService.getAPIList(query, 'limit, offset, sortBy, sortOrder);
     }
     isolated resource function post apis(@http:Payload API payload) returns CreatedAPI|BadRequestError|InternalServerErrorError {
-        APIClient apiService = new();
+        APIClient apiService = new ();
         APKError|CreatedAPI|BadRequestError createdAPI = apiService.createAPI(payload);
         if createdAPI is APKError {
-           return  handleAPKError(createdAPI);
-        } else{
+            return handleAPKError(createdAPI);
+        } else {
             return createdAPI;
-        } 
+        }
     }
     isolated resource function get apis/[string apiId]() returns API|NotFoundError|InternalServerErrorError {
         APIClient apiService = new ();
@@ -55,7 +55,7 @@ http:Service runtimeService = service object {
         } else {
             log:printError("Internal Error occured deleting API", apiDeletionResponse);
             return handleAPKError(apiDeletionResponse);
-       }
+        }
     }
     isolated resource function post apis/[string apiId]/'generate\-key() returns APIKey|BadRequestError|NotFoundError|ForbiddenError|InternalServerErrorError {
         APIClient apiService = new ();
@@ -74,9 +74,13 @@ http:Service runtimeService = service object {
         }
 
     }
-    isolated resource function post apis/'import\-definition(@http:Payload json payload) returns CreatedAPI|BadRequestError|PreconditionFailedError|InternalServerErrorError {
-        BadRequestError badRequest = {body: {code: 900910, message: "Not implemented"}};
-        return badRequest;
+    isolated resource function post apis/'import\-definition(http:Request message) returns CreatedAPI|BadRequestError|PreconditionFailedError|InternalServerErrorError {
+        APIClient apiService = new ();
+        APKError|CreatedAPI|InternalServerErrorError|BadRequestError createdAPI = apiService.importDefinition(message);
+        if createdAPI is APKError {
+            return handleAPKError(createdAPI);
+        }
+        return createdAPI;
     }
     isolated resource function post apis/'validate\-definition(http:Request message, boolean returnContent = false) returns APIDefinitionValidationResponse|BadRequestError|NotFoundError|InternalServerErrorError {
         APIClient apiService = new ();
@@ -91,7 +95,7 @@ http:Service runtimeService = service object {
         }
     }
     isolated resource function post apis/validate(string query) returns http:Ok|NotFoundError|BadRequestError|PreconditionFailedError|InternalServerErrorError {
-        APIClient apiService = new();
+        APIClient apiService = new ();
         return apiService.validateAPIExistence(query);
     }
     isolated resource function get apis/[string apiId]/definition() returns json|NotFoundError|PreconditionFailedError|InternalServerErrorError {
@@ -131,13 +135,14 @@ http:Service runtimeService = service object {
         return internalError;
     }
 };
-public isolated function handleAPKError(APKError errorDetail) returns InternalServerErrorError|BadRequestError{
-                ErrorHandler & readonly detail = errorDetail.detail();
-            if detail.statusCode=="400"{
-                BadRequestError badRequest = {body: {code: detail.code, message: detail.message}};
-                return badRequest;
-            }
-                InternalServerErrorError internalServerError = {body: {code: detail.code, message: detail.message}};
-                return internalServerError;
+
+public isolated function handleAPKError(APKError errorDetail) returns InternalServerErrorError|BadRequestError {
+    ErrorHandler & readonly detail = errorDetail.detail();
+    if detail.statusCode == "400" {
+        BadRequestError badRequest = {body: {code: detail.code, message: detail.message}};
+        return badRequest;
+    }
+    InternalServerErrorError internalServerError = {body: {code: detail.code, message: detail.message}};
+    return internalServerError;
 
 }

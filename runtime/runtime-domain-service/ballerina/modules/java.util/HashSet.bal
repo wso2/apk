@@ -198,7 +198,7 @@ public distinct class HashSet {
     # The function that maps to the `toArray` method of `java.util.HashSet`.
     #
     # + return - The `javalang:Object[]` value returning from the Java mapping.
-    public function toArray() returns javalang:Object[]|error {
+    public isolated function toArray() returns javalang:Object[]|error {
         handle externalObj = java_util_HashSet_toArray(self.jObj);
         javalang:Object[] newObj = [];
         handle[] anyObj = <handle[]>check jarrays:fromHandle(externalObj, "handle");
@@ -454,7 +454,7 @@ function java_util_HashSet_stream(handle receiver) returns handle = @java:Method
     paramTypes: []
 } external;
 
-function java_util_HashSet_toArray(handle receiver) returns handle = @java:Method {
+isolated function java_util_HashSet_toArray(handle receiver) returns handle = @java:Method {
     name: "toArray",
     'class: "java.util.HashSet",
     paramTypes: []
