@@ -25,6 +25,11 @@ import runtime_domain_service.model as model;
 function getMockStartandAttachServices() returns error? {
 }
 
+@test:Mock {functionName: "getUniqueIdForAPI"}
+test:MockFunction uniqueIdForAPI = new ();
+@test:Mock {functionName: "getBackendServiceUid"}
+test:MockFunction uniqueIdForBackend = new ();
+
 @test:Mock {functionName: "getServiceMappingClient"}
 function getMockServiceMappingClient(string resourceVersion) returns websocket:Client|error|() {
     string initialConectionId = uuid:createType1AsString();
@@ -93,20 +98,20 @@ function getMockClient(string resourceVersion) returns websocket:Client|error {
     functionName: "initializeK8sClient"
 }
 function getMockK8sClient() returns http:Client {
-    http:Client mock = test:mock(http:Client);
-    test:prepare(mock).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/apis")
+    http:Client mockK8sClient = test:mock(http:Client);
+    test:prepare(mockK8sClient).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/apis")
         .thenReturn(getMockAPIList());
-    test:prepare(mock).when("get").withArguments("/api/v1/services")
+    test:prepare(mockK8sClient).when("get").withArguments("/api/v1/services")
         .thenReturn(getMockServiceList());
-    test:prepare(mock).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/servicemappings")
+    test:prepare(mockK8sClient).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/servicemappings")
         .thenReturn(getMockServiceMappings());
-    test:prepare(mock).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis/01ed7b08-f2b1-1166-82d5-649ae706d29e").thenReturn(mock404Response());
-    test:prepare(mock).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk/apis/pizzashackAPI1").thenReturn(mock404Response());
-    test:prepare(mock).when("get").withArguments("/api/v1/namespaces/apk-platform/configmaps/01ed7aca-eb6b-1178-a200-f604a4ce114a-definition").thenReturn(mockConfigMaps());
+    test:prepare(mockK8sClient).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis/01ed7b08-f2b1-1166-82d5-649ae706d29e").thenReturn(mock404Response());
+    test:prepare(mockK8sClient).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk/apis/pizzashackAPI1").thenReturn(mock404Response());
+    test:prepare(mockK8sClient).when("get").withArguments("/api/v1/namespaces/apk-platform/configmaps/01ed7aca-eb6b-1178-a200-f604a4ce114a-definition").thenReturn(mockConfigMaps());
     http:ClientError clientError = error("Backend Failure");
-    test:prepare(mock).when("get").withArguments("/api/v1/namespaces/apk-platform/configmaps/01ed7b08-f2b1-1166-82d5-649ae706d29d-definition").thenReturn(mock404ConfigMap());
-    test:prepare(mock).when("get").withArguments("/api/v1/namespaces/apk-platform/configmaps/01ed7aca-eb6b-1178-a200-f604a4ce114b-definition").thenReturn(clientError);
-    return mock;
+    test:prepare(mockK8sClient).when("get").withArguments("/api/v1/namespaces/apk-platform/configmaps/01ed7b08-f2b1-1166-82d5-649ae706d29d-definition").thenReturn(mock404ConfigMap());
+    test:prepare(mockK8sClient).when("get").withArguments("/api/v1/namespaces/apk-platform/configmaps/01ed7aca-eb6b-1178-a200-f604a4ce114b-definition").thenReturn(clientError);
+    return mockK8sClient;
 }
 
 @test:Config {
@@ -885,76 +890,76 @@ function testDataGeneratedSwaggerDefinition() returns map<[API, json|APKError]> 
                 "operations": [{target: "/*", verb: "GET"}, {target: "/*", verb: "POST"}, {target: "/*", verb: "DELETE"}]
             },
             {
-	"openapi": "3.0.1",
-	"info": {
-		"title": "demoAPI",
-		"version": "1.0.0"
-	},
-	"security": [
-		{
-			"default": []
-		}
-	],
-	"paths": {
-		"/*": {
-			"get": {
-				"responses": {
-					"200": {
-						"description": "OK"
-					}
-				},
-				"security": [
-					{
-						"default": []
-					}
-				],
-				"x-auth-type": true,
-				"x-throttling-tier": "Unlimited"
-			},
-			"post": {
-				"responses": {
-					"200": {
-						"description": "OK"
-					}
-				},
-				"security": [
-					{
-						"default": []
-					}
-				],
-				"x-auth-type": true,
-				"x-throttling-tier": "Unlimited"
-			},
-			"delete": {
-				"responses": {
-					"200": {
-						"description": "OK"
-					}
-				},
-				"security": [
-					{
-						"default": []
-					}
-				],
-				"x-auth-type": true,
-				"x-throttling-tier": "Unlimited"
-			}
-		}
-	},
-	"components": {
-		"securitySchemes": {
-			"default": {
-				"type": "oauth2",
-				"flows": {
-					"implicit": {
-						"authorizationUrl": "https://test.com",
-						"scopes": {}
-					}
-				}
-			}
-		}
-	}
-}
+                "openapi": "3.0.1",
+                "info": {
+                    "title": "demoAPI",
+                    "version": "1.0.0"
+                },
+                "security": [
+                    {
+                        "default": []
+                    }
+                ],
+                "paths": {
+                    "/*": {
+                        "get": {
+                            "responses": {
+                                "200": {
+                                    "description": "OK"
+                                }
+                            },
+                            "security": [
+                                {
+                                    "default": []
+                                }
+                            ],
+                            "x-auth-type": true,
+                            "x-throttling-tier": "Unlimited"
+                        },
+                        "post": {
+                            "responses": {
+                                "200": {
+                                    "description": "OK"
+                                }
+                            },
+                            "security": [
+                                {
+                                    "default": []
+                                }
+                            ],
+                            "x-auth-type": true,
+                            "x-throttling-tier": "Unlimited"
+                        },
+                        "delete": {
+                            "responses": {
+                                "200": {
+                                    "description": "OK"
+                                }
+                            },
+                            "security": [
+                                {
+                                    "default": []
+                                }
+                            ],
+                            "x-auth-type": true,
+                            "x-throttling-tier": "Unlimited"
+                        }
+                    }
+                },
+                "components": {
+                    "securitySchemes": {
+                        "default": {
+                            "type": "oauth2",
+                            "flows": {
+                                "implicit": {
+                                    "authorizationUrl": "https://test.com",
+                                    "scopes": {}
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         ]
     }
 ;
@@ -980,4 +985,775 @@ function validateExistenceDataProvider() returns map<[string, NotFoundError|BadR
         "6": ["type:pizzashackAPI", badRequest]
     };
     return data;
+}
+
+@test:Config {dataProvider: createApiFromServiceDataProvider}
+function testCreateAPIFromService(string serviceUUId, string apiUUID, [model:ConfigMap, any] configmapResponse, [model:Httproute, any] httproute, [model:K8sServiceMapping, any] servicemapping, [model:API, any] k8sAPI, API api, string k8sapiUUID, anydata expected) {
+    test:when(uniqueIdForAPI).thenReturn(apiUUID);
+    test:prepare(k8sApiServerEp).when("post").withArguments("/api/v1/namespaces/apk-platform/configmaps", configmapResponse[0]).thenReturn(configmapResponse[1]);
+    test:prepare(k8sApiServerEp).when("post").withArguments("/apis/gateway.networking.k8s.io/v1beta1/namespaces/apk-platform/httproutes", httproute[0]).thenReturn(httproute[1]);
+    test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/servicemappings", servicemapping[0]).thenReturn(servicemapping[1]);
+    test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis", k8sAPI[0]).thenReturn(k8sAPI[1]);
+    APIClient apiClient = new;
+    test:assertEquals(apiClient.createAPIFromService(serviceUUId, api), expected);
+}
+
+function createApiFromServiceDataProvider() returns map<[string, string, [model:ConfigMap, any], [model:Httproute, any], [model:K8sServiceMapping, any], [model:API, any], API, string, CreatedAPI|BadRequestError|InternalServerErrorError|APKError]> {
+    string apiUUID = uuid:createType1AsString();
+    string k8sAPIUUID1 = uuid:createType1AsString();
+    API api = {
+        name: "PizzaAPI",
+        context: "/pizzaAPI/1.0.0",
+        'version: "1.0.0"
+    };
+    API alreadyNameExist = {
+        name: "pizzashackAPI",
+        context: "/pizzaAPI/1.0.0",
+        'version: "1.0.0"
+    };
+    model:ConfigMap configmap = getMockConfigMap1(apiUUID, api);
+    http:Response mockConfigMapResponse = getMockConfigMapResponse(configmap.clone());
+    model:Httproute httpRoute = getMockHttpRoute(api, apiUUID);
+    http:Response httpRouteResponse = getMockHttpRouteResponse(httpRoute.clone());
+    model:K8sServiceMapping mockServiceMappingRequest = getMockServiceMappingRequest(api, apiUUID);
+    model:API mockAPI = getMockAPI(api, apiUUID);
+    http:Response mockAPIResponse = getMockAPIResponse(mockAPI.clone(), k8sAPIUUID1);
+    http:Response serviceMappingResponse = getMockServiceMappingResponse(mockServiceMappingRequest.clone());
+    BadRequestError nameAlreadyExistError = {body: {code: 90911, message: "API Name - " + alreadyNameExist.name + " already exist.", description: "API Name - " + alreadyNameExist.name + " already exist."}};
+    API contextAlreadyExist = {
+        name: "PizzaAPI",
+        context: "/pizzashack/1.0.0",
+        'version: "1.0.0"
+    };
+    BadRequestError contextAlreadyExistError = {body: {code: 90911, message: "API Context - " + contextAlreadyExist.context + " already exist.", description: "API Context " + contextAlreadyExist.context + " already exist."}};
+    BadRequestError serviceNotExist = {body: {code: 90913, message: "Service from 275b00d1-722c-4df2-b65a-9b14677abe4a not found."}};
+
+    CreatedAPI createdAPI = {
+        body: {
+            "id": k8sAPIUUID1,
+            "name": "PizzaAPI",
+            "context": "/pizzaAPI/1.0.0",
+            "version": "1.0.0",
+            "type": "HTTP"
+        }
+    };
+    map<[string, string, [model:ConfigMap, any], [model:Httproute, any], [model:K8sServiceMapping, any], [model:API, any], API, string, CreatedAPI|BadRequestError|InternalServerErrorError|APKError]> data = {
+        "1": ["275b00d1-722c-4df2-b65a-9b14677abe4b", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], api, k8sAPIUUID1, createdAPI],
+        "2": ["275b00d1-722c-4df2-b65a-9b14677abe4b", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], alreadyNameExist, k8sAPIUUID1, nameAlreadyExistError],
+        "3": ["275b00d1-722c-4df2-b65a-9b14677abe4b", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], contextAlreadyExist, k8sAPIUUID1, contextAlreadyExistError],
+        "4": ["275b00d1-722c-4df2-b65a-9b14677abe4a", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], api, k8sAPIUUID1, serviceNotExist]
+    };
+    return data;
+}
+
+function getMockAPIResponse(model:API api, string k8sAPIUUID) returns http:Response {
+    http:Response response = new;
+    response.statusCode = 201;
+    api.metadata.uid = k8sAPIUUID;
+    api.metadata.creationTimestamp = "2023-01-17T11:23:49Z";
+    response.setJsonPayload(api.toJson());
+    return response;
+}
+
+function getMockAPIResponse1(API api, string apiUUID, string k8sAPIUUID) returns http:Response {
+    http:Response response = new;
+    response.statusCode = 400;
+    model:Status status = {code: 400, message: ""};
+    response.setJsonPayload(status.toJson());
+    return response;
+}
+
+function getMockAPI(API api, string apiUUID) returns model:API {
+    model:API k8sapi = {
+        "kind": "API",
+        "apiVersion": "dp.wso2.com/v1alpha1",
+        "metadata": {"name": apiUUID, "namespace": "apk-platform", "labels": {"api-name": api.name, "api-version": api.'version, "k8sapi-name": apiUUID}},
+        "spec": {
+            "apiDisplayName": api.name,
+            "apiType": "HTTP",
+            "apiVersion": api.'version,
+            "context": api.context,
+            "organization": "carbon.super",
+            "definitionFileRef": apiUUID + "-definition",
+            "prodHTTPRouteRef": apiUUID + "-production"
+        },
+        "status": null
+    };
+    return k8sapi;
+}
+
+function getMockAPI1(API api, string apiUUID) returns model:API {
+    model:API k8sapi = {
+        "kind": "API",
+        "apiVersion": "dp.wso2.com/v1alpha1",
+        "metadata": {"name": apiUUID, "namespace": "apk-platform", "labels": {"api-name": api.name, "api-version": api.'version, "k8sapi-name": apiUUID}},
+        "spec": {
+            "apiDisplayName": api.name,
+            "apiType": "HTTP",
+            "apiVersion": api.'version,
+            "context": api.context,
+            "organization": "carbon.super",
+            "definitionFileRef": apiUUID + "-definition",
+            "sandHTTPRouteRef": apiUUID + "-sandbox"
+        },
+        "status": null
+    };
+    return k8sapi;
+}
+
+function getMockServiceMappingRequest(API api, string apiUUID) returns model:K8sServiceMapping {
+    model:K8sServiceMapping serviceMapping = {"kind": "ServiceMapping", "apiVersion": "dp.wso2.com/v1alpha1", "metadata": {"name": apiUUID + "-servicemapping", "namespace": "apk-platform", "labels": {"api-name": api.name, "api-version": api.'version, "k8sapi-name": apiUUID}}, "spec": {"serviceRef": {"name": "backend", "namespace": "apk"}, "apiRef": {"name": apiUUID, "namespace": "apk-platform"}}};
+    return serviceMapping;
+}
+
+function getMockServiceMappingResponse(model:K8sServiceMapping serviceMapping) returns http:Response {
+    http:Response response = new;
+    response.statusCode = 201;
+    serviceMapping.metadata.uid = uuid:createType1AsString();
+    response.setJsonPayload(serviceMapping.toJson());
+    return response;
+}
+
+function getMockHttpRoute(API api, string apiUUID) returns model:Httproute {
+    return {
+        "apiVersion": "gateway.networking.k8s.io/v1beta1",
+        "kind": "HTTPRoute",
+        "metadata": {"name": apiUUID + "-production", "namespace": "apk-platform", "labels": {"api-name": api.name, "api-version": api.'version, "k8sapi-name": apiUUID}},
+        "spec": {
+            "hostnames": ["gw.wso2.com"],
+            "rules": [
+                {
+                    "matches": [{"path": {"type": "PathPrefix", "value": "/pizzaAPI/1.0.0"}, "method": "GET"}],
+                    "filters": [{"type": "URLRewrite", "urlRewrite": {"path": {"type": "ReplacePrefixMatch", "replacePrefixMatch": "/"}}}],
+                    "backendRefs": [{"weight": 1, "group": "", "kind": "Service", "name": "backend", "namespace": "apk", "port": 80}]
+                },
+                {
+                    "matches": [{"path": {"type": "PathPrefix", "value": "/pizzaAPI/1.0.0"}, "method": "PUT"}],
+                    "filters": [{"type": "URLRewrite", "urlRewrite": {"path": {"type": "ReplacePrefixMatch", "replacePrefixMatch": "/"}}}],
+                    "backendRefs": [{"weight": 1, "group": "", "kind": "Service", "name": "backend", "namespace": "apk", "port": 80}]
+                },
+                {
+                    "matches": [{"path": {"type": "PathPrefix", "value": "/pizzaAPI/1.0.0"}, "method": "POST"}],
+                    "filters": [{"type": "URLRewrite", "urlRewrite": {"path": {"type": "ReplacePrefixMatch", "replacePrefixMatch": "/"}}}],
+                    "backendRefs": [{"weight": 1, "group": "", "kind": "Service", "name": "backend", "namespace": "apk", "port": 80}]
+                },
+                {
+                    "matches": [{"path": {"type": "PathPrefix", "value": "/pizzaAPI/1.0.0"}, "method": "DELETE"}],
+                    "filters": [{"type": "URLRewrite", "urlRewrite": {"path": {"type": "ReplacePrefixMatch", "replacePrefixMatch": "/"}}}],
+                    "backendRefs": [{"weight": 1, "group": "", "kind": "Service", "name": "backend", "namespace": "apk", "port": 80}]
+                },
+                {
+                    "matches": [{"path": {"type": "PathPrefix", "value": "/pizzaAPI/1.0.0"}, "method": "PATCH"}],
+                    "filters": [{"type": "URLRewrite", "urlRewrite": {"path": {"type": "ReplacePrefixMatch", "replacePrefixMatch": "/"}}}],
+                    "backendRefs": [{"weight": 1, "group": "", "kind": "Service", "name": "backend", "namespace": "apk", "port": 80}]
+                }
+            ],
+            "parentRefs": [{"group": "gateway.networking.k8s.io", "kind": "Gateway", "name": "Default"}]
+        }
+    };
+}
+
+function getMockConfigMap1(string apiUniqueId, API api) returns model:ConfigMap {
+    model:ConfigMap configmap = {
+        "apiVersion": "v1",
+        "data": {
+            "openapi.json": "{\"openapi\":\"3.0.1\", \"info\":{\"title\":\"" + api.name + "\", \"version\":\"" + api.'version + "\"}, \"security\":[{\"default\":[]}], \"paths\":{\"/*\":{\"get\":{\"responses\":{\"200\":{\"description\":\"OK\"}}, \"security\":[{\"default\":[]}], \"x-auth-type\":true, \"x-throttling-tier\":\"Unlimited\"}, \"put\":{\"responses\":{\"200\":{\"description\":\"OK\"}}, \"security\":[{\"default\":[]}], \"x-auth-type\":true, \"x-throttling-tier\":\"Unlimited\"}, \"post\":{\"responses\":{\"200\":{\"description\":\"OK\"}}, \"security\":[{\"default\":[]}], \"x-auth-type\":true, \"x-throttling-tier\":\"Unlimited\"}, \"delete\":{\"responses\":{\"200\":{\"description\":\"OK\"}}, \"security\":[{\"default\":[]}], \"x-auth-type\":true, \"x-throttling-tier\":\"Unlimited\"}, \"patch\":{\"responses\":{\"200\":{\"description\":\"OK\"}}, \"security\":[{\"default\":[]}], \"x-auth-type\":true, \"x-throttling-tier\":\"Unlimited\"}}}, \"components\":{\"securitySchemes\":{\"default\":{\"type\":\"oauth2\", \"flows\":{\"implicit\":{\"authorizationUrl\":\"https://test.com\", \"scopes\":{}}}}}}}"
+        },
+        "kind": "ConfigMap",
+        "metadata": {
+            "labels": {
+                "api-name": api.name,
+                "api-version": api.'version,
+                "k8sapi-name": apiUniqueId
+            },
+            "name": apiUniqueId + "-definition",
+            "namespace": "apk-platform"
+        }
+    };
+    return configmap;
+}
+
+function getMockConfigMapResponse(model:ConfigMap configmap) returns http:Response {
+    http:Response response = new;
+    response.statusCode = 201;
+    configmap.metadata.uid = uuid:createType1AsString();
+    response.setJsonPayload(configmap.toJson());
+    return response;
+}
+
+function getMockConfigMapErrorResponse() returns http:Response {
+    http:Response response = new;
+    response.statusCode = 400;
+    model:Status status = {code: 400, message: "configmap already exist"};
+    response.setJsonPayload(status.toJson());
+    return response;
+}
+
+@test:Config {dataProvider: createAPIDataProvider}
+function testCreateAPI(string apiUUID, string backenduuid, API api, model:ConfigMap configmap,
+        any configmapDeployingResponse, model:Httproute? prodhttpRoute,
+        any prodhttpResponse, model:Httproute? sandHttpRoute, any sandhttpResponse,
+        [model:Service, any][] backendServices,
+        model:API k8sApi, any k8sapiResponse,
+        string k8sapiUUID, anydata expected) {
+    APIClient apiClient = new;
+    test:when(uniqueIdForBackend).thenReturn(backenduuid);
+    test:when(uniqueIdForAPI).thenReturn(apiUUID);
+    test:prepare(k8sApiServerEp).when("post").withArguments("/api/v1/namespaces/apk-platform/configmaps", configmap).thenReturn(configmapDeployingResponse);
+    if prodhttpRoute is model:Httproute {
+        test:prepare(k8sApiServerEp).when("post").withArguments("/apis/gateway.networking.k8s.io/v1beta1/namespaces/apk-platform/httproutes", prodhttpRoute).thenReturn(prodhttpResponse);
+    }
+    if sandHttpRoute is model:Httproute {
+        test:prepare(k8sApiServerEp).when("post").withArguments("/apis/gateway.networking.k8s.io/v1beta1/namespaces/apk-platform/httproutes", sandHttpRoute).thenReturn(sandhttpResponse);
+    }
+    foreach [model:Service, any] servicesResponse in backendServices {
+        test:prepare(k8sApiServerEp).when("post").withArguments("/api/v1/namespaces/apk-platform/services", servicesResponse[0]).thenReturn(servicesResponse[1]);
+    }
+    test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis", k8sApi).thenReturn(k8sapiResponse);
+    APKError|CreatedAPI|BadRequestError aPI = apiClient.createAPI(api);
+    if aPI is BadRequestError||aPI is CreatedAPI {
+    test:assertEquals(aPI, expected);
+    } else if aPI is APKError{
+    test:assertEquals(aPI.toBalString(), expected);
+    }
+}
+
+function getMockHttpRouteResponse(model:Httproute request) returns http:Response {
+    http:Response response = new;
+    response.statusCode = 201;
+    request.metadata.uid = uuid:createType1AsString();
+    response.setJsonPayload(request.toJson());
+    return response;
+}
+
+function getMockHttpRouteErrorResponse() returns http:Response {
+    http:Response response = new;
+    response.statusCode = 400;
+    model:Status status = {code: 400, message: "httproute already exist"};
+    response.setJsonPayload(status.toJson());
+    return response;
+}
+
+function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid, string 'type) returns model:Httproute {
+    return {
+        "apiVersion": "gateway.networking.k8s.io/v1beta1",
+        "kind": "HTTPRoute",
+        "metadata": {"name": apiUUID + "-" + 'type, "namespace": "apk-platform", "labels": {"api-name": api.name, "api-version": api.'version, "k8sapi-name": apiUUID}},
+        "spec": {
+            "hostnames": [
+                "gw.wso2.com"
+            ],
+            "rules": [
+                {
+                    "matches": [
+                        {
+                            "path": {
+                                "type": "PathPrefix",
+                                "value": "/pizzaAPI/1.0.0"
+                            },
+                            "method": "GET"
+                        }
+                    ],
+                    "filters": [
+                        {
+                            "type": "URLRewrite",
+                            "urlRewrite": {
+                                "path": {
+                                    "type": "ReplacePrefixMatch",
+                                    "replacePrefixMatch": "/"
+                                }
+                            }
+                        },
+                        {
+                            "type": "RequestHeaderModifier",
+                            "requestHeaderModifier": {
+                                "add": [
+                                    {
+                                        "name": "Host",
+                                        "value": "localhost"
+                                    }
+                                ]
+                            }
+                        }
+                    ],
+                    "backendRefs": [
+                        {
+                            "weight": 1,
+                            "group": "",
+                            "kind": "Service",
+                            "name": backenduuid,
+                            "namespace": "apk-platform",
+                            "port": 443
+                        }
+                    ]
+                },
+                {
+                    "matches": [
+                        {
+                            "path": {
+                                "type": "PathPrefix",
+                                "value": "/pizzaAPI/1.0.0"
+                            },
+                            "method": "PUT"
+                        }
+                    ],
+                    "filters": [
+                        {
+                            "type": "URLRewrite",
+                            "urlRewrite": {
+                                "path": {
+                                    "type": "ReplacePrefixMatch",
+                                    "replacePrefixMatch": "/"
+                                }
+                            }
+                        },
+                        {
+                            "type": "RequestHeaderModifier",
+                            "requestHeaderModifier": {
+                                "add": [
+                                    {
+                                        "name": "Host",
+                                        "value": "localhost"
+                                    }
+                                ]
+                            }
+                        }
+                    ],
+                    "backendRefs": [
+                        {
+                            "weight": 1,
+                            "group": "",
+                            "kind": "Service",
+                            "name": backenduuid,
+                            "namespace": "apk-platform",
+                            "port": 443
+                        }
+                    ]
+                },
+                {
+                    "matches": [
+                        {
+                            "path": {
+                                "type": "PathPrefix",
+                                "value": "/pizzaAPI/1.0.0"
+                            },
+                            "method": "POST"
+                        }
+                    ],
+                    "filters": [
+                        {
+                            "type": "URLRewrite",
+                            "urlRewrite": {
+                                "path": {
+                                    "type": "ReplacePrefixMatch",
+                                    "replacePrefixMatch": "/"
+                                }
+                            }
+                        },
+                        {
+                            "type": "RequestHeaderModifier",
+                            "requestHeaderModifier": {
+                                "add": [
+                                    {
+                                        "name": "Host",
+                                        "value": "localhost"
+                                    }
+                                ]
+                            }
+                        }
+                    ],
+                    "backendRefs": [
+                        {
+                            "weight": 1,
+                            "group": "",
+                            "kind": "Service",
+                            "name": backenduuid,
+                            "namespace": "apk-platform",
+                            "port": 443
+                        }
+                    ]
+                },
+                {
+                    "matches": [
+                        {
+                            "path": {
+                                "type": "PathPrefix",
+                                "value": "/pizzaAPI/1.0.0"
+                            },
+                            "method": "DELETE"
+                        }
+                    ],
+                    "filters": [
+                        {
+                            "type": "URLRewrite",
+                            "urlRewrite": {
+                                "path": {
+                                    "type": "ReplacePrefixMatch",
+                                    "replacePrefixMatch": "/"
+                                }
+                            }
+                        },
+                        {
+                            "type": "RequestHeaderModifier",
+                            "requestHeaderModifier": {
+                                "add": [
+                                    {
+                                        "name": "Host",
+                                        "value": "localhost"
+                                    }
+                                ]
+                            }
+                        }
+                    ],
+                    "backendRefs": [
+                        {
+                            "weight": 1,
+                            "group": "",
+                            "kind": "Service",
+                            "name": backenduuid,
+                            "namespace": "apk-platform",
+                            "port": 443
+                        }
+                    ]
+                },
+                {
+                    "matches": [
+                        {
+                            "path": {
+                                "type": "PathPrefix",
+                                "value": "/pizzaAPI/1.0.0"
+                            },
+                            "method": "PATCH"
+                        }
+                    ],
+                    "filters": [
+                        {
+                            "type": "URLRewrite",
+                            "urlRewrite": {
+                                "path": {
+                                    "type": "ReplacePrefixMatch",
+                                    "replacePrefixMatch": "/"
+                                }
+                            }
+                        },
+                        {
+                            "type": "RequestHeaderModifier",
+                            "requestHeaderModifier": {
+                                "add": [
+                                    {
+                                        "name": "Host",
+                                        "value": "localhost"
+                                    }
+                                ]
+                            }
+                        }
+                    ],
+                    "backendRefs": [
+                        {
+                            "weight": 1,
+                            "group": "",
+                            "kind": "Service",
+                            "name": backenduuid,
+                            "namespace": "apk-platform",
+                            "port": 443
+                        }
+                    ]
+                }
+            ],
+            "parentRefs": [
+                {
+                    "group": "gateway.networking.k8s.io",
+                    "kind": "Gateway",
+                    "name": "Default"
+                }
+            ]
+        }
+    };
+}
+
+function createAPIDataProvider() returns map<[string, string, API, model:ConfigMap, any, model:Httproute?, any, model:Httproute?, any, [model:Service, any][], model:API, any, string, string|CreatedAPI|BadRequestError]> {
+    API api = {
+        name: "PizzaAPI",
+        context: "/pizzaAPI/1.0.0",
+        'version: "1.0.0",
+        endpointConfig: {"production_endpoints": {"url": "https://localhost"}}
+    };
+    API produrlmissingAPI = {
+        name: "PizzaAPI",
+        context: "/pizzaAPI/1.0.0",
+        'version: "1.0.0",
+        endpointConfig: {"production_endpoints": {}}
+    };
+    API sandboxOnlyAPI = {
+        name: "PizzaAPI",
+        context: "/pizzaAPI/1.0.0",
+        'version: "1.0.0",
+        endpointConfig: {"sandbox_endpoints": {"url": "https://localhost"}}
+    };
+    API sandboxurlmissingapi = {
+        name: "PizzaAPI",
+        context: "/pizzaAPI/1.0.0",
+        'version: "1.0.0",
+        endpointConfig: {"sandbox_endpoints": {}}
+    };
+    API alreadyNameExist = {
+        name: "pizzashackAPI",
+        context: "/pizzaAPI/1.0.0",
+        'version: "1.0.0"
+    };
+    BadRequestError nameAlreadyExistError = {body: {code: 90911, message: "API Name - " + alreadyNameExist.name + " already exist.", description: "API Name - " + alreadyNameExist.name + " already exist."}};
+    API contextAlreadyExist = {
+        name: "PizzaAPI",
+        context: "/pizzashack/1.0.0",
+        'version: "1.0.0"
+    };
+    BadRequestError contextAlreadyExistError = {body: {code: 90911, message: "API Context - " + contextAlreadyExist.context + " already exist.", description: "API Context " + contextAlreadyExist.context + " already exist."}};
+    string apiUUID = uuid:createType1AsString();
+    string backenduuid = uuid:createType1AsString();
+    string k8sapiUUID = uuid:createType1AsString();
+    [model:Service, any][] services = [];
+    model:Service backendService = {
+        metadata: {name: backenduuid, namespace: "apk-platform", labels: {"api-name": api.name, "api-version": api.'version, "k8sapi-name": apiUUID}},
+        spec: {externalName: "localhost", 'type: "ExternalName"}
+    };
+    http:Response backendServiceResponse = new;
+    backendServiceResponse.statusCode = 201;
+    model:Service serviceClone = backendService.clone();
+    serviceClone.metadata.uid = uuid:createType1AsString();
+    backendServiceResponse.setJsonPayload(serviceClone.toJson());
+    http:Response backendServiceErrorResponse = new;
+    backendServiceErrorResponse.statusCode = 403;
+    services.push([backendService, backendServiceResponse]);
+    [model:Service, any][] servicesError = [];
+    servicesError.push([backendService, backendServiceErrorResponse]);
+    model:ConfigMap configmap = getMockConfigMap1(apiUUID, api);
+    model:Httproute prodhttpRoute = getMockHttpRouteWithBackend(api, apiUUID, backenduuid, "production");
+    model:Httproute sandhttpRoute = getMockHttpRouteWithBackend(api, apiUUID, backenduuid, "sandbox");
+
+    CreatedAPI createdAPI = {body: {name: "PizzaAPI", context: "/pizzaAPI/1.0.0", 'version: "1.0.0", id: k8sapiUUID}};
+    APKError productionEndpointNotSpecifiedError = error("Production Endpoint Not specified", message = "Endpoint Not specified", description = "Production Endpoint Not specified", code = 90911, statusCode = "400");
+    APKError sandboxEndpointNotSpecifiedError = error("Sandbox Endpoint Not specified", message = "Endpoint Not specified", description = "Sandbox Endpoint Not specified", code = 90911, statusCode = "400");
+    APKError k8sLevelError = error("Internal Error occured while deploying API", code = 909000, message
+        = "Internal Error occured while deploying API", statusCode = "500", description = "Internal Error occured while deploying API", moreInfo = {});
+    APKError invalidAPINameError = error("Invalid API Name", code = 90911, message = "Invalid API Name", statusCode = "400", description = "API Name PizzaAPI Invalid", moreInfo = {});
+    map<[string, string, API, model:ConfigMap,
+    any, model:Httproute|(), any, model:Httproute|(),
+    any, [model:Service, any][], model:API, any, string,
+    string|CreatedAPI|BadRequestError]> data = {
+        "1": [
+            apiUUID,
+            backenduuid,
+            api,
+            configmap,
+            getMockConfigMapResponse(configmap.clone()),
+            prodhttpRoute,
+            getMockHttpRouteResponse(prodhttpRoute.clone()),
+            (),
+            (),
+            services,
+            getMockAPI(api, apiUUID),
+            getMockAPIResponse(getMockAPI(api, apiUUID), k8sapiUUID),
+            k8sapiUUID,
+            createdAPI
+        ],
+        "2": [
+            apiUUID,
+            backenduuid,
+            alreadyNameExist,
+            configmap,
+            getMockConfigMapResponse(configmap.clone()),
+            prodhttpRoute,
+            getMockHttpRouteResponse(prodhttpRoute.clone()),
+            (),
+            (),
+            services,
+            getMockAPI(api, apiUUID),
+            getMockAPIResponse(getMockAPI(api, apiUUID), k8sapiUUID),
+            k8sapiUUID,
+            nameAlreadyExistError
+        ],
+        "3": [
+            apiUUID,
+            backenduuid,
+            contextAlreadyExist,
+            configmap,
+            getMockConfigMapResponse(configmap.clone()),
+            prodhttpRoute,
+            getMockHttpRouteResponse(prodhttpRoute.clone()),
+            (),
+            (),
+            services,
+            getMockAPI(api, apiUUID),
+            getMockAPIResponse(getMockAPI(api, apiUUID), k8sapiUUID),
+            k8sapiUUID,
+            contextAlreadyExistError
+        ],
+        "4": [
+            apiUUID,
+            backenduuid,
+            sandboxOnlyAPI,
+            configmap,
+            getMockConfigMapResponse(configmap.clone()),
+            (),
+            (),
+            sandhttpRoute,
+            getMockHttpRouteResponse(sandhttpRoute.clone()),
+            services,
+            getMockAPI1(api, apiUUID),
+            getMockAPIResponse(getMockAPI1(api, apiUUID), k8sapiUUID),
+            k8sapiUUID,
+            createdAPI
+        ]
+        ,
+        "5": [
+            apiUUID,
+            backenduuid,
+            produrlmissingAPI,
+            configmap,
+            getMockConfigMapResponse(configmap.clone()),
+            prodhttpRoute,
+            getMockHttpRouteResponse(prodhttpRoute.clone()),
+            (),
+            (),
+            services,
+            getMockAPI(api, apiUUID),
+            getMockAPIResponse(getMockAPI(api, apiUUID), k8sapiUUID),
+            k8sapiUUID,
+            productionEndpointNotSpecifiedError.toBalString()
+        ],
+        "6": [
+            apiUUID,
+            backenduuid,
+            sandboxurlmissingapi,
+            configmap,
+            getMockConfigMapResponse(configmap.clone()),
+            prodhttpRoute,
+            getMockHttpRouteResponse(prodhttpRoute.clone()),
+            (),
+            (),
+            services,
+            getMockAPI(api, apiUUID),
+            getMockAPIResponse(getMockAPI(api, apiUUID), k8sapiUUID),
+            k8sapiUUID,
+            sandboxEndpointNotSpecifiedError.toBalString()
+        ]
+        ,
+        "7": [
+            apiUUID,
+            backenduuid,
+            api,
+            configmap,
+            getMockConfigMapErrorResponse(),
+            prodhttpRoute,
+            getMockHttpRouteResponse(prodhttpRoute.clone()),
+            (),
+            (),
+            services,
+            getMockAPI(api, apiUUID),
+            getMockAPIResponse(getMockAPI(api, apiUUID), k8sapiUUID),
+            k8sapiUUID,
+            k8sLevelError.toBalString()
+        ]
+        ,
+        "8": [
+            apiUUID,
+            backenduuid,
+            sandboxOnlyAPI,
+            configmap,
+            getMockConfigMapResponse(configmap.clone()),
+            (),
+            (),
+            sandhttpRoute,
+            getMockHttpRouteErrorResponse(),
+            services,
+            getMockAPI(api, apiUUID),
+            getMockAPIResponse(getMockAPI(api, apiUUID), k8sapiUUID),
+            k8sapiUUID,
+            k8sLevelError.toBalString()
+        ]
+        ,
+        "9": [
+            apiUUID,
+            backenduuid,
+            api,
+            configmap,
+            getMockConfigMapResponse(configmap.clone()),
+            prodhttpRoute,
+            getMockHttpRouteErrorResponse(),
+            (),
+            (),
+            services,
+            getMockAPI(api, apiUUID),
+            getMockAPIResponse(getMockAPI(api, apiUUID), k8sapiUUID),
+            k8sapiUUID,
+            k8sLevelError.toBalString()
+        ]
+        ,
+        "10": [
+            apiUUID,
+            backenduuid,
+            api,
+            configmap,
+            getMockConfigMapResponse(configmap.clone()),
+            prodhttpRoute,
+            getMockHttpRouteResponse(prodhttpRoute.clone()),
+            (),
+            (),
+            servicesError,
+            getMockAPI(api, apiUUID),
+            getMockAPIResponse(getMockAPI(api, apiUUID), k8sapiUUID),
+            k8sapiUUID,
+            k8sLevelError.toBalString()
+        ]
+        ,
+        "11": [
+            apiUUID,
+            backenduuid,
+            api,
+            configmap,
+            getMockConfigMapResponse(configmap.clone()),
+            prodhttpRoute,
+            getMockHttpRouteResponse(prodhttpRoute.clone()),
+            (),
+            (),
+            services,
+            getMockAPI(api, apiUUID),
+            getMockAPIErrorResponse(),
+            k8sapiUUID,
+            k8sLevelError.toBalString()
+        ]
+        ,
+        "12": [
+            apiUUID,
+            backenduuid,
+            api,
+            configmap,
+            getMockConfigMapResponse(configmap.clone()),
+            prodhttpRoute,
+            getMockHttpRouteResponse(prodhttpRoute.clone()),
+            (),
+            (),
+            services,
+            getMockAPI(api, apiUUID),
+            getMockAPIErrorNameExist(),
+            k8sapiUUID,
+            invalidAPINameError.toBalString()
+        ]
+    };
+    return data;
+}
+
+function getMockAPIErrorResponse() returns http:Response {
+    http:Response response = new;
+    response.statusCode = 404;
+    return response;
+}
+
+function getMockAPIErrorNameExist() returns http:Response {
+    http:Response response = new;
+    response.statusCode = 400;
+    model:StatusCause[] causes = [{'field: "spec.apiDisplayName", message: "API Name already Exist", reason: "FieldValueDuplicate"}];
+    model:Status status = {code: 400, details: {'causes: causes, group: "dp.wso2.com", kind: "API", name: uuid:createType1AsString()}};
+    response.setJsonPayload(status.toJson());
+    return response;
 }
