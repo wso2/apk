@@ -18,11 +18,13 @@ package envoyconf_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/wso2/apk/adapter/config"
 	envoy "github.com/wso2/apk/adapter/internal/oasparser/envoyconf"
@@ -37,6 +39,12 @@ import (
 )
 
 func TestCreateRoutesWithClusters(t *testing.T) {
+
+	var MockHostNameResolver = func(client ctrlclient.Client, backend gwapiv1b1.HTTPBackendRef,
+		defaultNamespace string) string {
+		return fmt.Sprintf("%s.%s", backend.Name, "default")
+	}
+
 	apiState := synchronizer.APIState{}
 	apiDefinition := v1alpha1.API{
 		ObjectMeta: metav1.ObjectMeta{
@@ -122,7 +130,7 @@ func TestCreateRoutesWithClusters(t *testing.T) {
 
 	apiState.ProdHTTPRoute = &httpRouteState
 
-	mgwSwagger, err := synchronizer.GenerateMGWSwagger(apiState, &httpRouteState, true)
+	mgwSwagger, err := synchronizer.GenerateMGWSwagger(apiState, &httpRouteState, true, MockHostNameResolver)
 	assert.Nil(t, err, "Error should not be present when apiState is converted to a MgwSwagger object")
 	routes, clusters, _, _ := envoy.CreateRoutesWithClusters(*mgwSwagger, nil, nil, "prod.gw.wso2.com", "carbon.super")
 	assert.Equal(t, 2, len(clusters), "Number of production clusters created is incorrect.")

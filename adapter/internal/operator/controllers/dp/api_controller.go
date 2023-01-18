@@ -43,6 +43,7 @@ import (
 	k8client "sigs.k8s.io/controller-runtime/pkg/client"
 
 	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -50,6 +51,7 @@ const (
 	httpRouteAPIIndex           = "httpRouteAPIIndex"
 	authenticationAPIIndex      = "authenticationAPIIndex"
 	authenticationResourceIndex = "authenticationResourceIndex"
+	serviceHTTPRouteIndex       = "serviceHTTPRouteIndex"
 )
 
 // APIReconciler reconciles a API object
@@ -107,6 +109,16 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 			Message:   fmt.Sprintf("Error watching HTTPRoute resources: %v", err),
 			Severity:  logging.BLOCKER,
 			ErrorCode: 2602,
+		})
+		return err
+	}
+
+	if err := c.Watch(&source.Kind{Type: &corev1.Service{}}, handler.EnqueueRequestsFromMapFunc(r.getAPIsForService),
+		predicates...); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("Error watching Service resources: %v", err),
+			Severity:  logging.BLOCKER,
+			ErrorCode: 2618,
 		})
 		return err
 	}
@@ -311,6 +323,45 @@ func (apiReconciler *APIReconciler) getAPIForHTTPRoute(obj k8client.Object) []re
 	return requests
 }
 
+// getAPIsForService triggers the API controller reconcile method based on the changes detected
+// from Service objects. This generates a reconcile request for a API looking up two indexes;
+// serviceHTTPRouteIndex and httpRouteAPIIndex in that order.
+func (apiReconciler *APIReconciler) getAPIsForService(obj k8client.Object) []reconcile.Request {
+	ctx := context.Background()
+	service, ok := obj.(*corev1.Service)
+	if !ok {
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("Unexpected object type, bypassing reconciliation: %v", service),
+			Severity:  logging.TRIVIAL,
+			ErrorCode: 2620,
+		})
+		return []reconcile.Request{}
+	}
+
+	httpRouteList := &gwapiv1b1.HTTPRouteList{}
+	if err := apiReconciler.client.List(ctx, httpRouteList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(serviceHTTPRouteIndex, utils.NamespacedName(service).String()),
+	}); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("Unable to find associated HTTPRoutes: %s", utils.NamespacedName(service).String()),
+			Severity:  logging.CRITICAL,
+			ErrorCode: 2621,
+		})
+		return []reconcile.Request{}
+	}
+
+	if len(httpRouteList.Items) == 0 {
+		loggers.LoggerAPKOperator.Debugf("HTTPRoutes for Service not found: %s", utils.NamespacedName(service).String())
+		return []reconcile.Request{}
+	}
+
+	requests := []reconcile.Request{}
+	for _, httpRoute := range httpRouteList.Items {
+		requests = append(requests, apiReconciler.getAPIForHTTPRoute(&httpRoute)...)
+	}
+	return requests
+}
+
 // getAPIForAuthentication triggers the API controller reconcile method based on the changes detected
 // from Authentication objects. If the changes are done for an API stored in the Operator Data store,
 // a new reconcile event will be created and added to the reconcile event queue.
@@ -397,6 +448,25 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 					}.String())
 			}
 			return httpRoutes
+		}); err != nil {
+		return err
+	}
+
+	// Service (BackendRefs) to HTTPRoute indexer
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &gwapiv1b1.HTTPRoute{}, serviceHTTPRouteIndex,
+		func(rawObj k8client.Object) []string {
+			httpRoute := rawObj.(*gwapiv1b1.HTTPRoute)
+			var services []string
+			for _, rule := range httpRoute.Spec.Rules {
+				for _, backendRef := range rule.BackendRefs {
+					services = append(services, types.NamespacedName{
+						Namespace: utils.GetNamespace(backendRef.Namespace,
+							httpRoute.ObjectMeta.Namespace),
+						Name: string(backendRef.Name),
+					}.String())
+				}
+			}
+			return services
 		}); err != nil {
 		return err
 	}

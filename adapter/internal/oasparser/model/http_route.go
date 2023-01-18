@@ -27,13 +27,18 @@ import (
 	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
 	"github.com/wso2/apk/adapter/internal/operator/utils"
 	"golang.org/x/exp/maps"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
+
+// HostNameResolverFunc is the function signature for getting the hostname from service
+type HostNameResolverFunc = func(client client.Client, backend gwapiv1b1.HTTPBackendRef,
+	defaultNamespace string) string
 
 // SetInfoHTTPRouteCR populates resources and endpoints of mgwSwagger. httpRoute.Spec.Rules.Matches
 // are used to create resources and httpRoute.Spec.Rules.BackendRefs are used to create EndpointClusters.
 func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, authSchemes map[string]dpv1alpha1.Authentication,
-	resourceAuthSchemes map[string]dpv1alpha1.Authentication, isProd bool) error {
+	resourceAuthSchemes map[string]dpv1alpha1.Authentication, isProd bool, client client.Client, hostNameResolver HostNameResolverFunc) error {
 	var resources []*Resource
 	var securitySchemes []SecurityScheme
 	//TODO(amali) add gateway level securities after gateway crd has implemented
@@ -114,8 +119,7 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, au
 		}
 		for _, backend := range rule.BackendRefs {
 			endPoints = append(endPoints,
-				Endpoint{Host: fmt.Sprintf("%s.%s", backend.Name,
-					utils.GetNamespace(backend.Namespace, httpRoute.Namespace)),
+				Endpoint{Host: hostNameResolver(client, backend, httpRoute.Namespace),
 					URLType: constants.HTTP,
 					Port:    uint32(*backend.Port)})
 		}
