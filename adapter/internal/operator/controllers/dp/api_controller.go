@@ -245,6 +245,7 @@ func (apiReconciler *APIReconciler) resolveHTTPRouteRefs(ctx context.Context, na
 		return nil, fmt.Errorf("error while getting httproute auth defaults %s in namespace :%s, %s", httpRouteRef,
 			namespace, err.Error())
 	}
+	httpRouteState.BackendPropertyMapping = apiReconciler.getBackendProperties(ctx, httpRouteState.HTTPRoute)
 	return httpRouteState, nil
 }
 
@@ -276,6 +277,41 @@ func (apiReconciler *APIReconciler) getAuthenticationsForResources(ctx context.C
 		authentications[utils.NamespacedName(&item).Name] = item
 	}
 	return authentications, nil
+}
+
+func (apiReconciler *APIReconciler) getBackendProperties(ctx context.Context,
+	httpRoute *gwapiv1b1.HTTPRoute) dpv1alpha1.BackendPropertyMapping {
+	backendPropertyMapping := make(dpv1alpha1.BackendPropertyMapping)
+	for ruleIndex, rule := range httpRoute.Spec.Rules {
+		backendPropertyMapping[ruleIndex] = make(map[int]dpv1alpha1.BackendProperties)
+		for backendIndex, backend := range rule.BackendRefs {
+			backendPropertyMapping[ruleIndex][backendIndex] = dpv1alpha1.BackendProperties{
+				ResolvedHostname: apiReconciler.getHostNameForBackend(ctx,
+					backend, httpRoute.Namespace),
+			}
+		}
+	}
+	loggers.LoggerAPKOperator.Debugf("Generated backendPropertyMapping: %v", backendPropertyMapping)
+	return backendPropertyMapping
+}
+
+// getHostNameForService resolves the backed hostname for services.
+// When service type is ExternalName then ExternalName property is used as the hostname.
+// Otherwise defaulted to service name as <namespace>.<service>
+func (apiReconciler *APIReconciler) getHostNameForBackend(ctx context.Context, backend gwapiv1b1.HTTPBackendRef,
+	defaultNamespace string) string {
+	var service = new(corev1.Service)
+	err := apiReconciler.client.Get(context.Background(), types.NamespacedName{
+		Name:      string(backend.Name),
+		Namespace: utils.GetNamespace(backend.Namespace, defaultNamespace)}, service)
+	if err == nil {
+		switch service.Spec.Type {
+		case corev1.ServiceTypeExternalName:
+			return service.Spec.ExternalName
+		}
+	}
+	return fmt.Sprintf("%s.%s", backend.Name,
+		utils.GetNamespace(backend.Namespace, defaultNamespace))
 }
 
 // getAPIForHTTPRoute triggers the API controller reconcile method based on the changes detected

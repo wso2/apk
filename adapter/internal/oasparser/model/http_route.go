@@ -38,12 +38,12 @@ type HostNameResolverFunc = func(client client.Client, backend gwapiv1b1.HTTPBac
 // SetInfoHTTPRouteCR populates resources and endpoints of mgwSwagger. httpRoute.Spec.Rules.Matches
 // are used to create resources and httpRoute.Spec.Rules.BackendRefs are used to create EndpointClusters.
 func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, authSchemes map[string]dpv1alpha1.Authentication,
-	resourceAuthSchemes map[string]dpv1alpha1.Authentication, isProd bool, client client.Client, hostNameResolver HostNameResolverFunc) error {
+	resourceAuthSchemes map[string]dpv1alpha1.Authentication, backendPropertyMapping dpv1alpha1.BackendPropertyMapping, isProd bool) error {
 	var resources []*Resource
 	var securitySchemes []SecurityScheme
 	//TODO(amali) add gateway level securities after gateway crd has implemented
 	authScheme := selectAuthScheme(maps.Values(authSchemes))
-	for _, rule := range httpRoute.Spec.Rules {
+	for ruleIndex, rule := range httpRoute.Spec.Rules {
 		var endPoints []Endpoint
 		var policies = OperationPolicies{}
 		resourceAuthScheme := authScheme
@@ -117,9 +117,9 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, au
 		if len(rule.BackendRefs) < 1 {
 			return fmt.Errorf("no backendref were provided")
 		}
-		for _, backend := range rule.BackendRefs {
+		for backendIndex, backend := range rule.BackendRefs {
 			endPoints = append(endPoints,
-				Endpoint{Host: hostNameResolver(client, backend, httpRoute.Namespace),
+				Endpoint{Host: backendPropertyMapping[ruleIndex][backendIndex].ResolvedHostname,
 					URLType: constants.HTTP,
 					Port:    uint32(*backend.Port)})
 		}

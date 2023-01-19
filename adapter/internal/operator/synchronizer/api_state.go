@@ -38,4 +38,5 @@ type HTTPRouteState struct {
 	HTTPRoute               *gwapiv1b1.HTTPRoute
 	Authentications         map[string]v1alpha1.Authentication
 	ResourceAuthentications map[string]v1alpha1.Authentication
+	BackendPropertyMapping  v1alpha1.BackendPropertyMapping
 }

@@ -24,7 +24,6 @@ import (
 	"context"
 
 	"github.com/wso2/apk/adapter/internal/discovery/xds"
-	"k8s.io/apimachinery/pkg/types"
 
 	"github.com/wso2/apk/adapter/config"
 	client "github.com/wso2/apk/adapter/internal/grpc-client"
@@ -32,11 +31,8 @@ import (
 	model "github.com/wso2/apk/adapter/internal/oasparser/model"
 	"github.com/wso2/apk/adapter/internal/operator/constants"
 	"github.com/wso2/apk/adapter/internal/operator/services/runtime"
-	"github.com/wso2/apk/adapter/internal/operator/utils"
 	apiProtos "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/apkmgt"
 	"github.com/wso2/apk/adapter/pkg/logging"
-	corev1 "k8s.io/api/core/v1"
-	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
@@ -51,21 +47,14 @@ type APIEvent struct {
 var (
 	// TODO: Decide on a buffer size and add to config.
 	mgtServerCh chan APIEvent
-	c           ctrlclient.Client
 )
 
 func init() {
 	mgtServerCh = make(chan APIEvent, 10)
 }
 
-// StartSynchronizer sets up the synchronizer
-func StartSynchronizer(ch *chan APIEvent, client ctrlclient.Client) {
-	c = client
-	handleAPILifeCycleEvents(ch)
-}
-
-// handleAPILifeCycleEvents handles the API events generated from OperatorDataStore
-func handleAPILifeCycleEvents(ch *chan APIEvent) {
+// HandleAPILifeCycleEvents handles the API events generated from OperatorDataStore
+func HandleAPILifeCycleEvents(ch *chan APIEvent) {
 	loggers.LoggerAPKOperator.Info("Operator synchronizer listening for API lifecycle events...")
 	for event := range *ch {
 		if event.Event.APIDefinition == nil {
@@ -132,24 +121,23 @@ func deleteAPIFromEnv(httpRoute *gwapiv1b1.HTTPRoute, apiState APIState) error {
 func deployAPIInGateway(apiState APIState) error {
 	var err error
 	if apiState.ProdHTTPRoute != nil {
-		_, err = GenerateMGWSwagger(apiState, apiState.ProdHTTPRoute, true, getHostNameForBackend)
+		_, err = GenerateMGWSwagger(apiState, apiState.ProdHTTPRoute, true)
 	}
 	if err != nil {
 		return err
 	}
 	if apiState.SandHTTPRoute != nil {
-		_, err = GenerateMGWSwagger(apiState, apiState.SandHTTPRoute, false, getHostNameForBackend)
+		_, err = GenerateMGWSwagger(apiState, apiState.SandHTTPRoute, false)
 	}
 	return err
 }
 
 // GenerateMGWSwagger this will populate a mgwswagger representation for an HTTPRoute
-func GenerateMGWSwagger(apiState APIState, httpRoute *HTTPRouteState, isProd bool,
-	hostNameResolver model.HostNameResolverFunc) (*model.MgwSwagger, error) {
+func GenerateMGWSwagger(apiState APIState, httpRoute *HTTPRouteState, isProd bool) (*model.MgwSwagger, error) {
 	var mgwSwagger model.MgwSwagger
 	mgwSwagger.SetInfoAPICR(*apiState.APIDefinition)
 	if err := mgwSwagger.SetInfoHTTPRouteCR(httpRoute.HTTPRoute, httpRoute.Authentications, httpRoute.ResourceAuthentications,
-		isProd, c, hostNameResolver); err != nil {
+		httpRoute.BackendPropertyMapping, isProd); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
 			Message:   fmt.Sprintf("Error setting HttpRoute CR info to mgwSwagger for isProdEndpoint: %v. %v", isProd, err),
 			Severity:  logging.MAJOR,
@@ -180,25 +168,6 @@ func GenerateMGWSwagger(apiState APIState, httpRoute *HTTPRouteState, isProd boo
 		}
 	}
 	return &mgwSwagger, nil
-}
-
-// getHostNameForService resolves the backed hostname for services.
-// When service type is ExternalName then ExternalName property is used as the hostname.
-// Otherwise defaulted to service name as <namespace>.<service>
-func getHostNameForBackend(client ctrlclient.Client, backend gwapiv1b1.HTTPBackendRef,
-	defaultNamespace string) string {
-	var service = new(corev1.Service)
-	err := client.Get(context.Background(), types.NamespacedName{
-		Name:      string(backend.Name),
-		Namespace: utils.GetNamespace(backend.Namespace, defaultNamespace)}, service)
-	if err == nil {
-		switch service.Spec.Type {
-		case corev1.ServiceTypeExternalName:
-			return service.Spec.ExternalName
-		}
-	}
-	return fmt.Sprintf("%s.%s", backend.Name,
-		utils.GetNamespace(backend.Namespace, defaultNamespace))
 }
 
 // getVhostForAPI returns the vHosts related to an API.

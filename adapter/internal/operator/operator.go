@@ -149,7 +149,7 @@ func InitOperator() {
 		})
 	}
 
-	go synchronizer.StartSynchronizer(&ch, mgr.GetClient())
+	go synchronizer.HandleAPILifeCycleEvents(&ch)
 	go synchronizer.SendAPIToAPKMgtServer()
 	go xds.HandleApplicationEventsFromMgtServer(mgr.GetClient(), mgr.GetAPIReader())
 

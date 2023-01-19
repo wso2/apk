@@ -24,7 +24,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/wso2/apk/adapter/config"
 	envoy "github.com/wso2/apk/adapter/internal/oasparser/envoyconf"
@@ -39,11 +38,6 @@ import (
 )
 
 func TestCreateRoutesWithClusters(t *testing.T) {
-
-	var MockHostNameResolver = func(client ctrlclient.Client, backend gwapiv1b1.HTTPBackendRef,
-		defaultNamespace string) string {
-		return fmt.Sprintf("%s.%s", backend.Name, "default")
-	}
 
 	apiState := synchronizer.APIState{}
 	apiDefinition := v1alpha1.API{
@@ -127,10 +121,11 @@ func TestCreateRoutesWithClusters(t *testing.T) {
 	httpRouteState.HTTPRoute = &httpRoute
 	httpRouteState.Authentications = make(map[string]dpv1alpha1.Authentication)
 	httpRouteState.ResourceAuthentications = make(map[string]dpv1alpha1.Authentication)
+	httpRouteState.BackendPropertyMapping = getBackendProperties(&httpRoute)
 
 	apiState.ProdHTTPRoute = &httpRouteState
 
-	mgwSwagger, err := synchronizer.GenerateMGWSwagger(apiState, &httpRouteState, true, MockHostNameResolver)
+	mgwSwagger, err := synchronizer.GenerateMGWSwagger(apiState, &httpRouteState, true)
 	assert.Nil(t, err, "Error should not be present when apiState is converted to a MgwSwagger object")
 	routes, clusters, _, _ := envoy.CreateRoutesWithClusters(*mgwSwagger, nil, nil, "prod.gw.wso2.com", "carbon.super")
 	assert.Equal(t, 2, len(clusters), "Number of production clusters created is incorrect.")
@@ -220,6 +215,25 @@ func createDefaultBackendRef(serviceName string, port int32, weight int32) gwapi
 			Weight: &weight,
 		},
 	}
+}
+
+func getBackendProperties(httpRoute *gwapiv1b1.HTTPRoute) dpv1alpha1.BackendPropertyMapping {
+	backendPropertyMapping := make(dpv1alpha1.BackendPropertyMapping)
+	for ruleIndex, rule := range httpRoute.Spec.Rules {
+		backendPropertyMapping[ruleIndex] = make(map[int]dpv1alpha1.BackendProperties)
+		for backendIndex, backend := range rule.BackendRefs {
+			backendPropertyMapping[ruleIndex][backendIndex] = dpv1alpha1.BackendProperties{
+				ResolvedHostname: getHostNameForBackend(backend, httpRoute.Namespace),
+			}
+		}
+	}
+	return backendPropertyMapping
+}
+
+func getHostNameForBackend(backend gwapiv1b1.HTTPBackendRef,
+	defaultNamespace string) string {
+	return fmt.Sprintf("%s.%s", backend.Name,
+		operatorutils.GetNamespace(backend.Namespace, defaultNamespace))
 }
 
 func testCreateRoutesWithClustersWebsocket(t *testing.T, apiYamlFilePath string) {
