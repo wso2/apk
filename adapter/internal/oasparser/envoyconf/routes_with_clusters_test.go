@@ -38,7 +38,6 @@ import (
 )
 
 func TestCreateRoutesWithClusters(t *testing.T) {
-
 	apiState := synchronizer.APIState{}
 	apiDefinition := v1alpha1.API{
 		ObjectMeta: metav1.ObjectMeta{

@@ -27,13 +27,8 @@ import (
 	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
 	"github.com/wso2/apk/adapter/internal/operator/utils"
 	"golang.org/x/exp/maps"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
-
-// HostNameResolverFunc is the function signature for getting the hostname from service
-type HostNameResolverFunc = func(client client.Client, backend gwapiv1b1.HTTPBackendRef,
-	defaultNamespace string) string
 
 // SetInfoHTTPRouteCR populates resources and endpoints of mgwSwagger. httpRoute.Spec.Rules.Matches
 // are used to create resources and httpRoute.Spec.Rules.BackendRefs are used to create EndpointClusters.
