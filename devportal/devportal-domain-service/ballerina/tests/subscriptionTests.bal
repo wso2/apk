@@ -57,11 +57,10 @@ function addSubscriptionTest() {
     test:when(getBusinessPlanByNameDAOMock).thenReturn(businessPlanName);
     Subscription payload = { apiId: "8e3a1ca4-b649-4e57-9a57-e43b6b545af0",applicationId: "01ed716f-9f85-1ade-b634-be97dee7ceb4",throttlingPolicy: "MySubPol5"};
     test:when( addSubscriptionDAOMock).thenReturn(payload);
-    string?|Subscription|error subscription = addSubscription(payload, "carbon.super", "apkuser");
+    Subscription|APKError|NotFoundError|error subscription = addSubscription(payload, "carbon.super", "apkuser");
     if subscription is Subscription {
         test:assertTrue(true, "Succesfully added a subscription");
-    } else if subscription is error {
-        log:printDebug(subscription.message());
+    } else  {
         test:assertFail("Error occured while adding subscription");
     }
 }
@@ -78,10 +77,10 @@ function addSubscriptionNegativeTest1() {
     test:when(getBusinessPlanByNameDAOMock).thenReturn(businessPlanName);
     Subscription payload = { apiId: "8e3a1ca4-b649-4e57-9a57-e43b6b545af0",applicationId: "01ed716f-9f85-1ade-b634-be97dee7ceb4",throttlingPolicy: "MySubPol5"};
     test:when( addSubscriptionDAOMock).thenReturn(payload);
-    string?|Subscription|error subscription = addSubscription(payload, "carbon.super", "apkuser");
+    Subscription|APKError|NotFoundError|error subscription = addSubscription(payload, "carbon.super", "apkuser");
     if subscription is Subscription {
         test:assertFail("Succesfully added a subscription for a invalid API");
-    } else if subscription is error {
+    } else {
         test:assertTrue(true, "Sucessfully validated API not available while adding a subscription");
     }
 }
@@ -98,10 +97,10 @@ function addSubscriptionNegativeTest2() {
     test:when(getBusinessPlanByNameDAOMock).thenReturn(businessPlanName);
     Subscription payload = { apiId: "8e3a1ca4-b649-4e57-9a57-e43b6b545af0",applicationId: "01ed716f-9f85-1ade-b634-be97dee7ceb4",throttlingPolicy: "MySubPol5"};
     test:when( addSubscriptionDAOMock).thenReturn(payload);
-    string?|Subscription|error subscription = addSubscription(payload, "carbon.super", "apkuser");
+    Subscription|APKError|NotFoundError|error subscription = addSubscription(payload, "carbon.super", "apkuser");
     if subscription is Subscription {
         test:assertFail("Succesfully added a subscription for a invalid Application");
-    } else if subscription is error {
+    } else {
         test:assertTrue(true, "Sucessfully validated Application not available while adding a subscription");
     }
 }
@@ -114,14 +113,15 @@ function addSubscriptionNegativeTest3() {
     Application application = {name:"sampleApp",throttlingPolicy:"30PerMin",description: "sample application",applicationId: "12sqwsq",id: 1};
     test:when(getApplicationByIdDAOMock).thenReturn(application);
     // Policy Not Found
-    error businessPlanName = error("policy not found");
-    test:when(getBusinessPlanByNameDAOMock).thenReturn(businessPlanName);
+    string message = "policy not found";
+    APKError e = error(message, message = message, description = message, code = 90911, statusCode = "500");
+    test:when(getBusinessPlanByNameDAOMock).thenReturn(e);
     Subscription payload = { apiId: "8e3a1ca4-b649-4e57-9a57-e43b6b545af0",applicationId: "01ed716f-9f85-1ade-b634-be97dee7ceb4",throttlingPolicy: "MySubPol5"};
     test:when( addSubscriptionDAOMock).thenReturn(payload);
-    string?|Subscription|error subscription = addSubscription(payload, "carbon.super", "apkuser");
+    Subscription|APKError|NotFoundError|error subscription = addSubscription(payload, "carbon.super", "apkuser");
     if subscription is Subscription {
         test:assertFail("Succesfully added a subscription for a invalid Policy");
-    } else if subscription is error {
+    } else {
         test:assertTrue(true, "Sucessfully validated Policy not available while adding a subscription");
     }
 }
@@ -130,10 +130,10 @@ function addSubscriptionNegativeTest3() {
 function getBusinessPlanByNameTest(){
     string businessPlanName = "MySubPol5";
     test:when(getBusinessPlanByNameDAOMock).thenReturn(businessPlanName);
-    string?|error businessPlanID = getBusinessPlanByName(businessPlanName);
+    string|APKError|NotFoundError businessPlanID = getBusinessPlanByName(businessPlanName);
     if businessPlanID is string {
     test:assertTrue(true, "Successfully retrieved business plan id");
-    } else if businessPlanID is  error {
+    } else {
         test:assertFail("Error occured while retrieving business plan id");
     }
 }
@@ -151,10 +151,10 @@ function addMultipleSubscriptionsTest() {
     test:when(getBusinessPlanByNameDAOMock).thenReturn(businessPlanName);
     Subscription payload = { apiId: "8e3a1ca4-b649-4e57-9a57-e43b6b545af0",applicationId: "01ed716f-9f85-1ade-b634-be97dee7ceb4",throttlingPolicy: "MySubPol5"};
     test:when( addSubscriptionDAOMock).thenReturn(payload);
-    string?|Subscription[]|error subscriptions = addMultipleSubscriptions(multiSub, "carbon.super", "apkuser");
+    Subscription[]|APKError|NotFoundError|error subscriptions = addMultipleSubscriptions(multiSub, "carbon.super", "apkuser");
     if subscriptions is Subscription[] {
         test:assertTrue(true,"Succesfully added multiple subscriptions");
-    } else if subscriptions is error {
+    } else {
         test:assertFail("Error occured while adding multiple subscriptions");
     }
 }
@@ -163,10 +163,10 @@ function addMultipleSubscriptionsTest() {
 function getSubscriptionByIdTest() {
     Subscription payload = { apiId: "8e3a1ca4-b649-4e57-9a57-e43b6b545af0",applicationId: "01ed716f-9f85-1ade-b634-be97dee7ceb4",throttlingPolicy: "MySubPol5"};
     test:when(getSubscriptionByIdDAOMock).thenReturn(payload);
-    string?|Subscription|error returnedResponse = getSubscriptionById("12sqwsq","carbon.super");
+    Subscription|APKError|NotFoundError returnedResponse = getSubscriptionById("12sqwsq","carbon.super");
     if returnedResponse is Subscription {
     test:assertTrue(true, "Successfully retrieved subscription");
-    } else if returnedResponse is  error {
+    } else {
         test:assertFail("Error occured while retrieving subscription");
     }
 }
@@ -209,10 +209,10 @@ function getSubscriptionListTest1() {
     Subscription subscription = { apiId: "8e3a1ca4-b649-4e57-9a57-e43b6b545af0",applicationId: "01ed716f-9f85-1ade-b634-be97dee7ceb4",throttlingPolicy: "MySubPol4"};
     test:when(getSubscriptionByAPIandAppIdDAOMock).thenReturn(subscription);
     // Providing both API ID and App Id
-    string?|SubscriptionList|error subscriptionList = getSubscriptions("8e3a1ca4-b649-4e57-9a57-e43b6b545af0","01ed716f-9f85-1ade-b634-be97dee7ceb4","",0,0,"carbon.super");
+    SubscriptionList|APKError|NotFoundError subscriptionList = getSubscriptions("8e3a1ca4-b649-4e57-9a57-e43b6b545af0","01ed716f-9f85-1ade-b634-be97dee7ceb4","",0,0,"carbon.super");
     if subscriptionList is ApplicationList {
     test:assertTrue(true, "Successfully retrieved all subscriptions by API ID and App ID");
-    } else if subscriptionList is  error {
+    } else {
         test:assertFail("Error occured while retrieving all subscriptions");
     }
 }
@@ -223,10 +223,10 @@ function getSubscriptionListTest2() {
     { apiId: "8e3a1ca4-b649-4e57-9a57-e43b6b545af0",applicationId: "01ed716f-9f85-1ade-b634-be97dee7ceb4",throttlingPolicy: "MySubPol4"}];
     test:when(getSubscriptionsByAPIIdDAOMock).thenReturn(subList);
     // Providing only API ID
-    string?|SubscriptionList|error subscriptionList = getSubscriptions("8e3a1ca4-b649-4e57-9a57-e43b6b545af0",null,"",0,0,"carbon.super");
+    SubscriptionList|APKError|NotFoundError subscriptionList = getSubscriptions("8e3a1ca4-b649-4e57-9a57-e43b6b545af0",null,"",0,0,"carbon.super");
     if subscriptionList is ApplicationList {
     test:assertTrue(true, "Successfully retrieved all subscriptions by API ID and App ID");
-    } else if subscriptionList is  error {
+    } else {
         test:assertFail("Error occured while retrieving all subscriptions");
     }
 }
@@ -237,10 +237,10 @@ function getSubscriptionListTest3() {
     { apiId: "8e3a1ca4-b649-4e57-9a57-e43b6b545af0",applicationId: "01ed716f-9f85-1ade-b634-be97dee7ceb4",throttlingPolicy: "MySubPol4"}];
     test:when(getSubscriptionsByAPPIdDAOMock).thenReturn(subList);
     // Providing only App ID
-    string?|SubscriptionList|error subscriptionList = getSubscriptions(null,"01ed716f-9f85-1ade-b634-be97dee7ceb4","",0,0,"carbon.super");
+    SubscriptionList|APKError|NotFoundError subscriptionList = getSubscriptions(null,"01ed716f-9f85-1ade-b634-be97dee7ceb4","",0,0,"carbon.super");
     if subscriptionList is ApplicationList {
     test:assertTrue(true, "Successfully retrieved all subscriptions by API ID and App ID");
-    } else if subscriptionList is  error {
+    } else {
         test:assertFail("Error occured while retrieving all subscriptions");
     }
 }
@@ -251,10 +251,10 @@ function getSubscriptionListTest4() {
     { apiId: "8e3a1ca4-b649-4e57-9a57-e43b6b545af0",applicationId: "01ed716f-9f85-1ade-b634-be97dee7ceb4",throttlingPolicy: "MySubPol4"}];
     test:when(getSubscriptionsListMock).thenReturn(subList);
     // Providing nothing and retrieving all subscriptions
-    string?|SubscriptionList|error subscriptionList = getSubscriptions(null,null,"",0,0,"carbon.super");
+    SubscriptionList|APKError|NotFoundError subscriptionList = getSubscriptions(null,null,"",0,0,"carbon.super");
     if subscriptionList is ApplicationList {
     test:assertTrue(true, "Successfully retrieved all subscriptions by API ID and App ID");
-    } else if subscriptionList is  error {
+    } else {
         test:assertFail("Error occured while retrieving all subscriptions");
     }
 }

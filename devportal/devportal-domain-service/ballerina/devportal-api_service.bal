@@ -18,7 +18,6 @@
 
 import ballerina/http;
 import ballerina/log;
-import ballerina/lang.value;
 import devportal_service.org.wso2.apk.devportal.sdk as sdk;
 
 configurable int DEVPORTAL_PORT = 9443;
@@ -26,56 +25,46 @@ configurable int DEVPORTAL_PORT = 9443;
 listener http:Listener ep0 = new (DEVPORTAL_PORT);
 
 service /api/am/devportal on ep0 {
-    isolated resource function get apis(@http:Header string? 'x\-wso2\-tenant, string? query, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0) returns APIList|NotAcceptableError|InternalServerErrorError|error {
+    isolated resource function get apis(@http:Header string? 'x\-wso2\-tenant, string? query, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0) returns APIList|BadRequestError|InternalServerErrorError {
         string organization = "carbon.super";
-        string?| APIList | error apiList = check getAPIList('limit, offset, query, organization);
-        if apiList is string {
-            json j = check value:fromJsonString(apiList);
-            APIList apiListObj = check j.cloneWithType(APIList);
-            return apiListObj;
-        } else if apiList is APIList {
+        APIList|APKError apiList = getAPIList('limit, offset, query, organization);
+        if apiList is APIList {
             log:printDebug(apiList.toString());
             return apiList;
         } else {
-            InternalServerErrorError internalError = {body: {code: 90914, message: "Internal Error while retrieving all APIs"}};
-            return internalError;
+            return handleAPKError(apiList);
         }
     }
-    isolated resource function get apis/[string apiId](@http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match) returns API|http:NotModified|NotFoundError|NotAcceptableError|InternalServerErrorError|error|json {
+    isolated resource function get apis/[string apiId](@http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match) returns API|http:NotModified|NotFoundError|BadRequestError|InternalServerErrorError|json {
         string organization = "carbon.super";
-        string?|API|error api = check getAPIByAPIId(apiId, organization);
-        if api is string {
-            json j = check value:fromJsonString(api);
-            API clonedAPI = check j.cloneWithType(API);
-            log:printDebug(clonedAPI.toString());
-            return clonedAPI;
-        } else if api is API {
+        API|NotFoundError|APKError api = getAPIByAPIId(apiId, organization);
+        if api is API|NotFoundError {
             log:printDebug(api.toString());
             return api;
         } else {
-            InternalServerErrorError internalError = {body: {code: 90913, message: "Internal Error while retrieving API By Id"}};
-            return internalError;
+            return handleAPKError(api);
         }
     }
-    isolated resource function get apis/[string apiId]/definition(@http:Header string? 'if\-none\-match) returns APIDefinition|http:NotModified|NotFoundError|NotAcceptableError|InternalServerErrorError|error {
+    isolated resource function get apis/[string apiId]/definition(@http:Header string? 'if\-none\-match) returns APIDefinition|http:NotModified|NotFoundError|BadRequestError|InternalServerErrorError {
         string organization = "carbon.super";
-        APIDefinition|NotFoundError|error apiDefinition = check getAPIDefinition(apiId, organization);
+        APIDefinition|NotFoundError|APKError apiDefinition = getAPIDefinition(apiId, organization);
         if apiDefinition is APIDefinition|NotFoundError {
             log:printDebug(apiDefinition.toString());
             return apiDefinition;
         } else {
-            InternalServerErrorError internalError = {body: {code: 90914, message: "Internal Error while retrieving API Definition By API Id"}};
-            return internalError;
+            return handleAPKError(apiDefinition);
         }
     }
-    resource function get apis/[string apiId]/sdks/[string language](@http:Header string? 'x\-wso2\-tenant) returns http:Response|json|BadRequestError|NotFoundError|InternalServerErrorError|error {
+    resource function get apis/[string apiId]/sdks/[string language](@http:Header string? 'x\-wso2\-tenant) returns http:Response|json|BadRequestError|NotFoundError|InternalServerErrorError {
         string organization = "carbon.super";
-        string?|http:Response|sdk:APIClientGenerationException|error sdk = check generateSDKImpl(apiId,language, organization);
+        NotFoundError|http:Response|sdk:APIClientGenerationException|APKError sdk = generateSDKImpl(apiId,language, organization);
         if sdk is http:Response {
             return sdk;
-        } else if sdk is sdk:APIClientGenerationException|error {
-            InternalServerErrorError internalError = {body: {code: 90931, message: "Internal Error while generating client SDK for given language:" + language}};
+        } else if sdk is sdk:APIClientGenerationException {
+            InternalServerErrorError internalError = {body: {code: 90931, message: "Internal Error while generating client SDK for given language:" + language + ". Error: " + sdk.message()}};
             return internalError;
+        } else if sdk is APKError {
+            return handleAPKError(sdk);
         }
     }
     // resource function get apis/[string apiId]/documents(@http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0) returns DocumentList|http:NotModified|NotFoundError|NotAcceptableError {
@@ -110,74 +99,54 @@ service /api/am/devportal on ep0 {
     // }
     // resource function get apis/[string apiId]/'subscription\-policies(@http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match) returns ThrottlingPolicy|http:NotModified|NotFoundError|NotAcceptableError {
     // }
-    isolated resource function get applications(string? groupId, string? query, string? sortBy, string? sortOrder, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0) returns ApplicationList|http:NotModified|BadRequestError|NotAcceptableError|InternalServerErrorError|error{
+    isolated resource function get applications(string? groupId, string? query, string? sortBy, string? sortOrder, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0) returns ApplicationList|http:NotModified|BadRequestError|NotAcceptableError|InternalServerErrorError{
         string organization = "carbon.super";
-        string?|ApplicationList|error applicationList = check getApplicationList(sortBy, groupId, query, sortOrder, 'limit, offset, organization);
-        if applicationList is string {
-            json j = check value:fromJsonString(applicationList);
-            ApplicationList appList = check j.cloneWithType(ApplicationList);
-            log:printDebug(appList.toString());
-            return appList;
-        } else if applicationList is ApplicationList {
+        ApplicationList|APKError applicationList = getApplicationList(sortBy, groupId, query, sortOrder, 'limit, offset, organization);
+        if applicationList is ApplicationList {
             log:printDebug(applicationList.toString());
             return applicationList;
         } else {
-            InternalServerErrorError internalError = {body: {code: 90900, message: "Internal Error while retrieving all Applications"}};
-            return internalError;
+            return handleAPKError(applicationList);
         }
     }
-    isolated resource function post applications(@http:Payload Application payload) returns CreatedApplication|AcceptedWorkflowResponse|BadRequestError|ConflictError|UnsupportedMediaTypeError|InternalServerErrorError|error {
-        string?|Application|error application = check addApplication(payload, "carbon.super", "apkuser");
-        if application is string {
-            json j = check value:fromJsonString(application);
-            CreatedApplication createdApp = {body: check j.cloneWithType(Application)};
-            return createdApp;
-        } else if application is Application {
+    isolated resource function post applications(@http:Payload Application payload) returns CreatedApplication|AcceptedWorkflowResponse|BadRequestError|ConflictError|NotFoundError|InternalServerErrorError|error|json {
+        Application|NotFoundError|APKError application = addApplication(payload, "carbon.super", "apkuser");
+        if application is Application {
             CreatedApplication createdApp = {body: check application.cloneWithType(Application)};
             log:printDebug(application.toString());
             return createdApp;
+        } else if application is NotFoundError {
+            return application;
+        } else if application is APKError {
+            return handleAPKError(application);
         } else {
-            InternalServerErrorError internalError = {body: {code: 90910, message: "Internal Error while adding Application"}};
-            return internalError;
+            return {};
         }
     }
-    isolated resource function get applications/[string applicationId](@http:Header string? 'if\-none\-match, @http:Header string? 'x\-wso2\-tenant) returns Application|http:NotModified|NotFoundError|NotAcceptableError|InternalServerErrorError|error {
-        string?|Application|error application = check getApplicationById(applicationId, "carbon.super");
-        if application is string {
-            json j = check value:fromJsonString(application);
-            Application app = check j.cloneWithType(Application);
-            log:printDebug(app.toString());
-            return app;
-        } else if application is Application {
+    isolated resource function get applications/[string applicationId](@http:Header string? 'if\-none\-match, @http:Header string? 'x\-wso2\-tenant) returns Application|http:NotModified|NotFoundError|BadRequestError|InternalServerErrorError {
+        Application|APKError|NotFoundError application = getApplicationById(applicationId, "carbon.super");
+        if application is Application|NotFoundError {
             log:printDebug(application.toString());
             return application;
         } else {
-            InternalServerErrorError internalError = {body: {code: 90900, message: "Internal Error while retrieving Application By Id"}};
-            return internalError;
+            return handleAPKError(application);
         }
     }
-    isolated resource function put applications/[string applicationId](@http:Header string? 'if\-match, @http:Payload Application payload) returns Application|BadRequestError|NotFoundError|PreconditionFailedError|InternalServerErrorError|error {
+    isolated resource function put applications/[string applicationId](@http:Header string? 'if\-match, @http:Payload Application payload) returns Application|BadRequestError|NotFoundError|PreconditionFailedError|InternalServerErrorError {
         string organization = "carbon.super";
-        string?|Application|NotFoundError|error application = check updateApplication(applicationId, payload, organization,"apkuser");
-        if application is string {
-            json j = check value:fromJsonString(application);
-            Application app = check j.cloneWithType(Application);
-            log:printDebug(app.toString());
-            return app;
-        } else if application is Application|NotFoundError {
+        Application|NotFoundError|APKError application = updateApplication(applicationId, payload, organization,"apkuser");
+        if application is Application|NotFoundError {
             log:printDebug(application.toString());
             return application;
         } else {
-            InternalServerErrorError internalError = {body: {code: 90911, message: "Internal Error while updating Application"}};
-            return internalError;
+            return handleAPKError(application);
         }
     }
-    isolated resource function delete applications/[string applicationId](@http:Header string? 'if\-match) returns http:Ok|AcceptedWorkflowResponse|NotFoundError|PreconditionFailedError|InternalServerErrorError|error {
+    isolated resource function delete applications/[string applicationId](@http:Header string? 'if\-match) returns http:Ok|AcceptedWorkflowResponse|NotFoundError|BadRequestError|PreconditionFailedError|InternalServerErrorError {
         string organization = "carbon.super";
-        string|error? response = check deleteApplication(applicationId,organization);
-        if response is error {
-            InternalServerErrorError internalError = {body: {code: 90912, message: "Internal Error while deleting Application By Id"}};
-            return internalError;
+        string|APKError response = deleteApplication(applicationId,organization);
+        if response is APKError {
+            return handleAPKError(response);
         } else {
             return http:OK;
         }
@@ -210,13 +179,12 @@ service /api/am/devportal on ep0 {
     // }
     // resource function post applications/[string applicationId]/'oauth\-keys/[string keyMappingId]/'generate\-token(@http:Header string? 'if\-match, @http:Payload ApplicationTokenGenerateRequest payload) returns ApplicationToken|BadRequestError|NotFoundError|PreconditionFailedError {
     // }
-    isolated resource function post applications/[string applicationId]/'api\-keys/[string keyType]/generate(@http:Header string? 'if\-match, @http:Payload APIKeyGenerateRequest payload) returns APIKey|BadRequestError|NotFoundError|PreconditionFailedError|InternalServerErrorError|error {
-        APIKey|error apiKey = check generateAPIKey(payload, applicationId, keyType, "apkuser", "carbon.super");
-        if apiKey is APIKey {
+    isolated resource function post applications/[string applicationId]/'api\-keys/[string keyType]/generate(@http:Header string? 'if\-match, @http:Payload APIKeyGenerateRequest payload) returns APIKey|BadRequestError|NotFoundError|PreconditionFailedError|InternalServerErrorError {
+        APIKey|APKError|NotFoundError apiKey = generateAPIKey(payload, applicationId, keyType, "apkuser", "carbon.super");
+        if apiKey is APIKey|NotFoundError {
             return apiKey;
         } else {
-            InternalServerErrorError internalError = {body: {code: 909123, message: "Internal Error while generating API Key"}};
-            return internalError;
+            return handleAPKError(apiKey);
         }
     }
     // resource function post applications/[string applicationId]/'api\-keys/[string keyType]/revoke(@http:Header string? 'if\-match, @http:Payload APIKeyRevokeRequest payload) returns http:Ok|BadRequestError|PreconditionFailedError {
@@ -225,83 +193,64 @@ service /api/am/devportal on ep0 {
     // }
     // resource function post applications/'import(boolean? preserveOwner, boolean? skipSubscriptions, string? appOwner, boolean? skipApplicationKeys, boolean? update, @http:Payload json payload) returns ApplicationInfo|BadRequestError|NotAcceptableError {
     // }
-    isolated resource function get subscriptions(string? apiId, string? applicationId, string? groupId, @http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match, int offset = 0, int 'limit = 25) returns SubscriptionList|http:NotModified|NotAcceptableError|InternalServerErrorError|error {
-        string?|SubscriptionList|error subscriptionList = check getSubscriptions(apiId, applicationId, groupId, offset, 'limit, "carbon.super");
-        if subscriptionList is string {
-            json j = check value:fromJsonString(subscriptionList);
-            SubscriptionList sub = check j.cloneWithType(SubscriptionList);
-            log:printDebug(sub.toString());
-            return sub;
-        } else if subscriptionList is SubscriptionList {
+    isolated resource function get subscriptions(string? apiId, string? applicationId, string? groupId, @http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match, int offset = 0, int 'limit = 25) returns SubscriptionList|http:NotModified|NotFoundError|BadRequestError|InternalServerErrorError {
+        SubscriptionList|APKError|NotFoundError subscriptionList = getSubscriptions(apiId, applicationId, groupId, offset, 'limit, "carbon.super");
+        if subscriptionList is SubscriptionList|NotFoundError {
             log:printDebug(subscriptionList.toString());
             return subscriptionList;
         } else {
-            InternalServerErrorError internalError = {body: {code: 90922, message: "Internal Error while retrieving All Subscriptions of an API or Application or both"}};
-            return internalError;
+            return handleAPKError(subscriptionList);
         }
     }
-    isolated resource function post subscriptions(@http:Header string? 'x\-wso2\-tenant, @http:Payload Subscription payload) returns CreatedSubscription|AcceptedWorkflowResponse|BadRequestError|UnsupportedMediaTypeError|InternalServerErrorError|error {
-        string?|Subscription|error subscription = check addSubscription(payload, "carbon.super", "apkuser");
-        if subscription is string {
-            json j = check value:fromJsonString(subscription);
-            CreatedSubscription createdSub = {body: check j.cloneWithType(Subscription)};
-            return createdSub;
-        } else if subscription is Subscription  {
+    isolated resource function post subscriptions(@http:Header string? 'x\-wso2\-tenant, @http:Payload Subscription payload) returns CreatedSubscription|AcceptedWorkflowResponse|BadRequestError|NotFoundError|InternalServerErrorError|error|json {
+        Subscription|APKError|NotFoundError|error subscription = addSubscription(payload, "carbon.super", "apkuser");
+        if subscription is APKError {
+            return handleAPKError(subscription);
+        } else {
+            if subscription is Subscription {
             CreatedSubscription createdSub = {body: check subscription.cloneWithType(Subscription)};
             log:printDebug(subscription.toString());
             return createdSub;
-        } else {
-            InternalServerErrorError internalError = {body: {code: 90921, message: "Internal Error while adding Subscription"}};
-            return internalError;
+            } else if subscription is NotFoundError|error {
+                return subscription;
+            }
         }
+        return {};
     }
-    isolated resource function post subscriptions/multiple(@http:Header string? 'x\-wso2\-tenant, @http:Payload Subscription[] payload) returns Subscription[]|BadRequestError|UnsupportedMediaTypeError|InternalServerErrorError|error {
-        Subscription[]|error? subscriptions = check addMultipleSubscriptions(payload, "carbon.super", "apkuser");
-        if subscriptions is Subscription[]  {
+    isolated resource function post subscriptions/multiple(@http:Header string? 'x\-wso2\-tenant, @http:Payload Subscription[] payload) returns Subscription[]|BadRequestError|UnsupportedMediaTypeError|NotFoundError|InternalServerErrorError|error {
+        Subscription[]|APKError|NotFoundError subscriptions = check addMultipleSubscriptions(payload, "carbon.super", "apkuser");
+        if subscriptions is Subscription[]|NotFoundError  {
             log:printDebug(subscriptions.toString());
             return subscriptions;
         } else {
-            InternalServerErrorError internalError = {body: {code: 90921, message: "Internal Error while adding Subscriptions"}};
-            return internalError;
+            return handleAPKError(subscriptions);
         }
     }
     // resource function get subscriptions/[string apiId]/additionalInfo(string? groupId, @http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match, int offset = 0, int 'limit = 25) returns AdditionalSubscriptionInfoList|http:NotFound {
     // }
-    isolated resource function get subscriptions/[string subscriptionId](@http:Header string? 'if\-none\-match) returns Subscription|http:NotModified|NotFoundError|InternalServerErrorError|error {
-        string?|Subscription|error subscription = check getSubscriptionById(subscriptionId, "carbon.super");
-        if subscription  is string {
-            json j = check value:fromJsonString(subscription );
-            Subscription sub = check j.cloneWithType(Subscription);
-            log:printDebug(sub.toString());
-            return sub;
-        } else if subscription is Subscription {
+    isolated resource function get subscriptions/[string subscriptionId](@http:Header string? 'if\-none\-match) returns Subscription|http:NotModified|NotFoundError|BadRequestError|InternalServerErrorError|error {
+        Subscription|APKError|NotFoundError subscription = getSubscriptionById(subscriptionId, "carbon.super");
+        if subscription is Subscription|NotFoundError {
             log:printDebug(subscription.toString());
             return subscription;
         } else {
-            InternalServerErrorError internalError = {body: {code: 90922, message: "Internal Error while retrieving Subscription By Id"}};
-            return internalError;
+            return handleAPKError(subscription);
         }
     }
-    isolated resource function put subscriptions/[string subscriptionId](@http:Header string? 'x\-wso2\-tenant, @http:Payload Subscription payload) returns Subscription|AcceptedWorkflowResponse|http:NotModified|BadRequestError|NotFoundError|http:UnsupportedMediaType|InternalServerErrorError|error {
-        string?|Subscription|NotFoundError|error subscription = check updateSubscription(subscriptionId, payload, "carbon.super", "apkuser");
-        if subscription is string {
-            json j = check value:fromJsonString(subscription);
-            Subscription updatedSub = check j.cloneWithType(Subscription);
-            return updatedSub;
-        } else if subscription is Subscription  {
+    isolated resource function put subscriptions/[string subscriptionId](@http:Header string? 'x\-wso2\-tenant, @http:Payload Subscription payload) returns Subscription|AcceptedWorkflowResponse|http:NotModified|BadRequestError|NotFoundError|http:UnsupportedMediaType|InternalServerErrorError|error|json {
+        Subscription|NotFoundError|APKError|error subscription = check updateSubscription(subscriptionId, payload, "carbon.super", "apkuser");
+        if subscription is Subscription|NotFoundError  {
             log:printDebug(subscription.toString());
             return subscription;
-        } else {
-            InternalServerErrorError internalError = {body: {code: 90921, message: "Internal Error while updating Subscription Tier"}};
-            return internalError;
+        } else if subscription is APKError {
+            return handleAPKError(subscription);
         }
     }
-    isolated resource function delete subscriptions/[string subscriptionId](@http:Header string? 'if\-match) returns http:Ok|AcceptedWorkflowResponse|NotFoundError|PreconditionFailedError|InternalServerErrorError|error{
+    isolated resource function delete subscriptions/[string subscriptionId](@http:Header string? 'if\-match) returns http:Ok|AcceptedWorkflowResponse|NotFoundError|PreconditionFailedError|BadRequestError|InternalServerErrorError|error{
         string organization = "carbon.super";
-        string|error? response = check deleteSubscription(subscriptionId,organization);
-        if response is error {
-            InternalServerErrorError internalError = {body: {code: 90923, message: "Internal Error while deleting Subscription By Id"}};
-            return internalError;
+        string|APKError response = deleteSubscription(subscriptionId,organization);
+        if response is APKError {
+            return handleAPKError(response);
         } else {
             return http:OK;
         }
@@ -316,13 +265,12 @@ service /api/am/devportal on ep0 {
     // }
     // resource function get search(@http:Header string? 'x\-wso2\-tenant, string? query, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0) returns SearchResultList|http:NotModified|NotAcceptableError {
     // }
-    isolated resource function get 'sdk\-gen/languages() returns json|NotFoundError|InternalServerErrorError|error {
-        string|json|error sdkLanguages = check getSDKLanguages();
+    isolated resource function get 'sdk\-gen/languages() returns json|NotFoundError|InternalServerErrorError|BadRequestError|APKError {
+        string|json|APKError sdkLanguages = check getSDKLanguages();
         if sdkLanguages is string|json {
             return sdkLanguages;
         } else {
-            InternalServerErrorError internalError = {body: {code: 90931, message: "Internal Error while retrieving supported SDK languages"}};
-            return internalError;
+            return handleAPKError(sdkLanguages);
         }
     }
     // resource function get webhooks/subscriptions(string? applicationId, string? apiId, @http:Header string? 'x\-wso2\-tenant) returns WebhookSubscriptionList|NotFoundError|InternalServerErrorError {
@@ -345,4 +293,15 @@ service /api/am/devportal on ep0 {
     // }
     // resource function post me/'change\-password(@http:Payload CurrentAndNewPasswords payload) returns http:Ok|BadRequestError {
     // }
+
+}
+
+isolated function handleAPKError(APKError errorDetail) returns InternalServerErrorError|BadRequestError {
+    ErrorHandler & readonly detail = errorDetail.detail();
+    if detail.statusCode=="400" {
+        BadRequestError badRequest = {body: {code: detail.code, message: detail.message}};
+        return badRequest;
+    }
+    InternalServerErrorError internalServerError = {body: {code: detail.code, message: detail.message}};
+    return internalServerError;
 }

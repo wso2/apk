@@ -60,10 +60,10 @@ function addApplicationTest() {
 function getApplicationByIdTest(){
     Application app = {name:"sampleApp",throttlingPolicy:"30PerMin",description: "sample application",applicationId: "12sqwsq"};
     test:when(getApplicationByIdDAOMock).thenReturn(app);
-    string?|Application|error returnedResponse = getApplicationById("12sqwsq","carbon.super");
+    Application|APKError|NotFoundError returnedResponse = getApplicationById("12sqwsq","carbon.super");
     if returnedResponse is Application {
     test:assertTrue(true, "Successfully retrieved application");
-    } else if returnedResponse is  error {
+    } else if returnedResponse is  APKError|NotFoundError {
         test:assertFail("Error occured while retrieving application");
     }
 }
@@ -136,7 +136,7 @@ function generateAPIKeyTest(){
     "qXevZIdvWOm0qapK3hUFwK4uwxp_6qvTcwNOxGm1CoLv0JC-t2ds9EfkbI0qpWEjwJMFQqfgTLEZGT7I1m0re253Xv3Mg3I-eLtV9HcC2FA";
     test:when(generateTokenMock).thenReturn(token);
 
-    APIKey|error key = generateAPIKey(payload, "01ed716f-9f85-1ade-b634-be97dee7ceb4", "PRODUCTION", "apkuser", "carbon.super");
+    APIKey|APKError|NotFoundError key = generateAPIKey(payload, "01ed716f-9f85-1ade-b634-be97dee7ceb4", "PRODUCTION", "apkuser", "carbon.super");
     if key is APIKey {
     test:assertTrue(true, "API Key Successfully Generated");
     } else {

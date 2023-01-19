@@ -33,10 +33,10 @@ test:MockFunction getAPIDefinitionDAOMock = new();
 function getAPIByIdTest(){
     API api = {name: "MyAPI1", context: "/myapi", 'version: "1.0", provider: "apkuser", lifeCycleStatus: "PUBLISHED"};
     test:when(getAPIByIdDAOMock).thenReturn(api);
-    string?|API|error apiResponse = getAPIByIdDAO("12sqwsqadasd","carbon.super");
+    API|APKError|NotFoundError apiResponse = getAPIByIdDAO("12sqwsqadasd","carbon.super");
     if apiResponse is API {
     test:assertTrue(true, "Successfully retrieved API");
-    } else if apiResponse is  error {
+    } else if apiResponse is  APKError {
         test:assertFail("Error occured while retrieving API");
     }
 }
@@ -84,11 +84,13 @@ function getAPIDefinitionByIdNegativeTest(){
 
 @test:Config {}
 function getAPIDefinitionByIdNegative2Test(){
-    test:when(getAPIDefinitionDAOMock).thenReturn(error("Internal Error while retrieving API Definition"));
-    APIDefinition|NotFoundError|error apiDefResponse = getAPIDefinition("12sqwsqadasd","carbon.super");
+    string message = "Internal Error while retrieving API Definition";
+    APKError e = error(message, message = message, description = message, code = 90911, statusCode = "500");
+    test:when(getAPIDefinitionDAOMock).thenReturn(e);
+    APIDefinition|NotFoundError|APKError apiDefResponse = getAPIDefinition("12sqwsqadasd","carbon.super");
     if apiDefResponse is APIDefinition {
         test:assertFail("Successfully retrieved API Definition");
-    } else if apiDefResponse is  error {
+    } else if apiDefResponse is APKError {
         test:assertTrue(true,"Error occured while retrieving API");
     } else if apiDefResponse is  NotFoundError {
         test:assertFail("Definition Not Found Error");
@@ -110,10 +112,10 @@ function generateSDKImplTest(){
     "ion\":\"0.1.9\"}}"};
     test:when(getAPIDefinitionDAOMock).thenReturn(apiDefinition);
 
-    string?|http:Response|sdk:APIClientGenerationException|error sdk = generateSDKImpl("12sqwsqadasd","java","carbon.super");
+    http:Response|sdk:APIClientGenerationException|NotFoundError|APKError sdk = generateSDKImpl("12sqwsqadasd","java","carbon.super");
     if sdk is http:Response {
         test:assertTrue(true, "Successfully generated API SDK");
-    } else if sdk is sdk:APIClientGenerationException|error {
+    } else if sdk is sdk:APIClientGenerationException|APKError{
         test:assertFail("Error while generating API SDK");
     }
 }
@@ -127,10 +129,10 @@ function generateSDKImplTestNegative(){
     APIDefinition apiDefinition = {'type: "swagger",schemaDefinition: ""};
     test:when(getAPIDefinitionDAOMock).thenReturn(apiDefinition);
 
-    string?|http:Response|sdk:APIClientGenerationException|error sdk = generateSDKImpl("12sqwsqadasd","java","carbon.super");
+    http:Response|sdk:APIClientGenerationException|NotFoundError|APKError sdk = generateSDKImpl("12sqwsqadasd","java","carbon.super");
     if sdk is http:Response {
         test:assertFail("Successfully generated API SDK");
-    } else if sdk is sdk:APIClientGenerationException|error {
+    } else if sdk is sdk:APIClientGenerationException|APKError {
         test:assertTrue(true,"Error while generating API SDK");
     }
 }
