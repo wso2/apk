@@ -16,10 +16,9 @@
 // under the License.
 //
 
-import ballerina/log;
 import ballerina/uuid;
 
-isolated function addApplicationUsagePlan(ApplicationRatePlan body) returns string?|ApplicationRatePlan|error {
+isolated function addApplicationUsagePlan(ApplicationRatePlan body) returns ApplicationRatePlan|APKError {
     string policyId = uuid:createType1AsString();
     body.planId = policyId;
     match body.defaultLimit.'type {
@@ -33,18 +32,18 @@ isolated function addApplicationUsagePlan(ApplicationRatePlan body) returns stri
             body.defaultLimit.'type = "eventCount";
         }
     }
-    string?|ApplicationRatePlan|error policy = addApplicationUsagePlanDAO(body);
+    ApplicationRatePlan|APKError policy = addApplicationUsagePlanDAO(body);
     return policy;
 }
 
-isolated function getApplicationUsagePlanById(string policyId) returns string?|ApplicationRatePlan|error {
-    string?|ApplicationRatePlan|error policy = getApplicationUsagePlanByIdDAO(policyId);
+isolated function getApplicationUsagePlanById(string policyId) returns ApplicationRatePlan|APKError|NotFoundError {
+    ApplicationRatePlan|APKError|NotFoundError policy = getApplicationUsagePlanByIdDAO(policyId);
     return policy;
 }
 
-isolated function getApplicationUsagePlans() returns string?|ApplicationRatePlanList|error {
+isolated function getApplicationUsagePlans() returns ApplicationRatePlanList|APKError {
     string org = "carbon.super";
-    ApplicationRatePlan[]|error? usagePlans = getApplicationUsagePlansDAO(org);
+    ApplicationRatePlan[]|APKError usagePlans = getApplicationUsagePlansDAO(org);
     if usagePlans is ApplicationRatePlan[] {
         int count = usagePlans.length();
         ApplicationRatePlanList usagePlansList = {count: count, list: usagePlans};
@@ -54,15 +53,13 @@ isolated function getApplicationUsagePlans() returns string?|ApplicationRatePlan
     }
 }
 
-isolated function updateApplicationUsagePlan(string policyId, ApplicationRatePlan body) returns string?|ApplicationRatePlan|NotFoundError|error {
-    string?|ApplicationRatePlan|error existingPolicy = getApplicationUsagePlanByIdDAO(policyId);
+isolated function updateApplicationUsagePlan(string policyId, ApplicationRatePlan body) returns ApplicationRatePlan|NotFoundError|APKError {
+    ApplicationRatePlan|APKError|NotFoundError existingPolicy = getApplicationUsagePlanByIdDAO(policyId);
     if existingPolicy is ApplicationRatePlan {
         body.planId = policyId;
         //body.policyName = existingPolicy.name;
     } else {
-        Error err = {code:9010101, message:"Policy Not Found"};
-        NotFoundError nfe = {body: err};
-        return nfe;
+        return existingPolicy;
     }
 
     match body.defaultLimit.'type {
@@ -76,16 +73,16 @@ isolated function updateApplicationUsagePlan(string policyId, ApplicationRatePla
             body.defaultLimit.'type = "eventCount";
         }
     }
-    string?|ApplicationRatePlan|error policy = updateApplicationUsagePlanDAO(body);
+    ApplicationRatePlan|APKError policy = updateApplicationUsagePlanDAO(body);
     return policy;
 }
 
-isolated function removeApplicationUsagePlan(string policyId) returns error?|string {
-    error?|string status = deleteApplicationUsagePlanDAO(policyId);
+isolated function removeApplicationUsagePlan(string policyId) returns APKError|string {
+    APKError|string status = deleteApplicationUsagePlanDAO(policyId);
     return status;
 }
 
-isolated function addBusinessPlan(BusinessPlan body) returns string?|BusinessPlan|error {
+isolated function addBusinessPlan(BusinessPlan body) returns BusinessPlan|APKError {
     string policyId = uuid:createType1AsString();
     body.planId = policyId;
     match body.defaultLimit.'type {
@@ -99,18 +96,18 @@ isolated function addBusinessPlan(BusinessPlan body) returns string?|BusinessPla
             body.defaultLimit.'type = "eventCount";
         }
     }
-    string?|BusinessPlan|error policy = addBusinessPlanDAO(body);
+    BusinessPlan|APKError policy = addBusinessPlanDAO(body);
     return policy;
 }
 
-isolated function getBusinessPlanById(string policyId) returns string?|BusinessPlan|error {
-    string?|BusinessPlan|error policy = getBusinessPlanByIdDAO(policyId);
+isolated function getBusinessPlanById(string policyId) returns BusinessPlan|APKError|NotFoundError {
+    BusinessPlan|APKError|NotFoundError policy = getBusinessPlanByIdDAO(policyId);
     return policy;
 }
 
-isolated function getBusinessPlans() returns string?|BusinessPlanList|error {
+isolated function getBusinessPlans() returns BusinessPlanList|APKError {
     string org = "carbon.super";
-    BusinessPlan[]|error? businessPlans = getBusinessPlansDAO(org);
+    BusinessPlan[]|APKError businessPlans = getBusinessPlansDAO(org);
     if businessPlans is BusinessPlan[] {
         int count = businessPlans.length();
         BusinessPlanList BusinessPlansList = {count: count, list: businessPlans};
@@ -120,17 +117,14 @@ isolated function getBusinessPlans() returns string?|BusinessPlanList|error {
     }
 }
 
-isolated function updateBusinessPlan(string policyId, BusinessPlan body) returns string?|BusinessPlan|NotFoundError|error {
-    string?|BusinessPlan|error existingPolicy = getBusinessPlanByIdDAO(policyId);
+isolated function updateBusinessPlan(string policyId, BusinessPlan body) returns BusinessPlan|NotFoundError|APKError {
+    BusinessPlan|APKError|NotFoundError existingPolicy = getBusinessPlanByIdDAO(policyId);
     if existingPolicy is BusinessPlan {
         body.planId = policyId;
         //body.policyName = existingPolicy.name;
     } else {
-        Error err = {code:9010101, message:"Policy Not Found"};
-        NotFoundError nfe = {body: err};
-        return nfe;
+       return existingPolicy;
     }
-
     match body.defaultLimit.'type {
         "REQUESTCOUNTLIMIT" => {
             body.defaultLimit.'type = "requestCount";
@@ -142,16 +136,16 @@ isolated function updateBusinessPlan(string policyId, BusinessPlan body) returns
             body.defaultLimit.'type = "eventCount";
         }
     }
-    string?|BusinessPlan|error policy = updateBusinessPlanDAO(body);
+    BusinessPlan|APKError policy = updateBusinessPlanDAO(body);
     return policy;
 }
 
-isolated function removeBusinessPlan(string policyId) returns error?|string {
-    error?|string status = deleteBusinessPlanDAO(policyId);
+isolated function removeBusinessPlan(string policyId) returns APKError|string {
+    APKError|string status = deleteBusinessPlanDAO(policyId);
     return status;
 }
 
-isolated function addDenyPolicy(BlockingCondition body) returns string?|BlockingCondition|error {
+isolated function addDenyPolicy(BlockingCondition body) returns BlockingCondition|APKError {
     string policyId = uuid:createType1AsString();
     body.policyId = policyId;
     //Todo : need to validate each type
@@ -167,42 +161,39 @@ isolated function addDenyPolicy(BlockingCondition body) returns string?|Blocking
         "USER" => {
         }
     }
-    string?|BlockingCondition|error policy = addDenyPolicyDAO(body);
+    BlockingCondition|APKError policy = addDenyPolicyDAO(body);
     return policy;
 }
 
-isolated function getDenyPolicyById(string policyId) returns string?|BlockingCondition|error {
-    string?|BlockingCondition|error policy = getDenyPolicyByIdDAO(policyId);
+isolated function getDenyPolicyById(string policyId) returns BlockingCondition|APKError|NotFoundError {
+    BlockingCondition|APKError|NotFoundError policy = getDenyPolicyByIdDAO(policyId);
     return policy;
 }
 
-isolated function getAllDenyPolicies() returns string?|BlockingConditionList|error {
+isolated function getAllDenyPolicies() returns BlockingConditionList|APKError {
     string org = "carbon.super";
-    BlockingCondition[]|error? denyPolicies = getDenyPoliciesDAO(org);
+    BlockingCondition[]|APKError denyPolicies = getDenyPoliciesDAO(org);
     if denyPolicies is BlockingCondition[] {
         int count = denyPolicies.length();
         BlockingConditionList denyPoliciesList = {count: count, list: denyPolicies};
         return denyPoliciesList;
     } else {
-        log:printError("Error");
-        return error("Error while retrieving all deny polcies from DB");
+       return denyPolicies;
     }
 }
 
-isolated function updateDenyPolicy(string policyId, BlockingConditionStatus status) returns string?|BlockingCondition|NotFoundError|error {
-    string?|BlockingCondition|error existingPolicy = getDenyPolicyByIdDAO(policyId);
+isolated function updateDenyPolicy(string policyId, BlockingConditionStatus status) returns BlockingCondition|NotFoundError|APKError {
+    BlockingCondition|APKError|NotFoundError existingPolicy = getDenyPolicyByIdDAO(policyId);
     if existingPolicy !is BlockingCondition {
-        Error err = {code:9010101, message:"Policy Not Found"};
-        NotFoundError nfe = {body: err};
-        return nfe;
+        return existingPolicy;
     } else {
         status.policyId = policyId;
     }
-    string?|error response = updateDenyPolicyDAO(status);
-    if response is error {
+    string|APKError response = updateDenyPolicyDAO(status);
+    if response is APKError{
         return response;
     }
-    string?|BlockingCondition|error updatedPolicy = getDenyPolicyByIdDAO(policyId);
+    BlockingCondition|APKError|NotFoundError updatedPolicy = getDenyPolicyByIdDAO(policyId);
     if updatedPolicy is BlockingCondition {
         return updatedPolicy;
     } else {
@@ -210,8 +201,8 @@ isolated function updateDenyPolicy(string policyId, BlockingConditionStatus stat
     }
 }
 
-isolated function removeDenyPolicy(string policyId) returns error?|string {
-    error?|string status = deleteDenyPolicyDAO(policyId);
+isolated function removeDenyPolicy(string policyId) returns APKError|string {
+    APKError|string status = deleteDenyPolicyDAO(policyId);
     return status;
 }
 

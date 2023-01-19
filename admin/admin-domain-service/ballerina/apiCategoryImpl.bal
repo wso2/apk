@@ -18,15 +18,18 @@
 
 import ballerina/uuid;
 
-isolated function addAPICategory(APICategory payload) returns CreatedAPICategory|error {
+isolated function addAPICategory(APICategory payload) returns CreatedAPICategory|APKError {
     string org = "carbon.super";
-    boolean|error existingCategory = checkAPICategoryExistsByNameDAO(payload.name, org);
-    if existingCategory is true {
-        return error("API Category already exists by name:"+ payload.name);
+    boolean|APKError existingCategory = checkAPICategoryExistsByNameDAO(payload.name, org);
+    if existingCategory is APKError {
+        return existingCategory;
+    } else if existingCategory is true {
+        string message = "API Category already exists by name:" + payload.name;
+        return error(message, message = message, description = message, code = 90911, statusCode = "400");
     }
     string categoryId = uuid:createType1AsString();
     payload.id = categoryId;
-    APICategory|error category = addAPICategoryDAO(payload, org);
+    APICategory|APKError category = addAPICategoryDAO(payload, org);
     if category is APICategory {
         category.numberOfAPIs = 0;
         CreatedAPICategory createdCategory = {body: category};
@@ -36,9 +39,9 @@ isolated function addAPICategory(APICategory payload) returns CreatedAPICategory
     }
 }
 
-isolated function getAllCategoryList() returns APICategoryList|error {
+isolated function getAllCategoryList() returns APICategoryList|APKError {
     string org = "carbon.super";
-    APICategory[]|error categories = getAPICategoriesDAO(org);
+    APICategory[]|APKError categories = getAPICategoriesDAO(org);
     if categories is APICategory[] {
         int count = categories.length();
         if (count > 0) {
@@ -56,25 +59,28 @@ isolated function getAllCategoryList() returns APICategoryList|error {
     }
 }
 
-isolated function updateAPICategory(string id, APICategory body) returns APICategory|NotFoundError|error {
+isolated function updateAPICategory(string id, APICategory body) returns APICategory|NotFoundError|APKError {
     string org = "carbon.super";
-    APICategory|error existingAPICategory = getAPICategoryByIdDAO(id, org);
+    APICategory|APKError|NotFoundError existingAPICategory = getAPICategoryByIdDAO(id, org);
     if existingAPICategory !is APICategory {
-        Error err = {code:9010101, message:"API Category Not Found"};
-        NotFoundError nfe = {body: err};
-        return nfe;
+        return existingAPICategory;
     } else {
         body.id = id;
         string existingName = existingAPICategory.name;
         if (existingName != body.name) {
-            boolean|error existingCategory = checkAPICategoryExistsByNameDAO(body.name, org);
+            boolean|APKError existingCategory = checkAPICategoryExistsByNameDAO(body.name, org);
+            if existingCategory is APKError {
+                return existingCategory;
+            }
             //We allow to update API Category name given that the new category name is not taken yet
             if existingCategory is true {
-                return error("API Category already exists by name:"+ body.name);
+                string message = "API Category already exists by name:"+ body.name;
+                APKError e = error(message, message = message, description = message, code = 90911, statusCode = "400");
+                return e;
             }
         } 
     }
-    APICategory|error response = updateAPICategoryDAO(body, org);
+    APICategory|APKError response = updateAPICategoryDAO(body, org);
     if response is APICategory {
         //TODO:(Sampath) need to properly retrieve attached api count per category 
         //int count = isCategoryAttached(apiCategory.name);
@@ -84,8 +90,8 @@ isolated function updateAPICategory(string id, APICategory body) returns APICate
     return response;
 }
 
-isolated function removeAPICategory(string id) returns string|error? {
+isolated function removeAPICategory(string id) returns string|APKError {
     string org = "carbon.super";
-    error?|string status = deleteAPICategoryDAO(id, org);
+    APKError|string status = deleteAPICategoryDAO(id, org);
     return status;
 }
