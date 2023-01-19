@@ -127,13 +127,13 @@ function pathProvider() returns map<[string, string, string, string]>|error {
     map<[string, string, string, string]> dataSet = {
         "1": ["/abc/1.0.0", "1.0.0", "/abc", "/abc/1.0.0/abc"],
         "2": ["/abc", "1.0.0", "/abc", "/abc/1.0.0/abc"],
-        "3": ["/abc", "1.0.0", "/*", "/abc/1.0.0"],
-        "4": ["/abc/1.0.0", "1.0.0", "/*", "/abc/1.0.0"],
-        "5": ["/abc/1.0.0", "1.0.0", "/{path}/abcd", "/abc/1.0.0/.*/abcd"],
-        "6": ["/abc/1.0.0", "1.0.0", "/path1/{bcd}", "/abc/1.0.0/path1/.*"],
-        "7": ["/abc/1.0.0", "1.0.0", "/path1/{bcd}/path2", "/abc/1.0.0/path1/.*/path2"],
-        "8": ["/abc/1.0.0", "1.0.0", "/path1/{bcd}/{pathparam2}", "/abc/1.0.0/path1/.*/.*"],
-        "9": ["/abc", "1.0.0", "/path1/*", "/abc/1.0.0/path1"]
+        "3": ["/abc", "1.0.0", "/*", "/abc/1.0.0(.*)"],
+        "4": ["/abc/1.0.0", "1.0.0", "/*", "/abc/1.0.0(.*)"],
+        "5": ["/abc/1.0.0", "1.0.0", "/{path}/abcd", "/abc/1.0.0/(.*)/abcd"],
+        "6": ["/abc/1.0.0", "1.0.0", "/path1/{bcd}", "/abc/1.0.0/path1/(.*)"],
+        "7": ["/abc/1.0.0", "1.0.0", "/path1/{bcd}/path2", "/abc/1.0.0/path1/(.*)/path2"],
+        "8": ["/abc/1.0.0", "1.0.0", "/path1/{bcd}/{pathparam2}", "/abc/1.0.0/path1/(.*)/(.*)"],
+        "9": ["/abc", "1.0.0", "/path1/*", "/abc/1.0.0/path1(.*)"]
     };
     return dataSet;
 }
@@ -229,11 +229,12 @@ public function testGeneratePrefixMatch(API api, model:Endpoint endpoint, APIOpe
 
 function prefixMatchDataProvider() returns map<[API, model:Endpoint, APIOperations, string]> {
     map<[API, model:Endpoint, APIOperations, string]> dataSet = {
-        "1": [{name: "pizzaAPI", context: "/pizza1234", 'version: "1.0.0"}, {name: "service1", namespace: "apk-platform", port: 443, serviceEntry: false, url: "https://run.mocky.io/v3/f77cc767"}, {target: "/order/{orderId}", verb: "POST"}, "/v3/f77cc767/order"],
+        "1": [{name: "pizzaAPI", context: "/pizza1234", 'version: "1.0.0"}, {name: "service1", namespace: "apk-platform", port: 443, serviceEntry: false, url: "https://run.mocky.io/v3/f77cc767"}, {target: "/order/{orderId}", verb: "POST"}, "/v3/f77cc767/order/\\1"],
         "2": [{name: "pizzaAPI", context: "/pizza1234", 'version: "1.0.0"}, {name: "service1", namespace: "apk-platform", port: 443, serviceEntry: false, url: "https://run.mocky.io/v3/f77cc767"}, {target: "/menu", verb: "GET"}, "/v3/f77cc767/menu"],
         "3": [{name: "pizzaAPI", context: "/pizza1234", 'version: "1.0.0"}, {name: "service1", namespace: "apk-platform", port: 443, serviceEntry: false, url: "https://run.mocky.io/v3/f77cc767/"}, {target: "/menu", verb: "GET"}, "/v3/f77cc767/menu"],
-        "4": [{name: "pizzaAPI", context: "/pizza1234", 'version: "1.0.0"}, {name: "service1", namespace: "apk-platform", port: 443, serviceEntry: false, url: "https://run.mocky.io/v3/f77cc767/"}, {target: "/*", verb: "GET"}, "/v3/f77cc767/"],
-        "5": [{name: "pizzaAPI", context: "/pizza1234", 'version: "1.0.0"}, {name: "service1", namespace: "apk-platform", port: 443, serviceEntry: true, url: "https://run.mocky.io/v3/f77cc767/"}, {target: "/*", verb: "GET"}, "/"]
+        "4": [{name: "pizzaAPI", context: "/pizza1234", 'version: "1.0.0"}, {name: "service1", namespace: "apk-platform", port: 443, serviceEntry: false, url: "https://run.mocky.io/v3/f77cc767/"}, {target: "/*", verb: "GET"}, "/v3/f77cc767/\\1"],
+        "5": [{name: "pizzaAPI", context: "/pizza1234", 'version: "1.0.0"}, {name: "service1", namespace: "apk-platform", port: 443, serviceEntry: true, url: "https://run.mocky.io/v3/f77cc767/"}, {target: "/*", verb: "GET"}, "\\1"],
+        "6": [{name: "pizzaAPI", context: "/pizza1234", 'version: "1.0.0"}, {name: "service1", namespace: "apk-platform", port: 443, serviceEntry: false, url: "https://run.mocky.io/v3/f77cc767"}, {target: "/order/{orderId}/details/{item}", verb: "GET"}, "/v3/f77cc767/order/\\1/details/\\2"]
     };
     return dataSet;
 }
@@ -1123,28 +1124,28 @@ function getMockHttpRoute(API api, string apiUUID) returns model:Httproute {
             "hostnames": ["gw.wso2.com"],
             "rules": [
                 {
-                    "matches": [{"path": {"type": "PathPrefix", "value": "/pizzaAPI/1.0.0"}, "method": "GET"}],
-                    "filters": [{"type": "URLRewrite", "urlRewrite": {"path": {"type": "ReplacePrefixMatch", "replacePrefixMatch": "/"}}}],
+                    "matches": [{"path": {"type": "RegularExpression", "value": "/pizzaAPI/1.0.0(.*)"}, "method": "GET"}],
+                    "filters": [{"type": "URLRewrite", "urlRewrite": {"path": {"type": "ReplaceFullPath", "replaceFullPath": "\\1"}}}],
                     "backendRefs": [{"weight": 1, "group": "", "kind": "Service", "name": "backend", "namespace": "apk", "port": 80}]
                 },
                 {
-                    "matches": [{"path": {"type": "PathPrefix", "value": "/pizzaAPI/1.0.0"}, "method": "PUT"}],
-                    "filters": [{"type": "URLRewrite", "urlRewrite": {"path": {"type": "ReplacePrefixMatch", "replacePrefixMatch": "/"}}}],
+                    "matches": [{"path": {"type": "RegularExpression", "value": "/pizzaAPI/1.0.0(.*)"}, "method": "PUT"}],
+                    "filters": [{"type": "URLRewrite", "urlRewrite": {"path": {"type": "ReplaceFullPath", "replaceFullPath": "\\1"}}}],
                     "backendRefs": [{"weight": 1, "group": "", "kind": "Service", "name": "backend", "namespace": "apk", "port": 80}]
                 },
                 {
-                    "matches": [{"path": {"type": "PathPrefix", "value": "/pizzaAPI/1.0.0"}, "method": "POST"}],
-                    "filters": [{"type": "URLRewrite", "urlRewrite": {"path": {"type": "ReplacePrefixMatch", "replacePrefixMatch": "/"}}}],
+                    "matches": [{"path": {"type": "RegularExpression", "value": "/pizzaAPI/1.0.0(.*)"}, "method": "POST"}],
+                    "filters": [{"type": "URLRewrite", "urlRewrite": {"path": {"type": "ReplaceFullPath", "replaceFullPath": "\\1"}}}],
                     "backendRefs": [{"weight": 1, "group": "", "kind": "Service", "name": "backend", "namespace": "apk", "port": 80}]
                 },
                 {
-                    "matches": [{"path": {"type": "PathPrefix", "value": "/pizzaAPI/1.0.0"}, "method": "DELETE"}],
-                    "filters": [{"type": "URLRewrite", "urlRewrite": {"path": {"type": "ReplacePrefixMatch", "replacePrefixMatch": "/"}}}],
+                    "matches": [{"path": {"type": "RegularExpression", "value": "/pizzaAPI/1.0.0(.*)"}, "method": "DELETE"}],
+                    "filters": [{"type": "URLRewrite", "urlRewrite": {"path": {"type": "ReplaceFullPath", "replaceFullPath": "\\1"}}}],
                     "backendRefs": [{"weight": 1, "group": "", "kind": "Service", "name": "backend", "namespace": "apk", "port": 80}]
                 },
                 {
-                    "matches": [{"path": {"type": "PathPrefix", "value": "/pizzaAPI/1.0.0"}, "method": "PATCH"}],
-                    "filters": [{"type": "URLRewrite", "urlRewrite": {"path": {"type": "ReplacePrefixMatch", "replacePrefixMatch": "/"}}}],
+                    "matches": [{"path": {"type": "RegularExpression", "value": "/pizzaAPI/1.0.0(.*)"}, "method": "PATCH"}],
+                    "filters": [{"type": "URLRewrite", "urlRewrite": {"path": {"type": "ReplaceFullPath", "replaceFullPath": "\\1"}}}],
                     "backendRefs": [{"weight": 1, "group": "", "kind": "Service", "name": "backend", "namespace": "apk", "port": 80}]
                 }
             ],
@@ -1248,8 +1249,8 @@ function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid
                     "matches": [
                         {
                             "path": {
-                                "type": "PathPrefix",
-                                "value": "/pizzaAPI/1.0.0"
+                                "type": "RegularExpression",
+                                "value": "/pizzaAPI/1.0.0(.*)"
                             },
                             "method": "GET"
                         }
@@ -1259,8 +1260,8 @@ function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid
                             "type": "URLRewrite",
                             "urlRewrite": {
                                 "path": {
-                                    "type": "ReplacePrefixMatch",
-                                    "replacePrefixMatch": "/"
+                                    "type": "ReplaceFullPath",
+                                    "replaceFullPath": "\\1"
                                 }
                             }
                         },
@@ -1291,8 +1292,8 @@ function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid
                     "matches": [
                         {
                             "path": {
-                                "type": "PathPrefix",
-                                "value": "/pizzaAPI/1.0.0"
+                                "type": "RegularExpression",
+                                "value": "/pizzaAPI/1.0.0(.*)"
                             },
                             "method": "PUT"
                         }
@@ -1302,8 +1303,8 @@ function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid
                             "type": "URLRewrite",
                             "urlRewrite": {
                                 "path": {
-                                    "type": "ReplacePrefixMatch",
-                                    "replacePrefixMatch": "/"
+                                    "type": "ReplaceFullPath",
+                                    "replaceFullPath": "\\1"
                                 }
                             }
                         },
@@ -1334,8 +1335,8 @@ function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid
                     "matches": [
                         {
                             "path": {
-                                "type": "PathPrefix",
-                                "value": "/pizzaAPI/1.0.0"
+                                "type": "RegularExpression",
+                                "value": "/pizzaAPI/1.0.0(.*)"
                             },
                             "method": "POST"
                         }
@@ -1345,8 +1346,8 @@ function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid
                             "type": "URLRewrite",
                             "urlRewrite": {
                                 "path": {
-                                    "type": "ReplacePrefixMatch",
-                                    "replacePrefixMatch": "/"
+                                    "type": "ReplaceFullPath",
+                                    "replaceFullPath": "\\1"
                                 }
                             }
                         },
@@ -1377,8 +1378,8 @@ function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid
                     "matches": [
                         {
                             "path": {
-                                "type": "PathPrefix",
-                                "value": "/pizzaAPI/1.0.0"
+                                "type": "RegularExpression",
+                                "value": "/pizzaAPI/1.0.0(.*)"
                             },
                             "method": "DELETE"
                         }
@@ -1388,8 +1389,8 @@ function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid
                             "type": "URLRewrite",
                             "urlRewrite": {
                                 "path": {
-                                    "type": "ReplacePrefixMatch",
-                                    "replacePrefixMatch": "/"
+                                    "type": "ReplaceFullPath",
+                                    "replaceFullPath": "\\1"
                                 }
                             }
                         },
@@ -1420,8 +1421,8 @@ function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid
                     "matches": [
                         {
                             "path": {
-                                "type": "PathPrefix",
-                                "value": "/pizzaAPI/1.0.0"
+                                "type": "RegularExpression",
+                                "value": "/pizzaAPI/1.0.0(.*)"
                             },
                             "method": "PATCH"
                         }
@@ -1431,8 +1432,8 @@ function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid
                             "type": "URLRewrite",
                             "urlRewrite": {
                                 "path": {
-                                    "type": "ReplacePrefixMatch",
-                                    "replacePrefixMatch": "/"
+                                    "type": "ReplaceFullPath",
+                                    "replaceFullPath": "\\1"
                                 }
                             }
                         },

@@ -538,7 +538,7 @@ public class APIClient {
                                 return error("Invalid API Name", code = 90911, description = "API Name " + k8sAPI.spec.apiDisplayName + " Invalid", message = "Invalid API Name", statusCode = "400");
                             }
                         }
-                    return error("Invalid API Request", code = 90911, description = "Invalid API Request", message = "Invalid API Request", statusCode = "400");
+                        return error("Invalid API Request", code = 90911, description = "Invalid API Request", message = "Invalid API Request", statusCode = "400");
                     }
                     return self.handleK8sTimeout(statusResponse);
                 }
@@ -742,7 +742,7 @@ public class APIClient {
 
     private isolated function generateFilters(model:APIArtifact apiArtifact, API api, model:Endpoint endpoint, APIOperations operation, string endpointType) returns model:HTTPRouteFilter[] {
         model:HTTPRouteFilter[] routeFilters = [];
-        model:HTTPRouteFilter replacePathFilter = {'type: "URLRewrite", urlRewrite: {path: {'type: "ReplacePrefixMatch", replacePrefixMatch: self.generatePrefixMatch(api, endpoint, operation, endpointType)}}};
+        model:HTTPRouteFilter replacePathFilter = {'type: "URLRewrite", urlRewrite: {path: {'type: "ReplaceFullPath", replaceFullPath: self.generatePrefixMatch(api, endpoint, operation, endpointType)}}};
         routeFilters.push(replacePathFilter);
         if !endpoint.serviceEntry {
             model:HTTPRouteFilter backendHostHeaderModifierFilter = {'type: "RequestHeaderModifier", requestHeaderModifier: {add: [{name: "Host", value: self.gethost(<string>endpoint.url)}]}};
@@ -753,32 +753,39 @@ public class APIClient {
 
     isolated function generatePrefixMatch(API api, model:Endpoint endpoint, APIOperations operation, string endpointType) returns string {
         string target = operation.target ?: "/*";
+        string[] splitValues = regex:split(target, "/");
         string generatedPath = "";
-        if target == "/*" {
-            generatedPath = "/";
+        int pathparamCount = 1;
+        if (target == "/*") {
+            generatedPath = "\\1";
         } else {
-            string[] splitValues = regex:split(target, "/");
-            foreach string pathPart in splitValues {
-                if pathPart.indexOf("{", 0) >= 0 || pathPart.indexOf("*", 0) >= 0 {
-                    break;
-                }
-                if pathPart.trim().length() > 0 {
-                    generatedPath = generatedPath + "/" + pathPart;
+            foreach int i in 0 ..< splitValues.length() {
+                if splitValues[i].trim().length() > 0 {
+                    // path contains path param
+                    if regex:matches(splitValues[i], "\\{.*\\}") {
+                        generatedPath = generatedPath + "/" + regex:replaceAll(splitValues[i].trim(), "\\{.*\\}", "\\" + pathparamCount.toString());
+                        pathparamCount += 1;
+                    } else {
+                        generatedPath = generatedPath + "/" + splitValues[i];
+                    }
                 }
             }
+        }
+
+        if generatedPath.endsWith("/*") {
+            int lastSlashIndex = <int>generatedPath.lastIndexOf("/", generatedPath.length());
+            generatedPath = generatedPath.substring(0, lastSlashIndex) + "///" + pathparamCount.toString();
         }
         if endpoint.serviceEntry {
             return generatedPath.trim();
-        } else {
-            string path = self.getPath(<string>endpoint.url);
-            if path.endsWith("/") {
-                path = path.substring(0, path.length() - 1);
-            }
-            if generatedPath.startsWith("/") {
-                generatedPath = generatedPath.substring(1, generatedPath.length());
-            }
-            return path.trim() + "/" + generatedPath.trim();
         }
+        string path = self.getPath(<string>endpoint.url);
+        if path.endsWith("/") {
+            if generatedPath.startsWith("/") {
+                return path.substring(0, path.length() - 1) + generatedPath;
+            }
+        }
+        return path + generatedPath;
     }
 
     public isolated function retrievePathPrefix(string context, string 'version, string operation) returns string {
@@ -786,13 +793,13 @@ public class APIClient {
         string[] splitValues = regex:split(operation, "/");
         string generatedPath = fullContext;
         if (operation == "/*") {
-            return generatedPath;
+            return generatedPath + "(.*)";
         }
         foreach string pathPart in splitValues {
             if pathPart.trim().length() > 0 {
                 // path contains path param
                 if regex:matches(pathPart, "\\{.*\\}") {
-                    generatedPath = generatedPath + "/" + regex:replaceAll(pathPart.trim(), "\\{.*\\}", ".*");
+                    generatedPath = generatedPath + "/" + regex:replaceAll(pathPart.trim(), "\\{.*\\}", "(.*)");
                 } else {
                     generatedPath = generatedPath + "/" + pathPart;
                 }
@@ -801,7 +808,7 @@ public class APIClient {
 
         if generatedPath.endsWith("/*") {
             int lastSlashIndex = <int>generatedPath.lastIndexOf("/", generatedPath.length());
-            generatedPath = generatedPath.substring(0, lastSlashIndex);
+            generatedPath = generatedPath.substring(0, lastSlashIndex) + "(.*)";
         }
         return generatedPath.trim();
     }
@@ -831,11 +838,15 @@ public class APIClient {
 
     private isolated function retrieveMatches(API api, APIOperations apiOperation) returns model:HTTPRouteMatch[] {
         model:HTTPRouteMatch[] httpRouteMatch = [];
-        model:HTTPRouteMatch httpRoute = {method: <string>apiOperation.verb, path: {'type: "PathPrefix", value: self.retrievePathPrefix(api.context, api.'version, apiOperation.target ?: "/*")}};
+        model:HTTPRouteMatch httpRoute = self.retrieveHttpRouteMatch(api, apiOperation);
+
         httpRouteMatch.push(httpRoute);
         return httpRouteMatch;
     }
+    private isolated function retrieveHttpRouteMatch(API api, APIOperations apiOperation) returns model:HTTPRouteMatch {
 
+        return {method: <string>apiOperation.verb, path: {'type: "RegularExpression", value: self.retrievePathPrefix(api.context, api.'version, apiOperation.target ?: "/*")}};
+    }
     isolated function retrieveGeneratedSwaggerDefinition(API api) returns json|APKError {
         runtimeModels:API api1 = runtimeModels:newAPI1();
         api1.setName(api.name);
