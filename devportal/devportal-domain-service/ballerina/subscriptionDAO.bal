@@ -20,31 +20,35 @@ import ballerina/log;
 import ballerinax/postgresql;
 import ballerina/sql;
 
-public isolated function getBusinessPlanByNameDAO(string policyName) returns string?|error {
+public isolated function getBusinessPlanByNameDAO(string policyName) returns string|APKError|NotFoundError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
-        return error("Error while retrieving connection");
+        string message = "Error while retrieving connection";
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
         string org = "carbon.super";
         sql:ParameterizedQuery query = `SELECT UUID FROM BUSINESS_PLAN WHERE NAME =${policyName} AND ORGANIZATION =${org}`;
         string| sql:Error result =  dbClient->queryRow(query);
         if result is sql:NoRowsError {
             log:printDebug(result.toString());
-            return error("Not Found");
+            NotFoundError nfe = {body:{code: 90915, message: "Business Plan Not Found for provided Plan Name"}};
+            return nfe;
         } else if result is string {
             log:printDebug(result.toString());
             return result;
         } else {
             log:printDebug(result.toString());
-            return error("Error while retrieving Business Plan");
+            string message = "Error while retrieving Business Plan";
+            return error(message, result, message = message, description = message, code = 909000, statusCode = "500");
         }
     }
 }
 
-isolated function addSubscriptionDAO(Subscription sub, string user, int apiId, int appId) returns string?|Subscription|error {
+isolated function addSubscriptionDAO(Subscription sub, string user, int apiId, int appId) returns Subscription|APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
-        return error("Error while retrieving connection");
+        string message = "Error while retrieving connection";
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
         // check existing subscriptions
         sql:ParameterizedQuery existingCheckQuery = `SELECT SUB_STATUS, SUBS_CREATE_STATE FROM SUBSCRIPTION 
@@ -54,10 +58,12 @@ isolated function addSubscriptionDAO(Subscription sub, string user, int apiId, i
             log:printDebug(existingCheckResult.toString());
         } else if existingCheckResult is Subscription {
             log:printDebug(existingCheckResult.toString());
-            return error("Subscription Already exists");
+            string message = "Subscription Already exists";
+            return error(message, message = message, description = message, code = 909000, statusCode = "500");
         } else {
             log:printDebug(existingCheckResult.toString());
-            return error("Error while checking exisiting subscriptions");
+            string message = "Error while checking exisiting subscriptions";
+            return error(message, existingCheckResult, message = message, description = message, code = 909000, statusCode = "500");
         }
 
         // Insert into SUBSCRIPTION table
@@ -71,15 +77,17 @@ isolated function addSubscriptionDAO(Subscription sub, string user, int apiId, i
             return sub;
         } else {
             log:printDebug(result.toString());
-            return error("Error while inserting data into Database");  
+            string message = "Error while inserting data into Database";
+            return error(message, result, message = message, description = message, code = 909000, statusCode = "500");
         }
     }
 }
 
-isolated function getSubscriptionByIdDAO(string subId, string org) returns string?|Subscription|error {
+isolated function getSubscriptionByIdDAO(string subId, string org) returns Subscription|NotFoundError|APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
-        return error("Error while retrieving connection");
+        string message = "Error while retrieving connection";
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
         sql:ParameterizedQuery query = `SELECT 
         SUBS.SUBSCRIPTION_ID AS SUBSCRIPTION_ID, 
@@ -101,22 +109,25 @@ isolated function getSubscriptionByIdDAO(string subId, string org) returns strin
         WHERE APP.APPLICATION_ID=SUBS.APPLICATION_ID AND API.API_ID = SUBS.API_ID AND SUBS.UUID =${subId}`;
         Subscription | sql:Error result =  dbClient->queryRow(query);
         if result is sql:NoRowsError {
-            log:printInfo(result.toString());
-            return error("Not Found");
+            log:printDebug(result.toString());
+            NotFoundError nfe = {body:{code: 90915, message: "Subscription Not Found for provided ID"}};
+            return nfe;
         } else if result is Subscription {
-            log:printInfo(result.toString());
+            log:printDebug(result.toString());
             return result;
         } else {
-            log:printInfo(result.toString());
-            return error("Error while retrieving Subscription");
+            log:printDebug(result.toString());
+            string message = "Error while retrieving Subscription";
+            return error(message, result, message = message, description = message, code = 909000, statusCode = "500");
         }
     }
 }
 
-isolated function deleteSubscriptionDAO(string subId, string org) returns error?|string {
+isolated function deleteSubscriptionDAO(string subId, string org) returns APKError|string {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
-        return error("Error while retrieving connection");
+        string message = "Error while retrieving connection";
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
         sql:ParameterizedQuery query = `DELETE FROM SUBSCRIPTION WHERE UUID = ${subId}`;
         sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
@@ -124,15 +135,17 @@ isolated function deleteSubscriptionDAO(string subId, string org) returns error?
             return "deleted";
         } else {
             log:printDebug(result.toString());
-            return error("Error while deleting data record in the Database");  
+            string message = "Error while deleting data record in the Database";
+            return error(message, result, message = message, description = message, code = 909000, statusCode = "500");
         }
     }
 }
 
-isolated function updateSubscriptionDAO(Subscription sub, string user, int apiId, int appId) returns string?|Subscription|error {
+isolated function updateSubscriptionDAO(Subscription sub, string user, int apiId, int appId) returns Subscription|APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
-        return error("Error while retrieving connection");
+        string message = "Error while retrieving connection";
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
         // Update Policy of a subscription in SUBSCRIPTION table
         sql:ParameterizedQuery query = ` UPDATE SUBSCRIPTION SET TIER_ID_PENDING = ${sub.requestedThrottlingPolicy} 
@@ -144,15 +157,17 @@ isolated function updateSubscriptionDAO(Subscription sub, string user, int apiId
             return sub;
         } else {
             log:printError(result.toString());
-            return error("Error while updating data record in Database");  
+            string message = "Error while updating data record in Database";
+            return error(message, result, message = message, description = message, code = 909000, statusCode = "500");
         }
     }
 }
 
-isolated function getSubscriptionByAPIandAppIdDAO(string apiId, string appId, string org) returns string?|Subscription|error {
+isolated function getSubscriptionByAPIandAppIdDAO(string apiId, string appId, string org) returns Subscription|APKError|NotFoundError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
-        return error("Error while retrieving connection");
+        string message = "Error while retrieving connection";
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
         sql:ParameterizedQuery query = `SELECT 
         SUBS.SUBSCRIPTION_ID AS SUBSCRIPTION_ID, 
@@ -174,105 +189,125 @@ isolated function getSubscriptionByAPIandAppIdDAO(string apiId, string appId, st
         WHERE APP.APPLICATION_ID=SUBS.APPLICATION_ID AND API.API_ID = SUBS.API_ID AND API.API_UUID =${apiId} AND APP.UUID=${appId}`;
         Subscription | sql:Error result =  dbClient->queryRow(query);
         if result is sql:NoRowsError {
-            log:printInfo(result.toString());
-            return error("Not Found");
+            log:printDebug(result.toString());
+            NotFoundError nfe = {body:{code: 90916, message: "Subscription not found"}};
+            return nfe;
         } else if result is Subscription {
-            log:printInfo(result.toString());
+            log:printDebug(result.toString());
             return result;
         } else {
-            log:printInfo(result.toString());
-            return error("Error while retrieving Subscription");
+            log:printDebug(result.toString());
+            string message = "Error while retrieving Subscription";
+            return error(message, result, message = message, description = message, code = 909007, statusCode = "500");
         }
     }
 }
 
-isolated function getSubscriptionsByAPIIdDAO(string apiId, string org) returns Subscription[]|error? {
+isolated function getSubscriptionsByAPIIdDAO(string apiId, string org) returns Subscription[]|APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
-        return error("Error while retrieving connection");
+        string message = "Error while retrieving connection";
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
-        sql:ParameterizedQuery query = `SELECT 
-        SUBS.SUBSCRIPTION_ID AS SUBSCRIPTION_ID, 
-        API.API_PROVIDER AS API_PROVIDER, 
-        API.API_NAME AS API_NAME, 
-        API.API_VERSION AS API_VERSION, 
-        API.API_TYPE AS API_TYPE, 
-        API.ORGANIZATION AS ORGANIZATION, 
-        APP.UUID AS APPLICATIONID, 
-        SUBS.TIER_ID AS THROTTLINGPOLICY, 
-        SUBS.TIER_ID_PENDING AS TIER_ID_PENDING, 
-        SUBS.SUB_STATUS AS SUB_STATUS, 
-        SUBS.SUBS_CREATE_STATE AS SUBS_CREATE_STATE, 
-        SUBS.UUID AS UUID, 
-        SUBS.CREATED_TIME AS CREATED_TIME, 
-        SUBS.UPDATED_TIME AS UPDATED_TIME, 
-        API.API_UUID AS APIID
-        FROM SUBSCRIPTION SUBS, API API, APPLICATION APP 
-        WHERE APP.APPLICATION_ID=SUBS.APPLICATION_ID AND API.API_ID = SUBS.API_ID AND API.API_UUID =${apiId}`;
-        stream<Subscription, sql:Error?> subscriptionStream = dbClient->query(query);
-        Subscription[]? subscriptions = check from Subscription subscription in subscriptionStream select subscription;
-        check subscriptionStream.close();
-        return subscriptions;
+        do {
+            sql:ParameterizedQuery query = `SELECT 
+            SUBS.SUBSCRIPTION_ID AS SUBSCRIPTION_ID, 
+            API.API_PROVIDER AS API_PROVIDER, 
+            API.API_NAME AS API_NAME, 
+            API.API_VERSION AS API_VERSION, 
+            API.API_TYPE AS API_TYPE, 
+            API.ORGANIZATION AS ORGANIZATION, 
+            APP.UUID AS APPLICATIONID, 
+            SUBS.TIER_ID AS THROTTLINGPOLICY, 
+            SUBS.TIER_ID_PENDING AS TIER_ID_PENDING, 
+            SUBS.SUB_STATUS AS SUB_STATUS, 
+            SUBS.SUBS_CREATE_STATE AS SUBS_CREATE_STATE, 
+            SUBS.UUID AS UUID, 
+            SUBS.CREATED_TIME AS CREATED_TIME, 
+            SUBS.UPDATED_TIME AS UPDATED_TIME, 
+            API.API_UUID AS APIID
+            FROM SUBSCRIPTION SUBS, API API, APPLICATION APP 
+            WHERE APP.APPLICATION_ID=SUBS.APPLICATION_ID AND API.API_ID = SUBS.API_ID AND API.API_UUID =${apiId}`;
+            stream<Subscription, sql:Error?> subscriptionStream = dbClient->query(query);
+            Subscription[] subscriptions = check from Subscription subscription in subscriptionStream select subscription;
+            check subscriptionStream.close();
+            return subscriptions;
+        } on fail var e {
+            string message = "Internal Error occured while retrieving Subscription By API Id";
+            return error(message, e, message = message, description = message, code = 909001, statusCode = "500");
+        }     
     }
 }
 
-isolated function getSubscriptionsByAPPIdDAO(string appId, string org) returns Subscription[]|error? {
+isolated function getSubscriptionsByAPPIdDAO(string appId, string org) returns Subscription[]|APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
-        return error("Error while retrieving connection");
+        string message = "Error while retrieving connection";
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
-        sql:ParameterizedQuery query = `SELECT 
-        SUBS.SUBSCRIPTION_ID AS SUBSCRIPTION_ID, 
-        API.API_PROVIDER AS API_PROVIDER, 
-        API.API_NAME AS API_NAME, 
-        API.API_VERSION AS API_VERSION, 
-        API.API_TYPE AS API_TYPE, 
-        API.ORGANIZATION AS ORGANIZATION, 
-        APP.UUID AS APPLICATIONID, 
-        SUBS.TIER_ID AS THROTTLINGPOLICY, 
-        SUBS.TIER_ID_PENDING AS TIER_ID_PENDING, 
-        SUBS.SUB_STATUS AS SUB_STATUS, 
-        SUBS.SUBS_CREATE_STATE AS SUBS_CREATE_STATE, 
-        SUBS.UUID AS UUID, 
-        SUBS.CREATED_TIME AS CREATED_TIME, 
-        SUBS.UPDATED_TIME AS UPDATED_TIME, 
-        API.API_UUID AS APIID
-        FROM SUBSCRIPTION SUBS, API API, APPLICATION APP 
-        WHERE APP.APPLICATION_ID=SUBS.APPLICATION_ID AND API.API_ID = SUBS.API_ID AND APP.UUID=${appId}`;
-        stream<Subscription, sql:Error?> subscriptionStream = dbClient->query(query);
-        Subscription[]? subscriptions = check from Subscription subscription in subscriptionStream select subscription;
-        check subscriptionStream.close();
-        return subscriptions;
+        do {
+            sql:ParameterizedQuery query = `SELECT 
+            SUBS.SUBSCRIPTION_ID AS SUBSCRIPTION_ID, 
+            API.API_PROVIDER AS API_PROVIDER, 
+            API.API_NAME AS API_NAME, 
+            API.API_VERSION AS API_VERSION, 
+            API.API_TYPE AS API_TYPE, 
+            API.ORGANIZATION AS ORGANIZATION, 
+            APP.UUID AS APPLICATIONID, 
+            SUBS.TIER_ID AS THROTTLINGPOLICY, 
+            SUBS.TIER_ID_PENDING AS TIER_ID_PENDING, 
+            SUBS.SUB_STATUS AS SUB_STATUS, 
+            SUBS.SUBS_CREATE_STATE AS SUBS_CREATE_STATE, 
+            SUBS.UUID AS UUID, 
+            SUBS.CREATED_TIME AS CREATED_TIME, 
+            SUBS.UPDATED_TIME AS UPDATED_TIME, 
+            API.API_UUID AS APIID
+            FROM SUBSCRIPTION SUBS, API API, APPLICATION APP 
+            WHERE APP.APPLICATION_ID=SUBS.APPLICATION_ID AND API.API_ID = SUBS.API_ID AND APP.UUID=${appId}`;
+            stream<Subscription, sql:Error?> subscriptionStream = dbClient->query(query);
+            Subscription[] subscriptions = check from Subscription subscription in subscriptionStream select subscription;
+            check subscriptionStream.close();
+            return subscriptions;
+        } on fail var e {
+            string message = "Internal Error occured while retrieving Subscription By Application Id";
+            return error(message, e, message = message, description = message, code = 909001, statusCode = "500");
+        }  
     }
 }
 
-isolated function getSubscriptionsList(string org) returns Subscription[]|error? {
+isolated function getSubscriptionsList(string org) returns Subscription[]|APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
-        return error("Error while retrieving connection");
+        string message = "Error while retrieving connection";
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
-        sql:ParameterizedQuery query = `SELECT 
-        SUBS.SUBSCRIPTION_ID AS SUBSCRIPTION_ID, 
-        API.API_PROVIDER AS API_PROVIDER, 
-        API.API_NAME AS API_NAME, 
-        API.API_VERSION AS API_VERSION, 
-        API.API_TYPE AS API_TYPE, 
-        API.ORGANIZATION AS ORGANIZATION, 
-        APP.UUID AS APPLICATIONID, 
-        SUBS.TIER_ID AS THROTTLINGPOLICY, 
-        SUBS.TIER_ID_PENDING AS TIER_ID_PENDING, 
-        SUBS.SUB_STATUS AS SUB_STATUS, 
-        SUBS.SUBS_CREATE_STATE AS SUBS_CREATE_STATE, 
-        SUBS.UUID AS UUID, 
-        SUBS.CREATED_TIME AS CREATED_TIME, 
-        SUBS.UPDATED_TIME AS UPDATED_TIME, 
-        API.API_UUID AS APIID
-        FROM SUBSCRIPTION SUBS, API API, APPLICATION APP 
-        WHERE APP.APPLICATION_ID=SUBS.APPLICATION_ID AND API.API_ID = SUBS.API_ID`;
-        stream<Subscription, sql:Error?> subscriptionStream = dbClient->query(query);
-        Subscription[]? subscriptions = check from Subscription subscription in subscriptionStream select subscription;
-        check subscriptionStream.close();
-        return subscriptions;
+        do {
+            sql:ParameterizedQuery query = `SELECT 
+            SUBS.SUBSCRIPTION_ID AS SUBSCRIPTION_ID, 
+            API.API_PROVIDER AS API_PROVIDER, 
+            API.API_NAME AS API_NAME, 
+            API.API_VERSION AS API_VERSION, 
+            API.API_TYPE AS API_TYPE, 
+            API.ORGANIZATION AS ORGANIZATION, 
+            APP.UUID AS APPLICATIONID, 
+            SUBS.TIER_ID AS THROTTLINGPOLICY, 
+            SUBS.TIER_ID_PENDING AS TIER_ID_PENDING, 
+            SUBS.SUB_STATUS AS SUB_STATUS, 
+            SUBS.SUBS_CREATE_STATE AS SUBS_CREATE_STATE, 
+            SUBS.UUID AS UUID, 
+            SUBS.CREATED_TIME AS CREATED_TIME, 
+            SUBS.UPDATED_TIME AS UPDATED_TIME, 
+            API.API_UUID AS APIID
+            FROM SUBSCRIPTION SUBS, API API, APPLICATION APP 
+            WHERE APP.APPLICATION_ID=SUBS.APPLICATION_ID AND API.API_ID = SUBS.API_ID`;
+            stream<Subscription, sql:Error?> subscriptionStream = dbClient->query(query);
+            Subscription[] subscriptions = check from Subscription subscription in subscriptionStream select subscription;
+            check subscriptionStream.close();
+            return subscriptions;
+        } on fail var e {
+            string message = "Internal Error occured while retrieving Subscriptions";
+            return error(message, e, message = message, description = message, code = 909001, statusCode = "500");
+        }  
     }
 }
 

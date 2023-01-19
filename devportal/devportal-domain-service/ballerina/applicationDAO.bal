@@ -20,10 +20,11 @@ import ballerina/log;
 import ballerinax/postgresql;
 import ballerina/sql;
 
-isolated function addApplicationDAO(Application application,int subscriberId, string org) returns string?|Application|error {
+isolated function addApplicationDAO(Application application,int subscriberId, string org) returns Application|APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
-        return error("Error while retrieving connection");
+        string message = "Error while retrieving connection";
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
         sql:ParameterizedQuery query = `INSERT INTO APPLICATION (NAME, SUBSCRIBER_ID, APPLICATION_TIER,
         DESCRIPTION, APPLICATION_STATUS, GROUP_ID, CREATED_BY, CREATED_TIME, UPDATED_TIME,
@@ -34,28 +35,32 @@ isolated function addApplicationDAO(Application application,int subscriberId, st
         if result is sql:ExecutionResult {
             return application;
         } else {
-            log:printDebug(result.toString());
-            return error("Error while inserting data into Database");  
+            log:printDebug(result.toString());  
+            string message = "Error while inserting data into Database";
+            return error(message, result, message = message, description = message, code = 909000, statusCode = "500");
         }
     }
 }
 
-isolated function getSubscriberIdDAO(string user, string org) returns int?|error {
+isolated function getSubscriberIdDAO(string user, string org) returns int|NotFoundError|APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
-        return error("Error while retrieving connection");
+        string message = "Error while retrieving connection";
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
         sql:ParameterizedQuery query = `SELECT SUBSCRIBER_ID FROM SUBSCRIBER WHERE USER_ID =${user} AND ORGANIZATION =${org}`;
         int|sql:Error result =  dbClient->queryRow(query);
         if result is sql:NoRowsError {
             log:printDebug(result.toString());
-            return error("Not Found");
+            NotFoundError nfe = {body:{code: 90916, message: "Subscriber Id not found"}};
+            return nfe;
         } else if result is int {
             log:printDebug(result.toString());
             return result;
         } else {
             log:printDebug(result.toString());
-            return error("Error while retrieving Subscriber ID");
+            string message = "Error while retrieving Subscriber ID";
+            return error(message, result, message = message, description = message, code = 909007, statusCode = "500");
         }
     }
 }
@@ -80,45 +85,55 @@ isolated function getApplicationUsagePlanByNameDAO(string policyName, string org
     }
 }
 
-isolated function getApplicationByIdDAO(string appId, string org) returns string?|Application|error {
+isolated function getApplicationByIdDAO(string appId, string org) returns Application|APKError|NotFoundError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
-        return error("Error while retrieving connection");
+        string message = "Error while retrieving connection";
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
         sql:ParameterizedQuery query = `SELECT NAME, APPLICATION_ID as ID, UUID as APPLICATIONID, DESCRIPTION, APPLICATION_TIER as THROTTLINGPOLICY, TOKEN_TYPE as TOKENTYPE, ORGANIZATION,
         APPLICATION_STATUS as STATUS FROM APPLICATION WHERE UUID =${appId} AND ORGANIZATION =${org}`;
         Application | sql:Error result =  dbClient->queryRow(query);
         if result is sql:NoRowsError {
             log:printDebug(result.toString());
-            return error("Not Found");
+            NotFoundError nfe = {body:{code: 90916, message: "Application Not Found"}};
+            return nfe;
         } else if result is Application {
             log:printDebug(result.toString());
             return result;
         } else {
             log:printDebug(result.toString());
-            return error("Error while retrieving Application");
+            string message = "Error while retrieving Application";
+            return error(message, result, message = message, description = message, code = 909007, statusCode = "500");
         }
     }
 }
 
-isolated function getApplicationsDAO(string org) returns Application[]|error? {
+isolated function getApplicationsDAO(string org) returns Application[]|APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
-        return error("Error while retrieving connection");
+        string message = "Error while retrieving connection";
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
-        sql:ParameterizedQuery query = `SELECT NAME, APPLICATION_ID as ID, UUID as APPLICATIONID, DESCRIPTION, APPLICATION_TIER as THROTTLINGPOLICY, TOKEN_TYPE as TOKENTYPE, ORGANIZATION,
-        APPLICATION_STATUS as STATUS  FROM APPLICATION WHERE ORGANIZATION =${org}`;
-        stream<Application, sql:Error?> applicationStream = dbClient->query(query);
-        Application[]? applications = check from Application application in applicationStream select application;
-        check applicationStream.close();
-        return applications;
+        do {
+            sql:ParameterizedQuery query = `SELECT NAME, APPLICATION_ID as ID, UUID as APPLICATIONID, DESCRIPTION, APPLICATION_TIER as THROTTLINGPOLICY, TOKEN_TYPE as TOKENTYPE, ORGANIZATION,
+            APPLICATION_STATUS as STATUS  FROM APPLICATION WHERE ORGANIZATION =${org}`;
+            stream<Application, sql:Error?> applicationStream = dbClient->query(query);
+            Application[] applications = check from Application application in applicationStream select application;
+            check applicationStream.close();
+            return applications;
+        } on fail var e {
+            string message = "Internal Error occured while retrieving Applications";
+            return error(message, e, message = message, description = message, code = 909001, statusCode = "500");
+        }
     }
 }
 
-isolated function updateApplicationDAO(Application application,int subscriberId, string org) returns string?|Application|error {
+isolated function updateApplicationDAO(Application application,int subscriberId, string org) returns Application|APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
-        return error("Error while retrieving connection");
+        string message = "Error while retrieving connection";
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
         sql:ParameterizedQuery query = `UPDATE APPLICATION SET NAME = ${application.name},
          DESCRIPTION = ${application.description}, SUBSCRIBER_ID = ${subscriberId}, APPLICATION_TIER = ${application.throttlingPolicy}, 
@@ -129,24 +144,27 @@ isolated function updateApplicationDAO(Application application,int subscriberId,
         if result is sql:ExecutionResult {
             return application;
         } else {
-            log:printDebug(result.toString());
-            return error("Error while updating data record in the Database");  
+            log:printError(result.toString());
+            string message = "Error while updating data record in the Database";
+            return error(message, result, message = message, description = message, code = 909001, statusCode = "500");
         }
     }
 }
 
-isolated function deleteApplicationDAO(string appId, string org) returns error?|string {
+isolated function deleteApplicationDAO(string appId, string org) returns APKError|string {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
-        return error("Error while retrieving connection");
+        string message = "Error while retrieving connection";
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
         sql:ParameterizedQuery query = `DELETE FROM APPLICATION WHERE UUID = ${appId} AND ORGANIZATION = ${org}`;
         sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
         if result is sql:ExecutionResult {
             return "deleted";
         } else {
-            log:printDebug(result.toString());
-            return error("Error while deleting data record in the Database");  
+            log:printError(result.toString());
+            string message = "Error while deleting data record in the Database";
+            return error(message, result, message = message, description = message, code = 909001, statusCode = "500"); 
         }
     }
 }

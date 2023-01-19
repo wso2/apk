@@ -16,150 +16,135 @@
 // under the License.
 //
 
-import ballerina/log;
 import ballerina/uuid;
 import ballerina/lang.value;
 
-isolated function addSubscription(Subscription payload, string org, string user) returns string?|Subscription|error {
+isolated function addSubscription(Subscription payload, string org, string user) returns Subscription|APKError|NotFoundError|error {
     int apiId = 0;
     int appId = 0;
-    int|error? subscriberId = getSubscriberIdDAO(user,org);
+    int|NotFoundError|APKError subscriberId = getSubscriberIdDAO(user,org);
     if subscriberId !is int {
-        string err = "Error while retrieving user by name " + user;
-        log:printError(err);
-        return error(err);
+        return subscriberId;
     } 
     string? apiUUID = payload.apiId;
     if apiUUID is string {
-        string?|API|error api = getAPIByAPIId(apiUUID, org);
-        if api !is API {
-            string err = "Error while retrieving API by provided id" + apiUUID;
-            log:printError(err);
-            return error(err);
+        API|NotFoundError|APKError api = getAPIByAPIId(apiUUID, org);
+        if api is APKError|NotFoundError {
+            return api;
+        } else if api is API {
+            string apiInString = api.toJsonString();
+            json j = check value:fromJsonString(apiInString);
+            apiId = check j.apiId.ensureType();
         }
-        string apiInString = api.toJsonString();
-        json j = check value:fromJsonString(apiInString);
-        apiId = check j.apiId.ensureType();
     }
     string? appUUID = payload.applicationId;
     if appUUID is string {
-        string?|Application|error application = getApplicationById(appUUID, org);
-        if application !is Application {
-            string err = "Error while retrieving Application by provided id" + appUUID;
-            log:printError(err);
-            return error(err);
+        Application|APKError|NotFoundError application = getApplicationById(appUUID, org);
+        if application is APKError|NotFoundError {
+            return application;
+        } else  if application is Application {
+            string appInString = application.toJsonString();
+            json j = check value:fromJsonString(appInString);
+            appId = check j.id.ensureType();
         }
-        string appInString = application.toJsonString();
-        json j = check value:fromJsonString(appInString);
-        appId = check j.id.ensureType();
     }
     string? businessPlan = payload.throttlingPolicy;
     if businessPlan is string {
-        string?|error businessPlanID = getBusinessPlanByName(businessPlan);
-        if businessPlanID !is string {
-            string err = "Error while retrieving BusinessPlan by provided name" + businessPlan;
-            log:printError(err);
-            return error(err);
+        string|APKError|NotFoundError businessPlanID = getBusinessPlanByName(businessPlan);
+        if businessPlanID is APKError|NotFoundError {
+            return businessPlanID;
         }
         payload.requestedThrottlingPolicy = businessPlan;
     }
     string subscriptionId = uuid:createType1AsString();
     payload.subscriptionId = subscriptionId;
     payload.status = "UNBLOCKED";
-    string?|Subscription|error createdSub = addSubscriptionDAO(payload,user,apiId,appId);
+    Subscription|APKError createdSub = addSubscriptionDAO(payload,user,apiId,appId);
     return createdSub;
 }
 
-isolated function getBusinessPlanByName(string policyName) returns string?|error {
-    string?|error policy = getBusinessPlanByNameDAO(policyName);
+isolated function getBusinessPlanByName(string policyName) returns string|APKError|NotFoundError {
+    string|APKError|NotFoundError policy = getBusinessPlanByNameDAO(policyName);
     return policy;
 }
 
-isolated function addMultipleSubscriptions(Subscription[] subscriptions, string org, string user) returns Subscription[]|error? {
-    Subscription[]|error? addedSubs = [];
+isolated function addMultipleSubscriptions(Subscription[] subscriptions, string org, string user) returns Subscription[]|APKError|NotFoundError|error {
+    Subscription[]|APKError addedSubs = [];
     foreach Subscription sub in subscriptions {
-        string?|Subscription|error subscriptionResponse = check addSubscription(sub, org, user);
+        Subscription|APKError|NotFoundError|error subscriptionResponse = check addSubscription(sub, org, user);
         if subscriptionResponse is Subscription {
             if addedSubs is Subscription[] {
                 addedSubs.push(subscriptionResponse);
             }
-        } else if subscriptionResponse is error {
+        } else if subscriptionResponse is APKError|NotFoundError {
             return subscriptionResponse;
         }
     }
     return addedSubs;
 }
 
-isolated function getSubscriptionById(string subId, string org) returns string?|Subscription|error {
-    string?|Subscription|error subscription = getSubscriptionByIdDAO(subId, org);
+isolated function getSubscriptionById(string subId, string org) returns Subscription|APKError|NotFoundError {
+    Subscription|APKError|NotFoundError subscription = getSubscriptionByIdDAO(subId, org);
     return subscription;
 }
 
-isolated function deleteSubscription(string subId, string organization) returns string|error? {
-    error?|string status = deleteSubscriptionDAO(subId,organization);
+isolated function deleteSubscription(string subId, string organization) returns string|APKError {
+    APKError|string status = deleteSubscriptionDAO(subId,organization);
     return status;
 }
 
-isolated function updateSubscription(string subId, Subscription payload, string org, string user) returns string?|Subscription|NotFoundError|error {
-    string?|Subscription|error existingSub = getSubscriptionByIdDAO(subId, org);
+isolated function updateSubscription(string subId, Subscription payload, string org, string user) returns Subscription|NotFoundError|APKError |error{
+    Subscription|NotFoundError|APKError existingSub = getSubscriptionByIdDAO(subId, org);
     if existingSub is Subscription {
         payload.subscriptionId = subId;
     } else {
-        Error err = {code:9010101, message:"Subscription Not Found"};
-        NotFoundError nfe = {body: err};
-        return nfe;
+        return existingSub;
     }
     int apiId = 0;
     int appId = 0;
-    int|error? subscriberId = getSubscriberIdDAO(user,org);
-    if subscriberId !is int {
-        string err = "Error while retrieving user by name " + user;
-        log:printError(err);
-        return error(err);
+    int|NotFoundError|APKError subscriberId = getSubscriberIdDAO(user,org);
+    if subscriberId is APKError|NotFoundError {
+        return subscriberId;
     } 
     string? apiUUID = payload.apiId;
     if apiUUID is string {
-        string?|API|error api = getAPIByAPIId(apiUUID, org);
-        if api !is API {
-            string err = "Error while retrieving API by provided id" + apiUUID;
-            log:printError(err);
-            return error(err);
+        API|NotFoundError|APKError api = getAPIByAPIId(apiUUID, org);
+        if api is NotFoundError|APKError {
+            return api;
+        } else if api is API {
+            string apiInString = api.toJsonString();
+            json j = check value:fromJsonString(apiInString);
+            apiId = check j.apiId.ensureType();
         }
-        string apiInString = api.toJsonString();
-        json j = check value:fromJsonString(apiInString);
-        apiId = check j.apiId.ensureType();
     }
     string? appUUID = payload.applicationId;
     if appUUID is string {
-        string?|Application|error application = getApplicationById(appUUID, org);
-        if application !is Application {
-            string err = "Error while retrieving Application by provided id" + appUUID;
-            log:printError(err);
-            return error(err);
+        Application|APKError|NotFoundError application = getApplicationById(appUUID, org);
+        if application is APKError|NotFoundError {
+            return application;
+        } else if application is Application {
+            string appInString = application.toJsonString();
+            json j = check value:fromJsonString(appInString);
+            appId = check j.id.ensureType();
         }
-        string appInString = application.toJsonString();
-        json j = check value:fromJsonString(appInString);
-        appId = check j.id.ensureType();
     }
     string? businessPlan = payload.throttlingPolicy;
     if businessPlan is string {
-        string?|error businessPlanID = getBusinessPlanByName(businessPlan);
-        if businessPlanID !is string {
-            string err = "Error while retrieving BusinessPlan by provided name" + businessPlan;
-            log:printError(err);
-            return error(err);
+        string|APKError|NotFoundError businessPlanID = getBusinessPlanByName(businessPlan);
+        if businessPlanID is APKError|NotFoundError {
+            return businessPlanID;
         }
         payload.requestedThrottlingPolicy = businessPlan;
     }
     payload.status = "UNBLOCKED";
-    string?|Subscription|error createdSub = updateSubscriptionDAO(payload,user,apiId,appId);
+    Subscription|APKError createdSub = updateSubscriptionDAO(payload,user,apiId,appId);
     return createdSub;
 }
 
-isolated function getSubscriptions(string? apiId, string? applicationId, string? groupId, int offset, int limitCount, string org) returns string?|SubscriptionList|error {
+isolated function getSubscriptions(string? apiId, string? applicationId, string? groupId, int offset, int limitCount, string org) returns SubscriptionList|APKError|NotFoundError {
     if apiId is string && applicationId is string {
         // Retrieve Subscriptions per given API Id and App Id
-        string?|Subscription|error subscription = getSubscriptionByAPIandAppIdDAO(apiId,applicationId,org);
+        Subscription|APKError|NotFoundError subscription = getSubscriptionByAPIandAppIdDAO(apiId,applicationId,org);
         if subscription is Subscription {
             Subscription[] subs = [subscription];
             int count = subs.length();
@@ -170,7 +155,7 @@ isolated function getSubscriptions(string? apiId, string? applicationId, string?
         }
     } else if apiId is string {
         // Retrieve Subscriptions per given API Id
-        Subscription[]|error? subs = getSubscriptionsByAPIIdDAO(apiId,org);
+        Subscription[]|APKError subs = getSubscriptionsByAPIIdDAO(apiId,org);
         if subs is Subscription[] {
             int count = subs.length();
             SubscriptionList subList = {count: count, list: subs};
@@ -180,7 +165,7 @@ isolated function getSubscriptions(string? apiId, string? applicationId, string?
         }
     } else if applicationId is string {
         // Retrieve Subscriptions per given APP Id
-        Subscription[]|error? subs = getSubscriptionsByAPPIdDAO(applicationId,org);
+        Subscription[]|APKError subs = getSubscriptionsByAPPIdDAO(applicationId,org);
         if subs is Subscription[] {
             int count = subs.length();
             SubscriptionList subList = {count: count, list: subs};
@@ -190,7 +175,7 @@ isolated function getSubscriptions(string? apiId, string? applicationId, string?
         }
     } else {
         // Retrieve All Subscriptions
-        Subscription[]|error? subs = getSubscriptionsList(org);
+        Subscription[]|APKError subs = getSubscriptionsList(org);
         if subs is Subscription[] {
             int count = subs.length();
             SubscriptionList subList = {count: count, list: subs};

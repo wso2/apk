@@ -22,13 +22,13 @@ import devportal_service.java.util as javautil;
 import devportal_service.java.lang as javalang;
 import ballerina/http;
 
-isolated function getAPIByAPIId(string apiId, string organization) returns string?|API|error {
-    string?|API|error api = getAPIByIdDAO(apiId, organization);
+isolated function getAPIByAPIId(string apiId, string organization) returns API|NotFoundError|APKError {
+    API|APKError|NotFoundError api = getAPIByIdDAO(apiId, organization);
     return api;
 }
 
-isolated function getAPIList(int 'limit, int  offset, string? query, string organization) returns string?|APIList|error {
-    API[]|error? apis = getAPIsDAO(organization);
+isolated function getAPIList(int 'limit, int  offset, string? query, string organization) returns APIList|APKError{
+    API[]|APKError apis = getAPIsDAO(organization);
     if apis is API[] {
         int count = apis.length();
         ApplicationList apisList = {count: count, list: apis};
@@ -38,20 +38,20 @@ isolated function getAPIList(int 'limit, int  offset, string? query, string orga
     }
 }
 
-isolated function getAPIDefinition(string apiId, string organization) returns APIDefinition|NotFoundError|error {
-    APIDefinition|NotFoundError|error apiDefinition = getAPIDefinitionDAO(apiId,organization);
+isolated function getAPIDefinition(string apiId, string organization) returns APIDefinition|NotFoundError|APKError {
+    APIDefinition|NotFoundError|APKError apiDefinition = getAPIDefinitionDAO(apiId,organization);
     return apiDefinition;
 }
 
-function generateSDKImpl(string apiId, string language, string org) returns http:Response|sdk:APIClientGenerationException|string?|error {
+function generateSDKImpl(string apiId, string language, string org) returns http:Response|sdk:APIClientGenerationException|NotFoundError|APKError {
     sdk:APIClientGenerationManager sdkClient = new sdk:APIClientGenerationManager(newSDKClient());
     string apiName;
     string apiVersion;
-    string?|API|error api = getAPIByAPIId(apiId,org);
+    API|NotFoundError|APKError api = getAPIByAPIId(apiId,org);
     if api is API {
         apiName = api.name;
         apiVersion = api.'version;
-        APIDefinition|NotFoundError|error apiDefinition = getAPIDefinition(apiId,org);
+        APIDefinition|NotFoundError|APKError apiDefinition = getAPIDefinition(apiId,org);
         if apiDefinition is APIDefinition {
             string? schema = apiDefinition.schemaDefinition;
             if schema is string {
@@ -68,16 +68,20 @@ function generateSDKImpl(string apiId, string language, string org) returns http
                     return sdkMap;
                 }
             } else {
-                return error("Unable to retrieve Schema Definition");
+                string message = "Unable to retrieve schema mediation";
+                APKError e = error(message, message = message, description = message, code = 90911, statusCode = "500");
+                return e;
             }
         }
-    } else {
+    } else if api is NotFoundError|APKError {
         return api;
     }
-    return;
+    string message = "Unable to generate SDK";
+    APKError e = error(message, message = message, description = message, code = 90911, statusCode = "500");
+    return e;
 }
 
-isolated function getSDKLanguages() returns string|json|error {
+isolated function getSDKLanguages() returns string|json|APKError {
     sdk:APIClientGenerationManager sdkClient = new sdk:APIClientGenerationManager(newSDKClient());
     string? sdkLanguages = sdkClient.getSupportedSDKLanguages();
     return sdkLanguages;
