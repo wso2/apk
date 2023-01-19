@@ -80,10 +80,10 @@ function addApplicationUsagePlanTest() {
 function getApplicationUsagePlanByIdTest(){
     ApplicationRatePlan aup = {planName: "15PerMin", description: "15 Per Minute",'type:"ApplicationThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"},planId: "1234455"};
     test:when(getApplicationUsagePlanByIdDAOMock).withArguments("1234455").thenReturn(aup);
-    string?|ApplicationRatePlan|error policy = getApplicationUsagePlanByIdDAO("1234455");
+    ApplicationRatePlan|APKError|NotFoundError policy = getApplicationUsagePlanById("1234455");
     if policy is ApplicationRatePlan {
         test:assertTrue(true, "Successfully retrieved Application Usage Plan");
-    } else if policy is  error {
+    } else {
         test:assertFail("Error occured while retrieving Application Usage Plan");
     }
 }
@@ -107,10 +107,10 @@ function updateApplicationUsagePlanTest() {
     ApplicationRatePlan payload = {planName: "15PerMin", description: "15 Per Minute New",'type:"ApplicationThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"},planId: "1234455"};
     test:when(getApplicationUsagePlanByIdDAOMock).withArguments("1234455").thenReturn(applicationUsagePlan);
     test:when(updateApplicationUsagePlanDAOMock).thenReturn(payload);
-    string?|ApplicationRatePlan|error createdAppPol = updateApplicationUsagePlanDAO(payload);
+    string?|ApplicationRatePlan|NotFoundError|error createdAppPol = updateApplicationUsagePlan("1234455",payload);
     if createdAppPol is ApplicationRatePlan {
         test:assertTrue(true,"Application usage plan updated successfully");
-    } else if createdAppPol is error {
+    } else {
         test:assertFail("Error occured while updating Application Usage Plan");
     }
 }
@@ -146,10 +146,10 @@ function getBusinessPlanByIdTest() {
     string?|BusinessPlan|error  businessPlan = {planName: "MySubPol1", description: "test sub pol",'type:"SubscriptionThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"}, 
     subscriberCount: 12, rateLimitCount: 10,rateLimitTimeUnit: "sec", planId: "123456"};
     test:when(getBusinessPlanByIdDAOMock).thenReturn(businessPlan);
-    string?|BusinessPlan|error businessPlanResponse = getBusinessPlanById("123456");
+    BusinessPlan|APKError|NotFoundError businessPlanResponse = getBusinessPlanById("123456");
     if businessPlanResponse is BusinessPlan {
         test:assertTrue(true,"Successfully retrieved Business Plan");
-    } else if businessPlanResponse is error {
+    } else {
         test:assertFail("Error occured while retrieving Business Plan");
     }
 }
@@ -212,10 +212,10 @@ function addDenyPolicyTest() {
 function getDenyPolicyByIdTest() {
     BlockingCondition denyPolicy = {policyId: "123456",conditionType: "APPLICATION",conditionValue: "admin:MyApp5",conditionStatus: true};
     test:when(getDenyPolicyByIdDAOMock).withArguments("123456").thenReturn(denyPolicy);
-    string?|BlockingCondition|error denyPolicyResponse = getDenyPolicyById("123456");
+    BlockingCondition|APKError|NotFoundError denyPolicyResponse = getDenyPolicyById("123456");
     if denyPolicyResponse is BlockingCondition {
         test:assertTrue(true,"Successfully retrieved Deny Policy");
-    } else if denyPolicyResponse is error {
+    } else  {
         test:assertFail("Error occured while retrieving Deny Policy");
     }
 }

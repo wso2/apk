@@ -24,3 +24,4 @@ public type ErrorHandler record {|
     map<string> moreInfo = {};
 |};
 public type APKError distinct (error<ErrorHandler>);
+
