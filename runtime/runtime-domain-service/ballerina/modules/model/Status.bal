@@ -1,7 +1,7 @@
 public type Status record {
-    string apiVersion;
+    string apiVersion = "v1";
     int code;
-    string kind;
+    string kind = "Status";
     string message?;
     string reason?;
     string status?;
@@ -21,7 +21,7 @@ public type StatusDetails record {
     string kind;
     string name;
     int retryAfterSeconds?;
-    string uid;
+    string uid?;
 };
 
 public type ListMeta record {
