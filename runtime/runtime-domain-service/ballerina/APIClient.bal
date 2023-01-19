@@ -256,7 +256,7 @@ public class APIClient {
         return {list: limitSet, count: limitSet.length(), pagination: {total: apiList.length(), 'limit: 'limit, offset: offset}};
 
     }
-    public isolated function createAPI(API api) returns APKError|CreatedAPI|BadRequestError {
+    public isolated function createAPI(API api,string? definition) returns APKError|CreatedAPI|BadRequestError {
         do {
 
             if (self.validateName(api.name)) {
@@ -288,7 +288,7 @@ public class APIClient {
             }
             _ = check self.setHttpRoute(apiArtifact, api, createdEndpoints.hasKey(PRODUCTION_TYPE) ? createdEndpoints.get(PRODUCTION_TYPE) : (), uniqueId, PRODUCTION_TYPE);
             _ = check self.setHttpRoute(apiArtifact, api, createdEndpoints.hasKey(SANDBOX_TYPE) ? createdEndpoints.get(SANDBOX_TYPE) : (), uniqueId, SANDBOX_TYPE);
-            json generatedSwagger = check self.retrieveGeneratedSwaggerDefinition(api);
+            json generatedSwagger = check self.retrieveGeneratedSwaggerDefinition(api,definition);
             self.retrieveGeneratedConfigmapForDefinition(apiArtifact, api, generatedSwagger, uniqueId);
             self.generateAndSetAPICRArtifact(apiArtifact, api);
             model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact);
@@ -437,7 +437,7 @@ public class APIClient {
                 serviceEntry: true
             };
             check self.setHttpRoute(apiArtifact, api, endpoint, uniqueId, PRODUCTION_TYPE);
-            json generatedSwaggerDefinition = check self.retrieveGeneratedSwaggerDefinition(api);
+            json generatedSwaggerDefinition = check self.retrieveGeneratedSwaggerDefinition(api,());
             self.retrieveGeneratedConfigmapForDefinition(apiArtifact, api, generatedSwaggerDefinition, uniqueId);
             self.generateAndSetAPICRArtifact(apiArtifact, api);
             self.generateAndSetK8sServiceMapping(apiArtifact, api, serviceRetrieved, getNameSpace(runtimeConfiguration.apiCreationNamespace));
@@ -847,7 +847,7 @@ public class APIClient {
 
         return {method: <string>apiOperation.verb, path: {'type: "RegularExpression", value: self.retrievePathPrefix(api.context, api.'version, apiOperation.target ?: "/*")}};
     }
-    isolated function retrieveGeneratedSwaggerDefinition(API api) returns json|APKError {
+    isolated function retrieveGeneratedSwaggerDefinition(API api,string? definition) returns json|APKError {
         runtimeModels:API api1 = runtimeModels:newAPI1();
         api1.setName(api.name);
         api1.setType(api.'type);
@@ -872,8 +872,13 @@ public class APIClient {
             }
         }
         api1.setUriTemplates(uritemplatesSet);
-        string?|runtimeapi:APIManagementException retrievedDefinition = runtimeUtil:RuntimeAPICommonUtil_generateDefinition(api1);
-        if retrievedDefinition is string {
+        string?|runtimeapi:APIManagementException retrievedDefinition = "";
+        if definition is string && definition.toString().trim().length()>0 {
+            retrievedDefinition = runtimeUtil:RuntimeAPICommonUtil_generateDefinition2(api1,definition);
+        }else{
+         retrievedDefinition = runtimeUtil:RuntimeAPICommonUtil_generateDefinition(api1);
+        }
+        if retrievedDefinition is string && retrievedDefinition.toString().trim().length()>0{
             json|error jsonString = value:fromJsonString(retrievedDefinition);
             if jsonString is json {
                 return jsonString;
@@ -1397,7 +1402,7 @@ public class APIClient {
                                 runtimeModels:URITemplate template = check java:cast(uritemplate);
                                 operations.push({target: template.getUriTemplate(), authTypeEnabled: template.isAuthEnabled(), verb: template.getHTTPVerb().toString().toUpperAscii()});
                             }
-                            return self.createAPI(additionalPropertes);
+                            return self.createAPI(additionalPropertes,validateAndRetrieveDefinitionResult.getContent());
                         }
                         log:printError("Error occured retrieving uri templates from definition", uRITemplates);
                         runtimeapi:JAPIManagementException excetion = check uRITemplates.ensureType(runtimeapi:JAPIManagementException);

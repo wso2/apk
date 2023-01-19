@@ -855,19 +855,20 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
 }
 
 @test:Config {dataProvider: testDataGeneratedSwaggerDefinition}
-public function testRetrieveGeneratedSwaggerDefinition(API api, anydata expectedOutput) {
+public function testRetrieveGeneratedSwaggerDefinition(API api, string? definition, anydata expectedOutput) {
     APIClient apiclient = new;
-    test:assertEquals(apiclient.retrieveGeneratedSwaggerDefinition(api), expectedOutput);
+    test:assertEquals(apiclient.retrieveGeneratedSwaggerDefinition(api, definition), expectedOutput);
 }
 
-function testDataGeneratedSwaggerDefinition() returns map<[API, json|APKError]> {
-    map<[API, json|APKError]> data = {
+function testDataGeneratedSwaggerDefinition() returns map<[API, string?, json|APKError]> {
+    map<[API, string?, json|APKError]> data = {
         "1": [
             {
                 "name": "demoAPI",
                 "context": "/demoAPI/1.0.0",
                 "version": "1.0.0"
             },
+            (),
             {
                 "openapi": "3.0.1",
                 "info": {"title": "demoAPI", "version": "1.0.0"},
@@ -890,6 +891,7 @@ function testDataGeneratedSwaggerDefinition() returns map<[API, json|APKError]> 
                 "version": "1.0.0",
                 "operations": [{target: "/*", verb: "GET"}, {target: "/*", verb: "POST"}, {target: "/*", verb: "DELETE"}]
             },
+            (),
             {
                 "openapi": "3.0.1",
                 "info": {
@@ -959,6 +961,733 @@ function testDataGeneratedSwaggerDefinition() returns map<[API, json|APKError]> 
                             }
                         }
                     }
+                }
+            }
+        ]
+        ,
+        "3": [
+            {
+                "name": "demoAPI",
+                "context": "/demoAPI/1.0.0",
+                "version": "1.0.0",
+                "type": "HTTP",
+                "operations": [{target: "/menu", verb: "GET"}, {target: "/order", verb: "POST"}, {target: "/order/{orderId}", verb: "GET"}]
+            },
+            {
+                "openapi": "3.0.0",
+                "info": {
+                    "title": "PizzaShackAPI",
+                    "description": "This is a RESTFul API for Pizza Shack online pizza delivery store.\n",
+                    "contact": {
+                        "name": "John Doe",
+                        "url": "http://www.pizzashack.com",
+                        "email": "architecture@pizzashack.com"
+                    },
+                    "license": {
+                        "name": "Apache 2.0",
+                        "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+                    },
+                    "version": "1.0.0"
+                },
+                "servers": [
+                    {
+                        "url": "/"
+                    }
+                ],
+                "security": [
+                    {
+                        "default": []
+                    }
+                ],
+                "paths": {
+                    "/order": {
+                        "post": {
+                            "description": "Create a new Order",
+                            "requestBody": {
+                                "$ref": "#/components/requestBodies/Order"
+                            },
+                            "responses": {
+                                "201": {
+                                    "description": "Created. Successful response with the newly created object as entity inthe body.Location header contains URL of newly created entity.",
+                                    "headers": {
+                                        "Location": {
+                                            "description": "The URL of the newly created resource.",
+                                            "style": "simple",
+                                            "explode": false,
+                                            "schema": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "Content-Type": {
+                                            "description": "The content type of the body.",
+                                            "style": "simple",
+                                            "explode": false,
+                                            "schema": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "content": {
+                                        "application/json": {
+                                            "schema": {
+                                                "$ref": "#/components/schemas/Order"
+                                            }
+                                        }
+                                    }
+                                },
+                                "400": {
+                                    "description": "Bad Request. Invalid request or validation error.",
+                                    "content": {
+                                        "application/json": {
+                                            "schema": {
+                                                "$ref": "#/components/schemas/Error"
+                                            }
+                                        }
+                                    }
+                                },
+                                "415": {
+                                    "description": "Unsupported Media Type. The entity of the request was in a not supported format.",
+                                    "content": {
+                                        "application/json": {
+                                            "schema": {
+                                                "$ref": "#/components/schemas/Error"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "security": [
+                                {
+                                    "default": []
+                                }
+                            ]
+                        }
+                    },
+                    "/menu": {
+                        "get": {
+                            "description": "Return a list of available menu items",
+                            "responses": {
+                                "200": {
+                                    "description": "OK. List of APIs is returned.",
+                                    "content": {
+                                        "application/json": {
+                                            "schema": {
+                                                "type": "array",
+                                                "items": {
+                                                    "$ref": "#/components/schemas/MenuItem"
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                "406": {
+                                    "description": "Not Acceptable. The requested media type is not supported",
+                                    "content": {
+                                        "application/json": {
+                                            "schema": {
+                                                "$ref": "#/components/schemas/Error"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "security": [
+                                {
+                                    "default": []
+                                }
+                            ],
+                            "x-throttling-tier": "Unlimited"
+                        }
+                    },
+                    "/order/{orderId}": {
+                        "get": {
+                            "description": "Get details of an Order",
+                            "parameters": [
+                                {
+                                    "name": "orderId",
+                                    "in": "path",
+                                    "description": "Order Id",
+                                    "required": true,
+                                    "style": "simple",
+                                    "explode": false,
+                                    "schema": {
+                                        "type": "string",
+                                        "format": "string"
+                                    }
+                                }
+                            ],
+                            "responses": {
+                                "200": {
+                                    "description": "OK Requested Order will be returned",
+                                    "content": {
+                                        "application/json": {
+                                            "schema": {
+                                                "$ref": "#/components/schemas/Order"
+                                            }
+                                        }
+                                    }
+                                },
+                                "404": {
+                                    "description": "Not Found. Requested API does not exist.",
+                                    "content": {
+                                        "application/json": {
+                                            "schema": {
+                                                "$ref": "#/components/schemas/Error"
+                                            }
+                                        }
+                                    }
+                                },
+                                "406": {
+                                    "description": "Not Acceptable. The requested media type is not supported",
+                                    "content": {
+                                        "application/json": {
+                                            "schema": {
+                                                "$ref": "#/components/schemas/Error"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "security": [
+                                {
+                                    "default": []
+                                }
+                            ],
+                            "x-auth-type": true,
+                            "x-throttling-tier": "Unlimited"
+                        }
+                    }
+                },
+                "components": {
+                    "schemas": {
+                        "ErrorListItem": {
+                            "title": "Description of individual errors that may have occurred during a request.",
+                            "required": [
+                                "code",
+                                "message"
+                            ],
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "description": "Description about individual errors occurred"
+                                },
+                                "code": {
+                                    "type": "integer",
+                                    "format": "int64"
+                                }
+                            }
+                        },
+                        "MenuItem": {
+                            "title": "Pizza menu Item",
+                            "required": [
+                                "name"
+                            ],
+                            "properties": {
+                                "price": {
+                                    "type": "string"
+                                },
+                                "description": {
+                                    "type": "string"
+                                },
+                                "name": {
+                                    "type": "string"
+                                },
+                                "image": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "Order": {
+                            "title": "Pizza Order",
+                            "required": [
+                                "orderId"
+                            ],
+                            "properties": {
+                                "customerName": {
+                                    "type": "string"
+                                },
+                                "delivered": {
+                                    "type": "boolean"
+                                },
+                                "address": {
+                                    "type": "string"
+                                },
+                                "pizzaType": {
+                                    "type": "string"
+                                },
+                                "creditCardNumber": {
+                                    "type": "string"
+                                },
+                                "quantity": {
+                                    "type": "number"
+                                },
+                                "orderId": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "Error": {
+                            "title": "Error object returned with 4XX HTTP status",
+                            "required": [
+                                "code",
+                                "message"
+                            ],
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "description": "Error message."
+                                },
+                                "error": {
+                                    "type": "array",
+                                    "description": "If there are more than one error list them out. Ex. list out validation errors by each field.",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ErrorListItem"
+                                    }
+                                },
+                                "description": {
+                                    "type": "string",
+                                    "description": "A detail description about the error message."
+                                },
+                                "code": {
+                                    "type": "integer",
+                                    "format": "int64"
+                                },
+                                "moreInfo": {
+                                    "type": "string",
+                                    "description": "Preferably an url with more details about the error."
+                                }
+                            }
+                        }
+                    },
+                    "requestBodies": {
+                        "Order": {
+                            "description": "Order object that needs to be added",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "$ref": "#/components/schemas/Order"
+                                    }
+                                }
+                            },
+                            "required": true
+                        }
+                    },
+                    "securitySchemes": {
+                        "default": {
+                            "type": "oauth2",
+                            "flows": {
+                                "implicit": {
+                                    "authorizationUrl": "https://test.com",
+                                    "scopes": {}
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-wso2-auth-header": "Authorization",
+                "x-wso2-cors": {
+                    "corsConfigurationEnabled": false,
+                    "accessControlAllowOrigins": [
+                        "*"
+                    ],
+                    "accessControlAllowCredentials": false,
+                    "accessControlAllowHeaders": [
+                        "authorization",
+                        "Access-Control-Allow-Origin",
+                        "Content-Type",
+                        "SOAPAction",
+                        "apikey",
+                        "Internal-Key"
+                    ],
+                    "accessControlAllowMethods": [
+                        "GET",
+                        "PUT",
+                        "POST",
+                        "DELETE",
+                        "PATCH",
+                        "OPTIONS"
+                    ]
+                },
+                "x-wso2-production-endpoints": {
+                    "urls": [
+                        "https://localhost:9443/am/sample/pizzashack/v1/api/"
+                    ],
+                    "type": "http"
+                },
+                "x-wso2-sandbox-endpoints": {
+                    "urls": [
+                        "https://localhost:9443/am/sample/pizzashack/v1/api/"
+                    ],
+                    "type": "http"
+                },
+                "x-wso2-basePath": "/pizzashack/1.0.0",
+                "x-wso2-transports": [
+                    "http",
+                    "https"
+                ],
+                "x-wso2-response-cache": {
+                    "enabled": false,
+                    "cacheTimeoutInSeconds": 300
+                }
+            }.toJsonString(),
+            {
+                "openapi": "3.0.0",
+                "info": {
+                    "title": "demoAPI",
+                    "description": "This is a RESTFul API for Pizza Shack online pizza delivery store.\n",
+                    "contact": {
+                        "name": "John Doe",
+                        "url": "http://www.pizzashack.com",
+                        "email": "architecture@pizzashack.com"
+                    },
+                    "license": {
+                        "name": "Apache 2.0",
+                        "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+                    },
+                    "version": "1.0.0"
+                },
+                "servers": [
+                    {
+                        "url": "/"
+                    }
+                ],
+                "security": [
+                    {
+                        "default": []
+                    }
+                ],
+                "paths": {
+                    "/order": {
+                        "post": {
+                            "description": "Create a new Order",
+                            "requestBody": {
+                                "$ref": "#/components/requestBodies/Order"
+                            },
+                            "responses": {
+                                "201": {
+                                    "description": "Created. Successful response with the newly created object as entity inthe body.Location header contains URL of newly created entity.",
+                                    "headers": {
+                                        "Location": {
+                                            "description": "The URL of the newly created resource.",
+                                            "style": "simple",
+                                            "explode": false,
+                                            "schema": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "Content-Type": {
+                                            "description": "The content type of the body.",
+                                            "style": "simple",
+                                            "explode": false,
+                                            "schema": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "content": {
+                                        "application/json": {
+                                            "schema": {
+                                                "$ref": "#/components/schemas/Order"
+                                            }
+                                        }
+                                    }
+                                },
+                                "400": {
+                                    "description": "Bad Request. Invalid request or validation error.",
+                                    "content": {
+                                        "application/json": {
+                                            "schema": {
+                                                "$ref": "#/components/schemas/Error"
+                                            }
+                                        }
+                                    }
+                                },
+                                "415": {
+                                    "description": "Unsupported Media Type. The entity of the request was in a not supported format.",
+                                    "content": {
+                                        "application/json": {
+                                            "schema": {
+                                                "$ref": "#/components/schemas/Error"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "security": [
+                                {
+                                    "default": []
+                                }
+                            ],
+                            "x-auth-type": true,
+                            "x-throttling-tier": "Unlimited"
+                        }
+                    },
+                    "/menu": {
+                        "get": {
+                            "description": "Return a list of available menu items",
+                            "responses": {
+                                "200": {
+                                    "description": "OK. List of APIs is returned.",
+                                    "content": {
+                                        "application/json": {
+                                            "schema": {
+                                                "type": "array",
+                                                "items": {
+                                                    "$ref": "#/components/schemas/MenuItem"
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                "406": {
+                                    "description": "Not Acceptable. The requested media type is not supported",
+                                    "content": {
+                                        "application/json": {
+                                            "schema": {
+                                                "$ref": "#/components/schemas/Error"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "security": [
+                                {
+                                    "default": []
+                                }
+                            ],
+                            "x-auth-type": true,
+                            "x-throttling-tier": "Unlimited"
+                        }
+                    },
+                    "/order/{orderId}": {
+                        "get": {
+                            "description": "Get details of an Order",
+                            "parameters": [
+                                {
+                                    "name": "orderId",
+                                    "in": "path",
+                                    "description": "Order Id",
+                                    "required": true,
+                                    "style": "simple",
+                                    "explode": false,
+                                    "schema": {
+                                        "type": "string",
+                                        "format": "string"
+                                    }
+                                }
+                            ],
+                            "responses": {
+                                "200": {
+                                    "description": "OK Requested Order will be returned",
+                                    "content": {
+                                        "application/json": {
+                                            "schema": {
+                                                "$ref": "#/components/schemas/Order"
+                                            }
+                                        }
+                                    }
+                                },
+                                "404": {
+                                    "description": "Not Found. Requested API does not exist.",
+                                    "content": {
+                                        "application/json": {
+                                            "schema": {
+                                                "$ref": "#/components/schemas/Error"
+                                            }
+                                        }
+                                    }
+                                },
+                                "406": {
+                                    "description": "Not Acceptable. The requested media type is not supported",
+                                    "content": {
+                                        "application/json": {
+                                            "schema": {
+                                                "$ref": "#/components/schemas/Error"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "security": [
+                                {
+                                    "default": []
+                                }
+                            ],
+                            "x-auth-type": true,
+                            "x-throttling-tier": "Unlimited"
+                        }
+                    }
+                },
+                "components": {
+                    "schemas": {
+                        "ErrorListItem": {
+                            "title": "Description of individual errors that may have occurred during a request.",
+                            "required": [
+                                "code",
+                                "message"
+                            ],
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "description": "Description about individual errors occurred"
+                                },
+                                "code": {
+                                    "type": "integer",
+                                    "format": "int64"
+                                }
+                            }
+                        },
+                        "MenuItem": {
+                            "title": "Pizza menu Item",
+                            "required": [
+                                "name"
+                            ],
+                            "properties": {
+                                "price": {
+                                    "type": "string"
+                                },
+                                "description": {
+                                    "type": "string"
+                                },
+                                "name": {
+                                    "type": "string"
+                                },
+                                "image": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "Order": {
+                            "title": "Pizza Order",
+                            "required": [
+                                "orderId"
+                            ],
+                            "properties": {
+                                "customerName": {
+                                    "type": "string"
+                                },
+                                "delivered": {
+                                    "type": "boolean"
+                                },
+                                "address": {
+                                    "type": "string"
+                                },
+                                "pizzaType": {
+                                    "type": "string"
+                                },
+                                "creditCardNumber": {
+                                    "type": "string"
+                                },
+                                "quantity": {
+                                    "type": "number"
+                                },
+                                "orderId": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "Error": {
+                            "title": "Error object returned with 4XX HTTP status",
+                            "required": [
+                                "code",
+                                "message"
+                            ],
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "description": "Error message."
+                                },
+                                "error": {
+                                    "type": "array",
+                                    "description": "If there are more than one error list them out. Ex. list out validation errors by each field.",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ErrorListItem"
+                                    }
+                                },
+                                "description": {
+                                    "type": "string",
+                                    "description": "A detail description about the error message."
+                                },
+                                "code": {
+                                    "type": "integer",
+                                    "format": "int64"
+                                },
+                                "moreInfo": {
+                                    "type": "string",
+                                    "description": "Preferably an url with more details about the error."
+                                }
+                            }
+                        }
+                    },
+                    "requestBodies": {
+                        "Order": {
+                            "description": "Order object that needs to be added",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "$ref": "#/components/schemas/Order"
+                                    }
+                                }
+                            },
+                            "required": true
+                        }
+                    },
+                    "securitySchemes": {
+                        "default": {
+                            "type": "oauth2",
+                            "flows": {
+                                "implicit": {
+                                    "authorizationUrl": "https://test.com",
+                                    "scopes": {}
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-wso2-auth-header": "Authorization",
+                "x-wso2-cors": {
+                    "corsConfigurationEnabled": false,
+                    "accessControlAllowOrigins": [
+                        "*"
+                    ],
+                    "accessControlAllowCredentials": false,
+                    "accessControlAllowHeaders": [
+                        "authorization",
+                        "Access-Control-Allow-Origin",
+                        "Content-Type",
+                        "SOAPAction",
+                        "apikey",
+                        "Internal-Key"
+                    ],
+                    "accessControlAllowMethods": [
+                        "GET",
+                        "PUT",
+                        "POST",
+                        "DELETE",
+                        "PATCH",
+                        "OPTIONS"
+                    ]
+                },
+                "x-wso2-production-endpoints": {
+                    "urls": [
+                        "https://localhost:9443/am/sample/pizzashack/v1/api/"
+                    ],
+                    "type": "http"
+                },
+                "x-wso2-sandbox-endpoints": {
+                    "urls": [
+                        "https://localhost:9443/am/sample/pizzashack/v1/api/"
+                    ],
+                    "type": "http"
+                },
+                "x-wso2-basePath": "/pizzashack/1.0.0",
+                "x-wso2-transports": [
+                    "http",
+                    "https"
+                ],
+                "x-wso2-response-cache": {
+                    "enabled": false,
+                    "cacheTimeoutInSeconds": 300
                 }
             }
         ]
@@ -1211,11 +1940,11 @@ function testCreateAPI(string apiUUID, string backenduuid, API api, model:Config
         test:prepare(k8sApiServerEp).when("post").withArguments("/api/v1/namespaces/apk-platform/services", servicesResponse[0]).thenReturn(servicesResponse[1]);
     }
     test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis", k8sApi).thenReturn(k8sapiResponse);
-    APKError|CreatedAPI|BadRequestError aPI = apiClient.createAPI(api);
-    if aPI is BadRequestError||aPI is CreatedAPI {
-    test:assertEquals(aPI, expected);
-    } else if aPI is APKError{
-    test:assertEquals(aPI.toBalString(), expected);
+    APKError|CreatedAPI|BadRequestError aPI = apiClient.createAPI(api, ());
+    if aPI is BadRequestError || aPI is CreatedAPI {
+        test:assertEquals(aPI, expected);
+    } else if aPI is APKError {
+        test:assertEquals(aPI.toBalString(), expected);
     }
 }
 
@@ -1556,7 +2285,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             getMockAPIResponse(getMockAPI(api, apiUUID), k8sapiUUID),
             k8sapiUUID,
             createdAPI
-        ],
+        ]
+        ,
         "2": [
             apiUUID,
             backenduuid,

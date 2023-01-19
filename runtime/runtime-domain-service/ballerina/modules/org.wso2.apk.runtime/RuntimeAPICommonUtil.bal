@@ -114,6 +114,21 @@ public isolated function RuntimeAPICommonUtil_generateDefinition(orgwso2apkrunti
     }
 }
 
+# The function that maps to the `generateDefinition` method of `org.wso2.apk.runtime.RuntimeAPICommonUtil`.
+#
+# + arg0 - The `orgwso2apkruntimemodel:API` value required to map with the Java method parameter.
+# + arg1 - The `string` value required to map with the Java method parameter.
+# + return - The `string` or the `orgwso2apkruntimeapi:APIManagementException` value returning from the Java mapping.
+public isolated function RuntimeAPICommonUtil_generateDefinition2(orgwso2apkruntimemodel:API arg0, string arg1) returns string?|orgwso2apkruntimeapi:APIManagementException {
+    handle|error externalObj = org_wso2_apk_runtime_RuntimeAPICommonUtil_generateDefinition2(arg0.jObj, java:fromString(arg1));
+    if (externalObj is error) {
+        orgwso2apkruntimeapi:APIManagementException e = error orgwso2apkruntimeapi:APIManagementException(orgwso2apkruntimeapi:APIMANAGEMENTEXCEPTION, externalObj, message = externalObj.message());
+        return e;
+    } else {
+        return java:toString(externalObj);
+    }
+}
+
 # The function that maps to the `generateUriTemplatesFromAPIDefinition` method of `org.wso2.apk.runtime.RuntimeAPICommonUtil`.
 #
 # + arg0 - The `string` value required to map with the Java method parameter.
@@ -159,6 +174,12 @@ isolated function org_wso2_apk_runtime_RuntimeAPICommonUtil_generateDefinition(h
     name: "generateDefinition",
     'class: "org.wso2.apk.runtime.RuntimeAPICommonUtil",
     paramTypes: ["org.wso2.apk.runtime.model.API"]
+} external;
+
+isolated function org_wso2_apk_runtime_RuntimeAPICommonUtil_generateDefinition2(handle arg0, handle arg1) returns handle|error = @java:Method {
+    name: "generateDefinition",
+    'class: "org.wso2.apk.runtime.RuntimeAPICommonUtil",
+    paramTypes: ["org.wso2.apk.runtime.model.API", "java.lang.String"]
 } external;
 
 function org_wso2_apk_runtime_RuntimeAPICommonUtil_generateUriTemplatesFromAPIDefinition(handle arg0, handle arg1) returns handle|error = @java:Method {
