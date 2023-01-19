@@ -310,8 +310,7 @@ func (apiReconciler *APIReconciler) getHostNameForBackend(ctx context.Context, b
 			return service.Spec.ExternalName
 		}
 	}
-	return fmt.Sprintf("%s.%s", backend.Name,
-		utils.GetNamespace(backend.Namespace, defaultNamespace))
+	return utils.GetDefaultHostNameForBackend(backend, defaultNamespace)
 }
 
 // getAPIForHTTPRoute triggers the API controller reconcile method based on the changes detected

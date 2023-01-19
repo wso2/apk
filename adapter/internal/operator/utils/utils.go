@@ -18,12 +18,15 @@
 package utils
 
 import (
+	"fmt"
+
 	constants "github.com/wso2/apk/adapter/internal/operator/constants"
 	"github.com/wso2/apk/adapter/pkg/utils/envutils"
 	"github.com/wso2/apk/adapter/pkg/utils/stringutils"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/gateway-api/apis/v1beta1"
+	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
 // NamespacedName generates namespaced name for Kubernetes objects
@@ -80,4 +83,11 @@ func PathMatchTypePtr(pType v1beta1.PathMatchType) *v1beta1.PathMatchType {
 // StringPtr returns a pointer to created string
 func StringPtr(val string) *string {
 	return &val
+}
+
+// GetDefaultHostNameForBackend returns the host in <backend.name>.<namespace> format
+func GetDefaultHostNameForBackend(backend gwapiv1b1.HTTPBackendRef,
+	defaultNamespace string) string {
+	return fmt.Sprintf("%s.%s", backend.Name,
+		GetNamespace(backend.Namespace, defaultNamespace))
 }

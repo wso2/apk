@@ -120,7 +120,7 @@ func TestCreateRoutesWithClusters(t *testing.T) {
 	httpRouteState.HTTPRoute = &httpRoute
 	httpRouteState.Authentications = make(map[string]dpv1alpha1.Authentication)
 	httpRouteState.ResourceAuthentications = make(map[string]dpv1alpha1.Authentication)
-	httpRouteState.BackendPropertyMapping = getBackendProperties(&httpRoute)
+	httpRouteState.BackendPropertyMapping = getDefaultBackendProperties(&httpRoute)
 
 	apiState.ProdHTTPRoute = &httpRouteState
 
@@ -216,13 +216,13 @@ func createDefaultBackendRef(serviceName string, port int32, weight int32) gwapi
 	}
 }
 
-func getBackendProperties(httpRoute *gwapiv1b1.HTTPRoute) dpv1alpha1.BackendPropertyMapping {
+func getDefaultBackendProperties(httpRoute *gwapiv1b1.HTTPRoute) dpv1alpha1.BackendPropertyMapping {
 	backendPropertyMapping := make(dpv1alpha1.BackendPropertyMapping)
 	for ruleIndex, rule := range httpRoute.Spec.Rules {
 		backendPropertyMapping[ruleIndex] = make(map[int]dpv1alpha1.BackendProperties)
 		for backendIndex, backend := range rule.BackendRefs {
 			backendPropertyMapping[ruleIndex][backendIndex] = dpv1alpha1.BackendProperties{
-				ResolvedHostname: getHostNameForBackend(backend, httpRoute.Namespace),
+				ResolvedHostname: operatorutils.GetDefaultHostNameForBackend(backend, httpRoute.Namespace),
 			}
 		}
 	}
