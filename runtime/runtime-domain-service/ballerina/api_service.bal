@@ -32,7 +32,7 @@ http:Service runtimeService = service object {
     }
     isolated resource function post apis(@http:Payload API payload) returns CreatedAPI|BadRequestError|InternalServerErrorError {
         APIClient apiService = new ();
-        APKError|CreatedAPI|BadRequestError createdAPI = apiService.createAPI(payload);
+        APKError|CreatedAPI|BadRequestError createdAPI = apiService.createAPI(payload,());
         if createdAPI is APKError {
             return handleAPKError(createdAPI);
         } else {

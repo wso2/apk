@@ -64,6 +64,18 @@ public class RuntimeAPICommonUtil {
         }
     }
 
+    /**
+     * This method used to retrieve API definition merged with custom properties.
+     * @param api API object
+     * @param definition user given definition.
+     * @return definition
+     * @throws APIManagementException
+     */
+    public static String generateDefinition(API api,String definition) throws APIManagementException {
+        APIDefinition parser = DefinitionParserFactory.getParser(api);
+        return parser.generateAPIDefinition(api,definition);
+    }
+
     private RuntimeAPICommonUtil() {
     }
 
