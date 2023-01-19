@@ -17,9 +17,11 @@
 
 package v1alpha1
 
+import "k8s.io/apimachinery/pkg/types"
+
 // BackendPropertyMapping keep a two level map using rule index and backend index to
 // a backend properties
-type BackendPropertyMapping map[int]map[int]BackendProperties
+type BackendPropertyMapping map[types.NamespacedName]BackendProperties
 
 // BackendProperties holds backend properties
 type BackendProperties struct {

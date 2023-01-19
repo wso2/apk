@@ -27,6 +27,7 @@ import (
 	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
 	"github.com/wso2/apk/adapter/internal/operator/utils"
 	"golang.org/x/exp/maps"
+	"k8s.io/apimachinery/pkg/types"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
@@ -38,7 +39,7 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, au
 	var securitySchemes []SecurityScheme
 	//TODO(amali) add gateway level securities after gateway crd has implemented
 	authScheme := selectAuthScheme(maps.Values(authSchemes))
-	for ruleIndex, rule := range httpRoute.Spec.Rules {
+	for _, rule := range httpRoute.Spec.Rules {
 		var endPoints []Endpoint
 		var policies = OperationPolicies{}
 		resourceAuthScheme := authScheme
@@ -112,9 +113,12 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, au
 		if len(rule.BackendRefs) < 1 {
 			return fmt.Errorf("no backendref were provided")
 		}
-		for backendIndex, backend := range rule.BackendRefs {
+		for _, backend := range rule.BackendRefs {
 			endPoints = append(endPoints,
-				Endpoint{Host: backendPropertyMapping[ruleIndex][backendIndex].ResolvedHostname,
+				Endpoint{Host: backendPropertyMapping[types.NamespacedName{
+					Name:      string(backend.Name),
+					Namespace: utils.GetNamespace(backend.Namespace, httpRoute.Namespace),
+				}].ResolvedHostname,
 					URLType: constants.HTTP,
 					Port:    uint32(*backend.Port)})
 		}

@@ -18,7 +18,6 @@ package envoyconf_test
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"strings"
 	"testing"
@@ -34,6 +33,7 @@ import (
 	"github.com/wso2/apk/adapter/internal/operator/synchronizer"
 	operatorutils "github.com/wso2/apk/adapter/internal/operator/utils"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8types "k8s.io/apimachinery/pkg/types"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
@@ -120,7 +120,17 @@ func TestCreateRoutesWithClusters(t *testing.T) {
 	httpRouteState.HTTPRoute = &httpRoute
 	httpRouteState.Authentications = make(map[string]dpv1alpha1.Authentication)
 	httpRouteState.ResourceAuthentications = make(map[string]dpv1alpha1.Authentication)
-	httpRouteState.BackendPropertyMapping = getDefaultBackendProperties(&httpRoute)
+
+	backendPropertyMapping := make(dpv1alpha1.BackendPropertyMapping)
+	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "order-service"}] =
+		dpv1alpha1.BackendProperties{ResolvedHostname: "order-service.default"}
+	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "order-service-2"}] =
+		dpv1alpha1.BackendProperties{ResolvedHostname: "order-service-2.default"}
+	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "user-service"}] =
+		dpv1alpha1.BackendProperties{ResolvedHostname: "user-service.default"}
+	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "user-service-2"}] =
+		dpv1alpha1.BackendProperties{ResolvedHostname: "user-service-2.default"}
+	httpRouteState.BackendPropertyMapping = backendPropertyMapping
 
 	apiState.ProdHTTPRoute = &httpRouteState
 
@@ -214,25 +224,6 @@ func createDefaultBackendRef(serviceName string, port int32, weight int32) gwapi
 			Weight: &weight,
 		},
 	}
-}
-
-func getDefaultBackendProperties(httpRoute *gwapiv1b1.HTTPRoute) dpv1alpha1.BackendPropertyMapping {
-	backendPropertyMapping := make(dpv1alpha1.BackendPropertyMapping)
-	for ruleIndex, rule := range httpRoute.Spec.Rules {
-		backendPropertyMapping[ruleIndex] = make(map[int]dpv1alpha1.BackendProperties)
-		for backendIndex, backend := range rule.BackendRefs {
-			backendPropertyMapping[ruleIndex][backendIndex] = dpv1alpha1.BackendProperties{
-				ResolvedHostname: operatorutils.GetDefaultHostNameForBackend(backend, httpRoute.Namespace),
-			}
-		}
-	}
-	return backendPropertyMapping
-}
-
-func getHostNameForBackend(backend gwapiv1b1.HTTPBackendRef,
-	defaultNamespace string) string {
-	return fmt.Sprintf("%s.%s", backend.Name,
-		operatorutils.GetNamespace(backend.Namespace, defaultNamespace))
 }
 
 func testCreateRoutesWithClustersWebsocket(t *testing.T, apiYamlFilePath string) {

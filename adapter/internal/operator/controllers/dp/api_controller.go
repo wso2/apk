@@ -282,10 +282,12 @@ func (apiReconciler *APIReconciler) getAuthenticationsForResources(ctx context.C
 func (apiReconciler *APIReconciler) getBackendProperties(ctx context.Context,
 	httpRoute *gwapiv1b1.HTTPRoute) dpv1alpha1.BackendPropertyMapping {
 	backendPropertyMapping := make(dpv1alpha1.BackendPropertyMapping)
-	for ruleIndex, rule := range httpRoute.Spec.Rules {
-		backendPropertyMapping[ruleIndex] = make(map[int]dpv1alpha1.BackendProperties)
-		for backendIndex, backend := range rule.BackendRefs {
-			backendPropertyMapping[ruleIndex][backendIndex] = dpv1alpha1.BackendProperties{
+	for _, rule := range httpRoute.Spec.Rules {
+		for _, backend := range rule.BackendRefs {
+			backendPropertyMapping[types.NamespacedName{
+				Name:      string(backend.Name),
+				Namespace: utils.GetNamespace(backend.Namespace, httpRoute.Namespace),
+			}] = dpv1alpha1.BackendProperties{
 				ResolvedHostname: apiReconciler.getHostNameForBackend(ctx,
 					backend, httpRoute.Namespace),
 			}
