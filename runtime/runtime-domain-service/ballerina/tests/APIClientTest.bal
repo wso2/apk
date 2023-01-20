@@ -1993,19 +1993,8 @@ function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid
                                     "replaceFullPath": "\\1"
                                 }
                             }
-                        },
-                        {
-                            "type": "RequestHeaderModifier",
-                            "requestHeaderModifier": {
-                                "add": [
-                                    {
-                                        "name": "Host",
-                                        "value": "localhost"
-                                    }
-                                ]
-                            }
                         }
-                    ],
+                        ],
                     "backendRefs": [
                         {
                             "weight": 1,
@@ -2035,17 +2024,6 @@ function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid
                                     "type": "ReplaceFullPath",
                                     "replaceFullPath": "\\1"
                                 }
-                            }
-                        },
-                        {
-                            "type": "RequestHeaderModifier",
-                            "requestHeaderModifier": {
-                                "add": [
-                                    {
-                                        "name": "Host",
-                                        "value": "localhost"
-                                    }
-                                ]
                             }
                         }
                     ],
@@ -2079,17 +2057,6 @@ function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid
                                     "replaceFullPath": "\\1"
                                 }
                             }
-                        },
-                        {
-                            "type": "RequestHeaderModifier",
-                            "requestHeaderModifier": {
-                                "add": [
-                                    {
-                                        "name": "Host",
-                                        "value": "localhost"
-                                    }
-                                ]
-                            }
                         }
                     ],
                     "backendRefs": [
@@ -2122,17 +2089,6 @@ function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid
                                     "replaceFullPath": "\\1"
                                 }
                             }
-                        },
-                        {
-                            "type": "RequestHeaderModifier",
-                            "requestHeaderModifier": {
-                                "add": [
-                                    {
-                                        "name": "Host",
-                                        "value": "localhost"
-                                    }
-                                ]
-                            }
                         }
                     ],
                     "backendRefs": [
@@ -2164,17 +2120,6 @@ function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid
                                     "type": "ReplaceFullPath",
                                     "replaceFullPath": "\\1"
                                 }
-                            }
-                        },
-                        {
-                            "type": "RequestHeaderModifier",
-                            "requestHeaderModifier": {
-                                "add": [
-                                    {
-                                        "name": "Host",
-                                        "value": "localhost"
-                                    }
-                                ]
                             }
                         }
                     ],

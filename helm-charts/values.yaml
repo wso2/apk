@@ -61,7 +61,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: IfNotPresent
-          image: wso2/devportal-domain-service:0.0.1-m2
+          image: wso2/devportal-domain-service:latest
         ingress:
           path: /api/am/devportal
           className: ""
@@ -96,7 +96,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: IfNotPresent
-          image: wso2/admin-domain-service:0.0.1-m2
+          image: wso2/admin-domain-service:latest
         ingress:
           path: /api/am/admin
           className: ""
@@ -227,7 +227,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: IfNotPresent
-          image: wso2/management-server:0.0.1-m2
+          image: wso2/management-server:latest
       cnpg:
         npi: cnpg-npi
         instances: 1
@@ -302,7 +302,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: IfNotPresent
-          image: wso2/adapter:0.0.1-m2
+          image: wso2/adapter:latest
           security:
             sslHostname: "adapter"
       gatewayRuntime:

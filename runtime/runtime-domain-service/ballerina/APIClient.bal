@@ -722,7 +722,9 @@ public class APIClient {
             if endpointConfig is record {} {
                 // endpointConfig presense at Operation Level.
                 map<model:Endpoint> operationalLevelBackend = check self.createAndAddBackendServics(apiArtifact, api, endpointConfig, operation, endpointType);
-                endpointToUse = operationalLevelBackend.get(endpointType);
+                if operationalLevelBackend.hasKey(endpointType) {
+                endpointToUse = operationalLevelBackend.get(endpointType);                    
+                }
             } else {
                 if endpoint is model:Endpoint {
                     endpointToUse = endpoint;
@@ -744,10 +746,6 @@ public class APIClient {
         model:HTTPRouteFilter[] routeFilters = [];
         model:HTTPRouteFilter replacePathFilter = {'type: "URLRewrite", urlRewrite: {path: {'type: "ReplaceFullPath", replaceFullPath: self.generatePrefixMatch(api, endpoint, operation, endpointType)}}};
         routeFilters.push(replacePathFilter);
-        if !endpoint.serviceEntry {
-            model:HTTPRouteFilter backendHostHeaderModifierFilter = {'type: "RequestHeaderModifier", requestHeaderModifier: {add: [{name: "Host", value: self.gethost(<string>endpoint.url)}]}};
-            routeFilters.push(backendHostHeaderModifierFilter);
-        }
         return routeFilters;
     }
 
@@ -1552,7 +1550,7 @@ type DefinitionValidationRequest record {|
 |};
 
 public isolated function getBackendServiceUid() returns string {
-    return uuid:createType1AsString();
+    return "backend-"+uuid:createType1AsString();
 }
 
 public isolated function getUniqueIdForAPI() returns string {
