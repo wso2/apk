@@ -675,7 +675,7 @@ function serviceUsageDataProvider() returns map<[string, APIList|BadRequestError
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5e8",
                         "name": "pizzashackAPI",
-                        "context": "/pizzashack/1.0.0",
+                        "context": "/t/carbon.super/pizzashack/1.0.0",
                         "version": "1.0.0",
                         "type": "HTTP",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -683,7 +683,7 @@ function serviceUsageDataProvider() returns map<[string, APIList|BadRequestError
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5e8",
                         "name": "pizzashackAPI",
-                        "context": "/pizzashack/1.0.0",
+                        "context": "/t/carbon.super/pizzashack/1.0.0",
                         "version": "1.0.0",
                         "type": "HTTP",
                         "createdTime": "2022-12-13T09:45:47Z"

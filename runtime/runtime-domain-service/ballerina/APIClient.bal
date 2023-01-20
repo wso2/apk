@@ -256,20 +256,25 @@ public class APIClient {
         return {list: limitSet, count: limitSet.length(), pagination: {total: apiList.length(), 'limit: 'limit, offset: offset}};
 
     }
-    public isolated function createAPI(API api,string? definition) returns APKError|CreatedAPI|BadRequestError {
+    public isolated function createAPI(API api, string? definition, string organization) returns APKError|CreatedAPI|BadRequestError {
         do {
 
-            if (self.validateName(api.name)) {
+            if (self.validateName(api.name, organization)) {
                 BadRequestError badRequest = {body: {code: 90911, message: "API Name - " + api.name + " already exist.", description: "API Name - " + api.name + " already exist."}};
                 return badRequest;
             }
-            if self.validateContextAndVersion(api.context, api.'version) {
+            if (!self.returnFullContext(api.context, api.'version, organization).startsWith("/t/" + organization)) {
+                // possible context register in different org.
+                BadRequestError badRequest = {body: {code: 90911, message: "Invalid Context - " + api.context + ".", description: "Invalid Context " + api.context + " ."}};
+                return badRequest;
+            }
+            if self.validateContextAndVersion(api.context, api.'version, organization) {
                 BadRequestError badRequest = {body: {code: 90911, message: "API Context - " + api.context + " already exist.", description: "API Context " + api.context + " already exist."}};
                 return badRequest;
             }
 
             self.setDefaultOperationsIfNotExist(api);
-            string uniqueId = getUniqueIdForAPI();
+            string uniqueId = getUniqueIdForAPI(api, organization);
             model:APIArtifact apiArtifact = {uniqueId: uniqueId};
             APIOperations[]? operations = api.operations;
             if operations is APIOperations[] {
@@ -286,13 +291,13 @@ public class APIClient {
             if endpointConfig is record {} {
                 createdEndpoints = check self.createAndAddBackendServics(apiArtifact, api, endpointConfig, (), ());
             }
-            _ = check self.setHttpRoute(apiArtifact, api, createdEndpoints.hasKey(PRODUCTION_TYPE) ? createdEndpoints.get(PRODUCTION_TYPE) : (), uniqueId, PRODUCTION_TYPE);
-            _ = check self.setHttpRoute(apiArtifact, api, createdEndpoints.hasKey(SANDBOX_TYPE) ? createdEndpoints.get(SANDBOX_TYPE) : (), uniqueId, SANDBOX_TYPE);
-            json generatedSwagger = check self.retrieveGeneratedSwaggerDefinition(api,definition);
+            _ = check self.setHttpRoute(apiArtifact, api, createdEndpoints.hasKey(PRODUCTION_TYPE) ? createdEndpoints.get(PRODUCTION_TYPE) : (), uniqueId, PRODUCTION_TYPE, organization);
+            _ = check self.setHttpRoute(apiArtifact, api, createdEndpoints.hasKey(SANDBOX_TYPE) ? createdEndpoints.get(SANDBOX_TYPE) : (), uniqueId, SANDBOX_TYPE, organization);
+            json generatedSwagger = check self.retrieveGeneratedSwaggerDefinition(api, definition);
             self.retrieveGeneratedConfigmapForDefinition(apiArtifact, api, generatedSwagger, uniqueId);
-            self.generateAndSetAPICRArtifact(apiArtifact, api);
+            self.generateAndSetAPICRArtifact(apiArtifact, api, organization);
             model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact);
-            CreatedAPI createdAPI = {body: {name: api.name, context: self.returnFullContext(api.context, api.'version), 'version: api.'version, id: deployAPIToK8sResult.metadata.uid}};
+            CreatedAPI createdAPI = {body: {name: api.name, context: self.returnFullContext(api.context, api.'version, organization), 'version: api.'version, id: deployAPIToK8sResult.metadata.uid}};
             return createdAPI;
         } on fail var e {
             if e is APKError {
@@ -359,42 +364,51 @@ public class APIClient {
         map<string> labels = {"api-name": api.name, "api-version": api.'version, "k8sapi-name": uniqueId};
         return labels;
     }
-    isolated function validateContextAndVersion(string context, string 'version) returns boolean {
-
+    isolated function validateContextAndVersion(string context, string 'version, string organization) returns boolean {
         foreach model:API k8sAPI in getAPIs() {
-            if k8sAPI.spec.context == self.returnFullContext(context, 'version) {
+            if k8sAPI.spec.context == self.returnFullContext(context, 'version, organization) &&
+            k8sAPI.spec.organization == organization {
                 return true;
             }
         }
         return false;
     }
-    isolated function validateContext(string context) returns boolean {
+
+    isolated function validateContext(string context, string organization) returns boolean {
 
         foreach model:API k8sAPI in getAPIs() {
-            if k8sAPI.spec.context == context {
+            if k8sAPI.spec.context == self.retrieveOrgAwareContext(context, organization) &&
+            k8sAPI.spec.organization == organization {
                 return true;
             }
         }
         return false;
     }
-    private isolated function returnFullContext(string context, string 'version) returns string {
+    private isolated function retrieveOrgAwareContext(string context, string organization) returns string {
+        string fullContext = context;
+        if (!string:startsWith(fullContext, "/t/")) {
+            fullContext = string:'join("/", "", "t", organization) + fullContext;
+        }
+        return fullContext;
+    }
+    isolated function returnFullContext(string context, string 'version, string organization) returns string {
         string fullContext = context;
         if (!string:endsWith(context, 'version)) {
             fullContext = string:'join("/", context, 'version);
         }
-        return fullContext;
+        return self.retrieveOrgAwareContext(fullContext, organization);
     }
 
-    isolated function validateName(string name) returns boolean {
+    isolated function validateName(string name, string organization) returns boolean {
         foreach model:API k8sAPI in getAPIs() {
-            if k8sAPI.spec.apiDisplayName == name {
+            if k8sAPI.spec.apiDisplayName == name && k8sAPI.spec.organization == organization {
                 return true;
             }
         }
         return false;
     }
 
-    function convertK8sCrAPI(API api) returns model:API {
+    function convertK8sCrAPI(API api, string organization) returns model:API {
         model:API apispec = {
             metadata: {
                 name: api.name.concat(api.'version),
@@ -406,7 +420,7 @@ public class APIClient {
                 apiDisplayName: api.name,
                 apiType: api.'type,
                 apiVersion: api.'version,
-                context: self.returnFullContext(api.context, api.'version),
+                context: self.returnFullContext(api.context, api.'version, organization),
                 definitionFileRef: "",
                 prodHTTPRouteRef: "",
                 sandHTTPRouteRef: "",
@@ -416,18 +430,23 @@ public class APIClient {
         return apispec;
     }
 
-    isolated function createAPIFromService(string serviceKey, API api) returns CreatedAPI|BadRequestError|InternalServerErrorError|APKError {
-        if (self.validateName(api.name)) {
+    isolated function createAPIFromService(string serviceKey, API api, string organization) returns CreatedAPI|BadRequestError|InternalServerErrorError|APKError {
+        if (self.validateName(api.name, organization)) {
             BadRequestError badRequest = {body: {code: 90911, message: "API Name - " + api.name + " already exist.", description: "API Name - " + api.name + " already exist."}};
             return badRequest;
         }
-        if self.validateContextAndVersion(api.context, api.'version) {
+        if (!self.returnFullContext(api.context, api.'version, organization).startsWith("/t/" + organization)) {
+            // possible context register in different org.
+            BadRequestError badRequest = {body: {code: 90911, message: "Invalid Context - " + api.context + ".", description: "Invalid Context " + api.context + " ."}};
+            return badRequest;
+        }
+        if self.validateContextAndVersion(api.context, api.'version, organization) {
             BadRequestError badRequest = {body: {code: 90911, message: "API Context - " + api.context + " already exist.", description: "API Context " + api.context + " already exist."}};
             return badRequest;
         }
         self.setDefaultOperationsIfNotExist(api);
         Service|error serviceRetrieved = getServiceById(serviceKey);
-        string uniqueId = getUniqueIdForAPI();
+        string uniqueId = getUniqueIdForAPI(api, organization);
         if serviceRetrieved is Service {
             model:APIArtifact apiArtifact = {uniqueId: uniqueId};
             model:Endpoint endpoint = {
@@ -436,13 +455,13 @@ public class APIClient {
                 name: serviceRetrieved.name,
                 serviceEntry: true
             };
-            check self.setHttpRoute(apiArtifact, api, endpoint, uniqueId, PRODUCTION_TYPE);
-            json generatedSwaggerDefinition = check self.retrieveGeneratedSwaggerDefinition(api,());
+            check self.setHttpRoute(apiArtifact, api, endpoint, uniqueId, PRODUCTION_TYPE, organization);
+            json generatedSwaggerDefinition = check self.retrieveGeneratedSwaggerDefinition(api, ());
             self.retrieveGeneratedConfigmapForDefinition(apiArtifact, api, generatedSwaggerDefinition, uniqueId);
-            self.generateAndSetAPICRArtifact(apiArtifact, api);
+            self.generateAndSetAPICRArtifact(apiArtifact, api, organization);
             self.generateAndSetK8sServiceMapping(apiArtifact, api, serviceRetrieved, getNameSpace(runtimeConfiguration.apiCreationNamespace));
             model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact);
-            CreatedAPI createdAPI = {body: {name: api.name, context: self.returnFullContext(api.context, api.'version), 'version: api.'version, id: deployAPIToK8sResult.metadata.uid}};
+            CreatedAPI createdAPI = {body: {name: api.name, context: self.returnFullContext(api.context, api.'version, organization), 'version: api.'version, id: deployAPIToK8sResult.metadata.uid}};
             return createdAPI;
         } else {
             BadRequestError badRequest = {body: {code: 90913, message: "Service from " + serviceKey + " not found."}};
@@ -589,7 +608,7 @@ public class APIClient {
         }
     }
 
-    private isolated function generateAndSetAPICRArtifact(model:APIArtifact apiArtifact, API api) {
+    private isolated function generateAndSetAPICRArtifact(model:APIArtifact apiArtifact, API api, string organization) {
         model:API k8sAPI = {
             metadata: {
                 name: apiArtifact.uniqueId,
@@ -602,7 +621,7 @@ public class APIClient {
                 apiDisplayName: api.name,
                 apiType: api.'type,
                 apiVersion: api.'version,
-                context: self.returnFullContext(api.context, api.'version),
+                context: self.returnFullContext(api.context, api.'version, organization),
                 organization: "carbon.super"
             }
         };
@@ -632,7 +651,7 @@ public class APIClient {
         return uniqueId + "-" + 'type + "-authentication";
     }
 
-    private isolated function setHttpRoute(model:APIArtifact apiArtifact, API api, model:Endpoint? endpoint, string uniqueId, string endpointType) returns APKError? {
+    private isolated function setHttpRoute(model:APIArtifact apiArtifact, API api, model:Endpoint? endpoint, string uniqueId, string endpointType, string organization) returns APKError? {
         model:Httproute httpRoute = {
             metadata:
                 {
@@ -644,7 +663,7 @@ public class APIClient {
             },
             spec: {
                 parentRefs: self.generateAndRetrieveParentRefs(api, uniqueId),
-                rules: check self.generateHttpRouteRules(apiArtifact, api, endpoint, endpointType),
+                rules: check self.generateHttpRouteRules(apiArtifact, api, endpoint, endpointType, organization),
                 hostnames: self.getHostNames(api, uniqueId, endpointType)
             }
         };
@@ -666,12 +685,12 @@ public class APIClient {
         return parentRefs;
     }
 
-    private isolated function generateHttpRouteRules(model:APIArtifact apiArtifact, API api, model:Endpoint? endpoint, string endpointType) returns model:HTTPRouteRule[]|APKError {
+    private isolated function generateHttpRouteRules(model:APIArtifact apiArtifact, API api, model:Endpoint? endpoint, string endpointType, string organization) returns model:HTTPRouteRule[]|APKError {
         model:HTTPRouteRule[] httpRouteRules = [];
         APIOperations[]? operations = api.operations;
         if operations is APIOperations[] {
             foreach APIOperations operation in operations {
-                model:HTTPRouteRule|() httpRouteRule = check self.generateHttpRouteRule(apiArtifact, api, endpoint, operation, endpointType);
+                model:HTTPRouteRule|() httpRouteRule = check self.generateHttpRouteRule(apiArtifact, api, endpoint, operation, endpointType, organization);
                 if httpRouteRule is model:HTTPRouteRule {
                     if !operation.authTypeEnabled {
                         string disableAuthenticationRefName = self.retrieveDisableAuthenticationRefName(api, apiArtifact.uniqueId, endpointType);
@@ -715,7 +734,7 @@ public class APIClient {
         return authentication;
     }
 
-    private isolated function generateHttpRouteRule(model:APIArtifact apiArtifact, API api, model:Endpoint? endpoint, APIOperations operation, string endpointType) returns model:HTTPRouteRule|()|APKError {
+    private isolated function generateHttpRouteRule(model:APIArtifact apiArtifact, API api, model:Endpoint? endpoint, APIOperations operation, string endpointType, string organization) returns model:HTTPRouteRule|()|APKError {
         do {
             record {}? endpointConfig = operation.endpointConfig;
             model:Endpoint? endpointToUse = ();
@@ -723,7 +742,7 @@ public class APIClient {
                 // endpointConfig presense at Operation Level.
                 map<model:Endpoint> operationalLevelBackend = check self.createAndAddBackendServics(apiArtifact, api, endpointConfig, operation, endpointType);
                 if operationalLevelBackend.hasKey(endpointType) {
-                endpointToUse = operationalLevelBackend.get(endpointType);                    
+                    endpointToUse = operationalLevelBackend.get(endpointType);
                 }
             } else {
                 if endpoint is model:Endpoint {
@@ -731,7 +750,7 @@ public class APIClient {
                 }
             }
             if endpointToUse != () {
-                model:HTTPRouteRule httpRouteRule = {matches: self.retrieveMatches(api, operation), backendRefs: self.retrieveGeneratedBackend(api, endpointToUse, endpointType), filters: self.generateFilters(apiArtifact, api, endpointToUse, operation, endpointType)};
+                model:HTTPRouteRule httpRouteRule = {matches: self.retrieveMatches(api, operation, organization), backendRefs: self.retrieveGeneratedBackend(api, endpointToUse, endpointType), filters: self.generateFilters(apiArtifact, api, endpointToUse, operation, endpointType)};
                 return httpRouteRule;
             } else {
                 return ();
@@ -786,8 +805,8 @@ public class APIClient {
         return path + generatedPath;
     }
 
-    public isolated function retrievePathPrefix(string context, string 'version, string operation) returns string {
-        string fullContext = self.returnFullContext(context, 'version);
+    public isolated function retrievePathPrefix(string context, string 'version, string operation, string organization) returns string {
+        string fullContext = self.returnFullContext(context, 'version, organization);
         string[] splitValues = regex:split(operation, "/");
         string generatedPath = fullContext;
         if (operation == "/*") {
@@ -834,18 +853,18 @@ public class APIClient {
         return 80;
     }
 
-    private isolated function retrieveMatches(API api, APIOperations apiOperation) returns model:HTTPRouteMatch[] {
+    private isolated function retrieveMatches(API api, APIOperations apiOperation, string organization) returns model:HTTPRouteMatch[] {
         model:HTTPRouteMatch[] httpRouteMatch = [];
-        model:HTTPRouteMatch httpRoute = self.retrieveHttpRouteMatch(api, apiOperation);
+        model:HTTPRouteMatch httpRoute = self.retrieveHttpRouteMatch(api, apiOperation, organization);
 
         httpRouteMatch.push(httpRoute);
         return httpRouteMatch;
     }
-    private isolated function retrieveHttpRouteMatch(API api, APIOperations apiOperation) returns model:HTTPRouteMatch {
+    private isolated function retrieveHttpRouteMatch(API api, APIOperations apiOperation, string organization) returns model:HTTPRouteMatch {
 
-        return {method: <string>apiOperation.verb, path: {'type: "RegularExpression", value: self.retrievePathPrefix(api.context, api.'version, apiOperation.target ?: "/*")}};
+        return {method: <string>apiOperation.verb, path: {'type: "RegularExpression", value: self.retrievePathPrefix(api.context, api.'version, apiOperation.target ?: "/*", organization)}};
     }
-    isolated function retrieveGeneratedSwaggerDefinition(API api,string? definition) returns json|APKError {
+    isolated function retrieveGeneratedSwaggerDefinition(API api, string? definition) returns json|APKError {
         runtimeModels:API api1 = runtimeModels:newAPI1();
         api1.setName(api.name);
         api1.setType(api.'type);
@@ -871,12 +890,12 @@ public class APIClient {
         }
         api1.setUriTemplates(uritemplatesSet);
         string?|runtimeapi:APIManagementException retrievedDefinition = "";
-        if definition is string && definition.toString().trim().length()>0 {
-            retrievedDefinition = runtimeUtil:RuntimeAPICommonUtil_generateDefinition2(api1,definition);
-        }else{
-         retrievedDefinition = runtimeUtil:RuntimeAPICommonUtil_generateDefinition(api1);
+        if definition is string && definition.toString().trim().length() > 0 {
+            retrievedDefinition = runtimeUtil:RuntimeAPICommonUtil_generateDefinition2(api1, definition);
+        } else {
+            retrievedDefinition = runtimeUtil:RuntimeAPICommonUtil_generateDefinition(api1);
         }
-        if retrievedDefinition is string && retrievedDefinition.toString().trim().length()>0{
+        if retrievedDefinition is string && retrievedDefinition.toString().trim().length() > 0 {
             json|error jsonString = value:fromJsonString(retrievedDefinition);
             if jsonString is json {
                 return jsonString;
@@ -1359,16 +1378,16 @@ public class APIClient {
             string keyWord = query.substring(0, indexOfColon);
             string keyWordValue = query.substring(keyWord.length() + 1, query.length());
             if keyWord == "name" {
-                exist = self.validateName(keyWordValue);
+                exist = self.validateName(keyWordValue, "carbon.super");
             } else if keyWord == "context" {
-                exist = self.validateContext(keyWordValue);
+                exist = self.validateContext(keyWordValue, "carbon.super");
             } else {
                 BadRequestError badRequest = {body: {code: 90912, message: "Invalid KeyWord " + keyWord}};
                 return badRequest;
             }
         } else {
             // Consider full string as name;
-            exist = self.validateName(query);
+            exist = self.validateName(query, "carbon.super");
         }
         if exist {
             http:Ok ok = {};
@@ -1379,7 +1398,7 @@ public class APIClient {
         }
     }
 
-    public isolated function importDefinition(http:Request payload) returns APKError|CreatedAPI|InternalServerErrorError|BadRequestError {
+    public isolated function importDefinition(http:Request payload, string organization) returns APKError|CreatedAPI|InternalServerErrorError|BadRequestError {
         do {
             ImportDefintionRequest|BadRequestError importDefinitionRequest = check self.mapImportDefinitionRequest(payload);
             if importDefinitionRequest is ImportDefintionRequest {
@@ -1400,7 +1419,7 @@ public class APIClient {
                                 runtimeModels:URITemplate template = check java:cast(uritemplate);
                                 operations.push({target: template.getUriTemplate(), authTypeEnabled: template.isAuthEnabled(), verb: template.getHTTPVerb().toString().toUpperAscii()});
                             }
-                            return self.createAPI(additionalPropertes,validateAndRetrieveDefinitionResult.getContent());
+                            return self.createAPI(additionalPropertes, validateAndRetrieveDefinitionResult.getContent(), organization);
                         }
                         log:printError("Error occured retrieving uri templates from definition", uRITemplates);
                         runtimeapi:JAPIManagementException excetion = check uRITemplates.ensureType(runtimeapi:JAPIManagementException);
@@ -1550,9 +1569,10 @@ type DefinitionValidationRequest record {|
 |};
 
 public isolated function getBackendServiceUid() returns string {
-    return "backend-"+uuid:createType1AsString();
+    return "backend-" + uuid:createType1AsString();
 }
 
-public isolated function getUniqueIdForAPI() returns string {
+public isolated function getUniqueIdForAPI(API api, string organization) returns string {
+
     return uuid:createType1AsString();
 }
