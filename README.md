@@ -111,7 +111,27 @@ Devportal DS: [wso2/devportal-domain-service:0.0.1-m1](https://hub.docker.com/r/
 #### Minikube Flow
    Execute ``` minikube tunnel ``` command
 
-#### Rancher Flow
+## Quick Start APK with Kubernetes client
+Follow the instruction below to deploy an API using the kubectl.
+
+1. Create API CR and create production and/or sandbox HTTPRoute CRs, and service for the API backend . 
+   You can find a sample CR set in `developer/tryout/samples/` folder in this repository.
+2. Apply CRs to kubernetes API server using the kubectl.
+  ```bash
+  kubectl apply -f developer/tryout/samples/
+  ```
+3. Identify the router-service external IP address to invoke the API through the APK gateway.
+  ```bash
+  kubectl get svc -n apk | grep router-service
+  ```
+4. Get a test token to invoke the API. Provide the router service external ip to below command.
+  ```bash
+  TOKEN=$(curl -X POST "https://${router_service}:9095/testkey" -H "Authorization: Basic YWRtaW46YWRtaW4=" -H "Host: gw.wso2.com" -k -v)
+  ```
+5. Invoke the API.
+  ```bash
+  curl -X GET "https://${router_service}:9095/http-bin-api/1.0.8/get" -H "Authorization: Bearer $TOKEN" -H "Host: prod.gw.wso2.com" -k -v
+  ```
 
 ## Issue management
 We use GitHub to track all of our bugs and feature requests. Each issue we track has a variety of metadata:

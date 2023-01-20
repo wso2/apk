@@ -18,6 +18,6 @@ spec:
       authTypes:
         - type: jwt
   targetRef:
-    kind: HTTPRoute 
+    kind: Resource
     name: sand-http-route-http-bin-api
     group: gateway.networking.k8s.io
