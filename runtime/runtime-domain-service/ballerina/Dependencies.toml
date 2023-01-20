@@ -49,6 +49,9 @@ dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "time"}
 ]
+modules = [
+	{org = "ballerina", packageName = "crypto", moduleName = "crypto"}
+]
 
 [[package]]
 org = "ballerina"
@@ -386,6 +389,7 @@ name = "runtime_domain_service"
 version = "0.0.1-SNAPSHOT"
 dependencies = [
 	{org = "ballerina", name = "constraint"},
+	{org = "ballerina", name = "crypto"},
 	{org = "ballerina", name = "http"},
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"},
