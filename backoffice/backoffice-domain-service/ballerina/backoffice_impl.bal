@@ -16,11 +16,12 @@
 // under the License.
 //
 
+
 # This function used to get API from database
 #
 # + return - Return Value string?|APIList|error
-isolated function getAPIList() returns string?|APIList|error {
-    API[]|error? apis = db_getAPIsDAO();
+isolated function getAPIList() returns APIList|APKError {
+    API[]|APKError apis = db_getAPIsDAO();
     if apis is API[] {
         int count = apis.length();
         APIList apisList = {count: count, list: apis};
@@ -67,11 +68,15 @@ isolated function changeLifeCyleState(string targetState, string apiId, string o
 isolated function getLifeCyleState(string apiId, string organization) returns LifecycleState|error {
     string|error currentLCState = db_getCurrentLCStatus(apiId, organization);
     if currentLCState is string {
-        json lcPayload = check getTransitionsFromState(currentLCState);
-        LifecycleState lcGet = check lcPayload.cloneWithType(LifecycleState);
+        json lcPayload =  check getTransitionsFromState(currentLCState);
+        LifecycleState|error lcGet =  lcPayload.cloneWithType(LifecycleState);
+        if lcGet is error {
+            string message = "Error while retrieving connection";
+            return error(message, message = message, description = message, code = 909000, statusCode = "500");
+        }
         return lcGet;
     } else {
-        return error("error while Getting LC state" + currentLCState.message());
+        return currentLCState;
     }
 }
 
@@ -115,66 +120,69 @@ isolated function getTransitionsFromState(string state) returns json|error {
 #
 # + apiId - API Id parameter
 # + return - Return Value LifecycleHistory
-isolated function getLcEventHistory(string apiId) returns LifecycleHistory|error? {
-    LifecycleHistoryItem[]|error? lcHistory = db_getLCEventHistory(apiId);
+isolated function getLcEventHistory(string apiId) returns LifecycleHistory|APKError {
+    LifecycleHistoryItem[]|APKError lcHistory = db_getLCEventHistory(apiId);
     if lcHistory is LifecycleHistoryItem[] {
         int count = lcHistory.length();
         LifecycleHistory eventList = {count: count, list: lcHistory};
         return eventList;
     } else {
-        return error("Error while retriving LC events", lcHistory);
+        return lcHistory;
     }
 }
 
 
 
-isolated function getSubscriptions(string? apiId) returns SubscriptionList|error {
-    Subscription[]|error subcriptions;
+isolated function getSubscriptions(string? apiId) returns SubscriptionList|APKError {
+    Subscription[]|APKError subcriptions;
         subcriptions = check db_getSubscriptionsForAPI(apiId.toString());
         if subcriptions is Subscription[] {
             int count = subcriptions.length();
             SubscriptionList subsList = {count: count, list: subcriptions};
             return subsList;
         } else {
-            return error(subcriptions.message());
+            return subcriptions;
         } 
 }
 
 
-isolated function blockSubscription(string subscriptionId, string blockState) returns string|error {
+isolated function blockSubscription(string subscriptionId, string blockState) returns string|APKError {
     if ("blocked".equalsIgnoreCaseAscii(blockState) || "prod_only_blocked".equalsIgnoreCaseAscii(blockState)) {
-        error|string blockSub = db_blockSubscription(subscriptionId, blockState);
-        if blockSub is error {
-            return error("Error while blocking subscription");
-        } else {
-            return  blockSub;
-        }
+        APKError|string blockSub = db_blockSubscription(subscriptionId, blockState);
+        return blockSub;
     } else {
-        return error("Invalid block state provided");
+        string message = "Invalid blockState provided";
+        return error(message, message = message, description = message, code = 909002, statusCode = "400");    
     }
 }
 
-isolated function unblockSubscription(string subscriptionId) returns string|error {
-    error|string unblockSub = db_unblockSubscription(subscriptionId);
-    if unblockSub is error {
-        return error("Error while unblocking subscription");
-    } else {
-        return  unblockSub;
-    }
+isolated function unblockSubscription(string subscriptionId) returns string|APKError {
+    APKError|string unblockSub = db_unblockSubscription(subscriptionId);
+    return  unblockSub;
 }
 
-isolated function getAPI(string apiId) returns API|error {
-    API|error getAPI = check db_getAPI(apiId);
+isolated function getAPI(string apiId) returns API|APKError {
+    API|APKError getAPI = check db_getAPI(apiId);
     return  getAPI;
 }
 
-isolated function getAPIDefinition(string apiId) returns APIDefinition|NotFoundError|error {
-    APIDefinition|NotFoundError|error apiDefinition = db_getAPIDefinition(apiId);
+isolated function getAPIDefinition(string apiId) returns APIDefinition|NotFoundError|APKError {
+    APIDefinition|NotFoundError|APKError apiDefinition = db_getAPIDefinition(apiId);
     return apiDefinition;
 }
 
 
-isolated function updateAPI(string apiId, ModifiableAPI payload, string organization) returns API|error {
-    API|error api = db_updateAPI(apiId, payload, organization);
+isolated function updateAPI(string apiId, ModifiableAPI payload, string organization) returns API|APKError {
+    API|APKError api = db_updateAPI(apiId, payload, organization);
     return api;
+}
+
+isolated function handleAPKError(APKError errorDetail) returns InternalServerErrorError|BadRequestError{
+            ErrorHandler & readonly detail = errorDetail.detail();
+        if detail.statusCode == "400" {
+            BadRequestError badRequest = {body: {code: detail.code, message: detail.message}};
+            return badRequest;
+        }
+        InternalServerErrorError internalServerError = {body: {code: detail.code, message: detail.message}};
+        return internalServerError;
 }
