@@ -18,7 +18,6 @@
 
 import ballerina/http;
 import ballerina/log;
-import ballerina/uuid;
 import runtime_domain_service.model;
 import runtime_domain_service.org.wso2.apk.runtime.model as runtimeModels;
 import runtime_domain_service.java.util as utilapis;
@@ -30,6 +29,7 @@ import ballerina/jballerina.java;
 import ballerina/lang.value;
 import runtime_domain_service.java.lang;
 import runtime_domain_service.org.wso2.apk.runtime.api as runtimeapi;
+import ballerina/crypto;
 
 public class APIClient {
 
@@ -289,7 +289,7 @@ public class APIClient {
             record {}? endpointConfig = api.endpointConfig;
             map<model:Endpoint|()> createdEndpoints = {};
             if endpointConfig is record {} {
-                createdEndpoints = check self.createAndAddBackendServics(apiArtifact, api, endpointConfig, (), ());
+                createdEndpoints = check self.createAndAddBackendServics(apiArtifact, api, endpointConfig, (), (),organization);
             }
             _ = check self.setHttpRoute(apiArtifact, api, createdEndpoints.hasKey(PRODUCTION_TYPE) ? createdEndpoints.get(PRODUCTION_TYPE) : (), uniqueId, PRODUCTION_TYPE, organization);
             _ = check self.setHttpRoute(apiArtifact, api, createdEndpoints.hasKey(SANDBOX_TYPE) ? createdEndpoints.get(SANDBOX_TYPE) : (), uniqueId, SANDBOX_TYPE, organization);
@@ -308,7 +308,7 @@ public class APIClient {
         }
     }
 
-    private isolated function createAndAddBackendServics(model:APIArtifact apiArtifact, API api, record {} endpointConfig, APIOperations? apiOperation, string? endpointType) returns map<model:Endpoint>|APKError|error {
+    private isolated function createAndAddBackendServics(model:APIArtifact apiArtifact, API api, record {} endpointConfig, APIOperations? apiOperation, string? endpointType,string organization) returns map<model:Endpoint>|APKError|error {
         map<model:Endpoint> endpointIdMap = {};
         anydata|error sandboxEndpointConfig = trap endpointConfig.get("sandbox_endpoints");
         anydata|error productionEndpointConfig = trap endpointConfig.get("production_endpoints");
@@ -316,7 +316,7 @@ public class APIClient {
             if sandboxEndpointConfig is map<anydata> {
                 if sandboxEndpointConfig.hasKey("url") {
                     anydata url = sandboxEndpointConfig.get("url");
-                    model:Service backendService = self.createBackendService(<string>url, self.getLabels(apiArtifact.uniqueId, api));
+                    model:Service backendService = self.createBackendService(api,apiOperation,SANDBOX_TYPE,organization,<string>url, self.getLabels(apiArtifact.uniqueId, api));
                     if apiOperation == () {
                         apiArtifact.sandboxEndpointAvailable = true;
                         apiArtifact.sandboxUrl = <string?>url;
@@ -339,7 +339,7 @@ public class APIClient {
             if productionEndpointConfig is map<anydata> {
                 if productionEndpointConfig.hasKey("url") {
                     anydata url = productionEndpointConfig.get("url");
-                    model:Service backendService = self.createBackendService(<string>url, self.getLabels(apiArtifact.uniqueId, api));
+                    model:Service backendService = self.createBackendService(api,apiOperation,PRODUCTION_TYPE,organization,<string>url, self.getLabels(apiArtifact.uniqueId, api));
                     if apiOperation == () {
                         apiArtifact.productionEndpointAvailable = true;
                         apiArtifact.productionUrl = <string?>url;
@@ -361,7 +361,7 @@ public class APIClient {
         return endpointIdMap;
     }
     isolated function getLabels(string uniqueId, API api) returns map<string> {
-        map<string> labels = {"api-name": api.name, "api-version": api.'version, "k8sapi-name": uniqueId};
+        map<string> labels = {"api-name": api.name, "api-version": api.'version};
         return labels;
     }
     isolated function validateContextAndVersion(string context, string 'version, string organization) returns boolean {
@@ -445,6 +445,7 @@ public class APIClient {
             return badRequest;
         }
         self.setDefaultOperationsIfNotExist(api);
+        api.context = self.returnFullContext(api.context, api.'version, organization);
         Service|error serviceRetrieved = getServiceById(serviceKey);
         string uniqueId = getUniqueIdForAPI(api, organization);
         if serviceRetrieved is Service {
@@ -740,7 +741,7 @@ public class APIClient {
             model:Endpoint? endpointToUse = ();
             if endpointConfig is record {} {
                 // endpointConfig presense at Operation Level.
-                map<model:Endpoint> operationalLevelBackend = check self.createAndAddBackendServics(apiArtifact, api, endpointConfig, operation, endpointType);
+                map<model:Endpoint> operationalLevelBackend = check self.createAndAddBackendServics(apiArtifact, api, endpointConfig, operation, endpointType,organization);
                 if operationalLevelBackend.hasKey(endpointType) {
                     endpointToUse = operationalLevelBackend.get(endpointType);
                 }
@@ -1215,11 +1216,11 @@ public class APIClient {
         return apkError;
     }
 
-    isolated function createBackendService(string url, map<string> labels) returns model:Service {
+    isolated function createBackendService(API api,APIOperations? apiOperation,string? endpointType,string organization,string url, map<string> labels) returns model:Service {
         string nameSpace = getNameSpace(runtimeConfiguration.apiCreationNamespace);
         model:Service backendService = {
             metadata: {
-                name: getBackendServiceUid(),
+                name: getBackendServiceUid(api,apiOperation,endpointType,organization),
                 namespace: nameSpace,
                 uid: (),
                 creationTimestamp: (),
@@ -1568,11 +1569,19 @@ type DefinitionValidationRequest record {|
 
 |};
 
-public isolated function getBackendServiceUid() returns string {
-    return "backend-" + uuid:createType1AsString();
+public isolated function getBackendServiceUid(API api,APIOperations? apiOperation,string? endpointType,string organization) returns string {
+    string concatanatedString = string:'join("-",organization,api.name,api.'version);
+    if(apiOperation is APIOperations){
+        concatanatedString = string:'join("-",concatanatedString,<string>apiOperation.target,apiOperation.verb.toString().toUpperAscii(),endpointType.toString());
+    }else{
+        concatanatedString = string:'join("-",concatanatedString,endpointType.toString());
+    }
+    byte[] hashedValue = crypto:hashSha1(concatanatedString.toBytes());
+    return "backend-" + hashedValue.toBase16();
 }
 
 public isolated function getUniqueIdForAPI(API api, string organization) returns string {
-
-    return uuid:createType1AsString();
+    string concatanatedString = string:'join("-", organization, api.name, api.'version);
+    byte[] hashedValue = crypto:hashSha1(concatanatedString.toBytes());
+    return hashedValue.toBase16();
 }

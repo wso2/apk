@@ -25,11 +25,6 @@ import runtime_domain_service.model as model;
 function getMockStartandAttachServices() returns error? {
 }
 
-@test:Mock {functionName: "getUniqueIdForAPI"}
-test:MockFunction uniqueIdForAPI = new ();
-@test:Mock {functionName: "getBackendServiceUid"}
-test:MockFunction uniqueIdForBackend = new ();
-
 @test:Mock {functionName: "getServiceMappingClient"}
 function getMockServiceMappingClient(string resourceVersion) returns websocket:Client|error|() {
     string initialConectionId = uuid:createType1AsString();
@@ -119,7 +114,7 @@ function getMockK8sClient() returns http:Client {
 }
 public function testretrievePathPrefix(string context, string 'version, string path, string expected) {
     APIClient apiclient = new ();
-    string retrievePathPrefix = apiclient.retrievePathPrefix(context, 'version, path,"carbon.super");
+    string retrievePathPrefix = apiclient.retrievePathPrefix(context, 'version, path, "carbon.super");
     test:assertEquals(retrievePathPrefix, expected);
 }
 
@@ -141,7 +136,7 @@ function pathProvider() returns map<[string, string, string, string]>|error {
 @test:Config {dataProvider: contextVersionDataProvider}
 public function testValidateContextAndVersion(string context, string 'version, boolean expected) {
     APIClient apiclient = new ();
-    test:assertEquals(apiclient.validateContextAndVersion(context, 'version,"carbon.super"), expected);
+    test:assertEquals(apiclient.validateContextAndVersion(context, 'version, "carbon.super"), expected);
 }
 
 function contextVersionDataProvider() returns map<[string, string, boolean]>|error {
@@ -157,16 +152,16 @@ function contextVersionDataProvider() returns map<[string, string, boolean]>|err
 }
 
 @test:Config {dataProvider: nameDataProvider}
-public function testValidateName(string name,string organization, boolean expected) {
+public function testValidateName(string name, string organization, boolean expected) {
     APIClient apiclient = new ();
-    test:assertEquals(apiclient.validateName(name,organization), expected);
+    test:assertEquals(apiclient.validateName(name, organization), expected);
 }
 
-function nameDataProvider() returns map<[string,string, boolean]>|error {
-    map<[string,string, boolean]> dataSet = {
-        "1": ["pizzashackAPI1","carbon.super", true],
-        "2": ["pizzashackAPInew","carbon.super", false],
-        "3": ["pizzashackAPI1","wso2.com", false]
+function nameDataProvider() returns map<[string, string, boolean]>|error {
+    map<[string, string, boolean]> dataSet = {
+        "1": ["pizzashackAPI1", "carbon.super", true],
+        "2": ["pizzashackAPInew", "carbon.super", false],
+        "3": ["pizzashackAPI1", "wso2.com", false]
 
     };
     return dataSet;
@@ -1721,17 +1716,15 @@ function validateExistenceDataProvider() returns map<[string, NotFoundError|BadR
 
 @test:Config {dataProvider: createApiFromServiceDataProvider}
 function testCreateAPIFromService(string serviceUUId, string apiUUID, [model:ConfigMap, any] configmapResponse, [model:Httproute, any] httproute, [model:K8sServiceMapping, any] servicemapping, [model:API, any] k8sAPI, API api, string k8sapiUUID, anydata expected) {
-    test:when(uniqueIdForAPI).thenReturn(apiUUID);
     test:prepare(k8sApiServerEp).when("post").withArguments("/api/v1/namespaces/apk-platform/configmaps", configmapResponse[0]).thenReturn(configmapResponse[1]);
     test:prepare(k8sApiServerEp).when("post").withArguments("/apis/gateway.networking.k8s.io/v1beta1/namespaces/apk-platform/httproutes", httproute[0]).thenReturn(httproute[1]);
     test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/servicemappings", servicemapping[0]).thenReturn(servicemapping[1]);
     test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis", k8sAPI[0]).thenReturn(k8sAPI[1]);
     APIClient apiClient = new;
-    test:assertEquals(apiClient.createAPIFromService(serviceUUId, api,"carbon.super"), expected);
+    test:assertEquals(apiClient.createAPIFromService(serviceUUId, api, "carbon.super"), expected);
 }
 
 function createApiFromServiceDataProvider() returns map<[string, string, [model:ConfigMap, any], [model:Httproute, any], [model:K8sServiceMapping, any], [model:API, any], API, string, CreatedAPI|BadRequestError|InternalServerErrorError|APKError]> {
-    string apiUUID = uuid:createType1AsString();
     string k8sAPIUUID1 = uuid:createType1AsString();
     API api = {
         name: "PizzaAPI",
@@ -1743,12 +1736,13 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
         context: "/pizzaAPI/1.0.0",
         'version: "1.0.0"
     };
+    string apiUUID = getUniqueIdForAPI(api, "carbon.super");
     model:ConfigMap configmap = getMockConfigMap1(apiUUID, api);
     http:Response mockConfigMapResponse = getMockConfigMapResponse(configmap.clone());
     model:Httproute httpRoute = getMockHttpRoute(api, apiUUID);
     http:Response httpRouteResponse = getMockHttpRouteResponse(httpRoute.clone());
     model:K8sServiceMapping mockServiceMappingRequest = getMockServiceMappingRequest(api, apiUUID);
-    model:API mockAPI = getMockAPI(api, apiUUID,"carbon.super");
+    model:API mockAPI = getMockAPI(api, apiUUID, "carbon.super");
     http:Response mockAPIResponse = getMockAPIResponse(mockAPI.clone(), k8sAPIUUID1);
     http:Response serviceMappingResponse = getMockServiceMappingResponse(mockServiceMappingRequest.clone());
     BadRequestError nameAlreadyExistError = {body: {code: 90911, message: "API Name - " + alreadyNameExist.name + " already exist.", description: "API Name - " + alreadyNameExist.name + " already exist."}};
@@ -1795,17 +1789,17 @@ function getMockAPIResponse1(API api, string apiUUID, string k8sAPIUUID) returns
     return response;
 }
 
-function getMockAPI(API api, string apiUUID,string organization) returns model:API {
+function getMockAPI(API api, string apiUUID, string organization) returns model:API {
     APIClient apiClient = new;
     model:API k8sapi = {
         "kind": "API",
         "apiVersion": "dp.wso2.com/v1alpha1",
-        "metadata": {"name": apiUUID, "namespace": "apk-platform", "labels": {"api-name": api.name, "api-version": api.'version, "k8sapi-name": apiUUID}},
+        "metadata": {"name": apiUUID, "namespace": "apk-platform", "labels": {"api-name": api.name, "api-version": api.'version}},
         "spec": {
             "apiDisplayName": api.name,
             "apiType": "HTTP",
             "apiVersion": api.'version,
-            "context": apiClient.returnFullContext(api.context,api.'version,organization),
+            "context": apiClient.returnFullContext(api.context, api.'version, organization),
             "organization": organization,
             "definitionFileRef": apiUUID + "-definition",
             "prodHTTPRouteRef": apiUUID + "-production"
@@ -1815,17 +1809,17 @@ function getMockAPI(API api, string apiUUID,string organization) returns model:A
     return k8sapi;
 }
 
-function getMockAPI1(API api, string apiUUID,string organization) returns model:API {
+function getMockAPI1(API api, string apiUUID, string organization) returns model:API {
     APIClient apiClient = new;
     model:API k8sapi = {
         "kind": "API",
         "apiVersion": "dp.wso2.com/v1alpha1",
-        "metadata": {"name": apiUUID, "namespace": "apk-platform", "labels": {"api-name": api.name, "api-version": api.'version, "k8sapi-name": apiUUID}},
+        "metadata": {"name": apiUUID, "namespace": "apk-platform", "labels": {"api-name": api.name, "api-version": api.'version}},
         "spec": {
             "apiDisplayName": api.name,
             "apiType": "HTTP",
             "apiVersion": api.'version,
-            "context": apiClient.returnFullContext(api.context,api.'version,organization),
+            "context": apiClient.returnFullContext(api.context, api.'version, organization),
             "organization": organization,
             "definitionFileRef": apiUUID + "-definition",
             "sandHTTPRouteRef": apiUUID + "-sandbox"
@@ -1836,7 +1830,7 @@ function getMockAPI1(API api, string apiUUID,string organization) returns model:
 }
 
 function getMockServiceMappingRequest(API api, string apiUUID) returns model:K8sServiceMapping {
-    model:K8sServiceMapping serviceMapping = {"kind": "ServiceMapping", "apiVersion": "dp.wso2.com/v1alpha1", "metadata": {"name": apiUUID + "-servicemapping", "namespace": "apk-platform", "labels": {"api-name": api.name, "api-version": api.'version, "k8sapi-name": apiUUID}}, "spec": {"serviceRef": {"name": "backend", "namespace": "apk"}, "apiRef": {"name": apiUUID, "namespace": "apk-platform"}}};
+    model:K8sServiceMapping serviceMapping = {"kind": "ServiceMapping", "apiVersion": "dp.wso2.com/v1alpha1", "metadata": {"name": apiUUID + "-servicemapping", "namespace": "apk-platform", "labels": {"api-name": api.name, "api-version": api.'version}}, "spec": {"serviceRef": {"name": "backend", "namespace": "apk"}, "apiRef": {"name": apiUUID, "namespace": "apk-platform"}}};
     return serviceMapping;
 }
 
@@ -1852,7 +1846,7 @@ function getMockHttpRoute(API api, string apiUUID) returns model:Httproute {
     return {
         "apiVersion": "gateway.networking.k8s.io/v1beta1",
         "kind": "HTTPRoute",
-        "metadata": {"name": apiUUID + "-production", "namespace": "apk-platform", "labels": {"api-name": api.name, "api-version": api.'version, "k8sapi-name": apiUUID}},
+        "metadata": {"name": apiUUID + "-production", "namespace": "apk-platform", "labels": {"api-name": api.name, "api-version": api.'version}},
         "spec": {
             "hostnames": ["gw.wso2.com"],
             "rules": [
@@ -1897,8 +1891,7 @@ function getMockConfigMap1(string apiUniqueId, API api) returns model:ConfigMap 
         "metadata": {
             "labels": {
                 "api-name": api.name,
-                "api-version": api.'version,
-                "k8sapi-name": apiUniqueId
+                "api-version": api.'version
             },
             "name": apiUniqueId + "-definition",
             "namespace": "apk-platform"
@@ -1931,8 +1924,6 @@ function testCreateAPI(string apiUUID, string backenduuid, API api, model:Config
         model:API k8sApi, any k8sapiResponse,
         string k8sapiUUID, anydata expected) {
     APIClient apiClient = new;
-    test:when(uniqueIdForBackend).thenReturn(backenduuid);
-    test:when(uniqueIdForAPI).thenReturn(apiUUID);
     test:prepare(k8sApiServerEp).when("post").withArguments("/api/v1/namespaces/apk-platform/configmaps", configmap).thenReturn(configmapDeployingResponse);
     if prodhttpRoute is model:Httproute {
         test:prepare(k8sApiServerEp).when("post").withArguments("/apis/gateway.networking.k8s.io/v1beta1/namespaces/apk-platform/httproutes", prodhttpRoute).thenReturn(prodhttpResponse);
@@ -1944,7 +1935,7 @@ function testCreateAPI(string apiUUID, string backenduuid, API api, model:Config
         test:prepare(k8sApiServerEp).when("post").withArguments("/api/v1/namespaces/apk-platform/services", servicesResponse[0]).thenReturn(servicesResponse[1]);
     }
     test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis", k8sApi).thenReturn(k8sapiResponse);
-    APKError|CreatedAPI|BadRequestError aPI = apiClient.createAPI(api, (),"carbon.super");
+    APKError|CreatedAPI|BadRequestError aPI = apiClient.createAPI(api, (), "carbon.super");
     if aPI is BadRequestError || aPI is CreatedAPI {
         test:assertEquals(aPI, expected);
     } else if aPI is APKError {
@@ -1972,7 +1963,7 @@ function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid
     return {
         "apiVersion": "gateway.networking.k8s.io/v1beta1",
         "kind": "HTTPRoute",
-        "metadata": {"name": apiUUID + "-" + 'type, "namespace": "apk-platform", "labels": {"api-name": api.name, "api-version": api.'version, "k8sapi-name": apiUUID}},
+        "metadata": {"name": apiUUID + "-" + 'type, "namespace": "apk-platform", "labels": {"api-name": api.name, "api-version": api.'version}},
         "spec": {
             "hostnames": [
                 "gw.wso2.com"
@@ -1998,7 +1989,7 @@ function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid
                                 }
                             }
                         }
-                        ],
+                    ],
                     "backendRefs": [
                         {
                             "weight": 1,
@@ -2187,27 +2178,31 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
         'version: "1.0.0"
     };
     BadRequestError contextAlreadyExistError = {body: {code: 90911, message: "API Context - " + contextAlreadyExist.context + " already exist.", description: "API Context " + contextAlreadyExist.context + " already exist."}};
-    string apiUUID = uuid:createType1AsString();
-    string backenduuid = uuid:createType1AsString();
+    string apiUUID = getUniqueIdForAPI(api, "carbon.super");
+    string backenduuid = getBackendServiceUid(api, (), PRODUCTION_TYPE, "carbon.super");
+    string backenduuid1 = getBackendServiceUid(api, (), SANDBOX_TYPE, "carbon.super");
     string k8sapiUUID = uuid:createType1AsString();
-    [model:Service, any][] services = [];
     model:Service backendService = {
-        metadata: {name: backenduuid, namespace: "apk-platform", labels: {"api-name": api.name, "api-version": api.'version, "k8sapi-name": apiUUID}},
+        metadata: {name: backenduuid, namespace: "apk-platform", labels: {"api-name": api.name, "api-version": api.'version}},
         spec: {externalName: "localhost", 'type: "ExternalName"}
     };
-    http:Response backendServiceResponse = new;
-    backendServiceResponse.statusCode = 201;
-    model:Service serviceClone = backendService.clone();
-    serviceClone.metadata.uid = uuid:createType1AsString();
-    backendServiceResponse.setJsonPayload(serviceClone.toJson());
+    model:Service backendService1 = {
+        metadata: {name: backenduuid1, namespace: "apk-platform", labels: {"api-name": api.name, "api-version": api.'version}},
+        spec: {externalName: "localhost", 'type: "ExternalName"}
+    };
+    http:Response backendServiceResponse = getOKBackendServiceResponse(backendService);
+    http:Response backendServiceResponse1 = getOKBackendServiceResponse(backendService);
     http:Response backendServiceErrorResponse = new;
     backendServiceErrorResponse.statusCode = 403;
+    [model:Service, any][] services = [];
     services.push([backendService, backendServiceResponse]);
+    [model:Service, any][] services1 = [];
+    services.push([backendService1, backendServiceResponse1]);
     [model:Service, any][] servicesError = [];
     servicesError.push([backendService, backendServiceErrorResponse]);
     model:ConfigMap configmap = getMockConfigMap1(apiUUID, api);
-    model:Httproute prodhttpRoute = getMockHttpRouteWithBackend(api, apiUUID, backenduuid, "production");
-    model:Httproute sandhttpRoute = getMockHttpRouteWithBackend(api, apiUUID, backenduuid, "sandbox");
+    model:Httproute prodhttpRoute = getMockHttpRouteWithBackend(api, apiUUID, backenduuid, PRODUCTION_TYPE);
+    model:Httproute sandhttpRoute = getMockHttpRouteWithBackend(api, apiUUID, backenduuid1, SANDBOX_TYPE);
 
     CreatedAPI createdAPI = {body: {name: "PizzaAPI", context: "/t/carbon.super/pizzaAPI/1.0.0", 'version: "1.0.0", id: k8sapiUUID}};
     APKError productionEndpointNotSpecifiedError = error("Production Endpoint Not specified", message = "Endpoint Not specified", description = "Production Endpoint Not specified", code = 90911, statusCode = "400");
@@ -2230,8 +2225,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             (),
             (),
             services,
-            getMockAPI(api, apiUUID,"carbon.super"),
-            getMockAPIResponse(getMockAPI(api, apiUUID,"carbon.super"), k8sapiUUID),
+            getMockAPI(api, apiUUID, "carbon.super"),
+            getMockAPIResponse(getMockAPI(api, apiUUID, "carbon.super"), k8sapiUUID),
             k8sapiUUID,
             createdAPI
         ]
@@ -2247,8 +2242,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             (),
             (),
             services,
-            getMockAPI(api, apiUUID,"carbon.super"),
-            getMockAPIResponse(getMockAPI(api, apiUUID,"carbon.super"), k8sapiUUID),
+            getMockAPI(api, apiUUID, "carbon.super"),
+            getMockAPIResponse(getMockAPI(api, apiUUID, "carbon.super"), k8sapiUUID),
             k8sapiUUID,
             nameAlreadyExistError
         ],
@@ -2263,8 +2258,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             (),
             (),
             services,
-            getMockAPI(api, apiUUID,"carbon.super"),
-            getMockAPIResponse(getMockAPI(api, apiUUID,"carbon.super"), k8sapiUUID),
+            getMockAPI(api, apiUUID, "carbon.super"),
+            getMockAPIResponse(getMockAPI(api, apiUUID, "carbon.super"), k8sapiUUID),
             k8sapiUUID,
             contextAlreadyExistError
         ],
@@ -2278,9 +2273,9 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             (),
             sandhttpRoute,
             getMockHttpRouteResponse(sandhttpRoute.clone()),
-            services,
-            getMockAPI1(api, apiUUID,"carbon.super"),
-            getMockAPIResponse(getMockAPI1(api, apiUUID,"carbon.super"), k8sapiUUID),
+            services1,
+            getMockAPI1(api, apiUUID, "carbon.super"),
+            getMockAPIResponse(getMockAPI1(api, apiUUID, "carbon.super"), k8sapiUUID),
             k8sapiUUID,
             createdAPI
         ]
@@ -2296,8 +2291,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             (),
             (),
             services,
-            getMockAPI(api, apiUUID,"carbon.super"),
-            getMockAPIResponse(getMockAPI(api, apiUUID,"carbon.super"), k8sapiUUID),
+            getMockAPI(api, apiUUID, "carbon.super"),
+            getMockAPIResponse(getMockAPI(api, apiUUID, "carbon.super"), k8sapiUUID),
             k8sapiUUID,
             productionEndpointNotSpecifiedError.toBalString()
         ],
@@ -2312,8 +2307,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             (),
             (),
             services,
-            getMockAPI(api, apiUUID,"carbon.super"),
-            getMockAPIResponse(getMockAPI(api, apiUUID,"carbon.super"), k8sapiUUID),
+            getMockAPI(api, apiUUID, "carbon.super"),
+            getMockAPIResponse(getMockAPI(api, apiUUID, "carbon.super"), k8sapiUUID),
             k8sapiUUID,
             sandboxEndpointNotSpecifiedError.toBalString()
         ]
@@ -2329,8 +2324,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             (),
             (),
             services,
-            getMockAPI(api, apiUUID,"carbon.super"),
-            getMockAPIResponse(getMockAPI(api, apiUUID,"carbon.super"), k8sapiUUID),
+            getMockAPI(api, apiUUID, "carbon.super"),
+            getMockAPIResponse(getMockAPI(api, apiUUID, "carbon.super"), k8sapiUUID),
             k8sapiUUID,
             k8sLevelError.toBalString()
         ]
@@ -2345,9 +2340,9 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             (),
             sandhttpRoute,
             getMockHttpRouteErrorResponse(),
-            services,
-            getMockAPI(api, apiUUID,"carbon.super"),
-            getMockAPIResponse(getMockAPI(api, apiUUID,"carbon.super"), k8sapiUUID),
+            services1,
+            getMockAPI(api, apiUUID, "carbon.super"),
+            getMockAPIResponse(getMockAPI(api, apiUUID, "carbon.super"), k8sapiUUID),
             k8sapiUUID,
             k8sLevelError.toBalString()
         ]
@@ -2363,8 +2358,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             (),
             (),
             services,
-            getMockAPI(api, apiUUID,"carbon.super"),
-            getMockAPIResponse(getMockAPI(api, apiUUID,"carbon.super"), k8sapiUUID),
+            getMockAPI(api, apiUUID, "carbon.super"),
+            getMockAPIResponse(getMockAPI(api, apiUUID, "carbon.super"), k8sapiUUID),
             k8sapiUUID,
             k8sLevelError.toBalString()
         ]
@@ -2380,8 +2375,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             (),
             (),
             servicesError,
-            getMockAPI(api, apiUUID,"carbon.super"),
-            getMockAPIResponse(getMockAPI(api, apiUUID,"carbon.super"), k8sapiUUID),
+            getMockAPI(api, apiUUID, "carbon.super"),
+            getMockAPIResponse(getMockAPI(api, apiUUID, "carbon.super"), k8sapiUUID),
             k8sapiUUID,
             k8sLevelError.toBalString()
         ]
@@ -2397,7 +2392,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             (),
             (),
             services,
-            getMockAPI(api, apiUUID,"carbon.super"),
+            getMockAPI(api, apiUUID, "carbon.super"),
             getMockAPIErrorResponse(),
             k8sapiUUID,
             k8sLevelError.toBalString()
@@ -2414,13 +2409,22 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             (),
             (),
             services,
-            getMockAPI(api, apiUUID,"carbon.super"),
+            getMockAPI(api, apiUUID, "carbon.super"),
             getMockAPIErrorNameExist(),
             k8sapiUUID,
             invalidAPINameError.toBalString()
         ]
     };
     return data;
+}
+
+function getOKBackendServiceResponse(model:Service backendService) returns http:Response {
+    http:Response backendServiceResponse = new;
+    backendServiceResponse.statusCode = 201;
+    model:Service serviceClone = backendService.clone();
+    serviceClone.metadata.uid = uuid:createType1AsString();
+    backendServiceResponse.setJsonPayload(serviceClone.toJson());
+    return backendServiceResponse;
 }
 
 function getMockAPIErrorResponse() returns http:Response {
