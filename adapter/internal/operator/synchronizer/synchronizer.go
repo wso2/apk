@@ -137,7 +137,7 @@ func GenerateMGWSwagger(apiState APIState, httpRoute *HTTPRouteState, isProd boo
 	var mgwSwagger model.MgwSwagger
 	mgwSwagger.SetInfoAPICR(*apiState.APIDefinition)
 	if err := mgwSwagger.SetInfoHTTPRouteCR(httpRoute.HTTPRoute, httpRoute.Authentications, httpRoute.ResourceAuthentications,
-		isProd); err != nil {
+		httpRoute.BackendPropertyMapping, isProd); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
 			Message:   fmt.Sprintf("Error setting HttpRoute CR info to mgwSwagger for isProdEndpoint: %v. %v", isProd, err),
 			Severity:  logging.MAJOR,

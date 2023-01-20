@@ -33,6 +33,7 @@ import (
 	"github.com/wso2/apk/adapter/internal/operator/synchronizer"
 	operatorutils "github.com/wso2/apk/adapter/internal/operator/utils"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8types "k8s.io/apimachinery/pkg/types"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
@@ -119,6 +120,17 @@ func TestCreateRoutesWithClusters(t *testing.T) {
 	httpRouteState.HTTPRoute = &httpRoute
 	httpRouteState.Authentications = make(map[string]dpv1alpha1.Authentication)
 	httpRouteState.ResourceAuthentications = make(map[string]dpv1alpha1.Authentication)
+
+	backendPropertyMapping := make(dpv1alpha1.BackendPropertyMapping)
+	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "order-service"}] =
+		dpv1alpha1.BackendProperties{ResolvedHostname: "order-service.default"}
+	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "order-service-2"}] =
+		dpv1alpha1.BackendProperties{ResolvedHostname: "order-service-2.default"}
+	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "user-service"}] =
+		dpv1alpha1.BackendProperties{ResolvedHostname: "user-service.default"}
+	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "user-service-2"}] =
+		dpv1alpha1.BackendProperties{ResolvedHostname: "user-service-2.default"}
+	httpRouteState.BackendPropertyMapping = backendPropertyMapping
 
 	apiState.ProdHTTPRoute = &httpRouteState
 
