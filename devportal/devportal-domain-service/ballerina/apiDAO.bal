@@ -27,7 +27,7 @@ isolated function getAPIByIdDAO(string apiId, string org) returns API|APKError|N
         return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
         sql:ParameterizedQuery query = `SELECT API_UUID AS ID, API_ID as APIID,
-        API_PROVIDER as PROVIDER, API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS, API_TYPE as TYPE, ARTIFACT as ARTIFACT
+        API_PROVIDER as PROVIDER, API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS, API_TYPE as TYPE, string_to_array(SDK::text,',')::text[] AS SDK , ARTIFACT as ARTIFACT
         FROM API WHERE API_UUID =${apiId} AND ORGANIZATION =${org}`;
         API | sql:Error result =  dbClient->queryRow(query);
         if result is sql:NoRowsError {
