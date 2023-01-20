@@ -101,8 +101,7 @@ const (
 
 // API Type Constants
 const (
-	//todo(amali) change to REST
-	REST                  string = "HTTP"
+	REST                  string = "REST"
 	SOAP                  string = "SOAP"
 	WS                    string = "WS"
 	GRAPHQL               string = "GRAPHQL"
