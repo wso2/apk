@@ -18,6 +18,7 @@
 package synchronizer
 
 import (
+	"reflect"
 	"sync"
 
 	"github.com/wso2/apk/adapter/internal/loggers"
@@ -147,6 +148,12 @@ func updateHTTPRoute(httpRoute *HTTPRouteState, cachedHTTPRoute *HTTPRouteState,
 				break
 			}
 		}
+	}
+
+	if !reflect.DeepEqual(cachedHTTPRoute.BackendPropertyMapping, httpRoute.BackendPropertyMapping) {
+		cachedHTTPRoute.BackendPropertyMapping = httpRoute.BackendPropertyMapping
+		updated = true
+		events = append(events, endpointType+" Backend Properties")
 	}
 	return events, updated
 }
