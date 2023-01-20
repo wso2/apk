@@ -871,6 +871,8 @@ public type API record {
     boolean isSubscriptionAvailable?;
     # API categories
     string[] categories?;
+    # Supported SDK
+    string[] sdk?;
     # API Key Managers
     record {} keyManagers?;
     string createdTime?;
