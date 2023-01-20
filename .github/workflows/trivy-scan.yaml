@@ -289,4 +289,5 @@ jobs:
             format: 'table'
             ignore-unfixed: true
             vuln-type: 'os,library'
-            severity: 'CRITICAL,HIGH'                 
+            severity: 'CRITICAL,HIGH'     
+            timeout: '60m'            
