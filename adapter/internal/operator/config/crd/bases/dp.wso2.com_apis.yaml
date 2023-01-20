@@ -55,7 +55,7 @@ spec:
                   of the API in a ConfigMap.
                 type: string
               organization:
-                description: Organization denotes the organization related to the
+                description: Organization denotes the organization. related to the
                   API
                 type: string
               prodHTTPRouteRef:
@@ -66,6 +66,9 @@ spec:
                 description: 'SandHTTPRouteRef contains a list of references to HttpRoutes
                   of type HttpRoute. xref: https://github.com/kubernetes-sigs/gateway-api/blob/main/apis/v1beta1/httproute_types.go'
                 type: string
+              systemAPI:
+                description: SystemAPI denotes if it is an internal system API.
+                type: boolean
             required:
             - apiDisplayName
             - apiType

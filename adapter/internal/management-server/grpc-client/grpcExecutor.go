@@ -19,16 +19,14 @@ package client
 
 import (
 	"context"
-	"crypto/tls"
 	"fmt"
 	"time"
 
 	"github.com/wso2/apk/adapter/config"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
+	"github.com/wso2/apk/adapter/internal/management-server/utils"
 	"github.com/wso2/apk/adapter/pkg/logging"
-	"github.com/wso2/apk/adapter/pkg/utils/tlsutils"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
 	grpcStatus "google.golang.org/grpc/status"
 )
 
@@ -42,7 +40,7 @@ type RetryPolicy struct {
 
 // GetConnection creates and returns a grpc client connection
 func GetConnection(address string) (*grpc.ClientConn, error) {
-	transportCredentials, err := generateTLSCredentials()
+	transportCredentials, err := utils.GenerateTLSCredentials()
 	if err != nil {
 		return nil, err
 	}
@@ -51,31 +49,11 @@ func GetConnection(address string) (*grpc.ClientConn, error) {
 	return grpc.DialContext(ctx, address, grpc.WithTransportCredentials(transportCredentials), grpc.WithBlock())
 }
 
-func generateTLSCredentials() (credentials.TransportCredentials, error) {
-	conf := config.ReadConfigs()
-	certPool := tlsutils.GetTrustedCertPool(conf.Adapter.Truststore.Location)
-	certificate, err := tlsutils.GetServerCertificate(conf.Adapter.Keystore.CertPath,
-		conf.Adapter.Keystore.KeyPath)
-	if err != nil {
-		logger.LoggerGRPCClient.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("Error while processing the private-public key pair : %v", err.Error()),
-			Severity:  logging.BLOCKER,
-			ErrorCode: 2700,
-		})
-		return nil, err
-	}
-	tlsConfig := &tls.Config{
-		Certificates: []tls.Certificate{certificate},
-		RootCAs:      certPool,
-	}
-	return credentials.NewTLS(tlsConfig), nil
-}
-
 // ExecuteGRPCCall executes a grpc call
-func ExecuteGRPCCall(connection *grpc.ClientConn, call func() (interface{}, error)) (interface{}, error) {
+func ExecuteGRPCCall(call func() (interface{}, error)) (interface{}, error) {
 	conf := config.ReadConfigs()
-	maxAttempts := conf.Adapter.GRPCClient.MaxAttempts
-	backOffInMilliSeconds := conf.Adapter.GRPCClient.BackOffInMilliSeconds
+	maxAttempts := conf.ManagementServer.GRPCClient.MaxAttempts
+	backOffInMilliSeconds := conf.ManagementServer.GRPCClient.BackOffInMilliSeconds
 	retries := 0
 	response, err := call()
 	for {

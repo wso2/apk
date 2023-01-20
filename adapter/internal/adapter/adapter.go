@@ -27,7 +27,6 @@ import (
 	enforcerCallbacks "github.com/wso2/apk/adapter/internal/discovery/xds/enforcercallbacks"
 	routercb "github.com/wso2/apk/adapter/internal/discovery/xds/routercallbacks"
 	"github.com/wso2/apk/adapter/internal/operator"
-	xdsMgt "github.com/wso2/apk/adapter/internal/xds"
 	apiservice "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/api"
 	configservice "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/config"
 	keymanagerservice "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/keymgt"
@@ -233,7 +232,6 @@ func Run(conf *config.Config) {
 	}
 
 	go operator.InitOperator()
-	go xdsMgt.InitApkMgtClient()
 
 OUTER:
 	for {

@@ -100,8 +100,6 @@ type adapter struct {
 	SoapErrorInXMLEnabled bool
 	// SourceControl represents the configuration related to the repository where the api artifacts are stored
 	SourceControl sourceControl
-	// GRPCClient represents the configuration related to gRPC connection to Management server to agent
-	GRPCClient gRPCClient
 	// Operator represents the operator related configurations
 	Operator operator
 }
@@ -506,9 +504,13 @@ type requestWorkerPool struct {
 }
 
 type managementServer struct {
-	Enabled    bool
-	ServiceURL string
-	NodeLabel  string
+	Enabled bool
+	Host    string
+	// XDSPort represents the configuration related to XDS connection to Management server from agent
+	XDSPort   int
+	NodeLabel string
+	// GRPCClient represents the configuration related to gRPC connection from Management server to agent
+	GRPCClient gRPCClient
 }
 
 type brokerConnectionParameters struct {
@@ -548,9 +550,9 @@ type mutualSSL struct {
 }
 
 type gRPCClient struct {
-	ManagementServerAddress string
-	MaxAttempts             int
-	BackOffInMilliSeconds   int
+	Port                  int
+	MaxAttempts           int
+	BackOffInMilliSeconds int
 }
 
 type filters struct {

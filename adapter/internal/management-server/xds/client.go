@@ -28,6 +28,7 @@ import (
 	"github.com/golang/protobuf/ptypes"
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/loggers"
+	"github.com/wso2/apk/adapter/internal/management-server/utils"
 	cpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/cp/v1alpha1"
 
 	apkmgt_model "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/apkmgt"
@@ -89,7 +90,8 @@ func init() {
 
 func initConnection(xdsURL string) error {
 	// TODO: (AmaliMatharaarachchi) Bring in connection level configurations
-	conn, err := grpc.Dial(xdsURL, grpc.WithInsecure(), grpc.WithBlock())
+	transportCredentials, err := utils.GenerateTLSCredentials()
+	conn, err := grpc.Dial(xdsURL, grpc.WithTransportCredentials(transportCredentials), grpc.WithBlock())
 	if err != nil {
 		// TODO: (AmaliMatharaarachchi) retries
 		loggers.LoggerXds.ErrorC(logging.ErrorDetails{
@@ -186,11 +188,11 @@ func getAdapterNode() *core.Node {
 	}
 }
 
-// InitApkMgtClient initializes the connection to the apkmgt server.
-func InitApkMgtClient() {
+// InitApkMgtXDSClient initializes the connection to the apkmgt server.
+func InitApkMgtXDSClient() {
 	loggers.LoggerXds.Info("Starting the XDS Client connection to APK Management server.")
 	config := config.ReadConfigs()
-	err := initConnection(config.ManagementServer.ServiceURL)
+	err := initConnection(fmt.Sprintf("%s:%d", config.ManagementServer.Host, config.ManagementServer.XDSPort))
 	if err == nil {
 		go watchApplications()
 		discoveryRequest := &discovery.DiscoveryRequest{
