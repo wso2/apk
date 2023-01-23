@@ -18,19 +18,18 @@
 import ballerina/websocket;
 import ballerina/lang.value;
 import ballerina/log;
+import runtime_domain_service.model;
 
 isolated map<Service> services = {};
 string servicesResourceVersion = "";
 websocket:Client|error|() servicesClient = ();
 
 class ServiceTask {
-
     function init(string resourceVersion) {
         servicesClient = getServiceClient(servicesResourceVersion);
     }
-    public function startListening() {
-
-        worker WatchServices {
+    public function startListening() returns error? {
+        worker WatchServiceThread {
             while true {
                 do {
                     websocket:Client|error|() serviceClientResult = servicesClient;
@@ -62,9 +61,7 @@ class ServiceTask {
                 }
             }
         }
-
     }
-
 }
 
 function containsNamespace(string namespace) returns boolean {
@@ -76,32 +73,34 @@ function containsNamespace(string namespace) returns boolean {
     return false;
 }
 
-public isolated function createServiceModel(json event) returns Service|error {
+public isolated function createServiceModel(model:Service 'service) returns Service|error {
     Service serviceData = {
-        id: <string>check event.metadata.uid,
-        name: <string>check event.metadata.name,
-        namespace: <string>check event.metadata.namespace,
-        'type: <string>check event.spec.'type,
-        portmapping: check mapPortMapping(event),
-        createdTime: <string>check event.metadata.creationTimestamp
+        id: <string>'service.metadata.uid,
+        name: <string>'service.metadata.name,
+        namespace: <string>'service.metadata.namespace,
+        'type: <string>'service.spec.'type,
+        portmapping: check mapPortMapping('service),
+        createdTime: <string>'service.metadata.creationTimestamp
     };
     return serviceData;
 }
 
-isolated function mapPortMapping(json event) returns PortMapping[]|error {
-    json[] ports = <json[]>check event.spec.ports;
+isolated function mapPortMapping(model:Service 'service) returns PortMapping[]|error {
+    model:Port[]? ports = 'service.spec.ports;
     PortMapping[] portmappings = [];
-
-    foreach json port in ports {
-        PortMapping portmapping =
+    if ports is model:Port[] {
+        foreach model:Port port in ports {
+            PortMapping portmapping =
             {
-            name: check port.name,
-            protocol: check port.protocol,
-            port: check port.port,
-            targetport: check port.targetPort
-        };
-        portmappings.push(portmapping);
+                name: port.name ?: "",
+                protocol: port.protocol,
+                port: port.port,
+                targetport: <int>port.targetPort
+            };
+            portmappings.push(portmapping);
+        }
     }
+
     return portmappings;
 }
 
@@ -135,8 +134,8 @@ isolated function getServiceById(string id) returns Service|error {
     }
 }
 
-function putAllServices(json[] servicesEntries) {
-    foreach json serviceData in servicesEntries {
+function putAllServices(model:Service[] servicesEntries) {
+    foreach model:Service serviceData in servicesEntries {
         lock {
             Service|error serviceEntry = createServiceModel(serviceData.clone());
             if serviceEntry is Service {
@@ -182,26 +181,29 @@ function readServiceEvents(websocket:Client serviceWebSocketClient) returns erro
         json metadata = <json>check eventValue.metadata;
         string latestResourceVersion = <string>check metadata.resourceVersion;
         setServicesResourceVersion(latestResourceVersion);
-        Service|error serviceModel = createServiceModel(eventValue);
-        if serviceModel is Service {
-            if containsNamespace(serviceModel.namespace) {
-                if eventType == "ADDED" {
-                    lock {
-                        services[serviceModel.id] = serviceModel.clone();
-                    }
-                } else if (eventType == "MODIFIED") {
-                    lock {
-                        _ = services.remove(serviceModel.id);
-                        services[serviceModel.id] = serviceModel.clone();
-                    }
-                } else if (eventType == "DELETED") {
-                    lock {
-                        _ = services.remove(serviceModel.id);
+        model:Service|error mappedService = eventValue.cloneWithType(model:Service);
+        if mappedService is model:Service {
+            Service|error serviceModel = createServiceModel(mappedService);
+            if serviceModel is Service {
+                if containsNamespace(serviceModel.namespace) {
+                    if eventType == "ADDED" {
+                        lock {
+                            services[serviceModel.id] = serviceModel.clone();
+                        }
+                    } else if (eventType == "MODIFIED") {
+                        lock {
+                            _ = services.remove(serviceModel.id);
+                            services[serviceModel.id] = serviceModel.clone();
+                        }
+                    } else if (eventType == "DELETED") {
+                        lock {
+                            _ = services.remove(serviceModel.id);
+                        }
                     }
                 }
+            } else {
+                log:printError("Unable to read service messages" + serviceModel.message());
             }
-        } else {
-            log:printError("Unable to read service messages" + serviceModel.message());
         }
     }
 }

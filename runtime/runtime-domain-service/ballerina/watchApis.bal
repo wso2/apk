@@ -173,3 +173,14 @@ isolated function getAPIByNameAndNamespace(string name, string namespace) return
     }
     return ();
 }
+isolated function isAPIVersionExist(string name,string 'newVersion) returns boolean{
+    lock {
+        model:API[] & readonly readOnlyAPIList = apilist.toArray().cloneReadOnly();
+        foreach model:API & readonly api in readOnlyAPIList {
+            if api.spec.apiDisplayName==name && api.spec.apiVersion=='newVersion {
+                return true;
+            }
+        }
+    }
+    return false;
+}

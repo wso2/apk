@@ -6,7 +6,7 @@ ServiceSpec spec;
 };
 
 public type ServiceSpec record {
-string? externalName;
+string externalName?;
 string 'type;
 Port[] ports?;
 };
@@ -16,5 +16,12 @@ string name?;
 int nodePort?;
 int port;
 string protocol?;
-string targetPort?;
+int targetPort?;
+};
+
+public type ServiceList record {
+string kind = "ServiceList";
+string apiVersion = "v1";
+ListMeta metadata;
+Service[] items;
 };

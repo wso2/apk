@@ -113,6 +113,16 @@ http:Service runtimeService = service object {
         InternalServerErrorError internalError = {body: {code: 900910, message: "Not implemented"}};
         return internalError;
     }
+   isolated resource function post apis/'copy\-api(string newVersion, string? serviceId, string apiId) returns CreatedAPI|BadRequestError|NotFoundError|InternalServerErrorError {
+        APIClient apiClient = new;
+         CreatedAPI|NotFoundError|BadRequestError|APKError copyAPI = apiClient.copyAPI(newVersion,serviceId,apiId,"carbon.super");
+         if copyAPI is CreatedAPI|NotFoundError|BadRequestError {
+            return copyAPI;
+         } else {
+            return handleAPKError(copyAPI);
+         }
+    }
+
     isolated resource function get services(string? query, string sortBy = "createdTime", string sortOrder = "desc", int 'limit = 25, int offset = 0) returns ServiceList|BadRequestError|InternalServerErrorError {
         ServiceClient serviceClient = new ();
         return serviceClient.getServices(query, sortBy, sortOrder, 'limit, offset);
