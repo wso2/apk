@@ -170,7 +170,7 @@ Following are some tasks with the steps that a developer might do in operator de
     }
     ```
 
-10. Adding the watchers - Since the `APIPolicy` kind resource changes are feed into the Reconcile loop of `api_controller.go`, Add following code snippet under at the end of `NewAPIController` function.
+11. Adding the watchers - Since the `APIPolicy` kind resource changes are feed into the Reconcile loop of `api_controller.go`, Add following code snippet under at the end of `NewAPIController` function.
     ```
     if err := c.Watch(&source.Kind{Type: &dpv1alpha1.APIPolicy{}}, handler.EnqueueRequestsFromMapFunc(r.getAPIsForAPIPolicy),
         predicates...); err != nil {
@@ -183,7 +183,7 @@ Following are some tasks with the steps that a developer might do in operator de
     }
     ```
 
-11. Generating CRD and other resource yamls by running:
+12. Generating CRD and other resource yamls by running:
 
     ```
     make manifests
