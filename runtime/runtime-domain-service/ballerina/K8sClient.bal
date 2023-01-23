@@ -19,6 +19,7 @@
 import ballerina/io;
 import runtime_domain_service.model;
 import ballerina/url;
+import ballerina/log;
 import ballerina/http;
 
 const string K8S_API_ENDPOINT = "/api/v1";
@@ -57,6 +58,7 @@ isolated function deleteAPICR(string name, string namespace) returns http:Respon
     string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/apis/" + name;
     return k8sApiServerEp->delete(endpoint, targetType = http:Response);
 }
+
 isolated function deleteAuthenticationCR(string name, string namespace) returns http:Response|http:ClientError {
     string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/authentications/" + name;
     return k8sApiServerEp->delete(endpoint, targetType = http:Response);
@@ -65,6 +67,11 @@ isolated function deleteAuthenticationCR(string name, string namespace) returns 
 isolated function deployAuthenticationCR(model:Authentication authentication, string namespace) returns http:Response|http:ClientError {
     string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/authentications";
     return k8sApiServerEp->post(endpoint, authentication, targetType = http:Response);
+}
+
+isolated function getHttpRoute(string name, string namespace) returns model:Httproute|http:ClientError {
+    string endpoint = "/apis/gateway.networking.k8s.io/v1beta1/namespaces/" + namespace + "/httproutes/" + name;
+    return k8sApiServerEp->get(endpoint, targetType = model:Httproute);
 }
 
 isolated function deleteHttpRoute(string name, string namespace) returns http:Response|http:ClientError {
@@ -124,7 +131,7 @@ isolated function retrieveAllAPIS(string? continueToken) returns json|http:Clien
     return k8sApiServerEp->get(endpoint, targetType = json);
 }
 
-function retrieveAllServices(string? continueToken) returns json|http:ClientError {
+function retrieveAllServices(string? continueToken) returns model:ServiceList|http:ClientError {
     string? continueTokenValue = continueToken;
     string endpoint = "/api/v1/services";
     if continueTokenValue is string {
@@ -142,18 +149,25 @@ function retrieveAllServices(string? continueToken) returns json|http:ClientErro
         }
     }
 
-    return k8sApiServerEp->get(endpoint, targetType = json);
+    return k8sApiServerEp->get(endpoint, targetType = model:ServiceList);
+}
+isolated function deleteService(string name, string namespace) returns http:Response|http:ClientError{
+    string endpoint = "/api/v1/namespaces/" + namespace + "/services/" + name;
+    return k8sApiServerEp->delete(endpoint, targetType = http:Response);
 }
 
-isolated function getServiceByNameAndNamespace(string name, string namespace) returns json|error {
+isolated function getServiceByNameAndNamespace(string name, string namespace) returns model:Service|error {
     string endpoint = "/api/v1/namespaces/" + namespace + "/services/" + name;
     http:Response|http:ClientError response = k8sApiServerEp->get(endpoint);
     if response is http:Response {
         if response.statusCode == 200 {
-            return response.getJsonPayload();
+            json jsonPayload = check response.getJsonPayload();
+            return jsonPayload.cloneWithType(model:Service);
         } else if (response.statusCode == 404) {
             return error("Service not found");
         }
+        log:printError("Internal Error occured while retrieving service", statuscode = response.statusCode, payload = check response.getTextPayload());
+        return error("Internal Error occured");
     } else {
         return error(response.message());
     }
@@ -198,15 +212,23 @@ isolated function deleteK8ServiceMapping(string name, string namespace) returns 
     string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/servicemappings/" + name;
     return k8sApiServerEp->delete(endpoint, targetType = http:Response);
 }
-isolated function getK8sServiceMapingsForAPI(string apiName,string apiVersion,string namespace) returns model:ServiceMappingList|http:ClientError|error{
-    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/servicemappings?labelSelector="+check generateUrlEncodedLabelSelector(apiName,apiVersion);
+
+isolated function getK8sServiceMapingsForAPI(string apiName, string apiVersion, string namespace) returns model:ServiceMappingList|http:ClientError|error {
+    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/servicemappings?labelSelector=" + check generateUrlEncodedLabelSelector(apiName, apiVersion);
     return k8sApiServerEp->get(endpoint, targetType = model:ServiceMappingList);
 }
-isolated function getAuthenticationCrsForAPI(string apiName,string apiVersion,string namespace) returns model:AuthenticationList|http:ClientError|error{
-    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/authentications?labelSelector="+check generateUrlEncodedLabelSelector(apiName,apiVersion);
+
+isolated function getAuthenticationCrsForAPI(string apiName, string apiVersion, string namespace) returns model:AuthenticationList|http:ClientError|error {
+    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/authentications?labelSelector=" + check generateUrlEncodedLabelSelector(apiName, apiVersion);
     return k8sApiServerEp->get(endpoint, targetType = model:AuthenticationList);
 }
-isolated function generateUrlEncodedLabelSelector(string apiName,string apiVersion)returns string|error{
-string labelSelector = string:'join("","api-name=",apiName,",api-version=",apiVersion);
-return url:encode(labelSelector,"UTF-8");
+
+isolated function generateUrlEncodedLabelSelector(string apiName, string apiVersion) returns string|error {
+    string labelSelector = string:'join("", "api-name=", apiName, ",api-version=", apiVersion);
+    return url:encode(labelSelector, "UTF-8");
+}
+
+isolated function getBackendServicesForAPI(string apiName, string apiVersion, string namespace) returns model:ServiceList|http:ClientError|error {
+    string endpoint = "/api/v1/namespaces/" + namespace + "/services?labelSelector=" + check generateUrlEncodedLabelSelector(apiName, apiVersion);
+    return k8sApiServerEp->get(endpoint, targetType = model:ServiceList);
 }

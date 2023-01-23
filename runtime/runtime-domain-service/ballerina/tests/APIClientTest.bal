@@ -1736,7 +1736,7 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
         context: "/pizzaAPI/1.0.0",
         'version: "1.0.0"
     };
-    string apiUUID = getUniqueIdForAPI(api, "carbon.super");
+    string apiUUID = getUniqueIdForAPI(api.name,api.'version, "carbon.super");
     model:ConfigMap configmap = getMockConfigMap1(apiUUID, api);
     http:Response mockConfigMapResponse = getMockConfigMapResponse(configmap.clone());
     model:Httproute httpRoute = getMockHttpRoute(api, apiUUID);
@@ -2178,7 +2178,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
         'version: "1.0.0"
     };
     BadRequestError contextAlreadyExistError = {body: {code: 90911, message: "API Context - " + contextAlreadyExist.context + " already exist.", description: "API Context " + contextAlreadyExist.context + " already exist."}};
-    string apiUUID = getUniqueIdForAPI(api, "carbon.super");
+    string apiUUID = getUniqueIdForAPI(api.name,api.'version, "carbon.super");
     string backenduuid = getBackendServiceUid(api, (), PRODUCTION_TYPE, "carbon.super");
     string backenduuid1 = getBackendServiceUid(api, (), SANDBOX_TYPE, "carbon.super");
     string k8sapiUUID = uuid:createType1AsString();

@@ -22,8 +22,6 @@ import ballerina/regex;
 
 public class ServiceClient {
 
-
-
     public isolated function getServices(string? query, string sortBy, string sortOrder, int 'limit, int offset) returns ServiceList|BadRequestError|InternalServerErrorError {
         Service[] serviceList = getServicesList().clone();
         if query is string && query.toString().trim().length() > 0 {
@@ -45,25 +43,23 @@ public class ServiceClient {
 
     public function retrieveAllServicesAtStartup(string? continueValue) returns error? {
         string? resultValue = continueValue;
-        json|http:ClientError retrieveAllServicesResult;
+        model:ServiceList|http:ClientError retrieveAllServicesResult;
         if resultValue is string {
             retrieveAllServicesResult = retrieveAllServices(resultValue);
         } else {
             retrieveAllServicesResult = retrieveAllServices(());
         }
 
-        if retrieveAllServicesResult is json {
-            json metadata = check retrieveAllServicesResult.metadata;
-            json[] items = <json[]>check retrieveAllServicesResult.items;
-            putAllServices(items);
+        if retrieveAllServicesResult is model:ServiceList {
+            model:ListMeta metadata = retrieveAllServicesResult.metadata;
+            model:Service[] serviceList = retrieveAllServicesResult.items;
+            putAllServices(serviceList);
 
-            json|error continueElement = metadata.'continue;
-            if continueElement is json {
-                if (<string>continueElement).length() > 0 {
-                    _ = check self.retrieveAllServicesAtStartup(<string?>continueElement);
-                }
+            string? continueElement = metadata.'continue;
+            if continueElement is string && continueElement.length() > 0 {
+                _ = check self.retrieveAllServicesAtStartup(<string?>continueElement);
             }
-            string resourceVersion = <string>check metadata.'resourceVersion;
+            string resourceVersion = <string>metadata.'resourceVersion;
             setServicesResourceVersion(resourceVersion);
         }
     }
@@ -79,7 +75,7 @@ public class ServiceClient {
 
         if retrieveAllServiceMappingResult is model:ServiceMappingList {
             model:ListMeta metadata = retrieveAllServiceMappingResult.metadata;
-            model:K8sServiceMapping[] items =  retrieveAllServiceMappingResult.items;
+            model:K8sServiceMapping[] items = retrieveAllServiceMappingResult.items;
             _ = check putAllServiceMappings(items);
 
             json|error continueElement = metadata.'continue;
@@ -88,15 +84,15 @@ public class ServiceClient {
                     _ = check self.retrieveAllServicesAtStartup(<string?>continueElement);
                 }
             }
-            string? resourceVersion =  metadata.'resourceVersion;
-            if resourceVersion is string{
-            setServiceMappingResourceVersion(resourceVersion);                
+            string? resourceVersion = metadata.'resourceVersion;
+            if resourceVersion is string {
+                setServiceMappingResourceVersion(resourceVersion);
             }
         }
     }
 
     public isolated function retrieveK8sServiceMapping(string name, string namespace) returns Service|error {
-        json serviceByNameAndNamespace = check getServiceByNameAndNamespace(name, namespace);
+        model:Service serviceByNameAndNamespace = check getServiceByNameAndNamespace(name, namespace);
         return createServiceModel(serviceByNameAndNamespace);
     }
 

@@ -689,6 +689,52 @@ paths:
 
         "500":
           $ref: "#/components/responses/InternalServerError"
+  /apis/copy-api:
+    post:
+      tags:
+        - APIs
+      summary: Create a New API Version
+      description: |
+        This operation can be used to create a new version of an existing API. The new version is specified as `newVersion` query parameter. New API will be in `CREATED` state.
+      parameters:
+        - name: newVersion
+          in: query
+          description: Version of the new API.
+          required: true
+          schema:
+            maxLength: 30
+            type: string
+        - name: serviceId
+          in: query
+          description: Version of the Service that will used in creating new version
+          schema:
+            type: string
+          required: false
+        - $ref: '#/components/parameters/apiId-Q'
+      responses:
+        201:
+          description: |
+            Created.
+            Successful response with the newly created API as entity in the body. Location header contains URL of newly created API.
+          headers:
+            Location:
+              description: |
+                The URL of the newly created API.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/API'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2Security:
+            - apim:api_create
+            - apim:api_manage
+      operationId: createNewAPIVersion
   /services:
     get:
       tags:
@@ -1636,6 +1682,16 @@ components:
       required: true
       style: simple
       explode: false
+      schema:
+        type: string
+    apiId-Q:
+      name: apiId
+      in: query
+      description: |
+        **API ID** consisting of the **UUID** of the API.
+        The combination of the provider of the API, name of the API and the version is also accepted as a valid API I.
+        Should be formatted as **provider-name-version**.
+      required: true
       schema:
         type: string
     name:

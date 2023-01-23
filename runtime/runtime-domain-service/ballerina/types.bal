@@ -68,6 +68,8 @@ public type MediationPolicy record {
 };
 
 public type Apis_importdefinition_body record {
+    # Type of Definition.
+    string 'type?;
     # Definition to upload as a file
     string file?;
     # Definition url
@@ -129,7 +131,8 @@ public type Gateway record {
 public type APIOperations record {
     string target?;
     string verb?;
-    boolean authTypeEnabled = true;
+    # Authentication mode for resource (true/false)
+    boolean authTypeEnabled?;
     # Endpoint configuration of the API. This can be used to provide different types of endpoints including Simple REST Endpoints, Loadbalanced and Failover.
     # 
     # `Simple REST Endpoint`

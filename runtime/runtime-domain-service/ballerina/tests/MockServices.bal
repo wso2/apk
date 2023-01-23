@@ -1,3 +1,4 @@
+import runtime_domain_service.model;
 //
 // Copyright (c) 2022, WSO2 LLC. (http://www.wso2.com).
 //
@@ -15,9 +16,9 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-public function getMockServiceList() returns json {
+public function getMockServiceList() returns model:ServiceList {
 
-    json response = {
+    model:ServiceList response = {
         "kind": "ServiceList",
         "apiVersion": "v1",
         "metadata": {

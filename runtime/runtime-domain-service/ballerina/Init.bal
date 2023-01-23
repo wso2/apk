@@ -52,7 +52,7 @@ function init() returns error? {
     APIListingTask apiListingTask = new (resourceVersion);
     _ = check apiListingTask.startListening();
     ServiceTask serviceTask = new (servicesResourceVersion);
-    _ = serviceTask.startListening();
+    _ = check serviceTask.startListening();
     _ = check servicesService.retrieveAllServiceMappingsAtStartup(());
     ServiceMappingTask serviceMappingTask = new (serviceMappingResourceVersion);
     _ = check serviceMappingTask.startListening();

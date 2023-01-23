@@ -29,6 +29,7 @@ import ballerina/jballerina.java;
 import ballerina/lang.value;
 import runtime_domain_service.java.lang;
 import runtime_domain_service.org.wso2.apk.runtime.api as runtimeapi;
+import ballerina/uuid;
 import ballerina/crypto;
 
 public class APIClient {
@@ -53,17 +54,9 @@ public class APIClient {
         do {
             string? definitionFileRef = api.spec.definitionFileRef;
             if definitionFileRef is string && definitionFileRef.length() > 0 {
-                http:Response response = check getConfigMapValueFromNameAndNamespace(definitionFileRef, api.metadata.namespace);
-                if response.statusCode == 200 {
-                    json configMapValue = check response.getJsonPayload();
-                    json|error data = configMapValue.data;
-                    if data is json {
-                        map<json> dataMap = <map<json>>data;
-                        string[] keys = dataMap.keys();
-                        if keys.length() == 1 {
-                            return check value:fromJsonString(dataMap.get(keys[0]).toString());
-                        }
-                    }
+                model:ConfigMap? configmapDefinition = check self.getDefinitionConfigmap(definitionFileRef, api.metadata.namespace);
+                if configmapDefinition is model:ConfigMap {
+                    return check self.getDefinitionFromConfigMap(configmapDefinition);
                 }
             }
             // definitionFileRef not specified or empty. definitionfile
@@ -73,6 +66,25 @@ public class APIClient {
             return error(message, e, message = message, description = message, code = 909000, statusCode = "500");
         }
 
+    }
+    private isolated function getDefinitionFromConfigMap(model:ConfigMap configmap) returns json|error? {
+        map<string>? data = configmap.data;
+        if data is map<string> {
+            string[] keys = data.keys();
+            if keys.length() == 1 {
+                return check value:fromJsonString(data.get(keys[0]).toString());
+            }
+        }
+        return;
+    }
+    private isolated function getDefinitionConfigmap(string name, string namespace) returns model:ConfigMap|error? {
+        http:Response response = check getConfigMapValueFromNameAndNamespace(name, namespace);
+        if response.statusCode == 200 {
+            json configMapValue = check response.getJsonPayload();
+            model:ConfigMap configmapDefinition = check configMapValue.cloneWithType(model:ConfigMap);
+            return configmapDefinition;
+        }
+        return;
     }
 
     //Get APIs deployed in default namespace by APIId.
@@ -132,12 +144,39 @@ public class APIClient {
                 if response is APKError {
                     return response;
                 }
+                response = self.deleteBackendServices(api);
+                if response is APKError {
+                    return response;
+                }
             } else {
                 NotFoundError apiNotfound = {body: {code: 900910, description: "API with " + id + " not found", message: "API not found"}};
                 return apiNotfound;
             }
         }
         return http:OK;
+    }
+    private isolated function deleteBackendServices(model:API api) returns APKError? {
+        do {
+            model:ServiceList|http:ClientError serviceListResponse = check getBackendServicesForAPI(api.spec.apiDisplayName, api.spec.apiVersion, api.metadata.namespace);
+            if serviceListResponse is model:ServiceList {
+                foreach model:Service item in serviceListResponse.items {
+                    http:Response|http:ClientError serviceDeletionResponse = deleteService(item.metadata.name, item.metadata.namespace);
+                    if serviceDeletionResponse is http:Response {
+                        if serviceDeletionResponse.statusCode != http:STATUS_OK {
+                            json responsePayLoad = check serviceDeletionResponse.getJsonPayload();
+                            model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                            check self.handleK8sTimeout(statusResponse);
+                        }
+                    } else {
+                        log:printError("Error occured while deleting service mapping");
+                    }
+                }
+                return;
+            }
+        } on fail var e {
+            log:printError("Error occured deleting servicemapping", e);
+            return error("Error occured deleting servicemapping", message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = "500");
+        }
     }
     private isolated function deleteAuthneticationCRs(model:API api) returns APKError? {
         do {
@@ -274,7 +313,7 @@ public class APIClient {
             }
 
             self.setDefaultOperationsIfNotExist(api);
-            string uniqueId = getUniqueIdForAPI(api, organization);
+            string uniqueId = getUniqueIdForAPI(api.name, api.'version, organization);
             model:APIArtifact apiArtifact = {uniqueId: uniqueId};
             APIOperations[]? operations = api.operations;
             if operations is APIOperations[] {
@@ -289,7 +328,7 @@ public class APIClient {
             record {}? endpointConfig = api.endpointConfig;
             map<model:Endpoint|()> createdEndpoints = {};
             if endpointConfig is record {} {
-                createdEndpoints = check self.createAndAddBackendServics(apiArtifact, api, endpointConfig, (), (),organization);
+                createdEndpoints = check self.createAndAddBackendServics(apiArtifact, api, endpointConfig, (), (), organization);
             }
             _ = check self.setHttpRoute(apiArtifact, api, createdEndpoints.hasKey(PRODUCTION_TYPE) ? createdEndpoints.get(PRODUCTION_TYPE) : (), uniqueId, PRODUCTION_TYPE, organization);
             _ = check self.setHttpRoute(apiArtifact, api, createdEndpoints.hasKey(SANDBOX_TYPE) ? createdEndpoints.get(SANDBOX_TYPE) : (), uniqueId, SANDBOX_TYPE, organization);
@@ -308,7 +347,7 @@ public class APIClient {
         }
     }
 
-    private isolated function createAndAddBackendServics(model:APIArtifact apiArtifact, API api, record {} endpointConfig, APIOperations? apiOperation, string? endpointType,string organization) returns map<model:Endpoint>|APKError|error {
+    private isolated function createAndAddBackendServics(model:APIArtifact apiArtifact, API api, record {} endpointConfig, APIOperations? apiOperation, string? endpointType, string organization) returns map<model:Endpoint>|APKError|error {
         map<model:Endpoint> endpointIdMap = {};
         anydata|error sandboxEndpointConfig = trap endpointConfig.get("sandbox_endpoints");
         anydata|error productionEndpointConfig = trap endpointConfig.get("production_endpoints");
@@ -316,12 +355,12 @@ public class APIClient {
             if sandboxEndpointConfig is map<anydata> {
                 if sandboxEndpointConfig.hasKey("url") {
                     anydata url = sandboxEndpointConfig.get("url");
-                    model:Service backendService = self.createBackendService(api,apiOperation,SANDBOX_TYPE,organization,<string>url, self.getLabels(apiArtifact.uniqueId, api));
+                    model:Service backendService = self.createBackendService(api, apiOperation, SANDBOX_TYPE, organization, <string>url);
                     if apiOperation == () {
                         apiArtifact.sandboxEndpointAvailable = true;
                         apiArtifact.sandboxUrl = <string?>url;
                     }
-                    apiArtifact.backendServices.push(backendService);
+                    apiArtifact.backendServices[backendService.metadata.name] = (backendService);
                     endpointIdMap[SANDBOX_TYPE] = {
                         port: check self.getPort(<string>url),
                         namespace: backendService.metadata.namespace,
@@ -339,12 +378,12 @@ public class APIClient {
             if productionEndpointConfig is map<anydata> {
                 if productionEndpointConfig.hasKey("url") {
                     anydata url = productionEndpointConfig.get("url");
-                    model:Service backendService = self.createBackendService(api,apiOperation,PRODUCTION_TYPE,organization,<string>url, self.getLabels(apiArtifact.uniqueId, api));
+                    model:Service backendService = self.createBackendService(api, apiOperation, PRODUCTION_TYPE, organization, <string>url);
                     if apiOperation == () {
                         apiArtifact.productionEndpointAvailable = true;
                         apiArtifact.productionUrl = <string?>url;
                     }
-                    apiArtifact.backendServices.push(backendService);
+                    apiArtifact.backendServices[backendService.metadata.name] = backendService;
                     endpointIdMap[PRODUCTION_TYPE] = {
                         port: check self.getPort(<string>url),
                         namespace: backendService.metadata.namespace,
@@ -360,7 +399,7 @@ public class APIClient {
         }
         return endpointIdMap;
     }
-    isolated function getLabels(string uniqueId, API api) returns map<string> {
+    isolated function getLabels(API api) returns map<string> {
         map<string> labels = {"api-name": api.name, "api-version": api.'version};
         return labels;
     }
@@ -447,7 +486,7 @@ public class APIClient {
         self.setDefaultOperationsIfNotExist(api);
         api.context = self.returnFullContext(api.context, api.'version, organization);
         Service|error serviceRetrieved = getServiceById(serviceKey);
-        string uniqueId = getUniqueIdForAPI(api, organization);
+        string uniqueId = getUniqueIdForAPI(api.name, api.'version, organization);
         if serviceRetrieved is Service {
             model:APIArtifact apiArtifact = {uniqueId: uniqueId};
             model:Endpoint endpoint = {
@@ -583,7 +622,7 @@ public class APIClient {
                 namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace),
                 uid: (),
                 creationTimestamp: (),
-                labels: self.getLabels(uniqueId, api)
+                labels: self.getLabels(api)
 
             },
             data: configMapData
@@ -614,9 +653,7 @@ public class APIClient {
             metadata: {
                 name: apiArtifact.uniqueId,
                 namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace),
-                uid: (),
-                creationTimestamp: (),
-                labels: self.getLabels(apiArtifact.uniqueId, api)
+                labels: self.getLabels(api)
             },
             spec: {
                 apiDisplayName: api.name,
@@ -645,22 +682,22 @@ public class APIClient {
         return uniqueId + "-definition";
     }
 
-    private isolated function retrieveHttpRouteRefName(API api, string uniqueId, string 'type) returns string {
-        return uniqueId + "-" + 'type;
+    private isolated function retrieveHttpRouteRefName(API api, string 'type, string organization) returns string {
+        return getUniqueIdForAPI(api.name, api.'version, organization) + "-" + 'type;
     }
-    private isolated function retrieveDisableAuthenticationRefName(API api, string uniqueId, string 'type) returns string {
-        return uniqueId + "-" + 'type + "-authentication";
+    private isolated function retrieveDisableAuthenticationRefName(API api, string 'type, string organization) returns string {
+        return getUniqueIdForAPI(api.name, api.'version, organization) + "-" + 'type + "-authentication";
     }
 
     private isolated function setHttpRoute(model:APIArtifact apiArtifact, API api, model:Endpoint? endpoint, string uniqueId, string endpointType, string organization) returns APKError? {
         model:Httproute httpRoute = {
             metadata:
                 {
-                name: self.retrieveHttpRouteRefName(api, uniqueId, endpointType),
+                name: self.retrieveHttpRouteRefName(api, endpointType, organization),
                 namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace),
                 uid: (),
                 creationTimestamp: (),
-                labels: self.getLabels(uniqueId, api)
+                labels: self.getLabels(api)
             },
             spec: {
                 parentRefs: self.generateAndRetrieveParentRefs(api, uniqueId),
@@ -693,10 +730,10 @@ public class APIClient {
             foreach APIOperations operation in operations {
                 model:HTTPRouteRule|() httpRouteRule = check self.generateHttpRouteRule(apiArtifact, api, endpoint, operation, endpointType, organization);
                 if httpRouteRule is model:HTTPRouteRule {
-                    if !operation.authTypeEnabled {
-                        string disableAuthenticationRefName = self.retrieveDisableAuthenticationRefName(api, apiArtifact.uniqueId, endpointType);
+                    if !(operation.authTypeEnabled ?: true) {
+                        string disableAuthenticationRefName = self.retrieveDisableAuthenticationRefName(api, endpointType, organization);
                         if !apiArtifact.authenticationMap.hasKey(disableAuthenticationRefName) {
-                            model:Authentication generateDisableAuthenticationCR = self.generateDisableAuthenticationCR(apiArtifact, api, endpointType);
+                            model:Authentication generateDisableAuthenticationCR = self.generateDisableAuthenticationCR(apiArtifact, api, endpointType, organization);
                             apiArtifact.authenticationMap[disableAuthenticationRefName] = generateDisableAuthenticationCR;
                         }
                         model:HTTPRouteFilter disableAuthenticationFilter = {'type: "ExtensionRef", extensionRef: {group: "dp.wso2.com", kind: "Authentication", name: disableAuthenticationRefName}};
@@ -714,16 +751,16 @@ public class APIClient {
         return httpRouteRules;
     }
 
-    private isolated function generateDisableAuthenticationCR(model:APIArtifact apiArtifact, API api, string endpointType) returns model:Authentication {
-        string retrieveDisableAuthenticationRefName = self.retrieveDisableAuthenticationRefName(api, apiArtifact.uniqueId, endpointType);
+    private isolated function generateDisableAuthenticationCR(model:APIArtifact apiArtifact, API api, string endpointType, string organization) returns model:Authentication {
+        string retrieveDisableAuthenticationRefName = self.retrieveDisableAuthenticationRefName(api, endpointType,organization);
         string nameSpace = getNameSpace(runtimeConfiguration.apiCreationNamespace);
         model:Authentication authentication = {
-            metadata: {name: retrieveDisableAuthenticationRefName, namespace: nameSpace, labels: self.getLabels(apiArtifact.uniqueId, api)},
+            metadata: {name: retrieveDisableAuthenticationRefName, namespace: nameSpace, labels: self.getLabels(api)},
             spec: {
                 targetRef: {
                     group: "",
                     kind: "Resource",
-                    name: self.retrieveHttpRouteRefName(api, apiArtifact.uniqueId, endpointType),
+                    name: self.retrieveHttpRouteRefName(api, endpointType, organization),
                     namespace: nameSpace
                 },
                 override: {
@@ -741,7 +778,7 @@ public class APIClient {
             model:Endpoint? endpointToUse = ();
             if endpointConfig is record {} {
                 // endpointConfig presense at Operation Level.
-                map<model:Endpoint> operationalLevelBackend = check self.createAndAddBackendServics(apiArtifact, api, endpointConfig, operation, endpointType,organization);
+                map<model:Endpoint> operationalLevelBackend = check self.createAndAddBackendServics(apiArtifact, api, endpointConfig, operation, endpointType, organization);
                 if operationalLevelBackend.hasKey(endpointType) {
                     endpointToUse = operationalLevelBackend.get(endpointType);
                 }
@@ -964,7 +1001,7 @@ public class APIClient {
                     namespace: namespace,
                     uid: (),
                     creationTimestamp: (),
-                    labels: self.getLabels(apiArtifact.uniqueId, api)
+                    labels: self.getLabels(api)
                 },
                 spec: {
                     serviceRef: {
@@ -1216,15 +1253,15 @@ public class APIClient {
         return apkError;
     }
 
-    isolated function createBackendService(API api,APIOperations? apiOperation,string? endpointType,string organization,string url, map<string> labels) returns model:Service {
+    isolated function createBackendService(API api, APIOperations? apiOperation, string? endpointType, string organization, string url) returns model:Service {
         string nameSpace = getNameSpace(runtimeConfiguration.apiCreationNamespace);
         model:Service backendService = {
             metadata: {
-                name: getBackendServiceUid(api,apiOperation,endpointType,organization),
+                name: getBackendServiceUid(api, apiOperation, endpointType, organization),
                 namespace: nameSpace,
                 uid: (),
                 creationTimestamp: (),
-                labels: labels
+                labels: self.getLabels(api)
             },
             spec: {
                 externalName: self.gethost(url),
@@ -1549,6 +1586,316 @@ public class APIClient {
         };
         return importDefintionRequest;
     }
+    public isolated function copyAPI(string newVersion, string? serviceId, string apiId, string organization) returns CreatedAPI|NotFoundError|BadRequestError|APKError {
+        // validating API existence.
+        if newVersion.trim().length() == 0 || apiId.trim().length() == 0 {
+            BadRequestError badRequest = {body: {code: 900912, message: "new Version/APIID not exist."}};
+            return badRequest;
+        }
+        do {
+            API|NotFoundError api = self.getAPIById(apiId);
+            if api is API {
+                model:APIArtifact apiArtifact = check self.getApiArtifact(api);
+                // validating version
+                if isAPIVersionExist(api.name, newVersion) {
+                    BadRequestError badRequest = {body: {code: 900920, message: newVersion + " already exist."}};
+                    return badRequest;
+                }
+                //validating serviceuid if exist.
+                if apiArtifact.serviceMapping.length() > 0 {
+                    if serviceId is string && serviceId.toString().trim().length() > 0 {
+                        Service|error serviceById = getServiceById(serviceId);
+                        if serviceById is Service {
+                            self.prepareApiArtifactforNewVersion(apiArtifact, serviceById, api, newVersion, organization);
+                            model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact);
+                            CreatedAPI createdAPI = {body: {name: deployAPIToK8sResult.spec.apiDisplayName, context: self.returnFullContext(deployAPIToK8sResult.spec.context, deployAPIToK8sResult.spec.apiVersion, organization), 'version: deployAPIToK8sResult.spec.apiVersion, id: deployAPIToK8sResult.metadata.uid}};
+                            return createdAPI;
+                        } else {
+                            BadRequestError badRequest = {body: {code: 900921, message: serviceId + " service not exist."}};
+                            return badRequest;
+                        }
+                    }
+                }
+                self.prepareApiArtifactforNewVersion(apiArtifact, (), api, newVersion, organization);
+                model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact);
+                CreatedAPI createdAPI = {body: {name: deployAPIToK8sResult.spec.apiDisplayName, context: self.returnFullContext(deployAPIToK8sResult.spec.context, deployAPIToK8sResult.spec.apiVersion, organization), 'version: deployAPIToK8sResult.spec.apiVersion, id: deployAPIToK8sResult.metadata.uid}};
+                return createdAPI;
+            } else {
+                return <NotFoundError>api;
+            }
+        } on fail var e {
+            if e is APKError {
+                return e;
+            }
+            log:printError("Internal Error occured", e);
+            return error("Internal Error occured", code = 909000, message = "Internal Error occured", description = "Internal Error occured", statusCode = "500");
+        }
+    }
+    private isolated function prepareApiArtifactforNewVersion(model:APIArtifact apiArtifact, Service? serviceEntry, API oldAPI, string newVersion, string organization) {
+        do {
+            API newAPI = {
+                name: oldAPI.name,
+                context: regex:replace(oldAPI.context, oldAPI.'version, newVersion),
+                'version: newVersion
+            };
+            self.prepareAPICr(apiArtifact, oldAPI, newAPI, organization);
+            check self.prepareConfigMap(apiArtifact, oldAPI, newAPI);
+            self.prepareHttpRoute(apiArtifact, serviceEntry, oldAPI, newAPI, PRODUCTION_TYPE, organization);
+            self.prepareHttpRoute(apiArtifact, serviceEntry, oldAPI, newAPI, SANDBOX_TYPE, organization);
+            self.prepareK8sServiceMapping(apiArtifact, serviceEntry, oldAPI, newAPI, organization);
+        } on fail var e {
+            log:printError("", e);
+        }
+    }
+    private isolated function prepareK8sServiceMapping(model:APIArtifact apiArtifact, Service? serviceEntry, API oldAPI, API newAPI, string organization) {
+        model:K8sServiceMapping[] serviceMappings = apiArtifact.serviceMapping;
+        foreach model:K8sServiceMapping serviceMapping in serviceMappings {
+            serviceMapping.metadata.name = self.getServiceMappingEntryName(apiArtifact.uniqueId);
+            serviceMapping.metadata.labels = self.getLabels(newAPI);
+            serviceMapping.spec.apiRef.name = apiArtifact.uniqueId;
+        }
+    }
+    private isolated function prepareHttpRoute(model:APIArtifact apiArtifact, Service? serviceEntry, API oldAPI, API newAPI, string endpointType, string organization) {
+        model:Httproute? httproute;
+        if endpointType == PRODUCTION_TYPE {
+            httproute = apiArtifact.productionRoute;
+        } else {
+            httproute = apiArtifact.sandboxRoute;
+        }
+        if httproute is model:Httproute {
+            map<string> serviceMapping = {};
+            map<string> extenstionRefMappings = {};
+            httproute.metadata.name = self.retrieveHttpRouteRefName(newAPI, endpointType, organization);
+            model:HTTPRouteRule[] routeRules = httproute.spec.rules;
+            foreach model:HTTPRouteRule routeRule in routeRules {
+                model:HTTPBackendRef[]? backendRefs = routeRule.backendRefs;
+                if backendRefs is model:HTTPBackendRef[] {
+                    foreach model:HTTPBackendRef backendRef in backendRefs {
+                        if serviceMapping.hasKey(backendRef.name) {
+                            string newServiceName = serviceMapping.get(backendRef.name);
+                            backendRef.name = newServiceName;
+                        } else {
+                            [string, string]? prepareBackendRefResult = self.prepareBackendRef(backendRef, apiArtifact, serviceEntry, oldAPI, newAPI, endpointType, organization);
+                            if prepareBackendRefResult is [string, string] {
+                                serviceMapping[prepareBackendRefResult[0]] = prepareBackendRefResult[1];
+                            }
+                        }
+                    }
+                }
+                model:HTTPRouteMatch[]? matches = routeRule.matches;
+                if matches is model:HTTPRouteMatch[] {
+                    foreach model:HTTPRouteMatch routeMatch in matches {
+                        model:HTTPPathMatch? path = routeMatch.path;
+                        if path is model:HTTPPathMatch {
+                            path.value = regex:replace(path.value, oldAPI.'version, newAPI.'version);
+                        }
+                    }
+                }
+                model:HTTPRouteFilter[]? filters = routeRule.filters;
+                if filters is model:HTTPRouteFilter[] {
+                    foreach model:HTTPRouteFilter filter in filters {
+                        model:LocalObjectReference? extensionRef = filter.extensionRef;
+                        if extensionRef is model:LocalObjectReference {
+                            if extenstionRefMappings.hasKey(extensionRef.name) {
+                                extensionRef.name = extenstionRefMappings.get(extensionRef.name);
+                            }
+                            if extensionRef.kind == "Authentication" {
+                                if apiArtifact.authenticationMap.hasKey(extensionRef.name) {
+                                    model:Authentication authentication = apiArtifact.authenticationMap.get(extensionRef.name).clone();
+                                    model:Authentication newAuthenticationCR = self.prepareAuthenticationCR(apiArtifact, newAPI, authentication, endpointType, organization);
+                                    _ = apiArtifact.authenticationMap.remove(extensionRef.name);
+                                    apiArtifact.authenticationMap[newAuthenticationCR.metadata.name] = newAuthenticationCR;
+                                    extenstionRefMappings[extensionRef.name] = newAuthenticationCR.metadata.name;
+                                    extensionRef.name = newAuthenticationCR.metadata.name;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            httproute.metadata.name = self.retrieveHttpRouteRefName(newAPI, endpointType, organization);
+            httproute.metadata.labels = self.getLabels(newAPI);
+        }
+    }
+    private isolated function prepareAuthenticationCR(model:APIArtifact apiArtifact, API api, model:Authentication authentication, string endpointType, string organization) returns model:Authentication {
+        authentication.metadata.name = self.retrieveDisableAuthenticationRefName(api, endpointType, organization);
+        authentication.metadata.labels = self.getLabels(api);
+        authentication.spec.targetRef.name = self.retrieveHttpRouteRefName(api, endpointType, organization);
+        return authentication;
+    }
+    private isolated function prepareBackendRef(model:HTTPBackendRef backendRef, model:APIArtifact apiArtifact, Service? serviceEntry, API oldAPI, API newAPI, string endpointType, string organization) returns [string, string]? {
+        if apiArtifact.serviceMapping.length() >= 1 {
+            if serviceEntry is Service {
+                backendRef.name = serviceEntry.name;
+                backendRef.namespace = serviceEntry.namespace;
+                apiArtifact.serviceMapping.removeAll();
+                self.generateAndSetK8sServiceMapping(apiArtifact, newAPI, serviceEntry, getNameSpace(runtimeConfiguration.apiCreationNamespace));
+            }
+        } else {
+            map<model:Service> backendServices = apiArtifact.backendServices;
+            string oldBackendRefName = backendRef.name;
+            if backendServices.hasKey(oldBackendRefName) {
+                model:Service 'service = backendServices.get(oldBackendRefName).clone();
+                if 'service.metadata.name.includes("-api-") {
+                    'service.metadata.name = getBackendServiceUid(newAPI, (), endpointType, organization);
+                } else {
+                    'service.metadata.name = getBackendServiceUid(newAPI, {}, endpointType, organization);
+                }
+                'service.metadata.labels = self.getLabels(newAPI);
+                _ = backendServices.remove(oldBackendRefName);
+                backendServices['service.metadata.name] = 'service;
+                backendRef.name = 'service.metadata.name;
+                return [oldBackendRefName, 'service.metadata.name];
+            }
+        }
+        return;
+    }
+    private isolated function prepareAPICr(model:APIArtifact apiArtifact, API oldAPI, API newAPI, string organization) {
+        string uuid = getUniqueIdForAPI(oldAPI.name, newAPI.'version, organization);
+        apiArtifact.uniqueId = uuid;
+        model:API? api = apiArtifact.api;
+        if api is model:API {
+            string oldName = api.metadata.name;
+            api.spec.apiVersion = newAPI.'version;
+            api.metadata.name = uuid;
+            api.metadata.labels = self.getLabels(newAPI);
+            api.spec.context = newAPI.context;
+            string? prodHTTPRouteRef = api.spec.prodHTTPRouteRef;
+            if prodHTTPRouteRef is string {
+                api.spec.prodHTTPRouteRef = regex:replaceAll(prodHTTPRouteRef, oldName, uuid);
+            }
+            string? sandHTTPRouteRef = api.spec.sandHTTPRouteRef;
+            if sandHTTPRouteRef is string {
+                api.spec.sandHTTPRouteRef = regex:replaceAll(sandHTTPRouteRef, oldName, uuid);
+            }
+            string? definitionFileRef = api.spec.definitionFileRef;
+            if definitionFileRef is string {
+                api.spec.definitionFileRef = regex:replaceAll(definitionFileRef, oldName, uuid);
+            }
+        }
+    }
+    private isolated function prepareConfigMap(model:APIArtifact apiArtifact, API oldAPI, API newAPI) returns error? {
+        model:ConfigMap? definition = apiArtifact.definition;
+        if definition is model:ConfigMap {
+            json definitionJson = check self.getDefinitionFromConfigMap(definition);
+            json info = check definitionJson.info;
+            map<json> infoElement = <map<json>>info;
+            infoElement["version"] = newAPI.'version;
+            map<json> definitionMap = <map<json>>definitionJson;
+            definitionMap["info"] = infoElement;
+            self.retrieveGeneratedConfigmapForDefinition(apiArtifact, newAPI, definitionMap, apiArtifact.uniqueId);
+        }
+    }
+
+    private isolated function getApiArtifact(API api) returns model:APIArtifact|error {
+        model:API k8sapi = check getAPI(<string>api.id);
+        model:APIArtifact apiArtifact = {uniqueId: k8sapi.metadata.name};
+        // retrieveConfigmap
+        string? definitionFileRef = k8sapi.spec.definitionFileRef;
+        if definitionFileRef is string {
+            model:ConfigMap|error? definitionConfigmap = check self.getDefinitionConfigmap(definitionFileRef, k8sapi.metadata.namespace);
+            if definitionConfigmap is model:ConfigMap {
+                apiArtifact.definition = self.sanitizeConfigMapData(definitionConfigmap);
+            }
+        }
+        string? prodHTTPRouteRef = k8sapi.spec.prodHTTPRouteRef;
+        if prodHTTPRouteRef is string && prodHTTPRouteRef.trim().length() > 0 {
+            model:Httproute httpRoute = check getHttpRoute(prodHTTPRouteRef, k8sapi.metadata.namespace);
+            apiArtifact.productionRoute = self.sanitizeHttpRoute(httpRoute);
+        }
+        string? sandboxHTTPRouteRef = k8sapi.spec.sandHTTPRouteRef;
+        if sandboxHTTPRouteRef is string && sandboxHTTPRouteRef.trim().length() > 0 {
+            model:Httproute httpRoute = check getHttpRoute(sandboxHTTPRouteRef, k8sapi.metadata.namespace);
+            apiArtifact.sandboxRoute = self.sanitizeHttpRoute(httpRoute);
+        }
+        model:ServiceMappingList k8sServiceMapingsForAPI = check getK8sServiceMapingsForAPI(api.name, api.'version, k8sapi.metadata.namespace);
+        foreach model:K8sServiceMapping serviceMapping in k8sServiceMapingsForAPI.items {
+            apiArtifact.serviceMapping.push(self.sanitizeServiceMapping(serviceMapping));
+        }
+        model:ServiceList backendServicesForAPI = check getBackendServicesForAPI(api.name, api.'version, k8sapi.metadata.namespace);
+        foreach model:Service serviceEntry in backendServicesForAPI.items {
+            apiArtifact.backendServices[serviceEntry.metadata.name] = self.sanitizeBackendService(serviceEntry);
+        }
+        model:AuthenticationList authenticationCrsForAPI = check getAuthenticationCrsForAPI(api.name, api.'version, k8sapi.metadata.namespace);
+        foreach model:Authentication authentication in authenticationCrsForAPI.items {
+            apiArtifact.authenticationMap[authentication.metadata.name] = self.sanitizeAuthenticationCrs(authentication);
+        }
+        apiArtifact.api = self.sanitizeAPICR(k8sapi);
+        return apiArtifact;
+    }
+    private isolated function sanitizeAPICR(model:API api) returns model:API {
+        model:API modifiedAPI = {
+            metadata: {name: api.metadata.name, namespace: api.metadata.namespace},
+            spec: {apiDisplayName: api.spec.apiDisplayName, apiType: api.spec.apiType, apiVersion: api.spec.apiVersion, context: api.spec.context, organization: api.spec.organization}
+        };
+        if api.spec.definitionFileRef is string && api.spec.definitionFileRef.toString().trim().length() > 0 {
+            modifiedAPI.spec.definitionFileRef = api.spec.definitionFileRef;
+        }
+        if api.spec.prodHTTPRouteRef is string && api.spec.prodHTTPRouteRef.toString().trim().length() > 0 {
+            modifiedAPI.spec.prodHTTPRouteRef = api.spec.prodHTTPRouteRef;
+        }
+        if api.spec.sandHTTPRouteRef is string && api.spec.sandHTTPRouteRef.toString().trim().length() > 0 {
+            modifiedAPI.spec.sandHTTPRouteRef = api.spec.sandHTTPRouteRef;
+        }
+        return modifiedAPI;
+    }
+
+    private isolated function sanitizeConfigMapData(model:ConfigMap configmap) returns model:ConfigMap {
+        return {
+            metadata: {
+                name: configmap.metadata.name,
+                namespace: configmap.metadata.namespace,
+                labels: configmap.metadata.labels
+            },
+            data: configmap.data,
+            binaryData: configmap.binaryData
+        };
+    }
+
+    private isolated function sanitizeHttpRoute(model:Httproute httproute) returns model:Httproute {
+        return {
+            metadata: {
+                name: httproute.metadata.name,
+                namespace: httproute.metadata.namespace,
+                labels: httproute.metadata.labels
+            },
+            spec: httproute.spec
+        };
+    }
+
+    private isolated function sanitizeServiceMapping(model:K8sServiceMapping serviceMapping) returns model:K8sServiceMapping {
+        return {
+            metadata: {
+                name: serviceMapping.metadata.name,
+                namespace: serviceMapping.metadata.namespace,
+                labels: serviceMapping.metadata.labels
+            },
+            spec: serviceMapping.spec
+        };
+    }
+
+    private isolated function sanitizeBackendService(model:Service serviceEntry) returns model:Service {
+        return {
+            metadata: {
+                name: serviceEntry.metadata.name,
+                namespace: serviceEntry.metadata.namespace,
+                labels: serviceEntry.metadata.labels
+            },
+            spec: serviceEntry.spec
+        };
+    }
+
+    private isolated function sanitizeAuthenticationCrs(model:Authentication authentication) returns model:Authentication {
+        return {
+            metadata: {
+                name: authentication.metadata.name,
+                namespace: authentication.metadata.namespace,
+                labels: authentication.metadata.labels
+            },
+            spec: authentication.spec
+        };
+    }
+
 }
 
 type ImportDefintionRequest record {
@@ -1569,19 +1916,17 @@ type DefinitionValidationRequest record {|
 
 |};
 
-public isolated function getBackendServiceUid(API api,APIOperations? apiOperation,string? endpointType,string organization) returns string {
-    string concatanatedString = string:'join("-",organization,api.name,api.'version);
-    if(apiOperation is APIOperations){
-        concatanatedString = string:'join("-",concatanatedString,<string>apiOperation.target,apiOperation.verb.toString().toUpperAscii(),endpointType.toString());
-    }else{
-        concatanatedString = string:'join("-",concatanatedString,endpointType.toString());
+public isolated function getBackendServiceUid(API api, APIOperations? apiOperation, string? endpointType, string organization) returns string {
+    string concatanatedString = uuid:createType1AsString();
+    if (apiOperation is APIOperations) {
+        return "backend-" + concatanatedString + "-resource";
+    } else {
+        return "backend-" + getUniqueIdForAPI(api.name, api.'version, organization) + "-api";
     }
-    byte[] hashedValue = crypto:hashSha1(concatanatedString.toBytes());
-    return "backend-" + hashedValue.toBase16();
 }
 
-public isolated function getUniqueIdForAPI(API api, string organization) returns string {
-    string concatanatedString = string:'join("-", organization, api.name, api.'version);
+public isolated function getUniqueIdForAPI(string name, string 'version, string organization) returns string {
+    string concatanatedString = string:'join("-", organization, name, 'version);
     byte[] hashedValue = crypto:hashSha1(concatanatedString.toBytes());
     return hashedValue.toBase16();
 }
