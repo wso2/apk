@@ -18,7 +18,6 @@
 
 import ballerina/http;
 import ballerina/log;
-import ballerina/lang.value;
 
 configurable int BACKOFFICE_PORT = 9443;
 
@@ -36,44 +35,38 @@ listener http:Listener ep0 = new (BACKOFFICE_PORT);
 
 service /api/am/backoffice on ep0 {
     
-    isolated resource function get apis(string? query, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0, string sortBy = "createdTime", string sortOrder = "desc", @http:Header string? accept = "application/json") returns APIList|http:NotModified|NotAcceptableError|InternalServerErrorError|error {
-        string?| APIList | error apiList = check getAPIList();
-        if apiList is string {
-            json j = check value:fromJsonString(apiList);
-            APIList apiListObj = check j.cloneWithType(APIList);
-            return apiListObj;
-        } else if apiList is APIList {
-            log:printDebug(apiList.toString());
+    isolated resource function get apis(string? query, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0, string sortBy = "createdTime", string sortOrder = "desc", @http:Header string? accept = "application/json") returns APIList|http:NotModified|NotAcceptableError|InternalServerErrorError|BadRequestError {
+        APIList|APKError apiList = getAPIList(); 
+        if apiList is APIList {
             return apiList;
         } else {
-            InternalServerErrorError internalError = {body: {code: 90914, message: "Internal Error while retrieving all APIs"}};
-            return internalError;
+            return handleAPKError(apiList);
         }
     }
-    isolated resource function get apis/[string apiId](@http:Header string? 'if\-none\-match) returns API|http:NotModified|NotFoundError|NotAcceptableError|error {
-        API|error response = getAPI(apiId);
+    
+    isolated resource function get apis/[string apiId](@http:Header string? 'if\-none\-match) returns API|http:NotModified|NotFoundError|NotAcceptableError|BadRequestError|InternalServerErrorError {
+        API|APKError response = getAPI(apiId);
         if response is API {
             return response;
         } else {
-           return  error(response.message());
+           return  handleAPKError(response);
         }
     }
-    resource function put apis/[string apiId](@http:Header string? 'if\-none\-match, @http:Payload ModifiableAPI payload) returns API|BadRequestError|ForbiddenError|NotFoundError|PreconditionFailedError|error {
-      API | error updatedAPI = updateAPI(apiId, payload, "carbon.super");
+    resource function put apis/[string apiId](@http:Header string? 'if\-none\-match, @http:Payload ModifiableAPI payload) returns API|BadRequestError|ForbiddenError|NotFoundError|PreconditionFailedError|BadRequestError|InternalServerErrorError {
+      API | APKError updatedAPI = updateAPI(apiId, payload, "carbon.super");
         if updatedAPI is API {
             return updatedAPI;
         }
-        return error("Error while updating API");
+        return handleAPKError(updatedAPI);
     }
 
-    isolated resource function get apis/[string apiId]/definition(@http:Header string? 'if\-none\-match) returns APIDefinition|http:NotModified|NotFoundError|NotAcceptableError|InternalServerErrorError {
-        APIDefinition|NotFoundError|error apiDefinition = getAPIDefinition(apiId);
+    isolated resource function get apis/[string apiId]/definition(@http:Header string? 'if\-none\-match) returns APIDefinition|http:NotModified|NotFoundError|NotAcceptableError|BadRequestError|InternalServerErrorError {
+        APIDefinition|NotFoundError|APKError apiDefinition = getAPIDefinition(apiId);
         if apiDefinition is APIDefinition|NotFoundError {
             log:printDebug(apiDefinition.toString());
             return apiDefinition;
         } else {
-            InternalServerErrorError internalError = {body: {code: 90914, message: "Internal Error while retrieving API Definition By API Id"}};
-            return internalError;
+            return handleAPKError(apiDefinition);
         }
     }
     // resource function get apis/[string apiId]/'resource\-paths(@http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0) returns ResourcePathList|http:NotModified|NotFoundError|NotAcceptableError {
@@ -108,30 +101,28 @@ service /api/am/backoffice on ep0 {
     // }
     // resource function get apis/[string apiId]/comments/[string commentId]/replies(@http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0, boolean includeCommenterInfo = false) returns CommentList|UnauthorizedError|NotFoundError|NotAcceptableError|InternalServerErrorError {
     // }
-    isolated resource function get subscriptions(string? apiId, @http:Header string? 'if\-none\-match, string? query, int 'limit = 25, int offset = 0) returns SubscriptionList|http:NotModified|NotAcceptableError|InternalServerErrorError|error {
-        SubscriptionList|error subList = getSubscriptions(apiId);
+    isolated resource function get subscriptions(string? apiId, @http:Header string? 'if\-none\-match, string? query, int 'limit = 25, int offset = 0) returns SubscriptionList|http:NotModified|NotAcceptableError|BadRequestError|InternalServerErrorError {
+        SubscriptionList|APKError subList = getSubscriptions(apiId);
         if subList is SubscriptionList {
             return subList;
         } else {
-           return  error(subList.message());
+           return  handleAPKError(subList);
         }
     }
     // resource function get subscriptions/[string subscriptionId]/'subscriber\-info() returns SubscriberInfo|NotFoundError {
     // }
     isolated resource function post subscriptions/'block\-subscription(string subscriptionId, string blockState, @http:Header string? 'if\-match) returns http:Ok|BadRequestError|NotFoundError|PreconditionFailedError| InternalServerErrorError {
-        string|error response = blockSubscription(subscriptionId, blockState);
-        if response is error {
-            InternalServerErrorError internalError = {body: {code: 90912, message: response.message()}};
-            return internalError;
+        string|APKError response = blockSubscription(subscriptionId, blockState);
+        if response is APKError {
+            return handleAPKError(response);
         } else {
             return http:OK;
         }
     }
     isolated resource function post subscriptions/'unblock\-subscription(string subscriptionId, @http:Header string? 'if\-match) returns http:Ok|BadRequestError|NotFoundError|PreconditionFailedError| InternalServerErrorError {
         string|error response = unblockSubscription(subscriptionId);
-        if response is error {
-            InternalServerErrorError internalError = {body: {code: 90912, message: response.message()}};
-            return internalError;
+        if response is APKError {
+            return handleAPKError(response);
         } else {
             return http:OK;
         }
@@ -144,7 +135,7 @@ service /api/am/backoffice on ep0 {
     // }
     // resource function get 'api\-categories() returns APICategoryList {
     // }
-    isolated resource function post apis/'change\-lifecycle(string targetState, string apiId, @http:Header string? 'if\-match) returns LifecycleState|BadRequestError|UnauthorizedError|NotFoundError|ConflictError|InternalServerErrorError|error {
+    isolated resource function post apis/'change\-lifecycle(string targetState, string apiId, @http:Header string? 'if\-match) returns LifecycleState|BadRequestError|UnauthorizedError|NotFoundError|ConflictError|InternalServerErrorError| BadRequestError|error {
         LifecycleState | error  changeState = changeLifeCyleState(targetState, apiId, "carbon.super");
         if changeState is LifecycleState {
             return changeState;
@@ -152,31 +143,20 @@ service /api/am/backoffice on ep0 {
             return error("Error while updating LC state of API" + changeState.message());
         }
     }
-    isolated resource function get apis/[string apiId]/'lifecycle\-history(@http:Header string? 'if\-none\-match) returns LifecycleHistory|UnauthorizedError|NotFoundError|InternalServerErrorError {
-        LifecycleHistory|error? lcList = getLcEventHistory(apiId);
+    isolated resource function get apis/[string apiId]/'lifecycle\-history(@http:Header string? 'if\-none\-match) returns LifecycleHistory|UnauthorizedError|NotFoundError|InternalServerErrorError|BadRequestError {
+        LifecycleHistory|APKError lcList = getLcEventHistory(apiId);
         if lcList is LifecycleHistory {
             return lcList;
         } else {
-            InternalServerErrorError internalError = {body: {code: 90900, message: "Internal Error while retrieving LC events"}};
-            return internalError;
+            return handleAPKError(lcList);
         }
     }
-    isolated resource function get apis/[string apiId]/'lifecycle\-state(@http:Header string? 'if\-none\-match) returns LifecycleState|UnauthorizedError|NotFoundError|InternalServerErrorError|error {
+    isolated resource function get apis/[string apiId]/'lifecycle\-state(@http:Header string? 'if\-none\-match) returns LifecycleState|UnauthorizedError|NotFoundError|InternalServerErrorError|BadRequestError|error {
         LifecycleState | error currentState = getLifeCyleState(apiId, "carbon.super");
             if currentState is LifecycleState {
                 return currentState;
         } else {
-            return error("Error while getting LC state of API" + currentState.message());
+             return error("Error while getting LC state of API" + currentState.message());
         }
-    }
-
-    public isolated function handleAPKError(APKError errorDetail) returns InternalServerErrorError|BadRequestError{
-                ErrorHandler & readonly detail = errorDetail.detail();
-            if detail.statusCode == "400" {
-                BadRequestError badRequest = {body: {code: detail.code, message: detail.message}};
-                return badRequest;
-            }
-            InternalServerErrorError internalServerError = {body: {code: detail.code, message: detail.message}};
-            return internalServerError;
     }
 }
