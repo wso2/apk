@@ -110,7 +110,7 @@ isolated function deployHttpRoute(model:Httproute httproute, string namespace) r
     return k8sApiServerEp->post(endpoint, httproute, targetType = http:Response);
 }
 
-isolated function retrieveAllAPIS(string? continueToken) returns json|http:ClientError {
+isolated function retrieveAllAPIS(string? continueToken) returns model:APIList|http:ClientError {
     string? continueTokenValue = continueToken;
     string endpoint = "/apis/dp.wso2.com/v1alpha1/apis";
     if continueTokenValue is string {
@@ -128,7 +128,7 @@ isolated function retrieveAllAPIS(string? continueToken) returns json|http:Clien
         }
     }
 
-    return k8sApiServerEp->get(endpoint, targetType = json);
+    return k8sApiServerEp->get(endpoint, targetType = model:APIList);
 }
 
 function retrieveAllServices(string? continueToken) returns model:ServiceList|http:ClientError {

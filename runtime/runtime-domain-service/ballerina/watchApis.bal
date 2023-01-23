@@ -20,7 +20,7 @@ import ballerina/lang.value;
 import runtime_domain_service.model as model;
 import ballerina/log;
 
-isolated map<model:API> apilist = {};
+isolated map<map<model:API>> apilist = {};
 string resourceVersion = "";
 websocket:Client|error|() apiClient = ();
 
@@ -83,26 +83,34 @@ public function getClient(string resourceVersion) returns websocket:Client|error
     );
 }
 
-isolated function getAPIs() returns model:API[] {
+isolated function getAPIs(string organization) returns model:API[] {
     lock {
-        model:API[] & readonly readOnlyAPIList = apilist.toArray().cloneReadOnly();
-        return readOnlyAPIList;
+        map<model:API>|error & readonly readOnlyAPImap = trap apilist.get(organization).cloneReadOnly();
+        if readOnlyAPImap is map<model:API> & readonly{
+            return readOnlyAPImap.toArray();
+        } else {
+            return [];
+        }
     }
 }
 
-isolated function getAPI(string id) returns model:API|error {
+isolated function getAPI(string id, string organization) returns model:API|error {
     lock {
-        map<model:API> & readonly readOnlyAPIMap = apilist.cloneReadOnly();
-        return check trap readOnlyAPIMap.get(id);
+        map<model:API> & readonly apiMap = check trap apilist.get(organization).cloneReadOnly();
+        return check trap apiMap.get(id);
     }
 }
 
-function putallAPIS(json[] apiData) {
-    foreach json api in apiData {
-        model:API|error k8sAPI = api.cloneWithType(model:API);
-        if k8sAPI is model:API {
-            lock {
-                apilist[<string>k8sAPI.metadata.uid] = k8sAPI.clone();
+function putallAPIS(model:API[] apiData) {
+    foreach model:API api in apiData {
+        lock {
+            map<model:API>|error orgmap = trap apilist.get(api.spec.organization);
+            if orgmap is map<model:API> {
+                orgmap[<string>api.metadata.uid] = api.clone();
+            } else {
+                map<model:API> apiMap = {};
+                apiMap[<string>api.metadata.uid] = api.clone();
+                apilist[api.spec.organization] = apiMap;
             }
         }
     }
@@ -134,16 +142,15 @@ function readAPIEvent(websocket:Client apiWebsocketClient) returns error? {
             if apiModel.metadata.namespace == getNameSpace(runtimeConfiguration.apiCreationNamespace) {
                 if eventType == "ADDED" {
                     lock {
-                        apilist[<string>apiModel.metadata.uid] = apiModel.clone();
+                        putAPI(apiModel.clone());
                     }
                 } else if (eventType == "MODIFIED") {
                     lock {
-                        _ = apilist.remove(<string>apiModel.metadata.uid);
-                        apilist[<string>apiModel.metadata.uid] = apiModel.clone();
+                        updateAPI(apiModel.clone());
                     }
                 } else if (eventType == "DELETED") {
                     lock {
-                        _ = apilist.remove(<string>apiModel.metadata.uid);
+                        removeAPI(apiModel);
                     }
                 }
             }
@@ -156,8 +163,45 @@ function readAPIEvent(websocket:Client apiWebsocketClient) returns error? {
 
 }
 
-isolated function getAPIByNameAndNamespace(string name, string namespace) returns model:API|() {
-    foreach model:API api in getAPIs() {
+isolated function putAPI(model:API api) {
+    lock {
+        map<model:API>|error orgapiMap = trap apilist.get(api.spec.organization);
+        if orgapiMap is map<model:API> {
+            orgapiMap[<string>api.metadata.uid] = api.clone();
+        } else {
+            map<model:API> apiMap = {};
+            apiMap[<string>api.metadata.uid] = api.clone();
+            apilist[api.spec.organization] = apiMap;
+        }
+    }
+}
+
+isolated function updateAPI(model:API api) {
+    lock {
+
+        map<model:API>|error orgapiMap = trap apilist.get(api.spec.organization);
+        if orgapiMap is map<model:API> {
+            _ = orgapiMap.remove(<string>api.metadata.uid);
+            orgapiMap[<string>api.metadata.uid] = api.clone();
+        } else {
+            map<model:API> apiMap = {};
+            apiMap[<string>api.metadata.uid] = api.clone();
+            apilist[api.spec.organization] = apiMap;
+        }
+    }
+}
+
+isolated function removeAPI(model:API api) {
+    lock {
+        map<model:API>|error orgapiMap = trap apilist.get(api.spec.organization);
+        if orgapiMap is map<model:API> {
+            _ = orgapiMap.remove(<string>api.metadata.uid);
+        }
+    }
+}
+
+isolated function getAPIByNameAndNamespace(string name, string namespace, string organization) returns model:API|() {
+    foreach model:API api in getAPIs(organization) {
         if (api.metadata.name == name && api.metadata.namespace == namespace) {
             return api;
         }
@@ -173,12 +217,16 @@ isolated function getAPIByNameAndNamespace(string name, string namespace) return
     }
     return ();
 }
-isolated function isAPIVersionExist(string name,string 'newVersion) returns boolean{
+
+isolated function isAPIVersionExist(string name, string 'newVersion, string organization) returns boolean {
     lock {
-        model:API[] & readonly readOnlyAPIList = apilist.toArray().cloneReadOnly();
-        foreach model:API & readonly api in readOnlyAPIList {
-            if api.spec.apiDisplayName==name && api.spec.apiVersion=='newVersion {
-                return true;
+        map<model:API>|error apiMap = trap apilist.get(organization);
+        if apiMap is map<model:API> {
+            model:API[] & readonly readOnlyAPIList = apiMap.toArray().cloneReadOnly();
+            foreach model:API & readonly api in readOnlyAPIList {
+                if api.spec.apiDisplayName == name && api.spec.apiVersion == 'newVersion {
+                    return true;
+                }
             }
         }
     }

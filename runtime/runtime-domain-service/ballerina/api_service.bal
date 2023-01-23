@@ -28,11 +28,11 @@ http:Service runtimeService = service object {
 
     isolated resource function get apis(string? query, int 'limit = 25, int offset = 0, string sortBy = "createdTime", string sortOrder = "desc") returns APIList|InternalServerErrorError|BadRequestError {
         APIClient apiService = new ();
-        return apiService.getAPIList(query, 'limit, offset, sortBy, sortOrder);
+        return apiService.getAPIList(query, 'limit, offset, sortBy, sortOrder, "carbon.super");
     }
     isolated resource function post apis(@http:Payload API payload) returns CreatedAPI|BadRequestError|InternalServerErrorError {
         APIClient apiService = new ();
-        APKError|CreatedAPI|BadRequestError createdAPI = apiService.createAPI(payload,(),"carbon.super");
+        APKError|CreatedAPI|BadRequestError createdAPI = apiService.createAPI(payload, (), "carbon.super");
         if createdAPI is APKError {
             return handleAPKError(createdAPI);
         } else {
@@ -41,7 +41,7 @@ http:Service runtimeService = service object {
     }
     isolated resource function get apis/[string apiId]() returns API|NotFoundError|InternalServerErrorError {
         APIClient apiService = new ();
-        return apiService.getAPIById(apiId);
+        return apiService.getAPIById(apiId, "carbon.super");
     }
     isolated resource function put apis/[string apiId](@http:Payload API payload) returns API|BadRequestError|ForbiddenError|NotFoundError|PreconditionFailedError|InternalServerErrorError {
         BadRequestError badRequest = {body: {code: 900910, message: "Not implemented"}};
@@ -49,7 +49,7 @@ http:Service runtimeService = service object {
     }
     isolated resource function delete apis/[string apiId]() returns http:Ok|ForbiddenError|NotFoundError|InternalServerErrorError|BadRequestError {
         APIClient apiService = new ();
-        http:Ok|ForbiddenError|NotFoundError|InternalServerErrorError|APKError apiDeletionResponse = apiService.deleteAPIById(apiId);
+        http:Ok|ForbiddenError|NotFoundError|InternalServerErrorError|APKError apiDeletionResponse = apiService.deleteAPIById(apiId, "carbon.super");
         if apiDeletionResponse is http:Ok|ForbiddenError|NotFoundError|InternalServerErrorError {
             return apiDeletionResponse;
         } else {
@@ -59,11 +59,11 @@ http:Service runtimeService = service object {
     }
     isolated resource function post apis/[string apiId]/'generate\-key() returns APIKey|BadRequestError|NotFoundError|ForbiddenError|InternalServerErrorError {
         APIClient apiService = new ();
-        return apiService.generateAPIKey(apiId);
+        return apiService.generateAPIKey(apiId, "carbon.super");
     }
     isolated resource function post apis/'import\-service(string serviceKey, @http:Payload API payload) returns CreatedAPI|BadRequestError|InternalServerErrorError {
         APIClient apiService = new ();
-        CreatedAPI|BadRequestError|InternalServerErrorError|APKError aPIFromService = apiService.createAPIFromService(serviceKey, payload,"carbon.super");
+        CreatedAPI|BadRequestError|InternalServerErrorError|APKError aPIFromService = apiService.createAPIFromService(serviceKey, payload, "carbon.super");
         if aPIFromService is CreatedAPI|BadRequestError|InternalServerErrorError {
             return aPIFromService;
         } else {
@@ -75,7 +75,7 @@ http:Service runtimeService = service object {
     }
     isolated resource function post apis/'import\-definition(http:Request message) returns CreatedAPI|BadRequestError|PreconditionFailedError|InternalServerErrorError {
         APIClient apiService = new ();
-        APKError|CreatedAPI|InternalServerErrorError|BadRequestError createdAPI = apiService.importDefinition(message,"carbon.super");
+        APKError|CreatedAPI|InternalServerErrorError|BadRequestError createdAPI = apiService.importDefinition(message, "carbon.super");
         if createdAPI is APKError {
             return handleAPKError(createdAPI);
         }
@@ -99,28 +99,33 @@ http:Service runtimeService = service object {
     }
     isolated resource function get apis/[string apiId]/definition() returns json|NotFoundError|PreconditionFailedError|InternalServerErrorError {
         APIClient apiService = new ();
-        return apiService.getAPIDefinitionByID(apiId);
+        return apiService.getAPIDefinitionByID(apiId, "carbon.super");
     }
     isolated resource function put apis/[string apiId]/definition(@http:Payload json payload) returns string|BadRequestError|ForbiddenError|NotFoundError|PreconditionFailedError|InternalServerErrorError {
         BadRequestError badRequest = {body: {code: 900910, message: "Not implemented"}};
         return badRequest;
     }
-    isolated resource function get apis/export(string? apiId, string? name, string? 'version, string? format) returns json|NotFoundError|InternalServerErrorError {
-        InternalServerErrorError internalError = {body: {code: 900910, message: "Not implemented"}};
-        return internalError;
+    isolated resource function get apis/export(string? apiId, string? name, string? 'version, string? format) returns http:Response|NotFoundError|InternalServerErrorError|BadRequestError {
+        APIClient apiClient = new;
+        APKError|NotFoundError|BadRequestError|http:Response exportAPI = apiClient.exportAPI(apiId, "carbon.super");
+        if exportAPI is APKError {
+            return handleAPKError(exportAPI);
+        } else {
+            return exportAPI;
+        }
     }
     isolated resource function post apis/'import(boolean? overwrite, @http:Payload json payload) returns http:Ok|ForbiddenError|ConflictError|PreconditionFailedError|InternalServerErrorError {
         InternalServerErrorError internalError = {body: {code: 900910, message: "Not implemented"}};
         return internalError;
     }
-   isolated resource function post apis/'copy\-api(string newVersion, string? serviceId, string apiId) returns CreatedAPI|BadRequestError|NotFoundError|InternalServerErrorError {
+    isolated resource function post apis/'copy\-api(string newVersion, string? serviceId, string apiId) returns CreatedAPI|BadRequestError|NotFoundError|InternalServerErrorError {
         APIClient apiClient = new;
-         CreatedAPI|NotFoundError|BadRequestError|APKError copyAPI = apiClient.copyAPI(newVersion,serviceId,apiId,"carbon.super");
-         if copyAPI is CreatedAPI|NotFoundError|BadRequestError {
+        CreatedAPI|NotFoundError|BadRequestError|APKError copyAPI = apiClient.copyAPI(newVersion, serviceId, apiId, "carbon.super");
+        if copyAPI is CreatedAPI|NotFoundError|BadRequestError {
             return copyAPI;
-         } else {
+        } else {
             return handleAPKError(copyAPI);
-         }
+        }
     }
 
     isolated resource function get services(string? query, string sortBy = "createdTime", string sortOrder = "desc", int 'limit = 25, int offset = 0) returns ServiceList|BadRequestError|InternalServerErrorError {
@@ -133,7 +138,7 @@ http:Service runtimeService = service object {
     }
     isolated resource function get services/[string serviceId]/usage() returns APIList|BadRequestError|NotFoundError|InternalServerErrorError {
         ServiceClient serviceClient = new ();
-        return serviceClient.getServiceUsageByServiceId(serviceId);
+        return serviceClient.getServiceUsageByServiceId(serviceId, "carbon.super");
     }
     isolated resource function get policies(string? query, int 'limit = 25, int offset = 0, string sortBy = "createdTime", string sortOrder = "desc", @http:Header string? accept = "application/json") returns MediationPolicyList|InternalServerErrorError {
         InternalServerErrorError internalError = {body: {code: 900910, message: "Not implemented"}};

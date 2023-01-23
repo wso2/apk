@@ -193,7 +193,7 @@ function hostnameDataProvider() returns map<[string, string, string, int, string
 
 @test:Config {dataProvider: apiNameDataProvider}
 public function testGetAPIByNameAndNamespace(string name, string namespace, model:API & readonly|() expected) {
-    test:assertEquals(getAPIByNameAndNamespace(name, namespace), expected);
+    test:assertEquals(getAPIByNameAndNamespace(name, namespace,"carbon.super"), expected);
 }
 
 function apiNameDataProvider() returns map<[string, string, model:API & readonly|()]>|error {
@@ -206,13 +206,14 @@ function apiNameDataProvider() returns map<[string, string, model:API & readonly
 }
 
 @test:Config {dataProvider: apiIDDataprovider}
-public function testGetAPIById(string id, model:API & readonly|error expected) returns error? {
-    test:assertEquals(getAPI(id), check expected);
+public function testGetAPIById(string id,string organization, model:API & readonly|error expected) returns error? {
+    test:assertEquals(getAPI(id,organization), check expected);
 }
 
-function apiIDDataprovider() returns map<[string, model:API & readonly|error]>|error {
-    map<[string, model:API & readonly|error]> dataSet = {
-        "1": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e8", getMockPizzaShakK8sAPI()]
+function apiIDDataprovider() returns map<[string,string, model:API & readonly|error]>|error {
+    
+    map<[string,string, model:API & readonly|error]> dataSet = {
+        "1": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e8","carbon.super", getMockPizzaShakK8sAPI()]
     };
     return dataSet;
 }
@@ -239,7 +240,7 @@ function prefixMatchDataProvider() returns map<[API, model:Endpoint, APIOperatio
 @test:Config {dataProvider: apiDefinitionDataProvider}
 public function testGetAPIDefinitionByID(string apiid, anydata expectedResponse) returns error? {
     APIClient apiclient = new ();
-    test:assertEquals(apiclient.getAPIDefinitionByID(apiid), expectedResponse);
+    test:assertEquals(apiclient.getAPIDefinitionByID(apiid,"carbon.super"), expectedResponse);
 }
 
 public function apiDefinitionDataProvider() returns map<[string, json|NotFoundError|PreconditionFailedError|InternalServerErrorError]> {
@@ -259,17 +260,17 @@ public function apiDefinitionDataProvider() returns map<[string, json|NotFoundEr
 }
 
 @test:Config {dataProvider: apiByIdDataProvider}
-public function testgetApiById(string apiid, anydata expectedData) {
+public function testgetApiById(string apiid,string organization ,anydata expectedData) {
     APIClient apiclient = new ();
-    test:assertEquals(apiclient.getAPIById(apiid), expectedData);
+    test:assertEquals(apiclient.getAPIById(apiid,organization), expectedData);
 }
 
-public function apiByIdDataProvider() returns map<[string, API|NotFoundError]> {
+public function apiByIdDataProvider() returns map<[string,string, API|NotFoundError]> {
     API & readonly api1 = {name: "pizzashackAPI", context: "/t/carbon.super/pizzashack/1.0.0", 'version: "1.0.0", id: "c5ab2423-b9e8-432b-92e8-35e6907ed5e8", createdTime: "2022-12-13T09:45:47Z"};
     NotFoundError notfound = {body: {code: 909100, message: "c5ab2423-b9e8-432b-92e8-35e6907ed5e9 not found."}};
-    map<[string, API & readonly|NotFoundError]> dataset = {
-        "1": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e8", api1],
-        "2": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e9", notfound]
+    map<[string,string, API & readonly|NotFoundError]> dataset = {
+        "1": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e8","carbon.super", api1],
+        "2": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e9", "carbon.super",notfound]
     };
     return dataset;
 }
@@ -277,7 +278,7 @@ public function apiByIdDataProvider() returns map<[string, API|NotFoundError]> {
 @test:Config {dataProvider: getApilistDataProvider}
 public function testGetAPIList(string? query, int 'limit, int offset, string sortBy, string sortOrder, anydata expected) {
     APIClient apiclient = new ();
-    test:assertEquals(apiclient.getAPIList(query, 'limit, offset, sortBy, sortOrder), expected);
+    test:assertEquals(apiclient.getAPIList(query, 'limit, offset, sortBy, sortOrder,"carbon.super"), expected);
 }
 
 function getApilistDataProvider() returns map<[string?, int, int, string, string, APIList|InternalServerErrorError|BadRequestError]> {

@@ -661,7 +661,7 @@ public function serviceByIdDataProvider() returns map<[string, Service|BadReques
 @test:Config {dataProvider: serviceUsageDataProvider}
 public function testServiceUsageByID(string serviceId, anydata expected) {
     ServiceClient serviceClient = new;
-    test:assertEquals(serviceClient.getServiceUsageByServiceId(serviceId), expected);
+    test:assertEquals(serviceClient.getServiceUsageByServiceId(serviceId,"carbon.super"), expected);
 }
 
 function serviceUsageDataProvider() returns map<[string, APIList|BadRequestError|NotFoundError|InternalServerErrorError]> {
