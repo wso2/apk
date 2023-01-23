@@ -1,9 +1,8 @@
 {
 	"info": {
-		"_postman_id": "954cdcf1-3e97-404a-9b38-c4f23dbb425f",
+		"_postman_id": "a2541153-0eda-4fe9-9344-fefed82dfabf",
 		"name": "Test Runtime API Operations",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "16040063"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
@@ -80,7 +79,7 @@
 							"    //parse the response JSON and test three properties",
 							"    const responseJson = pm.response.json();",
 							"    pm.expect(responseJson.name).equals(pm.collectionVariables.get('testAPIName'));",
-							"    pm.expect(responseJson.context).equals(pm.collectionVariables.get('testAPIContext'));",
+							"    pm.expect(responseJson.context).equals( \"/t/carbon.super\"+pm.collectionVariables.get('testAPIContext'));",
 							"    pm.expect(responseJson.version).equals(\"1.0.0\");",
 							"    pm.expect(responseJson.type).equals(\"HTTP\");",
 							"});"
@@ -158,7 +157,7 @@
 							"console.log('Getting all APIs in namespace and find sample service required for test');",
 							"_.each(pm.response.json().list, (APIEntry) => {",
 							"    if(APIEntry.name === pm.collectionVariables.get('testAPIName')) {",
-							"    pm.expect(APIEntry.context).equals( pm.collectionVariables.get('testAPIContext'));",
+							"    pm.expect(APIEntry.context).equals( \"/t/carbon.super\"+pm.collectionVariables.get('testAPIContext'));",
 							"    pm.expect(APIEntry.version).equals(\"1.0.0\");",
 							"    pm.expect(APIEntry.type).equals(\"HTTP\");",
 							"    pm.collectionVariables.set(\"APIUUID\",APIEntry.id)",
@@ -338,7 +337,7 @@
 							"    //parse the response JSON and test three properties",
 							"    const responseJson = pm.response.json();",
 							"    pm.expect(responseJson.name).equals(pm.collectionVariables.get('testAPIV2Name'));",
-							"    pm.expect(responseJson.context).equals(pm.collectionVariables.get('testAPIV2Context'));",
+							"    pm.expect(responseJson.context).equals(\"/t/carbon.super\"+pm.collectionVariables.get('testAPIV2Context'));",
 							"    pm.expect(responseJson.version).equals(\"1.0.0\");",
 							"    pm.expect(responseJson.type).equals(\"HTTP\");",
 							"    pm.collectionVariables.set(\"APIUUID\",responseJson.id)",
@@ -417,7 +416,7 @@
 							"console.log('Getting all APIs in namespace and find sample service required for test');",
 							"_.each(pm.response.json().list, (APIEntry) => {",
 							"    if(APIEntry.name === pm.collectionVariables.get('testAPIV2Name')) {",
-							"    pm.expect(APIEntry.context).equals(pm.collectionVariables.get('testAPIV2Context'));",
+							"    pm.expect(APIEntry.context).equals(\"/t/carbon.super\"+pm.collectionVariables.get('testAPIV2Context'));",
 							"    pm.expect(APIEntry.version).equals(\"1.0.0\");",
 							"    pm.expect(APIEntry.type).equals(\"HTTP\");",
 							"    pm.collectionVariables.set(\"APIV2UUID\",APIEntry.id)",
@@ -551,11 +550,13 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURL}}{{testAPIV2Context}}/get",
+					"raw": "{{gatewayBaseURL}}/t/carbon.super{{testAPIV2Context}}/get",
 					"host": [
-						"{{gatewayBaseURL}}{{testAPIV2Context}}"
+						"{{gatewayBaseURL}}"
 					],
 					"path": [
+						"t",
+						"carbon.super{{testAPIV2Context}}",
 						"get"
 					]
 				}
