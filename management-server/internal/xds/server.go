@@ -19,6 +19,7 @@ package xds
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"math/rand"
 	"net"
@@ -36,11 +37,13 @@ import (
 	wso2_resource "github.com/wso2/apk/adapter/pkg/discovery/protocol/resource/v3"
 	wso2_server "github.com/wso2/apk/adapter/pkg/discovery/protocol/server/v3"
 	"github.com/wso2/apk/adapter/pkg/logging"
+	"github.com/wso2/apk/adapter/pkg/tlsutils"
 	"github.com/wso2/apk/management-server/internal/config"
 	"github.com/wso2/apk/management-server/internal/logger"
 	internal_types "github.com/wso2/apk/management-server/internal/types"
 	"github.com/wso2/apk/management-server/internal/xds/callbacks"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
 var (
@@ -255,9 +258,24 @@ func InitAPKMgtServer() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	apkMgtAPIDsSrv := wso2_server.NewServer(ctx, applicationCache, &callbacks.Callbacks{})
-
+	publicKeyLocation, privateKeyLocation, truststoreLocation := tlsutils.GetKeyLocations()
+	cert, err := tlsutils.GetServerCertificate(publicKeyLocation, privateKeyLocation)
+	if err != nil {
+		logger.LoggerMGTServer.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("Failed to initiate the ssl context, error: %v", err.Error()),
+			Severity:  logging.BLOCKER,
+			ErrorCode: 1200,
+		})
+	}
+	caCertPool := tlsutils.GetTrustedCertPool(truststoreLocation)
 	var grpcOptions []grpc.ServerOption
-	grpcOptions = append(grpcOptions, grpc.MaxConcurrentStreams(grpcMaxConcurrentStreams))
+	grpcOptions = append(grpcOptions, grpc.MaxConcurrentStreams(grpcMaxConcurrentStreams), grpc.Creds(
+		credentials.NewTLS(&tls.Config{
+			Certificates: []tls.Certificate{cert},
+			ClientAuth:   tls.RequireAndVerifyClientCert,
+			ClientCAs:    caCertPool,
+		}),
+	))
 	grpcServer := grpc.NewServer(grpcOptions...)
 	apkmgt_service.RegisterAPKMgtDiscoveryServiceServer(grpcServer, apkMgtAPIDsSrv)
 	config := config.ReadConfigs()

@@ -73,11 +73,16 @@ type APISpec struct {
 	//
 	Context string `json:"context"`
 
-	// Organization denotes the organization
+	// Organization denotes the organization.
 	// related to the API
 	//
 	// +optional
 	Organization string `json:"organization"`
+
+	// SystemAPI denotes if it is an internal system API.
+	//
+	// +optional
+	SystemAPI bool `json:"systemAPI"`
 }
 
 // APIStatus defines the observed state of API

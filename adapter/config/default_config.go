@@ -66,11 +66,6 @@ var defaultConfig = &Config{
 			MaxRetryCount:      20,
 			ArtifactsDirectory: "/home/wso2/git-artifacts",
 		},
-		GRPCClient: gRPCClient{
-			ManagementServerAddress: "management-server:8765",
-			MaxAttempts:             5,
-			BackOffInMilliSeconds:   1000,
-		},
 		Operator: operator{
 			Namespaces: nil,
 		},
@@ -368,9 +363,15 @@ var defaultConfig = &Config{
 		},
 	},
 	ManagementServer: managementServer{
-		Enabled:    false,
-		ServiceURL: "management-server:18000",
-		NodeLabel:  "default",
+		Enabled:   true,
+		Host:      "management-server",
+		XDSPort:   18000,
+		NodeLabel: "default",
+		GRPCClient: gRPCClient{
+			Port:                  8765,
+			MaxAttempts:           5,
+			BackOffInMilliSeconds: 1000,
+		},
 	},
 	Runtime: runtime{
 		Host:            "runtime-service",
