@@ -4,7 +4,7 @@ This guide has information to setup adapter component for development and guides
 
 ## Prerequisites
 
-following should be installed in your dev machine.
+The following should be installed in your dev machine.
 
 - [Gradle](https://gradle.org/install/) >= 7.5.1 version
 - Docker >= 17.03 version
