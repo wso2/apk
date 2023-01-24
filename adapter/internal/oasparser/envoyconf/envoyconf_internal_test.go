@@ -89,7 +89,7 @@ func TestCreateRoute(t *testing.T) {
 					MaxProgramSize: nil,
 				},
 			},
-			Regex: "^/xWso2BasePath/resourcePath(/.*)*",
+			Regex: "^/xWso2BasePath/resourcePath((?:/.*)*)",
 		},
 		Substitution: "/basepath/resourcePath\\1",
 	}

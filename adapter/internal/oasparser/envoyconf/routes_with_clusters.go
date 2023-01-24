@@ -1304,13 +1304,13 @@ func generateRoutePath(resourcePath string, pathMatchType gwapiv1b1.PathMatchTyp
 	newPath := strings.TrimSuffix(resourcePath, "/")
 	switch pathMatchType {
 	case gwapiv1b1.PathMatchExact:
-		fallthrough
+		return fmt.Sprintf("^%s([/]{0,1})", regexp.QuoteMeta(newPath))
 	case gwapiv1b1.PathMatchRegularExpression:
 		return fmt.Sprintf("^%s([/]{0,1})", newPath)
 	case gwapiv1b1.PathMatchPathPrefix:
 		fallthrough
 	default:
-		return fmt.Sprintf("^%s(/.*)*", newPath)
+		return fmt.Sprintf("^%s((?:/.*)*)", regexp.QuoteMeta(newPath))
 	}
 }
 

@@ -37,7 +37,145 @@ import (
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
-func TestCreateRoutesWithClusters(t *testing.T) {
+func TestCreateRoutesWithClustersWithExactAndRegularExpressionRules(t *testing.T) {
+	apiState := synchronizer.APIState{}
+	apiDefinition := v1alpha1.API{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "default",
+			Name:      "test-api-2",
+		},
+		Spec: v1alpha1.APISpec{
+			APIDisplayName:   "test-api-2",
+			APIVersion:       "2.0.0",
+			Context:          "/test-api/2.0.0",
+			ProdHTTPRouteRef: "test-api-2-prod-http-route",
+		},
+	}
+	apiState.APIDefinition = &apiDefinition
+	httpRouteState := synchronizer.HTTPRouteState{}
+
+	methodTypeGet := gwapiv1b1.HTTPMethodGet
+	methodTypePost := gwapiv1b1.HTTPMethodPost
+
+	httpRoute := gwapiv1b1.HTTPRoute{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "default",
+			Name:      "test-api-2-prod-http-route",
+		},
+		Spec: gwapiv1b1.HTTPRouteSpec{
+			Hostnames:       []gwapiv1b1.Hostname{"prod.gw.wso2.com"},
+			CommonRouteSpec: createDefaultCommonRouteSpec(),
+			Rules: []gwapiv1b1.HTTPRouteRule{
+				{
+					Matches: []gwapiv1b1.HTTPRouteMatch{
+						{
+							Path: &gwapiv1b1.HTTPPathMatch{
+								Type:  operatorutils.PathMatchTypePtr(gwapiv1b1.PathMatchExact),
+								Value: operatorutils.StringPtr("/exact-path-api/2.0.0/(.*)/exact-path"),
+							},
+							Method: &methodTypeGet,
+						},
+					},
+					Filters: []gwapiv1b1.HTTPRouteFilter{
+						{
+							Type: gwapiv1b1.HTTPRouteFilterType("URLRewrite"),
+							URLRewrite: &gwapiv1b1.HTTPURLRewriteFilter{
+								Path: &gwapiv1b1.HTTPPathModifier{
+									Type:               gwapiv1b1.PrefixMatchHTTPPathModifier,
+									ReplacePrefixMatch: operatorutils.StringPtr("/backend-base-path"),
+								},
+							},
+						},
+					},
+					BackendRefs: []gwapiv1b1.HTTPBackendRef{
+						createDefaultBackendRef("test-service-1", 7001, 1),
+					},
+				},
+				{
+					Matches: []gwapiv1b1.HTTPRouteMatch{
+						{
+							Path: &gwapiv1b1.HTTPPathMatch{
+								Type:  operatorutils.PathMatchTypePtr(gwapiv1b1.PathMatchRegularExpression),
+								Value: operatorutils.StringPtr("/regex-path/2.0.0/userId/([^/]+)/orderId/([^/]+)"),
+							},
+							Method: &methodTypePost,
+						},
+					},
+					Filters: []gwapiv1b1.HTTPRouteFilter{
+						{
+							Type: gwapiv1b1.HTTPRouteFilterType("URLRewrite"),
+							URLRewrite: &gwapiv1b1.HTTPURLRewriteFilter{
+								Path: &gwapiv1b1.HTTPPathModifier{
+									Type:               gwapiv1b1.PrefixMatchHTTPPathModifier,
+									ReplacePrefixMatch: operatorutils.StringPtr("/backend-base-path/order/\\2/user/\\1"),
+								},
+							},
+						},
+					},
+					BackendRefs: []gwapiv1b1.HTTPBackendRef{
+						createDefaultBackendRef("test-service-2", 7002, 1),
+					},
+				},
+			},
+		},
+	}
+
+	httpRouteState.HTTPRoute = &httpRoute
+	httpRouteState.Authentications = make(map[string]dpv1alpha1.Authentication)
+	httpRouteState.ResourceAuthentications = make(map[string]dpv1alpha1.Authentication)
+
+	backendPropertyMapping := make(dpv1alpha1.BackendPropertyMapping)
+	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "test-service-1"}] =
+		dpv1alpha1.BackendProperties{ResolvedHostname: "test-service-1.default"}
+	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "test-service-2"}] =
+		dpv1alpha1.BackendProperties{ResolvedHostname: "test-service-2.default"}
+	httpRouteState.BackendPropertyMapping = backendPropertyMapping
+
+	apiState.ProdHTTPRoute = &httpRouteState
+
+	mgwSwagger, err := synchronizer.GenerateMGWSwagger(apiState, &httpRouteState, true)
+	assert.Nil(t, err, "Error should not be present when apiState is converted to a MgwSwagger object")
+	routes, clusters, _, _ := envoy.CreateRoutesWithClusters(*mgwSwagger, nil, nil, "prod.gw.wso2.com", "carbon.super")
+	assert.Equal(t, 2, len(clusters), "Number of production clusters created is incorrect.")
+
+	exactPathCluster := clusters[0]
+
+	assert.Equal(t, exactPathCluster.GetName(), "carbon.super_clusterProd_prod.gw.wso2.com_test-api-22.0.0", "Exact path cluster name mismatch, %v", clusters)
+
+	exactPathClusterHost := exactPathCluster.GetLoadAssignment().GetEndpoints()[0].GetLbEndpoints()[0].GetEndpoint().
+		GetAddress().GetSocketAddress().GetAddress()
+	exactPathClusterPort := exactPathCluster.GetLoadAssignment().GetEndpoints()[0].GetLbEndpoints()[0].GetEndpoint().
+		GetAddress().GetSocketAddress().GetPortValue()
+	exactPathClusterPriority := exactPathCluster.GetLoadAssignment().GetEndpoints()[0].Priority
+
+	assert.NotEmpty(t, exactPathClusterHost, "Exact path cluster's assigned host should not be null")
+	assert.Equal(t, "test-service-1.default", exactPathClusterHost, "Exact path cluster's assigned host is incorrect.")
+	assert.NotEmpty(t, exactPathClusterPort, "Exact path cluster's assigned port should not be null")
+	assert.Equal(t, uint32(7001), exactPathClusterPort, "Exact path cluster's assigned port is incorrect.")
+	assert.Equal(t, uint32(0), exactPathClusterPriority, "Exact path cluster's assigned Priority is incorrect.")
+
+	regexPathCluster := clusters[1]
+
+	regexPathClusterHost := regexPathCluster.GetLoadAssignment().GetEndpoints()[0].GetLbEndpoints()[0].GetEndpoint().
+		GetAddress().GetSocketAddress().GetAddress()
+	regexPathClusterPort := regexPathCluster.GetLoadAssignment().GetEndpoints()[0].GetLbEndpoints()[0].GetEndpoint().
+		GetAddress().GetSocketAddress().GetPortValue()
+	regexPathClusterPriority := regexPathCluster.GetLoadAssignment().GetEndpoints()[0].Priority
+
+	assert.NotEmpty(t, regexPathClusterHost, "Regex path cluster's assigned host should not be null")
+	assert.Equal(t, "test-service-2.default", regexPathClusterHost, "Regex path cluster's assigned host is incorrect.")
+	assert.NotEmpty(t, regexPathClusterPort, "Regex path cluster's assigned port should not be null")
+	assert.Equal(t, uint32(7002), regexPathClusterPort, "Regex path cluster's assigned host is incorrect.")
+	assert.Equal(t, uint32(0), regexPathClusterPriority, "Regex path cluster's assigned priority is incorrect.")
+
+	assert.Equal(t, 2, len(routes), "Created number of routes are incorrect.")
+	assert.Contains(t, []string{"^/exact-path-api/2\\.0\\.0/\\(\\.\\*\\)/exact-path([/]{0,1})"}, routes[0].GetMatch().GetSafeRegex().Regex)
+	assert.Contains(t, []string{"^/regex-path/2.0.0/userId/([^/]+)/orderId/([^/]+)([/]{0,1})"}, routes[1].GetMatch().GetSafeRegex().Regex)
+	assert.NotEqual(t, routes[0].GetMatch().GetSafeRegex().Regex, routes[1].GetMatch().GetSafeRegex().Regex,
+		"The route regex for the two paths should not be the same")
+}
+
+func TestCreateRoutesWithClustersWithMultiplePathPrefixRules(t *testing.T) {
 	apiState := synchronizer.APIState{}
 	apiDefinition := v1alpha1.API{
 		ObjectMeta: metav1.ObjectMeta{
@@ -193,8 +331,8 @@ func TestCreateRoutesWithClusters(t *testing.T) {
 	assert.Equal(t, uint32(0), userServiceClusterPriority1, "API Level Cluster's second endpoint Priority is incorrect.")
 
 	assert.Equal(t, 14, len(routes), "Created number of routes are incorrect.")
-	assert.Contains(t, []string{"^/test-api/1.0.0/orders(/.*)*"}, routes[0].GetMatch().GetSafeRegex().Regex)
-	assert.Contains(t, []string{"^/test-api/1.0.0/users(/.*)*"}, routes[7].GetMatch().GetSafeRegex().Regex)
+	assert.Contains(t, []string{"^/test-api/1\\.0\\.0/orders((?:/.*)*)"}, routes[0].GetMatch().GetSafeRegex().Regex)
+	assert.Contains(t, []string{"^/test-api/1\\.0\\.0/users((?:/.*)*)"}, routes[7].GetMatch().GetSafeRegex().Regex)
 	assert.NotEqual(t, routes[0].GetMatch().GetSafeRegex().Regex, routes[7].GetMatch().GetSafeRegex().Regex,
 		"The route regex for the two paths should not be the same")
 }
