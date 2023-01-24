@@ -16,24 +16,85 @@
 // under the License.
 //
 
+import ballerina/log;
 import ballerina/test;
 import devportal_service.org.wso2.apk.devportal.sdk as sdk;
 import ballerina/http;
 
-@test:Mock { functionName: "getAPIByIdDAO" }
-test:MockFunction getAPIByIdDAOMock = new();
+@test:BeforeSuite
+function beforeFunc() {
+    APIBody body = {
+        "apiProperties":{
+            "id": "01ed75e2-b30b-18c8-wwf2-25da7edd2231",
+            "name":"PizzaShask",
+            "context":"pizzssa",
+            "version":"1.0.0",
+            "provider":"admin",
+            "lifeCycleStatus":"CREATED",
+            "type":"HTTP"
+        },
+        "Definition" : {	  
+        "openapi": "3.0.0",
+        "info": {
+            "title": "Sample API",
+            "description": "Optional multiline or single-line description in [CommonMark](http://commonmark.org/help/) or HTML.",
+            "version": "0.1.9"
+        },
+        "servers": [
+            {
+            "url": "http://api.example.com/v1",
+            "description": "Optional server description, e.g. Main (production) server"
+            },
+            {
+            "url": "http://staging-api.example.com",
+            "description": "Optional server description, e.g. Internal staging server for testing"
+            }
+        ],
+        "paths": {
+            "/users": {
+            "get": {
+            "summary": "Returns a list of users.",
+            "description": "Optional extended description in CommonMark or HTML.",
+            "responses": {
+            "200": {
+                "description": "A JSON array of user names",
+                "content": {
+                "application/json": {
+                    "schema": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                    }
+                }
+                }
+            }
+            }
+            }
+            }
+        }
+        }
+    };
+    API|APKError createdAPI = createAPIDAO(body,"carbon.super");
+    if createdAPI is API {
+    test:assertTrue(true, "Successfully created API");
+        API|APKError createdAPIDefinition = addDefinitionDAO(body,"carbon.super");
+        if createdAPIDefinition is API {
+        test:assertTrue(true, "Successfully created API");
+        } else if createdAPIDefinition is  APKError {
+            log:printError(createdAPIDefinition.toString());
+            test:assertFail("Error occured while creating API");
+        }
+    } else if createdAPI is  APKError {
+        log:printError(createdAPI.toString());
+        test:assertFail("Error occured while creating API");
+    }
 
-@test:Mock { functionName: "getAPIsDAO" }
-test:MockFunction getAPIsDAOMock = new();
-
-@test:Mock { functionName: "getAPIDefinitionDAO" }
-test:MockFunction getAPIDefinitionDAOMock = new();
+}
 
 @test:Config {}
 function getAPIByIdTest(){
-    API api = {name: "MyAPI1", context: "/myapi", 'version: "1.0", provider: "apkuser", lifeCycleStatus: "PUBLISHED"};
-    test:when(getAPIByIdDAOMock).thenReturn(api);
-    API|APKError|NotFoundError apiResponse = getAPIByIdDAO("12sqwsqadasd","carbon.super");
+    API|APKError|NotFoundError apiResponse = getAPIByAPIId("01ed75e2-b30b-18c8-wwf2-25da7edd2231","carbon.super");
     if apiResponse is API {
     test:assertTrue(true, "Successfully retrieved API");
     } else if apiResponse is  APKError {
@@ -43,25 +104,21 @@ function getAPIByIdTest(){
 
 @test:Config {}
 function getAPIListTest(){
-    API[] apiList = [{name: "MyAPI1", context: "/myapi", 'version: "1.0", provider: "apkuser", lifeCycleStatus: "PUBLISHED"}, 
-    {name: "MyAPI2", context: "/myapi2", 'version: "1.0", provider: "apkuser", lifeCycleStatus: "PUBLISHED"}];
-    test:when(getAPIsDAOMock).thenReturn(apiList);
-    string?| APIList | error apiListReturned = getAPIList(0, 0, "", "carbon.super");
+    APIList | APKError apiListReturned = getAPIList(0, 0, "", "carbon.super");
     if apiListReturned is APIList {
     test:assertTrue(true, "Successfully retrieved all APIs");
-    } else if apiListReturned is  error {
+    } else if apiListReturned is  APKError {
         test:assertFail("Error occured while retrieving all APIs");
     }
 }
 
 @test:Config {}
 function getAPIDefinitionByIdTest(){
-    APIDefinition apiDefinition = {'type: "swagger",schemaDefinition: ""};
-    test:when(getAPIDefinitionDAOMock).thenReturn(apiDefinition);
-    APIDefinition|NotFoundError|error apiDefResponse = getAPIDefinition("12sqwsqadasd","carbon.super");
+    APIDefinition|NotFoundError|APKError apiDefResponse = getAPIDefinition("01ed75e2-b30b-18c8-wwf2-25da7edd2231","carbon.super");
     if apiDefResponse is APIDefinition {
         test:assertTrue(true, "Successfully retrieved API Definition");
-    } else if apiDefResponse is  error {
+    } else if apiDefResponse is  APKError {
+        log:printError(apiDefResponse.toString());
         test:assertFail("Error occured while retrieving API");
     } else if apiDefResponse is  NotFoundError {
         test:assertFail("Definition Not Found Error");
@@ -70,12 +127,10 @@ function getAPIDefinitionByIdTest(){
 
 @test:Config {}
 function getAPIDefinitionByIdNegativeTest(){
-    NotFoundError nfe = {body:{code: 90915, message: "API Definition Not Found for provided API ID"}};
-    test:when(getAPIDefinitionDAOMock).thenReturn(nfe);
-    APIDefinition|NotFoundError|error apiDefResponse = getAPIDefinition("12sqwsqadasd","carbon.super");
+    APIDefinition|NotFoundError|APKError apiDefResponse = getAPIDefinition("12sqwsqadasd","carbon.super");
     if apiDefResponse is APIDefinition {
         test:assertFail("Successfully retrieved API Definition");
-    } else if apiDefResponse is  error {
+    } else if apiDefResponse is  APKError {
         test:assertFail("Error occured while retrieving API");
     } else if apiDefResponse is  NotFoundError {
         test:assertTrue(true,"Definition Not Found Error");
@@ -83,36 +138,8 @@ function getAPIDefinitionByIdNegativeTest(){
 }
 
 @test:Config {}
-function getAPIDefinitionByIdNegative2Test(){
-    string message = "Internal Error while retrieving API Definition";
-    APKError e = error(message, message = message, description = message, code = 90911, statusCode = "500");
-    test:when(getAPIDefinitionDAOMock).thenReturn(e);
-    APIDefinition|NotFoundError|APKError apiDefResponse = getAPIDefinition("12sqwsqadasd","carbon.super");
-    if apiDefResponse is APIDefinition {
-        test:assertFail("Successfully retrieved API Definition");
-    } else if apiDefResponse is APKError {
-        test:assertTrue(true,"Error occured while retrieving API");
-    } else if apiDefResponse is  NotFoundError {
-        test:assertFail("Definition Not Found Error");
-    }
-}
-
-@test:Config {}
 function generateSDKImplTest(){
-    API api = {name: "MyAPI1", context: "/myapi", 'version: "1.0", provider: "apkuser", lifeCycleStatus: "PUBLISHED"};
-    test:when(getAPIByIdDAOMock).thenReturn(api);
-
-    APIDefinition apiDefinition = {'type: "swagger",schemaDefinition: "{\"servers\":[{\"url\":\"http:api.example.com.v1\",\"descri" +
-    "ption\":\"Optional server description, e.g. Main (production) server\"},{\"url\":\"http:staging-api.example.com\",\"descri" +
-    "ption\":\"Optional server description, e.g. Internal staging server for testing\"}],\"openapi\":\"3.0.0\",\"paths\":{\"use" +
-    "rs\":{\"get\":{\"summary\":\"Returns a list of users.\",\"description\":\"Optional extended descr" +
-    "iption in CommonMark or HTML.\",\"responses\":{\"200\":{\"description\":\"A JSON array of user names\",\"content\":{\"applic" +
-    "ation.json\":{\"schema\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}}}}}}}}},\"info\":{\"title\":\"Sample API\",\"descri" +
-    "ption\":\"Optional multiline or single-line description in [CommonMark](http:commonmark.org.help) or HTML.\",\"vers" +
-    "ion\":\"0.1.9\"}}"};
-    test:when(getAPIDefinitionDAOMock).thenReturn(apiDefinition);
-
-    http:Response|sdk:APIClientGenerationException|NotFoundError|APKError sdk = generateSDKImpl("12sqwsqadasd","java","carbon.super");
+    http:Response|sdk:APIClientGenerationException|NotFoundError|APKError sdk = generateSDKImpl("01ed75e2-b30b-18c8-wwf2-25da7edd2231","java","carbon.super");
     if sdk is http:Response {
         test:assertTrue(true, "Successfully generated API SDK");
     } else if sdk is sdk:APIClientGenerationException|APKError{
@@ -122,13 +149,6 @@ function generateSDKImplTest(){
 
 @test:Config {}
 function generateSDKImplTestNegative(){
-    API api = {name: "MyAPI1", context: "/myapi", 'version: "1.0", provider: "apkuser", lifeCycleStatus: "PUBLISHED"};
-    test:when(getAPIByIdDAOMock).thenReturn(api);
-
-    //Invalid schema definition
-    APIDefinition apiDefinition = {'type: "swagger",schemaDefinition: ""};
-    test:when(getAPIDefinitionDAOMock).thenReturn(apiDefinition);
-
     http:Response|sdk:APIClientGenerationException|NotFoundError|APKError sdk = generateSDKImpl("12sqwsqadasd","java","carbon.super");
     if sdk is http:Response {
         test:assertFail("Successfully generated API SDK");
