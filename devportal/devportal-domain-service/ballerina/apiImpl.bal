@@ -27,14 +27,54 @@ isolated function getAPIByAPIId(string apiId, string organization) returns API|N
     return api;
 }
 
-isolated function getAPIList(int 'limit, int  offset, string? query, string organization) returns APIList|APKError{
-    API[]|APKError apis = getAPIsDAO(organization);
-    if apis is API[] {
-        int count = apis.length();
-        ApplicationList apisList = {count: count, list: apis};
-        return apisList;
+isolated function getAPIList(int 'limit, int  offset, string? query, string organization) returns APIList|APKError {
+    if query !is string {
+        API[]|APKError apis = getAPIsDAO(organization);
+        if apis is API[] {
+            API[] limitSet = [];
+            if apis.length() > offset {
+                foreach int i in offset ... (apis.length() - 1) {
+                    if limitSet.length() < 'limit {
+                        limitSet.push(apis[i]);
+                    }
+                }
+            }
+            APIList apisList = {count: limitSet.length(), list: limitSet,pagination: {total: apis.length(), 'limit: 'limit, offset: offset}};
+            return apisList;
+        } else {
+            return apis;
+        }
     } else {
-        return apis;
+        boolean hasPrefix = query.startsWith("content");
+        if hasPrefix {
+            int? index = query.indexOf(":");
+            if index is int {
+                string modifiedQuery = "%" + query.substring(index+1) +"%";
+                API[]|APKError apis = getAPIsByQueryDAO(modifiedQuery,organization);
+                if apis is API[] {
+                    API[] limitSet = [];
+                    if apis.length() > offset {
+                        foreach int i in offset ... (apis.length() - 1) {
+                            if limitSet.length() < 'limit {
+                                limitSet.push(apis[i]);
+                            }
+                        }
+                    }
+                    APIList apisList = {count: limitSet.length(), list: limitSet,pagination: {total: apis.length(), 'limit: 'limit, offset: offset}};
+                    return apisList;
+                } else {
+                    return apis;
+                }
+            } else {
+                string message = "Invalid Content Search Text Provided. Missing :";
+                APKError e = error(message, message = message, description = message, code = 90911, statusCode = "400");
+                return e;
+            }
+        } else {
+            string message = "Invalid Content Search Text Provided. Missing content keyword";
+            APKError e = error(message, message = message, description = message, code = 90911, statusCode = "400");
+            return e;
+        }
     }
 }
 

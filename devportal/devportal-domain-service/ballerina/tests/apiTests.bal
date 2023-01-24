@@ -96,7 +96,7 @@ function beforeFunc() {
 function getAPIByIdTest(){
     API|APKError|NotFoundError apiResponse = getAPIByAPIId("01ed75e2-b30b-18c8-wwf2-25da7edd2231","carbon.super");
     if apiResponse is API {
-    test:assertTrue(true, "Successfully retrieved API");
+        test:assertTrue(true, "Successfully retrieved API");
     } else if apiResponse is  APKError {
         test:assertFail("Error occured while retrieving API");
     }
@@ -104,11 +104,43 @@ function getAPIByIdTest(){
 
 @test:Config {}
 function getAPIListTest(){
-    APIList | APKError apiListReturned = getAPIList(0, 0, "", "carbon.super");
+    APIList | APKError apiListReturned = getAPIList(25, 0, null, "carbon.super");
     if apiListReturned is APIList {
-    test:assertTrue(true, "Successfully retrieved all APIs");
+        test:assertTrue(true, "Successfully retrieved all APIs");
     } else if apiListReturned is  APKError {
         test:assertFail("Error occured while retrieving all APIs");
+    }
+}
+
+@test:Config {}
+function getAPIListContentSearchTest1(){
+    APIList | APKError apiListReturned = getAPIList(25, 0, "content:pizza", "carbon.super");
+    if apiListReturned is APIList {
+        test:assertTrue(true, "Successfully retrieved all APIs");
+    } else if apiListReturned is  APKError {
+        test:assertFail("Error occured while retrieving all APIs");
+    }
+}
+
+@test:Config {}
+function getAPIListContentSearchTest2(){
+    //Invalid Search Query without "content:" keyword
+    APIList | APKError apiListReturned = getAPIList(25, 0, "pizza", "carbon.super");
+    if apiListReturned is APIList {
+        test:assertFail("Successfully retrieved all APIs");
+    } else if apiListReturned is  APKError {
+        test:assertTrue(true,"Successfully Error occured while retrieving all APIs");
+    }
+}
+
+@test:Config {}
+function getAPIListContentSearchTest3(){
+    //Invalid Search Query without ":" 
+    APIList | APKError apiListReturned = getAPIList(25, 0, "contentpizza", "carbon.super");
+    if apiListReturned is APIList {
+        test:assertFail("Successfully retrieved all APIs");
+    } else if apiListReturned is  APKError {
+        test:assertTrue(true,"Successfully Error occured while retrieving all APIs");
     }
 }
 
