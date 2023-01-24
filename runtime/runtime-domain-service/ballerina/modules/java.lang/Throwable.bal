@@ -1,6 +1,5 @@
 import ballerina/jballerina.java;
 import ballerina/jballerina.java.arrays as jarrays;
-import runtime_domain_service.java.io as javaio;
 
 # Ballerina class mapping for the Java `java.lang.Throwable` class.
 @java:Binding {'class: "java.lang.Throwable"}
@@ -143,19 +142,6 @@ public distinct class Throwable {
         java_lang_Throwable_printStackTrace(self.jObj);
     }
 
-    # The function that maps to the `printStackTrace` method of `java.lang.Throwable`.
-    #
-    # + arg0 - The `javaio:PrintStream` value required to map with the Java method parameter.
-    public function printStackTrace2(javaio:PrintStream arg0) {
-        java_lang_Throwable_printStackTrace2(self.jObj, arg0.jObj);
-    }
-
-    # The function that maps to the `printStackTrace` method of `java.lang.Throwable`.
-    #
-    # + arg0 - The `javaio:PrintWriter` value required to map with the Java method parameter.
-    public function printStackTrace3(javaio:PrintWriter arg0) {
-        java_lang_Throwable_printStackTrace3(self.jObj, arg0.jObj);
-    }
 
     # The function that maps to the `setStackTrace` method of `java.lang.Throwable`.
     #

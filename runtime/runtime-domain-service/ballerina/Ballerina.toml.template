@@ -5,7 +5,7 @@ version = "PROJECT_VERSION"
 distribution = "2201.2.3"
 
 [build-options]
-observabilityIncluded = true
+observabilityIncluded = false
 
 
 [[platform.java11.dependency]]
@@ -391,3 +391,4 @@ version = "20220924"
 groupId = "commons-lang"
 artifactId = "commons-lang"
 version = "2.4"
+

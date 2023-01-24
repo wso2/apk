@@ -96,11 +96,11 @@ public class ServiceClient {
         return createServiceModel(serviceByNameAndNamespace);
     }
 
-    public isolated function getServiceUsageByServiceId(string serviceId) returns APIList|BadRequestError|NotFoundError|InternalServerErrorError {
+    public isolated function getServiceUsageByServiceId(string serviceId,string organization) returns APIList|BadRequestError|NotFoundError|InternalServerErrorError {
         APIInfo[] apiInfos = [];
         Service|BadRequestError|NotFoundError|InternalServerErrorError serviceEntry = self.getServiceById(serviceId);
         if serviceEntry is Service {
-            model:API[] k8sAPIS = retrieveAPIMappingsForService(serviceEntry);
+            model:API[] k8sAPIS = retrieveAPIMappingsForService(serviceEntry,organization);
             foreach model:API k8sAPI in k8sAPIS {
                 apiInfos.push({
                     context: k8sAPI.spec.context,
