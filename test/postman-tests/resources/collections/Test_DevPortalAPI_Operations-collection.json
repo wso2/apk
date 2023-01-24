@@ -1,0 +1,628 @@
+{
+	"info": {
+		"_postman_id": "4a2e18ed-31f9-499f-83ca-28856c78c4c0",
+		"name": "APK-Devportal API Operations",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "16040063"
+	},
+	"item": [
+		{
+			"name": "DevportalAPI List APIs",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"APIs available via control plane's devPortal API\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.list.length).to.be.above(0);",
+							"});",
+							"console.log('Getting all devPortal APIs in control plane and find sample service required for test');",
+							"_.each(pm.response.json().list, (APIEntry) => {",
+							"    if(APIEntry.name === pm.collectionVariables.get('testAPIName')) {",
+							"        pm.environment.set('testAPIID', APIEntry.id)",
+							"        pm.collectionVariables.set('testAPIID', APIEntry.id)",
+							"        console.log(\"HTTP bin API found via portal API, ID is\", APIEntry.id);",
+							"    }",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{devPortalBaseURL}}/api/am/devportal/apis",
+					"host": [
+						"{{devPortalBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"devportal",
+						"apis"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DevportalAPI Search APIs by Content",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"APIs available via control plane's devPortal API\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.list.length).to.be.above(0);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{devPortalBaseURL}}/api/am/devportal/apis",
+					"host": [
+						"{{devPortalBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"devportal",
+						"apis"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DevportalAPI GET API By ID Copy",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"APIs available via control plane's devPortal API\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const responseJson = pm.response.json();",
+							"        pm.expect(responseJson.context).equals(pm.collectionVariables.get('testAPIContext'));",
+							"        pm.expect(responseJson.version).equals(pm.collectionVariables.get('testAPIVersion'));",
+							"",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{devPortalBaseURL}}/api/am/devportal/apis/{{testAPIID}}",
+					"host": [
+						"{{devPortalBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"devportal",
+						"apis",
+						"{{testAPIID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DevportalAPI GET API Definition",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{devPortalBaseURL}}/api/am/devportal/apis/{{testAPIID}}/definition",
+					"host": [
+						"{{devPortalBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"devportal",
+						"apis",
+						"{{testAPIID}}",
+						"definition"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DevportalAPI GET SDK Languages",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{devPortalBaseURL}}/api/am/devportal/sdk-gen/languages",
+					"host": [
+						"{{devPortalBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"devportal",
+						"sdk-gen",
+						"languages"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DevportalAPI Generate SDK Client",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{devPortalBaseURL}}/api/am/devportal/apis/{{testAPIID}}/sdks/java",
+					"host": [
+						"{{devPortalBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"devportal",
+						"apis",
+						"{{testAPIID}}",
+						"sdks",
+						"java"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "AdminAPI Create Application Rate Plan Copy",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"  pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Assert Internal BackOffice API creation response\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const responseJson = pm.response.json();",
+							"    //Usually come as false and need to assert in future",
+							"    //pm.expect(responseJson.isDeployed).equals(pm.collectionVariables.get('idTest1'));",
+							"    pm.expect(responseJson.description).equals(pm.collectionVariables.get('applicationRatePlanDescription'));",
+							"    pm.expect(responseJson.displayName).equals(pm.collectionVariables.get('applicationRatePlanDisplayName'));",
+							"    pm.expect(responseJson.planName).equals(pm.collectionVariables.get('applicationRatePlanName'));",
+							"    //ID is autogenerated hence skipped asseting",
+							"    // pm.expect(responseJson.policyId).equals(pm.collectionVariables.get('contextTest1'));",
+							"    pm.collectionVariables.set(\"applicationRatePlanID\",responseJson.planId)",
+							"",
+							"    pm.expect(responseJson.defaultLimit.type).equals(pm.collectionVariables.get('applicationRatePlanType'));",
+							"    pm.expect(responseJson.defaultLimit.requestCount.requestCount).to.eql(parseInt(pm.collectionVariables.get('applicationRatePlanRequestCount')));",
+							"    pm.expect(responseJson.defaultLimit.requestCount.timeUnit).equals(pm.collectionVariables.get('applicationRatePlanTimeUnit'));",
+							"    pm.expect(responseJson.defaultLimit.requestCount.unitTime).equals(parseInt(pm.collectionVariables.get('applicationRatePlanTime')));",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"planName\": \"{{applicationRatePlanName}}\",\n  \"displayName\": \"{{applicationRatePlanDisplayName}}\",\n  \"description\": \"{{applicationRatePlanDescription}}\",\n  \"defaultLimit\": {\n    \"type\": \"{{applicationRatePlanType}}\",\n    \"requestCount\": {\n      \"requestCount\": {{applicationRatePlanRequestCount}},\n      \"timeUnit\": \"{{applicationRatePlanTimeUnit}}\",\n      \"unitTime\": {{applicationRatePlanTime}}\n    }\n  }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{adminAPIServerBaseURL}}/api/am/admin/application-rate-plans",
+					"host": [
+						"{{adminAPIServerBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"admin",
+						"application-rate-plans"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DevportalAPI Application Create",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"  pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Assert Internal BackOffice API creation response\", () => {",
+							"    const responseJson = pm.response.json();",
+							"    ",
+							"    pm.collectionVariables.set(\"testApplicationID\",responseJson.applicationId)",
+							"",
+							"    pm.expect(responseJson.name).equals(pm.collectionVariables.get('testAppName'));",
+							"    pm.expect(responseJson.throttlingPolicy).equals(pm.collectionVariables.get('testAppThrottlingPolicy'));",
+							"    pm.expect(responseJson.description).equals(pm.collectionVariables.get('testAppDescription'));",
+							"    pm.expect(responseJson.tokenType).equals(pm.collectionVariables.get('testAppTokenType'));",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"{{testAppName}}\",\n  \"throttlingPolicy\": \"{{testAppThrottlingPolicy}}\",\n  \"description\": \"{{testAppDescription}}\",\n  \"tokenType\": \"{{testAppTokenType}}\",\n  \"groups\": [],\n  \"attributes\": {}\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{devPortalBaseURL}}/api/am/devportal/applications",
+					"host": [
+						"{{devPortalBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"devportal",
+						"applications"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DevportalAPI Application GET By ID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{devPortalBaseURL}}/api/am/devportal/applications/{{testApplicationID}}",
+					"host": [
+						"{{devPortalBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"devportal",
+						"applications",
+						"{{testApplicationID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DevportalAPI Application Update",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Assert Internal BackOffice API creation response\", () => {",
+							"    const responseJson = pm.response.json();",
+							"    ",
+							"    pm.collectionVariables.set(\"testApplicationID\",responseJson.applicationId)",
+							"",
+							"    pm.expect(responseJson.name).equals(pm.collectionVariables.get('testAppName'));",
+							"    pm.expect(responseJson.throttlingPolicy).equals(pm.collectionVariables.get('testAppThrottlingPolicy'));",
+							"    pm.expect(responseJson.description).equals(pm.collectionVariables.get('testAppDescription2'));",
+							"    pm.expect(responseJson.tokenType).equals(pm.collectionVariables.get('testAppTokenType'));",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"{{testAppName}}\",\n  \"throttlingPolicy\": \"{{testAppThrottlingPolicy}}\",\n  \"description\": \"{{testAppDescription2}}\",\n  \"tokenType\": \"{{testAppTokenType}}\",\n  \"groups\": [],\n  \"attributes\": {}\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{devPortalBaseURL}}/api/am/devportal/applications/{{testApplicationID}}",
+					"host": [
+						"{{devPortalBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"devportal",
+						"applications",
+						"{{testApplicationID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DevportalAPI List Application Copy",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{devPortalBaseURL}}/api/am/devportal/applications",
+					"host": [
+						"{{devPortalBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"devportal",
+						"applications"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DevportalAPI Application Delete Copy",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{devPortalBaseURL}}/api/am/devportal/applications/{{testApplicationID}}",
+					"host": [
+						"{{devPortalBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"devportal",
+						"applications",
+						"{{testApplicationID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "AdminAPI Application Rate Plan Delete",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"policyName\": \"30PerMin\",\n  \"displayName\": \"30PerMin\",\n  \"description\": \"30 Per Min\",\n  \"type\": \"ApplicationThrottlePolicy\",\n  \"defaultLimit\": {\n    \"type\": \"REQUESTCOUNTLIMIT\",\n    \"requestCount\": {\n      \"requestCount\": 10,\n      \"timeUnit\": \"min\",\n      \"unitTime\": 1\n    }\n  }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{adminAPIServerBaseURL}}/api/am/admin/application-rate-plans/{{applicationRatePlanID}}",
+					"host": [
+						"{{adminAPIServerBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"admin",
+						"application-rate-plans",
+						"{{applicationRatePlanID}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "applicationRatePlanName",
+			"value": "95PerMinPlan",
+			"type": "string"
+		},
+		{
+			"key": "applicationRatePlanDisplayName",
+			"value": "95 Requests per Minutes",
+			"type": "string"
+		},
+		{
+			"key": "applicationRatePlanDescription",
+			"value": "95 Requests per Minutes",
+			"type": "string"
+		},
+		{
+			"key": "applicationRatePlanType",
+			"value": "ApplicationThrottlePolicy",
+			"type": "string"
+		},
+		{
+			"key": "applicationRatePlanRequestCount",
+			"value": "95",
+			"type": "string"
+		},
+		{
+			"key": "applicationRatePlanTimeUnit",
+			"value": "min",
+			"type": "string"
+		},
+		{
+			"key": "applicationRatePlanTime",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "applicationRatePlanID",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "testAPIName",
+			"value": "http-bin-api",
+			"type": "string"
+		},
+		{
+			"key": "testAPIID",
+			"value": ""
+		},
+		{
+			"key": "testAPIContext",
+			"value": "/http-bin-api/1.0.8",
+			"type": "string"
+		},
+		{
+			"key": "testAPIVersion",
+			"value": "1.0.8",
+			"type": "string"
+		},
+		{
+			"key": "testAppName",
+			"value": "95PerMinPlan",
+			"type": "string"
+		},
+		{
+			"key": "testAppThrottlingPolicy",
+			"value": "95PerMinPlan",
+			"type": "string"
+		},
+		{
+			"key": "testAppDescription",
+			"value": "test desc 50",
+			"type": "string"
+		},
+		{
+			"key": "testAppTokenType",
+			"value": "JWT",
+			"type": "string"
+		},
+		{
+			"key": "testAppDescription2",
+			"value": "updated test desc 50",
+			"type": "string"
+		},
+		{
+			"key": "testApplicationID",
+			"value": ""
+		}
+	]
+}
