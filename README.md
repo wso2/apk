@@ -67,7 +67,7 @@ ___
 
 ## Test Product APIs
 WSO2 APK comes with Postman collections to test product APIs and developers can use collection of API requests and configure them to test different scenarios. For example, they can reuse available requests to verify that the API returns the correct responses for different requests.
-These tests will users t identify potential issues or bugs that may need to be addressed before using it. 
+These tests will allow users to identify potential issues or bugs that may need to be addressed before using it. 
 Please refer [Postman Tests](https://github.com/wso2/apk/tree/main/test/postman-tests) section of the repo for more information about tests and test artifacts.
 
 ## Getting Started
