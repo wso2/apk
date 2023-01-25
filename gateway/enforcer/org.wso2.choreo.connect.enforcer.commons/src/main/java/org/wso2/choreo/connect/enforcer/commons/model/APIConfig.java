@@ -50,7 +50,7 @@ public class APIConfig {
     private String mutualSSL;
     private boolean applicationSecurity;
     private GraphQLSchemaDTO graphQLSchemaDTO;
-
+    private boolean systemAPI;
     /**
      * getApiType returns the API type. This could be one of the following.
      * HTTP, WS, WEBHOOK
@@ -246,6 +246,10 @@ public class APIConfig {
         return graphQLSchemaDTO;
     }
 
+    public boolean isSystemAPI() {
+        return systemAPI;
+    }
+
     /**
      * Implements builder pattern to build an API Config object.
      */
@@ -273,7 +277,7 @@ public class APIConfig {
         private String mutualSSL;
         private boolean applicationSecurity;
         private GraphQLSchemaDTO graphQLSchemaDTO;
-
+        private boolean systemAPI;
         public Builder(String name) {
             this.name = name;
         }
@@ -381,7 +385,10 @@ public class APIConfig {
             this.applicationSecurity = applicationSecurity;
             return this;
         }
-
+        public Builder systemAPI(boolean systemAPI){
+            this.systemAPI = systemAPI;
+            return this;
+        }
         public APIConfig build() {
             APIConfig apiConfig = new APIConfig();
             apiConfig.name = this.name;
@@ -406,6 +413,7 @@ public class APIConfig {
             apiConfig.mutualSSL = this.mutualSSL;
             apiConfig.applicationSecurity = this.applicationSecurity;
             apiConfig.graphQLSchemaDTO = this.graphQLSchemaDTO;
+            apiConfig.systemAPI  = this.systemAPI;
             return apiConfig;
         }
     }

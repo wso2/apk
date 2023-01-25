@@ -33,6 +33,7 @@ public type APISpec record {|
     string definitionFileRef?;
     string prodHTTPRouteRef?;
     string sandHTTPRouteRef?;
+    boolean systemAPI?;
 |};
 
 public type APIStatus record {
