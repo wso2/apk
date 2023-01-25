@@ -277,10 +277,11 @@ isolated function db_updateAPI(string apiId, ModifiableAPI payload, string organ
         string message = "Error while retrieving connection";
         return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
-        postgresql:JsonBinaryValue j = new (payload.sdk.toJson());
+        postgresql:JsonBinaryValue sdk = new (payload.sdk.toJson());
+        postgresql:JsonBinaryValue categories = new (payload.categories.toJson());
         sql:ParameterizedQuery UPDATE_API_Suffix = `UPDATE api SET`;
-        sql:ParameterizedQuery values = ` description = ${payload.description}, status= ${payload.state}, sdk = ${j}
-        WHERE api_uuid = ${apiId}`;
+        sql:ParameterizedQuery values = ` status= ${payload.state}, sdk = ${sdk},
+        categories = ${categories} WHERE api_uuid = ${apiId}`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(UPDATE_API_Suffix, values);
 
         sql:ExecutionResult | sql:Error result = dbClient->execute(sqlQuery);
@@ -290,6 +291,27 @@ isolated function db_updateAPI(string apiId, ModifiableAPI payload, string organ
         } else {
             string message = "Error while updating API data into Database";
             return error(message, result, message = message, description = message, code = 909005, statusCode = "500"); 
+        }
+    }
+}
+
+
+isolated function getAPICategoriesDAO(string org) returns APICategory[]|APKError {
+    postgresql:Client | error dbClient  = getConnection();
+    if dbClient is error {
+        string message = "Error while retrieving connection";
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+    } else {
+        do {
+            sql:ParameterizedQuery query = `SELECT UUID as ID, NAME, DESCRIPTION 
+            FROM API_CATEGORIES WHERE ORGANIZATION =${org} ORDER BY NAME`;
+            stream<APICategory, sql:Error?> apiCategoryStream = dbClient->query(query);
+            APICategory[] apiCategoryList = check from APICategory apiCategory in apiCategoryStream select apiCategory;
+            check apiCategoryStream.close();
+            return apiCategoryList;
+        } on fail var e {
+        	string message = "Internal Error occured while retrieving API Categories";
+            return error(message, e, message = message, description = message, code = 909001, statusCode = "500");
         }
     }
 }
