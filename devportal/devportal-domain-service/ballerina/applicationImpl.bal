@@ -18,6 +18,8 @@
 
 import ballerina/log;
 import ballerina/uuid;
+import wso2/notification_grpc_client;
+import ballerina/time;
 
 isolated function addApplication(Application application, string org, string user) returns NotFoundError|Application|APKError {
     string applicationId = uuid:createType1AsString();
@@ -32,6 +34,22 @@ isolated function addApplication(Application application, string org, string use
     if subscriberId is int {
         log:printDebug("subscriber id" + subscriberId.toString());
         Application|APKError createdApp = addApplicationDAO(application, subscriberId, org);
+        if createdApp is Application {
+            string[] hostList = retrieveManagementServerHostsList();
+            string eventId = uuid:createType1AsString();
+            time:Utc currTime = time:utcNow();
+            string date = time:utcToString(currTime);
+            ApplicationGRPC createApplicationRequest = {eventId: eventId, applicationId: createdApp.name, uuid: applicationId, timeStamp: date, organization: org};
+            foreach string host in hostList {
+                NotificationResponse|error applicationNotification = notification_grpc_client:createApplication(createApplicationRequest,host);
+                if applicationNotification is error {
+                    string message = "Error while sending application create grpc event";
+                    log:printError(applicationNotification.toString());
+                    return error(message, applicationNotification, message = message, description = message, code = 909000, statusCode = "500");
+                }  
+            }
+
+        }
         return createdApp;
     } else {
         return subscriberId;
@@ -78,6 +96,21 @@ isolated function updateApplication(string appId, Application application, strin
     if subscriberId is int {
         log:printDebug("subscriber id" + subscriberId.toString());
         Application|APKError updatedApp = updateApplicationDAO(application, subscriberId, org);
+        if updatedApp is Application {
+            string[] hostList = retrieveManagementServerHostsList();
+            string eventId = uuid:createType1AsString();
+            time:Utc currTime = time:utcNow();
+            string date = time:utcToString(currTime);
+            ApplicationGRPC updateApplicationRequest = {eventId: eventId, applicationId: updatedApp.name, uuid: appId, timeStamp: date, organization: org};
+            foreach string host in hostList {
+                NotificationResponse|error applicationNotification = notification_grpc_client:updateApplication(updateApplicationRequest,host);
+                if applicationNotification is error {
+                    string message = "Error while sending application update grpc event";
+                    log:printError(applicationNotification.toString());
+                    return error(message, applicationNotification, message = message, description = message, code = 909000, statusCode = "500");
+                }  
+            }
+        }
         return updatedApp;
     } else {
         return subscriberId;
@@ -86,6 +119,21 @@ isolated function updateApplication(string appId, Application application, strin
 
 isolated function deleteApplication(string appId, string organization) returns string|APKError {
     APKError|string status = deleteApplicationDAO(appId,organization);
+    if status is string {
+        string[] hostList = retrieveManagementServerHostsList();
+        string eventId = uuid:createType1AsString();
+        time:Utc currTime = time:utcNow();
+        string date = time:utcToString(currTime);
+        ApplicationGRPC deleteApplicationRequest = {eventId: eventId, applicationId: appId, uuid: appId, timeStamp: date, organization: organization};
+        foreach string host in hostList {
+            NotificationResponse|error applicationNotification = notification_grpc_client:deleteApplication(deleteApplicationRequest,host);
+            if applicationNotification is error {
+                string message = "Error while sending application delete grpc event";
+                log:printError(applicationNotification.toString());
+                return error(message, applicationNotification, message = message, description = message, code = 909000, statusCode = "500");
+            }  
+        }
+    }
     return status;
 }
 
@@ -168,4 +216,9 @@ isolated function generateAPIKeyForApplication(string username, Application appl
 
 isolated function checkUserAccessAllowedForApplication(Application application, string user) returns boolean {
     return true;
+}
+
+isolated function retrieveManagementServerHostsList() returns string[] {
+    string[] hostList = ["http://localhost:9090","" ];
+    return hostList;
 }

@@ -22,6 +22,30 @@ import ballerina/log;
 Subscription sub = { apiId: "01ed75e2-b30b-18c8-wwf2-25da7edd2231",applicationId: "21212",throttlingPolicy: "MyBusinessPlan"};
 Application applicationNew  ={name:"sampleAppNew",throttlingPolicy:"25PerMin",description: "sample application"};
 
+@test:Mock { functionName: "createApplication",moduleName: "wso2/notification_grpc_client" }
+public isolated function createApplicationMock(ApplicationGRPC createApplicationRequest, string endpoint) returns error|NotificationResponse {
+    NotificationResponse noti= {code: "OK"};
+    return noti;
+}
+
+@test:Mock { functionName: "createSubscription",moduleName: "wso2/notification_grpc_client" }
+public isolated function createSubscriptionMock(ApplicationGRPC createSubscriptionRequest, string endpoint) returns error|NotificationResponse {
+    NotificationResponse noti= {code: "OK"};
+    return noti;
+}
+
+@test:Mock { functionName: "updateSubscription",moduleName: "wso2/notification_grpc_client" }
+public isolated function updateSubscriptionMock(ApplicationGRPC updateSubscriptionRequest, string endpoint) returns error|NotificationResponse {
+    NotificationResponse noti= {code: "OK"};
+    return noti;
+}
+
+@test:Mock { functionName: "deleteSubscription",moduleName: "wso2/notification_grpc_client" }
+public isolated function deleteSubscriptionMock(ApplicationGRPC deleteSubscriptionRequest, string endpoint) returns error|NotificationResponse {
+    NotificationResponse noti= {code: "OK"};
+    return noti;
+}
+
 @test:BeforeSuite
 function beforeFunc2() {
     Application payload = {name:"sampleAppNew",throttlingPolicy:"25PerMin",description: "sample application"};

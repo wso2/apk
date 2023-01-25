@@ -18,6 +18,12 @@ artifactId = "org.wso2.apk.devportal"
 version = "0.0.1-SNAPSHOT"
 path = "../java/build/libs/org.wso2.apk.devportal-0.0.1-SNAPSHOT.jar"
 
+[[dependency]]
+org = "wso2"
+name = "notification_grpc_client"
+version = "0.0.1-SNAPSHOT"
+repository = "local"
+
 # transitive dependency of org.wso2.apk:org.wso2.apk.devportal:0.0.1-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "commons-logging"

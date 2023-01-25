@@ -22,6 +22,18 @@ import ballerina/log;
 @test:Mock { functionName: "generateToken" }
 test:MockFunction generateTokenMock = new();
 
+@test:Mock { functionName: "updateApplication",moduleName: "wso2/notification_grpc_client" }
+public isolated function updateApplicationMock(ApplicationGRPC updateApplicationRequest, string endpoint) returns error|NotificationResponse {
+    NotificationResponse noti= {code: "OK"};
+    return noti;
+}
+
+@test:Mock { functionName: "deleteApplication",moduleName: "wso2/notification_grpc_client" }
+public isolated function deleteApplicationMock(ApplicationGRPC deleteApplicationRequest, string endpoint) returns error|NotificationResponse {
+    NotificationResponse noti= {code: "OK"};
+    return noti;
+}
+
 Application application  ={name:"sampleApp",throttlingPolicy:"30PerMin",description: "sample application"};
 
 @test:BeforeSuite
