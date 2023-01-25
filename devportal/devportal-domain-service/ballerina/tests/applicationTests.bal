@@ -17,112 +17,121 @@
 //
 
 import ballerina/test;
-
-@test:Mock { functionName: "validateApplicationUsagePolicy" }
-test:MockFunction validateApplicationUsagePolicyMock = new();
-
-@test:Mock { functionName: "getSubscriberIdDAO" }
-test:MockFunction getSubscriberIdDAOMock = new();
-
-@test:Mock { functionName: "addApplicationDAO" }
-test:MockFunction addApplicationDAOMock = new();
-
-@test:Mock { functionName: "getApplicationByIdDAO" }
-test:MockFunction getApplicationByIdDAOMock = new();
-
-@test:Mock { functionName: "getApplicationsDAO" }
-test:MockFunction getApplicationsDAOMock = new();
-
-@test:Mock { functionName: "updateApplicationDAO" }
-test:MockFunction updateApplicationDAOMock = new();
-
-@test:Mock { functionName: "deleteApplicationDAO" }
-test:MockFunction deleteApplicationDAOMock = new();
+import ballerina/log;
 
 @test:Mock { functionName: "generateToken" }
 test:MockFunction generateTokenMock = new();
 
+Application application  ={name:"sampleApp",throttlingPolicy:"30PerMin",description: "sample application"};
+
+@test:BeforeSuite
+function beforeFunc1() {
+    ApplicationRatePlan payload = {
+        "planName": "25PerMin",
+        "displayName": "25PerMin",
+        "description": "25 Per Min",
+        "defaultLimit": {
+            "type": "REQUESTCOUNTLIMIT",
+            "requestCount": {
+            "requestCount": 25,
+            "timeUnit": "min",
+            "unitTime": 1
+            }
+        }
+    };
+    ApplicationRatePlan|APKError createdAppPol = addApplicationUsagePlanDAO(payload);
+    if createdAppPol is ApplicationRatePlan {
+        test:assertTrue(true,"Application usage plan added successfully");
+        BusinessPlan payloadbp = {
+            "planName": "MyBusinessPlan",
+            "displayName": "MyBusinessPlan",
+            "description": "test sub pol test",
+            "defaultLimit": {
+                "type": "REQUESTCOUNTLIMIT",
+                "requestCount": {
+                "requestCount": 20,
+                "timeUnit": "min",
+                "unitTime": 1
+                }
+            },
+            "rateLimitCount": 10,
+            "rateLimitTimeUnit": "sec",
+            "customAttributes": []
+        };
+        BusinessPlan|APKError createdBusinessPlan = addBusinessPlanDAO(payloadbp);
+        if createdBusinessPlan is BusinessPlan {
+            test:assertTrue(true,"Business Plan added successfully");
+        } else if createdBusinessPlan is APKError {
+            test:assertFail("Error occured while adding Business Plan");
+        }
+    } else if createdAppPol is APKError {
+        log:printError(createdAppPol.toString());
+        test:assertFail("Error occured while adding Application Usage Plan");
+    }
+}
+
 @test:Config {}
 function addApplicationTest() {
-    string?|Application|error application  ={name:"sampleApp",throttlingPolicy:"30PerMin",description: "sample application"};
-    Application payload = {name:"sampleApp",throttlingPolicy:"30PerMin",description: "sample application",applicationId: "12sqwsq"};
-    test:when(validateApplicationUsagePolicyMock).withArguments("30PerMin", "carbon.super").thenReturn("20");
-    test:when(getSubscriberIdDAOMock).withArguments("apkuser", "carbon.super").thenReturn(20);
-    test:when(addApplicationDAOMock).thenReturn(application);
-    if application is Application {
-        test:assertEquals(addApplication(payload, "carbon.super", "apkuser"), application);
-    } else if application is error {
+    Application payload = {name:"sampleApp",throttlingPolicy:"25PerMin",description: "sample application"};
+    NotFoundError|Application|APKError createdApplication = addApplication(payload, "carbon.super", "apkuser");
+    if createdApplication is Application {
+        test:assertTrue(true, "Successfully added the application");
+        application.applicationId = createdApplication.applicationId;
+    } else if createdApplication is error {
         test:assertFail("Error occured while adding application");
     }
 }
 
-@test:Config {}
+@test:Config {dependsOn: [addApplicationTest]}
 function getApplicationByIdTest(){
-    Application app = {name:"sampleApp",throttlingPolicy:"30PerMin",description: "sample application",applicationId: "12sqwsq"};
-    test:when(getApplicationByIdDAOMock).thenReturn(app);
-    Application|APKError|NotFoundError returnedResponse = getApplicationById("12sqwsq","carbon.super");
-    if returnedResponse is Application {
-    test:assertTrue(true, "Successfully retrieved application");
-    } else if returnedResponse is  APKError|NotFoundError {
-        test:assertFail("Error occured while retrieving application");
+    string? appId = application.applicationId;
+    if appId is string {
+        Application|APKError|NotFoundError returnedResponse = getApplicationById(appId,"carbon.super");
+        if returnedResponse is Application {
+        test:assertTrue(true, "Successfully retrieved application");
+        } else if returnedResponse is  APKError|NotFoundError {
+            test:assertFail("Error occured while retrieving application");
+        }
+    } else {
+        test:assertFail("App ID isn't a string");
     }
 }
 
-@test:Config {}
+@test:Config {dependsOn: [getApplicationByIdTest]}
 function getApplicationListTest(){
-    Application[] appList = [{name:"sampleApp",throttlingPolicy:"30PerMin",description: "sample application",applicationId: "12sqwsq"},
-    {name:"sampleApp2",throttlingPolicy:"30PerMin",description: "sample application 2",applicationId: "heuqwsqasdsada"}];
-    test:when(getApplicationsDAOMock).thenReturn(appList);
-     string?|ApplicationList|error applicationList = getApplicationList("","","","",0,0,"carbon.super");
+    ApplicationList|APKError applicationList = getApplicationList("","","","",0,0,"carbon.super");
     if applicationList is ApplicationList {
     test:assertTrue(true, "Successfully retrieved all applications");
-    } else if applicationList is  error {
+    } else if applicationList is APKError {
         test:assertFail("Error occured while retrieving all applications");
     }
 }
 
-@test:Config {}
+@test:Config {dependsOn: [getApplicationListTest]}
 function updateApplicationTest() {
-    string?|Application|error application  ={name:"sampleApp",throttlingPolicy:"30PerMin",description: "sample application"};
-    Application payload = {name:"sampleApp",throttlingPolicy:"30PerMin",description: "sample application",applicationId: "12sqwsq"};
-    test:when(getApplicationByIdDAOMock).thenReturn(payload);
-    test:when(validateApplicationUsagePolicyMock).withArguments("30PerMin", "carbon.super").thenReturn("20");
-    test:when(getSubscriberIdDAOMock).withArguments("apkuser", "carbon.super").thenReturn(20);
-    test:when(updateApplicationDAOMock).thenReturn(application);
-    if application is Application {
-        test:assertEquals(updateApplication("12sqwsq", payload, "carbon.super", "apkuser"), application);
-    } else if application is error {
-        test:assertFail("Error occured while updating application");
+    Application payload = {name:"sampleApp",throttlingPolicy:"25PerMin",description: "sample application updated"};
+    string? appId = application.applicationId;
+    if appId is string {
+        NotFoundError|Application|APKError createdApplication = updateApplication(appId,payload, "carbon.super", "apkuser");
+        if createdApplication is Application {
+            test:assertTrue(true, "Successfully added the application");
+            application.applicationId = createdApplication.applicationId;
+        } else if createdApplication is APKError {
+            test:assertFail("Error occured while updating application");
+        }
+    } else {
+        test:assertFail("App ID isn't a string");
     }
 }
 
-@test:Config {}
-function deleteApplicationTest(){
-    test:when(deleteApplicationDAOMock).withArguments("12sqwsq", "carbon.super").thenReturn("");
-    error?|string status = deleteApplication("12sqwsq", "carbon.super");
-    if status is string {
-    test:assertTrue(true, "Successfully deleted application");
-    } else if status is  error {
-        test:assertFail("Error occured while deleting application");
-    }
-}
 
-@test:Config {}
+@test:Config {dependsOn: [updateApplicationTest]}
 function generateAPIKeyTest(){
-    Application app = {name:"sampleApp",throttlingPolicy:"30PerMin",description: "sample application",applicationId: "12sqwsq"};
-    test:when(getApplicationByIdDAOMock).thenReturn(app);
     APIKeyGenerateRequest payload = {
         validityPeriod: 3600,
         additionalProperties: {}
     };
-    Subscription[] subList = [{ apiId: "8e3a1ca4-b649-4e57-9a57-e43b6b545af0",applicationId: "01ed716f-9f85-1ade-b634-be97dee7ceb4",throttlingPolicy: "MySubPol4"},
-    { apiId: "8e3a1ca4-b649-4e57-9a57-e43b6b545af0",applicationId: "01ed716f-9f85-1ade-b634-be97dee7ceb4",throttlingPolicy: "MySubPol4"}];
-    test:when(getSubscriptionsByAPPIdDAOMock).thenReturn(subList);
-
-    API api = {name: "MyAPI1", context: "/myapi", 'version: "1.0", provider: "apkuser", lifeCycleStatus: "PUBLISHED"};
-    test:when(getAPIByIdDAOMock).thenReturn(api);
-
-    string token = "eyJhbGciOiJSUzI1NiIsICJ0eXAiOiJKV1QiLCAia2lkIjoiZ2F0ZXdheV9jZXJ0aWZpY2F0ZV9hbGlhcyJ9." +
+     string token = "eyJhbGciOiJSUzI1NiIsICJ0eXAiOiJKV1QiLCAia2lkIjoiZ2F0ZXdheV9jZXJ0aWZpY2F0ZV9hbGlhcyJ9." +
     "eyJpc3MiOiJodHRwczovL2FwaW0ud3NvMi5jb20vb2F1dGgyL3Rva2VuIiwgInN1YiI6IiIsICJhdWQiOiJodHRwczovL2FwaW0u" +
     "d3NvMi5jb20vb2F1dGgyL3Rva2VuIiwgImV4cCI6MTY3MTA5MDg0NCwgIm5iZiI6MTY3MTA4NzI0NCwgImlhdCI6MTY3MTA4NzI0NCw" +
     "gImp0aSI6IjAxZWQ3YzQ1LTQzMmQtMThlMC05MzBmLTUyN2I4ODM0NDM3MyIsICJrZXl0eXBlIjoiUFJPRFVDVElPTiIsICJwZXJtaXR0" +
@@ -135,11 +144,30 @@ function generateAPIKeyTest(){
     "8LFIFE_GWes43CU_SVYL4X6yoSMuu2qN9VXsOlCWnK6v5xoNZjzcqr4qZtLuck3rcR70OF-yKZ1FRc-UlmDM_4nI9LTiOYvXGvJ8V" +
     "qXevZIdvWOm0qapK3hUFwK4uwxp_6qvTcwNOxGm1CoLv0JC-t2ds9EfkbI0qpWEjwJMFQqfgTLEZGT7I1m0re253Xv3Mg3I-eLtV9HcC2FA";
     test:when(generateTokenMock).thenReturn(token);
-
-    APIKey|APKError|NotFoundError key = generateAPIKey(payload, "01ed716f-9f85-1ade-b634-be97dee7ceb4", "PRODUCTION", "apkuser", "carbon.super");
-    if key is APIKey {
-    test:assertTrue(true, "API Key Successfully Generated");
+    string? appId = application.applicationId;
+    if appId is string {
+        APIKey|APKError|NotFoundError key = generateAPIKey(payload, appId, "PRODUCTION", "apkuser", "carbon.super");
+        if key is APIKey {
+            test:assertTrue(true, "API Key Successfully Generated");
+        } else {
+            test:assertFail("Error occured while generating API Key");
+        }
     } else {
-        test:assertFail("Error occured while generating API Key");
+        test:assertFail("App ID isn't a string");
+    }
+}
+
+@test:Config {dependsOn: [generateAPIKeyTest]}
+function deleteApplicationTest() {
+    string? appId = application.applicationId;
+    if appId is string {
+        error?|string status = deleteApplication(appId, "carbon.super");
+        if status is string {
+            test:assertTrue(true, "Successfully deleted application");
+        } else if status is  error {
+            test:assertFail("Error occured while deleting application");
+        }
+    } else {
+        test:assertFail("App ID isn't a string");
     }
 }

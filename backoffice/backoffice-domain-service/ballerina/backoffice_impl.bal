@@ -186,3 +186,15 @@ isolated function handleAPKError(APKError errorDetail) returns InternalServerErr
         InternalServerErrorError internalServerError = {body: {code: detail.code, message: detail.message}};
         return internalServerError;
 }
+
+isolated function getAllCategoryList() returns APICategoryList|APKError {
+    string org = "carbon.super";
+    APICategory[]|APKError categories = getAPICategoriesDAO(org);
+    if categories is APICategory[] {
+        int count = categories.length();
+        APICategoryList apiCategoriesList = {count: count, list: categories};
+        return apiCategoriesList;
+    } else {
+        return categories;
+    }
+}

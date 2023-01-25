@@ -42,3 +42,10 @@ public type APIStatus record {
     string status;
     string transitionTime;
 };
+
+public type APIList record {
+    string apiVersion = "dp.wso2.com/v1alpha1";
+    string kind = "APIList";
+    API[] items;
+    ListMeta metadata;
+};

@@ -18,9 +18,9 @@
 import ballerina/http;
 import runtime_domain_service.model;
 
-public function getMockAPIList() returns json {
+public function getMockAPIList() returns model:APIList {
 
-    json response = {
+    model:APIList response = {
         "apiVersion": "dp.wso2.com/v1alpha1",
         "items": [
             {
@@ -482,7 +482,7 @@ public function mockPizzashackAPI12Definition() returns json {
             apiDisplayName: "pizzashackAPI12",
             apiType: "HTTP",
             apiVersion: "1.0.0",
-            context: "/pizzashack12/1.0.0",
+            context: "/t/carbon.super/pizzashack12/1.0.0",
             organization: "carbon.super",
             prodHTTPRouteRef: "01ed7aca-eb6b-1178-a200-f604a4ce114a-production",
             definitionFileRef: ""
@@ -505,7 +505,7 @@ public function mockPizzaShackAPI1Definition() returns json {
             apiDisplayName: "pizzashackAPI1",
             apiType: "HTTP",
             apiVersion: "1.0.0",
-            context: "/pizzashack1/1.0.0",
+            context: "/t/carbon.super/pizzashack1/1.0.0",
             organization: "carbon.super",
             definitionFileRef: "01ed7b08-f2b1-1166-82d5-649ae706d29d-definition",
             prodHTTPRouteRef: "01ed7b08-f2b1-1166-82d5-649ae706d29d-production"

@@ -30,12 +30,14 @@ import ballerina/lang.value;
 import runtime_domain_service.java.lang;
 import runtime_domain_service.org.wso2.apk.runtime.api as runtimeapi;
 import ballerina/uuid;
+import ballerina/file;
+import ballerina/io;
 import ballerina/crypto;
 
 public class APIClient {
 
-    public isolated function getAPIDefinitionByID(string id) returns json|NotFoundError|PreconditionFailedError|InternalServerErrorError {
-        model:API|error api = getAPI(id);
+    public isolated function getAPIDefinitionByID(string id, string organization) returns json|NotFoundError|PreconditionFailedError|InternalServerErrorError {
+        model:API|error api = getAPI(id, organization);
         if api is model:API {
             json|error definition = self.getDefinition(api);
             if definition is json {
@@ -88,15 +90,18 @@ public class APIClient {
     }
 
     //Get APIs deployed in default namespace by APIId.
-    public isolated function getAPIById(string id) returns API|NotFoundError {
+    public isolated function getAPIById(string id, string organization) returns API|NotFoundError {
         boolean APIIDAvailable = id.length() > 0 ? true : false;
         if (APIIDAvailable && string:length(id.toString()) > 0)
         {
             lock {
-                model:API? api = apilist[id];
-                if api != null {
-                    API detailedAPI = convertK8sAPItoAPI(api);
-                    return detailedAPI.cloneReadOnly();
+                map<model:API>? apiMap = apilist[organization];
+                if apiMap is map<model:API> {
+                    model:API? api = apiMap[id];
+                    if api != null {
+                        API detailedAPI = convertK8sAPItoAPI(api);
+                        return detailedAPI.cloneReadOnly();
+                    }
                 }
             }
         }
@@ -105,11 +110,11 @@ public class APIClient {
     }
 
     //Delete APIs deployed in a namespace by APIId.
-    public isolated function deleteAPIById(string id) returns http:Ok|ForbiddenError|NotFoundError|InternalServerErrorError|APKError {
+    public isolated function deleteAPIById(string id, string organization) returns http:Ok|ForbiddenError|NotFoundError|InternalServerErrorError|APKError {
         boolean APIIDAvailable = id.length() > 0 ? true : false;
         if (APIIDAvailable && string:length(id.toString()) > 0)
         {
-            model:API|error api = getAPI(id);
+            model:API|error api = getAPI(id, organization);
             if api is model:API {
                 http:Response|http:ClientError apiCRDeletionResponse = deleteAPICR(api.metadata.name, api.metadata.namespace);
                 if apiCRDeletionResponse is http:ClientError {
@@ -210,9 +215,9 @@ public class APIClient {
     # + sortBy - Parameter Description  
     # + sortOrder - Parameter Description
     # + return - Return list of APIS in namsepace.
-    public isolated function getAPIList(string? query, int 'limit, int offset, string sortBy, string sortOrder) returns APIList|BadRequestError {
+    public isolated function getAPIList(string? query, int 'limit, int offset, string sortBy, string sortOrder, string organization) returns APIList|BadRequestError {
         API[] apilist = [];
-        foreach model:API api in getAPIs() {
+        foreach model:API api in getAPIs(organization) {
             API convertedModel = convertK8sAPItoAPI(api);
             apilist.push(convertedModel);
         }
@@ -404,7 +409,7 @@ public class APIClient {
         return labels;
     }
     isolated function validateContextAndVersion(string context, string 'version, string organization) returns boolean {
-        foreach model:API k8sAPI in getAPIs() {
+        foreach model:API k8sAPI in getAPIs(organization) {
             if k8sAPI.spec.context == self.returnFullContext(context, 'version, organization) &&
             k8sAPI.spec.organization == organization {
                 return true;
@@ -415,7 +420,7 @@ public class APIClient {
 
     isolated function validateContext(string context, string organization) returns boolean {
 
-        foreach model:API k8sAPI in getAPIs() {
+        foreach model:API k8sAPI in getAPIs(organization) {
             if k8sAPI.spec.context == self.retrieveOrgAwareContext(context, organization) &&
             k8sAPI.spec.organization == organization {
                 return true;
@@ -439,7 +444,7 @@ public class APIClient {
     }
 
     isolated function validateName(string name, string organization) returns boolean {
-        foreach model:API k8sAPI in getAPIs() {
+        foreach model:API k8sAPI in getAPIs(organization) {
             if k8sAPI.spec.apiDisplayName == name && k8sAPI.spec.organization == organization {
                 return true;
             }
@@ -752,7 +757,7 @@ public class APIClient {
     }
 
     private isolated function generateDisableAuthenticationCR(model:APIArtifact apiArtifact, API api, string endpointType, string organization) returns model:Authentication {
-        string retrieveDisableAuthenticationRefName = self.retrieveDisableAuthenticationRefName(api, endpointType,organization);
+        string retrieveDisableAuthenticationRefName = self.retrieveDisableAuthenticationRefName(api, endpointType, organization);
         string nameSpace = getNameSpace(runtimeConfiguration.apiCreationNamespace);
         model:Authentication authentication = {
             metadata: {name: retrieveDisableAuthenticationRefName, namespace: nameSpace, labels: self.getLabels(api)},
@@ -948,8 +953,8 @@ public class APIClient {
         }
     }
 
-    public isolated function generateAPIKey(string apiId) returns APIKey|BadRequestError|NotFoundError|InternalServerErrorError {
-        model:API|error api = getAPI(apiId);
+    public isolated function generateAPIKey(string apiId, string organization) returns APIKey|BadRequestError|NotFoundError|InternalServerErrorError {
+        model:API|error api = getAPI(apiId, organization);
         if api is model:API {
             InternalTokenGenerator tokenGenerator = new ();
             string|jwt:Error generatedToken = tokenGenerator.generateToken(api, APK_USER);
@@ -969,26 +974,28 @@ public class APIClient {
 
     public function retrieveAllApisAtStartup(string? continueValue) returns error? {
         string? resultValue = continueValue;
-        json|http:ClientError retrieveAllAPISResult;
+        model:APIList|http:ClientError retrieveAllAPISResult;
         if resultValue is string {
             retrieveAllAPISResult = retrieveAllAPIS(resultValue);
         } else {
             retrieveAllAPISResult = retrieveAllAPIS(());
         }
 
-        if retrieveAllAPISResult is json {
-            json metadata = check retrieveAllAPISResult.metadata;
-            json[] items = <json[]>check retrieveAllAPISResult.items;
+        if retrieveAllAPISResult is model:APIList {
+            model:ListMeta metadata = retrieveAllAPISResult.metadata;
+            model:API[] items = retrieveAllAPISResult.items;
             putallAPIS(items);
 
-            json|error continueElement = metadata.'continue;
-            if continueElement is json {
-                if (<string>continueElement).length() > 0 {
-                    _ = check self.retrieveAllApisAtStartup(<string?>continueElement);
+            string? continueElement = metadata.'continue;
+            if continueElement is string {
+                if continueElement.length() > 0 {
+                    _ = check self.retrieveAllApisAtStartup(continueElement);
                 }
             }
-            string resourceVersion = <string>check metadata.'resourceVersion;
-            setResourceVersion(resourceVersion);
+            string? resourceVersion = metadata.'resourceVersion;
+            if resourceVersion is string {
+                setResourceVersion(resourceVersion);
+            }
         }
     }
 
@@ -1593,11 +1600,11 @@ public class APIClient {
             return badRequest;
         }
         do {
-            API|NotFoundError api = self.getAPIById(apiId);
+            API|NotFoundError api = self.getAPIById(apiId, organization);
             if api is API {
-                model:APIArtifact apiArtifact = check self.getApiArtifact(api);
+                model:APIArtifact apiArtifact = check self.getApiArtifact(api, organization);
                 // validating version
-                if isAPIVersionExist(api.name, newVersion) {
+                if isAPIVersionExist(api.name, newVersion, organization) {
                     BadRequestError badRequest = {body: {code: 900920, message: newVersion + " already exist."}};
                     return badRequest;
                 }
@@ -1787,8 +1794,8 @@ public class APIClient {
         }
     }
 
-    private isolated function getApiArtifact(API api) returns model:APIArtifact|error {
-        model:API k8sapi = check getAPI(<string>api.id);
+    private isolated function getApiArtifact(API api, string organization) returns model:APIArtifact|error {
+        model:API k8sapi = check getAPI(<string>api.id, organization);
         model:APIArtifact apiArtifact = {uniqueId: k8sapi.metadata.name};
         // retrieveConfigmap
         string? definitionFileRef = k8sapi.spec.definitionFileRef;
@@ -1895,7 +1902,75 @@ public class APIClient {
             spec: authentication.spec
         };
     }
+    public isolated function exportAPI(string? apiId, string organization) returns APKError|NotFoundError|http:Response|BadRequestError {
+        if apiId is string {
+            do {
+                API|NotFoundError api = self.getAPIById(apiId, organization);
+                if api is API {
+                    model:APIArtifact apiArtifact = check self.getApiArtifact(api, organization);
+                    string zipDir = check file:createTempDir(apiId);
+                    model:API? k8sAPI = apiArtifact.api;
+                    if k8sAPI is model:API {
+                        _ = check self.convertAndStoreYamlFile(k8sAPI.toJsonString(),k8sAPI.metadata.name, zipDir, "api");
+                    }
+                    model:ConfigMap? definition = apiArtifact.definition;
+                    if definition is model:ConfigMap {
+                        _ = check self.convertAndStoreYamlFile(definition.toJsonString(), definition.metadata.name, zipDir, "definitions");
+                    }
+                    foreach model:Authentication authenticationCr in apiArtifact.authenticationMap {
+                        _ = check self.convertAndStoreYamlFile(authenticationCr.toJsonString(), authenticationCr.metadata.name, zipDir, "policies/authentications");
+                    }
+                    foreach model:Service backendService in apiArtifact.backendServices {
+                        _ = check self.convertAndStoreYamlFile(backendService.toJsonString(), backendService.metadata.name, zipDir, "backends");
+                    }
+                    model:Httproute? productionRoute = apiArtifact.productionRoute;
 
+                    if productionRoute is model:Httproute {
+                        _ = check self.convertAndStoreYamlFile(productionRoute.toJsonString(), productionRoute.metadata.name, zipDir, "httproutes");
+                    }
+                    model:Httproute? sandboxRoute = apiArtifact.sandboxRoute;
+                    if sandboxRoute is model:Httproute {
+                        _ = check self.convertAndStoreYamlFile(sandboxRoute.toJsonString(), sandboxRoute.metadata.name, zipDir, "httproutes");
+                    }
+                    foreach model:K8sServiceMapping servicemapping in apiArtifact.serviceMapping {
+                        _ = check self.convertAndStoreYamlFile(servicemapping.toJsonString(), servicemapping.metadata.name, zipDir, "servicemappings");
+                    }
+                    [string, string] zipName = check self.zipDirectory(apiId, zipDir);
+                    http:Response response = new;
+                    response.setFileAsPayload(zipName[1]);
+                    response.addHeader("Content-Disposition", "attachment; filename=" + zipName[0]);
+                    return response;
+                } else {
+                    return <NotFoundError>api;
+                }
+            } on fail var e {
+                APKError apkError = error("Internal Error occured when exporting api", e, message = "Internal Error.", code = 900900, description = "Internal Error.", statusCode = "500");
+                return apkError;
+            }
+        } else {
+            BadRequestError badRequest = {body: {code: 90912, message: "apiId not found in request."}};
+            return badRequest;
+        }
+    }
+    private isolated function convertAndStoreYamlFile(string jsonString, string fileName, string directroy, string? subDirectory) returns error? {
+        runtimeUtil:YamlUtil yamlUtil = runtimeUtil:newYamlUtil1();
+        string|() convertedYaml = check yamlUtil.fromJsonStringToYaml(jsonString);
+        string fullPath = directroy;
+        if convertedYaml is string {
+            if subDirectory is string {
+                fullPath = fullPath + file:pathSeparator + subDirectory;
+                _ = check file:createDir(directroy + file:pathSeparator + subDirectory,file:RECURSIVE);
+            }
+            fullPath = fullPath + file:pathSeparator + fileName + ".yaml";
+            _ = check io:fileWriteString(fullPath, convertedYaml);
+        }
+    }
+    private isolated function zipDirectory(string apiId, string directoryPath) returns [string, string]|error {
+        string zipName = apiId + ZIP_FILE_EXTENSTION;
+        string zipPath = directoryPath + ZIP_FILE_EXTENSTION;
+        _ = check runtimeUtil:ZIPUtils_zipDir(directoryPath, zipPath);
+        return [zipName, zipPath];
+    }
 }
 
 type ImportDefintionRequest record {

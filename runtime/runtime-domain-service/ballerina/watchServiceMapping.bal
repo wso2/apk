@@ -139,7 +139,7 @@ function putAllServiceMappings(model:K8sServiceMapping[] events) returns error? 
     }
 }
 
-isolated function retrieveAPIMappingsForService(Service serviceEntry) returns model:API[] {
+isolated function retrieveAPIMappingsForService(Service serviceEntry,string organization) returns model:API[] {
     lock {
         string[] keys = k8sServiceMappings.keys();
         model:API[] apis = [];
@@ -148,7 +148,7 @@ isolated function retrieveAPIMappingsForService(Service serviceEntry) returns mo
             model:ServiceReference serviceRef = serviceMapping.spec.serviceRef;
             if (serviceRef.name == serviceEntry.name && serviceRef.namespace == serviceEntry.namespace) {
                 model:APIReference apiRef = serviceMapping.spec.apiRef;
-                model:API? k8sAPI = getAPIByNameAndNamespace(apiRef.name, apiRef.namespace);
+                model:API? k8sAPI = getAPIByNameAndNamespace(apiRef.name, apiRef.namespace,organization);
                 if k8sAPI is model:API {
                     apis.push(k8sAPI);
                 }

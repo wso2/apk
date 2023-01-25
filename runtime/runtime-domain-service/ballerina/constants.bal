@@ -30,3 +30,4 @@ const string CONTEXT_ALREADY_EXIST_K8s_VALIDATION_MESSAGE = "an API has been alr
 const string PRODUCTION_TYPE = "production";
 const string SANDBOX_TYPE = "sandbox";
 const string PRIMARY_ENDPOINT = "primary";
+const string ZIP_FILE_EXTENSTION = ".zip";

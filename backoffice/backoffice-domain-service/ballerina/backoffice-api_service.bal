@@ -133,8 +133,16 @@ service /api/am/backoffice on ep0 {
     // }
     // resource function get settings() returns Settings|NotFoundError {
     // }
-    // resource function get 'api\-categories() returns APICategoryList {
-    // }
+
+    isolated resource function get 'api\-categories() returns APICategoryList|BadRequestError|InternalServerErrorError {
+        APICategoryList|APKError apiCategoryList = getAllCategoryList();
+        if apiCategoryList is APICategoryList {
+            return apiCategoryList;
+        } else {
+            return handleAPKError(apiCategoryList);
+        }
+    }
+
     isolated resource function post apis/'change\-lifecycle(string targetState, string apiId, @http:Header string? 'if\-match) returns LifecycleState|BadRequestError|UnauthorizedError|NotFoundError|ConflictError|InternalServerErrorError| BadRequestError|error {
         LifecycleState | error  changeState = changeLifeCyleState(targetState, apiId, "carbon.super");
         if changeState is LifecycleState {

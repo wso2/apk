@@ -2,12 +2,12 @@
 ADMIN_PORT = 9444
 [wso2.admin_service.datasourceConfiguration]
 description = "Database for admin"
-url = "jdbc:postgresql://localhost:5432/apk"
+url = "jdbc:postgresql://localhost:10320/WSO2AM_DB"
 host = "localhost"
-port = 5432
-databaseName = "apk"
-username = "admin"
-password = "1234"
+port = 10320
+databaseName = "WSO2AM_DB"
+username = "wso2carbon"
+password = "wso2carbon"
 validationTimeout = 250
 testQuery = "SELECT 1"
 driver = "org.postgresql.Driver"

@@ -65,6 +65,28 @@ isolated function getAPIsDAO(string org) returns API[]|APKError {
     }
 }
 
+isolated function getAPIsByQueryDAO(string payload, string org) returns API[]|APKError {
+    postgresql:Client | error dbClient  = getConnection();
+    if dbClient is error {
+        string message = "Error while retrieving connection";
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+    } else {
+        do {
+            sql:ParameterizedQuery query = `SELECT DISTINCT API_UUID AS ID, API_ID as APIID,
+            API_PROVIDER as PROVIDER, API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS, 
+            API_TYPE as TYPE, ARTIFACT as ARTIFACT FROM API JOIN JSONB_EACH_TEXT(ARTIFACT) e ON true 
+            WHERE ORGANIZATION =${org} AND e.value LIKE ${payload}`;
+            stream<API, sql:Error?> apisStream = dbClient->query(query);
+            API[] apis = check from API api in apisStream select api;
+            check apisStream.close();
+            return apis;
+        } on fail var e {
+            string message = "Internal Error occured while retrieving APIs";
+            return error(message, e, message = message, description = message, code = 909001, statusCode = "500");
+        }
+    }
+}
+
 isolated function getAPIDefinitionDAO(string apiId, string org) returns APIDefinition|NotFoundError|APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
