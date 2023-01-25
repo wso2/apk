@@ -140,41 +140,6 @@ wso2:
             nginx.ingress.kubernetes.io/affinity: "cookie"
             nginx.ingress.kubernetes.io/session-cookie-name: "route"
             nginx.ingress.kubernetes.io/session-cookie-hash: "sha1"
-      backofficeInternal:
-        appName: "backoffice-internal-ds"
-        deployment:
-          npi: backoffice-internal-ds-npi
-          resources:
-            requests:
-              memory: "128Mi"
-              cpu: "100m"
-            limits:
-              memory: "1028Mi"
-              cpu: "1000m"
-          readinessProbe:
-            path: /health
-            port: 9443
-            initialDelaySeconds: 20
-            periodSeconds: 20
-            failureThreshold: 5
-          livenessProbe:
-            path: /health
-            port: 9443
-            initialDelaySeconds: 20
-            periodSeconds: 20
-            failureThreshold: 5
-          strategy: Recreate
-          replicas: 1
-          imagePullPolicy: IfNotPresent
-          image: wso2/backoffice-internal-domain-service:0.0.1-m2
-        ingress:
-          path: /api/am/backoffice/internal
-          className: ""
-          annotations:
-            kubernetes.io/ingress.class: "nginx"
-            nginx.ingress.kubernetes.io/affinity: "cookie"
-            nginx.ingress.kubernetes.io/session-cookie-name: "route"
-            nginx.ingress.kubernetes.io/session-cookie-hash: "sha1"
       devportalUI:
         appName: "devportal-ui"
         deployment:

@@ -1,0 +1,1022 @@
+#   Copyright (c) 2020, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+#
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+################################################################################
+openapi: 3.0.1
+info:
+  title: WSO2 API Manager - Backoffice Internal REST API
+  description: |
+    This document specifies a **RESTful Internal API** for WSO2 **APK** - **BackOffice**.
+  contact:
+    name: WSO2
+    url: https://wso2.com/api-manager/
+    email: architecture@wso2.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: v1
+servers:
+  - url: https://apis.wso2.com/api/am/backoffice
+paths:
+  ######################################################
+  # The "API Collection" resource APIs
+  ######################################################
+  /apis:
+    post:
+      tags:
+        - APIs
+      summary: Create a New API
+      description: |
+        This operation can be used to create a new API specifying the details of the API in the payload. The new API will be in `CREATED` state.
+
+        There is a special capability for a user who has `APIM Admin` permission such that he can create APIs on behalf of other users. For that he can to specify `"provider" : "some_other_user"` in the payload so that the API's creator will be shown as `some_other_user` in the UI.
+      operationId: createAPI
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/APIBody'
+        required: true
+      responses:
+        201:
+          description: |
+            Created.
+            Successful response with the newly created object as entity in the body.
+            Location header contains URL of newly created entity.
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).
+              schema:
+                type: string
+            Location:
+              description: |
+                The URL of the newly created resource.
+              schema:
+                type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/API'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        415:
+          $ref: '#/components/responses/UnsupportedMediaType'
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -F file=@openapi.json -F additionalProperties=@data.json "https://127.0.0.1:9443/api/am/publisher/v3/apis/import-openapi"'
+
+  ######################################################
+  # The "Individual API" resource APIs
+  ######################################################
+  /apis/{apiId}:
+    put:
+      tags:
+        - APIs
+      summary: Update an API
+      description: |
+        This operation can be used to update an existing API.
+        But the properties `name`, `version`, `context`, `provider`, `state` will not be changed by this operation.
+      parameters:
+        - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/If-Match'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/APIBody'
+        required: true
+      responses:
+        200:
+          description: |
+            OK.
+            Successful response with updated API object
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).
+              schema:
+                type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional requests (Will be supported in future).
+              schema:
+                type: string
+            Location:
+              description: |
+                The URL of the newly created resource.
+              schema:
+                type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/API'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        409:
+          $ref: '#/components/responses/Conflict'
+        412:
+          $ref: '#/components/responses/PreconditionFailed'
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/publisher/v3/apis/7a2298c4-c905-403f-8fac-38c73301631f"'
+      operationId: updateAPI
+
+    delete:
+      tags:
+        - APIs
+      summary: Delete an API
+      description: |
+        This operation can be used to delete an existing API proving the Id of the API.
+      parameters:
+        - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/If-Match'
+      responses:
+        200:
+          description: |
+            OK.
+            Resource successfully deleted.
+          content: {}
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        409:
+          $ref: '#/components/responses/Conflict'
+        412:
+          $ref: '#/components/responses/PreconditionFailed'
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/publisher/v3/apis/7a2298c4-c905-403f-8fac-38c73301631f"'
+      operationId: deleteAPI
+
+  /apis/{apiId}/definition:
+    put:
+      tags:
+        - APIs
+      summary: Update API Definition
+      description: |
+        This operation can be used to update the swagger definition of an existing API. Swagger definition to be updated is passed as a form data parameter `apiDefinition`.
+      parameters:
+        - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/If-Match'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/APIDefinition'
+        required: true
+      responses:
+        200:
+          description: |
+            OK.
+            Successful response with updated Swagger definition
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).
+              schema:
+                type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional requests (Will be supported in future).
+              schema:
+                type: string
+            Location:
+              description: |
+                The URL of the newly created resource.
+              schema:
+                type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: string
+                example: ""
+        400:
+          $ref: '#/components/responses/BadRequest'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        412:
+          $ref: '#/components/responses/PreconditionFailed'
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -F apiDefinition=@swagger.json "https://127.0.0.1:9443/api/am/publisher/v3/apis/96077508-fd01-4fae-bc64-5de0e2baf43c/swagger"'
+      operationId: updateAPISwagger
+
+  
+components:
+  schemas:
+    API:
+      title: API object
+      required:
+        - context
+        - name
+        - version
+      type: object
+      properties:
+        id:
+          type: string
+          description: |
+            UUID of the api registry artifact
+          readOnly: true
+          example: 01234567-0123-0123-0123-012345678901
+        name:
+          maxLength: 60
+          minLength: 1
+          pattern: '(^[^~!@#;:%^*()+={}|\\<>"'',&$\[\]\/]*$)'
+          type: string
+          example: PizzaShackAPI
+        description:
+          maxLength: 32766
+          type: string
+          example: This is a simple API for Pizza Shack online pizza delivery store.
+        context:
+          maxLength: 232
+          minLength: 1
+          type: string
+          example: pizza
+        version:
+          maxLength: 30
+          minLength: 1
+          type: string
+          pattern: '^[^~!@#;:%^*()+={}|\\<>"'',&/$\[\]\s+\/]+$'
+          example: 1.0.0
+        provider:
+          maxLength: 50
+          type: string
+          description: |
+            If the provider value is not given user invoking the api will be used as the provider.
+          example: admin
+        lifeCycleStatus:
+          type: string
+          example: CREATED
+          x-otherScopes:
+            - apim:api_publish
+            - apim:api_manage
+        wsdlInfo:
+          $ref: '#/components/schemas/WSDLInfo'
+        wsdlUrl:
+          type: string
+          readOnly: true
+          example: /apimgt/applicationdata/wsdls/admin--soap1.wsdl
+        responseCachingEnabled:
+          type: boolean
+          example: true
+        cacheTimeout:
+          type: integer
+          example: 300
+        hasThumbnail:
+          type: boolean
+          example: false
+        isDefaultVersion:
+          type: boolean
+          example: false
+        isRevision:
+          type: boolean
+          example: false
+        revisionedApiId:
+          type: string
+          description: |
+            UUID of the api registry artifact
+          readOnly: true
+          example: 01234567-0123-0123-0123-012345678901
+        revisionId:
+          type: integer
+          example: 1
+        enableSchemaValidation:
+          type: boolean
+          example: false
+        type:
+          type: string
+          description: The api creation type to be used. Accepted values are HTTP,
+            WS, SOAPTOREST, GRAPHQL, WEBSUB, SSE, WEBHOOK, ASYNC
+          example: HTTP
+          default: HTTP
+          enum:
+            - HTTP
+            - WS
+            - SOAPTOREST
+            - SOAP
+            - GRAPHQL
+            - WEBSUB
+            - SSE
+            - WEBHOOK
+            - ASYNC
+        audience:
+          type: string
+          description: The audience of the API. Accepted values are PUBLIC, SINGLE
+          example: PUBLIC
+          enum:
+            - PUBLIC
+            - SINGLE
+        transport:
+          type: array
+          description: |
+            Supported transports for the API (http and/or https).
+          example:
+            - http
+            - https
+          items:
+            type: string
+        tags:
+          type: array
+          example:
+            - pizza
+            - food
+          items:
+            type: string
+          x-otherScopes:
+            - apim:api_publish
+            - apim:api_manage
+        policies:
+          type: array
+          example:
+            - Unlimited
+          items:
+            type: string
+          x-otherScopes:
+            - apim:api_publish
+            - apim:api_manage
+        apiThrottlingPolicy:
+          type: string
+          description: The API level throttling policy selected for the particular
+            API
+          example: Unlimited
+          x-otherScopes:
+            - apim:api_publish
+            - apim:api_manage
+        authorizationHeader:
+          type: string
+          pattern: '(^[^~!@#;:%^*()+={}|\\<>"'',&$\s+]*$)'
+          description: |
+            Name of the Authorization header used for invoking the API. If it is not set, Authorization header name specified
+            in tenant or system level will be used.
+          example: Authorization
+        securityScheme:
+          type: array
+          description: |
+            Types of API security, the current API secured with. It can be either OAuth2 or mutual SSL or both. If
+            it is not set OAuth2 will be set as the security for the current API.
+          example:
+            - oauth2
+          items:
+            type: string
+        visibility:
+          type: string
+          description: The visibility level of the API. Accepts one of the following.
+            PUBLIC, PRIVATE, RESTRICTED.
+          example: PUBLIC
+          default: PUBLIC
+          enum:
+            - PUBLIC
+            - PRIVATE
+            - RESTRICTED
+          x-otherScopes:
+            - apim:api_publish
+            - apim:api_manage
+        visibleRoles:
+          type: array
+          description: The user roles that are able to access the API in Developer Portal
+          example: []
+          items:
+            type: string
+          x-otherScopes:
+            - apim:api_publish
+            - apim:api_manage
+        visibleTenants:
+          type: array
+          example: []
+          items:
+            type: string
+        subscriptionAvailability:
+          type: string
+          description: The subscription availability. Accepts one of the following.
+            CURRENT_TENANT, ALL_TENANTS or SPECIFIC_TENANTS.
+          example: CURRENT_TENANT
+          default: CURRENT_TENANT
+          enum:
+            - CURRENT_TENANT
+            - ALL_TENANTS
+            - SPECIFIC_TENANTS
+          x-otherScopes:
+            - apim:api_publish
+            - apim:api_manage
+        subscriptionAvailableTenants:
+          type: array
+          example: []
+          items:
+            type: string
+        additionalProperties:
+          type: array
+          description: Map of custom properties of API
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              value:
+                type: string
+              display:
+                type: boolean
+          x-otherScopes:
+            - apim:api_publish
+            - apim:api_manage
+        additionalPropertiesMap:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              name:
+                type: string
+              value:
+                type: string
+              display:
+                type: boolean
+                default: false
+          x-otherScopes:
+            - apim:api_publish
+            - apim:api_manage
+        accessControl:
+          type: string
+          description: |
+            Is the API is restricted to certain set of publishers or creators or is it visible to all the
+            publishers and creators. If the accessControl restriction is none, this API can be modified by all the
+            publishers and creators, if not it can only be viewable/modifiable by certain set of publishers and creators,
+             based on the restriction.
+          default: NONE
+          enum:
+            - NONE
+            - RESTRICTED
+        accessControlRoles:
+          type: array
+          description: The user roles that are able to view/modify as API publisher
+            or creator.
+          example: []
+          items:
+            type: string
+        workflowStatus:
+          type: string
+          example: APPROVED
+        createdTime:
+          type: string
+        lastUpdatedTime:
+          type: string
+          x-otherScopes:
+            - apim:api_publish
+            - apim:api_manage
+        endpointConfig:
+          type: object
+          properties: {}
+          description: |
+            Endpoint configuration of the API. This can be used to provide different types of endpoints including Simple REST Endpoints, Loadbalanced and Failover.
+
+            `Simple REST Endpoint`
+              {
+                "endpoint_type": "http",
+                "sandbox_endpoints":       {
+                   "url": "https://localhost:9443/am/sample/pizzashack/v3/api/"
+                },
+                "production_endpoints":       {
+                   "url": "https://localhost:9443/am/sample/pizzashack/v3/api/"
+                }
+              }
+
+            `Loadbalanced Endpoint`
+
+              {
+                "endpoint_type": "load_balance",
+                "algoCombo": "org.apache.synapse.endpoints.algorithms.RoundRobin",
+                "sessionManagement": "",
+                "sandbox_endpoints":       [
+                            {
+                      "url": "https://localhost:9443/am/sample/pizzashack/v3/api/1"
+                   },
+                            {
+                      "endpoint_type": "http",
+                      "template_not_supported": false,
+                      "url": "https://localhost:9443/am/sample/pizzashack/v3/api/2"
+                   }
+                ],
+                "production_endpoints":       [
+                            {
+                      "url": "https://localhost:9443/am/sample/pizzashack/v3/api/3"
+                   },
+                            {
+                      "endpoint_type": "http",
+                      "template_not_supported": false,
+                      "url": "https://localhost:9443/am/sample/pizzashack/v3/api/4"
+                   }
+                ],
+                "sessionTimeOut": "",
+                "algoClassName": "org.apache.synapse.endpoints.algorithms.RoundRobin"
+              }
+
+            `Failover Endpoint`
+
+              {
+                "production_failovers":[
+                   {
+                      "endpoint_type":"http",
+                      "template_not_supported":false,
+                      "url":"https://localhost:9443/am/sample/pizzashack/v3/api/1"
+                   }
+                ],
+                "endpoint_type":"failover",
+                "sandbox_endpoints":{
+                   "url":"https://localhost:9443/am/sample/pizzashack/v3/api/2"
+                },
+                "production_endpoints":{
+                   "url":"https://localhost:9443/am/sample/pizzashack/v3/api/3"
+                },
+                "sandbox_failovers":[
+                   {
+                      "endpoint_type":"http",
+                      "template_not_supported":false,
+                      "url":"https://localhost:9443/am/sample/pizzashack/v3/api/4"
+                   }
+                ]
+              }
+
+            `Default Endpoint`
+
+              {
+                "endpoint_type":"default",
+                "sandbox_endpoints":{
+                   "url":"default"
+                },
+                "production_endpoints":{
+                   "url":"default"
+                }
+              }
+
+            `Endpoint from Endpoint Registry`
+              {
+                "endpoint_type": "Registry",
+                "endpoint_id": "{registry-name:entry-name:version}",
+              }
+          example:
+            endpoint_type: http
+            sandbox_endpoints:
+              url: https://localhost:9443/am/sample/pizzashack/v3/api/
+            production_endpoints:
+              url: https://localhost:9443/am/sample/pizzashack/v3/api/
+        endpointImplementationType:
+          type: string
+          example: INLINE
+          default: ENDPOINT
+          enum:
+            - INLINE
+            - ENDPOINT
+            - MOCKED_OAS
+        threatProtectionPolicies:
+          type: object
+          properties:
+            list:
+              type: array
+              items:
+                type: object
+                properties:
+                  policyId:
+                    type: string
+                  priority:
+                    type: integer
+        categories:
+          type: array
+          description: |
+            API categories
+          items:
+            type: string
+            example: ""
+          x-otherScopes:
+            - apim:api_publish
+        keyManagers:
+          type: object
+          properties: {}
+          description: |
+            API Key Managers
+          readOnly: true
+        serviceInfo:
+          type: object
+          properties:
+            key:
+              type: string
+              example: PetStore-1.0.0
+            name:
+              type: string
+              example: PetStore
+            version:
+              type: string
+              example: 1.0.0
+            outdated:
+              type: boolean
+              example: false
+        gatewayVendor:
+          title: field to identify gateway vendor
+          type: string
+          example:
+            wso2
+        gatewayType:
+          title: Field to identify gateway type.
+          type: string
+          description: The gateway type selected for the API policies. Accepts one of the
+            following. wso2/synapse, wso2/choreo-connect.
+          example: wso2/synapse
+        asyncTransportProtocols:
+          type: array
+          description: |
+            Supported transports for the async API (http and/or https).
+          example:
+            - http
+            - https
+          items:
+            type: string
+      x-scopes:
+        - apim:api_create
+        - apim:api_import_export
+        - apim:api_manage
+    WSDLInfo:
+      title: WSDL information of the API. This is only available if the API is a SOAP
+        API.
+      type: object
+      properties:
+        type:
+          type: string
+          description: Indicates whether the WSDL is a single WSDL or an archive in
+            ZIP format
+          enum:
+            - WSDL
+            - ZIP
+    APIBody:
+      title: APIBody object
+      type: object
+      required:
+        - apiProperties
+        - Definition
+      properties:
+        apiProperties:
+          $ref: '#/components/schemas/API'
+        Definition:
+          type: object
+          description: Content of the definition
+    APIDefinition:
+      title: APIDefinition object
+      type: object
+      required:
+        - Definition
+      properties:
+        Definition:
+          type: object
+          description: Content of the definition
+    Error:
+      title: Error object returned with 4XX HTTP Status
+      required:
+        - code
+        - message
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int64
+        message:
+          type: string
+          description: Error message.
+        description:
+          type: string
+          description: |
+            A detail description about the error message.
+        moreInfo:
+          type: string
+          description: |
+            Preferably an url with more details about the error.
+        error:
+          type: array
+          description: |
+            If there are more than one error list them out.
+            For example, list out validation errors by each field.
+          items:
+            $ref: '#/components/schemas/ErrorListItem'
+    ErrorListItem:
+      title: Description of individual errors that may have occurred during a request.
+      required:
+        - code
+        - message
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+          description: |
+            Description about individual errors occurred
+        description:
+          type: string
+          description: |
+            A detail description about the error message.
+ 
+  responses:
+    BadRequest:
+      description: Bad Request. Invalid request or validation error.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 400
+            message: Bad Request
+            description: Invalid request or validation error
+            moreInfo: ""
+            error: []
+    Conflict:
+      description: Conflict. Specified resource already exists.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 409
+            message: Conflict
+            description: Specified resource already exists
+            moreInfo: ""
+            error: []
+    Forbidden:
+      description: Forbidden. The request must be conditional but no condition has
+        been specified.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 403
+            message: Forbidden
+            description: The request must be conditional but no condition has been
+              specified
+            moreInfo: ""
+            error: []
+    InternalServerError:
+      description: Internal Server Error.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 500
+            message: Internal Server Error
+            description: The server encountered an internal error. Please contact
+              administrator.
+            moreInfo: ""
+            error: []
+    NotAcceptable:
+      description: Not Acceptable. The requested media type is not supported.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 406
+            message: Not Acceptable
+            description: The requested media type is not supported
+            moreInfo: ""
+            error: []
+    NotFound:
+      description: Not Found. The specified resource does not exist.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 404
+            message: Not Found
+            description: The specified resource does not exist
+            moreInfo: ""
+            error: []
+    PreconditionFailed:
+      description: Precondition Failed. The request has not been performed because
+        one of the preconditions is not met.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 412
+            message: Precondition Failed
+            description: The request has not been performed because one of the preconditions
+              is not met
+            moreInfo: ""
+            error: []
+    Unauthorized:
+      description: Unauthorized. The user is not authorized.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 401
+            message: Unauthorized
+            description: The user is not authorized
+            moreInfo: ""
+            error: []
+    UnsupportedMediaType:
+      description: Unsupported Media Type. The entity of the request was not in a
+        supported format.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 415
+            message: Unsupported media type
+            description: The entity of the request was not in a supported format
+            moreInfo: ""
+            error: []
+  parameters:
+    replyLimit:
+      name: replyLimit
+      in: query
+      description: |
+        Maximum size of replies array to return.
+      schema:
+        type: integer
+        default: 25
+    replyOffset:
+      name: replyOffset
+      in: query
+      description: |
+        Starting point within the complete list of replies.
+      schema:
+        type: integer
+        default: 0
+    apiId:
+      name: apiId
+      in: path
+      description: |
+        **API ID** consisting of the **UUID** of the API.
+      required: true
+      schema:
+        type: string
+    apiId-Q:
+      name: apiId
+      in: query
+      description: |
+        **API ID** consisting of the **UUID** of the API.
+        The combination of the provider of the API, name of the API and the version is also accepted as a valid API I.
+        Should be formatted as **provider-name-version**.
+      required: true
+      schema:
+        type: string
+    apiId-Q-Opt:
+      name: apiId
+      in: query
+      description: |
+        **API ID** consisting of the **UUID** of the API.
+        The combination of the provider of the API, name of the API and the version is also accepted as a valid API I.
+        Should be formatted as **provider-name-version**.
+      schema:
+        type: string
+    labelType-Q:
+      name: labelType
+      in: query
+      description: |
+        **API ID** consisting of the **UUID** of the API.
+        The combination of the provider of the API, name of the API and the version is also accepted as a valid API I.
+        Should be formatted as **provider-name-version**.
+      schema:
+        type: string
+    name:
+      name: name
+      in: path
+      description: |
+        Name of the API
+      required: true
+      schema:
+        type: string
+    version:
+      name: version
+      in: path
+      description: |
+        Version of the API
+      required: true
+      schema:
+        type: string
+    apiName-Q:
+      name: name
+      in: query
+      description: |
+        Name of the API
+      schema:
+        type: string
+    apiVersion-Q:
+      name: version
+      in: query
+      description: |
+        Version of the API
+      schema:
+        type: string
+    apiProvider-Q:
+      name: providerName
+      in: query
+      description: |
+        Provider name of the API
+      schema:
+        type: string
+
+    limit:
+      name: limit
+      in: query
+      description: |
+        Maximum size of resource array to return.
+      schema:
+        type: integer
+        default: 25
+    Accept:
+      name: Accept
+      in: header
+      description: |
+        Media types acceptable for the response. Default is application/json.
+      schema:
+        type: string
+        default: application/json
+    offset:
+      name: offset
+      in: query
+      description: |
+        Starting point within the complete list of items qualified.
+      schema:
+        type: integer
+        default: 0
+    sortBy:
+      name: sortBy
+      in: query
+      description: |
+        Criteria for sorting.
+      schema:
+        type: string
+        default: createdTime
+        enum:
+          - apiName
+          - version
+          - createdTime
+          - status
+    sortOrder:
+      name: sortOrder
+      in: query
+      description: |
+        Order of sorting(ascending/descending).
+      schema:
+        type: string
+        default: desc
+        enum:
+          - asc
+          - desc
+    If-None-Match:
+      name: If-None-Match
+      in: header
+      description: |
+        Validator for conditional requests; based on the ETag of the formerly retrieved
+        variant of the resource.
+      schema:
+        type: string
+    If-Match:
+      name: If-Match
+      in: header
+      description: |
+        Validator for conditional requests; based on ETag.
+      schema:
+        type: string
+    
