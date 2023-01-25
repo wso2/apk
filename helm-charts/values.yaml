@@ -131,7 +131,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: IfNotPresent
-          image: wso2/backoffice-domain-service:0.0.1-m2
+          image: wso2/backoffice-domain-service:latest
         ingress:
           path: /api/am/backoffice
           className: ""
