@@ -46,6 +46,7 @@ const (
 const (
 	KindAuthentication = "Authentication"
 	KindHTTPRoute      = "HTTPRoute"
+	KindService        = "Service"
 	//TODO(amali) remove this after fixing the issue in https://github.com/wso2/apk/issues/383
 	KindResource = "Resource"
 )

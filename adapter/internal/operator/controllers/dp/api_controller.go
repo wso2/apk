@@ -52,6 +52,7 @@ const (
 	authenticationAPIIndex      = "authenticationAPIIndex"
 	authenticationResourceIndex = "authenticationResourceIndex"
 	serviceHTTPRouteIndex       = "serviceHTTPRouteIndex"
+	serviceBackendPolicy        = "serviceBackendPolicy"
 )
 
 // APIReconciler reconciles a API object
@@ -119,6 +120,16 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 			Message:   fmt.Sprintf("Error watching Service resources: %v", err),
 			Severity:  logging.BLOCKER,
 			ErrorCode: 2618,
+		})
+		return err
+	}
+
+	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.BackendPolicy{}}, handler.EnqueueRequestsFromMapFunc(r.getAPIsForBackendPolicy),
+		predicates...); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("Error watching BackendPolicy resources: %v", err),
+			Severity:  logging.BLOCKER,
+			ErrorCode: 2698,
 		})
 		return err
 	}
@@ -399,6 +410,36 @@ func (apiReconciler *APIReconciler) getAPIsForService(obj k8client.Object) []rec
 	return requests
 }
 
+// getAPIsForBackendPolicy triggers the API controller reconcile method based on the changes detected
+// from BackendPolicy objects using the targetRef to a Service object.
+func (apiReconciler *APIReconciler) getAPIsForBackendPolicy(obj k8client.Object) []reconcile.Request {
+	ctx := context.Background()
+	backendPolicy, ok := obj.(*dpv1alpha1.BackendPolicy)
+	if !ok {
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("Unexpected object type, bypassing reconciliation: %v", backendPolicy),
+			Severity:  logging.TRIVIAL,
+			ErrorCode: 2622,
+		})
+		return []reconcile.Request{}
+	}
+
+	service := &corev1.Service{}
+	if err := apiReconciler.client.Get(ctx, types.NamespacedName{
+		Name: string(backendPolicy.Spec.TargetRef.Name),
+		Namespace: utils.GetNamespace((*gwapiv1b1.Namespace)(backendPolicy.Spec.TargetRef.Namespace),
+			backendPolicy.Namespace),
+	}, service); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("Unable to find associated Service for BackendPolicy: %s", utils.NamespacedName(backendPolicy).String()),
+			Severity:  logging.CRITICAL,
+			ErrorCode: 2623,
+		})
+		return []reconcile.Request{}
+	}
+	return apiReconciler.getAPIsForService(service)
+}
+
 // getAPIForAuthentication triggers the API controller reconcile method based on the changes detected
 // from Authentication objects. If the changes are done for an API stored in the Operator Data store,
 // a new reconcile event will be created and added to the reconcile event queue.
@@ -502,6 +543,23 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 						Name: string(backendRef.Name),
 					}.String())
 				}
+			}
+			return services
+		}); err != nil {
+		return err
+	}
+
+	// Service to BackendPolicy indexer
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.BackendPolicy{}, serviceBackendPolicy,
+		func(rawObj k8client.Object) []string {
+			backendPolicy := rawObj.(*dpv1alpha1.BackendPolicy)
+			var services []string
+			if backendPolicy.Spec.TargetRef.Kind == constants.KindService {
+				services = append(services,
+					types.NamespacedName{
+						Name:      string(backendPolicy.Spec.TargetRef.Name),
+						Namespace: backendPolicy.Namespace,
+					}.String())
 			}
 			return services
 		}); err != nil {
