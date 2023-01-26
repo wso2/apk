@@ -225,6 +225,7 @@ func GetEnforcerAPI(mgwSwagger model.MgwSwagger, vhost string) *api.Api {
 		ApplicationSecurity:   mgwSwagger.GetXWSO2ApplicationSecurity(),
 		GraphQLSchema:         mgwSwagger.GraphQLSchema,
 		GraphqlComplexityInfo: mgwSwagger.GraphQLComplexities.Data.List,
+		SystemAPI:             mgwSwagger.IsSystemAPI,
 	}
 }
 

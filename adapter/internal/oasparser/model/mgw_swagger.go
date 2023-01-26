@@ -75,6 +75,7 @@ type MgwSwagger struct {
 	xWso2ApplicationSecurity   bool
 	GraphQLSchema              string
 	GraphQLComplexities        GraphQLComplexityYaml
+	IsSystemAPI                bool
 }
 
 // EndpointCluster represent an upstream cluster

@@ -197,7 +197,7 @@ public class JWTAuthenticator implements Authenticator {
                     ExtendedTokenIssuerDto issuerDto = configuration.getIssuersMap().get(validationInfo.getIssuer());
                     Scope validateSubscriptionSpanScope = null;
                     try {
-                        if (issuerDto.isValidateSubscriptions()) {
+                        if (issuerDto.isValidateSubscriptions() && !requestContext.getMatchedAPI().isSystemAPI() ) {
                             if (Utils.tracingEnabled()) {
                                 validateSubscriptionSpan = Utils
                                         .startSpan(TracingConstants.SUBSCRIPTION_VALIDATION_SPAN, tracer);
