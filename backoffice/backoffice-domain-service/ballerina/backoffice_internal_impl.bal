@@ -27,7 +27,7 @@ isolated function createAPI(APIBody body, string organization) returns API | err
         if apiCr is API {
             API | error defCr = db_AddDefinition(body, organization);
             if defCr is API {
-                string|error lcEveCr = db_AddLCEvent(body.apiProperties.id, "carbon.super");
+                string|error lcEveCr = db_AddLCEvent_internal(body.apiProperties.id, "carbon.super");
                 if lcEveCr is string {
                     check commit;
                 } else {
@@ -52,8 +52,8 @@ isolated function createAPI(APIBody body, string organization) returns API | err
 # + apiId - API Id parameter
 # + organization - organization
 # + return - Return Value API | error
-isolated function updateAPI(string apiId, APIBody body, string organization) returns API | error {
-    API | error apiUp = db_updateAPI(apiId, body, organization);
+isolated function updateAPI_internal(string apiId, APIBody body, string organization) returns API | error {
+    API | error apiUp = db_updateAPI_internal(apiId, body, organization);
     if apiUp is error {
         return error("Error while updating API data");
     }
@@ -85,8 +85,8 @@ isolated function deleteAPI(string apiId) returns string|error? {
 # + apiId - API Id parameter
 # + apiBody - ApiidDefinitionBody 
 # + return - Return Value string | error
-isolated function updateDefinition(APIDefinition apiBody, string apiId) returns APIDefinition|error? {
-    APIDefinition | error apiUp = db_updateDefinitionbyId(apiId, apiBody);
+isolated function updateDefinition(APIDefinition1 apiBody, string apiId) returns APIDefinition1|error? {
+    APIDefinition1 | error apiUp = db_updateDefinitionbyId(apiId, apiBody);
     if apiUp is error {
         return error("Error while updating API definition data");
     }

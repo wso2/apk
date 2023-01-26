@@ -87,7 +87,7 @@ isolated function db_AddDefinition(APIBody apiBody, string organization) returns
 # + apiId - API Id parameter
 # + organization - organization
 # + return - API | error
-isolated function db_updateAPI(string apiId, APIBody api, string organization) returns API | error {
+isolated function db_updateAPI_internal(string apiId, APIBody api, string organization) returns API | error {
     postgresql:Client | error db_client  = getConnection();
     if db_client is error {
         return error("Issue while conecting to databse");
@@ -182,7 +182,7 @@ isolated function db_deleteDefinition(string apiId) returns string | error? {
 # + api - API Parameter
 # + apiId - API Id parameter
 # + return - API | error
-isolated function db_updateDefinitionbyId(string apiId, APIDefinition api) returns APIDefinition | error {
+isolated function db_updateDefinitionbyId(string apiId, APIDefinition1 api) returns APIDefinition1 | error {
     postgresql:Client | error db_client  = getConnection();
     if db_client is error {
         return error("Issue while conecting to databse");
@@ -207,7 +207,7 @@ isolated function db_updateDefinitionbyId(string apiId, APIDefinition api) retur
 # + apiId - API id Parameter
 # + organization - organization
 # + return - API | error
-isolated function db_AddLCEvent(string? apiId, string organization) returns string | error {
+isolated function db_AddLCEvent_internal(string? apiId, string organization) returns string | error {
     postgresql:Client | error db_client  = getConnection();
     time:Utc utc = time:utcNow();
     if db_client is error {
