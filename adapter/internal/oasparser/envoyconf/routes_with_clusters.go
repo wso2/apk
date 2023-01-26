@@ -478,14 +478,7 @@ func processEndpoints(clusterName string, clusterDetails *model.EndpointCluster,
 
 		// create tls configs
 		if strings.HasPrefix(ep.URLType, httpsURLType) || strings.HasPrefix(ep.URLType, wssURLType) {
-			var epCert []byte
-			if cert, found := upstreamCerts[ep.RawURL]; found {
-				epCert = cert
-			} else if defaultCerts, found := upstreamCerts["default"]; found {
-				epCert = defaultCerts
-			}
-
-			upstreamtlsContext := createUpstreamTLSContext(epCert, address, clusterDetails.HTTP2BackendEnabled)
+			upstreamtlsContext := createUpstreamTLSContext(ep.Certificate, address, clusterDetails.HTTP2BackendEnabled)
 			marshalledTLSContext, err := anypb.New(upstreamtlsContext)
 			if err != nil {
 				return nil, nil, errors.New("internal Error while marshalling the upstream TLS Context")

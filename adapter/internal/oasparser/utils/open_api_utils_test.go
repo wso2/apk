@@ -117,3 +117,29 @@ func TestFileNameWithoutExtension(t *testing.T) {
 		assert.Equal(t, test.expFileName, actualFileName, test.message)
 	}
 }
+
+func TestGetURLType(t *testing.T) {
+	type testItem struct {
+		tls     bool
+		urlType string
+		message string
+	}
+
+	tests := []testItem{
+		{
+			tls:     true,
+			urlType: "https",
+			message: "Type should be https when tls is enabled",
+		},
+		{
+			tls:     false,
+			urlType: "http",
+			message: "Type should be http when tls is disabled",
+		},
+	}
+
+	for _, test := range tests {
+		outputURLType := utils.GetURLType(test.tls)
+		assert.Equal(t, test.urlType, outputURLType, test.message)
+	}
+}

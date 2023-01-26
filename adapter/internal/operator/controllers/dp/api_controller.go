@@ -20,6 +20,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/loggers"
@@ -53,6 +54,7 @@ const (
 	authenticationResourceIndex = "authenticationResourceIndex"
 	serviceHTTPRouteIndex       = "serviceHTTPRouteIndex"
 	serviceBackendPolicy        = "serviceBackendPolicy"
+	configMapBackendPolicy      = "configMapBackendPolicy"
 )
 
 // APIReconciler reconciles a API object
@@ -129,7 +131,17 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
 			Message:   fmt.Sprintf("Error watching BackendPolicy resources: %v", err),
 			Severity:  logging.BLOCKER,
-			ErrorCode: 2698,
+			ErrorCode: 2624,
+		})
+		return err
+	}
+
+	if err := c.Watch(&source.Kind{Type: &corev1.ConfigMap{}}, handler.EnqueueRequestsFromMapFunc(r.getAPIsForConfigMap),
+		predicates...); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("Error watching ConfigMap resources: %v", err),
+			Severity:  logging.BLOCKER,
+			ErrorCode: 2625,
 		})
 		return err
 	}
@@ -295,12 +307,14 @@ func (apiReconciler *APIReconciler) getBackendProperties(ctx context.Context,
 	backendPropertyMapping := make(dpv1alpha1.BackendPropertyMapping)
 	for _, rule := range httpRoute.Spec.Rules {
 		for _, backend := range rule.BackendRefs {
-			backendPropertyMapping[types.NamespacedName{
+			backendNamespacedName := types.NamespacedName{
 				Name:      string(backend.Name),
 				Namespace: utils.GetNamespace(backend.Namespace, httpRoute.Namespace),
-			}] = dpv1alpha1.BackendProperties{
+			}
+			backendPropertyMapping[backendNamespacedName] = dpv1alpha1.BackendProperties{
 				ResolvedHostname: apiReconciler.getHostNameForBackend(ctx,
 					backend, httpRoute.Namespace),
+				TLS: apiReconciler.getTLSConfigForBackend(ctx, backendNamespacedName),
 			}
 		}
 	}
@@ -324,6 +338,54 @@ func (apiReconciler *APIReconciler) getHostNameForBackend(ctx context.Context, b
 		}
 	}
 	return utils.GetDefaultHostNameForBackend(backend, defaultNamespace)
+}
+
+// getTLSConfigForBackend resolves backend TLS configurations.
+func (apiReconciler *APIReconciler) getTLSConfigForBackend(ctx context.Context,
+	serviceNamespacedName types.NamespacedName) dpv1alpha1.TLSConfigs {
+	tlsConfig := dpv1alpha1.TLSConfigs{}
+	backendPolicyList := &dpv1alpha1.BackendPolicyList{}
+	if err := apiReconciler.client.List(ctx, backendPolicyList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(serviceBackendPolicy, serviceNamespacedName.String()),
+	}); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("Unable to find associated BackendPolicies for service: %s", serviceNamespacedName),
+			Severity:  logging.CRITICAL,
+			ErrorCode: 2611,
+		})
+	}
+	if len(backendPolicyList.Items) > 0 {
+		backendPolicy := backendPolicyList.Items[0]
+		if len(backendPolicyList.Items) > 1 {
+			loggers.LoggerAPKOperator.Warnf("Found multiple backend policies for the service: %s, BackendPolicy: %s is in effect",
+				serviceNamespacedName, backendPolicyList.Items[0].GetName())
+		}
+		tlsConfig.Enabled = backendPolicy.Spec.Default.TLS.Enabled
+		if len(backendPolicy.Spec.Default.TLS.CertificateRef) > 0 {
+			configMapKey := types.NamespacedName{
+				Namespace: backendPolicy.Namespace,
+				Name:      backendPolicy.Spec.Default.TLS.CertificateRef,
+			}
+			var certConfigMap = new(corev1.ConfigMap)
+			err := apiReconciler.client.Get(ctx, configMapKey, certConfigMap)
+			if err != nil {
+				loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+					Message:   fmt.Sprintf("Error getting configmap for backend certificate: %v", err),
+					Severity:  logging.CRITICAL,
+					ErrorCode: 2619,
+				})
+			} else {
+				for _, value := range certConfigMap.Data {
+					if strings.HasPrefix(value, "-----BEGIN CERTIFICATE-----") {
+						tlsConfig.Certificate = []byte(value)
+						break
+					}
+				}
+				loggers.LoggerAPKOperator.Debugf("Could not read a certificate value in the configMap: %s", configMapKey)
+			}
+		}
+	}
+	return tlsConfig
 }
 
 // getAPIForHTTPRoute triggers the API controller reconcile method based on the changes detected
@@ -438,6 +500,39 @@ func (apiReconciler *APIReconciler) getAPIsForBackendPolicy(obj k8client.Object)
 		return []reconcile.Request{}
 	}
 	return apiReconciler.getAPIsForService(service)
+}
+
+// getAPIsForConfigMap triggers the API controller reconcile method based on the changes detected
+// in configMap resources.
+func (apiReconciler *APIReconciler) getAPIsForConfigMap(obj k8client.Object) []reconcile.Request {
+	ctx := context.Background()
+	configMap, ok := obj.(*corev1.ConfigMap)
+	if !ok {
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("Unexpected object type, bypassing reconciliation: %v", configMap),
+			Severity:  logging.TRIVIAL,
+			ErrorCode: 2626,
+		})
+		return []reconcile.Request{}
+	}
+
+	backendPolicyList := &dpv1alpha1.BackendPolicyList{}
+	if err := apiReconciler.client.List(ctx, backendPolicyList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(configMapBackendPolicy, utils.NamespacedName(configMap).String()),
+	}); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("Unable to find associated BackendPolicies for ConfigMap: %s", utils.NamespacedName(configMap).String()),
+			Severity:  logging.CRITICAL,
+			ErrorCode: 2627,
+		})
+		return []reconcile.Request{}
+	}
+
+	requests := []reconcile.Request{}
+	for _, backendPolicy := range backendPolicyList.Items {
+		requests = append(requests, apiReconciler.getAPIsForBackendPolicy(&backendPolicy)...)
+	}
+	return requests
 }
 
 // getAPIForAuthentication triggers the API controller reconcile method based on the changes detected
@@ -562,6 +657,23 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 					}.String())
 			}
 			return services
+		}); err != nil {
+		return err
+	}
+
+	// ConfigMap to BackendPolicy indexer
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.BackendPolicy{}, configMapBackendPolicy,
+		func(rawObj k8client.Object) []string {
+			backendPolicy := rawObj.(*dpv1alpha1.BackendPolicy)
+			var configMaps []string
+			if len(backendPolicy.Spec.Default.TLS.CertificateRef) > 0 {
+				configMaps = append(configMaps,
+					types.NamespacedName{
+						Name:      string(backendPolicy.Spec.Default.TLS.CertificateRef),
+						Namespace: backendPolicy.Namespace,
+					}.String())
+			}
+			return configMaps
 		}); err != nil {
 		return err
 	}

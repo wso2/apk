@@ -24,6 +24,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
+	oasutils "github.com/wso2/apk/adapter/internal/oasparser/utils"
 	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
 	"github.com/wso2/apk/adapter/internal/operator/utils"
 	"golang.org/x/exp/maps"
@@ -114,13 +115,16 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, au
 			return fmt.Errorf("no backendref were provided")
 		}
 		for _, backend := range rule.BackendRefs {
+			backendProperties := backendPropertyMapping[types.NamespacedName{
+				Name:      string(backend.Name),
+				Namespace: utils.GetNamespace(backend.Namespace, httpRoute.Namespace),
+			}]
 			endPoints = append(endPoints,
-				Endpoint{Host: backendPropertyMapping[types.NamespacedName{
-					Name:      string(backend.Name),
-					Namespace: utils.GetNamespace(backend.Namespace, httpRoute.Namespace),
-				}].ResolvedHostname,
-					URLType: constants.HTTP,
-					Port:    uint32(*backend.Port)})
+				Endpoint{Host: backendProperties.ResolvedHostname,
+					URLType:     oasutils.GetURLType(backendProperties.TLS.Enabled),
+					Port:        uint32(*backend.Port),
+					Certificate: backendProperties.TLS.Certificate,
+				})
 		}
 
 		for _, match := range rule.Matches {

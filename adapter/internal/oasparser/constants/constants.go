@@ -22,6 +22,7 @@ const (
 	Urls                  string = "urls"
 	Type                  string = "type"
 	HTTP                  string = "http"
+	HTTPS                 string = "https"
 	LoadBalance           string = "load_balance"
 	FailOver              string = "failover"
 	AdvanceEndpointConfig string = "advanceEndpointConfig"

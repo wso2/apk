@@ -337,6 +337,99 @@ func TestCreateRoutesWithClustersWithMultiplePathPrefixRules(t *testing.T) {
 		"The route regex for the two paths should not be the same")
 }
 
+func TestCreateRoutesWithClustersWithBackendTLSConfigs(t *testing.T) {
+	apiState := synchronizer.APIState{}
+	apiDefinition := v1alpha1.API{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "default",
+			Name:      "test-api-3",
+		},
+		Spec: v1alpha1.APISpec{
+			APIDisplayName:   "test-api-3",
+			APIVersion:       "1.0.0",
+			Context:          "/test-api-3/1.0.0",
+			ProdHTTPRouteRef: "test-api-3-prod-http-route",
+		},
+	}
+	apiState.APIDefinition = &apiDefinition
+	httpRouteState := synchronizer.HTTPRouteState{}
+	methodTypeGet := gwapiv1b1.HTTPMethodGet
+
+	httpRoute := gwapiv1b1.HTTPRoute{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "default",
+			Name:      "test-api-3-prod-http-route",
+		},
+		Spec: gwapiv1b1.HTTPRouteSpec{
+			Hostnames:       []gwapiv1b1.Hostname{"prod.gw.wso2.com"},
+			CommonRouteSpec: createDefaultCommonRouteSpec(),
+			Rules: []gwapiv1b1.HTTPRouteRule{
+				{
+					Matches: []gwapiv1b1.HTTPRouteMatch{
+						{
+							Path: &gwapiv1b1.HTTPPathMatch{
+								Type:  operatorutils.PathMatchTypePtr(gwapiv1b1.PathMatchExact),
+								Value: operatorutils.StringPtr("/resource-path"),
+							},
+							Method: &methodTypeGet,
+						},
+					},
+					Filters: []gwapiv1b1.HTTPRouteFilter{
+						{
+							Type: gwapiv1b1.HTTPRouteFilterType("URLRewrite"),
+							URLRewrite: &gwapiv1b1.HTTPURLRewriteFilter{
+								Path: &gwapiv1b1.HTTPPathModifier{
+									Type:               gwapiv1b1.PrefixMatchHTTPPathModifier,
+									ReplacePrefixMatch: operatorutils.StringPtr("/backend-base-path"),
+								},
+							},
+						},
+					},
+					BackendRefs: []gwapiv1b1.HTTPBackendRef{
+						createDefaultBackendRef("test-service-3", 443, 1),
+					},
+				},
+			},
+		},
+	}
+
+	httpRouteState.HTTPRoute = &httpRoute
+	httpRouteState.Authentications = make(map[string]dpv1alpha1.Authentication)
+	httpRouteState.ResourceAuthentications = make(map[string]dpv1alpha1.Authentication)
+
+	backendPropertyMapping := make(dpv1alpha1.BackendPropertyMapping)
+	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "test-service-3"}] =
+		dpv1alpha1.BackendProperties{ResolvedHostname: "webhook.site",
+			TLS: dpv1alpha1.TLSConfigs{
+				Enabled:     true,
+				Certificate: []byte(`-----BEGIN CERTIFICATE-----test-cert-data-----END CERTIFICATE-----`),
+			}}
+	httpRouteState.BackendPropertyMapping = backendPropertyMapping
+
+	apiState.ProdHTTPRoute = &httpRouteState
+
+	mgwSwagger, err := synchronizer.GenerateMGWSwagger(apiState, &httpRouteState, true)
+	assert.Nil(t, err, "Error should not be present when apiState is converted to a MgwSwagger object")
+	_, clusters, _, _ := envoy.CreateRoutesWithClusters(*mgwSwagger, nil, nil, "prod.gw.wso2.com", "carbon.super")
+	assert.Equal(t, 1, len(clusters), "Number of production clusters created is incorrect.")
+
+	exactPathCluster := clusters[0]
+
+	assert.Equal(t, exactPathCluster.GetName(), "carbon.super_clusterProd_prod.gw.wso2.com_test-api-31.0.0", "Exact path cluster name mismatch, %v", clusters)
+
+	exactPathClusterHost := exactPathCluster.GetLoadAssignment().GetEndpoints()[0].GetLbEndpoints()[0].GetEndpoint().
+		GetAddress().GetSocketAddress().GetAddress()
+	exactPathClusterPort := exactPathCluster.GetLoadAssignment().GetEndpoints()[0].GetLbEndpoints()[0].GetEndpoint().
+		GetAddress().GetSocketAddress().GetPortValue()
+	exactPathClusterPriority := exactPathCluster.GetLoadAssignment().GetEndpoints()[0].Priority
+
+	assert.NotEmpty(t, exactPathClusterHost, "Exact path cluster's assigned host should not be null")
+	assert.Equal(t, "webhook.site", exactPathClusterHost, "Exact path cluster's assigned host is incorrect.")
+	assert.NotEmpty(t, exactPathClusterPort, "Exact path cluster's assigned port should not be null")
+	assert.Equal(t, uint32(443), exactPathClusterPort, "Exact path cluster's assigned port is incorrect.")
+	assert.Equal(t, uint32(0), exactPathClusterPriority, "Exact path cluster's assigned Priority is incorrect.")
+}
+
 func createDefaultCommonRouteSpec() gwapiv1b1.CommonRouteSpec {
 	return gwapiv1b1.CommonRouteSpec{
 		ParentRefs: []gwapiv1b1.ParentReference{
