@@ -6,8 +6,6 @@ current_dir=$PWD;
 cd $current_dir;
 cd backoffice/backoffice-domain-service;gradle build;
 cd $current_dir;
-cd backoffice/backoffice-internal-domain-service;gradle build;
-cd $current_dir;
 cd runtime/runtime-domain-service;gradle build;
 cd $current_dir;
 cd admin/admin-domain-service;gradle build;
