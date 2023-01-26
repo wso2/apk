@@ -31,15 +31,12 @@ type routeCreateParams struct {
 	vHost                        string
 	endpointBasePath             string
 	resource                     *model.Resource
-	prodClusterName              string
-	sandClusterName              string
-	prodRouteConfig              *model.EndpointConfig
-	sandRouteConfig              *model.EndpointConfig
+	clusterName                  string
+	routeConfig                  *model.EndpointConfig
 	AuthHeader                   string
 	requestInterceptor           map[string]model.InterceptEndpoint
 	responseInterceptor          map[string]model.InterceptEndpoint
 	corsPolicy                   *model.CorsConfig
 	passRequestPayloadToEnforcer bool
 	isDefaultVersion             bool
-	isSandbox                    bool
 }

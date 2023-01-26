@@ -26,9 +26,7 @@ public class AdapterConstants {
     // The header which should be populated to set the upstream cluster
     public static final String CLUSTER_HEADER = "x-wso2-cluster-header";
     // The key which specifies the production cluster name inside the request context
-    public static final String PROD_CLUSTER_HEADER_KEY = "prodClusterName";
-     // The key which specifies the sandbox cluster name inside the request context
-    public static final String SAND_CLUSTER_HEADER_KEY = "sandClusterName";
+    public static final String CLUSTER_HEADER_KEY = "clusterName";
     // The common enforcer Label
     public static final String COMMON_ENFORCER_LABEL = "commonEnforcerLabel";
     // The node identifier Key

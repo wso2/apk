@@ -26,7 +26,7 @@ import (
 	"github.com/wso2/apk/adapter/pkg/logging"
 )
 
-//Interceptor hold values used for interceptor
+// Interceptor hold values used for interceptor
 type Interceptor struct {
 	Context               *InvocationContext
 	IsRequestFlowEnabled  bool
@@ -35,14 +35,14 @@ type Interceptor struct {
 	ResponseFlow          map[string]Config // key:operation method -> value:config
 }
 
-//Config hold config values used for request/response interceptors
+// Config hold config values used for request/response interceptors
 type Config struct {
 	Enable       bool
 	ExternalCall *HTTPCallConfig
 	Include      *RequestInclusions
 }
 
-//HTTPCallConfig hold values used for external interceptor engine
+// HTTPCallConfig hold values used for external interceptor engine
 type HTTPCallConfig struct {
 	ClusterName     string
 	Timeout         string // in milli seconds
@@ -70,8 +70,7 @@ type InvocationContext struct {
 	APIVersion       string
 	PathTemplate     string
 	Vhost            string
-	ProdClusterName  string
-	SandClusterName  string
+	ClusterName      string
 }
 
 var (
@@ -94,8 +93,7 @@ var (
 	 apiVersion = "{{.Context.APIVersion}}",
 	 pathTemplate = "{{.Context.PathTemplate}}",
 	 vhost = "{{.Context.Vhost}}",
-	 prodClusterName = "{{.Context.ProdClusterName}}",
-	 sandClusterName = "{{.Context.SandClusterName}}"
+	 clusterName = "{{.Context.ClusterName}}",
  }
  local wire_log_config = {
 	 log_body_enabled = {{ .LogConfig.LogBodyEnabled }},
@@ -155,7 +153,7 @@ var (
  `
 )
 
-//GetInterceptor inject values and get request interceptor
+// GetInterceptor inject values and get request interceptor
 // Note: This method is called only if one of request or response interceptor is enabled
 func GetInterceptor(templateValues any, templateString string) string {
 	t, err := template.New("lua-filter").Parse(templateString)

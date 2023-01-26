@@ -121,25 +121,26 @@ func deleteAPIFromEnv(httpRoute *gwapiv1b1.HTTPRoute, apiState APIState) error {
 func deployAPIInGateway(apiState APIState) error {
 	var err error
 	if apiState.ProdHTTPRoute != nil {
-		_, err = GenerateMGWSwagger(apiState, apiState.ProdHTTPRoute, true)
+		_, err = GenerateMGWSwagger(apiState, apiState.ProdHTTPRoute)
 	}
 	if err != nil {
 		return err
 	}
 	if apiState.SandHTTPRoute != nil {
-		_, err = GenerateMGWSwagger(apiState, apiState.SandHTTPRoute, false)
+		_, err = GenerateMGWSwagger(apiState, apiState.SandHTTPRoute)
 	}
 	return err
 }
 
 // GenerateMGWSwagger this will populate a mgwswagger representation for an HTTPRoute
-func GenerateMGWSwagger(apiState APIState, httpRoute *HTTPRouteState, isProd bool) (*model.MgwSwagger, error) {
+func GenerateMGWSwagger(apiState APIState, httpRoute *HTTPRouteState) (*model.MgwSwagger, error) {
 	var mgwSwagger model.MgwSwagger
 	mgwSwagger.SetInfoAPICR(*apiState.APIDefinition)
+	//todo(amali) add validations for hostname list
 	if err := mgwSwagger.SetInfoHTTPRouteCR(httpRoute.HTTPRoute, httpRoute.Authentications, httpRoute.ResourceAuthentications,
-		httpRoute.BackendPropertyMapping, isProd); err != nil {
+		httpRoute.BackendPropertyMapping); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("Error setting HttpRoute CR info to mgwSwagger for isProdEndpoint: %v. %v", isProd, err),
+			Message:   fmt.Sprintf("Error setting HttpRoute CR info to mgwSwagger. %v", err),
 			Severity:  logging.MAJOR,
 			ErrorCode: 2613,
 		})
@@ -147,8 +148,7 @@ func GenerateMGWSwagger(apiState APIState, httpRoute *HTTPRouteState, isProd boo
 	}
 	if err := mgwSwagger.Validate(); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-			Message: fmt.Sprintf("Error validating mgwSwagger intermediate representation for isProdEndpoint: %v. %v",
-				isProd, err),
+			Message:   fmt.Sprintf("Error validating mgwSwagger intermediate representation. %v", err),
 			Severity:  logging.MAJOR,
 			ErrorCode: 2615,
 		})

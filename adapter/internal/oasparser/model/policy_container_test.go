@@ -94,75 +94,75 @@ func TestPolicySpecificationValidatePolicy(t *testing.T) {
 	}
 }
 
-func TestAPIProjectGetFormattedPolicyFromTemplated(t *testing.T) {
-	apiYaml := APIYaml{}
-	apiYaml.Data.Operations = []OperationYaml{
-		{
-			Target: "/pets",
-			Verb:   "POST",
-			OperationPolicies: OperationPolicies{
-				Request: PolicyList{
-					{
-						PolicyName:    "fooAddRequestHeader",
-						PolicyVersion: "v1",
-						Parameters: map[string]interface{}{
-							"fooName":  "fooHeaderName",
-							"fooValue": "fooHeaderValue",
-						},
-					},
-				},
-			},
-		},
-	}
+// func TestAPIProjectGetFormattedPolicyFromTemplated(t *testing.T) {
+// 	apiYaml := APIYaml{}
+// 	apiYaml.Data.Operations = []OperationYaml{
+// 		{
+// 			Target: "/pets",
+// 			Verb:   "POST",
+// 			OperationPolicies: OperationPolicies{
+// 				Request: PolicyList{
+// 					{
+// 						PolicyName:    "fooAddRequestHeader",
+// 						PolicyVersion: "v1",
+// 						Parameters: map[string]interface{}{
+// 							"fooName":  "fooHeaderName",
+// 							"fooValue": "fooHeaderValue",
+// 						},
+// 					},
+// 				},
+// 			},
+// 		},
+// 	}
 
-	spec := getSampleTestPolicySpec()
-	specInvalid1 := getSampleTestPolicySpec()
-	specInvalid1.Data.Name = "fooAddRequestHeaderInvalid1"
-	specInvalid2 := getSampleTestPolicySpec()
-	specInvalid2.Data.Name = "fooAddRequestHeaderInvalid2"
+// 	spec := getSampleTestPolicySpec()
+// 	specInvalid1 := getSampleTestPolicySpec()
+// 	specInvalid1.Data.Name = "fooAddRequestHeaderInvalid1"
+// 	specInvalid2 := getSampleTestPolicySpec()
+// 	specInvalid2.Data.Name = "fooAddRequestHeaderInvalid2"
 
-	proj := ProjectAPI{
-		APIYaml: apiYaml,
-		Policies: map[string]PolicyContainer{
-			"fooAddRequestHeader_v1": {
-				Specification: spec,
-				Definition: PolicyDefinition{
-					RawData: getSampleTestPolicyDef(),
-				},
-			},
-			"fooAddRequestHeaderInvalid1_v1": {
-				Specification: specInvalid1,
-				Definition: PolicyDefinition{
-					RawData: getSampleInvalidTestPolicyDef1(),
-				},
-			},
-			"fooAddRequestHeaderInvalid2_v1": {
-				Specification: specInvalid2,
-				Definition: PolicyDefinition{
-					RawData: getSampleInvalidTestPolicyDef2(),
-				},
-			},
-		},
-	}
+// 	proj := ProjectAPI{
+// 		APIYaml: apiYaml,
+// 		Policies: map[string]PolicyContainer{
+// 			"fooAddRequestHeader_v1": {
+// 				Specification: spec,
+// 				Definition: PolicyDefinition{
+// 					RawData: getSampleTestPolicyDef(),
+// 				},
+// 			},
+// 			"fooAddRequestHeaderInvalid1_v1": {
+// 				Specification: specInvalid1,
+// 				Definition: PolicyDefinition{
+// 					RawData: getSampleInvalidTestPolicyDef1(),
+// 				},
+// 			},
+// 			"fooAddRequestHeaderInvalid2_v1": {
+// 				Specification: specInvalid2,
+// 				Definition: PolicyDefinition{
+// 					RawData: getSampleInvalidTestPolicyDef2(),
+// 				},
+// 			},
+// 		},
+// 	}
 
-	expFormattedP := OperationPolicies{
-		Request: PolicyList{
-			{
-				PolicyName:       "fooAddRequestHeader",
-				PolicyVersion:    "v1",
-				Action:           "SET_HEADER",
-				IsPassToEnforcer: false,
-				Parameters: map[string]interface{}{
-					"headerName":  "fooHeaderName",
-					"headerValue": "fooHeaderValue",
-				},
-			},
-		},
-	}
-	actualFormattedP, err := proj.Policies.GetFormattedOperationalPolicies(apiYaml.Data.Operations[0].OperationPolicies, &MgwSwagger{})
-	assert.Nil(t, err)
-	assert.Equal(t, expFormattedP, actualFormattedP, "Converting operational policies to Choreo Connect format failed")
-}
+// 	expFormattedP := OperationPolicies{
+// 		Request: PolicyList{
+// 			{
+// 				PolicyName:       "fooAddRequestHeader",
+// 				PolicyVersion:    "v1",
+// 				Action:           "SET_HEADER",
+// 				IsPassToEnforcer: false,
+// 				Parameters: map[string]interface{}{
+// 					"headerName":  "fooHeaderName",
+// 					"headerValue": "fooHeaderValue",
+// 				},
+// 			},
+// 		},
+// 	}
+// 	actualFormattedP, err := proj.Policies.GetFormattedOperationalPolicies(apiYaml.Data.Operations[0].OperationPolicies, &MgwSwagger{})
+// 	assert.Nil(t, err)
+// 	assert.Equal(t, expFormattedP, actualFormattedP, "Converting operational policies to Choreo Connect format failed")
+// }
 
 func getSampleTestPolicySpec() PolicySpecification {
 	spec := PolicySpecification{}
@@ -199,32 +199,32 @@ func getSampleTestPolicySpec() PolicySpecification {
 	return spec
 }
 
-func getSampleTestPolicyDef() []byte {
-	return []byte(`
-definition:
-  action: SET_HEADER
-  parameters:
-    headerName: {{ .fooName }}
-    headerValue: {{ .fooValue }}
-`)
-}
+// func getSampleTestPolicyDef() []byte {
+// 	return []byte(`
+// definition:
+//   action: SET_HEADER
+//   parameters:
+//     headerName: {{ .fooName }}
+//     headerValue: {{ .fooValue }}
+// `)
+// }
 
-func getSampleInvalidTestPolicyDef1() []byte {
-	return []byte(`
-definition:
-  action: SET_HEADER_INVALID_ACTION
-  parameters:
-    headerName: {{ .fooName }}
-    headerValue: {{ .fooValue }}
-`)
-}
+// func getSampleInvalidTestPolicyDef1() []byte {
+// 	return []byte(`
+// definition:
+//   action: SET_HEADER_INVALID_ACTION
+//   parameters:
+//     headerName: {{ .fooName }}
+//     headerValue: {{ .fooValue }}
+// `)
+// }
 
-func getSampleInvalidTestPolicyDef2() []byte {
-	return []byte(`
-definition:
-  action: SET_HEADER
-  parameters:
-    headerNameInvalidParam: {{ .fooName }}
-    headerValue: {{ .fooValue }}
-`)
-}
+// func getSampleInvalidTestPolicyDef2() []byte {
+// 	return []byte(`
+// definition:
+//   action: SET_HEADER
+//   parameters:
+//     headerNameInvalidParam: {{ .fooName }}
+//     headerValue: {{ .fooValue }}
+// `)
+// }

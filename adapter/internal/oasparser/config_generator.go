@@ -29,22 +29,26 @@ import (
 	"github.com/wso2/apk/adapter/config"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
-	"github.com/wso2/apk/adapter/internal/oasparser/envoyconf"
 	envoy "github.com/wso2/apk/adapter/internal/oasparser/envoyconf"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
-	mgw "github.com/wso2/apk/adapter/internal/oasparser/model"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/api"
 )
 
 // GetRoutesClustersEndpoints generates the routes, clusters and endpoints (envoy)
 // when the openAPI Json is provided. For websockets apiJsn created from api.yaml file is considered.
-func GetRoutesClustersEndpoints(mgwSwagger mgw.MgwSwagger, upstreamCerts map[string][]byte, interceptorCerts map[string][]byte,
+func GetRoutesClustersEndpoints(mgwSwagger model.MgwSwagger, upstreamCerts map[string][]byte, interceptorCerts map[string][]byte,
 	vHost string, organizationID string) ([]*routev3.Route, []*clusterv3.Cluster, []*corev3.Address, error) {
 
+	for _, resource := range mgwSwagger.GetResources() {
+		logger.LoggerAPI.Error("HEY resource!!! %v", resource)
+	}
 	routes, clusters, endpoints, err := envoy.CreateRoutesWithClusters(mgwSwagger, upstreamCerts, interceptorCerts,
 		vHost, organizationID)
+	for _, resource := range clusters {
+		logger.LoggerAPI.Error("HEY ep !!! %v", resource)
+	}
 	if err != nil {
-		return nil, nil, nil, fmt.Errorf("Error while creating routes, clusters and endpoints. %v", err)
+		return nil, nil, nil, fmt.Errorf("error while creating routes, clusters and endpoints. %v", err)
 	}
 	return routes, clusters, endpoints, nil
 }
@@ -57,9 +61,9 @@ func GetGlobalClusters() ([]*clusterv3.Cluster, []*corev3.Address) {
 	)
 	conf := config.ReadConfigs()
 
-	if conf.Tracing.Enabled && conf.Tracing.Type != envoyconf.TracerTypeAzure {
+	if conf.Tracing.Enabled && conf.Tracing.Type != envoy.TracerTypeAzure {
 		logger.LoggerOasparser.Debugln("Creating global cluster - Tracing")
-		if c, e, err := envoyconf.CreateTracingCluster(conf); err == nil {
+		if c, e, err := envoy.CreateTracingCluster(conf); err == nil {
 			clusters = append(clusters, c)
 			endpoints = append(endpoints, e...)
 		} else {
@@ -161,35 +165,13 @@ func GetEnforcerAPI(mgwSwagger model.MgwSwagger, vhost string) *api.Api {
 			Methods: operations,
 			Path:    res.GetPath(),
 		}
-		if res.GetProdEndpoints() != nil {
-			resource.ProductionEndpoints = generateRPCEndpointCluster(res.GetProdEndpoints())
-		}
-		if res.GetSandEndpoints() != nil {
-			resource.SandboxEndpoints = generateRPCEndpointCluster(res.GetSandEndpoints())
+		if res.GetEndpoints() != nil {
+			resource.ProductionEndpoints = generateRPCEndpointCluster(res.GetEndpoints())
 		}
 		resources = append(resources, resource)
 	}
 
 	endpointSecurityDetails := &api.EndpointSecurity{}
-
-	if mgwSwagger.GetProdEndpoints() != nil {
-		endpointSecurityDetails.ProductionSecurityInfo = &api.SecurityInfo{
-			Username:         mgwSwagger.GetProdEndpoints().SecurityConfig.Username,
-			Password:         mgwSwagger.GetProdEndpoints().SecurityConfig.Password,
-			SecurityType:     mgwSwagger.GetProdEndpoints().SecurityConfig.Type,
-			Enabled:          mgwSwagger.GetProdEndpoints().SecurityConfig.Enabled,
-			CustomParameters: mgwSwagger.GetProdEndpoints().SecurityConfig.CustomParameters,
-		}
-	}
-	if mgwSwagger.GetSandEndpoints() != nil {
-		endpointSecurityDetails.SandBoxSecurityInfo = &api.SecurityInfo{
-			Username:         mgwSwagger.GetSandEndpoints().SecurityConfig.Username,
-			Password:         mgwSwagger.GetSandEndpoints().SecurityConfig.Password,
-			SecurityType:     mgwSwagger.GetSandEndpoints().SecurityConfig.Type,
-			Enabled:          mgwSwagger.GetSandEndpoints().SecurityConfig.Enabled,
-			CustomParameters: mgwSwagger.GetSandEndpoints().SecurityConfig.CustomParameters,
-		}
-	}
 
 	for _, cert := range mgwSwagger.GetClientCerts() {
 		certificate := &api.Certificate{
@@ -201,36 +183,36 @@ func GetEnforcerAPI(mgwSwagger model.MgwSwagger, vhost string) *api.Api {
 	}
 
 	return &api.Api{
-		Id:                    mgwSwagger.GetID(),
-		Title:                 mgwSwagger.GetTitle(),
-		Description:           mgwSwagger.GetDescription(),
-		BasePath:              mgwSwagger.GetXWso2Basepath(),
-		Version:               mgwSwagger.GetVersion(),
-		ApiType:               mgwSwagger.GetAPIType(),
-		ProductionEndpoints:   generateRPCEndpointCluster(mgwSwagger.GetProdEndpoints()),
-		SandboxEndpoints:      generateRPCEndpointCluster(mgwSwagger.GetSandEndpoints()),
-		Resources:             resources,
-		ApiLifeCycleState:     mgwSwagger.LifecycleStatus,
-		Tier:                  mgwSwagger.GetXWso2ThrottlingTier(),
-		SecurityScheme:        securitySchemes,
-		Security:              securityList,
-		EndpointSecurity:      endpointSecurityDetails,
-		AuthorizationHeader:   mgwSwagger.GetXWSO2AuthHeader(),
-		DisableSecurity:       mgwSwagger.GetDisableSecurity(),
-		OrganizationId:        mgwSwagger.OrganizationID,
-		Vhost:                 vhost,
-		IsMockedApi:           isMockedAPI,
-		ClientCertificates:    clientCertificates,
-		MutualSSL:             mgwSwagger.GetXWSO2MutualSSL(),
-		ApplicationSecurity:   mgwSwagger.GetXWSO2ApplicationSecurity(),
-		GraphQLSchema:         mgwSwagger.GraphQLSchema,
-		GraphqlComplexityInfo: mgwSwagger.GraphQLComplexities.Data.List,
-		SystemAPI:             mgwSwagger.IsSystemAPI,
+		Id:          mgwSwagger.GetID(),
+		Title:       mgwSwagger.GetTitle(),
+		Description: mgwSwagger.GetDescription(),
+		BasePath:    mgwSwagger.GetXWso2Basepath(),
+		Version:     mgwSwagger.GetVersion(),
+		ApiType:     mgwSwagger.GetAPIType(),
+		// ProductionEndpoints:   generateRPCEndpointCluster(mgwSwagger.GetProdEndpoints()),
+		// SandboxEndpoints:      generateRPCEndpointCluster(mgwSwagger.GetSandEndpoints()),
+		Resources:           resources,
+		ApiLifeCycleState:   mgwSwagger.LifecycleStatus,
+		Tier:                mgwSwagger.GetXWso2ThrottlingTier(),
+		SecurityScheme:      securitySchemes,
+		Security:            securityList,
+		EndpointSecurity:    endpointSecurityDetails,
+		AuthorizationHeader: mgwSwagger.GetXWSO2AuthHeader(),
+		DisableSecurity:     mgwSwagger.GetDisableSecurity(),
+		OrganizationId:      mgwSwagger.OrganizationID,
+		Vhost:               vhost,
+		IsMockedApi:         isMockedAPI,
+		ClientCertificates:  clientCertificates,
+		MutualSSL:           mgwSwagger.GetXWSO2MutualSSL(),
+		ApplicationSecurity: mgwSwagger.GetXWSO2ApplicationSecurity(),
+		// GraphQLSchema:         mgwSwagger.GraphQLSchema,
+		// GraphqlComplexityInfo: mgwSwagger.GraphQLComplexities.Data.List,
+		SystemAPI: mgwSwagger.IsSystemAPI,
 	}
 }
 
 // GetEnforcerAPIOperation builds the operation object expected by the proto definition
-func GetEnforcerAPIOperation(operation mgw.Operation, isMockedAPI bool) *api.Operation {
+func GetEnforcerAPIOperation(operation model.Operation, isMockedAPI bool) *api.Operation {
 	secSchemas := make([]*api.SecurityList, len(operation.GetSecurity()))
 	for i, security := range operation.GetSecurity() {
 		mapOfSecurity := make(map[string]*api.Scopes)
@@ -295,7 +277,7 @@ func castPoliciesToEnforcerPolicies(policies []model.Policy) []*api.Policy {
 	return enforcerPolicies
 }
 
-func generateRPCEndpointCluster(inputEndpointCluster *mgw.EndpointCluster) *api.EndpointCluster {
+func generateRPCEndpointCluster(inputEndpointCluster *model.EndpointCluster) *api.EndpointCluster {
 	if inputEndpointCluster == nil || len(inputEndpointCluster.Endpoints) == 0 {
 		return nil
 	}
