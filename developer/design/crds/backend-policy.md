@@ -9,7 +9,9 @@ metadata:
   name: backend-security-policy-1
 spec:
   default:
-     certificateRef: cert-secret-name    
+     tls: 
+      enabled: true
+      certificateRef: ca-cert-cm-name
   targetRef
     kind: Service
     name: backend-service-name
