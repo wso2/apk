@@ -213,7 +213,8 @@ public class APIClient {
     # + 'limit - Parameter Description  
     # + offset - Parameter Description  
     # + sortBy - Parameter Description  
-    # + sortOrder - Parameter Description
+    # + sortOrder - Parameter Description  
+    # + organization - Parameter Description
     # + return - Return list of APIS in namsepace.
     public isolated function getAPIList(string? query, int 'limit, int offset, string sortBy, string sortOrder, string organization) returns APIList|BadRequestError {
         API[] apilist = [];
