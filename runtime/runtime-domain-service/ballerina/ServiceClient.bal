@@ -41,7 +41,7 @@ public class ServiceClient {
         }
     }
 
-    public function retrieveAllServicesAtStartup(string? continueValue) returns error? {
+    public function retrieveAllServicesAtStartup(map<Service>? servicesMap, string? continueValue) returns error? {
         string? resultValue = continueValue;
         model:ServiceList|http:ClientError retrieveAllServicesResult;
         if resultValue is string {
@@ -53,18 +53,24 @@ public class ServiceClient {
         if retrieveAllServicesResult is model:ServiceList {
             model:ListMeta metadata = retrieveAllServicesResult.metadata;
             model:Service[] serviceList = retrieveAllServicesResult.items;
-            putAllServices(serviceList);
+            if servicesMap is map<Service> {
+                putAllServices(servicesMap, serviceList);
+            } else {
+                lock {
+                    putAllServices(services, serviceList.clone());
+                }
+            }
 
             string? continueElement = metadata.'continue;
             if continueElement is string && continueElement.length() > 0 {
-                _ = check self.retrieveAllServicesAtStartup(<string?>continueElement);
+                _ = check self.retrieveAllServicesAtStartup(servicesMap, <string?>continueElement);
             }
             string resourceVersion = <string>metadata.'resourceVersion;
             setServicesResourceVersion(resourceVersion);
         }
     }
 
-    public function retrieveAllServiceMappingsAtStartup(string? continueValue) returns error? {
+    public function retrieveAllServiceMappingsAtStartup(map<model:K8sServiceMapping>? serviceMappingMap, string? continueValue) returns error? {
         string? resultValue = continueValue;
         model:ServiceMappingList|http:ClientError retrieveAllServiceMappingResult;
         if resultValue is string {
@@ -76,12 +82,20 @@ public class ServiceClient {
         if retrieveAllServiceMappingResult is model:ServiceMappingList {
             model:ListMeta metadata = retrieveAllServiceMappingResult.metadata;
             model:K8sServiceMapping[] items = retrieveAllServiceMappingResult.items;
-            _ = check putAllServiceMappings(items);
+            if serviceMappingMap is map<model:K8sServiceMapping> {
+                lock {
+                    _ = putAllServiceMappings(serviceMappingMap, items.clone());
+                }
+            } else {
+                lock {
+                    _ = putAllServiceMappings(k8sServiceMappings, items.clone());
+                }
+            }
 
-            json|error continueElement = metadata.'continue;
-            if continueElement is json {
-                if (<string>continueElement).length() > 0 {
-                    _ = check self.retrieveAllServicesAtStartup(<string?>continueElement);
+            string? continueElement = metadata.'continue;
+            if continueElement is string {
+                if (continueElement.length() > 0) {
+                    _ = check self.retrieveAllServiceMappingsAtStartup(serviceMappingMap, <string?>continueElement);
                 }
             }
             string? resourceVersion = metadata.'resourceVersion;
@@ -96,11 +110,11 @@ public class ServiceClient {
         return createServiceModel(serviceByNameAndNamespace);
     }
 
-    public isolated function getServiceUsageByServiceId(string serviceId,string organization) returns APIList|BadRequestError|NotFoundError|InternalServerErrorError {
+    public isolated function getServiceUsageByServiceId(string serviceId, string organization) returns APIList|BadRequestError|NotFoundError|InternalServerErrorError {
         APIInfo[] apiInfos = [];
         Service|BadRequestError|NotFoundError|InternalServerErrorError serviceEntry = self.getServiceById(serviceId);
         if serviceEntry is Service {
-            model:API[] k8sAPIS = retrieveAPIMappingsForService(serviceEntry,organization);
+            model:API[] k8sAPIS = retrieveAPIMappingsForService(serviceEntry, organization);
             foreach model:API k8sAPI in k8sAPIS {
                 apiInfos.push({
                     context: k8sAPI.spec.context,
