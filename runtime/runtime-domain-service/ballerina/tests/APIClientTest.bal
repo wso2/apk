@@ -39,7 +39,7 @@ function getMockServiceMappingClient(string resourceVersion) returns websocket:C
         mock = test:mock(websocket:Client);
         test:prepare(mock).when("isOpen").thenReturn(true);
         test:prepare(mock).when("getConnectionId").thenReturn(connectionId);
-        test:prepare(mock).when("readMessage").thenReturnSequence(getNextServiceMappingEvent(), ());
+        test:prepare(mock).when("readMessage").thenReturnSequence(getNextServiceMappingEvent(),());
     } else {
         mock = test:mock(websocket:Client);
     }
@@ -61,7 +61,7 @@ function getMockServiceClient(string resourceVersion) returns websocket:Client|e
         mock = test:mock(websocket:Client);
         test:prepare(mock).when("isOpen").thenReturn(true);
         test:prepare(mock).when("getConnectionId").thenReturn(initialConectionId);
-        test:prepare(mock).when("readMessage").thenReturnSequence(getNextMockServiceEvent(), ());
+        test:prepare(mock).when("readMessage").thenReturnSequence(getNextMockServiceEvent(),());
     } else {
         mock = test:mock(websocket:Client);
     }
@@ -82,7 +82,7 @@ function getMockClient(string resourceVersion) returns websocket:Client|error {
         mock = test:mock(websocket:Client);
         test:prepare(mock).when("isOpen").thenReturn(true);
         test:prepare(mock).when("getConnectionId").thenReturn(initialConectionId);
-        test:prepare(mock).when("readMessage").thenReturnSequence(getNextMockWatchAPIEvent(), ());
+        test:prepare(mock).when("readMessage").thenReturnSequence(getNextMockWatchAPIEvent(),());
     } else {
         mock = test:mock(websocket:Client);
     }
