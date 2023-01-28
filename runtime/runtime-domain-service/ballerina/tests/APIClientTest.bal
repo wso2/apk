@@ -39,7 +39,7 @@ function getMockServiceMappingClient(string resourceVersion) returns websocket:C
         mock = test:mock(websocket:Client);
         test:prepare(mock).when("isOpen").thenReturn(true);
         test:prepare(mock).when("getConnectionId").thenReturn(connectionId);
-        test:prepare(mock).when("readMessage").thenReturnSequence(getNextServiceMappingEvent(),());
+        test:prepare(mock).when("readMessage").thenReturnSequence(getNextServiceMappingEvent(), ());
     } else {
         mock = test:mock(websocket:Client);
     }
@@ -61,7 +61,7 @@ function getMockServiceClient(string resourceVersion) returns websocket:Client|e
         mock = test:mock(websocket:Client);
         test:prepare(mock).when("isOpen").thenReturn(true);
         test:prepare(mock).when("getConnectionId").thenReturn(initialConectionId);
-        test:prepare(mock).when("readMessage").thenReturnSequence(getNextMockServiceEvent(),());
+        test:prepare(mock).when("readMessage").thenReturnSequence(getNextMockServiceEvent(), ());
     } else {
         mock = test:mock(websocket:Client);
     }
@@ -82,7 +82,7 @@ function getMockClient(string resourceVersion) returns websocket:Client|error {
         mock = test:mock(websocket:Client);
         test:prepare(mock).when("isOpen").thenReturn(true);
         test:prepare(mock).when("getConnectionId").thenReturn(initialConectionId);
-        test:prepare(mock).when("readMessage").thenReturnSequence(getNextMockWatchAPIEvent(),());
+        test:prepare(mock).when("readMessage").thenReturnSequence(getNextMockWatchAPIEvent(), ());
     } else {
         mock = test:mock(websocket:Client);
     }
@@ -96,7 +96,8 @@ function getMockK8sClient() returns http:Client {
     http:Client mockK8sClient = test:mock(http:Client);
     test:prepare(mockK8sClient).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/apis")
         .thenReturn(getMockAPIList());
-    test:prepare(mockK8sClient).when("get").withArguments("/api/v1/services")
+        string fieldSlector = "metadata.namespace%21%3Dkube-system%2Cmetadata.namespace%21%3Dkubernetes-dashboard%2Cmetadata.namespace%21%3Dgateway-system%2Cmetadata.namespace%21%3Dingress-nginx%2Cmetadata.namespace%21%3Dapk-platform";
+    test:prepare(mockK8sClient).when("get").withArguments("/api/v1/services?fieldSelector=" +fieldSlector)
         .thenReturn(getMockServiceList());
     test:prepare(mockK8sClient).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/servicemappings")
         .thenReturn(getMockServiceMappings());
@@ -193,7 +194,7 @@ function hostnameDataProvider() returns map<[string, string, string, int, string
 
 @test:Config {dataProvider: apiNameDataProvider}
 public function testGetAPIByNameAndNamespace(string name, string namespace, model:API & readonly|() expected) {
-    test:assertEquals(getAPIByNameAndNamespace(name, namespace,"carbon.super"), expected);
+    test:assertEquals(getAPIByNameAndNamespace(name, namespace, "carbon.super"), expected);
 }
 
 function apiNameDataProvider() returns map<[string, string, model:API & readonly|()]>|error {
@@ -206,14 +207,14 @@ function apiNameDataProvider() returns map<[string, string, model:API & readonly
 }
 
 @test:Config {dataProvider: apiIDDataprovider}
-public function testGetAPIById(string id,string organization, model:API & readonly|error expected) returns error? {
-    test:assertEquals(getAPI(id,organization), check expected);
+public function testGetAPIById(string id, string organization, model:API & readonly|error expected) returns error? {
+    test:assertEquals(getAPI(id, organization), check expected);
 }
 
-function apiIDDataprovider() returns map<[string,string, model:API & readonly|error]>|error {
-    
-    map<[string,string, model:API & readonly|error]> dataSet = {
-        "1": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e8","carbon.super", getMockPizzaShakK8sAPI()]
+function apiIDDataprovider() returns map<[string, string, model:API & readonly|error]>|error {
+
+    map<[string, string, model:API & readonly|error]> dataSet = {
+        "1": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e8", "carbon.super", getMockPizzaShakK8sAPI()]
     };
     return dataSet;
 }
@@ -240,7 +241,7 @@ function prefixMatchDataProvider() returns map<[API, model:Endpoint, APIOperatio
 @test:Config {dataProvider: apiDefinitionDataProvider}
 public function testGetAPIDefinitionByID(string apiid, anydata expectedResponse) returns error? {
     APIClient apiclient = new ();
-    test:assertEquals(apiclient.getAPIDefinitionByID(apiid,"carbon.super"), expectedResponse);
+    test:assertEquals(apiclient.getAPIDefinitionByID(apiid, "carbon.super"), expectedResponse);
 }
 
 public function apiDefinitionDataProvider() returns map<[string, json|NotFoundError|PreconditionFailedError|InternalServerErrorError]> {
@@ -260,17 +261,17 @@ public function apiDefinitionDataProvider() returns map<[string, json|NotFoundEr
 }
 
 @test:Config {dataProvider: apiByIdDataProvider}
-public function testgetApiById(string apiid,string organization ,anydata expectedData) {
+public function testgetApiById(string apiid, string organization, anydata expectedData) {
     APIClient apiclient = new ();
-    test:assertEquals(apiclient.getAPIById(apiid,organization), expectedData);
+    test:assertEquals(apiclient.getAPIById(apiid, organization), expectedData);
 }
 
-public function apiByIdDataProvider() returns map<[string,string, API|NotFoundError]> {
+public function apiByIdDataProvider() returns map<[string, string, API|NotFoundError]> {
     API & readonly api1 = {name: "pizzashackAPI", context: "/t/carbon.super/pizzashack/1.0.0", 'version: "1.0.0", id: "c5ab2423-b9e8-432b-92e8-35e6907ed5e8", createdTime: "2022-12-13T09:45:47Z"};
     NotFoundError notfound = {body: {code: 909100, message: "c5ab2423-b9e8-432b-92e8-35e6907ed5e9 not found."}};
-    map<[string,string, API & readonly|NotFoundError]> dataset = {
-        "1": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e8","carbon.super", api1],
-        "2": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e9", "carbon.super",notfound]
+    map<[string, string, API & readonly|NotFoundError]> dataset = {
+        "1": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e8", "carbon.super", api1],
+        "2": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e9", "carbon.super", notfound]
     };
     return dataset;
 }
@@ -278,7 +279,7 @@ public function apiByIdDataProvider() returns map<[string,string, API|NotFoundEr
 @test:Config {dataProvider: getApilistDataProvider}
 public function testGetAPIList(string? query, int 'limit, int offset, string sortBy, string sortOrder, anydata expected) {
     APIClient apiclient = new ();
-    test:assertEquals(apiclient.getAPIList(query, 'limit, offset, sortBy, sortOrder,"carbon.super"), expected);
+    test:assertEquals(apiclient.getAPIList(query, 'limit, offset, sortBy, sortOrder, "carbon.super"), expected);
 }
 
 function getApilistDataProvider() returns map<[string?, int, int, string, string, APIList|InternalServerErrorError|BadRequestError]> {
@@ -1737,7 +1738,7 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
         context: "/pizzaAPI/1.0.0",
         'version: "1.0.0"
     };
-    string apiUUID = getUniqueIdForAPI(api.name,api.'version, "carbon.super");
+    string apiUUID = getUniqueIdForAPI(api.name, api.'version, "carbon.super");
     model:ConfigMap configmap = getMockConfigMap1(apiUUID, api);
     http:Response mockConfigMapResponse = getMockConfigMapResponse(configmap.clone());
     model:Httproute httpRoute = getMockHttpRoute(api, apiUUID);
@@ -2179,7 +2180,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
         'version: "1.0.0"
     };
     BadRequestError contextAlreadyExistError = {body: {code: 90911, message: "API Context - " + contextAlreadyExist.context + " already exist.", description: "API Context " + contextAlreadyExist.context + " already exist."}};
-    string apiUUID = getUniqueIdForAPI(api.name,api.'version, "carbon.super");
+    string apiUUID = getUniqueIdForAPI(api.name, api.'version, "carbon.super");
     string backenduuid = getBackendServiceUid(api, (), PRODUCTION_TYPE, "carbon.super");
     string backenduuid1 = getBackendServiceUid(api, (), SANDBOX_TYPE, "carbon.super");
     string k8sapiUUID = uuid:createType1AsString();

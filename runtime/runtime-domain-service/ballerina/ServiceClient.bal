@@ -45,9 +45,9 @@ public class ServiceClient {
         string? resultValue = continueValue;
         model:ServiceList|http:ClientError retrieveAllServicesResult;
         if resultValue is string {
-            retrieveAllServicesResult = retrieveAllServices(resultValue);
+            retrieveAllServicesResult = retrieveAllServices(resultValue,check getEncodedStringForNamespaces());
         } else {
-            retrieveAllServicesResult = retrieveAllServices(());
+            retrieveAllServicesResult = retrieveAllServices((),check getEncodedStringForNamespaces());
         }
 
         if retrieveAllServicesResult is model:ServiceList {

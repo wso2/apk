@@ -18,6 +18,7 @@
 import ballerina/websocket;
 import ballerina/lang.value;
 import ballerina/log;
+import ballerina/url;
 import runtime_domain_service.model;
 
 isolated map<Service> services = {};
@@ -137,9 +138,11 @@ isolated function getServiceById(string id) returns Service|error {
 isolated function putAllServices(map<Service> services, model:Service[] servicesEntries) {
     foreach model:Service serviceData in servicesEntries {
         lock {
-            Service|error serviceEntry = createServiceModel(serviceData.clone());
-            if serviceEntry is Service {
-                services[serviceEntry.id] = serviceEntry;
+            if serviceData.spec.'type != "ExternalName" {
+                Service|error serviceEntry = createServiceModel(serviceData.clone());
+                if serviceEntry is Service {
+                    services[serviceEntry.id] = serviceEntry;
+                }
             }
         }
     }
@@ -151,9 +154,9 @@ function setServicesResourceVersion(string resourceVersionValue) {
 
 public function getServiceClient(string resourceVersion) returns websocket:Client|error|() {
     log:printDebug("Initializing Watch Service for Services with resource Version " + resourceVersion);
-    string requestURl = "wss://" + runtimeConfiguration.k8sConfiguration.host + "/api/v1/watch/services";
+    string requestURl = "wss://" + runtimeConfiguration.k8sConfiguration.host + "/api/v1/watch/services?fieldSelector=" + check getEncodedStringForNamespaces();
     if resourceVersion.length() > 0 {
-        requestURl = requestURl + "?resourceVersion=" + resourceVersion.toString();
+        requestURl = requestURl + "&resourceVersion=" + resourceVersion.toString();
     }
     return new (requestURl,
     auth = {
@@ -163,6 +166,17 @@ public function getServiceClient(string resourceVersion) returns websocket:Clien
         cert: caCertPath
     }
     );
+}
+
+function getEncodedStringForNamespaces() returns string|error {
+    string[] & readonly serviceListingNamespaces = runtimeConfiguration.serviceListingNamespaces;
+    string fieldSelectorQuery = "metadata.namespace!=kube-system,metadata.namespace!=kubernetes-dashboard,metadata.namespace!=gateway-system,metadata.namespace!=ingress-nginx,metadata.namespace!=" + currentNameSpace;
+    foreach string namespace in serviceListingNamespaces {
+        if namespace != ALL_NAMESPACES {
+            fieldSelectorQuery += ",metadata.namespace=" + namespace;
+        }
+    }
+    return check url:encode(fieldSelectorQuery, "UTF-8");
 }
 
 function readServiceEvents(websocket:Client serviceWebSocketClient) returns error? {
@@ -190,9 +204,9 @@ function readServiceEvents(websocket:Client serviceWebSocketClient) returns erro
             setServicesResourceVersion(latestResourceVersion);
             model:Service|error mappedService = eventValue.cloneWithType(model:Service);
             if mappedService is model:Service {
-                Service|error serviceModel = createServiceModel(mappedService);
-                if serviceModel is Service {
-                    if containsNamespace(serviceModel.namespace) {
+                if mappedService.spec.'type != "ExternalName" {
+                    Service|error serviceModel = createServiceModel(mappedService);
+                    if serviceModel is Service {
                         if eventType == "ADDED" {
                             lock {
                                 services[serviceModel.id] = serviceModel.clone();
@@ -207,9 +221,9 @@ function readServiceEvents(websocket:Client serviceWebSocketClient) returns erro
                                 _ = services.remove(serviceModel.id);
                             }
                         }
+                    } else {
+                        log:printError("Unable to read service messages" + serviceModel.message());
                     }
-                } else {
-                    log:printError("Unable to read service messages" + serviceModel.message());
                 }
             }
         }
