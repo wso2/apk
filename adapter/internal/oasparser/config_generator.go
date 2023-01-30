@@ -38,15 +38,8 @@ import (
 // when the openAPI Json is provided. For websockets apiJsn created from api.yaml file is considered.
 func GetRoutesClustersEndpoints(mgwSwagger model.MgwSwagger, upstreamCerts map[string][]byte, interceptorCerts map[string][]byte,
 	vHost string, organizationID string) ([]*routev3.Route, []*clusterv3.Cluster, []*corev3.Address, error) {
-
-	for _, resource := range mgwSwagger.GetResources() {
-		logger.LoggerAPI.Error("HEY resource!!! %v", resource)
-	}
 	routes, clusters, endpoints, err := envoy.CreateRoutesWithClusters(mgwSwagger, upstreamCerts, interceptorCerts,
 		vHost, organizationID)
-	for _, resource := range clusters {
-		logger.LoggerAPI.Error("HEY ep !!! %v", resource)
-	}
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("error while creating routes, clusters and endpoints. %v", err)
 	}

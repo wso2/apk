@@ -207,7 +207,6 @@ func SendAPIToAPKMgtServer() {
 				})
 			}
 			_, err = client.ExecuteGRPCCall(func() (interface{}, error) {
-				loggers.LoggerAPI.Error("SENT!!!!")
 				if strings.Compare(apiEvent.EventType, constants.Create) == 0 {
 					return apiClient.CreateAPI(context.Background(), &apiProtos.API{
 						Uuid:           string(api.APIDefinition.GetUID()),
