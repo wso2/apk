@@ -35,20 +35,26 @@ isolated function addApplication(Application application, string org, string use
         log:printDebug("subscriber id" + subscriberId.toString());
         Application|APKError createdApp = addApplicationDAO(application, subscriberId, org);
         if createdApp is Application {
-            string[] hostList = retrieveManagementServerHostsList();
-            string eventId = uuid:createType1AsString();
-            time:Utc currTime = time:utcNow();
-            string date = time:utcToString(currTime);
-            ApplicationGRPC createApplicationRequest = {eventId: eventId, applicationId: createdApp.name, uuid: applicationId, timeStamp: date, organization: org};
-            foreach string host in hostList {
-                NotificationResponse|error applicationNotification = notification_grpc_client:createApplication(createApplicationRequest,host);
-                if applicationNotification is error {
-                    string message = "Error while sending application create grpc event";
-                    log:printError(applicationNotification.toString());
-                    return error(message, applicationNotification, message = message, description = message, code = 909000, statusCode = "500");
-                }  
+            string[]|APKError hostList = retrieveManagementServerHostsList();
+            if hostList is string[] {
+                string eventId = uuid:createType1AsString();
+                time:Utc currTime = time:utcNow();
+                string date = time:utcToString(currTime);
+                ApplicationGRPC createApplicationRequest = {eventId: eventId, applicationId: createdApp.name, uuid: applicationId, timeStamp: date, organization: org};
+                foreach string host in hostList {
+                    log:printInfo("Retrieved Host:"+host);
+                    NotificationResponse|error applicationNotification = notification_grpc_client:createApplication(createApplicationRequest,"http://" + host + ":8766/");
+                    if applicationNotification is error {
+                        string message = "Error while sending application create grpc event";
+                        log:printError(applicationNotification.toString());
+                        return error(message, applicationNotification, message = message, description = message, code = 909000, statusCode = "500");
+                    }  
+                }
+            } else {
+                return hostList;
             }
-
+        } else {
+            return application;
         }
         return createdApp;
     } else {
@@ -97,19 +103,25 @@ isolated function updateApplication(string appId, Application application, strin
         log:printDebug("subscriber id" + subscriberId.toString());
         Application|APKError updatedApp = updateApplicationDAO(application, subscriberId, org);
         if updatedApp is Application {
-            string[] hostList = retrieveManagementServerHostsList();
-            string eventId = uuid:createType1AsString();
-            time:Utc currTime = time:utcNow();
-            string date = time:utcToString(currTime);
-            ApplicationGRPC updateApplicationRequest = {eventId: eventId, applicationId: updatedApp.name, uuid: appId, timeStamp: date, organization: org};
-            foreach string host in hostList {
-                NotificationResponse|error applicationNotification = notification_grpc_client:updateApplication(updateApplicationRequest,host);
-                if applicationNotification is error {
-                    string message = "Error while sending application update grpc event";
-                    log:printError(applicationNotification.toString());
-                    return error(message, applicationNotification, message = message, description = message, code = 909000, statusCode = "500");
-                }  
+            string[]|APKError hostList = retrieveManagementServerHostsList();
+            if hostList is string[] {
+                string eventId = uuid:createType1AsString();
+                time:Utc currTime = time:utcNow();
+                string date = time:utcToString(currTime);
+                ApplicationGRPC updateApplicationRequest = {eventId: eventId, applicationId: updatedApp.name, uuid: appId, timeStamp: date, organization: org};
+                foreach string host in hostList {
+                    NotificationResponse|error applicationNotification = notification_grpc_client:updateApplication(updateApplicationRequest,"http://" + host + ":8766");
+                    if applicationNotification is error {
+                        string message = "Error while sending application update grpc event";
+                        log:printError(applicationNotification.toString());
+                        return error(message, applicationNotification, message = message, description = message, code = 909000, statusCode = "500");
+                    }  
+                }
+            } else {
+                return hostList;
             }
+        } else {
+            return updatedApp;
         }
         return updatedApp;
     } else {
@@ -120,19 +132,25 @@ isolated function updateApplication(string appId, Application application, strin
 isolated function deleteApplication(string appId, string organization) returns string|APKError {
     APKError|string status = deleteApplicationDAO(appId,organization);
     if status is string {
-        string[] hostList = retrieveManagementServerHostsList();
-        string eventId = uuid:createType1AsString();
-        time:Utc currTime = time:utcNow();
-        string date = time:utcToString(currTime);
-        ApplicationGRPC deleteApplicationRequest = {eventId: eventId, applicationId: appId, uuid: appId, timeStamp: date, organization: organization};
-        foreach string host in hostList {
-            NotificationResponse|error applicationNotification = notification_grpc_client:deleteApplication(deleteApplicationRequest,host);
-            if applicationNotification is error {
-                string message = "Error while sending application delete grpc event";
-                log:printError(applicationNotification.toString());
-                return error(message, applicationNotification, message = message, description = message, code = 909000, statusCode = "500");
-            }  
+        string[]|APKError hostList = retrieveManagementServerHostsList();
+        if hostList is string[] {
+            string eventId = uuid:createType1AsString();
+            time:Utc currTime = time:utcNow();
+            string date = time:utcToString(currTime);
+            ApplicationGRPC deleteApplicationRequest = {eventId: eventId, applicationId: appId, uuid: appId, timeStamp: date, organization: organization};
+            foreach string host in hostList {
+                NotificationResponse|error applicationNotification = notification_grpc_client:deleteApplication(deleteApplicationRequest,"http://" + host + ":8766");
+                if applicationNotification is error {
+                    string message = "Error while sending application delete grpc event";
+                    log:printError(applicationNotification.toString());
+                    return error(message, applicationNotification, message = message, description = message, code = 909000, statusCode = "500");
+                }  
+            }
+        } else {
+            return hostList;
         }
+    } else {
+        return status;
     }
     return status;
 }
@@ -218,7 +236,7 @@ isolated function checkUserAccessAllowedForApplication(Application application, 
     return true;
 }
 
-isolated function retrieveManagementServerHostsList() returns string[] {
-    string[] hostList = ["http://localhost:9090","" ];
+isolated function retrieveManagementServerHostsList() returns string[]|APKError {
+    string[]|APKError hostList = getPodFromNameAndNamespace("management-server","apk");
     return hostList;
 }

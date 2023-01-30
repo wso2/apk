@@ -22,6 +22,15 @@ import ballerina/log;
 Subscription sub = { apiId: "01ed75e2-b30b-18c8-wwf2-25da7edd2231",applicationId: "21212",throttlingPolicy: "MyBusinessPlan"};
 Application applicationNew  ={name:"sampleAppNew",throttlingPolicy:"25PerMin",description: "sample application"};
 
+
+@test:Mock { functionName: "retrieveManagementServerHostsList" }
+test:MockFunction retrieveManagementServerHostsListMock = new();
+// public isolated function retrieveManagementServerHostsListMock() returns string[]|APKError {
+//     string[] testHosts= ["http://localhost:9090"];
+//     return testHosts;
+// }
+
+
 @test:Mock { functionName: "createApplication",moduleName: "wso2/notification_grpc_client" }
 public isolated function createApplicationMock(ApplicationGRPC createApplicationRequest, string endpoint) returns error|NotificationResponse {
     NotificationResponse noti= {code: "OK"};
@@ -48,6 +57,8 @@ public isolated function deleteSubscriptionMock(ApplicationGRPC deleteSubscripti
 
 @test:BeforeSuite
 function beforeFunc2() {
+    string[] testHosts= ["http://localhost:9090"];
+    test:when(retrieveManagementServerHostsListMock).thenReturn(testHosts);
     Application payload = {name:"sampleAppNew",throttlingPolicy:"25PerMin",description: "sample application"};
     NotFoundError|Application|APKError createdApplication = addApplication(payload, "carbon.super", "apkuser");
     if createdApplication is Application {

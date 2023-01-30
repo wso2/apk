@@ -25,6 +25,7 @@ configurable ThrottlingConfiguration throttleConfig = ?;
 configurable TokenIssuerConfiguration issuerConfig = ?;
 configurable KeyStores keyStores = ?;
 configurable SDKConfiguration sdkConfig = ?;
+configurable K8sConfigurations k8sConfig = ?;
 
 final postgresql:Client|sql:Error dbClient;
 final APKConfiguration & readonly apkConfig;

@@ -32,6 +32,7 @@ spec:
       labels:
 {{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.wso2.apk.cp.devportal.appName ) | indent 8}}
     spec:
+      serviceAccountName: {{ .Values.wso2.apk.auth.serviceAccountName }}
       initContainers:
         - name: init-db
           image: busybox:1.32

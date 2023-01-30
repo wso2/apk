@@ -21,6 +21,8 @@ import ballerina/log;
 
 @test:Mock { functionName: "generateToken" }
 test:MockFunction generateTokenMock = new();
+// @test:Mock { functionName: "retrieveManagementServerHostsList" }
+// test:MockFunction retrieveManagementServerHostsListMock = new();
 
 @test:Mock { functionName: "updateApplication",moduleName: "wso2/notification_grpc_client" }
 public isolated function updateApplicationMock(ApplicationGRPC updateApplicationRequest, string endpoint) returns error|NotificationResponse {
@@ -51,6 +53,8 @@ function beforeFunc1() {
             }
         }
     };
+    // string[] hostList = ["http://localhost:9090","" ];
+    // test:when(retrieveManagementServerHostsListMock).thenReturn(hostList);
     ApplicationRatePlan|APKError createdAppPol = addApplicationUsagePlanDAO(payload);
     if createdAppPol is ApplicationRatePlan {
         test:assertTrue(true,"Application usage plan added successfully");
@@ -84,6 +88,8 @@ function beforeFunc1() {
 
 @test:Config {}
 function addApplicationTest() {
+    string[] testHosts= ["http://localhost:9090"];
+    test:when(retrieveManagementServerHostsListMock).thenReturn(testHosts);
     Application payload = {name:"sampleApp",throttlingPolicy:"25PerMin",description: "sample application"};
     NotFoundError|Application|APKError createdApplication = addApplication(payload, "carbon.super", "apkuser");
     if createdApplication is Application {
