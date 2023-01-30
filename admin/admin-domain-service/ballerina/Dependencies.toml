@@ -33,7 +33,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "constraint"
-version = "1.0.2"
+version = "1.0.1"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
@@ -353,7 +353,7 @@ modules = [
 [[package]]
 org = "wso2"
 name = "admin_service"
-version = "0.0.1-m3"
+version = "0.0.1-SNAPSHOT"
 dependencies = [
 	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "http"},
