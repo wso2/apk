@@ -42,9 +42,6 @@ jobs:
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
-  scan-backoffice-internal-domain-service:
-    runs-on: ubuntu-latest
-    steps:
       - name: Cache Ballerina.
         uses: actions/cache@v3
         id: cache
