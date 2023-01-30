@@ -382,7 +382,7 @@ modules = [
 [[package]]
 org = "wso2"
 name = "backoffice_service"
-version = "0.0.1-SNAPSHOT"
+version = "0.0.1-m3"
 dependencies = [
 	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "http"},
@@ -398,5 +398,4 @@ modules = [
 	{org = "wso2", packageName = "backoffice_service", moduleName = "backoffice_service"},
 	{org = "wso2", packageName = "backoffice_service", moduleName = "backoffice_service.backoffice"}
 ]
-
 
