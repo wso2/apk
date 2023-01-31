@@ -57,7 +57,7 @@ public function getMockAPIList() returns model:APIList {
                 },
                 "spec": {
                     "apiDisplayName": "pizzashackAPI",
-                    "apiType": "HTTP",
+                    "apiType": "REST",
                     "apiVersion": "1.0.0",
                     "context": "/t/carbon.super/pizzashack/1.0.0",
                     "organization": "carbon.super",
@@ -99,7 +99,7 @@ public function getMockAPIList() returns model:APIList {
                 },
                 "spec": {
                     "apiDisplayName": "pizzashackAPI1",
-                    "apiType": "HTTP",
+                    "apiType": "REST",
                     "apiVersion": "1.0.0",
                     "context": "/t/carbon.super/pizzashack1/1.0.0",
                     "organization": "carbon.super",
@@ -141,7 +141,7 @@ public function getMockAPIList() returns model:APIList {
                 },
                 "spec": {
                     "apiDisplayName": "pizzashackAPI11",
-                    "apiType": "HTTP",
+                    "apiType": "REST",
                     "apiVersion": "1.0.0",
                     "context": "/t/carbon.super/pizzashack11/1.0.0",
                     "organization": "carbon.super",
@@ -182,7 +182,7 @@ public function getMockAPIList() returns model:APIList {
                 },
                 "spec": {
                     "apiDisplayName": "pizzashackAPI12",
-                    "apiType": "HTTP",
+                    "apiType": "REST",
                     "apiVersion": "1.0.0",
                     "context": "/t/carbon.super/pizzashack12/1.0.0",
                     "organization": "carbon.super",
@@ -224,7 +224,7 @@ public function getMockAPIList() returns model:APIList {
                 },
                 "spec": {
                     "apiDisplayName": "pizzashackAPI13",
-                    "apiType": "HTTP",
+                    "apiType": "REST",
                     "apiVersion": "1.0.0",
                     "context": "/t/carbon.super/pizzashack13/1.0.0",
                     "organization": "carbon.super",
@@ -262,7 +262,7 @@ public function getMockWatchAPIEvent() returns string {
             },
             "spec": {
                 "apiDisplayName": "pizzashackAPI6",
-                "apiType": "HTTP",
+                "apiType": "REST",
                 "apiVersion": "1.0.0",
                 "context": "/t/carbon.super/pizzashack6/1.0.0",
                 "organization": "carbon.super",
@@ -294,7 +294,7 @@ public function getNextMockWatchAPIEvent() returns string {
             },
             "spec": {
                 "apiDisplayName": "DemoAPI",
-                "apiType": "HTTP",
+                "apiType": "REST",
                 "apiVersion": "1.0.0",
                 "context": "/t/carbon.super/demoapi/1.0.0",
                 "definitionFileRef": "01ed7b16-90f7-1a88-8114-a7e71796d460-definition",
@@ -321,7 +321,7 @@ public function getMockPizzaShakK8sAPI() returns model:API & readonly {
         },
         spec: {
             apiDisplayName: "pizzashackAPI",
-            apiType: "HTTP",
+            apiType: "REST",
             apiVersion: "1.0.0",
             context: "/t/carbon.super/pizzashack/1.0.0",
             definitionFileRef: "01ed7aca-eb6b-1178-a200-f604a4ce114a-definition",
@@ -459,7 +459,7 @@ public function mockpizzashackAPI11Definition() returns json {
         },
         spec: {
             apiDisplayName: "pizzashackAPI11",
-            apiType: "HTTP",
+            apiType: "REST",
             apiVersion: "1.0.0",
             context: "/pizzashack11/1.0.0",
             organization: "carbon.super",
@@ -480,7 +480,7 @@ public function mockPizzashackAPI12Definition() returns json {
         },
         spec: {
             apiDisplayName: "pizzashackAPI12",
-            apiType: "HTTP",
+            apiType: "REST",
             apiVersion: "1.0.0",
             context: "/t/carbon.super/pizzashack12/1.0.0",
             organization: "carbon.super",
@@ -503,7 +503,7 @@ public function mockPizzaShackAPI1Definition() returns json {
         },
         spec: {
             apiDisplayName: "pizzashackAPI1",
-            apiType: "HTTP",
+            apiType: "REST",
             apiVersion: "1.0.0",
             context: "/t/carbon.super/pizzashack1/1.0.0",
             organization: "carbon.super",

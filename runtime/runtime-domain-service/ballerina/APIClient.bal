@@ -619,7 +619,7 @@ public class APIClient {
 
     private isolated function retrieveGeneratedConfigmapForDefinition(model:APIArtifact apiArtifact, API api, json generatedSwaggerDefinition, string uniqueId) {
         map<string> configMapData = {};
-        if api.'type == API_TYPE_HTTP {
+        if api.'type == API_TYPE_REST {
             configMapData["openapi.json"] = generatedSwaggerDefinition.toJsonString();
         }
         model:ConfigMap configMap = {
@@ -644,7 +644,7 @@ public class APIClient {
         }
         if operationsAvailable == false {
             APIOperations[] apiOperations = [];
-            if api.'type == API_TYPE_HTTP {
+            if api.'type == API_TYPE_REST {
                 foreach string httpverb in HTTP_DEFAULT_METHODS {
                     APIOperations apiOperation = {target: "/*", verb: httpverb.toUpperAscii()};
                     apiOperations.push(apiOperation);
