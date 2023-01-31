@@ -61,7 +61,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: IfNotPresent
-          image: wso2/devportal-domain-service:latest
+          image: wso2/devportal-domain-service:0.0.1-m3
         ingress:
           path: /api/am/devportal
           className: ""
@@ -96,7 +96,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: IfNotPresent
-          image: wso2/admin-domain-service:latest
+          image: wso2/admin-domain-service:0.0.1-m3
         ingress:
           path: /api/am/admin
           className: ""
@@ -131,44 +131,9 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: IfNotPresent
-          image: wso2/backoffice-domain-service:0.0.1-m2
+          image: wso2/backoffice-domain-service:0.0.1-m3
         ingress:
           path: /api/am/backoffice
-          className: ""
-          annotations:
-            kubernetes.io/ingress.class: "nginx"
-            nginx.ingress.kubernetes.io/affinity: "cookie"
-            nginx.ingress.kubernetes.io/session-cookie-name: "route"
-            nginx.ingress.kubernetes.io/session-cookie-hash: "sha1"
-      backofficeInternal:
-        appName: "backoffice-internal-ds"
-        deployment:
-          npi: backoffice-internal-ds-npi
-          resources:
-            requests:
-              memory: "128Mi"
-              cpu: "100m"
-            limits:
-              memory: "1028Mi"
-              cpu: "1000m"
-          readinessProbe:
-            path: /health
-            port: 9443
-            initialDelaySeconds: 20
-            periodSeconds: 20
-            failureThreshold: 5
-          livenessProbe:
-            path: /health
-            port: 9443
-            initialDelaySeconds: 20
-            periodSeconds: 20
-            failureThreshold: 5
-          strategy: Recreate
-          replicas: 1
-          imagePullPolicy: IfNotPresent
-          image: wso2/backoffice-internal-domain-service:0.0.1-m2
-        ingress:
-          path: /api/am/backoffice/internal
           className: ""
           annotations:
             kubernetes.io/ingress.class: "nginx"
@@ -227,7 +192,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: IfNotPresent
-          image: wso2/management-server:latest
+          image: wso2/management-server:0.0.1-m3
       cnpg:
         npi: cnpg-npi
         instances: 1
@@ -262,7 +227,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: IfNotPresent
-          image: wso2/runtime-domain-service:latest
+          image: wso2/runtime-domain-service:0.0.1-m3
         ingress:
           path: /api/am/runtime
           className: ""
@@ -302,7 +267,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: IfNotPresent
-          image: wso2/adapter:latest
+          image: wso2/adapter:0.0.1-m3
           security:
             sslHostname: "adapter"
       gatewayRuntime:
@@ -345,7 +310,7 @@ wso2:
               failureThreshold: 5
             strategy: Recreate
             imagePullPolicy: IfNotPresent
-            image: wso2/router:0.0.1-m2
+            image: wso2/router:0.0.1-m3
           enforcer:
             npi: enforcer-npi
             resources:
@@ -384,7 +349,7 @@ wso2:
               failureThreshold: 5
             strategy: Recreate
             imagePullPolicy: IfNotPresent
-            image: wso2/enforcer:0.0.1-m2
+            image: wso2/enforcer:0.0.1-m3
             security:
               sslHostname: "enforcer"
 

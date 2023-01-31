@@ -322,4 +322,5 @@ func (swagger *MgwSwagger) SetInfoAPICR(api dpv1alpha1.API) {
 	swagger.version = api.Spec.APIVersion
 	swagger.xWso2Basepath = api.Spec.Context
 	swagger.OrganizationID = api.Spec.Organization
+	swagger.IsSystemAPI = api.Spec.SystemAPI
 }

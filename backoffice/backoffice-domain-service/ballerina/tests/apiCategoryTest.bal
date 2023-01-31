@@ -16,18 +16,14 @@
 // under the License.
 //
 
-apply from: "$rootDir/../../common-gradle-scripts/docker.gradle"
-apply from: "$rootDir/../../common-gradle-scripts/copy.gradle"
+import ballerina/test;
 
-tasks.named('copy_dist').configure{
-    finalizedBy docker_build
+@test:Config {}
+function getAllCategoryTest() {
+    APICategory[]|APKError updateAPI = getAPICategoriesDAO("carbon.super");
+        if updateAPI is APICategory[] {
+            test:assertTrue(true, "Successfully retrive all API categories");
+        } else if updateAPI is  APKError {
+            test:assertFail("Error occured while retrive API categories");
+    }
 }
-
-tasks.register('build') {
-    group 'build'
-    description 'Build docker image'
-    dependsOn 'copy_dist'
-    dependsOn 'docker_build'
-}
-build.mustRunAfter ":ballerina:build"
-build.dependsOn ":ballerina:build"

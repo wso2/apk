@@ -16,11 +16,15 @@
 // under the License.
 //
 
-import ballerina/http;
+import ballerina/test;
 
-service / on ep0 {
-    resource function get health() returns http:Ok {
-        json status = {"health": "Ok"};
-        return {body: status};
+
+@test:Config {dependsOn: [createAPITest]}
+function getAllSubcriptions() {
+    SubscriptionList|APKError getSub = getSubscriptions("01ed75e2-b30b-18c8-wwf2-25da7edd2231");
+        if getSub is SubscriptionList {
+            test:assertTrue(true, "Successfully retrive all subscriptions");
+        } else if getSub is  APKError {
+            test:assertFail("Error occured while retrive subscriptions");
     }
 }

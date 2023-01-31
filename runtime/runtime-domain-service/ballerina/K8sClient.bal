@@ -131,27 +131,26 @@ isolated function retrieveAllAPIS(string? continueToken) returns model:APIList|h
     return k8sApiServerEp->get(endpoint, targetType = model:APIList);
 }
 
-function retrieveAllServices(string? continueToken) returns model:ServiceList|http:ClientError {
+function retrieveAllServices(string? continueToken, string? fieldSelector) returns model:ServiceList|http:ClientError {
     string? continueTokenValue = continueToken;
     string endpoint = "/api/v1/services";
-    if continueTokenValue is string {
-        if continueTokenValue.length() > 0 {
-            int? questionMarkIndex = endpoint.lastIndexOf("?");
-            if questionMarkIndex is int {
-                if questionMarkIndex > 0 {
-                    endpoint = endpoint + "&continue=" + continueTokenValue;
-                } else {
-                    endpoint = endpoint + "?continue=" + continueTokenValue;
-                }
-            } else {
-                endpoint = endpoint + "?continue=" + continueTokenValue;
-            }
+    boolean questionMarkAvailable = false;
+    if continueTokenValue is string && continueTokenValue.length() > 0 {
+        endpoint = endpoint + "?continue=" + continueTokenValue;
+        questionMarkAvailable = true;
+    }
+    if fieldSelector is string && fieldSelector.length() > 0 {
+        if questionMarkAvailable {
+            endpoint += "&fieldSelector=" + fieldSelector;
+        } else {
+            endpoint += "?fieldSelector=" + fieldSelector;
+            questionMarkAvailable = true;
         }
     }
-
     return k8sApiServerEp->get(endpoint, targetType = model:ServiceList);
 }
-isolated function deleteService(string name, string namespace) returns http:Response|http:ClientError{
+
+isolated function deleteService(string name, string namespace) returns http:Response|http:ClientError {
     string endpoint = "/api/v1/namespaces/" + namespace + "/services/" + name;
     return k8sApiServerEp->delete(endpoint, targetType = http:Response);
 }
@@ -190,19 +189,8 @@ isolated function getK8sAPIByNameAndNamespace(string name, string namespace) ret
 function retrieveAllServiceMappings(string? continueToken) returns model:ServiceMappingList|http:ClientError {
     string? continueTokenValue = continueToken;
     string endpoint = "/apis/dp.wso2.com/v1alpha1/servicemappings";
-    if continueTokenValue is string {
-        if continueTokenValue.length() > 0 {
-            int? questionMarkIndex = endpoint.lastIndexOf("?");
-            if questionMarkIndex is int {
-                if questionMarkIndex > 0 {
-                    endpoint = endpoint + "&continue=" + continueTokenValue;
-                } else {
-                    endpoint = endpoint + "?continue=" + continueTokenValue;
-                }
-            } else {
-                endpoint = endpoint + "?continue=" + continueTokenValue;
-            }
-        }
+    if continueTokenValue is string && continueTokenValue.length() > 0 {
+        endpoint = endpoint + "?continue=" + continueTokenValue;
     }
 
     return k8sApiServerEp->get(endpoint, targetType = model:ServiceMappingList);

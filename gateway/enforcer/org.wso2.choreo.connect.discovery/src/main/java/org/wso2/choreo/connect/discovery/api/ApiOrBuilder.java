@@ -345,4 +345,10 @@ public interface ApiOrBuilder extends
    */
   org.wso2.choreo.connect.discovery.api.GraphqlComplexityOrBuilder getGraphqlComplexityInfoOrBuilder(
       int index);
+
+  /**
+   * <code>bool systemAPI = 25;</code>
+   * @return The systemAPI.
+   */
+  boolean getSystemAPI();
 }

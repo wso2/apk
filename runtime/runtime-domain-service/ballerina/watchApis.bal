@@ -22,11 +22,11 @@ import ballerina/log;
 
 isolated map<map<model:API>> apilist = {};
 string resourceVersion = "";
-websocket:Client|error|() apiClient = ();
+websocket:Client|error|() watchAPIService = ();
 
 class APIListingTask {
     function init(string resourceVersion) {
-        apiClient = getClient(resourceVersion);
+        watchAPIService = getClient(resourceVersion);
     }
 
     public function startListening() returns error? {
@@ -34,13 +34,13 @@ class APIListingTask {
         worker WatchAPIThread {
             while true {
                 do {
-                    websocket:Client|error|() apiClientResult = apiClient;
+                    websocket:Client|error|() apiClientResult = watchAPIService;
                     if apiClientResult is websocket:Client {
                         boolean connectionOpen = apiClientResult.isOpen();
                         if !connectionOpen {
                             log:printDebug("Websocket Client connection closed conectionId: " + apiClientResult.getConnectionId() + " state: " + connectionOpen.toString());
-                            apiClient = getClient(resourceVersion);
-                            websocket:Client|error|() retryClient = apiClient;
+                            watchAPIService = getClient(resourceVersion);
+                            websocket:Client|error|() retryClient = watchAPIService;
                             if retryClient is websocket:Client {
                                 log:printDebug("Reinitializing client..");
                                 connectionOpen = retryClient.isOpen();
@@ -69,6 +69,7 @@ class APIListingTask {
 # + resourceVersion - resource Version to watch after.
 # + return - Return websocket Client.
 public function getClient(string resourceVersion) returns websocket:Client|error {
+    log:printDebug("Initializing Watch Service for APIS with resource Version " + resourceVersion);
     string requestURl = "wss://" + runtimeConfiguration.k8sConfiguration.host + "/apis/dp.wso2.com/v1alpha1/watch/apis";
     if resourceVersion.length() > 0 {
         requestURl = requestURl + "?resourceVersion=" + resourceVersion.toString();
@@ -86,7 +87,7 @@ public function getClient(string resourceVersion) returns websocket:Client|error
 isolated function getAPIs(string organization) returns model:API[] {
     lock {
         map<model:API>|error & readonly readOnlyAPImap = trap apilist.get(organization).cloneReadOnly();
-        if readOnlyAPImap is map<model:API> & readonly{
+        if readOnlyAPImap is map<model:API> & readonly {
             return readOnlyAPImap.toArray();
         } else {
             return [];
@@ -101,16 +102,16 @@ isolated function getAPI(string id, string organization) returns model:API|error
     }
 }
 
-function putallAPIS(model:API[] apiData) {
+isolated function putallAPIS(map<map<model:API>> orgApiMap, model:API[] apiData) {
     foreach model:API api in apiData {
         lock {
-            map<model:API>|error orgmap = trap apilist.get(api.spec.organization);
+            map<model:API>|error orgmap = trap orgApiMap.get(api.spec.organization);
             if orgmap is map<model:API> {
                 orgmap[<string>api.metadata.uid] = api.clone();
             } else {
                 map<model:API> apiMap = {};
                 apiMap[<string>api.metadata.uid] = api.clone();
-                apilist[api.spec.organization] = apiMap;
+                orgApiMap[api.spec.organization] = apiMap;
             }
         }
     }
@@ -135,32 +136,53 @@ function readAPIEvent(websocket:Client apiWebsocketClient) returns error? {
         string eventType = <string>check value.'type;
         json eventValue = <json>check value.'object;
         json metadata = <json>check eventValue.metadata;
-        string latestResourceVersion = <string>check metadata.resourceVersion;
-        setResourceVersion(latestResourceVersion);
-        model:API|error apiModel = eventValue.cloneWithType(model:API);
-        if apiModel is model:API {
-            if apiModel.metadata.namespace == getNameSpace(runtimeConfiguration.apiCreationNamespace) {
-                if eventType == "ADDED" {
-                    lock {
-                        putAPI(apiModel.clone());
-                    }
-                } else if (eventType == "MODIFIED") {
-                    lock {
-                        updateAPI(apiModel.clone());
-                    }
-                } else if (eventType == "DELETED") {
-                    lock {
-                        removeAPI(apiModel);
-                    }
-                }
+        if eventType == "ERROR" {
+            model:Status|error statusEvent = eventValue.cloneWithType(model:Status);
+            if (statusEvent is model:Status) {
+                _ = check handleWatchAPIGone(statusEvent);
             }
         } else {
-            log:printError("error while converting");
+            string latestResourceVersion = <string>check metadata.resourceVersion;
+            setResourceVersion(latestResourceVersion);
+            model:API|error apiModel = eventValue.cloneWithType(model:API);
+            if apiModel is model:API {
+                if apiModel.metadata.namespace == getNameSpace(runtimeConfiguration.apiCreationNamespace) {
+                    if eventType == "ADDED" {
+                        lock {
+                            putAPI(apiModel.clone());
+                        }
+                    } else if (eventType == "MODIFIED") {
+                        lock {
+                            updateAPI(apiModel.clone());
+                        }
+                    } else if (eventType == "DELETED") {
+                        lock {
+                            removeAPI(apiModel);
+                        }
+                    }
+                }
+            } else {
+                log:printError("error while converting");
+            }
         }
+
     } else {
         log:printError("error while reading message", message);
     }
 
+}
+
+function handleWatchAPIGone(model:Status statusEvent) returns error? {
+    if statusEvent.code == 410 {
+        log:printDebug("Re-initializing watch service for API due to cache clear.");
+        map<map<model:API>> orgApiMap = {};
+        APIClient apiClient = new ();
+        _ = check apiClient.retrieveAllApisAtStartup(orgApiMap, ());
+        lock {
+            apilist = orgApiMap.clone();
+        }
+        watchAPIService = getClient(resourceVersion);
+    }
 }
 
 isolated function putAPI(model:API api) {
