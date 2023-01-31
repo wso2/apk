@@ -85,10 +85,7 @@ func (r *API) validateAPI() error {
 	if err := r.validateFormats(); err != nil {
 		return err
 	}
-	if err := r.validateAPIContext(); err != nil {
-		return err
-	}
-	return nil
+	return r.validateAPIContext()
 }
 
 // validateAPIContext check for duplicate api contexts
