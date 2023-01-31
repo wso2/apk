@@ -23,10 +23,12 @@ import (
 	"regexp"
 
 	"github.com/wso2/apk/adapter/internal/loggers"
+	"github.com/wso2/apk/adapter/internal/operator/utils"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -112,7 +114,11 @@ func (r *API) validateAPIContext() *field.Error {
 			errors.New("unable to list APIs for API context validation"))
 	}
 	for _, api := range apiList.Items {
-		if r.Name != api.Name && api.Spec.Context == r.Spec.Context {
+		if (utils.NamespacedName(r) != types.NamespacedName{
+			Namespace: api.Namespace,
+			Name:      api.Name,
+		}) &&
+			api.Spec.Context == r.Spec.Context {
 			return &field.Error{
 				Type:     field.ErrorTypeDuplicate,
 				Field:    field.NewPath("spec").Child("context").String(),

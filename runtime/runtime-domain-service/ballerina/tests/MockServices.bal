@@ -1,4 +1,5 @@
 import runtime_domain_service.model;
+
 //
 // Copyright (c) 2022, WSO2 LLC. (http://www.wso2.com).
 //
@@ -157,8 +158,8 @@ public function getMockServiceList() returns model:ServiceList {
 
                     }
                 }
-            }    ,
-             {
+            },
+            {
                 "metadata": {
                     "name": "httpbin",
                     "namespace": "apk-platform",
@@ -188,7 +189,7 @@ public function getMockServiceList() returns model:ServiceList {
 
                     }
                 }
-            }                       
+            }
         ]
     };
     return response;
@@ -265,3 +266,4 @@ public function getNextMockServiceEvent() returns string {
     };
     return message.toJsonString();
 }
+

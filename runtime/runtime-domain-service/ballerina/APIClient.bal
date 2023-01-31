@@ -213,7 +213,8 @@ public class APIClient {
     # + 'limit - Parameter Description  
     # + offset - Parameter Description  
     # + sortBy - Parameter Description  
-    # + sortOrder - Parameter Description
+    # + sortOrder - Parameter Description  
+    # + organization - Parameter Description
     # + return - Return list of APIS in namsepace.
     public isolated function getAPIList(string? query, int 'limit, int offset, string sortBy, string sortOrder, string organization) returns APIList|BadRequestError {
         API[] apilist = [];
@@ -972,7 +973,7 @@ public class APIClient {
         }
     }
 
-    public function retrieveAllApisAtStartup(string? continueValue) returns error? {
+    public function retrieveAllApisAtStartup(map<map<model:API>>? apiMap, string? continueValue) returns error? {
         string? resultValue = continueValue;
         model:APIList|http:ClientError retrieveAllAPISResult;
         if resultValue is string {
@@ -984,12 +985,18 @@ public class APIClient {
         if retrieveAllAPISResult is model:APIList {
             model:ListMeta metadata = retrieveAllAPISResult.metadata;
             model:API[] items = retrieveAllAPISResult.items;
-            putallAPIS(items);
+            if apiMap is map<map<model:API>> {
+                putallAPIS(apiMap, items.clone());
+            } else {
+                lock {
+                    putallAPIS(apilist, items.clone());
+                }
+            }
 
             string? continueElement = metadata.'continue;
             if continueElement is string {
                 if continueElement.length() > 0 {
-                    _ = check self.retrieveAllApisAtStartup(continueElement);
+                    _ = check self.retrieveAllApisAtStartup(apiMap, continueElement);
                 }
             }
             string? resourceVersion = metadata.'resourceVersion;
@@ -1911,7 +1918,7 @@ public class APIClient {
                     string zipDir = check file:createTempDir(apiId);
                     model:API? k8sAPI = apiArtifact.api;
                     if k8sAPI is model:API {
-                        _ = check self.convertAndStoreYamlFile(k8sAPI.toJsonString(),k8sAPI.metadata.name, zipDir, "api");
+                        _ = check self.convertAndStoreYamlFile(k8sAPI.toJsonString(), k8sAPI.metadata.name, zipDir, "api");
                     }
                     model:ConfigMap? definition = apiArtifact.definition;
                     if definition is model:ConfigMap {
@@ -1959,7 +1966,7 @@ public class APIClient {
         if convertedYaml is string {
             if subDirectory is string {
                 fullPath = fullPath + file:pathSeparator + subDirectory;
-                _ = check file:createDir(directroy + file:pathSeparator + subDirectory,file:RECURSIVE);
+                _ = check file:createDir(directroy + file:pathSeparator + subDirectory, file:RECURSIVE);
             }
             fullPath = fullPath + file:pathSeparator + fileName + ".yaml";
             _ = check io:fileWriteString(fullPath, convertedYaml);

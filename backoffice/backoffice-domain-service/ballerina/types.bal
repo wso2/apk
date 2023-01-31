@@ -580,6 +580,8 @@ public type API record {
     string createdTime?;
     string lastUpdatedTime?;
     APIOperations[] operations?;
+    string provider?;
+    string lifeCycleStatus?;
     # The API level usage policy selected for the particular Runtime API
     string apiUsagePolicy?;
     APIMonetizationInfo monetization?;

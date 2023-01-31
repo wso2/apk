@@ -20,14 +20,13 @@ import ballerina/lang.value;
 import runtime_domain_service.model as model;
 import ballerina/log;
 
-map<map<model:API>> serviceMappings = {};
 string serviceMappingResourceVersion = "";
 isolated map<model:K8sServiceMapping> k8sServiceMappings = {};
-websocket:Client|error|() serviceMappingClient = ();
+websocket:Client|error|() watchK8sServiceClient = ();
 
 class ServiceMappingTask {
     function init(string resourceVersion) {
-        serviceMappingClient = getServiceMappingClient(serviceMappingResourceVersion);
+        watchK8sServiceClient = getServiceMappingClient(resourceVersion);
     }
 
     public function startListening() returns error? {
@@ -35,13 +34,13 @@ class ServiceMappingTask {
         worker WatchServiceMappingThread {
             while true {
                 do {
-                    websocket:Client|error|() apiClientResult = serviceMappingClient;
+                    websocket:Client|error|() apiClientResult = watchK8sServiceClient;
                     if apiClientResult is websocket:Client {
                         boolean connectionOpen = apiClientResult.isOpen();
                         if !connectionOpen {
                             log:printDebug("Websocket Client connection closed conectionId: " + apiClientResult.getConnectionId() + " state: " + connectionOpen.toString());
-                            serviceMappingClient = getServiceMappingClient(serviceMappingResourceVersion);
-                            websocket:Client|error|() retryClient = serviceMappingClient;
+                            watchK8sServiceClient = getServiceMappingClient(serviceMappingResourceVersion);
+                            websocket:Client|error|() retryClient = watchK8sServiceClient;
                             if retryClient is websocket:Client {
                                 log:printDebug("Reinitializing client..");
                                 connectionOpen = retryClient.isOpen();
@@ -66,6 +65,7 @@ class ServiceMappingTask {
 }
 
 public function getServiceMappingClient(string resourceVersion) returns websocket:Client|error|() {
+    log:printDebug("Initializing Watch Service for ServiceMappings with resource Version " + resourceVersion);
     string requestURl = "wss://" + runtimeConfiguration.k8sConfiguration.host + "/apis/dp.wso2.com/v1alpha1/watch/servicemappings";
     if resourceVersion.length() > 0 {
         requestURl = requestURl + "?resourceVersion=" + resourceVersion.toString();
@@ -97,6 +97,12 @@ function readServiceMappingEvent(websocket:Client apiWebsocketClient) returns er
         string eventType = <string>check value.'type;
         json eventValue = <json>check value.'object;
         json metadata = <json>check eventValue.metadata;
+        if eventType == "ERROR" {
+            model:Status|error statusEvent = eventValue.cloneWithType(model:Status);
+            if (statusEvent is model:Status) {
+                _ = check handleWatchServiceMappingsGone(statusEvent);
+            }
+        } else {
         string latestResourceVersion = <string>check metadata.resourceVersion;
         setServiceMappingResourceVersion(latestResourceVersion);
         json clonedEvent = eventValue.cloneReadOnly();
@@ -104,16 +110,17 @@ function readServiceMappingEvent(websocket:Client apiWebsocketClient) returns er
         if serviceMapping is model:K8sServiceMapping {
             if serviceMapping.metadata.namespace == getNameSpace(runtimeConfiguration.apiCreationNamespace) {
                 if eventType == "ADDED" {
-                    addServiceMapping(serviceMappings, serviceMapping);
+                    addServiceMapping(serviceMapping);
                 } else if (eventType == "MODIFIED") {
-                    deleteServiceMapping(serviceMappings, serviceMapping);
-                    addServiceMapping(serviceMappings, serviceMapping);
+                    deleteServiceMapping(serviceMapping);
+                    addServiceMapping(serviceMapping);
                 } else if (eventType == "DELETED") {
-                    deleteServiceMapping(serviceMappings, serviceMapping);
+                    deleteServiceMapping(serviceMapping);
                 }
             }
         } else {
             log:printError("error while converting");
+        }
         }
     } else {
         log:printError("error while reading message", message);
@@ -121,21 +128,21 @@ function readServiceMappingEvent(websocket:Client apiWebsocketClient) returns er
 
 }
 
-function addServiceMapping(map<map<model:API>> serviceMappings, model:K8sServiceMapping serviceMapping) {
+function addServiceMapping(model:K8sServiceMapping serviceMapping) {
     lock {
         k8sServiceMappings[serviceMapping.metadata.uid ?: ""] = serviceMapping.clone();
     }
 }
 
-function deleteServiceMapping(map<map<model:API>> serviceMappings, model:K8sServiceMapping serviceMapping) {
+function deleteServiceMapping(model:K8sServiceMapping serviceMapping) {
     lock {
         _ = k8sServiceMappings.remove(serviceMapping.metadata.uid ?: "");
     }
 }
 
-function putAllServiceMappings(model:K8sServiceMapping[] events) returns error? {
+isolated function putAllServiceMappings(map<model:K8sServiceMapping> serviceMappings,model:K8sServiceMapping[] events)  {
     foreach model:K8sServiceMapping serviceMapping in events {
-        addServiceMapping(serviceMappings, serviceMapping);
+        serviceMappings[serviceMapping.metadata.uid ?: ""] = serviceMapping.clone();
     }
 }
 
@@ -170,5 +177,17 @@ isolated function retrieveServiceMappingsForAPI(model:API api) returns map<model
             }
         }
         return sortedk8sServiceMappings.clone();
+    }
+}
+function handleWatchServiceMappingsGone(model:Status statusEvent) returns error? {
+        if statusEvent.code == 410 {
+        log:printDebug("Re-initializing watch service for ServiceMapping due to cache clear.");
+        map<model:K8sServiceMapping> serviceMappingMap = {};
+        ServiceClient serviceClient = new ();
+        _ = check serviceClient.retrieveAllServiceMappingsAtStartup(serviceMappingMap, ());
+        lock {
+            k8sServiceMappings = serviceMappingMap.clone();
+        }
+        watchK8sServiceClient = getServiceMappingClient(resourceVersion);
     }
 }

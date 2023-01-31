@@ -38,13 +38,13 @@ configurable RuntimeConfiguratation & readonly runtimeConfiguration = {
 # + return - Return Error if error occured at initialization.
 function init() returns error? {
     APIClient apiService = new ();
-    error? retrieveAllApisAtStartup = apiService.retrieveAllApisAtStartup(());
+    error? retrieveAllApisAtStartup = apiService.retrieveAllApisAtStartup((),());
     if retrieveAllApisAtStartup is error {
         log:printError("Error occured while retrieving API List", retrieveAllApisAtStartup);
     }
 
     ServiceClient servicesService = new ();
-    error? retrieveAllServicesAtStartup = servicesService.retrieveAllServicesAtStartup(());
+    error? retrieveAllServicesAtStartup = servicesService.retrieveAllServicesAtStartup((),());
     if retrieveAllServicesAtStartup is error {
         log:printError("Error occured while retrieving Service List", retrieveAllServicesAtStartup);
     }
@@ -53,7 +53,7 @@ function init() returns error? {
     _ = check apiListingTask.startListening();
     ServiceTask serviceTask = new (servicesResourceVersion);
     _ = check serviceTask.startListening();
-    _ = check servicesService.retrieveAllServiceMappingsAtStartup(());
+    _ = check servicesService.retrieveAllServiceMappingsAtStartup((),());
     ServiceMappingTask serviceMappingTask = new (serviceMappingResourceVersion);
     _ = check serviceMappingTask.startListening();
     _ = check startAndAttachServices();

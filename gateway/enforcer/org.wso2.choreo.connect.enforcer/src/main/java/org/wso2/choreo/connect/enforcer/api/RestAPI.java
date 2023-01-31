@@ -178,7 +178,7 @@ public class RestAPI implements API {
                 .disableSecurity(api.getDisableSecurity()).authHeader(api.getAuthorizationHeader())
                 .endpoints(endpoints).endpointSecurity(endpointSecurity).mockedApi(api.getIsMockedApi())
                 .trustStore(trustStore).organizationId(api.getOrganizationId())
-                .mtlsCertificateTiers(mtlsCertificateTiers).mutualSSL(mutualSSL)
+                .mtlsCertificateTiers(mtlsCertificateTiers).mutualSSL(mutualSSL).systemAPI(api.getSystemAPI())
                 .applicationSecurity(applicationSecurity).build();
 
         initFilters();
@@ -300,18 +300,21 @@ public class RestAPI implements API {
         this.filters.add(authFilter);
 
         // enable throttle filter
-        ThrottleFilter throttleFilter = new ThrottleFilter();
-        throttleFilter.init(apiConfig, null);
-        this.filters.add(throttleFilter);
+        if (!apiConfig.isSystemAPI()){
+            ThrottleFilter throttleFilter = new ThrottleFilter();
+            throttleFilter.init(apiConfig, null);
+            this.filters.add(throttleFilter);
+            loadCustomFilters(apiConfig);
+            MediationPolicyFilter mediationPolicyFilter = new MediationPolicyFilter();
+            this.filters.add(mediationPolicyFilter);
+        }
 
-        loadCustomFilters(apiConfig);
 
         // CORS filter is added as the first filter, and it is not customizable.
         CorsFilter corsFilter = new CorsFilter();
         this.filters.add(0, corsFilter);
 
-        MediationPolicyFilter mediationPolicyFilter = new MediationPolicyFilter();
-        this.filters.add(mediationPolicyFilter);
+
     }
 
     private void loadCustomFilters(APIConfig apiConfig) {

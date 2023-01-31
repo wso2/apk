@@ -248,6 +248,11 @@ private static final long serialVersionUID = 0L;
                 input.readMessage(org.wso2.choreo.connect.discovery.api.GraphqlComplexity.parser(), extensionRegistry));
             break;
           }
+          case 200: {
+
+            systemAPI_ = input.readBool();
+            break;
+          }
           default: {
             if (!parseUnknownField(
                 input, unknownFields, extensionRegistry, tag)) {
@@ -1100,6 +1105,17 @@ private static final long serialVersionUID = 0L;
     return graphqlComplexityInfo_.get(index);
   }
 
+  public static final int SYSTEMAPI_FIELD_NUMBER = 25;
+  private boolean systemAPI_;
+  /**
+   * <code>bool systemAPI = 25;</code>
+   * @return The systemAPI.
+   */
+  @java.lang.Override
+  public boolean getSystemAPI() {
+    return systemAPI_;
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -1185,6 +1201,9 @@ private static final long serialVersionUID = 0L;
     }
     for (int i = 0; i < graphqlComplexityInfo_.size(); i++) {
       output.writeMessage(24, graphqlComplexityInfo_.get(i));
+    }
+    if (systemAPI_ != false) {
+      output.writeBool(25, systemAPI_);
     }
     unknownFields.writeTo(output);
   }
@@ -1278,6 +1297,10 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(24, graphqlComplexityInfo_.get(i));
     }
+    if (systemAPI_ != false) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeBoolSize(25, systemAPI_);
+    }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
     return size;
@@ -1350,6 +1373,8 @@ private static final long serialVersionUID = 0L;
         .equals(other.getGraphQLSchema())) return false;
     if (!getGraphqlComplexityInfoList()
         .equals(other.getGraphqlComplexityInfoList())) return false;
+    if (getSystemAPI()
+        != other.getSystemAPI()) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -1428,6 +1453,9 @@ private static final long serialVersionUID = 0L;
       hash = (37 * hash) + GRAPHQLCOMPLEXITYINFO_FIELD_NUMBER;
       hash = (53 * hash) + getGraphqlComplexityInfoList().hashCode();
     }
+    hash = (37 * hash) + SYSTEMAPI_FIELD_NUMBER;
+    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+        getSystemAPI());
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -1650,6 +1678,8 @@ private static final long serialVersionUID = 0L;
       } else {
         graphqlComplexityInfoBuilder_.clear();
       }
+      systemAPI_ = false;
+
       return this;
     }
 
@@ -1753,6 +1783,7 @@ private static final long serialVersionUID = 0L;
       } else {
         result.graphqlComplexityInfo_ = graphqlComplexityInfoBuilder_.build();
       }
+      result.systemAPI_ = systemAPI_;
       onBuilt();
       return result;
     }
@@ -2000,6 +2031,9 @@ private static final long serialVersionUID = 0L;
             graphqlComplexityInfoBuilder_.addAllMessages(other.graphqlComplexityInfo_);
           }
         }
+      }
+      if (other.getSystemAPI() != false) {
+        setSystemAPI(other.getSystemAPI());
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -4667,6 +4701,37 @@ private static final long serialVersionUID = 0L;
         graphqlComplexityInfo_ = null;
       }
       return graphqlComplexityInfoBuilder_;
+    }
+
+    private boolean systemAPI_ ;
+    /**
+     * <code>bool systemAPI = 25;</code>
+     * @return The systemAPI.
+     */
+    @java.lang.Override
+    public boolean getSystemAPI() {
+      return systemAPI_;
+    }
+    /**
+     * <code>bool systemAPI = 25;</code>
+     * @param value The systemAPI to set.
+     * @return This builder for chaining.
+     */
+    public Builder setSystemAPI(boolean value) {
+      
+      systemAPI_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>bool systemAPI = 25;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearSystemAPI() {
+      
+      systemAPI_ = false;
+      onChanged();
+      return this;
     }
     @java.lang.Override
     public final Builder setUnknownFields(
