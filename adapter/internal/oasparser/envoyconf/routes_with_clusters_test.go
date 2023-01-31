@@ -120,9 +120,9 @@ func TestCreateRoutesWithClustersWithExactAndRegularExpressionRules(t *testing.T
 
 	backendPropertyMapping := make(v1alpha1.BackendPropertyMapping)
 	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "test-service-1"}] =
-		dpv1alpha1.BackendProperties{ResolvedHostname: "test-service-1.default", Protocol: dpv1alpha1.HTTPProtocol}
+		v1alpha1.BackendProperties{ResolvedHostname: "test-service-1.default", Protocol: v1alpha1.HTTPProtocol}
 	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "test-service-2"}] =
-		dpv1alpha1.BackendProperties{ResolvedHostname: "test-service-2.default", Protocol: dpv1alpha1.HTTPProtocol}
+		v1alpha1.BackendProperties{ResolvedHostname: "test-service-2.default", Protocol: v1alpha1.HTTPProtocol}
 	httpRouteState.BackendPropertyMapping = backendPropertyMapping
 
 	apiState.ProdHTTPRoute = &httpRouteState
@@ -259,13 +259,13 @@ func TestCreateRoutesWithClustersWithMultiplePathPrefixRules(t *testing.T) {
 
 	backendPropertyMapping := make(v1alpha1.BackendPropertyMapping)
 	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "order-service"}] =
-		dpv1alpha1.BackendProperties{ResolvedHostname: "order-service.default", Protocol: dpv1alpha1.HTTPProtocol}
+		v1alpha1.BackendProperties{ResolvedHostname: "order-service.default", Protocol: v1alpha1.HTTPProtocol}
 	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "order-service-2"}] =
-		dpv1alpha1.BackendProperties{ResolvedHostname: "order-service-2.default", Protocol: dpv1alpha1.HTTPProtocol}
+		v1alpha1.BackendProperties{ResolvedHostname: "order-service-2.default", Protocol: v1alpha1.HTTPProtocol}
 	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "user-service"}] =
-		dpv1alpha1.BackendProperties{ResolvedHostname: "user-service.default", Protocol: dpv1alpha1.HTTPProtocol}
+		v1alpha1.BackendProperties{ResolvedHostname: "user-service.default", Protocol: v1alpha1.HTTPProtocol}
 	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "user-service-2"}] =
-		dpv1alpha1.BackendProperties{ResolvedHostname: "user-service-2.default", Protocol: dpv1alpha1.HTTPProtocol}
+		v1alpha1.BackendProperties{ResolvedHostname: "user-service-2.default", Protocol: v1alpha1.HTTPProtocol}
 	httpRouteState.BackendPropertyMapping = backendPropertyMapping
 
 	apiState.ProdHTTPRoute = &httpRouteState
@@ -395,28 +395,29 @@ func TestCreateRoutesWithClustersWithBackendTLSConfigs(t *testing.T) {
 	}
 
 	httpRouteState.HTTPRoute = &httpRoute
-	httpRouteState.Authentications = make(map[string]dpv1alpha1.Authentication)
-	httpRouteState.ResourceAuthentications = make(map[string]dpv1alpha1.Authentication)
+	httpRouteState.Authentications = make(map[string]v1alpha1.Authentication)
+	httpRouteState.ResourceAuthentications = make(map[string]v1alpha1.Authentication)
 
-	backendPropertyMapping := make(dpv1alpha1.BackendPropertyMapping)
+	backendPropertyMapping := make(v1alpha1.BackendPropertyMapping)
 	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "test-service-3"}] =
-		dpv1alpha1.BackendProperties{ResolvedHostname: "webhook.site",
-			Protocol: dpv1alpha1.HTTPSProtocol,
-			TLS: dpv1alpha1.TLSConfig{
+		v1alpha1.BackendProperties{ResolvedHostname: "webhook.site",
+			Protocol: v1alpha1.HTTPSProtocol,
+			TLS: v1alpha1.TLSConfig{
 				CertificateInline: `-----BEGIN CERTIFICATE-----test-cert-data-----END CERTIFICATE-----`,
 			}}
 	httpRouteState.BackendPropertyMapping = backendPropertyMapping
 
 	apiState.ProdHTTPRoute = &httpRouteState
 
-	mgwSwagger, err := synchronizer.GenerateMGWSwagger(apiState, &httpRouteState, true)
+	mgwSwagger, err := synchronizer.GenerateMGWSwagger(apiState, &httpRouteState)
 	assert.Nil(t, err, "Error should not be present when apiState is converted to a MgwSwagger object")
 	_, clusters, _, _ := envoy.CreateRoutesWithClusters(*mgwSwagger, nil, "prod.gw.wso2.com", "carbon.super")
 	assert.Equal(t, 1, len(clusters), "Number of production clusters created is incorrect.")
 
 	exactPathCluster := clusters[0]
 
-	assert.Equal(t, exactPathCluster.GetName(), "carbon.super_clusterProd_prod.gw.wso2.com_test-api-31.0.0", "Exact path cluster name mismatch, %v", clusters)
+	assert.True(t, strings.HasPrefix(exactPathCluster.GetName(), "carbon.super__prod.gw.wso2.com_test-api-31.0.0_"),
+		"Exact path cluster name mismatch, %v", exactPathCluster.GetName())
 
 	exactPathClusterHost := exactPathCluster.GetLoadAssignment().GetEndpoints()[0].GetLbEndpoints()[0].GetEndpoint().
 		GetAddress().GetSocketAddress().GetAddress()

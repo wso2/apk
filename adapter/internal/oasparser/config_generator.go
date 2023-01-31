@@ -36,8 +36,7 @@ import (
 
 // GetRoutesClustersEndpoints generates the routes, clusters and endpoints (envoy)
 // when the openAPI Json is provided. For websockets apiJsn created from api.yaml file is considered.
-
-func GetRoutesClustersEndpoints(mgwSwagger mgw.MgwSwagger, interceptorCerts map[string][]byte,
+func GetRoutesClustersEndpoints(mgwSwagger model.MgwSwagger, interceptorCerts map[string][]byte,
 	vHost string, organizationID string) ([]*routev3.Route, []*clusterv3.Cluster, []*corev3.Address, error) {
 
 	routes, clusters, endpoints, err := envoy.CreateRoutesWithClusters(mgwSwagger, interceptorCerts,
