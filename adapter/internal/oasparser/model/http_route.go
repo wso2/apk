@@ -24,7 +24,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
-	urlutils "github.com/wso2/apk/adapter/internal/oasparser/utils/url"
 	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
 	"github.com/wso2/apk/adapter/internal/operator/utils"
 	"golang.org/x/exp/maps"
@@ -39,7 +38,11 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, au
 	var resources []*Resource
 	var securitySchemes []SecurityScheme
 	//TODO(amali) add gateway level securities after gateway crd has implemented
-	authScheme := selectAuthScheme(maps.Values(authSchemes))
+	outputAuthScheme := utils.TieBreaker(utils.GetPtrSlice(maps.Values(authSchemes)))
+	var authScheme *dpv1alpha1.Authentication
+	if outputAuthScheme != nil {
+		authScheme = *outputAuthScheme
+	}
 	for _, rule := range httpRoute.Spec.Rules {
 		var endPoints []Endpoint
 		var policies = OperationPolicies{}
@@ -121,9 +124,9 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, au
 			}]
 			endPoints = append(endPoints,
 				Endpoint{Host: backendProperties.ResolvedHostname,
-					URLType:     urlutils.GetURLType(backendProperties.TLS.Enabled),
+					URLType:     string(backendProperties.Protocol),
 					Port:        uint32(*backend.Port),
-					Certificate: backendProperties.TLS.Certificate,
+					Certificate: []byte(backendProperties.TLS.CertificateInline),
 				})
 		}
 
@@ -247,23 +250,6 @@ func concatAuthScheme(scheme *dpv1alpha1.Authentication) *dpv1alpha1.Authenticat
 		}
 	}
 	return &finalAuth
-}
-
-func selectAuthScheme(authSchemes []dpv1alpha1.Authentication) *dpv1alpha1.Authentication {
-	if len(authSchemes) < 1 {
-		return nil
-	}
-	selectedAuth := &authSchemes[0]
-	// According to https://gateway-api.sigs.k8s.io/geps/gep-713/?h=multiple+targetrefs#conflict-resolution
-	for _, authScheme := range authSchemes[1:] {
-		if selectedAuth.CreationTimestamp.After(authScheme.CreationTimestamp.Time) {
-			selectedAuth = &authScheme
-		} else if selectedAuth.CreationTimestamp.String() == authScheme.CreationTimestamp.Time.String() &&
-			utils.NamespacedName(selectedAuth).String() > utils.NamespacedName(&authScheme).String() {
-			selectedAuth = &authScheme
-		}
-	}
-	return selectedAuth
 }
 
 // getSecurity returns security schemes and it's definitions with flag to indicate if security is disabled

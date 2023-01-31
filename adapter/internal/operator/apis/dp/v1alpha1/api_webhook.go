@@ -23,7 +23,6 @@ import (
 	"regexp"
 
 	"github.com/wso2/apk/adapter/internal/loggers"
-	"github.com/wso2/apk/adapter/internal/operator/utils"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -114,7 +113,10 @@ func (r *API) validateAPIContext() *field.Error {
 			errors.New("unable to list APIs for API context validation"))
 	}
 	for _, api := range apiList.Items {
-		if (utils.NamespacedName(r) != types.NamespacedName{
+		if (types.NamespacedName{
+			Namespace: r.Namespace,
+			Name:      r.Name,
+		} != types.NamespacedName{
 			Namespace: api.Namespace,
 			Name:      api.Name,
 		}) &&

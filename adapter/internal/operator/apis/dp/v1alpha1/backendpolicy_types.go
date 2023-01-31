@@ -34,15 +34,30 @@ type BackendPolicySpec struct {
 	Default *BackendConfigs `json:"default,omitempty"`
 }
 
+// BackendProtocolType defines the backend protocol type.
+type BackendProtocolType string
+
+const (
+	// HTTPProtocol is the http protocol
+	HTTPProtocol BackendProtocolType = "http"
+	// HTTPSProtocol is the https protocol
+	HTTPSProtocol BackendProtocolType = "https"
+	// WSProtocol is the ws protocol
+	WSProtocol BackendProtocolType = "ws"
+	// WSSProtocol is the wss protocol
+	WSSProtocol BackendProtocolType = "wss"
+)
+
 // BackendConfigs holds different backend configurations
 type BackendConfigs struct {
-	TLS TLSConfig `json:"tls,omitempty"`
+	// +kubebuilder:validation:Enum=http;https;ws;wss
+	Protocol BackendProtocolType `json:"protocol"`
+	TLS      TLSConfig           `json:"tls,omitempty"`
 }
 
 // TLSConfig defines enpoint TLS configurations
 type TLSConfig struct {
-	Enabled     bool   `json:"enabled,omitempty"`
-	Certificate string `json:"certificate,omitempty"`
+	CertificateInline string `json:"certificateInline,omitempty"`
 }
 
 // BackendPolicyStatus defines the observed state of BackendPolicy

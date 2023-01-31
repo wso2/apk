@@ -126,9 +126,9 @@ func TestCreateRoutesWithClustersWithExactAndRegularExpressionRules(t *testing.T
 
 	backendPropertyMapping := make(dpv1alpha1.BackendPropertyMapping)
 	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "test-service-1"}] =
-		dpv1alpha1.BackendProperties{ResolvedHostname: "test-service-1.default"}
+		dpv1alpha1.BackendProperties{ResolvedHostname: "test-service-1.default", Protocol: dpv1alpha1.HTTPProtocol}
 	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "test-service-2"}] =
-		dpv1alpha1.BackendProperties{ResolvedHostname: "test-service-2.default"}
+		dpv1alpha1.BackendProperties{ResolvedHostname: "test-service-2.default", Protocol: dpv1alpha1.HTTPProtocol}
 	httpRouteState.BackendPropertyMapping = backendPropertyMapping
 
 	apiState.ProdHTTPRoute = &httpRouteState
@@ -261,13 +261,13 @@ func TestCreateRoutesWithClustersWithMultiplePathPrefixRules(t *testing.T) {
 
 	backendPropertyMapping := make(dpv1alpha1.BackendPropertyMapping)
 	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "order-service"}] =
-		dpv1alpha1.BackendProperties{ResolvedHostname: "order-service.default"}
+		dpv1alpha1.BackendProperties{ResolvedHostname: "order-service.default", Protocol: dpv1alpha1.HTTPProtocol}
 	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "order-service-2"}] =
-		dpv1alpha1.BackendProperties{ResolvedHostname: "order-service-2.default"}
+		dpv1alpha1.BackendProperties{ResolvedHostname: "order-service-2.default", Protocol: dpv1alpha1.HTTPProtocol}
 	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "user-service"}] =
-		dpv1alpha1.BackendProperties{ResolvedHostname: "user-service.default"}
+		dpv1alpha1.BackendProperties{ResolvedHostname: "user-service.default", Protocol: dpv1alpha1.HTTPProtocol}
 	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "user-service-2"}] =
-		dpv1alpha1.BackendProperties{ResolvedHostname: "user-service-2.default"}
+		dpv1alpha1.BackendProperties{ResolvedHostname: "user-service-2.default", Protocol: dpv1alpha1.HTTPProtocol}
 	httpRouteState.BackendPropertyMapping = backendPropertyMapping
 
 	apiState.ProdHTTPRoute = &httpRouteState
@@ -400,9 +400,9 @@ func TestCreateRoutesWithClustersWithBackendTLSConfigs(t *testing.T) {
 	backendPropertyMapping := make(dpv1alpha1.BackendPropertyMapping)
 	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "test-service-3"}] =
 		dpv1alpha1.BackendProperties{ResolvedHostname: "webhook.site",
-			TLS: dpv1alpha1.TLSConfigs{
-				Enabled:     true,
-				Certificate: []byte(`-----BEGIN CERTIFICATE-----test-cert-data-----END CERTIFICATE-----`),
+			Protocol: dpv1alpha1.HTTPSProtocol,
+			TLS: dpv1alpha1.TLSConfig{
+				CertificateInline: `-----BEGIN CERTIFICATE-----test-cert-data-----END CERTIFICATE-----`,
 			}}
 	httpRouteState.BackendPropertyMapping = backendPropertyMapping
 

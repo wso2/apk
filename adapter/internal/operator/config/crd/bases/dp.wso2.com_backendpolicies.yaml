@@ -38,26 +38,44 @@ spec:
               default:
                 description: BackendConfigs holds different backend configurations
                 properties:
+                  protocol:
+                    description: BackendProtocolType defines the backend protocol
+                      type.
+                    enum:
+                    - http
+                    - https
+                    - ws
+                    - wss
+                    type: string
                   tls:
                     description: TLSConfig defines enpoint TLS configurations
                     properties:
-                      certificate:
+                      certificateInline:
                         type: string
-                      enabled:
-                        type: boolean
                     type: object
+                required:
+                - protocol
                 type: object
               override:
                 description: BackendConfigs holds different backend configurations
                 properties:
+                  protocol:
+                    description: BackendProtocolType defines the backend protocol
+                      type.
+                    enum:
+                    - http
+                    - https
+                    - ws
+                    - wss
+                    type: string
                   tls:
                     description: TLSConfig defines enpoint TLS configurations
                     properties:
-                      certificate:
+                      certificateInline:
                         type: string
-                      enabled:
-                        type: boolean
                     type: object
+                required:
+                - protocol
                 type: object
               targetRef:
                 description: PolicyTargetReference identifies an API object to apply

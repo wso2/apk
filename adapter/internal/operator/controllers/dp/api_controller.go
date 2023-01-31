@@ -299,10 +299,12 @@ func (apiReconciler *APIReconciler) getBackendProperties(ctx context.Context,
 				Name:      string(backend.Name),
 				Namespace: utils.GetNamespace(backend.Namespace, httpRoute.Namespace),
 			}
+			tls, protocol := apiReconciler.getBackendConfigs(ctx, backendNamespacedName)
 			backendPropertyMapping[backendNamespacedName] = dpv1alpha1.BackendProperties{
 				ResolvedHostname: apiReconciler.getHostNameForBackend(ctx,
 					backend, httpRoute.Namespace),
-				TLS: apiReconciler.getTLSConfigForBackend(ctx, backendNamespacedName),
+				TLS:      tls,
+				Protocol: protocol,
 			}
 		}
 	}
@@ -329,9 +331,10 @@ func (apiReconciler *APIReconciler) getHostNameForBackend(ctx context.Context, b
 }
 
 // getTLSConfigForBackend resolves backend TLS configurations.
-func (apiReconciler *APIReconciler) getTLSConfigForBackend(ctx context.Context,
-	serviceNamespacedName types.NamespacedName) dpv1alpha1.TLSConfigs {
-	tlsConfig := dpv1alpha1.TLSConfigs{}
+func (apiReconciler *APIReconciler) getBackendConfigs(ctx context.Context,
+	serviceNamespacedName types.NamespacedName) (dpv1alpha1.TLSConfig, dpv1alpha1.BackendProtocolType) {
+	tlsConfig := dpv1alpha1.TLSConfig{}
+	protocol := dpv1alpha1.HTTPProtocol
 	backendPolicyList := &dpv1alpha1.BackendPolicyList{}
 	if err := apiReconciler.client.List(ctx, backendPolicyList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(serviceBackendPolicy, serviceNamespacedName.String()),
@@ -343,19 +346,25 @@ func (apiReconciler *APIReconciler) getTLSConfigForBackend(ctx context.Context,
 		})
 	}
 	if len(backendPolicyList.Items) > 0 {
-		backendPolicy := backendPolicyList.Items[0]
-		if len(backendPolicyList.Items) > 1 {
-			loggers.LoggerAPKOperator.Warnf("Found multiple backend policies for the service: %s, BackendPolicy: %s is in effect",
-				serviceNamespacedName, backendPolicyList.Items[0].GetName())
-		}
-
-		backendTLSConfig := backendPolicy.Spec.Default.TLS
-		tlsConfig.Enabled = backendTLSConfig.Enabled
-		if len(backendTLSConfig.Certificate) > 0 {
-			tlsConfig.Certificate = []byte(backendTLSConfig.Certificate)
+		backendPolicy := *utils.TieBreaker(utils.GetPtrSlice(backendPolicyList.Items))
+		tlsConfig = backendPolicy.Spec.Default.TLS
+		backendProtocol := backendPolicy.Spec.Default.Protocol
+		if len(backendProtocol) > 0 {
+			switch protocol {
+			case dpv1alpha1.HTTPProtocol:
+				fallthrough
+			case dpv1alpha1.HTTPSProtocol:
+				fallthrough
+			case dpv1alpha1.WSProtocol:
+				fallthrough
+			case dpv1alpha1.WSSProtocol:
+				protocol = backendProtocol
+			default:
+				protocol = dpv1alpha1.HTTPProtocol
+			}
 		}
 	}
-	return tlsConfig
+	return tlsConfig, protocol
 }
 
 // getAPIForHTTPRoute triggers the API controller reconcile method based on the changes detected
