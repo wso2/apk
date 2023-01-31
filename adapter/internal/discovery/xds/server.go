@@ -900,7 +900,7 @@ func UpdateAPICache(vHost string, newLabels []string, mgwSwagger model.MgwSwagge
 	updateVhostInternalMaps(mgwSwagger.UUID, mgwSwagger.GetID(), mgwSwagger.GetVersion(), vHost, newLabels)
 
 	routes, clusters, endpoints, err := oasParser.GetRoutesClustersEndpoints(mgwSwagger, nil,
-		nil, vHost, mgwSwagger.GetOrganizationID())
+		vHost, mgwSwagger.GetOrganizationID())
 
 	if err != nil {
 		return fmt.Errorf("error while deploying API. Name: %s Version: %s, OrgID: %s, Error: %s",

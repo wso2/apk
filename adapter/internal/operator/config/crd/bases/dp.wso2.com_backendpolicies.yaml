@@ -41,7 +41,7 @@ spec:
                   tls:
                     description: TLSConfig defines enpoint TLS configurations
                     properties:
-                      certificateRef:
+                      certificate:
                         type: string
                       enabled:
                         type: boolean
@@ -53,7 +53,7 @@ spec:
                   tls:
                     description: TLSConfig defines enpoint TLS configurations
                     properties:
-                      certificateRef:
+                      certificate:
                         type: string
                       enabled:
                         type: boolean

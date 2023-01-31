@@ -24,7 +24,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
-	oasutils "github.com/wso2/apk/adapter/internal/oasparser/utils"
+	urlutils "github.com/wso2/apk/adapter/internal/oasparser/utils/url"
 	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
 	"github.com/wso2/apk/adapter/internal/operator/utils"
 	"golang.org/x/exp/maps"
@@ -121,7 +121,7 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, au
 			}]
 			endPoints = append(endPoints,
 				Endpoint{Host: backendProperties.ResolvedHostname,
-					URLType:     oasutils.GetURLType(backendProperties.TLS.Enabled),
+					URLType:     urlutils.GetURLType(backendProperties.TLS.Enabled),
 					Port:        uint32(*backend.Port),
 					Certificate: backendProperties.TLS.Certificate,
 				})

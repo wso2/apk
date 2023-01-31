@@ -76,7 +76,7 @@ type CombinedTemplateValues struct {
 //
 // First set of routes, clusters, addresses represents the production endpoints related
 // configurations. Next set represents the sandbox endpoints related configurations.
-func CreateRoutesWithClusters(mgwSwagger model.MgwSwagger, upstreamCerts map[string][]byte, interceptorCerts map[string][]byte, vHost string, organizationID string) (routesP []*routev3.Route,
+func CreateRoutesWithClusters(mgwSwagger model.MgwSwagger, interceptorCerts map[string][]byte, vHost string, organizationID string) (routesP []*routev3.Route,
 	clustersP []*clusterv3.Cluster, addressesP []*corev3.Address, err error) {
 	var (
 		routes    []*routev3.Route
@@ -112,7 +112,7 @@ func CreateRoutesWithClusters(mgwSwagger model.MgwSwagger, upstreamCerts map[str
 			apiVersion, "")
 		if !strings.Contains(apiLevelProdEndpoints.EndpointPrefix, xWso2EPClustersConfigNamePrefix) {
 			cluster, address, err := processEndpoints(apiLevelClusterNameProd, apiLevelProdEndpoints,
-				upstreamCerts, timeout, apiLevelBasePathProd)
+				timeout, apiLevelBasePathProd)
 			if err != nil {
 				apiLevelClusterNameProd = ""
 				logger.LoggerOasparser.ErrorC(logging.ErrorDetails{
@@ -149,7 +149,7 @@ func CreateRoutesWithClusters(mgwSwagger model.MgwSwagger, upstreamCerts map[str
 				apiTitle, apiVersion, "")
 			if !strings.Contains(apiLevelSandEndpoints.EndpointPrefix, xWso2EPClustersConfigNamePrefix) {
 				cluster, address, err := processEndpoints(apiLevelClusterNameSand, apiLevelSandEndpoints,
-					upstreamCerts, timeout, selectedBasePathSand)
+					timeout, selectedBasePathSand)
 				if err != nil {
 					apiLevelClusterNameSand = ""
 					logger.LoggerOasparser.ErrorC(logging.ErrorDetails{
@@ -176,7 +176,7 @@ func CreateRoutesWithClusters(mgwSwagger model.MgwSwagger, upstreamCerts map[str
 			}
 			epClusterName := getClusterName(endpointCluster.EndpointPrefix, organizationID, vHost, apiTitle,
 				apiVersion, "")
-			cluster, addresses, err := processEndpoints(epClusterName, endpointCluster, upstreamCerts, timeout, apiLevelBasePathProd)
+			cluster, addresses, err := processEndpoints(epClusterName, endpointCluster, timeout, apiLevelBasePathProd)
 			if err != nil {
 				logger.LoggerOasparser.Errorf("Error while adding x-wso2-endpoints cluster %v for %s. %v ", epName, apiTitle, err.Error())
 			} else {
@@ -260,7 +260,7 @@ func CreateRoutesWithClusters(mgwSwagger model.MgwSwagger, upstreamCerts map[str
 			if !strings.Contains(endpointProd.EndpointPrefix, xWso2EPClustersConfigNamePrefix) {
 				clusterNameProd = getClusterName(endpointProd.EndpointPrefix, organizationID, vHost,
 					mgwSwagger.GetTitle(), apiVersion, resource.GetID())
-				clusterProd, addressProd, err := processEndpoints(clusterNameProd, endpointProd, upstreamCerts, timeout, resourceBasePath)
+				clusterProd, addressProd, err := processEndpoints(clusterNameProd, endpointProd, timeout, resourceBasePath)
 				if err != nil {
 					clusterNameProd = apiLevelClusterNameProd
 					// reverting resource base path setting as production cluster creation has failed
@@ -293,7 +293,7 @@ func CreateRoutesWithClusters(mgwSwagger model.MgwSwagger, upstreamCerts map[str
 			if isSandboxClusterRequired(resource.GetProdEndpoints(), resource.GetSandEndpoints()) {
 				clusterNameSand = getClusterName(endpointSand.EndpointPrefix, organizationID, vHost, apiTitle,
 					apiVersion, resource.GetID())
-				clusterSand, addressSand, err := processEndpoints(clusterNameSand, endpointSand, upstreamCerts, timeout, resourceBasePathSand)
+				clusterSand, addressSand, err := processEndpoints(clusterNameSand, endpointSand, timeout, resourceBasePathSand)
 				if err != nil {
 					clusterNameSand = apiLevelClusterNameSand
 					// reverting resource base path setting as sandbox cluster creation has failed
@@ -399,7 +399,7 @@ func getClusterName(epPrefix string, organizationID string, vHost string, swagge
 // CreateLuaCluster creates lua cluster configuration.
 func CreateLuaCluster(interceptorCerts map[string][]byte, endpoint model.InterceptEndpoint) (*clusterv3.Cluster, []*corev3.Address, error) {
 	logger.LoggerOasparser.Debug("creating a lua cluster ", endpoint.ClusterName)
-	return processEndpoints(endpoint.ClusterName, &endpoint.EndpointCluster, interceptorCerts, endpoint.ClusterTimeout, endpoint.EndpointCluster.Endpoints[0].Basepath)
+	return processEndpoints(endpoint.ClusterName, &endpoint.EndpointCluster, endpoint.ClusterTimeout, endpoint.EndpointCluster.Endpoints[0].Basepath)
 }
 
 // CreateTracingCluster creates a cluster definition for router's tracing server.
@@ -434,13 +434,13 @@ func CreateTracingCluster(conf *config.Config) (*clusterv3.Cluster, []*corev3.Ad
 	epCluster.Endpoints[0].Port = epPort
 	epCluster.Endpoints[0].Basepath = epPath
 
-	return processEndpoints(tracingClusterName, epCluster, nil, epTimeout, epPath)
+	return processEndpoints(tracingClusterName, epCluster, epTimeout, epPath)
 }
 
 // processEndpoints creates cluster configuration. AddressConfiguration, cluster name and
 // urlType (http or https) is required to be provided.
 // timeout cluster timeout
-func processEndpoints(clusterName string, clusterDetails *model.EndpointCluster, upstreamCerts map[string][]byte,
+func processEndpoints(clusterName string, clusterDetails *model.EndpointCluster,
 	timeout time.Duration, basePath string) (*clusterv3.Cluster, []*corev3.Address, error) {
 	// tls configs
 	var transportSocketMatches []*clusterv3.Cluster_TransportSocketMatch

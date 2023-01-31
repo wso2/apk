@@ -135,7 +135,7 @@ func TestCreateRoutesWithClustersWithExactAndRegularExpressionRules(t *testing.T
 
 	mgwSwagger, err := synchronizer.GenerateMGWSwagger(apiState, &httpRouteState, true)
 	assert.Nil(t, err, "Error should not be present when apiState is converted to a MgwSwagger object")
-	routes, clusters, _, _ := envoy.CreateRoutesWithClusters(*mgwSwagger, nil, nil, "prod.gw.wso2.com", "carbon.super")
+	routes, clusters, _, _ := envoy.CreateRoutesWithClusters(*mgwSwagger, nil, "prod.gw.wso2.com", "carbon.super")
 	assert.Equal(t, 2, len(clusters), "Number of production clusters created is incorrect.")
 
 	exactPathCluster := clusters[0]
@@ -274,7 +274,7 @@ func TestCreateRoutesWithClustersWithMultiplePathPrefixRules(t *testing.T) {
 
 	mgwSwagger, err := synchronizer.GenerateMGWSwagger(apiState, &httpRouteState, true)
 	assert.Nil(t, err, "Error should not be present when apiState is converted to a MgwSwagger object")
-	routes, clusters, _, _ := envoy.CreateRoutesWithClusters(*mgwSwagger, nil, nil, "prod.gw.wso2.com", "carbon.super")
+	routes, clusters, _, _ := envoy.CreateRoutesWithClusters(*mgwSwagger, nil, "prod.gw.wso2.com", "carbon.super")
 	assert.Equal(t, 2, len(clusters), "Number of production clusters created is incorrect.")
 
 	orderServiceCluster := clusters[0]
@@ -410,7 +410,7 @@ func TestCreateRoutesWithClustersWithBackendTLSConfigs(t *testing.T) {
 
 	mgwSwagger, err := synchronizer.GenerateMGWSwagger(apiState, &httpRouteState, true)
 	assert.Nil(t, err, "Error should not be present when apiState is converted to a MgwSwagger object")
-	_, clusters, _, _ := envoy.CreateRoutesWithClusters(*mgwSwagger, nil, nil, "prod.gw.wso2.com", "carbon.super")
+	_, clusters, _, _ := envoy.CreateRoutesWithClusters(*mgwSwagger, nil, "prod.gw.wso2.com", "carbon.super")
 	assert.Equal(t, 1, len(clusters), "Number of production clusters created is incorrect.")
 
 	exactPathCluster := clusters[0]
@@ -479,7 +479,7 @@ func testCreateRoutesWithClustersWebsocket(t *testing.T, apiYamlFilePath string)
 
 	err = mgwSwagger.SetInfoAsyncAPI(asyncapi)
 	assert.Nil(t, err, "Error while populating the MgwSwagger object for web socket APIs")
-	routes, clusters, _, _ := envoy.CreateRoutesWithClusters(mgwSwagger, nil, nil, "localhost", "carbon.super")
+	routes, clusters, _, _ := envoy.CreateRoutesWithClusters(mgwSwagger, nil, "localhost", "carbon.super")
 
 	if strings.HasSuffix(apiYamlFilePath, "api.yaml") {
 		assert.Equal(t, len(clusters), 2, "Number of clusters created incorrect")
@@ -562,7 +562,7 @@ func commonTestForClusterPrioritiesInWebSocketAPI(t *testing.T, apiYamlFilePath 
 	var mgwSwagger model.MgwSwagger
 	err = mgwSwagger.PopulateFromAPIYaml(apiYaml)
 	assert.Nil(t, err, "Error while populating the MgwSwagger object for web socket APIs")
-	_, clusters, _, _ := envoy.CreateRoutesWithClusters(mgwSwagger, nil, nil, "localhost", "carbon.super")
+	_, clusters, _, _ := envoy.CreateRoutesWithClusters(mgwSwagger, nil, "localhost", "carbon.super")
 
 	assert.Equal(t, len(clusters), 1, "Number of clusters created incorrect")
 	productionCluster := clusters[0]
@@ -614,7 +614,7 @@ func testCreateRoutesWithClustersAPIClusters(t *testing.T) {
 	mgwSwaggerForOpenapi := model.MgwSwagger{}
 	err = mgwSwaggerForOpenapi.GetMgwSwagger(openapiByteArr)
 	assert.Nil(t, err, "Error should not be present when openAPI definition is converted to a MgwSwagger object")
-	routes, clusters, _, _ := envoy.CreateRoutesWithClusters(mgwSwaggerForOpenapi, nil, nil, "localhost", "carbon.super")
+	routes, clusters, _, _ := envoy.CreateRoutesWithClusters(mgwSwaggerForOpenapi, nil, "localhost", "carbon.super")
 
 	assert.Equal(t, 2, len(clusters), "Number of production clusters created is incorrect.")
 	// As the first cluster is always related to API level cluster

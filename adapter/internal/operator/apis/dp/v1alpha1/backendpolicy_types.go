@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2022, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2023, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -41,8 +41,8 @@ type BackendConfigs struct {
 
 // TLSConfig defines enpoint TLS configurations
 type TLSConfig struct {
-	Enabled        bool   `json:"enabled,omitempty"`
-	CertificateRef string `json:"certificateRef,omitempty"`
+	Enabled     bool   `json:"enabled,omitempty"`
+	Certificate string `json:"certificate,omitempty"`
 }
 
 // BackendPolicyStatus defines the observed state of BackendPolicy

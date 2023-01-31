@@ -6,15 +6,21 @@ Another policy [1] to apply endpoint certificates for endpoints in a cluster.
 apiVersion: dp.wso2.com/v1alpha1
 kind: BackendPolicy
 metadata:
-  name: backend-security-policy-1
+  namespace: apk
+  name: backendpolicy-sample
 spec:
   default:
-     tls: 
+    tls: 
       enabled: true
-      certificateRef: ca-cert-cm-name
-  targetRef
+      certificate: |
+        -----BEGIN CERTIFICATE-----
+        <certificate-data>
+        -----END CERTIFICATE-----
+  targetRef:
+    group: ""
     kind: Service
-    name: backend-service-name
+    namespace: apk
+    name: web-hook-service
 ```
 
 Since HTTPRoute has service reference in bakcendRefs when deploying the HTTPRoute, cert can be picked up since targetRef is pointing to a service.
