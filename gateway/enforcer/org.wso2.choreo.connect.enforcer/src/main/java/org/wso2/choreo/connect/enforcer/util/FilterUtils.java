@@ -248,7 +248,7 @@ public class FilterUtils {
         authContext.setAuthenticated(true);
         authContext.setTier(APIConstants.UNAUTHENTICATED_TIER);
         authContext.setApiKey(clientIP);
-        if (!StringUtils.isEmpty(requestContext.getProdClusterHeader())) {
+        if (!StringUtils.isEmpty(requestContext.getClusterHeader())) {
             authContext.setKeyType(APIConstants.API_KEY_TYPE_PRODUCTION);
         } else {
             authContext.setKeyType(APIConstants.API_KEY_TYPE_SANDBOX);

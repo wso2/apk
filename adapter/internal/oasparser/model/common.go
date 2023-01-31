@@ -27,9 +27,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/google/uuid"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
+)
+
+const (
+	hostNameValidator = "^[a-zA-Z0-9][a-zA-Z0-9-.]*[0-9a-zA-Z]$"
 )
 
 func arrayContains(a []string, x string) bool {
@@ -39,42 +42,6 @@ func arrayContains(a []string, x string) bool {
 		}
 	}
 	return false
-}
-
-// getXWso2AuthHeader extracts the value of xWso2AuthHeader extension.
-// if the property is not available, an empty string is returned.
-func getXWso2AuthHeader(vendorExtensions map[string]interface{}) string {
-	xWso2AuthHeader := ""
-	if y, found := vendorExtensions[constants.XAuthHeader]; found {
-		if val, ok := y.(string); ok {
-			xWso2AuthHeader = val
-		}
-	}
-	return xWso2AuthHeader
-}
-
-// getXWso2Basepath extracts the value of xWso2BasePath extension.
-// if the property is not available, an empty string is returned.
-func getXWso2Basepath(vendorExtensions map[string]interface{}) string {
-	xWso2basepath := ""
-	if y, found := vendorExtensions[constants.XWso2BasePath]; found {
-		if val, ok := y.(string); ok {
-			xWso2basepath = val
-		}
-	}
-	return xWso2basepath
-}
-
-// getXWso2HTTP2BackendEnabled extracts the value of XWso2HTTP2BackendEnabled extension.
-// if the property is not available, false is returned.
-func getXWso2HTTP2BackendEnabled(vendorExtensions map[string]interface{}) bool {
-	xWso2HTTP2BackendEnabled := false
-	if y, found := vendorExtensions[constants.XWso2HTTP2BackendEnabled]; found {
-		if val, ok := y.(bool); ok {
-			xWso2HTTP2BackendEnabled = val
-		}
-	}
-	return xWso2HTTP2BackendEnabled
 }
 
 // ResolveThrottlingTier extracts the value of x-wso2-throttling-tier and
@@ -127,10 +94,6 @@ func ResolveDisableSecurity(vendorExtensions map[string]interface{}) bool {
 
 func getHTTPEndpoint(rawURL string) (*Endpoint, error) {
 	return getHostandBasepathandPort(constants.REST, rawURL)
-}
-
-func getWebSocketEndpoint(rawURL string) (*Endpoint, error) {
-	return getHostandBasepathandPort(constants.WS, rawURL)
 }
 
 func getHostandBasepathandPort(apiType string, rawURL string) (*Endpoint, error) {
@@ -191,21 +154,4 @@ func getHostandBasepathandPort(apiType string, rawURL string) (*Endpoint, error)
 	}
 
 	return &Endpoint{Host: host, Basepath: basepath, Port: port, URLType: urlType, RawURL: rawURL}, nil
-}
-
-// unmarshalSwaggerResources used to populate mgwSwagger for both OpenAPI and AsyncAPI
-func unmarshalSwaggerResources(path string, methods []*Operation, vendorExtensions map[string]interface{}) Resource {
-	return Resource{
-		path:    path,
-		methods: methods,
-		// TODO: (VirajSalaka) This will not solve the actual problem when incremental Xds is introduced (used for cluster names)
-		iD: uuid.New().String(),
-		// PathItem object in swagger 2 specification does not contain summary and description properties
-		summary:     "",
-		description: "",
-		//schemes:          operation.Schemes,
-		//tags:             operation.Tags,
-		//security:         operation.Security,
-		vendorExtensions: vendorExtensions,
-	}
 }

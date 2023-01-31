@@ -34,7 +34,7 @@ import (
 // SetInfoHTTPRouteCR populates resources and endpoints of mgwSwagger. httpRoute.Spec.Rules.Matches
 // are used to create resources and httpRoute.Spec.Rules.BackendRefs are used to create EndpointClusters.
 func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, authSchemes map[string]dpv1alpha1.Authentication,
-	resourceAuthSchemes map[string]dpv1alpha1.Authentication, backendPropertyMapping dpv1alpha1.BackendPropertyMapping, isProd bool) error {
+	resourceAuthSchemes map[string]dpv1alpha1.Authentication, backendPropertyMapping dpv1alpha1.BackendPropertyMapping) error {
 	var resources []*Resource
 	var securitySchemes []SecurityScheme
 	//TODO(amali) add gateway level securities after gateway crd has implemented
@@ -129,22 +129,14 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, au
 				methods:       getAllowedOperations(match.Method, policies, resourceAuthScheme, securities, disabledSecurity),
 				pathMatchType: *match.Path.Type,
 				hasPolicies:   hasPolicies,
+				iD:            uuid.New().String(),
 			}
-			if isProd {
-				resource.productionEndpoints = &EndpointCluster{
-					EndpointPrefix: constants.ProdClustersConfigNamePrefix,
-					Endpoints:      endPoints,
-				}
-			} else {
-				resource.sandboxEndpoints = &EndpointCluster{
-					EndpointPrefix: constants.SandClustersConfigNamePrefix,
-					Endpoints:      endPoints,
-				}
+			resource.endpoints = &EndpointCluster{
+				Endpoints: endPoints,
 			}
 			resources = append(resources, resource)
 		}
 	}
-
 	swagger.resources = resources
 	swagger.securityScheme = securitySchemes
 	return nil

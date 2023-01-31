@@ -81,7 +81,7 @@ func generateRouteMatch(routeRegex string) *routev3.RouteMatch {
 	return match
 }
 
-func generateRouteAction(apiType string, prodRouteConfig, sandRouteConfig *model.EndpointConfig,
+func generateRouteAction(apiType string, routeConfig *model.EndpointConfig,
 	corsPolicy *routev3.CorsPolicy) (action *routev3.Route_Route) {
 
 	config := config.ReadConfigs()
@@ -103,8 +103,7 @@ func generateRouteAction(apiType string, prodRouteConfig, sandRouteConfig *model
 		},
 	}
 
-	if (prodRouteConfig != nil && prodRouteConfig.RetryConfig != nil) ||
-		(sandRouteConfig != nil && sandRouteConfig.RetryConfig != nil) {
+	if routeConfig != nil && routeConfig.RetryConfig != nil {
 		// Retry configs are always added via headers. This is to update the
 		// default retry back-off base interval, which cannot be updated via headers.
 		retryConfig := config.Envoy.Upstream.Retry
@@ -113,7 +112,6 @@ func generateRouteAction(apiType string, prodRouteConfig, sandRouteConfig *model
 			NumRetries: &wrapperspb.UInt32Value{
 				Value: 0,
 				// If not set to 0, default value 1 will be
-				// applied to both prod and sandbox even if they are not set.
 			},
 			RetriableStatusCodes: retryConfig.StatusCodes,
 			RetryBackOff: &routev3.RetryPolicy_RetryBackOff{
@@ -128,21 +126,9 @@ func generateRouteAction(apiType string, prodRouteConfig, sandRouteConfig *model
 	return action
 }
 
-func generateHTTPMethodMatcher(methodRegex string, isSandbox bool, sandClusterName string) []*routev3.HeaderMatcher {
+func generateHTTPMethodMatcher(methodRegex string, sandClusterName string) []*routev3.HeaderMatcher {
 	headerMatcher := generateHeaderMatcher(httpMethodHeader, methodRegex)
 	headerMatcherArray := []*routev3.HeaderMatcher{headerMatcher}
-	// if sandbox route, add additional header match based on cluster name header
-	if isSandbox {
-		clusterHeaderMatcher := routev3.HeaderMatcher{
-			Name: clusterHeaderName,
-			HeaderMatchSpecifier: &routev3.HeaderMatcher_StringMatch{
-				StringMatch: &envoy_type_matcherv3.StringMatcher{
-					MatchPattern: &envoy_type_matcherv3.StringMatcher_Exact{Exact: sandClusterName},
-				},
-			},
-		}
-		headerMatcherArray = append(headerMatcherArray, &clusterHeaderMatcher)
-	}
 	return headerMatcherArray
 }
 

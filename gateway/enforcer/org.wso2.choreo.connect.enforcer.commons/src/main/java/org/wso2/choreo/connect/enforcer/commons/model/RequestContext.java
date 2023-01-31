@@ -50,8 +50,7 @@ public class RequestContext {
     private String clientCertificate;
     // Denotes the cluster header name for each environment. Both properties can be null if
     // the openAPI has production endpoints alone.
-    private String prodClusterHeader;
-    private String sandClusterHeader;
+    private String clusterHeader;
     //Denotes the specific headers which needs to be passed to response object
     private Map<String, String> addHeaders;
     private Map<String, String> metadataMap = new HashMap<>();
@@ -265,20 +264,8 @@ public class RequestContext {
      *
      * @return prod Cluster name header value
      */
-    public String getProdClusterHeader() {
-        return prodClusterHeader;
-    }
-
-    /**
-     * Returns the sandbox cluster header value.
-     * can be null if the openAPI has production endpoints alone.
-     * In that case, no header should not be set.
-     * If this property is null and the keytype is sand box, the request should be blocked
-     *
-     * @return sand Cluster name header value
-     */
-    public String getSandClusterHeader() {
-        return sandClusterHeader;
+    public String getClusterHeader() {
+        return clusterHeader;
     }
 
     /**
@@ -403,8 +390,7 @@ public class RequestContext {
         private String requestPathTemplate;
         private ArrayList<ResourceConfig> matchedResourceConfigs;
         private Map<String, String> headers;
-        private String prodClusterHeader;
-        private String sandClusterHeader;
+        private String clusterHeader;
         private long requestTimeStamp;
         private Map<String, Object> properties = new HashMap<>();
         private AuthenticationContext authenticationContext = new AuthenticationContext();
@@ -438,16 +424,9 @@ public class RequestContext {
             return this;
         }
 
-        public Builder prodClusterHeader(String cluster) {
+        public Builder clusterHeader(String cluster) {
             if (!StringUtils.isEmpty(cluster)) {
-                this.prodClusterHeader = cluster;
-            }
-            return this;
-        }
-
-        public Builder sandClusterHeader(String cluster) {
-            if (!StringUtils.isEmpty(cluster)) {
-                this.sandClusterHeader = cluster;
+                this.clusterHeader = cluster;
             }
             return this;
         }
@@ -494,8 +473,7 @@ public class RequestContext {
             requestContext.requestMethod = this.requestMethod;
             requestContext.requestPath = this.requestPath;
             requestContext.headers = this.headers;
-            requestContext.prodClusterHeader = this.prodClusterHeader;
-            requestContext.sandClusterHeader = this.sandClusterHeader;
+            requestContext.clusterHeader = this.clusterHeader;
             requestContext.properties = this.properties;
             requestContext.requestPathTemplate = this.requestPathTemplate;
             requestContext.requestTimeStamp = this.requestTimeStamp;

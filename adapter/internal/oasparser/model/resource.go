@@ -32,30 +32,24 @@ import (
 // information can be stored as envoy architecture does not support having an operation level
 // granularity out of the box.
 //
-// Each resource can contain the path, the http methods that support, security schemas, production
-// endpoints, and sandbox endpoints. These values are populated from extensions/properties
+// Each resource can contain the path, the http methods that support, security schemas, endpoints.
+// These values are populated from extensions/properties
 // mentioned under pathItem.
 type Resource struct {
-	path                string
-	pathMatchType       gwapiv1b1.PathMatchType
-	methods             []*Operation
-	description         string
-	summary             string
-	iD                  string
-	productionEndpoints *EndpointCluster
-	sandboxEndpoints    *EndpointCluster
-	vendorExtensions    map[string]interface{}
-	hasPolicies         bool
+	path             string
+	pathMatchType    gwapiv1b1.PathMatchType
+	methods          []*Operation
+	description      string
+	summary          string
+	iD               string
+	endpoints        *EndpointCluster
+	vendorExtensions map[string]interface{}
+	hasPolicies      bool
 }
 
-// GetProdEndpoints returns the production endpoints object of a given resource.
-func (resource *Resource) GetProdEndpoints() *EndpointCluster {
-	return resource.productionEndpoints
-}
-
-// GetSandEndpoints returns the sandbox endpoints object of a given resource.
-func (resource *Resource) GetSandEndpoints() *EndpointCluster {
-	return resource.sandboxEndpoints
+// GetEndpoints returns the endpoints object of a given resource.
+func (resource *Resource) GetEndpoints() *EndpointCluster {
+	return resource.endpoints
 }
 
 // GetPath returns the pathItem name (of openAPI definition) corresponding to a given resource
@@ -66,6 +60,7 @@ func (resource *Resource) GetPath() string {
 // GetPathMatchType returns the path match type of the resource.
 // https://gateway-api.sigs.k8s.io/references/spec/#gateway.networking.k8s.io/v1beta1.PathMatchType
 func (resource *Resource) GetPathMatchType() gwapiv1b1.PathMatchType {
+	//todo(amila) fix cannot be nil issue
 	if &resource.pathMatchType == nil {
 		return gwapiv1b1.PathMatchPathPrefix
 	}
@@ -112,20 +107,18 @@ func (resource *Resource) HasPolicies() bool {
 
 // CreateMinimalDummyResourceForTests create a resource object with minimal required set of values
 // which could be used for unit tests.
-func CreateMinimalDummyResourceForTests(path string, methods []*Operation, id string, productionUrls,
+func CreateMinimalDummyResourceForTests(path string, methods []*Operation, id string, urls,
 	sandboxUrls []Endpoint, hasPolicies bool) Resource {
 
-	prodEndpints := generateEndpointCluster(constants.ProdClustersConfigNamePrefix, productionUrls, constants.LoadBalance)
-	sandboxEndpints := generateEndpointCluster(constants.SandClustersConfigNamePrefix, sandboxUrls, constants.LoadBalance)
+	endpints := generateEndpointCluster(urls, constants.LoadBalance)
 
 	return Resource{
-		path:                path,
-		methods:             methods,
-		iD:                  id,
-		productionEndpoints: prodEndpints,
-		sandboxEndpoints:    sandboxEndpints,
-		pathMatchType:       gwapiv1b1.PathMatchPathPrefix,
-		hasPolicies:         hasPolicies,
+		path:          path,
+		methods:       methods,
+		iD:            id,
+		endpoints:     endpints,
+		pathMatchType: gwapiv1b1.PathMatchPathPrefix,
+		hasPolicies:   hasPolicies,
 	}
 }
 
