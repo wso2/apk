@@ -80,10 +80,8 @@ public class HttpRequestHandler implements RequestHandler<CheckRequest, Response
         String certificate = request.getAttributes().getSource().getCertificate();
         Map<String, String> headers = request.getAttributes().getRequest().getHttp().getHeadersMap();
         String pathTemplate = request.getAttributes().getContextExtensionsMap().get(APIConstants.GW_RES_PATH_PARAM);
-        String prodCluster = request.getAttributes().getContextExtensionsMap()
-                .get(AdapterConstants.PROD_CLUSTER_HEADER_KEY);
-        String sandCluster = request.getAttributes().getContextExtensionsMap()
-                .get(AdapterConstants.SAND_CLUSTER_HEADER_KEY);
+        String cluster = request.getAttributes().getContextExtensionsMap()
+                .get(AdapterConstants.CLUSTER_HEADER_KEY);
         long requestTimeInMillis = request.getAttributes().getRequest().getTime().getSeconds() * 1000 +
                 request.getAttributes().getRequest().getTime().getNanos() / 1000000;
         String requestID = request.getAttributes().getRequest().getHttp().
@@ -122,7 +120,7 @@ public class HttpRequestHandler implements RequestHandler<CheckRequest, Response
                         ErrorDetails.errorLog(LoggingConstants.Severity.MINOR, 6704), exception);
                 RequestContext requestContext = new RequestContext.Builder(requestPath).requestMethod(method)
                         .matchedAPI(api.getAPIConfig()).headers(headers).requestID(requestID).address(address)
-                        .prodClusterHeader(prodCluster).sandClusterHeader(sandCluster).certificate(certificate)
+                        .clusterHeader(cluster).certificate(certificate)
                         .requestTimeStamp(requestTimeInMillis).requestPayload(requestPayload).build();
                 requestContext.getProperties().put(APIConstants.MessageFormat.STATUS_CODE,
                         APIConstants.StatusCodes.BAD_REQUEST_ERROR.getCode());
@@ -143,7 +141,7 @@ public class HttpRequestHandler implements RequestHandler<CheckRequest, Response
         }
         return new RequestContext.Builder(requestPath).matchedResourceConfigs(resourceConfigs).requestMethod(method)
                 .certificate(certificate).matchedAPI(api.getAPIConfig()).headers(headers).requestID(requestID)
-                .address(address).prodClusterHeader(prodCluster).sandClusterHeader(sandCluster)
+                .address(address).clusterHeader(cluster)
                 .requestTimeStamp(requestTimeInMillis).pathTemplate(pathTemplate).requestPayload(requestPayload)
                 .build();
     }

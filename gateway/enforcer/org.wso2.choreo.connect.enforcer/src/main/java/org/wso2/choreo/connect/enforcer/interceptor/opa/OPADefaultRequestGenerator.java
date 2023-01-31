@@ -70,8 +70,7 @@ public class OPADefaultRequestGenerator implements OPARequestGenerator {
         apiContext.put("orgId", requestContext.getMatchedAPI().getOrganizationId());
         apiContext.put("vhost", requestContext.getMatchedAPI().getVhost());
         apiContext.put("pathTemplate", requestContext.getRequestPathTemplate());
-        apiContext.put("prodClusterName", requestContext.getProdClusterHeader());
-        apiContext.put("sandClusterName", requestContext.getSandClusterHeader());
+        apiContext.put("clusterName", requestContext.getClusterHeader());
 
         // Authentication Context
         if (Boolean.parseBoolean(additionalParameters.get(OPAConstants.AdditionalParameters.SEND_ACCESS_TOKEN))) {

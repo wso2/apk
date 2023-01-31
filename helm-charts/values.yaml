@@ -60,8 +60,8 @@ wso2:
             failureThreshold: 5
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: IfNotPresent
-          image: wso2/devportal-domain-service:0.0.1-m3
+          imagePullPolicy: Always
+          image: wso2/devportal-domain-service:latest
         ingress:
           path: /api/am/devportal
           className: ""
@@ -95,8 +95,8 @@ wso2:
             failureThreshold: 5
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: IfNotPresent
-          image: wso2/admin-domain-service:0.0.1-m3
+          imagePullPolicy: Always
+          image: wso2/admin-domain-service:latest
         ingress:
           path: /api/am/admin
           className: ""
@@ -130,8 +130,8 @@ wso2:
             failureThreshold: 5
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: IfNotPresent
-          image: wso2/backoffice-domain-service:0.0.1-m3
+          imagePullPolicy: Always
+          image: wso2/backoffice-domain-service:latest
         ingress:
           path: /api/am/backoffice
           className: ""
@@ -191,8 +191,8 @@ wso2:
               cpu: "1000m"
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: IfNotPresent
-          image: wso2/management-server:0.0.1-m3
+          imagePullPolicy: Always
+          image: wso2/management-server:latest
       cnpg:
         npi: cnpg-npi
         instances: 1
@@ -226,8 +226,8 @@ wso2:
             failureThreshold: 5
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: IfNotPresent
-          image: wso2/runtime-domain-service:0.0.1-m3
+          imagePullPolicy: Always
+          image: wso2/runtime-domain-service:latest
         ingress:
           path: /api/am/runtime
           className: ""
@@ -266,8 +266,8 @@ wso2:
             failureThreshold: 5
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: IfNotPresent
-          image: wso2/adapter:0.0.1-m3
+          imagePullPolicy: Always
+          image: wso2/adapter:latest
           security:
             sslHostname: "adapter"
       gatewayRuntime:
@@ -309,8 +309,8 @@ wso2:
               periodSeconds: 20
               failureThreshold: 5
             strategy: Recreate
-            imagePullPolicy: IfNotPresent
-            image: wso2/router:0.0.1-m3
+            imagePullPolicy: Always
+            image: wso2/router:latest
           enforcer:
             npi: enforcer-npi
             resources:
@@ -348,8 +348,8 @@ wso2:
               periodSeconds: 20
               failureThreshold: 5
             strategy: Recreate
-            imagePullPolicy: IfNotPresent
-            image: wso2/enforcer:0.0.1-m3
+            imagePullPolicy: Always
+            image: wso2/enforcer:latest
             security:
               sslHostname: "enforcer"
 
