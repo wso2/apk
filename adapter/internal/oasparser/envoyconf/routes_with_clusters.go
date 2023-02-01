@@ -73,7 +73,7 @@ type CombinedTemplateValues struct {
 // If a resource has resource level endpoint, it create another cluster and
 // link it. If resources doesn't has resource level endpoints, those clusters are linked
 // to the api level clusters.
-func CreateRoutesWithClusters(mgwSwagger model.MgwSwagger, upstreamCerts map[string][]byte, interceptorCerts map[string][]byte, vHost string, organizationID string) (routesP []*routev3.Route,
+func CreateRoutesWithClusters(mgwSwagger model.MgwSwagger, interceptorCerts map[string][]byte, vHost string, organizationID string) (routesP []*routev3.Route,
 	clustersP []*clusterv3.Cluster, addressesP []*corev3.Address, err error) {
 	var (
 		routes    []*routev3.Route
@@ -98,7 +98,7 @@ func CreateRoutesWithClusters(mgwSwagger model.MgwSwagger, upstreamCerts map[str
 		endpoint := resource.GetEndpoints()
 		basePath := strings.TrimSuffix(endpoint.Endpoints[0].Basepath, "/")
 		clusterName := getClusterName(endpoint.EndpointPrefix, organizationID, vHost, mgwSwagger.GetTitle(), apiVersion, resource.GetID())
-		cluster, address, err := processEndpoints(clusterName, endpoint, upstreamCerts, timeout, basePath)
+		cluster, address, err := processEndpoints(clusterName, endpoint, timeout, basePath)
 		if err != nil {
 			logger.LoggerOasparser.Errorf("Error while adding resource level endpoints for %s:%v-%v. %v",
 				apiTitle, apiVersion, resourcePath, err.Error())
@@ -142,7 +142,7 @@ func getClusterName(epPrefix string, organizationID string, vHost string, swagge
 // CreateLuaCluster creates lua cluster configuration.
 func CreateLuaCluster(interceptorCerts map[string][]byte, endpoint model.InterceptEndpoint) (*clusterv3.Cluster, []*corev3.Address, error) {
 	logger.LoggerOasparser.Debug("creating a lua cluster ", endpoint.ClusterName)
-	return processEndpoints(endpoint.ClusterName, &endpoint.EndpointCluster, interceptorCerts, endpoint.ClusterTimeout, endpoint.EndpointCluster.Endpoints[0].Basepath)
+	return processEndpoints(endpoint.ClusterName, &endpoint.EndpointCluster, endpoint.ClusterTimeout, endpoint.EndpointCluster.Endpoints[0].Basepath)
 }
 
 // CreateTracingCluster creates a cluster definition for router's tracing server.
@@ -177,13 +177,13 @@ func CreateTracingCluster(conf *config.Config) (*clusterv3.Cluster, []*corev3.Ad
 	epCluster.Endpoints[0].Port = epPort
 	epCluster.Endpoints[0].Basepath = epPath
 
-	return processEndpoints(tracingClusterName, epCluster, nil, epTimeout, epPath)
+	return processEndpoints(tracingClusterName, epCluster, epTimeout, epPath)
 }
 
 // processEndpoints creates cluster configuration. AddressConfiguration, cluster name and
 // urlType (http or https) is required to be provided.
 // timeout cluster timeout
-func processEndpoints(clusterName string, clusterDetails *model.EndpointCluster, upstreamCerts map[string][]byte,
+func processEndpoints(clusterName string, clusterDetails *model.EndpointCluster,
 	timeout time.Duration, basePath string) (*clusterv3.Cluster, []*corev3.Address, error) {
 	// tls configs
 	var transportSocketMatches []*clusterv3.Cluster_TransportSocketMatch
@@ -221,14 +221,7 @@ func processEndpoints(clusterName string, clusterDetails *model.EndpointCluster,
 
 		// create tls configs
 		if strings.HasPrefix(ep.URLType, httpsURLType) || strings.HasPrefix(ep.URLType, wssURLType) {
-			var epCert []byte
-			if cert, found := upstreamCerts[ep.RawURL]; found {
-				epCert = cert
-			} else if defaultCerts, found := upstreamCerts["default"]; found {
-				epCert = defaultCerts
-			}
-
-			upstreamtlsContext := createUpstreamTLSContext(epCert, address, clusterDetails.HTTP2BackendEnabled)
+			upstreamtlsContext := createUpstreamTLSContext(ep.Certificate, address, clusterDetails.HTTP2BackendEnabled)
 			marshalledTLSContext, err := anypb.New(upstreamtlsContext)
 			if err != nil {
 				return nil, nil, errors.New("internal Error while marshalling the upstream TLS Context")

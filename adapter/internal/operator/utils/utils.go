@@ -23,6 +23,7 @@ import (
 	constants "github.com/wso2/apk/adapter/internal/operator/constants"
 	"github.com/wso2/apk/adapter/pkg/utils/envutils"
 	"github.com/wso2/apk/adapter/pkg/utils/stringutils"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/gateway-api/apis/v1beta1"
@@ -90,4 +91,38 @@ func GetDefaultHostNameForBackend(backend gwapiv1b1.HTTPBackendRef,
 	defaultNamespace string) string {
 	return fmt.Sprintf("%s.%s", backend.Name,
 		GetNamespace(backend.Namespace, defaultNamespace))
+}
+
+// TieBreaker breaks ties when multiple objects are present in a case only single object is expected.
+// tie breaking logic is explained in https://gateway-api.sigs.k8s.io/geps/gep-713/?h=multiple+targetrefs#conflict-resolution
+func TieBreaker[T metav1.Object](k8sObjects []T) *T {
+	if len(k8sObjects) < 1 {
+		return nil
+	}
+	selectedk8sObject := k8sObjects[0]
+	for _, k8sObject := range k8sObjects[1:] {
+		if selectedk8sObject.GetCreationTimestamp().After(k8sObject.GetCreationTimestamp().Time) {
+			selectedk8sObject = k8sObject
+		} else if selectedk8sObject.GetCreationTimestamp().String() == k8sObject.GetCreationTimestamp().String() &&
+			(types.NamespacedName{
+				Name:      selectedk8sObject.GetName(),
+				Namespace: selectedk8sObject.GetNamespace(),
+			}).String() > (types.NamespacedName{
+				Name:      k8sObject.GetName(),
+				Namespace: k8sObject.GetNamespace(),
+			}).String() {
+			selectedk8sObject = k8sObject
+		}
+	}
+	return &selectedk8sObject
+}
+
+// GetPtrSlice returns a slice which is also a slice containing pointers to the elements
+// in the input slice.
+func GetPtrSlice[T any](inputSlice []T) []*T {
+	var outputSlice []*T
+	for i := range inputSlice {
+		outputSlice = append(outputSlice, &inputSlice[i])
+	}
+	return outputSlice
 }

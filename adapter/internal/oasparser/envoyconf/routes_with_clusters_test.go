@@ -120,16 +120,16 @@ func TestCreateRoutesWithClustersWithExactAndRegularExpressionRules(t *testing.T
 
 	backendPropertyMapping := make(v1alpha1.BackendPropertyMapping)
 	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "test-service-1"}] =
-		v1alpha1.BackendProperties{ResolvedHostname: "test-service-1.default"}
+		v1alpha1.BackendProperties{ResolvedHostname: "test-service-1.default", Protocol: v1alpha1.HTTPProtocol}
 	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "test-service-2"}] =
-		v1alpha1.BackendProperties{ResolvedHostname: "test-service-2.default"}
+		v1alpha1.BackendProperties{ResolvedHostname: "test-service-2.default", Protocol: v1alpha1.HTTPProtocol}
 	httpRouteState.BackendPropertyMapping = backendPropertyMapping
 
 	apiState.ProdHTTPRoute = &httpRouteState
 
 	mgwSwagger, err := synchronizer.GenerateMGWSwagger(apiState, &httpRouteState)
 	assert.Nil(t, err, "Error should not be present when apiState is converted to a MgwSwagger object")
-	routes, clusters, _, _ := envoy.CreateRoutesWithClusters(*mgwSwagger, nil, nil, "prod.gw.wso2.com", "carbon.super")
+	routes, clusters, _, _ := envoy.CreateRoutesWithClusters(*mgwSwagger, nil, "prod.gw.wso2.com", "carbon.super")
 	assert.Equal(t, 2, len(clusters), "Number of production clusters created is incorrect.")
 
 	exactPathCluster := clusters[0]
@@ -259,20 +259,20 @@ func TestCreateRoutesWithClustersWithMultiplePathPrefixRules(t *testing.T) {
 
 	backendPropertyMapping := make(v1alpha1.BackendPropertyMapping)
 	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "order-service"}] =
-		v1alpha1.BackendProperties{ResolvedHostname: "order-service.default"}
+		v1alpha1.BackendProperties{ResolvedHostname: "order-service.default", Protocol: v1alpha1.HTTPProtocol}
 	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "order-service-2"}] =
-		v1alpha1.BackendProperties{ResolvedHostname: "order-service-2.default"}
+		v1alpha1.BackendProperties{ResolvedHostname: "order-service-2.default", Protocol: v1alpha1.HTTPProtocol}
 	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "user-service"}] =
-		v1alpha1.BackendProperties{ResolvedHostname: "user-service.default"}
+		v1alpha1.BackendProperties{ResolvedHostname: "user-service.default", Protocol: v1alpha1.HTTPProtocol}
 	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "user-service-2"}] =
-		v1alpha1.BackendProperties{ResolvedHostname: "user-service-2.default"}
+		v1alpha1.BackendProperties{ResolvedHostname: "user-service-2.default", Protocol: v1alpha1.HTTPProtocol}
 	httpRouteState.BackendPropertyMapping = backendPropertyMapping
 
 	apiState.ProdHTTPRoute = &httpRouteState
 
 	mgwSwagger, err := synchronizer.GenerateMGWSwagger(apiState, &httpRouteState)
 	assert.Nil(t, err, "Error should not be present when apiState is converted to a MgwSwagger object")
-	routes, clusters, _, _ := envoy.CreateRoutesWithClusters(*mgwSwagger, nil, nil, "prod.gw.wso2.com", "carbon.super")
+	routes, clusters, _, _ := envoy.CreateRoutesWithClusters(*mgwSwagger, nil, "prod.gw.wso2.com", "carbon.super")
 	assert.Equal(t, 2, len(clusters), "Number of production clusters created is incorrect.")
 
 	orderServiceCluster := clusters[0]
@@ -336,6 +336,100 @@ func TestCreateRoutesWithClustersWithMultiplePathPrefixRules(t *testing.T) {
 	assert.Contains(t, []string{"^/test-api/1\\.0\\.0/users((?:/.*)*)"}, routes[7].GetMatch().GetSafeRegex().Regex)
 	assert.NotEqual(t, routes[0].GetMatch().GetSafeRegex().Regex, routes[7].GetMatch().GetSafeRegex().Regex,
 		"The route regex for the two paths should not be the same")
+}
+
+func TestCreateRoutesWithClustersWithBackendTLSConfigs(t *testing.T) {
+	apiState := synchronizer.APIState{}
+	apiDefinition := v1alpha1.API{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "default",
+			Name:      "test-api-3",
+		},
+		Spec: v1alpha1.APISpec{
+			APIDisplayName:   "test-api-3",
+			APIVersion:       "1.0.0",
+			Context:          "/test-api-3/1.0.0",
+			ProdHTTPRouteRef: "test-api-3-prod-http-route",
+		},
+	}
+	apiState.APIDefinition = &apiDefinition
+	httpRouteState := synchronizer.HTTPRouteState{}
+	methodTypeGet := gwapiv1b1.HTTPMethodGet
+
+	httpRoute := gwapiv1b1.HTTPRoute{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "default",
+			Name:      "test-api-3-prod-http-route",
+		},
+		Spec: gwapiv1b1.HTTPRouteSpec{
+			Hostnames:       []gwapiv1b1.Hostname{"prod.gw.wso2.com"},
+			CommonRouteSpec: createDefaultCommonRouteSpec(),
+			Rules: []gwapiv1b1.HTTPRouteRule{
+				{
+					Matches: []gwapiv1b1.HTTPRouteMatch{
+						{
+							Path: &gwapiv1b1.HTTPPathMatch{
+								Type:  operatorutils.PathMatchTypePtr(gwapiv1b1.PathMatchExact),
+								Value: operatorutils.StringPtr("/resource-path"),
+							},
+							Method: &methodTypeGet,
+						},
+					},
+					Filters: []gwapiv1b1.HTTPRouteFilter{
+						{
+							Type: gwapiv1b1.HTTPRouteFilterType("URLRewrite"),
+							URLRewrite: &gwapiv1b1.HTTPURLRewriteFilter{
+								Path: &gwapiv1b1.HTTPPathModifier{
+									Type:               gwapiv1b1.PrefixMatchHTTPPathModifier,
+									ReplacePrefixMatch: operatorutils.StringPtr("/backend-base-path"),
+								},
+							},
+						},
+					},
+					BackendRefs: []gwapiv1b1.HTTPBackendRef{
+						createDefaultBackendRef("test-service-3", 443, 1),
+					},
+				},
+			},
+		},
+	}
+
+	httpRouteState.HTTPRoute = &httpRoute
+	httpRouteState.Authentications = make(map[string]v1alpha1.Authentication)
+	httpRouteState.ResourceAuthentications = make(map[string]v1alpha1.Authentication)
+
+	backendPropertyMapping := make(v1alpha1.BackendPropertyMapping)
+	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "test-service-3"}] =
+		v1alpha1.BackendProperties{ResolvedHostname: "webhook.site",
+			Protocol: v1alpha1.HTTPSProtocol,
+			TLS: v1alpha1.TLSConfig{
+				CertificateInline: `-----BEGIN CERTIFICATE-----test-cert-data-----END CERTIFICATE-----`,
+			}}
+	httpRouteState.BackendPropertyMapping = backendPropertyMapping
+
+	apiState.ProdHTTPRoute = &httpRouteState
+
+	mgwSwagger, err := synchronizer.GenerateMGWSwagger(apiState, &httpRouteState)
+	assert.Nil(t, err, "Error should not be present when apiState is converted to a MgwSwagger object")
+	_, clusters, _, _ := envoy.CreateRoutesWithClusters(*mgwSwagger, nil, "prod.gw.wso2.com", "carbon.super")
+	assert.Equal(t, 1, len(clusters), "Number of production clusters created is incorrect.")
+
+	exactPathCluster := clusters[0]
+
+	assert.True(t, strings.HasPrefix(exactPathCluster.GetName(), "carbon.super__prod.gw.wso2.com_test-api-31.0.0_"),
+		"Exact path cluster name mismatch, %v", exactPathCluster.GetName())
+
+	exactPathClusterHost := exactPathCluster.GetLoadAssignment().GetEndpoints()[0].GetLbEndpoints()[0].GetEndpoint().
+		GetAddress().GetSocketAddress().GetAddress()
+	exactPathClusterPort := exactPathCluster.GetLoadAssignment().GetEndpoints()[0].GetLbEndpoints()[0].GetEndpoint().
+		GetAddress().GetSocketAddress().GetPortValue()
+	exactPathClusterPriority := exactPathCluster.GetLoadAssignment().GetEndpoints()[0].Priority
+
+	assert.NotEmpty(t, exactPathClusterHost, "Exact path cluster's assigned host should not be null")
+	assert.Equal(t, "webhook.site", exactPathClusterHost, "Exact path cluster's assigned host is incorrect.")
+	assert.NotEmpty(t, exactPathClusterPort, "Exact path cluster's assigned port should not be null")
+	assert.Equal(t, uint32(443), exactPathClusterPort, "Exact path cluster's assigned port is incorrect.")
+	assert.Equal(t, uint32(0), exactPathClusterPriority, "Exact path cluster's assigned Priority is incorrect.")
 }
 
 func createDefaultCommonRouteSpec() gwapiv1b1.CommonRouteSpec {

@@ -52,6 +52,7 @@ const (
 	authenticationAPIIndex      = "authenticationAPIIndex"
 	authenticationResourceIndex = "authenticationResourceIndex"
 	serviceHTTPRouteIndex       = "serviceHTTPRouteIndex"
+	serviceBackendPolicy        = "serviceBackendPolicy"
 )
 
 // APIReconciler reconciles a API object
@@ -119,6 +120,16 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 			Message:   fmt.Sprintf("Error watching Service resources: %v", err),
 			Severity:  logging.BLOCKER,
 			ErrorCode: 2618,
+		})
+		return err
+	}
+
+	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.BackendPolicy{}}, handler.EnqueueRequestsFromMapFunc(r.getAPIsForBackendPolicy),
+		predicates...); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("Error watching BackendPolicy resources: %v", err),
+			Severity:  logging.BLOCKER,
+			ErrorCode: 2624,
 		})
 		return err
 	}
@@ -284,12 +295,16 @@ func (apiReconciler *APIReconciler) getBackendProperties(ctx context.Context,
 	backendPropertyMapping := make(dpv1alpha1.BackendPropertyMapping)
 	for _, rule := range httpRoute.Spec.Rules {
 		for _, backend := range rule.BackendRefs {
-			backendPropertyMapping[types.NamespacedName{
+			backendNamespacedName := types.NamespacedName{
 				Name:      string(backend.Name),
 				Namespace: utils.GetNamespace(backend.Namespace, httpRoute.Namespace),
-			}] = dpv1alpha1.BackendProperties{
+			}
+			tls, protocol := apiReconciler.getBackendConfigs(ctx, backendNamespacedName)
+			backendPropertyMapping[backendNamespacedName] = dpv1alpha1.BackendProperties{
 				ResolvedHostname: apiReconciler.getHostNameForBackend(ctx,
 					backend, httpRoute.Namespace),
+				TLS:      tls,
+				Protocol: protocol,
 			}
 		}
 	}
@@ -313,6 +328,43 @@ func (apiReconciler *APIReconciler) getHostNameForBackend(ctx context.Context, b
 		}
 	}
 	return utils.GetDefaultHostNameForBackend(backend, defaultNamespace)
+}
+
+// getTLSConfigForBackend resolves backend TLS configurations.
+func (apiReconciler *APIReconciler) getBackendConfigs(ctx context.Context,
+	serviceNamespacedName types.NamespacedName) (dpv1alpha1.TLSConfig, dpv1alpha1.BackendProtocolType) {
+	tlsConfig := dpv1alpha1.TLSConfig{}
+	protocol := dpv1alpha1.HTTPProtocol
+	backendPolicyList := &dpv1alpha1.BackendPolicyList{}
+	if err := apiReconciler.client.List(ctx, backendPolicyList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(serviceBackendPolicy, serviceNamespacedName.String()),
+	}); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("Unable to find associated BackendPolicies for service: %s", serviceNamespacedName),
+			Severity:  logging.CRITICAL,
+			ErrorCode: 2611,
+		})
+	}
+	if len(backendPolicyList.Items) > 0 {
+		backendPolicy := *utils.TieBreaker(utils.GetPtrSlice(backendPolicyList.Items))
+		tlsConfig = backendPolicy.Spec.Default.TLS
+		backendProtocol := backendPolicy.Spec.Default.Protocol
+		if len(backendProtocol) > 0 {
+			switch protocol {
+			case dpv1alpha1.HTTPProtocol:
+				fallthrough
+			case dpv1alpha1.HTTPSProtocol:
+				fallthrough
+			case dpv1alpha1.WSProtocol:
+				fallthrough
+			case dpv1alpha1.WSSProtocol:
+				protocol = backendProtocol
+			default:
+				protocol = dpv1alpha1.HTTPProtocol
+			}
+		}
+	}
+	return tlsConfig, protocol
 }
 
 // getAPIForHTTPRoute triggers the API controller reconcile method based on the changes detected
@@ -397,6 +449,36 @@ func (apiReconciler *APIReconciler) getAPIsForService(obj k8client.Object) []rec
 		requests = append(requests, apiReconciler.getAPIForHTTPRoute(&httpRoute)...)
 	}
 	return requests
+}
+
+// getAPIsForBackendPolicy triggers the API controller reconcile method based on the changes detected
+// from BackendPolicy objects using the targetRef to a Service object.
+func (apiReconciler *APIReconciler) getAPIsForBackendPolicy(obj k8client.Object) []reconcile.Request {
+	ctx := context.Background()
+	backendPolicy, ok := obj.(*dpv1alpha1.BackendPolicy)
+	if !ok {
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("Unexpected object type, bypassing reconciliation: %v", backendPolicy),
+			Severity:  logging.TRIVIAL,
+			ErrorCode: 2622,
+		})
+		return []reconcile.Request{}
+	}
+
+	service := &corev1.Service{}
+	if err := apiReconciler.client.Get(ctx, types.NamespacedName{
+		Name: string(backendPolicy.Spec.TargetRef.Name),
+		Namespace: utils.GetNamespace((*gwapiv1b1.Namespace)(backendPolicy.Spec.TargetRef.Namespace),
+			backendPolicy.Namespace),
+	}, service); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("Unable to find associated Service for BackendPolicy: %s", utils.NamespacedName(backendPolicy).String()),
+			Severity:  logging.CRITICAL,
+			ErrorCode: 2623,
+		})
+		return []reconcile.Request{}
+	}
+	return apiReconciler.getAPIsForService(service)
 }
 
 // getAPIForAuthentication triggers the API controller reconcile method based on the changes detected
@@ -502,6 +584,23 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 						Name: string(backendRef.Name),
 					}.String())
 				}
+			}
+			return services
+		}); err != nil {
+		return err
+	}
+
+	// Service to BackendPolicy indexer
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.BackendPolicy{}, serviceBackendPolicy,
+		func(rawObj k8client.Object) []string {
+			backendPolicy := rawObj.(*dpv1alpha1.BackendPolicy)
+			var services []string
+			if backendPolicy.Spec.TargetRef.Kind == constants.KindService {
+				services = append(services,
+					types.NamespacedName{
+						Name:      string(backendPolicy.Spec.TargetRef.Name),
+						Namespace: backendPolicy.Namespace,
+					}.String())
 			}
 			return services
 		}); err != nil {

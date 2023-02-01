@@ -38,7 +38,11 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, au
 	var resources []*Resource
 	var securitySchemes []SecurityScheme
 	//TODO(amali) add gateway level securities after gateway crd has implemented
-	authScheme := selectAuthScheme(maps.Values(authSchemes))
+	outputAuthScheme := utils.TieBreaker(utils.GetPtrSlice(maps.Values(authSchemes)))
+	var authScheme *dpv1alpha1.Authentication
+	if outputAuthScheme != nil {
+		authScheme = *outputAuthScheme
+	}
 	for _, rule := range httpRoute.Spec.Rules {
 		var endPoints []Endpoint
 		var policies = OperationPolicies{}
@@ -114,13 +118,16 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, au
 			return fmt.Errorf("no backendref were provided")
 		}
 		for _, backend := range rule.BackendRefs {
+			backendProperties := backendPropertyMapping[types.NamespacedName{
+				Name:      string(backend.Name),
+				Namespace: utils.GetNamespace(backend.Namespace, httpRoute.Namespace),
+			}]
 			endPoints = append(endPoints,
-				Endpoint{Host: backendPropertyMapping[types.NamespacedName{
-					Name:      string(backend.Name),
-					Namespace: utils.GetNamespace(backend.Namespace, httpRoute.Namespace),
-				}].ResolvedHostname,
-					URLType: constants.HTTP,
-					Port:    uint32(*backend.Port)})
+				Endpoint{Host: backendProperties.ResolvedHostname,
+					URLType:     string(backendProperties.Protocol),
+					Port:        uint32(*backend.Port),
+					Certificate: []byte(backendProperties.TLS.CertificateInline),
+				})
 		}
 
 		for _, match := range rule.Matches {
@@ -235,23 +242,6 @@ func concatAuthScheme(scheme *dpv1alpha1.Authentication) *dpv1alpha1.Authenticat
 		}
 	}
 	return &finalAuth
-}
-
-func selectAuthScheme(authSchemes []dpv1alpha1.Authentication) *dpv1alpha1.Authentication {
-	if len(authSchemes) < 1 {
-		return nil
-	}
-	selectedAuth := &authSchemes[0]
-	// According to https://gateway-api.sigs.k8s.io/geps/gep-713/?h=multiple+targetrefs#conflict-resolution
-	for _, authScheme := range authSchemes[1:] {
-		if selectedAuth.CreationTimestamp.After(authScheme.CreationTimestamp.Time) {
-			selectedAuth = &authScheme
-		} else if selectedAuth.CreationTimestamp.String() == authScheme.CreationTimestamp.Time.String() &&
-			utils.NamespacedName(selectedAuth).String() > utils.NamespacedName(&authScheme).String() {
-			selectedAuth = &authScheme
-		}
-	}
-	return selectedAuth
 }
 
 // getSecurity returns security schemes and it's definitions with flag to indicate if security is disabled

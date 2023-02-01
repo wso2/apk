@@ -100,6 +100,8 @@ type Endpoint struct {
 	//ServiceDiscoveryQuery consul query for service discovery
 	ServiceDiscoveryString string
 	RawURL                 string
+	// Trusted CA Cerificate for the endpoint
+	Certificate []byte
 }
 
 // EndpointSecurity contains parameters of endpoint security at api.json

@@ -26,4 +26,6 @@ type BackendPropertyMapping map[types.NamespacedName]BackendProperties
 // BackendProperties holds backend properties
 type BackendProperties struct {
 	ResolvedHostname string
+	Protocol         BackendProtocolType
+	TLS              TLSConfig
 }
