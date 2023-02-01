@@ -1,9 +1,8 @@
 {
 	"info": {
-		"_postman_id": "2ba8a4dd-9002-4003-89a2-665f56c76b73",
+		"_postman_id": "3e515b82-3dd0-42fe-ba30-7a79c4c717a4",
 		"name": "Test Backoffice Operations",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "16040063"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
@@ -44,6 +43,11 @@
 						"key": "Content-Type",
 						"value": "application/json",
 						"type": "text"
+					},
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
 					}
 				],
 				"body": {
@@ -89,7 +93,13 @@
 			],
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
 				"url": {
 					"raw": "{{backOfficeAPIServerBaseURL}}/api/am/backoffice/apis/",
 					"host": [
@@ -129,7 +139,13 @@
 			],
 			"request": {
 				"method": "POST",
-				"header": [],
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
 				"url": {
 					"raw": "{{backOfficeAPIServerBaseURL}}/api/am/backoffice/apis/change-lifecycle?apiId={{idTest1}}&targetState={{lifeCycleStatusTest2}}",
 					"host": [
@@ -179,7 +195,13 @@
 			],
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
 				"url": {
 					"raw": "http://localhost/api/am/backoffice/apis/01ed75e2-b30b-18c8-wwf2-25da7edd2231/lifecycle-state",
 					"protocol": "http",
@@ -226,7 +248,13 @@
 			],
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
 				"url": {
 					"raw": "{{backOfficeAPIServerBaseURL}}/api/am/backoffice/apis/{{idTest1}}/lifecycle-history",
 					"host": [
@@ -262,7 +290,13 @@
 			],
 			"request": {
 				"method": "DELETE",
-				"header": [],
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
 				"url": {
 					"raw": "{{internalBackOfficeAPIServerBaseURL}}/api/am/backoffice/internal/apis/{{idTest1}}",
 					"host": [

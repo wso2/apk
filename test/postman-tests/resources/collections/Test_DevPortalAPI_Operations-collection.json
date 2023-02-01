@@ -1,9 +1,8 @@
 {
 	"info": {
-		"_postman_id": "4a2e18ed-31f9-499f-83ca-28856c78c4c0",
+		"_postman_id": "239527c4-9a71-415a-a674-9822664323a1",
 		"name": "APK-Devportal API Operations",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "16040063"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
@@ -37,7 +36,13 @@
 			],
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
 				"url": {
 					"raw": "{{devPortalBaseURL}}/api/am/devportal/apis",
 					"host": [
@@ -76,7 +81,13 @@
 			],
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
 				"url": {
 					"raw": "{{devPortalBaseURL}}/api/am/devportal/apis",
 					"host": [
@@ -118,9 +129,15 @@
 			],
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
 				"url": {
-					"raw": "{{devPortalBaseURL}}/api/am/devportal/apis/{{testAPIID}}",
+					"raw": "{{devPortalBaseURL}}/api/am/devportal/apis/{{testAPIID}}?",
 					"host": [
 						"{{devPortalBaseURL}}"
 					],
@@ -130,6 +147,12 @@
 						"devportal",
 						"apis",
 						"{{testAPIID}}"
+					],
+					"query": [
+						{
+							"key": "",
+							"value": null
+						}
 					]
 				}
 			},
@@ -153,7 +176,13 @@
 			],
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
 				"url": {
 					"raw": "{{devPortalBaseURL}}/api/am/devportal/apis/{{testAPIID}}/definition",
 					"host": [
@@ -188,7 +217,13 @@
 			],
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
 				"url": {
 					"raw": "{{devPortalBaseURL}}/api/am/devportal/sdk-gen/languages",
 					"host": [
@@ -222,7 +257,13 @@
 			],
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
 				"url": {
 					"raw": "{{devPortalBaseURL}}/api/am/devportal/apis/{{testAPIID}}/sdks/java",
 					"host": [
@@ -287,7 +328,7 @@
 					}
 				},
 				"url": {
-					"raw": "{{adminAPIServerBaseURL}}/api/am/admin/application-rate-plans",
+					"raw": "{{adminAPIServerBaseURL}}/api/am/admin/application-rate-plans?Host=api.am.wso2.com",
 					"host": [
 						"{{adminAPIServerBaseURL}}"
 					],
@@ -296,6 +337,12 @@
 						"am",
 						"admin",
 						"application-rate-plans"
+					],
+					"query": [
+						{
+							"key": "Host",
+							"value": "api.am.wso2.com"
+						}
 					]
 				}
 			},
@@ -329,7 +376,13 @@
 			],
 			"request": {
 				"method": "POST",
-				"header": [],
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
 				"body": {
 					"mode": "raw",
 					"raw": "{\n  \"name\": \"{{testAppName}}\",\n  \"throttlingPolicy\": \"{{testAppThrottlingPolicy}}\",\n  \"description\": \"{{testAppDescription}}\",\n  \"tokenType\": \"{{testAppTokenType}}\",\n  \"groups\": [],\n  \"attributes\": {}\n}",
@@ -358,7 +411,13 @@
 			"name": "DevportalAPI Application GET By ID",
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
 				"url": {
 					"raw": "{{devPortalBaseURL}}/api/am/devportal/applications/{{testApplicationID}}",
 					"host": [
@@ -403,7 +462,13 @@
 			],
 			"request": {
 				"method": "PUT",
-				"header": [],
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
 				"body": {
 					"mode": "raw",
 					"raw": "{\n  \"name\": \"{{testAppName}}\",\n  \"throttlingPolicy\": \"{{testAppThrottlingPolicy}}\",\n  \"description\": \"{{testAppDescription2}}\",\n  \"tokenType\": \"{{testAppTokenType}}\",\n  \"groups\": [],\n  \"attributes\": {}\n}",
@@ -433,7 +498,13 @@
 			"name": "DevportalAPI List Application Copy",
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
 				"url": {
 					"raw": "{{devPortalBaseURL}}/api/am/devportal/applications",
 					"host": [
@@ -453,7 +524,13 @@
 			"name": "DevportalAPI Application Delete Copy",
 			"request": {
 				"method": "DELETE",
-				"header": [],
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
 				"url": {
 					"raw": "{{devPortalBaseURL}}/api/am/devportal/applications/{{testApplicationID}}",
 					"host": [
@@ -488,7 +565,13 @@
 			],
 			"request": {
 				"method": "DELETE",
-				"header": [],
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
 				"body": {
 					"mode": "raw",
 					"raw": "{\n  \"policyName\": \"30PerMin\",\n  \"displayName\": \"30PerMin\",\n  \"description\": \"30 Per Min\",\n  \"type\": \"ApplicationThrottlePolicy\",\n  \"defaultLimit\": {\n    \"type\": \"REQUESTCOUNTLIMIT\",\n    \"requestCount\": {\n      \"requestCount\": 10,\n      \"timeUnit\": \"min\",\n      \"unitTime\": 1\n    }\n  }\n}",

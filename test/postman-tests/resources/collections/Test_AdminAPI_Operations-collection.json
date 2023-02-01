@@ -1,9 +1,8 @@
 {
 	"info": {
-		"_postman_id": "5e2ffa62-61b8-4dba-8e2a-4ffd29db22a5",
+		"_postman_id": "7674eece-f4c5-4356-b901-338ceb9dc548",
 		"name": "Test Admin API Operations",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "16040063"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
@@ -41,7 +40,13 @@
 			],
 			"request": {
 				"method": "POST",
-				"header": [],
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
 				"body": {
 					"mode": "raw",
 					"raw": "{\n  \"planName\": \"{{applicationRatePlanName}}\",\n  \"displayName\": \"{{applicationRatePlanDisplayName}}\",\n  \"description\": \"{{applicationRatePlanDescription}}\",\n  \"defaultLimit\": {\n    \"type\": \"{{applicationRatePlanType}}\",\n    \"requestCount\": {\n      \"requestCount\": {{applicationRatePlanRequestCount}},\n      \"timeUnit\": \"{{applicationRatePlanTimeUnit}}\",\n      \"unitTime\": {{applicationRatePlanTime}}\n    }\n  }\n}",
@@ -97,7 +102,13 @@
 			],
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
 				"url": {
 					"raw": "{{adminAPIServerBaseURL}}/api/am/admin/application-rate-plans/{{applicationRatePlanID}}",
 					"host": [
@@ -147,7 +158,13 @@
 			],
 			"request": {
 				"method": "PUT",
-				"header": [],
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
 				"body": {
 					"mode": "raw",
 					"raw": "{\n  \"planName\": \"{{applicationRatePlanName2}}\",\n  \"displayName\": \"{{applicationRatePlanDisplayName2}}\",\n  \"description\": \"{{applicationRatePlanDescription2}}\",\n  \"defaultLimit\": {\n    \"type\": \"{{applicationRatePlanType2}}\",\n    \"requestCount\": {\n      \"requestCount\": {{applicationRatePlanRequestCount2}},\n      \"timeUnit\": \"{{applicationRatePlanTimeUnit2}}\",\n      \"unitTime\": {{applicationRatePlanTime2}}\n    }\n  }\n}",
@@ -158,10 +175,9 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost/api/am/admin/application-rate-plans/{{applicationRatePlanID}}",
-					"protocol": "http",
+					"raw": "{{adminAPIServerBaseURL}}/api/am/admin/application-rate-plans/{{applicationRatePlanID}}",
 					"host": [
-						"localhost"
+						"{{adminAPIServerBaseURL}}"
 					],
 					"path": [
 						"api",
@@ -178,7 +194,13 @@
 			"name": "AdminAPI List Application Rate Plans",
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
 				"url": {
 					"raw": "{{adminAPIServerBaseURL}}/api/am/admin/application-rate-plans",
 					"host": [
@@ -212,7 +234,13 @@
 			],
 			"request": {
 				"method": "DELETE",
-				"header": [],
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
 				"body": {
 					"mode": "raw",
 					"raw": "{\n  \"policyName\": \"30PerMin\",\n  \"displayName\": \"30PerMin\",\n  \"description\": \"30 Per Min\",\n  \"type\": \"ApplicationThrottlePolicy\",\n  \"defaultLimit\": {\n    \"type\": \"REQUESTCOUNTLIMIT\",\n    \"requestCount\": {\n      \"requestCount\": 10,\n      \"timeUnit\": \"min\",\n      \"unitTime\": 1\n    }\n  }\n}",
@@ -263,7 +291,13 @@
 			],
 			"request": {
 				"method": "POST",
-				"header": [],
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
 				"body": {
 					"mode": "raw",
 					"raw": "{\n  \"conditionType\": \"{{denyPolicyConditionTypeApplication}}\",\n  \"conditionValue\": \"{{denyPolicyConditionValueApplication}}\",\n  \"conditionStatus\": {{denyPolicyConditionStateApplication}}\n}",
@@ -274,7 +308,7 @@
 					}
 				},
 				"url": {
-					"raw": "{{adminAPIServerBaseURL}}/api/am/admin/deny-policies",
+					"raw": "{{adminAPIServerBaseURL}}/api/am/admin/deny-policies?",
 					"host": [
 						"{{adminAPIServerBaseURL}}"
 					],
@@ -283,6 +317,12 @@
 						"am",
 						"admin",
 						"deny-policies"
+					],
+					"query": [
+						{
+							"key": "",
+							"value": null
+						}
 					]
 				}
 			},
@@ -312,7 +352,13 @@
 			],
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
 				"url": {
 					"raw": "{{adminAPIServerBaseURL}}/api/am/admin/deny-policies/{{applicationDenyPolicyID}}",
 					"host": [
@@ -352,7 +398,13 @@
 			],
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
 				"url": {
 					"raw": "{{adminAPIServerBaseURL}}/api/am/admin/deny-policies",
 					"host": [
@@ -386,7 +438,13 @@
 			],
 			"request": {
 				"method": "DELETE",
-				"header": [],
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
 				"body": {
 					"mode": "raw",
 					"raw": "{\n  \"policyName\": \"30PerMin\",\n  \"displayName\": \"30PerMin\",\n  \"description\": \"30 Per Min\",\n  \"type\": \"ApplicationThrottlePolicy\",\n  \"defaultLimit\": {\n    \"type\": \"REQUESTCOUNTLIMIT\",\n    \"requestCount\": {\n      \"requestCount\": 10,\n      \"timeUnit\": \"min\",\n      \"unitTime\": 1\n    }\n  }\n}",
@@ -416,7 +474,13 @@
 			"name": "AdminAPI Deny Policy Update",
 			"request": {
 				"method": "PATCH",
-				"header": [],
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
 				"body": {
 					"mode": "raw",
 					"raw": "{\n  \"conditionStatus\": false\n}",
