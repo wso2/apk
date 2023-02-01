@@ -21,7 +21,7 @@ import ballerina/test;
 
 @test:Config {dependsOn: [createAPITest]}
 function getAPITest() {
-    APIList|APKError getAPI = getAPIList();
+    APIList|APKError getAPI = getAPIList(25,0,"content:pizza","carbon.super");
     if getAPI is APIList {
         test:assertTrue(true, "Successfully retrieve APIs");
         log:printInfo(getAPI.toString());

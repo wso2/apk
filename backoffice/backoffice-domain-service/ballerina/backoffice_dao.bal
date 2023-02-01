@@ -19,6 +19,7 @@
 import ballerina/sql;
 import ballerina/time;
 import ballerinax/postgresql;
+import ballerina/io;
 
 isolated function db_getAPIsDAO() returns API[]|APKError {
     postgresql:Client | error db_Client  = getConnection();
@@ -311,6 +312,29 @@ isolated function getAPICategoriesDAO(string org) returns APICategory[]|APKError
             return apiCategoryList;
         } on fail var e {
         	string message = "Internal Error occured while retrieving API Categories";
+            return error(message, e, message = message, description = message, code = 909001, statusCode = "500");
+        }
+    }
+}
+
+isolated function getAPIsByQueryDAO(string payload, string org) returns API[]|APKError {
+    postgresql:Client | error dbClient  = getConnection();
+    if dbClient is error {
+        string message = "Error while retrieving connection";
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+    } else {
+        do {
+            sql:ParameterizedQuery query = `SELECT DISTINCT API_UUID AS ID, API_ID as APIID,
+            API_PROVIDER as PROVIDER, API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS, 
+            ARTIFACT as ARTIFACT FROM API JOIN JSONB_EACH_TEXT(ARTIFACT) e ON true 
+            WHERE e.value LIKE ${payload}`;
+            stream<API, sql:Error?> apisStream = dbClient->query(query);
+            API[] apis = check from API api in apisStream select api;
+            check apisStream.close();
+            return apis;
+        } on fail var e {
+            io:print(e);
+            string message = "Internal Error occured while retrieving APIs";
             return error(message, e, message = message, description = message, code = 909001, statusCode = "500");
         }
     }
