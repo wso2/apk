@@ -20,6 +20,10 @@ import ballerina/log;
 import ballerinax/postgresql;
 import ballerina/sql;
 
+final string PUBLISHED = "PUBLISHED";
+final string PROTOTYPED = "PROTOTYPED";
+final string DEPRECATED = "DEPRECATED";
+
 isolated function getAPIByIdDAO(string apiId, string org) returns API|APKError|NotFoundError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
@@ -28,7 +32,8 @@ isolated function getAPIByIdDAO(string apiId, string org) returns API|APKError|N
     } else {
         sql:ParameterizedQuery query = `SELECT API_UUID AS ID, API_ID as APIID,
         API_PROVIDER as PROVIDER, API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS, API_TYPE as TYPE, string_to_array(SDK::text,',')::text[] AS SDK , ARTIFACT as ARTIFACT
-        FROM API WHERE API_UUID =${apiId} AND ORGANIZATION =${org}`;
+        FROM API WHERE API_UUID =${apiId} AND ORGANIZATION =${org} AND 
+        STATUS IN (${PUBLISHED},${PROTOTYPED},${DEPRECATED})`;
         API | sql:Error result =  dbClient->queryRow(query);
         if result is sql:NoRowsError {
             log:printDebug(result.toString());
@@ -53,7 +58,9 @@ isolated function getAPIsDAO(string org) returns API[]|APKError {
     } else {
         do {
             sql:ParameterizedQuery query = `SELECT API_UUID AS ID, API_ID as APIID,
-            API_PROVIDER as PROVIDER, API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS, API_TYPE as TYPE, ARTIFACT as ARTIFACT FROM API WHERE ORGANIZATION =${org}`;
+            API_PROVIDER as PROVIDER, API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS, 
+            API_TYPE as TYPE, ARTIFACT as ARTIFACT FROM API WHERE ORGANIZATION =${org} AND 
+            STATUS IN (${PUBLISHED},${PROTOTYPED},${DEPRECATED})`;
             stream<API, sql:Error?> apisStream = dbClient->query(query);
             API[] apis = check from API api in apisStream select api;
             check apisStream.close();
@@ -75,7 +82,8 @@ isolated function getAPIsByQueryDAO(string payload, string org) returns API[]|AP
             sql:ParameterizedQuery query = `SELECT DISTINCT API_UUID AS ID, API_ID as APIID,
             API_PROVIDER as PROVIDER, API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS, 
             API_TYPE as TYPE, ARTIFACT as ARTIFACT FROM API JOIN JSONB_EACH_TEXT(ARTIFACT) e ON true 
-            WHERE ORGANIZATION =${org} AND e.value LIKE ${payload}`;
+            WHERE ORGANIZATION =${org} AND e.value LIKE ${payload} AND 
+            STATUS IN (${PUBLISHED},${PROTOTYPED},${DEPRECATED})`;
             stream<API, sql:Error?> apisStream = dbClient->query(query);
             API[] apis = check from API api in apisStream select api;
             check apisStream.close();
