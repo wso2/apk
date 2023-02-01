@@ -30,7 +30,7 @@ function beforeFunc() {
             "context":"pizzssa",
             "version":"1.0.0",
             "provider":"admin",
-            "lifeCycleStatus":"CREATED",
+            "lifeCycleStatus":"PUBLISHED",
             "type":"HTTP"
         },
         "Definition" : {	  
