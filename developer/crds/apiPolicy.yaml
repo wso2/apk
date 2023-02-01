@@ -1,0 +1,20 @@
+apiVersion: wso2.com/v1beta1
+kind: APIPolicy
+metadata:
+  name: pet-store-authentication-1-resource-override
+Spec:
+  override:
+    cORSPolicy:
+    oPAPolicy:
+    requestQueryModifier:
+    requestMethodModifier:
+    requestInterceptor:
+      serviceURL:
+      includes:
+    responseInterceptor:
+    responseCaching:
+  default:
+    ...
+  targetRef:
+    Kind: HTTPRoute
+    Name: http-route-SwaggerPetstore

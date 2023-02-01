@@ -1,0 +1,27 @@
+apiVersion: wso2.com/v1beta1
+kind: Authentication
+metadata:
+  name: pet-store-authentication-1-resource-override
+Spec:
+  override:
+    type: ext
+    ext:
+      serviceRef:
+        group: wso2/v1alpha2
+        kind: Backend
+        name: ext_authz-server
+        port: 1234
+      disabled: true
+      tokenValidation: true
+      scopeValidation: true
+      subscriptionValidation: true
+      backendJWTEnabled: true
+      authTypes:
+          - type: jwt
+          - type: basic
+          - type: internalKey
+          - type: mtls
+            mtls: ...
+  targetRef:
+    Kind: Resource
+    Name: http-route-SwaggerPetstore
