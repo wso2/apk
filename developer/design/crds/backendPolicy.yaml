@@ -1,0 +1,35 @@
+---
+# Using given trusted cert for validation
+apiVersion: dp.wso2.com/v1alpha1
+kind: BackendPolicy
+metadata:
+ namespace: apk
+ name: backendpolicy-sample
+spec:
+ default:
+   protocol: https
+   tls: 
+     certificateInline: |
+       -----BEGIN CERTIFICATE-----
+       <cert-data>
+       -----END CERTIFICATE-----
+ targetRef:
+   group: ""
+   kind: Service
+   namespace: apk
+   name: web-hook-service
+---
+# Using default trusted ca certs for validation
+apiVersion: dp.wso2.com/v1alpha1
+kind: BackendPolicy
+metadata:
+ namespace: apk
+ name: backendpolicy-sample
+spec:
+ default:
+   protocol: https
+ targetRef:
+   group: ""
+   kind: Service
+   namespace: apk
+   name: web-hook-service
