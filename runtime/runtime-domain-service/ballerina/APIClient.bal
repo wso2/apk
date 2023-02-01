@@ -1470,6 +1470,7 @@ public class APIClient {
                                 runtimeModels:URITemplate template = check java:cast(uritemplate);
                                 operations.push({target: template.getUriTemplate(), authTypeEnabled: template.isAuthEnabled(), verb: template.getHTTPVerb().toString().toUpperAscii()});
                             }
+                            additionalPropertes.operations = operations;
                             return self.createAPI(additionalPropertes, validateAndRetrieveDefinitionResult.getContent(), organization);
                         }
                         log:printError("Error occured retrieving uri templates from definition", uRITemplates);

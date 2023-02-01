@@ -104,16 +104,20 @@ isolated function getAPI(string id, string organization) returns model:API|error
 
 isolated function putallAPIS(map<map<model:API>> orgApiMap, model:API[] apiData) {
     foreach model:API api in apiData {
-        lock {
-            map<model:API>|error orgmap = trap orgApiMap.get(api.spec.organization);
-            if orgmap is map<model:API> {
-                orgmap[<string>api.metadata.uid] = api.clone();
-            } else {
-                map<model:API> apiMap = {};
-                apiMap[<string>api.metadata.uid] = api.clone();
-                orgApiMap[api.spec.organization] = apiMap;
+        boolean systemAPI = api.spec.systemAPI ?: false;
+        if !systemAPI {
+            lock {
+                map<model:API>|error orgmap = trap orgApiMap.get(api.spec.organization);
+                if orgmap is map<model:API> {
+                    orgmap[<string>api.metadata.uid] = api.clone();
+                } else {
+                    map<model:API> apiMap = {};
+                    apiMap[<string>api.metadata.uid] = api.clone();
+                    orgApiMap[api.spec.organization] = apiMap;
+                }
             }
         }
+
     }
 }
 
@@ -146,7 +150,7 @@ function readAPIEvent(websocket:Client apiWebsocketClient) returns error? {
             setResourceVersion(latestResourceVersion);
             model:API|error apiModel = eventValue.cloneWithType(model:API);
             if apiModel is model:API {
-                if apiModel.metadata.namespace == getNameSpace(runtimeConfiguration.apiCreationNamespace) {
+                if (apiModel.metadata.namespace == getNameSpace(runtimeConfiguration.apiCreationNamespace)) {
                     if eventType == "ADDED" {
                         lock {
                             putAPI(apiModel.clone());
@@ -186,31 +190,24 @@ function handleWatchAPIGone(model:Status statusEvent) returns error? {
 }
 
 isolated function putAPI(model:API api) {
-    lock {
-        map<model:API>|error orgapiMap = trap apilist.get(api.spec.organization);
-        if orgapiMap is map<model:API> {
-            orgapiMap[<string>api.metadata.uid] = api.clone();
-        } else {
-            map<model:API> apiMap = {};
-            apiMap[<string>api.metadata.uid] = api.clone();
-            apilist[api.spec.organization] = apiMap;
+    boolean systemAPI = api.spec.systemAPI ?: false;
+    if !systemAPI {
+        lock {
+            map<model:API>|error orgapiMap = trap apilist.get(api.spec.organization);
+            if orgapiMap is map<model:API> {
+                orgapiMap[<string>api.metadata.uid] = api.clone();
+            } else {
+                map<model:API> apiMap = {};
+                apiMap[<string>api.metadata.uid] = api.clone();
+                apilist[api.spec.organization] = apiMap;
+            }
         }
     }
 }
 
 isolated function updateAPI(model:API api) {
-    lock {
-
-        map<model:API>|error orgapiMap = trap apilist.get(api.spec.organization);
-        if orgapiMap is map<model:API> {
-            _ = orgapiMap.remove(<string>api.metadata.uid);
-            orgapiMap[<string>api.metadata.uid] = api.clone();
-        } else {
-            map<model:API> apiMap = {};
-            apiMap[<string>api.metadata.uid] = api.clone();
-            apilist[api.spec.organization] = apiMap;
-        }
-    }
+    removeAPI(api);
+    putAPI(api);
 }
 
 isolated function removeAPI(model:API api) {
