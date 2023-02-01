@@ -546,7 +546,7 @@ spec:
                   required:
                   - value
                   type: object
-                maxItems: 16
+                maxItems: 100
                 type: array
               gatewayClassName:
                 description: GatewayClassName used for this Gateway. This is the name
@@ -935,7 +935,7 @@ spec:
                   required:
                   - value
                   type: object
-                maxItems: 16
+                maxItems: 100
                 type: array
               conditions:
                 default:
@@ -1241,7 +1241,7 @@ spec:
                   required:
                   - value
                   type: object
-                maxItems: 16
+                maxItems: 100
                 type: array
               gatewayClassName:
                 description: GatewayClassName used for this Gateway. This is the name
@@ -1629,7 +1629,7 @@ spec:
                   required:
                   - value
                   type: object
-                maxItems: 16
+                maxItems: 100
                 type: array
               conditions:
                 default:
@@ -1969,7 +1969,7 @@ spec:
                   minLength: 1
                   pattern: ^(\*\.)?[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
                   type: string
-                maxItems: 16
+                maxItems: 100
                 type: array
               parentRefs:
                 description: "ParentRefs references the resources (usually Gateways)
@@ -2207,7 +2207,7 @@ spec:
                                         - name
                                         - value
                                         type: object
-                                      maxItems: 16
+                                      maxItems: 100
                                       type: array
                                       x-kubernetes-list-map-keys:
                                       - name
@@ -2225,7 +2225,7 @@ spec:
                                         bar"
                                       items:
                                         type: string
-                                      maxItems: 16
+                                      maxItems: 100
                                       type: array
                                     set:
                                       description: "Set overwrites the request with
@@ -2265,7 +2265,7 @@ spec:
                                         - name
                                         - value
                                         type: object
-                                      maxItems: 16
+                                      maxItems: 100
                                       type: array
                                       x-kubernetes-list-map-keys:
                                       - name
@@ -2560,7 +2560,7 @@ spec:
                               required:
                               - type
                               type: object
-                            maxItems: 16
+                            maxItems: 100
                             type: array
                           group:
                             default: ""
@@ -2628,7 +2628,7 @@ spec:
                         required:
                         - name
                         type: object
-                      maxItems: 16
+                      maxItems: 100
                       type: array
                     filters:
                       description: "Filters define the filters that are applied to
@@ -2731,7 +2731,7 @@ spec:
                                   - name
                                   - value
                                   type: object
-                                maxItems: 16
+                                maxItems: 100
                                 type: array
                                 x-kubernetes-list-map-keys:
                                 - name
@@ -2747,7 +2747,7 @@ spec:
                                   \  GET /foo HTTP/1.1   my-header2: bar"
                                 items:
                                   type: string
-                                maxItems: 16
+                                maxItems: 100
                                 type: array
                               set:
                                 description: "Set overwrites the request with the
@@ -2784,7 +2784,7 @@ spec:
                                   - name
                                   - value
                                   type: object
-                                maxItems: 16
+                                maxItems: 100
                                 type: array
                                 x-kubernetes-list-map-keys:
                                 - name
@@ -3059,7 +3059,7 @@ spec:
                         required:
                         - type
                         type: object
-                      maxItems: 16
+                      maxItems: 100
                       type: array
                     matches:
                       default:
@@ -3158,7 +3158,7 @@ spec:
                               - name
                               - value
                               type: object
-                            maxItems: 16
+                            maxItems: 100
                             type: array
                             x-kubernetes-list-map-keys:
                             - name
@@ -3247,7 +3247,7 @@ spec:
                               - name
                               - value
                               type: object
-                            maxItems: 16
+                            maxItems: 100
                             type: array
                             x-kubernetes-list-map-keys:
                             - name
@@ -3256,7 +3256,7 @@ spec:
                       maxItems: 8
                       type: array
                   type: object
-                maxItems: 16
+                maxItems: 100
                 type: array
             type: object
           status:
@@ -3568,7 +3568,7 @@ spec:
                   minLength: 1
                   pattern: ^(\*\.)?[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
                   type: string
-                maxItems: 16
+                maxItems: 100
                 type: array
               parentRefs:
                 description: "ParentRefs references the resources (usually Gateways)
@@ -3806,7 +3806,7 @@ spec:
                                         - name
                                         - value
                                         type: object
-                                      maxItems: 16
+                                      maxItems: 100
                                       type: array
                                       x-kubernetes-list-map-keys:
                                       - name
@@ -3824,7 +3824,7 @@ spec:
                                         bar"
                                       items:
                                         type: string
-                                      maxItems: 16
+                                      maxItems: 100
                                       type: array
                                     set:
                                       description: "Set overwrites the request with
@@ -3864,7 +3864,7 @@ spec:
                                         - name
                                         - value
                                         type: object
-                                      maxItems: 16
+                                      maxItems: 100
                                       type: array
                                       x-kubernetes-list-map-keys:
                                       - name
@@ -4158,7 +4158,7 @@ spec:
                               required:
                               - type
                               type: object
-                            maxItems: 16
+                            maxItems: 100
                             type: array
                           group:
                             default: ""
@@ -4226,7 +4226,7 @@ spec:
                         required:
                         - name
                         type: object
-                      maxItems: 16
+                      maxItems: 100
                       type: array
                     filters:
                       description: "Filters define the filters that are applied to
@@ -4329,7 +4329,7 @@ spec:
                                   - name
                                   - value
                                   type: object
-                                maxItems: 16
+                                maxItems: 100
                                 type: array
                                 x-kubernetes-list-map-keys:
                                 - name
@@ -4345,7 +4345,7 @@ spec:
                                   \  GET /foo HTTP/1.1   my-header2: bar"
                                 items:
                                   type: string
-                                maxItems: 16
+                                maxItems: 100
                                 type: array
                               set:
                                 description: "Set overwrites the request with the
@@ -4382,7 +4382,7 @@ spec:
                                   - name
                                   - value
                                   type: object
-                                maxItems: 16
+                                maxItems: 100
                                 type: array
                                 x-kubernetes-list-map-keys:
                                 - name
@@ -4656,7 +4656,7 @@ spec:
                         required:
                         - type
                         type: object
-                      maxItems: 16
+                      maxItems: 100
                       type: array
                     matches:
                       default:
@@ -4755,7 +4755,7 @@ spec:
                               - name
                               - value
                               type: object
-                            maxItems: 16
+                            maxItems: 100
                             type: array
                             x-kubernetes-list-map-keys:
                             - name
@@ -4844,7 +4844,7 @@ spec:
                               - name
                               - value
                               type: object
-                            maxItems: 16
+                            maxItems: 100
                             type: array
                             x-kubernetes-list-map-keys:
                             - name
@@ -4853,7 +4853,7 @@ spec:
                       maxItems: 8
                       type: array
                   type: object
-                maxItems: 16
+                maxItems: 100
                 type: array
             type: object
           status:
@@ -5191,7 +5191,7 @@ spec:
                   - kind
                   - namespace
                   type: object
-                maxItems: 16
+                maxItems: 100
                 minItems: 1
                 type: array
               to:
@@ -5231,7 +5231,7 @@ spec:
                   - group
                   - kind
                   type: object
-                maxItems: 16
+                maxItems: 100
                 minItems: 1
                 type: array
             required:
@@ -5349,7 +5349,7 @@ spec:
                   - kind
                   - namespace
                   type: object
-                maxItems: 16
+                maxItems: 100
                 minItems: 1
                 type: array
               to:
@@ -5389,7 +5389,7 @@ spec:
                   - group
                   - kind
                   type: object
-                maxItems: 16
+                maxItems: 100
                 minItems: 1
                 type: array
             required:
@@ -5653,11 +5653,11 @@ spec:
                         required:
                         - name
                         type: object
-                      maxItems: 16
+                      maxItems: 100
                       minItems: 1
                       type: array
                   type: object
-                maxItems: 16
+                maxItems: 100
                 minItems: 1
                 type: array
             required:
@@ -5996,7 +5996,7 @@ spec:
                   minLength: 1
                   pattern: ^(\*\.)?[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
                   type: string
-                maxItems: 16
+                maxItems: 100
                 type: array
               parentRefs:
                 description: "ParentRefs references the resources (usually Gateways)
@@ -6198,11 +6198,11 @@ spec:
                         required:
                         - name
                         type: object
-                      maxItems: 16
+                      maxItems: 100
                       minItems: 1
                       type: array
                   type: object
-                maxItems: 16
+                maxItems: 100
                 minItems: 1
                 type: array
             required:
@@ -6694,11 +6694,11 @@ spec:
                         required:
                         - name
                         type: object
-                      maxItems: 16
+                      maxItems: 100
                       minItems: 1
                       type: array
                   type: object
-                maxItems: 16
+                maxItems: 100
                 minItems: 1
                 type: array
             required:

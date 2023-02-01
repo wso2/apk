@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "a2541153-0eda-4fe9-9344-fefed82dfabf",
+		"_postman_id": "5f748725-0bd0-485a-9bde-a11a721b8a53",
 		"name": "Test Runtime API Operations",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -38,7 +38,13 @@
 			],
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
 				"url": {
 					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/services",
 					"host": [
@@ -100,6 +106,11 @@
 						"key": "Accept",
 						"value": "application/json",
 						"type": "text"
+					},
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
 					}
 				],
 				"body": {
@@ -171,7 +182,13 @@
 			],
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
 				"url": {
 					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/apis",
 					"host": [
@@ -203,7 +220,13 @@
 			],
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
 				"url": {
 					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/apis/{{APIUUID}}",
 					"host": [
@@ -249,7 +272,13 @@
 			],
 			"request": {
 				"method": "DELETE",
-				"header": [],
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
 				"url": {
 					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/apis/{{APIUUID}}",
 					"host": [
@@ -295,7 +324,13 @@
 			],
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
 				"url": {
 					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/apis/{{APIUUID}}",
 					"host": [
@@ -359,6 +394,11 @@
 						"key": "Accept",
 						"value": "application/json",
 						"type": "text"
+					},
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
 					}
 				],
 				"body": {
@@ -438,7 +478,13 @@
 			],
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
 				"url": {
 					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/apis",
 					"host": [
@@ -497,6 +543,11 @@
 						"key": "Accept",
 						"value": "application/json",
 						"type": "text"
+					},
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
 					}
 				],
 				"body": {
@@ -592,7 +643,13 @@
 			],
 			"request": {
 				"method": "DELETE",
-				"header": [],
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
 				"url": {
 					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/apis/{{APIV2UUID}}",
 					"host": [
@@ -604,6 +661,49 @@
 						"runtime",
 						"apis",
 						"{{APIV2UUID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Call API after Deleting API",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Check API response and status code is 404\", function () {",
+							"  pm.response.to.have.status(404);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "HOST",
+						"value": "gw.wso2.com",
+						"type": "text"
+					},
+					{
+						"key": "Internal-Key",
+						"value": "{{APITestKey}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURL}}/t/carbon.super{{testAPIV2Context}}/get",
+					"host": [
+						"{{gatewayBaseURL}}"
+					],
+					"path": [
+						"t",
+						"carbon.super{{testAPIV2Context}}",
+						"get"
 					]
 				}
 			},
