@@ -36,7 +36,7 @@ listener http:Listener ep0 = new (BACKOFFICE_PORT);
 service /api/am/backoffice on ep0 {
     
     isolated resource function get apis(string? query, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0, string sortBy = "createdTime", string sortOrder = "desc", @http:Header string? accept = "application/json") returns APIList|http:NotModified|NotAcceptableError|InternalServerErrorError|BadRequestError {
-        APIList|APKError apiList = getAPIList(); 
+        APIList|APKError apiList = getAPIList('limit, offset, query, "carbon.super");
         if apiList is APIList {
             return apiList;
         } else {
