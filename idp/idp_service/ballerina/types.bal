@@ -47,6 +47,33 @@ public type TokenResponse record {
     string scope?;
 };
 
+public type JWKList_keys record {
+    string kid?;
+    string kty?;
+    string use?;
+    string[] key_ops?;
+    string alg?;
+    string x5u?;
+    string[] x5c?;
+    string x5t?;
+    string 'x5t\#S256?;
+    string e?;
+    string n?;
+    string x?;
+    string y?;
+    string d?;
+    string p?;
+    string q?;
+    string dp?;
+    string dq?;
+    string qi?;
+    string k?;
+};
+
+public type JWKList record {
+    JWKList_keys keys?;
+};
+
 public type Token_body record {
     # Required OAuth grant type
     string grant_type;
