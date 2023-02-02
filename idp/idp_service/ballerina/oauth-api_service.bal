@@ -24,7 +24,7 @@ service /oauth2 on ep0 {
         return {};
     }
     resource function post token(@http:Header string? authorization, @http:Payload {mediaType: "application/x-www-form-urlencoded"} Token_body payload) returns TokenResponse|BadRequestTokenErrorResponse|UnauthorizedTokenErrorResponse {
-    BadRequestTokenErrorResponse badRequest = {body: {preProcessingError: "Invalid client credentials"}};
-    return badRequest; 
+    }
+    resource function get keys() returns JWKList {
     }
 }
