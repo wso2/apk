@@ -89,7 +89,7 @@ func (r *API) validateAPI() error {
 }
 
 // validateAPIContext check for duplicate api contexts
-func (r *API) validateAPIContext() *field.Error {
+func (r *API) validateAPIContext() error {
 	ctx := context.Background()
 	apiList := &APIList{}
 	if err := c.List(ctx, apiList); err != nil {
@@ -121,7 +121,7 @@ func (r *API) validateAPIContext() *field.Error {
 }
 
 // validateMandatoryFields check mandatory fields
-func (r *API) validateMandatoryFields() *field.Error {
+func (r *API) validateMandatoryFields() error {
 	var errMsg string
 
 	if r.Spec.APIDisplayName == "" {
@@ -150,7 +150,7 @@ func (r *API) validateMandatoryFields() *field.Error {
 	return nil
 }
 
-func (r *API) validateFormats() *field.Error {
+func (r *API) validateFormats() error {
 	if errMsg := validateContext(r.Spec.Context); errMsg != "" {
 		return field.Invalid(field.NewPath("spec").Child("context"), r.Spec.Context, errMsg)
 	}
