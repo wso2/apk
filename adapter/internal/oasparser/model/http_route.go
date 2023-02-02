@@ -70,10 +70,14 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, au
 				})
 			case gwapiv1b1.HTTPRouteFilterExtensionRef:
 				if filter.ExtensionRef.Kind == constants.KindAuthentication {
-					if ref, found := resourceAuthSchemes[string(filter.ExtensionRef.Name)]; found {
+					if ref, found := resourceAuthSchemes[types.NamespacedName{
+						Name:      string(filter.ExtensionRef.Name),
+						Namespace: httpRoute.Namespace,
+					}.String()]; found {
 						resourceAuthScheme = concatAuthSchemes(authScheme, &ref)
 					} else {
-						return fmt.Errorf("auth scheme : %s has not been resolved", filter.ExtensionRef.Name)
+						return fmt.Errorf(`Auth scheme: %s has not been resolved, spec.targetRef.kind should be 
+						'Resource' in resource level Authentications`, filter.ExtensionRef.Name)
 					}
 				}
 			case gwapiv1b1.HTTPRouteFilterRequestHeaderModifier:
