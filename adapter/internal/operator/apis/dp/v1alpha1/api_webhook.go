@@ -21,6 +21,7 @@ import (
 	"context"
 	"errors"
 	"regexp"
+	"strings"
 
 	"github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/pkg/logging"
@@ -80,27 +81,50 @@ func (r *API) ValidateDelete() error {
 	return nil
 }
 
+// validateAPI validate api crd fields
 func (r *API) validateAPI() error {
 	var allErrs field.ErrorList
-	if err := r.validateMandatoryFields(); err != nil {
+
+	if r.Spec.APIDisplayName == "" {
+		allErrs = append(allErrs, field.Required(field.NewPath("spec").Child("apiDisplayName"), "API display name is required"))
+	} else if errMsg := validateAPIDisplayNameFormat(r.Spec.APIDisplayName); errMsg != "" {
+		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("apiDisplayName"), r.Spec.Context, errMsg))
+	}
+
+	if r.Spec.APIVersion == "" {
+		allErrs = append(allErrs, field.Required(field.NewPath("spec").Child("apiVersion"), "API version is required"))
+	} else if errMsg := validateAPIVersionFormat(r.Spec.APIVersion); errMsg != "" {
+		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("apiVersion"), r.Spec.Context, errMsg))
+	}
+
+	if r.Spec.Context == "" {
+		allErrs = append(allErrs, field.Required(field.NewPath("spec").Child("context"), "API context is required"))
+	} else if errMsg := validateAPIContextFormat(r.Spec.Context, r.Spec.APIVersion); errMsg != "" {
+		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("context"), r.Spec.Context, errMsg))
+	} else if err := r.validateAPIContextExists(); err != nil {
 		allErrs = append(allErrs, err)
 	}
-	if err := r.validateFormats(); err != nil {
-		allErrs = append(allErrs, err)
+
+	if errMsg := validateAPITypeFormat(r.Spec.APIType); errMsg != "" {
+		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("apiType"), r.Spec.Context, errMsg))
+	} else {
+		r.Spec.APIType = "REST"
 	}
-	if err := r.validateAPIContext(); err != nil {
-		allErrs = append(allErrs, err)
+
+	if r.Spec.ProdHTTPRouteRef == "" && r.Spec.SandHTTPRouteRef == "" {
+		allErrs = append(allErrs, field.Required(field.NewPath("spec"),
+			"both API production and sandbox endpoint references cannot be empty"))
 	}
-	if len(allErrs) == 0 {
-		return nil
+
+	if len(allErrs) > 0 {
+		return apierrors.NewInvalid(
+			schema.GroupKind{Group: "dp.wso2.com", Kind: "API"},
+			r.Name, allErrs)
 	}
-	return apierrors.NewInvalid(
-		schema.GroupKind{Group: "dp.wso2.com", Kind: "API"},
-		r.Name, allErrs)
+	return nil
 }
 
-// validateAPIContext check for duplicate api contexts
-func (r *API) validateAPIContext() *field.Error {
+func (r *API) validateAPIContextExists() *field.Error {
 	ctx := context.Background()
 	apiList := &APIList{}
 	if err := c.List(ctx, apiList); err != nil {
@@ -113,14 +137,8 @@ func (r *API) validateAPIContext() *field.Error {
 			errors.New("unable to list APIs for API context validation"))
 	}
 	for _, api := range apiList.Items {
-		if (types.NamespacedName{
-			Namespace: r.Namespace,
-			Name:      r.Name,
-		} != types.NamespacedName{
-			Namespace: api.Namespace,
-			Name:      api.Name,
-		}) &&
-			api.Spec.Context == r.Spec.Context {
+		if (types.NamespacedName{Namespace: r.Namespace, Name: r.Name} !=
+			types.NamespacedName{Namespace: api.Namespace, Name: api.Name}) && api.Spec.Context == r.Spec.Context {
 			return &field.Error{
 				Type:     field.ErrorTypeDuplicate,
 				Field:    field.NewPath("spec").Child("context").String(),
@@ -131,46 +149,42 @@ func (r *API) validateAPIContext() *field.Error {
 	return nil
 }
 
-// validateMandatoryFields check mandatory fields
-func (r *API) validateMandatoryFields() *field.Error {
-	var errMsg string
-
-	if r.Spec.APIDisplayName == "" {
-		errMsg = "API display name "
+func validateAPIContextFormat(context string, apiVersion string) string {
+	if len(context) > 232 {
+		return "API context character length should not exceed 232."
 	}
-
-	if r.Spec.APIVersion == "" {
-		errMsg = errMsg + "API version "
-	}
-
-	if r.Spec.Context == "" {
-		errMsg = errMsg + "API context "
-	}
-	if r.Spec.APIType == "" {
-		errMsg = errMsg + "API type "
-	}
-
-	if r.Spec.ProdHTTPRouteRef == "" && r.Spec.SandHTTPRouteRef == "" {
-		errMsg = errMsg + "both API production and sandbox endpoint references "
-	}
-
-	if errMsg != "" {
-		errMsg = errMsg + "fields cannot be empty."
-		return field.Required(field.NewPath("spec"), errMsg)
-	}
-	return nil
-}
-
-func (r *API) validateFormats() *field.Error {
-	if errMsg := validateContext(r.Spec.Context); errMsg != "" {
-		return field.Invalid(field.NewPath("spec").Child("context"), r.Spec.Context, errMsg)
-	}
-	return nil
-}
-
-func validateContext(context string) string {
 	if match, _ := regexp.MatchString("^[/][a-zA-Z0-9~/_.-]*$", context); !match {
-		return "invalid basepath. Does not start with / or includes invalid characters."
+		return "invalid API context. Does not start with / or includes invalid characters."
+	}
+	if !strings.HasSuffix("/"+context, apiVersion) {
+		return "API context value should contain the /{APIVersion} at end."
+	}
+	return ""
+}
+
+func validateAPIDisplayNameFormat(apiName string) string {
+	if len(apiName) > 60 {
+		return "API display name character length should not exceed 60."
+	}
+	if match, _ := regexp.MatchString("^[^~!@#;:%^*()+={}|\\<>\"'',&$\\[\\]\\/]*$", apiName); !match {
+		return "invalid API display name. Includes invalid characters."
+	}
+	return ""
+}
+
+func validateAPIVersionFormat(version string) string {
+	if len(version) > 30 {
+		return "API version length should not exceed 30."
+	}
+	if match, _ := regexp.MatchString("^[^~!@#;:%^*()+={}|\\<>\"'',&/$\\[\\]\\s+\\/]+$", version); !match {
+		return "invalid API version. Includes invalid characters."
+	}
+	return ""
+}
+
+func validateAPITypeFormat(apiType string) string {
+	if apiType != "" && strings.ToUpper(apiType) != "REST" {
+		return "invalid API type. Only REST is supported"
 	}
 	return ""
 }

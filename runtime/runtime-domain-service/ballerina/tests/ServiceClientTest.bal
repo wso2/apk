@@ -677,7 +677,7 @@ function serviceUsageDataProvider() returns map<[string, APIList|BadRequestError
                         "name": "pizzashackAPI",
                         "context": "/t/carbon.super/pizzashack/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
                     },
                     {
@@ -685,7 +685,7 @@ function serviceUsageDataProvider() returns map<[string, APIList|BadRequestError
                         "name": "pizzashackAPI",
                         "context": "/t/carbon.super/pizzashack/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
                     }
                 ],

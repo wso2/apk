@@ -8,7 +8,7 @@ public final string[] WEBSUB_SUPPORTED_METHODS = ["subscribe"];
 public final string[] SSE_SUPPORTED_METHODS = ["subscribe"];
 public final string[] WS_SUPPORTED_METHODS = ["subscribe", "publish"];
 
-const string API_TYPE_HTTP = "HTTP";
+const string API_TYPE_REST = "REST";
 const string API_TYPE_SOAP = "SOAP";
 const string API_TYPE_SSE = "SSE";
 const string API_TYPE_WS = "WS";
