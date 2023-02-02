@@ -19,12 +19,20 @@ import ballerina/http;
 
 listener http:Listener ep0 = new (9090, config = {host: "localhost"});
 
-service /oauth2 on ep0 {
+service / on ep0 {
     resource function get authorize(string response_type, string client_id, string? redirect_uri, string? scope, string? state) returns http:Found {
         return {};
     }
     resource function post token(@http:Header string? authorization, @http:Payload {mediaType: "application/x-www-form-urlencoded"} Token_body payload) returns TokenResponse|BadRequestTokenErrorResponse|UnauthorizedTokenErrorResponse {
     }
     resource function get keys() returns JWKList {
+    }
+    resource function post register(@http:Payload RegistrationRequest payload) returns CreatedApplication|BadRequest'error|Conflict'error|InternalServerError'error {
+    }
+    resource function get register/[string client_id]() returns Application|NotFound'error|InternalServerError'error {
+    }
+    resource function put register/[string client_id](@http:Payload UpdateRequest payload) returns Application|BadRequest'error|Conflict'error|InternalServerError'error {
+    }
+    resource function delete register/[string client_id]() returns http:NoContent|NotFound'error|InternalServerError'error {
     }
 }

@@ -15,6 +15,14 @@
 // specific language governing permissions and limitations
 // under the License.
 //
+# Description
+#
+# + loginUiUrl - Field Description  
+# + user - Field Description  
+# + signingKeyStore - Field Description  
+# + publicKey - Field Description  
+# + dataSource - Field Description  
+# + fileBaseApp - Field Description
 public type IDPConfiguration record {|
 
 string loginUiUrl;

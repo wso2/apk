@@ -23,9 +23,34 @@ public type BadRequestTokenErrorResponse record {|
     TokenErrorResponse body;
 |};
 
+public type InternalServerError'error record {|
+    *http:InternalServerError;
+    'error body;
+|};
+
+public type BadRequest'error record {|
+    *http:BadRequest;
+    'error body;
+|};
+
+public type Conflict'error record {|
+    *http:Conflict;
+    'error body;
+|};
+
 public type UnauthorizedTokenErrorResponse record {|
     *http:Unauthorized;
     TokenErrorResponse body;
+|};
+
+public type NotFound'error record {|
+    *http:NotFound;
+    'error body;
+|};
+
+public type CreatedApplication record {|
+    *http:Created;
+    Application body;
 |};
 
 public type TokenErrorResponse record {
@@ -72,6 +97,24 @@ public type JWKList_keys record {
 
 public type JWKList record {
     JWKList_keys keys?;
+};
+
+public type RegistrationRequest record {
+    string[] redirect_uris;
+    string client_name;
+    string client_id?;
+    string client_secret?;
+    string[] grant_types?;
+    string application_type?;
+    string[] response_types?;
+};
+
+public type Application record {
+    string client_id?;
+    string client_secret?;
+    string[] redirect_uris?;
+    string[] grant_types?;
+    string client_name?;
 };
 
 public type Token_body record {
