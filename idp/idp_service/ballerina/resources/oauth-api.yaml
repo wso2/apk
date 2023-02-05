@@ -156,160 +156,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/JWKList"
-
-  /register:
-    post:
-      tags:
-      - OAuth2 DCR
-      summary: |
-        Registers an OAuth2 application
-      operationId: registerApplication
-      requestBody:
-        description: Application information to register.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/registrationRequest'
-        required: true
-      responses:
-        201:
-          description: Created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/application'
-        400:
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-        409:
-          description: Conflict
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-        500:
-          description: Server Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-  /register/{client_id}:
-    get:
-      tags:
-      - OAuth2 DCR
-      summary: |
-        Get OAuth2 application information
-      description: |
-        This API is used to get/retrieve an OAuth2 application by client_id.
-      operationId: getApplication
-      parameters:
-      - name: client_id
-        in: path
-        description: Unique identifier of the OAuth2 client application.
-        required: true
-        schema:
-          type: string
-      responses:
-        200:
-          description: Successfully Retrieved
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/application'
-        404:
-          description: Not Found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-        500:
-          description: Server Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-    put:
-      tags:
-      - OAuth2 DCR
-      summary: |
-        Updates an OAuth2 application
-      description: |
-        This API is used to update an OAuth2 application.
-      operationId: updateApplication
-      parameters:
-      - name: client_id
-        in: path
-        description: Unique identifier for the OAuth2 client application.
-        required: true
-        schema:
-          type: string
-      requestBody:
-        description: Application information to update.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/updateRequest'
-        required: true
-      responses:
-        200:
-          description: Successfully updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/application'
-        400:
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-        409:
-          description: Conflict
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-        500:
-          description: Server Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-    delete:
-      tags:
-      - OAuth2 DCR
-      summary: |
-        Delete OAuth2 application
-      description: |
-        This API is used to delete an OAuth2 application by client_id.
-      operationId: deleteApplication
-      parameters:
-      - name: client_id
-        in: path
-        description: Unique identifier of the OAuth2 client application.
-        required: true
-        schema:
-          type: string
-      responses:
-        204:
-          description: Successfully deleted
-          content: {}
-        404:
-          description: Not Found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-        500:
-          description: Server Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-
 components:
   schemas:
     TokenResponse:
@@ -344,12 +190,14 @@ components:
     TokenErrorResponse:
       title: Error response sent for OAuth token request.
       required:
-      - preProcessingError
+      - error
       type: object
       properties:
-        preProcessingError:
+        error:
           type: string
           description: Error code classifying the type of preProcessingError.
+        error_description:
+          type: string
     JWKList:
       title: Signing keys.
       type: object
@@ -418,66 +266,3 @@ components:
             k:
               type: string
               example: "GawgguFyGrWKav7AX4VKUg"                            
-    registrationRequest:
-      required:
-      - client_name
-      - redirect_uris
-      type: object
-      properties:
-        redirect_uris:
-          type: array
-          items:
-            type: string
-        client_name:
-          type: string
-        client_id:
-          type: string
-        client_secret:
-          type: string
-        grant_types:
-          type: array
-          items:
-            type: string
-        application_type:
-          type: string
-        response_types:
-          type: array
-          items:
-            type: string
-    updateRequest:
-      type: object
-      properties:
-        redirect_uris:
-          type: array
-          items:
-            type: string
-        client_name:
-          type: string
-        grant_types:
-          type: array
-          items:
-            type: string
-    application:
-      type: object
-      properties:
-        client_id:
-          type: string
-        client_secret:
-          type: string
-        redirect_uris:
-          type: array
-          items:
-            type: string
-        grant_types:
-          type: array
-          items:
-            type: string
-        client_name:
-          type: string
-    error:
-      type: object
-      properties:
-        error:
-          type: string
-        error_description:
-          type: string

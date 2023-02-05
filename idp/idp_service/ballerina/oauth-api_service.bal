@@ -1,38 +1,27 @@
-//
-// Copyright (c) 2023, WSO2 LLC. (http://www.wso2.com).
-//
-// WSO2 LLC. licenses this file to you under the Apache License,
-// Version 2.0 (the "License"); you may not use this file except
-// in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing,
-// software distributed under the License is distributed on an
-// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-// KIND, either express or implied.  See the License for the
-// specific language governing permissions and limitations
-// under the License.
-//
+import ballerina/log;
 import ballerina/http;
 
-listener http:Listener ep0 = new (9090, config = {host: "localhost"});
-
-service / on ep0 {
+service /oauth2 on ep0 {
     resource function get authorize(string response_type, string client_id, string? redirect_uri, string? scope, string? state) returns http:Found {
         return {};
     }
-    resource function post token(@http:Header string? authorization, @http:Payload {mediaType: "application/x-www-form-urlencoded"} Token_body payload) returns TokenResponse|BadRequestTokenErrorResponse|UnauthorizedTokenErrorResponse {
+    isolated resource function post token(@http:Header string? authorization, http:Request request) returns TokenResponse|BadRequestTokenErrorResponse|UnauthorizedTokenErrorResponse {
+        TokenUtil tokenUtil = new;
+        do {
+            map<string> formParams = check request.getFormParams();
+            Token_body payload = check formParams.cloneWithType(Token_body);
+            return tokenUtil.generateToken(authorization, payload);
+
+        } on fail var e {
+            log:printError("Error occured on pasing payload", e);
+            BadRequestTokenErrorResponse tokenError = {"body": {'error: "server_error", error_description: "Server Error occured on generating token"}};
+            return tokenError;
+
+        }
+
     }
     resource function get keys() returns JWKList {
-    }
-    resource function post register(@http:Payload RegistrationRequest payload) returns CreatedApplication|BadRequest'error|Conflict'error|InternalServerError'error {
-    }
-    resource function get register/[string client_id]() returns Application|NotFound'error|InternalServerError'error {
-    }
-    resource function put register/[string client_id](@http:Payload UpdateRequest payload) returns Application|BadRequest'error|Conflict'error|InternalServerError'error {
-    }
-    resource function delete register/[string client_id]() returns http:NoContent|NotFound'error|InternalServerError'error {
+        JWKList jwklist = {};
+        return jwklist;
     }
 }

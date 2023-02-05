@@ -1,21 +1,3 @@
-//
-// Copyright (c) 2023, WSO2 LLC. (http://www.wso2.com).
-//
-// WSO2 LLC. licenses this file to you under the Apache License,
-// Version 2.0 (the "License"); you may not use this file except
-// in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing,
-// software distributed under the License is distributed on an
-// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-// KIND, either express or implied.  See the License for the
-// specific language governing permissions and limitations
-// under the License.
-//
-
 import ballerina/http;
 
 public type BadRequestTokenErrorResponse record {|
@@ -23,39 +5,15 @@ public type BadRequestTokenErrorResponse record {|
     TokenErrorResponse body;
 |};
 
-public type InternalServerError'error record {|
-    *http:InternalServerError;
-    'error body;
-|};
-
-public type BadRequest'error record {|
-    *http:BadRequest;
-    'error body;
-|};
-
-public type Conflict'error record {|
-    *http:Conflict;
-    'error body;
-|};
-
 public type UnauthorizedTokenErrorResponse record {|
     *http:Unauthorized;
     TokenErrorResponse body;
 |};
 
-public type NotFound'error record {|
-    *http:NotFound;
-    'error body;
-|};
-
-public type CreatedApplication record {|
-    *http:Created;
-    Application body;
-|};
-
 public type TokenErrorResponse record {
     # Error code classifying the type of preProcessingError.
-    string preProcessingError;
+    string 'error;
+    string error_description?;
 };
 
 public type TokenResponse record {
@@ -64,7 +22,7 @@ public type TokenResponse record {
     # The type of the token issued.
     string token_type;
     # The lifetime in seconds of the access token.
-    int expires_in?;
+    decimal expires_in?;
     # OPTIONAL.
     # The refresh token, which can be used to obtain new access tokens.
     string refresh_token?;
@@ -97,24 +55,6 @@ public type JWKList_keys record {
 
 public type JWKList record {
     JWKList_keys keys?;
-};
-
-public type RegistrationRequest record {
-    string[] redirect_uris;
-    string client_name;
-    string client_id?;
-    string client_secret?;
-    string[] grant_types?;
-    string application_type?;
-    string[] response_types?;
-};
-
-public type Application record {
-    string client_id?;
-    string client_secret?;
-    string[] redirect_uris?;
-    string[] grant_types?;
-    string client_name?;
 };
 
 public type Token_body record {

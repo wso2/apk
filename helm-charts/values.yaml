@@ -314,7 +314,6 @@ wso2:
 postgresql:
   fullnameOverride: "wso2apk-db-service"
   auth:
-    database: WSO2AM_DB
     postgresPassword: wso2carbon
     username: wso2carbon
     password: wso2carbon

@@ -1,3 +1,5 @@
+import ballerina/uuid;
+
 //
 // Copyright (c) 2023, WSO2 LLC. (http://www.wso2.com).
 //
@@ -22,17 +24,20 @@
 # + signingKeyStore - Field Description  
 # + publicKey - Field Description  
 # + dataSource - Field Description  
-# + fileBaseApp - Field Description
+# + fileBaseApp - Field Description  
+# + tokenIssuerConfiguration - Field Description
 public type IDPConfiguration record {|
 
-string loginUiUrl;
-  
- Users[] user = [];
- KeyStoreConfiguration signingKeyStore;
- KeyStoreConfiguration publicKey;
- DatasourceConfiguration dataSource;
- FileBaseOAuthapps[] fileBaseApp=[];
+    string loginUiUrl;
+
+    Users[] user = [];
+    KeyStoreConfiguration signingKeyStore;
+    KeyStoreConfiguration publicKey;
+    DatasourceConfiguration dataSource;
+    FileBaseOAuthapps[] fileBaseApp = [];
+    TokenIssuerConfiguration tokenIssuerConfiguration = {};
 |};
+
 # Description
 #
 # + username - User name  
@@ -40,14 +45,14 @@ string loginUiUrl;
 # + organizations - organizations belongs to user.  
 # + superAdmin - User mark as super_admin.
 public type Users record {|
-string username;
-string password;
-string[] organizations = [];
-boolean superAdmin;
+    string username;
+    string password;
+    string[] organizations = [];
+    boolean superAdmin;
 |};
 
 public type KeyStoreConfiguration record {|
-    string id;
+    string id = uuid:createType1AsString();
     string path;
     string keyPassword?;
 |};
@@ -69,9 +74,17 @@ public type DatasourceConfiguration record {
     string testQuery;
     string driver;
 };
+
 public type FileBaseOAuthapps record {|
-string clientId;
-string clientSecret;
-string[] callbackUrls = [];
-string[] grantTypes = [];
+    string clientId;
+    string clientSecret;
+    string[] callbackUrls = [];
+    string[] grantTypes = [];
+|};
+
+public type TokenIssuerConfiguration record {|
+    string issuer = "https://localhost:9443/oauth2/token";
+    string audience = "https://localhost:9443/oauth2/token";
+    string keyId = "gateway_certificate_alias";
+    decimal expTime = 3600;
 |};
