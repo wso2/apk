@@ -156,7 +156,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/JWKList"
-          
 components:
   schemas:
     TokenResponse:
@@ -191,12 +190,14 @@ components:
     TokenErrorResponse:
       title: Error response sent for OAuth token request.
       required:
-      - preProcessingError
+      - error
       type: object
       properties:
-        preProcessingError:
+        error:
           type: string
           description: Error code classifying the type of preProcessingError.
+        error_description:
+          type: string
     JWKList:
       title: Signing keys.
       type: object
