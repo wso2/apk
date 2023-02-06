@@ -156,16 +156,15 @@ func GenerateMGWSwagger(apiState APIState, httpRoute *HTTPRouteState) (*model.Mg
 	}
 	vHosts := getVhostsForAPI(httpRoute.HTTPRoute)
 	labels := getLabelsForAPI(httpRoute.HTTPRoute)
-	for _, vHost := range vHosts {
-		err := xds.UpdateAPICache(vHost, labels, mgwSwagger)
-		if err != nil {
-			loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-				Message: fmt.Sprintf("Error updating the API : %s:%s in vhost: %s. %v",
-					mgwSwagger.GetTitle(), mgwSwagger.GetVersion(), vHost, err),
-				Severity:  logging.MAJOR,
-				ErrorCode: 2614,
-			})
-		}
+
+	err := xds.UpdateAPICache(vHosts, labels, mgwSwagger)
+	if err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message: fmt.Sprintf("Error updating the API : %s:%s in vhosts: %s. %v",
+				mgwSwagger.GetTitle(), mgwSwagger.GetVersion(), vHosts, err),
+			Severity:  logging.MAJOR,
+			ErrorCode: 2614,
+		})
 	}
 	return &mgwSwagger, nil
 }

@@ -76,6 +76,7 @@ var (
 	apiToVhostsMap           map[string]map[string]struct{} // API_UUID -> VHosts set (for un-deploying APIs from API-CTL)
 
 	orgIDAPIMgwSwaggerMap       map[string]map[string]model.MgwSwagger     // organizationID -> Vhost:API_UUID -> MgwSwagger struct map
+	orgIDAPIvHostsMap           map[string]map[string][]string             // organizationID -> Vhost:API_UUID -> Envoy Vhost Array map
 	orgIDOpenAPIEnvoyMap        map[string]map[string][]string             // organizationID -> Vhost:API_UUID -> Envoy Label Array map
 	orgIDOpenAPIRoutesMap       map[string]map[string][]*routev3.Route     // organizationID -> Vhost:API_UUID -> Envoy Routes map
 	orgIDOpenAPIClustersMap     map[string]map[string][]*clusterv3.Cluster // organizationID -> Vhost:API_UUID -> Envoy Clusters map
@@ -149,6 +150,7 @@ func init() {
 	envoyEndpointConfigMap = make(map[string][]*corev3.Address)
 
 	orgIDAPIMgwSwaggerMap = make(map[string]map[string]model.MgwSwagger)       // organizationID -> Vhost:API_UUID -> MgwSwagger struct map
+	orgIDAPIvHostsMap = make(map[string]map[string][]string)                   // organizationID -> Vhost:API_UUID -> Envoy Vhost Array map
 	orgIDOpenAPIEnvoyMap = make(map[string]map[string][]string)                // organizationID -> Vhost:API_UUID -> Envoy Label Array map
 	orgIDOpenAPIRoutesMap = make(map[string]map[string][]*routev3.Route)       // organizationID -> Vhost:API_UUID -> Envoy Routes map
 	orgIDOpenAPIClustersMap = make(map[string]map[string][]*clusterv3.Cluster) // organizationID -> Vhost:API_UUID -> Envoy Clusters map
@@ -229,25 +231,23 @@ func GetEnforcerThrottleDataCache() wso2_cache.SnapshotCache {
 func DeleteAPICREvent(vHosts, labels []string, apiUUID string, organizationID string) error {
 	mutexForInternalMapUpdate.Lock()
 	defer mutexForInternalMapUpdate.Unlock()
-	for _, vhost := range vHosts {
-		apiIdentifier := GenerateIdentifierForAPIWithUUID(vhost, apiUUID)
-		if err := deleteAPI(apiIdentifier, labels, organizationID); err != nil {
-			logger.LoggerXds.ErrorC(logging.ErrorDetails{
-				Message: fmt.Sprintf("Error undeploying API %v of Organization %v from environments %v",
-					apiIdentifier, organizationID, labels),
-				Severity:  logging.MAJOR,
-				ErrorCode: 1410,
-			})
-			return err
-		}
-		// if no error, update internal vhost maps
-		// error only happens when API not found in deleteAPI func
-		logger.LoggerXds.Infof("Successfully undeployed the API %v under Organization %s and environment %s ",
-			apiIdentifier, organizationID, labels)
-		for _, environment := range labels {
-			// delete environment if exists
-			delete(apiUUIDToGatewayToVhosts[apiUUID], environment)
-		}
+	apiIdentifier := apiUUID
+	if err := deleteAPI(apiIdentifier, labels, organizationID); err != nil {
+		logger.LoggerXds.ErrorC(logging.ErrorDetails{
+			Message: fmt.Sprintf("Error undeploying API %v of Organization %v from environments %v",
+				apiIdentifier, organizationID, labels),
+			Severity:  logging.MAJOR,
+			ErrorCode: 1410,
+		})
+		return err
+	}
+	// if no error, update internal vhost maps
+	// error only happens when API not found in deleteAPI func
+	logger.LoggerXds.Infof("Successfully undeployed the API %v under Organization %s and environment %s ",
+		apiIdentifier, organizationID, labels)
+	for _, environment := range labels {
+		// delete environment if exists
+		delete(apiUUIDToGatewayToVhosts[apiUUID], environment)
 	}
 	return nil
 }
@@ -301,6 +301,7 @@ func cleanMapResources(apiIdentifier string, organizationID string, toBeDelEnvs 
 	deleteBasepathForVHost(organizationID, apiIdentifier)
 	delete(orgIDOpenAPIEnvoyMap[organizationID], apiIdentifier)  //delete labels
 	delete(orgIDAPIMgwSwaggerMap[organizationID], apiIdentifier) //delete mgwSwagger
+	delete(orgIDAPIvHostsMap[organizationID], apiIdentifier)     //delete vhosts
 	//TODO: (SuKSW) clean any remaining in label wise maps, if this is the last API of that label
 	logger.LoggerXds.Infof("Deleted API %v of organization %v", apiIdentifier, organizationID)
 }
@@ -356,36 +357,39 @@ func GenerateEnvoyResoucesForLabel(label string) ([]types.Resource, []types.Reso
 	for organizationID, entityMap := range orgIDOpenAPIEnvoyMap {
 		for apiKey, labels := range entityMap {
 			if stringutils.StringInSlice(label, labels) {
-				vhost, err := ExtractVhostFromAPIIdentifier(apiKey)
-				if err != nil {
+				apivHosts := orgIDAPIvHostsMap[organizationID][apiKey]
+				if len(apivHosts) == 0 {
 					logger.LoggerXds.ErrorC(logging.ErrorDetails{
-						Message:   fmt.Sprintf("Error extracting vhost from API identifier: %v for Organization %v. Ignore deploying the API", err.Error(), organizationID),
+						Message: fmt.Sprintf("No vhosts found for API identifier: %v for Organization %v. Ignore deploying the API",
+							apiKey, organizationID),
 						Severity:  logging.MAJOR,
 						ErrorCode: 1411,
 					})
 					continue
 				}
-				isDefaultVersion := false
-				if enforcerAPISwagger, ok := orgIDAPIMgwSwaggerMap[organizationID][apiKey]; ok {
-					isDefaultVersion = enforcerAPISwagger.IsDefaultVersion
-				} else {
-					// If the mgwSwagger is not found, proceed with other APIs. (Unreachable condition at this point)
-					// If that happens, there is no purpose in processing clusters too.
-					continue
-				}
-				// If it is a default versioned API, the routes are added to the end of the existing array.
-				// Otherwise the routes would be added to the front.
-				// /fooContext/2.0.0/* resource path should be matched prior to the /fooContext/* .
-				if isDefaultVersion {
-					vhostToRouteArrayMap[vhost] = append(vhostToRouteArrayMap[vhost], orgIDOpenAPIRoutesMap[organizationID][apiKey]...)
-				} else {
-					vhostToRouteArrayMap[vhost] = append(orgIDOpenAPIRoutesMap[organizationID][apiKey], vhostToRouteArrayMap[vhost]...)
-				}
-				clusterArray = append(clusterArray, orgIDOpenAPIClustersMap[organizationID][apiKey]...)
-				endpointArray = append(endpointArray, orgIDOpenAPIEndpointsMap[organizationID][apiKey]...)
-				enfocerAPI, ok := orgIDOpenAPIEnforcerApisMap[organizationID][apiKey]
-				if ok {
-					apis = append(apis, enfocerAPI)
+				for _, vhost := range apivHosts {
+					isDefaultVersion := false
+					if enforcerAPISwagger, ok := orgIDAPIMgwSwaggerMap[organizationID][apiKey]; ok {
+						isDefaultVersion = enforcerAPISwagger.IsDefaultVersion
+					} else {
+						// If the mgwSwagger is not found, proceed with other APIs. (Unreachable condition at this point)
+						// If that happens, there is no purpose in processing clusters too.
+						continue
+					}
+					// If it is a default versioned API, the routes are added to the end of the existing array.
+					// Otherwise the routes would be added to the front.
+					// /fooContext/2.0.0/* resource path should be matched prior to the /fooContext/* .
+					if isDefaultVersion {
+						vhostToRouteArrayMap[vhost] = append(vhostToRouteArrayMap[vhost], orgIDOpenAPIRoutesMap[organizationID][apiKey]...)
+					} else {
+						vhostToRouteArrayMap[vhost] = append(orgIDOpenAPIRoutesMap[organizationID][apiKey], vhostToRouteArrayMap[vhost]...)
+					}
+					clusterArray = append(clusterArray, orgIDOpenAPIClustersMap[organizationID][apiKey]...)
+					endpointArray = append(endpointArray, orgIDOpenAPIEndpointsMap[organizationID][apiKey]...)
+					enfocerAPI, ok := orgIDOpenAPIEnforcerApisMap[organizationID][apiKey]
+					if ok {
+						apis = append(apis, enfocerAPI)
+					}
 				}
 				// listenerArrays = append(listenerArrays, openAPIListenersMap[apiKey])
 			}
@@ -702,11 +706,7 @@ func ListApis(apiType string, organizationID string, limit *int64) *apiModel.API
 			apiMetaListItem.APIType = mgwSwagger.GetAPIType()
 			apiMetaListItem.Context = mgwSwagger.GetXWso2Basepath()
 			apiMetaListItem.GatewayEnvs = orgIDOpenAPIEnvoyMap[organizationID][apiIdentifier]
-			vhost := "ERROR"
-			if vh, err := ExtractVhostFromAPIIdentifier(apiIdentifier); err == nil {
-				vhost = vh
-			}
-			apiMetaListItem.Vhost = vhost
+			apiMetaListItem.Vhosts = orgIDAPIvHostsMap[organizationID][apiIdentifier]
 			apisArray = append(apisArray, &apiMetaListItem)
 			i++
 		}
@@ -724,7 +724,7 @@ func IsAPIExist(vhost, uuid, apiName, apiVersion, organizationID string) (exists
 		// If API is imported from apictl generate hash as the unique ID
 		uuid = GenerateHashedAPINameVersionIDWithoutVhost(apiName, apiVersion)
 	}
-	apiIdentifier := GenerateIdentifierForAPIWithUUID(vhost, uuid)
+	apiIdentifier := uuid
 	_, exists = orgIDAPIMgwSwaggerMap[organizationID][apiIdentifier]
 	return exists
 }
@@ -874,11 +874,11 @@ func UpdateEnforcerThrottleData(throttleData *throttle.ThrottleData) {
 }
 
 // UpdateAPICache updates the xDS cache related to the API Lifecycle event.
-func UpdateAPICache(vHost string, newLabels []string, mgwSwagger model.MgwSwagger) error {
+func UpdateAPICache(vHosts []string, newLabels []string, mgwSwagger model.MgwSwagger) error {
 	mutexForInternalMapUpdate.Lock()
 	defer mutexForInternalMapUpdate.Unlock()
 
-	apiIdentifier := GenerateIdentifierForAPIWithUUID(vHost, mgwSwagger.UUID)
+	apiIdentifier := mgwSwagger.UUID
 	oldLabels := orgIDOpenAPIEnvoyMap[mgwSwagger.GetOrganizationID()][apiIdentifier]
 
 	if _, ok := orgIDAPIMgwSwaggerMap[mgwSwagger.OrganizationID]; ok {
@@ -889,6 +889,14 @@ func UpdateAPICache(vHost string, newLabels []string, mgwSwagger model.MgwSwagge
 		orgIDAPIMgwSwaggerMap[mgwSwagger.GetOrganizationID()] = mgwSwaggerMap
 	}
 
+	if _, ok := orgIDAPIvHostsMap[mgwSwagger.OrganizationID]; ok {
+		orgIDAPIvHostsMap[mgwSwagger.GetOrganizationID()][apiIdentifier] = vHosts
+	} else {
+		vHostsMap := make(map[string][]string)
+		vHostsMap[apiIdentifier] = vHosts
+		orgIDAPIvHostsMap[mgwSwagger.GetOrganizationID()] = vHostsMap
+	}
+
 	if _, ok := orgIDOpenAPIEnvoyMap[mgwSwagger.GetOrganizationID()]; ok {
 		orgIDOpenAPIEnvoyMap[mgwSwagger.GetOrganizationID()][apiIdentifier] = newLabels
 	} else {
@@ -897,49 +905,51 @@ func UpdateAPICache(vHost string, newLabels []string, mgwSwagger model.MgwSwagge
 		orgIDOpenAPIEnvoyMap[mgwSwagger.GetOrganizationID()] = openAPIEnvoyMap
 	}
 
-	updateVhostInternalMaps(mgwSwagger.UUID, mgwSwagger.GetID(), mgwSwagger.GetVersion(), vHost, newLabels)
+	for _, vHost := range vHosts {
+		updateVhostInternalMaps(mgwSwagger.UUID, mgwSwagger.GetID(), mgwSwagger.GetVersion(), vHost, newLabels)
 
-	routes, clusters, endpoints, err := oasParser.GetRoutesClustersEndpoints(mgwSwagger, nil,
-		vHost, mgwSwagger.GetOrganizationID())
+		routes, clusters, endpoints, err := oasParser.GetRoutesClustersEndpoints(mgwSwagger, nil,
+			vHost, mgwSwagger.GetOrganizationID())
 
-	if err != nil {
-		return fmt.Errorf("error while deploying API. Name: %s Version: %s, OrgID: %s, Error: %s",
-			mgwSwagger.GetTitle(), mgwSwagger.GetVersion(), mgwSwagger.GetOrganizationID(), err.Error())
+		if err != nil {
+			return fmt.Errorf("error while deploying API. Name: %s Version: %s, OrgID: %s, Error: %s",
+				mgwSwagger.GetTitle(), mgwSwagger.GetVersion(), mgwSwagger.GetOrganizationID(), err.Error())
+		}
+
+		if _, ok := orgIDOpenAPIRoutesMap[mgwSwagger.GetOrganizationID()]; ok {
+			orgIDOpenAPIRoutesMap[mgwSwagger.GetOrganizationID()][apiIdentifier] = routes
+		} else {
+			routesMap := make(map[string][]*routev3.Route)
+			routesMap[apiIdentifier] = routes
+			orgIDOpenAPIRoutesMap[mgwSwagger.GetOrganizationID()] = routesMap
+		}
+
+		if _, ok := orgIDOpenAPIClustersMap[mgwSwagger.GetOrganizationID()]; ok {
+			orgIDOpenAPIClustersMap[mgwSwagger.GetOrganizationID()][apiIdentifier] = clusters
+		} else {
+			clustersMap := make(map[string][]*clusterv3.Cluster)
+			clustersMap[apiIdentifier] = clusters
+			orgIDOpenAPIClustersMap[mgwSwagger.GetOrganizationID()] = clustersMap
+		}
+
+		if _, ok := orgIDOpenAPIEndpointsMap[mgwSwagger.GetOrganizationID()]; ok {
+			orgIDOpenAPIEndpointsMap[mgwSwagger.GetOrganizationID()][apiIdentifier] = endpoints
+		} else {
+			endpointMap := make(map[string][]*corev3.Address)
+			endpointMap[apiIdentifier] = endpoints
+			orgIDOpenAPIEndpointsMap[mgwSwagger.GetOrganizationID()] = endpointMap
+		}
+
+		if _, ok := orgIDOpenAPIEnforcerApisMap[mgwSwagger.GetOrganizationID()]; ok {
+			orgIDOpenAPIEnforcerApisMap[mgwSwagger.GetOrganizationID()][apiIdentifier] = oasParser.GetEnforcerAPI(mgwSwagger, vHost)
+		} else {
+			enforcerAPIMap := make(map[string]types.Resource)
+			enforcerAPIMap[apiIdentifier] = oasParser.GetEnforcerAPI(mgwSwagger, vHost)
+			orgIDOpenAPIEnforcerApisMap[mgwSwagger.GetOrganizationID()] = enforcerAPIMap
+		}
+
+		revisionStatus := updateXdsCacheOnAPIChange(oldLabels, newLabels)
+		logger.LoggerXds.Infof("Deployed Revision: %v:%v", apiIdentifier, revisionStatus)
 	}
-
-	if _, ok := orgIDOpenAPIRoutesMap[mgwSwagger.GetOrganizationID()]; ok {
-		orgIDOpenAPIRoutesMap[mgwSwagger.GetOrganizationID()][apiIdentifier] = routes
-	} else {
-		routesMap := make(map[string][]*routev3.Route)
-		routesMap[apiIdentifier] = routes
-		orgIDOpenAPIRoutesMap[mgwSwagger.GetOrganizationID()] = routesMap
-	}
-
-	if _, ok := orgIDOpenAPIClustersMap[mgwSwagger.GetOrganizationID()]; ok {
-		orgIDOpenAPIClustersMap[mgwSwagger.GetOrganizationID()][apiIdentifier] = clusters
-	} else {
-		clustersMap := make(map[string][]*clusterv3.Cluster)
-		clustersMap[apiIdentifier] = clusters
-		orgIDOpenAPIClustersMap[mgwSwagger.GetOrganizationID()] = clustersMap
-	}
-
-	if _, ok := orgIDOpenAPIEndpointsMap[mgwSwagger.GetOrganizationID()]; ok {
-		orgIDOpenAPIEndpointsMap[mgwSwagger.GetOrganizationID()][apiIdentifier] = endpoints
-	} else {
-		endpointMap := make(map[string][]*corev3.Address)
-		endpointMap[apiIdentifier] = endpoints
-		orgIDOpenAPIEndpointsMap[mgwSwagger.GetOrganizationID()] = endpointMap
-	}
-
-	if _, ok := orgIDOpenAPIEnforcerApisMap[mgwSwagger.GetOrganizationID()]; ok {
-		orgIDOpenAPIEnforcerApisMap[mgwSwagger.GetOrganizationID()][apiIdentifier] = oasParser.GetEnforcerAPI(mgwSwagger, vHost)
-	} else {
-		enforcerAPIMap := make(map[string]types.Resource)
-		enforcerAPIMap[apiIdentifier] = oasParser.GetEnforcerAPI(mgwSwagger, vHost)
-		orgIDOpenAPIEnforcerApisMap[mgwSwagger.GetOrganizationID()] = enforcerAPIMap
-	}
-
-	revisionStatus := updateXdsCacheOnAPIChange(oldLabels, newLabels)
-	logger.LoggerXds.Infof("Deployed Revision: %v:%v", apiIdentifier, revisionStatus)
 	return nil
 }
