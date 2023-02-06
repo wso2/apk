@@ -65,6 +65,9 @@ function updateAPITest() {
             ],
             "categories": [
                 "cloud","open"
+            ],
+            "Policies": [
+                "mysub1","mysub2"
             ]
         };
     API|APKError updateAPICr = updateAPI("01ed75e2-b30b-18c8-wwf2-25da7edd2231", payload, "carbon.super");
