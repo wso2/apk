@@ -112,9 +112,8 @@ func undeployAPIInGateway(apiState APIState) error {
 func deleteAPIFromEnv(httpRoute *gwapiv1b1.HTTPRoute, apiState APIState) error {
 	labels := getLabelsForAPI(httpRoute)
 	org := apiState.APIDefinition.Spec.Organization
-	vHosts := getVhostsForAPI(httpRoute)
 	uuid := string(apiState.APIDefinition.ObjectMeta.UID)
-	return xds.DeleteAPICREvent(vHosts, labels, uuid, org)
+	return xds.DeleteAPICREvent(labels, uuid, org)
 }
 
 // deployAPIInGateway deploys the related API in CREATE and UPDATE events.
