@@ -167,4 +167,13 @@ service /api/am/backoffice on ep0 {
              return error("Error while getting LC state of API" + currentState.message());
         }
     }
+    resource function get 'business\-plans(@http:Header string? accept = "application/json") returns BusinessPlanList|InternalServerErrorError|BadRequestError {
+        BusinessPlanList|APKError subPolicyList = getBusinessPlans();
+        if subPolicyList is BusinessPlanList {
+            log:printDebug(subPolicyList.toString());
+            return subPolicyList;
+        } else {
+            return handleAPKError(subPolicyList);
+        }
+    }
 }

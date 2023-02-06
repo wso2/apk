@@ -155,6 +155,46 @@ public type APIList record {
     Pagination pagination?;
 };
 
+public type BusinessPlan record {
+    *Policy;
+    *GraphQLQuery;
+    ThrottleLimit defaultLimit;
+    # Burst control request count
+    int rateLimitCount?;
+    # Burst control time unit
+    string rateLimitTimeUnit?;
+    # Number of subscriptions allowed
+    int subscriberCount?;
+    # Custom attributes added to the Subscription Throttling Policy
+    CustomAttribute[] customAttributes?;
+    BusinessPlanPermission permissions?;
+};
+
+public type Policy record {
+    # Id of plan
+    string planId?;
+    # Name of plan
+    @constraint:String {maxLength: 60, minLength: 1}
+    string planName;
+    # Display name of the policy
+    @constraint:String {maxLength: 512}
+    string displayName?;
+    # Description of the policy
+    @constraint:String {maxLength: 1024}
+    string description?;
+    # Indicates whether the policy is deployed successfully or not.
+    boolean isDeployed = false;
+    # Indicates the type of throttle policy
+    string 'type?;
+};
+
+public type GraphQLQuery record {
+    # Maximum Complexity of the GraphQL query
+    int graphQLMaxComplexity?;
+    # Maximum Depth of the GraphQL query
+    int graphQLMaxDepth?;
+};
+
 public type APIMonetizationUsage record {
     # Map of custom properties related to monetization usage
     record {} properties?;
@@ -187,6 +227,12 @@ public type APIRevision record {
     string createdTime?;
 };
 
+public type BusinessPlanList record {
+    # Number of Business Plans returned.
+    int count?;
+    BusinessPlan[] list?;
+};
+
 public type APIExternalStoreList record {
     # Number of external stores returned.
     int count?;
@@ -214,6 +260,16 @@ public type APIMonetizationInfo record {
     boolean enabled;
     # Map of custom properties related to monetization
     record {} properties?;
+};
+
+public type ThrottleLimit record {
+    # Type of the throttling limit. Allowed values are "REQUESTCOUNTLIMIT" and "BANDWIDTHLIMIT".
+    # Please see schemas of "RequestCountLimit" and "BandwidthLimit" throttling limit types in
+    # Definitions section.
+    string 'type;
+    RequestCountLimit requestCount?;
+    BandwidthLimit bandwidth?;
+    EventCountLimit eventCount?;
 };
 
 public type LifecycleHistoryItem record {
@@ -282,6 +338,11 @@ public type CommentList record {
     Pagination pagination?;
 };
 
+public type BusinessPlanPermission record {
+    string permissionType;
+    string[] roles;
+};
+
 public type CustomAttribute record {
     # Name of the custom attribute
     string name;
@@ -344,6 +405,7 @@ public type ModifiableAPI record {
     string[] categories?;
     # Supported SDK
     string[] sdk?;
+    string[] policies?;
 };
 
 public type LifecycleState record {
@@ -576,12 +638,13 @@ public type API record {
     string[] categories?;
     # Supported SDK
     string[] sdk?;
+    string[] policies?;
+    string provider?;
+    string lifeCycleStatus?;
     record {} additionalProperties?;
     string createdTime?;
     string lastUpdatedTime?;
     APIOperations[] operations?;
-    string provider?;
-    string lifeCycleStatus?;
     # The API level usage policy selected for the particular Runtime API
     string apiUsagePolicy?;
     APIMonetizationInfo monetization?;
