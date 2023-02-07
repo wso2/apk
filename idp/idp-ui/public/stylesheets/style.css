@@ -23,7 +23,6 @@ a {
 .form-signin-heading {
   text-align:left;
   margin-bottom: 50px;
-  background-color: #00B7FF;
 }
 
 .form-control {
@@ -34,7 +33,7 @@ a {
 }
 
 input[type="text"] {
-  margin-bottom: 0px;
+  margin-bottom: 20px;
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
 }
@@ -43,4 +42,11 @@ input[type="password"] {
   margin-bottom: 20px;
   border-top-left-radius: 0;
   border-top-right-radius: 0;
+}
+
+.form-message {
+  max-width: 420px;
+  margin: 0 auto;
+  font-size: 14px;
+  height: auto;
 }

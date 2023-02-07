@@ -41,13 +41,13 @@ app.use(function(req, res, next){
 // dummy database
 
 var users = {
-  tj: { name: 'tj' }
+  tj: { name: 'admin' }
 };
 
 // when you create a user, generate a salt
-// and hash the password ('foobar' is the pass here)
+// and hash the password ('admin' is the pass here)
 
-hash({ password: 'foobar' }, function (err, pass, salt, hash) {
+hash({ password: 'admin' }, function (err, pass, salt, hash) {
   if (err) throw err;
   // store the salt & hash in the "db"
   users.tj.salt = salt;
@@ -55,7 +55,7 @@ hash({ password: 'foobar' }, function (err, pass, salt, hash) {
 });
 
 
-// Authenticate using our plain-object database of doom!
+// Authenticate using our plain-object database!
 
 function authenticate(name, pass, fn) {
   if (!module.parent) console.log('authenticating %s:%s', name, pass);
@@ -89,7 +89,7 @@ app.get('/', function(req, res){
 });
 
 app.get('/admin', restrict, function(req, res){
-  res.send('Wahoo! restricted area, click to <a href="/logout">logout</a>');
+  res.send('admin console login success, click to <a href="/logout">logout</a>');
 });
 
 app.get('/logout', function(req, res){
@@ -128,7 +128,7 @@ app.post('/login', function (req, res, next) {
     } else {
       req.session.error = 'Authentication failed, please check your '
         + ' username and password.'
-        + ' (use "tj" and "foobar")';
+        + ' (use "admin" and "admin")';
       res.redirect('/login');
     }
   });
