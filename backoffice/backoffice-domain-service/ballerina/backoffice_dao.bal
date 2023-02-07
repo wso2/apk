@@ -29,7 +29,7 @@ isolated function db_getAPIsDAO() returns API[]|APKError {
     } else {
         do {
             sql:ParameterizedQuery GET_API = `SELECT API_UUID AS ID, API_ID as APIID,
-            API_PROVIDER as PROVIDER, API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS, ARTIFACT as ARTIFACT
+            API_PROVIDER as PROVIDER, API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION, STATUS as STATE, string_to_array(SDK::text,',')::text[] AS SDK,string_to_array(API_TIER::text,',') AS POLICIES, ARTIFACT as ARTIFACT
             FROM API `;
             stream<API, sql:Error?> apisStream = db_Client->query(GET_API);
             API[] apis = check from API api in apisStream select api;
@@ -235,7 +235,7 @@ isolated function db_getAPI(string apiId) returns API|APKError {
         return error(message, db_Client, message = message, description = message, code = 909000, statusCode = "500");
     } else {
         sql:ParameterizedQuery GET_API_Prefix = `SELECT API_UUID AS ID, API_ID as APIID,
-        API_PROVIDER as PROVIDER, API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS, ARTIFACT as ARTIFACT
+        API_PROVIDER as PROVIDER, API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS,string_to_array(SDK::text,',')::text[] AS SDK,string_to_array(API_TIER::text,',') AS POLICIES, ARTIFACT as ARTIFACT
         FROM API where API_UUID = `;
         sql:ParameterizedQuery values = `${apiId}`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(GET_API_Prefix, values);
@@ -280,9 +280,10 @@ isolated function db_updateAPI(string apiId, ModifiableAPI payload, string organ
     } else {
         postgresql:JsonBinaryValue sdk = new (payload.sdk.toJson());
         postgresql:JsonBinaryValue categories = new (payload.categories.toJson());
+        postgresql:JsonBinaryValue businessPlans = new (payload.policies.toJson());
         sql:ParameterizedQuery UPDATE_API_Suffix = `UPDATE api SET`;
         sql:ParameterizedQuery values = ` status= ${payload.state}, sdk = ${sdk},
-        categories = ${categories} WHERE api_uuid = ${apiId}`;
+        categories = ${categories}, api_tier=${businessPlans} WHERE api_uuid = ${apiId}`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(UPDATE_API_Suffix, values);
 
         sql:ExecutionResult | sql:Error result = dbClient->execute(sqlQuery);
@@ -335,6 +336,58 @@ isolated function getAPIsByQueryDAO(string payload, string org) returns API[]|AP
         } on fail var e {
             io:print(e);
             string message = "Internal Error occured while retrieving APIs";
+            return error(message, e, message = message, description = message, code = 909001, statusCode = "500");
+        }
+    }
+}
+
+public isolated function getBusinessPlansDAO(string org) returns BusinessPlan[]|APKError {
+    postgresql:Client | error dbClient  = getConnection();
+    if dbClient is error {
+        string message = "Error while retrieving connection";
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+    } else {
+        do {
+            sql:ParameterizedQuery query = `SELECT NAME as PLANNAME, DISPLAY_NAME as DISPLAYNAME, DESCRIPTION, 
+            UUID as PLANID, IS_DEPLOYED as ISDEPLOYED, 
+            QUOTA_TYPE as DefaulLimitType, QUOTA , TIME_UNIT as TIMEUNIT, UNIT_TIME as 
+            UNITTIME, RATE_LIMIT_COUNT as RATELIMITCOUNT, RATE_LIMIT_TIME_UNIT as RATELIMITTIMEUNIT FROM BUSINESS_PLAN WHERE ORGANIZATION =${org}`;
+            stream<BusinessPlanDAO, sql:Error?> businessPlanStream = dbClient->query(query);
+            BusinessPlanDAO[] businessPlansDAO = check from BusinessPlanDAO businessPlan in businessPlanStream select businessPlan;
+            check businessPlanStream.close();
+            BusinessPlan[] businessPlans =[];
+            if businessPlansDAO is BusinessPlanDAO[] {
+                foreach BusinessPlanDAO result in businessPlansDAO {
+                    if result.defaulLimitType == "requestCount" {
+                        BusinessPlan bp = {planName: result.planName, displayName: result.displayName, 
+                        description: result.description, planId: result.planId, isDeployed: result.isDeployed, 
+                        rateLimitCount: result.rateLimitCount, rateLimitTimeUnit: result.rateLimitTimeUnit,
+                        defaultLimit: {'type: result.defaulLimitType, requestCount: 
+                        {requestCount: result.quota, timeUnit: result.timeUnit, unitTime: result.unitTime}
+                        }};
+                        businessPlans.push(bp);
+                    } else if result.defaulLimitType == "bandwidth" {
+                        BusinessPlan bp = {planName: result.planName, displayName: result.displayName, 
+                        description: result.description, planId: result.planId, isDeployed: result.isDeployed, 
+                        rateLimitCount: result.rateLimitCount, rateLimitTimeUnit: result.rateLimitTimeUnit,
+                        defaultLimit: {'type: result.defaulLimitType, bandwidth: 
+                        {dataAmount: result.quota, dataUnit: <string>result.dataUnit, timeUnit: result.timeUnit, unitTime: result.unitTime}
+                        }};
+                        businessPlans.push(bp);
+                    } else {
+                        BusinessPlan bp = {planName: result.planName, displayName: result.displayName, 
+                        description: result.description, planId: result.planId, isDeployed: result.isDeployed, 
+                        rateLimitCount: result.rateLimitCount, rateLimitTimeUnit: result.rateLimitTimeUnit,
+                        defaultLimit: {'type: result.defaulLimitType, eventCount: 
+                        {eventCount:result.quota, timeUnit: result.timeUnit, unitTime: result.unitTime}
+                        }};
+                        businessPlans.push(bp);
+                    }
+                }
+            }
+            return businessPlans;
+        } on fail var e {
+        	string message = "Internal Error occured while retrieving Business Plans";
             return error(message, e, message = message, description = message, code = 909001, statusCode = "500");
         }
     }
