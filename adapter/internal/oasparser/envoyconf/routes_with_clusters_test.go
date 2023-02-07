@@ -22,6 +22,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/wso2/apk/adapter/internal/oasparser/constants"
 	envoy "github.com/wso2/apk/adapter/internal/oasparser/envoyconf"
 	"github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
 	"github.com/wso2/apk/adapter/internal/operator/synchronizer"
@@ -127,7 +128,7 @@ func TestCreateRoutesWithClustersWithExactAndRegularExpressionRules(t *testing.T
 
 	apiState.ProdHTTPRoute = &httpRouteState
 
-	mgwSwagger, err := synchronizer.GenerateMGWSwagger(apiState, &httpRouteState)
+	mgwSwagger, err := synchronizer.GenerateMGWSwagger(apiState, &httpRouteState, constants.ProdEnvType)
 	assert.Nil(t, err, "Error should not be present when apiState is converted to a MgwSwagger object")
 	routes, clusters, _, _ := envoy.CreateRoutesWithClusters(*mgwSwagger, nil, "prod.gw.wso2.com", "carbon.super")
 	assert.Equal(t, 2, len(clusters), "Number of production clusters created is incorrect.")
@@ -270,7 +271,7 @@ func TestCreateRoutesWithClustersWithMultiplePathPrefixRules(t *testing.T) {
 
 	apiState.ProdHTTPRoute = &httpRouteState
 
-	mgwSwagger, err := synchronizer.GenerateMGWSwagger(apiState, &httpRouteState)
+	mgwSwagger, err := synchronizer.GenerateMGWSwagger(apiState, &httpRouteState, constants.ProdEnvType)
 	assert.Nil(t, err, "Error should not be present when apiState is converted to a MgwSwagger object")
 	routes, clusters, _, _ := envoy.CreateRoutesWithClusters(*mgwSwagger, nil, "prod.gw.wso2.com", "carbon.super")
 	assert.Equal(t, 2, len(clusters), "Number of production clusters created is incorrect.")
@@ -409,7 +410,7 @@ func TestCreateRoutesWithClustersWithBackendTLSConfigs(t *testing.T) {
 
 	apiState.ProdHTTPRoute = &httpRouteState
 
-	mgwSwagger, err := synchronizer.GenerateMGWSwagger(apiState, &httpRouteState)
+	mgwSwagger, err := synchronizer.GenerateMGWSwagger(apiState, &httpRouteState, constants.ProdEnvType)
 	assert.Nil(t, err, "Error should not be present when apiState is converted to a MgwSwagger object")
 	_, clusters, _, _ := envoy.CreateRoutesWithClusters(*mgwSwagger, nil, "prod.gw.wso2.com", "carbon.super")
 	assert.Equal(t, 1, len(clusters), "Number of production clusters created is incorrect.")

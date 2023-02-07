@@ -136,3 +136,13 @@ const (
 const (
 	KindAuthentication = "Authentication"
 )
+
+// APIEnvType defines Prod and and Sand API type
+type APIEnvType string
+
+const (
+	// ProdEnvType is the production API Type
+	ProdEnvType APIEnvType = "prod"
+	// SandEnvType is the sandbox API Type
+	SandEnvType APIEnvType = "sand"
+)
