@@ -19,7 +19,9 @@ import ballerina/uuid;
 //
 # Description
 #
-# + loginUiUrl - Field Description  
+# + loginPageURl - Field Description  
+# + loginErrorPageUrl - Field Description  
+# + loginCallBackURl - Field Description  
 # + user - Field Description  
 # + signingKeyStore - Field Description  
 # + publicKey - Field Description  
@@ -28,9 +30,10 @@ import ballerina/uuid;
 # + tokenIssuerConfiguration - Field Description
 public type IDPConfiguration record {|
 
-    string loginUiUrl;
-
-    Users[] user = [];
+    string loginPageURl;
+    string loginErrorPageUrl;
+    string loginCallBackURl;
+    User[] user = [];
     KeyStoreConfiguration signingKeyStore;
     KeyStoreConfiguration publicKey;
     DatasourceConfiguration dataSource;
@@ -44,11 +47,11 @@ public type IDPConfiguration record {|
 # + password - Password of user.
 # + organizations - organizations belongs to user.  
 # + superAdmin - User mark as super_admin.
-public type Users record {|
+public type User record {|
     string username;
     string password;
     string[] organizations = [];
-    boolean superAdmin;
+    boolean superAdmin = false;
 |};
 
 public type KeyStoreConfiguration record {|
@@ -87,4 +90,5 @@ public type TokenIssuerConfiguration record {|
     string audience = "https://localhost:9443/oauth2/token";
     string keyId = "gateway_certificate_alias";
     decimal expTime = 3600;
+    decimal refrshTokenValidity = 86400;
 |};
