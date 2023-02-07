@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www"
+    "start": "node ./bin/www",
+    "startDev": "nodemon ./bin/www"
   },
   "dependencies": {
     "cookie-parser": "~1.4.4",
@@ -15,5 +16,8 @@
     "jade": "~1.11.0",
     "morgan": "~1.9.1",
     "pbkdf2-password": "^1.2.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20"
   }
 }
