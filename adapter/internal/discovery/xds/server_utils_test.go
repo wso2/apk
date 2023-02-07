@@ -82,30 +82,3 @@ func TestGetEnvironmentsToBeDeleted(t *testing.T) {
 		})
 	}
 }
-
-func TestUpdateVhostInternalMaps(t *testing.T) {
-	setupInternalMemoryMapsWithTestSamples()
-	uuid1 := "111-PetStore-org1"
-	vhost1 := "org1.wso2.com"
-
-	// force update existing API with same name and same UUID to same vhost in same environment
-	updateVhostInternalMaps(uuid1, "PetStore", "v1", vhost1, []string{"us-region"})
-	if _, ok := apiToVhostsMap[uuid1][vhost1]; len(apiToVhostsMap[uuid1]) != 2 || !ok {
-		t.Errorf("expected the vhost %v in the map only once", vhost1)
-	}
-	vhost := apiUUIDToGatewayToVhosts[uuid1]["us-region"]
-	if vhost != vhost1 {
-		t.Errorf("expected the vhost %v of the API is but found %v", vhost1, vhost)
-	}
-
-	// add new API
-	uuid2 := "xxx"
-	updateVhostInternalMaps(uuid2, "NewAPI", "v1", vhost1, []string{"us-region"})
-	if _, ok := apiToVhostsMap[uuid2][vhost1]; len(apiToVhostsMap[uuid2]) != 1 || !ok {
-		t.Errorf("expected the vhost %v in the map only once", vhost1)
-	}
-	vhost = apiUUIDToGatewayToVhosts[uuid2]["us-region"]
-	if vhost != vhost1 {
-		t.Errorf("expected the vhost %v of the API is but found %v", vhost1, vhost)
-	}
-}

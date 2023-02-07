@@ -72,8 +72,7 @@ var (
 
 	// Vhosts entry maps, these maps updated with delta changes (when an API added, only added its entry only)
 	// These maps are managed separately for API-CTL and APIM, since when deploying an project from API-CTL there is no API uuid
-	apiUUIDToGatewayToVhosts map[string]map[string]string   // API_UUID -> gateway-env -> vhost (for un-deploying APIs from APIM or Choreo)
-	apiToVhostsMap           map[string]map[string]struct{} // API_UUID -> VHosts set (for un-deploying APIs from API-CTL)
+	apiUUIDToGatewayToVhosts map[string]map[string]string // API_UUID -> gateway-env -> vhost (for un-deploying APIs from APIM or Choreo)
 
 	orgIDAPIMgwSwaggerMap       map[string]map[string]model.MgwSwagger     // organizationID -> Vhost:API_UUID -> MgwSwagger struct map
 	orgIDAPIvHostsMap           map[string]map[string][]string             // organizationID -> UUID -> prod/sand -> Envoy Vhost Array map
@@ -143,7 +142,6 @@ func init() {
 	enforcerThrottleDataCache = wso2_cache.NewSnapshotCache(false, IDHash{}, nil)
 
 	apiUUIDToGatewayToVhosts = make(map[string]map[string]string)
-	apiToVhostsMap = make(map[string]map[string]struct{})
 	envoyListenerConfigMap = make(map[string][]*listenerv3.Listener)
 	envoyRouteConfigMap = make(map[string]*routev3.RouteConfiguration)
 	envoyClusterConfigMap = make(map[string][]*clusterv3.Cluster)
@@ -917,8 +915,6 @@ func UpdateAPICache(vHosts []string, newLabels []string, mgwSwagger model.MgwSwa
 			openAPIEnvoyMap[apiIdentifier] = newLabels
 			orgIDOpenAPIEnvoyMap[mgwSwagger.GetOrganizationID()] = openAPIEnvoyMap
 		}
-
-		updateVhostInternalMaps(mgwSwagger.UUID, mgwSwagger.GetID(), mgwSwagger.GetVersion(), vHost, newLabels)
 
 		routes, clusters, endpoints, err := oasParser.GetRoutesClustersEndpoints(mgwSwagger, nil,
 			vHost, mgwSwagger.GetOrganizationID())

@@ -22,7 +22,6 @@ import (
 )
 
 func TestGenerateIdentifierForAPIWithUUID(t *testing.T) {
-	setupInternalMemoryMapsWithTestSamples()
 	tests := []struct {
 		name  string
 		uuid  string
@@ -42,33 +41,5 @@ func TestGenerateIdentifierForAPIWithUUID(t *testing.T) {
 				t.Errorf("expected identifier %v but found %v", test.vhost+":"+test.uuid, identifier)
 			}
 		})
-	}
-}
-
-func setupInternalMemoryMapsWithTestSamples() {
-	apiToVhostsMap = map[string]map[string]struct{}{
-		// The same API uuid is deployed in two org with two gateway environments
-		"111-PetStore-org1": {"org1.wso2.com": void, "org2.foo.com": void},
-		"333-Pizza-org1":    {"org1.foo.com": void, "org2.foo.com": void, "org2.wso2.com": void},
-	}
-	apiUUIDToGatewayToVhosts = map[string]map[string]string{
-		// PetStore:v1 in Org1
-		"111-PetStore-org1": {
-			"Default":   "org1.wso2.com",
-			"us-region": "org1.wso2.com",
-		},
-		// PetStore:v1 in Org2
-		"222-PetStore-org2": {
-			"Default": "org2.foo.com",
-		},
-		// Pizza:v1 in Org1
-		"333-Pizza-org1": {
-			"us-region": "org1.foo.com",
-		},
-		// Pizza:v1 in Org2
-		"444-Pizza-org2": {
-			"Default":   "org2.foo.com",
-			"us-region": "org2.wso2.com",
-		},
 	}
 }
