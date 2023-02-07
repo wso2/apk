@@ -14,7 +14,7 @@ var app = module.exports = express();
 // config
 
 app.set('view engine', 'ejs');
-app.set('views', path.join("/home/krish/Documents/apk/idp/idp-ui/", 'views'));
+app.set('views', path.join(__dirname, 'views'));
 
 // middleware
 
@@ -38,12 +38,13 @@ app.use(function(req, res, next){
   next();
 });
 
+//Initial request coming here and redirect to login
 app.get('/', function(req, res){
   req.session.sessionDataKey = "testKey";
   res.redirect('/login');
 });
 
-
+// Logout function
 app.get('/logout', function(req, res){
   // destroy the user's session to log them out
   // will be re-created next request
@@ -52,6 +53,7 @@ app.get('/logout', function(req, res){
   });
 });
 
+// Login GET request
 app.get('/login', function(req, res) {
   // request sessiondata key add to cookie
   var minute = 60000;
@@ -62,21 +64,23 @@ app.get('/login', function(req, res) {
   }
   else {
     req.session.error = 'Auth 302 error';
-    res.render('login');
+    res.redirect('loginError');
   }
 });
 
+//Login post request
 app.post('/login', function (req, res, next) {
   // redirection IDP
   res.redirect(`url?username=${req.body.username}&password=${req.body.password}&organization=${req.body.org}`)
 });
 
+//Login callback
 app.get('/login-callback', function (req, res, next) {
-
+  
 });
 
 
-/* istanbul ignore next */
+/* Listen Port */
 if (!module.parent) {
   app.listen(3000);
   console.log('Express started on port 3000');
