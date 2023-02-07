@@ -24,7 +24,7 @@ metadata:
     api-version: "1.0.0"
 spec:
   apiDisplayName: "Runtime Domain Service API"
-  apiType: "HTTP"
+  apiType: "REST"
   apiVersion: "2.0.0"
   context: "/api/am/runtime"
   organization: "carbon.super"

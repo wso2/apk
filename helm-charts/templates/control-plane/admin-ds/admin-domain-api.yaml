@@ -24,7 +24,7 @@ metadata:
     api-version: "1.0.0"
 spec:
   apiDisplayName: "admin-domain-service"
-  apiType: "HTTP"
+  apiType: "REST"
   apiVersion: "1.0.0"
   context: "/api/am/admin"
   organization: "carbon.super"

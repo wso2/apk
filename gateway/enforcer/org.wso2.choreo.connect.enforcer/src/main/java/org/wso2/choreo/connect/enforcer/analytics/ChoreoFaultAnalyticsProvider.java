@@ -137,8 +137,7 @@ public class ChoreoFaultAnalyticsProvider implements AnalyticsDataProvider {
         AuthenticationContext authContext = AnalyticsUtils.getAuthenticationContext(requestContext);
         Application application = new Application();
         // Default Value would be PRODUCTION
-        application.setKeyType(
-                authContext.getKeyType() == null ? APIConstants.API_KEY_TYPE_PRODUCTION : authContext.getKeyType());
+        application.setKeyType(requestContext.getMatchedAPI().getEnvType());
         application.setApplicationId(AnalyticsUtils.setDefaultIfNull(authContext.getApplicationUUID()));
         application.setApplicationOwner(AnalyticsUtils.setDefaultIfNull(authContext.getSubscriber()));
         application.setApplicationName(AnalyticsUtils.setDefaultIfNull(authContext.getApplicationName()));

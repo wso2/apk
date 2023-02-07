@@ -21,6 +21,7 @@ const (
 )
 
 // Endpoint config model
+// todo(amali) fix endpoint security
 type EndpointSecurity struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

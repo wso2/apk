@@ -121,22 +121,22 @@ func deleteAPIFromEnv(httpRoute *gwapiv1b1.HTTPRoute, apiState APIState) error {
 func deployAPIInGateway(apiState APIState) error {
 	var err error
 	if apiState.ProdHTTPRoute != nil {
-		_, err = GenerateMGWSwagger(apiState, apiState.ProdHTTPRoute)
+		_, err = GenerateMGWSwagger(apiState, apiState.ProdHTTPRoute, constants.Production)
 	}
 	if err != nil {
 		return err
 	}
 	if apiState.SandHTTPRoute != nil {
-		_, err = GenerateMGWSwagger(apiState, apiState.SandHTTPRoute)
+		_, err = GenerateMGWSwagger(apiState, apiState.SandHTTPRoute, constants.Sandbox)
 	}
 	return err
 }
 
 // GenerateMGWSwagger this will populate a mgwswagger representation for an HTTPRoute
-func GenerateMGWSwagger(apiState APIState, httpRoute *HTTPRouteState) (*model.MgwSwagger, error) {
+func GenerateMGWSwagger(apiState APIState, httpRoute *HTTPRouteState, envType string) (*model.MgwSwagger, error) {
 	var mgwSwagger model.MgwSwagger
 	mgwSwagger.SetInfoAPICR(*apiState.APIDefinition)
-	//todo(amali) add validations for hostname list
+	mgwSwagger.EnvType = envType
 	if err := mgwSwagger.SetInfoHTTPRouteCR(httpRoute.HTTPRoute, httpRoute.Authentications, httpRoute.ResourceAuthentications,
 		httpRoute.BackendPropertyMapping); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{

@@ -25,7 +25,7 @@ metadata:
     api-version: "1.0.0"
 spec:
   apiDisplayName: "Backoffice Domain API"
-  apiType: "HTTP"
+  apiType: "REST"
   apiVersion: "1.0.0"
   context: "/api/am/backoffice"
   organization: "carbon.super"

@@ -56,46 +56,24 @@ public interface ApiOrBuilder extends
       getApiTypeBytes();
 
   /**
-   * <code>string description = 5;</code>
-   * @return The description.
+   * <pre>
+   * string description = 5;
+   * </pre>
+   *
+   * <code>string envType = 6;</code>
+   * @return The envType.
    */
-  java.lang.String getDescription();
+  java.lang.String getEnvType();
   /**
-   * <code>string description = 5;</code>
-   * @return The bytes for description.
+   * <pre>
+   * string description = 5;
+   * </pre>
+   *
+   * <code>string envType = 6;</code>
+   * @return The bytes for envType.
    */
   com.google.protobuf.ByteString
-      getDescriptionBytes();
-
-  /**
-   * <code>.wso2.discovery.api.EndpointCluster productionEndpoints = 6;</code>
-   * @return Whether the productionEndpoints field is set.
-   */
-  boolean hasProductionEndpoints();
-  /**
-   * <code>.wso2.discovery.api.EndpointCluster productionEndpoints = 6;</code>
-   * @return The productionEndpoints.
-   */
-  org.wso2.choreo.connect.discovery.api.EndpointCluster getProductionEndpoints();
-  /**
-   * <code>.wso2.discovery.api.EndpointCluster productionEndpoints = 6;</code>
-   */
-  org.wso2.choreo.connect.discovery.api.EndpointClusterOrBuilder getProductionEndpointsOrBuilder();
-
-  /**
-   * <code>.wso2.discovery.api.EndpointCluster sandboxEndpoints = 7;</code>
-   * @return Whether the sandboxEndpoints field is set.
-   */
-  boolean hasSandboxEndpoints();
-  /**
-   * <code>.wso2.discovery.api.EndpointCluster sandboxEndpoints = 7;</code>
-   * @return The sandboxEndpoints.
-   */
-  org.wso2.choreo.connect.discovery.api.EndpointCluster getSandboxEndpoints();
-  /**
-   * <code>.wso2.discovery.api.EndpointCluster sandboxEndpoints = 7;</code>
-   */
-  org.wso2.choreo.connect.discovery.api.EndpointClusterOrBuilder getSandboxEndpointsOrBuilder();
+      getEnvTypeBytes();
 
   /**
    * <code>repeated .wso2.discovery.api.Resource resources = 8;</code>
@@ -263,30 +241,44 @@ public interface ApiOrBuilder extends
       getOrganizationIdBytes();
 
   /**
-   * <code>bool isMockedApi = 19;</code>
-   * @return The isMockedApi.
-   */
-  boolean getIsMockedApi();
-
-  /**
+   * <pre>
+   * bool isMockedApi = 19;
+   * </pre>
+   *
    * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
    */
   java.util.List<org.wso2.choreo.connect.discovery.api.Certificate> 
       getClientCertificatesList();
   /**
+   * <pre>
+   * bool isMockedApi = 19;
+   * </pre>
+   *
    * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
    */
   org.wso2.choreo.connect.discovery.api.Certificate getClientCertificates(int index);
   /**
+   * <pre>
+   * bool isMockedApi = 19;
+   * </pre>
+   *
    * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
    */
   int getClientCertificatesCount();
   /**
+   * <pre>
+   * bool isMockedApi = 19;
+   * </pre>
+   *
    * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
    */
   java.util.List<? extends org.wso2.choreo.connect.discovery.api.CertificateOrBuilder> 
       getClientCertificatesOrBuilderList();
   /**
+   * <pre>
+   * bool isMockedApi = 19;
+   * </pre>
+   *
    * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
    */
   org.wso2.choreo.connect.discovery.api.CertificateOrBuilder getClientCertificatesOrBuilder(
@@ -311,42 +303,11 @@ public interface ApiOrBuilder extends
   boolean getApplicationSecurity();
 
   /**
-   * <code>string graphQLSchema = 23;</code>
-   * @return The graphQLSchema.
-   */
-  java.lang.String getGraphQLSchema();
-  /**
-   * <code>string graphQLSchema = 23;</code>
-   * @return The bytes for graphQLSchema.
-   */
-  com.google.protobuf.ByteString
-      getGraphQLSchemaBytes();
-
-  /**
-   * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 24;</code>
-   */
-  java.util.List<org.wso2.choreo.connect.discovery.api.GraphqlComplexity> 
-      getGraphqlComplexityInfoList();
-  /**
-   * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 24;</code>
-   */
-  org.wso2.choreo.connect.discovery.api.GraphqlComplexity getGraphqlComplexityInfo(int index);
-  /**
-   * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 24;</code>
-   */
-  int getGraphqlComplexityInfoCount();
-  /**
-   * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 24;</code>
-   */
-  java.util.List<? extends org.wso2.choreo.connect.discovery.api.GraphqlComplexityOrBuilder> 
-      getGraphqlComplexityInfoOrBuilderList();
-  /**
-   * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 24;</code>
-   */
-  org.wso2.choreo.connect.discovery.api.GraphqlComplexityOrBuilder getGraphqlComplexityInfoOrBuilder(
-      int index);
-
-  /**
+   * <pre>
+   *&#47; string graphQLSchema = 23;
+   * repeated GraphqlComplexity graphqlComplexityInfo = 24;
+   * </pre>
+   *
    * <code>bool systemAPI = 25;</code>
    * @return The systemAPI.
    */
