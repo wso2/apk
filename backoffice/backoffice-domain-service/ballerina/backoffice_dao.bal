@@ -29,7 +29,7 @@ isolated function db_getAPIsDAO() returns API[]|APKError {
     } else {
         do {
             sql:ParameterizedQuery GET_API = `SELECT API_UUID AS ID, API_ID as APIID,
-            API_PROVIDER as PROVIDER, API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS,string_to_array(SDK::text,',')::text[] AS SDK,string_to_array(API_TIER::text,',') AS POLICIES, ARTIFACT as ARTIFACT
+            API_PROVIDER as PROVIDER, API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION, STATUS as STATE, string_to_array(SDK::text,',')::text[] AS SDK,string_to_array(API_TIER::text,',') AS POLICIES, ARTIFACT as ARTIFACT
             FROM API `;
             stream<API, sql:Error?> apisStream = db_Client->query(GET_API);
             API[] apis = check from API api in apisStream select api;
