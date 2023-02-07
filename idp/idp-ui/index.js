@@ -8,6 +8,7 @@ var express = require('express');
 var hash = require('pbkdf2-password')()
 var path = require('path');
 var session = require('express-session');
+var cookieParser = require('cookie-parser');
 
 var app = module.exports = express();
 
@@ -17,7 +18,7 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 // middleware
-
+app.use(cookieParser());
 app.use(express.urlencoded({ extended: false }))
 app.use(session({
   resave: false, // don't save session if unmodified
@@ -57,7 +58,9 @@ app.get('/logout', function(req, res){
 app.get('/login', function(req, res) {
   // request sessiondata key add to cookie
   var minute = 60000;
-  console.log(req.session.sessionDataKey);
+  //Read cookie "req.cookies.sessionDataKey"
+  //Read queryParam "req.param.sessionDataKey"
+  console.log(req.cookies.sessionDataKey);
   if (req.session.sessionDataKey) {
     res.cookie('sessionDataKey', 1, { maxAge: minute });
     res.render('login');
