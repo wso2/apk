@@ -19,9 +19,13 @@ import ballerinax/postgresql;
 import ballerina/log;
 import ballerina/sql;
 import ballerina/http;
+import ballerina/jwt;
+
 configurable IDPConfiguration idpConfiguration = ?;
 final postgresql:Client|sql:Error dbClient;
 listener http:Listener ep0 = new (9090);
+final jwt:ValidatorConfig & readonly validatorConfig;
+
 function init() {
     dbClient =
         new (host = idpConfiguration.dataSource.host,
@@ -31,10 +35,19 @@ function init() {
             port = idpConfiguration.dataSource.port,
             connectionPool = {maxOpenConnections: idpConfiguration.dataSource.maxPoolSize}
             );
+    validatorConfig = {
+        issuer: idpConfiguration.tokenIssuerConfiguration.issuer,
+        signatureConfig: {
+            certFile: idpConfiguration.publicKey.path
+        }
+    };
     log:printInfo("Initialize Non Production OIDC Server..");
 }
 
 public isolated function getConnection() returns postgresql:Client|error {
     return dbClient;
+}
+public isolated function getValidationConfig() returns jwt:ValidatorConfig{
+    return validatorConfig;
 }
 

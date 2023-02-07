@@ -52,6 +52,25 @@ paths:
               schema:
                 type: string
           content: {}
+  /auth-callback:
+    get:
+      tags:
+      - OAuth Authorization
+      parameters:
+      - name: sessionKey
+        in: query
+        description: Session key.
+        required: true
+        schema:
+          type: string
+      responses:
+        302:
+          description: Response from authorization endpoint
+          headers:
+            Location:
+              schema:
+                type: string
+          content: {}
   /token:
     post:
       tags:
@@ -174,10 +193,9 @@ components:
           description: |
             The type of the token issued.
         expires_in:
-          type: integer
+          type: number
           description: |
             The lifetime in seconds of the access token.
-          format: int64
         refresh_token:
           type: string
           description: |

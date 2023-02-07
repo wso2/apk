@@ -3,10 +3,12 @@ import ballerina/regex;
 import ballerina/lang.array;
 import ballerina/uuid;
 import ballerina/jwt;
+import ballerina/http;
+import ballerina/time;
 
 public class TokenUtil {
 
-    public isolated function generateToken(string? authorization, Token_body payload) returns TokenResponse|BadRequestTokenErrorResponse|UnauthorizedTokenErrorResponse {
+    public isolated function generateToken(string? authorization, Token_body payload) returns UnauthorizedTokenErrorResponse|BadRequestTokenErrorResponse|TokenResponse|error {
         if (authorization is ()) || (authorization.toString().trim().length() == 0) || (!authorization.toString().startsWith("Basic ")) {
             UnauthorizedTokenErrorResponse unauthorized = {body: {'error: "access_denied", error_description: "Unauthorized"}};
             return unauthorized;
@@ -43,6 +45,10 @@ public class TokenUtil {
                         }
                         if grantType == CLIENT_CREDENTIALS_GRANT_TYPE {
                             return self.handleClientCredentialsGrant(payload, application);
+                        } else if grantType == AUTHORIZATION_CODE_GRANT_TYPE {
+                            return self.handleAuthorizationCodeGrant(payload, application);
+                        } else if grantType == REFRESH_TOKEN_GRANT_TYPE {
+                            return self.hanleRefreshTokenGrant(payload, application);
                         }
                     } else if application is NotFoundClientRegistrationError {
                         UnauthorizedTokenErrorResponse unauthorized = {body: {'error: "access_denied", error_description: "Invalide Client Id/Secret"}};
@@ -63,16 +69,12 @@ public class TokenUtil {
         }
     }
     public isolated function handleClientCredentialsGrant(Token_body payload, Application application) returns TokenResponse|BadRequestTokenErrorResponse|UnauthorizedTokenErrorResponse {
-        string? scope = payload.scope;
-        string[] scopeArray = ["default"];
-        if scope is string && scope.trim().length() > 0 {
-            scopeArray = regex:split(scope, " ");
-        }
-        string|jwt:Error tokenResult = self.issueToken(application, (), scopeArray);
+        string[] scopeArray = self.filterScopes(payload.scope);
+        string|jwt:Error tokenResult = self.issueToken(application, (), scopeArray, (), ACCESS_TOKEN_TYPE);
         if tokenResult is string {
             TokenResponse tokenResponse = {
                 access_token: tokenResult,
-                token_type: "Bearer",
+                token_type: TOKEN_TYPE_BEARER,
                 expires_in: idpConfiguration.tokenIssuerConfiguration.expTime,
                 scope: string:'join(" ", ...scopeArray)
             };
@@ -85,13 +87,14 @@ public class TokenUtil {
 
         }
     }
-    public isolated function issueToken(Application application, string? username, string[] scopes) returns string|jwt:Error {
+    public isolated function issueToken(Application application, string? username, string[] scopes, string? organization, string tokenType) returns string|jwt:Error {
         TokenIssuerConfiguration issuerConfiguration = idpConfiguration.tokenIssuerConfiguration;
         KeyStoreConfiguration signingCert = idpConfiguration.signingKeyStore;
         string jwtid = uuid:createType1AsString();
+        decimal exptime = tokenType == ACCESS_TOKEN_TYPE ? issuerConfiguration.expTime : issuerConfiguration.refrshTokenValidity;
         jwt:IssuerConfig issuerConfig = {
             issuer: issuerConfiguration.issuer,
-            expTime: issuerConfiguration.expTime,
+            expTime: exptime,
             jwtId: jwtid,
             keyId: issuerConfiguration.keyId,
             signatureConfig: {
@@ -103,13 +106,256 @@ public class TokenUtil {
         } else {
             issuerConfig.username = application.client_id;
         }
-
-        issuerConfig.customClaims = self.handleCustomClaims(application, username, scopes);
+        map<string> customClaims = {};
+        customClaims[SCOPES_CLAIM] = string:'join(" ", ...scopes);
+        if organization is string && organization.toString().trim().length() > 0 {
+            customClaims[ORGANIZATION_CLAIM] = organization;
+        }
+        if tokenType == REFRESH_TOKEN_TYPE {
+            customClaims[TOKEN_TYPE_CLAIM] = tokenType;
+        }
+        issuerConfig.customClaims = customClaims;
         return jwt:issue(issuerConfig);
     }
-    public isolated function handleCustomClaims(Application application, string? username, string[] scopes) returns map<json> {
-        map<json> claims = {};
-        claims = {"scope": string:'join(" ", ...scopes)};
-        return claims;
+    public isolated function handleAuthorizationCodeGrant(Token_body payload, Application application) returns BadRequestTokenErrorResponse|TokenResponse|error {
+        string? authorization_code = payload.code;
+        string? redirectUri = payload.redirect_uri;
+
+        if (authorization_code is () || authorization_code.toString().trim().length() == 0) || (redirectUri is () || redirectUri.toString().trim().length() == 0) {
+            BadRequestTokenErrorResponse tokenError = {body: {'error: "invalid_request", error_description: "authorization_code|redirect_uri not available in request."}};
+            return tokenError;
+        }
+        // authorization code available.
+        jwt:Payload|jwt:Error validatedPayload = jwt:validate(authorization_code, getValidationConfig());
+        if validatedPayload is jwt:Payload {
+            // validating expiry.
+            string tokenType = validatedPayload.hasKey(TOKEN_TYPE_CLAIM) ? <string>validatedPayload.get(TOKEN_TYPE_CLAIM) : "";
+            if tokenType != AUTHORIZATION_CODE_TYPE {
+                BadRequestTokenErrorResponse tokenError = {"body": {'error: "invalid_request", error_description: "Invalid authorization_code"}};
+                return tokenError;
+            }
+            if validatedPayload.exp <= time:utcNow()[0] {
+                BadRequestTokenErrorResponse tokenError = {"body": {'error: "invalid_grant", error_description: "authorization_code expired."}};
+                return tokenError;
+            }
+            string requestRedirectUrl = <string>validatedPayload.get(REDIRECT_URI_CLAIM);
+            string clientId = <string>validatedPayload.get(CLIENT_ID_CLAIM);
+            json[] scopes = <json[]>validatedPayload.get(SCOPES_CLAIM);
+            string sub = <string>validatedPayload.sub;
+            string[]? redirectUris = application.redirect_uris;
+
+            string? organization = payload.hasKey(ORGANIZATION_CLAIM) ? <string>payload.get(ORGANIZATION_CLAIM) : ();
+            if requestRedirectUrl != redirectUri || application.client_id != clientId || (redirectUris is () || redirectUris.indexOf(redirectUri) is ()) {
+                BadRequestTokenErrorResponse tokenError = {"body": {'error: "unauthorized_client", error_description: "redirectUrl not matched with application"}};
+                return tokenError;
+            }
+            string[] scopesArray = [];
+            foreach json scope in scopes {
+                scopesArray.push(scope.toString());
+            }
+            do {
+                string accessToken = check self.issueToken(application, sub, scopesArray, organization, ACCESS_TOKEN_TYPE);
+                string refreshToken = check self.issueToken(application, sub, scopesArray, organization, REFRESH_TOKEN_TYPE);
+                TokenResponse token = {access_token: accessToken, refresh_token: refreshToken, expires_in: idpConfiguration.tokenIssuerConfiguration.expTime, token_type: TOKEN_TYPE_BEARER, scope: string:'join(" ", ...scopesArray)};
+                return token;
+            } on fail var e {
+                log:printInfo("Error on generating token", e);
+                return {"body": {'error: "server_error", error_description: "Server Error occured on generating token"}};
+            }
+        } else {
+            log:printError("Error on validating authorization_code", validatedPayload);
+            BadRequestTokenErrorResponse tokenError = {"body": {'error: "server_error", error_description: "Server Error occured on generating token"}};
+            return tokenError;
+        }
+    }
+    public isolated function hanleRefreshTokenGrant(Token_body payload, Application application) returns BadRequestTokenErrorResponse|TokenResponse {
+        string? refresh_token = payload.refresh_token;
+
+        if (refresh_token is () || refresh_token.toString().trim().length() == 0) {
+            BadRequestTokenErrorResponse tokenError = {body: {'error: "invalid_request", error_description: "refresh_token not available in request."}};
+            return tokenError;
+        }
+        // authorization code available.
+        jwt:Payload|jwt:Error validatedPayload = jwt:validate(refresh_token, getValidationConfig());
+        if validatedPayload is jwt:Payload {
+            // validating expiry.
+            string tokenType = validatedPayload.hasKey(TOKEN_TYPE_CLAIM) ? <string>validatedPayload.get(TOKEN_TYPE_CLAIM) : "";
+            if tokenType != REFRESH_TOKEN_TYPE {
+                BadRequestTokenErrorResponse tokenError = {"body": {'error: "invalid_request", error_description: "Invalid refresh_token"}};
+                return tokenError;
+            }
+            if validatedPayload.exp <= time:utcNow()[0] {
+                BadRequestTokenErrorResponse tokenError = {"body": {'error: "invalid_grant", error_description: "refredh_token expired."}};
+                return tokenError;
+            }
+            string clientId = <string>validatedPayload.get(CLIENT_ID_CLAIM);
+            json[] scopes = <json[]>validatedPayload.get(SCOPES_CLAIM);
+            string sub = <string>validatedPayload.sub;
+
+            string? organization = payload.hasKey(ORGANIZATION_CLAIM) ? <string>payload.get(ORGANIZATION_CLAIM) : ();
+            if application.client_id != clientId {
+                BadRequestTokenErrorResponse tokenError = {"body": {'error: "invalid_request", error_description: "Invalid refresh_token"}};
+                return tokenError;
+            }
+            do {
+                string[] scopesArray = [];
+                foreach json scope in scopes {
+                    scopesArray.push(scope.toString());
+                }
+                string accessToken = check self.issueToken(application, sub, scopesArray, organization, ACCESS_TOKEN_TYPE);
+                string refreshToken = check self.issueToken(application, sub, scopesArray, organization, REFRESH_TOKEN_TYPE);
+                TokenResponse token = {access_token: accessToken, refresh_token: refreshToken, expires_in: idpConfiguration.tokenIssuerConfiguration.expTime, token_type: TOKEN_TYPE_BEARER, scope: string:'join(" ", ...<string[]>scopes)};
+                return token;
+            } on fail var e {
+                log:printInfo("Error on generating token", e);
+                return {"body": {'error: "server_error", error_description: "Server Error occured on generating token"}};
+            }
+        } else {
+            log:printError("Error on validating authorization_code", validatedPayload);
+            BadRequestTokenErrorResponse tokenError = {"body": {'error: "server_error", error_description: "Server Error occured on generating token"}};
+            return tokenError;
+        }
+    }
+    public isolated function handleAuthorizeRequest(string response_type, string client_id, string? redirect_uri, string? scope, string? state) returns http:Found {
+        do {
+            if client_id.trim().length() > 0 && redirect_uri is string {
+                DCRMClient dcrmClient = new;
+                Application|NotFoundClientRegistrationError|InternalServerErrorClientRegistrationError application = dcrmClient.getApplication(client_id);
+                if application is Application {
+                    string[]? grantTypes = application.grant_types;
+                    if grantTypes is string[] {
+                        int? indexOf = grantTypes.indexOf(AUTHORIZATION_CODE_GRANT_TYPE);
+                        if indexOf is () {
+                            string loginPageRedirect = idpConfiguration.loginErrorPageUrl + "?error=unauthorized_client&error_description=authorization_code grant not supported from application";
+                            return {headers: {"Location": loginPageRedirect}};
+                        }
+                        if response_type != AUTHORIZATION_CODE_QUERY_PARAM {
+                            string loginPageRedirect = idpConfiguration.loginErrorPageUrl + "?error=unsupported_response_type&error_description=" + response_type + " not supported from authorization server.";
+                            return {headers: {"Location": loginPageRedirect}};
+                        }
+                        string[] scopeArray = self.filterScopes(scope);
+                        return self.redirectRequest(application, redirect_uri, scopeArray, state);
+                    }
+                } else if application is NotFoundClientRegistrationError {
+                    string loginPageRedirect = idpConfiguration.loginErrorPageUrl + "?error=unauthorized_client&error_description=Client application not found in system";
+                    return {headers: {"Location": loginPageRedirect}};
+                } else {
+                    string loginPageRedirect = idpConfiguration.loginErrorPageUrl + "?error=server_error&error_description=Internal Server Error";
+                    return {headers: {"Location": loginPageRedirect}};
+                }
+            }
+            string loginPageRedirect = idpConfiguration.loginErrorPageUrl + "?error=invalid_request&error_description=authorization_code grant not supported from application";
+            return {headers: {"Location": loginPageRedirect}};
+        }
+        on fail var e {
+            log:printError("Error on authorizing request", e);
+        }
+    }
+    public isolated function redirectRequest(Application application, string redirectUri, string[] scopes, string? state) returns http:Found {
+        TokenIssuerConfiguration issuerConfiguration = idpConfiguration.tokenIssuerConfiguration;
+        KeyStoreConfiguration signingCert = idpConfiguration.signingKeyStore;
+        string jwtid = uuid:createType1AsString();
+        jwt:IssuerConfig issuerConfig = {
+            issuer: issuerConfiguration.issuer,
+            expTime: 600,
+            jwtId: jwtid,
+            signatureConfig: {
+                config: {keyFile: signingCert.path}
+            }
+        };
+        issuerConfig.customClaims = {[REDIRECT_URI_CLAIM] : redirectUri, [SCOPES_CLAIM] : scopes, [CLIENT_ID_CLAIM] : application.client_id, [TOKEN_TYPE_CLAIM] : SESSION_KEY_TYPE};
+        string|jwt:Error stateKey = jwt:issue(issuerConfig);
+        if stateKey is string {
+            string loginPageRedirect = idpConfiguration.loginPageURl + "?" + STATE_KEY_QUERY_PARAM + "=" + jwtid;
+            http:CookieOptions cookieOption = {domain: gethost(idpConfiguration.loginPageURl), secure: false, path: "/"};
+            http:Cookie cookie = new (SESSION_KEY_PREFIX + jwtid, stateKey, cookieOption);
+            return {
+                headers: {
+                    "Location": loginPageRedirect,
+                    "Set-Cookie": cookie.toStringValue()
+                }
+            };
+        } else {
+            log:printInfo("Error on generating State", stateKey);
+            string loginPageRedirect = idpConfiguration.loginErrorPageUrl + "?error=server_error&error_description=Internal Server Error";
+            return {headers: {"Location": loginPageRedirect}};
+        }
+    }
+    public isolated function filterScopes(string? scopes) returns string[] {
+        string[] scopeArray = ["default"];
+        if scopes is string && scopes.trim().length() > 0 {
+            scopeArray = regex:split(scopes, " ");
+        }
+        return scopeArray;
+    }
+    public isolated function handleOauthCallBackRequest(http:Request request, string sessionKey) returns http:Found {
+        do {
+
+            http:Cookie[] cookies = request.getCookies();
+            http:Cookie? sessionCookieValue = ();
+            foreach http:Cookie cookie in cookies {
+                if cookie.name == SESSION_KEY_PREFIX + sessionKey {
+                    sessionCookieValue = cookie;
+                    break;
+                }
+            }
+            if sessionCookieValue is http:Cookie {
+                string sessionValue = sessionCookieValue.value;
+                jwt:Payload validatedPayload = check jwt:validate(sessionValue, getValidationConfig());
+                if validatedPayload.exp <= time:utcNow()[0] {
+                    string loginPageRedirect = idpConfiguration.loginErrorPageUrl + "?error=expired_session&error_description=Login Session expired.";
+                    return {headers: {"Location": loginPageRedirect}};
+                }
+                string? tokenType = validatedPayload.hasKey(TOKEN_TYPE_CLAIM) ? <string>validatedPayload.get(TOKEN_TYPE_CLAIM) : ();
+                if tokenType is () || tokenType != SESSION_KEY_TYPE {
+                    string loginPageRedirect = idpConfiguration.loginErrorPageUrl + "?error=invalid_request&error_description=Invalid login Session.";
+                    return {headers: {"Location": loginPageRedirect}};
+                }
+                // non expired session.
+                return self.generateOauthcodeResponse(validatedPayload);
+            }
+            else {
+                string loginPageRedirect = idpConfiguration.loginErrorPageUrl + "?error=invalid_request&error_description=Invalid login Session.";
+                return {headers: {"Location": loginPageRedirect}};
+            }
+        } on fail var e {
+            log:printError("Error occured login user.", e);
+            string loginPageRedirect = idpConfiguration.loginErrorPageUrl + "?error=server_error&error_description=Internal Error Occurred.";
+            return {headers: {"Location": loginPageRedirect}};
+        }
+
+    }
+    public isolated function generateOauthcodeResponse(jwt:Payload payload) returns http:Found {
+        string redirectUri = <string>payload.get(REDIRECT_URI_CLAIM);
+        string clientId = <string>payload.get(CLIENT_ID_CLAIM);
+        json[] scopes = <json[]>payload.get(SCOPES_CLAIM);
+        string sub = <string>payload.sub;
+        string? organization = payload.hasKey(ORGANIZATION_CLAIM) ? <string>payload.get(ORGANIZATION_CLAIM) : ();
+        TokenIssuerConfiguration issuerConfiguration = idpConfiguration.tokenIssuerConfiguration;
+        KeyStoreConfiguration signingCert = idpConfiguration.signingKeyStore;
+        string jwtid = uuid:createType1AsString();
+        jwt:IssuerConfig issuerConfig = {
+            issuer: issuerConfiguration.issuer,
+            expTime: 600,
+            jwtId: jwtid,
+            username: sub,
+            keyId: issuerConfiguration.keyId,
+            signatureConfig: {
+                config: {keyFile: signingCert.path}
+            }
+        };
+        issuerConfig.customClaims = {[REDIRECT_URI_CLAIM] : redirectUri, [SCOPES_CLAIM] : scopes, [CLIENT_ID_CLAIM] : clientId, [TOKEN_TYPE_CLAIM] : AUTHORIZATION_CODE_TYPE};
+        if organization is string {
+            issuerConfig.customClaims = {[REDIRECT_URI_CLAIM] : redirectUri, [SCOPES_CLAIM] : scopes, [CLIENT_ID_CLAIM] : clientId, [ORGANIZATION_CLAIM] : organization, [TOKEN_TYPE_CLAIM] : AUTHORIZATION_CODE_TYPE};
+        }
+        do {
+            string oauthcode = check jwt:issue(issuerConfig);
+            string redirectUrl = redirectUri.includes("?") ? (redirectUri + "&" + AUTHORIZATION_CODE_QUERY_PARAM + "=" + oauthcode) : (redirectUri + "?" + AUTHORIZATION_CODE_QUERY_PARAM + "=" + oauthcode);
+            return {headers: {"Location": redirectUrl}};
+        } on fail var e {
+            log:printError("Error occured login user.", e);
+            string loginPageRedirect = idpConfiguration.loginErrorPageUrl + "?error=server_error&error_description=Internal Error Occurred.";
+            return {headers: {"Location": loginPageRedirect}};
+        }
     }
 }
