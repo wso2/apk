@@ -41,7 +41,6 @@ import org.wso2.choreo.connect.enforcer.tracing.TracingSpan;
 import org.wso2.choreo.connect.enforcer.tracing.TracingTracer;
 import org.wso2.choreo.connect.enforcer.tracing.Utils;
 import org.wso2.choreo.connect.enforcer.util.FilterUtils;
-import org.wso2.choreo.connect.enforcer.websocket.MetadataConstants;
 
 import java.net.Inet4Address;
 import java.net.Inet6Address;
@@ -77,23 +76,23 @@ public class ThrottleFilter implements Filter {
         log.debug("Throttle filter received the request");
         Decision decision = doThrottle(requestContext);
 
-        if (APIConstants.WEBSOCKET.equals(requestContext.getHeaders().get(APIConstants.UPGRADE_HEADER))) {
-            if (decision.isThrottled() && decision.isDueToBlockedCondition()) {
-                log.debug("Throttle filter does not allow the upgrade request, if any relevant blocking"
-                        + "conditions are present.");
-                return false;
-            }
-            requestContext.getMetadataMap().put(MetadataConstants.IS_THROTTLED,
-                    String.valueOf(decision.isThrottled()));
-            if (decision.isThrottled()) {
-                requestContext.getMetadataMap().put(MetadataConstants.INITIAL_APIM_ERROR_CODE,
-                        requestContext.getProperties().get(APIConstants.MessageFormat.ERROR_CODE).toString());
-                requestContext.getMetadataMap().put(MetadataConstants.THROTTLE_CONDITION_EXPIRE_TIMESTAMP,
-                        String.valueOf(decision.getResetAt() / 1000));
-            }
-            log.debug("Throttle filter discarded the request as it is a websocket upgrade request");
-            return true;
-        }
+//        if (APIConstants.WEBSOCKET.equals(requestContext.getHeaders().get(APIConstants.UPGRADE_HEADER))) {
+//            if (decision.isThrottled() && decision.isDueToBlockedCondition()) {
+//                log.debug("Throttle filter does not allow the upgrade request, if any relevant blocking"
+//                        + "conditions are present.");
+//                return false;
+//            }
+//            requestContext.getMetadataMap().put(MetadataConstants.IS_THROTTLED,
+//                    String.valueOf(decision.isThrottled()));
+//            if (decision.isThrottled()) {
+//                requestContext.getMetadataMap().put(MetadataConstants.INITIAL_APIM_ERROR_CODE,
+//                        requestContext.getProperties().get(APIConstants.MessageFormat.ERROR_CODE).toString());
+//                requestContext.getMetadataMap().put(MetadataConstants.THROTTLE_CONDITION_EXPIRE_TIMESTAMP,
+//                        String.valueOf(decision.getResetAt() / 1000));
+//            }
+//            log.debug("Throttle filter discarded the request as it is a websocket upgrade request");
+//            return true;
+//        }
 
         if (decision.isThrottled()) {
             // breaking filter chain since request is throttled
@@ -175,7 +174,7 @@ public class ThrottleFilter implements Filter {
                 if (dataHolder.isBlockingConditionsPresent()) {
                     String appBlockingKey = authContext.getSubscriber() + ":" + authContext.getApplicationName();
                     String subBlockingKey = apiContext + ":" + apiVersion + ":" + authContext.getSubscriber()
-                            + "-" + authContext.getApplicationName() + ":" + authContext.getKeyType();
+                            + "-" + authContext.getApplicationName() + ":" + api.getEnvType();
 
                     if (dataHolder.isRequestBlocked(apiContext, appBlockingKey, authorizedUser,
                             reqContext.getClientIp(), subBlockingKey, apiTenantDomain)) {

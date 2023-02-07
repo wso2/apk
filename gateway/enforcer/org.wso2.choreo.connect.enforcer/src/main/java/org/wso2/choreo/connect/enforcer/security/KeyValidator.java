@@ -147,7 +147,7 @@ public class KeyValidator {
      * @return validation information about the request
      */
     public static APIKeyValidationInfoDTO validateSubscription(String uuid, String apiContext, String apiVersion,
-                                                         String consumerKey, String keyManager) {
+                                                         String consumerKey, String envType, String keyManager) {
         log.debug("Before validating subscriptions");
         log.debug("Validation Info : { uuid : {}, context : {}, version : {}, consumerKey : {} }",
                 uuid, apiContext, apiVersion, consumerKey);
@@ -195,9 +195,8 @@ public class KeyValidator {
         }
 
         APIKeyValidationInfoDTO infoDTO = new APIKeyValidationInfoDTO();
-        if (api != null && app != null && key != null && sub != null) {
-            String keyType = key.getKeyType();
-            validate(infoDTO, datastore, api, keyType, app, sub);
+        if (api != null && app != null && sub != null) {
+            validate(infoDTO, datastore, api, envType, app, sub);
         }
         if (!infoDTO.isAuthorized() && infoDTO.getValidationStatus() == 0) {
             //Scenario where validation failed and message is not set
@@ -216,7 +215,7 @@ public class KeyValidator {
      * @return validation information about the request
      */
     public static APIKeyValidationInfoDTO validateSubscription(String apiUuid, String apiContext,
-                                                               JWTClaimsSet payload) {
+                                                               JWTClaimsSet payload, String envType) {
         log.debug("Before validating subscriptions with API key. API_uuid: {}, context: {}", apiUuid, apiContext);
         String apiTenantDomain = FilterUtils.getTenantDomainFromRequestURL(apiContext);
         if (apiTenantDomain == null) {
@@ -261,13 +260,9 @@ public class KeyValidator {
             log.error("Subscription data store is null for tenant domain " + apiTenantDomain);
         }
 
-        String keyType = (String) payload.getClaim(APIConstants.JwtTokenConstants.KEY_TYPE);
-        if (keyType == null) {
-            keyType = APIConstants.API_KEY_TYPE_PRODUCTION;
-        }
         APIKeyValidationInfoDTO infoDTO = new APIKeyValidationInfoDTO();
         if (api != null && app != null && sub != null) {
-            validate(infoDTO, datastore, api, keyType, app, sub);
+            validate(infoDTO, datastore, api, envType, app, sub);
         }
         if (!infoDTO.isAuthorized() && infoDTO.getValidationStatus() == 0) {
             //Scenario where validation failed and message is not set

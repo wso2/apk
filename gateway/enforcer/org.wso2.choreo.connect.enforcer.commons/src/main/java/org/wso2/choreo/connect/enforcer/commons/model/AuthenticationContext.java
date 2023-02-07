@@ -29,7 +29,6 @@ public class AuthenticationContext {
     private String tier;
     private boolean isContentAwareTierPresent;
     private String apiKey;
-    private String keyType;
     private String callerToken;
     private int applicationId;
     private String applicationUUID;
@@ -149,21 +148,6 @@ public class AuthenticationContext {
 
     public void setTier(String tier) {
         this.tier = tier;
-    }
-
-    /**
-     * Returns the key-type corresponding to the token.
-     * It is one of the following,
-     * "PRODUCTION" , "SANDBOX".
-     *
-     * @return
-     */
-    public String getKeyType() {
-        return keyType;
-    }
-
-    public void setKeyType(String keyType) {
-        this.keyType = keyType;
     }
 
     /**

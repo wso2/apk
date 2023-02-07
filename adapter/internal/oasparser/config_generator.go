@@ -28,7 +28,6 @@ import (
 	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
 	"github.com/wso2/apk/adapter/config"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
-	"github.com/wso2/apk/adapter/internal/oasparser/constants"
 	envoy "github.com/wso2/apk/adapter/internal/oasparser/envoyconf"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/api"
@@ -120,7 +119,7 @@ func GetEnforcerAPI(mgwSwagger model.MgwSwagger, vhost string) *api.Api {
 	resources := []*api.Resource{}
 	securitySchemes := []*api.SecurityScheme{}
 	securityList := []*api.SecurityList{}
-	isMockedAPI := mgwSwagger.EndpointImplementationType == constants.MockedOASEndpointType
+	isMockedAPI := false
 	clientCertificates := []*api.Certificate{}
 
 	logger.LoggerOasparser.Debugf("Security schemes in GetEnforcerAPI method : %s. %v",
@@ -160,7 +159,7 @@ func GetEnforcerAPI(mgwSwagger model.MgwSwagger, vhost string) *api.Api {
 			Path:    res.GetPath(),
 		}
 		if res.GetEndpoints() != nil {
-			resource.ProductionEndpoints = generateRPCEndpointCluster(res.GetEndpoints())
+			resource.Endpoints = generateRPCEndpointCluster(res.GetEndpoints())
 		}
 		resources = append(resources, resource)
 	}
@@ -177,14 +176,11 @@ func GetEnforcerAPI(mgwSwagger model.MgwSwagger, vhost string) *api.Api {
 	}
 
 	return &api.Api{
-		Id:          mgwSwagger.GetID(),
-		Title:       mgwSwagger.GetTitle(),
-		Description: mgwSwagger.GetDescription(),
-		BasePath:    mgwSwagger.GetXWso2Basepath(),
-		Version:     mgwSwagger.GetVersion(),
-		ApiType:     mgwSwagger.GetAPIType(),
-		// ProductionEndpoints:   generateRPCEndpointCluster(mgwSwagger.GetProdEndpoints()),
-		// SandboxEndpoints:      generateRPCEndpointCluster(mgwSwagger.GetSandEndpoints()),
+		Id:                  mgwSwagger.GetID(),
+		Title:               mgwSwagger.GetTitle(),
+		BasePath:            mgwSwagger.GetXWso2Basepath(),
+		Version:             mgwSwagger.GetVersion(),
+		ApiType:             mgwSwagger.GetAPIType(),
 		Resources:           resources,
 		ApiLifeCycleState:   mgwSwagger.LifecycleStatus,
 		Tier:                mgwSwagger.GetXWso2ThrottlingTier(),
@@ -195,7 +191,8 @@ func GetEnforcerAPI(mgwSwagger model.MgwSwagger, vhost string) *api.Api {
 		DisableSecurity:     mgwSwagger.GetDisableSecurity(),
 		OrganizationId:      mgwSwagger.OrganizationID,
 		Vhost:               vhost,
-		IsMockedApi:         isMockedAPI,
+		EnvType:             mgwSwagger.EnvType,
+		// IsMockedApi:         isMockedAPI,
 		ClientCertificates:  clientCertificates,
 		MutualSSL:           mgwSwagger.GetXWSO2MutualSSL(),
 		ApplicationSecurity: mgwSwagger.GetXWSO2ApplicationSecurity(),
@@ -222,10 +219,10 @@ func GetEnforcerAPIOperation(operation model.Operation, isMockedAPI bool) *api.O
 		secSchemas[i] = secSchema
 	}
 
-	var mockedAPIConfig *api.MockedApiConfig
-	if isMockedAPI {
-		mockedAPIConfig = operation.GetMockedAPIConfig()
-	}
+	// var mockedAPIConfig *api.MockedApiConfig
+	// if isMockedAPI {
+	// 	mockedAPIConfig = operation.GetMockedAPIConfig()
+	// }
 
 	policies := &api.OperationPolicies{
 		Request:  castPoliciesToEnforcerPolicies(operation.GetPolicies().Request),
@@ -238,7 +235,7 @@ func GetEnforcerAPIOperation(operation model.Operation, isMockedAPI bool) *api.O
 		Tier:            operation.GetTier(),
 		DisableSecurity: operation.GetDisableSecurity(),
 		Policies:        policies,
-		MockedApiConfig: mockedAPIConfig,
+		// MockedApiConfig: mockedAPIConfig,
 	}
 	return &apiOperation
 }

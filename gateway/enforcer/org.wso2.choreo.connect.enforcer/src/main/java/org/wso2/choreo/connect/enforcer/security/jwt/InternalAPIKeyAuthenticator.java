@@ -253,7 +253,7 @@ public class InternalAPIKeyAuthenticator extends APIKeyHandler {
                         }
                     }
                     //Get APIKeyValidationInfoDTO for internal key with limited info
-                    APIKeyValidationInfoDTO apiKeyValidationInfoDTO = getAPIKeyValidationDTO(requestContext, payload);
+                    APIKeyValidationInfoDTO apiKeyValidationInfoDTO = getAPIKeyValidationDTO(requestContext);
 
                     // Generate or get backend JWT
                     JWTConfigurationDto jwtConfigurationDto = ConfigHolder.getInstance().
@@ -297,15 +297,11 @@ public class InternalAPIKeyAuthenticator extends APIKeyHandler {
                 APISecurityConstants.API_AUTH_GENERAL_ERROR, APISecurityConstants.API_AUTH_GENERAL_ERROR_MESSAGE);
     }
 
-    private APIKeyValidationInfoDTO getAPIKeyValidationDTO(RequestContext requestContext, JWTClaimsSet payload)
+    private APIKeyValidationInfoDTO getAPIKeyValidationDTO(RequestContext requestContext)
             throws ParseException {
 
         APIKeyValidationInfoDTO validationInfoDTO = new APIKeyValidationInfoDTO();
-        if (payload.getClaim(APIConstants.JwtTokenConstants.KEY_TYPE) != null) {
-            validationInfoDTO.setType(payload.getStringClaim(APIConstants.JwtTokenConstants.KEY_TYPE));
-        } else {
-            validationInfoDTO.setType(APIConstants.API_KEY_TYPE_PRODUCTION);
-        }
+        validationInfoDTO.setType(requestContext.getMatchedAPI().getEnvType());
 
         //check whether name is assigned correctly (This was not populated in JWTAuthenticator)
         validationInfoDTO.setApiName(requestContext.getMatchedAPI().getName());

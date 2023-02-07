@@ -57,7 +57,7 @@ public class RequestContext {
     private String requestPathTemplate;
     private ArrayList<String> removeHeaders;
     // Consist of web socket frame related data like frame length, remote IP
-    private WebSocketFrameContext webSocketFrameContext;
+//    private WebSocketFrameContext webSocketFrameContext;
     private Map<String, String> queryParameters;
     private Map<String, String> pathParameters;
     private ArrayList<String> queryParamsToRemove;
@@ -309,21 +309,21 @@ public class RequestContext {
     public Map<String, String> getQueryParameters() {
         return queryParameters;
     }
-
-    /**
-     * This is used for websocket specific implementation.
-     * When the websocket communication happens, there is a specific filter which sends some metadata
-     * related to the websocket frames for throttling and analytics purposes. This publishing happens
-     * asynchronously.
-     * <p>
-     * Note:
-     * This can't be used for modifying/reading websocket frame data.
-     *
-     * @return {@code WebSocketFrameContext} object
-     */
-    public WebSocketFrameContext getWebSocketFrameContext() {
-        return webSocketFrameContext;
-    }
+//
+//    /**
+//     * This is used for websocket specific implementation.
+//     * When the websocket communication happens, there is a specific filter which sends some metadata
+//     * related to the websocket frames for throttling and analytics purposes. This publishing happens
+//     * asynchronously.
+//     * <p>
+//     * Note:
+//     * This can't be used for modifying/reading websocket frame data.
+//     *
+//     * @return {@code WebSocketFrameContext} object
+//     */
+//    public WebSocketFrameContext getWebSocketFrameContext() {
+//        return webSocketFrameContext;
+//    }
 
     /**
      * If there is a set of query parameters needs to be removed from the outbound request, those parameters should
@@ -500,9 +500,9 @@ public class RequestContext {
             requestContext.pathParameters = populatePathParameters(
                     matchedAPI.getBasePath(), requestPathTemplate, this.requestPath);
 
-            if (this.webSocketFrameContext != null) {
-                requestContext.webSocketFrameContext = this.webSocketFrameContext;
-            }
+//            if (this.webSocketFrameContext != null) {
+//                requestContext.webSocketFrameContext = this.webSocketFrameContext;
+//            }
             return requestContext;
         }
 

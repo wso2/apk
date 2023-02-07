@@ -69,7 +69,7 @@ public class AnalyticsFilter {
         analyticsConfigProperties = ConfigHolder.getInstance().getConfig().getAnalyticsConfig().getConfigProperties();
         boolean isChoreoDeployment = analyticsConfigProperties
                 .containsKey(AnalyticsConstants.IS_CHOREO_DEPLOYMENT_CONFIG_KEY) &&
-                Boolean.valueOf(analyticsConfigProperties.get(AnalyticsConstants.IS_CHOREO_DEPLOYMENT_CONFIG_KEY));
+                Boolean.parseBoolean(analyticsConfigProperties.get(AnalyticsConstants.IS_CHOREO_DEPLOYMENT_CONFIG_KEY));
         String customAnalyticsPublisher = analyticsConfigProperties.get(AnalyticsConstants.PUBLISHER_IMPL_CONFIG_KEY);
         Map<String, String> publisherConfig = new HashMap<>(2);
         for (Map.Entry<String, String> entry : analyticsConfigProperties.entrySet()) {
@@ -90,7 +90,7 @@ public class AnalyticsFilter {
             }
             if (analyticsConfigProperties.containsKey(
                     org.wso2.choreo.connect.enforcer.constants.AnalyticsConstants.DATA_PROVIDER_CLASS_PROPERTY)) {
-                this.analyticsDataProvider = AnalyticsUtils.getCustomAnalyticsDataProvider();
+                analyticsDataProvider = AnalyticsUtils.getCustomAnalyticsDataProvider();
             }
         }
 
@@ -120,14 +120,14 @@ public class AnalyticsFilter {
         }
     }
 
-    public void handleWebsocketFrameRequest(WebSocketFrameRequest frameRequest) {
-        if (publisher != null) {
-            publisher.handleWebsocketFrameRequest(frameRequest);
-        } else {
-            logger.error("Cannot publish the analytics event as analytics publisher is null.",
-                    ErrorDetails.errorLog(LoggingConstants.Severity.CRITICAL, 5102));
-        }
-    }
+//    public void handleWebsocketFrameRequest(WebSocketFrameRequest frameRequest) {
+//        if (publisher != null) {
+//            publisher.handleWebsocketFrameRequest(frameRequest);
+//        } else {
+//            logger.error("Cannot publish the analytics event as analytics publisher is null.",
+//                    ErrorDetails.errorLog(LoggingConstants.Severity.CRITICAL, 5102));
+//        }
+//    }
 
     public static Map<String, String> getAnalyticsConfigProperties() {
         return analyticsConfigProperties;
@@ -169,7 +169,7 @@ public class AnalyticsFilter {
 
             // Default Value would be PRODUCTION
             requestContext.addMetadataToMap(MetadataConstants.APP_KEY_TYPE_KEY,
-                    authContext.getKeyType() == null ? APIConstants.API_KEY_TYPE_PRODUCTION : authContext.getKeyType());
+                    requestContext.getMatchedAPI().getEnvType());
             requestContext.addMetadataToMap(MetadataConstants.APP_UUID_KEY,
                     AnalyticsUtils.setDefaultIfNull(authContext.getApplicationUUID()));
             requestContext.addMetadataToMap(MetadataConstants.APP_NAME_KEY,
@@ -210,20 +210,8 @@ public class AnalyticsFilter {
         if (requestContext.getMatchedAPI().isMockedApi()) {
             return "MockImplementation";
         }
-
-        AuthenticationContext authContext = requestContext.getAuthenticationContext();
-        // KeyType could be sandbox only if the keytype is set fetched from the Eventhub
-        if (authContext != null && authContext.getKeyType() != null
-                && authContext.getKeyType().equals(APIConstants.API_KEY_TYPE_SANDBOX)) {
-            // keyType is sandbox but the sandbox endpoints are null this will result in authentication failure.
-            // Hence null scenario is impossible to occur.
-            return requestContext.getMatchedAPI().getEndpoints().containsKey(APIConstants.API_KEY_TYPE_SANDBOX) ?
-                    requestContext.getMatchedAPI().getEndpoints().get(APIConstants.API_KEY_TYPE_SANDBOX)
-                            .getUrls().get(0) : "";
-        }
         // This does not cause problems at the moment Since the current microgateway supports only one URL
-        return requestContext.getMatchedAPI().getEndpoints().get(APIConstants.API_KEY_TYPE_PRODUCTION)
-                .getUrls().get(0);
+        return requestContext.getMatchedResourcePaths().get(0).getEndpoints().getUrls().get(0);
     }
 
     public void handleFailureRequest(RequestContext requestContext) {
