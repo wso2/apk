@@ -269,6 +269,18 @@ service /api/am/admin on ep0 {
     // }
     // resource function post 'key\-managers/discover(@http:Payload json payload) returns KeyManagerWellKnownResponse {
     // }
+    // resource function get organization() returns OrganizationList {
+    // }
+    // resource function post organization(@http:Payload Organization payload) returns CreatedOrganization|BadRequestError {
+    // }
+    // resource function get organization/[string organizationId]() returns Organization|BadRequestError|NotFoundError|NotAcceptableError {
+    // }
+    // resource function put organization/[string organizationId](@http:Payload Organization payload) returns Organization|BadRequestError|NotFoundError {
+    // }
+    // resource function delete organization/[string organizationId]() returns http:Ok|NotFoundError {
+    // }
+    // resource function get 'organization\-info/[string claimValue]() returns Organization|BadRequestError|NotFoundError {
+    // }
 }
 
 isolated function handleAPKError(APKError errorDetail) returns InternalServerErrorError|BadRequestError {
