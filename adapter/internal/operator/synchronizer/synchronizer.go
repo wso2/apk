@@ -28,7 +28,6 @@ import (
 
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/loggers"
-	oasconsts "github.com/wso2/apk/adapter/internal/oasparser/constants"
 	model "github.com/wso2/apk/adapter/internal/oasparser/model"
 	"github.com/wso2/apk/adapter/internal/operator/constants"
 	"github.com/wso2/apk/adapter/internal/operator/services/runtime"
@@ -157,7 +156,7 @@ func GenerateMGWSwagger(apiState APIState, httpRoute *HTTPRouteState, envType st
 	vHosts := getVhostsForAPI(httpRoute.HTTPRoute)
 	labels := getLabelsForAPI(httpRoute.HTTPRoute)
 
-	err := xds.UpdateAPICache(vHosts, labels, mgwSwagger, apiEnv)
+	err := xds.UpdateAPICache(vHosts, labels, mgwSwagger)
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
 			Message: fmt.Sprintf("Error updating the API : %s:%s in vhosts: %s. %v",

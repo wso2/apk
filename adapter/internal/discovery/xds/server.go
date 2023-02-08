@@ -44,6 +44,7 @@ import (
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
 	"github.com/wso2/apk/adapter/internal/oasparser/envoyconf"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
+	operatorconsts "github.com/wso2/apk/adapter/internal/operator/constants"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/subscription"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/throttle"
 	wso2_cache "github.com/wso2/apk/adapter/pkg/discovery/protocol/cache/v3"
@@ -229,8 +230,8 @@ func GetEnforcerThrottleDataCache() wso2_cache.SnapshotCache {
 func DeleteAPICREvent(labels []string, apiUUID string, organizationID string) error {
 	mutexForInternalMapUpdate.Lock()
 	defer mutexForInternalMapUpdate.Unlock()
-	vHosts := append(orgIDAPIvHostsMap[organizationID][GetvHostsIdentifier(apiUUID, constants.ProdEnvType)],
-		orgIDAPIvHostsMap[organizationID][GetvHostsIdentifier(apiUUID, constants.SandEnvType)]...)
+	vHosts := append(orgIDAPIvHostsMap[organizationID][GetvHostsIdentifier(apiUUID, operatorconsts.Production)],
+		orgIDAPIvHostsMap[organizationID][GetvHostsIdentifier(apiUUID, operatorconsts.Sandbox)]...)
 	for _, vhost := range vHosts {
 		apiIdentifier := GenerateIdentifierForAPIWithUUID(vhost, apiUUID)
 		if err := deleteAPI(apiIdentifier, labels, organizationID); err != nil {
@@ -866,12 +867,11 @@ func UpdateEnforcerThrottleData(throttleData *throttle.ThrottleData) {
 }
 
 // UpdateAPICache updates the xDS cache related to the API Lifecycle event.
-func UpdateAPICache(vHosts []string, newLabels []string, mgwSwagger model.MgwSwagger,
-	apiEnv constants.APIEnvType) error {
+func UpdateAPICache(vHosts []string, newLabels []string, mgwSwagger model.MgwSwagger) error {
 	mutexForInternalMapUpdate.Lock()
 	defer mutexForInternalMapUpdate.Unlock()
 
-	vHostIdentifier := GetvHostsIdentifier(mgwSwagger.UUID, apiEnv)
+	vHostIdentifier := GetvHostsIdentifier(mgwSwagger.UUID, mgwSwagger.EnvType)
 	var oldvHosts []string
 	if _, ok := orgIDAPIvHostsMap[mgwSwagger.OrganizationID]; ok {
 		oldvHosts = orgIDAPIvHostsMap[mgwSwagger.GetOrganizationID()][vHostIdentifier]
@@ -963,6 +963,6 @@ func UpdateAPICache(vHosts []string, newLabels []string, mgwSwagger model.MgwSwa
 
 // GetvHostsIdentifier creates a identifier for vHosts for a API considering prod
 // and sand env
-func GetvHostsIdentifier(UUID string, apiEnv constants.APIEnvType) string {
-	return fmt.Sprintf("%s-%s", UUID, string(apiEnv))
+func GetvHostsIdentifier(UUID string, envType string) string {
+	return fmt.Sprintf("%s-%s", UUID, envType)
 }
