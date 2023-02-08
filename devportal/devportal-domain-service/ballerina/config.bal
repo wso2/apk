@@ -66,6 +66,7 @@ public type TokenIssuerConfiguration record {|
 public type KeyStores record {|
     KeyStore signing;
     KeyStore tls;
+    KeyStore truststore;
 |};
 
 public type KeyStore record {|

@@ -40,6 +40,8 @@ data:
     path = "/home/wso2apk/devportal/security/wso2carbon.key"
     [wso2.devportal_service.keyStores.signing]
     path = "/home/wso2apk/devportal/security/wso2carbon.key"
+    [wso2.devportal_service.keyStores.truststore]
+    path = "/home/wso2apk/devportal/security/truststore"
     [wso2.devportal_service.issuerConfig]
     issuer = "https://apim.wso2.com/oauth2/token"
     audience = "https://apim.wso2.com/oauth2/token"

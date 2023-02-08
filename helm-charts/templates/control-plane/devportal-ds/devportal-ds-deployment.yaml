@@ -51,6 +51,10 @@ spec:
             - mountPath: /home/wso2apk/devportal/security/wso2carbon.key
               name: devportal-signing-keystore-volume
               subPath: wso2carbon.key
+            - mountPath: /home/wso2apk/devportal/security/truststore
+              name: devportal-ds-truststore-secret-volume
+            - mountPath: /home/wso2apk/devportal/security/keystore
+              name: devportal-ds-keystore-secret-volume
             - mountPath: /home/wso2apk/devportal/conf/Config.toml
               name: config-toml-volume
               subPath: Config.toml
@@ -59,6 +63,12 @@ spec:
         - name: devportal-signing-keystore-volume
           secret:
             secretName: {{ template "apk-helm.resource.prefix" . }}-signing-keystore-secret
+        - name: devportal-ds-truststore-secret-volume
+          secret:
+            secretName: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-truststore-secret
+        - name: devportal-ds-keystore-secret-volume
+          secret:
+            secretName: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-keystore-secret
         - name: config-toml-volume
           configMap:
             name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-configmap

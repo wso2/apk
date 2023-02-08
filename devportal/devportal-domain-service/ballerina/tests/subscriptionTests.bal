@@ -32,7 +32,7 @@ test:MockFunction retrieveManagementServerHostsListMock = new();
 
 
 @test:Mock { functionName: "createApplication",moduleName: "wso2/notification_grpc_client" }
-public isolated function createApplicationMock(ApplicationGRPC createApplicationRequest, string endpoint) returns error|NotificationResponse {
+public isolated function createApplicationMock(ApplicationGRPC createApplicationRequest, string endpoint, KeyStore cert, KeyStore tls) returns error|NotificationResponse {
     NotificationResponse noti= {code: "OK"};
     return noti;
 }

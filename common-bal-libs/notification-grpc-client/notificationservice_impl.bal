@@ -17,11 +17,29 @@
 //
 
 import ballerina/log;
+import ballerina/grpc;
 
-public isolated function createApplication(Application createApplicationRequest, string endpoint) returns error|NotificationResponse {
-    NotificationServiceClient ep = check new (endpoint);
+public isolated function createApplication(Application createApplicationRequest, string endpoint, KeyStore pubCert,KeyStore tlsCert) returns error|NotificationResponse {
+    string certPath = pubCert.path + "/mg.pem";
+    log:printInfo("certPath:"+certPath);
+    grpc:ClientConfiguration config ={ 
+        secureSocket:{
+            verifyHostName: false,
+            cert:certPath, 
+            key: {
+                certFile:"/home/wso2apk/devportal/security/keystore/devportal.crt",
+                keyFile:"/home/wso2apk/devportal/security/keystore/devportal.key"
+            },
+            enable: true,
+            protocol: {
+                name: grpc:TLS,
+                versions: ["TLSv1.2", "TLSv1.1"]
+            }
+        }
+    };
+    NotificationServiceClient ep = check new (endpoint,config);
     NotificationResponse createApplicationResponse = check ep->CreateApplication(createApplicationRequest);
-    log:printDebug(createApplicationResponse.toString());
+    log:printInfo(createApplicationResponse.toString());
     return createApplicationResponse;
 }
 
@@ -59,3 +77,8 @@ public isolated function deleteSubscription(Subscription deleteSubscriptionReque
     log:printDebug(deleteSubscriptionResponse.toString());
     return deleteSubscriptionResponse;
 }
+
+public type KeyStore record {|
+    string path;
+    string keyPassword?;
+|};

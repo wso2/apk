@@ -43,7 +43,12 @@ isolated function addApplication(Application application, string org, string use
                 ApplicationGRPC createApplicationRequest = {eventId: eventId, applicationId: createdApp.name, uuid: applicationId, timeStamp: date, organization: org};
                 foreach string host in hostList {
                     log:printInfo("Retrieved Host:"+host);
-                    NotificationResponse|error applicationNotification = notification_grpc_client:createApplication(createApplicationRequest,"http://" + host + ":8766/");
+                    KeyStore & readonly msPublicCert = apkConfig.keyStores.truststore;
+                    KeyStore & readonly tlsCert = apkConfig.keyStores.tls;
+                    KeyStore pubCert = {path: msPublicCert.path,keyPassword: "" };
+                    KeyStore key = {path: tlsCert.path,keyPassword: "" };
+                    NotificationResponse|error applicationNotification = notification_grpc_client:createApplication(createApplicationRequest,
+                    "https://" + host + ":8766/",pubCert, key);
                     if applicationNotification is error {
                         string message = "Error while sending application create grpc event";
                         log:printError(applicationNotification.toString());
