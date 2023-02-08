@@ -230,8 +230,14 @@ func GetEnforcerThrottleDataCache() wso2_cache.SnapshotCache {
 func DeleteAPICREvent(labels []string, apiUUID string, organizationID string) error {
 	mutexForInternalMapUpdate.Lock()
 	defer mutexForInternalMapUpdate.Unlock()
-	vHosts := append(orgIDAPIvHostsMap[organizationID][GetvHostsIdentifier(apiUUID, operatorconsts.Production)],
-		orgIDAPIvHostsMap[organizationID][GetvHostsIdentifier(apiUUID, operatorconsts.Sandbox)]...)
+
+	prodvHostIdentifier := GetvHostsIdentifier(apiUUID, operatorconsts.Production)
+	sandvHostIdentifier := GetvHostsIdentifier(apiUUID, operatorconsts.Sandbox)
+	vHosts := append(orgIDAPIvHostsMap[organizationID][prodvHostIdentifier],
+		orgIDAPIvHostsMap[organizationID][sandvHostIdentifier]...)
+
+	delete(orgIDAPIvHostsMap[organizationID], prodvHostIdentifier)
+	delete(orgIDAPIvHostsMap[organizationID], sandvHostIdentifier)
 	for _, vhost := range vHosts {
 		apiIdentifier := GenerateIdentifierForAPIWithUUID(vhost, apiUUID)
 		if err := deleteAPI(apiIdentifier, labels, organizationID); err != nil {
@@ -959,10 +965,4 @@ func UpdateAPICache(vHosts []string, newLabels []string, mgwSwagger model.MgwSwa
 		logger.LoggerXds.Infof("Deployed Revision: %v:%v", apiIdentifier, revisionStatus)
 	}
 	return nil
-}
-
-// GetvHostsIdentifier creates a identifier for vHosts for a API considering prod
-// and sand env
-func GetvHostsIdentifier(UUID string, envType string) string {
-	return fmt.Sprintf("%s-%s", UUID, envType)
 }

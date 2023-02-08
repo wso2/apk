@@ -18,6 +18,8 @@
 package xds
 
 import (
+	"fmt"
+
 	"github.com/wso2/apk/adapter/pkg/utils/stringutils"
 )
 
@@ -40,4 +42,10 @@ func getEnvironmentsToBeDeleted(existingEnvs, deleteEnvs []string) (toBeDel []st
 		}
 	}
 	return
+}
+
+// GetvHostsIdentifier creates a identifier for vHosts for a API considering prod
+// and sand env
+func GetvHostsIdentifier(UUID string, envType string) string {
+	return fmt.Sprintf("%s-%s", UUID, envType)
 }
