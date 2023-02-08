@@ -2726,7 +2726,7 @@ paths:
     get:
       tags:
         - Organization (Collection)
-      summary: Get all API Categories
+      summary: Get all Organization
       description: |
         Get all Organization
       responses:
@@ -2823,7 +2823,7 @@ paths:
         - $ref: '#/components/parameters/organizationId'
       requestBody:
         description: |
-          API Category object with updated information
+          Organization object with updated information
         content:
           application/json:
             schema:
@@ -2862,7 +2862,7 @@ paths:
         200:
           description: |
             OK.
-            API Category successfully deleted.
+            Organization successfully deleted.
           content: {}
         404:
           $ref: '#/components/responses/NotFound'
@@ -3882,7 +3882,7 @@ components:
         count:
           type: integer
           description: |
-            Number of API categories returned.
+            Number of Organization returned.
           example: 1
         list:
           type: array
