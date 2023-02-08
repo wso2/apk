@@ -44,6 +44,7 @@ import (
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
 	"github.com/wso2/apk/adapter/internal/oasparser/envoyconf"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
+	operatorconsts "github.com/wso2/apk/adapter/internal/operator/constants"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/subscription"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/throttle"
 	wso2_cache "github.com/wso2/apk/adapter/pkg/discovery/protocol/cache/v3"
@@ -72,10 +73,10 @@ var (
 
 	// Vhosts entry maps, these maps updated with delta changes (when an API added, only added its entry only)
 	// These maps are managed separately for API-CTL and APIM, since when deploying an project from API-CTL there is no API uuid
-	apiUUIDToGatewayToVhosts map[string]map[string]string   // API_UUID -> gateway-env -> vhost (for un-deploying APIs from APIM or Choreo)
-	apiToVhostsMap           map[string]map[string]struct{} // API_UUID -> VHosts set (for un-deploying APIs from API-CTL)
+	apiUUIDToGatewayToVhosts map[string]map[string]string // API_UUID -> gateway-env -> vhost (for un-deploying APIs from APIM or Choreo)
 
 	orgIDAPIMgwSwaggerMap       map[string]map[string]model.MgwSwagger     // organizationID -> Vhost:API_UUID -> MgwSwagger struct map
+	orgIDAPIvHostsMap           map[string]map[string][]string             // organizationID -> UUID -> prod/sand -> Envoy Vhost Array map
 	orgIDOpenAPIEnvoyMap        map[string]map[string][]string             // organizationID -> Vhost:API_UUID -> Envoy Label Array map
 	orgIDOpenAPIRoutesMap       map[string]map[string][]*routev3.Route     // organizationID -> Vhost:API_UUID -> Envoy Routes map
 	orgIDOpenAPIClustersMap     map[string]map[string][]*clusterv3.Cluster // organizationID -> Vhost:API_UUID -> Envoy Clusters map
@@ -142,13 +143,13 @@ func init() {
 	enforcerThrottleDataCache = wso2_cache.NewSnapshotCache(false, IDHash{}, nil)
 
 	apiUUIDToGatewayToVhosts = make(map[string]map[string]string)
-	apiToVhostsMap = make(map[string]map[string]struct{})
 	envoyListenerConfigMap = make(map[string][]*listenerv3.Listener)
 	envoyRouteConfigMap = make(map[string]*routev3.RouteConfiguration)
 	envoyClusterConfigMap = make(map[string][]*clusterv3.Cluster)
 	envoyEndpointConfigMap = make(map[string][]*corev3.Address)
 
 	orgIDAPIMgwSwaggerMap = make(map[string]map[string]model.MgwSwagger)       // organizationID -> Vhost:API_UUID -> MgwSwagger struct map
+	orgIDAPIvHostsMap = make(map[string]map[string][]string)                   // organizationID -> UUID-prod/sand -> Envoy Vhost Array map
 	orgIDOpenAPIEnvoyMap = make(map[string]map[string][]string)                // organizationID -> Vhost:API_UUID -> Envoy Label Array map
 	orgIDOpenAPIRoutesMap = make(map[string]map[string][]*routev3.Route)       // organizationID -> Vhost:API_UUID -> Envoy Routes map
 	orgIDOpenAPIClustersMap = make(map[string]map[string][]*clusterv3.Cluster) // organizationID -> Vhost:API_UUID -> Envoy Clusters map
@@ -226,9 +227,17 @@ func GetEnforcerThrottleDataCache() wso2_cache.SnapshotCache {
 }
 
 // DeleteAPICREvent deletes API with the given UUID from the given gw environments
-func DeleteAPICREvent(vHosts, labels []string, apiUUID string, organizationID string) error {
+func DeleteAPICREvent(labels []string, apiUUID string, organizationID string) error {
 	mutexForInternalMapUpdate.Lock()
 	defer mutexForInternalMapUpdate.Unlock()
+
+	prodvHostIdentifier := GetvHostsIdentifier(apiUUID, operatorconsts.Production)
+	sandvHostIdentifier := GetvHostsIdentifier(apiUUID, operatorconsts.Sandbox)
+	vHosts := append(orgIDAPIvHostsMap[organizationID][prodvHostIdentifier],
+		orgIDAPIvHostsMap[organizationID][sandvHostIdentifier]...)
+
+	delete(orgIDAPIvHostsMap[organizationID], prodvHostIdentifier)
+	delete(orgIDAPIvHostsMap[organizationID], sandvHostIdentifier)
 	for _, vhost := range vHosts {
 		apiIdentifier := GenerateIdentifierForAPIWithUUID(vhost, apiUUID)
 		if err := deleteAPI(apiIdentifier, labels, organizationID); err != nil {
@@ -706,7 +715,8 @@ func ListApis(apiType string, organizationID string, limit *int64) *apiModel.API
 			if vh, err := ExtractVhostFromAPIIdentifier(apiIdentifier); err == nil {
 				vhost = vh
 			}
-			apiMetaListItem.Vhost = vhost
+			apiMetaListItem.Vhosts = []string{vhost}
+			// orgIDAPIvHostsMap[organizationID][apiIdentifier]
 			apisArray = append(apisArray, &apiMetaListItem)
 			i++
 		}
@@ -716,17 +726,6 @@ func ListApis(apiType string, organizationID string, limit *int64) *apiModel.API
 	apiMetaObject.Count = int64(len(apisArray))
 	apiMetaObject.List = apisArray
 	return &apiMetaObject
-}
-
-// IsAPIExist returns whether a given API exists
-func IsAPIExist(vhost, uuid, apiName, apiVersion, organizationID string) (exists bool) {
-	if uuid == "" {
-		// If API is imported from apictl generate hash as the unique ID
-		uuid = GenerateHashedAPINameVersionIDWithoutVhost(apiName, apiVersion)
-	}
-	apiIdentifier := GenerateIdentifierForAPIWithUUID(vhost, uuid)
-	_, exists = orgIDAPIMgwSwaggerMap[organizationID][apiIdentifier]
-	return exists
 }
 
 // GenerateIdentifierForAPI generates an identifier unique to the API
@@ -874,72 +873,96 @@ func UpdateEnforcerThrottleData(throttleData *throttle.ThrottleData) {
 }
 
 // UpdateAPICache updates the xDS cache related to the API Lifecycle event.
-func UpdateAPICache(vHost string, newLabels []string, mgwSwagger model.MgwSwagger) error {
+func UpdateAPICache(vHosts []string, newLabels []string, mgwSwagger model.MgwSwagger) error {
 	mutexForInternalMapUpdate.Lock()
 	defer mutexForInternalMapUpdate.Unlock()
 
-	apiIdentifier := GenerateIdentifierForAPIWithUUID(vHost, mgwSwagger.UUID)
-	oldLabels := orgIDOpenAPIEnvoyMap[mgwSwagger.GetOrganizationID()][apiIdentifier]
-
-	if _, ok := orgIDAPIMgwSwaggerMap[mgwSwagger.OrganizationID]; ok {
-		orgIDAPIMgwSwaggerMap[mgwSwagger.GetOrganizationID()][apiIdentifier] = mgwSwagger
+	vHostIdentifier := GetvHostsIdentifier(mgwSwagger.UUID, mgwSwagger.EnvType)
+	var oldvHosts []string
+	if _, ok := orgIDAPIvHostsMap[mgwSwagger.OrganizationID]; ok {
+		oldvHosts = orgIDAPIvHostsMap[mgwSwagger.GetOrganizationID()][vHostIdentifier]
+		orgIDAPIvHostsMap[mgwSwagger.GetOrganizationID()][vHostIdentifier] = vHosts
 	} else {
-		mgwSwaggerMap := make(map[string]model.MgwSwagger)
-		mgwSwaggerMap[apiIdentifier] = mgwSwagger
-		orgIDAPIMgwSwaggerMap[mgwSwagger.GetOrganizationID()] = mgwSwaggerMap
+		vHostsMap := make(map[string][]string)
+		vHostsMap[vHostIdentifier] = vHosts
+		orgIDAPIvHostsMap[mgwSwagger.GetOrganizationID()] = vHostsMap
 	}
 
-	if _, ok := orgIDOpenAPIEnvoyMap[mgwSwagger.GetOrganizationID()]; ok {
-		orgIDOpenAPIEnvoyMap[mgwSwagger.GetOrganizationID()][apiIdentifier] = newLabels
-	} else {
-		openAPIEnvoyMap := make(map[string][]string)
-		openAPIEnvoyMap[apiIdentifier] = newLabels
-		orgIDOpenAPIEnvoyMap[mgwSwagger.GetOrganizationID()] = openAPIEnvoyMap
+	// Remove internal mappigs for old vHosts
+	for _, oldvhost := range oldvHosts {
+		apiIdentifier := GenerateIdentifierForAPIWithUUID(oldvhost, mgwSwagger.UUID)
+		delete(orgIDAPIMgwSwaggerMap[mgwSwagger.GetOrganizationID()], apiIdentifier)
+		delete(orgIDOpenAPIRoutesMap[mgwSwagger.GetOrganizationID()], apiIdentifier)
+		delete(orgIDOpenAPIClustersMap[mgwSwagger.GetOrganizationID()], apiIdentifier)
+		delete(orgIDOpenAPIEndpointsMap[mgwSwagger.GetOrganizationID()], apiIdentifier)
+		delete(orgIDOpenAPIEnforcerApisMap[mgwSwagger.GetOrganizationID()], apiIdentifier)
+		oldLabels := orgIDOpenAPIEnvoyMap[mgwSwagger.GetOrganizationID()][apiIdentifier]
+		updateXdsCacheOnAPIChange(oldLabels, newLabels)
 	}
 
-	updateVhostInternalMaps(mgwSwagger.UUID, mgwSwagger.GetID(), mgwSwagger.GetVersion(), vHost, newLabels)
+	// Create internal mappigs for new vHosts
+	for _, vHost := range vHosts {
+		apiIdentifier := GenerateIdentifierForAPIWithUUID(vHost, mgwSwagger.UUID)
+		oldLabels := orgIDOpenAPIEnvoyMap[mgwSwagger.GetOrganizationID()][apiIdentifier]
 
-	routes, clusters, endpoints, err := oasParser.GetRoutesClustersEndpoints(mgwSwagger, nil,
-		vHost, mgwSwagger.GetOrganizationID())
+		if _, ok := orgIDAPIMgwSwaggerMap[mgwSwagger.OrganizationID]; ok {
+			orgIDAPIMgwSwaggerMap[mgwSwagger.GetOrganizationID()][apiIdentifier] = mgwSwagger
+		} else {
+			mgwSwaggerMap := make(map[string]model.MgwSwagger)
+			mgwSwaggerMap[apiIdentifier] = mgwSwagger
+			orgIDAPIMgwSwaggerMap[mgwSwagger.GetOrganizationID()] = mgwSwaggerMap
+		}
 
-	if err != nil {
-		return fmt.Errorf("error while deploying API. Name: %s Version: %s, OrgID: %s, Error: %s",
-			mgwSwagger.GetTitle(), mgwSwagger.GetVersion(), mgwSwagger.GetOrganizationID(), err.Error())
+		if _, ok := orgIDOpenAPIEnvoyMap[mgwSwagger.GetOrganizationID()]; ok {
+			orgIDOpenAPIEnvoyMap[mgwSwagger.GetOrganizationID()][apiIdentifier] = newLabels
+		} else {
+			openAPIEnvoyMap := make(map[string][]string)
+			openAPIEnvoyMap[apiIdentifier] = newLabels
+			orgIDOpenAPIEnvoyMap[mgwSwagger.GetOrganizationID()] = openAPIEnvoyMap
+		}
+
+		routes, clusters, endpoints, err := oasParser.GetRoutesClustersEndpoints(mgwSwagger, nil,
+			vHost, mgwSwagger.GetOrganizationID())
+
+		if err != nil {
+			return fmt.Errorf("error while deploying API. Name: %s Version: %s, OrgID: %s, Error: %s",
+				mgwSwagger.GetTitle(), mgwSwagger.GetVersion(), mgwSwagger.GetOrganizationID(), err.Error())
+		}
+
+		if _, ok := orgIDOpenAPIRoutesMap[mgwSwagger.GetOrganizationID()]; ok {
+			orgIDOpenAPIRoutesMap[mgwSwagger.GetOrganizationID()][apiIdentifier] = routes
+		} else {
+			routesMap := make(map[string][]*routev3.Route)
+			routesMap[apiIdentifier] = routes
+			orgIDOpenAPIRoutesMap[mgwSwagger.GetOrganizationID()] = routesMap
+		}
+
+		if _, ok := orgIDOpenAPIClustersMap[mgwSwagger.GetOrganizationID()]; ok {
+			orgIDOpenAPIClustersMap[mgwSwagger.GetOrganizationID()][apiIdentifier] = clusters
+		} else {
+			clustersMap := make(map[string][]*clusterv3.Cluster)
+			clustersMap[apiIdentifier] = clusters
+			orgIDOpenAPIClustersMap[mgwSwagger.GetOrganizationID()] = clustersMap
+		}
+
+		if _, ok := orgIDOpenAPIEndpointsMap[mgwSwagger.GetOrganizationID()]; ok {
+			orgIDOpenAPIEndpointsMap[mgwSwagger.GetOrganizationID()][apiIdentifier] = endpoints
+		} else {
+			endpointMap := make(map[string][]*corev3.Address)
+			endpointMap[apiIdentifier] = endpoints
+			orgIDOpenAPIEndpointsMap[mgwSwagger.GetOrganizationID()] = endpointMap
+		}
+
+		if _, ok := orgIDOpenAPIEnforcerApisMap[mgwSwagger.GetOrganizationID()]; ok {
+			orgIDOpenAPIEnforcerApisMap[mgwSwagger.GetOrganizationID()][apiIdentifier] = oasParser.GetEnforcerAPI(mgwSwagger, vHost)
+		} else {
+			enforcerAPIMap := make(map[string]types.Resource)
+			enforcerAPIMap[apiIdentifier] = oasParser.GetEnforcerAPI(mgwSwagger, vHost)
+			orgIDOpenAPIEnforcerApisMap[mgwSwagger.GetOrganizationID()] = enforcerAPIMap
+		}
+
+		revisionStatus := updateXdsCacheOnAPIChange(oldLabels, newLabels)
+		logger.LoggerXds.Infof("Deployed Revision: %v:%v", apiIdentifier, revisionStatus)
 	}
-
-	if _, ok := orgIDOpenAPIRoutesMap[mgwSwagger.GetOrganizationID()]; ok {
-		orgIDOpenAPIRoutesMap[mgwSwagger.GetOrganizationID()][apiIdentifier] = routes
-	} else {
-		routesMap := make(map[string][]*routev3.Route)
-		routesMap[apiIdentifier] = routes
-		orgIDOpenAPIRoutesMap[mgwSwagger.GetOrganizationID()] = routesMap
-	}
-
-	if _, ok := orgIDOpenAPIClustersMap[mgwSwagger.GetOrganizationID()]; ok {
-		orgIDOpenAPIClustersMap[mgwSwagger.GetOrganizationID()][apiIdentifier] = clusters
-	} else {
-		clustersMap := make(map[string][]*clusterv3.Cluster)
-		clustersMap[apiIdentifier] = clusters
-		orgIDOpenAPIClustersMap[mgwSwagger.GetOrganizationID()] = clustersMap
-	}
-
-	if _, ok := orgIDOpenAPIEndpointsMap[mgwSwagger.GetOrganizationID()]; ok {
-		orgIDOpenAPIEndpointsMap[mgwSwagger.GetOrganizationID()][apiIdentifier] = endpoints
-	} else {
-		endpointMap := make(map[string][]*corev3.Address)
-		endpointMap[apiIdentifier] = endpoints
-		orgIDOpenAPIEndpointsMap[mgwSwagger.GetOrganizationID()] = endpointMap
-	}
-
-	if _, ok := orgIDOpenAPIEnforcerApisMap[mgwSwagger.GetOrganizationID()]; ok {
-		orgIDOpenAPIEnforcerApisMap[mgwSwagger.GetOrganizationID()][apiIdentifier] = oasParser.GetEnforcerAPI(mgwSwagger, vHost)
-	} else {
-		enforcerAPIMap := make(map[string]types.Resource)
-		enforcerAPIMap[apiIdentifier] = oasParser.GetEnforcerAPI(mgwSwagger, vHost)
-		orgIDOpenAPIEnforcerApisMap[mgwSwagger.GetOrganizationID()] = enforcerAPIMap
-	}
-
-	revisionStatus := updateXdsCacheOnAPIChange(oldLabels, newLabels)
-	logger.LoggerXds.Infof("Deployed Revision: %v:%v", apiIdentifier, revisionStatus)
 	return nil
 }
