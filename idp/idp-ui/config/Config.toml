@@ -1,0 +1,3 @@
+[idp_service]
+login_service_url  = "https://api.am.wso2.com:9095/idp/login"
+login_callback_url = "https://api.am.wso2.com:9095/idp/auth-callback"

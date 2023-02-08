@@ -23,17 +23,18 @@ import ballerina/jwt;
 
 configurable IDPConfiguration idpConfiguration = ?;
 final postgresql:Client|sql:Error dbClient;
-listener http:Listener ep0 = new (9090);
+listener http:Listener ep0 = new (9443);
 final jwt:ValidatorConfig & readonly validatorConfig;
+configurable DatasourceConfiguration datasourceConfiguration=? ;
 
 function init() {
     dbClient =
-        new (host = idpConfiguration.dataSource.host,
-            username = idpConfiguration.dataSource.username,
-            password = idpConfiguration.dataSource.password,
-            database = idpConfiguration.dataSource.databaseName,
-            port = idpConfiguration.dataSource.port,
-            connectionPool = {maxOpenConnections: idpConfiguration.dataSource.maxPoolSize}
+        new (host = datasourceConfiguration.host,
+            username = datasourceConfiguration.username,
+            password = datasourceConfiguration.password,
+            database = datasourceConfiguration.databaseName,
+            port = datasourceConfiguration.port,
+            connectionPool = {maxOpenConnections: datasourceConfiguration.maxPoolSize}
             );
     validatorConfig = {
         issuer: idpConfiguration.tokenIssuerConfiguration.issuer,
@@ -47,7 +48,8 @@ function init() {
 public isolated function getConnection() returns postgresql:Client|error {
     return dbClient;
 }
-public isolated function getValidationConfig() returns jwt:ValidatorConfig{
+
+public isolated function getValidationConfig() returns jwt:ValidatorConfig {
     return validatorConfig;
 }
 

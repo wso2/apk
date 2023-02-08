@@ -15,7 +15,9 @@
     "http-errors": "~1.6.3",
     "jade": "~1.11.0",
     "morgan": "~1.9.1",
-    "pbkdf2-password": "^1.2.1"
+    "pbkdf2-password": "^1.2.1",
+    "request": "^2.88.2",
+    "toml-nodejs": "^0.2.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.20"
