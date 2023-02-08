@@ -303,7 +303,6 @@ func cleanMapResources(apiIdentifier string, organizationID string, toBeDelEnvs 
 	deleteBasepathForVHost(organizationID, apiIdentifier)
 	delete(orgIDOpenAPIEnvoyMap[organizationID], apiIdentifier)  //delete labels
 	delete(orgIDAPIMgwSwaggerMap[organizationID], apiIdentifier) //delete mgwSwagger
-	delete(orgIDAPIvHostsMap[organizationID], apiIdentifier)     //delete vhosts
 	//TODO: (SuKSW) clean any remaining in label wise maps, if this is the last API of that label
 	logger.LoggerXds.Infof("Deleted API %v of organization %v", apiIdentifier, organizationID)
 }
