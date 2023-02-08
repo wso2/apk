@@ -301,7 +301,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "DemoAPI",
                         "context": "/t/carbon.super/demoapi/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-14T18:51:26Z"
                     },
                     {
@@ -309,7 +309,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "pizzashackAPI",
                         "context": "/t/carbon.super/pizzashack/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
                     },
                     {
@@ -317,7 +317,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "pizzashackAPI1",
                         "context": "/t/carbon.super/pizzashack1/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-13T17:09:49Z"
                     },
                     {
@@ -325,7 +325,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "pizzashackAPI11",
                         "context": "/t/carbon.super/pizzashack11/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
                     },
                     {
@@ -333,7 +333,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "pizzashackAPI12",
                         "context": "/t/carbon.super/pizzashack12/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
                     },
                     {
@@ -341,7 +341,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "pizzashackAPI13",
                         "context": "/t/carbon.super/pizzashack13/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
                     }
                 ],
@@ -366,7 +366,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "pizzashackAPI13",
                         "context": "/t/carbon.super/pizzashack13/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
                     },
                     {
@@ -374,7 +374,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "pizzashackAPI12",
                         "context": "/t/carbon.super/pizzashack12/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
                     },
                     {
@@ -382,7 +382,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "pizzashackAPI11",
                         "context": "/t/carbon.super/pizzashack11/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
                     },
                     {
@@ -390,7 +390,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "pizzashackAPI1",
                         "context": "/t/carbon.super/pizzashack1/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-13T17:09:49Z"
                     },
                     {
@@ -398,7 +398,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "pizzashackAPI",
                         "context": "/t/carbon.super/pizzashack/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
                     },
                     {
@@ -406,7 +406,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "DemoAPI",
                         "context": "/t/carbon.super/demoapi/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-14T18:51:26Z"
                     }
                 ],
@@ -431,7 +431,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "pizzashackAPI",
                         "context": "/t/carbon.super/pizzashack/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
                     },
                     {
@@ -439,7 +439,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "pizzashackAPI11",
                         "context": "/t/carbon.super/pizzashack11/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
                     },
                     {
@@ -447,7 +447,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "pizzashackAPI12",
                         "context": "/t/carbon.super/pizzashack12/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
                     },
                     {
@@ -455,7 +455,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "pizzashackAPI13",
                         "context": "/t/carbon.super/pizzashack13/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
                     },
                     {
@@ -463,7 +463,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "pizzashackAPI1",
                         "context": "/t/carbon.super/pizzashack1/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-13T17:09:49Z"
                     },
                     {
@@ -471,7 +471,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "DemoAPI",
                         "context": "/t/carbon.super/demoapi/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-14T18:51:26Z"
                     }
                 ],
@@ -496,7 +496,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "DemoAPI",
                         "context": "/t/carbon.super/demoapi/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-14T18:51:26Z"
                     },
                     {
@@ -504,7 +504,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "pizzashackAPI1",
                         "context": "/t/carbon.super/pizzashack1/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-13T17:09:49Z"
                     },
                     {
@@ -512,7 +512,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "pizzashackAPI",
                         "context": "/t/carbon.super/pizzashack/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
                     },
                     {
@@ -520,7 +520,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "pizzashackAPI11",
                         "context": "/t/carbon.super/pizzashack11/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
                     },
                     {
@@ -528,7 +528,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "pizzashackAPI12",
                         "context": "/t/carbon.super/pizzashack12/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
                     },
                     {
@@ -536,7 +536,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "pizzashackAPI13",
                         "context": "/t/carbon.super/pizzashack13/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
                     }
                 ],
@@ -562,7 +562,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "DemoAPI",
                         "context": "/t/carbon.super/demoapi/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-14T18:51:26Z"
                     },
                     {
@@ -570,7 +570,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "pizzashackAPI",
                         "context": "/t/carbon.super/pizzashack/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
                     },
                     {
@@ -578,7 +578,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "pizzashackAPI1",
                         "context": "/t/carbon.super/pizzashack1/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-13T17:09:49Z"
                     }
                 ],
@@ -603,7 +603,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "pizzashackAPI11",
                         "context": "/t/carbon.super/pizzashack11/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
                     },
                     {
@@ -611,7 +611,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "pizzashackAPI12",
                         "context": "/t/carbon.super/pizzashack12/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
                     },
                     {
@@ -619,7 +619,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "pizzashackAPI13",
                         "context": "/t/carbon.super/pizzashack13/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
                     }
                 ],
@@ -660,7 +660,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "pizzashackAPI",
                         "context": "/t/carbon.super/pizzashack/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
                     },
                     {
@@ -668,7 +668,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "pizzashackAPI1",
                         "context": "/t/carbon.super/pizzashack1/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-13T17:09:49Z"
                     },
                     {
@@ -676,7 +676,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "pizzashackAPI11",
                         "context": "/t/carbon.super/pizzashack11/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
                     },
                     {
@@ -684,7 +684,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "pizzashackAPI12",
                         "context": "/t/carbon.super/pizzashack12/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
                     },
                     {
@@ -692,7 +692,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "pizzashackAPI13",
                         "context": "/t/carbon.super/pizzashack13/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
                     }
                 ],
@@ -717,7 +717,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "pizzashackAPI",
                         "context": "/t/carbon.super/pizzashack/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
                     },
                     {
@@ -725,7 +725,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "pizzashackAPI1",
                         "context": "/t/carbon.super/pizzashack1/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-13T17:09:49Z"
                     },
                     {
@@ -733,7 +733,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "pizzashackAPI11",
                         "context": "/t/carbon.super/pizzashack11/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
                     },
                     {
@@ -741,7 +741,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "pizzashackAPI12",
                         "context": "/t/carbon.super/pizzashack12/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
                     },
                     {
@@ -749,7 +749,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "pizzashackAPI13",
                         "context": "/t/carbon.super/pizzashack13/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
                     }
                 ],
@@ -761,7 +761,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
             }
         ],
         "11": [
-            "type:HTTP",
+            "type:REST",
             10,
             0,
             SORT_BY_API_NAME,
@@ -774,7 +774,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "DemoAPI",
                         "context": "/t/carbon.super/demoapi/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-14T18:51:26Z"
                     },
                     {
@@ -782,7 +782,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "pizzashackAPI",
                         "context": "/t/carbon.super/pizzashack/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
                     },
                     {
@@ -790,7 +790,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "pizzashackAPI1",
                         "context": "/t/carbon.super/pizzashack1/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-13T17:09:49Z"
                     },
                     {
@@ -798,7 +798,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "pizzashackAPI11",
                         "context": "/t/carbon.super/pizzashack11/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
                     },
                     {
@@ -806,7 +806,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "pizzashackAPI12",
                         "context": "/t/carbon.super/pizzashack12/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
                     },
                     {
@@ -814,7 +814,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                         "name": "pizzashackAPI13",
                         "context": "/t/carbon.super/pizzashack13/1.0.0",
                         "version": "1.0.0",
-                        "type": "HTTP",
+                        "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
                     }
                 ],
@@ -969,7 +969,7 @@ function testDataGeneratedSwaggerDefinition() returns map<[API, string?, json|AP
                 "name": "demoAPI",
                 "context": "/demoAPI/1.0.0",
                 "version": "1.0.0",
-                "type": "HTTP",
+                "type": "REST",
                 "operations": [{target: "/menu", verb: "GET"}, {target: "/order", verb: "POST"}, {target: "/order/{orderId}", verb: "GET"}]
             },
             {
@@ -1762,7 +1762,7 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
             "name": "PizzaAPI",
             "context": "/t/carbon.super/pizzaAPI/1.0.0",
             "version": "1.0.0",
-            "type": "HTTP"
+            "type": "REST"
         }
     };
     map<[string, string, [model:ConfigMap, any], [model:Httproute, any], [model:K8sServiceMapping, any], [model:API, any], API, string, CreatedAPI|BadRequestError|InternalServerErrorError|APKError]> data = {
@@ -1799,7 +1799,7 @@ function getMockAPI(API api, string apiUUID, string organization) returns model:
         "metadata": {"name": apiUUID, "namespace": "apk-platform", "labels": {"api-name": api.name, "api-version": api.'version}},
         "spec": {
             "apiDisplayName": api.name,
-            "apiType": "HTTP",
+            "apiType": "REST",
             "apiVersion": api.'version,
             "context": apiClient.returnFullContext(api.context, api.'version, organization),
             "organization": organization,
@@ -1819,7 +1819,7 @@ function getMockAPI1(API api, string apiUUID, string organization) returns model
         "metadata": {"name": apiUUID, "namespace": "apk-platform", "labels": {"api-name": api.name, "api-version": api.'version}},
         "spec": {
             "apiDisplayName": api.name,
-            "apiType": "HTTP",
+            "apiType": "REST",
             "apiVersion": api.'version,
             "context": apiClient.returnFullContext(api.context, api.'version, organization),
             "organization": organization,

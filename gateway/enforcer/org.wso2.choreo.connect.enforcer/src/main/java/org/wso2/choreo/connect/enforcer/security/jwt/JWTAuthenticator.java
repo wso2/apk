@@ -149,6 +149,7 @@ public class JWTAuthenticator implements Authenticator {
             }
             String context = requestContext.getMatchedAPI().getBasePath();
             String name = requestContext.getMatchedAPI().getName();
+            String envType = requestContext.getMatchedAPI().getEnvType();
             String version = requestContext.getMatchedAPI().getVersion();
             context = context + "/" + version;
             SignedJWTInfo signedJWTInfo;
@@ -191,6 +192,14 @@ public class JWTAuthenticator implements Authenticator {
             JWTValidationInfo validationInfo = getJwtValidationInfo(signedJWTInfo, jwtTokenIdentifier);
             if (validationInfo != null) {
                 if (validationInfo.isValid()) {
+                    // Validate token type
+                    Object keyType = claims.getClaim("keytype");
+                    if (keyType != null && !keyType.toString()
+                            .equalsIgnoreCase(requestContext.getMatchedAPI().getEnvType())) {
+                        throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
+                                APISecurityConstants.API_AUTH_INVALID_CREDENTIALS, "Invalid key type.");
+                    }
+
                     // Validate subscriptions
                     APIKeyValidationInfoDTO apiKeyValidationInfoDTO = new APIKeyValidationInfoDTO();
                     EnforcerConfig configuration = ConfigHolder.getInstance().getConfig();
@@ -206,7 +215,7 @@ public class JWTAuthenticator implements Authenticator {
                                         ThreadContext.get(APIConstants.LOG_TRACE_ID));
                             }
                             // if the token is self contained, validation subscription from `subscribedApis` claim
-                            JSONObject api = validateSubscriptionFromClaim(name, version, claims, splitToken,
+                            JSONObject api = validateSubscriptionFromClaim(name, version, claims, splitToken, envType,
                                     apiKeyValidationInfoDTO, true);
                             if (api == null) {
                                 if (log.isDebugEnabled()) {
@@ -307,14 +316,9 @@ public class JWTAuthenticator implements Authenticator {
                         requestContext.addOrModifyHeaders(backendJwtConfig.getJwtHeader(), endUserToken);
                     }
 
-                    AuthenticationContext authenticationContext = FilterUtils
+                    return FilterUtils
                             .generateAuthenticationContext(requestContext, jwtTokenIdentifier, validationInfo,
                                     apiKeyValidationInfoDTO, endUserToken, jwtToken, true);
-                    //TODO: (VirajSalaka) Place the keytype population logic properly for self contained token
-                    if (claims.getClaim("keytype") != null) {
-                        authenticationContext.setKeyType(claims.getClaim("keytype").toString());
-                    }
-                    return authenticationContext;
                 } else {
                     throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
                             validationInfo.getValidationCode(),
@@ -397,12 +401,13 @@ public class JWTAuthenticator implements Authenticator {
         String apiContext = requestContext.getMatchedAPI().getBasePath();
         String apiVersion = requestContext.getMatchedAPI().getVersion();
         String uuid = requestContext.getMatchedAPI().getUuid();
+        String envType = requestContext.getMatchedAPI().getEnvType();
 
         String consumerKey = jwtValidationInfo.getConsumerKey();
         String keyManager = jwtValidationInfo.getKeyManager();
 
         if (consumerKey != null && keyManager != null) {
-            return KeyValidator.validateSubscription(uuid, apiContext, apiVersion, consumerKey, keyManager);
+            return KeyValidator.validateSubscription(uuid, apiContext, apiVersion, consumerKey, envType, keyManager);
         }
         log.debug("Cannot call Key Manager to validate subscription. "
                 + "Payload of the token does not contain the Authorized party - the party to which the ID Token was "
@@ -426,16 +431,13 @@ public class JWTAuthenticator implements Authenticator {
      * @throws APISecurityException if the user is not subscribed to the API
      */
     private JSONObject validateSubscriptionFromClaim(String name, String version, JWTClaimsSet payload,
-                                                     String[] splitToken, APIKeyValidationInfoDTO validationInfo,
+                                                     String[] splitToken, String envType,
+                                                     APIKeyValidationInfoDTO validationInfo,
                                                      boolean isOauth) throws APISecurityException {
         JSONObject api = null;
         try {
             validationInfo.setEndUserName(payload.getSubject());
-            if (payload.getClaim(APIConstants.JwtTokenConstants.KEY_TYPE) != null) {
-                validationInfo.setType(payload.getStringClaim(APIConstants.JwtTokenConstants.KEY_TYPE));
-            } else {
-                validationInfo.setType(APIConstants.API_KEY_TYPE_PRODUCTION);
-            }
+            validationInfo.setType(envType);
 
             if (payload.getClaim(APIConstants.JwtTokenConstants.CONSUMER_KEY) != null) {
                 validationInfo.setConsumerKey(payload.getStringClaim(APIConstants.JwtTokenConstants.CONSUMER_KEY));

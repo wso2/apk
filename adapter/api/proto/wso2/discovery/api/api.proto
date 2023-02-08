@@ -18,12 +18,11 @@ syntax = "proto3";
 
 package wso2.discovery.api;
 
-import "wso2/discovery/api/endpoint_cluster.proto";
 import "wso2/discovery/api/Resource.proto";
 import "wso2/discovery/api/endpoint_security.proto";
 import "wso2/discovery/api/security_scheme.proto";
 import "wso2/discovery/api/Certificate.proto";
-import "wso2/discovery/api/graphql.proto";
+// import "wso2/discovery/api/graphql.proto";
 
 option go_package = "github.com/envoyproxy/go-control-plane/wso2/discovery/api;api";
 option java_package = "org.wso2.choreo.connect.discovery.api";
@@ -38,9 +37,8 @@ message Api {
 	string title = 2;
 	string version = 3;
 	string apiType = 4;
-	string description = 5;
-	EndpointCluster productionEndpoints = 6;
-	EndpointCluster sandboxEndpoints = 7;
+	// string description = 5;
+	string envType = 6;
 	repeated Resource resources = 8;
 	string basePath = 9;
 	string tier = 10;
@@ -52,11 +50,11 @@ message Api {
 	bool disableSecurity = 16;
 	string vhost = 17;
 	string organizationId = 18;
-	bool isMockedApi = 19;
+	// bool isMockedApi = 19;
 	repeated Certificate clientCertificates = 20;
 	string mutualSSL = 21;
 	bool applicationSecurity = 22;
-	string graphQLSchema = 23;
-	repeated GraphqlComplexity graphqlComplexityInfo = 24;
+	/// string graphQLSchema = 23;
+	// repeated GraphqlComplexity graphqlComplexityInfo = 24;
 	bool systemAPI = 25;
 }
