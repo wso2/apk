@@ -66,7 +66,8 @@ public class LoginClient {
                     string|jwt:Error cookieValue = generateSucessSession[1];
                     if cookieValue is string {
                         string loginPageRedirect = idpConfiguration.loginCallBackURl + "?" + STATE_KEY_QUERY_PARAM + "=" + sessionKey;
-                        http:CookieOptions cookieOption = {domain: gethost(idpConfiguration.loginCallBackURl), secure: false, path: "/"};
+                        boolean secureCookie = idpConfiguration.loginCallBackURl.startsWith("https") ? true : false;
+                        http:CookieOptions cookieOption = {domain: gethost(idpConfiguration.loginCallBackURl), secure: secureCookie, path: "/"};
                         http:Cookie cookie = new (SESSION_KEY_PREFIX + sessionKey, cookieValue, cookieOption);
                         return {
                             headers: {
@@ -96,7 +97,8 @@ public class LoginClient {
                     string|jwt:Error cookieValue = generateSucessSession[1];
                     if cookieValue is string {
                         string loginPageRedirect = idpConfiguration.loginCallBackURl + "?" + STATE_KEY_QUERY_PARAM + "=" + sessionKey;
-                        http:CookieOptions cookieOption = {domain: gethost(idpConfiguration.loginCallBackURl), secure: false, path: "/"};
+                        boolean secureCookie = idpConfiguration.loginCallBackURl.startsWith("https") ? true : false;
+                        http:CookieOptions cookieOption = {domain: gethost(idpConfiguration.loginCallBackURl), secure: secureCookie, path: "/"};
                         http:Cookie cookie = new (SESSION_KEY_PREFIX + sessionKey, cookieValue, cookieOption);
                         return {
                             headers: {
@@ -145,9 +147,9 @@ public class LoginClient {
         string redirectUri = <string>requestSessionPayload.get(REDIRECT_URI_CLAIM);
         string clientId = <string>requestSessionPayload.get(CLIENT_ID_CLAIM);
         json[] scopes = <json[]>requestSessionPayload.get(SCOPES_CLAIM);
-        issuerConfig.customClaims = {[REDIRECT_URI_CLAIM]: redirectUri, [SCOPES_CLAIM]: scopes, [CLIENT_ID_CLAIM]: clientId, [TOKEN_TYPE_CLAIM]: SESSION_KEY_TYPE};
+        issuerConfig.customClaims = {[REDIRECT_URI_CLAIM] : redirectUri, [SCOPES_CLAIM] : scopes, [CLIENT_ID_CLAIM] : clientId, [TOKEN_TYPE_CLAIM] : SESSION_KEY_TYPE};
         if organization is string {
-            issuerConfig.customClaims = {[REDIRECT_URI_CLAIM]: redirectUri, [SCOPES_CLAIM]: scopes, [CLIENT_ID_CLAIM]: clientId, [ORGANIZATION_CLAIM]: organization,[TOKEN_TYPE_CLAIM]: SESSION_KEY_TYPE};
+            issuerConfig.customClaims = {[REDIRECT_URI_CLAIM] : redirectUri, [SCOPES_CLAIM] : scopes, [CLIENT_ID_CLAIM] : clientId, [ORGANIZATION_CLAIM] : organization, [TOKEN_TYPE_CLAIM] : SESSION_KEY_TYPE};
         }
         return [jwtid, jwt:issue(issuerConfig)];
     }

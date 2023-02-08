@@ -267,7 +267,8 @@ public class TokenUtil {
         string|jwt:Error stateKey = jwt:issue(issuerConfig);
         if stateKey is string {
             string loginPageRedirect = idpConfiguration.loginPageURl + "?" + STATE_KEY_QUERY_PARAM + "=" + jwtid;
-            http:CookieOptions cookieOption = {domain: gethost(idpConfiguration.loginPageURl), secure: false, path: "/"};
+            boolean secureCookie = idpConfiguration.loginPageURl.startsWith("https") ? true : false;
+            http:CookieOptions cookieOption = {domain: gethost(idpConfiguration.loginPageURl), secure: secureCookie, path: "/"};
             http:Cookie cookie = new (SESSION_KEY_PREFIX + jwtid, stateKey, cookieOption);
             return {
                 headers: {

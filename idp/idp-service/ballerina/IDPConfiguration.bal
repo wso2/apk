@@ -33,8 +33,8 @@ public type IDPConfiguration record {|
     string loginErrorPageUrl;
     string loginCallBackURl;
     User[] user = [];
-    KeyStoreConfiguration signingKeyStore = {path: "/home/wso2apk/runtime/security/wso2carbon.key"};
-    KeyStoreConfiguration publicKey = {path: "/home/wso2apk/runtime/security/wso2carbon.crt"};
+    KeyStoreConfiguration signingKeyStore = {path: "/home/wso2apk/idp/security/wso2carbon.key"};
+    KeyStoreConfiguration publicKey = {path: "/home/wso2apk/idp/security/wso2carbon.pem"};
     FileBaseOAuthapps[] fileBaseApp = [];
     TokenIssuerConfiguration tokenIssuerConfiguration = {};
 |};

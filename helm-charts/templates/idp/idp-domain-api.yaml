@@ -17,17 +17,17 @@
 kind: "API"
 apiVersion: "dp.wso2.com/v1alpha1"
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-api
+  name: {{ template "apk-helm.resource.prefix" . }}-idp-ds-api
   namespace: {{ .Release.Namespace }}
   labels:
-    api-name: "admin-domain-service"
+    api-name: "idp-domain-service"
     api-version: "1.0.0"
 spec:
-  apiDisplayName: "admin-domain-service"
+  apiDisplayName: "idp-domain-service"
   apiType: "REST"
   apiVersion: "1.0.0"
-  context: "/api/am/admin/1.0.0"
+  context: "/idp/1.0.0"
   organization: "carbon.super"
-  prodHTTPRouteRef: {{ template "apk-helm.resource.prefix" . }}-admin-ds-httproute
+  prodHTTPRouteRef: {{ template "apk-helm.resource.prefix" . }}-idp-ds-httproute
   systemAPI: true
 {{- end -}}

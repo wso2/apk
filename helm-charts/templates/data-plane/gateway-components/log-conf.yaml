@@ -48,6 +48,10 @@ data:
       enabled = true
       issuer = "https://gw.wso2.com/testkey"
 
+    [enforcer.security.authHeader]
+    # Send the authorization header to the backend
+    enableOutboundAuthHeader = true
+    
     [enforcer.security]
     [[enforcer.security.tokenService]]
       name = "Resident Key Manager"
