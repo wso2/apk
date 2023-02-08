@@ -31,7 +31,7 @@ public class ResourceConfig {
     private Map<String, List<String>> securitySchemas = new HashMap(); // security_schema_name -> scopes
     private String tier = "Unlimited";
     private boolean disableSecurity = false;
-    private Map<String, EndpointCluster> endpoints; // "PRODUCTION" OR "SANDBOX" -> endpoint cluster
+    private EndpointCluster endpoints;
     private PolicyConfig policyConfig;
     private MockedApiConfig mockedApiConfig;
 
@@ -117,17 +117,18 @@ public class ResourceConfig {
         this.disableSecurity = disableSecurity;
     }
 
+    //todo(amali) this don't need to be a map
     /**
      * Get the resource level endpoint cluster map for the corresponding Resource
      * where the map-key is either "PRODUCTION" or "SANDBOX".
      *
      * @return resource level endpoint cluster map
      */
-    public Map<String, EndpointCluster> getEndpoints() {
+    public EndpointCluster getEndpoints() {
         return endpoints;
     }
 
-    public void setEndpoints(Map<String, EndpointCluster> endpoints) {
+    public void setEndpoints(EndpointCluster endpoints) {
         this.endpoints = endpoints;
     }
 

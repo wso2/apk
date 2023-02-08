@@ -88,13 +88,13 @@ func (r *API) validateAPI() error {
 	if r.Spec.APIDisplayName == "" {
 		allErrs = append(allErrs, field.Required(field.NewPath("spec").Child("apiDisplayName"), "API display name is required"))
 	} else if errMsg := validateAPIDisplayNameFormat(r.Spec.APIDisplayName); errMsg != "" {
-		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("apiDisplayName"), r.Spec.Context, errMsg))
+		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("apiDisplayName"), r.Spec.APIDisplayName, errMsg))
 	}
 
 	if r.Spec.APIVersion == "" {
 		allErrs = append(allErrs, field.Required(field.NewPath("spec").Child("apiVersion"), "API version is required"))
 	} else if errMsg := validateAPIVersionFormat(r.Spec.APIVersion); errMsg != "" {
-		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("apiVersion"), r.Spec.Context, errMsg))
+		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("apiVersion"), r.Spec.APIVersion, errMsg))
 	}
 
 	if r.Spec.Context == "" {
@@ -106,7 +106,7 @@ func (r *API) validateAPI() error {
 	}
 
 	if errMsg := validateAPITypeFormat(r.Spec.APIType); errMsg != "" {
-		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("apiType"), r.Spec.Context, errMsg))
+		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("apiType"), r.Spec.APIType, errMsg))
 	} else {
 		r.Spec.APIType = "REST"
 	}

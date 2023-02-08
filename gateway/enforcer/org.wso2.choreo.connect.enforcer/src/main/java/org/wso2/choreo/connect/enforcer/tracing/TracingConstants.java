@@ -56,10 +56,10 @@ public class TracingConstants {
             "Authenticate request using Unsecured Api Authenticator.";
     public static final String MTLS_API_AUTHENTICATOR_SPAN = "MTLSAPIAuthenticator:authenticate():" +
             "Authenticate request using MTLS Api Authenticator.";
-    public static final String WS_HANDLER_SPAN = "WebSocketHandler:process():Handle request coming through" +
-            " websocket frame service";
-    public static final String WS_THROTTLE_SPAN = "WebSocketThrottleFilter:handleRequest():WebSocket throttling filter";
-    public static final String WS_METADATA_SPAN = "WebSocketMetaDataFilter:handleRequest():WebSocket Metadata filter";
+//    public static final String WS_HANDLER_SPAN = "WebSocketHandler:process():Handle request coming through" +
+//            " websocket frame service";
+//    public static final String WS_THROTTLE_SPAN = "WebSocketThrottleFilter:handleRequest():WebSocket throttling filter";
+//    public static final String WS_METADATA_SPAN = "WebSocketMetaDataFilter:handleRequest():WebSocket Metadata filter";
 
     // config property keys
     public static final String CONF_CONNECTION_STRING = "connectionString";

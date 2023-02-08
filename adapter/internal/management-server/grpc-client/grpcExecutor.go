@@ -19,13 +19,11 @@ package client
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/wso2/apk/adapter/config"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/management-server/utils"
-	"github.com/wso2/apk/adapter/pkg/logging"
 	"google.golang.org/grpc"
 	grpcStatus "google.golang.org/grpc/status"
 )
@@ -59,11 +57,7 @@ func ExecuteGRPCCall(call func() (interface{}, error)) (interface{}, error) {
 	for {
 		if err != nil {
 			errStatus, _ := grpcStatus.FromError(err)
-			logger.LoggerGRPCClient.ErrorC(logging.ErrorDetails{
-				Message:   fmt.Sprintf("GRPC call failed. errorCode: %v errorMessage: %v", errStatus.Code().String(), errStatus.Message()),
-				Severity:  logging.CRITICAL,
-				ErrorCode: 2701,
-			})
+			logger.LoggerGRPCClient.Debugf("GRPC call failed. errorCode: %v errorMessage: %v", errStatus.Code().String(), errStatus.Message())
 			if maxAttempts < 0 {
 				// If max attempts has a negative value, retry indefinitely by setting retry less than max attempts.
 				retries = maxAttempts - 1

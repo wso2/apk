@@ -32,7 +32,8 @@ public class APIConfig {
     private String vhost;
     private String basePath;
     private String apiType;
-    private Map<String, EndpointCluster> endpoints; // "PRODUCTION" OR "SANDBOX" -> endpoint cluster
+//    private Map<String, EndpointCluster> endpoints; // "PRODUCTION" OR "SANDBOX" -> endpoint cluster
+    private String envType;
     private Map<String, SecuritySchemaConfig> securitySchemeDefinitions; // security scheme def name -> scheme def
     private String apiLifeCycleState;
     private String authorizationHeader;
@@ -62,13 +63,13 @@ public class APIConfig {
     }
 
     /**
-     * getProductionEndpoints returns the map of EndpointCluster objects based on
-     * whether the key type is prod or sandbox.
+     * getEnvType returns the API's env type
+     * whether the key type is production or sandbox.
      *
-     * @return getProductionEndpoints returns the map of EndpointClusters
+     * @return getEnvType returns type of the env. Production or Sandbox
      */
-    public Map<String, EndpointCluster> getEndpoints() {
-        return endpoints;
+    public String getEnvType() {
+        return envType;
     }
 
     /**
@@ -260,7 +261,7 @@ public class APIConfig {
         private String vhost;
         private String basePath;
         private String apiType;
-        private Map<String, EndpointCluster> endpoints;
+        private String envType;
         private String apiLifeCycleState;
         private String authorizationHeader;
         private EndpointSecurity endpointSecurity;
@@ -322,8 +323,8 @@ public class APIConfig {
             return this;
         }
 
-        public Builder endpoints(Map<String, EndpointCluster> endpoints) {
-            this.endpoints = endpoints;
+        public Builder envType(String envType) {
+            this.envType = envType;
             return this;
         }
 
@@ -398,7 +399,7 @@ public class APIConfig {
             apiConfig.apiLifeCycleState = this.apiLifeCycleState;
             apiConfig.resources = this.resources;
             apiConfig.apiType = this.apiType;
-            apiConfig.endpoints = this.endpoints;
+            apiConfig.envType = this.envType;
             apiConfig.apiSecurity = this.apiSecurity;
             apiConfig.tier = this.tier;
             apiConfig.endpointSecurity = this.endpointSecurity;

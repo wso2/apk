@@ -36,33 +36,33 @@ import (
 // the root level of the openAPI definition. The pathItem level information is represented
 // by the resources array which contains the MgwResource entries.
 type MgwSwagger struct {
-	id                         string
-	UUID                       string
-	apiType                    string
-	description                string
-	title                      string
-	version                    string
-	vendorExtensions           map[string]interface{}
-	xWso2Endpoints             map[string]*EndpointCluster
-	resources                  []*Resource
-	xWso2Basepath              string
-	xWso2HTTP2BackendEnabled   bool
-	xWso2Cors                  *CorsConfig
-	securityScheme             []SecurityScheme
-	security                   []map[string][]string
-	xWso2ThrottlingTier        string
-	xWso2AuthHeader            string
-	disableSecurity            bool
-	OrganizationID             string
-	IsPrototyped               bool
-	EndpointType               string
-	EndpointImplementationType string
-	LifecycleStatus            string
-	xWso2RequestBodyPass       bool
-	IsDefaultVersion           bool
-	clientCertificates         []Certificate
-	xWso2MutualSSL             string
-	xWso2ApplicationSecurity   bool
+	id                       string
+	UUID                     string
+	apiType                  string
+	description              string
+	title                    string
+	version                  string
+	vendorExtensions         map[string]interface{}
+	xWso2Endpoints           map[string]*EndpointCluster
+	resources                []*Resource
+	xWso2Basepath            string
+	xWso2HTTP2BackendEnabled bool
+	xWso2Cors                *CorsConfig
+	securityScheme           []SecurityScheme
+	security                 []map[string][]string
+	xWso2ThrottlingTier      string
+	xWso2AuthHeader          string
+	disableSecurity          bool
+	OrganizationID           string
+	IsPrototyped             bool
+	EndpointType             string
+	LifecycleStatus          string
+	xWso2RequestBodyPass     bool
+	IsDefaultVersion         bool
+	clientCertificates       []Certificate
+	xWso2MutualSSL           string
+	xWso2ApplicationSecurity bool
+	EnvType                  string
 	// GraphQLSchema              string
 	// GraphQLComplexities        GraphQLComplexityYaml
 	IsSystemAPI bool
@@ -340,19 +340,17 @@ func (swagger *MgwSwagger) GetOrganizationID() string {
 // Validate method confirms that the mgwSwagger has all required fields in the required format.
 // This needs to be checked prior to generate router/enforcer related resources.
 func (swagger *MgwSwagger) Validate() error {
-	if swagger.EndpointImplementationType != constants.MockedOASEndpointType {
-		for _, res := range swagger.resources {
-			if res.endpoints == nil || len(res.endpoints.Endpoints) == 0 {
-				logger.LoggerOasparser.Errorf("No Endpoints are provided for the resources in %s:%s",
-					swagger.title, swagger.version)
-				return errors.New("no endpoints are provided for the API")
-			}
-			err := res.endpoints.validateEndpointCluster()
-			if err != nil {
-				logger.LoggerOasparser.Errorf("Error while parsing the endpoints of the API %s:%s - %v",
-					swagger.title, swagger.version, err)
-				return err
-			}
+	for _, res := range swagger.resources {
+		if res.endpoints == nil || len(res.endpoints.Endpoints) == 0 {
+			logger.LoggerOasparser.Errorf("No Endpoints are provided for the resources in %s:%s",
+				swagger.title, swagger.version)
+			return errors.New("no endpoints are provided for the API")
+		}
+		err := res.endpoints.validateEndpointCluster()
+		if err != nil {
+			logger.LoggerOasparser.Errorf("Error while parsing the endpoints of the API %s:%s - %v",
+				swagger.title, swagger.version, err)
+			return err
 		}
 	}
 	return nil

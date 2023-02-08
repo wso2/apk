@@ -283,13 +283,8 @@ public class AuthFilter implements Filter {
         ResourceConfig resourceConfig = requestContext.getMatchedResourcePaths().get(0);
         // In websockets case, the endpoints object becomes null. Hence it would result
         // in a NPE, if it is not checked.
-        if (resourceConfig.getEndpoints() != null &&
-                resourceConfig.getEndpoints().containsKey(APIConstants.API_KEY_TYPE_PRODUCTION)) {
-            EndpointCluster endpointCluster = resourceConfig.getEndpoints().get(APIConstants.API_KEY_TYPE_PRODUCTION);
-            addRetryAndTimeoutConfigHeaders(requestContext, endpointCluster);
-            handleEmptyPathHeader(requestContext, endpointCluster.getBasePath());
-        } else if (requestContext.getMatchedAPI().getEndpoints().containsKey(APIConstants.API_KEY_TYPE_PRODUCTION)) {
-            EndpointCluster endpointCluster = requestContext.getMatchedAPI().getEndpoints().get(APIConstants.API_KEY_TYPE_PRODUCTION);
+        if (resourceConfig.getEndpoints() != null) {
+            EndpointCluster endpointCluster = resourceConfig.getEndpoints();
             addRetryAndTimeoutConfigHeaders(requestContext, endpointCluster);
             handleEmptyPathHeader(requestContext, endpointCluster.getBasePath());
         }
@@ -330,7 +325,7 @@ public class AuthFilter implements Filter {
         requestContext.addMetadataToMap(InterceptorConstants.AuthContextFields.TOKEN,
                 Objects.toString(authContext.getRawToken(), ""));
         requestContext.addMetadataToMap(InterceptorConstants.AuthContextFields.KEY_TYPE,
-                Objects.toString(authContext.getKeyType(), ""));
+                Objects.toString(requestContext.getMatchedAPI().getEnvType(), ""));
     }
 
     /**
