@@ -13,8 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # -----------------------------------------------------------------------
-
----
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -30,7 +28,7 @@ webhooks:
     rules:
       - operations: [ "CREATE" , "UPDATE" ]
         apiGroups: [ "gateway.networking.k8s.io" ]
-        apiVersions: [ "v1alpha2" ]
+        apiVersions: [ "v1alpha2", "v1beta1" ]
         resources: [ "gateways", "gatewayclasses", "httproutes" ]
     failurePolicy: Fail
     sideEffects: None
@@ -78,7 +76,7 @@ spec:
     spec:
       containers:
         - name: webhook
-          image: gcr.io/k8s-staging-gateway-api/admission-server:v0.5.0
+          image: gcr.io/k8s-staging-gateway-api/admission-server:v0.6.1
           imagePullPolicy: Always
           args:
             - -logtostderr
