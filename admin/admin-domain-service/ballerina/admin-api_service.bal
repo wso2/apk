@@ -271,8 +271,14 @@ service /api/am/admin on ep0 {
     // }
     // resource function get organizations() returns OrganizationList {
     // }
-    // resource function post organizations(@http:Payload Organization payload) returns CreatedOrganization|BadRequestError {
-    // }
+    resource function post organizations(@http:Payload Organization payload) returns CreatedOrganization|BadRequestError|InternalServerErrorError {
+        CreatedOrganization|APKError createdOrganization = addOrganization(payload);
+        if createdOrganization is CreatedOrganization {
+            return createdOrganization;
+        } else {
+            return handleAPKError(createdOrganization);
+        }
+    }
     // resource function get organizations/[string organizationId]() returns Organization|BadRequestError|NotFoundError|NotAcceptableError {
     // }
     // resource function put organizations/[string organizationId](@http:Payload Organization payload) returns Organization|BadRequestError|NotFoundError {

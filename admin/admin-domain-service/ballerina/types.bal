@@ -461,7 +461,7 @@ public type Organization record {
     string name?;
     @constraint:String {maxLength: 255, minLength: 1}
     string displayName?;
-    OrganizationClaim[] claimList?;
+    OrganizationClaim[] claimList;
 };
 
 public type MonetizationUsagePublishInfo record {
