@@ -14,9 +14,6 @@ flag_management:
     - name: backoffice-domain-service
       paths:
         - backoffice/backoffice-domain-service
-    - name: backoffice-internal-domain-service
-      paths:
-        - backoffice/backoffice-internal-domain-service
     - name: devportal-domain-service
       paths:
         - devportal/devportal-domain-service
@@ -26,6 +23,12 @@ flag_management:
     - name: runtime-domain-service
       paths:
         - runtime-domain-service
+    - name: idp-domain-service
+      paths:
+        - '**/idp/idp-service/**'
+    - name: idp-ui
+      paths:
+        - '**/idp/idp-ui/**'
 
       statuses:
         - type: project

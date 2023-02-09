@@ -21,6 +21,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
 data:
   setup1.sql: |
+    CREATE DATABASE WSO2AM_DB;
     GRANT ALL PRIVILEGES ON DATABASE "WSO2AM_DB" TO wso2carbon;
     \c "WSO2AM_DB"
         BEGIN TRANSACTION;
@@ -402,7 +403,18 @@ data:
         );
         
         -- End of APK Tables --
-        
+        -- Start Creating non-production-idp tables --
+
+        CREATE TABLE CONSUMER_APPS (
+            CONSUMER_KEY VARCHAR(255),
+            CONSUMER_SECRET VARCHAR(2048),
+            APP_NAME VARCHAR(255),
+            CALLBACK_URL VARCHAR(2048),
+            GRANT_TYPES VARCHAR (1024),
+            CONSTRAINT CONSUMER_KEY_CONSTRAINT UNIQUE (CONSUMER_KEY),
+            PRIMARY KEY (CONSUMER_KEY)
+        );
+
         -- Performance indexes start--
         
         create index IDX_AI_CTX on API (CONTEXT);
@@ -424,76 +436,3 @@ data:
         INSERT INTO public.subscriber(user_id, organization, email_address, date_subscribed ) VALUES ( 'apkuser', 'carbon.super', 'apk@wso2.com', now());
         -- End Insert Demo APK data        
         commit;
-
-#   setup2.sql: |
-#     Insert into am_subscriber (subscriber_id, user_id, organization, email_address, date_subscribed, created_by, created_time, updated_by, updated_time)
-#     values(
-#               '100',
-#               '200',
-#               'carbon.super',
-#               'vajira@gmail.com',
-#               '2016-06-22 19:10:25-07',
-#               'vajira',
-#               '2016-06-22 19:10:25-07',
-#               'vajira',
-#               '2016-06-22 19:10:25-07'
-#           );
-
-#     Insert into am_application (application_id, name, subscriber_id, application_tier, callback_url, description, application_status, group_id, created_by, created_time, updated_by, updated_time, uuid, token_type, organization)
-#     values(
-#               '1',
-#               'my_app',
-#               '100',
-#               'Unlimited',
-#               'http://example.com',
-#               'sample application for testing',
-#               'active',
-#               '100',
-#               'vajira',
-#               '2016-06-22 19:10:25-07',
-#               'vajira',
-#               '2016-06-22 19:10:25-07',
-#               'b9850225-c7db-444d-87fd-4feeb3c6b3cc',
-#               'bearer',
-#               'carbon.super'
-#           );
-
-#     INSERT INTO public.am_api(
-#         api_id, api_uuid, api_provider, api_name, api_version, context, context_template, api_tier, api_type, organization, gateway_vendor, created_by, created_time, updated_by, updated_time, status, version_comparable, log_level, revisions_created, artifact)
-#     VALUES ('1',
-#             'f85c323f-388a-4ed3-99a6-c15de431660f',
-#             'apkuser',
-#             'Petstore',
-#             '1.0.0',
-#             'pets',
-#             'pets',
-#             'Unlimited',
-#             'HTTP',
-#             'carbon.super',
-#             'wso2',
-#             'vajira',
-#             '2016-06-22 19:10:25-07',
-#             'vajira',
-#             '2016-06-22 19:10:25-07',
-#             'PUBLISHED',
-#             '1.2',
-#             'DEBUG',
-#             '1',
-#             '{"s":"y"}');
-
-#     insert into am_subscription (subscription_id, tier_id, tier_id_pending, api_id, last_accessed, application_id, sub_status, subs_create_state, created_by, created_time, updated_by, updated_time, uuid)
-#     values (
-#               '1',
-#               '1',
-#               '2',
-#               '1',
-#               '2016-06-22 19:10:25-07',
-#               '1',
-#               'active',
-#               'completed',
-#               'vajira',
-#               '2016-06-22 19:10:25-07',
-#               'vajira',
-#               '2016-06-22 19:10:25-07',
-#               'cdafb148-ebd8-4f76-abbb-d6ec00e8f686'
-#           )

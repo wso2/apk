@@ -25,8 +25,8 @@ metadata:
 spec:
   apiDisplayName: "Runtime Domain Service API"
   apiType: "REST"
-  apiVersion: "2.0.0"
-  context: "/api/am/runtime"
+  apiVersion: "1.0.0"
+  context: "/api/am/runtime/1.0.0"
   organization: "carbon.super"
   definitionFileRef: ""
   prodHTTPRouteRef: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-httproute

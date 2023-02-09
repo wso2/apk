@@ -26,7 +26,7 @@ spec:
   apiDisplayName: "admin-domain-service"
   apiType: "REST"
   apiVersion: "1.0.0"
-  context: "/api/am/admin"
+  context: "/api/am/admin/1.0.0"
   organization: "carbon.super"
   prodHTTPRouteRef: {{ template "apk-helm.resource.prefix" . }}-admin-ds-httproute
   systemAPI: true
