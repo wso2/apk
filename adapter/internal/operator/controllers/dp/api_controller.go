@@ -356,8 +356,7 @@ func (apiReconciler *APIReconciler) getBackendConfigs(ctx context.Context,
 		if backendPolicy.Spec.Override != nil {
 			tlsConfig = backendPolicy.Spec.Override.TLS
 			backendProtocol = backendPolicy.Spec.Override.Protocol
-		}
-		if backendPolicy.Spec.Default != nil {
+		} else if backendPolicy.Spec.Default != nil {
 			tlsConfig = backendPolicy.Spec.Default.TLS
 			backendProtocol = backendPolicy.Spec.Default.Protocol
 		}
