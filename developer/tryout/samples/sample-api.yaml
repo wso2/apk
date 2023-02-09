@@ -55,6 +55,22 @@ spec:
           path:
             type: ReplacePrefixMatch
             replacePrefixMatch: /get
+  - backendRefs:
+    - group: ""
+      kind: Service
+      name: secure-backend
+      port: 443
+      weight: 1
+    matches:
+    - path:
+        type: PathPrefix
+        value: /http-bin-api/1.0.8/secure/get/
+    filters:
+      - type: URLRewrite
+        urlRewrite:
+          path:
+            type: ReplacePrefixMatch
+            replacePrefixMatch: /get
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: HTTPRoute
