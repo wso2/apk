@@ -218,10 +218,13 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 // - HTTPRoutes
 func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, namespace string,
 	prodHTTPRouteRef string, sandHTTPRouteRef string) (*synchronizer.HTTPRouteState, *synchronizer.HTTPRouteState, error) {
-	var prodHTTPRoute *synchronizer.HTTPRouteState
-	var sandHTTPRoute *synchronizer.HTTPRouteState
+	prodHTTPRoute := &synchronizer.HTTPRouteState{
+		HTTPRoute: &gwapiv1b1.HTTPRoute{},
+	}
+	sandHTTPRoute := &synchronizer.HTTPRouteState{
+		HTTPRoute: &gwapiv1b1.HTTPRoute{},
+	}
 	var err error
-
 	if prodHTTPRouteRef != "" {
 		if prodHTTPRoute, err = apiReconciler.resolveHTTPRouteRefs(ctx, namespace, prodHTTPRouteRef); err != nil {
 			return nil, nil, fmt.Errorf("error while resolving production httpRouteref %s in namespace :%s has not found. %s",
