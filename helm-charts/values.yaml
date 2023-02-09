@@ -76,13 +76,13 @@ wso2:
               memory: "1028Mi"
               cpu: "1000m"
           readinessProbe:
-            path: /health
+            path: /authenticationEndpoint/health
             port: 9443
             initialDelaySeconds: 20
             periodSeconds: 20
             failureThreshold: 5
           livenessProbe:
-            path: /health
+            path: /authenticationEndpoint/health
             port: 9443
             initialDelaySeconds: 20
             periodSeconds: 20

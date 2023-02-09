@@ -63,12 +63,6 @@ spec:
     - path:
         type: "PathPrefix"
         value: "/authenticationEndpoint" 
-    filters:
-    - type: "URLRewrite"
-      urlRewrite:
-        path:
-          type: "ReplacePrefixMatch"
-          replacePrefixMatch: "/"
     backendRefs:
     - weight: 1
       group: ""
