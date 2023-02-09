@@ -107,6 +107,7 @@ public class TokenUtil {
             issuerConfig.username = application.client_id;
         }
         map<string> customClaims = {};
+        customClaims[CLIENT_ID_CLAIM] = <string>application.client_id;
         customClaims[SCOPES_CLAIM] = string:'join(" ", ...scopes);
         if organization is string && organization.toString().trim().length() > 0 {
             customClaims[ORGANIZATION_CLAIM] = organization;
@@ -189,7 +190,7 @@ public class TokenUtil {
                 return tokenError;
             }
             string clientId = <string>validatedPayload.get(CLIENT_ID_CLAIM);
-            json[] scopes = <json[]>validatedPayload.get(SCOPES_CLAIM);
+            string scopes = <string>validatedPayload.get(SCOPES_CLAIM);
             string sub = <string>validatedPayload.sub;
 
             string? organization = payload.hasKey(ORGANIZATION_CLAIM) ? <string>payload.get(ORGANIZATION_CLAIM) : ();
@@ -198,13 +199,10 @@ public class TokenUtil {
                 return tokenError;
             }
             do {
-                string[] scopesArray = [];
-                foreach json scope in scopes {
-                    scopesArray.push(scope.toString());
-                }
+                string[] scopesArray = regex:split(scopes," ");
                 string accessToken = check self.issueToken(application, sub, scopesArray, organization, ACCESS_TOKEN_TYPE);
                 string refreshToken = check self.issueToken(application, sub, scopesArray, organization, REFRESH_TOKEN_TYPE);
-                TokenResponse token = {access_token: accessToken, refresh_token: refreshToken, expires_in: idpConfiguration.tokenIssuerConfiguration.expTime, token_type: TOKEN_TYPE_BEARER, scope: string:'join(" ", ...<string[]>scopes)};
+                TokenResponse token = {access_token: accessToken, refresh_token: refreshToken, expires_in: idpConfiguration.tokenIssuerConfiguration.expTime, token_type: TOKEN_TYPE_BEARER, scope: scopes};
                 return token;
             } on fail var e {
                 log:printInfo("Error on generating token", e);
