@@ -344,7 +344,7 @@ public type BotDetectionData record {
 };
 
 public type OrganizationList record {
-    # Number of Organization returned.
+    # Number of API categories returned.
     int count?;
     Organization[] list?;
 };

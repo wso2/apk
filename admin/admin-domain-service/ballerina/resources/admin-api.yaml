@@ -2722,11 +2722,11 @@ paths:
 ######################################################
   # The "Organization" resource API
 ######################################################
-  /organization:
+  /organizations:
     get:
       tags:
         - Organization (Collection)
-      summary: Get all Organization
+      summary: Get all API Categories
       description: |
         Get all Organization
       responses:
@@ -2780,7 +2780,7 @@ paths:
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/organization"'
       operationId: addOrganization
-  /organization/{organizationId}:
+  /organizations/{organizationId}:
     get:
       tags:
         - Organization (Individual)
@@ -2823,7 +2823,7 @@ paths:
         - $ref: '#/components/parameters/organizationId'
       requestBody:
         description: |
-          Organization object with updated information
+          API Category object with updated information
         content:
           application/json:
             schema:
@@ -2862,7 +2862,7 @@ paths:
         200:
           description: |
             OK.
-            Organization successfully deleted.
+            API Category successfully deleted.
           content: {}
         404:
           $ref: '#/components/responses/NotFound'
@@ -3882,7 +3882,7 @@ components:
         count:
           type: integer
           description: |
-            Number of Organization returned.
+            Number of API categories returned.
           example: 1
         list:
           type: array
