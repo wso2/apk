@@ -169,6 +169,7 @@ public class APIKeyAuthenticator extends APIKeyHandler {
             String apiVersion = requestContext.getMatchedAPI().getVersion();
             String apiContext = requestContext.getMatchedAPI().getBasePath();
             String apiUuid = requestContext.getMatchedAPI().getUuid();
+            String envType = requestContext.getMatchedAPI().getEnvType();
 
             // Avoids using internal API keys, when internal key header or queryParam configured as api_key
             if (isInternalKey(payload)) {
@@ -206,13 +207,19 @@ public class APIKeyAuthenticator extends APIKeyHandler {
                     jwtTokenPayloadInfo.setAccessToken(apiKey);
                     CacheProvider.getGatewayAPIKeyDataCache().put(tokenIdentifier, jwtTokenPayloadInfo);
                 }
-
+                // Validate token type
+                Object keyType = payload.getClaim("keytype");
+                if (keyType != null && !keyType.toString()
+                        .equalsIgnoreCase(requestContext.getMatchedAPI().getEnvType())) {
+                    throw new APISecurityException(APIConstants.StatusCodes.UNAUTHENTICATED.getCode(),
+                            APISecurityConstants.API_AUTH_INVALID_CREDENTIALS, "Invalid key type.");
+                }
                 validateAPIKeyRestrictions(payload, requestContext, apiContext, apiVersion);
                 APIKeyValidationInfoDTO validationInfoDto;
                 if (ConfigHolder.getInstance().isControlPlaneEnabled()) {
                     log.debug("Validating subscription for API Key against subscription store."
                             + " context: {} version: {}", apiContext, apiVersion);
-                    validationInfoDto = KeyValidator.validateSubscription(apiUuid, apiContext, payload);
+                    validationInfoDto = KeyValidator.validateSubscription(apiUuid, apiContext, payload, envType);
                 } else if (apiKeySubValidationEnabled && !requestContext.getMatchedAPI().isSystemAPI()) {
                     log.debug("Validating subscription for API Key using JWT claims against invoked API info."
                             + " context: {} version: {}", apiContext, apiVersion);
@@ -267,9 +274,6 @@ public class APIKeyAuthenticator extends APIKeyHandler {
 
                 // TODO: Add analytics data processing
 
-                // Get SignedJWTInfo
-                SignedJWTInfo signedJWTInfo = JWTUtils.getSignedJwt(apiKey);
-
                 // Get JWTValidationInfo
                 JWTValidationInfo validationInfo = new JWTValidationInfo();
                 validationInfo.setUser(payload.getSubject());
@@ -288,13 +292,9 @@ public class APIKeyAuthenticator extends APIKeyHandler {
                 }
 
                 // Create authentication context
-                JWTClaimsSet claims = signedJWTInfo.getJwtClaimsSet();
                 AuthenticationContext authenticationContext = FilterUtils
                         .generateAuthenticationContext(requestContext, tokenIdentifier, validationInfo,
                                 validationInfoDto, endUserToken, apiKey, false);
-                if (claims.getClaim("keytype") != null) {
-                    authenticationContext.setKeyType(claims.getClaim("keytype").toString());
-                }
                 log.debug("Analytics data processing for API Key (jiti) {} was successful", tokenIdentifier);
                 return authenticationContext;
 
@@ -317,12 +317,8 @@ public class APIKeyAuthenticator extends APIKeyHandler {
         APIKeyValidationInfoDTO validationInfoDTO = new APIKeyValidationInfoDTO();
         JSONObject app = payload.getJSONObjectClaim(APIConstants.JwtTokenConstants.APPLICATION);
         JSONObject api = null;
+        validationInfoDTO.setType(requestContext.getMatchedAPI().getEnvType());
 
-        if (payload.getClaim(APIConstants.JwtTokenConstants.KEY_TYPE) != null) {
-            validationInfoDTO.setType(payload.getStringClaim(APIConstants.JwtTokenConstants.KEY_TYPE));
-        } else {
-            validationInfoDTO.setType(APIConstants.API_KEY_TYPE_PRODUCTION);
-        }
         if (app != null) {
             validationInfoDTO.setApplicationId(app.getAsNumber(APIConstants.JwtTokenConstants.APPLICATION_ID)
                     .intValue());

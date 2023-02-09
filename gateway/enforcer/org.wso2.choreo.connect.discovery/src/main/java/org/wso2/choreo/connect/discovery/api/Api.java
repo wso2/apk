@@ -24,7 +24,7 @@ private static final long serialVersionUID = 0L;
     title_ = "";
     version_ = "";
     apiType_ = "";
-    description_ = "";
+    envType_ = "";
     resources_ = java.util.Collections.emptyList();
     basePath_ = "";
     tier_ = "";
@@ -36,8 +36,6 @@ private static final long serialVersionUID = 0L;
     organizationId_ = "";
     clientCertificates_ = java.util.Collections.emptyList();
     mutualSSL_ = "";
-    graphQLSchema_ = "";
-    graphqlComplexityInfo_ = java.util.Collections.emptyList();
   }
 
   @java.lang.Override
@@ -95,36 +93,10 @@ private static final long serialVersionUID = 0L;
             apiType_ = s;
             break;
           }
-          case 42: {
+          case 50: {
             java.lang.String s = input.readStringRequireUtf8();
 
-            description_ = s;
-            break;
-          }
-          case 50: {
-            org.wso2.choreo.connect.discovery.api.EndpointCluster.Builder subBuilder = null;
-            if (productionEndpoints_ != null) {
-              subBuilder = productionEndpoints_.toBuilder();
-            }
-            productionEndpoints_ = input.readMessage(org.wso2.choreo.connect.discovery.api.EndpointCluster.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(productionEndpoints_);
-              productionEndpoints_ = subBuilder.buildPartial();
-            }
-
-            break;
-          }
-          case 58: {
-            org.wso2.choreo.connect.discovery.api.EndpointCluster.Builder subBuilder = null;
-            if (sandboxEndpoints_ != null) {
-              subBuilder = sandboxEndpoints_.toBuilder();
-            }
-            sandboxEndpoints_ = input.readMessage(org.wso2.choreo.connect.discovery.api.EndpointCluster.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(sandboxEndpoints_);
-              sandboxEndpoints_ = subBuilder.buildPartial();
-            }
-
+            envType_ = s;
             break;
           }
           case 66: {
@@ -208,11 +180,6 @@ private static final long serialVersionUID = 0L;
             organizationId_ = s;
             break;
           }
-          case 152: {
-
-            isMockedApi_ = input.readBool();
-            break;
-          }
           case 162: {
             if (!((mutable_bitField0_ & 0x00000008) != 0)) {
               clientCertificates_ = new java.util.ArrayList<org.wso2.choreo.connect.discovery.api.Certificate>();
@@ -231,21 +198,6 @@ private static final long serialVersionUID = 0L;
           case 176: {
 
             applicationSecurity_ = input.readBool();
-            break;
-          }
-          case 186: {
-            java.lang.String s = input.readStringRequireUtf8();
-
-            graphQLSchema_ = s;
-            break;
-          }
-          case 194: {
-            if (!((mutable_bitField0_ & 0x00000010) != 0)) {
-              graphqlComplexityInfo_ = new java.util.ArrayList<org.wso2.choreo.connect.discovery.api.GraphqlComplexity>();
-              mutable_bitField0_ |= 0x00000010;
-            }
-            graphqlComplexityInfo_.add(
-                input.readMessage(org.wso2.choreo.connect.discovery.api.GraphqlComplexity.parser(), extensionRegistry));
             break;
           }
           case 200: {
@@ -279,9 +231,6 @@ private static final long serialVersionUID = 0L;
       }
       if (((mutable_bitField0_ & 0x00000008) != 0)) {
         clientCertificates_ = java.util.Collections.unmodifiableList(clientCertificates_);
-      }
-      if (((mutable_bitField0_ & 0x00000010) != 0)) {
-        graphqlComplexityInfo_ = java.util.Collections.unmodifiableList(graphqlComplexityInfo_);
       }
       this.unknownFields = unknownFields.build();
       makeExtensionsImmutable();
@@ -452,94 +401,50 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int DESCRIPTION_FIELD_NUMBER = 5;
-  private volatile java.lang.Object description_;
+  public static final int ENVTYPE_FIELD_NUMBER = 6;
+  private volatile java.lang.Object envType_;
   /**
-   * <code>string description = 5;</code>
-   * @return The description.
+   * <pre>
+   * string description = 5;
+   * </pre>
+   *
+   * <code>string envType = 6;</code>
+   * @return The envType.
    */
   @java.lang.Override
-  public java.lang.String getDescription() {
-    java.lang.Object ref = description_;
+  public java.lang.String getEnvType() {
+    java.lang.Object ref = envType_;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
       com.google.protobuf.ByteString bs = 
           (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
-      description_ = s;
+      envType_ = s;
       return s;
     }
   }
   /**
-   * <code>string description = 5;</code>
-   * @return The bytes for description.
+   * <pre>
+   * string description = 5;
+   * </pre>
+   *
+   * <code>string envType = 6;</code>
+   * @return The bytes for envType.
    */
   @java.lang.Override
   public com.google.protobuf.ByteString
-      getDescriptionBytes() {
-    java.lang.Object ref = description_;
+      getEnvTypeBytes() {
+    java.lang.Object ref = envType_;
     if (ref instanceof java.lang.String) {
       com.google.protobuf.ByteString b = 
           com.google.protobuf.ByteString.copyFromUtf8(
               (java.lang.String) ref);
-      description_ = b;
+      envType_ = b;
       return b;
     } else {
       return (com.google.protobuf.ByteString) ref;
     }
-  }
-
-  public static final int PRODUCTIONENDPOINTS_FIELD_NUMBER = 6;
-  private org.wso2.choreo.connect.discovery.api.EndpointCluster productionEndpoints_;
-  /**
-   * <code>.wso2.discovery.api.EndpointCluster productionEndpoints = 6;</code>
-   * @return Whether the productionEndpoints field is set.
-   */
-  @java.lang.Override
-  public boolean hasProductionEndpoints() {
-    return productionEndpoints_ != null;
-  }
-  /**
-   * <code>.wso2.discovery.api.EndpointCluster productionEndpoints = 6;</code>
-   * @return The productionEndpoints.
-   */
-  @java.lang.Override
-  public org.wso2.choreo.connect.discovery.api.EndpointCluster getProductionEndpoints() {
-    return productionEndpoints_ == null ? org.wso2.choreo.connect.discovery.api.EndpointCluster.getDefaultInstance() : productionEndpoints_;
-  }
-  /**
-   * <code>.wso2.discovery.api.EndpointCluster productionEndpoints = 6;</code>
-   */
-  @java.lang.Override
-  public org.wso2.choreo.connect.discovery.api.EndpointClusterOrBuilder getProductionEndpointsOrBuilder() {
-    return getProductionEndpoints();
-  }
-
-  public static final int SANDBOXENDPOINTS_FIELD_NUMBER = 7;
-  private org.wso2.choreo.connect.discovery.api.EndpointCluster sandboxEndpoints_;
-  /**
-   * <code>.wso2.discovery.api.EndpointCluster sandboxEndpoints = 7;</code>
-   * @return Whether the sandboxEndpoints field is set.
-   */
-  @java.lang.Override
-  public boolean hasSandboxEndpoints() {
-    return sandboxEndpoints_ != null;
-  }
-  /**
-   * <code>.wso2.discovery.api.EndpointCluster sandboxEndpoints = 7;</code>
-   * @return The sandboxEndpoints.
-   */
-  @java.lang.Override
-  public org.wso2.choreo.connect.discovery.api.EndpointCluster getSandboxEndpoints() {
-    return sandboxEndpoints_ == null ? org.wso2.choreo.connect.discovery.api.EndpointCluster.getDefaultInstance() : sandboxEndpoints_;
-  }
-  /**
-   * <code>.wso2.discovery.api.EndpointCluster sandboxEndpoints = 7;</code>
-   */
-  @java.lang.Override
-  public org.wso2.choreo.connect.discovery.api.EndpointClusterOrBuilder getSandboxEndpointsOrBuilder() {
-    return getSandboxEndpoints();
   }
 
   public static final int RESOURCES_FIELD_NUMBER = 8;
@@ -927,20 +832,13 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int ISMOCKEDAPI_FIELD_NUMBER = 19;
-  private boolean isMockedApi_;
-  /**
-   * <code>bool isMockedApi = 19;</code>
-   * @return The isMockedApi.
-   */
-  @java.lang.Override
-  public boolean getIsMockedApi() {
-    return isMockedApi_;
-  }
-
   public static final int CLIENTCERTIFICATES_FIELD_NUMBER = 20;
   private java.util.List<org.wso2.choreo.connect.discovery.api.Certificate> clientCertificates_;
   /**
+   * <pre>
+   * bool isMockedApi = 19;
+   * </pre>
+   *
    * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
    */
   @java.lang.Override
@@ -948,6 +846,10 @@ private static final long serialVersionUID = 0L;
     return clientCertificates_;
   }
   /**
+   * <pre>
+   * bool isMockedApi = 19;
+   * </pre>
+   *
    * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
    */
   @java.lang.Override
@@ -956,6 +858,10 @@ private static final long serialVersionUID = 0L;
     return clientCertificates_;
   }
   /**
+   * <pre>
+   * bool isMockedApi = 19;
+   * </pre>
+   *
    * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
    */
   @java.lang.Override
@@ -963,6 +869,10 @@ private static final long serialVersionUID = 0L;
     return clientCertificates_.size();
   }
   /**
+   * <pre>
+   * bool isMockedApi = 19;
+   * </pre>
+   *
    * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
    */
   @java.lang.Override
@@ -970,6 +880,10 @@ private static final long serialVersionUID = 0L;
     return clientCertificates_.get(index);
   }
   /**
+   * <pre>
+   * bool isMockedApi = 19;
+   * </pre>
+   *
    * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
    */
   @java.lang.Override
@@ -1027,87 +941,14 @@ private static final long serialVersionUID = 0L;
     return applicationSecurity_;
   }
 
-  public static final int GRAPHQLSCHEMA_FIELD_NUMBER = 23;
-  private volatile java.lang.Object graphQLSchema_;
-  /**
-   * <code>string graphQLSchema = 23;</code>
-   * @return The graphQLSchema.
-   */
-  @java.lang.Override
-  public java.lang.String getGraphQLSchema() {
-    java.lang.Object ref = graphQLSchema_;
-    if (ref instanceof java.lang.String) {
-      return (java.lang.String) ref;
-    } else {
-      com.google.protobuf.ByteString bs = 
-          (com.google.protobuf.ByteString) ref;
-      java.lang.String s = bs.toStringUtf8();
-      graphQLSchema_ = s;
-      return s;
-    }
-  }
-  /**
-   * <code>string graphQLSchema = 23;</code>
-   * @return The bytes for graphQLSchema.
-   */
-  @java.lang.Override
-  public com.google.protobuf.ByteString
-      getGraphQLSchemaBytes() {
-    java.lang.Object ref = graphQLSchema_;
-    if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
-          com.google.protobuf.ByteString.copyFromUtf8(
-              (java.lang.String) ref);
-      graphQLSchema_ = b;
-      return b;
-    } else {
-      return (com.google.protobuf.ByteString) ref;
-    }
-  }
-
-  public static final int GRAPHQLCOMPLEXITYINFO_FIELD_NUMBER = 24;
-  private java.util.List<org.wso2.choreo.connect.discovery.api.GraphqlComplexity> graphqlComplexityInfo_;
-  /**
-   * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 24;</code>
-   */
-  @java.lang.Override
-  public java.util.List<org.wso2.choreo.connect.discovery.api.GraphqlComplexity> getGraphqlComplexityInfoList() {
-    return graphqlComplexityInfo_;
-  }
-  /**
-   * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 24;</code>
-   */
-  @java.lang.Override
-  public java.util.List<? extends org.wso2.choreo.connect.discovery.api.GraphqlComplexityOrBuilder> 
-      getGraphqlComplexityInfoOrBuilderList() {
-    return graphqlComplexityInfo_;
-  }
-  /**
-   * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 24;</code>
-   */
-  @java.lang.Override
-  public int getGraphqlComplexityInfoCount() {
-    return graphqlComplexityInfo_.size();
-  }
-  /**
-   * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 24;</code>
-   */
-  @java.lang.Override
-  public org.wso2.choreo.connect.discovery.api.GraphqlComplexity getGraphqlComplexityInfo(int index) {
-    return graphqlComplexityInfo_.get(index);
-  }
-  /**
-   * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 24;</code>
-   */
-  @java.lang.Override
-  public org.wso2.choreo.connect.discovery.api.GraphqlComplexityOrBuilder getGraphqlComplexityInfoOrBuilder(
-      int index) {
-    return graphqlComplexityInfo_.get(index);
-  }
-
   public static final int SYSTEMAPI_FIELD_NUMBER = 25;
   private boolean systemAPI_;
   /**
+   * <pre>
+   *&#47; string graphQLSchema = 23;
+   * repeated GraphqlComplexity graphqlComplexityInfo = 24;
+   * </pre>
+   *
    * <code>bool systemAPI = 25;</code>
    * @return The systemAPI.
    */
@@ -1142,14 +983,8 @@ private static final long serialVersionUID = 0L;
     if (!getApiTypeBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 4, apiType_);
     }
-    if (!getDescriptionBytes().isEmpty()) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 5, description_);
-    }
-    if (productionEndpoints_ != null) {
-      output.writeMessage(6, getProductionEndpoints());
-    }
-    if (sandboxEndpoints_ != null) {
-      output.writeMessage(7, getSandboxEndpoints());
+    if (!getEnvTypeBytes().isEmpty()) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 6, envType_);
     }
     for (int i = 0; i < resources_.size(); i++) {
       output.writeMessage(8, resources_.get(i));
@@ -1184,9 +1019,6 @@ private static final long serialVersionUID = 0L;
     if (!getOrganizationIdBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 18, organizationId_);
     }
-    if (isMockedApi_ != false) {
-      output.writeBool(19, isMockedApi_);
-    }
     for (int i = 0; i < clientCertificates_.size(); i++) {
       output.writeMessage(20, clientCertificates_.get(i));
     }
@@ -1195,12 +1027,6 @@ private static final long serialVersionUID = 0L;
     }
     if (applicationSecurity_ != false) {
       output.writeBool(22, applicationSecurity_);
-    }
-    if (!getGraphQLSchemaBytes().isEmpty()) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 23, graphQLSchema_);
-    }
-    for (int i = 0; i < graphqlComplexityInfo_.size(); i++) {
-      output.writeMessage(24, graphqlComplexityInfo_.get(i));
     }
     if (systemAPI_ != false) {
       output.writeBool(25, systemAPI_);
@@ -1226,16 +1052,8 @@ private static final long serialVersionUID = 0L;
     if (!getApiTypeBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, apiType_);
     }
-    if (!getDescriptionBytes().isEmpty()) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(5, description_);
-    }
-    if (productionEndpoints_ != null) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(6, getProductionEndpoints());
-    }
-    if (sandboxEndpoints_ != null) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(7, getSandboxEndpoints());
+    if (!getEnvTypeBytes().isEmpty()) {
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(6, envType_);
     }
     for (int i = 0; i < resources_.size(); i++) {
       size += com.google.protobuf.CodedOutputStream
@@ -1275,10 +1093,6 @@ private static final long serialVersionUID = 0L;
     if (!getOrganizationIdBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(18, organizationId_);
     }
-    if (isMockedApi_ != false) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeBoolSize(19, isMockedApi_);
-    }
     for (int i = 0; i < clientCertificates_.size(); i++) {
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(20, clientCertificates_.get(i));
@@ -1289,13 +1103,6 @@ private static final long serialVersionUID = 0L;
     if (applicationSecurity_ != false) {
       size += com.google.protobuf.CodedOutputStream
         .computeBoolSize(22, applicationSecurity_);
-    }
-    if (!getGraphQLSchemaBytes().isEmpty()) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(23, graphQLSchema_);
-    }
-    for (int i = 0; i < graphqlComplexityInfo_.size(); i++) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(24, graphqlComplexityInfo_.get(i));
     }
     if (systemAPI_ != false) {
       size += com.google.protobuf.CodedOutputStream
@@ -1324,18 +1131,8 @@ private static final long serialVersionUID = 0L;
         .equals(other.getVersion())) return false;
     if (!getApiType()
         .equals(other.getApiType())) return false;
-    if (!getDescription()
-        .equals(other.getDescription())) return false;
-    if (hasProductionEndpoints() != other.hasProductionEndpoints()) return false;
-    if (hasProductionEndpoints()) {
-      if (!getProductionEndpoints()
-          .equals(other.getProductionEndpoints())) return false;
-    }
-    if (hasSandboxEndpoints() != other.hasSandboxEndpoints()) return false;
-    if (hasSandboxEndpoints()) {
-      if (!getSandboxEndpoints()
-          .equals(other.getSandboxEndpoints())) return false;
-    }
+    if (!getEnvType()
+        .equals(other.getEnvType())) return false;
     if (!getResourcesList()
         .equals(other.getResourcesList())) return false;
     if (!getBasePath()
@@ -1361,18 +1158,12 @@ private static final long serialVersionUID = 0L;
         .equals(other.getVhost())) return false;
     if (!getOrganizationId()
         .equals(other.getOrganizationId())) return false;
-    if (getIsMockedApi()
-        != other.getIsMockedApi()) return false;
     if (!getClientCertificatesList()
         .equals(other.getClientCertificatesList())) return false;
     if (!getMutualSSL()
         .equals(other.getMutualSSL())) return false;
     if (getApplicationSecurity()
         != other.getApplicationSecurity()) return false;
-    if (!getGraphQLSchema()
-        .equals(other.getGraphQLSchema())) return false;
-    if (!getGraphqlComplexityInfoList()
-        .equals(other.getGraphqlComplexityInfoList())) return false;
     if (getSystemAPI()
         != other.getSystemAPI()) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
@@ -1394,16 +1185,8 @@ private static final long serialVersionUID = 0L;
     hash = (53 * hash) + getVersion().hashCode();
     hash = (37 * hash) + APITYPE_FIELD_NUMBER;
     hash = (53 * hash) + getApiType().hashCode();
-    hash = (37 * hash) + DESCRIPTION_FIELD_NUMBER;
-    hash = (53 * hash) + getDescription().hashCode();
-    if (hasProductionEndpoints()) {
-      hash = (37 * hash) + PRODUCTIONENDPOINTS_FIELD_NUMBER;
-      hash = (53 * hash) + getProductionEndpoints().hashCode();
-    }
-    if (hasSandboxEndpoints()) {
-      hash = (37 * hash) + SANDBOXENDPOINTS_FIELD_NUMBER;
-      hash = (53 * hash) + getSandboxEndpoints().hashCode();
-    }
+    hash = (37 * hash) + ENVTYPE_FIELD_NUMBER;
+    hash = (53 * hash) + getEnvType().hashCode();
     if (getResourcesCount() > 0) {
       hash = (37 * hash) + RESOURCES_FIELD_NUMBER;
       hash = (53 * hash) + getResourcesList().hashCode();
@@ -1435,9 +1218,6 @@ private static final long serialVersionUID = 0L;
     hash = (53 * hash) + getVhost().hashCode();
     hash = (37 * hash) + ORGANIZATIONID_FIELD_NUMBER;
     hash = (53 * hash) + getOrganizationId().hashCode();
-    hash = (37 * hash) + ISMOCKEDAPI_FIELD_NUMBER;
-    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
-        getIsMockedApi());
     if (getClientCertificatesCount() > 0) {
       hash = (37 * hash) + CLIENTCERTIFICATES_FIELD_NUMBER;
       hash = (53 * hash) + getClientCertificatesList().hashCode();
@@ -1447,12 +1227,6 @@ private static final long serialVersionUID = 0L;
     hash = (37 * hash) + APPLICATIONSECURITY_FIELD_NUMBER;
     hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
         getApplicationSecurity());
-    hash = (37 * hash) + GRAPHQLSCHEMA_FIELD_NUMBER;
-    hash = (53 * hash) + getGraphQLSchema().hashCode();
-    if (getGraphqlComplexityInfoCount() > 0) {
-      hash = (37 * hash) + GRAPHQLCOMPLEXITYINFO_FIELD_NUMBER;
-      hash = (53 * hash) + getGraphqlComplexityInfoList().hashCode();
-    }
     hash = (37 * hash) + SYSTEMAPI_FIELD_NUMBER;
     hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
         getSystemAPI());
@@ -1592,7 +1366,6 @@ private static final long serialVersionUID = 0L;
         getSecuritySchemeFieldBuilder();
         getSecurityFieldBuilder();
         getClientCertificatesFieldBuilder();
-        getGraphqlComplexityInfoFieldBuilder();
       }
     }
     @java.lang.Override
@@ -1606,20 +1379,8 @@ private static final long serialVersionUID = 0L;
 
       apiType_ = "";
 
-      description_ = "";
+      envType_ = "";
 
-      if (productionEndpointsBuilder_ == null) {
-        productionEndpoints_ = null;
-      } else {
-        productionEndpoints_ = null;
-        productionEndpointsBuilder_ = null;
-      }
-      if (sandboxEndpointsBuilder_ == null) {
-        sandboxEndpoints_ = null;
-      } else {
-        sandboxEndpoints_ = null;
-        sandboxEndpointsBuilder_ = null;
-      }
       if (resourcesBuilder_ == null) {
         resources_ = java.util.Collections.emptyList();
         bitField0_ = (bitField0_ & ~0x00000001);
@@ -1658,8 +1419,6 @@ private static final long serialVersionUID = 0L;
 
       organizationId_ = "";
 
-      isMockedApi_ = false;
-
       if (clientCertificatesBuilder_ == null) {
         clientCertificates_ = java.util.Collections.emptyList();
         bitField0_ = (bitField0_ & ~0x00000008);
@@ -1670,14 +1429,6 @@ private static final long serialVersionUID = 0L;
 
       applicationSecurity_ = false;
 
-      graphQLSchema_ = "";
-
-      if (graphqlComplexityInfoBuilder_ == null) {
-        graphqlComplexityInfo_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000010);
-      } else {
-        graphqlComplexityInfoBuilder_.clear();
-      }
       systemAPI_ = false;
 
       return this;
@@ -1711,17 +1462,7 @@ private static final long serialVersionUID = 0L;
       result.title_ = title_;
       result.version_ = version_;
       result.apiType_ = apiType_;
-      result.description_ = description_;
-      if (productionEndpointsBuilder_ == null) {
-        result.productionEndpoints_ = productionEndpoints_;
-      } else {
-        result.productionEndpoints_ = productionEndpointsBuilder_.build();
-      }
-      if (sandboxEndpointsBuilder_ == null) {
-        result.sandboxEndpoints_ = sandboxEndpoints_;
-      } else {
-        result.sandboxEndpoints_ = sandboxEndpointsBuilder_.build();
-      }
+      result.envType_ = envType_;
       if (resourcesBuilder_ == null) {
         if (((bitField0_ & 0x00000001) != 0)) {
           resources_ = java.util.Collections.unmodifiableList(resources_);
@@ -1761,7 +1502,6 @@ private static final long serialVersionUID = 0L;
       result.disableSecurity_ = disableSecurity_;
       result.vhost_ = vhost_;
       result.organizationId_ = organizationId_;
-      result.isMockedApi_ = isMockedApi_;
       if (clientCertificatesBuilder_ == null) {
         if (((bitField0_ & 0x00000008) != 0)) {
           clientCertificates_ = java.util.Collections.unmodifiableList(clientCertificates_);
@@ -1773,16 +1513,6 @@ private static final long serialVersionUID = 0L;
       }
       result.mutualSSL_ = mutualSSL_;
       result.applicationSecurity_ = applicationSecurity_;
-      result.graphQLSchema_ = graphQLSchema_;
-      if (graphqlComplexityInfoBuilder_ == null) {
-        if (((bitField0_ & 0x00000010) != 0)) {
-          graphqlComplexityInfo_ = java.util.Collections.unmodifiableList(graphqlComplexityInfo_);
-          bitField0_ = (bitField0_ & ~0x00000010);
-        }
-        result.graphqlComplexityInfo_ = graphqlComplexityInfo_;
-      } else {
-        result.graphqlComplexityInfo_ = graphqlComplexityInfoBuilder_.build();
-      }
       result.systemAPI_ = systemAPI_;
       onBuilt();
       return result;
@@ -1848,15 +1578,9 @@ private static final long serialVersionUID = 0L;
         apiType_ = other.apiType_;
         onChanged();
       }
-      if (!other.getDescription().isEmpty()) {
-        description_ = other.description_;
+      if (!other.getEnvType().isEmpty()) {
+        envType_ = other.envType_;
         onChanged();
-      }
-      if (other.hasProductionEndpoints()) {
-        mergeProductionEndpoints(other.getProductionEndpoints());
-      }
-      if (other.hasSandboxEndpoints()) {
-        mergeSandboxEndpoints(other.getSandboxEndpoints());
       }
       if (resourcesBuilder_ == null) {
         if (!other.resources_.isEmpty()) {
@@ -1966,9 +1690,6 @@ private static final long serialVersionUID = 0L;
         organizationId_ = other.organizationId_;
         onChanged();
       }
-      if (other.getIsMockedApi() != false) {
-        setIsMockedApi(other.getIsMockedApi());
-      }
       if (clientCertificatesBuilder_ == null) {
         if (!other.clientCertificates_.isEmpty()) {
           if (clientCertificates_.isEmpty()) {
@@ -2001,36 +1722,6 @@ private static final long serialVersionUID = 0L;
       }
       if (other.getApplicationSecurity() != false) {
         setApplicationSecurity(other.getApplicationSecurity());
-      }
-      if (!other.getGraphQLSchema().isEmpty()) {
-        graphQLSchema_ = other.graphQLSchema_;
-        onChanged();
-      }
-      if (graphqlComplexityInfoBuilder_ == null) {
-        if (!other.graphqlComplexityInfo_.isEmpty()) {
-          if (graphqlComplexityInfo_.isEmpty()) {
-            graphqlComplexityInfo_ = other.graphqlComplexityInfo_;
-            bitField0_ = (bitField0_ & ~0x00000010);
-          } else {
-            ensureGraphqlComplexityInfoIsMutable();
-            graphqlComplexityInfo_.addAll(other.graphqlComplexityInfo_);
-          }
-          onChanged();
-        }
-      } else {
-        if (!other.graphqlComplexityInfo_.isEmpty()) {
-          if (graphqlComplexityInfoBuilder_.isEmpty()) {
-            graphqlComplexityInfoBuilder_.dispose();
-            graphqlComplexityInfoBuilder_ = null;
-            graphqlComplexityInfo_ = other.graphqlComplexityInfo_;
-            bitField0_ = (bitField0_ & ~0x00000010);
-            graphqlComplexityInfoBuilder_ = 
-              com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
-                 getGraphqlComplexityInfoFieldBuilder() : null;
-          } else {
-            graphqlComplexityInfoBuilder_.addAllMessages(other.graphqlComplexityInfo_);
-          }
-        }
       }
       if (other.getSystemAPI() != false) {
         setSystemAPI(other.getSystemAPI());
@@ -2369,318 +2060,100 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private java.lang.Object description_ = "";
+    private java.lang.Object envType_ = "";
     /**
-     * <code>string description = 5;</code>
-     * @return The description.
+     * <pre>
+     * string description = 5;
+     * </pre>
+     *
+     * <code>string envType = 6;</code>
+     * @return The envType.
      */
-    public java.lang.String getDescription() {
-      java.lang.Object ref = description_;
+    public java.lang.String getEnvType() {
+      java.lang.Object ref = envType_;
       if (!(ref instanceof java.lang.String)) {
         com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
-        description_ = s;
+        envType_ = s;
         return s;
       } else {
         return (java.lang.String) ref;
       }
     }
     /**
-     * <code>string description = 5;</code>
-     * @return The bytes for description.
+     * <pre>
+     * string description = 5;
+     * </pre>
+     *
+     * <code>string envType = 6;</code>
+     * @return The bytes for envType.
      */
     public com.google.protobuf.ByteString
-        getDescriptionBytes() {
-      java.lang.Object ref = description_;
+        getEnvTypeBytes() {
+      java.lang.Object ref = envType_;
       if (ref instanceof String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
-        description_ = b;
+        envType_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
       }
     }
     /**
-     * <code>string description = 5;</code>
-     * @param value The description to set.
+     * <pre>
+     * string description = 5;
+     * </pre>
+     *
+     * <code>string envType = 6;</code>
+     * @param value The envType to set.
      * @return This builder for chaining.
      */
-    public Builder setDescription(
+    public Builder setEnvType(
         java.lang.String value) {
       if (value == null) {
     throw new NullPointerException();
   }
   
-      description_ = value;
+      envType_ = value;
       onChanged();
       return this;
     }
     /**
-     * <code>string description = 5;</code>
+     * <pre>
+     * string description = 5;
+     * </pre>
+     *
+     * <code>string envType = 6;</code>
      * @return This builder for chaining.
      */
-    public Builder clearDescription() {
+    public Builder clearEnvType() {
       
-      description_ = getDefaultInstance().getDescription();
+      envType_ = getDefaultInstance().getEnvType();
       onChanged();
       return this;
     }
     /**
-     * <code>string description = 5;</code>
-     * @param value The bytes for description to set.
+     * <pre>
+     * string description = 5;
+     * </pre>
+     *
+     * <code>string envType = 6;</code>
+     * @param value The bytes for envType to set.
      * @return This builder for chaining.
      */
-    public Builder setDescriptionBytes(
+    public Builder setEnvTypeBytes(
         com.google.protobuf.ByteString value) {
       if (value == null) {
     throw new NullPointerException();
   }
   checkByteStringIsUtf8(value);
       
-      description_ = value;
+      envType_ = value;
       onChanged();
       return this;
-    }
-
-    private org.wso2.choreo.connect.discovery.api.EndpointCluster productionEndpoints_;
-    private com.google.protobuf.SingleFieldBuilderV3<
-        org.wso2.choreo.connect.discovery.api.EndpointCluster, org.wso2.choreo.connect.discovery.api.EndpointCluster.Builder, org.wso2.choreo.connect.discovery.api.EndpointClusterOrBuilder> productionEndpointsBuilder_;
-    /**
-     * <code>.wso2.discovery.api.EndpointCluster productionEndpoints = 6;</code>
-     * @return Whether the productionEndpoints field is set.
-     */
-    public boolean hasProductionEndpoints() {
-      return productionEndpointsBuilder_ != null || productionEndpoints_ != null;
-    }
-    /**
-     * <code>.wso2.discovery.api.EndpointCluster productionEndpoints = 6;</code>
-     * @return The productionEndpoints.
-     */
-    public org.wso2.choreo.connect.discovery.api.EndpointCluster getProductionEndpoints() {
-      if (productionEndpointsBuilder_ == null) {
-        return productionEndpoints_ == null ? org.wso2.choreo.connect.discovery.api.EndpointCluster.getDefaultInstance() : productionEndpoints_;
-      } else {
-        return productionEndpointsBuilder_.getMessage();
-      }
-    }
-    /**
-     * <code>.wso2.discovery.api.EndpointCluster productionEndpoints = 6;</code>
-     */
-    public Builder setProductionEndpoints(org.wso2.choreo.connect.discovery.api.EndpointCluster value) {
-      if (productionEndpointsBuilder_ == null) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        productionEndpoints_ = value;
-        onChanged();
-      } else {
-        productionEndpointsBuilder_.setMessage(value);
-      }
-
-      return this;
-    }
-    /**
-     * <code>.wso2.discovery.api.EndpointCluster productionEndpoints = 6;</code>
-     */
-    public Builder setProductionEndpoints(
-        org.wso2.choreo.connect.discovery.api.EndpointCluster.Builder builderForValue) {
-      if (productionEndpointsBuilder_ == null) {
-        productionEndpoints_ = builderForValue.build();
-        onChanged();
-      } else {
-        productionEndpointsBuilder_.setMessage(builderForValue.build());
-      }
-
-      return this;
-    }
-    /**
-     * <code>.wso2.discovery.api.EndpointCluster productionEndpoints = 6;</code>
-     */
-    public Builder mergeProductionEndpoints(org.wso2.choreo.connect.discovery.api.EndpointCluster value) {
-      if (productionEndpointsBuilder_ == null) {
-        if (productionEndpoints_ != null) {
-          productionEndpoints_ =
-            org.wso2.choreo.connect.discovery.api.EndpointCluster.newBuilder(productionEndpoints_).mergeFrom(value).buildPartial();
-        } else {
-          productionEndpoints_ = value;
-        }
-        onChanged();
-      } else {
-        productionEndpointsBuilder_.mergeFrom(value);
-      }
-
-      return this;
-    }
-    /**
-     * <code>.wso2.discovery.api.EndpointCluster productionEndpoints = 6;</code>
-     */
-    public Builder clearProductionEndpoints() {
-      if (productionEndpointsBuilder_ == null) {
-        productionEndpoints_ = null;
-        onChanged();
-      } else {
-        productionEndpoints_ = null;
-        productionEndpointsBuilder_ = null;
-      }
-
-      return this;
-    }
-    /**
-     * <code>.wso2.discovery.api.EndpointCluster productionEndpoints = 6;</code>
-     */
-    public org.wso2.choreo.connect.discovery.api.EndpointCluster.Builder getProductionEndpointsBuilder() {
-      
-      onChanged();
-      return getProductionEndpointsFieldBuilder().getBuilder();
-    }
-    /**
-     * <code>.wso2.discovery.api.EndpointCluster productionEndpoints = 6;</code>
-     */
-    public org.wso2.choreo.connect.discovery.api.EndpointClusterOrBuilder getProductionEndpointsOrBuilder() {
-      if (productionEndpointsBuilder_ != null) {
-        return productionEndpointsBuilder_.getMessageOrBuilder();
-      } else {
-        return productionEndpoints_ == null ?
-            org.wso2.choreo.connect.discovery.api.EndpointCluster.getDefaultInstance() : productionEndpoints_;
-      }
-    }
-    /**
-     * <code>.wso2.discovery.api.EndpointCluster productionEndpoints = 6;</code>
-     */
-    private com.google.protobuf.SingleFieldBuilderV3<
-        org.wso2.choreo.connect.discovery.api.EndpointCluster, org.wso2.choreo.connect.discovery.api.EndpointCluster.Builder, org.wso2.choreo.connect.discovery.api.EndpointClusterOrBuilder> 
-        getProductionEndpointsFieldBuilder() {
-      if (productionEndpointsBuilder_ == null) {
-        productionEndpointsBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-            org.wso2.choreo.connect.discovery.api.EndpointCluster, org.wso2.choreo.connect.discovery.api.EndpointCluster.Builder, org.wso2.choreo.connect.discovery.api.EndpointClusterOrBuilder>(
-                getProductionEndpoints(),
-                getParentForChildren(),
-                isClean());
-        productionEndpoints_ = null;
-      }
-      return productionEndpointsBuilder_;
-    }
-
-    private org.wso2.choreo.connect.discovery.api.EndpointCluster sandboxEndpoints_;
-    private com.google.protobuf.SingleFieldBuilderV3<
-        org.wso2.choreo.connect.discovery.api.EndpointCluster, org.wso2.choreo.connect.discovery.api.EndpointCluster.Builder, org.wso2.choreo.connect.discovery.api.EndpointClusterOrBuilder> sandboxEndpointsBuilder_;
-    /**
-     * <code>.wso2.discovery.api.EndpointCluster sandboxEndpoints = 7;</code>
-     * @return Whether the sandboxEndpoints field is set.
-     */
-    public boolean hasSandboxEndpoints() {
-      return sandboxEndpointsBuilder_ != null || sandboxEndpoints_ != null;
-    }
-    /**
-     * <code>.wso2.discovery.api.EndpointCluster sandboxEndpoints = 7;</code>
-     * @return The sandboxEndpoints.
-     */
-    public org.wso2.choreo.connect.discovery.api.EndpointCluster getSandboxEndpoints() {
-      if (sandboxEndpointsBuilder_ == null) {
-        return sandboxEndpoints_ == null ? org.wso2.choreo.connect.discovery.api.EndpointCluster.getDefaultInstance() : sandboxEndpoints_;
-      } else {
-        return sandboxEndpointsBuilder_.getMessage();
-      }
-    }
-    /**
-     * <code>.wso2.discovery.api.EndpointCluster sandboxEndpoints = 7;</code>
-     */
-    public Builder setSandboxEndpoints(org.wso2.choreo.connect.discovery.api.EndpointCluster value) {
-      if (sandboxEndpointsBuilder_ == null) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        sandboxEndpoints_ = value;
-        onChanged();
-      } else {
-        sandboxEndpointsBuilder_.setMessage(value);
-      }
-
-      return this;
-    }
-    /**
-     * <code>.wso2.discovery.api.EndpointCluster sandboxEndpoints = 7;</code>
-     */
-    public Builder setSandboxEndpoints(
-        org.wso2.choreo.connect.discovery.api.EndpointCluster.Builder builderForValue) {
-      if (sandboxEndpointsBuilder_ == null) {
-        sandboxEndpoints_ = builderForValue.build();
-        onChanged();
-      } else {
-        sandboxEndpointsBuilder_.setMessage(builderForValue.build());
-      }
-
-      return this;
-    }
-    /**
-     * <code>.wso2.discovery.api.EndpointCluster sandboxEndpoints = 7;</code>
-     */
-    public Builder mergeSandboxEndpoints(org.wso2.choreo.connect.discovery.api.EndpointCluster value) {
-      if (sandboxEndpointsBuilder_ == null) {
-        if (sandboxEndpoints_ != null) {
-          sandboxEndpoints_ =
-            org.wso2.choreo.connect.discovery.api.EndpointCluster.newBuilder(sandboxEndpoints_).mergeFrom(value).buildPartial();
-        } else {
-          sandboxEndpoints_ = value;
-        }
-        onChanged();
-      } else {
-        sandboxEndpointsBuilder_.mergeFrom(value);
-      }
-
-      return this;
-    }
-    /**
-     * <code>.wso2.discovery.api.EndpointCluster sandboxEndpoints = 7;</code>
-     */
-    public Builder clearSandboxEndpoints() {
-      if (sandboxEndpointsBuilder_ == null) {
-        sandboxEndpoints_ = null;
-        onChanged();
-      } else {
-        sandboxEndpoints_ = null;
-        sandboxEndpointsBuilder_ = null;
-      }
-
-      return this;
-    }
-    /**
-     * <code>.wso2.discovery.api.EndpointCluster sandboxEndpoints = 7;</code>
-     */
-    public org.wso2.choreo.connect.discovery.api.EndpointCluster.Builder getSandboxEndpointsBuilder() {
-      
-      onChanged();
-      return getSandboxEndpointsFieldBuilder().getBuilder();
-    }
-    /**
-     * <code>.wso2.discovery.api.EndpointCluster sandboxEndpoints = 7;</code>
-     */
-    public org.wso2.choreo.connect.discovery.api.EndpointClusterOrBuilder getSandboxEndpointsOrBuilder() {
-      if (sandboxEndpointsBuilder_ != null) {
-        return sandboxEndpointsBuilder_.getMessageOrBuilder();
-      } else {
-        return sandboxEndpoints_ == null ?
-            org.wso2.choreo.connect.discovery.api.EndpointCluster.getDefaultInstance() : sandboxEndpoints_;
-      }
-    }
-    /**
-     * <code>.wso2.discovery.api.EndpointCluster sandboxEndpoints = 7;</code>
-     */
-    private com.google.protobuf.SingleFieldBuilderV3<
-        org.wso2.choreo.connect.discovery.api.EndpointCluster, org.wso2.choreo.connect.discovery.api.EndpointCluster.Builder, org.wso2.choreo.connect.discovery.api.EndpointClusterOrBuilder> 
-        getSandboxEndpointsFieldBuilder() {
-      if (sandboxEndpointsBuilder_ == null) {
-        sandboxEndpointsBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-            org.wso2.choreo.connect.discovery.api.EndpointCluster, org.wso2.choreo.connect.discovery.api.EndpointCluster.Builder, org.wso2.choreo.connect.discovery.api.EndpointClusterOrBuilder>(
-                getSandboxEndpoints(),
-                getParentForChildren(),
-                isClean());
-        sandboxEndpoints_ = null;
-      }
-      return sandboxEndpointsBuilder_;
     }
 
     private java.util.List<org.wso2.choreo.connect.discovery.api.Resource> resources_ =
@@ -4009,37 +3482,6 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private boolean isMockedApi_ ;
-    /**
-     * <code>bool isMockedApi = 19;</code>
-     * @return The isMockedApi.
-     */
-    @java.lang.Override
-    public boolean getIsMockedApi() {
-      return isMockedApi_;
-    }
-    /**
-     * <code>bool isMockedApi = 19;</code>
-     * @param value The isMockedApi to set.
-     * @return This builder for chaining.
-     */
-    public Builder setIsMockedApi(boolean value) {
-      
-      isMockedApi_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>bool isMockedApi = 19;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearIsMockedApi() {
-      
-      isMockedApi_ = false;
-      onChanged();
-      return this;
-    }
-
     private java.util.List<org.wso2.choreo.connect.discovery.api.Certificate> clientCertificates_ =
       java.util.Collections.emptyList();
     private void ensureClientCertificatesIsMutable() {
@@ -4053,6 +3495,10 @@ private static final long serialVersionUID = 0L;
         org.wso2.choreo.connect.discovery.api.Certificate, org.wso2.choreo.connect.discovery.api.Certificate.Builder, org.wso2.choreo.connect.discovery.api.CertificateOrBuilder> clientCertificatesBuilder_;
 
     /**
+     * <pre>
+     * bool isMockedApi = 19;
+     * </pre>
+     *
      * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
      */
     public java.util.List<org.wso2.choreo.connect.discovery.api.Certificate> getClientCertificatesList() {
@@ -4063,6 +3509,10 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
+     * <pre>
+     * bool isMockedApi = 19;
+     * </pre>
+     *
      * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
      */
     public int getClientCertificatesCount() {
@@ -4073,6 +3523,10 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
+     * <pre>
+     * bool isMockedApi = 19;
+     * </pre>
+     *
      * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
      */
     public org.wso2.choreo.connect.discovery.api.Certificate getClientCertificates(int index) {
@@ -4083,6 +3537,10 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
+     * <pre>
+     * bool isMockedApi = 19;
+     * </pre>
+     *
      * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
      */
     public Builder setClientCertificates(
@@ -4100,6 +3558,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * bool isMockedApi = 19;
+     * </pre>
+     *
      * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
      */
     public Builder setClientCertificates(
@@ -4114,6 +3576,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * bool isMockedApi = 19;
+     * </pre>
+     *
      * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
      */
     public Builder addClientCertificates(org.wso2.choreo.connect.discovery.api.Certificate value) {
@@ -4130,6 +3596,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * bool isMockedApi = 19;
+     * </pre>
+     *
      * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
      */
     public Builder addClientCertificates(
@@ -4147,6 +3617,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * bool isMockedApi = 19;
+     * </pre>
+     *
      * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
      */
     public Builder addClientCertificates(
@@ -4161,6 +3635,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * bool isMockedApi = 19;
+     * </pre>
+     *
      * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
      */
     public Builder addClientCertificates(
@@ -4175,6 +3653,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * bool isMockedApi = 19;
+     * </pre>
+     *
      * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
      */
     public Builder addAllClientCertificates(
@@ -4190,6 +3672,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * bool isMockedApi = 19;
+     * </pre>
+     *
      * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
      */
     public Builder clearClientCertificates() {
@@ -4203,6 +3689,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * bool isMockedApi = 19;
+     * </pre>
+     *
      * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
      */
     public Builder removeClientCertificates(int index) {
@@ -4216,6 +3706,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * bool isMockedApi = 19;
+     * </pre>
+     *
      * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
      */
     public org.wso2.choreo.connect.discovery.api.Certificate.Builder getClientCertificatesBuilder(
@@ -4223,6 +3717,10 @@ private static final long serialVersionUID = 0L;
       return getClientCertificatesFieldBuilder().getBuilder(index);
     }
     /**
+     * <pre>
+     * bool isMockedApi = 19;
+     * </pre>
+     *
      * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
      */
     public org.wso2.choreo.connect.discovery.api.CertificateOrBuilder getClientCertificatesOrBuilder(
@@ -4233,6 +3731,10 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
+     * <pre>
+     * bool isMockedApi = 19;
+     * </pre>
+     *
      * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
      */
     public java.util.List<? extends org.wso2.choreo.connect.discovery.api.CertificateOrBuilder> 
@@ -4244,6 +3746,10 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
+     * <pre>
+     * bool isMockedApi = 19;
+     * </pre>
+     *
      * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
      */
     public org.wso2.choreo.connect.discovery.api.Certificate.Builder addClientCertificatesBuilder() {
@@ -4251,6 +3757,10 @@ private static final long serialVersionUID = 0L;
           org.wso2.choreo.connect.discovery.api.Certificate.getDefaultInstance());
     }
     /**
+     * <pre>
+     * bool isMockedApi = 19;
+     * </pre>
+     *
      * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
      */
     public org.wso2.choreo.connect.discovery.api.Certificate.Builder addClientCertificatesBuilder(
@@ -4259,6 +3769,10 @@ private static final long serialVersionUID = 0L;
           index, org.wso2.choreo.connect.discovery.api.Certificate.getDefaultInstance());
     }
     /**
+     * <pre>
+     * bool isMockedApi = 19;
+     * </pre>
+     *
      * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
      */
     public java.util.List<org.wso2.choreo.connect.discovery.api.Certificate.Builder> 
@@ -4387,324 +3901,13 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private java.lang.Object graphQLSchema_ = "";
-    /**
-     * <code>string graphQLSchema = 23;</code>
-     * @return The graphQLSchema.
-     */
-    public java.lang.String getGraphQLSchema() {
-      java.lang.Object ref = graphQLSchema_;
-      if (!(ref instanceof java.lang.String)) {
-        com.google.protobuf.ByteString bs =
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        graphQLSchema_ = s;
-        return s;
-      } else {
-        return (java.lang.String) ref;
-      }
-    }
-    /**
-     * <code>string graphQLSchema = 23;</code>
-     * @return The bytes for graphQLSchema.
-     */
-    public com.google.protobuf.ByteString
-        getGraphQLSchemaBytes() {
-      java.lang.Object ref = graphQLSchema_;
-      if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        graphQLSchema_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-    /**
-     * <code>string graphQLSchema = 23;</code>
-     * @param value The graphQLSchema to set.
-     * @return This builder for chaining.
-     */
-    public Builder setGraphQLSchema(
-        java.lang.String value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  
-      graphQLSchema_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string graphQLSchema = 23;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearGraphQLSchema() {
-      
-      graphQLSchema_ = getDefaultInstance().getGraphQLSchema();
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string graphQLSchema = 23;</code>
-     * @param value The bytes for graphQLSchema to set.
-     * @return This builder for chaining.
-     */
-    public Builder setGraphQLSchemaBytes(
-        com.google.protobuf.ByteString value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-      
-      graphQLSchema_ = value;
-      onChanged();
-      return this;
-    }
-
-    private java.util.List<org.wso2.choreo.connect.discovery.api.GraphqlComplexity> graphqlComplexityInfo_ =
-      java.util.Collections.emptyList();
-    private void ensureGraphqlComplexityInfoIsMutable() {
-      if (!((bitField0_ & 0x00000010) != 0)) {
-        graphqlComplexityInfo_ = new java.util.ArrayList<org.wso2.choreo.connect.discovery.api.GraphqlComplexity>(graphqlComplexityInfo_);
-        bitField0_ |= 0x00000010;
-       }
-    }
-
-    private com.google.protobuf.RepeatedFieldBuilderV3<
-        org.wso2.choreo.connect.discovery.api.GraphqlComplexity, org.wso2.choreo.connect.discovery.api.GraphqlComplexity.Builder, org.wso2.choreo.connect.discovery.api.GraphqlComplexityOrBuilder> graphqlComplexityInfoBuilder_;
-
-    /**
-     * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 24;</code>
-     */
-    public java.util.List<org.wso2.choreo.connect.discovery.api.GraphqlComplexity> getGraphqlComplexityInfoList() {
-      if (graphqlComplexityInfoBuilder_ == null) {
-        return java.util.Collections.unmodifiableList(graphqlComplexityInfo_);
-      } else {
-        return graphqlComplexityInfoBuilder_.getMessageList();
-      }
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 24;</code>
-     */
-    public int getGraphqlComplexityInfoCount() {
-      if (graphqlComplexityInfoBuilder_ == null) {
-        return graphqlComplexityInfo_.size();
-      } else {
-        return graphqlComplexityInfoBuilder_.getCount();
-      }
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 24;</code>
-     */
-    public org.wso2.choreo.connect.discovery.api.GraphqlComplexity getGraphqlComplexityInfo(int index) {
-      if (graphqlComplexityInfoBuilder_ == null) {
-        return graphqlComplexityInfo_.get(index);
-      } else {
-        return graphqlComplexityInfoBuilder_.getMessage(index);
-      }
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 24;</code>
-     */
-    public Builder setGraphqlComplexityInfo(
-        int index, org.wso2.choreo.connect.discovery.api.GraphqlComplexity value) {
-      if (graphqlComplexityInfoBuilder_ == null) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        ensureGraphqlComplexityInfoIsMutable();
-        graphqlComplexityInfo_.set(index, value);
-        onChanged();
-      } else {
-        graphqlComplexityInfoBuilder_.setMessage(index, value);
-      }
-      return this;
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 24;</code>
-     */
-    public Builder setGraphqlComplexityInfo(
-        int index, org.wso2.choreo.connect.discovery.api.GraphqlComplexity.Builder builderForValue) {
-      if (graphqlComplexityInfoBuilder_ == null) {
-        ensureGraphqlComplexityInfoIsMutable();
-        graphqlComplexityInfo_.set(index, builderForValue.build());
-        onChanged();
-      } else {
-        graphqlComplexityInfoBuilder_.setMessage(index, builderForValue.build());
-      }
-      return this;
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 24;</code>
-     */
-    public Builder addGraphqlComplexityInfo(org.wso2.choreo.connect.discovery.api.GraphqlComplexity value) {
-      if (graphqlComplexityInfoBuilder_ == null) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        ensureGraphqlComplexityInfoIsMutable();
-        graphqlComplexityInfo_.add(value);
-        onChanged();
-      } else {
-        graphqlComplexityInfoBuilder_.addMessage(value);
-      }
-      return this;
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 24;</code>
-     */
-    public Builder addGraphqlComplexityInfo(
-        int index, org.wso2.choreo.connect.discovery.api.GraphqlComplexity value) {
-      if (graphqlComplexityInfoBuilder_ == null) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        ensureGraphqlComplexityInfoIsMutable();
-        graphqlComplexityInfo_.add(index, value);
-        onChanged();
-      } else {
-        graphqlComplexityInfoBuilder_.addMessage(index, value);
-      }
-      return this;
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 24;</code>
-     */
-    public Builder addGraphqlComplexityInfo(
-        org.wso2.choreo.connect.discovery.api.GraphqlComplexity.Builder builderForValue) {
-      if (graphqlComplexityInfoBuilder_ == null) {
-        ensureGraphqlComplexityInfoIsMutable();
-        graphqlComplexityInfo_.add(builderForValue.build());
-        onChanged();
-      } else {
-        graphqlComplexityInfoBuilder_.addMessage(builderForValue.build());
-      }
-      return this;
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 24;</code>
-     */
-    public Builder addGraphqlComplexityInfo(
-        int index, org.wso2.choreo.connect.discovery.api.GraphqlComplexity.Builder builderForValue) {
-      if (graphqlComplexityInfoBuilder_ == null) {
-        ensureGraphqlComplexityInfoIsMutable();
-        graphqlComplexityInfo_.add(index, builderForValue.build());
-        onChanged();
-      } else {
-        graphqlComplexityInfoBuilder_.addMessage(index, builderForValue.build());
-      }
-      return this;
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 24;</code>
-     */
-    public Builder addAllGraphqlComplexityInfo(
-        java.lang.Iterable<? extends org.wso2.choreo.connect.discovery.api.GraphqlComplexity> values) {
-      if (graphqlComplexityInfoBuilder_ == null) {
-        ensureGraphqlComplexityInfoIsMutable();
-        com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, graphqlComplexityInfo_);
-        onChanged();
-      } else {
-        graphqlComplexityInfoBuilder_.addAllMessages(values);
-      }
-      return this;
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 24;</code>
-     */
-    public Builder clearGraphqlComplexityInfo() {
-      if (graphqlComplexityInfoBuilder_ == null) {
-        graphqlComplexityInfo_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000010);
-        onChanged();
-      } else {
-        graphqlComplexityInfoBuilder_.clear();
-      }
-      return this;
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 24;</code>
-     */
-    public Builder removeGraphqlComplexityInfo(int index) {
-      if (graphqlComplexityInfoBuilder_ == null) {
-        ensureGraphqlComplexityInfoIsMutable();
-        graphqlComplexityInfo_.remove(index);
-        onChanged();
-      } else {
-        graphqlComplexityInfoBuilder_.remove(index);
-      }
-      return this;
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 24;</code>
-     */
-    public org.wso2.choreo.connect.discovery.api.GraphqlComplexity.Builder getGraphqlComplexityInfoBuilder(
-        int index) {
-      return getGraphqlComplexityInfoFieldBuilder().getBuilder(index);
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 24;</code>
-     */
-    public org.wso2.choreo.connect.discovery.api.GraphqlComplexityOrBuilder getGraphqlComplexityInfoOrBuilder(
-        int index) {
-      if (graphqlComplexityInfoBuilder_ == null) {
-        return graphqlComplexityInfo_.get(index);  } else {
-        return graphqlComplexityInfoBuilder_.getMessageOrBuilder(index);
-      }
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 24;</code>
-     */
-    public java.util.List<? extends org.wso2.choreo.connect.discovery.api.GraphqlComplexityOrBuilder> 
-         getGraphqlComplexityInfoOrBuilderList() {
-      if (graphqlComplexityInfoBuilder_ != null) {
-        return graphqlComplexityInfoBuilder_.getMessageOrBuilderList();
-      } else {
-        return java.util.Collections.unmodifiableList(graphqlComplexityInfo_);
-      }
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 24;</code>
-     */
-    public org.wso2.choreo.connect.discovery.api.GraphqlComplexity.Builder addGraphqlComplexityInfoBuilder() {
-      return getGraphqlComplexityInfoFieldBuilder().addBuilder(
-          org.wso2.choreo.connect.discovery.api.GraphqlComplexity.getDefaultInstance());
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 24;</code>
-     */
-    public org.wso2.choreo.connect.discovery.api.GraphqlComplexity.Builder addGraphqlComplexityInfoBuilder(
-        int index) {
-      return getGraphqlComplexityInfoFieldBuilder().addBuilder(
-          index, org.wso2.choreo.connect.discovery.api.GraphqlComplexity.getDefaultInstance());
-    }
-    /**
-     * <code>repeated .wso2.discovery.api.GraphqlComplexity graphqlComplexityInfo = 24;</code>
-     */
-    public java.util.List<org.wso2.choreo.connect.discovery.api.GraphqlComplexity.Builder> 
-         getGraphqlComplexityInfoBuilderList() {
-      return getGraphqlComplexityInfoFieldBuilder().getBuilderList();
-    }
-    private com.google.protobuf.RepeatedFieldBuilderV3<
-        org.wso2.choreo.connect.discovery.api.GraphqlComplexity, org.wso2.choreo.connect.discovery.api.GraphqlComplexity.Builder, org.wso2.choreo.connect.discovery.api.GraphqlComplexityOrBuilder> 
-        getGraphqlComplexityInfoFieldBuilder() {
-      if (graphqlComplexityInfoBuilder_ == null) {
-        graphqlComplexityInfoBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-            org.wso2.choreo.connect.discovery.api.GraphqlComplexity, org.wso2.choreo.connect.discovery.api.GraphqlComplexity.Builder, org.wso2.choreo.connect.discovery.api.GraphqlComplexityOrBuilder>(
-                graphqlComplexityInfo_,
-                ((bitField0_ & 0x00000010) != 0),
-                getParentForChildren(),
-                isClean());
-        graphqlComplexityInfo_ = null;
-      }
-      return graphqlComplexityInfoBuilder_;
-    }
-
     private boolean systemAPI_ ;
     /**
+     * <pre>
+     *&#47; string graphQLSchema = 23;
+     * repeated GraphqlComplexity graphqlComplexityInfo = 24;
+     * </pre>
+     *
      * <code>bool systemAPI = 25;</code>
      * @return The systemAPI.
      */
@@ -4713,6 +3916,11 @@ private static final long serialVersionUID = 0L;
       return systemAPI_;
     }
     /**
+     * <pre>
+     *&#47; string graphQLSchema = 23;
+     * repeated GraphqlComplexity graphqlComplexityInfo = 24;
+     * </pre>
+     *
      * <code>bool systemAPI = 25;</code>
      * @param value The systemAPI to set.
      * @return This builder for chaining.
@@ -4724,6 +3932,11 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     *&#47; string graphQLSchema = 23;
+     * repeated GraphqlComplexity graphqlComplexityInfo = 24;
+     * </pre>
+     *
      * <code>bool systemAPI = 25;</code>
      * @return This builder for chaining.
      */

@@ -25,7 +25,6 @@ import ballerina/uuid;
 # + user - Field Description  
 # + signingKeyStore - Field Description  
 # + publicKey - Field Description  
-# + dataSource - Field Description  
 # + fileBaseApp - Field Description  
 # + tokenIssuerConfiguration - Field Description
 public type IDPConfiguration record {|
@@ -34,9 +33,8 @@ public type IDPConfiguration record {|
     string loginErrorPageUrl;
     string loginCallBackURl;
     User[] user = [];
-    KeyStoreConfiguration signingKeyStore;
-    KeyStoreConfiguration publicKey;
-    DatasourceConfiguration dataSource;
+    KeyStoreConfiguration signingKeyStore = {path: "/home/wso2apk/idp/security/wso2carbon.key"};
+    KeyStoreConfiguration publicKey = {path: "/home/wso2apk/idp/security/wso2carbon.pem"};
     FileBaseOAuthapps[] fileBaseApp = [];
     TokenIssuerConfiguration tokenIssuerConfiguration = {};
 |};

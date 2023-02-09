@@ -9,7 +9,6 @@ var hash = require('pbkdf2-password')()
 var path = require('path');
 var session = require('express-session');
 var cookieParser = require('cookie-parser');
-
 var app = module.exports = express();
 
 // config
@@ -28,63 +27,52 @@ app.use(session({
 
 // Session-persisted message middleware
 
-app.use(function(req, res, next){
+app.use(function (req, res, next) {
   var err = req.session.error;
   var msg = req.session.success;
   delete req.session.error;
   delete req.session.success;
   res.locals.message = '';
+  res.locals.loginURl = process.env.IDP_LOGIN_URL;
   if (err) res.locals.message = '<p class="msg error">' + err + '</p>';
   if (msg) res.locals.message = '<p class="msg success">' + msg + '</p>';
   next();
 });
 
 //Initial request coming here and redirect to login
-app.get('/', function(req, res){
-  req.session.sessionDataKey = "testKey";
+app.get('/', function (req, res) {
   res.redirect('/login');
 });
 
-// Logout function
-app.get('/logout', function(req, res){
-  // destroy the user's session to log them out
-  // will be re-created next request
-  req.session.destroy(function(){
-    res.redirect('/');
-  });
-});
 
 // Login GET request
-app.get('/login', function(req, res) {
-  // request sessiondata key add to cookie
-  var minute = 60000;
-  //Read cookie "req.cookies.sessionDataKey"
-  //Read queryParam "req.param.sessionDataKey"
-  console.log(req.cookies.sessionDataKey);
-  if (req.session.sessionDataKey) {
-    res.cookie('sessionDataKey', 1, { maxAge: minute });
+app.get('/login', function (req, res) {
+  var sessionKey = req.query.stateKey;
+  res.locals.sessionKey = sessionKey;
+  var sessionCookieName = "session-" + sessionKey;
+  var sessionCookie = req.cookies[sessionCookieName];
+  if (sessionCookie){
     res.render('login');
-  }
-  else {
-    req.session.error = 'Auth 302 error';
-    res.redirect('loginError');
   }
 });
 
-//Login post request
-app.post('/login', function (req, res, next) {
-  // redirection IDP
-  res.redirect(`url?username=${req.body.username}&password=${req.body.password}&organization=${req.body.org}`)
-});
 
 //Login callback
 app.get('/login-callback', function (req, res, next) {
-  
+  var stateKey = req.query.stateKey;
+  var url = process.env.IDP_AUTH_CALLBACK_URL + "?sessionKey=" + stateKey;
+  res.redirect(url);
+});
+
+//Login callback
+app.get('/health', function (req, res, next) {
+  res.json({ "healthy": 'true' })
+
 });
 
 
 /* Listen Port */
 if (!module.parent) {
-  app.listen(3000);
-  console.log('Express started on port 3000');
+  app.listen(9443);
+  console.log('Express started on port 9443');
 }

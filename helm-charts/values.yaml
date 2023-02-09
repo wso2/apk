@@ -20,6 +20,80 @@ wso2:
       enabled: true
       serviceAccountName: wso2apk-platform
       roleName: wso2apk-role
+    idp:
+      enabled: true
+      database:
+        enabled: true
+        driver: "org.postgresql.Driver"
+        url: "jdbc:postgresql://wso2apk-db-service:5432/WSO2AM_DB"
+        host: "wso2apk-db-service"
+        port: 5432
+        databaseName: "WSO2AM_DB"
+        username: "wso2carbon"
+        password: "wso2carbon"
+        validationQuery: "SELECT 1"
+        validationTimeout: 250
+      idpds:
+        config:
+          loginPageURl: "https://idp.am.wso2.com:9095/authenticationEndpoint/login"
+          loginErrorPageUrl: "https://idp.am.wso2.com:9095/authenticationEndpoint/error"
+          loginCallBackURl: "https:// :9095/authenticationEndpoint/login-callback"
+        appName: "idp-ds"
+        deployment:
+          npi: idp-ds-npi
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "1028Mi"
+              cpu: "1000m"
+          readinessProbe:
+            path: /health
+            port: 9443
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 5
+          livenessProbe:
+            path: /health
+            port: 9443
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 5
+          strategy: Recreate
+          replicas: 1
+          imagePullPolicy: IfNotPresent
+          image: idp-service:0.0.1-SNAPSHOT
+      idpui:
+        appName: "idp-ui"
+        deployment:
+          npi: idp-ui-npi
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "1028Mi"
+              cpu: "1000m"
+          readinessProbe:
+            path: /health
+            port: 9443
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 5
+          livenessProbe:
+            path: /health
+            port: 9443
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 5
+          strategy: Recreate
+          replicas: 1
+          imagePullPolicy: IfNotPresent
+          image: idp-ui:0.0.1-SNAPSHOT
+        configs:
+          idpLoginUrl: "https://idp.am.wso2.com:9095/commonauth/login"
+          idpAuthCallBackUrl: "https://idp.am.wso2.com:9095/oauth2/auth-callback"
     cp:
       enabled: true
       database:
@@ -33,8 +107,6 @@ wso2:
         password: "wso2carbon"
         validationQuery: "SELECT 1"
         validationTimeout: 250
-      ipk:
-        enabled: false
       devportal:
         appName: "devportal-ds"
         deployment:
@@ -314,6 +386,7 @@ wso2:
 postgresql:
   fullnameOverride: "wso2apk-db-service"
   auth:
+    database: WSO2AM_DB
     postgresPassword: wso2carbon
     username: wso2carbon
     password: wso2carbon

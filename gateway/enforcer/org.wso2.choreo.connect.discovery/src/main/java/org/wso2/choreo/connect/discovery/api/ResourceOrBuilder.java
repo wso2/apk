@@ -56,58 +56,19 @@ public interface ResourceOrBuilder extends
       int index);
 
   /**
-   * <code>string summary = 4;</code>
-   * @return The summary.
+   * <code>.wso2.discovery.api.EndpointCluster endpoints = 6;</code>
+   * @return Whether the endpoints field is set.
    */
-  java.lang.String getSummary();
+  boolean hasEndpoints();
   /**
-   * <code>string summary = 4;</code>
-   * @return The bytes for summary.
+   * <code>.wso2.discovery.api.EndpointCluster endpoints = 6;</code>
+   * @return The endpoints.
    */
-  com.google.protobuf.ByteString
-      getSummaryBytes();
-
+  org.wso2.choreo.connect.discovery.api.EndpointCluster getEndpoints();
   /**
-   * <code>string description = 5;</code>
-   * @return The description.
+   * <code>.wso2.discovery.api.EndpointCluster endpoints = 6;</code>
    */
-  java.lang.String getDescription();
-  /**
-   * <code>string description = 5;</code>
-   * @return The bytes for description.
-   */
-  com.google.protobuf.ByteString
-      getDescriptionBytes();
-
-  /**
-   * <code>.wso2.discovery.api.EndpointCluster productionEndpoints = 6;</code>
-   * @return Whether the productionEndpoints field is set.
-   */
-  boolean hasProductionEndpoints();
-  /**
-   * <code>.wso2.discovery.api.EndpointCluster productionEndpoints = 6;</code>
-   * @return The productionEndpoints.
-   */
-  org.wso2.choreo.connect.discovery.api.EndpointCluster getProductionEndpoints();
-  /**
-   * <code>.wso2.discovery.api.EndpointCluster productionEndpoints = 6;</code>
-   */
-  org.wso2.choreo.connect.discovery.api.EndpointClusterOrBuilder getProductionEndpointsOrBuilder();
-
-  /**
-   * <code>.wso2.discovery.api.EndpointCluster sandboxEndpoints = 7;</code>
-   * @return Whether the sandboxEndpoints field is set.
-   */
-  boolean hasSandboxEndpoints();
-  /**
-   * <code>.wso2.discovery.api.EndpointCluster sandboxEndpoints = 7;</code>
-   * @return The sandboxEndpoints.
-   */
-  org.wso2.choreo.connect.discovery.api.EndpointCluster getSandboxEndpoints();
-  /**
-   * <code>.wso2.discovery.api.EndpointCluster sandboxEndpoints = 7;</code>
-   */
-  org.wso2.choreo.connect.discovery.api.EndpointClusterOrBuilder getSandboxEndpointsOrBuilder();
+  org.wso2.choreo.connect.discovery.api.EndpointClusterOrBuilder getEndpointsOrBuilder();
 
   /**
    * <code>map&lt;string, string&gt; security = 8;</code>
@@ -144,31 +105,6 @@ public interface ResourceOrBuilder extends
       java.lang.String key);
 
   /**
-   * <code>repeated string consumes = 9;</code>
-   * @return A list containing the consumes.
-   */
-  java.util.List<java.lang.String>
-      getConsumesList();
-  /**
-   * <code>repeated string consumes = 9;</code>
-   * @return The count of consumes.
-   */
-  int getConsumesCount();
-  /**
-   * <code>repeated string consumes = 9;</code>
-   * @param index The index of the element to return.
-   * @return The consumes at the given index.
-   */
-  java.lang.String getConsumes(int index);
-  /**
-   * <code>repeated string consumes = 9;</code>
-   * @param index The index of the value to return.
-   * @return The bytes of the consumes at the given index.
-   */
-  com.google.protobuf.ByteString
-      getConsumesBytes(int index);
-
-  /**
    * <code>repeated string schemes = 10;</code>
    * @return A list containing the schemes.
    */
@@ -192,29 +128,4 @@ public interface ResourceOrBuilder extends
    */
   com.google.protobuf.ByteString
       getSchemesBytes(int index);
-
-  /**
-   * <code>repeated string tags = 11;</code>
-   * @return A list containing the tags.
-   */
-  java.util.List<java.lang.String>
-      getTagsList();
-  /**
-   * <code>repeated string tags = 11;</code>
-   * @return The count of tags.
-   */
-  int getTagsCount();
-  /**
-   * <code>repeated string tags = 11;</code>
-   * @param index The index of the element to return.
-   * @return The tags at the given index.
-   */
-  java.lang.String getTags(int index);
-  /**
-   * <code>repeated string tags = 11;</code>
-   * @param index The index of the value to return.
-   * @return The bytes of the tags at the given index.
-   */
-  com.google.protobuf.ByteString
-      getTagsBytes(int index);
 }

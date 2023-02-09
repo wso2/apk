@@ -248,11 +248,6 @@ public class FilterUtils {
         authContext.setAuthenticated(true);
         authContext.setTier(APIConstants.UNAUTHENTICATED_TIER);
         authContext.setApiKey(clientIP);
-        if (!StringUtils.isEmpty(requestContext.getClusterHeader())) {
-            authContext.setKeyType(APIConstants.API_KEY_TYPE_PRODUCTION);
-        } else {
-            authContext.setKeyType(APIConstants.API_KEY_TYPE_SANDBOX);
-        }
         // Setting end user as anonymous
         authContext.setUsername(APIConstants.END_USER_ANONYMOUS);
         // TODO: (VirajSalaka) clientIP for applicationUUID?
@@ -283,7 +278,6 @@ public class FilterUtils {
         authContext.setUsername(jwtValidationInfo.getUser());
 
         if (apiKeyValidationInfoDTO != null) {
-            authContext.setKeyType(apiKeyValidationInfoDTO.getType());
             authContext.setApplicationId(apiKeyValidationInfoDTO.getApplicationId());
             authContext.setApplicationUUID(apiKeyValidationInfoDTO.getApplicationUUID());
             authContext.setApplicationName(apiKeyValidationInfoDTO.getApplicationName());
@@ -369,11 +363,7 @@ public class FilterUtils {
         authContext.setApiKey(tokenIdentifier);
         authContext.setRawToken(rawToken);
         authContext.setUsername(payload.getSubject());
-        if (payload.getClaim(APIConstants.JwtTokenConstants.KEY_TYPE) != null) {
-            authContext.setKeyType(payload.getStringClaim(APIConstants.JwtTokenConstants.KEY_TYPE));
-        } else {
-            authContext.setKeyType(APIConstants.API_KEY_TYPE_PRODUCTION);
-        }
+
         if (api != null) {
             authContext.setTier(APIConstants.UNLIMITED_TIER);
             authContext.setApiName(api.getAsString(APIConstants.JwtTokenConstants.API_NAME));

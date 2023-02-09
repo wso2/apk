@@ -15,26 +15,11 @@
 // specific language governing permissions and limitations
 // under the License.
 //
+import ballerina/http;
 
-plugins {
-    id 'net.researchgate.release' version '2.8.0'
-}
-allprojects {
-    group = project.group
-    version = project.version
-}
-
-release {
-    tagTemplate = 'idp-$version'
-
-    git {
-        requireBranch= "main"
-        pushToRemote= "origin"
+service / on ep0 {
+    resource function get health() returns http:Ok {
+        json status = {"health": "Ok"};
+        return {body: status};
     }
-}
-
-unSnapshotVersion.finalizedBy ":ballerina:commit_toml_files"
-afterReleaseBuild.dependsOn ":docker:docker_push"
-task build{
-    dependsOn("docker:build")
 }

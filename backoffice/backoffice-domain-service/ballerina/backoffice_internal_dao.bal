@@ -37,7 +37,7 @@ isolated function db_createAPI(APIBody apiBody, string organization) returns API
                                             ${apiBody.apiProperties.'version}, 
                                             ${apiBody.apiProperties.context},
                                             ${apiBody.apiProperties.provider},
-                                            ${apiBody.apiProperties.lifeCycleStatus}, 
+                                            'CREATED', 
                                             ${organization},
                                             ${artifact})`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(ADD_API_Suffix, values);

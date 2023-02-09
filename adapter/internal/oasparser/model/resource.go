@@ -39,8 +39,6 @@ type Resource struct {
 	path             string
 	pathMatchType    gwapiv1b1.PathMatchType
 	methods          []*Operation
-	description      string
-	summary          string
 	iD               string
 	endpoints        *EndpointCluster
 	vendorExtensions map[string]interface{}
