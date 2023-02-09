@@ -86,6 +86,11 @@ public type ForbiddenError record {|
     Error body;
 |};
 
+public type CreatedOrganization record {|
+    *http:Created;
+    Organization body;
+|};
+
 public type Policy record {
     # Id of plan
     string planId?;
@@ -338,6 +343,12 @@ public type BotDetectionData record {
     string clientIp?;
 };
 
+public type OrganizationList record {
+    # Number of Organization returned.
+    int count?;
+    Organization[] list?;
+};
+
 public type ThrottleLimit record {
     # Type of the throttling limit. Allowed values are "REQUESTCOUNTLIMIT" and "BANDWIDTHLIMIT".
     # Please see schemas of "RequestCountLimit" and "BandwidthLimit" throttling limit types in
@@ -442,6 +453,15 @@ public type ConditionalGroup record {
     # Please see schemas of each of those throttling condition in Definitions section.
     ThrottleCondition[] conditions;
     ThrottleLimit 'limit;
+};
+
+public type Organization record {
+    string id;
+    @constraint:String {maxLength: 255, minLength: 1}
+    string name?;
+    @constraint:String {maxLength: 255, minLength: 1}
+    string displayName?;
+    OrganizationClaim[] claimList?;
 };
 
 public type MonetizationUsagePublishInfo record {
@@ -572,6 +592,11 @@ public type BotDetectionDataList record {
     # Number of Bot Detection Data returned.
     int count?;
     BotDetectionData[] list?;
+};
+
+public type OrganizationClaim record {
+    string claimKey?;
+    string claimValue?;
 };
 
 public type PublishStatus record {

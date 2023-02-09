@@ -2719,6 +2719,193 @@ paths:
           -F "type=WSO2-IS" "https://127.0.0.1:9443/api/am/admin/v3/key-managers/discover"'
       operationId: getWellKnownInfoKeyManager
 
+######################################################
+  # The "Organization" resource API
+######################################################
+  /organizations:
+    get:
+      tags:
+        - Organization (Collection)
+      summary: Get all Organization
+      description: |
+        Get all Organization
+      responses:
+        200:
+          description: |
+            OK.
+            Organization returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationList'
+      security:
+        - OAuth2Security:
+            - apim:admin
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/organizations"'
+      operationId: getAllOrganization
+
+    post:
+      tags:
+        - Organization (Individual)
+      summary: Add Organization
+      description: |
+        Add a new Organization
+      requestBody:
+        description: |
+          Organization object that should to be added
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Organization'
+        required: true
+      responses:
+        201:
+          description: |
+            Created.
+            Successful response with the newly created object as entity in the body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+        400:
+          $ref: '#/components/responses/BadRequest'
+      security:
+        - OAuth2Security:
+            - apim:admin
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/organizations"'
+      operationId: addOrganization
+  /organizations/{organizationId}:
+    get:
+      tags:
+        - Organization (Individual)
+      summary: |
+        Get the details of an Organization
+      description: |
+        This operation can be used to get the details of an Organization by specifying its id.
+      parameters:
+        - $ref: '#/components/parameters/organizationId'
+      responses:
+        200:
+          description: |
+            OK.
+            Application details returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        406:
+          $ref: '#/components/responses/NotAcceptable'
+      security:
+        - OAuth2Security:
+            - apim:admin
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X GET -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/organizations/0a043c2b-ee75-4ef3-9e1c-fc2610ccfa8b"'
+      operationId: getOrganizationById
+    put:
+      tags:
+        - Organization (Individual)
+      summary: Update an Organization
+      description: |
+        Update an Organization by organization Id
+      parameters:
+        - $ref: '#/components/parameters/organizationId'
+      requestBody:
+        description: |
+          Organization object with updated information
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Organization'
+        required: true
+      responses:
+        200:
+          description: |
+            OK.
+            Label updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2Security:
+            - apim:admin
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/organizations/d7cf8523-9180-4255-84fa-6cb171c1f779"'
+      operationId: updateOrganization
+    delete:
+      tags:
+        - Organization (Individual)
+      summary: Delete an Organization
+      description: |
+        Delete an Organization by API Organization Id
+      parameters:
+        - $ref: '#/components/parameters/organizationId'
+      responses:
+        200:
+          description: |
+            OK.
+            Organization successfully deleted.
+          content: {}
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2Security:
+            - apim:admin
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/organizations/d7cf8523-9180-4255-84fa-6cb171c1f779"'
+      operationId: removeOrganization
+  /organization-info/{claimValue}:
+    get:
+      tags:
+        - Organization (Individual)
+      summary: |
+        Authenticate Organization info
+      description: |
+        This operation can be used to authenticate Organization by specifying its claimValue.
+      parameters:
+        - $ref: '#/components/parameters/claimValue'
+      responses:
+        200:
+          description: |
+            OK.
+            Application details returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+      security:
+        - OAuth2Security:
+            - apim:admin
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -X GET -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/organization-info/0a043c2b-ee75-4ef3-9e1c-fc2610ccfa8b"'
+      operationId: getOrganizationByClaimValue
+
 components:
   schemas:
     Error:
@@ -3654,6 +3841,53 @@ components:
               type: string
               example: http://example.com
       description: The custom url information of the tenant domain
+    Organization:
+      title: Organization
+      required:
+        - id
+      type: object
+      properties:
+        id:
+          type: string
+          readOnly: true
+          example: 01234567-0123-0123-0123-012345678901
+        name:
+          maxLength: 255
+          minLength: 1
+          type: string
+          example: Finance
+        displayName:
+          maxLength: 255
+          minLength: 1
+          type: string
+          example: Finance
+        claimList:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrganizationClaim'
+    OrganizationClaim:
+      title: Organization Claim
+      type: object
+      properties:
+        claimKey:
+          type: string
+          example: 
+        claimValue:
+          type: string
+          example: 01234567-0123-0123-0123-012345678901
+    OrganizationList:
+      title: Organization List
+      type: object
+      properties:
+        count:
+          type: integer
+          description: |
+            Number of Organization returned.
+          example: 1
+        list:
+          type: array
+          items:
+            $ref: '#/components/schemas/Organization'
     APICategory:
       title: API Category
       required:
@@ -4548,6 +4782,22 @@ components:
       in: path
       description: |
         API Category UUID
+      required: true
+      schema:
+        type: string
+    organizationId:
+      name: organizationId
+      in: path
+      description: |
+        Organization UUID
+      required: true
+      schema:
+        type: string
+    claimValue:
+      name: claimValue
+      in: path
+      description: |
+        Organization claimValue
       required: true
       schema:
         type: string
