@@ -112,31 +112,30 @@ func undeployAPIInGateway(apiState APIState) error {
 func deleteAPIFromEnv(httpRoute *gwapiv1b1.HTTPRoute, apiState APIState) error {
 	labels := getLabelsForAPI(httpRoute)
 	org := apiState.APIDefinition.Spec.Organization
-	vHosts := getVhostsForAPI(httpRoute)
 	uuid := string(apiState.APIDefinition.ObjectMeta.UID)
-	return xds.DeleteAPICREvent(vHosts, labels, uuid, org)
+	return xds.DeleteAPICREvent(labels, uuid, org)
 }
 
 // deployAPIInGateway deploys the related API in CREATE and UPDATE events.
 func deployAPIInGateway(apiState APIState) error {
 	var err error
 	if apiState.ProdHTTPRoute != nil {
-		_, err = GenerateMGWSwagger(apiState, apiState.ProdHTTPRoute)
+		_, err = GenerateMGWSwagger(apiState, apiState.ProdHTTPRoute, constants.Production)
 	}
 	if err != nil {
 		return err
 	}
 	if apiState.SandHTTPRoute != nil {
-		_, err = GenerateMGWSwagger(apiState, apiState.SandHTTPRoute)
+		_, err = GenerateMGWSwagger(apiState, apiState.SandHTTPRoute, constants.Sandbox)
 	}
 	return err
 }
 
 // GenerateMGWSwagger this will populate a mgwswagger representation for an HTTPRoute
-func GenerateMGWSwagger(apiState APIState, httpRoute *HTTPRouteState) (*model.MgwSwagger, error) {
+func GenerateMGWSwagger(apiState APIState, httpRoute *HTTPRouteState, envType string) (*model.MgwSwagger, error) {
 	var mgwSwagger model.MgwSwagger
 	mgwSwagger.SetInfoAPICR(*apiState.APIDefinition)
-	//todo(amali) add validations for hostname list
+	mgwSwagger.EnvType = envType
 	if err := mgwSwagger.SetInfoHTTPRouteCR(httpRoute.HTTPRoute, httpRoute.Authentications, httpRoute.ResourceAuthentications,
 		httpRoute.BackendPropertyMapping); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
@@ -156,16 +155,15 @@ func GenerateMGWSwagger(apiState APIState, httpRoute *HTTPRouteState) (*model.Mg
 	}
 	vHosts := getVhostsForAPI(httpRoute.HTTPRoute)
 	labels := getLabelsForAPI(httpRoute.HTTPRoute)
-	for _, vHost := range vHosts {
-		err := xds.UpdateAPICache(vHost, labels, mgwSwagger)
-		if err != nil {
-			loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-				Message: fmt.Sprintf("Error updating the API : %s:%s in vhost: %s. %v",
-					mgwSwagger.GetTitle(), mgwSwagger.GetVersion(), vHost, err),
-				Severity:  logging.MAJOR,
-				ErrorCode: 2614,
-			})
-		}
+
+	err := xds.UpdateAPICache(vHosts, labels, mgwSwagger)
+	if err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message: fmt.Sprintf("Error updating the API : %s:%s in vhosts: %s. %v",
+				mgwSwagger.GetTitle(), mgwSwagger.GetVersion(), vHosts, err),
+			Severity:  logging.MAJOR,
+			ErrorCode: 2614,
+		})
 	}
 	return &mgwSwagger, nil
 }

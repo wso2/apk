@@ -19,7 +19,7 @@
 package org.wso2.choreo.connect.enforcer.analytics;
 
 import io.envoyproxy.envoy.service.accesslog.v3.StreamAccessLogsMessage;
-import org.wso2.choreo.connect.discovery.service.websocket.WebSocketFrameRequest;
+//import org.wso2.choreo.connect.discovery.service.websocket.WebSocketFrameRequest;
 
 import java.util.Map;
 
@@ -55,33 +55,33 @@ public interface AnalyticsEventPublisher {
      */
     void handleGRPCLogMsg(StreamAccessLogsMessage message);
 
-    /**
-     * The method body should include about how to handle the websocket framereqeust received from the router's
-     * wasm filter for websockets.
-     *
-     * Following information would be available within
-     * dynamic metadata which is populated within router (envoy.filters.http.ext_authz).
-     *
-     * APIID
-     * APIName
-     * APIVersion
-     * APICreator
-     * APIType
-     * APICreatorTenantDomain
-     *
-     * ApplicationKeyType
-     * ApplicationID
-     * ApplicationName
-     * ApplicationOwner
-     *
-     * CorrelationID (fetched from requestID)
-     * Region
-     * APIResourceTemplate
-     * Destination (The upstream endpoint of the request)
-     *
-     * @param webSocketFrameRequest
-     */
-    void handleWebsocketFrameRequest(WebSocketFrameRequest webSocketFrameRequest);
+//    /**
+//     * The method body should include about how to handle the websocket framereqeust received from the router's
+//     * wasm filter for websockets.
+//     *
+//     * Following information would be available within
+//     * dynamic metadata which is populated within router (envoy.filters.http.ext_authz).
+//     *
+//     * APIID
+//     * APIName
+//     * APIVersion
+//     * APICreator
+//     * APIType
+//     * APICreatorTenantDomain
+//     *
+//     * ApplicationKeyType
+//     * ApplicationID
+//     * ApplicationName
+//     * ApplicationOwner
+//     *
+//     * CorrelationID (fetched from requestID)
+//     * Region
+//     * APIResourceTemplate
+//     * Destination (The upstream endpoint of the request)
+//     *
+//     * @param webSocketFrameRequest
+//     */
+//    void handleWebsocketFrameRequest(WebSocketFrameRequest webSocketFrameRequest);
 
     /**
      * Initialize the analytics publisher with configurations map.

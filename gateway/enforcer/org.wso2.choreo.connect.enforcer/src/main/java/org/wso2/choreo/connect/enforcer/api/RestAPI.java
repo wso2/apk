@@ -83,7 +83,6 @@ public class RestAPI implements API {
         String name = api.getTitle();
         String version = api.getVersion();
         String apiType = api.getApiType();
-        Map<String, EndpointCluster> endpoints = new HashMap<>();
         Map<String, SecuritySchemaConfig> securitySchemeDefinitions = new HashMap<>();
         Map<String, List<String>> securityScopesMap = new HashMap<>();
         List<ResourceConfig> resources = new ArrayList<>();
@@ -91,15 +90,6 @@ public class RestAPI implements API {
         Map<String, String> mtlsCertificateTiers = new HashMap<>();
         String mutualSSL = api.getMutualSSL();
         boolean applicationSecurity = api.getApplicationSecurity();
-
-        EndpointCluster productionEndpoints = Utils.processEndpoints(api.getProductionEndpoints());
-        EndpointCluster sandboxEndpoints = Utils.processEndpoints(api.getSandboxEndpoints());
-        if (productionEndpoints != null) {
-            endpoints.put(APIConstants.API_KEY_TYPE_PRODUCTION, productionEndpoints);
-        }
-        if (sandboxEndpoints != null) {
-            endpoints.put(APIConstants.API_KEY_TYPE_SANDBOX, sandboxEndpoints);
-        }
 
         for (SecurityScheme securityScheme : api.getSecuritySchemeList()) {
             if (securityScheme.getType() != null) {
@@ -129,22 +119,12 @@ public class RestAPI implements API {
         }
 
         for (Resource res : api.getResourcesList()) {
-            Map<String, EndpointCluster> endpointClusterMap = new HashMap();
-            EndpointCluster prodEndpointCluster = Utils.processEndpoints(res.getProductionEndpoints());
-            EndpointCluster sandEndpointCluster = Utils.processEndpoints(res.getSandboxEndpoints());
-            if (prodEndpointCluster != null) {
-                endpointClusterMap.put(APIConstants.API_KEY_TYPE_PRODUCTION, prodEndpointCluster);
-            }
-            if (sandEndpointCluster != null) {
-                endpointClusterMap.put(APIConstants.API_KEY_TYPE_SANDBOX, sandEndpointCluster);
-            }
-
             for (Operation operation : res.getMethodsList()) {
                 ResourceConfig resConfig = Utils.buildResource(operation, res.getPath(), securityScopesMap);
                 resConfig.setPolicyConfig(Utils.genPolicyConfig(operation.getPolicies()));
-                resConfig.setEndpoints(endpointClusterMap);
-                resConfig.setMockApiConfig(getMockedApiOperationConfig(operation.getMockedApiConfig(),
-                        operation.getMethod()));
+                resConfig.setEndpoints(Utils.processEndpoints(res.getEndpoints()));
+//                resConfig.setMockApiConfig(getMockedApiOperationConfig(operation.getMockedApiConfig(),
+//                        operation.getMethod()));
                 resources.add(resConfig);
             }
         }
@@ -176,7 +156,7 @@ public class RestAPI implements API {
                 .resources(resources).apiType(apiType).apiLifeCycleState(apiLifeCycleState).tier(api.getTier())
                 .apiSecurity(securityScopesMap).securitySchemeDefinitions(securitySchemeDefinitions)
                 .disableSecurity(api.getDisableSecurity()).authHeader(api.getAuthorizationHeader())
-                .endpoints(endpoints).endpointSecurity(endpointSecurity).mockedApi(api.getIsMockedApi())
+                .envType(api.getEnvType()).endpointSecurity(endpointSecurity)
                 .trustStore(trustStore).organizationId(api.getOrganizationId())
                 .mtlsCertificateTiers(mtlsCertificateTiers).mutualSSL(mutualSSL).systemAPI(api.getSystemAPI())
                 .applicationSecurity(applicationSecurity).build();

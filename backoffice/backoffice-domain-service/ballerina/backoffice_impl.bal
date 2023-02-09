@@ -238,3 +238,15 @@ isolated function getAllCategoryList() returns APICategoryList|APKError {
         return categories;
     }
 }
+
+isolated function getBusinessPlans() returns BusinessPlanList|APKError {
+    string org = "carbon.super";
+    BusinessPlan[]|APKError businessPlans = getBusinessPlansDAO(org);
+    if businessPlans is BusinessPlan[] {
+        int count = businessPlans.length();
+        BusinessPlanList BusinessPlansList = {count: count, list: businessPlans};
+        return BusinessPlansList;
+    } else {
+        return businessPlans;
+    }
+}

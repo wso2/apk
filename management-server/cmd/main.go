@@ -24,6 +24,7 @@ import (
 	"github.com/wso2/apk/management-server/internal/database"
 	server "github.com/wso2/apk/management-server/internal/grpc-server"
 	"github.com/wso2/apk/management-server/internal/logger"
+	"github.com/wso2/apk/management-server/internal/notification"
 	"github.com/wso2/apk/management-server/internal/synchronizer"
 	"github.com/wso2/apk/management-server/internal/xds"
 )
@@ -40,6 +41,7 @@ func main() {
 	go synchronizer.ProcessApplicationEvents()
 	go synchronizer.ProcessSubscriptionEvents()
 	go server.StartGRPCServer()
+	go notification.StartGRPCServer()
 
 OUTER:
 	for {

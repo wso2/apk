@@ -144,7 +144,7 @@ func StartGRPCServer() {
 	)
 	grpcServer := grpc.NewServer(grpcOptions...)
 	conf := config.ReadConfigs()
-	port := conf.ManagementServer.GRPCPort
+	port := conf.ManagementServer.NotificationPort
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		logger.LoggerNotificationServer.ErrorC(logging.ErrorDetails{

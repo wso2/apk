@@ -85,6 +85,7 @@ rm -rf target/gen/java/org/wso2/choreo/connect/discovery/apkmgt
 rm -rf target/gen/java/org/wso2/choreo/connect/discovery/service/apkmgt
 rm -rf $ENFORCER_GEN_DIR/org/wso2/choreo/connect/discovery
 cp -r target/gen/java/* $ENFORCER_GEN_DIR
+rm -rf target
 
 # remove all the containers created
 docker rm -f $(docker ps -a -q -f "ancestor=namely/protoc-all:$PROTOC_VERSION")

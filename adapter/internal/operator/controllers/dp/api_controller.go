@@ -48,11 +48,13 @@ import (
 )
 
 const (
-	httpRouteAPIIndex           = "httpRouteAPIIndex"
-	authenticationAPIIndex      = "authenticationAPIIndex"
-	authenticationResourceIndex = "authenticationResourceIndex"
-	serviceHTTPRouteIndex       = "serviceHTTPRouteIndex"
-	serviceBackendPolicy        = "serviceBackendPolicy"
+	httpRouteAPIIndex = "httpRouteAPIIndex"
+	// Index for API level authentications
+	httpRouteAuthenticationIndex = "httpRouteAuthenticationIndex"
+	// Index for resource level authentications
+	httpRouteAuthenticationResourceIndex = "httpRouteAuthenticationResourceIndex"
+	serviceHTTPRouteIndex                = "serviceHTTPRouteIndex"
+	serviceBackendPolicy                 = "serviceBackendPolicy"
 )
 
 // APIReconciler reconciles a API object
@@ -216,10 +218,13 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 // - HTTPRoutes
 func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, namespace string,
 	prodHTTPRouteRef string, sandHTTPRouteRef string) (*synchronizer.HTTPRouteState, *synchronizer.HTTPRouteState, error) {
-	var prodHTTPRoute *synchronizer.HTTPRouteState
-	var sandHTTPRoute *synchronizer.HTTPRouteState
+	prodHTTPRoute := &synchronizer.HTTPRouteState{
+		HTTPRoute: &gwapiv1b1.HTTPRoute{},
+	}
+	sandHTTPRoute := &synchronizer.HTTPRouteState{
+		HTTPRoute: &gwapiv1b1.HTTPRoute{},
+	}
 	var err error
-
 	if prodHTTPRouteRef != "" {
 		if prodHTTPRoute, err = apiReconciler.resolveHTTPRouteRefs(ctx, namespace, prodHTTPRouteRef); err != nil {
 			return nil, nil, fmt.Errorf("error while resolving production httpRouteref %s in namespace :%s has not found. %s",
@@ -265,12 +270,12 @@ func (apiReconciler *APIReconciler) getAuthenticationsForHTTPRoute(ctx context.C
 	authentications := make(map[string]dpv1alpha1.Authentication)
 	authenticationList := &dpv1alpha1.AuthenticationList{}
 	if err := apiReconciler.client.List(ctx, authenticationList, &k8client.ListOptions{
-		FieldSelector: fields.OneTermEqualSelector(authenticationAPIIndex, utils.NamespacedName(httpRoute).String()),
+		FieldSelector: fields.OneTermEqualSelector(httpRouteAuthenticationIndex, utils.NamespacedName(httpRoute).String()),
 	}); err != nil {
 		return nil, err
 	}
 	for _, item := range authenticationList.Items {
-		authentications[utils.NamespacedName(&item).Name] = item
+		authentications[utils.NamespacedName(&item).String()] = item
 	}
 	return authentications, nil
 }
@@ -280,12 +285,12 @@ func (apiReconciler *APIReconciler) getAuthenticationsForResources(ctx context.C
 	authentications := make(map[string]dpv1alpha1.Authentication)
 	authenticationList := &dpv1alpha1.AuthenticationList{}
 	if err := apiReconciler.client.List(ctx, authenticationList, &k8client.ListOptions{
-		FieldSelector: fields.OneTermEqualSelector(authenticationResourceIndex, utils.NamespacedName(httpRoute).String()),
+		FieldSelector: fields.OneTermEqualSelector(httpRouteAuthenticationResourceIndex, utils.NamespacedName(httpRoute).String()),
 	}); err != nil {
 		return nil, err
 	}
 	for _, item := range authenticationList.Items {
-		authentications[utils.NamespacedName(&item).Name] = item
+		authentications[utils.NamespacedName(&item).String()] = item
 	}
 	return authentications, nil
 }
@@ -510,8 +515,10 @@ func (apiReconciler *APIReconciler) getAPIsForAuthentication(obj k8client.Object
 	apiList := &dpv1alpha1.APIList{}
 
 	namespacedName := types.NamespacedName{
-		Name:      string(authentication.Spec.TargetRef.Name),
-		Namespace: authentication.Namespace}.String()
+		Name: string(authentication.Spec.TargetRef.Name),
+		Namespace: utils.GetNamespace(
+			(*gwapiv1b1.Namespace)(authentication.Spec.TargetRef.Namespace),
+			authentication.Namespace)}.String()
 
 	if err := apiReconciler.client.List(ctx, apiList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(httpRouteAPIIndex, namespacedName)}); err != nil {
@@ -607,15 +614,17 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 		return err
 	}
 
-	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.Authentication{}, authenticationAPIIndex,
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.Authentication{}, httpRouteAuthenticationIndex,
 		func(rawObj k8client.Object) []string {
 			authentication := rawObj.(*dpv1alpha1.Authentication)
 			var httpRoutes []string
 			if authentication.Spec.TargetRef.Kind == constants.KindHTTPRoute {
 				httpRoutes = append(httpRoutes,
 					types.NamespacedName{
-						Namespace: authentication.Namespace,
-						Name:      string(authentication.Spec.TargetRef.Name),
+						Namespace: utils.GetNamespace(
+							(*gwapiv1b1.Namespace)(authentication.Spec.TargetRef.Namespace),
+							authentication.Namespace),
+						Name: string(authentication.Spec.TargetRef.Name),
 					}.String())
 			}
 			return httpRoutes
@@ -627,15 +636,17 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 	// https://gateway-api.sigs.k8s.io/geps/gep-713/?h=multiple+targetrefs#apply-policies-to-sections-of-a-resource-future-extension
 	// we will use a temporary kindName called Resource for policy attachments
 	// TODO(amali) Fix after the official support is available
-	err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.Authentication{}, authenticationResourceIndex,
+	err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.Authentication{}, httpRouteAuthenticationResourceIndex,
 		func(rawObj k8client.Object) []string {
 			authentication := rawObj.(*dpv1alpha1.Authentication)
 			var httpRoutes []string
 			if authentication.Spec.TargetRef.Kind == constants.KindResource {
 				httpRoutes = append(httpRoutes,
 					types.NamespacedName{
-						Namespace: authentication.Namespace,
-						Name:      string(authentication.Spec.TargetRef.Name),
+						Namespace: utils.GetNamespace(
+							(*gwapiv1b1.Namespace)(authentication.Spec.TargetRef.Namespace),
+							authentication.Namespace),
+						Name: string(authentication.Spec.TargetRef.Name),
 					}.String())
 			}
 			return httpRoutes

@@ -288,8 +288,8 @@ public type API record {
     string context;
     @constraint:String {maxLength: 30, minLength: 1}
     string 'version;
-    # The api creation type to be used. Accepted values are HTTP, WS, GRAPHQL, WEBSUB, SSE, WEBHOOK, ASYNC
-    string 'type = "HTTP";
+    # The api creation type to be used. Accepted values are REST, WS, GRAPHQL, WEBSUB, SSE, WEBHOOK, ASYNC
+    string 'type = "REST";
     # Endpoint configuration of the API. This can be used to provide different types of endpoints including Simple REST Endpoints, Loadbalanced and Failover.
     # 
     # `Simple REST Endpoint`

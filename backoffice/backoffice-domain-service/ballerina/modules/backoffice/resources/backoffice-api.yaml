@@ -1710,7 +1710,44 @@ paths:
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/apk/backoffice/v1/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/lifecycle-state"'
       operationId: getAPILifecycleState
-
+######################################################
+# The "Business Plans Collection" resource API
+######################################################
+  /business-plans:
+    get:
+      tags:
+        - Business Plan (Collection)
+      summary: Get all Business Plans
+      description: |
+        This operation can be used to retrieve all Business Plans.
+      parameters:
+        - $ref: '#/components/parameters/Accept'
+      responses:
+        200:
+          description: |
+            OK.
+            Plans returned
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BusinessPlanList'
+        406:
+          $ref: '#/components/responses/NotAcceptable'
+      security:
+        - OAuth2Security:
+            - apim:admin
+            - apim:tier_view
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/am/admin/business-plans"'
+      operationId: getAllBusinessPlans
 components:
   schemas:
     APIDefinition:
@@ -1947,6 +1984,15 @@ components:
           example: []
           items:
             type: string
+        policies:
+          type: array
+          example:
+            - Unlimited
+          items:
+            type: string
+          x-otherScopes:
+            - apim:api_publish
+            - apim:api_manage
         additionalProperties:
           type: object
           additionalProperties:
@@ -2008,6 +2054,93 @@ components:
         - apim:api_create
         - apim:api_manage
 
+    BusinessPlanList:
+      title: Business Plan List
+      type: object
+      properties:
+        count:
+          type: integer
+          description: |
+            Number of Business Plans returned.
+          example: 1
+        list:
+          type: array
+          items:
+            $ref: '#/components/schemas/BusinessPlan'
+    BusinessPlan:
+      title: Business Plan
+      allOf:
+        - $ref: '#/components/schemas/Policy'
+        - $ref: '#/components/schemas/GraphQLQuery'
+        - required:
+            - defaultLimit
+          type: object
+          properties:
+            defaultLimit:
+              $ref: '#/components/schemas/ThrottleLimit'
+            rateLimitCount:
+              type: integer
+              description: Burst control request count
+              example: 10
+            rateLimitTimeUnit:
+              type: string
+              description: Burst control time unit
+              example: min
+            subscriberCount:
+              type: integer
+              description: Number of subscriptions allowed
+              example: 10
+            customAttributes:
+              type: array
+              description: |
+                Custom attributes added to the Subscription Throttling Policy
+              example: []
+              items:
+                $ref: '#/components/schemas/CustomAttribute'
+            permissions:
+              $ref: '#/components/schemas/BusinessPlanPermission'
+    BusinessPlanPermission:
+      title: Business Plan Permission
+      required:
+        - permissionType
+        - roles
+      type: object
+      properties:
+        permissionType:
+          type: string
+          example: deny
+          enum:
+            - ALLOW
+            - DENY
+        roles:
+          type: array
+          example:
+            - Internal/everyone
+          items:
+            type: string
+    ThrottleLimit:
+      title: Throttle Limit
+      required:
+        - type
+      type: object
+      properties:
+        type:
+          type: string
+          description: |
+            Type of the throttling limit. Allowed values are "REQUESTCOUNTLIMIT" and "BANDWIDTHLIMIT".
+            Please see schemas of "RequestCountLimit" and "BandwidthLimit" throttling limit types in
+            Definitions section.
+          example: REQUESTCOUNTLIMIT
+          enum:
+            - REQUESTCOUNTLIMIT
+            - BANDWIDTHLIMIT
+            - EVENTCOUNTLIMIT
+        requestCount:
+          $ref: '#/components/schemas/RequestCountLimit'
+        bandwidth:
+          $ref: '#/components/schemas/BandwidthLimit'
+        eventCount:
+          $ref: '#/components/schemas/EventCountLimit'
     #-----------------------------------------------------
     # The API Revision resource
     #-----------------------------------------------------
@@ -2121,6 +2254,15 @@ components:
           example: []
           items:
             type: string
+        policies:
+          type: array
+          example:
+            - Unlimited
+          items:
+            type: string
+          x-otherScopes:
+            - apim:api_publish
+            - apim:api_manage
     ResourcePath:
       title: ResourcePath
       required:

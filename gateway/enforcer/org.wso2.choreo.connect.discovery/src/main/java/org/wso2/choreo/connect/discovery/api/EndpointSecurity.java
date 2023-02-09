@@ -6,6 +6,7 @@ package org.wso2.choreo.connect.discovery.api;
 /**
  * <pre>
  * Endpoint config model
+ * todo(amali) fix endpoint security
  * </pre>
  *
  * Protobuf type {@code wso2.discovery.api.EndpointSecurity}
@@ -341,6 +342,7 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * Endpoint config model
+   * todo(amali) fix endpoint security
    * </pre>
    *
    * Protobuf type {@code wso2.discovery.api.EndpointSecurity}

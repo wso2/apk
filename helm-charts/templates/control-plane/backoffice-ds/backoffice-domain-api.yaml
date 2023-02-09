@@ -25,9 +25,9 @@ metadata:
     api-version: "1.0.0"
 spec:
   apiDisplayName: "Backoffice Domain API"
-  apiType: "HTTP"
+  apiType: "REST"
   apiVersion: "1.0.0"
-  context: "/api/am/backoffice"
+  context: "/api/am/backoffice/1.0.0"
   organization: "carbon.super"
   definitionFileRef: ""
   prodHTTPRouteRef: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-httproute

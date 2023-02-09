@@ -14,7 +14,8 @@ on:
       - closed
     paths:
       - '**/gateway/enforcer/**'
-
+    branches:
+      - 'main'
 jobs:
   build:
     runs-on: ubuntu-latest

@@ -14,7 +14,8 @@ on:
       - closed
     paths:
       - '**/runtime/runtime-domain-service/**'
-
+    branches:
+      - 'main'
 jobs:
   build:
     runs-on: ubuntu-latest

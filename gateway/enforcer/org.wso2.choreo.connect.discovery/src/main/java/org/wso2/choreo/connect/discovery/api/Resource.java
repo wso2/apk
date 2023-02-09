@@ -23,11 +23,7 @@ private static final long serialVersionUID = 0L;
     id_ = "";
     path_ = "";
     methods_ = java.util.Collections.emptyList();
-    summary_ = "";
-    description_ = "";
-    consumes_ = com.google.protobuf.LazyStringArrayList.EMPTY;
     schemes_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-    tags_ = com.google.protobuf.LazyStringArrayList.EMPTY;
   }
 
   @java.lang.Override
@@ -82,40 +78,15 @@ private static final long serialVersionUID = 0L;
                 input.readMessage(org.wso2.choreo.connect.discovery.api.Operation.parser(), extensionRegistry));
             break;
           }
-          case 34: {
-            java.lang.String s = input.readStringRequireUtf8();
-
-            summary_ = s;
-            break;
-          }
-          case 42: {
-            java.lang.String s = input.readStringRequireUtf8();
-
-            description_ = s;
-            break;
-          }
           case 50: {
             org.wso2.choreo.connect.discovery.api.EndpointCluster.Builder subBuilder = null;
-            if (productionEndpoints_ != null) {
-              subBuilder = productionEndpoints_.toBuilder();
+            if (endpoints_ != null) {
+              subBuilder = endpoints_.toBuilder();
             }
-            productionEndpoints_ = input.readMessage(org.wso2.choreo.connect.discovery.api.EndpointCluster.parser(), extensionRegistry);
+            endpoints_ = input.readMessage(org.wso2.choreo.connect.discovery.api.EndpointCluster.parser(), extensionRegistry);
             if (subBuilder != null) {
-              subBuilder.mergeFrom(productionEndpoints_);
-              productionEndpoints_ = subBuilder.buildPartial();
-            }
-
-            break;
-          }
-          case 58: {
-            org.wso2.choreo.connect.discovery.api.EndpointCluster.Builder subBuilder = null;
-            if (sandboxEndpoints_ != null) {
-              subBuilder = sandboxEndpoints_.toBuilder();
-            }
-            sandboxEndpoints_ = input.readMessage(org.wso2.choreo.connect.discovery.api.EndpointCluster.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(sandboxEndpoints_);
-              sandboxEndpoints_ = subBuilder.buildPartial();
+              subBuilder.mergeFrom(endpoints_);
+              endpoints_ = subBuilder.buildPartial();
             }
 
             break;
@@ -133,31 +104,13 @@ private static final long serialVersionUID = 0L;
                 security__.getKey(), security__.getValue());
             break;
           }
-          case 74: {
-            java.lang.String s = input.readStringRequireUtf8();
-            if (!((mutable_bitField0_ & 0x00000004) != 0)) {
-              consumes_ = new com.google.protobuf.LazyStringArrayList();
-              mutable_bitField0_ |= 0x00000004;
-            }
-            consumes_.add(s);
-            break;
-          }
           case 82: {
             java.lang.String s = input.readStringRequireUtf8();
-            if (!((mutable_bitField0_ & 0x00000008) != 0)) {
+            if (!((mutable_bitField0_ & 0x00000004) != 0)) {
               schemes_ = new com.google.protobuf.LazyStringArrayList();
-              mutable_bitField0_ |= 0x00000008;
+              mutable_bitField0_ |= 0x00000004;
             }
             schemes_.add(s);
-            break;
-          }
-          case 90: {
-            java.lang.String s = input.readStringRequireUtf8();
-            if (!((mutable_bitField0_ & 0x00000010) != 0)) {
-              tags_ = new com.google.protobuf.LazyStringArrayList();
-              mutable_bitField0_ |= 0x00000010;
-            }
-            tags_.add(s);
             break;
           }
           default: {
@@ -179,13 +132,7 @@ private static final long serialVersionUID = 0L;
         methods_ = java.util.Collections.unmodifiableList(methods_);
       }
       if (((mutable_bitField0_ & 0x00000004) != 0)) {
-        consumes_ = consumes_.getUnmodifiableView();
-      }
-      if (((mutable_bitField0_ & 0x00000008) != 0)) {
         schemes_ = schemes_.getUnmodifiableView();
-      }
-      if (((mutable_bitField0_ & 0x00000010) != 0)) {
-        tags_ = tags_.getUnmodifiableView();
       }
       this.unknownFields = unknownFields.build();
       makeExtensionsImmutable();
@@ -332,132 +279,30 @@ private static final long serialVersionUID = 0L;
     return methods_.get(index);
   }
 
-  public static final int SUMMARY_FIELD_NUMBER = 4;
-  private volatile java.lang.Object summary_;
+  public static final int ENDPOINTS_FIELD_NUMBER = 6;
+  private org.wso2.choreo.connect.discovery.api.EndpointCluster endpoints_;
   /**
-   * <code>string summary = 4;</code>
-   * @return The summary.
+   * <code>.wso2.discovery.api.EndpointCluster endpoints = 6;</code>
+   * @return Whether the endpoints field is set.
    */
   @java.lang.Override
-  public java.lang.String getSummary() {
-    java.lang.Object ref = summary_;
-    if (ref instanceof java.lang.String) {
-      return (java.lang.String) ref;
-    } else {
-      com.google.protobuf.ByteString bs = 
-          (com.google.protobuf.ByteString) ref;
-      java.lang.String s = bs.toStringUtf8();
-      summary_ = s;
-      return s;
-    }
+  public boolean hasEndpoints() {
+    return endpoints_ != null;
   }
   /**
-   * <code>string summary = 4;</code>
-   * @return The bytes for summary.
+   * <code>.wso2.discovery.api.EndpointCluster endpoints = 6;</code>
+   * @return The endpoints.
    */
   @java.lang.Override
-  public com.google.protobuf.ByteString
-      getSummaryBytes() {
-    java.lang.Object ref = summary_;
-    if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
-          com.google.protobuf.ByteString.copyFromUtf8(
-              (java.lang.String) ref);
-      summary_ = b;
-      return b;
-    } else {
-      return (com.google.protobuf.ByteString) ref;
-    }
-  }
-
-  public static final int DESCRIPTION_FIELD_NUMBER = 5;
-  private volatile java.lang.Object description_;
-  /**
-   * <code>string description = 5;</code>
-   * @return The description.
-   */
-  @java.lang.Override
-  public java.lang.String getDescription() {
-    java.lang.Object ref = description_;
-    if (ref instanceof java.lang.String) {
-      return (java.lang.String) ref;
-    } else {
-      com.google.protobuf.ByteString bs = 
-          (com.google.protobuf.ByteString) ref;
-      java.lang.String s = bs.toStringUtf8();
-      description_ = s;
-      return s;
-    }
+  public org.wso2.choreo.connect.discovery.api.EndpointCluster getEndpoints() {
+    return endpoints_ == null ? org.wso2.choreo.connect.discovery.api.EndpointCluster.getDefaultInstance() : endpoints_;
   }
   /**
-   * <code>string description = 5;</code>
-   * @return The bytes for description.
+   * <code>.wso2.discovery.api.EndpointCluster endpoints = 6;</code>
    */
   @java.lang.Override
-  public com.google.protobuf.ByteString
-      getDescriptionBytes() {
-    java.lang.Object ref = description_;
-    if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
-          com.google.protobuf.ByteString.copyFromUtf8(
-              (java.lang.String) ref);
-      description_ = b;
-      return b;
-    } else {
-      return (com.google.protobuf.ByteString) ref;
-    }
-  }
-
-  public static final int PRODUCTIONENDPOINTS_FIELD_NUMBER = 6;
-  private org.wso2.choreo.connect.discovery.api.EndpointCluster productionEndpoints_;
-  /**
-   * <code>.wso2.discovery.api.EndpointCluster productionEndpoints = 6;</code>
-   * @return Whether the productionEndpoints field is set.
-   */
-  @java.lang.Override
-  public boolean hasProductionEndpoints() {
-    return productionEndpoints_ != null;
-  }
-  /**
-   * <code>.wso2.discovery.api.EndpointCluster productionEndpoints = 6;</code>
-   * @return The productionEndpoints.
-   */
-  @java.lang.Override
-  public org.wso2.choreo.connect.discovery.api.EndpointCluster getProductionEndpoints() {
-    return productionEndpoints_ == null ? org.wso2.choreo.connect.discovery.api.EndpointCluster.getDefaultInstance() : productionEndpoints_;
-  }
-  /**
-   * <code>.wso2.discovery.api.EndpointCluster productionEndpoints = 6;</code>
-   */
-  @java.lang.Override
-  public org.wso2.choreo.connect.discovery.api.EndpointClusterOrBuilder getProductionEndpointsOrBuilder() {
-    return getProductionEndpoints();
-  }
-
-  public static final int SANDBOXENDPOINTS_FIELD_NUMBER = 7;
-  private org.wso2.choreo.connect.discovery.api.EndpointCluster sandboxEndpoints_;
-  /**
-   * <code>.wso2.discovery.api.EndpointCluster sandboxEndpoints = 7;</code>
-   * @return Whether the sandboxEndpoints field is set.
-   */
-  @java.lang.Override
-  public boolean hasSandboxEndpoints() {
-    return sandboxEndpoints_ != null;
-  }
-  /**
-   * <code>.wso2.discovery.api.EndpointCluster sandboxEndpoints = 7;</code>
-   * @return The sandboxEndpoints.
-   */
-  @java.lang.Override
-  public org.wso2.choreo.connect.discovery.api.EndpointCluster getSandboxEndpoints() {
-    return sandboxEndpoints_ == null ? org.wso2.choreo.connect.discovery.api.EndpointCluster.getDefaultInstance() : sandboxEndpoints_;
-  }
-  /**
-   * <code>.wso2.discovery.api.EndpointCluster sandboxEndpoints = 7;</code>
-   */
-  @java.lang.Override
-  public org.wso2.choreo.connect.discovery.api.EndpointClusterOrBuilder getSandboxEndpointsOrBuilder() {
-    return getSandboxEndpoints();
+  public org.wso2.choreo.connect.discovery.api.EndpointClusterOrBuilder getEndpointsOrBuilder() {
+    return getEndpoints();
   }
 
   public static final int SECURITY_FIELD_NUMBER = 8;
@@ -541,41 +386,6 @@ private static final long serialVersionUID = 0L;
     return map.get(key);
   }
 
-  public static final int CONSUMES_FIELD_NUMBER = 9;
-  private com.google.protobuf.LazyStringList consumes_;
-  /**
-   * <code>repeated string consumes = 9;</code>
-   * @return A list containing the consumes.
-   */
-  public com.google.protobuf.ProtocolStringList
-      getConsumesList() {
-    return consumes_;
-  }
-  /**
-   * <code>repeated string consumes = 9;</code>
-   * @return The count of consumes.
-   */
-  public int getConsumesCount() {
-    return consumes_.size();
-  }
-  /**
-   * <code>repeated string consumes = 9;</code>
-   * @param index The index of the element to return.
-   * @return The consumes at the given index.
-   */
-  public java.lang.String getConsumes(int index) {
-    return consumes_.get(index);
-  }
-  /**
-   * <code>repeated string consumes = 9;</code>
-   * @param index The index of the value to return.
-   * @return The bytes of the consumes at the given index.
-   */
-  public com.google.protobuf.ByteString
-      getConsumesBytes(int index) {
-    return consumes_.getByteString(index);
-  }
-
   public static final int SCHEMES_FIELD_NUMBER = 10;
   private com.google.protobuf.LazyStringList schemes_;
   /**
@@ -611,41 +421,6 @@ private static final long serialVersionUID = 0L;
     return schemes_.getByteString(index);
   }
 
-  public static final int TAGS_FIELD_NUMBER = 11;
-  private com.google.protobuf.LazyStringList tags_;
-  /**
-   * <code>repeated string tags = 11;</code>
-   * @return A list containing the tags.
-   */
-  public com.google.protobuf.ProtocolStringList
-      getTagsList() {
-    return tags_;
-  }
-  /**
-   * <code>repeated string tags = 11;</code>
-   * @return The count of tags.
-   */
-  public int getTagsCount() {
-    return tags_.size();
-  }
-  /**
-   * <code>repeated string tags = 11;</code>
-   * @param index The index of the element to return.
-   * @return The tags at the given index.
-   */
-  public java.lang.String getTags(int index) {
-    return tags_.get(index);
-  }
-  /**
-   * <code>repeated string tags = 11;</code>
-   * @param index The index of the value to return.
-   * @return The bytes of the tags at the given index.
-   */
-  public com.google.protobuf.ByteString
-      getTagsBytes(int index) {
-    return tags_.getByteString(index);
-  }
-
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -669,17 +444,8 @@ private static final long serialVersionUID = 0L;
     for (int i = 0; i < methods_.size(); i++) {
       output.writeMessage(3, methods_.get(i));
     }
-    if (!getSummaryBytes().isEmpty()) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 4, summary_);
-    }
-    if (!getDescriptionBytes().isEmpty()) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 5, description_);
-    }
-    if (productionEndpoints_ != null) {
-      output.writeMessage(6, getProductionEndpoints());
-    }
-    if (sandboxEndpoints_ != null) {
-      output.writeMessage(7, getSandboxEndpoints());
+    if (endpoints_ != null) {
+      output.writeMessage(6, getEndpoints());
     }
     com.google.protobuf.GeneratedMessageV3
       .serializeStringMapTo(
@@ -687,14 +453,8 @@ private static final long serialVersionUID = 0L;
         internalGetSecurity(),
         SecurityDefaultEntryHolder.defaultEntry,
         8);
-    for (int i = 0; i < consumes_.size(); i++) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 9, consumes_.getRaw(i));
-    }
     for (int i = 0; i < schemes_.size(); i++) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 10, schemes_.getRaw(i));
-    }
-    for (int i = 0; i < tags_.size(); i++) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 11, tags_.getRaw(i));
     }
     unknownFields.writeTo(output);
   }
@@ -715,19 +475,9 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(3, methods_.get(i));
     }
-    if (!getSummaryBytes().isEmpty()) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, summary_);
-    }
-    if (!getDescriptionBytes().isEmpty()) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(5, description_);
-    }
-    if (productionEndpoints_ != null) {
+    if (endpoints_ != null) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(6, getProductionEndpoints());
-    }
-    if (sandboxEndpoints_ != null) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(7, getSandboxEndpoints());
+        .computeMessageSize(6, getEndpoints());
     }
     for (java.util.Map.Entry<java.lang.String, java.lang.String> entry
          : internalGetSecurity().getMap().entrySet()) {
@@ -741,27 +491,11 @@ private static final long serialVersionUID = 0L;
     }
     {
       int dataSize = 0;
-      for (int i = 0; i < consumes_.size(); i++) {
-        dataSize += computeStringSizeNoTag(consumes_.getRaw(i));
-      }
-      size += dataSize;
-      size += 1 * getConsumesList().size();
-    }
-    {
-      int dataSize = 0;
       for (int i = 0; i < schemes_.size(); i++) {
         dataSize += computeStringSizeNoTag(schemes_.getRaw(i));
       }
       size += dataSize;
       size += 1 * getSchemesList().size();
-    }
-    {
-      int dataSize = 0;
-      for (int i = 0; i < tags_.size(); i++) {
-        dataSize += computeStringSizeNoTag(tags_.getRaw(i));
-      }
-      size += dataSize;
-      size += 1 * getTagsList().size();
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -784,28 +518,15 @@ private static final long serialVersionUID = 0L;
         .equals(other.getPath())) return false;
     if (!getMethodsList()
         .equals(other.getMethodsList())) return false;
-    if (!getSummary()
-        .equals(other.getSummary())) return false;
-    if (!getDescription()
-        .equals(other.getDescription())) return false;
-    if (hasProductionEndpoints() != other.hasProductionEndpoints()) return false;
-    if (hasProductionEndpoints()) {
-      if (!getProductionEndpoints()
-          .equals(other.getProductionEndpoints())) return false;
-    }
-    if (hasSandboxEndpoints() != other.hasSandboxEndpoints()) return false;
-    if (hasSandboxEndpoints()) {
-      if (!getSandboxEndpoints()
-          .equals(other.getSandboxEndpoints())) return false;
+    if (hasEndpoints() != other.hasEndpoints()) return false;
+    if (hasEndpoints()) {
+      if (!getEndpoints()
+          .equals(other.getEndpoints())) return false;
     }
     if (!internalGetSecurity().equals(
         other.internalGetSecurity())) return false;
-    if (!getConsumesList()
-        .equals(other.getConsumesList())) return false;
     if (!getSchemesList()
         .equals(other.getSchemesList())) return false;
-    if (!getTagsList()
-        .equals(other.getTagsList())) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -825,33 +546,17 @@ private static final long serialVersionUID = 0L;
       hash = (37 * hash) + METHODS_FIELD_NUMBER;
       hash = (53 * hash) + getMethodsList().hashCode();
     }
-    hash = (37 * hash) + SUMMARY_FIELD_NUMBER;
-    hash = (53 * hash) + getSummary().hashCode();
-    hash = (37 * hash) + DESCRIPTION_FIELD_NUMBER;
-    hash = (53 * hash) + getDescription().hashCode();
-    if (hasProductionEndpoints()) {
-      hash = (37 * hash) + PRODUCTIONENDPOINTS_FIELD_NUMBER;
-      hash = (53 * hash) + getProductionEndpoints().hashCode();
-    }
-    if (hasSandboxEndpoints()) {
-      hash = (37 * hash) + SANDBOXENDPOINTS_FIELD_NUMBER;
-      hash = (53 * hash) + getSandboxEndpoints().hashCode();
+    if (hasEndpoints()) {
+      hash = (37 * hash) + ENDPOINTS_FIELD_NUMBER;
+      hash = (53 * hash) + getEndpoints().hashCode();
     }
     if (!internalGetSecurity().getMap().isEmpty()) {
       hash = (37 * hash) + SECURITY_FIELD_NUMBER;
       hash = (53 * hash) + internalGetSecurity().hashCode();
     }
-    if (getConsumesCount() > 0) {
-      hash = (37 * hash) + CONSUMES_FIELD_NUMBER;
-      hash = (53 * hash) + getConsumesList().hashCode();
-    }
     if (getSchemesCount() > 0) {
       hash = (37 * hash) + SCHEMES_FIELD_NUMBER;
       hash = (53 * hash) + getSchemesList().hashCode();
-    }
-    if (getTagsCount() > 0) {
-      hash = (37 * hash) + TAGS_FIELD_NUMBER;
-      hash = (53 * hash) + getTagsList().hashCode();
     }
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
@@ -1023,29 +728,15 @@ private static final long serialVersionUID = 0L;
       } else {
         methodsBuilder_.clear();
       }
-      summary_ = "";
-
-      description_ = "";
-
-      if (productionEndpointsBuilder_ == null) {
-        productionEndpoints_ = null;
+      if (endpointsBuilder_ == null) {
+        endpoints_ = null;
       } else {
-        productionEndpoints_ = null;
-        productionEndpointsBuilder_ = null;
-      }
-      if (sandboxEndpointsBuilder_ == null) {
-        sandboxEndpoints_ = null;
-      } else {
-        sandboxEndpoints_ = null;
-        sandboxEndpointsBuilder_ = null;
+        endpoints_ = null;
+        endpointsBuilder_ = null;
       }
       internalGetMutableSecurity().clear();
-      consumes_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      bitField0_ = (bitField0_ & ~0x00000004);
       schemes_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      bitField0_ = (bitField0_ & ~0x00000008);
-      tags_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      bitField0_ = (bitField0_ & ~0x00000010);
+      bitField0_ = (bitField0_ & ~0x00000004);
       return this;
     }
 
@@ -1084,35 +775,18 @@ private static final long serialVersionUID = 0L;
       } else {
         result.methods_ = methodsBuilder_.build();
       }
-      result.summary_ = summary_;
-      result.description_ = description_;
-      if (productionEndpointsBuilder_ == null) {
-        result.productionEndpoints_ = productionEndpoints_;
+      if (endpointsBuilder_ == null) {
+        result.endpoints_ = endpoints_;
       } else {
-        result.productionEndpoints_ = productionEndpointsBuilder_.build();
-      }
-      if (sandboxEndpointsBuilder_ == null) {
-        result.sandboxEndpoints_ = sandboxEndpoints_;
-      } else {
-        result.sandboxEndpoints_ = sandboxEndpointsBuilder_.build();
+        result.endpoints_ = endpointsBuilder_.build();
       }
       result.security_ = internalGetSecurity();
       result.security_.makeImmutable();
       if (((bitField0_ & 0x00000004) != 0)) {
-        consumes_ = consumes_.getUnmodifiableView();
+        schemes_ = schemes_.getUnmodifiableView();
         bitField0_ = (bitField0_ & ~0x00000004);
       }
-      result.consumes_ = consumes_;
-      if (((bitField0_ & 0x00000008) != 0)) {
-        schemes_ = schemes_.getUnmodifiableView();
-        bitField0_ = (bitField0_ & ~0x00000008);
-      }
       result.schemes_ = schemes_;
-      if (((bitField0_ & 0x00000010) != 0)) {
-        tags_ = tags_.getUnmodifiableView();
-        bitField0_ = (bitField0_ & ~0x00000010);
-      }
-      result.tags_ = tags_;
       onBuilt();
       return result;
     }
@@ -1195,49 +869,18 @@ private static final long serialVersionUID = 0L;
           }
         }
       }
-      if (!other.getSummary().isEmpty()) {
-        summary_ = other.summary_;
-        onChanged();
-      }
-      if (!other.getDescription().isEmpty()) {
-        description_ = other.description_;
-        onChanged();
-      }
-      if (other.hasProductionEndpoints()) {
-        mergeProductionEndpoints(other.getProductionEndpoints());
-      }
-      if (other.hasSandboxEndpoints()) {
-        mergeSandboxEndpoints(other.getSandboxEndpoints());
+      if (other.hasEndpoints()) {
+        mergeEndpoints(other.getEndpoints());
       }
       internalGetMutableSecurity().mergeFrom(
           other.internalGetSecurity());
-      if (!other.consumes_.isEmpty()) {
-        if (consumes_.isEmpty()) {
-          consumes_ = other.consumes_;
-          bitField0_ = (bitField0_ & ~0x00000004);
-        } else {
-          ensureConsumesIsMutable();
-          consumes_.addAll(other.consumes_);
-        }
-        onChanged();
-      }
       if (!other.schemes_.isEmpty()) {
         if (schemes_.isEmpty()) {
           schemes_ = other.schemes_;
-          bitField0_ = (bitField0_ & ~0x00000008);
+          bitField0_ = (bitField0_ & ~0x00000004);
         } else {
           ensureSchemesIsMutable();
           schemes_.addAll(other.schemes_);
-        }
-        onChanged();
-      }
-      if (!other.tags_.isEmpty()) {
-        if (tags_.isEmpty()) {
-          tags_ = other.tags_;
-          bitField0_ = (bitField0_ & ~0x00000010);
-        } else {
-          ensureTagsIsMutable();
-          tags_.addAll(other.tags_);
         }
         onChanged();
       }
@@ -1663,394 +1306,123 @@ private static final long serialVersionUID = 0L;
       return methodsBuilder_;
     }
 
-    private java.lang.Object summary_ = "";
-    /**
-     * <code>string summary = 4;</code>
-     * @return The summary.
-     */
-    public java.lang.String getSummary() {
-      java.lang.Object ref = summary_;
-      if (!(ref instanceof java.lang.String)) {
-        com.google.protobuf.ByteString bs =
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        summary_ = s;
-        return s;
-      } else {
-        return (java.lang.String) ref;
-      }
-    }
-    /**
-     * <code>string summary = 4;</code>
-     * @return The bytes for summary.
-     */
-    public com.google.protobuf.ByteString
-        getSummaryBytes() {
-      java.lang.Object ref = summary_;
-      if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        summary_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-    /**
-     * <code>string summary = 4;</code>
-     * @param value The summary to set.
-     * @return This builder for chaining.
-     */
-    public Builder setSummary(
-        java.lang.String value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  
-      summary_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string summary = 4;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearSummary() {
-      
-      summary_ = getDefaultInstance().getSummary();
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string summary = 4;</code>
-     * @param value The bytes for summary to set.
-     * @return This builder for chaining.
-     */
-    public Builder setSummaryBytes(
-        com.google.protobuf.ByteString value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-      
-      summary_ = value;
-      onChanged();
-      return this;
-    }
-
-    private java.lang.Object description_ = "";
-    /**
-     * <code>string description = 5;</code>
-     * @return The description.
-     */
-    public java.lang.String getDescription() {
-      java.lang.Object ref = description_;
-      if (!(ref instanceof java.lang.String)) {
-        com.google.protobuf.ByteString bs =
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        description_ = s;
-        return s;
-      } else {
-        return (java.lang.String) ref;
-      }
-    }
-    /**
-     * <code>string description = 5;</code>
-     * @return The bytes for description.
-     */
-    public com.google.protobuf.ByteString
-        getDescriptionBytes() {
-      java.lang.Object ref = description_;
-      if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        description_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-    /**
-     * <code>string description = 5;</code>
-     * @param value The description to set.
-     * @return This builder for chaining.
-     */
-    public Builder setDescription(
-        java.lang.String value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  
-      description_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string description = 5;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearDescription() {
-      
-      description_ = getDefaultInstance().getDescription();
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string description = 5;</code>
-     * @param value The bytes for description to set.
-     * @return This builder for chaining.
-     */
-    public Builder setDescriptionBytes(
-        com.google.protobuf.ByteString value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-      
-      description_ = value;
-      onChanged();
-      return this;
-    }
-
-    private org.wso2.choreo.connect.discovery.api.EndpointCluster productionEndpoints_;
+    private org.wso2.choreo.connect.discovery.api.EndpointCluster endpoints_;
     private com.google.protobuf.SingleFieldBuilderV3<
-        org.wso2.choreo.connect.discovery.api.EndpointCluster, org.wso2.choreo.connect.discovery.api.EndpointCluster.Builder, org.wso2.choreo.connect.discovery.api.EndpointClusterOrBuilder> productionEndpointsBuilder_;
+        org.wso2.choreo.connect.discovery.api.EndpointCluster, org.wso2.choreo.connect.discovery.api.EndpointCluster.Builder, org.wso2.choreo.connect.discovery.api.EndpointClusterOrBuilder> endpointsBuilder_;
     /**
-     * <code>.wso2.discovery.api.EndpointCluster productionEndpoints = 6;</code>
-     * @return Whether the productionEndpoints field is set.
+     * <code>.wso2.discovery.api.EndpointCluster endpoints = 6;</code>
+     * @return Whether the endpoints field is set.
      */
-    public boolean hasProductionEndpoints() {
-      return productionEndpointsBuilder_ != null || productionEndpoints_ != null;
+    public boolean hasEndpoints() {
+      return endpointsBuilder_ != null || endpoints_ != null;
     }
     /**
-     * <code>.wso2.discovery.api.EndpointCluster productionEndpoints = 6;</code>
-     * @return The productionEndpoints.
+     * <code>.wso2.discovery.api.EndpointCluster endpoints = 6;</code>
+     * @return The endpoints.
      */
-    public org.wso2.choreo.connect.discovery.api.EndpointCluster getProductionEndpoints() {
-      if (productionEndpointsBuilder_ == null) {
-        return productionEndpoints_ == null ? org.wso2.choreo.connect.discovery.api.EndpointCluster.getDefaultInstance() : productionEndpoints_;
+    public org.wso2.choreo.connect.discovery.api.EndpointCluster getEndpoints() {
+      if (endpointsBuilder_ == null) {
+        return endpoints_ == null ? org.wso2.choreo.connect.discovery.api.EndpointCluster.getDefaultInstance() : endpoints_;
       } else {
-        return productionEndpointsBuilder_.getMessage();
+        return endpointsBuilder_.getMessage();
       }
     }
     /**
-     * <code>.wso2.discovery.api.EndpointCluster productionEndpoints = 6;</code>
+     * <code>.wso2.discovery.api.EndpointCluster endpoints = 6;</code>
      */
-    public Builder setProductionEndpoints(org.wso2.choreo.connect.discovery.api.EndpointCluster value) {
-      if (productionEndpointsBuilder_ == null) {
+    public Builder setEndpoints(org.wso2.choreo.connect.discovery.api.EndpointCluster value) {
+      if (endpointsBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
-        productionEndpoints_ = value;
+        endpoints_ = value;
         onChanged();
       } else {
-        productionEndpointsBuilder_.setMessage(value);
+        endpointsBuilder_.setMessage(value);
       }
 
       return this;
     }
     /**
-     * <code>.wso2.discovery.api.EndpointCluster productionEndpoints = 6;</code>
+     * <code>.wso2.discovery.api.EndpointCluster endpoints = 6;</code>
      */
-    public Builder setProductionEndpoints(
+    public Builder setEndpoints(
         org.wso2.choreo.connect.discovery.api.EndpointCluster.Builder builderForValue) {
-      if (productionEndpointsBuilder_ == null) {
-        productionEndpoints_ = builderForValue.build();
+      if (endpointsBuilder_ == null) {
+        endpoints_ = builderForValue.build();
         onChanged();
       } else {
-        productionEndpointsBuilder_.setMessage(builderForValue.build());
+        endpointsBuilder_.setMessage(builderForValue.build());
       }
 
       return this;
     }
     /**
-     * <code>.wso2.discovery.api.EndpointCluster productionEndpoints = 6;</code>
+     * <code>.wso2.discovery.api.EndpointCluster endpoints = 6;</code>
      */
-    public Builder mergeProductionEndpoints(org.wso2.choreo.connect.discovery.api.EndpointCluster value) {
-      if (productionEndpointsBuilder_ == null) {
-        if (productionEndpoints_ != null) {
-          productionEndpoints_ =
-            org.wso2.choreo.connect.discovery.api.EndpointCluster.newBuilder(productionEndpoints_).mergeFrom(value).buildPartial();
+    public Builder mergeEndpoints(org.wso2.choreo.connect.discovery.api.EndpointCluster value) {
+      if (endpointsBuilder_ == null) {
+        if (endpoints_ != null) {
+          endpoints_ =
+            org.wso2.choreo.connect.discovery.api.EndpointCluster.newBuilder(endpoints_).mergeFrom(value).buildPartial();
         } else {
-          productionEndpoints_ = value;
+          endpoints_ = value;
         }
         onChanged();
       } else {
-        productionEndpointsBuilder_.mergeFrom(value);
+        endpointsBuilder_.mergeFrom(value);
       }
 
       return this;
     }
     /**
-     * <code>.wso2.discovery.api.EndpointCluster productionEndpoints = 6;</code>
+     * <code>.wso2.discovery.api.EndpointCluster endpoints = 6;</code>
      */
-    public Builder clearProductionEndpoints() {
-      if (productionEndpointsBuilder_ == null) {
-        productionEndpoints_ = null;
+    public Builder clearEndpoints() {
+      if (endpointsBuilder_ == null) {
+        endpoints_ = null;
         onChanged();
       } else {
-        productionEndpoints_ = null;
-        productionEndpointsBuilder_ = null;
+        endpoints_ = null;
+        endpointsBuilder_ = null;
       }
 
       return this;
     }
     /**
-     * <code>.wso2.discovery.api.EndpointCluster productionEndpoints = 6;</code>
+     * <code>.wso2.discovery.api.EndpointCluster endpoints = 6;</code>
      */
-    public org.wso2.choreo.connect.discovery.api.EndpointCluster.Builder getProductionEndpointsBuilder() {
+    public org.wso2.choreo.connect.discovery.api.EndpointCluster.Builder getEndpointsBuilder() {
       
       onChanged();
-      return getProductionEndpointsFieldBuilder().getBuilder();
+      return getEndpointsFieldBuilder().getBuilder();
     }
     /**
-     * <code>.wso2.discovery.api.EndpointCluster productionEndpoints = 6;</code>
+     * <code>.wso2.discovery.api.EndpointCluster endpoints = 6;</code>
      */
-    public org.wso2.choreo.connect.discovery.api.EndpointClusterOrBuilder getProductionEndpointsOrBuilder() {
-      if (productionEndpointsBuilder_ != null) {
-        return productionEndpointsBuilder_.getMessageOrBuilder();
+    public org.wso2.choreo.connect.discovery.api.EndpointClusterOrBuilder getEndpointsOrBuilder() {
+      if (endpointsBuilder_ != null) {
+        return endpointsBuilder_.getMessageOrBuilder();
       } else {
-        return productionEndpoints_ == null ?
-            org.wso2.choreo.connect.discovery.api.EndpointCluster.getDefaultInstance() : productionEndpoints_;
+        return endpoints_ == null ?
+            org.wso2.choreo.connect.discovery.api.EndpointCluster.getDefaultInstance() : endpoints_;
       }
     }
     /**
-     * <code>.wso2.discovery.api.EndpointCluster productionEndpoints = 6;</code>
+     * <code>.wso2.discovery.api.EndpointCluster endpoints = 6;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
         org.wso2.choreo.connect.discovery.api.EndpointCluster, org.wso2.choreo.connect.discovery.api.EndpointCluster.Builder, org.wso2.choreo.connect.discovery.api.EndpointClusterOrBuilder> 
-        getProductionEndpointsFieldBuilder() {
-      if (productionEndpointsBuilder_ == null) {
-        productionEndpointsBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+        getEndpointsFieldBuilder() {
+      if (endpointsBuilder_ == null) {
+        endpointsBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
             org.wso2.choreo.connect.discovery.api.EndpointCluster, org.wso2.choreo.connect.discovery.api.EndpointCluster.Builder, org.wso2.choreo.connect.discovery.api.EndpointClusterOrBuilder>(
-                getProductionEndpoints(),
+                getEndpoints(),
                 getParentForChildren(),
                 isClean());
-        productionEndpoints_ = null;
+        endpoints_ = null;
       }
-      return productionEndpointsBuilder_;
-    }
-
-    private org.wso2.choreo.connect.discovery.api.EndpointCluster sandboxEndpoints_;
-    private com.google.protobuf.SingleFieldBuilderV3<
-        org.wso2.choreo.connect.discovery.api.EndpointCluster, org.wso2.choreo.connect.discovery.api.EndpointCluster.Builder, org.wso2.choreo.connect.discovery.api.EndpointClusterOrBuilder> sandboxEndpointsBuilder_;
-    /**
-     * <code>.wso2.discovery.api.EndpointCluster sandboxEndpoints = 7;</code>
-     * @return Whether the sandboxEndpoints field is set.
-     */
-    public boolean hasSandboxEndpoints() {
-      return sandboxEndpointsBuilder_ != null || sandboxEndpoints_ != null;
-    }
-    /**
-     * <code>.wso2.discovery.api.EndpointCluster sandboxEndpoints = 7;</code>
-     * @return The sandboxEndpoints.
-     */
-    public org.wso2.choreo.connect.discovery.api.EndpointCluster getSandboxEndpoints() {
-      if (sandboxEndpointsBuilder_ == null) {
-        return sandboxEndpoints_ == null ? org.wso2.choreo.connect.discovery.api.EndpointCluster.getDefaultInstance() : sandboxEndpoints_;
-      } else {
-        return sandboxEndpointsBuilder_.getMessage();
-      }
-    }
-    /**
-     * <code>.wso2.discovery.api.EndpointCluster sandboxEndpoints = 7;</code>
-     */
-    public Builder setSandboxEndpoints(org.wso2.choreo.connect.discovery.api.EndpointCluster value) {
-      if (sandboxEndpointsBuilder_ == null) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        sandboxEndpoints_ = value;
-        onChanged();
-      } else {
-        sandboxEndpointsBuilder_.setMessage(value);
-      }
-
-      return this;
-    }
-    /**
-     * <code>.wso2.discovery.api.EndpointCluster sandboxEndpoints = 7;</code>
-     */
-    public Builder setSandboxEndpoints(
-        org.wso2.choreo.connect.discovery.api.EndpointCluster.Builder builderForValue) {
-      if (sandboxEndpointsBuilder_ == null) {
-        sandboxEndpoints_ = builderForValue.build();
-        onChanged();
-      } else {
-        sandboxEndpointsBuilder_.setMessage(builderForValue.build());
-      }
-
-      return this;
-    }
-    /**
-     * <code>.wso2.discovery.api.EndpointCluster sandboxEndpoints = 7;</code>
-     */
-    public Builder mergeSandboxEndpoints(org.wso2.choreo.connect.discovery.api.EndpointCluster value) {
-      if (sandboxEndpointsBuilder_ == null) {
-        if (sandboxEndpoints_ != null) {
-          sandboxEndpoints_ =
-            org.wso2.choreo.connect.discovery.api.EndpointCluster.newBuilder(sandboxEndpoints_).mergeFrom(value).buildPartial();
-        } else {
-          sandboxEndpoints_ = value;
-        }
-        onChanged();
-      } else {
-        sandboxEndpointsBuilder_.mergeFrom(value);
-      }
-
-      return this;
-    }
-    /**
-     * <code>.wso2.discovery.api.EndpointCluster sandboxEndpoints = 7;</code>
-     */
-    public Builder clearSandboxEndpoints() {
-      if (sandboxEndpointsBuilder_ == null) {
-        sandboxEndpoints_ = null;
-        onChanged();
-      } else {
-        sandboxEndpoints_ = null;
-        sandboxEndpointsBuilder_ = null;
-      }
-
-      return this;
-    }
-    /**
-     * <code>.wso2.discovery.api.EndpointCluster sandboxEndpoints = 7;</code>
-     */
-    public org.wso2.choreo.connect.discovery.api.EndpointCluster.Builder getSandboxEndpointsBuilder() {
-      
-      onChanged();
-      return getSandboxEndpointsFieldBuilder().getBuilder();
-    }
-    /**
-     * <code>.wso2.discovery.api.EndpointCluster sandboxEndpoints = 7;</code>
-     */
-    public org.wso2.choreo.connect.discovery.api.EndpointClusterOrBuilder getSandboxEndpointsOrBuilder() {
-      if (sandboxEndpointsBuilder_ != null) {
-        return sandboxEndpointsBuilder_.getMessageOrBuilder();
-      } else {
-        return sandboxEndpoints_ == null ?
-            org.wso2.choreo.connect.discovery.api.EndpointCluster.getDefaultInstance() : sandboxEndpoints_;
-      }
-    }
-    /**
-     * <code>.wso2.discovery.api.EndpointCluster sandboxEndpoints = 7;</code>
-     */
-    private com.google.protobuf.SingleFieldBuilderV3<
-        org.wso2.choreo.connect.discovery.api.EndpointCluster, org.wso2.choreo.connect.discovery.api.EndpointCluster.Builder, org.wso2.choreo.connect.discovery.api.EndpointClusterOrBuilder> 
-        getSandboxEndpointsFieldBuilder() {
-      if (sandboxEndpointsBuilder_ == null) {
-        sandboxEndpointsBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-            org.wso2.choreo.connect.discovery.api.EndpointCluster, org.wso2.choreo.connect.discovery.api.EndpointCluster.Builder, org.wso2.choreo.connect.discovery.api.EndpointClusterOrBuilder>(
-                getSandboxEndpoints(),
-                getParentForChildren(),
-                isClean());
-        sandboxEndpoints_ = null;
-      }
-      return sandboxEndpointsBuilder_;
+      return endpointsBuilder_;
     }
 
     private com.google.protobuf.MapField<
@@ -2181,121 +1553,11 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private com.google.protobuf.LazyStringList consumes_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-    private void ensureConsumesIsMutable() {
-      if (!((bitField0_ & 0x00000004) != 0)) {
-        consumes_ = new com.google.protobuf.LazyStringArrayList(consumes_);
-        bitField0_ |= 0x00000004;
-       }
-    }
-    /**
-     * <code>repeated string consumes = 9;</code>
-     * @return A list containing the consumes.
-     */
-    public com.google.protobuf.ProtocolStringList
-        getConsumesList() {
-      return consumes_.getUnmodifiableView();
-    }
-    /**
-     * <code>repeated string consumes = 9;</code>
-     * @return The count of consumes.
-     */
-    public int getConsumesCount() {
-      return consumes_.size();
-    }
-    /**
-     * <code>repeated string consumes = 9;</code>
-     * @param index The index of the element to return.
-     * @return The consumes at the given index.
-     */
-    public java.lang.String getConsumes(int index) {
-      return consumes_.get(index);
-    }
-    /**
-     * <code>repeated string consumes = 9;</code>
-     * @param index The index of the value to return.
-     * @return The bytes of the consumes at the given index.
-     */
-    public com.google.protobuf.ByteString
-        getConsumesBytes(int index) {
-      return consumes_.getByteString(index);
-    }
-    /**
-     * <code>repeated string consumes = 9;</code>
-     * @param index The index to set the value at.
-     * @param value The consumes to set.
-     * @return This builder for chaining.
-     */
-    public Builder setConsumes(
-        int index, java.lang.String value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureConsumesIsMutable();
-      consumes_.set(index, value);
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>repeated string consumes = 9;</code>
-     * @param value The consumes to add.
-     * @return This builder for chaining.
-     */
-    public Builder addConsumes(
-        java.lang.String value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureConsumesIsMutable();
-      consumes_.add(value);
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>repeated string consumes = 9;</code>
-     * @param values The consumes to add.
-     * @return This builder for chaining.
-     */
-    public Builder addAllConsumes(
-        java.lang.Iterable<java.lang.String> values) {
-      ensureConsumesIsMutable();
-      com.google.protobuf.AbstractMessageLite.Builder.addAll(
-          values, consumes_);
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>repeated string consumes = 9;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearConsumes() {
-      consumes_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      bitField0_ = (bitField0_ & ~0x00000004);
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>repeated string consumes = 9;</code>
-     * @param value The bytes of the consumes to add.
-     * @return This builder for chaining.
-     */
-    public Builder addConsumesBytes(
-        com.google.protobuf.ByteString value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-      ensureConsumesIsMutable();
-      consumes_.add(value);
-      onChanged();
-      return this;
-    }
-
     private com.google.protobuf.LazyStringList schemes_ = com.google.protobuf.LazyStringArrayList.EMPTY;
     private void ensureSchemesIsMutable() {
-      if (!((bitField0_ & 0x00000008) != 0)) {
+      if (!((bitField0_ & 0x00000004) != 0)) {
         schemes_ = new com.google.protobuf.LazyStringArrayList(schemes_);
-        bitField0_ |= 0x00000008;
+        bitField0_ |= 0x00000004;
        }
     }
     /**
@@ -2380,7 +1642,7 @@ private static final long serialVersionUID = 0L;
      */
     public Builder clearSchemes() {
       schemes_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      bitField0_ = (bitField0_ & ~0x00000008);
+      bitField0_ = (bitField0_ & ~0x00000004);
       onChanged();
       return this;
     }
@@ -2397,116 +1659,6 @@ private static final long serialVersionUID = 0L;
   checkByteStringIsUtf8(value);
       ensureSchemesIsMutable();
       schemes_.add(value);
-      onChanged();
-      return this;
-    }
-
-    private com.google.protobuf.LazyStringList tags_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-    private void ensureTagsIsMutable() {
-      if (!((bitField0_ & 0x00000010) != 0)) {
-        tags_ = new com.google.protobuf.LazyStringArrayList(tags_);
-        bitField0_ |= 0x00000010;
-       }
-    }
-    /**
-     * <code>repeated string tags = 11;</code>
-     * @return A list containing the tags.
-     */
-    public com.google.protobuf.ProtocolStringList
-        getTagsList() {
-      return tags_.getUnmodifiableView();
-    }
-    /**
-     * <code>repeated string tags = 11;</code>
-     * @return The count of tags.
-     */
-    public int getTagsCount() {
-      return tags_.size();
-    }
-    /**
-     * <code>repeated string tags = 11;</code>
-     * @param index The index of the element to return.
-     * @return The tags at the given index.
-     */
-    public java.lang.String getTags(int index) {
-      return tags_.get(index);
-    }
-    /**
-     * <code>repeated string tags = 11;</code>
-     * @param index The index of the value to return.
-     * @return The bytes of the tags at the given index.
-     */
-    public com.google.protobuf.ByteString
-        getTagsBytes(int index) {
-      return tags_.getByteString(index);
-    }
-    /**
-     * <code>repeated string tags = 11;</code>
-     * @param index The index to set the value at.
-     * @param value The tags to set.
-     * @return This builder for chaining.
-     */
-    public Builder setTags(
-        int index, java.lang.String value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureTagsIsMutable();
-      tags_.set(index, value);
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>repeated string tags = 11;</code>
-     * @param value The tags to add.
-     * @return This builder for chaining.
-     */
-    public Builder addTags(
-        java.lang.String value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureTagsIsMutable();
-      tags_.add(value);
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>repeated string tags = 11;</code>
-     * @param values The tags to add.
-     * @return This builder for chaining.
-     */
-    public Builder addAllTags(
-        java.lang.Iterable<java.lang.String> values) {
-      ensureTagsIsMutable();
-      com.google.protobuf.AbstractMessageLite.Builder.addAll(
-          values, tags_);
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>repeated string tags = 11;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearTags() {
-      tags_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      bitField0_ = (bitField0_ & ~0x00000010);
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>repeated string tags = 11;</code>
-     * @param value The bytes of the tags to add.
-     * @return This builder for chaining.
-     */
-    public Builder addTagsBytes(
-        com.google.protobuf.ByteString value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-      ensureTagsIsMutable();
-      tags_.add(value);
       onChanged();
       return this;
     }
