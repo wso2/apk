@@ -14,6 +14,8 @@ on:
       - closed
     paths:
       - '**/backoffice/backoffice-domain-service/**'
+    branches:
+      - 'main'
 jobs:
   build:
     runs-on: ubuntu-latest
