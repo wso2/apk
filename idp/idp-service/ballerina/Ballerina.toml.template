@@ -1,0 +1,13 @@
+[package]
+org = "wso2"
+name = "idp_service"
+version = "PROJECT_VERSION"
+distribution = "2201.3.0"
+
+[[platform.java11.dependency]]
+groupId = "org.postgresql"
+artifactId = "postgresql"
+version = "42.2.20"
+
+[build-options]
+observabilityIncluded = true
