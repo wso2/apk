@@ -19,19 +19,16 @@ package notification
 
 import (
 	"context"
-	"crypto/tls"
 	"fmt"
 	"net"
 	"time"
 
 	"github.com/wso2/apk/adapter/pkg/logging"
-	"github.com/wso2/apk/adapter/pkg/tlsutils"
 	"github.com/wso2/apk/management-server/internal/config"
 	"github.com/wso2/apk/management-server/internal/logger"
 	"github.com/wso2/apk/management-server/internal/synchronizer"
 	internal_types "github.com/wso2/apk/management-server/internal/types"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/keepalive"
 )
 
@@ -118,24 +115,25 @@ func (s *notificationService) DeleteSubscription(ctx context.Context, subscripti
 // StartGRPCServer starts the GRPC server for notifications
 func StartGRPCServer() {
 	var grpcOptions []grpc.ServerOption
-	publicKeyLocation, privateKeyLocation, truststoreLocation := tlsutils.GetKeyLocations()
-	cert, err := tlsutils.GetServerCertificate(publicKeyLocation, privateKeyLocation)
-	caCertPool := tlsutils.GetTrustedCertPool(truststoreLocation)
-	if err == nil {
-		grpcOptions = append(grpcOptions, grpc.Creds(
-			credentials.NewTLS(&tls.Config{
-				Certificates: []tls.Certificate{cert},
-				ClientAuth:   tls.RequireAndVerifyClientCert,
-				ClientCAs:    caCertPool,
-			}),
-		))
-	} else {
-		logger.LoggerNotificationServer.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("Failed to initiate the ssl context, error: %v", err.Error()),
-			Severity:  logging.BLOCKER,
-			ErrorCode: 1200,
-		})
-	}
+	// Todo(Sampath): need to re-enable TLS after bal TLS cert issue resolved
+	//publicKeyLocation, privateKeyLocation, truststoreLocation := tlsutils.GetKeyLocations()
+	//cert, err := tlsutils.GetServerCertificate(publicKeyLocation, privateKeyLocation)
+	//caCertPool := tlsutils.GetTrustedCertPool(truststoreLocation)
+	// if err == nil {
+		// grpcOptions = append(grpcOptions, grpc.Creds(
+		// 	credentials.NewTLS(&tls.Config{
+		// 		Certificates: []tls.Certificate{cert},
+		// 		ClientAuth:   tls.RequireAndVerifyClientCert,
+		// 		ClientCAs:    caCertPool,
+		// 	}),
+		// ))
+	// } else {
+	// 	logger.LoggerNotificationServer.ErrorC(logging.ErrorDetails{
+	// 		Message:   fmt.Sprintf("Failed to initiate the ssl context, error: %v", err.Error()),
+	// 		Severity:  logging.BLOCKER,
+	// 		ErrorCode: 1200,
+	// 	})
+	// }
 	grpcOptions = append(grpcOptions, grpc.KeepaliveParams(
 		keepalive.ServerParameters{
 			Time:    time.Duration(5 * time.Minute),

@@ -17,27 +17,28 @@
 //
 
 import ballerina/log;
-import ballerina/grpc;
+//import ballerina/grpc;
 
 public isolated function createApplication(Application createApplicationRequest, string endpoint, KeyStore pubCert,KeyStore tlsCert) returns error|NotificationResponse {
-    string certPath = pubCert.path + "/mg.pem";
-    log:printInfo("certPath:"+certPath);
-    grpc:ClientConfiguration config ={ 
-        secureSocket:{
-            verifyHostName: false,
-            cert:certPath, 
-            key: {
-                certFile:"/home/wso2apk/devportal/security/keystore/devportal.crt",
-                keyFile:"/home/wso2apk/devportal/security/keystore/devportal.key"
-            },
-            enable: true,
-            protocol: {
-                name: grpc:TLS,
-                versions: ["TLSv1.2", "TLSv1.1"]
-            }
-        }
-    };
-    NotificationServiceClient ep = check new (endpoint,config);
+    // Todo(Sampath): re-enable after bal grpc cert issue resolved
+    // string certPath = pubCert.path + "/mg.pem";
+    // log:printInfo("certPath:"+certPath);
+    // grpc:ClientConfiguration config ={ 
+    //     secureSocket:{
+    //         verifyHostName: false,
+    //         cert:certPath, 
+    //         key: {
+    //             certFile:"/home/wso2apk/devportal/security/keystore/devportal.crt",
+    //             keyFile:"/home/wso2apk/devportal/security/keystore/devportal.key"
+    //         },
+    //         enable: true,
+    //         protocol: {
+    //             name: grpc:TLS,
+    //             versions: ["TLSv1.2", "TLSv1.1"]
+    //         }
+    //     }
+    // };
+    NotificationServiceClient ep = check new (endpoint);
     NotificationResponse createApplicationResponse = check ep->CreateApplication(createApplicationRequest);
     log:printInfo(createApplicationResponse.toString());
     return createApplicationResponse;

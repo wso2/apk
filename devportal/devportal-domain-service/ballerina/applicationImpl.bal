@@ -48,7 +48,7 @@ isolated function addApplication(Application application, string org, string use
                     KeyStore pubCert = {path: msPublicCert.path,keyPassword: "" };
                     KeyStore key = {path: tlsCert.path,keyPassword: "" };
                     NotificationResponse|error applicationNotification = notification_grpc_client:createApplication(createApplicationRequest,
-                    "https://" + host + ":8766/",pubCert, key);
+                    "http://" + host + ":8766/",pubCert, key);
                     if applicationNotification is error {
                         string message = "Error while sending application create grpc event";
                         log:printError(applicationNotification.toString());
