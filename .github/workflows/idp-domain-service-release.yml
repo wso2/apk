@@ -14,7 +14,8 @@ on:
       - closed
     paths:
       - '**/idp/idp-service/**'
-
+    branches:
+      - 'main'
 jobs:
   build:
     runs-on: ubuntu-latest
