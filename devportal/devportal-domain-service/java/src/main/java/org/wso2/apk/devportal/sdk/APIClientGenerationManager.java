@@ -33,6 +33,9 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -74,14 +77,14 @@ public class APIClientGenerationManager {
     /**
      * This method generates client side SDK for a given API
      *
-     * @param sdkLanguage preferred language to generate the SDK
-     * @param apiName     name of the API
-     * @param apiVersion  version of the API
+     * @param sdkLanguage          preferred language to generate the SDK
+     * @param apiName              name of the API
+     * @param apiVersion           version of the API
      * @param swaggerAPIDefinition Swagger Definition of the API
-     * @param groupId  group id of the generated SDK
-     * @param artifactId  artifact id of the generated SDK
-     * @param modelPackage  model package name of the generated SDK
-     * @param apiPackage  api package name of the generated SDK
+     * @param groupId              group id of the generated SDK
+     * @param artifactId           artifact id of the generated SDK
+     * @param modelPackage         model package name of the generated SDK
+     * @param apiPackage           api package name of the generated SDK
      * @return a map containing the zip file name and its' temporary location until it is downloaded
      * @throws APIClientGenerationException if failed to generate the SDK
      */
@@ -97,35 +100,31 @@ public class APIClientGenerationManager {
             handleSDKGenException("Error loading the Swagger definition. Swagger file is empty.");
         }
         //create a temporary directory with a random name to store files created during generating the SDK
-        String tempDirectoryLocation = SDKConstants.TEMP_DIRECTORY_NAME + File.separator + UUID.randomUUID().toString();
-        File tempDirectory = new File(tempDirectoryLocation);
-        boolean isTempDirectoryCreated = tempDirectory.mkdir();
-
-        if (!isTempDirectoryCreated) {
+        Path path = Paths.get(FileUtils.getTempDirectory().getAbsolutePath(), UUID.randomUUID().toString());
+        String tempDirectoryLocation = path.toFile().getAbsolutePath();
+        try {
+            tempDirectoryLocation = Files.createDirectories(path).toFile().getAbsolutePath();
+        } catch (IOException e) {
             handleSDKGenException("Unable to create temporary directory in : " + tempDirectoryLocation);
         }
-
-        String specFileLocation = tempDirectoryLocation + File.separator + UUID.randomUUID().toString() +
+        String specFileLocation = tempDirectoryLocation + File.separator + UUID.randomUUID() +
                 SDKConstants.JSON_FILE_EXTENSION;
         //The below swaggerSpecFile will be deleted when cleaning the temp directory by the caller
-        File swaggerSpecFile = new File(specFileLocation);
-        FileWriter fileWriter = null;
-        BufferedWriter bufferedWriter = null;
-
         try {
+            File swaggerSpecFile = new File(specFileLocation);
+
             boolean isSpecFileCreated = swaggerSpecFile.createNewFile();
             if (!isSpecFileCreated) {
                 handleSDKGenException("Unable to create the swagger spec file for API : " + apiName + " in " +
                         specFileLocation);
             }
-            fileWriter = new FileWriter(swaggerSpecFile.getAbsoluteFile());
-            bufferedWriter = new BufferedWriter(fileWriter);
-            bufferedWriter.write(swaggerAPIDefinition);
+            try (FileWriter fileWriter = new FileWriter(swaggerSpecFile.getAbsoluteFile())) {
+                try (BufferedWriter bufferedWriter = new BufferedWriter(fileWriter)) {
+                    bufferedWriter.write(swaggerAPIDefinition);
+                }
+            }
         } catch (IOException e) {
             handleSDKGenException("Error while storing the temporary swagger file in : " + specFileLocation, e);
-        } finally {
-            IOUtils.closeQuietly(bufferedWriter);
-            IOUtils.closeQuietly(fileWriter);
         }
 
         String sdkDirectoryName = apiName + "_" + apiVersion + "_" + sdkLanguage;
@@ -180,7 +179,7 @@ public class APIClientGenerationManager {
      * @param temporaryOutputPath temporary location where the SDK archive is saved until downloaded
      */
     private void generateClient(String apiName, String specLocation, String sdkLanguage, String temporaryOutputPath,
-                                String groupId, String artifactId, String modelPackage, String apiPackage ) {
+                                String groupId, String artifactId, String modelPackage, String apiPackage) {
 
         CodegenConfigurator codegenConfigurator = new CodegenConfigurator();
         codegenConfigurator.setGroupId(groupId);
