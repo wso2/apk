@@ -352,8 +352,15 @@ func (apiReconciler *APIReconciler) getBackendConfigs(ctx context.Context,
 	}
 	if len(backendPolicyList.Items) > 0 {
 		backendPolicy := *utils.TieBreaker(utils.GetPtrSlice(backendPolicyList.Items))
-		tlsConfig = backendPolicy.Spec.Default.TLS
-		backendProtocol := backendPolicy.Spec.Default.Protocol
+		var backendProtocol dpv1alpha1.BackendProtocolType
+		if backendPolicy.Spec.Override != nil {
+			tlsConfig = backendPolicy.Spec.Override.TLS
+			backendProtocol = backendPolicy.Spec.Override.Protocol
+		}
+		if backendPolicy.Spec.Default != nil {
+			tlsConfig = backendPolicy.Spec.Default.TLS
+			backendProtocol = backendPolicy.Spec.Default.Protocol
+		}
 		if len(backendProtocol) > 0 {
 			switch protocol {
 			case dpv1alpha1.HTTPProtocol:
