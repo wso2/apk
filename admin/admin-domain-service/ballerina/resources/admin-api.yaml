@@ -2744,7 +2744,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/organization"'
+          "https://127.0.0.1:9443/api/am/admin/organizations"'
       operationId: getAllOrganization
 
     post:
@@ -2778,7 +2778,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/organization"'
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/organizations"'
       operationId: addOrganization
   /organizations/{organizationId}:
     get:
@@ -2811,7 +2811,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X GET -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/organization/0a043c2b-ee75-4ef3-9e1c-fc2610ccfa8b"'
+          "https://127.0.0.1:9443/api/am/admin/organizations/0a043c2b-ee75-4ef3-9e1c-fc2610ccfa8b"'
       operationId: getOrganizationById
     put:
       tags:
@@ -2848,7 +2848,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/organization/d7cf8523-9180-4255-84fa-6cb171c1f779"'
+          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/am/admin/organizations/d7cf8523-9180-4255-84fa-6cb171c1f779"'
       operationId: updateOrganization
     delete:
       tags:
@@ -2872,7 +2872,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/organization/d7cf8523-9180-4255-84fa-6cb171c1f779"'
+          "https://127.0.0.1:9443/api/am/admin/organizations/d7cf8523-9180-4255-84fa-6cb171c1f779"'
       operationId: removeOrganization
   /organization-info/{claimValue}:
     get:
@@ -2903,7 +2903,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X GET -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/organization/0a043c2b-ee75-4ef3-9e1c-fc2610ccfa8b"'
+          "https://127.0.0.1:9443/api/am/admin/organization-info/0a043c2b-ee75-4ef3-9e1c-fc2610ccfa8b"'
       operationId: getOrganizationByClaimValue
 
 components:
