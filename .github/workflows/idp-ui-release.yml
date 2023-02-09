@@ -13,7 +13,7 @@ on:
     types:
       - closed
     paths:
-      - '**/management-server/**'
+      - '**/idp/idp-ui/**'
     branches:
       - 'main'
 
