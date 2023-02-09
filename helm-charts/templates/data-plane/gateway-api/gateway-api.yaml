@@ -13,17 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # -----------------------------------------------------------------------
-#
-# config/webhook/0-namespace.yaml
-#
 apiVersion: v1
 kind: Namespace
 metadata:
   name: gateway-system
 ---
-#
-# config/webhook/admission_webhook.yaml
-#
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
@@ -111,9 +105,6 @@ spec:
           secret:
             secretName: gateway-api-admission
 ---
-#
-# config/webhook/certificate_config.yaml
-#
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -144,6 +135,7 @@ metadata:
   annotations:
   labels:
     name: gateway-api-webhook
+  namespace: gateway-system
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
