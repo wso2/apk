@@ -38,7 +38,14 @@ data:
     loginPageURl = "{{ .Values.wso2.apk.idp.idpds.config.loginPageURl }}"
     loginErrorPageUrl = "{{ .Values.wso2.apk.idp.idpds.config.loginErrorPageUrl }}"
     loginCallBackURl = "{{ .Values.wso2.apk.idp.idpds.config.loginCallBackURl }}"
-    
+    [wso2.idp_service.idpConfiguration.tokenIssuerConfiguration]
+    issuer = "{{ .Values.wso2.apk.idp.idpds.config.issuer }}"
+    keyId="{{ .Values.wso2.apk.idp.idpds.config.keyId }}"
+    [[wso2.idp_service.idpConfiguration.fileBaseApp]]
+    clientId = "45f1c5c8-a92e-11ed-afa1-0242ac120002"
+    clientSecret = "4fbd62ec-a92e-11ed-afa1-0242ac120002"
+    callbackUrls = []
+    grantTypes = ["client_credentials",refresh_token"]
     [[wso2.idp_service.idpConfiguration.user]]
     username = "admin"
     password = "admin"
@@ -49,12 +56,5 @@ data:
     password = "user1"
     organizations = [""]
     superAdmin = true
-
-    [ballerina.http]
-    traceLogConsole = true
-
-
-    [ballerina.log]
-    level = "DEBUG"
 
 {{- end -}}

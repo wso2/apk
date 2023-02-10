@@ -21,7 +21,7 @@ import ballerina/sql;
 import ballerina/http;
 import ballerina/jwt;
 
-configurable IDPConfiguration idpConfiguration = ?;
+configurable IDPConfiguration & readonly idpConfiguration = ?;
 final postgresql:Client|sql:Error dbClient;
 listener http:Listener ep0 = new (9443);
 final jwt:ValidatorConfig & readonly validatorConfig;
