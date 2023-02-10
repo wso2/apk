@@ -31,7 +31,7 @@ public type RuntimeConfiguratation record {|
     (TokenIssuerConfiguration & readonly) tokenIssuerConfiguration = {};
     KeyStores keyStores;
     (K8sConfigurations & readonly) k8sConfiguration = {};
-    Vhost[] vhost = [{name:"Default",hosts:["gw.wso2.com"],'type:PRODUCTION_TYPE},{name:"Default",hosts:["sandbox.gw.wso2.com"],'type:SANDBOX_TYPE}];
+    (Vhost[] & readonly) vhost = [{name:"Default",hosts:["gw.wso2.com"],'type:PRODUCTION_TYPE},{name:"Default",hosts:["sandbox.gw.wso2.com"],'type:SANDBOX_TYPE}];
 |};
 
 public type Vhost record {|
