@@ -456,11 +456,11 @@ public type ConditionalGroup record {
 };
 
 public type Organization record {
-    string id;
+    string id?;
     @constraint:String {maxLength: 255, minLength: 1}
-    string name?;
+    string name;
     @constraint:String {maxLength: 255, minLength: 1}
-    string displayName?;
+    string displayName;
     OrganizationClaim[] claimList;
 };
 

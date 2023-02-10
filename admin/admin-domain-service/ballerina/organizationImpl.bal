@@ -19,22 +19,53 @@
 import ballerina/uuid;
 
 isolated function addOrganization(Organization payload) returns CreatedOrganization|APKError {
-    string | APKError validateOrganization = validateOrganizationByNameDAO(payload.name);
-    if validateOrganization is "true" {
-        string message = "Organization already exists by name";
+    boolean validateOrganization = check validateOrganizationByNameDAO(payload.name);
+    if validateOrganization is true {
+        string message = "Organization already exists by name:" + payload.name;
         return error(message, message = message, description = message, code = 90911, statusCode = "400");
     }
-    string | APKError validateOrganizationbyDisplayName = validateOrganizationByDisplayNameDAO(payload.displayName);
-    if validateOrganizationbyDisplayName is "true" {
-        string message = "Organization already exists by name";
+    boolean validateOrganizationbyDisplayName = check validateOrganizationByDisplayNameDAO(payload.displayName);
+    if validateOrganizationbyDisplayName is true {
+        string message = "Organization already exists by displayName:" + payload.displayName;
         return error(message, message = message, description = message, code = 90911, statusCode = "400");
     }
     string organizationId = uuid:createType1AsString();
     payload.id = organizationId;
     Organization|APKError organization = addOrganizationDAO(payload);
     if organization is Organization {
-        CreatedOrganization createdOrganization = {body: organization};
-        return createdOrganization;
+        Organization|APKError organization1 = addOrganizationClaimMappingDAO(payload);
+        if organization1 is Organization{
+            CreatedOrganization createdOrganization = {body: organization};
+            return createdOrganization;
+        } else {
+            return organization1;
+        } 
+    } else {
+        return organization;
+    } 
+}
+
+isolated function updatedOrganization(string id, Organization payload) returns Organization|APKError {
+    boolean validateOrganizationId = check validateOrganizationById(id);
+    if validateOrganizationId is false {
+        string message = "Organization ID not exist by:" + id;
+        return error(message, message = message, description = message, code = 90911, statusCode = "400");
+    }
+    
+    boolean validateOrganizationClaimKey = check validateClaimKeys(payload.claimList);
+    if validateOrganizationClaimKey is false {
+        string message = "Organization claim key invalid";
+        return error(message, message = message, description = message, code = 90911, statusCode = "400");
+    }
+
+    Organization|APKError organization = updateOrganizationDAO(id, payload);
+    if organization is Organization {
+        Organization|APKError organization1 = updateOrganizationClaimMappingDAO(id, payload);
+        if organization1 is Organization{
+            return organization1;
+        } else {
+            return organization1;
+        } 
     } else {
         return organization;
     } 

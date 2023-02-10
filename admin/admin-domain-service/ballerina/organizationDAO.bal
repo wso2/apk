@@ -45,7 +45,7 @@ isolated function addOrganizationClaimMappingDAO(Organization payload) returns O
         return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
         foreach OrganizationClaim e in payload.claimList {
-            sql:ParameterizedQuery query = `INSERT INTO ORGANIZATION_CLIAM_MAPPING(UUID, CLIAM_KEY, 
+            sql:ParameterizedQuery query = `INSERT INTO ORGANIZATION_CLIAM_MAPPING(UUID, CLAIM_KEY, 
             CLAIM_VALUE) VALUES (${payload.id},${e.claimKey},
             ${e.claimValue})`;
             sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
@@ -60,36 +60,110 @@ isolated function addOrganizationClaimMappingDAO(Organization payload) returns O
     }
 }
 
-isolated function validateOrganizationByNameDAO(string? name) returns string|APKError {
+isolated function validateOrganizationByNameDAO(string name) returns boolean|APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
         return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } 
-        sql:ParameterizedQuery query = `SELECT EXISTS(SELECT 1 FROM ORGANIZATION WHERE NAME = ${name})`;
-        sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
-        if result is sql:ExecutionResult {
-            return result.toString();
-        } else { 
-            string message = "Error while validating organization name in Database";
-            return error(message, message = message, description = message, code = 909000, statusCode = "500"); 
-        }
+    sql:ParameterizedQuery query = `select exists(SELECT 1 FROM ORGANIZATION WHERE NAME = ${name})`;
+    boolean | sql:Error result =  dbClient->queryRow(query);
+    if result is boolean {
+        return result;
+    } else { 
+        string message = "Error while validating organization name in Database";
+        return error(message, message = message, description = message, code = 909000, statusCode = "500"); 
+    }
     
 }
 
-isolated function validateOrganizationByDisplayNameDAO(string? displayname) returns string|APKError {
+isolated function validateOrganizationByDisplayNameDAO(string displayname) returns boolean|APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
         return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } 
-        sql:ParameterizedQuery query = `SELECT EXISTS(SELECT 1 FROM ORGANIZATION WHERE DISPLAY_NAME = ${displayname})`;
+    sql:ParameterizedQuery query = `select exists(SELECT 1 FROM ORGANIZATION WHERE DISPLAY_NAME = ${displayname})`;
+    boolean | sql:Error result =  dbClient->queryRow(query);
+    if result is boolean {
+        return result;
+    } else { 
+        string message = "Error while validating organization display name in Database";
+        return error(message, message = message, description = message, code = 909000, statusCode = "500"); 
+    }   
+}
+
+isolated function validateOrganizationById(string? id) returns boolean|APKError {
+    postgresql:Client | error dbClient  = getConnection();
+    if dbClient is error {
+        string message = "Error while retrieving connection";
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+    } 
+    sql:ParameterizedQuery query = `select exists(SELECT 1 FROM ORGANIZATION WHERE UUID = ${id})`;
+    boolean | sql:Error result =  dbClient->queryRow(query);
+    if result is boolean {
+        return result;
+    } else { 
+        string message = "Error while validating organization id in Database";
+        return error(message, message = message, description = message, code = 909000, statusCode = "500"); 
+    }   
+}
+
+isolated function validateClaimKeys(OrganizationClaim[] claims) returns boolean|APKError {
+    postgresql:Client | error dbClient  = getConnection();
+    if dbClient is error {
+        string message = "Error while retrieving connection";
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+    } 
+    foreach OrganizationClaim e in claims {
+        sql:ParameterizedQuery query = `select exists(SELECT 1 FROM organization_cliam_mapping WHERE CLAIM_KEY = ${e.claimKey})`;
+        boolean | sql:Error result =  dbClient->queryRow(query);
+        if result is true {
+            continue;
+        } else if result is false {
+            return false;
+        } else { 
+            string message = "Error while validating claim key in Database";
+            return error(message, message = message, description = message, code = 909000, statusCode = "500"); 
+        }  
+    } 
+    return true;
+}
+
+isolated function updateOrganizationDAO(string id, Organization payload) returns Organization|APKError {
+    postgresql:Client | error dbClient  = getConnection();
+    if dbClient is error {
+        string message = "Error while retrieving connection";
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+    } else {
+        sql:ParameterizedQuery query = `UPDATE ORGANIZATION SET NAME =${payload.name},
+         DISPLAY_NAME = ${payload.displayName} WHERE UUID = ${id}`;
         sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
         if result is sql:ExecutionResult {
-            return result.toString();
+            return payload;
         } else { 
-            string message = "Error while validating organization display name in Database";
-            return error(message, message = message, description = message, code = 909000, statusCode = "500"); 
+            string message = "Error while updating organization data into Database";
+            return error(message, result, message = message, description = message, code = 909000, statusCode = "500"); 
         }
-    
+    }
+}
+
+isolated function updateOrganizationClaimMappingDAO(string id, Organization payload) returns Organization|APKError {
+    postgresql:Client | error dbClient  = getConnection();
+    if dbClient is error {
+        string message = "Error while retrieving connection";
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+    } else {
+        foreach OrganizationClaim e in payload.claimList {
+            sql:ParameterizedQuery query = `UPDATE ORGANIZATION_CLIAM_MAPPING SET CLAIM_VALUE=${e.claimValue} WHERE CLAIM_KEY=${e.claimKey}`;
+            sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
+            if result is sql:ExecutionResult {
+                continue;
+            } else { 
+                string message = "Error while updating organization claim data into Database";
+                return error(message, result, message = message, description = message, code = 909000, statusCode = "500"); 
+            }
+        }
+        return payload;
+    }
 }
