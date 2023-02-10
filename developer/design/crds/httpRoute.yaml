@@ -1,0 +1,38 @@
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: http-route-SwaggerPetstore
+spec:
+  parentRefs:
+    - name: my-gateway
+  hostnames:
+    - "prod.gateway.wso2.com"
+  rules:
+    matches:
+      - path:
+          type: PathPrefix
+          value: /pet-store-api/1.0.6/pet/findByStatus
+          method: GET
+          queryParams:
+            - type: Exact
+              name: status
+              value: available
+      - path:
+          type: PathPrefix
+          value: /pet-store-api/1.0.6/pet
+    filters:
+      - type: RequestRewrite
+        requestRewrite:
+          path:
+            type: ReplacePrefix
+            pattern: /pet-store-api/1.0.6
+            substitution: /my-backend-path
+      - type: RequestHeaderModifier
+        requestHeaderModifier:
+          remove:
+            - X-Header-Remove
+      - type: extensionRef
+        extensionRef:
+          group: wso2.com/v1beta1
+          kind: Scope
+          name: pet-store-scope-1

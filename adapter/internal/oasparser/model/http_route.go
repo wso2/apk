@@ -113,6 +113,39 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, au
 						Parameters: policyParameters,
 					})
 				}
+			case gwapiv1b1.HTTPRouteFilterResponseHeaderModifier:
+				for _, header := range filter.ResponseHeaderModifier.Add {
+					policyParameters := make(map[string]interface{})
+					policyParameters[constants.HeaderName] = string(header.Name)
+					policyParameters[constants.HeaderValue] = string(header.Value)
+
+					policies.Response = append(policies.Response, Policy{
+						PolicyName: string(gwapiv1b1.HTTPRouteFilterResponseHeaderModifier),
+						Action:     constants.ActionHeaderAdd,
+						Parameters: policyParameters,
+					})
+				}
+				for _, header := range filter.ResponseHeaderModifier.Remove {
+					policyParameters := make(map[string]interface{})
+					policyParameters[constants.HeaderName] = string(header)
+
+					policies.Response = append(policies.Response, Policy{
+						PolicyName: string(gwapiv1b1.HTTPRouteFilterResponseHeaderModifier),
+						Action:     constants.ActionHeaderRemove,
+						Parameters: policyParameters,
+					})
+				}
+				for _, header := range filter.ResponseHeaderModifier.Set {
+					policyParameters := make(map[string]interface{})
+					policyParameters[constants.HeaderName] = string(header.Name)
+					policyParameters[constants.HeaderValue] = string(header.Value)
+
+					policies.Response = append(policies.Response, Policy{
+						PolicyName: string(gwapiv1b1.HTTPRouteFilterResponseHeaderModifier),
+						Action:     constants.ActionHeaderAdd,
+						Parameters: policyParameters,
+					})
+				}
 			}
 		}
 		loggers.LoggerOasparser.Debug("Calculating auths for API ...")
