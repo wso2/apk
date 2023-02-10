@@ -31,3 +31,5 @@ const string PRODUCTION_TYPE = "production";
 const string SANDBOX_TYPE = "sandbox";
 const string PRIMARY_ENDPOINT = "primary";
 const string ZIP_FILE_EXTENSTION = ".zip";
+const string PROTOCOL_HTTP = "http";
+const string PROTOCOL_HTTPS = "https";

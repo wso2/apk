@@ -25,6 +25,11 @@ import runtime_domain_service.model as model;
 function getMockStartandAttachServices() returns error? {
 }
 
+@test:Mock {functionName: "getBackendPolicyUid"}
+function testgetBackendPolicyUid(API api, string? endpointType, string organization) returns string {
+    return "backendpolicy-uuid";
+}
+
 @test:Mock {functionName: "getServiceMappingClient"}
 function getMockServiceMappingClient(string resourceVersion) returns websocket:Client|error|() {
     string initialConectionId = uuid:createType1AsString();
@@ -96,8 +101,8 @@ function getMockK8sClient() returns http:Client {
     http:Client mockK8sClient = test:mock(http:Client);
     test:prepare(mockK8sClient).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/apis")
         .thenReturn(getMockAPIList());
-        string fieldSlector = "metadata.namespace%21%3Dkube-system%2Cmetadata.namespace%21%3Dkubernetes-dashboard%2Cmetadata.namespace%21%3Dgateway-system%2Cmetadata.namespace%21%3Dingress-nginx%2Cmetadata.namespace%21%3Dapk-platform";
-    test:prepare(mockK8sClient).when("get").withArguments("/api/v1/services?fieldSelector=" +fieldSlector)
+    string fieldSlector = "metadata.namespace%21%3Dkube-system%2Cmetadata.namespace%21%3Dkubernetes-dashboard%2Cmetadata.namespace%21%3Dgateway-system%2Cmetadata.namespace%21%3Dingress-nginx%2Cmetadata.namespace%21%3Dapk-platform";
+    test:prepare(mockK8sClient).when("get").withArguments("/api/v1/services?fieldSelector=" + fieldSlector)
         .thenReturn(getMockServiceList());
     test:prepare(mockK8sClient).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/servicemappings")
         .thenReturn(getMockServiceMappings());
@@ -1922,7 +1927,7 @@ function getMockConfigMapErrorResponse() returns http:Response {
 function testCreateAPI(string apiUUID, string backenduuid, API api, model:ConfigMap configmap,
         any configmapDeployingResponse, model:Httproute? prodhttpRoute,
         any prodhttpResponse, model:Httproute? sandHttpRoute, any sandhttpResponse,
-        [model:Service, any][] backendServices,
+        [model:Service, any][] backendServices, [model:BackendPolicy, any][] backendPolicies,
         model:API k8sApi, any k8sapiResponse,
         string k8sapiUUID, anydata expected) {
     APIClient apiClient = new;
@@ -1935,6 +1940,9 @@ function testCreateAPI(string apiUUID, string backenduuid, API api, model:Config
     }
     foreach [model:Service, any] servicesResponse in backendServices {
         test:prepare(k8sApiServerEp).when("post").withArguments("/api/v1/namespaces/apk-platform/services", servicesResponse[0]).thenReturn(servicesResponse[1]);
+    }
+    foreach [model:BackendPolicy, any] backendPolicy in backendPolicies {
+        test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/backendpolicies", backendPolicy[0]).thenReturn(backendPolicy[1]);
     }
     test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis", k8sApi).thenReturn(k8sapiResponse);
     APKError|CreatedAPI|BadRequestError aPI = apiClient.createAPI(api, (), "carbon.super");
@@ -1962,13 +1970,14 @@ function getMockHttpRouteErrorResponse() returns http:Response {
 }
 
 function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid, string 'type) returns model:Httproute {
+    string hostnames = 'type == PRODUCTION_TYPE ? "gw.wso2.com" : "sandbox.gw.wso2.com";
     return {
         "apiVersion": "gateway.networking.k8s.io/v1beta1",
         "kind": "HTTPRoute",
         "metadata": {"name": apiUUID + "-" + 'type, "namespace": "apk-platform", "labels": {"api-name": api.name, "api-version": api.'version}},
         "spec": {
             "hostnames": [
-                "gw.wso2.com"
+                hostnames
             ],
             "rules": [
                 {
@@ -2143,7 +2152,7 @@ function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid
     };
 }
 
-function createAPIDataProvider() returns map<[string, string, API, model:ConfigMap, any, model:Httproute?, any, model:Httproute?, any, [model:Service, any][], model:API, any, string, string|CreatedAPI|BadRequestError]> {
+function createAPIDataProvider() returns map<[string, string, API, model:ConfigMap, any, model:Httproute?, any, model:Httproute?, any, [model:Service, any][], [model:BackendPolicy, any][], model:API, any, string, string|CreatedAPI|BadRequestError]> {
     API api = {
         name: "PizzaAPI",
         context: "/pizzaAPI/1.0.0",
@@ -2202,6 +2211,35 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
     services.push([backendService1, backendServiceResponse1]);
     [model:Service, any][] servicesError = [];
     servicesError.push([backendService, backendServiceErrorResponse]);
+    [model:BackendPolicy, any][] backendPolicies = [];
+    model:BackendPolicy backendPolicy = {
+        metadata: {name: "backendpolicy-uuid", namespace: "apk-platform", labels: {"api-name": api.name, "api-version": api.'version}},
+        spec: {
+            default: {protocol: "https"},
+            targetRef: {
+                kind: "Service",
+                name: backendService.metadata.name,
+                namespace: backendService.metadata.namespace,
+                group: ""
+            }
+        }
+    };
+    model:BackendPolicy backendPolicy1 = {
+        metadata: {name: "backendpolicy-uuid", namespace: "apk-platform", labels: {"api-name": api.name, "api-version": api.'version}},
+        spec: {
+            default: {protocol: "https"},
+            targetRef: {
+                kind: "Service",
+                name: backendService1.metadata.name,
+                namespace: backendService1.metadata.namespace,
+                group: ""
+            }
+        }
+    };
+    http:Response backendPolicyResponse = getOKBackendPolicyResponse(backendPolicy);
+    http:Response backendPolicy1Response = getOKBackendPolicyResponse(backendPolicy1);
+    backendPolicies.push([backendPolicy, backendPolicyResponse]);
+    backendPolicies.push([backendPolicy1, backendPolicy1Response]);
     model:ConfigMap configmap = getMockConfigMap1(apiUUID, api);
     model:Httproute prodhttpRoute = getMockHttpRouteWithBackend(api, apiUUID, backenduuid, PRODUCTION_TYPE);
     model:Httproute sandhttpRoute = getMockHttpRouteWithBackend(api, apiUUID, backenduuid1, SANDBOX_TYPE);
@@ -2214,7 +2252,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
     APKError invalidAPINameError = error("Invalid API Name", code = 90911, message = "Invalid API Name", statusCode = "400", description = "API Name PizzaAPI Invalid", moreInfo = {});
     map<[string, string, API, model:ConfigMap,
     any, model:Httproute|(), any, model:Httproute|(),
-    any, [model:Service, any][], model:API, any, string,
+    any, [model:Service, any][], [model:BackendPolicy, any][], model:API, any, string,
     string|CreatedAPI|BadRequestError]> data = {
         "1": [
             apiUUID,
@@ -2227,6 +2265,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             (),
             (),
             services,
+            backendPolicies,
             getMockAPI(api, apiUUID, "carbon.super"),
             getMockAPIResponse(getMockAPI(api, apiUUID, "carbon.super"), k8sapiUUID),
             k8sapiUUID,
@@ -2244,6 +2283,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             (),
             (),
             services,
+            backendPolicies,
             getMockAPI(api, apiUUID, "carbon.super"),
             getMockAPIResponse(getMockAPI(api, apiUUID, "carbon.super"), k8sapiUUID),
             k8sapiUUID,
@@ -2260,6 +2300,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             (),
             (),
             services,
+            backendPolicies,
             getMockAPI(api, apiUUID, "carbon.super"),
             getMockAPIResponse(getMockAPI(api, apiUUID, "carbon.super"), k8sapiUUID),
             k8sapiUUID,
@@ -2276,6 +2317,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             sandhttpRoute,
             getMockHttpRouteResponse(sandhttpRoute.clone()),
             services1,
+            backendPolicies,
             getMockAPI1(api, apiUUID, "carbon.super"),
             getMockAPIResponse(getMockAPI1(api, apiUUID, "carbon.super"), k8sapiUUID),
             k8sapiUUID,
@@ -2293,6 +2335,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             (),
             (),
             services,
+            backendPolicies,
             getMockAPI(api, apiUUID, "carbon.super"),
             getMockAPIResponse(getMockAPI(api, apiUUID, "carbon.super"), k8sapiUUID),
             k8sapiUUID,
@@ -2309,6 +2352,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             (),
             (),
             services,
+            backendPolicies,
             getMockAPI(api, apiUUID, "carbon.super"),
             getMockAPIResponse(getMockAPI(api, apiUUID, "carbon.super"), k8sapiUUID),
             k8sapiUUID,
@@ -2326,6 +2370,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             (),
             (),
             services,
+            backendPolicies,
             getMockAPI(api, apiUUID, "carbon.super"),
             getMockAPIResponse(getMockAPI(api, apiUUID, "carbon.super"), k8sapiUUID),
             k8sapiUUID,
@@ -2343,6 +2388,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             sandhttpRoute,
             getMockHttpRouteErrorResponse(),
             services1,
+            backendPolicies,
             getMockAPI(api, apiUUID, "carbon.super"),
             getMockAPIResponse(getMockAPI(api, apiUUID, "carbon.super"), k8sapiUUID),
             k8sapiUUID,
@@ -2360,6 +2406,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             (),
             (),
             services,
+            backendPolicies,
             getMockAPI(api, apiUUID, "carbon.super"),
             getMockAPIResponse(getMockAPI(api, apiUUID, "carbon.super"), k8sapiUUID),
             k8sapiUUID,
@@ -2377,6 +2424,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             (),
             (),
             servicesError,
+            backendPolicies,
             getMockAPI(api, apiUUID, "carbon.super"),
             getMockAPIResponse(getMockAPI(api, apiUUID, "carbon.super"), k8sapiUUID),
             k8sapiUUID,
@@ -2394,6 +2442,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             (),
             (),
             services,
+            backendPolicies,
             getMockAPI(api, apiUUID, "carbon.super"),
             getMockAPIErrorResponse(),
             k8sapiUUID,
@@ -2411,6 +2460,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             (),
             (),
             services,
+            backendPolicies,
             getMockAPI(api, apiUUID, "carbon.super"),
             getMockAPIErrorNameExist(),
             k8sapiUUID,
@@ -2426,6 +2476,15 @@ function getOKBackendServiceResponse(model:Service backendService) returns http:
     model:Service serviceClone = backendService.clone();
     serviceClone.metadata.uid = uuid:createType1AsString();
     backendServiceResponse.setJsonPayload(serviceClone.toJson());
+    return backendServiceResponse;
+}
+
+function getOKBackendPolicyResponse(model:BackendPolicy backendPolicy) returns http:Response {
+    http:Response backendServiceResponse = new;
+    backendServiceResponse.statusCode = 201;
+    model:BackendPolicy backendPolicyClone = backendPolicy.clone();
+    backendPolicyClone.metadata.uid = uuid:createType1AsString();
+    backendServiceResponse.setJsonPayload(backendPolicyClone.toJson());
     return backendServiceResponse;
 }
 

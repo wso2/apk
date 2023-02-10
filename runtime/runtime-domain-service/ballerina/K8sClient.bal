@@ -211,6 +211,21 @@ isolated function getAuthenticationCrsForAPI(string apiName, string apiVersion, 
     return k8sApiServerEp->get(endpoint, targetType = model:AuthenticationList);
 }
 
+isolated function deleteBackendPolicyCR(string name, string namespace) returns http:Response|http:ClientError {
+    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/backendpolicies/" + name;
+    return k8sApiServerEp->delete(endpoint, targetType = http:Response);
+}
+
+isolated function deployBackendPolicyCR(model:BackendPolicy backendPolciy, string namespace) returns http:Response|http:ClientError {
+    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/backendpolicies";
+    return k8sApiServerEp->post(endpoint, backendPolciy, targetType = http:Response);
+} 
+isolated function getBackendPolicyCRsForAPI(string apiName, string apiVersion, string namespace) returns model:BackendPolicyList|http:ClientError|error {
+    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/backendpolicies?labelSelector=" + check generateUrlEncodedLabelSelector(apiName, apiVersion);
+    return k8sApiServerEp->get(endpoint, targetType = model:BackendPolicyList);
+}
+
+
 isolated function generateUrlEncodedLabelSelector(string apiName, string apiVersion) returns string|error {
     string labelSelector = string:'join("", "api-name=", apiName, ",api-version=", apiVersion);
     return url:encode(labelSelector, "UTF-8");
