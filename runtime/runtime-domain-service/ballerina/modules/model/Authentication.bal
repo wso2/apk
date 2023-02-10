@@ -24,7 +24,7 @@ public type Authentication record {
 public type AuthenticationSpec record {
     AuthenticationData override?;
     AuthenticationData default?;
-    AuthenticationTarget targetRef;
+    TargetRef targetRef;
 
 };
 public type AuthenticationData record {
@@ -52,12 +52,6 @@ public type JWTAuthentication record {
     string authorizationHeader?;
 };
 
-public type AuthenticationTarget record {
-    string group;
-    string kind;
-    string name;
-    string namespace;
-};
 
 public type AuthenticationList record {
     string apiVersion="dp.wso2.com/v1alpha1";

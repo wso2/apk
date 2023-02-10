@@ -149,6 +149,10 @@ public class APIClient {
                 if response is APKError {
                     return response;
                 }
+                response = self.deleteBackendPolicies(api);
+                if response is APKError {
+                    return response;
+                }
                 response = self.deleteBackendServices(api);
                 if response is APKError {
                     return response;
@@ -159,6 +163,29 @@ public class APIClient {
             }
         }
         return http:OK;
+    }
+    private isolated function deleteBackendPolicies(model:API api) returns APKError? {
+        do {
+            model:BackendPolicyList|http:ClientError backendPolicyListResponse = check getBackendPolicyCRsForAPI(api.spec.apiDisplayName, api.spec.apiVersion, api.metadata.namespace);
+            if backendPolicyListResponse is model:BackendPolicyList {
+                foreach model:BackendPolicy item in backendPolicyListResponse.items {
+                    http:Response|http:ClientError serviceDeletionResponse = deleteBackendPolicyCR(item.metadata.name, item.metadata.namespace);
+                    if serviceDeletionResponse is http:Response {
+                        if serviceDeletionResponse.statusCode != http:STATUS_OK {
+                            json responsePayLoad = check serviceDeletionResponse.getJsonPayload();
+                            model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                            check self.handleK8sTimeout(statusResponse);
+                        }
+                    } else {
+                        log:printError("Error occured while deleting service mapping");
+                    }
+                }
+                return;
+            }
+        } on fail var e {
+            log:printError("Error occured deleting servicemapping", e);
+            return error("Error occured deleting servicemapping", message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = "500");
+        }
     }
     private isolated function deleteBackendServices(model:API api) returns APKError? {
         do {
@@ -352,7 +379,26 @@ public class APIClient {
             return error("Internal Error occured", code = 909000, message = "Internal Error occured", description = "Internal Error occured", statusCode = "500");
         }
     }
-
+    private isolated function createBackendPolicy(API api, APIOperations? apiOperation, string endpointType, string organization, map<anydata>? endpointConfig, string url, model:Service backendService) returns model:BackendPolicy {
+        string nameSpace = getNameSpace(runtimeConfiguration.apiCreationNamespace);
+        model:BackendPolicy backendPolicy = {
+            metadata: {
+                name: getBackendPolicyUid(api, endpointType, organization),
+                namespace: nameSpace,
+                labels: self.getLabels(api)
+            },
+            spec: {
+                default: {protocol: url.startsWith(PROTOCOL_HTTPS) ? PROTOCOL_HTTPS : PROTOCOL_HTTP},
+                targetRef: {
+                    group: "",
+                    kind: "Service",
+                    name: backendService.metadata.name,
+                    namespace: backendService.metadata.namespace
+                }
+            }
+        };
+        return backendPolicy;
+    }
     private isolated function createAndAddBackendServics(model:APIArtifact apiArtifact, API api, record {} endpointConfig, APIOperations? apiOperation, string? endpointType, string organization) returns map<model:Endpoint>|APKError|error {
         map<model:Endpoint> endpointIdMap = {};
         anydata|error sandboxEndpointConfig = trap endpointConfig.get("sandbox_endpoints");
@@ -362,11 +408,13 @@ public class APIClient {
                 if sandboxEndpointConfig.hasKey("url") {
                     anydata url = sandboxEndpointConfig.get("url");
                     model:Service backendService = self.createBackendService(api, apiOperation, SANDBOX_TYPE, organization, <string>url);
+                    model:BackendPolicy backendPolicy = self.createBackendPolicy(api, apiOperation, SANDBOX_TYPE, organization, sandboxEndpointConfig, <string>url, backendService);
                     if apiOperation == () {
                         apiArtifact.sandboxEndpointAvailable = true;
                         apiArtifact.sandboxUrl = <string?>url;
                     }
                     apiArtifact.backendServices[backendService.metadata.name] = (backendService);
+                    apiArtifact.backendPolicies[backendPolicy.metadata.name] = (backendPolicy);
                     endpointIdMap[SANDBOX_TYPE] = {
                         port: check self.getPort(<string>url),
                         namespace: backendService.metadata.namespace,
@@ -385,11 +433,13 @@ public class APIClient {
                 if productionEndpointConfig.hasKey("url") {
                     anydata url = productionEndpointConfig.get("url");
                     model:Service backendService = self.createBackendService(api, apiOperation, PRODUCTION_TYPE, organization, <string>url);
+                    model:BackendPolicy backendPolicy = self.createBackendPolicy(api, apiOperation, SANDBOX_TYPE, organization, productionEndpointConfig, <string>url, backendService);
                     if apiOperation == () {
                         apiArtifact.productionEndpointAvailable = true;
                         apiArtifact.productionUrl = <string?>url;
                     }
                     apiArtifact.backendServices[backendService.metadata.name] = backendService;
+                    apiArtifact.backendPolicies[backendPolicy.metadata.name] = (backendPolicy);
                     endpointIdMap[PRODUCTION_TYPE] = {
                         port: check self.getPort(<string>url),
                         namespace: backendService.metadata.namespace,
@@ -453,28 +503,6 @@ public class APIClient {
         return false;
     }
 
-    function convertK8sCrAPI(API api, string organization) returns model:API {
-        model:API apispec = {
-            metadata: {
-                name: api.name.concat(api.'version),
-                namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace),
-                uid: (),
-                creationTimestamp: ()
-            },
-            spec: {
-                apiDisplayName: api.name,
-                apiType: api.'type,
-                apiVersion: api.'version,
-                context: self.returnFullContext(api.context, api.'version, organization),
-                definitionFileRef: "",
-                prodHTTPRouteRef: "",
-                sandHTTPRouteRef: "",
-                organization: ""
-            }
-        };
-        return apispec;
-    }
-
     isolated function createAPIFromService(string serviceKey, API api, string organization) returns CreatedAPI|BadRequestError|InternalServerErrorError|APKError {
         if (self.validateName(api.name, organization)) {
             BadRequestError badRequest = {body: {code: 90911, message: "API Name - " + api.name + " already exist.", description: "API Name - " + api.name + " already exist."}};
@@ -533,6 +561,16 @@ public class APIClient {
                     log:printDebug("Deployed HttpRoute Successfully" + backendService.toString());
                 } else {
                     json responsePayLoad = check deployServiceResult.getJsonPayload();
+                    model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                    check self.handleK8sTimeout(statusResponse);
+                }
+            }
+            foreach model:BackendPolicy backendPolicy in apiArtifact.backendPolicies {
+                http:Response deployBackendPolicyResult = check deployBackendPolicyCR(backendPolicy, getNameSpace(runtimeConfiguration.apiCreationNamespace));
+                if deployBackendPolicyResult.statusCode == http:STATUS_CREATED {
+                    log:printDebug("Deployed BackendPolicy Successfully" + backendPolicy.toString());
+                } else {
+                    json responsePayLoad = check deployBackendPolicyResult.getJsonPayload();
                     model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
                     check self.handleK8sTimeout(statusResponse);
                 }
@@ -718,8 +756,15 @@ public class APIClient {
         }
     }
 
-    private isolated function getHostNames(API api, string unoqueId, string 'type) returns string[] {
-        return ["gw.wso2.com"];
+    private isolated function getHostNames(API api, string uniqueId, string endpointType) returns string[] {
+        Vhost[] vhosts = runtimeConfiguration.vhost;
+        string[] hosts = [];
+        foreach Vhost vhost in vhosts {
+            if vhost.'type == endpointType {
+                hosts.push(...vhost.hosts);
+            }
+        }
+        return hosts;
     }
 
     private isolated function generateAndRetrieveParentRefs(API api, string uniqueId) returns model:ParentReference[] {
@@ -1267,7 +1312,7 @@ public class APIClient {
         return apkError;
     }
 
-    isolated function createBackendService(API api, APIOperations? apiOperation, string? endpointType, string organization, string url) returns model:Service {
+    isolated function createBackendService(API api, APIOperations? apiOperation, string endpointType, string organization, string url) returns model:Service {
         string nameSpace = getNameSpace(runtimeConfiguration.apiCreationNamespace);
         model:Service backendService = {
             metadata: {
@@ -1728,8 +1773,18 @@ public class APIClient {
                     }
                 }
             }
+            self.prepareBackendPolicyCR(apiArtifact, newAPI, endpointType, serviceMapping, organization);
             httproute.metadata.name = self.retrieveHttpRouteRefName(newAPI, endpointType, organization);
             httproute.metadata.labels = self.getLabels(newAPI);
+        }
+    }
+    private isolated function prepareBackendPolicyCR(model:APIArtifact apiArtifact, API api, string endpointType, map<string> backendServiceMapping, string organization) {
+        foreach model:BackendPolicy backendPolicy in apiArtifact.backendPolicies {
+            backendPolicy.metadata.name = getBackendPolicyUid(api, endpointType, organization);
+            string oldServiceName = backendPolicy.spec.targetRef.name;
+            if backendServiceMapping.hasKey(oldServiceName) {
+                backendPolicy.spec.targetRef.name = backendServiceMapping.get(oldServiceName);
+            }
         }
     }
     private isolated function prepareAuthenticationCR(model:APIArtifact apiArtifact, API api, model:Authentication authentication, string endpointType, string organization) returns model:Authentication {
@@ -1835,6 +1890,11 @@ public class APIClient {
         foreach model:Authentication authentication in authenticationCrsForAPI.items {
             apiArtifact.authenticationMap[authentication.metadata.name] = self.sanitizeAuthenticationCrs(authentication);
         }
+        model:BackendPolicyList backendPolicyList = check getBackendPolicyCRsForAPI(api.name, api.'version, k8sapi.metadata.namespace);
+        foreach model:BackendPolicy backendPolicy in backendPolicyList.items {
+            apiArtifact.backendPolicies[backendPolicy.metadata.name] = self.sanitizeBackendPolicyCrs(backendPolicy);
+        }
+
         apiArtifact.api = self.sanitizeAPICR(k8sapi);
         return apiArtifact;
     }
@@ -1910,13 +1970,23 @@ public class APIClient {
             spec: authentication.spec
         };
     }
+    private isolated function sanitizeBackendPolicyCrs(model:BackendPolicy backendPolicy) returns model:BackendPolicy {
+        return {
+            metadata: {
+                name: backendPolicy.metadata.name,
+                namespace: backendPolicy.metadata.namespace,
+                labels: backendPolicy.metadata.labels
+            },
+            spec: backendPolicy.spec
+        };
+    }
     public isolated function exportAPI(string? apiId, string organization) returns APKError|NotFoundError|http:Response|BadRequestError {
         if apiId is string {
             do {
                 API|NotFoundError api = self.getAPIById(apiId, organization);
                 if api is API {
                     model:APIArtifact apiArtifact = check self.getApiArtifact(api, organization);
-                    string zipDir = check file:createTempDir(apiId);
+                    string zipDir = check file:createTempDir(uuid:createType1AsString());
                     model:API? k8sAPI = apiArtifact.api;
                     if k8sAPI is model:API {
                         _ = check self.convertAndStoreYamlFile(k8sAPI.toJsonString(), k8sAPI.metadata.name, zipDir, "api");
@@ -1942,6 +2012,10 @@ public class APIClient {
                     }
                     foreach model:K8sServiceMapping servicemapping in apiArtifact.serviceMapping {
                         _ = check self.convertAndStoreYamlFile(servicemapping.toJsonString(), servicemapping.metadata.name, zipDir, "servicemappings");
+                    }
+                    foreach model:BackendPolicy backendPolicy in apiArtifact.backendPolicies {
+                        _ = check self.convertAndStoreYamlFile(backendPolicy.toJsonString(), backendPolicy.metadata.name, zipDir, "policies/backendPolicies");
+
                     }
                     [string, string] zipName = check self.zipDirectory(apiId, zipDir);
                     http:Response response = new;
@@ -1999,13 +2073,21 @@ type DefinitionValidationRequest record {|
 
 |};
 
-public isolated function getBackendServiceUid(API api, APIOperations? apiOperation, string? endpointType, string organization) returns string {
+public isolated function getBackendServiceUid(API api, APIOperations? apiOperation, string endpointType, string organization) returns string {
     string concatanatedString = uuid:createType1AsString();
     if (apiOperation is APIOperations) {
         return "backend-" + concatanatedString + "-resource";
     } else {
-        return "backend-" + getUniqueIdForAPI(api.name, api.'version, organization) + "-api";
+        concatanatedString = string:'join("-", organization, api.name, 'api.'version, endpointType);
+        byte[] hashedValue = crypto:hashSha1(concatanatedString.toBytes());
+        concatanatedString = hashedValue.toBase16();
+        return "backend-" + concatanatedString + "-api";
     }
+}
+
+public isolated function getBackendPolicyUid(API api, string endpointType, string organization) returns string {
+    string concatanatedString = uuid:createType1AsString();
+    return "backendpolicy-" + concatanatedString;
 }
 
 public isolated function getUniqueIdForAPI(string name, string 'version, string organization) returns string {

@@ -18,18 +18,26 @@
 
 # This Record contains the Runtime related configurations
 #
-# + serviceListingNamespaces - Namespaces for List Services
+# + serviceListingNamespaces - Namespaces for List Services  
 # + apiCreationNamespace - Namespace for API creation.  
 # + tokenIssuerConfiguration - Token Issuer Configuration for APIKey.  
-# + keyStores - KeyStore Configuration
-# + k8sConfiguration - K8s Configuration (debug purpose only.)
+# + keyStores - KeyStore Configuration  
+# + k8sConfiguration - K8s Configuration (debug purpose only.)  
+# + vhost - Field Description
 public type RuntimeConfiguratation record {|
-
+    
     (string[] & readonly) serviceListingNamespaces = [ALL_NAMESPACES];
     string apiCreationNamespace = CURRENT_NAMESPACE;
     (TokenIssuerConfiguration & readonly) tokenIssuerConfiguration = {};
     KeyStores keyStores;
     (K8sConfigurations & readonly) k8sConfiguration = {};
+    Vhost[] vhost = [{name:"Default",hosts:["gw.wso2.com"],'type:PRODUCTION_TYPE},{name:"Default",hosts:["sandbox.gw.wso2.com"],'type:SANDBOX_TYPE}];
+|};
+
+public type Vhost record {|
+string name;
+string[] hosts;
+string 'type;
 |};
 
 public type TokenIssuerConfiguration record {|

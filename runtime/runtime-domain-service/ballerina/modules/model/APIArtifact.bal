@@ -5,6 +5,7 @@ Httproute sandboxRoute?;
 ConfigMap definition?;
 K8sServiceMapping[] serviceMapping = [];
 map<Service> backendServices = {};
+map<BackendPolicy> backendPolicies = {};
 map<Authentication> authenticationMap = {};
 boolean sandboxEndpointAvailable = false;
 string productionUrl?;
