@@ -692,7 +692,7 @@ data:
 
     [[pkg]]
     name = "github.com/wso2/product-microgateway/adapter/internal/adapter"
-    logLevel = "INFO" # LogLevels can be "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC"
+    logLevel = "DEBG" # LogLevels can be "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC"
 
     [[pkg]]
     name = "github.com/wso2/product-microgateway/adapter/internal/oasparser"

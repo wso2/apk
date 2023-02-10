@@ -33,11 +33,11 @@ metadata:
   name: prod-http-route-http-bin-api
 spec:
   hostnames:
-  - prod.gw.wso2.com
+    - prod.gw.wso2.com
   parentRefs:
-  - group: gateway.networking.k8s.io
-    kind: Gateway
-    name: Default
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: Default
   rules:
   - backendRefs:
     - group: ""
@@ -78,30 +78,37 @@ metadata:
   name: sand-http-route-http-bin-api
 spec:
   hostnames:
-  - sand.gw.wso2.com
+    - sand.gw.wso2.com
   parentRefs:
-  - group: gateway.networking.k8s.io
-    kind: Gateway
-    name: Default
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: Default
   rules:
-  - backendRefs:
-    - group: ""
-      kind: Service
-      name: backend
-      port: 80
-      weight: 1
-    matches:
-    - path:
-        type: PathPrefix
-        value: /http-bin-api/1.0.8/get
-    filters:
-      - type: URLRewrite
-        urlRewrite:
-          path:
-            type: ReplacePrefixMatch
-            replacePrefixMatch: /get
-      - type: ExtensionRef
-        extensionRef:
-          group: dp.wso2.com
-          kind: Authentication
-          name: sand-http-bin-authentication
+    - backendRefs:
+        - group: ""
+          kind: Service
+          name: backend
+          port: 80
+          weight: 1
+      matches:
+        - path:
+            type: PathPrefix
+            value: /http-bin-api/1.0.8/get
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /get
+        - type: ResponseHeaderModifier
+          responseHeaderModifier:
+            add:
+              - name: custom-response-header
+                value: myvalue
+            remove:
+              - access-control-allow-credentials
+        - type: ExtensionRef
+          extensionRef:
+            group: dp.wso2.com
+            kind: Authentication
+            name: sand-http-bin-authentication
