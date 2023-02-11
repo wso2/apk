@@ -4,6 +4,7 @@ import ballerina/uuid;
 import ballerina/regex;
 import ballerina/sql;
 import ballerina/http;
+
 public class DCRMClient {
 
     public isolated function createDCRApplication(RegistrationRequest payload) returns CreatedApplication|BadRequestClientRegistrationError|ConflictClientRegistrationError|InternalServerErrorClientRegistrationError {
@@ -162,6 +163,19 @@ public class DCRMClient {
                 return internalError;
             }
         }
+    }
+    public isolated function getApplicationIncludeFileBaseApps(string clientId) returns Application|Application|NotFoundClientRegistrationError|InternalServerErrorClientRegistrationError {
+        foreach FileBaseOAuthapps oauthApp in idpConfiguration.fileBaseApp {
+            if oauthApp.clientId == clientId {
+                return {
+                    client_id: oauthApp.clientId,
+                    client_secret: oauthApp.clientSecret,
+                    grant_types: oauthApp.grantTypes,
+                    redirect_uris: oauthApp.callbackUrls
+                };
+            }
+        }
+        return self.getApplication(clientId);
     }
 }
 

@@ -28,7 +28,7 @@ public class TokenUtil {
                         return unauthorized;
                     }
                     DCRMClient dcrmClient = new;
-                    Application|NotFoundClientRegistrationError|InternalServerErrorClientRegistrationError application = dcrmClient.getApplication(clientIdSecretToken[0]);
+                    Application|NotFoundClientRegistrationError|InternalServerErrorClientRegistrationError application = dcrmClient.getApplicationIncludeFileBaseApps(clientIdSecretToken[0]);
                     if application is Application {
                         if application.client_secret != clientIdSecretToken[1] {
                             UnauthorizedTokenErrorResponse unauthorized = {body: {'error: "unauthorized_client", error_description: "Invalide Client Id/Secret"}};
@@ -49,6 +49,9 @@ public class TokenUtil {
                             return self.handleAuthorizationCodeGrant(payload, application);
                         } else if grantType == REFRESH_TOKEN_GRANT_TYPE {
                             return self.hanleRefreshTokenGrant(payload, application);
+                        } else {
+                                BadRequestTokenErrorResponse tokenError = {body: {'error: "unsupported_grant_type", error_description: grantType + " not supported by system."}};
+                                return tokenError;
                         }
                     } else if application is NotFoundClientRegistrationError {
                         UnauthorizedTokenErrorResponse unauthorized = {body: {'error: "access_denied", error_description: "Invalide Client Id/Secret"}};
@@ -57,8 +60,6 @@ public class TokenUtil {
                         BadRequestTokenErrorResponse tokenError = {"body": {'error: "server_error", error_description: "Server Error occured on generating token"}};
                         return tokenError;
                     }
-                    BadRequestTokenErrorResponse tokenError = {"body": {'error: "server_error", error_description: "Server Error occured on generating token"}};
-                    return tokenError;
                 }
                 on fail var e {
                     log:printError("Error on decoding base64", e);
@@ -199,7 +200,7 @@ public class TokenUtil {
                 return tokenError;
             }
             do {
-                string[] scopesArray = regex:split(scopes," ");
+                string[] scopesArray = regex:split(scopes, " ");
                 string accessToken = check self.issueToken(application, sub, scopesArray, organization, ACCESS_TOKEN_TYPE);
                 string refreshToken = check self.issueToken(application, sub, scopesArray, organization, REFRESH_TOKEN_TYPE);
                 TokenResponse token = {access_token: accessToken, refresh_token: refreshToken, expires_in: idpConfiguration.tokenIssuerConfiguration.expTime, token_type: TOKEN_TYPE_BEARER, scope: scopes};
@@ -218,7 +219,7 @@ public class TokenUtil {
         do {
             if client_id.trim().length() > 0 && redirect_uri is string {
                 DCRMClient dcrmClient = new;
-                Application|NotFoundClientRegistrationError|InternalServerErrorClientRegistrationError application = dcrmClient.getApplication(client_id);
+                Application|NotFoundClientRegistrationError|InternalServerErrorClientRegistrationError application = dcrmClient.getApplicationIncludeFileBaseApps(client_id);
                 if application is Application {
                     string[]? grantTypes = application.grant_types;
                     if grantTypes is string[] {

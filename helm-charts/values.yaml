@@ -35,6 +35,8 @@ wso2:
         validationTimeout: 250
       idpds:
         config:
+          issuer: "https://idp.am.wso2.com/token"
+          keyId: "gateway_certificate_alias"
           loginPageURl: "https://idp.am.wso2.com:9095/authenticationEndpoint/login"
           loginErrorPageUrl: "https://idp.am.wso2.com:9095/authenticationEndpoint/error"
           loginCallBackURl: "https:// :9095/authenticationEndpoint/login-callback"
@@ -264,8 +266,8 @@ wso2:
             failureThreshold: 5
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: Always
-          image: wso2/runtime-domain-service:latest
+          imagePullPolicy: IfNotPresent
+          image: runtime-domain-service:0.0.1-SNAPSHOT
       adapter:
         appName: "adapter"
         deployment:

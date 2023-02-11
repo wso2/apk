@@ -1,13 +1,83 @@
 {
 	"info": {
-		"_postman_id": "3e515b82-3dd0-42fe-ba30-7a79c4c717a4",
+		"_postman_id": "2b075b4a-768d-4c20-b056-859b1db78d46",
 		"name": "Test Backoffice Operations",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
-			"name": "Internal BackOffice Add API Copy",
+			"name": "Generate Token",
 			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var accessTokenResponse = pm.response.json();",
+							"pm.collectionVariables.set(\"access_token\",accessTokenResponse.access_token);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "{{client_id}}",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "{{client_secret}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Host",
+						"value": "idp.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "grant_type",
+							"value": "client_credentials",
+							"type": "default"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{idpEndpointUrl}}/oauth2/token",
+					"host": [
+						"{{idpEndpointUrl}}"
+					],
+					"path": [
+						"oauth2",
+						"token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "RuntimeAPI Create API",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
 				{
 					"listen": "test",
 					"script": {
@@ -16,20 +86,14 @@
 							"  pm.response.to.have.status(201);",
 							"});",
 							"",
-							"pm.test(\"Assert Internal BackOffice API creation response\", () => {",
+							"pm.test(\"Assert API creation response\", () => {",
 							"    //parse the response JSON and test three properties",
 							"    const responseJson = pm.response.json();",
-							"    pm.expect(responseJson.id).equals(pm.collectionVariables.get('idTest1'));",
 							"    pm.expect(responseJson.name).equals(pm.collectionVariables.get('APINameTest1'));",
-							"    pm.expect(responseJson.version).equals(pm.collectionVariables.get('versionTest1'));",
-							"    pm.expect(responseJson.type).equals(pm.collectionVariables.get('typeTest1'));",
-							"    pm.expect(responseJson.context).equals(pm.collectionVariables.get('contextTest1'));",
-							"    pm.expect(responseJson.provider).equals(pm.collectionVariables.get('providerTest1'));",
-							"    pm.expect(responseJson.lifeCycleStatus).equals(pm.collectionVariables.get('lifeCycleStatusTest1'));",
-							"    pm.expect(responseJson.visibility).equals(pm.collectionVariables.get('visibilityTest1'));",
-							"    pm.expect(responseJson.subscriptionAvailability).equals(pm.collectionVariables.get('subscriptionAvailabilityTest1'));",
-							"    pm.expect(responseJson.accessControl).equals(pm.collectionVariables.get('accessControlTest1'));",
-							"    pm.expect(responseJson.endpointImplementationType).equals(pm.collectionVariables.get('endpointImplementationTypeTest1'))",
+							"    pm.expect(responseJson.context).equals( \"/t/carbon.super\"+pm.collectionVariables.get('contextTest1')+\"/1.0.0\");",
+							"    pm.expect(responseJson.version).equals(\"1.0.0\");",
+							"    pm.expect(responseJson.type).equals(\"REST\");",
+							"    pm.collectionVariables.set(\"runtimeAPIUUID\",responseJson.id);",
 							"});"
 						],
 						"type": "text/javascript"
@@ -37,10 +101,25 @@
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "POST",
 				"header": [
 					{
 						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
 						"value": "application/json",
 						"type": "text"
 					},
@@ -52,18 +131,17 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"apiProperties\":{\n\t\t\"id\": \"{{idTest1}}\",\n\t\t\"name\":\"{{APINameTest1}}\",\n\t\t\"context\":\"{{contextTest1}}\",\n\t\t\"version\":\"{{versionTest1}}\",\n\t\t\"provider\":\"{{providerTest1}}\",\n        \"visibility\": \"{{visibilityTest1}}\",\n        \"subscriptionAvailability\" : \"{{subscriptionAvailabilityTest1}}\",\n\t\t\"lifeCycleStatus\":\"{{lifeCycleStatusTest1}}\"\n\t},\n\t\"Definition\" : {\t  \n\t  \"openapi\": \"3.0.0\",\n\t  \"info\": {\n\t    \"title\": \"Sample API\",\n\t    \"description\": \"Optional multiline or single-line description in [CommonMark](http://commonmark.org/help/) or HTML.\",\n\t    \"version\": \"0.1.9\"\n\t  },\n\t  \"servers\": [\n\t    {\n\t      \"url\": \"http://api.example.com/v1\",\n\t      \"description\": \"Optional server description, e.g. Main (production) server\"\n\t    },\n\t    {\n\t      \"url\": \"http://staging-api.example.com\",\n\t      \"description\": \"Optional server description, e.g. Internal staging server for testing\"\n\t    }\n\t  ],\n\t  \"paths\": {\n\t    \"/users\": {\n\t      \"get\": {\n\t\t\"summary\": \"Returns a list of users.\",\n\t\t\"description\": \"Optional extended description in CommonMark or HTML.\",\n\t\t\"responses\": {\n\t\t  \"200\": {\n\t\t    \"description\": \"A JSON array of user names\",\n\t\t    \"content\": {\n\t\t      \"application/json\": {\n\t\t        \"schema\": {\n\t\t          \"type\": \"array\",\n\t\t          \"items\": {\n\t\t            \"type\": \"string\"\n\t\t          }\n\t\t        }\n\t\t      }\n\t\t    }\n\t\t  }\n\t\t}\n\t      }\n\t    }\n\t  }\n\t}\n}"
+					"raw": "{\n    \"context\": \"{{contextTest1}}\",\n    \"name\": \"{{APINameTest1}}\",\n    \"version\": \"{{versionTest1}}\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/get\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"endpointConfig\": {\n                \"endpoint_type\": \"http\",\n                \"production_endpoints\": {\n                    \"url\": \"http://httpbin.org\"\n                }\n            }\n        },\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"endpointConfig\": {\n                \"endpoint_type\": \"http\",\n                \"production_endpoints\": {\n                    \"url\": \"http://httpbin.org\"\n                }\n            }\n        }\n    ]\n}"
 				},
 				"url": {
-					"raw": "{{internalBackOfficeAPIServerBaseURL}}/api/am/backoffice/internal/apis",
+					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/apis",
 					"host": [
-						"{{internalBackOfficeAPIServerBaseURL}}"
+						"{{runtimeAPIServerBaseURL}}"
 					],
 					"path": [
 						"api",
 						"am",
-						"backoffice",
-						"internal",
+						"runtime",
 						"apis"
 					]
 				}
@@ -84,7 +162,10 @@
 							"pm.test(\"Check API list via backoffice APIs get call\", () => {",
 							"    //parse the response JSON and test three properties",
 							"    const responseJson = pm.response.json();",
-							"    pm.expect(responseJson.list.length).to.be.above(0);",
+							"    pm.expect(responseJson.list.length).to.be.equal(1);",
+							"    const api1 = responseJson.list[0];",
+							"    pm.expect(api1.name).equals(pm.collectionVariables.get('APINameTest1'));",
+							"    pm.collectionVariables.set(\"backOfficeApiUUID\",api1.id);",
 							"});"
 						],
 						"type": "text/javascript"
@@ -92,6 +173,16 @@
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
 				"header": [
 					{
@@ -101,7 +192,7 @@
 					}
 				],
 				"url": {
-					"raw": "{{backOfficeAPIServerBaseURL}}/api/am/backoffice/apis/",
+					"raw": "{{backOfficeAPIServerBaseURL}}/api/am/backoffice/apis",
 					"host": [
 						"{{backOfficeAPIServerBaseURL}}"
 					],
@@ -109,8 +200,7 @@
 						"api",
 						"am",
 						"backoffice",
-						"apis",
-						""
+						"apis"
 					]
 				}
 			},
@@ -138,6 +228,16 @@
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "POST",
 				"header": [
 					{
@@ -147,7 +247,7 @@
 					}
 				],
 				"url": {
-					"raw": "{{backOfficeAPIServerBaseURL}}/api/am/backoffice/apis/change-lifecycle?apiId={{idTest1}}&targetState={{lifeCycleStatusTest2}}",
+					"raw": "{{backOfficeAPIServerBaseURL}}/api/am/backoffice/apis/change-lifecycle?apiId={{backOfficeApiUUID}}&targetState={{lifeCycleStatusTest2}}",
 					"host": [
 						"{{backOfficeAPIServerBaseURL}}"
 					],
@@ -161,7 +261,7 @@
 					"query": [
 						{
 							"key": "apiId",
-							"value": "{{idTest1}}"
+							"value": "{{backOfficeApiUUID}}"
 						},
 						{
 							"key": "targetState",
@@ -194,6 +294,16 @@
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
 				"header": [
 					{
@@ -203,17 +313,16 @@
 					}
 				],
 				"url": {
-					"raw": "http://localhost/api/am/backoffice/apis/01ed75e2-b30b-18c8-wwf2-25da7edd2231/lifecycle-state",
-					"protocol": "http",
+					"raw": "{{backOfficeAPIServerBaseURL}}/api/am/backoffice/apis/{{backOfficeApiUUID}}/lifecycle-state",
 					"host": [
-						"localhost"
+						"{{backOfficeAPIServerBaseURL}}"
 					],
 					"path": [
 						"api",
 						"am",
 						"backoffice",
 						"apis",
-						"01ed75e2-b30b-18c8-wwf2-25da7edd2231",
+						"{{backOfficeApiUUID}}",
 						"lifecycle-state"
 					]
 				}
@@ -247,6 +356,16 @@
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
 				"header": [
 					{
@@ -256,7 +375,7 @@
 					}
 				],
 				"url": {
-					"raw": "{{backOfficeAPIServerBaseURL}}/api/am/backoffice/apis/{{idTest1}}/lifecycle-history",
+					"raw": "{{backOfficeAPIServerBaseURL}}/api/am/backoffice/apis/{{backOfficeApiUUID}}/lifecycle-history",
 					"host": [
 						"{{backOfficeAPIServerBaseURL}}"
 					],
@@ -265,7 +384,7 @@
 						"am",
 						"backoffice",
 						"apis",
-						"{{idTest1}}",
+						"{{backOfficeApiUUID}}",
 						"lifecycle-history"
 					]
 				}
@@ -273,8 +392,18 @@
 			"response": []
 		},
 		{
-			"name": "Internal BackOffice Delete API",
+			"name": "RuntimeAPI Delete API",
 			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.variables.set(\"runtimeAPIUUID\",pm.collectionVariables.get('runtimeAPIUUID'))",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
 				{
 					"listen": "test",
 					"script": {
@@ -282,13 +411,24 @@
 							"pm.test(\"Status code is 200\", function () {",
 							"    pm.response.to.have.status(200);",
 							"",
-							"});"
+							"});",
+							""
 						],
 						"type": "text/javascript"
 					}
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "DELETE",
 				"header": [
 					{
@@ -298,17 +438,16 @@
 					}
 				],
 				"url": {
-					"raw": "{{internalBackOfficeAPIServerBaseURL}}/api/am/backoffice/internal/apis/{{idTest1}}",
+					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/apis/{{runtimeAPIUUID}}",
 					"host": [
-						"{{internalBackOfficeAPIServerBaseURL}}"
+						"{{runtimeAPIServerBaseURL}}"
 					],
 					"path": [
 						"api",
 						"am",
-						"backoffice",
-						"internal",
+						"runtime",
 						"apis",
-						"{{idTest1}}"
+						"{{runtimeAPIUUID}}"
 					]
 				}
 			},
@@ -343,7 +482,7 @@
 		},
 		{
 			"key": "contextTest1",
-			"value": "pizzashack",
+			"value": "/pizzashack",
 			"type": "string"
 		},
 		{
@@ -428,7 +567,7 @@
 		},
 		{
 			"key": "typeTest2",
-			"value": "HTTP",
+			"value": "REST",
 			"type": "string"
 		},
 		{
@@ -440,6 +579,18 @@
 			"key": "accessControlTest2",
 			"value": "NONE",
 			"type": "string"
+		},
+		{
+			"key": "access_token",
+			"value": ""
+		},
+		{
+			"key": "backOfficeApiUUID",
+			"value": ""
+		},
+		{
+			"key": "runtimeAPIUUID",
+			"value": ""
 		}
 	]
 }

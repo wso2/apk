@@ -1,12 +1,334 @@
 {
 	"info": {
-		"_postman_id": "239527c4-9a71-415a-a674-9822664323a1",
+		"_postman_id": "3f008829-7935-4d46-bd9b-440db3490925",
 		"name": "APK-Devportal API Operations",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
-			"name": "DevportalAPI List APIs",
+			"name": "Generate Token",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var accessTokenResponse = pm.response.json();",
+							"pm.collectionVariables.set(\"access_token\",accessTokenResponse.access_token);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{client_secret}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{client_id}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Host",
+						"value": "idp.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "grant_type",
+							"value": "client_credentials",
+							"type": "default"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{idpEndpointUrl}}/oauth2/token",
+					"host": [
+						"{{idpEndpointUrl}}"
+					],
+					"path": [
+						"oauth2",
+						"token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "RuntimeAPI Create API",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"  pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Assert API creation response\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.name).equals(pm.collectionVariables.get('testAPIName'));",
+							"    pm.expect(responseJson.context).equals( \"/t/carbon.super\"+pm.collectionVariables.get('testAPIContext')+\"/\"+pm.collectionVariables.get('testAPIVersion'));",
+							"    pm.expect(responseJson.version).equals(pm.collectionVariables.get('testAPIVersion'));",
+							"    pm.expect(responseJson.type).equals(\"REST\");",
+							"    pm.collectionVariables.set(\"runtimeAPIUUID\",responseJson.id);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"context\": \"{{testAPIContext}}\",\n    \"name\": \"{{testAPIName}}\",\n    \"version\": \"{{testAPIVersion}}\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/get\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"endpointConfig\": {\n                \"endpoint_type\": \"http\",\n                \"production_endpoints\": {\n                    \"url\": \"http://httpbin.org\"\n                }\n            }\n        },\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"endpointConfig\": {\n                \"endpoint_type\": \"http\",\n                \"production_endpoints\": {\n                    \"url\": \"http://httpbin.org\"\n                }\n            }\n        }\n    ]\n}"
+				},
+				"url": {
+					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/apis",
+					"host": [
+						"{{runtimeAPIServerBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Backoffice List APIs",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Check API list via backoffice APIs get call\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.list.length).to.be.equal(1);",
+							"    const api1 = responseJson.list[0];",
+							"    pm.expect(api1.name).equals(pm.collectionVariables.get('testAPIName'));",
+							"    pm.collectionVariables.set(\"backOfficeApiUUID\",api1.id);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"url": {
+					"raw": "{{backOfficeAPIServerBaseURL}}/api/am/backoffice/apis",
+					"host": [
+						"{{backOfficeAPIServerBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"backoffice",
+						"apis"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DevportalAPI List APIs before change lifecycle",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"APIs available via control plane's devPortal API\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.list.length).equals(0);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"url": {
+					"raw": "{{devPortalBaseURL}}/api/am/devportal/apis",
+					"host": [
+						"{{devPortalBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"devportal",
+						"apis"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "BackOffice Change API LifeCycle State",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"  pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Assert BackOffice API to change lifecycle state \", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.State).equals(pm.collectionVariables.get('lifeCycleStatusTest2'));",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"url": {
+					"raw": "{{backOfficeAPIServerBaseURL}}/api/am/backoffice/apis/change-lifecycle?apiId={{backOfficeApiUUID}}&targetState={{lifeCycleStatusTest2}}",
+					"host": [
+						"{{backOfficeAPIServerBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"backoffice",
+						"apis",
+						"change-lifecycle"
+					],
+					"query": [
+						{
+							"key": "apiId",
+							"value": "{{backOfficeApiUUID}}"
+						},
+						{
+							"key": "targetState",
+							"value": "{{lifeCycleStatusTest2}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DevportalAPI List APIs after publishing",
 			"event": [
 				{
 					"listen": "test",
@@ -26,6 +348,7 @@
 							"    if(APIEntry.name === pm.collectionVariables.get('testAPIName')) {",
 							"        pm.environment.set('testAPIID', APIEntry.id)",
 							"        pm.collectionVariables.set('testAPIID', APIEntry.id)",
+							"        pm.expect(APIEntry.id).equals(pm.collectionVariables.get('backOfficeApiUUID'));",
 							"        console.log(\"HTTP bin API found via portal API, ID is\", APIEntry.id);",
 							"    }",
 							"})"
@@ -35,6 +358,16 @@
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
 				"header": [
 					{
@@ -80,6 +413,16 @@
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
 				"header": [
 					{
@@ -104,7 +447,7 @@
 			"response": []
 		},
 		{
-			"name": "DevportalAPI GET API By ID Copy",
+			"name": "DevportalAPI GET API By ID",
 			"event": [
 				{
 					"listen": "test",
@@ -117,7 +460,6 @@
 							"pm.test(\"APIs available via control plane's devPortal API\", () => {",
 							"    //parse the response JSON and test three properties",
 							"    const responseJson = pm.response.json();",
-							"        pm.expect(responseJson.context).equals(pm.collectionVariables.get('testAPIContext'));",
 							"        pm.expect(responseJson.version).equals(pm.collectionVariables.get('testAPIVersion'));",
 							"",
 							"});",
@@ -128,6 +470,16 @@
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
 				"header": [
 					{
@@ -137,7 +489,7 @@
 					}
 				],
 				"url": {
-					"raw": "{{devPortalBaseURL}}/api/am/devportal/apis/{{testAPIID}}?",
+					"raw": "{{devPortalBaseURL}}/api/am/devportal/apis/{{backOfficeApiUUID}}",
 					"host": [
 						"{{devPortalBaseURL}}"
 					],
@@ -146,13 +498,7 @@
 						"am",
 						"devportal",
 						"apis",
-						"{{testAPIID}}"
-					],
-					"query": [
-						{
-							"key": "",
-							"value": null
-						}
+						"{{backOfficeApiUUID}}"
 					]
 				}
 			},
@@ -175,6 +521,16 @@
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
 				"header": [
 					{
@@ -184,7 +540,7 @@
 					}
 				],
 				"url": {
-					"raw": "{{devPortalBaseURL}}/api/am/devportal/apis/{{testAPIID}}/definition",
+					"raw": "{{devPortalBaseURL}}/api/am/devportal/apis/{{backOfficeApiUUID}}/definition",
 					"host": [
 						"{{devPortalBaseURL}}"
 					],
@@ -193,7 +549,7 @@
 						"am",
 						"devportal",
 						"apis",
-						"{{testAPIID}}",
+						"{{backOfficeApiUUID}}",
 						"definition"
 					]
 				}
@@ -216,6 +572,16 @@
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
 				"header": [
 					{
@@ -256,6 +622,16 @@
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
 				"header": [
 					{
@@ -265,7 +641,7 @@
 					}
 				],
 				"url": {
-					"raw": "{{devPortalBaseURL}}/api/am/devportal/apis/{{testAPIID}}/sdks/java",
+					"raw": "{{devPortalBaseURL}}/api/am/devportal/apis/{{backOfficeApiUUID}}/sdks/java",
 					"host": [
 						"{{devPortalBaseURL}}"
 					],
@@ -274,7 +650,7 @@
 						"am",
 						"devportal",
 						"apis",
-						"{{testAPIID}}",
+						"{{backOfficeApiUUID}}",
 						"sdks",
 						"java"
 					]
@@ -316,8 +692,24 @@
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "POST",
-				"header": [],
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
 				"body": {
 					"mode": "raw",
 					"raw": "{\n  \"planName\": \"{{applicationRatePlanName}}\",\n  \"displayName\": \"{{applicationRatePlanDisplayName}}\",\n  \"description\": \"{{applicationRatePlanDescription}}\",\n  \"defaultLimit\": {\n    \"type\": \"{{applicationRatePlanType}}\",\n    \"requestCount\": {\n      \"requestCount\": {{applicationRatePlanRequestCount}},\n      \"timeUnit\": \"{{applicationRatePlanTimeUnit}}\",\n      \"unitTime\": {{applicationRatePlanTime}}\n    }\n  }\n}",
@@ -328,7 +720,7 @@
 					}
 				},
 				"url": {
-					"raw": "{{adminAPIServerBaseURL}}/api/am/admin/application-rate-plans?Host=api.am.wso2.com",
+					"raw": "{{adminAPIServerBaseURL}}/api/am/admin/application-rate-plans",
 					"host": [
 						"{{adminAPIServerBaseURL}}"
 					],
@@ -337,12 +729,6 @@
 						"am",
 						"admin",
 						"application-rate-plans"
-					],
-					"query": [
-						{
-							"key": "Host",
-							"value": "api.am.wso2.com"
-						}
 					]
 				}
 			},
@@ -375,6 +761,16 @@
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "POST",
 				"header": [
 					{
@@ -410,6 +806,16 @@
 		{
 			"name": "DevportalAPI Application GET By ID",
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
 				"header": [
 					{
@@ -461,6 +867,16 @@
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "PUT",
 				"header": [
 					{
@@ -495,8 +911,18 @@
 			"response": []
 		},
 		{
-			"name": "DevportalAPI List Application Copy",
+			"name": "DevportalAPI List Application",
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
 				"header": [
 					{
@@ -521,9 +947,69 @@
 			"response": []
 		},
 		{
-			"name": "DevportalAPI Application Delete Copy",
+			"name": "DevportalAPI Application Delete",
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "DELETE",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"url": {
+					"raw": "{{devPortalBaseURL}}/api/am/devportal/applications/{{testApplicationID}}",
+					"host": [
+						"{{devPortalBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"devportal",
+						"applications",
+						"{{testApplicationID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DevportalAPI Application GET By ID Copy",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 404\", function () {",
+							"    pm.response.to.have.status(404);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
 				"header": [
 					{
 						"key": "Host",
@@ -564,6 +1050,16 @@
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "DELETE",
 				"header": [
 					{
@@ -574,7 +1070,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"policyName\": \"30PerMin\",\n  \"displayName\": \"30PerMin\",\n  \"description\": \"30 Per Min\",\n  \"type\": \"ApplicationThrottlePolicy\",\n  \"defaultLimit\": {\n    \"type\": \"REQUESTCOUNTLIMIT\",\n    \"requestCount\": {\n      \"requestCount\": 10,\n      \"timeUnit\": \"min\",\n      \"unitTime\": 1\n    }\n  }\n}",
+					"raw": "",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -592,6 +1088,131 @@
 						"admin",
 						"application-rate-plans",
 						"{{applicationRatePlanID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "AdminAPI Application Rate Plan get after delete",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 404\", function () {",
+							"    pm.response.to.have.status(404);",
+							"",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{adminAPIServerBaseURL}}/api/am/admin/application-rate-plans/{{applicationRatePlanID}}",
+					"host": [
+						"{{adminAPIServerBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"admin",
+						"application-rate-plans",
+						"{{applicationRatePlanID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "RuntimeAPI Delete API",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.variables.set(\"runtimeAPIUUID\",pm.collectionVariables.get('runtimeAPIUUID'))",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"url": {
+					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/apis/{{runtimeAPIUUID}}",
+					"host": [
+						"{{runtimeAPIServerBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{runtimeAPIUUID}}"
 					]
 				}
 			},
@@ -670,7 +1291,7 @@
 		},
 		{
 			"key": "testAPIContext",
-			"value": "/http-bin-api/1.0.8",
+			"value": "/http-bin-api",
 			"type": "string"
 		},
 		{
@@ -706,6 +1327,23 @@
 		{
 			"key": "testApplicationID",
 			"value": ""
+		},
+		{
+			"key": "access_token",
+			"value": ""
+		},
+		{
+			"key": "runtimeAPIUUID",
+			"value": ""
+		},
+		{
+			"key": "backOfficeApiUUID",
+			"value": ""
+		},
+		{
+			"key": "lifeCycleStatusTest2",
+			"value": "Published",
+			"type": "default"
 		}
 	]
 }
