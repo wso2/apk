@@ -102,5 +102,5 @@ $JAVACMD \
     $JAVA_OPTS \
     -classpath "$CLASSPATH" \
     -Djava.io.tmpdir="$IDP_HOME/tmp" \
-    -jar idp_service.jar $*
+    -jar idp_domain_service.jar $*
     status=$?
