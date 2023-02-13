@@ -1,5 +1,3 @@
-import ballerina/uuid;
-
 //
 // Copyright (c) 2023, WSO2 LLC. (http://www.wso2.com).
 //
@@ -17,6 +15,9 @@ import ballerina/uuid;
 // specific language governing permissions and limitations
 // under the License.
 //
+import ballerina/uuid;
+
+
 # Description
 #
 # + loginPageURl - Field Description  
