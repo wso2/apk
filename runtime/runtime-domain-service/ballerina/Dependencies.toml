@@ -377,7 +377,7 @@ modules = [
 [[package]]
 org = "wso2"
 name = "runtime_domain_service"
-version = "0.0.1-m4"
+version = "0.0.1-SNAPSHOT"
 dependencies = [
 	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "crypto"},
