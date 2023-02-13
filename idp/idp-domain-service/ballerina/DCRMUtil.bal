@@ -13,9 +13,13 @@ public class DCRMClient {
             return badClient;
         }
         string[]? grantTypes = payload.grant_types;
-        if !(grantTypes is string[]) {
+        if (grantTypes is () || grantTypes.length()==0) {
             BadRequestClientRegistrationError badClient = {body: {'error: GRANT_TYPES_EMPTY_ERROR, error_description: "grant type list is empty"}};
             return badClient;
+        }
+        BadRequestClientRegistrationError? validateGrantType = self.validateGrantTypes(grantTypes);
+        if validateGrantType is BadRequestClientRegistrationError {
+            return validateGrantType;
         }
         string clientID = uuid:createType1AsString();
         string clientSecret = uuid:createType1AsString();
@@ -67,9 +71,13 @@ public class DCRMClient {
             return badClient;
         }
         string[]? grantTypes = payload.grant_types;
-        if !(grantTypes is string[]) {
+        if (grantTypes is () || grantTypes.length()==0) {
             BadRequestClientRegistrationError badClient = {body: {'error: GRANT_TYPES_EMPTY_ERROR, error_description: "grant type list is empty"}};
             return badClient;
+        }
+        BadRequestClientRegistrationError? validateGrantType = self.validateGrantTypes(grantTypes);
+        if validateGrantType is BadRequestClientRegistrationError {
+            return validateGrantType;
         }
         string clientName = <string>payload.client_name;
         string grantTypesArray = string:'join(",", ...grantTypes);
@@ -78,31 +86,35 @@ public class DCRMClient {
         if redirectUris is string[] {
             callBackurls = string:'join("|", ...redirectUris);
         }
-        postgresql:Client|error db_client = getConnection();
-        if db_client is error {
-            string message = "Error while retrieving connection";
-            log:printError(message, db_client);
-            InternalServerErrorClientRegistrationError internalError = {body: {'error: INTERNAL_ERROR, error_description: "Internal Error"}};
-            return internalError;
-        } else {
-            sql:ParameterizedQuery sqlQuery = `UPDATE CONSUMER_APPS SET APP_NAME=${clientName},CALLBACK_URL=${callBackurls},GRANT_TYPES=${grantTypesArray} WHERE CONSUMER_KEY=${clientId}`;
-
-            sql:ExecutionResult|sql:Error result = db_client->execute(sqlQuery);
-
-            if result is sql:ExecutionResult {
-                if result.affectedRowCount > 0 {
-                    return self.getApplication(clientId);
-                } else {
-                    NotFoundClientRegistrationError badRequest = {body: {'error: CLIENT_ID_NOT_FOUND_ERROR, error_description: clientId + " not found in system."}};
-                    return badRequest;
-
-                }
-            } else {
-                string message = "Error while inserting data into Database";
-                log:printError(message, result);
+        Application|NotFoundClientRegistrationError|InternalServerErrorClientRegistrationError application = self.getApplication(clientId);
+        if application is Application {
+            postgresql:Client|error db_client = getConnection();
+            if db_client is error {
+                string message = "Error while retrieving connection";
+                log:printError(message, db_client);
                 InternalServerErrorClientRegistrationError internalError = {body: {'error: INTERNAL_ERROR, error_description: "Internal Error"}};
                 return internalError;
+            } else {
+                sql:ParameterizedQuery sqlQuery = `UPDATE CONSUMER_APPS SET APP_NAME=${clientName},CALLBACK_URL=${callBackurls},GRANT_TYPES=${grantTypesArray} WHERE CONSUMER_KEY=${clientId}`;
+
+                sql:ExecutionResult|sql:Error result = db_client->execute(sqlQuery);
+
+                if result is sql:ExecutionResult {
+                    if result.affectedRowCount > 0 {
+                        return self.getApplication(clientId);
+                    } else {
+                        NotFoundClientRegistrationError badRequest = {body: {'error: CLIENT_ID_NOT_FOUND_ERROR, error_description: clientId + " not found in system."}};
+                        return badRequest;
+                    }
+                } else {
+                    string message = "Error while inserting data into Database";
+                    log:printError(message, result);
+                    InternalServerErrorClientRegistrationError internalError = {body: {'error: INTERNAL_ERROR, error_description: "Internal Error"}};
+                    return internalError;
+                }
             }
+        } else  {
+            return application;
         }
     }
     public isolated function getApplication(string consumerKey) returns Application|NotFoundClientRegistrationError|InternalServerErrorClientRegistrationError {
@@ -176,6 +188,18 @@ public class DCRMClient {
             }
         }
         return self.getApplication(clientId);
+    }
+    isolated function validateGrantTypes(string[] grantTypes) returns BadRequestClientRegistrationError? {
+        foreach string grantType in grantTypes {
+            lock {
+                int? available = ALLOWED_GRANT_TYPES.indexOf(grantType);
+                if available is () {
+                    BadRequestClientRegistrationError badRequest = {body: {'error: UNSUPPORTED_GRANT_TYPE_ERROR, error_description: grantType + " grant type not supported."}};
+                    return badRequest.cloneReadOnly();
+                }
+            }
+        }
+        return;
     }
 }
 

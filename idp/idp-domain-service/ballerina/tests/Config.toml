@@ -1,0 +1,32 @@
+[wso2.idp_domain_service.idpConfiguration]
+loginPageURl = "http://api.am.wso2.com/login"
+loginErrorPageUrl = "http://api.am.wso2.com/error"
+loginCallBackURl = "http://api.am.wso2.com/login-callback"
+[wso2.idp_domain_service.datasourceConfiguration]
+description = "APK DB"
+url = "jdbc:postgresql://localhost:10320/WSO2AM_DB"
+username = "wso2carbon"
+password = "wso2carbon"
+validationTimeout = 30000
+testQuery = "SELECT 1"
+driver = "org.postgresql.Driver"
+host = "localhost"
+port = 10320
+databaseName = "WSO2AM_DB"
+
+[wso2.idp_domain_service.idpConfiguration.signingKeyStore]
+path = "tests/resources/wso2carbon.key"
+[wso2.idp_domain_service.idpConfiguration.publicKey]
+path = "tests/resources/wso2carbon.crt"
+
+[[wso2.idp_domain_service.idpConfiguration.user]]
+username = "admin"
+password = "admin"
+organizations = ["org1"]
+
+[[wso2.idp_domain_service.idpConfiguration.user]]
+username = "user1"
+password = "user1"
+organizations = [""]
+superAdmin = true
+

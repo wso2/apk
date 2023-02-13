@@ -25,6 +25,7 @@ ENV POSTGRES_PASSWORD wso2carbon
 ENV POSTGRES_DB WSO2AM_DB
 ENV PGDATA /tmp/data1
 COPY db.sql /docker-entrypoint-initdb.d/
+COPY idp.sql /docker-entrypoint-initdb.d/
 
 USER root 
 
