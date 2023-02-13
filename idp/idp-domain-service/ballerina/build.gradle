@@ -16,19 +16,18 @@
 // under the License.
 //
 
-apply from: "$rootDir/../../common-gradle-scripts/docker.gradle"
-apply from: "$rootDir/../../common-gradle-scripts/copy.gradle"
+import org.apache.tools.ant.taskdefs.condition.Os
 
-tasks.named('copy_dist').configure{
-    finalizedBy docker_build
+apply from: "$projectDir/../../../common-gradle-scripts/ballerina.gradle"
+task build{
+    dependsOn 'bal_build'
+}
+task clean{
+    dependsOn 'bal_clean'
 }
 
-tasks.register('build') {
-    group 'build'
-    description 'Build docker image'
-    dependsOn 'copy_dist'
-    dependsOn 'docker_build'
+tasks.register('test') {
+    group 'test'
+    description 'Test ballerina component'
+    dependsOn 'bal_test'
 }
-
-build.mustRunAfter ":ballerina:build"
-build.dependsOn ":ballerina:build"

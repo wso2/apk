@@ -23,7 +23,7 @@ metadata:
 data:
   Config.toml: |
     # Sample configurations
-    [wso2.idp_service.datasourceConfiguration]
+    [wso2.idp_domain_service.datasourceConfiguration]
     description = "Database for idp"
     url = "{{ .Values.wso2.apk.idp.database.url }}"
     host = "{{ .Values.wso2.apk.idp.database.host }}"
@@ -34,24 +34,24 @@ data:
     validationTimeout = {{ .Values.wso2.apk.idp.database.validationTimeout }}
     testQuery = "{{ .Values.wso2.apk.idp.database.validationQuery }}"
     driver = "{{ .Values.wso2.apk.idp.database.driver }}"
-    [wso2.idp_service.idpConfiguration]
+    [wso2.idp_domain_service.idpConfiguration]
     loginPageURl = "{{ .Values.wso2.apk.idp.idpds.config.loginPageURl }}"
     loginErrorPageUrl = "{{ .Values.wso2.apk.idp.idpds.config.loginErrorPageUrl }}"
     loginCallBackURl = "{{ .Values.wso2.apk.idp.idpds.config.loginCallBackURl }}"
-    [wso2.idp_service.idpConfiguration.tokenIssuerConfiguration]
+    [wso2.idp_domain_service.idpConfiguration.tokenIssuerConfiguration]
     issuer = "{{ .Values.wso2.apk.idp.idpds.config.issuer }}"
     keyId="{{ .Values.wso2.apk.idp.idpds.config.keyId }}"
-    [[wso2.idp_service.idpConfiguration.fileBaseApp]]
+    [[wso2.idp_domain_service.idpConfiguration.fileBaseApp]]
     clientId = "45f1c5c8-a92e-11ed-afa1-0242ac120002"
     clientSecret = "4fbd62ec-a92e-11ed-afa1-0242ac120002"
     callbackUrls = []
     grantTypes = ["client_credentials",refresh_token"]
-    [[wso2.idp_service.idpConfiguration.user]]
+    [[wso2.idp_domain_service.idpConfiguration.user]]
     username = "admin"
     password = "admin"
     organizations = ["org1"]
 
-    [[wso2.idp_service.idpConfiguration.user]]
+    [[wso2.idp_domain_service.idpConfiguration.user]]
     username = "user1"
     password = "user1"
     organizations = [""]

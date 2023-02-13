@@ -349,8 +349,8 @@ modules = [
 
 [[package]]
 org = "wso2"
-name = "idp_service"
-version = "PROJECT_VERSION"
+name = "idp_domain_service"
+version = "0.0.1-SNAPSHOT"
 dependencies = [
 	{org = "ballerina", name = "http"},
 	{org = "ballerina", name = "jwt"},
@@ -364,7 +364,7 @@ dependencies = [
 	{org = "ballerinax", name = "postgresql"}
 ]
 modules = [
-	{org = "wso2", packageName = "idp_service", moduleName = "idp_service"}
+	{org = "wso2", packageName = "idp_domain_service", moduleName = "idp_domain_service"}
 ]
 
 

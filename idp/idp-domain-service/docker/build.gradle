@@ -16,25 +16,20 @@
 // under the License.
 //
 
-plugins {
-    id 'net.researchgate.release' version '2.8.0'
-}
-allprojects {
-    group = project.group
-    version = project.version
-}
+apply from: "$projectDir/../../../common-gradle-scripts/docker.gradle"
+apply from: "$rootDir/../../common-gradle-scripts/copy.gradle"
 
-release {
-    tagTemplate = 'idp-service-$version'
 
-    git {
-        requireBranch= "main"
-        pushToRemote= "origin"
-    }
+tasks.named('copy_dist').configure{
+    finalizedBy docker_build
 }
 
-unSnapshotVersion.finalizedBy ":ballerina:commit_toml_files"
-afterReleaseBuild.dependsOn ":docker:docker_push"
 task build{
-    dependsOn("docker:build")
+    group 'build'
+    description 'Build docker image'
+    dependsOn 'copy_dist'
+    dependsOn 'docker_build'
 }
+
+build.mustRunAfter ":ballerina:build"
+build.dependsOn ":ballerina:build"
