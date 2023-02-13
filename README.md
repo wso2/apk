@@ -74,14 +74,16 @@ Please refer [Postman Tests](https://github.com/wso2/apk/tree/main/test/postman-
 
 WSO2 API Kubernetes Platform has released following docker images in the WSO2 public docker hub.
 
-* Adapter: [wso2/adapter:0.0.1-m3](https://hub.docker.com/r/wso2/adapter)
-* Gateway Enforcer: [wso2/enforcer:0.0.1-m3](https://hub.docker.com/r/wso2/enforcer/tags)
-* Gatewary Router: [wso2/router:0.0.1-m3](https://hub.docker.com/r/wso2/router)
-* Management Server: [wso2/management-server:0.0.1-m3](https://hub.docker.com/r/wso2/management-server)
-* Runtime DS: [wso2/runtime-domain-service:0.0.1-m3](https://hub.docker.com/r/wso2/admin-domain-service)
-* Admin DS: [wso2/admin-domain-service:0.0.1-m3](https://hub.docker.com/r/wso2/admin-domain-service)
-* BackOffice DS: [wso2/backoffice-domain-service:0.0.1-m3](https://hub.docker.com/r/wso2/backoffice-domain-service)
-* Devportal DS: [wso2/devportal-domain-service:0.0.1-m3](https://hub.docker.com/r/wso2/devportal-domain-service)
+* Adapter: [wso2/adapter:0.0.1-m4](https://hub.docker.com/r/wso2/adapter)
+* Gateway Enforcer: [wso2/enforcer:0.0.1-m4](https://hub.docker.com/r/wso2/enforcer/tags)
+* Gatewary Router: [wso2/router:0.0.1-m4](https://hub.docker.com/r/wso2/router)
+* Management Server: [wso2/management-server:0.0.1-m4](https://hub.docker.com/r/wso2/management-server)
+* Runtime DS: [wso2/runtime-domain-service:0.0.1-m4](https://hub.docker.com/r/wso2/admin-domain-service)
+* Admin DS: [wso2/admin-domain-service:0.0.1-m4](https://hub.docker.com/r/wso2/admin-domain-service)
+* BackOffice DS: [wso2/backoffice-domain-service:0.0.1-m4](https://hub.docker.com/r/wso2/backoffice-domain-service)
+* Devportal DS: [wso2/devportal-domain-service:0.0.1-m4](https://hub.docker.com/r/wso2/devportal-domain-service)
+* IDP DS: [wso2/idp-domain-service:0.0.1-m4](https://hub.docker.com/r/wso2/devportal-domain-service)
+* IDP UI: [wso2/idp-ui:0.0.1-m4](https://hub.docker.com/r/wso2/devportal-domain-service)
 
 ### Before you begin...
 
@@ -89,8 +91,6 @@ WSO2 API Kubernetes Platform has released following docker images in the WSO2 pu
   and [Kubernetes client](https://kubernetes.io/docs/tasks/tools/install-kubectl/) <br>
 
 * An already setup [Kubernetes cluster](https://kubernetes.io/docs/setup). If you want to run it on the local you can use Minikube or Kind or a similar software.<br>
-
-* Install [NGINX Ingress Controller](https://kubernetes.github.io/ingress-nginx/deploy/). If you are using Minikube you can install ingress by running ```minikube addons enable ingress```<br>
 
 * Setup deployment namespace
 ```kubectl create namespace <Namespace>```
@@ -103,15 +103,18 @@ WSO2 API Kubernetes Platform has released following docker images in the WSO2 pu
 2. Clone the repo and cd into the ```HELM-HOME``` folder.
 3. Execute ``` helm dependency build ``` command to download the dependent charts.
 4. Now execute ```helm install apk-test . -n apk``` to install the APK components.
+#### Optional: 
+  - To deploy control plane components only use ``` --set wso2.apk.dp.enabled=false ```
+  - To deploy data plane components only use ``` --set wso2.apk.cp.enabled=false --set wso2.apk.cp.postgresql.enabled=false ```
 5. Verify the deployment by executing ```kubectl get pods -n apk```
 
 ### To Access Deployment through local machine
 
-#### Using ingress
-   Execute ``` kubectl get ing -n apk ``` command
+#### Identify the router-service external IP address to invoke the API through the APK gateway.
+``` kubectl get svc -n apk | grep router-service ```
 
-#### Minikube Flow
-   Execute ``` minikube tunnel ``` command
+``` kubectl port-forward svc/apk-test-wso2-apk-router-service -n apk 9095:9095 ```
+
 
 ## Quick Start APK with Kubernetes client
 Follow the instruction below to deploy an API using the kubectl.
@@ -122,18 +125,22 @@ Follow the instruction below to deploy an API using the kubectl.
   ```bash
   kubectl apply -f developer/tryout/samples/
   ```
-3. Identify the router-service external IP address to invoke the API through the APK gateway.
+
+3. Get a  token to invoke the API. Provide the router service external ip to below command.
   ```bash
-  kubectl get svc -n apk | grep router-service
-  ```
-4. Get a test token to invoke the API. Provide the router service external ip to below command.
-  ```bash
-  TOKEN=$(curl -X POST "https://${router_service}:9095/testkey" -H "Authorization: Basic YWRtaW46YWRtaW4=" -H "Host: gw.wso2.com" -k -v)
+  TOKEN=$(curl --location --request POST '{router_service}:9095/oauth2/token' \
+--header 'Host: idp.am.wso2.com' \
+--header 'Authorization: Basic NDVmMWM1YzgtYTkyZS0xMWVkLWFmYTEtMDI0MmFjMTIwMDAyOjRmYmQ2MmVjLWE5MmUtMTFlZC1hZmExLTAyNDJhYzEyMDAwMg==' \
+--header 'Content-Type: application/x-www-form-urlencoded' \
+--data-urlencode 'grant_type=client_credentials')
   ```
 5. Invoke the API.
   ```bash
   curl -X GET "https://${router_service}:9095/http-bin-api/1.0.8/get" -H "Authorization: Bearer $TOKEN" -H "Host: prod.gw.wso2.com" -k -v
   ```
+
+## Run domain services APIs in APK with postman
+[Test Postman collection](#test/postman-tests/README.md)
 
 ## Issue management
 We use GitHub to track all of our bugs and feature requests. Each issue we track has a variety of metadata:
