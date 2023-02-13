@@ -31,14 +31,22 @@ import (
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
+// HTTPRouteParams contains httproute related parameters
+type HTTPRouteParams struct {
+	AuthSchemes            map[string]dpv1alpha1.Authentication
+	ResourceAuthSchemes    map[string]dpv1alpha1.Authentication
+	APIPolicies            map[string]dpv1alpha1.APIPolicy
+	ResourceAPIPolicies    map[string]dpv1alpha1.APIPolicy
+	BackendPropertyMapping dpv1alpha1.BackendPropertyMapping
+}
+
 // SetInfoHTTPRouteCR populates resources and endpoints of mgwSwagger. httpRoute.Spec.Rules.Matches
 // are used to create resources and httpRoute.Spec.Rules.BackendRefs are used to create EndpointClusters.
-func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, authSchemes map[string]dpv1alpha1.Authentication,
-	resourceAuthSchemes map[string]dpv1alpha1.Authentication, backendPropertyMapping dpv1alpha1.BackendPropertyMapping) error {
+func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, httpRouteParams HTTPRouteParams) error {
 	var resources []*Resource
 	var securitySchemes []SecurityScheme
 	//TODO(amali) add gateway level securities after gateway crd has implemented
-	outputAuthScheme := utils.TieBreaker(utils.GetPtrSlice(maps.Values(authSchemes)))
+	outputAuthScheme := utils.TieBreaker(utils.GetPtrSlice(maps.Values(httpRouteParams.AuthSchemes)))
 	var authScheme *dpv1alpha1.Authentication
 	if outputAuthScheme != nil {
 		authScheme = *outputAuthScheme
@@ -70,13 +78,13 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, au
 				})
 			case gwapiv1b1.HTTPRouteFilterExtensionRef:
 				if filter.ExtensionRef.Kind == constants.KindAuthentication {
-					if ref, found := resourceAuthSchemes[types.NamespacedName{
+					if ref, found := httpRouteParams.ResourceAuthSchemes[types.NamespacedName{
 						Name:      string(filter.ExtensionRef.Name),
 						Namespace: httpRoute.Namespace,
 					}.String()]; found {
 						resourceAuthScheme = concatAuthSchemes(authScheme, &ref)
 					} else {
-						return fmt.Errorf(`Auth scheme: %s has not been resolved, spec.targetRef.kind should be 
+						return fmt.Errorf(`auth scheme: %s has not been resolved, spec.targetRef.kind should be 
 						'Resource' in resource level Authentications`, filter.ExtensionRef.Name)
 					}
 				}
@@ -155,7 +163,7 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, au
 			return fmt.Errorf("no backendref were provided")
 		}
 		for _, backend := range rule.BackendRefs {
-			backendProperties := backendPropertyMapping[types.NamespacedName{
+			backendProperties := httpRouteParams.BackendPropertyMapping[types.NamespacedName{
 				Name:      string(backend.Name),
 				Namespace: utils.GetNamespace(backend.Namespace, httpRoute.Namespace),
 			}]

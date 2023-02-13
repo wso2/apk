@@ -19,6 +19,7 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1alpha2"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -30,7 +31,8 @@ type APIPolicySpec struct {
 	//
 	//
 	// +optional
-	RequestQueryModifier RequestQueryModifier `json:"requestQueryModifier,omitempty"`
+	RequestQueryModifier RequestQueryModifier            `json:"requestQueryModifier,omitempty"`
+	TargetRef            gwapiv1b1.PolicyTargetReference `json:"targetRef,omitempty"`
 }
 
 // RequestQueryModifier allows to modify request query params
