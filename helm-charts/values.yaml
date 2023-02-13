@@ -39,7 +39,7 @@ wso2:
           keyId: "gateway_certificate_alias"
           loginPageURl: "https://idp.am.wso2.com:9095/authenticationEndpoint/login"
           loginErrorPageUrl: "https://idp.am.wso2.com:9095/authenticationEndpoint/error"
-          loginCallBackURl: "https:// :9095/authenticationEndpoint/login-callback"
+          loginCallBackURl: "https://idp.am.wso2.com:9095/authenticationEndpoint/login-callback"
         appName: "idp-ds"
         deployment:
           npi: idp-ds-npi
