@@ -40,7 +40,7 @@ public isolated function createApplication(Application createApplicationRequest,
     // };
     NotificationServiceClient ep = check new (endpoint);
     NotificationResponse createApplicationResponse = check ep->CreateApplication(createApplicationRequest);
-    log:printInfo(createApplicationResponse.toString());
+    log:printDebug(createApplicationResponse.toString());
     return createApplicationResponse;
 }
 
