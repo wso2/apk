@@ -65,7 +65,7 @@ router.get('/login-callback', function (req, res, next) {
   res.redirect(url);
 });
 
-//Login callback
+//Health check
 router.get('/health', function (req, res, next) {
   res.json({ "healthy": 'true' })
 
