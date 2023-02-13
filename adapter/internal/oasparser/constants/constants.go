@@ -134,4 +134,5 @@ const (
 // CRD Kinds
 const (
 	KindAuthentication = "Authentication"
+	KindAPIPolicy      = "APIPolicy"
 )

@@ -35,15 +35,89 @@ spec:
           spec:
             description: APIPolicySpec defines the desired state of APIPolicy
             properties:
-              requestQueryModifier:
+              default:
                 description: RequestQueryModifier support request query modifications
                 properties:
-                  add:
-                    type: string
-                  remove:
-                    type: string
-                  removeAll:
-                    type: string
+                  requestQueryModifier:
+                    description: RequestQueryModifier allows to modify request query
+                      params
+                    properties:
+                      add:
+                        items:
+                          description: HTTPQuery represents an HTTP Header name and
+                            value as defined by RFC 7230.
+                          properties:
+                            name:
+                              description: "Name is the name of the HTTP Header to
+                                be matched. Name matching MUST be case insensitive.
+                                (See https://tools.ietf.org/html/rfc7230#section-3.2).
+                                \n If multiple entries specify equivalent header names,
+                                the first entry with an equivalent name MUST be considered
+                                for a match. Subsequent entries with an equivalent
+                                header name MUST be ignored. Due to the case-insensitivity
+                                of header names, \"foo\" and \"Foo\" are considered
+                                equivalent."
+                              type: string
+                            value:
+                              description: Value is the value of HTTP Header to be
+                                matched.
+                              maxLength: 4096
+                              minLength: 1
+                              type: string
+                          required:
+                          - name
+                          - value
+                          type: object
+                        type: array
+                      remove:
+                        items:
+                          type: string
+                        type: array
+                      removeAll:
+                        type: string
+                    type: object
+                type: object
+              override:
+                description: PolicySpec contains API policies
+                properties:
+                  requestQueryModifier:
+                    description: RequestQueryModifier allows to modify request query
+                      params
+                    properties:
+                      add:
+                        items:
+                          description: HTTPQuery represents an HTTP Header name and
+                            value as defined by RFC 7230.
+                          properties:
+                            name:
+                              description: "Name is the name of the HTTP Header to
+                                be matched. Name matching MUST be case insensitive.
+                                (See https://tools.ietf.org/html/rfc7230#section-3.2).
+                                \n If multiple entries specify equivalent header names,
+                                the first entry with an equivalent name MUST be considered
+                                for a match. Subsequent entries with an equivalent
+                                header name MUST be ignored. Due to the case-insensitivity
+                                of header names, \"foo\" and \"Foo\" are considered
+                                equivalent."
+                              type: string
+                            value:
+                              description: Value is the value of HTTP Header to be
+                                matched.
+                              maxLength: 4096
+                              minLength: 1
+                              type: string
+                          required:
+                          - name
+                          - value
+                          type: object
+                        type: array
+                      remove:
+                        items:
+                          type: string
+                        type: array
+                      removeAll:
+                        type: string
+                    type: object
                 type: object
               targetRef:
                 description: PolicyTargetReference identifies an API object to apply
