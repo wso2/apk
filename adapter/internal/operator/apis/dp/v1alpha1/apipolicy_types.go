@@ -33,6 +33,7 @@ type APIPolicySpec struct {
 	RequestQueryModifier RequestQueryModifier `json:"requestQueryModifier,omitempty"`
 }
 
+// RequestQueryModifier allows to modify request query params
 type RequestQueryModifier struct {
 	Add       string `json:"add,omitempty"`
 	Remove    string `json:"remove,omitempty"`
