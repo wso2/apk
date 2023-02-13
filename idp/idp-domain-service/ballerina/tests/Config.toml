@@ -1,3 +1,4 @@
+
 [wso2.idp_domain_service.idpConfiguration]
 loginPageURl = "http://api.am.wso2.com/login"
 loginErrorPageUrl = "http://api.am.wso2.com/error"
