@@ -33,7 +33,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "constraint"
-version = "1.0.2"
+version = "1.0.1"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
@@ -101,9 +101,6 @@ version = "1.3.1"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "lang.value"}
-]
-modules = [
-	{org = "ballerina", packageName = "io", moduleName = "io"}
 ]
 
 [[package]]
@@ -385,11 +382,10 @@ modules = [
 [[package]]
 org = "wso2"
 name = "backoffice_service"
-version = "0.0.1-m4"
+version = "0.0.1-SNAPSHOT"
 dependencies = [
 	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "http"},
-	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "log"},
 	{org = "ballerina", name = "sql"},
 	{org = "ballerina", name = "test"},
@@ -402,5 +398,4 @@ modules = [
 	{org = "wso2", packageName = "backoffice_service", moduleName = "backoffice_service"},
 	{org = "wso2", packageName = "backoffice_service", moduleName = "backoffice_service.backoffice"}
 ]
-
 
