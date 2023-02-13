@@ -16,7 +16,6 @@
 apiVersion: dp.wso2.com/v1alpha1
 kind: BackendPolicy
 metadata:
-  namespace: apk
   name: sample-backend-policy
 spec:
   override:
@@ -47,5 +46,4 @@ spec:
   targetRef:
     group: ""
     kind: Service
-    namespace: apk
     name: secure-backend
