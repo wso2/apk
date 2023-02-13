@@ -30,7 +30,7 @@ public class DCRMClient {
             return badClient;
         }
         string[]? grantTypes = payload.grant_types;
-        if (grantTypes is () || grantTypes.length()==0) {
+        if (grantTypes is () || grantTypes.length() == 0) {
             BadRequestClientRegistrationError badClient = {body: {'error: GRANT_TYPES_EMPTY_ERROR, error_description: "grant type list is empty"}};
             return badClient;
         }
@@ -88,7 +88,7 @@ public class DCRMClient {
             return badClient;
         }
         string[]? grantTypes = payload.grant_types;
-        if (grantTypes is () || grantTypes.length()==0) {
+        if (grantTypes is () || grantTypes.length() == 0) {
             BadRequestClientRegistrationError badClient = {body: {'error: GRANT_TYPES_EMPTY_ERROR, error_description: "grant type list is empty"}};
             return badClient;
         }
@@ -103,15 +103,16 @@ public class DCRMClient {
         if redirectUris is string[] {
             callBackurls = string:'join("|", ...redirectUris);
         }
-        Application|NotFoundClientRegistrationError|InternalServerErrorClientRegistrationError application = self.getApplication(clientId);
-        if application is Application {
-            postgresql:Client|error db_client = getConnection();
-            if db_client is error {
-                string message = "Error while retrieving connection";
-                log:printError(message, db_client);
-                InternalServerErrorClientRegistrationError internalError = {body: {'error: INTERNAL_ERROR, error_description: "Internal Error"}};
-                return internalError;
-            } else {
+        postgresql:Client|error db_client = getConnection();
+        if db_client is error {
+            string message = "Error while retrieving connection";
+            log:printError(message, db_client);
+            InternalServerErrorClientRegistrationError internalError = {body: {'error: INTERNAL_ERROR, error_description: "Internal Error"}};
+            return internalError;
+        } else {
+            Application|NotFoundClientRegistrationError|InternalServerErrorClientRegistrationError application = self.getApplicationInternal(clientId, db_client);
+            if application is Application {
+
                 sql:ParameterizedQuery sqlQuery = `UPDATE CONSUMER_APPS SET APP_NAME=${clientName},CALLBACK_URL=${callBackurls},GRANT_TYPES=${grantTypesArray} WHERE CONSUMER_KEY=${clientId}`;
 
                 sql:ExecutionResult|sql:Error result = db_client->execute(sqlQuery);
@@ -129,9 +130,9 @@ public class DCRMClient {
                     InternalServerErrorClientRegistrationError internalError = {body: {'error: INTERNAL_ERROR, error_description: "Internal Error"}};
                     return internalError;
                 }
+            } else {
+                return application;
             }
-        } else  {
-            return application;
         }
     }
     public isolated function getApplication(string consumerKey) returns Application|NotFoundClientRegistrationError|InternalServerErrorClientRegistrationError {
@@ -142,32 +143,36 @@ public class DCRMClient {
             InternalServerErrorClientRegistrationError internalError = {body: {'error: INTERNAL_ERROR, error_description: "Internal Error"}};
             return internalError;
         } else {
-            sql:ParameterizedQuery query = `SELECT * FROM CONSUMER_APPS WHERE CONSUMER_KEY = ${consumerKey}`;
-            stream<OauthAppSqlEntry, sql:Error?> resultStream = db_Client->query(query);
-            do {
-                check from OauthAppSqlEntry oauthAppEntry in resultStream
-                    do {
-                        string[] callBackUrls = [];
-                        string callbackUrl = oauthAppEntry.callback_url;
-                        if callbackUrl.trim().length() > 0 {
-                            callBackUrls = regex:split(callbackUrl, "\\|");
-                        }
-                        string[] grantTypes = [];
-                        if oauthAppEntry.grant_types.trim().length() > 0 {
-                            grantTypes = regex:split(oauthAppEntry.grant_types, "\\,");
-                        }
-                        return {client_id: oauthAppEntry.consumer_key, client_secret: oauthAppEntry.consumer_secret, client_name: oauthAppEntry.app_name, grant_types: grantTypes, redirect_uris: callBackUrls, client_secret_expires_at: int:MAX_VALUE};
-                    };
+            return self.getApplicationInternal(consumerKey, db_Client);
+        }
+    }
+    isolated function getApplicationInternal(string consumerKey, postgresql:Client db_Client) returns Application|NotFoundClientRegistrationError|InternalServerErrorClientRegistrationError {
+        sql:ParameterizedQuery query = `SELECT * FROM CONSUMER_APPS WHERE CONSUMER_KEY = ${consumerKey}`;
+        OauthAppSqlEntry|sql:Error result = db_Client->queryRow(query, returnType = OauthAppSqlEntry);
+        if result is OauthAppSqlEntry {
+            string[] callBackUrls = [];
+            string callbackUrl = result.callback_url;
+            if callbackUrl.trim().length() > 0 {
+                callBackUrls = regex:split(callbackUrl, "\\|");
+            }
+            string[] grantTypes = [];
+            if result.grant_types.trim().length() > 0 {
+                grantTypes = regex:split(result.grant_types, "\\,");
+            }
+            return {client_id: result.consumer_key, client_secret: result.consumer_secret, client_name: result.app_name, grant_types: grantTypes, redirect_uris: callBackUrls, client_secret_expires_at: int:MAX_VALUE};
+        } else {
+            if result is sql:NoRowsError {
                 NotFoundClientRegistrationError notFound = {body: {'error: CLIENT_ID_NOT_FOUND_ERROR, error_description: consumerKey + " not found in system."}};
                 return notFound;
-            } on fail var e {
-                log:printError("Internal Error", e);
+            } else {
+                string message = "Error while retrieving data from Database";
+                log:printError(message, result);
                 InternalServerErrorClientRegistrationError internalError = {body: {'error: INTERNAL_ERROR, error_description: "Internal Error"}};
                 return internalError;
+
             }
         }
     }
-
     public isolated function deleteApplication(string consumerKey) returns http:NoContent|NotFoundClientRegistrationError|InternalServerErrorClientRegistrationError {
         postgresql:Client|error db_Client = getConnection();
         if db_Client is error {
@@ -193,6 +198,7 @@ public class DCRMClient {
             }
         }
     }
+
     public isolated function getApplicationIncludeFileBaseApps(string clientId) returns Application|Application|NotFoundClientRegistrationError|InternalServerErrorClientRegistrationError {
         foreach FileBaseOAuthapps oauthApp in idpConfiguration.fileBaseApp {
             if oauthApp.clientId == clientId {
@@ -206,6 +212,7 @@ public class DCRMClient {
         }
         return self.getApplication(clientId);
     }
+
     isolated function validateGrantTypes(string[] grantTypes) returns BadRequestClientRegistrationError? {
         foreach string grantType in grantTypes {
             lock {
@@ -218,6 +225,7 @@ public class DCRMClient {
         }
         return;
     }
+
 }
 
 type OauthAppSqlEntry record {|
