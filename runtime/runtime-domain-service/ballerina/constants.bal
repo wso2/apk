@@ -33,3 +33,4 @@ const string PRIMARY_ENDPOINT = "primary";
 const string ZIP_FILE_EXTENSTION = ".zip";
 const string PROTOCOL_HTTP = "http";
 const string PROTOCOL_HTTPS = "https";
+isolated string[] ALLOWED_API_TYPES = [API_TYPE_REST];
