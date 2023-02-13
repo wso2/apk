@@ -330,10 +330,15 @@ public class APIClient {
     }
     public isolated function createAPI(API api, string? definition, string organization) returns APKError|CreatedAPI|BadRequestError {
         do {
-
             if (self.validateName(api.name, organization)) {
                 BadRequestError badRequest = {body: {code: 90911, message: "API Name - " + api.name + " already exist.", description: "API Name - " + api.name + " already exist."}};
                 return badRequest;
+            }
+            lock {
+                if (ALLOWED_API_TYPES.indexOf(api.'type) is ()) {
+                    BadRequestError badRequest = {body: {code: 900912, message: "unsupported API Type."}};
+                    return badRequest.clone();
+                }
             }
             if (!self.returnFullContext(api.context, api.'version, organization).startsWith("/t/" + organization)) {
                 // possible context register in different org.
@@ -507,6 +512,12 @@ public class APIClient {
         if (self.validateName(api.name, organization)) {
             BadRequestError badRequest = {body: {code: 90911, message: "API Name - " + api.name + " already exist.", description: "API Name - " + api.name + " already exist."}};
             return badRequest;
+        }
+        lock {
+            if (ALLOWED_API_TYPES.indexOf(api.'type) is ()) {
+                BadRequestError badRequest = {body: {code: 900912, message: "unsupported API Type."}};
+                return badRequest.clone();
+            }
         }
         if (!self.returnFullContext(api.context, api.'version, organization).startsWith("/t/" + organization)) {
             // possible context register in different org.
@@ -1499,11 +1510,17 @@ public class APIClient {
         do {
             ImportDefintionRequest|BadRequestError importDefinitionRequest = check self.mapImportDefinitionRequest(payload);
             if importDefinitionRequest is ImportDefintionRequest {
+                lock {
+                    if (ALLOWED_API_TYPES.indexOf(importDefinitionRequest.'type) is ()) {
+                        BadRequestError badRequest = {body: {code: 900912, message: "unsupported API Type."}};
+                        return badRequest.clone();
+                    }
+                }
                 runtimeapi:APIDefinitionValidationResponse|runtimeapi:APIManagementException|BadRequestError validateAndRetrieveDefinitionResult = check self.validateAndRetrieveDefinition(importDefinitionRequest.'type, importDefinitionRequest.url, importDefinitionRequest.inlineAPIDefinition, importDefinitionRequest.content, importDefinitionRequest.fileName);
                 if validateAndRetrieveDefinitionResult is runtimeapi:APIDefinitionValidationResponse {
                     if validateAndRetrieveDefinitionResult.isValid() {
                         runtimeapi:APIDefinition parser = validateAndRetrieveDefinitionResult.getParser();
-                        log:printInfo("content available ==", contentAvailable = (validateAndRetrieveDefinitionResult.getContent() is string));
+                        log:printDebug("content available ==", contentAvailable = (validateAndRetrieveDefinitionResult.getContent() is string));
                         utilapis:Set|runtimeapi:APIManagementException uRITemplates = parser.getURITemplates(<string>validateAndRetrieveDefinitionResult.getContent());
                         if uRITemplates is utilapis:Set {
                             API additionalPropertes = importDefinitionRequest.additionalPropertes;
@@ -1514,7 +1531,9 @@ public class APIClient {
                             lang:Object[] uriTemplates = check uRITemplates.toArray();
                             foreach lang:Object uritemplate in uriTemplates {
                                 runtimeModels:URITemplate template = check java:cast(uritemplate);
-                                operations.push({target: template.getUriTemplate(), authTypeEnabled: template.isAuthEnabled(), verb: template.getHTTPVerb().toString().toUpperAscii()});
+                                if operations is APIOperations[] {
+                                    operations.push({target: template.getUriTemplate(), authTypeEnabled: template.isAuthEnabled(), verb: template.getHTTPVerb().toString().toUpperAscii()});
+                                }
                             }
                             additionalPropertes.operations = operations;
                             return self.createAPI(additionalPropertes, validateAndRetrieveDefinitionResult.getContent(), organization);

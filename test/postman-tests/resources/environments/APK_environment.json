@@ -1,16 +1,16 @@
 {
-	"id": "800a5bc5-48cb-4526-83b2-037f7d057487",
+	"id": "9e8a2d98-52d7-422b-9a29-4e5cb74a9061",
 	"name": "LocalMinikube",
 	"values": [
 		{
 			"key": "runtimeAPIServerBaseURL",
-			"value": "http://localhost",
+			"value": "https://127.0.0.1:9095",
 			"type": "default",
 			"enabled": true
 		},
 		{
 			"key": "serviceUUID",
-			"value": "",
+			"value": "91f04c0f-936e-40bc-9ca2-987757be0c93",
 			"type": "any",
 			"enabled": true
 		},
@@ -22,26 +22,42 @@
 		},
 		{
 			"key": "adminAPIServerBaseURL",
-			"value": "http://localhost",
+			"value": "https://127.0.0.1:9095",
 			"type": "default",
 			"enabled": true
 		},
 		{
 			"key": "backOfficeAPIServerBaseURL",
-			"value": "http://localhost",
+			"value": "https://127.0.0.1:9095",
 			"type": "default",
 			"enabled": true
 		},
 		{
 			"key": "internalBackOfficeAPIServerBaseURL",
-			"value": "http://localhost",
+			"value": "http://192.168.49.2",
 			"type": "default",
 			"enabled": true
 		},
 		{
 			"key": "devPortalBaseURL",
-			"value": "http://localhost",
+			"value": "https://127.0.0.1:9095",
 			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "idpEndpointUrl",
+			"value": "https://127.0.0.1:9095",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "client_id",
+			"value": "45f1c5c8-a92e-11ed-afa1-0242ac120002",
+			"enabled": true
+		},
+		{
+			"key": "client_secret",
+			"value": "4fbd62ec-a92e-11ed-afa1-0242ac120002",
 			"enabled": true
 		},
 		{
@@ -52,6 +68,6 @@
 		}
 	],
 	"_postman_variable_scope": "environment",
-	"_postman_exported_at": "2023-01-24T13:24:39.940Z",
-	"_postman_exported_using": "Postman/10.6.7"
+	"_postman_exported_at": "2023-02-13T05:07:36.379Z",
+	"_postman_exported_using": "Postman/10.9.4"
 }
