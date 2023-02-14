@@ -83,8 +83,7 @@ public class LoginClient {
                     string|jwt:Error cookieValue = generateSucessSession[1];
                     if cookieValue is string {
                         string loginPageRedirect = idpConfiguration.loginCallBackURl + "?" + STATE_KEY_QUERY_PARAM + "=" + sessionKey;
-                        boolean secureCookie = idpConfiguration.loginCallBackURl.startsWith("https") ? true : false;
-                        http:CookieOptions cookieOption = {domain: gethost(idpConfiguration.loginCallBackURl), secure: secureCookie, path: "/"};
+                        http:CookieOptions cookieOption = {domain: idpConfiguration.hostname, secure: true, path: "/"};
                         http:Cookie cookie = new (SESSION_KEY_PREFIX + sessionKey, cookieValue, cookieOption);
                         return {
                             headers: {
@@ -114,8 +113,7 @@ public class LoginClient {
                     string|jwt:Error cookieValue = generateSucessSession[1];
                     if cookieValue is string {
                         string loginPageRedirect = idpConfiguration.loginCallBackURl + "?" + STATE_KEY_QUERY_PARAM + "=" + sessionKey;
-                        boolean secureCookie = idpConfiguration.loginCallBackURl.startsWith("https") ? true : false;
-                        http:CookieOptions cookieOption = {domain: gethost(idpConfiguration.loginCallBackURl), secure: secureCookie, path: "/"};
+                        http:CookieOptions cookieOption = {domain: idpConfiguration.hostname, secure: true, path: "/"};
                         http:Cookie cookie = new (SESSION_KEY_PREFIX + sessionKey, cookieValue, cookieOption);
                         return {
                             headers: {
@@ -150,7 +148,6 @@ public class LoginClient {
     public isolated function generateSucessSessionData(string user, string? organization, jwt:Payload requestSessionPayload) returns [string, string|jwt:Error] {
 
         TokenIssuerConfiguration issuerConfiguration = idpConfiguration.tokenIssuerConfiguration;
-        KeyStoreConfiguration signingCert = idpConfiguration.signingKeyStore;
         string jwtid = uuid:createType1AsString();
         jwt:IssuerConfig issuerConfig = {
             issuer: issuerConfiguration.issuer,
@@ -158,7 +155,7 @@ public class LoginClient {
             jwtId: jwtid,
             username: user,
             signatureConfig: {
-                config: {keyFile: signingCert.path}
+                config: {keyFile: idpConfiguration.keyStores.signing.keyFile}
             }
         };
         string redirectUri = <string>requestSessionPayload.get(REDIRECT_URI_CLAIM);

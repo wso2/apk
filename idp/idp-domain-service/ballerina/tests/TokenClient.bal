@@ -47,6 +47,9 @@ public isolated client class TokenClient {
             if config.proxy is http:ProxyConfig {
                 httpClientConfig.proxy = check config.proxy.ensureType(http:ProxyConfig);
             }
+            if config.cookieConfig is http:CookieConfig{
+                httpClientConfig.cookieConfig = check config.cookieConfig.ensureType(http:CookieConfig);
+            }
         }
         http:Client httpEp = check new (serviceUrl, httpClientConfig);
         self.clientEp = httpEp;
@@ -60,7 +63,7 @@ public isolated client class TokenClient {
     # + state - Opaque value used by the client to maintain state between the request and callback 
     # + return - Response from authorization endpoint 
     resource isolated function get authorize(string response_type, string client_id, string? redirect_uri = (), string? scope = (), string? state = ()) returns http:Response|error {
-        string resourcePath = string `/authorize`;
+        string resourcePath = string `/oauth2/authorize`;
         map<anydata> queryParam = {"response_type": response_type, "client_id": client_id, "redirect_uri": redirect_uri, "scope": scope, "state": state};
         resourcePath = resourcePath + check getPathForQueryParam(queryParam);
         http:Response response = check self.clientEp->get(resourcePath);
@@ -70,7 +73,7 @@ public isolated client class TokenClient {
     # + sessionKey - Session key. 
     # + return - Response from authorization endpoint 
     resource isolated function get 'auth\-callback(string sessionKey) returns http:Response|error {
-        string resourcePath = string `/auth-callback`;
+        string resourcePath = string `/oauth2/auth-callback`;
         map<anydata> queryParam = {"sessionKey": sessionKey};
         resourcePath = resourcePath + check getPathForQueryParam(queryParam);
         http:Response response = check self.clientEp->get(resourcePath);
@@ -80,7 +83,7 @@ public isolated client class TokenClient {
     # + authorization - Authentication scheme header 
     # + return - OK. Successful response from token endpoint. 
     resource isolated function post token(Token_body payload, string? authorization = ()) returns TokenResponse|error {
-        string resourcePath = string `/token`;
+        string resourcePath = string `/oauth2/token`;
         map<any> headerValues = {"Authorization": authorization};
         map<string|string[]> httpHeaders = getMapForHeaders(headerValues);
         http:Request request = new;
@@ -92,7 +95,7 @@ public isolated client class TokenClient {
     #
     # + return - Signing key List 
     resource isolated function get keys() returns JWKList|error {
-        string resourcePath = string `/keys`;
+        string resourcePath = string `/oauth2/keys`;
         JWKList response = check self.clientEp->get(resourcePath);
         return response;
     }

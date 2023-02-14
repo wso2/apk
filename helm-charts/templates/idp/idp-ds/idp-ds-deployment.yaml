@@ -64,4 +64,5 @@ spec:
         - name: idp-signing-keystore-volume
           secret: 
             secretName: {{ template "apk-helm.resource.prefix" . }}-idp-signing-keystore-secret
+
 {{- end -}}

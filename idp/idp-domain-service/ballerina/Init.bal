@@ -23,10 +23,13 @@ import ballerina/jwt;
 
 configurable IDPConfiguration & readonly idpConfiguration = ?;
 final postgresql:Client|sql:Error dbClient;
-listener http:Listener ep0 = new (9443);
+listener http:Listener ep0 = getListener();
 final jwt:ValidatorConfig & readonly validatorConfig;
-configurable DatasourceConfiguration datasourceConfiguration=? ;
+configurable DatasourceConfiguration datasourceConfiguration = ?;
 
+function getListener() returns http:Listener|error{
+    return check new(9443);
+}
 function init() {
     dbClient =
         new (host = datasourceConfiguration.host,
@@ -39,7 +42,7 @@ function init() {
     validatorConfig = {
         issuer: idpConfiguration.tokenIssuerConfiguration.issuer,
         signatureConfig: {
-            certFile: idpConfiguration.publicKey.path
+            certFile: idpConfiguration.keyStores.signing.certFile
         }
     };
     log:printInfo("Initialize Non Production OIDC Server..");

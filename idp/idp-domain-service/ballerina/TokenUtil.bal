@@ -50,15 +50,12 @@ public class TokenUtil {
                         } else if grantType == REFRESH_TOKEN_GRANT_TYPE {
                             return self.hanleRefreshTokenGrant(payload, application);
                         } else {
-                                BadRequestTokenErrorResponse tokenError = {body: {'error: "unsupported_grant_type", error_description: grantType + " not supported by system."}};
-                                return tokenError;
+                            BadRequestTokenErrorResponse tokenError = {body: {'error: "unsupported_grant_type", error_description: grantType + " not supported by system."}};
+                            return tokenError;
                         }
-                    } else if application is NotFoundClientRegistrationError {
+                    } else {
                         UnauthorizedTokenErrorResponse unauthorized = {body: {'error: "access_denied", error_description: "Invalide Client Id/Secret"}};
                         return unauthorized;
-                    } else {
-                        BadRequestTokenErrorResponse tokenError = {"body": {'error: "server_error", error_description: "Server Error occured on generating token"}};
-                        return tokenError;
                     }
                 }
                 on fail var e {
@@ -90,7 +87,6 @@ public class TokenUtil {
     }
     public isolated function issueToken(Application application, string? username, string[] scopes, string? organization, string tokenType) returns string|jwt:Error {
         TokenIssuerConfiguration issuerConfiguration = idpConfiguration.tokenIssuerConfiguration;
-        KeyStoreConfiguration signingCert = idpConfiguration.signingKeyStore;
         string jwtid = uuid:createType1AsString();
         decimal exptime = tokenType == ACCESS_TOKEN_TYPE ? issuerConfiguration.expTime : issuerConfiguration.refrshTokenValidity;
         jwt:IssuerConfig issuerConfig = {
@@ -99,7 +95,7 @@ public class TokenUtil {
             jwtId: jwtid,
             keyId: issuerConfiguration.keyId,
             signatureConfig: {
-                config: {keyFile: signingCert.path}
+                config: {keyFile: idpConfiguration.keyStores.signing.keyFile}
             }
         };
         if username is string {
@@ -146,7 +142,7 @@ public class TokenUtil {
             string sub = <string>validatedPayload.sub;
             string[]? redirectUris = application.redirect_uris;
 
-            string? organization = payload.hasKey(ORGANIZATION_CLAIM) ? <string>payload.get(ORGANIZATION_CLAIM) : ();
+            string? organization = validatedPayload.hasKey(ORGANIZATION_CLAIM) ? <string>validatedPayload.get(ORGANIZATION_CLAIM) : ();
             if requestRedirectUrl != redirectUri || application.client_id != clientId || (redirectUris is () || redirectUris.indexOf(redirectUri) is ()) {
                 BadRequestTokenErrorResponse tokenError = {"body": {'error: "unauthorized_client", error_description: "redirectUrl not matched with application"}};
                 return tokenError;
@@ -194,7 +190,7 @@ public class TokenUtil {
             string scopes = <string>validatedPayload.get(SCOPES_CLAIM);
             string sub = <string>validatedPayload.sub;
 
-            string? organization = payload.hasKey(ORGANIZATION_CLAIM) ? <string>payload.get(ORGANIZATION_CLAIM) : ();
+            string? organization = validatedPayload.hasKey(ORGANIZATION_CLAIM) ? <string>validatedPayload.get(ORGANIZATION_CLAIM) : ();
             if application.client_id != clientId {
                 BadRequestTokenErrorResponse tokenError = {"body": {'error: "invalid_request", error_description: "Invalid refresh_token"}};
                 return tokenError;
@@ -252,22 +248,21 @@ public class TokenUtil {
     }
     public isolated function redirectRequest(Application application, string redirectUri, string[] scopes, string? state) returns http:Found {
         TokenIssuerConfiguration issuerConfiguration = idpConfiguration.tokenIssuerConfiguration;
-        KeyStoreConfiguration signingCert = idpConfiguration.signingKeyStore;
         string jwtid = uuid:createType1AsString();
         jwt:IssuerConfig issuerConfig = {
             issuer: issuerConfiguration.issuer,
             expTime: 600,
             jwtId: jwtid,
             signatureConfig: {
-                config: {keyFile: signingCert.path}
+                config: {keyFile: idpConfiguration.keyStores.signing.keyFile}
             }
         };
         issuerConfig.customClaims = {[REDIRECT_URI_CLAIM] : redirectUri, [SCOPES_CLAIM] : scopes, [CLIENT_ID_CLAIM] : application.client_id, [TOKEN_TYPE_CLAIM] : SESSION_KEY_TYPE};
         string|jwt:Error stateKey = jwt:issue(issuerConfig);
         if stateKey is string {
             string loginPageRedirect = idpConfiguration.loginPageURl + "?" + STATE_KEY_QUERY_PARAM + "=" + jwtid;
-            boolean secureCookie = idpConfiguration.loginPageURl.startsWith("https") ? true : false;
-            http:CookieOptions cookieOption = {domain: gethost(idpConfiguration.loginPageURl), secure: secureCookie, path: "/"};
+
+            http:CookieOptions cookieOption = {domain: idpConfiguration.hostname, secure: true, path: "/"};
             http:Cookie cookie = new (SESSION_KEY_PREFIX + jwtid, stateKey, cookieOption);
             return {
                 headers: {
@@ -332,7 +327,6 @@ public class TokenUtil {
         string sub = <string>payload.sub;
         string? organization = payload.hasKey(ORGANIZATION_CLAIM) ? <string>payload.get(ORGANIZATION_CLAIM) : ();
         TokenIssuerConfiguration issuerConfiguration = idpConfiguration.tokenIssuerConfiguration;
-        KeyStoreConfiguration signingCert = idpConfiguration.signingKeyStore;
         string jwtid = uuid:createType1AsString();
         jwt:IssuerConfig issuerConfig = {
             issuer: issuerConfiguration.issuer,
@@ -341,7 +335,7 @@ public class TokenUtil {
             username: sub,
             keyId: issuerConfiguration.keyId,
             signatureConfig: {
-                config: {keyFile: signingCert.path}
+                config: {keyFile: idpConfiguration.keyStores.signing.keyFile}
             }
         };
         issuerConfig.customClaims = {[REDIRECT_URI_CLAIM] : redirectUri, [SCOPES_CLAIM] : scopes, [CLIENT_ID_CLAIM] : clientId, [TOKEN_TYPE_CLAIM] : AUTHORIZATION_CODE_TYPE};
