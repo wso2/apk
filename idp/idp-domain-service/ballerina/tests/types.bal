@@ -48,6 +48,8 @@ public type ConnectionConfig record {|
     http:ProxyConfig proxy?;
     # Enables the inbound payload validation functionality which provided by the constraint package. Enabled by default
     boolean validation = true;
+    # cookie config
+    http:CookieConfig cookieConfig?;
 |};
 
 # Provides settings related to HTTP/1.x protocol.

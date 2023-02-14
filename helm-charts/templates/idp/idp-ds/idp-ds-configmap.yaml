@@ -22,7 +22,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
 data:
   Config.toml: |
-    # Sample configurations
+    # Sample configurations      
     [wso2.idp_domain_service.datasourceConfiguration]
     description = "Database for idp"
     url = "{{ .Values.wso2.apk.idp.database.url }}"
@@ -35,6 +35,7 @@ data:
     testQuery = "{{ .Values.wso2.apk.idp.database.validationQuery }}"
     driver = "{{ .Values.wso2.apk.idp.database.driver }}"
     [wso2.idp_domain_service.idpConfiguration]
+    hostname = "{{ .Values.wso2.apk.idp.idpds.config.hostname }}"
     loginPageURl = "{{ .Values.wso2.apk.idp.idpds.config.loginPageURl }}"
     loginErrorPageUrl = "{{ .Values.wso2.apk.idp.idpds.config.loginErrorPageUrl }}"
     loginCallBackURl = "{{ .Values.wso2.apk.idp.idpds.config.loginCallBackURl }}"

@@ -365,7 +365,7 @@ modules = [
 [[package]]
 org = "wso2"
 name = "idp_domain_service"
-version = "0.0.1-m4"
+version = "0.0.1-SNAPSHOT"
 dependencies = [
 	{org = "ballerina", name = "http"},
 	{org = "ballerina", name = "jwt"},

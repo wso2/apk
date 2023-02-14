@@ -19,12 +19,29 @@
 import ballerina/http;
 import ballerina/uuid;
 import ballerina/test;
+import ballerina/sql;
+import ballerinax/postgresql;
+
+
+@test:Mock{functionName: "getListener"}
+function getTestListener() returns http:Listener|error {
+http:Listener testListener = check new (9443, secureSocket = {
+    key: {
+        certFile: idpConfiguration.keyStores.tls.certFile,
+        keyFile: idpConfiguration.keyStores.tls.keyFile
+    }
+});    
+return testListener;
+}
+@test:Mock {functionName: "getConnection"}
+test:MockFunction testgetConnection = new ();
+ConnectionConfig connectionConfig = {secureSocket: {enable: true, cert: "tests/resources/wso2carbon.crt"}};
 
 @test:Config {}
 public function testCreateDCRApplication() returns error? {
-
+    test:when(testgetConnection).callOriginal();
     RegistrationRequest registrationRequest = {client_name: "app1", redirect_uris: ["https://localhost"], grant_types: ["client_credentials", "authorization_code", "refresh_token"]};
-    DCRClient dcrClient = check new ("http://localhost:9443");
+    DCRClient dcrClient = check new ("https://localhost:9443",connectionConfig);
     Application createdApplication = check dcrClient->/register.post(registrationRequest);
     test:assertEquals(createdApplication.client_name, registrationRequest.client_name);
     test:assertEquals(createdApplication.grant_types, registrationRequest.grant_types);
@@ -99,8 +116,9 @@ public function testCreateDCRApplication() returns error? {
 }
 
 @test:Config {}
-function testCreateApplicationNegativeTests() returns error? {
-    DCRClient dcrClient = check new ("http://localhost:9443");
+function testCreateApplicationNegativeTests1() returns error? {
+    test:when(testgetConnection).callOriginal();
+    DCRClient dcrClient = check new ("https://localhost:9443", connectionConfig);
     RegistrationRequest registrationRequest = {client_name: "", redirect_uris: ["https://localhost"], grant_types: ["client_credentials", "authorization_code", "refresh_token"]};
     Application|error createdApplication = dcrClient->/register.post(registrationRequest);
     test:assertTrue(createdApplication is error);
@@ -119,4 +137,129 @@ function testCreateApplicationNegativeTests() returns error? {
     if createdApplication is error {
         test:assertTrue(createdApplication.toString().includes("100151", 0));
     }
+}
+
+@test:Config {}
+function testCreateApplicationNegativeTests2() returns error? {
+    sql:DatabaseError error1 = error("Error while connecting to db", errorCode = 0, sqlState = ());
+    test:when(testgetConnection).thenReturn(error1);
+    ConnectionConfig connectionConfig = {secureSocket: {enable: true, cert: "tests/resources/wso2carbon.crt"}};
+    DCRClient dcrClient = check new ("https://localhost:9443", connectionConfig);
+    RegistrationRequest registrationRequest = {client_name: "abcde", redirect_uris: ["https://localhost"], grant_types: ["client_credentials", "authorization_code", "refresh_token"]};
+    Application|error createdApplication = dcrClient->/register.post(registrationRequest);
+    test:assertTrue(createdApplication is error);
+    if createdApplication is error {
+        test:assertTrue(createdApplication.toString().includes("100100", 0));
+    }
+}
+
+@test:Config {}
+function testCreateApplicationNegativeTests3() returns error? {
+    postgresql:Client mockClient = test:mock(postgresql:Client);
+    test:when(testgetConnection).thenReturn(mockClient);
+    sql:DatabaseError dataBaseError = error("error while executing query", errorCode = 90100, sqlState = ());
+    sql:ExecutionResult execution = {lastInsertId: 1, affectedRowCount: 0};
+
+    test:prepare(mockClient).when("execute").thenReturnSequence(dataBaseError, execution);
+    ConnectionConfig connectionConfig = {secureSocket: {enable: true, cert: "tests/resources/wso2carbon.crt"}};
+    DCRClient dcrClient = check new ("https://localhost:9443", connectionConfig);
+    RegistrationRequest registrationRequest = {client_name: "abcde", redirect_uris: ["https://localhost"], grant_types: ["client_credentials", "authorization_code", "refresh_token"]};
+    Application|error createdApplication = dcrClient->/register.post(registrationRequest);
+    test:assertTrue(createdApplication is error);
+    if createdApplication is error {
+        test:assertTrue(createdApplication.toString().includes("100100", 0));
+    }
+    createdApplication = dcrClient->/register.post(registrationRequest);
+    test:assertTrue(createdApplication is error);
+    if createdApplication is error {
+        test:assertTrue(createdApplication.toString().includes("100100", 0));
+    }
+}
+
+@test:Config {}
+function testUpdateApplicationNegativeTests4() returns error? {
+    string clientId = uuid:createType1AsString();
+    sql:DatabaseError error1 = error("Error while connecting to db", errorCode = 0, sqlState = ());
+    postgresql:Client mockClient = test:mock(postgresql:Client);
+    test:when(testgetConnection).thenReturn(error1);
+    ConnectionConfig connectionConfig = {secureSocket: {enable: true, cert: "tests/resources/wso2carbon.crt"}};
+    DCRClient dcrClient = check new ("https://localhost:9443", connectionConfig);
+    UpdateRequest updateRequest = {client_name: "abcde", redirect_uris: ["https://localhost"], grant_types: ["client_credentials", "authorization_code", "refresh_token"]};
+    Application|error createdApplication = dcrClient->/register/[clientId].put(updateRequest);
+    test:assertTrue(createdApplication is error);
+    if createdApplication is error {
+        test:assertTrue(createdApplication.toString().includes("100100", 0));
+    }
+    sql:DatabaseError dataBaseError = error("error while executing query", errorCode = 90100, sqlState = ());
+    test:when(testgetConnection).thenReturn(mockClient);
+    sql:ExecutionResult execution = {lastInsertId: 1, affectedRowCount: 0};
+    OauthAppSqlEntry oauthAppentry = {consumer_key: clientId, callback_url: "", app_name: "", consumer_secret: uuid:createType1AsString(), grant_types: ""};
+    test:prepare(mockClient).when("queryRow").thenReturn(oauthAppentry);
+    test:prepare(mockClient).when("execute").thenReturnSequence(dataBaseError, execution);
+    createdApplication = dcrClient->/register/[clientId].put(updateRequest);
+    test:assertTrue(createdApplication is error);
+    if createdApplication is error {
+        test:assertTrue(createdApplication.toString().includes("100100", 0));
+    }
+    createdApplication = dcrClient->/register/[clientId].put(updateRequest);
+    test:assertTrue(createdApplication is error);
+    if createdApplication is error {
+        test:assertTrue(createdApplication.toString().includes("100152", 0));
+    }
+}
+
+@test:Config {}
+function testGetApplicationNegativeTests5() returns error? {
+    string clientId = uuid:createType1AsString();
+    sql:DatabaseError error1 = error("Error while connecting to db", errorCode = 0, sqlState = ());
+    postgresql:Client mockClient = test:mock(postgresql:Client);
+    test:when(testgetConnection).thenReturn(error1);
+    ConnectionConfig connectionConfig = {secureSocket: {enable: true, cert: "tests/resources/wso2carbon.crt"}};
+    DCRClient dcrClient = check new ("https://localhost:9443", connectionConfig);
+    Application|error createdApplication = dcrClient->/register/[clientId];
+    test:assertTrue(createdApplication is error);
+    if createdApplication is error {
+        test:assertTrue(createdApplication.toString().includes("100100", 0));
+    }
+    sql:DatabaseError dataBaseError = error("error while executing query", errorCode = 90100, sqlState = ());
+    test:when(testgetConnection).thenReturn(mockClient);
+    test:prepare(mockClient).when("queryRow").thenReturn(dataBaseError);
+    createdApplication = dcrClient->/register/[clientId];
+    test:assertTrue(createdApplication is error);
+    if createdApplication is error {
+        test:assertTrue(createdApplication.toString().includes("100100", 0));
+    }
+}
+
+@test:Config {}
+function testDeleteApplicationNegativeTests6() returns error? {
+    string clientId = uuid:createType1AsString();
+    sql:DatabaseError error1 = error("Error while connecting to db", errorCode = 0, sqlState = ());
+    postgresql:Client mockClient = test:mock(postgresql:Client);
+    test:when(testgetConnection).thenReturn(error1);
+    ConnectionConfig connectionConfig = {secureSocket: {enable: true, cert: "tests/resources/wso2carbon.crt"}};
+    DCRClient dcrClient = check new ("https://localhost:9443", connectionConfig);
+    http:Response|error createdApplication = dcrClient->/register/[clientId].delete;
+    test:assertTrue(createdApplication is http:Response);
+    if createdApplication is http:Response {
+        test:assertEquals(createdApplication.statusCode, 500);
+        test:assertEquals(check createdApplication.getJsonPayload(), {'error: INTERNAL_ERROR, error_description: "Internal Error"});
+    }
+    sql:DatabaseError dataBaseError = error("error while executing query", errorCode = 90100, sqlState = ());
+    sql:ExecutionResult executionResult = {affectedRowCount: 0, lastInsertId: 1};
+    test:when(testgetConnection).thenReturn(mockClient);
+    test:prepare(mockClient).when("execute").thenReturnSequence(dataBaseError, executionResult);
+    createdApplication = dcrClient->/register/[clientId].delete;
+    test:assertTrue(createdApplication is http:Response);
+    if createdApplication is http:Response {
+        test:assertEquals(createdApplication.statusCode, 500);
+        test:assertEquals(check createdApplication.getJsonPayload(), {'error: INTERNAL_ERROR, error_description: "Internal Error"});
+    }
+    createdApplication = dcrClient->/register/[clientId].delete;
+    test:assertTrue(createdApplication is http:Response);
+    if createdApplication is http:Response {
+        test:assertEquals(createdApplication.statusCode, 404);
+        test:assertEquals(check createdApplication.getJsonPayload(), {'error: CLIENT_ID_NOT_FOUND_ERROR, error_description: clientId + " not found in system."});
+    }
+
 }
