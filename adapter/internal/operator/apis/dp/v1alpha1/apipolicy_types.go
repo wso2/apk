@@ -31,15 +31,40 @@ type APIPolicySpec struct {
 	//
 	//
 	// +optional
-	RequestQueryModifier RequestQueryModifier            `json:"requestQueryModifier,omitempty"`
-	TargetRef            gwapiv1b1.PolicyTargetReference `json:"targetRef,omitempty"`
+	Default   PolicySpec                      `json:"default,omitempty"`
+	Override  PolicySpec                      `json:"override,omitempty"`
+	TargetRef gwapiv1b1.PolicyTargetReference `json:"targetRef,omitempty"`
+}
+
+// PolicySpec contains API policies
+type PolicySpec struct {
+	RequestQueryModifier RequestQueryModifier `json:"requestQueryModifier,omitempty"`
 }
 
 // RequestQueryModifier allows to modify request query params
 type RequestQueryModifier struct {
-	Add       string `json:"add,omitempty"`
-	Remove    string `json:"remove,omitempty"`
-	RemoveAll string `json:"removeAll,omitempty"`
+	Add       []HTTPQuery `json:"add,omitempty"`
+	Remove    []string    `json:"remove,omitempty"`
+	RemoveAll string      `json:"removeAll,omitempty"`
+}
+
+// HTTPQuery represents an HTTP Header name and value as defined by RFC 7230.
+type HTTPQuery struct {
+	// Name is the name of the HTTP Header to be matched. Name matching MUST be
+	// case insensitive. (See https://tools.ietf.org/html/rfc7230#section-3.2).
+	//
+	// If multiple entries specify equivalent header names, the first entry with
+	// an equivalent name MUST be considered for a match. Subsequent entries
+	// with an equivalent header name MUST be ignored. Due to the
+	// case-insensitivity of header names, "foo" and "Foo" are considered
+	// equivalent.
+	Name string `json:"name"`
+
+	// Value is the value of HTTP Header to be matched.
+	//
+	// +kubebuilder:validation:MinLength=1
+	// +kubebuilder:validation:MaxLength=4096
+	Value string `json:"value"`
 }
 
 // APIPolicyStatus defines the observed state of APIPolicy

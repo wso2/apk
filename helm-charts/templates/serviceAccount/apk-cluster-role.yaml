@@ -62,4 +62,13 @@ rules:
   - apiGroups: ["dp.wso2.com"]
     resources: ["backendpolicies/status"]
     verbs: ["get","patch","update"]
+  - apiGroups: ["dp.wso2.com"]
+    resources: ["apipolicies"]
+    verbs: ["get","list","watch","update","delete","create"]
+  - apiGroups: ["dp.wso2.com"]
+    resources: ["apipolicies/finalizers"]
+    verbs: ["update"]
+  - apiGroups: ["dp.wso2.com"]
+    resources: ["apipolicies/status"]
+    verbs: ["get","patch","update"]
 {{- end -}}
