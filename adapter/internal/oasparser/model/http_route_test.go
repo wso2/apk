@@ -64,16 +64,15 @@ func TestConcatAPIPolicies(t *testing.T) {
 			result: dpv1alpha1.APIPolicySpec{
 				Override: dpv1alpha1.PolicySpec{
 					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
-						Remove: []string{"a", "b", "c", "d"},
+						Remove: []string{"a", "b"},
 						Add: []dpv1alpha1.HTTPQuery{
 							{Name: "q1", Value: "val1"},
-							{Name: "q2", Value: "val2"},
 						},
 						RemoveAll: "true",
 					},
 				},
 			},
-			message: "both schemeUp override and schemeDown override policies should be provided",
+			message: "only schemeUp override policies should be provided",
 		},
 		{
 			schemeUpSpec: dpv1alpha1.APIPolicySpec{

@@ -311,7 +311,7 @@ func concatAuthScheme(scheme *dpv1alpha1.Authentication) *dpv1alpha1.Authenticat
 // folowing the hierarchy described in the https://gateway-api.sigs.k8s.io/references/policy-attachment/#hierarchy
 // Following code would follow below logic.
 // | API override policies | Resource override policies | Resource default policies | API default policies |
-// |            1          |              1             |              0            |           0          | API override policies + Resource override policies
+// |            1          |              1             |              0            |           0          | API override policies
 // |            1          |              0             |              1            |           0          | API override policies
 // |            0          |              1             |              0            |           1          | Resource override policies
 // |            0          |              0             |              1            |           1          | Resource default policies
@@ -331,18 +331,22 @@ func concatAPIPolicies(schemeUp *dpv1alpha1.APIPolicy, schemeDown *dpv1alpha1.AP
 
 	// resource level override policies - must apply
 	// api level override RequestQueryModifier.Add/remove + resource level override RequestQueryModifier.Add/remove
-	finalAPIPolicy.Spec.Override.RequestQueryModifier.Add = append(finalAPIPolicy.Spec.Override.RequestQueryModifier.Add, schemeDown.Spec.Override.RequestQueryModifier.Add...)
-	finalAPIPolicy.Spec.Override.RequestQueryModifier.Remove = append(finalAPIPolicy.Spec.Override.RequestQueryModifier.Remove, schemeDown.Spec.Override.RequestQueryModifier.Remove...)
+	if len(finalAPIPolicy.Spec.Override.RequestQueryModifier.Add) < 1 {
+		finalAPIPolicy.Spec.Override.RequestQueryModifier.Add = schemeDown.Spec.Override.RequestQueryModifier.Add
+	}
+	if len(finalAPIPolicy.Spec.Override.RequestQueryModifier.Remove) < 1 {
+		finalAPIPolicy.Spec.Override.RequestQueryModifier.Remove = schemeDown.Spec.Override.RequestQueryModifier.Remove
+	}
 	if finalAPIPolicy.Spec.Override.RequestQueryModifier.RemoveAll == "" {
 		finalAPIPolicy.Spec.Override.RequestQueryModifier.RemoveAll = schemeDown.Spec.Override.RequestQueryModifier.RemoveAll
 	}
 
 	// resource level default policies if above are empty
 	if len(finalAPIPolicy.Spec.Override.RequestQueryModifier.Add) < 1 {
-		finalAPIPolicy.Spec.Override.RequestQueryModifier.Add = append(finalAPIPolicy.Spec.Override.RequestQueryModifier.Add, schemeDown.Spec.Default.RequestQueryModifier.Add...)
+		finalAPIPolicy.Spec.Override.RequestQueryModifier.Add = schemeDown.Spec.Default.RequestQueryModifier.Add
 	}
 	if len(finalAPIPolicy.Spec.Override.RequestQueryModifier.Remove) < 1 {
-		finalAPIPolicy.Spec.Override.RequestQueryModifier.Remove = append(finalAPIPolicy.Spec.Override.RequestQueryModifier.Remove, schemeDown.Spec.Default.RequestQueryModifier.Remove...)
+		finalAPIPolicy.Spec.Override.RequestQueryModifier.Remove = schemeDown.Spec.Default.RequestQueryModifier.Remove
 	}
 	if finalAPIPolicy.Spec.Override.RequestQueryModifier.RemoveAll == "" {
 		finalAPIPolicy.Spec.Override.RequestQueryModifier.RemoveAll = schemeDown.Spec.Default.RequestQueryModifier.RemoveAll
@@ -350,10 +354,10 @@ func concatAPIPolicies(schemeUp *dpv1alpha1.APIPolicy, schemeDown *dpv1alpha1.AP
 
 	// API level default policies if above are empty
 	if len(finalAPIPolicy.Spec.Override.RequestQueryModifier.Add) < 1 {
-		finalAPIPolicy.Spec.Override.RequestQueryModifier.Add = append(finalAPIPolicy.Spec.Override.RequestQueryModifier.Add, schemeUp.Spec.Default.RequestQueryModifier.Add...)
+		finalAPIPolicy.Spec.Override.RequestQueryModifier.Add = schemeUp.Spec.Default.RequestQueryModifier.Add
 	}
 	if len(finalAPIPolicy.Spec.Override.RequestQueryModifier.Remove) < 1 {
-		finalAPIPolicy.Spec.Override.RequestQueryModifier.Remove = append(finalAPIPolicy.Spec.Override.RequestQueryModifier.Remove, schemeUp.Spec.Default.RequestQueryModifier.Remove...)
+		finalAPIPolicy.Spec.Override.RequestQueryModifier.Remove = schemeUp.Spec.Default.RequestQueryModifier.Remove
 	}
 	if finalAPIPolicy.Spec.Override.RequestQueryModifier.RemoveAll == "" {
 		finalAPIPolicy.Spec.Override.RequestQueryModifier.RemoveAll = schemeUp.Spec.Default.RequestQueryModifier.RemoveAll
