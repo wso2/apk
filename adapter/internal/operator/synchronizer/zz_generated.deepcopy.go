@@ -79,6 +79,20 @@ func (in *HTTPRouteState) DeepCopyInto(out *HTTPRouteState) {
 			(*out)[key] = *val.DeepCopy()
 		}
 	}
+	if in.APIPolicies != nil {
+		in, out := &in.APIPolicies, &out.APIPolicies
+		*out = make(map[string]v1alpha1.APIPolicy, len(*in))
+		for key, val := range *in {
+			(*out)[key] = *val.DeepCopy()
+		}
+	}
+	if in.ResourceAPIPolicies != nil {
+		in, out := &in.ResourceAPIPolicies, &out.ResourceAPIPolicies
+		*out = make(map[string]v1alpha1.APIPolicy, len(*in))
+		for key, val := range *in {
+			(*out)[key] = *val.DeepCopy()
+		}
+	}
 	if in.BackendPropertyMapping != nil {
 		in, out := &in.BackendPropertyMapping, &out.BackendPropertyMapping
 		*out = make(v1alpha1.BackendPropertyMapping, len(*in))

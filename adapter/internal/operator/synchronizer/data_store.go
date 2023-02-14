@@ -150,6 +150,49 @@ func updateHTTPRoute(httpRoute *HTTPRouteState, cachedHTTPRoute *HTTPRouteState,
 		}
 	}
 
+	if len(httpRoute.APIPolicies) != len(cachedHTTPRoute.APIPolicies) {
+		cachedHTTPRoute.APIPolicies = httpRoute.APIPolicies
+		updated = true
+		events = append(events, endpointType+" Endpoint APIPolicies")
+	} else {
+		for key, auth := range httpRoute.APIPolicies {
+			if existingAuth, found := cachedHTTPRoute.APIPolicies[key]; found {
+				if auth.UID != existingAuth.UID || auth.Generation > existingAuth.Generation {
+					cachedHTTPRoute.APIPolicies = httpRoute.APIPolicies
+					updated = true
+					events = append(events, endpointType+" Endpoint APIPolicies")
+					break
+				}
+			} else {
+				cachedHTTPRoute.APIPolicies = httpRoute.APIPolicies
+				updated = true
+				events = append(events, endpointType+" Endpoint APIPolicies")
+				break
+			}
+		}
+	}
+	if len(httpRoute.ResourceAPIPolicies) != len(cachedHTTPRoute.ResourceAPIPolicies) {
+		cachedHTTPRoute.ResourceAPIPolicies = httpRoute.ResourceAPIPolicies
+		updated = true
+		events = append(events, endpointType+" Endpoint Resource APIPolicies")
+	} else {
+		for key, auth := range httpRoute.ResourceAPIPolicies {
+			if existingAuth, found := cachedHTTPRoute.ResourceAPIPolicies[key]; found {
+				if auth.UID != existingAuth.UID || auth.Generation > existingAuth.Generation {
+					cachedHTTPRoute.ResourceAPIPolicies = httpRoute.ResourceAPIPolicies
+					updated = true
+					events = append(events, endpointType+" Endpoint Resource APIPolicies")
+					break
+				}
+			} else {
+				cachedHTTPRoute.ResourceAPIPolicies = httpRoute.ResourceAPIPolicies
+				updated = true
+				events = append(events, endpointType+" Endpoint Resource APIPolicies")
+				break
+			}
+		}
+	}
+
 	if !reflect.DeepEqual(cachedHTTPRoute.BackendPropertyMapping, httpRoute.BackendPropertyMapping) {
 		cachedHTTPRoute.BackendPropertyMapping = httpRoute.BackendPropertyMapping
 		updated = true

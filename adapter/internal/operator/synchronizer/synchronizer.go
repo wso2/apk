@@ -136,8 +136,14 @@ func GenerateMGWSwagger(apiState APIState, httpRoute *HTTPRouteState, envType st
 	var mgwSwagger model.MgwSwagger
 	mgwSwagger.SetInfoAPICR(*apiState.APIDefinition)
 	mgwSwagger.EnvType = envType
-	if err := mgwSwagger.SetInfoHTTPRouteCR(httpRoute.HTTPRoute, httpRoute.Authentications, httpRoute.ResourceAuthentications,
-		httpRoute.BackendPropertyMapping); err != nil {
+	httpRouteParams := model.HTTPRouteParams{
+		AuthSchemes:            httpRoute.Authentications,
+		ResourceAuthSchemes:    httpRoute.ResourceAuthentications,
+		BackendPropertyMapping: httpRoute.BackendPropertyMapping,
+		APIPolicies:            httpRoute.APIPolicies,
+		ResourceAPIPolicies:    httpRoute.ResourceAPIPolicies,
+	}
+	if err := mgwSwagger.SetInfoHTTPRouteCR(httpRoute.HTTPRoute, httpRouteParams); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
 			Message:   fmt.Sprintf("Error setting HttpRoute CR info to mgwSwagger. %v", err),
 			Severity:  logging.MAJOR,

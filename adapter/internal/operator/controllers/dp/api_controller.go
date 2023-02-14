@@ -53,8 +53,12 @@ const (
 	httpRouteAuthenticationIndex = "httpRouteAuthenticationIndex"
 	// Index for resource level authentications
 	httpRouteAuthenticationResourceIndex = "httpRouteAuthenticationResourceIndex"
-	serviceHTTPRouteIndex                = "serviceHTTPRouteIndex"
-	serviceBackendPolicy                 = "serviceBackendPolicy"
+	// Index for API level apipolicies
+	httpRouteAPIPolicyIndex = "httpRouteAPIPolicyIndex"
+	// Index for resource level apipolicies
+	httpRouteAPIPolicyResourceIndex = "httpRouteAPIPolicyResourceIndex"
+	serviceHTTPRouteIndex           = "serviceHTTPRouteIndex"
+	serviceBackendPolicy            = "serviceBackendPolicy"
 )
 
 // APIReconciler reconciles a API object
@@ -146,6 +150,16 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 		return err
 	}
 
+	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.APIPolicy{}}, handler.EnqueueRequestsFromMapFunc(r.getAPIsForAPIPolicy),
+		predicates...); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("Error watching APIPolicy resources: %v", err),
+			Severity:  logging.BLOCKER,
+			ErrorCode: 2612,
+		})
+		return err
+	}
+
 	loggers.LoggerAPKOperator.Info("API Controller successfully started. Watching API Objects....")
 	return nil
 }
@@ -159,6 +173,9 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 //+kubebuilder:rbac:groups=dp.wso2.com,resources=authentications,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=dp.wso2.com,resources=authentications/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=dp.wso2.com,resources=authentications/finalizers,verbs=update
+//+kubebuilder:rbac:groups=dp.wso2.com,resources=apipolicies,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=dp.wso2.com,resources=apipolicies/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=dp.wso2.com,resources=apipolicies/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -261,6 +278,14 @@ func (apiReconciler *APIReconciler) resolveHTTPRouteRefs(ctx context.Context, na
 		return nil, fmt.Errorf("error while getting httproute auth defaults %s in namespace :%s, %s", httpRouteRef,
 			namespace, err.Error())
 	}
+	if httpRouteState.APIPolicies, err = apiReconciler.getAPIPoliciesForHTTPRoute(ctx, httpRouteState.HTTPRoute); err != nil {
+		return nil, fmt.Errorf("error while getting httproute auth defaults %s in namespace :%s, %s", httpRouteRef,
+			namespace, err.Error())
+	}
+	if httpRouteState.ResourceAPIPolicies, err = apiReconciler.getAPIPoliciesForResources(ctx, httpRouteState.HTTPRoute); err != nil {
+		return nil, fmt.Errorf("error while getting httproute auth defaults %s in namespace :%s, %s", httpRouteRef,
+			namespace, err.Error())
+	}
 	httpRouteState.BackendPropertyMapping = apiReconciler.getBackendProperties(ctx, httpRouteState.HTTPRoute)
 	return httpRouteState, nil
 }
@@ -293,6 +318,36 @@ func (apiReconciler *APIReconciler) getAuthenticationsForResources(ctx context.C
 		authentications[utils.NamespacedName(&item).String()] = item
 	}
 	return authentications, nil
+}
+
+func (apiReconciler *APIReconciler) getAPIPoliciesForHTTPRoute(ctx context.Context,
+	httpRoute *gwapiv1b1.HTTPRoute) (map[string]dpv1alpha1.APIPolicy, error) {
+	apiPolicies := make(map[string]dpv1alpha1.APIPolicy)
+	apiPolicyList := &dpv1alpha1.APIPolicyList{}
+	if err := apiReconciler.client.List(ctx, apiPolicyList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(httpRouteAPIPolicyIndex, utils.NamespacedName(httpRoute).String()),
+	}); err != nil {
+		return nil, err
+	}
+	for _, item := range apiPolicyList.Items {
+		apiPolicies[utils.NamespacedName(&item).String()] = item
+	}
+	return apiPolicies, nil
+}
+
+func (apiReconciler *APIReconciler) getAPIPoliciesForResources(ctx context.Context,
+	httpRoute *gwapiv1b1.HTTPRoute) (map[string]dpv1alpha1.APIPolicy, error) {
+	apiPolicies := make(map[string]dpv1alpha1.APIPolicy)
+	apiPolicyList := &dpv1alpha1.APIPolicyList{}
+	if err := apiReconciler.client.List(ctx, apiPolicyList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(httpRouteAPIPolicyResourceIndex, utils.NamespacedName(httpRoute).String()),
+	}); err != nil {
+		return nil, err
+	}
+	for _, item := range apiPolicyList.Items {
+		apiPolicies[utils.NamespacedName(&item).String()] = item
+	}
+	return apiPolicies, nil
 }
 
 func (apiReconciler *APIReconciler) getBackendProperties(ctx context.Context,
@@ -553,6 +608,67 @@ func (apiReconciler *APIReconciler) getAPIsForAuthentication(obj k8client.Object
 	return requests
 }
 
+// getAPIForAuthentication triggers the API controller reconcile method based on the changes detected
+// from Authentication objects. If the changes are done for an API stored in the Operator Data store,
+// a new reconcile event will be created and added to the reconcile event queue.
+func (apiReconciler *APIReconciler) getAPIsForAPIPolicy(obj k8client.Object) []reconcile.Request {
+	apiPolicy, ok := obj.(*dpv1alpha1.APIPolicy)
+	ctx := context.Background()
+	if !ok {
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("unexpected object type, bypassing reconciliation: %v", apiPolicy),
+			Severity:  logging.TRIVIAL,
+			ErrorCode: 2608,
+		})
+		return []reconcile.Request{}
+	}
+
+	requests := []reconcile.Request{}
+
+	// todo(amali) move this validation to validation hook
+	if !(apiPolicy.Spec.TargetRef.Kind == constants.KindHTTPRoute || apiPolicy.Spec.TargetRef.Kind == constants.KindResource) {
+		loggers.LoggerAPKOperator.Errorf("Unsupported target ref kind : %s was given for authentication: %s",
+			apiPolicy.Spec.TargetRef.Kind, apiPolicy.Name)
+		return requests
+	}
+	loggers.LoggerAPKOperator.Debugf("Finding reconcile API requests for httpRoute: %s in namespace : %s",
+		apiPolicy.Spec.TargetRef.Name, apiPolicy.Namespace)
+
+	apiList := &dpv1alpha1.APIList{}
+
+	namespacedName := types.NamespacedName{
+		Name: string(apiPolicy.Spec.TargetRef.Name),
+		Namespace: utils.GetNamespace(
+			(*gwapiv1b1.Namespace)(apiPolicy.Spec.TargetRef.Namespace),
+			apiPolicy.Namespace)}.String()
+
+	if err := apiReconciler.client.List(ctx, apiList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(httpRouteAPIIndex, namespacedName)}); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("Unable to find associated APIs: %s", namespacedName),
+			Severity:  logging.CRITICAL,
+			ErrorCode: 2610,
+		})
+		return []reconcile.Request{}
+	}
+
+	if len(apiList.Items) == 0 {
+		loggers.LoggerAPKOperator.Debugf("APIs for HTTPRoute not found: %s", namespacedName)
+		return []reconcile.Request{}
+	}
+
+	for _, api := range apiList.Items {
+		req := reconcile.Request{
+			NamespacedName: types.NamespacedName{
+				Name:      api.Name,
+				Namespace: api.Namespace},
+		}
+		requests = append(requests, req)
+		loggers.LoggerAPKOperator.Infof("Adding reconcile request for API: %s/%s", api.Namespace, api.Name)
+	}
+	return requests
+}
+
 // addIndexes adds indexing on API, for
 //   - prodution and sandbox HTTPRoutes
 //     referenced in API objects via `.spec.prodHTTPRouteRef` and `.spec.sandHTTPRouteRef`
@@ -560,6 +676,9 @@ func (apiReconciler *APIReconciler) getAPIsForAuthentication(obj k8client.Object
 //   - authentications
 //     authentication schemes related to httproutes
 //     This helps to find authentication schemes binded to HTTPRoute.
+//   - apiPolicies
+//     apiPolicy schemes related to httproutes
+//     This helps to find apiPolicy schemes binded to HTTPRoute.
 func addIndexes(ctx context.Context, mgr manager.Manager) error {
 	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.API{}, httpRouteAPIIndex,
 		func(rawObj k8client.Object) []string {
@@ -620,6 +739,7 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 		return err
 	}
 
+	// authentication to HTTPRoute indexer
 	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.Authentication{}, httpRouteAuthenticationIndex,
 		func(rawObj k8client.Object) []string {
 			authentication := rawObj.(*dpv1alpha1.Authentication)
@@ -642,7 +762,7 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 	// https://gateway-api.sigs.k8s.io/geps/gep-713/?h=multiple+targetrefs#apply-policies-to-sections-of-a-resource-future-extension
 	// we will use a temporary kindName called Resource for policy attachments
 	// TODO(amali) Fix after the official support is available
-	err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.Authentication{}, httpRouteAuthenticationResourceIndex,
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.Authentication{}, httpRouteAuthenticationResourceIndex,
 		func(rawObj k8client.Object) []string {
 			authentication := rawObj.(*dpv1alpha1.Authentication)
 			var httpRoutes []string
@@ -653,6 +773,46 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 							(*gwapiv1b1.Namespace)(authentication.Spec.TargetRef.Namespace),
 							authentication.Namespace),
 						Name: string(authentication.Spec.TargetRef.Name),
+					}.String())
+			}
+			return httpRoutes
+		}); err != nil {
+		return err
+	}
+
+	// APIPolicy to HTTPRoute indexer
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.APIPolicy{}, httpRouteAPIPolicyIndex,
+		func(rawObj k8client.Object) []string {
+			apiPolicy := rawObj.(*dpv1alpha1.APIPolicy)
+			var httpRoutes []string
+			if apiPolicy.Spec.TargetRef.Kind == constants.KindHTTPRoute {
+				httpRoutes = append(httpRoutes,
+					types.NamespacedName{
+						Namespace: utils.GetNamespace(
+							(*gwapiv1b1.Namespace)(apiPolicy.Spec.TargetRef.Namespace), apiPolicy.Namespace),
+						Name: string(apiPolicy.Spec.TargetRef.Name),
+					}.String())
+			}
+			return httpRoutes
+		}); err != nil {
+		return err
+	}
+
+	// Till the below is httproute rule name and targetref sectionname is supported,
+	// https://gateway-api.sigs.k8s.io/geps/gep-713/?h=multiple+targetrefs#apply-policies-to-sections-of-a-resource-future-extension
+	// we will use a temporary kindName called Resource for policy attachments
+	// TODO(amali) Fix after the official support is available
+	err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.APIPolicy{}, httpRouteAPIPolicyResourceIndex,
+		func(rawObj k8client.Object) []string {
+			apiPolicy := rawObj.(*dpv1alpha1.APIPolicy)
+			var httpRoutes []string
+			if apiPolicy.Spec.TargetRef.Kind == constants.KindResource {
+				httpRoutes = append(httpRoutes,
+					types.NamespacedName{
+						Namespace: utils.GetNamespace(
+							(*gwapiv1b1.Namespace)(apiPolicy.Spec.TargetRef.Namespace),
+							apiPolicy.Namespace),
+						Name: string(apiPolicy.Spec.TargetRef.Name),
 					}.String())
 			}
 			return httpRoutes
