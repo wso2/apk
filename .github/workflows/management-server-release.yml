@@ -16,6 +16,9 @@ on:
       - '**/management-server/**'
     branches:
       - 'main'
+concurrency:
+  group: ${{ github.event.number }}
+  cancel-in-progress: true
 
 jobs:
   build:

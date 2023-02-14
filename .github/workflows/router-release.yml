@@ -16,6 +16,9 @@ on:
       - '**/gateway/router**'
     branches:
       - 'main'
+concurrency:
+  group: ${{ github.event.number }}
+  cancel-in-progress: true
 jobs:
   build:
     runs-on: ubuntu-latest
