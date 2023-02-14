@@ -70,3 +70,34 @@ isolated function updatedOrganization(string id, Organization payload) returns O
         return organization;
     } 
 }
+
+isolated function getAllOrganization() returns OrganizationList|APKError {
+    Organization[]|APKError getOrgnizations = getAllOrganizationDAO();
+    if getOrgnizations is Organization[] {
+        int count = getOrgnizations.length();
+        OrganizationList getOrgnizationsList = {count: count, list: getOrgnizations};
+        return getOrgnizationsList;
+    } else {
+       return getOrgnizations;
+    }
+}
+
+isolated function getOrganizationById(string id) returns Organization|APKError {
+    boolean validateOrganizationId = check validateOrganizationById(id);
+    if validateOrganizationId is false {
+        string message = "Organization ID not exist by:" + id;
+        return error(message, message = message, description = message, code = 90911, statusCode = "400");
+    }
+    Organization|APKError organization = getOrganizationByIdDAO(id);
+    return organization;
+}
+
+isolated function removeOrganization(string id) returns boolean|APKError {
+    boolean validateOrganizationId = check validateOrganizationById(id);
+    if validateOrganizationId is false {
+        string message = "Organization ID not exist by:" + id;
+        return error(message, message = message, description = message, code = 90911, statusCode = "400");
+    }
+    boolean|APKError organization = removeOrganizationDAO(id);
+    return organization;
+}
