@@ -106,6 +106,9 @@ data:
       host = "{{ template "apk-helm.resource.prefix" . }}-runtime-ds-service"
       port = 9443
       serviceBasePath = "/api/am/runtime"
+    
+    [managementServer]
+      enabled = true
 
   config.toml.template: |
     # The configuration file for mgw
