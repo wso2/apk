@@ -163,6 +163,30 @@ Note: APIs should be created in the APK deployment namespace.
 ## Run domain services APIs in APK with postman
 [Test Postman collection](#test/postman-tests/README.md)
 
+## Build APK Components
+
+### Pre-requisites
+1. Install Java JDK 11.
+2. Install Ballerina Ballerina version: 2201.3.1 (Swan Lake Update 3)
+3. Install Go.
+4. Install Lua.
+5. Docker Runtime Up and Running.
+
+### Build all components
+
+Run <APK>/apk-build.sh file.
+  ```bash
+  sh apk-build.sh
+  ```
+
+### Build single component
+
+For example: building Runtime Domain Service
+  ```bash
+  cd runtime/runtime-domain-service
+  gradle build
+  ```
+
 ## Issue management
 We use GitHub to track all of our bugs and feature requests. Each issue we track has a variety of metadata:
 - **Epic**. An epic represents a feature area for APK as a whole. Epics are fairly broad in scope and are basically product-level things.Each issue is ultimately part of an epic.
