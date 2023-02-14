@@ -121,12 +121,15 @@ Follow the instruction below to deploy an API using the kubectl.
 
 1. Create API CR and create production and/or sandbox HTTPRoute CRs, and service for the API backend . 
    You can find a sample CR set in `developer/tryout/samples/` folder in this repository.
+
 2. Apply CRs to kubernetes API server using the kubectl.
   ```bash
   kubectl apply -f developer/tryout/samples/
   ```
+Note: Services should be created in a different namespace than APK or Kubernetes System namespaces.
+Note: APIs should be created in the APK deployment namespace.
 
-3. Get a  token to invoke the API. Provide the router service external ip to below command.
+3. Get a  token to invoke the System API. Provide the router service external ip to below command.
   ```bash
   TOKEN=$(curl --location --request POST '{router_service}:9095/oauth2/token' \
 --header 'Host: idp.am.wso2.com' \
@@ -134,9 +137,27 @@ Follow the instruction below to deploy an API using the kubectl.
 --header 'Content-Type: application/x-www-form-urlencoded' \
 --data-urlencode 'grant_type=client_credentials')
   ```
-5. Invoke the API.
+
+4. List the created API and retrieve API_ID.
   ```bash
-  curl -X GET "https://${router_service}:9095/http-bin-api/1.0.8/get" -H "Authorization: Bearer $TOKEN" -H "Host: prod.gw.wso2.com" -k -v
+  curl --location --request GET '{router_service}:9095/api/am/runtime/apis' \
+--header 'Host: api.am.wso2.com' \
+--header 'Authorization: Bearer $TOKEN'
+  ```
+
+5. Get a token to invoke the created API. Provide the router service external ip to below command.
+  ```bash
+  INTERNAL_KEY=$(curl --location --request POST '{router_service}:9095/api/am/runtime/apis/<$API_ID>/generate-key' \
+--header 'Content-Type: application/json' \
+--header 'Accept: application/json' \
+--header 'Host: api.am.wso2.com' \
+--header 'Authorization: Bearer $TOKEN')
+  ```
+6. Invoke the API.
+  ```bash
+  curl --location --request GET '{router_service}:9095/http-bin-api/1.0.8/get' \
+--header 'HOST: gw.wso2.com' \
+--header 'Internal-Key: $INTERNAL_KEY'
   ```
 
 ## Run domain services APIs in APK with postman
