@@ -105,7 +105,12 @@ WSO2 API Kubernetes Platform has released following docker images in the WSO2 pu
 4. Now execute ```helm install apk-test . -n apk``` to install the APK components.
 #### Optional: 
   - To deploy control plane components only use ``` --set wso2.apk.dp.enabled=false ```
-  - To deploy data plane components only use ``` --set wso2.apk.cp.enabled=false --set wso2.apk.cp.postgresql.enabled=false ```
+  - To deploy data plane components only use ``` --set wso2.apk.cp.enabled=false ``` and need to disable Adapter 
+connection to Management Server by setting following value to ```false``` in /apk/helm-charts/templates/data-plane/gateway-components/log-conf.yaml file.
+  ```bash
+    [managementServer]
+    enabled = false
+  ```
 5. Verify the deployment by executing ```kubectl get pods -n apk```
 
 ### To Access Deployment through local machine
@@ -167,10 +172,11 @@ Note: APIs should be created in the APK deployment namespace.
 
 ### Pre-requisites
 1. Install Java JDK 11.
-2. Install Ballerina Ballerina version: 2201.3.1 (Swan Lake Update 3)
-3. Install Go.
-4. Install Lua.
-5. Docker Runtime Up and Running.
+2. Install Gradle(7.5.1).
+3. Install Ballerina Ballerina version: 2201.3.1 (Swan Lake Update 3).
+4. Install Go.
+5. Install Lua.
+6. Docker Runtime Up and Running.
 
 ### Build all components
 
