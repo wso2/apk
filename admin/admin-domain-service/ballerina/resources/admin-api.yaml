@@ -3844,7 +3844,9 @@ components:
     Organization:
       title: Organization
       required:
-        - id
+        - name
+        - displayName
+        - claimList
       type: object
       properties:
         id:
