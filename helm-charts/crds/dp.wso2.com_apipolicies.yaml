@@ -1,5 +1,5 @@
 # --------------------------------------------------------------------
-# Copyright (c) 2022, WSO2 LLC. (http://wso2.com) All Rights Reserved.
+# Copyright (c) 2023, WSO2 LLC. (http://wso2.com) All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,42 +31,153 @@ spec:
     singular: apipolicy
   scope: Namespaced
   versions:
-  - name: v1alpha1
-    schema:
-      openAPIV3Schema:
-        description: APIPolicy is the Schema for the apipolicies API
-        properties:
-          apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
+    - name: v1alpha1
+      schema:
+        openAPIV3Schema:
+          description: APIPolicy is the Schema for the apipolicies API
+          properties:
+            apiVersion:
+              description: 'APIVersion defines the versioned schema of this representation
               of an object. Servers should convert recognized schemas to the latest
               internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
-            type: string
-          kind:
-            description: 'Kind is a string value representing the REST resource this
+              type: string
+            kind:
+              description: 'Kind is a string value representing the REST resource this
               object represents. Servers may infer this from the endpoint the client
               submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
-            type: string
-          metadata:
-            type: object
-          spec:
-            description: APIPolicySpec defines the desired state of APIPolicy
-            properties:
-              requestQueryModifier:
-                description: RequestQueryModifier support request query modifications
-                properties:
-                  add:
-                    type: string
-                  remove:
-                    type: string
-                  removeAll:
-                    type: string
-                type: object
-            type: object
-          status:
-            description: APIPolicyStatus defines the observed state of APIPolicy
-            type: object
-        type: object
-    served: true
-    storage: true
-    subresources:
-      status: {}
+              type: string
+            metadata:
+              type: object
+            spec:
+              description: APIPolicySpec defines the desired state of APIPolicy
+              properties:
+                default:
+                  description: RequestQueryModifier support request query modifications
+                  properties:
+                    requestQueryModifier:
+                      description: RequestQueryModifier allows to modify request query
+                        params
+                      properties:
+                        add:
+                          items:
+                            description: HTTPQuery represents an HTTP Header name and
+                              value as defined by RFC 7230.
+                            properties:
+                              name:
+                                description: "Name is the name of the HTTP Header to
+                                be matched. Name matching MUST be case insensitive.
+                                (See https://tools.ietf.org/html/rfc7230#section-3.2).
+                                \n If multiple entries specify equivalent header names,
+                                the first entry with an equivalent name MUST be considered
+                                for a match. Subsequent entries with an equivalent
+                                header name MUST be ignored. Due to the case-insensitivity
+                                of header names, \"foo\" and \"Foo\" are considered
+                                equivalent."
+                                type: string
+                              value:
+                                description: Value is the value of HTTP Header to be
+                                  matched.
+                                maxLength: 4096
+                                minLength: 1
+                                type: string
+                            required:
+                              - name
+                              - value
+                            type: object
+                          type: array
+                        remove:
+                          items:
+                            type: string
+                          type: array
+                        removeAll:
+                          type: string
+                      type: object
+                  type: object
+                override:
+                  description: PolicySpec contains API policies
+                  properties:
+                    requestQueryModifier:
+                      description: RequestQueryModifier allows to modify request query
+                        params
+                      properties:
+                        add:
+                          items:
+                            description: HTTPQuery represents an HTTP Header name and
+                              value as defined by RFC 7230.
+                            properties:
+                              name:
+                                description: "Name is the name of the HTTP Header to
+                                be matched. Name matching MUST be case insensitive.
+                                (See https://tools.ietf.org/html/rfc7230#section-3.2).
+                                \n If multiple entries specify equivalent header names,
+                                the first entry with an equivalent name MUST be considered
+                                for a match. Subsequent entries with an equivalent
+                                header name MUST be ignored. Due to the case-insensitivity
+                                of header names, \"foo\" and \"Foo\" are considered
+                                equivalent."
+                                type: string
+                              value:
+                                description: Value is the value of HTTP Header to be
+                                  matched.
+                                maxLength: 4096
+                                minLength: 1
+                                type: string
+                            required:
+                              - name
+                              - value
+                            type: object
+                          type: array
+                        remove:
+                          items:
+                            type: string
+                          type: array
+                        removeAll:
+                          type: string
+                      type: object
+                  type: object
+                targetRef:
+                  description: PolicyTargetReference identifies an API object to apply
+                    policy to. This should be used as part of Policy resources that
+                    can target Gateway API resources. For more information on how this
+                    policy attachment model works, and a sample Policy resource, refer
+                    to the policy attachment documentation for Gateway API.
+                  properties:
+                    group:
+                      description: Group is the group of the target resource.
+                      maxLength: 253
+                      pattern: ^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                      type: string
+                    kind:
+                      description: Kind is kind of the target resource.
+                      maxLength: 63
+                      minLength: 1
+                      pattern: ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$
+                      type: string
+                    name:
+                      description: Name is the name of the target resource.
+                      maxLength: 253
+                      minLength: 1
+                      type: string
+                    namespace:
+                      description: Namespace is the namespace of the referent. When
+                        unspecified, the local namespace is inferred. Even when policy
+                        targets a resource in a different namespace, it MUST only apply
+                        to traffic originating from the same namespace as the policy.
+                      maxLength: 63
+                      minLength: 1
+                      pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+                      type: string
+                  required:
+                    - group
+                    - kind
+                    - name
+                  type: object
+              type: object
+            status:
+              description: APIPolicyStatus defines the observed state of APIPolicy
+              type: object
+          type: object
+      served: true
+      storage: true
+      subresources:
+        status: {}
