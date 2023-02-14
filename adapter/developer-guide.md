@@ -191,7 +191,20 @@ Following are some tasks with the steps that a developer might do in operator de
     ```
     This will generate artefacts inside `{OPERATOR_HOME}/config` directory 
 
-13. To make the CRD and other resource changes affect, you need to move the k8s resources to the helm chart in `PROJECT_HOME/helm-charts` directory.
+13. To make the CRD and other resource changes affect, you need to move the k8s resources to the helm chart in `PROJECT_HOME/helm-charts` directory:
+    - Copy the newly created CRD (in this example `dp.wso2.com_apipolicies.yaml`) from `adapter/internal/operator/config/crd/bases` to `helm-charts/crds`.
+    - Append new rules to the `ClusterRole` in `helm-charts/templates/serviceAccount/apk-cluster-role.yaml`:
+        ```
+        - apiGroups: ["dp.wso2.com"]
+          resources: ["apipolicies"]
+          verbs: ["get","list","watch","update","delete","create"]
+        - apiGroups: ["dp.wso2.com"]
+          resources: ["apipolicies/finalizers"]
+          verbs: ["update"]
+        - apiGroups: ["dp.wso2.com"]
+          resources: ["apipolicies/status"]
+          verbs: ["get","patch","update"]
+        ```
 
 ### Adding a new property to an existing Kind
 
