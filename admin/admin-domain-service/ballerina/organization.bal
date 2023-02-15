@@ -23,3 +23,16 @@ public type Organizations record {
     string claimKey;
     string claimValue;
 };
+
+
+public type Internal_Organization record {
+    string id;
+    string name;
+    string displayName;
+    OrganizationClaim[] claimList;
+};
+
+public type OrganizationClaim record {
+    string claimKey?;
+    string claimValue?;
+};

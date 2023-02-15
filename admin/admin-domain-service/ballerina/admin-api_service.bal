@@ -278,6 +278,7 @@ service /api/am/admin on ep0 {
         }
     }
 
+
     isolated resource function post organizations(@http:Payload Organization payload) returns CreatedOrganization|BadRequestError|InternalServerErrorError {
         CreatedOrganization|APKError createdOrganization = addOrganization(payload);
         if createdOrganization is CreatedOrganization {
@@ -313,8 +314,14 @@ service /api/am/admin on ep0 {
             return http:OK;
         }
     }
-    // resource function get 'organization\-info/[string claimValue]() returns Organization|BadRequestError|NotFoundError {
-    // }
+    resource function get 'organization\-info() returns Organization|BadRequestError|NotFoundError|InternalServerErrorError {
+        Organization|APKError getOrganization = getOrganizationByOrganizationClaim();
+        if getOrganization is Organization {
+            return getOrganization;
+        } else {
+            return handleAPKError(getOrganization);
+        }
+    }
 }
 
 isolated function handleAPKError(APKError errorDetail) returns InternalServerErrorError|BadRequestError {

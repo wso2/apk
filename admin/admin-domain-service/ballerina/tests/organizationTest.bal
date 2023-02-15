@@ -19,19 +19,14 @@
 import ballerina/test;
 
 Organization  organization = {
-    name: "Finance",
-    displayName: "Finance",
-    claimList: [
-    {
-        "claimKey": "claim/id",
-        "claimValue": "000000000000000000"
-    },
-    {
-        "claimKey": "claim/name",
-        "claimValue": "testClaim"
-    }
-    ]
-};
+        id: "01234567-0123-0123-0123-012345678901",
+        name: "Finance",
+        displayName: "Finance",
+        organizationClaimValue: "01234567-0123-0123-0123",
+        serviceNamespaces: [
+        "string"
+        ]
+    };
 string orgId = "";
 
 @test:Config {}
@@ -50,18 +45,13 @@ function addOrganizationTest() {
 @test:Config {dependsOn: [addOrganizationTest]}
 function updateOrganizationTest() {
     Organization  updateOrganization = {
+        id: "01234567-0123-0123-0123-012345678901",
         name: "Finance",
-        displayName: "Finance-Marketing",
-        claimList: [
-        {
-          "claimKey": "claim/id",
-          "claimValue": "11111111111111"
-        },
-        {
-          "claimKey": "claim/name",
-          "claimValue": "testClaim"
-        }
-      ]
+        displayName: "Finance",
+        organizationClaimValue: "01234567-0123-0123-0123",
+        serviceNamespaces: [
+        "string"
+        ]
     };
     Organization|APKError response = updatedOrganization(orgId, updateOrganization);
     if response is Organization {

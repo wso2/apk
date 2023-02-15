@@ -19,7 +19,7 @@
 import ballerinax/postgresql;
 import ballerina/sql;
 
-isolated function addOrganizationDAO(Organization payload) returns Organization|APKError {
+isolated function addOrganizationDAO(Internal_Organization payload) returns Internal_Organization|APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
@@ -29,35 +29,29 @@ isolated function addOrganizationDAO(Organization payload) returns Organization|
         DISPLAY_NAME) VALUES (${payload.id},${payload.name},
         ${payload.displayName})`;
         sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
-        if result is sql:ExecutionResult {
-            return payload;
+        if result is sql:ExecutionResult && result.affectedRowCount == 1 {
+           return addOrganizationClaimMappingDAO(dbClient, payload);    
         } else { 
             string message = "Error while inserting organization data into Database";
-            return error(message, result, message = message, description = message, code = 909000, statusCode = "500"); 
+            return error(message, message = message, description = message, code = 909000, statusCode = "500"); 
         }
     }
 }
 
-isolated function addOrganizationClaimMappingDAO(Organization payload) returns Organization|APKError {
-    postgresql:Client | error dbClient  = getConnection();
-    if dbClient is error {
-        string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
-    } else {
-        foreach OrganizationClaim e in payload.claimList {
-            sql:ParameterizedQuery query = `INSERT INTO ORGANIZATION_CLIAM_MAPPING(UUID, CLAIM_KEY, 
-            CLAIM_VALUE) VALUES (${payload.id},${e.claimKey},
-            ${e.claimValue})`;
-            sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
-            if result is sql:ExecutionResult {
-                continue;
-            } else { 
-                string message = "Error while inserting organization claim data into Database";
-                return error(message, result, message = message, description = message, code = 909000, statusCode = "500"); 
-            }
+isolated function addOrganizationClaimMappingDAO(postgresql:Client dbClient, Internal_Organization payload) returns Internal_Organization|APKError {
+    foreach OrganizationClaim e in payload.claimList {
+        sql:ParameterizedQuery query = `INSERT INTO ORGANIZATION_CLAIM_MAPPING(UUID, CLAIM_KEY, 
+        CLAIM_VALUE) VALUES (${payload.id},${e.claimKey},
+        ${e.claimValue})`;
+        sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
+        if result is sql:ExecutionResult {
+            continue;
+        } else { 
+            string message = "Error while inserting organization claim data into Database";
+            return error(message, result, message = message, description = message, code = 909000, statusCode = "500"); 
         }
-        return payload;
     }
+    return payload;
 }
 
 isolated function validateOrganizationByNameDAO(string name) returns boolean|APKError {
@@ -66,31 +60,17 @@ isolated function validateOrganizationByNameDAO(string name) returns boolean|APK
         string message = "Error while retrieving connection";
         return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } 
-    sql:ParameterizedQuery query = `select exists(SELECT 1 FROM ORGANIZATION WHERE NAME = ${name})`;
-    boolean | sql:Error result =  dbClient->queryRow(query);
-    if result is boolean {
-        return result;
-    } else { 
+    sql:ParameterizedQuery query = `SELECT * FROM ORGANIZATION WHERE NAME = ${name}`;
+    Organization | sql:Error result =  dbClient->queryRow(query);
+    if result is sql:NoRowsError {
+        return false;
+    } else if result is APICategory {
+        return true;
+    } else {
         string message = "Error while validating organization name in Database";
         return error(message, message = message, description = message, code = 909000, statusCode = "500"); 
     }
     
-}
-
-isolated function validateOrganizationByDisplayNameDAO(string displayname) returns boolean|APKError {
-    postgresql:Client | error dbClient  = getConnection();
-    if dbClient is error {
-        string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
-    } 
-    sql:ParameterizedQuery query = `select exists(SELECT 1 FROM ORGANIZATION WHERE DISPLAY_NAME = ${displayname})`;
-    boolean | sql:Error result =  dbClient->queryRow(query);
-    if result is boolean {
-        return result;
-    } else { 
-        string message = "Error while validating organization display name in Database";
-        return error(message, message = message, description = message, code = 909000, statusCode = "500"); 
-    }   
 }
 
 isolated function validateOrganizationById(string? id) returns boolean|APKError {
@@ -109,28 +89,7 @@ isolated function validateOrganizationById(string? id) returns boolean|APKError 
     }   
 }
 
-isolated function validateClaimKeys(OrganizationClaim[] claims) returns boolean|APKError {
-    postgresql:Client | error dbClient  = getConnection();
-    if dbClient is error {
-        string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
-    } 
-    foreach OrganizationClaim e in claims {
-        sql:ParameterizedQuery query = `select exists(SELECT 1 FROM organization_cliam_mapping WHERE CLAIM_KEY = ${e.claimKey})`;
-        boolean | sql:Error result =  dbClient->queryRow(query);
-        if result is true {
-            continue;
-        } else if result is false {
-            return false;
-        } else { 
-            string message = "Error while validating claim key in Database";
-            return error(message, message = message, description = message, code = 909000, statusCode = "500"); 
-        }  
-    } 
-    return true;
-}
-
-isolated function updateOrganizationDAO(string id, Organization payload) returns Organization|APKError {
+isolated function updateOrganizationDAO(string id, Internal_Organization payload) returns Internal_Organization|APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
@@ -139,81 +98,58 @@ isolated function updateOrganizationDAO(string id, Organization payload) returns
         sql:ParameterizedQuery query = `UPDATE ORGANIZATION SET NAME =${payload.name},
          DISPLAY_NAME = ${payload.displayName} WHERE UUID = ${id}`;
         sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
-        if result is sql:ExecutionResult {
-            return payload;
+        if result is sql:ExecutionResult && result.affectedRowCount == 1 {
+                return updateOrganizationClaimMappingDAO(dbClient, id, payload);
         } else { 
             string message = "Error while updating organization data into Database";
-            return error(message, result, message = message, description = message, code = 909000, statusCode = "500"); 
+            return error(message, message = message, description = message, code = 909000, statusCode = "500"); 
         }
     }
 }
 
-isolated function updateOrganizationClaimMappingDAO(string id, Organization payload) returns Organization|APKError {
-    postgresql:Client | error dbClient  = getConnection();
-    if dbClient is error {
-        string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
-    } else {
+isolated function updateOrganizationClaimMappingDAO(postgresql:Client dbClient, string id, Internal_Organization payload) returns Internal_Organization|APKError {
+    sql:ParameterizedQuery query = `DELETE FROM ORGANIZATION_CLAIM_MAPPING WHERE UUID = ${id}`;
+    sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
+    if result is sql:ExecutionResult {
         foreach OrganizationClaim e in payload.claimList {
-            sql:ParameterizedQuery query = `UPDATE ORGANIZATION_CLIAM_MAPPING SET CLAIM_VALUE=${e.claimValue} WHERE CLAIM_KEY=${e.claimKey}`;
-            sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
-            if result is sql:ExecutionResult {
+            sql:ParameterizedQuery query1 = `INSERT INTO ORGANIZATION_CLAIM_MAPPING(UUID, CLAIM_KEY, 
+            CLAIM_VALUE) VALUES (${id},${e.claimKey},
+            ${e.claimValue})`;
+            sql:ExecutionResult | sql:Error result1 =  dbClient->execute(query1);
+            if result1 is sql:ExecutionResult {
                 continue;
             } else { 
-                string message = "Error while updating organization claim data into Database";
-                return error(message, result, message = message, description = message, code = 909000, statusCode = "500"); 
+                string message = "Error while inserting organization claim data into Database";
+                return error(message, result1, message = message, description = message, code = 909000, statusCode = "500"); 
             }
         }
-        return payload;
     }
+    return payload;
 }
 
-public isolated function getAllOrganizationDAO() returns Organization[]|APKError {
+public isolated function getAllOrganizationDAO() returns Internal_Organization[]|APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
         return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
         do {
-            sql:ParameterizedQuery query = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName, claim_key as claimKey, claim_value as claimValue FROM ORGANIZATION, ORGANIZATION_CLIAM_MAPPING where ORGANIZATION.UUID = ORGANIZATION_CLIAM_MAPPING.UUID`;
+            sql:ParameterizedQuery query = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName, claim_key as claimKey, claim_value as claimValue FROM ORGANIZATION, ORGANIZATION_CLAIM_MAPPING where ORGANIZATION.UUID = ORGANIZATION_CLAIM_MAPPING.UUID`;
             stream<Organizations, sql:Error?> orgStream = dbClient->query(query);
-            Organization[] organization = [];
-            OrganizationClaim[] claimList = [];
+            map<Internal_Organization> organization = {};
+
             check from Organizations org in orgStream do {
-                if (organization.length() == 0) {
-                    claimList.push({
-                        claimKey:org.claimKey,
-                        claimValue: org.claimValue
-                    });
-                    organization.push({
-                        id:org.id,
-                        name:org.name,
-                        displayName:org.displayName,
-                        claimList:claimList
-                    });
+                if organization.hasKey(org.id) {
+                    OrganizationClaim claim = {claimKey: org.claimKey, claimValue: org.claimValue};
+                    organization.get(org.id).claimList.push(claim);
                 } else {
-                    if (organization[organization.length() - 1].id == org.id) {
-                        organization[organization.length() - 1].claimList.push({
-                            claimKey:org.claimKey,
-                            claimValue: org.claimValue
-                        });
-                    } else {
-                        claimList = [];
-                        claimList.push({
-                            claimKey:org.claimKey,
-                            claimValue: org.claimValue
-                        });
-                        organization.push({
-                            id:org.id,
-                            name:org.name,
-                            displayName:org.displayName,
-                            claimList:claimList
-                        });
-                    }
+                    OrganizationClaim claim = {claimKey: org.claimKey, claimValue: org.claimValue};
+                    Internal_Organization organizationData = {id: org.id, name: org.name, displayName: org.displayName, claimList: [claim]};
+                    organization[org.id] = organizationData;
                 }
             };
             check orgStream.close();
-            return organization;
+            return organization.toArray();
         } on fail var e {
         	string message = "Internal Error occured while retrieving organization data from Database";
             return error(message, e, message = message, description = message, code = 909001, statusCode = "500");
@@ -221,7 +157,7 @@ public isolated function getAllOrganizationDAO() returns Organization[]|APKError
     }
 }
 
-isolated function getOrganizationByIdDAO(string id) returns Organization|APKError {
+isolated function getOrganizationByIdDAO(string id) returns Internal_Organization|APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
@@ -229,26 +165,40 @@ isolated function getOrganizationByIdDAO(string id) returns Organization|APKErro
     } else {
         do {
             sql:ParameterizedQuery query = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName, claim_key as claimKey, 
-                    claim_value as claimValue FROM ORGANIZATION, ORGANIZATION_CLIAM_MAPPING where ORGANIZATION.UUID = ORGANIZATION_CLIAM_MAPPING.UUID and ORGANIZATION.UUID =${id}`;
+                    claim_value as claimValue FROM ORGANIZATION, ORGANIZATION_CLAIM_MAPPING where ORGANIZATION.UUID = ORGANIZATION_CLAIM_MAPPING.UUID and ORGANIZATION.UUID =${id}`;
             stream<Organizations, sql:Error?> orgStream = dbClient->query(query);
-            OrganizationClaim[] claimList = [];
-            Organization organization = {
-                id:id,
-                name:"",
-                displayName:"",
-                claimList:[]
+            Internal_Organization organization1 = {
+                id: "",
+                name: "",
+                displayName: "",
+                claimList: []
             };
             check from Organizations org in orgStream do {
-                organization.name = org.name;
-                organization.displayName = org.displayName;
-                claimList.push({
-                    claimKey:org.claimKey,
-                    claimValue: org.claimValue
-                });
+                if (organization1.id == "") {
+                    organization1 = {
+                        id:id,
+                        name:org.name,
+                        displayName:org.displayName,
+                        claimList:[{
+                            claimKey:org.claimKey,
+                            claimValue: org.claimValue
+                        }]
+                    };
+                } else {
+                    organization1.claimList.push({
+                        claimKey:org.claimKey,
+                        claimValue: org.claimValue
+                    });
+                }
             }; 
-            organization.claimList = claimList;
-            return organization;
-        } on fail var e {
+            if (organization1.id == "") {
+                string message = "Organization not found";
+                return error(message, message = message, description = message, code = 909000, statusCode = "404");
+            } else {
+                 return organization1;
+            }
+
+            } on fail var e {
         	string message = "Internal Error occured while retrieving organization data from Database";
             return error(message, e, message = message, description = message, code = 909001, statusCode = "500");
         }
@@ -268,6 +218,26 @@ isolated function removeOrganizationDAO(string id) returns boolean|APKError {
         } else { 
             string message = "Error while deleting organization data from Database";
             return error(message, result, message = message, description = message, code = 909000, statusCode = "500"); 
+        }
+    }
+}
+
+isolated function getOrganizationByOrganizationClaimDAO(string claim) returns Internal_Organization|APKError {
+    postgresql:Client | error dbClient  = getConnection();
+    if dbClient is error {
+        string message = "Error while retrieving connection";
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+    } else { 
+        sql:ParameterizedQuery query = `SELECT UUID as id FROM ORGANIZATION_CLAIM_MAPPING where claim_value =${claim}`;
+        string | sql:Error result =  dbClient->queryRow(query);
+        if result is sql:NoRowsError {
+            string message = "No organization found";
+            return error(message, message = message, description = message, code = 909000, statusCode = "404"); 
+        } else if result is string {
+            return getOrganizationByIdDAO(result);
+        } else { 
+            string message = "Error while retrieving organization data from Database";
+            return error(message, message = message, description = message, code = 909000, statusCode = "500"); 
         }
     }
 }

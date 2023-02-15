@@ -2874,7 +2874,7 @@ paths:
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
           "https://127.0.0.1:9443/api/am/admin/organizations/d7cf8523-9180-4255-84fa-6cb171c1f779"'
       operationId: removeOrganization
-  /organization-info/{claimValue}:
+  /organization-info:
     get:
       tags:
         - Organization (Individual)
@@ -2882,8 +2882,6 @@ paths:
         Authenticate Organization info
       description: |
         This operation can be used to authenticate Organization by specifying its claimValue.
-      parameters:
-        - $ref: '#/components/parameters/claimValue'
       responses:
         200:
           description: |
@@ -3863,20 +3861,15 @@ components:
           minLength: 1
           type: string
           example: Finance
-        claimList:
+        organizationClaimValue:
+          maxLength: 255
+          minLength: 1
+          type: string
+          example: 01234567-0123-0123-0123
+        serviceNamespaces:
           type: array
           items:
-            $ref: '#/components/schemas/OrganizationClaim'
-    OrganizationClaim:
-      title: Organization Claim
-      type: object
-      properties:
-        claimKey:
-          type: string
-          example: 
-        claimValue:
-          type: string
-          example: 01234567-0123-0123-0123-012345678901
+            type: string
     OrganizationList:
       title: Organization List
       type: object
@@ -4792,14 +4785,6 @@ components:
       in: path
       description: |
         Organization UUID
-      required: true
-      schema:
-        type: string
-    claimValue:
-      name: claimValue
-      in: path
-      description: |
-        Organization claimValue
       required: true
       schema:
         type: string

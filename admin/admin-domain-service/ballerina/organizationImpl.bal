@@ -18,28 +18,41 @@
 
 import ballerina/uuid;
 
+isolated function createInternalFromOrganization(Organization payload) returns Internal_Organization {
+    OrganizationClaim orgClaim = {
+        claimKey: "organizationClaimKey",
+        claimValue: payload.organizationClaimValue
+    };
+    Internal_Organization internalOrganization = {
+        id: payload.id.toString(),
+        name: payload.name,
+        displayName: payload.displayName,
+        claimList: [ orgClaim ]
+    };
+    return internalOrganization;
+}
+
+isolated function createOrganizationFromInternal(Internal_Organization payload) returns Organization {
+    Organization organization = {
+        id: payload.id,
+        name: payload.name,
+        displayName: payload.displayName,
+        organizationClaimValue: payload.claimList[0].claimValue
+    };
+    return organization;
+}
+
 isolated function addOrganization(Organization payload) returns CreatedOrganization|APKError {
     boolean validateOrganization = check validateOrganizationByNameDAO(payload.name);
     if validateOrganization is true {
         string message = "Organization already exists by name:" + payload.name;
-        return error(message, message = message, description = message, code = 90911, statusCode = "400");
+        return error(message, message = message, description = message, code = 90911, statusCode = "409");
     }
-    boolean validateOrganizationbyDisplayName = check validateOrganizationByDisplayNameDAO(payload.displayName);
-    if validateOrganizationbyDisplayName is true {
-        string message = "Organization already exists by displayName:" + payload.displayName;
-        return error(message, message = message, description = message, code = 90911, statusCode = "400");
-    }
-    string organizationId = uuid:createType1AsString();
-    payload.id = organizationId;
-    Organization|APKError organization = addOrganizationDAO(payload);
-    if organization is Organization {
-        Organization|APKError organization1 = addOrganizationClaimMappingDAO(payload);
-        if organization1 is Organization{
-            CreatedOrganization createdOrganization = {body: organization};
-            return createdOrganization;
-        } else {
-            return organization1;
-        } 
+    payload.id = uuid:createType1AsString();
+    Internal_Organization|APKError organization = addOrganizationDAO(createInternalFromOrganization(payload));
+    if organization is Internal_Organization {
+        CreatedOrganization createdOrganization = {body: createOrganizationFromInternal(organization)};
+        return createdOrganization;
     } else {
         return organization;
     } 
@@ -51,31 +64,24 @@ isolated function updatedOrganization(string id, Organization payload) returns O
         string message = "Organization ID not exist by:" + id;
         return error(message, message = message, description = message, code = 90911, statusCode = "400");
     }
-    
-    boolean validateOrganizationClaimKey = check validateClaimKeys(payload.claimList);
-    if validateOrganizationClaimKey is false {
-        string message = "Organization claim key invalid";
-        return error(message, message = message, description = message, code = 90911, statusCode = "400");
-    }
-
-    Organization|APKError organization = updateOrganizationDAO(id, payload);
-    if organization is Organization {
-        Organization|APKError organization1 = updateOrganizationClaimMappingDAO(id, payload);
-        if organization1 is Organization{
-            return organization1;
-        } else {
-            return organization1;
-        } 
+    payload.id = id;
+    Internal_Organization|APKError organization = updateOrganizationDAO(id, createInternalFromOrganization(payload));
+    if organization is Internal_Organization {
+       return createOrganizationFromInternal(organization);
     } else {
         return organization;
     } 
 }
 
 isolated function getAllOrganization() returns OrganizationList|APKError {
-    Organization[]|APKError getOrgnizations = getAllOrganizationDAO();
-    if getOrgnizations is Organization[] {
+    Internal_Organization[]|APKError getOrgnizations = getAllOrganizationDAO();
+    if getOrgnizations is Internal_Organization[] {
         int count = getOrgnizations.length();
-        OrganizationList getOrgnizationsList = {count: count, list: getOrgnizations};
+        Organization[] organizations = [];
+        foreach var organization in getOrgnizations {
+            organizations.push(createOrganizationFromInternal(organization));
+        }
+        OrganizationList getOrgnizationsList = {count: count, list: organizations};
         return getOrgnizationsList;
     } else {
        return getOrgnizations;
@@ -83,13 +89,12 @@ isolated function getAllOrganization() returns OrganizationList|APKError {
 }
 
 isolated function getOrganizationById(string id) returns Organization|APKError {
-    boolean validateOrganizationId = check validateOrganizationById(id);
-    if validateOrganizationId is false {
-        string message = "Organization ID not exist by:" + id;
-        return error(message, message = message, description = message, code = 90911, statusCode = "400");
+    Internal_Organization|APKError organization = getOrganizationByIdDAO(id);
+    if organization is Internal_Organization {
+        return createOrganizationFromInternal(organization);
+    } else {
+        return organization;
     }
-    Organization|APKError organization = getOrganizationByIdDAO(id);
-    return organization;
 }
 
 isolated function removeOrganization(string id) returns boolean|APKError {
@@ -100,4 +105,15 @@ isolated function removeOrganization(string id) returns boolean|APKError {
     }
     boolean|APKError organization = removeOrganizationDAO(id);
     return organization;
+}
+
+isolated function getOrganizationByOrganizationClaim() returns Organization|APKError{
+    //TO DO: Get organization claim from JWT
+    string organizationClaimValue = "organizationClaimValue";
+    Internal_Organization|APKError organization = getOrganizationByOrganizationClaimDAO(organizationClaimValue);
+    if organization is Internal_Organization {
+        return createOrganizationFromInternal(organization);
+    } else {
+        return organization;
+    }
 }
