@@ -25,7 +25,7 @@ flag_management:
         - runtime-domain-service
     - name: idp-domain-service
       paths:
-        - '**/idp/idp-service/**'
+        - '**/idp/idp-domain-service/**'
     - name: idp-ui
       paths:
         - '**/idp/idp-ui/**'
