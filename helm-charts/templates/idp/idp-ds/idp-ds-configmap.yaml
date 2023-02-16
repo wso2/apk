@@ -47,14 +47,30 @@ data:
     clientSecret = "4fbd62ec-a92e-11ed-afa1-0242ac120002"
     callbackUrls = []
     grantTypes = ["client_credentials","refresh_token"]
+
     [[wso2.idp_domain_service.idpConfiguration.user]]
-    username = "admin"
-    password = "admin"
+    username = "org1user"
+    password = "org1user"
     organizations = ["org1"]
 
     [[wso2.idp_domain_service.idpConfiguration.user]]
-    username = "user1"
-    password = "user1"
+    username = "org2user"
+    password = "org2user"
+    organizations = ["org2"]
+
+    [[wso2.idp_domain_service.idpConfiguration.user]]
+    username = "org2user"
+    password = "org2user"
+    organizations = ["org2"]
+
+    [[wso2.idp_domain_service.idpConfiguration.user]]
+    username = "multiorguser"
+    password = "multiorguser"
+    organizations = ["org1","org2"]
+
+    [[wso2.idp_domain_service.idpConfiguration.user]]
+    username = "superAdmin"
+    password = "superAdmin"
     organizations = [""]
     superAdmin = true
 

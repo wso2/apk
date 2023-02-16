@@ -376,6 +376,20 @@ modules = [
 
 [[package]]
 org = "wso2"
+name = "apk_common_lib"
+version = "0.0.1-SNAPSHOT"
+dependencies = [
+	{org = "ballerina", name = "http"},
+	{org = "ballerina", name = "jwt"},
+	{org = "ballerina", name = "lang.value"},
+	{org = "ballerina", name = "log"}
+]
+modules = [
+	{org = "wso2", packageName = "apk_common_lib", moduleName = "apk_common_lib"}
+]
+
+[[package]]
+org = "wso2"
 name = "runtime_domain_service"
 version = "0.0.1-SNAPSHOT"
 dependencies = [
@@ -395,7 +409,8 @@ dependencies = [
 	{org = "ballerina", name = "test"},
 	{org = "ballerina", name = "url"},
 	{org = "ballerina", name = "uuid"},
-	{org = "ballerina", name = "websocket"}
+	{org = "ballerina", name = "websocket"},
+	{org = "wso2", name = "apk_common_lib"}
 ]
 modules = [
 	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service"},

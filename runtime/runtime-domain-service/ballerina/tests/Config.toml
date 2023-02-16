@@ -6,6 +6,8 @@ serviceAccountPath = "tests/resources/serviceAccount"
 path = "tests/resources/wso2carbon.key"
 [wso2.runtime_domain_service.runtimeConfiguration.keyStores.tls]
 path = "tests/resources/wso2carbon.key"
+[wso2.runtime_domain_service.runtimeConfiguration.idpConfiguration.publicKey]
+path = "tests/resources/wso2carbon.key"
 
 [ballerina.http]
 traceLogConsole = true

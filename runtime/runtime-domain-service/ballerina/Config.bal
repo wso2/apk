@@ -15,6 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 //
+import wso2/apk_common_lib as commons;
 
 # This Record contains the Runtime related configurations
 #
@@ -23,7 +24,9 @@
 # + tokenIssuerConfiguration - Token Issuer Configuration for APIKey.  
 # + keyStores - KeyStore Configuration  
 # + k8sConfiguration - K8s Configuration (debug purpose only.)  
-# + vhost - Field Description
+# + vhost - Field Description  
+# + idpConfiguration - IDP configuration for JWT generated from Enforcer.
+# 
 public type RuntimeConfiguratation record {|
     
     (string[] & readonly) serviceListingNamespaces = [ALL_NAMESPACES];
@@ -32,6 +35,7 @@ public type RuntimeConfiguratation record {|
     KeyStores keyStores;
     (K8sConfigurations & readonly) k8sConfiguration = {};
     (Vhost[] & readonly) vhost = [{name:"Default",hosts:["gw.wso2.com"],'type:PRODUCTION_TYPE},{name:"Default",hosts:["sandbox.gw.wso2.com"],'type:SANDBOX_TYPE}];
+    commons:IDPConfiguration idpConfiguration;
 |};
 
 public type Vhost record {|
@@ -39,6 +43,7 @@ string name;
 string[] hosts;
 string 'type;
 |};
+
 
 public type TokenIssuerConfiguration record {|
     string issuer = "https://localhost:9443/oauth2/token";

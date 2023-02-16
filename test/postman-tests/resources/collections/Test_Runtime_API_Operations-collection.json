@@ -156,7 +156,7 @@
 							"    //parse the response JSON and test three properties",
 							"    const responseJson = pm.response.json();",
 							"    pm.expect(responseJson.name).equals(pm.collectionVariables.get('testAPIName'));",
-							"    pm.expect(responseJson.context).equals( \"/t/carbon.super\"+pm.collectionVariables.get('testAPIContext'));",
+							"    pm.expect(responseJson.context).equals( pm.collectionVariables.get('testAPIContext'));",
 							"    pm.expect(responseJson.version).equals(\"1.0.0\");",
 							"    pm.expect(responseJson.type).equals(\"REST\");",
 							"});"
@@ -249,7 +249,7 @@
 							"console.log('Getting all APIs in namespace and find sample service required for test');",
 							"_.each(pm.response.json().list, (APIEntry) => {",
 							"    if(APIEntry.name === pm.collectionVariables.get('testAPIName')) {",
-							"    pm.expect(APIEntry.context).equals( \"/t/carbon.super\"+pm.collectionVariables.get('testAPIContext'));",
+							"    pm.expect(APIEntry.context).equals( pm.collectionVariables.get('testAPIContext'));",
 							"    pm.expect(APIEntry.version).equals(\"1.0.0\");",
 							"    pm.expect(APIEntry.type).equals(\"REST\");",
 							"    pm.collectionVariables.set(\"APIUUID\",APIEntry.id)",
@@ -493,7 +493,7 @@
 							"    //parse the response JSON and test three properties",
 							"    const responseJson = pm.response.json();",
 							"    pm.expect(responseJson.name).equals(pm.collectionVariables.get('testAPIV2Name'));",
-							"    pm.expect(responseJson.context).equals(\"/t/carbon.super\"+pm.collectionVariables.get('testAPIV2Context'));",
+							"    pm.expect(responseJson.context).equals(pm.collectionVariables.get('testAPIV2Context'));",
 							"    pm.expect(responseJson.version).equals(\"1.0.0\");",
 							"    pm.expect(responseJson.type).equals(\"REST\");",
 							"    pm.collectionVariables.set(\"APIUUID\",responseJson.id)",
@@ -587,7 +587,7 @@
 							"console.log('Getting all APIs in namespace and find sample service required for test');",
 							"_.each(pm.response.json().list, (APIEntry) => {",
 							"    if(APIEntry.name === pm.collectionVariables.get('testAPIV2Name')) {",
-							"    pm.expect(APIEntry.context).equals(\"/t/carbon.super\"+pm.collectionVariables.get('testAPIV2Context'));",
+							"    pm.expect(APIEntry.context).equals(pm.collectionVariables.get('testAPIV2Context'));",
 							"    pm.expect(APIEntry.version).equals(\"1.0.0\");",
 							"    pm.expect(APIEntry.type).equals(\"REST\");",
 							"    pm.collectionVariables.set(\"APIV2UUID\",APIEntry.id)",
@@ -752,7 +752,7 @@
 				"header": [
 					{
 						"key": "HOST",
-						"value": "gw.wso2.com",
+						"value": "a3b58ccf-6ecc-4557-b5bb-0a35cce38256.gw.wso2.com",
 						"type": "text"
 					},
 					{
@@ -762,13 +762,11 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURL}}/t/carbon.super{{testAPIV2Context}}/get",
+					"raw": "{{gatewayBaseURL}}{{testAPIV2Context}}/get",
 					"host": [
-						"{{gatewayBaseURL}}"
+						"{{gatewayBaseURL}}{{testAPIV2Context}}"
 					],
 					"path": [
-						"t",
-						"carbon.super{{testAPIV2Context}}",
 						"get"
 					]
 				}
@@ -867,7 +865,7 @@
 				"header": [
 					{
 						"key": "HOST",
-						"value": "gw.wso2.com",
+						"value": "a3b58ccf-6ecc-4557-b5bb-0a35cce38256.gw.wso2.com",
 						"type": "text"
 					},
 					{

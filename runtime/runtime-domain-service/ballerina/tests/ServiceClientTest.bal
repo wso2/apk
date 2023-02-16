@@ -3,7 +3,7 @@ import ballerina/test;
 @test:Config {dataProvider: getServicesDataProvider}
 public function testGetServices(string? query, string sortBy, string sortOrder, int 'limit, int offset, anydata expected) {
     ServiceClient serviceClient = new;
-    test:assertEquals(serviceClient.getServices(query, sortBy, sortOrder, 'limit, offset), expected);
+    test:assertEquals(serviceClient.getServices(query, sortBy, sortOrder, 'limit, offset,organiztion1), expected);
 }
 
 public function getServicesDataProvider() returns map<[string|(), string, string, int, int, ServiceList|BadRequestError|InternalServerErrorError]> {
@@ -629,7 +629,7 @@ public function getServicesDataProvider() returns map<[string|(), string, string
 @test:Config {dataProvider: serviceByIdDataProvider}
 public function testGetServiceByID(string id, anydata expected) {
     ServiceClient serviceClient = new;
-    test:assertEquals(serviceClient.getServiceById(id), expected);
+    test:assertEquals(serviceClient.getServiceById(id,organiztion1), expected);
 }
 
 public function serviceByIdDataProvider() returns map<[string, Service|BadRequestError|NotFoundError|InternalServerErrorError]> {
@@ -661,7 +661,7 @@ public function serviceByIdDataProvider() returns map<[string, Service|BadReques
 @test:Config {dataProvider: serviceUsageDataProvider}
 public function testServiceUsageByID(string serviceId, anydata expected) {
     ServiceClient serviceClient = new;
-    test:assertEquals(serviceClient.getServiceUsageByServiceId(serviceId,"carbon.super"), expected);
+    test:assertEquals(serviceClient.getServiceUsageByServiceId(serviceId,organiztion1), expected);
 }
 
 function serviceUsageDataProvider() returns map<[string, APIList|BadRequestError|NotFoundError|InternalServerErrorError]> {
@@ -675,7 +675,7 @@ function serviceUsageDataProvider() returns map<[string, APIList|BadRequestError
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5e8",
                         "name": "pizzashackAPI",
-                        "context": "/t/carbon.super/pizzashack/1.0.0",
+                        "context": "/pizzashack/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -683,7 +683,7 @@ function serviceUsageDataProvider() returns map<[string, APIList|BadRequestError
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5e8",
                         "name": "pizzashackAPI",
-                        "context": "/t/carbon.super/pizzashack/1.0.0",
+                        "context": "/pizzashack/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
