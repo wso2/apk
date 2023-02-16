@@ -15,11 +15,11 @@
  *
  */
 
-package tests
+package resources
 
-import (
-	"github.com/wso2/apk/test/integration/integration/utils/suite"
-)
+import "embed"
 
-// IntegrationTests contains all the tests to be executed
-var IntegrationTests []suite.IntegrationTest
+// Manifests embeds integration test resources
+//
+//go:embed tests/* base/*
+var Manifests embed.FS
