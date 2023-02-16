@@ -235,29 +235,29 @@ func addApplicationsToChannel(resp *discovery.DiscoveryResponse) {
 				Name:      application.Uuid,
 			},
 			Spec: cpv1alpha1.ApplicationSpec{
-				UUID:       application.Uuid,
 				Name:       application.Name,
 				Owner:      application.Owner,
 				Attributes: application.Attributes,
 			},
 		}
 
-		var consumerKeys []cpv1alpha1.ConsumerKey
+		var consumerKeys []cpv1alpha1.Key
 		for _, consumerKey := range application.ConsumerKeys {
-			consumerKeys = append(consumerKeys, cpv1alpha1.ConsumerKey{Key: consumerKey.Key, KeyManager: consumerKey.KeyManager})
+			consumerKeys = append(consumerKeys, cpv1alpha1.Key{Key: consumerKey.Key, KeyManager: consumerKey.KeyManager})
 		}
-		applicationResource.Spec.ConsumerKeys = consumerKeys
+		applicationResource.Spec.Keys = consumerKeys
 
-		var subscriptions []cpv1alpha1.Subscription
-		for _, subscription := range application.Subscriptions {
-			subscriptions = append(subscriptions, cpv1alpha1.Subscription{
-				UUID:               subscription.Uuid,
-				SubscriptionStatus: subscription.SubscriptionStatus,
-				PolicyID:           subscription.PolicyId,
-				APIRef:             subscription.ApiUuid,
-			})
-		}
-		applicationResource.Spec.Subscriptions = subscriptions
+		// Todo:(Sampath) Need to handle adding the subscriptions coming from management server seperately
+		// var subscriptions []cpv1alpha1.Subscription
+		// for _, subscription := range application.Subscriptions {
+		// 	subscriptions = append(subscriptions, cpv1alpha1.Subscription{
+		// 		UUID:               subscription.Name,
+		// 		SubscriptionStatus: subscription.Spec.SubscriptionStatus,
+		// 		PolicyID:           subscription.PolicyId,
+		// 		APIRef:             subscription.ApiUuid,
+		// 	})
+		// }
+		// applicationResource.Spec.Subscriptions = subscriptions
 
 		var event ApplicationEvent
 

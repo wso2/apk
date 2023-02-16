@@ -24,9 +24,7 @@ import (
 	"github.com/wso2/apk/adapter/internal/discovery/xds"
 	"github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/pkg/logging"
-	k8error "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -45,18 +43,14 @@ import (
 
 // ApplicationReconciler reconciles a Application object
 type ApplicationReconciler struct {
-	client           client.Client
-	Scheme           *runtime.Scheme
-	applicationCache applicationCache
+	client client.Client
+	Scheme *runtime.Scheme
 }
-
-type applicationCache map[types.NamespacedName]*cpv1alpha1.Application
 
 // NewApplicationController creates a new Application controller instance.
 func NewApplicationController(mgr manager.Manager) error {
 	r := &ApplicationReconciler{
-		client:           mgr.GetClient(),
-		applicationCache: applicationCache{},
+		client: mgr.GetClient(),
 	}
 	c, err := controller.New(constants.ApplicationController, mgr, controller.Options{Reconciler: r})
 	if err != nil {
@@ -101,52 +95,32 @@ func (applicationReconciler *ApplicationReconciler) Reconcile(ctx context.Contex
 	loggers.LoggerAPKOperator.Debugf("Reconciling application: %v", req.NamespacedName.String())
 
 	applicationKey := req.NamespacedName
-	var application = new(cpv1alpha1.Application)
-	if err := applicationReconciler.client.Get(ctx, applicationKey, application); err != nil {
-		if k8error.IsNotFound(err) {
-			// The application doesn't exist in the applicationCache, remove it
-			delete(applicationReconciler.applicationCache, applicationKey)
-			loggers.LoggerAPKOperator.Debug("Application deleted from application cache")
-
-			sendUpdates(applicationReconciler.applicationCache)
-			return ctrl.Result{}, nil
-		}
-		return reconcile.Result{}, fmt.Errorf("failed to get application %s/%s",
+	var applicationList = new(cpv1alpha1.ApplicationList)
+	if err := applicationReconciler.client.List(ctx, applicationList); err != nil {
+		return reconcile.Result{}, fmt.Errorf("failed to get applications %s/%s",
 			applicationKey.Namespace, applicationKey.Name)
 	}
-	// The application created / updated, add to the map
-	if applicationReconciler.applicationCache == nil {
-		applicationReconciler.applicationCache = applicationCache{}
-	}
-	applicationReconciler.applicationCache[applicationKey] = application
 
-	sendUpdates(applicationReconciler.applicationCache)
+	sendUpdates(applicationList)
 	return ctrl.Result{}, nil
 }
 
-func sendUpdates(cache applicationCache) {
-	var applications []cpv1alpha1.ApplicationSpec
-	for _, application := range cache {
-		applications = append(applications, application.Spec)
-	}
-	appList := marshalApplicationList(applications)
+func sendUpdates(applicationList *cpv1alpha1.ApplicationList) {
+	appList := marshalApplicationList(applicationList.Items)
 	xds.UpdateEnforcerApplications(appList)
 
-	subList := marshalSubscriptionList(applications)
-	xds.UpdateEnforcerSubscriptions(subList)
-
-	appKeyMappingList := marshalApplicationKeyMapping(applications)
+	appKeyMappingList := marshalApplicationKeyMapping(applicationList.Items)
 	xds.UpdateEnforcerApplicationKeyMappings(appKeyMappingList)
 }
 
-func marshalApplicationList(applicationList []cpv1alpha1.ApplicationSpec) *subscription.ApplicationList {
+func marshalApplicationList(applicationList []cpv1alpha1.Application) *subscription.ApplicationList {
 	applications := []*subscription.Application{}
 	for _, appInternal := range applicationList {
 		app := &subscription.Application{
-			Uuid:       appInternal.UUID,
-			Name:       appInternal.Name,
-			Policy:     appInternal.Policy,
-			Attributes: appInternal.Attributes,
+			Uuid:       appInternal.Name,
+			Name:       appInternal.Spec.Name,
+			Policy:     appInternal.Spec.Policy,
+			Attributes: appInternal.Spec.Attributes,
 		}
 		applications = append(applications, app)
 	}
@@ -155,32 +129,14 @@ func marshalApplicationList(applicationList []cpv1alpha1.ApplicationSpec) *subsc
 	}
 }
 
-func marshalSubscriptionList(applicationList []cpv1alpha1.ApplicationSpec) *subscription.SubscriptionList {
-	subscriptions := []*subscription.Subscription{}
-	for _, appInternal := range applicationList {
-		for _, subInternal := range appInternal.Subscriptions {
-			sub := &subscription.Subscription{
-				SubscriptionUUID:  subInternal.UUID,
-				PolicyId:          subInternal.PolicyID,
-				SubscriptionState: subInternal.SubscriptionStatus,
-				AppUUID:           appInternal.UUID,
-			}
-			subscriptions = append(subscriptions, sub)
-		}
-	}
-	return &subscription.SubscriptionList{
-		List: subscriptions,
-	}
-}
-
-func marshalApplicationKeyMapping(applicationList []cpv1alpha1.ApplicationSpec) *subscription.ApplicationKeyMappingList {
+func marshalApplicationKeyMapping(applicationList []cpv1alpha1.Application) *subscription.ApplicationKeyMappingList {
 	applicationKeyMappings := []*subscription.ApplicationKeyMapping{}
 	for _, appInternal := range applicationList {
-		for _, consumerKeyInternal := range appInternal.ConsumerKeys {
+		for _, consumerKeyInternal := range appInternal.Spec.Keys {
 			consumerKey := &subscription.ApplicationKeyMapping{
 				ConsumerKey:     consumerKeyInternal.Key,
 				KeyManager:      consumerKeyInternal.KeyManager,
-				ApplicationUUID: appInternal.UUID,
+				ApplicationUUID: appInternal.Name,
 			}
 			applicationKeyMappings = append(applicationKeyMappings, consumerKey)
 		}
