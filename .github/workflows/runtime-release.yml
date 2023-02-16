@@ -56,6 +56,10 @@ jobs:
           git config --global user.name ${{ secrets.WSO2_BOT_USER }}
           git config --global user.email ${{ secrets.WSO2_BOT_EMAIL }}
 
+      - name: build common bal libs
+        run: |
+          cd apk-repo/common-bal-libs/apk-common-lib
+          gradle build
       - name: Run Gradle build
         if: github.event_name == 'workflow_dispatch'
         run: |

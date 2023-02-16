@@ -37,9 +37,6 @@ version = "1.0.2"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
-modules = [
-	{org = "ballerina", packageName = "constraint", moduleName = "constraint"}
-]
 
 [[package]]
 org = "ballerina"
@@ -48,9 +45,6 @@ version = "2.3.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "time"}
-]
-modules = [
-	{org = "ballerina", packageName = "crypto", moduleName = "crypto"}
 ]
 
 [[package]]
@@ -64,9 +58,6 @@ dependencies = [
 	{org = "ballerina", name = "os"},
 	{org = "ballerina", name = "regex"},
 	{org = "ballerina", name = "time"}
-]
-modules = [
-	{org = "ballerina", packageName = "file", moduleName = "file"}
 ]
 
 [[package]]
@@ -108,28 +99,11 @@ dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "lang.value"}
 ]
-modules = [
-	{org = "ballerina", packageName = "io", moduleName = "io"}
-]
 
 [[package]]
 org = "ballerina"
 name = "jballerina.java"
 version = "0.0.0"
-modules = [
-	{org = "ballerina", packageName = "jballerina.java", moduleName = "jballerina.java"}
-]
-
-[[package]]
-org = "ballerina"
-name = "jballerina.java.arrays"
-version = "1.2.3"
-dependencies = [
-	{org = "ballerina", name = "jballerina.java"}
-]
-modules = [
-	{org = "ballerina", packageName = "jballerina.java.arrays", moduleName = "jballerina.java.arrays"}
-]
 
 [[package]]
 org = "ballerina"
@@ -203,9 +177,6 @@ version = "0.0.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
-modules = [
-	{org = "ballerina", packageName = "lang.runtime", moduleName = "lang.runtime"}
-]
 
 [[package]]
 org = "ballerina"
@@ -222,9 +193,6 @@ name = "lang.value"
 version = "0.0.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
-]
-modules = [
-	{org = "ballerina", packageName = "lang.value", moduleName = "lang.value"}
 ]
 
 [[package]]
@@ -249,9 +217,6 @@ dependencies = [
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "lang.int"}
-]
-modules = [
-	{org = "ballerina", packageName = "mime", moduleName = "mime"}
 ]
 
 [[package]]
@@ -291,9 +256,6 @@ dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "lang.string"}
 ]
-modules = [
-	{org = "ballerina", packageName = "regex", moduleName = "regex"}
-]
 
 [[package]]
 org = "ballerina"
@@ -302,18 +264,6 @@ version = "2.3.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "time"}
-]
-
-[[package]]
-org = "ballerina"
-name = "test"
-version = "0.0.0"
-scope = "testOnly"
-dependencies = [
-	{org = "ballerina", name = "jballerina.java"}
-]
-modules = [
-	{org = "ballerina", packageName = "test", moduleName = "test"}
 ]
 
 [[package]]
@@ -331,48 +281,6 @@ version = "2.2.3"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
-modules = [
-	{org = "ballerina", packageName = "url", moduleName = "url"}
-]
-
-[[package]]
-org = "ballerina"
-name = "uuid"
-version = "1.4.0"
-dependencies = [
-	{org = "ballerina", name = "crypto"},
-	{org = "ballerina", name = "jballerina.java"},
-	{org = "ballerina", name = "lang.int"},
-	{org = "ballerina", name = "regex"},
-	{org = "ballerina", name = "time"}
-]
-modules = [
-	{org = "ballerina", packageName = "uuid", moduleName = "uuid"}
-]
-
-[[package]]
-org = "ballerina"
-name = "websocket"
-version = "2.5.1"
-dependencies = [
-	{org = "ballerina", name = "auth"},
-	{org = "ballerina", name = "constraint"},
-	{org = "ballerina", name = "http"},
-	{org = "ballerina", name = "io"},
-	{org = "ballerina", name = "jballerina.java"},
-	{org = "ballerina", name = "jwt"},
-	{org = "ballerina", name = "lang.array"},
-	{org = "ballerina", name = "lang.runtime"},
-	{org = "ballerina", name = "lang.string"},
-	{org = "ballerina", name = "lang.value"},
-	{org = "ballerina", name = "log"},
-	{org = "ballerina", name = "oauth2"},
-	{org = "ballerina", name = "regex"},
-	{org = "ballerina", name = "time"}
-]
-modules = [
-	{org = "ballerina", packageName = "websocket", moduleName = "websocket"}
-]
 
 [[package]]
 org = "wso2"
@@ -385,45 +293,6 @@ dependencies = [
 ]
 modules = [
 	{org = "wso2", packageName = "apk_common_lib", moduleName = "apk_common_lib"}
-]
-
-[[package]]
-org = "wso2"
-name = "runtime_domain_service"
-version = "0.0.1-SNAPSHOT"
-dependencies = [
-	{org = "ballerina", name = "constraint"},
-	{org = "ballerina", name = "crypto"},
-	{org = "ballerina", name = "file"},
-	{org = "ballerina", name = "http"},
-	{org = "ballerina", name = "io"},
-	{org = "ballerina", name = "jballerina.java"},
-	{org = "ballerina", name = "jballerina.java.arrays"},
-	{org = "ballerina", name = "jwt"},
-	{org = "ballerina", name = "lang.runtime"},
-	{org = "ballerina", name = "lang.value"},
-	{org = "ballerina", name = "log"},
-	{org = "ballerina", name = "mime"},
-	{org = "ballerina", name = "regex"},
-	{org = "ballerina", name = "test"},
-	{org = "ballerina", name = "url"},
-	{org = "ballerina", name = "uuid"},
-	{org = "ballerina", name = "websocket"},
-	{org = "wso2", name = "apk_common_lib"}
-]
-modules = [
-	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service"},
-	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service.com.fasterxml.jackson.core"},
-	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service.java.io"},
-	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service.java.lang"},
-	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service.java.nio.charset"},
-	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service.java.util"},
-	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service.java.util.function"},
-	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service.java.util.stream"},
-	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service.model"},
-	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service.org.wso2.apk.runtime"},
-	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service.org.wso2.apk.runtime.api"},
-	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service.org.wso2.apk.runtime.model"}
 ]
 
 

@@ -59,6 +59,17 @@ spec:
               displayName:
                 type: string
                 description: Display name  of Organization.
+              organizationClaimValue:
+                type: string
+                description: Organization claim value from IDP JWT.
+              enabled:
+                type: boolean
+                description: organization enabled.
+                default: true
+              serviceListingNamespaces:
+                type: array
+                items:
+                  type: string  
               properties:
                 items:
                   description: properties defines to Organization

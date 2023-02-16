@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2022, WSO2 LLC. (http://www.wso2.com).
+// Copyright (c) 2023, WSO2 LLC. (http://www.wso2.com).
 //
 // WSO2 LLC. licenses this file to you under the Apache License,
 // Version 2.0 (the "License"); you may not use this file except
@@ -15,22 +15,12 @@
 // specific language governing permissions and limitations
 // under the License.
 //
+public type ErrorHandler record {|
+    int code;
+    string message;
+    int statusCode;
+    string description;
+    map<string> moreInfo = {};
+|};
+public type APKError distinct (error<ErrorHandler>);
 
-apply from: "$rootDir/../../common-gradle-scripts/docker.gradle"
-apply from: "$rootDir/../../common-gradle-scripts/copy.gradle"
-
-tasks.named('copy_dist').configure{
-    finalizedBy docker_build
-}
-
-tasks.register('build') {
-    group 'build'
-    description 'Build docker image'
-    dependsOn 'copy_dist'
-    dependsOn 'docker_build'
-}
-
-build.configure{
-    mustRunAfter(":ballerina:build")
-    dependsOn(":ballerina:build")
-    }

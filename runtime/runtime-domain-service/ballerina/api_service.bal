@@ -17,7 +17,7 @@
 //
 
 import ballerina/http;
-import ballerina/log;
+import wso2/apk_common_lib as commons;
 
 @display {
     label: "runtime-api-service",
@@ -30,14 +30,9 @@ http:Service runtimeService = service object {
         APIClient apiService = new ();
         return apiService.getAPIList(query, 'limit, offset, sortBy, sortOrder, "carbon.super");
     }
-    isolated resource function post apis(@http:Payload API payload) returns CreatedAPI|BadRequestError|InternalServerErrorError {
+    isolated resource function post apis(@http:Payload API payload) returns CreatedAPI|BadRequestError|InternalServerErrorError|commons:APKError {
         APIClient apiService = new ();
-        APKError|CreatedAPI|BadRequestError createdAPI = apiService.createAPI(payload, (), "carbon.super");
-        if createdAPI is APKError {
-            return handleAPKError(createdAPI);
-        } else {
-            return createdAPI;
-        }
+        return apiService.createAPI(payload, (), "carbon.super");
     }
     isolated resource function get apis/[string apiId]() returns API|NotFoundError|InternalServerErrorError {
         APIClient apiService = new ();
@@ -47,51 +42,25 @@ http:Service runtimeService = service object {
         BadRequestError badRequest = {body: {code: 900910, message: "Not implemented"}};
         return badRequest;
     }
-    isolated resource function delete apis/[string apiId]() returns http:Ok|ForbiddenError|NotFoundError|InternalServerErrorError|BadRequestError {
+    isolated resource function delete apis/[string apiId]() returns http:Ok|ForbiddenError|NotFoundError|InternalServerErrorError|BadRequestError|commons:APKError {
         APIClient apiService = new ();
-        http:Ok|ForbiddenError|NotFoundError|InternalServerErrorError|APKError apiDeletionResponse = apiService.deleteAPIById(apiId, "carbon.super");
-        if apiDeletionResponse is http:Ok|ForbiddenError|NotFoundError|InternalServerErrorError {
-            return apiDeletionResponse;
-        } else {
-            log:printError("Internal Error occured deleting API", apiDeletionResponse);
-            return handleAPKError(apiDeletionResponse);
-        }
+        return apiService.deleteAPIById(apiId, "carbon.super");
     }
     isolated resource function post apis/[string apiId]/'generate\-key() returns APIKey|BadRequestError|NotFoundError|ForbiddenError|InternalServerErrorError {
         APIClient apiService = new ();
         return apiService.generateAPIKey(apiId, "carbon.super");
     }
-    isolated resource function post apis/'import\-service(string serviceKey, @http:Payload API payload) returns CreatedAPI|BadRequestError|InternalServerErrorError {
+    isolated resource function post apis/'import\-service(string serviceKey, @http:Payload API payload) returns CreatedAPI|BadRequestError|InternalServerErrorError|commons:APKError {
         APIClient apiService = new ();
-        CreatedAPI|BadRequestError|InternalServerErrorError|APKError aPIFromService = apiService.createAPIFromService(serviceKey, payload, "carbon.super");
-        if aPIFromService is CreatedAPI|BadRequestError|InternalServerErrorError {
-            return aPIFromService;
-        } else {
-            log:printError("Internal Error occured deploying API", aPIFromService);
-            InternalServerErrorError internalEror = {body: {code: 90900, message: "Internal Error occured deploying API"}};
-            return internalEror;
-        }
-
+        return apiService.createAPIFromService(serviceKey, payload, "carbon.super");
     }
-    isolated resource function post apis/'import\-definition(http:Request message) returns CreatedAPI|BadRequestError|PreconditionFailedError|InternalServerErrorError {
+    isolated resource function post apis/'import\-definition(http:Request message) returns CreatedAPI|BadRequestError|PreconditionFailedError|InternalServerErrorError|commons:APKError {
         APIClient apiService = new ();
-        APKError|CreatedAPI|InternalServerErrorError|BadRequestError createdAPI = apiService.importDefinition(message, "carbon.super");
-        if createdAPI is APKError {
-            return handleAPKError(createdAPI);
-        }
-        return createdAPI;
+        return apiService.importDefinition(message, "carbon.super");
     }
-    isolated resource function post apis/'validate\-definition(http:Request message, boolean returnContent = false) returns APIDefinitionValidationResponse|BadRequestError|NotFoundError|InternalServerErrorError {
+    isolated resource function post apis/'validate\-definition(http:Request message, boolean returnContent = false) returns APIDefinitionValidationResponse|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
         APIClient apiService = new ();
-        do {
-            APIDefinitionValidationResponse|BadRequestError|NotFoundError|InternalServerErrorError|error validateDefinition = apiService.validateDefinition(message, returnContent);
-            if validateDefinition is APIDefinitionValidationResponse|BadRequestError|NotFoundError|InternalServerErrorError {
-                return validateDefinition;
-            } else {
-                InternalServerErrorError internalError = {body: {code: 90900, message: ""}};
-                return internalError;
-            }
-        }
+        return apiService.validateDefinition(message, returnContent);
     }
     isolated resource function post apis/validate(string query) returns http:Ok|NotFoundError|BadRequestError|PreconditionFailedError|InternalServerErrorError {
         APIClient apiService = new ();
@@ -105,27 +74,17 @@ http:Service runtimeService = service object {
         BadRequestError badRequest = {body: {code: 900910, message: "Not implemented"}};
         return badRequest;
     }
-    isolated resource function get apis/export(string? apiId, string? name, string? 'version, string? format) returns http:Response|NotFoundError|InternalServerErrorError|BadRequestError {
+    isolated resource function get apis/export(string? apiId, string? name, string? 'version, string? format) returns http:Response|NotFoundError|InternalServerErrorError|BadRequestError|commons:APKError {
         APIClient apiClient = new;
-        APKError|NotFoundError|BadRequestError|http:Response exportAPI = apiClient.exportAPI(apiId, "carbon.super");
-        if exportAPI is APKError {
-            return handleAPKError(exportAPI);
-        } else {
-            return exportAPI;
-        }
+        return apiClient.exportAPI(apiId, "carbon.super");
     }
     isolated resource function post apis/'import(boolean? overwrite, @http:Payload json payload) returns http:Ok|ForbiddenError|ConflictError|PreconditionFailedError|InternalServerErrorError {
         InternalServerErrorError internalError = {body: {code: 900910, message: "Not implemented"}};
         return internalError;
     }
-    isolated resource function post apis/'copy\-api(string newVersion, string? serviceId, string apiId) returns CreatedAPI|BadRequestError|NotFoundError|InternalServerErrorError {
+    isolated resource function post apis/'copy\-api(string newVersion, string? serviceId, string apiId) returns CreatedAPI|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
         APIClient apiClient = new;
-        CreatedAPI|NotFoundError|BadRequestError|APKError copyAPI = apiClient.copyAPI(newVersion, serviceId, apiId, "carbon.super");
-        if copyAPI is CreatedAPI|NotFoundError|BadRequestError {
-            return copyAPI;
-        } else {
-            return handleAPKError(copyAPI);
-        }
+        return apiClient.copyAPI(newVersion, serviceId, apiId, "carbon.super");
     }
 
     isolated resource function get services(string? query, string sortBy = "createdTime", string sortOrder = "desc", int 'limit = 25, int offset = 0) returns ServiceList|BadRequestError|InternalServerErrorError {
@@ -149,14 +108,3 @@ http:Service runtimeService = service object {
         return internalError;
     }
 };
-
-public isolated function handleAPKError(APKError errorDetail) returns InternalServerErrorError|BadRequestError {
-    ErrorHandler & readonly detail = errorDetail.detail();
-    if detail.statusCode == "400" {
-        BadRequestError badRequest = {body: {code: detail.code, message: detail.message}};
-        return badRequest;
-    }
-    InternalServerErrorError internalServerError = {body: {code: detail.code, message: detail.message}};
-    return internalServerError;
-
-}

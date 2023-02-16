@@ -16,26 +16,18 @@
  */
 import org.apache.tools.ant.taskdefs.condition.*
 
-apply from: "$rootDir/../../common-gradle-scripts/docker.gradle"
 
 task bal_build(type: Exec) {
     group 'ballerina'
     description 'Build ballerina code'
     commandLine 'bal', 'build'
-    dependsOn 'bal_test'
-}
-task bal_test_run(type: Exec) {
-    group 'ballerina'
-    description 'Run ballerina tests with postgres'
-    dependsOn 'start_postgres_image'
-    commandLine 'bal', 'test', '--code-coverage','--coverage-format=xml',"--target-dir=${projectDir}/test-target"
 }
 task bal_test(type: Exec) {
     group 'ballerina'
-    description 'stop postgres'
-    dependsOn 'bal_test_run'
-    commandLine 'docker', 'stop', 'postgresql_test'
+    description 'Run ballerina tests with postgres'
+    commandLine 'bal', 'test', '--code-coverage','--coverage-format=xml',"--target-dir=${projectDir}/test-target"
 }
+
 task bal_clean(type: Exec) {
     group 'ballerina'
     description 'Run ballerina clean'
@@ -77,4 +69,16 @@ task commit_toml_files {
             }
         }
     }
+}
+task bal_pack(type: Exec) {
+    group 'ballerina'
+    description 'Pack ballerina code'
+    commandLine 'bal', 'pack'
+    dependsOn 'bal_build'
+}
+task bal_push(type: Exec) {
+    group 'ballerina'
+    description 'Push ballerina module to local'
+    commandLine 'bal', 'push', '--repository', 'local'
+    dependsOn 'bal_pack'
 }

@@ -36,7 +36,7 @@ rules:
     resources: ["apis/status"]
     verbs: ["get","patch","update"]
   - apiGroups: ["cp.wso2.com"]
-    resources: ["applications"]
+    resources: ["applications","organizations"]
     verbs: ["get","list","watch","update","delete","create"]
   - apiGroups: ["a.wso2.com"]
     resources: ["applications/finalizers"]

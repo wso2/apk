@@ -37,3 +37,6 @@ afterReleaseBuild.dependsOn ":docker:docker_push"
 task build{
  dependsOn("docker:build")
 }
+build.configure {
+    dependsOn(":docker:build")
+}

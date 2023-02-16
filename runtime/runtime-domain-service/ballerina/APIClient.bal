@@ -33,6 +33,7 @@ import ballerina/uuid;
 import ballerina/file;
 import ballerina/io;
 import ballerina/crypto;
+import wso2/apk_common_lib as commons;
 
 public class APIClient {
 
@@ -52,7 +53,7 @@ public class APIClient {
         return notfound;
     }
 
-    private isolated function getDefinition(model:API api) returns json|APKError {
+    private isolated function getDefinition(model:API api) returns json|commons:APKError {
         do {
             string? definitionFileRef = api.spec.definitionFileRef;
             if definitionFileRef is string && definitionFileRef.length() > 0 {
@@ -65,7 +66,7 @@ public class APIClient {
             return self.retrieveDefaultDefinition(api);
         } on fail var e {
             string message = "Internal Error occured while retrieving api Definition";
-            return error(message, e, message = message, description = message, code = 909000, statusCode = "500");
+            return error(message, e, message = message, description = message, code = 909000, statusCode = 500);
         }
 
     }
@@ -110,7 +111,7 @@ public class APIClient {
     }
 
     //Delete APIs deployed in a namespace by APIId.
-    public isolated function deleteAPIById(string id, string organization) returns http:Ok|ForbiddenError|NotFoundError|InternalServerErrorError|APKError {
+    public isolated function deleteAPIById(string id, string organization) returns http:Ok|ForbiddenError|NotFoundError|InternalServerErrorError|commons:APKError {
         boolean APIIDAvailable = id.length() > 0 ? true : false;
         if (APIIDAvailable && string:length(id.toString()) > 0)
         {
@@ -141,20 +142,20 @@ public class APIClient {
                         log:printError("Error while undeploying prod http route ", sandHttpRouteDeletionResponse);
                     }
                 }
-                APKError? response = check self.deleteServiceMappings(api);
-                if response is APKError {
+                commons:APKError? response = check self.deleteServiceMappings(api);
+                if response is commons:APKError {
                     return response;
                 }
                 response = self.deleteAuthneticationCRs(api);
-                if response is APKError {
+                if response is commons:APKError {
                     return response;
                 }
                 response = self.deleteBackendPolicies(api);
-                if response is APKError {
+                if response is commons:APKError {
                     return response;
                 }
                 response = self.deleteBackendServices(api);
-                if response is APKError {
+                if response is commons:APKError {
                     return response;
                 }
             } else {
@@ -164,7 +165,7 @@ public class APIClient {
         }
         return http:OK;
     }
-    private isolated function deleteBackendPolicies(model:API api) returns APKError? {
+    private isolated function deleteBackendPolicies(model:API api) returns commons:APKError? {
         do {
             model:BackendPolicyList|http:ClientError backendPolicyListResponse = check getBackendPolicyCRsForAPI(api.spec.apiDisplayName, api.spec.apiVersion, api.metadata.namespace);
             if backendPolicyListResponse is model:BackendPolicyList {
@@ -184,10 +185,10 @@ public class APIClient {
             }
         } on fail var e {
             log:printError("Error occured deleting servicemapping", e);
-            return error("Error occured deleting servicemapping", message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = "500");
+            return error("Error occured deleting servicemapping", message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = 500);
         }
     }
-    private isolated function deleteBackendServices(model:API api) returns APKError? {
+    private isolated function deleteBackendServices(model:API api) returns commons:APKError? {
         do {
             model:ServiceList|http:ClientError serviceListResponse = check getBackendServicesForAPI(api.spec.apiDisplayName, api.spec.apiVersion, api.metadata.namespace);
             if serviceListResponse is model:ServiceList {
@@ -207,10 +208,10 @@ public class APIClient {
             }
         } on fail var e {
             log:printError("Error occured deleting servicemapping", e);
-            return error("Error occured deleting servicemapping", message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = "500");
+            return error("Error occured deleting servicemapping", message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = 500);
         }
     }
-    private isolated function deleteAuthneticationCRs(model:API api) returns APKError? {
+    private isolated function deleteAuthneticationCRs(model:API api) returns commons:APKError? {
         do {
             model:AuthenticationList|http:ClientError authenticationCrListResponse = check getAuthenticationCrsForAPI(api.spec.apiDisplayName, api.spec.apiVersion, api.metadata.namespace);
             if authenticationCrListResponse is model:AuthenticationList {
@@ -230,7 +231,7 @@ public class APIClient {
             }
         } on fail var e {
             log:printError("Error occured deleting servicemapping", e);
-            return error("Error occured deleting servicemapping", message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = "500");
+            return error("Error occured deleting servicemapping", message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = 500);
         }
     }
 
@@ -328,7 +329,7 @@ public class APIClient {
         return {list: limitSet, count: limitSet.length(), pagination: {total: apiList.length(), 'limit: 'limit, offset: offset}};
 
     }
-    public isolated function createAPI(API api, string? definition, string organization) returns APKError|CreatedAPI|BadRequestError {
+    public isolated function createAPI(API api, string? definition, string organization) returns commons:APKError|CreatedAPI|BadRequestError {
         do {
             if (self.validateName(api.name, organization)) {
                 BadRequestError badRequest = {body: {code: 90911, message: "API Name - " + api.name + " already exist.", description: "API Name - " + api.name + " already exist."}};
@@ -377,11 +378,11 @@ public class APIClient {
             CreatedAPI createdAPI = {body: {name: api.name, context: self.returnFullContext(api.context, api.'version, organization), 'version: api.'version, id: deployAPIToK8sResult.metadata.uid}};
             return createdAPI;
         } on fail var e {
-            if e is APKError {
+            if e is commons:APKError {
                 return e;
             }
             log:printError("Internal Error occured", e);
-            return error("Internal Error occured", code = 909000, message = "Internal Error occured", description = "Internal Error occured", statusCode = "500");
+            return error("Internal Error occured", code = 909000, message = "Internal Error occured", description = "Internal Error occured", statusCode = 500);
         }
     }
     private isolated function createBackendPolicy(API api, APIOperations? apiOperation, string endpointType, string organization, map<anydata>? endpointConfig, string url, model:Service backendService) returns model:BackendPolicy {
@@ -404,7 +405,7 @@ public class APIClient {
         };
         return backendPolicy;
     }
-    private isolated function createAndAddBackendServics(model:APIArtifact apiArtifact, API api, record {} endpointConfig, APIOperations? apiOperation, string? endpointType, string organization) returns map<model:Endpoint>|APKError|error {
+    private isolated function createAndAddBackendServics(model:APIArtifact apiArtifact, API api, record {} endpointConfig, APIOperations? apiOperation, string? endpointType, string organization) returns map<model:Endpoint>|commons:APKError|error {
         map<model:Endpoint> endpointIdMap = {};
         anydata|error sandboxEndpointConfig = trap endpointConfig.get("sandbox_endpoints");
         anydata|error productionEndpointConfig = trap endpointConfig.get("production_endpoints");
@@ -428,7 +429,7 @@ public class APIClient {
                         url: <string?>url
                     };
                 } else {
-                    APKError e = error("Sandbox Endpoint Not specified", message = "Endpoint Not specified", description = "Sandbox Endpoint Not specified", code = 90911, statusCode = "400");
+                    commons:APKError e = error("Sandbox Endpoint Not specified", message = "Endpoint Not specified", description = "Sandbox Endpoint Not specified", code = 90911, statusCode = 400);
                     return e;
                 }
             }
@@ -453,7 +454,7 @@ public class APIClient {
                         url: <string?>url
                     };
                 } else {
-                    APKError e = error("Production Endpoint Not specified", message = "Endpoint Not specified", description = "Production Endpoint Not specified", code = 90911, statusCode = "400");
+                    commons:APKError e = error("Production Endpoint Not specified", message = "Endpoint Not specified", description = "Production Endpoint Not specified", code = 90911, statusCode = 400);
                     return e;
                 }
             }
@@ -508,7 +509,7 @@ public class APIClient {
         return false;
     }
 
-    isolated function createAPIFromService(string serviceKey, API api, string organization) returns CreatedAPI|BadRequestError|InternalServerErrorError|APKError {
+    isolated function createAPIFromService(string serviceKey, API api, string organization) returns CreatedAPI|BadRequestError|InternalServerErrorError|commons:APKError {
         if (self.validateName(api.name, organization)) {
             BadRequestError badRequest = {body: {code: 90911, message: "API Name - " + api.name + " already exist.", description: "API Name - " + api.name + " already exist."}};
             return badRequest;
@@ -553,7 +554,7 @@ public class APIClient {
             return badRequest;
         }
     }
-    private isolated function deployAPIToK8s(model:APIArtifact apiArtifact) returns APKError|model:API {
+    private isolated function deployAPIToK8s(model:APIArtifact apiArtifact) returns commons:APKError|model:API {
         do {
             model:ConfigMap? definition = apiArtifact.definition;
             if definition is model:ConfigMap {
@@ -646,22 +647,22 @@ public class APIClient {
                         model:StatusCause[] 'causes = details.'causes;
                         foreach model:StatusCause 'cause in 'causes {
                             if 'cause.'field == "spec.context" {
-                                return error("Invalid API Context", code = 90911, description = "API Context " + k8sAPI.spec.context + " Invalid", message = "Invalid API context", statusCode = "400");
+                                return error("Invalid API Context", code = 90911, description = "API Context " + k8sAPI.spec.context + " Invalid", message = "Invalid API context", statusCode = 400);
 
                             } else if 'cause.'field == "spec.apiDisplayName" {
-                                return error("Invalid API Name", code = 90911, description = "API Name " + k8sAPI.spec.apiDisplayName + " Invalid", message = "Invalid API Name", statusCode = "400");
+                                return error("Invalid API Name", code = 90911, description = "API Name " + k8sAPI.spec.apiDisplayName + " Invalid", message = "Invalid API Name", statusCode = 400);
                             }
                         }
-                        return error("Invalid API Request", code = 90911, description = "Invalid API Request", message = "Invalid API Request", statusCode = "400");
+                        return error("Invalid API Request", code = 90911, description = "Invalid API Request", message = "Invalid API Request", statusCode = 400);
                     }
                     return self.handleK8sTimeout(statusResponse);
                 }
             } else {
-                return error("Internal Error occured", code = 909000, message = "Internal Error occured", description = "Internal Error occured", statusCode = "500");
+                return error("Internal Error occured", code = 909000, message = "Internal Error occured", description = "Internal Error occured", statusCode = 500);
             }
         } on fail var e {
             log:printError("Internal Error occured while deploying API", e);
-            APKError internalError = error("Internal Error occured while deploying API", code = 909000, statusCode = "500", description = "Internal Error occured while deploying API", message = "Internal Error occured while deploying API");
+            commons:APKError internalError = error("Internal Error occured while deploying API", code = 909000, statusCode = 500, description = "Internal Error occured while deploying API", message = "Internal Error occured while deploying API");
             return internalError;
         }
     }
@@ -744,7 +745,7 @@ public class APIClient {
         return getUniqueIdForAPI(api.name, api.'version, organization) + "-" + 'type + "-authentication";
     }
 
-    private isolated function setHttpRoute(model:APIArtifact apiArtifact, API api, model:Endpoint? endpoint, string uniqueId, string endpointType, string organization) returns APKError? {
+    private isolated function setHttpRoute(model:APIArtifact apiArtifact, API api, model:Endpoint? endpoint, string uniqueId, string endpointType, string organization) returns commons:APKError? {
         model:Httproute httpRoute = {
             metadata:
                 {
@@ -785,7 +786,7 @@ public class APIClient {
         return parentRefs;
     }
 
-    private isolated function generateHttpRouteRules(model:APIArtifact apiArtifact, API api, model:Endpoint? endpoint, string endpointType, string organization) returns model:HTTPRouteRule[]|APKError {
+    private isolated function generateHttpRouteRules(model:APIArtifact apiArtifact, API api, model:Endpoint? endpoint, string endpointType, string organization) returns model:HTTPRouteRule[]|commons:APKError {
         model:HTTPRouteRule[] httpRouteRules = [];
         APIOperations[]? operations = api.operations;
         if operations is APIOperations[] {
@@ -834,7 +835,7 @@ public class APIClient {
         return authentication;
     }
 
-    private isolated function generateHttpRouteRule(model:APIArtifact apiArtifact, API api, model:Endpoint? endpoint, APIOperations operation, string endpointType, string organization) returns model:HTTPRouteRule|()|APKError {
+    private isolated function generateHttpRouteRule(model:APIArtifact apiArtifact, API api, model:Endpoint? endpoint, APIOperations operation, string endpointType, string organization) returns model:HTTPRouteRule|()|commons:APKError {
         do {
             record {}? endpointConfig = operation.endpointConfig;
             model:Endpoint? endpointToUse = ();
@@ -857,7 +858,7 @@ public class APIClient {
             }
         } on fail var e {
             log:printError("Internal Error occured", e);
-            return error("Internal Error occured", code = 909000, message = "Internal Error occured", description = "Internal Error occured", statusCode = "500");
+            return error("Internal Error occured", code = 909000, message = "Internal Error occured", description = "Internal Error occured", statusCode = 500);
         }
     }
 
@@ -964,7 +965,7 @@ public class APIClient {
 
         return {method: <string>apiOperation.verb, path: {'type: "RegularExpression", value: self.retrievePathPrefix(api.context, api.'version, apiOperation.target ?: "/*", organization)}};
     }
-    isolated function retrieveGeneratedSwaggerDefinition(API api, string? definition) returns json|APKError {
+    isolated function retrieveGeneratedSwaggerDefinition(API api, string? definition) returns json|commons:APKError {
         runtimeModels:API api1 = runtimeModels:newAPI1();
         api1.setName(api.name);
         api1.setType(api.'type);
@@ -1001,12 +1002,12 @@ public class APIClient {
                 return jsonString;
             } else {
                 log:printError("Error on converting to json", jsonString);
-                return error("Error occured while generating openapi definition", code = 900920, message = "Error occured while generating openapi definition", statusCode = "500", description = "Error occured while generating openapi definition");
+                return error("Error occured while generating openapi definition", code = 900920, message = "Error occured while generating openapi definition", statusCode = 500, description = "Error occured while generating openapi definition");
             }
         } else if retrievedDefinition is () {
             return "";
         } else {
-            return error("Error occured while generating openapi definition", code = 900920, message = "Error occured while generating openapi definition", statusCode = "500", description = "Error occured while generating openapi definition");
+            return error("Error occured while generating openapi definition", code = 900920, message = "Error occured while generating openapi definition", statusCode = 500, description = "Error occured while generating openapi definition");
         }
     }
 
@@ -1092,7 +1093,7 @@ public class APIClient {
         return uniqueId + "-servicemapping";
     }
 
-    isolated function deleteServiceMappings(model:API api) returns APKError? {
+    isolated function deleteServiceMappings(model:API api) returns commons:APKError? {
         do {
             map<model:K8sServiceMapping> retrieveServiceMappingsForAPIResult = retrieveServiceMappingsForAPI(api).clone();
             model:ServiceMappingList|http:ClientError k8sServiceMapingsDeletionResponse = check getK8sServiceMapingsForAPI(api.spec.apiDisplayName, api.spec.apiVersion, api.metadata.namespace);
@@ -1120,56 +1121,61 @@ public class APIClient {
             return;
         } on fail var e {
             log:printError("Error occured deleting servicemapping", e);
-            return error("Error occured deleting servicemapping", message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = "500");
+            return error("Error occured deleting servicemapping", message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = 500);
         }
 
     }
 
-    public isolated function validateDefinition(http:Request message, boolean returnContent) returns InternalServerErrorError|error|BadRequestError|APIDefinitionValidationResponse {
-        DefinitionValidationRequest|BadRequestError|error definitionValidationRequest = self.mapApiDefinitionPayload(message);
-        if definitionValidationRequest is DefinitionValidationRequest {
-            runtimeapi:APIDefinitionValidationResponse|runtimeapi:APIManagementException|error|BadRequestError validationResponse = self.validateAndRetrieveDefinition(definitionValidationRequest.'type, definitionValidationRequest.url, definitionValidationRequest.inlineAPIDefinition, definitionValidationRequest.content, definitionValidationRequest.fileName);
-            if validationResponse is runtimeapi:APIDefinitionValidationResponse {
-                string[] endpoints = [];
-                ErrorListItem[] errorItems = [];
-                if validationResponse.isValid() {
-                    runtimeapi:Info info = validationResponse.getInfo();
-                    utilapis:List endpointList = info.getEndpoints();
-                    foreach int i in 0 ... endpointList.size() - 1 {
-                        endpoints.push(endpointList.get(i).toString());
+    public isolated function validateDefinition(http:Request message, boolean returnContent) returns InternalServerErrorError|BadRequestError|APIDefinitionValidationResponse|commons:APKError {
+        do {
+            DefinitionValidationRequest|BadRequestError|error definitionValidationRequest = self.mapApiDefinitionPayload(message);
+            if definitionValidationRequest is DefinitionValidationRequest {
+                runtimeapi:APIDefinitionValidationResponse|runtimeapi:APIManagementException|error|BadRequestError validationResponse = self.validateAndRetrieveDefinition(definitionValidationRequest.'type, definitionValidationRequest.url, definitionValidationRequest.inlineAPIDefinition, definitionValidationRequest.content, definitionValidationRequest.fileName);
+                if validationResponse is runtimeapi:APIDefinitionValidationResponse {
+                    string[] endpoints = [];
+                    ErrorListItem[] errorItems = [];
+                    if validationResponse.isValid() {
+                        runtimeapi:Info info = validationResponse.getInfo();
+                        utilapis:List endpointList = info.getEndpoints();
+                        foreach int i in 0 ... endpointList.size() - 1 {
+                            endpoints.push(endpointList.get(i).toString());
+                        }
+                        APIDefinitionValidationResponse_info validationResponseInfo = {
+                            context: info.getContext(),
+                            description: info.getDescription(),
+                            name: info.getName(),
+                            'version: info.getVersion(),
+                            openAPIVersion: info.getOpenAPIVersion(),
+                            endpoints: endpoints
+                        };
+                        APIDefinitionValidationResponse response = {content: validationResponse.getContent(), isValid: validationResponse.isValid(), info: validationResponseInfo, errors: errorItems};
+                        return response;
                     }
-                    APIDefinitionValidationResponse_info validationResponseInfo = {
-                        context: info.getContext(),
-                        description: info.getDescription(),
-                        name: info.getName(),
-                        'version: info.getVersion(),
-                        openAPIVersion: info.getOpenAPIVersion(),
-                        endpoints: endpoints
-                    };
-                    APIDefinitionValidationResponse response = {content: validationResponse.getContent(), isValid: validationResponse.isValid(), info: validationResponseInfo, errors: errorItems};
+                    utilapis:ArrayList errorItemsResult = validationResponse.getErrorItems();
+                    foreach int i in 0 ... errorItemsResult.size() - 1 {
+                        runtimeapi:ErrorItem errorItem = check java:cast(errorItemsResult.get(i));
+                        ErrorListItem errorListItem = {code: errorItem.getErrorCode().toString(), message: <string>errorItem.getErrorMessage(), description: errorItem.getErrorDescription()};
+                        errorItems.push(errorListItem);
+                    }
+                    APIDefinitionValidationResponse response = {content: validationResponse.getContent(), isValid: validationResponse.isValid(), info: {}, errors: errorItems};
                     return response;
-                }
-                utilapis:ArrayList errorItemsResult = validationResponse.getErrorItems();
-                foreach int i in 0 ... errorItemsResult.size() - 1 {
-                    runtimeapi:ErrorItem errorItem = check java:cast(errorItemsResult.get(i));
-                    ErrorListItem errorListItem = {code: errorItem.getErrorCode().toString(), message: <string>errorItem.getErrorMessage(), description: errorItem.getErrorDescription()};
-                    errorItems.push(errorListItem);
-                }
-                APIDefinitionValidationResponse response = {content: validationResponse.getContent(), isValid: validationResponse.isValid(), info: {}, errors: errorItems};
-                return response;
 
-            } else {
-                runtimeapi:JAPIManagementException excetion = check validationResponse.ensureType(runtimeapi:JAPIManagementException);
-                runtimeapi:ErrorHandler errorHandler = excetion.getErrorHandler();
-                BadRequestError badeRequest = {body: {code: errorHandler.getErrorCode(), message: errorHandler.getErrorMessage().toString()}};
-                return badeRequest;
+                } else {
+                    runtimeapi:JAPIManagementException excetion = check validationResponse.ensureType(runtimeapi:JAPIManagementException);
+                    runtimeapi:ErrorHandler errorHandler = excetion.getErrorHandler();
+                    BadRequestError badeRequest = {body: {code: errorHandler.getErrorCode(), message: errorHandler.getErrorMessage().toString()}};
+                    return badeRequest;
+                }
             }
-        }
-        else if definitionValidationRequest is BadRequestError {
-            return definitionValidationRequest;
-        } else {
-            InternalServerErrorError internalError = {body: {code: 909000, message: "InternalServerError"}};
-            return internalError;
+            else if definitionValidationRequest is BadRequestError {
+                return definitionValidationRequest;
+            } else {
+                InternalServerErrorError internalError = {body: {code: 909000, message: "InternalServerError"}};
+                return internalError;
+            }
+        } on fail var e {
+            commons:APKError apkError = error("Internal Error",e,code = 900900,message = "InternalServer Error",description = "InternalServer Error",statusCode = 500);
+            return apkError;
         }
     }
 
@@ -1311,7 +1317,7 @@ public class APIClient {
         }
     }
 
-    isolated function handleK8sTimeout(model:Status errorStatus) returns APKError {
+    isolated function handleK8sTimeout(model:Status errorStatus) returns commons:APKError {
         model:StatusDetails? details = errorStatus.details;
         if details is model:StatusDetails {
             if details.retryAfterSeconds is int && details.retryAfterSeconds >= 0 {
@@ -1319,7 +1325,7 @@ public class APIClient {
                 log:printError("K8s API Timeout happens when invoking k8s api");
             }
         }
-        APKError apkError = error("Internal Server Error", code = 900900, message = "Internal Server Error", statusCode = "500", description = "Internal Server Error");
+        commons:APKError apkError = error("Internal Server Error", code = 900900, message = "Internal Server Error", statusCode = 500, description = "Internal Server Error");
         return apkError;
     }
 
@@ -1506,7 +1512,7 @@ public class APIClient {
         }
     }
 
-    public isolated function importDefinition(http:Request payload, string organization) returns APKError|CreatedAPI|InternalServerErrorError|BadRequestError {
+    public isolated function importDefinition(http:Request payload, string organization) returns commons:APKError|CreatedAPI|InternalServerErrorError|BadRequestError {
         do {
             ImportDefintionRequest|BadRequestError importDefinitionRequest = check self.mapImportDefinitionRequest(payload);
             if importDefinitionRequest is ImportDefintionRequest {
@@ -1665,7 +1671,7 @@ public class APIClient {
         };
         return importDefintionRequest;
     }
-    public isolated function copyAPI(string newVersion, string? serviceId, string apiId, string organization) returns CreatedAPI|NotFoundError|BadRequestError|APKError {
+    public isolated function copyAPI(string newVersion, string? serviceId, string apiId, string organization) returns CreatedAPI|NotFoundError|BadRequestError|commons:APKError {
         // validating API existence.
         if newVersion.trim().length() == 0 || apiId.trim().length() == 0 {
             BadRequestError badRequest = {body: {code: 900912, message: "new Version/APIID not exist."}};
@@ -1703,11 +1709,11 @@ public class APIClient {
                 return <NotFoundError>api;
             }
         } on fail var e {
-            if e is APKError {
+            if e is commons:APKError {
                 return e;
             }
             log:printError("Internal Error occured", e);
-            return error("Internal Error occured", code = 909000, message = "Internal Error occured", description = "Internal Error occured", statusCode = "500");
+            return error("Internal Error occured", code = 909000, message = "Internal Error occured", description = "Internal Error occured", statusCode = 500);
         }
     }
     private isolated function prepareApiArtifactforNewVersion(model:APIArtifact apiArtifact, Service? serviceEntry, API oldAPI, string newVersion, string organization) {
@@ -1999,7 +2005,7 @@ public class APIClient {
             spec: backendPolicy.spec
         };
     }
-    public isolated function exportAPI(string? apiId, string organization) returns APKError|NotFoundError|http:Response|BadRequestError {
+    public isolated function exportAPI(string? apiId, string organization) returns commons:APKError|NotFoundError|http:Response|BadRequestError {
         if apiId is string {
             do {
                 API|NotFoundError api = self.getAPIById(apiId, organization);
@@ -2045,7 +2051,7 @@ public class APIClient {
                     return <NotFoundError>api;
                 }
             } on fail var e {
-                APKError apkError = error("Internal Error occured when exporting api", e, message = "Internal Error.", code = 900900, description = "Internal Error.", statusCode = "500");
+                commons:APKError apkError = error("Internal Error occured when exporting api", e, message = "Internal Error.", code = 900900, description = "Internal Error.", statusCode = 500);
                 return apkError;
             }
         } else {
