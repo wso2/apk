@@ -48,6 +48,9 @@ spec:
             - mountPath: /home/wso2apk/runtime/security/wso2carbon.key
               name: runtime-signing-keystore-volume
               subPath: wso2carbon.key
+            - mountPath: /home/wso2apk/runtime/security/mg.pem
+              name: runtime-ds-jwt-validation-key-volume
+              subPath: mg.pem
             - mountPath: /home/wso2apk/runtime/conf/Config.toml
               name: config-toml-volume
               subPath: Config.toml
@@ -56,6 +59,10 @@ spec:
         - name: runtime-signing-keystore-volume
           secret: 
             secretName: {{ template "apk-helm.resource.prefix" . }}-signing-keystore-secret
+        - name: runtime-ds-jwt-validation-key-volume
+          secret: 
+            secretName: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-jwt-validaion-secret
+
         - name: config-toml-volume
           configMap:
             name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-configmap

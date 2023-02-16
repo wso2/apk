@@ -381,6 +381,7 @@ version = "0.0.1-SNAPSHOT"
 dependencies = [
 	{org = "ballerina", name = "http"},
 	{org = "ballerina", name = "jwt"},
+	{org = "ballerina", name = "lang.value"},
 	{org = "ballerina", name = "log"}
 ]
 modules = [

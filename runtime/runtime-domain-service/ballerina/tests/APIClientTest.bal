@@ -21,13 +21,30 @@ import ballerina/uuid;
 import ballerina/http;
 import runtime_domain_service.model as model;
 import wso2/apk_common_lib as commons;
-
+commons:Organization organiztion1 = {
+    name: "org1",
+    displayName: "org1",
+    uuid: "01ed7aca-eb6b-1178-a200-f604a4ce114b",
+    organizationClaimValue: "org1",
+    enabled: true,
+    serviceListingNamespaces: ["*"],
+    properties: []
+};
+commons:Organization organiztion2 = {
+    name: "wso2.com",
+    displayName: "wso2.com",
+    uuid: "01ed7aca-eb6b-1178-a200-f604a4ce114c",
+    organizationClaimValue: "wso2.com",
+    enabled: true,
+    serviceListingNamespaces: ["*"],
+    properties: []
+};
 @test:Mock {functionName: "startAndAttachServices"}
 function getMockStartandAttachServices() returns error? {
 }
 
 @test:Mock {functionName: "getBackendPolicyUid"}
-function testgetBackendPolicyUid(API api, string? endpointType, string organization) returns string {
+function testgetBackendPolicyUid(API api, string? endpointType, commons:Organization organization) returns string {
     return "backendpolicy-uuid";
 }
 
@@ -168,26 +185,27 @@ function getMockOrganizationList() returns model:OrganizationList {
             }]};
 return organizationList;
 }
+
 @test:Config {
     dataProvider: pathProvider
 }
 public function testretrievePathPrefix(string context, string 'version, string path, string expected) {
     APIClient apiclient = new ();
-    string retrievePathPrefix = apiclient.retrievePathPrefix(context, 'version, path, "carbon.super");
+    string retrievePathPrefix = apiclient.retrievePathPrefix(context, 'version, path, organiztion1);
     test:assertEquals(retrievePathPrefix, expected);
 }
 
 function pathProvider() returns map<[string, string, string, string]>|error {
     map<[string, string, string, string]> dataSet = {
-        "1": ["/abc/1.0.0", "1.0.0", "/abc", "/t/carbon.super/abc/1.0.0/abc"],
-        "2": ["/abc", "1.0.0", "/abc", "/t/carbon.super/abc/1.0.0/abc"],
-        "3": ["/abc", "1.0.0", "/*", "/t/carbon.super/abc/1.0.0(.*)"],
-        "4": ["/abc/1.0.0", "1.0.0", "/*", "/t/carbon.super/abc/1.0.0(.*)"],
-        "5": ["/abc/1.0.0", "1.0.0", "/{path}/abcd", "/t/carbon.super/abc/1.0.0/(.*)/abcd"],
-        "6": ["/abc/1.0.0", "1.0.0", "/path1/{bcd}", "/t/carbon.super/abc/1.0.0/path1/(.*)"],
-        "7": ["/abc/1.0.0", "1.0.0", "/path1/{bcd}/path2", "/t/carbon.super/abc/1.0.0/path1/(.*)/path2"],
-        "8": ["/abc/1.0.0", "1.0.0", "/path1/{bcd}/{pathparam2}", "/t/carbon.super/abc/1.0.0/path1/(.*)/(.*)"],
-        "9": ["/abc", "1.0.0", "/path1/*", "/t/carbon.super/abc/1.0.0/path1(.*)"]
+        "1": ["/abc/1.0.0", "1.0.0", "/abc", "/abc/1.0.0/abc"],
+        "2": ["/abc", "1.0.0", "/abc", "/abc/1.0.0/abc"],
+        "3": ["/abc", "1.0.0", "/*", "/abc/1.0.0(.*)"],
+        "4": ["/abc/1.0.0", "1.0.0", "/*", "/abc/1.0.0(.*)"],
+        "5": ["/abc/1.0.0", "1.0.0", "/{path}/abcd", "/abc/1.0.0/(.*)/abcd"],
+        "6": ["/abc/1.0.0", "1.0.0", "/path1/{bcd}", "/abc/1.0.0/path1/(.*)"],
+        "7": ["/abc/1.0.0", "1.0.0", "/path1/{bcd}/path2", "/abc/1.0.0/path1/(.*)/path2"],
+        "8": ["/abc/1.0.0", "1.0.0", "/path1/{bcd}/{pathparam2}", "/abc/1.0.0/path1/(.*)/(.*)"],
+        "9": ["/abc", "1.0.0", "/path1/*", "/abc/1.0.0/path1(.*)"]
     };
     return dataSet;
 }
@@ -195,7 +213,7 @@ function pathProvider() returns map<[string, string, string, string]>|error {
 @test:Config {dataProvider: contextVersionDataProvider}
 public function testValidateContextAndVersion(string context, string 'version, boolean expected) {
     APIClient apiclient = new ();
-    test:assertEquals(apiclient.validateContextAndVersion(context, 'version, "carbon.super"), expected);
+    test:assertEquals(apiclient.validateContextAndVersion(context, 'version, organiztion1), expected);
 }
 
 function contextVersionDataProvider() returns map<[string, string, boolean]>|error {
@@ -211,16 +229,16 @@ function contextVersionDataProvider() returns map<[string, string, boolean]>|err
 }
 
 @test:Config {dataProvider: nameDataProvider}
-public function testValidateName(string name, string organization, boolean expected) {
+public function testValidateName(string name, commons:Organization organization, boolean expected) {
     APIClient apiclient = new ();
     test:assertEquals(apiclient.validateName(name, organization), expected);
 }
 
-function nameDataProvider() returns map<[string, string, boolean]>|error {
-    map<[string, string, boolean]> dataSet = {
-        "1": ["pizzashackAPI1", "carbon.super", true],
-        "2": ["pizzashackAPInew", "carbon.super", false],
-        "3": ["pizzashackAPI1", "wso2.com", false]
+function nameDataProvider() returns map<[string, commons:Organization, boolean]>|error {
+    map<[string, commons:Organization, boolean]> dataSet = {
+        "1": ["pizzashackAPI1", organiztion1, true],
+        "2": ["pizzashackAPInew", organiztion1, false],
+        "3": ["pizzashackAPI1", organiztion2, false]
 
     };
     return dataSet;
@@ -252,7 +270,7 @@ function hostnameDataProvider() returns map<[string, string, string, int, string
 
 @test:Config {dataProvider: apiNameDataProvider}
 public function testGetAPIByNameAndNamespace(string name, string namespace, model:API & readonly|() expected) {
-    test:assertEquals(getAPIByNameAndNamespace(name, namespace, "carbon.super"), expected);
+    test:assertEquals(getAPIByNameAndNamespace(name, namespace, organiztion1), expected);
 }
 
 function apiNameDataProvider() returns map<[string, string, model:API & readonly|()]>|error {
@@ -265,14 +283,14 @@ function apiNameDataProvider() returns map<[string, string, model:API & readonly
 }
 
 @test:Config {dataProvider: apiIDDataprovider}
-public function testGetAPIById(string id, string organization, model:API & readonly|error expected) returns error? {
+public function testGetAPIById(string id, commons:Organization organization, model:API & readonly|error expected) returns error? {
     test:assertEquals(getAPI(id, organization), check expected);
 }
 
-function apiIDDataprovider() returns map<[string, string, model:API & readonly|error]>|error {
+function apiIDDataprovider() returns map<[string, commons:Organization, model:API & readonly|error]>|error {
 
-    map<[string, string, model:API & readonly|error]> dataSet = {
-        "1": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e8", "carbon.super", getMockPizzaShakK8sAPI()]
+    map<[string, commons:Organization, model:API & readonly|error]> dataSet = {
+        "1": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e8",organiztion1, getMockPizzaShakK8sAPI()]
     };
     return dataSet;
 }
@@ -299,7 +317,7 @@ function prefixMatchDataProvider() returns map<[API, model:Endpoint, APIOperatio
 @test:Config {dataProvider: apiDefinitionDataProvider}
 public function testGetAPIDefinitionByID(string apiid, anydata expectedResponse) returns error? {
     APIClient apiclient = new ();
-    test:assertEquals(apiclient.getAPIDefinitionByID(apiid, "carbon.super"), expectedResponse);
+    test:assertEquals(apiclient.getAPIDefinitionByID(apiid, organiztion1), expectedResponse);
 }
 
 public function apiDefinitionDataProvider() returns map<[string, json|NotFoundError|PreconditionFailedError|InternalServerErrorError]> {
@@ -319,17 +337,17 @@ public function apiDefinitionDataProvider() returns map<[string, json|NotFoundEr
 }
 
 @test:Config {dataProvider: apiByIdDataProvider}
-public function testgetApiById(string apiid, string organization, anydata expectedData) {
+public function testgetApiById(string apiid, commons:Organization organization, anydata expectedData) {
     APIClient apiclient = new ();
     test:assertEquals(apiclient.getAPIById(apiid, organization), expectedData);
 }
 
-public function apiByIdDataProvider() returns map<[string, string, API|NotFoundError]> {
-    API & readonly api1 = {name: "pizzashackAPI", context: "/t/carbon.super/pizzashack/1.0.0", 'version: "1.0.0", id: "c5ab2423-b9e8-432b-92e8-35e6907ed5e8", createdTime: "2022-12-13T09:45:47Z"};
+public function apiByIdDataProvider() returns map<[string, commons:Organization, API|NotFoundError]> {
+    API & readonly api1 = {name: "pizzashackAPI", context: "/pizzashack/1.0.0", 'version: "1.0.0", id: "c5ab2423-b9e8-432b-92e8-35e6907ed5e8", createdTime: "2022-12-13T09:45:47Z"};
     NotFoundError notfound = {body: {code: 909100, message: "c5ab2423-b9e8-432b-92e8-35e6907ed5e9 not found."}};
-    map<[string, string, API & readonly|NotFoundError]> dataset = {
-        "1": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e8", "carbon.super", api1],
-        "2": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e9", "carbon.super", notfound]
+    map<[string, commons:Organization, API & readonly|NotFoundError]> dataset = {
+        "1": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e8", organiztion1, api1],
+        "2": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e9",organiztion1, notfound]
     };
     return dataset;
 }
@@ -337,7 +355,7 @@ public function apiByIdDataProvider() returns map<[string, string, API|NotFoundE
 @test:Config {dataProvider: getApilistDataProvider}
 public function testGetAPIList(string? query, int 'limit, int offset, string sortBy, string sortOrder, anydata expected) {
     APIClient apiclient = new ();
-    test:assertEquals(apiclient.getAPIList(query, 'limit, offset, sortBy, sortOrder, "carbon.super"), expected);
+    test:assertEquals(apiclient.getAPIList(query, 'limit, offset, sortBy, sortOrder, organiztion1), expected);
 }
 
 function getApilistDataProvider() returns map<[string?, int, int, string, string, APIList|InternalServerErrorError|BadRequestError]> {
@@ -357,7 +375,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "8a1eb4f9-efab-4682-a051-4df4050812d2",
                         "name": "DemoAPI",
-                        "context": "/t/carbon.super/demoapi/1.0.0",
+                        "context": "/demoapi/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-14T18:51:26Z"
@@ -365,7 +383,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5e8",
                         "name": "pizzashackAPI",
-                        "context": "/t/carbon.super/pizzashack/1.0.0",
+                        "context": "/pizzashack/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -373,7 +391,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "7b7db1f0-0a9a-4f72-9f9d-5a1696d590c1",
                         "name": "pizzashackAPI1",
-                        "context": "/t/carbon.super/pizzashack1/1.0.0",
+                        "context": "/pizzashack1/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T17:09:49Z"
@@ -381,7 +399,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f9",
                         "name": "pizzashackAPI11",
-                        "context": "/t/carbon.super/pizzashack11/1.0.0",
+                        "context": "/pizzashack11/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -389,7 +407,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f1",
                         "name": "pizzashackAPI12",
-                        "context": "/t/carbon.super/pizzashack12/1.0.0",
+                        "context": "/pizzashack12/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -397,7 +415,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f3",
                         "name": "pizzashackAPI13",
-                        "context": "/t/carbon.super/pizzashack13/1.0.0",
+                        "context": "/pizzashack13/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -422,7 +440,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f3",
                         "name": "pizzashackAPI13",
-                        "context": "/t/carbon.super/pizzashack13/1.0.0",
+                        "context": "/pizzashack13/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -430,7 +448,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f1",
                         "name": "pizzashackAPI12",
-                        "context": "/t/carbon.super/pizzashack12/1.0.0",
+                        "context": "/pizzashack12/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -438,7 +456,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f9",
                         "name": "pizzashackAPI11",
-                        "context": "/t/carbon.super/pizzashack11/1.0.0",
+                        "context": "/pizzashack11/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -446,7 +464,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "7b7db1f0-0a9a-4f72-9f9d-5a1696d590c1",
                         "name": "pizzashackAPI1",
-                        "context": "/t/carbon.super/pizzashack1/1.0.0",
+                        "context": "/pizzashack1/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T17:09:49Z"
@@ -454,7 +472,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5e8",
                         "name": "pizzashackAPI",
-                        "context": "/t/carbon.super/pizzashack/1.0.0",
+                        "context": "/pizzashack/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -462,7 +480,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "8a1eb4f9-efab-4682-a051-4df4050812d2",
                         "name": "DemoAPI",
-                        "context": "/t/carbon.super/demoapi/1.0.0",
+                        "context": "/demoapi/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-14T18:51:26Z"
@@ -487,7 +505,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5e8",
                         "name": "pizzashackAPI",
-                        "context": "/t/carbon.super/pizzashack/1.0.0",
+                        "context": "/pizzashack/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -495,7 +513,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f9",
                         "name": "pizzashackAPI11",
-                        "context": "/t/carbon.super/pizzashack11/1.0.0",
+                        "context": "/pizzashack11/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -503,7 +521,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f1",
                         "name": "pizzashackAPI12",
-                        "context": "/t/carbon.super/pizzashack12/1.0.0",
+                        "context": "/pizzashack12/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -511,7 +529,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f3",
                         "name": "pizzashackAPI13",
-                        "context": "/t/carbon.super/pizzashack13/1.0.0",
+                        "context": "/pizzashack13/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -519,7 +537,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "7b7db1f0-0a9a-4f72-9f9d-5a1696d590c1",
                         "name": "pizzashackAPI1",
-                        "context": "/t/carbon.super/pizzashack1/1.0.0",
+                        "context": "/pizzashack1/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T17:09:49Z"
@@ -527,7 +545,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "8a1eb4f9-efab-4682-a051-4df4050812d2",
                         "name": "DemoAPI",
-                        "context": "/t/carbon.super/demoapi/1.0.0",
+                        "context": "/demoapi/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-14T18:51:26Z"
@@ -552,7 +570,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "8a1eb4f9-efab-4682-a051-4df4050812d2",
                         "name": "DemoAPI",
-                        "context": "/t/carbon.super/demoapi/1.0.0",
+                        "context": "/demoapi/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-14T18:51:26Z"
@@ -560,7 +578,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "7b7db1f0-0a9a-4f72-9f9d-5a1696d590c1",
                         "name": "pizzashackAPI1",
-                        "context": "/t/carbon.super/pizzashack1/1.0.0",
+                        "context": "/pizzashack1/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T17:09:49Z"
@@ -568,7 +586,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5e8",
                         "name": "pizzashackAPI",
-                        "context": "/t/carbon.super/pizzashack/1.0.0",
+                        "context": "/pizzashack/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -576,7 +594,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f9",
                         "name": "pizzashackAPI11",
-                        "context": "/t/carbon.super/pizzashack11/1.0.0",
+                        "context": "/pizzashack11/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -584,7 +602,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f1",
                         "name": "pizzashackAPI12",
-                        "context": "/t/carbon.super/pizzashack12/1.0.0",
+                        "context": "/pizzashack12/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -592,7 +610,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f3",
                         "name": "pizzashackAPI13",
-                        "context": "/t/carbon.super/pizzashack13/1.0.0",
+                        "context": "/pizzashack13/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -618,7 +636,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "8a1eb4f9-efab-4682-a051-4df4050812d2",
                         "name": "DemoAPI",
-                        "context": "/t/carbon.super/demoapi/1.0.0",
+                        "context": "/demoapi/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-14T18:51:26Z"
@@ -626,7 +644,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5e8",
                         "name": "pizzashackAPI",
-                        "context": "/t/carbon.super/pizzashack/1.0.0",
+                        "context": "/pizzashack/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -634,7 +652,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "7b7db1f0-0a9a-4f72-9f9d-5a1696d590c1",
                         "name": "pizzashackAPI1",
-                        "context": "/t/carbon.super/pizzashack1/1.0.0",
+                        "context": "/pizzashack1/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T17:09:49Z"
@@ -659,7 +677,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f9",
                         "name": "pizzashackAPI11",
-                        "context": "/t/carbon.super/pizzashack11/1.0.0",
+                        "context": "/pizzashack11/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -667,7 +685,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f1",
                         "name": "pizzashackAPI12",
-                        "context": "/t/carbon.super/pizzashack12/1.0.0",
+                        "context": "/pizzashack12/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -675,7 +693,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f3",
                         "name": "pizzashackAPI13",
-                        "context": "/t/carbon.super/pizzashack13/1.0.0",
+                        "context": "/pizzashack13/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -716,7 +734,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5e8",
                         "name": "pizzashackAPI",
-                        "context": "/t/carbon.super/pizzashack/1.0.0",
+                        "context": "/pizzashack/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -724,7 +742,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "7b7db1f0-0a9a-4f72-9f9d-5a1696d590c1",
                         "name": "pizzashackAPI1",
-                        "context": "/t/carbon.super/pizzashack1/1.0.0",
+                        "context": "/pizzashack1/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T17:09:49Z"
@@ -732,7 +750,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f9",
                         "name": "pizzashackAPI11",
-                        "context": "/t/carbon.super/pizzashack11/1.0.0",
+                        "context": "/pizzashack11/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -740,7 +758,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f1",
                         "name": "pizzashackAPI12",
-                        "context": "/t/carbon.super/pizzashack12/1.0.0",
+                        "context": "/pizzashack12/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -748,7 +766,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f3",
                         "name": "pizzashackAPI13",
-                        "context": "/t/carbon.super/pizzashack13/1.0.0",
+                        "context": "/pizzashack13/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -773,7 +791,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5e8",
                         "name": "pizzashackAPI",
-                        "context": "/t/carbon.super/pizzashack/1.0.0",
+                        "context": "/pizzashack/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -781,7 +799,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "7b7db1f0-0a9a-4f72-9f9d-5a1696d590c1",
                         "name": "pizzashackAPI1",
-                        "context": "/t/carbon.super/pizzashack1/1.0.0",
+                        "context": "/pizzashack1/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T17:09:49Z"
@@ -789,7 +807,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f9",
                         "name": "pizzashackAPI11",
-                        "context": "/t/carbon.super/pizzashack11/1.0.0",
+                        "context": "/pizzashack11/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -797,7 +815,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f1",
                         "name": "pizzashackAPI12",
-                        "context": "/t/carbon.super/pizzashack12/1.0.0",
+                        "context": "/pizzashack12/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -805,7 +823,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f3",
                         "name": "pizzashackAPI13",
-                        "context": "/t/carbon.super/pizzashack13/1.0.0",
+                        "context": "/pizzashack13/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -830,7 +848,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "8a1eb4f9-efab-4682-a051-4df4050812d2",
                         "name": "DemoAPI",
-                        "context": "/t/carbon.super/demoapi/1.0.0",
+                        "context": "/demoapi/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-14T18:51:26Z"
@@ -838,7 +856,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5e8",
                         "name": "pizzashackAPI",
-                        "context": "/t/carbon.super/pizzashack/1.0.0",
+                        "context": "/pizzashack/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -846,7 +864,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "7b7db1f0-0a9a-4f72-9f9d-5a1696d590c1",
                         "name": "pizzashackAPI1",
-                        "context": "/t/carbon.super/pizzashack1/1.0.0",
+                        "context": "/pizzashack1/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T17:09:49Z"
@@ -854,7 +872,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f9",
                         "name": "pizzashackAPI11",
-                        "context": "/t/carbon.super/pizzashack11/1.0.0",
+                        "context": "/pizzashack11/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -862,7 +880,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f1",
                         "name": "pizzashackAPI12",
-                        "context": "/t/carbon.super/pizzashack12/1.0.0",
+                        "context": "/pizzashack12/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -870,7 +888,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f3",
                         "name": "pizzashackAPI13",
-                        "context": "/t/carbon.super/pizzashack13/1.0.0",
+                        "context": "/pizzashack13/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -1756,7 +1774,7 @@ function testDataGeneratedSwaggerDefinition() returns map<[API, string?, json|co
 @test:Config {dataProvider: validateExistenceDataProvider}
 function testValidateAPIExistence(string query, anydata expected) {
     APIClient apiClient = new;
-    test:assertEquals(apiClient.validateAPIExistence(query), expected);
+    test:assertEquals(apiClient.validateAPIExistence(query,organiztion1), expected);
 }
 
 function validateExistenceDataProvider() returns map<[string, NotFoundError|BadRequestError|http:Ok]> {
@@ -1781,7 +1799,7 @@ function testCreateAPIFromService(string serviceUUId, string apiUUID, [model:Con
     test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/servicemappings", servicemapping[0]).thenReturn(servicemapping[1]);
     test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis", k8sAPI[0]).thenReturn(k8sAPI[1]);
     APIClient apiClient = new;
-    test:assertEquals(apiClient.createAPIFromService(serviceUUId, api, "carbon.super"), expected);
+    test:assertEquals(apiClient.createAPIFromService(serviceUUId, api, organiztion1), expected);
 }
 
 function createApiFromServiceDataProvider() returns map<[string, string, [model:ConfigMap, any], [model:Httproute, any], [model:K8sServiceMapping, any], [model:API, any], API, string, CreatedAPI|BadRequestError|InternalServerErrorError|commons:APKError]> {
@@ -1796,10 +1814,10 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
         context: "/pizzaAPI/1.0.0",
         'version: "1.0.0"
     };
-    string apiUUID = getUniqueIdForAPI(api.name, api.'version, "carbon.super");
+    string apiUUID = getUniqueIdForAPI(api.name, api.'version, organiztion1);
     model:ConfigMap configmap = getMockConfigMap1(apiUUID, api);
     http:Response mockConfigMapResponse = getMockConfigMapResponse(configmap.clone());
-    model:Httproute httpRoute = getMockHttpRoute(api, apiUUID);
+    model:Httproute httpRoute = getMockHttpRoute(api, apiUUID,organiztion1);
     http:Response httpRouteResponse = getMockHttpRouteResponse(httpRoute.clone());
     model:K8sServiceMapping mockServiceMappingRequest = getMockServiceMappingRequest(api, apiUUID);
     model:API mockAPI = getMockAPI(api, apiUUID, "carbon.super");
@@ -1818,7 +1836,7 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
         body: {
             "id": k8sAPIUUID1,
             "name": "PizzaAPI",
-            "context": "/t/carbon.super/pizzaAPI/1.0.0",
+            "context": "/pizzaAPI/1.0.0",
             "version": "1.0.0",
             "type": "REST"
         }
@@ -1859,7 +1877,7 @@ function getMockAPI(API api, string apiUUID, string organization) returns model:
             "apiDisplayName": api.name,
             "apiType": "REST",
             "apiVersion": api.'version,
-            "context": apiClient.returnFullContext(api.context, api.'version, organization),
+            "context": apiClient.returnFullContext(api.context, api.'version),
             "organization": organization,
             "definitionFileRef": apiUUID + "-definition",
             "prodHTTPRouteRef": apiUUID + "-production"
@@ -1879,7 +1897,7 @@ function getMockAPI1(API api, string apiUUID, string organization) returns model
             "apiDisplayName": api.name,
             "apiType": "REST",
             "apiVersion": api.'version,
-            "context": apiClient.returnFullContext(api.context, api.'version, organization),
+            "context": apiClient.returnFullContext(api.context, api.'version),
             "organization": organization,
             "definitionFileRef": apiUUID + "-definition",
             "sandHTTPRouteRef": apiUUID + "-sandbox"
@@ -1902,36 +1920,36 @@ function getMockServiceMappingResponse(model:K8sServiceMapping serviceMapping) r
     return response;
 }
 
-function getMockHttpRoute(API api, string apiUUID) returns model:Httproute {
+function getMockHttpRoute(API api, string apiUUID,commons:Organization organiztion) returns model:Httproute {
     return {
         "apiVersion": "gateway.networking.k8s.io/v1beta1",
         "kind": "HTTPRoute",
         "metadata": {"name": apiUUID + "-production", "namespace": "apk-platform", "labels": {"api-name": api.name, "api-version": api.'version}},
         "spec": {
-            "hostnames": ["gw.wso2.com"],
+            "hostnames": [string:concat(organiztion.uuid,".","gw.wso2.com")],
             "rules": [
                 {
-                    "matches": [{"path": {"type": "RegularExpression", "value": "/t/carbon.super/pizzaAPI/1.0.0(.*)"}, "method": "GET"}],
+                    "matches": [{"path": {"type": "RegularExpression", "value": "/pizzaAPI/1.0.0(.*)"}, "method": "GET"}],
                     "filters": [{"type": "URLRewrite", "urlRewrite": {"path": {"type": "ReplaceFullPath", "replaceFullPath": "\\1"}}}],
                     "backendRefs": [{"weight": 1, "group": "", "kind": "Service", "name": "backend", "namespace": "apk", "port": 80}]
                 },
                 {
-                    "matches": [{"path": {"type": "RegularExpression", "value": "/t/carbon.super/pizzaAPI/1.0.0(.*)"}, "method": "PUT"}],
+                    "matches": [{"path": {"type": "RegularExpression", "value": "/pizzaAPI/1.0.0(.*)"}, "method": "PUT"}],
                     "filters": [{"type": "URLRewrite", "urlRewrite": {"path": {"type": "ReplaceFullPath", "replaceFullPath": "\\1"}}}],
                     "backendRefs": [{"weight": 1, "group": "", "kind": "Service", "name": "backend", "namespace": "apk", "port": 80}]
                 },
                 {
-                    "matches": [{"path": {"type": "RegularExpression", "value": "/t/carbon.super/pizzaAPI/1.0.0(.*)"}, "method": "POST"}],
+                    "matches": [{"path": {"type": "RegularExpression", "value": "/pizzaAPI/1.0.0(.*)"}, "method": "POST"}],
                     "filters": [{"type": "URLRewrite", "urlRewrite": {"path": {"type": "ReplaceFullPath", "replaceFullPath": "\\1"}}}],
                     "backendRefs": [{"weight": 1, "group": "", "kind": "Service", "name": "backend", "namespace": "apk", "port": 80}]
                 },
                 {
-                    "matches": [{"path": {"type": "RegularExpression", "value": "/t/carbon.super/pizzaAPI/1.0.0(.*)"}, "method": "DELETE"}],
+                    "matches": [{"path": {"type": "RegularExpression", "value": "/pizzaAPI/1.0.0(.*)"}, "method": "DELETE"}],
                     "filters": [{"type": "URLRewrite", "urlRewrite": {"path": {"type": "ReplaceFullPath", "replaceFullPath": "\\1"}}}],
                     "backendRefs": [{"weight": 1, "group": "", "kind": "Service", "name": "backend", "namespace": "apk", "port": 80}]
                 },
                 {
-                    "matches": [{"path": {"type": "RegularExpression", "value": "/t/carbon.super/pizzaAPI/1.0.0(.*)"}, "method": "PATCH"}],
+                    "matches": [{"path": {"type": "RegularExpression", "value": "/pizzaAPI/1.0.0(.*)"}, "method": "PATCH"}],
                     "filters": [{"type": "URLRewrite", "urlRewrite": {"path": {"type": "ReplaceFullPath", "replaceFullPath": "\\1"}}}],
                     "backendRefs": [{"weight": 1, "group": "", "kind": "Service", "name": "backend", "namespace": "apk", "port": 80}]
                 }
@@ -1998,7 +2016,7 @@ function testCreateAPI(string apiUUID, string backenduuid, API api, model:Config
         test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/backendpolicies", backendPolicy[0]).thenReturn(backendPolicy[1]);
     }
     test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis", k8sApi).thenReturn(k8sapiResponse);
-    commons:APKError|CreatedAPI|BadRequestError aPI = apiClient.createAPI(api, (), "carbon.super");
+    commons:APKError|CreatedAPI|BadRequestError aPI = apiClient.createAPI(api, (), organiztion1);
     if aPI is BadRequestError || aPI is CreatedAPI {
         test:assertEquals(aPI, expected);
     } else if aPI is commons:APKError {
@@ -2022,8 +2040,8 @@ function getMockHttpRouteErrorResponse() returns http:Response {
     return response;
 }
 
-function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid, string 'type) returns model:Httproute {
-    string hostnames = 'type == PRODUCTION_TYPE ? "gw.wso2.com" : "sandbox.gw.wso2.com";
+function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid, string 'type,commons:Organization organization) returns model:Httproute {
+    string hostnames = 'type == PRODUCTION_TYPE ? string:concat(organization.uuid,".","gw.wso2.com") : string:concat(organization.uuid,".","sandbox.gw.wso2.com");
     return {
         "apiVersion": "gateway.networking.k8s.io/v1beta1",
         "kind": "HTTPRoute",
@@ -2038,7 +2056,7 @@ function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/t/carbon.super/pizzaAPI/1.0.0(.*)"
+                                "value": "/pizzaAPI/1.0.0(.*)"
                             },
                             "method": "GET"
                         }
@@ -2070,7 +2088,7 @@ function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/t/carbon.super/pizzaAPI/1.0.0(.*)"
+                                "value": "/pizzaAPI/1.0.0(.*)"
                             },
                             "method": "PUT"
                         }
@@ -2102,7 +2120,7 @@ function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/t/carbon.super/pizzaAPI/1.0.0(.*)"
+                                "value": "/pizzaAPI/1.0.0(.*)"
                             },
                             "method": "POST"
                         }
@@ -2134,7 +2152,7 @@ function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/t/carbon.super/pizzaAPI/1.0.0(.*)"
+                                "value": "/pizzaAPI/1.0.0(.*)"
                             },
                             "method": "DELETE"
                         }
@@ -2166,7 +2184,7 @@ function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/t/carbon.super/pizzaAPI/1.0.0(.*)"
+                                "value": "/pizzaAPI/1.0.0(.*)"
                             },
                             "method": "PATCH"
                         }
@@ -2242,9 +2260,9 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
         'version: "1.0.0"
     };
     BadRequestError contextAlreadyExistError = {body: {code: 90911, message: "API Context - " + contextAlreadyExist.context + " already exist.", description: "API Context " + contextAlreadyExist.context + " already exist."}};
-    string apiUUID = getUniqueIdForAPI(api.name, api.'version, "carbon.super");
-    string backenduuid = getBackendServiceUid(api, (), PRODUCTION_TYPE, "carbon.super");
-    string backenduuid1 = getBackendServiceUid(api, (), SANDBOX_TYPE, "carbon.super");
+    string apiUUID = getUniqueIdForAPI(api.name, api.'version, organiztion1);
+    string backenduuid = getBackendServiceUid(api, (), PRODUCTION_TYPE, organiztion1);
+    string backenduuid1 = getBackendServiceUid(api, (), SANDBOX_TYPE, organiztion1);
     string k8sapiUUID = uuid:createType1AsString();
     model:Service backendService = {
         metadata: {name: backenduuid, namespace: "apk-platform", labels: {"api-name": api.name, "api-version": api.'version}},
@@ -2294,10 +2312,10 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
     backendPolicies.push([backendPolicy, backendPolicyResponse]);
     backendPolicies.push([backendPolicy1, backendPolicy1Response]);
     model:ConfigMap configmap = getMockConfigMap1(apiUUID, api);
-    model:Httproute prodhttpRoute = getMockHttpRouteWithBackend(api, apiUUID, backenduuid, PRODUCTION_TYPE);
-    model:Httproute sandhttpRoute = getMockHttpRouteWithBackend(api, apiUUID, backenduuid1, SANDBOX_TYPE);
+    model:Httproute prodhttpRoute = getMockHttpRouteWithBackend(api, apiUUID, backenduuid, PRODUCTION_TYPE,organiztion1);
+    model:Httproute sandhttpRoute = getMockHttpRouteWithBackend(api, apiUUID, backenduuid1, SANDBOX_TYPE,organiztion1);
 
-    CreatedAPI createdAPI = {body: {name: "PizzaAPI", context: "/t/carbon.super/pizzaAPI/1.0.0", 'version: "1.0.0", id: k8sapiUUID}};
+    CreatedAPI createdAPI = {body: {name: "PizzaAPI", context: "/pizzaAPI/1.0.0", 'version: "1.0.0", id: k8sapiUUID}};
     commons:APKError productionEndpointNotSpecifiedError = error("Production Endpoint Not specified", message = "Endpoint Not specified", description = "Production Endpoint Not specified", code = 90911, statusCode = 400);
     commons:APKError sandboxEndpointNotSpecifiedError = error("Sandbox Endpoint Not specified", message = "Endpoint Not specified", description = "Sandbox Endpoint Not specified", code = 90911, statusCode = 400);
     commons:APKError k8sLevelError = error("Internal Error occured while deploying API", code = 909000, message

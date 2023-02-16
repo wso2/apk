@@ -45,4 +45,14 @@ public class OrgClient {
         }    
         return ;    
     }
+    public isolated function retrieveOrganizationByName(string orgName) returns model:Organization|(){
+        lock{
+            foreach model:Organization organization in organizationList {
+                if organization.spec.name==orgName{
+                    return organization.cloneReadOnly();
+                }
+            }
+        }    
+        return ;    
+    }
 }

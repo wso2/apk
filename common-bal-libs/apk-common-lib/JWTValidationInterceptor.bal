@@ -12,7 +12,9 @@ public service class JWTValidationInterceptor {
         self.jwtValidatorConfig = initializeJWTValidator(idpConfiguration.clone());
     }
     resource function 'default [string... path](http:RequestContext ctx, http:Request request, http:Caller caller) returns http:NextService|error? {
-
+        if path[0] == "health" {
+            return ctx.next();
+        }
         string|http:HeaderNotFoundError authorizationHeader = request.getHeader(self.idpConfiguration.authorizationHeader);
         if authorizationHeader is string {
             UserContext userContext = check self.validateJWT(authorizationHeader);
@@ -48,10 +50,16 @@ public service class JWTValidationInterceptor {
                     return apkError;
                 }
             } else {
-                //todo: consider default organization.
-                UserContext userContext = {username: <string>validatedJWT.sub};
-                userContext.claims = self.extractCustomClaims(validatedJWT);
-                return userContext;
+                // find default organization
+                Organization? retrievedorg = self.organizationResolver.retrieveOrganizationByName(DEFAULT_ORGANIZATION_NAME);
+                if retrievedorg is Organization {
+                    UserContext userContext = {username: <string>validatedJWT.sub, organization: retrievedorg};
+                    userContext.claims = self.extractCustomClaims(validatedJWT);
+                    return userContext;
+                } else {
+                    APKError apkError = error("Organization not found in APK system", code = 900952, description = "Organization not found in APK system", statusCode = 401, message = "Organization not found in APK system");
+                    return apkError;
+                }
             }
         }
         else {

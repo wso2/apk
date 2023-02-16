@@ -267,8 +267,8 @@ wso2:
             failureThreshold: 5
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: Always
-          image: wso2/runtime-domain-service:0.0.1-m4
+          imagePullPolicy: IfNotPresent
+          image: runtime-domain-service:0.0.1-SNAPSHOT
       adapter:
         appName: "adapter"
         deployment:

@@ -18,6 +18,7 @@
 import ballerina/websocket;
 import ballerina/lang.value;
 import runtime_domain_service.model as model;
+import wso2/apk_common_lib as commons;
 import ballerina/log;
 
 isolated map<map<model:API>> apilist = {};
@@ -84,9 +85,9 @@ public function getClient(string resourceVersion) returns websocket:Client|error
     );
 }
 
-isolated function getAPIs(string organization) returns model:API[] {
+isolated function getAPIs(commons:Organization organization) returns model:API[] {
     lock {
-        map<model:API>|error & readonly readOnlyAPImap = trap apilist.get(organization).cloneReadOnly();
+        map<model:API>|error & readonly readOnlyAPImap = trap apilist.get(organization.uuid).cloneReadOnly();
         if readOnlyAPImap is map<model:API> & readonly {
             return readOnlyAPImap.toArray();
         } else {
@@ -95,9 +96,9 @@ isolated function getAPIs(string organization) returns model:API[] {
     }
 }
 
-isolated function getAPI(string id, string organization) returns model:API|error {
+isolated function getAPI(string id, commons:Organization organization) returns model:API|error {
     lock {
-        map<model:API> & readonly apiMap = check trap apilist.get(organization).cloneReadOnly();
+        map<model:API> & readonly apiMap = check trap apilist.get(organization.uuid).cloneReadOnly();
         return check trap apiMap.get(id);
     }
 }
@@ -219,7 +220,7 @@ isolated function removeAPI(model:API api) {
     }
 }
 
-isolated function getAPIByNameAndNamespace(string name, string namespace, string organization) returns model:API|() {
+isolated function getAPIByNameAndNamespace(string name, string namespace, commons:Organization organization) returns model:API|() {
     foreach model:API api in getAPIs(organization) {
         if (api.metadata.name == name && api.metadata.namespace == namespace) {
             return api;
@@ -237,9 +238,9 @@ isolated function getAPIByNameAndNamespace(string name, string namespace, string
     return ();
 }
 
-isolated function isAPIVersionExist(string name, string 'newVersion, string organization) returns boolean {
+isolated function isAPIVersionExist(string name, string 'newVersion, commons:Organization organization) returns boolean {
     lock {
-        map<model:API>|error apiMap = trap apilist.get(organization);
+        map<model:API>|error apiMap = trap apilist.get(organization.uuid);
         if apiMap is map<model:API> {
             model:API[] & readonly readOnlyAPIList = apiMap.toArray().cloneReadOnly();
             foreach model:API & readonly api in readOnlyAPIList {

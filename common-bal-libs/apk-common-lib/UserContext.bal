@@ -5,6 +5,6 @@
 # + claims - Field Description
 public type UserContext record{|
     string username;
-    Organization organization?;
+    Organization organization;
     map<anydata> claims = {};
 |};

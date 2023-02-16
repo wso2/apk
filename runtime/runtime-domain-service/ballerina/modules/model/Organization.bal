@@ -49,6 +49,7 @@ public type Organization record {|
 # + name - name of organization.  
 # + displayName - displayname organization.  
 # + organizationClaimValue - organization claim value came from jwt.  
+# + serviceListingNamespaces - service listing namespaces.
 # + enabled - Organization enabld in system. 
 # + properties - additional properties.
 public type OrganizationSpec record {
@@ -56,7 +57,8 @@ public type OrganizationSpec record {
     string name;
     string displayName;
     string organizationClaimValue;
-    boolean enabled;
+    boolean enabled = true;
+    string[] serviceListingNamespaces = ["*"];
     OrganizationProperties[] properties = [];
 };
 

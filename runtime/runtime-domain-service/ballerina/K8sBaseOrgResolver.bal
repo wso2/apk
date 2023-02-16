@@ -8,17 +8,30 @@ public class K8sBaseOrgResolver {
         OrgClient orgClient = new;
         model:Organization? retrievedOrg = orgClient.retrieveOrganizationFromIDPClaimValue(organizationClaim);
         if retrievedOrg is model:Organization {
-            commons:Organization organization = {
-                displayName: retrievedOrg.spec.displayName,
-                name: retrievedOrg.spec.name,
-                organizationClaimValue: retrievedOrg.spec.organizationClaimValue,
-                uuid: retrievedOrg.spec.uuid,
-                enabled: retrievedOrg.spec.enabled,
-                properties: retrievedOrg.spec.properties
-            };
-            return organization;
+            return self.convertK8sOrgToGenericOrg(retrievedOrg);
         }
 
         return;
+    }
+
+    public isolated function retrieveOrganizationByName(string organizationName) returns commons:Organization? {
+        OrgClient orgClient = new;
+        model:Organization? organization = orgClient.retrieveOrganizationByName(organizationName);
+        if organization is model:Organization {
+            return self.convertK8sOrgToGenericOrg(organization);
+        }
+        return;
+    }
+    public isolated function convertK8sOrgToGenericOrg(model:Organization k8sOrganization) returns commons:Organization {
+        commons:Organization organization = {
+            displayName: k8sOrganization.spec.displayName,
+            name: k8sOrganization.spec.name,
+            organizationClaimValue: k8sOrganization.spec.organizationClaimValue,
+            uuid: k8sOrganization.spec.uuid,
+            enabled: k8sOrganization.spec.enabled,
+            properties: k8sOrganization.spec.properties,
+            serviceListingNamespaces: k8sOrganization.spec.serviceListingNamespaces
+        };
+        return organization;
     }
 }
