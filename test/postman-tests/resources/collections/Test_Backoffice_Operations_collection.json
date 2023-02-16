@@ -90,7 +90,7 @@
 							"    //parse the response JSON and test three properties",
 							"    const responseJson = pm.response.json();",
 							"    pm.expect(responseJson.name).equals(pm.collectionVariables.get('APINameTest1'));",
-							"    pm.expect(responseJson.context).equals( \"/t/carbon.super\"+pm.collectionVariables.get('contextTest1')+\"/1.0.0\");",
+							"    pm.expect(responseJson.context).equals( pm.collectionVariables.get('contextTest1')+\"/1.0.0\");",
 							"    pm.expect(responseJson.version).equals(\"1.0.0\");",
 							"    pm.expect(responseJson.type).equals(\"REST\");",
 							"    pm.collectionVariables.set(\"runtimeAPIUUID\",responseJson.id);",
