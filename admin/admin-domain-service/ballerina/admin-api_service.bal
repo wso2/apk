@@ -269,8 +269,16 @@ service /api/am/admin on ep0 {
     // }
     // resource function post 'key\-managers/discover(@http:Payload json payload) returns KeyManagerWellKnownResponse {
     // }
-    // resource function get organizations() returns OrganizationList {
-    // }
+    isolated resource function get organizations() returns OrganizationList|BadRequestError|InternalServerErrorError {
+        OrganizationList|APKError getAllOrganizationList = getAllOrganization();
+        if getAllOrganizationList is OrganizationList {
+            return getAllOrganizationList;
+        } else {
+            return handleAPKError(getAllOrganizationList);
+        }
+    }
+
+
     isolated resource function post organizations(@http:Payload Organization payload) returns CreatedOrganization|BadRequestError|InternalServerErrorError {
         CreatedOrganization|APKError createdOrganization = addOrganization(payload);
         if createdOrganization is CreatedOrganization {
@@ -279,8 +287,16 @@ service /api/am/admin on ep0 {
             return handleAPKError(createdOrganization);
         }
     }
-    // resource function get organizations/[string organizationId]() returns Organization|BadRequestError|NotFoundError|NotAcceptableError {
-    // }
+
+    isolated resource function get organizations/[string organizationId]() returns Organization|BadRequestError|NotFoundError|NotAcceptableError|InternalServerErrorError {
+        Organization|APKError getOrganization = getOrganizationById(organizationId);
+        if getOrganization is Organization {
+            return getOrganization;
+        } else {
+            return handleAPKError(getOrganization);
+        }
+    }
+
     isolated resource function put organizations/[string organizationId](@http:Payload Organization payload) returns Organization|BadRequestError|NotFoundError|InternalServerErrorError {
         Organization|APKError updateOrganization = updatedOrganization(organizationId, payload);
         if updateOrganization is Organization {
@@ -289,10 +305,23 @@ service /api/am/admin on ep0 {
             return handleAPKError(updateOrganization);
         }
     }
-    // resource function delete organizations/[string organizationId]() returns http:Ok|NotFoundError {
-    // }
-    // resource function get 'organization\-info/[string claimValue]() returns Organization|BadRequestError|NotFoundError {
-    // }
+
+    resource function delete organizations/[string organizationId]() returns http:Ok|NotFoundError|BadRequestError|InternalServerErrorError {
+        boolean|APKError deleteOrganization = removeOrganization(organizationId);
+        if deleteOrganization is APKError {
+            return handleAPKError(deleteOrganization);
+        } else {
+            return http:OK;
+        }
+    }
+    resource function get 'organization\-info() returns Organization|BadRequestError|NotFoundError|InternalServerErrorError {
+        Organization|APKError getOrganization = getOrganizationByOrganizationClaim();
+        if getOrganization is Organization {
+            return getOrganization;
+        } else {
+            return handleAPKError(getOrganization);
+        }
+    }
 }
 
 isolated function handleAPKError(APKError errorDetail) returns InternalServerErrorError|BadRequestError {

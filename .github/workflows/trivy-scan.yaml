@@ -7,37 +7,10 @@ jobs:
   scan-backoffice-domain-service:
     runs-on: ubuntu-latest
     steps:
-      - name: Cache Ballerina.
-        uses: actions/cache@v3
-        id: cache
-        with:
-          path: "ballerina-dist/*.deb"
-          key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
-      - name: Download Ballerina distribution.
-        shell: sh
-        run: |
-          mkdir -p ballerina-dist
-          wget 'https://dist.ballerina.io/downloads/2201.3.0/ballerina-2201.3.0-swan-lake-linux-x64.deb' -P ballerina-dist
-        if: steps.cache.outputs.cache-hit != 'true'
-      - name: Install Ballerina distribution.
-        shell: sh
-        run: "sudo dpkg -i ballerina-dist/ballerina-2201.3.0-swan-lake-linux-x64.deb"
-      - name: Verify Ballerina Version
-        shell: sh
-        run: "bal -v"
-      - name: Checkout apk-repo
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: "0"
-          path: apk-repo
-      - name: Build backoffice-domain-service.
-        run: |
-          cd apk-repo/backoffice/backoffice-domain-service
-          gradle build
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'backoffice-domain-service:0.0.1-SNAPSHOT'
+          image-ref: 'wso2/backoffice-domain-service:latest'
           format: 'table'
           ignore-unfixed: true
           vuln-type: 'os,library'
@@ -45,37 +18,10 @@ jobs:
   scan-runtime-domain-service:
     runs-on: ubuntu-latest
     steps:
-      - name: Cache Ballerina.
-        uses: actions/cache@v3
-        id: cache
-        with:
-          path: "ballerina-dist/*.deb"
-          key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
-      - name: Download Ballerina distribution.
-        shell: sh
-        run: |
-          mkdir -p ballerina-dist
-          wget 'https://dist.ballerina.io/downloads/2201.3.0/ballerina-2201.3.0-swan-lake-linux-x64.deb' -P ballerina-dist
-        if: steps.cache.outputs.cache-hit != 'true'
-      - name: Install Ballerina distribution.
-        shell: sh
-        run: "sudo dpkg -i ballerina-dist/ballerina-2201.3.0-swan-lake-linux-x64.deb"
-      - name: Verify Ballerina Version
-        shell: sh
-        run: "bal -v"
-      - name: Checkout apk-repo
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: "0"
-          path: apk-repo
-      - name: Build runtime-domain-service.
-        run: |
-          cd apk-repo/runtime/runtime-domain-service
-          gradle build
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'runtime-domain-service:0.0.1-SNAPSHOT'
+          image-ref: 'wso2/runtime-domain-service:latest'
           format: 'table'
           ignore-unfixed: true
           vuln-type: 'os,library'
@@ -83,37 +29,10 @@ jobs:
   scan-admin-domain-service:
     runs-on: ubuntu-latest
     steps:
-      - name: Cache Ballerina.
-        uses: actions/cache@v3
-        id: cache
-        with:
-          path: "ballerina-dist/*.deb"
-          key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
-      - name: Download Ballerina distribution.
-        shell: sh
-        run: |
-          mkdir -p ballerina-dist
-          wget 'https://dist.ballerina.io/downloads/2201.3.0/ballerina-2201.3.0-swan-lake-linux-x64.deb' -P ballerina-dist
-        if: steps.cache.outputs.cache-hit != 'true'
-      - name: Install Ballerina distribution.
-        shell: sh
-        run: "sudo dpkg -i ballerina-dist/ballerina-2201.3.0-swan-lake-linux-x64.deb"
-      - name: Verify Ballerina Version
-        shell: sh
-        run: "bal -v"
-      - name: Checkout apk-repo
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: "0"
-          path: apk-repo
-      - name: Build admin-domain-service.
-        run: |
-          cd apk-repo/admin/admin-domain-service
-          gradle build
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'admin-domain-service:0.0.1-SNAPSHOT'
+          image-ref: 'wso2/admin-domain-service:latest'
           format: 'table'
           ignore-unfixed: true
           vuln-type: 'os,library'
@@ -121,37 +40,32 @@ jobs:
   scan-devportal-domain-service:
     runs-on: ubuntu-latest
     steps:
-      - name: Cache Ballerina.
-        uses: actions/cache@v3
-        id: cache
-        with:
-          path: "ballerina-dist/*.deb"
-          key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
-      - name: Download Ballerina distribution.
-        shell: sh
-        run: |
-          mkdir -p ballerina-dist
-          wget 'https://dist.ballerina.io/downloads/2201.3.0/ballerina-2201.3.0-swan-lake-linux-x64.deb' -P ballerina-dist
-        if: steps.cache.outputs.cache-hit != 'true'
-      - name: Install Ballerina distribution.
-        shell: sh
-        run: "sudo dpkg -i ballerina-dist/ballerina-2201.3.0-swan-lake-linux-x64.deb"
-      - name: Verify Ballerina Version
-        shell: sh
-        run: "bal -v"
-      - name: Checkout apk-repo
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: "0"
-          path: apk-repo
-      - name: Build devportal-domain-service.
-        run: |
-          cd apk-repo/devportal/devportal-domain-service
-          gradle build
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'devportal-domain-service:0.0.1-SNAPSHOT'
+          image-ref: 'wso2/devportal-domain-service:latest'
+          format: 'table'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'                 
+  scan-idp-domain-service:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'wso2/idp-domain-service:latest'
+          format: 'table'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'                 
+  scan-idp-ui-service:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'wso2/idp-ui:latest'
           format: 'table'
           ignore-unfixed: true
           vuln-type: 'os,library'
@@ -159,27 +73,10 @@ jobs:
   scan-adapter:
     runs-on: ubuntu-latest
     steps:
-      - name: Install Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: "1.19"
-      - name: Install Revive
-        shell: sh
-        run: |
-          go install github.com/mgechev/revive@latest
-      - name: Checkout apk-repo
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: "0"
-          path: apk-repo
-      - name: Build adapter
-        run: |
-          cd apk-repo/adapter
-          gradle build
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'adapter:0.0.1-SNAPSHOT'
+          image-ref: 'wso2/adapter:latest'
           format: 'table'
           ignore-unfixed: true
           vuln-type: 'os,library'
@@ -187,27 +84,10 @@ jobs:
   scan-management-server:
     runs-on: ubuntu-latest
     steps:
-      - name: Install Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: "1.19"
-      - name: Install Revive
-        shell: sh
-        run: |
-          go install github.com/mgechev/revive@latest
-      - name: Checkout apk-repo
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: "0"
-          path: apk-repo
-      - name: Build management-server.
-        run: |
-          cd apk-repo/management-server
-          gradle build
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'management-server:0.0.1-SNAPSHOT'
+          image-ref: 'wso2/management-server:latest'
           format: 'table'
           ignore-unfixed: true
           vuln-type: 'os,library'
@@ -215,19 +95,10 @@ jobs:
   scan-router:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout apk-repo
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: "0"
-          path: apk-repo
-      - name: Build router.
-        run: |
-          cd apk-repo/gateway/router
-          gradle build
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'router:0.0.1-SNAPSHOT'
+          image-ref: 'wso2/router:latest'
           format: 'table'
           ignore-unfixed: true
           vuln-type: 'os,library'
@@ -235,19 +106,10 @@ jobs:
   scan-enforcer:
       runs-on: ubuntu-latest
       steps:
-        - name: Checkout apk-repo
-          uses: actions/checkout@v3
-          with:
-            fetch-depth: "0"
-            path: apk-repo
-        - name: Build enforcer.
-          run: |
-            cd apk-repo/gateway/enforcer
-            gradle build
         - name: Run Trivy vulnerability scanner
           uses: aquasecurity/trivy-action@master
           with:
-            image-ref: 'enforcer:0.0.1-SNAPSHOT'
+            image-ref: 'wso2/enforcer:latest'
             format: 'table'
             ignore-unfixed: true
             vuln-type: 'os,library'

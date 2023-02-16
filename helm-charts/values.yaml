@@ -37,6 +37,7 @@ wso2:
         config:
           issuer: "https://idp.am.wso2.com/token"
           keyId: "gateway_certificate_alias"
+          hostname: "idp.am.wso2.com"
           loginPageURl: "https://idp.am.wso2.com:9095/authenticationEndpoint/login"
           loginErrorPageUrl: "https://idp.am.wso2.com:9095/authenticationEndpoint/error"
           loginCallBackURl: "https://idp.am.wso2.com:9095/authenticationEndpoint/login-callback"
@@ -65,7 +66,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/idp-domain-service:0.0.1-m4
+          image: wso2/idp-domain-service:latest
       idpui:
         appName: "idp-ui"
         deployment:

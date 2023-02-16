@@ -15,29 +15,31 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-import ballerina/uuid;
-
 
 # Description
 #
+# + hostname - Field Description  
 # + loginPageURl - Field Description  
 # + loginErrorPageUrl - Field Description  
 # + loginCallBackURl - Field Description  
 # + user - Field Description  
-# + signingKeyStore - Field Description  
-# + publicKey - Field Description  
+# + keyStores - Field Description  
 # + fileBaseApp - Field Description  
 # + tokenIssuerConfiguration - Field Description
 public type IDPConfiguration record {|
-
+    string hostname = "localhost:9443";
     string loginPageURl;
     string loginErrorPageUrl;
     string loginCallBackURl;
     User[] user = [];
-    KeyStoreConfiguration signingKeyStore = {path: "/home/wso2apk/idp/security/wso2carbon.key"};
-    KeyStoreConfiguration publicKey = {path: "/home/wso2apk/idp/security/wso2carbon.pem"};
+    KeyStores keyStores = {};
     FileBaseOAuthapps[] fileBaseApp = [];
     TokenIssuerConfiguration tokenIssuerConfiguration = {};
+|};
+
+public type KeyStores record {|
+    CertKey signing = {keyFile: "/home/wso2apk/idp/security/wso2carbon.key", certFile: "/home/wso2apk/idp/security/wso2carbon.pem"};
+    CertKey tls = {keyFile: "/home/wso2apk/idp/security/tls.key",certFile: "/home/wso2apk/idp/security/tls.crt"};
 |};
 
 # Description
@@ -53,9 +55,14 @@ public type User record {|
     boolean superAdmin = false;
 |};
 
-public type KeyStoreConfiguration record {|
-    string id = uuid:createType1AsString();
-    string path;
+# Represents combination of certificate, private key and private key password if encrypted.
+#
+# + certFile - A file containing the certificate
+# + keyFile - A file containing the private key in PKCS8 format
+# + keyPassword - Password of the private key if it is encrypted
+public type CertKey record {|
+    string certFile;
+    string keyFile;
     string keyPassword?;
 |};
 
