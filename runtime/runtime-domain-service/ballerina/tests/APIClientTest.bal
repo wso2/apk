@@ -329,7 +329,7 @@ public function apiDefinitionDataProvider() returns map<[string, json|NotFoundEr
         "2": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e9", notfound],
         "3": ["c5ab2423-b9e8-432b-92e8-35e6907ed5f9", mockpizzashackAPI11Definition()],
         "4": ["c5ab2423-b9e8-432b-92e8-35e6907ed5f1", mockPizzashackAPI12Definition()],
-        "5": ["7b7db1f0-0a9a-4f72-9f9d-5a1696d590c1", mockPizzaShackAPI1Definition()],
+        "5": ["7b7db1f0-0a9a-4f72-9f9d-5a1696d590c1", mockPizzaShackAPI1Definition(organiztion1.uuid)],
         "6": ["c5ab2423-b9e8-432b-92e8-35e6907ed5f3", internalError]
 
     };
@@ -1820,7 +1820,7 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
     model:Httproute httpRoute = getMockHttpRoute(api, apiUUID,organiztion1);
     http:Response httpRouteResponse = getMockHttpRouteResponse(httpRoute.clone());
     model:K8sServiceMapping mockServiceMappingRequest = getMockServiceMappingRequest(api, apiUUID);
-    model:API mockAPI = getMockAPI(api, apiUUID, "carbon.super");
+    model:API mockAPI = getMockAPI(api, apiUUID, organiztion1.uuid);
     http:Response mockAPIResponse = getMockAPIResponse(mockAPI.clone(), k8sAPIUUID1);
     http:Response serviceMappingResponse = getMockServiceMappingResponse(mockServiceMappingRequest.clone());
     BadRequestError nameAlreadyExistError = {body: {code: 90911, message: "API Name - " + alreadyNameExist.name + " already exist.", description: "API Name - " + alreadyNameExist.name + " already exist."}};
@@ -2337,8 +2337,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             (),
             services,
             backendPolicies,
-            getMockAPI(api, apiUUID, "carbon.super"),
-            getMockAPIResponse(getMockAPI(api, apiUUID, "carbon.super"), k8sapiUUID),
+            getMockAPI(api, apiUUID, organiztion1.uuid),
+            getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
             k8sapiUUID,
             createdAPI
         ]
@@ -2355,8 +2355,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             (),
             services,
             backendPolicies,
-            getMockAPI(api, apiUUID, "carbon.super"),
-            getMockAPIResponse(getMockAPI(api, apiUUID, "carbon.super"), k8sapiUUID),
+            getMockAPI(api, apiUUID, organiztion1.uuid),
+            getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
             k8sapiUUID,
             nameAlreadyExistError
         ],
@@ -2372,8 +2372,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             (),
             services,
             backendPolicies,
-            getMockAPI(api, apiUUID, "carbon.super"),
-            getMockAPIResponse(getMockAPI(api, apiUUID, "carbon.super"), k8sapiUUID),
+            getMockAPI(api, apiUUID, organiztion1.uuid),
+            getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
             k8sapiUUID,
             contextAlreadyExistError
         ],
@@ -2389,8 +2389,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             getMockHttpRouteResponse(sandhttpRoute.clone()),
             services1,
             backendPolicies,
-            getMockAPI1(api, apiUUID, "carbon.super"),
-            getMockAPIResponse(getMockAPI1(api, apiUUID, "carbon.super"), k8sapiUUID),
+            getMockAPI1(api, apiUUID, organiztion1.uuid),
+            getMockAPIResponse(getMockAPI1(api, apiUUID, organiztion1.uuid), k8sapiUUID),
             k8sapiUUID,
             createdAPI
         ]
@@ -2407,8 +2407,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             (),
             services,
             backendPolicies,
-            getMockAPI(api, apiUUID, "carbon.super"),
-            getMockAPIResponse(getMockAPI(api, apiUUID, "carbon.super"), k8sapiUUID),
+            getMockAPI(api, apiUUID, organiztion1.uuid),
+            getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
             k8sapiUUID,
             productionEndpointNotSpecifiedError.toBalString()
         ],
@@ -2424,8 +2424,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             (),
             services,
             backendPolicies,
-            getMockAPI(api, apiUUID, "carbon.super"),
-            getMockAPIResponse(getMockAPI(api, apiUUID, "carbon.super"), k8sapiUUID),
+            getMockAPI(api, apiUUID, organiztion1.uuid),
+            getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
             k8sapiUUID,
             sandboxEndpointNotSpecifiedError.toBalString()
         ]
@@ -2442,8 +2442,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             (),
             services,
             backendPolicies,
-            getMockAPI(api, apiUUID, "carbon.super"),
-            getMockAPIResponse(getMockAPI(api, apiUUID, "carbon.super"), k8sapiUUID),
+            getMockAPI(api, apiUUID, organiztion1.uuid),
+            getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
             k8sapiUUID,
             k8sLevelError.toBalString()
         ]
@@ -2460,8 +2460,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             getMockHttpRouteErrorResponse(),
             services1,
             backendPolicies,
-            getMockAPI(api, apiUUID, "carbon.super"),
-            getMockAPIResponse(getMockAPI(api, apiUUID, "carbon.super"), k8sapiUUID),
+            getMockAPI(api, apiUUID, organiztion1.uuid),
+            getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
             k8sapiUUID,
             k8sLevelError.toBalString()
         ]
@@ -2478,8 +2478,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             (),
             services,
             backendPolicies,
-            getMockAPI(api, apiUUID, "carbon.super"),
-            getMockAPIResponse(getMockAPI(api, apiUUID, "carbon.super"), k8sapiUUID),
+            getMockAPI(api, apiUUID, organiztion1.uuid),
+            getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
             k8sapiUUID,
             k8sLevelError.toBalString()
         ]
@@ -2496,8 +2496,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             (),
             servicesError,
             backendPolicies,
-            getMockAPI(api, apiUUID, "carbon.super"),
-            getMockAPIResponse(getMockAPI(api, apiUUID, "carbon.super"), k8sapiUUID),
+            getMockAPI(api, apiUUID, organiztion1.uuid),
+            getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
             k8sapiUUID,
             k8sLevelError.toBalString()
         ]
@@ -2514,7 +2514,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             (),
             services,
             backendPolicies,
-            getMockAPI(api, apiUUID, "carbon.super"),
+            getMockAPI(api, apiUUID, organiztion1.uuid),
             getMockAPIErrorResponse(),
             k8sapiUUID,
             k8sLevelError.toBalString()
@@ -2532,7 +2532,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             (),
             services,
             backendPolicies,
-            getMockAPI(api, apiUUID, "carbon.super"),
+            getMockAPI(api, apiUUID, organiztion1.uuid),
             getMockAPIErrorNameExist(),
             k8sapiUUID,
             invalidAPINameError.toBalString()

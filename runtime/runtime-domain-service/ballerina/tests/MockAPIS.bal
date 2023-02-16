@@ -492,7 +492,7 @@ public function mockPizzashackAPI12Definition() returns json {
     return apiclient.retrieveDefaultDefinition(api);
 }
 
-public function mockPizzaShackAPI1Definition() returns json {
+public function mockPizzaShackAPI1Definition(string organization) returns json {
     model:API api = {
         kind: "API",
         metadata: {
@@ -506,7 +506,7 @@ public function mockPizzaShackAPI1Definition() returns json {
             apiType: "REST",
             apiVersion: "1.0.0",
             context: "/pizzashack1/1.0.0",
-            organization: "carbon.super",
+            organization: organization,
             definitionFileRef: "01ed7b08-f2b1-1166-82d5-649ae706d29d-definition",
             prodHTTPRouteRef: "01ed7b08-f2b1-1166-82d5-649ae706d29d-production"
         }

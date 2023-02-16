@@ -700,7 +700,7 @@ public class APIClient {
                 apiType: api.'type,
                 apiVersion: api.'version,
                 context: self.returnFullContext(api.context, api.'version),
-                organization: "carbon.super"
+                organization: organization.uuid
             }
         };
         model:ConfigMap? definition = apiArtifact?.definition;
