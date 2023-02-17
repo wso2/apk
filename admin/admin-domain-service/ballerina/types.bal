@@ -463,6 +463,7 @@ public type Organization record {
     string displayName;
     @constraint:String {maxLength: 255, minLength: 1}
     string organizationClaimValue?;
+    boolean enabled = true;
     string[] serviceNamespaces?;
 };
 
