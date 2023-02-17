@@ -20,7 +20,6 @@ package tests
 import (
 	"testing"
 
-	"github.com/wso2/apk/test/integration/integration/utils/kubernetes"
 	"github.com/wso2/apk/test/integration/integration/utils/suite"
 	"sigs.k8s.io/gateway-api/conformance/utils/http"
 	gwapisuite "sigs.k8s.io/gateway-api/conformance/utils/suite"
@@ -38,7 +37,7 @@ var HTTPRouteRewritePath = suite.IntegrationTest{
 	Features:    []gwapisuite.SupportedFeature{gwapisuite.SupportHTTPRoutePathRewrite},
 	Test: func(t *testing.T, suite *suite.IntegrationTestSuite) {
 		ns := "gateway-conformance-infra"
-		gwAddr, _ := kubernetes.WaitForGatewayAddress(t, suite.Client, suite.TimeoutConfig)
+		gwAddr := "localhost:9090"
 
 		testCases := []http.ExpectedResponse{
 			{

@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
+	"github.com/wso2/apk/test/integration/integration/constants"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -67,9 +68,9 @@ func WaitForGatewayAddress(t *testing.T, c client.Client, timeoutConfig config.T
 
 	var ipAddr string
 	// Use http port for now, ideally we should get the port from the Gateway or from a config.
-	port := "9090"
-	name := "apk-test-wso2-apk-router-service"
-	namespace := "apk"
+	port := string(constants.GatewayServicePort)
+	name := constants.GatewayServiceName
+	namespace := constants.GatewayServiceNamespace
 
 	waitErr := wait.PollImmediate(1*time.Second, timeoutConfig.GatewayMustHaveAddress, func() (bool, error) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
