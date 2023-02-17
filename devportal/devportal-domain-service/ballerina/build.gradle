@@ -25,9 +25,7 @@ tasks.register('build') {
     group 'build'
     description 'Build ballerina component'
     dependsOn 'test'
-    doLast {
-        bal_build
-    }
+    dependsOn 'bal_build'
 }
 
 tasks.register('test') {
@@ -35,9 +33,7 @@ tasks.register('test') {
     description 'Test ballerina component'
     dependsOn('start_postgres_image')
     mustRunAfter('start_postgres_image')
-    doLast {
-        bal_test
-    }
+    dependsOn('bal_test')
     finalizedBy('stop_postgres_image')
 }
 task clean{
