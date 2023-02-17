@@ -27,6 +27,7 @@ isolated function createInternalFromOrganization(Organization payload) returns I
         id: payload.id.toString(),
         name: payload.name,
         displayName: payload.displayName,
+        enabled: payload.enabled,
         claimList: [ orgClaim ]
     };
     return internalOrganization;
@@ -37,6 +38,7 @@ isolated function createOrganizationFromInternal(Internal_Organization payload) 
         id: payload.id,
         name: payload.name,
         displayName: payload.displayName,
+        enabled: payload.enabled,
         organizationClaimValue: payload.claimList[0].claimValue
     };
     return organization;
