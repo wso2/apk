@@ -19,8 +19,9 @@ package constants
 
 // Controller related constants
 const (
-	APIController         string = "APIController"
-	ApplicationController string = "ApplicationController"
+	APIController          string = "APIController"
+	ApplicationController  string = "ApplicationController"
+	SubscriptionController string = "SubscriptionController"
 )
 
 // API events related constants

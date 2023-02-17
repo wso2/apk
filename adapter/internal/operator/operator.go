@@ -135,6 +135,10 @@ func InitOperator() {
 		loggers.LoggerAPKOperator.Errorf("Error creating Application controller: %v", err)
 	}
 
+	if err := cpcontrollers.NewSubscriptionController(mgr); err != nil {
+		loggers.LoggerAPKOperator.Errorf("Error creating Subscription controller: %v", err)
+	}
+
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
 			Message:   fmt.Sprintf("unable to set up health check: %v", err),
