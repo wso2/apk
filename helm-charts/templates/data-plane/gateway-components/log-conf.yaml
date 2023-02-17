@@ -117,7 +117,7 @@ data:
       serviceBasePath = "/api/am/runtime"
     
     [managementServer]
-      enabled = true
+      enabled = {{ .Values.wso2.apk.cp.enabled }}
 
   config.toml.template: |
     # The configuration file for mgw

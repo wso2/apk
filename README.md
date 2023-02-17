@@ -105,12 +105,7 @@ WSO2 API Kubernetes Platform has released following docker images in the WSO2 pu
 4. Now execute ```helm install apk-test . -n apk``` to install the APK components.
 #### Optional: 
   - To deploy control plane components only use ``` --set wso2.apk.dp.enabled=false ```
-  - To deploy data plane components only use ``` --set wso2.apk.cp.enabled=false ``` and need to disable Adapter 
-connection to Management Server by setting following value to ```false``` in /apk/helm-charts/templates/data-plane/gateway-components/log-conf.yaml file.
-  ```bash
-    [managementServer]
-    enabled = false
-  ```
+  - To deploy data plane components only use ``` --set wso2.apk.cp.enabled=false ```
 5. Verify the deployment by executing ```kubectl get pods -n apk```
 
 ### To Access Deployment through local machine
