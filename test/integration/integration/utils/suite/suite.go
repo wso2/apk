@@ -133,7 +133,6 @@ func (suite *IntegrationTestSuite) Setup(t *testing.T) {
 	t.Logf("Test Setup: Applying base manifests")
 	suite.Applier.MustApplyWithCleanup(t, suite.Client, suite.TimeoutConfig, suite.BaseManifests, suite.Cleanup)
 
-	// time.Sleep(60 * time.Second)
 	t.Logf("Test Setup: Applying programmatic resources")
 	secret := gwapik8s.MustCreateSelfSignedCertSecret(t, "gateway-conformance-web-backend", "certificate", []string{"*"})
 	suite.Applier.MustApplyObjectsWithCleanup(t, suite.Client, suite.TimeoutConfig, []client.Object{secret}, suite.Cleanup)
@@ -142,7 +141,6 @@ func (suite *IntegrationTestSuite) Setup(t *testing.T) {
 	secret = gwapik8s.MustCreateSelfSignedCertSecret(t, "gateway-conformance-infra", "tls-passthrough-checks-certificate", []string{"abc.example.com"})
 	suite.Applier.MustApplyObjectsWithCleanup(t, suite.Client, suite.TimeoutConfig, []client.Object{secret}, suite.Cleanup)
 
-	// t.Logf("Test Setup: Ensuring Pods from base manifests are ready")
 	namespaces := []string{
 		"gateway-conformance-infra",
 		"gateway-conformance-app-backend",

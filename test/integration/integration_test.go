@@ -52,7 +52,7 @@ func TestIntegration(t *testing.T) {
 		supportedFeatures[feature] = false
 	}
 
-	t.Logf("Running conformance tests with %s GatewayClass\n cleanup: %t\n debug: %t\n supported features: [%v]\n exempt features: [%v]",
+	t.Logf("Running integration tests with %s GatewayClass\n cleanup: %t\n debug: %t\n supported features: [%v]\n exempt features: [%v]",
 		*flags.GatewayClassName, *flags.CleanupBaseResources, *flags.ShowDebug, *flags.SupportedFeatures, *flags.ExemptFeatures)
 
 	cSuite := suite.New(suite.Options{
