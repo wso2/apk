@@ -22,7 +22,7 @@ kubectl create ns apk
 # Install wso2 apk chart with cp diasabled
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo add jetstack https://charts.jetstack.io
-helm dependency build
+helm dependency build ../../helm-charts
 helm install apk-test ../../helm-charts -n apk --set wso2.apk.cp.enabled=false
 
 # Wait gateway resources to be available.
