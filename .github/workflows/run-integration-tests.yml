@@ -1,5 +1,6 @@
 name: Run Gateway Integration Tests.
 on:
+  workflow_dispatch:
   pull_request_target:
     types:
       - closed
@@ -7,6 +8,9 @@ on:
       - synchronize
     paths:
       - '**/test/**'
+concurrency:
+  group: test-${{ github.event.number }}
+  cancel-in-progress: true
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -19,14 +23,6 @@ jobs:
         shell: sh
         run: |
           go install github.com/mgechev/revive@latest
-      - name: Install kind
-        shell: sh
-        run: |
-          go install sigs.k8s.io/kind@v0.17.0
-      - name: Install kubectl
-        shell: sh
-        run: |
-          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
       - name: Checkout apk-repo
         uses: actions/checkout@v3
         with:
@@ -41,4 +37,4 @@ jobs:
       - name: Run Gradle Build
         run: |
           cd apk-repo/test/integration
-          gradle build -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Pimage_version=latest -PmultiArch=true
+          gradle build
