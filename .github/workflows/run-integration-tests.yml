@@ -34,7 +34,7 @@ jobs:
         run: |
           git config --global user.name ${{ secrets.WSO2_BOT_USER }}
           git config --global user.email ${{ secrets.WSO2_BOT_EMAIL }}
-      - name: Run Gradle Build
+      - name: Run Integration Tests
         run: |
           cd apk-repo/test/integration
           gradle build
