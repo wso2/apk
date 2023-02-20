@@ -19,43 +19,54 @@ plugins {
     id 'net.researchgate.release' version '2.8.0'
 }
 
-apply from: "$rootDir/../../common-gradle-scripts/docker.gradle"
 apply from: "$rootDir/../../common-gradle-scripts/go.gradle"
-
-release {
-    tagTemplate = 'test-integration-$version'
-
-    git {
-        requireBranch= "main"
-        pushToRemote= "origin"
-    }
-}
 
 allprojects {
     group = project.group
     version = project.version
 }
 
-// tasks.register('go_test', Exec) {
-//     group 'go'
-//     description 'Automates testing the packages named by the import paths.'
-//     commandLine 'sh', '-c', "go test -race -coverprofile=coverage.out -covermode=atomic ./..."
-// }
+tasks.register('cluster_setup', Exec).configure { 
+    group 'integration'
+    description 'Sets up a kind cluster'
+    commandLine 'sh', "$rootDir/scripts/cluster-setup.sh"
+}
+
+tasks.register('cluster_cleanup', Exec).configure { 
+    group 'integration'
+    description 'Cleans up the kind cluster'
+    commandLine 'sh', "$rootDir/scripts/cluster-cleanup.sh"
+}
+
+tasks.register('integration_test', Exec) {
+    group 'integration'
+    description 'Runs integration tests'
+    commandLine 'sh', "$rootDir/scripts/run-tests.sh"
+}
+
+tasks.register('go_test', Exec) {
+    group 'go'
+    description 'Automates testing the packages named by the import paths.'
+    commandLine 'sh', '-c', "go test -race -covermode=atomic ./integration/..."
+}
 
 tasks.named('go_revive_run').configure { 
     finalizedBy go_tidy
-    // finalizedBy go_test
+    finalizedBy go_test
 }
 
-tasks.named('go_build').configure {
+tasks.named('integration_test').configure { 
+    dependsOn cluster_setup
+}
+
+tasks.named('cluster_setup').configure { 
     dependsOn go_revive_run
-    dependsOn go_vet
-    finalizedBy docker_build
+}
+
+tasks.named('cluster_cleanup').configure { 
+    finalizedBy integration_test
 }
 
 task build{
-    dependsOn go_build
-    dependsOn docker_build
+    dependsOn integration_test
 }
-
-afterReleaseBuild.dependsOn "docker_push"

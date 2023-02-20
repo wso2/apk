@@ -58,7 +58,7 @@ func TestIntegration(t *testing.T) {
 	cSuite := suite.New(suite.Options{
 		Client:               client,
 		GatewayClassName:     *flags.GatewayClassName,
-		Debug:                *flags.ShowDebug,
+		Debug:                true,
 		CleanupBaseResources: *flags.CleanupBaseResources,
 		SupportedFeatures:    supportedFeatures,
 	})
