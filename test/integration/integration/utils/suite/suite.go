@@ -178,20 +178,6 @@ func (test *IntegrationTest) Run(t *testing.T, suite *IntegrationTestSuite) {
 		t.Parallel()
 	}
 
-	// Check that all features exercised by the test have been opted into by
-	// the suite.
-	for _, feature := range test.Features {
-		if supported, ok := suite.SupportedFeatures[feature]; !ok || !supported {
-			t.Skipf("Skipping %s: suite does not support %s", test.ShortName, feature)
-		}
-	}
-
-	// check that the test should not be skipped
-	if suite.SkipTests.Has(test.ShortName) {
-		t.Logf("Skipping %s", test.ShortName)
-		return
-	}
-
 	for _, manifestLocation := range test.Manifests {
 		t.Logf("Applying %s", manifestLocation)
 		suite.Applier.MustApplyWithCleanup(t, suite.Client, suite.TimeoutConfig, manifestLocation, true)

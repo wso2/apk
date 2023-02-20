@@ -21,5 +21,5 @@ package constants
 const (
 	GatewayServiceName      string = "apk-test-wso2-apk-router-service"
 	GatewayServiceNamespace string = "apk"
-	GatewayServicePort      int32  = 9090
+	GatewayServicePort      int16  = 9090
 )

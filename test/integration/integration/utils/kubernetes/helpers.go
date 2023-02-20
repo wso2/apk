@@ -20,6 +20,7 @@ package kubernetes
 import (
 	"context"
 	"net"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -63,12 +64,12 @@ func NamespacesMustBeAccepted(t *testing.T, c client.Client, timeoutConfig confi
 
 // WaitForGatewayAddress waits until at least one IP Address has been set in the
 // Gateway infra exposed service.
-func WaitForGatewayAddress(t *testing.T, c client.Client, timeoutConfig config.TimeoutConfig) (string, error) {
+func WaitForGatewayAddress(t *testing.T, c client.Client, timeoutConfig config.TimeoutConfig) string {
 	t.Helper()
 
 	var ipAddr string
 	// Use http port for now, ideally we should get the port from the Gateway or from a config.
-	port := string(constants.GatewayServicePort)
+	port := strconv.FormatInt(int64(constants.GatewayServicePort), 10)
 	name := constants.GatewayServiceName
 	namespace := constants.GatewayServiceNamespace
 
@@ -91,7 +92,7 @@ func WaitForGatewayAddress(t *testing.T, c client.Client, timeoutConfig config.T
 		return true, nil
 	})
 	require.NoErrorf(t, waitErr, "error waiting for Gateway service to have an IP address")
-	return net.JoinHostPort(ipAddr, port), waitErr
+	return net.JoinHostPort(ipAddr, port)
 }
 
 func findPodConditionInList(t *testing.T, conditions []v1.PodCondition, condName, condValue string) bool {

@@ -14,38 +14,14 @@
 # limitations under the License.
 # -----------------------------------------------------------------------
 
-FROM alpine:3.15.4
-LABEL maintainer="WSO2 Docker Maintainers <wso2.com>"
+FROM golang:1.19
 
-RUN apk update && apk upgrade --no-cache
-RUN apk add  --no-cache tzdata
+WORKDIR /usr/src/app
 
-ENV LANG=C.UTF-8
+# pre-copy/cache go.mod for pre-downloading dependencies and only redownloading them in subsequent builds if they change
+COPY go.mod go.sum ./
+RUN go mod download && go mod verify
 
-ARG APK_USER=wso2
-ARG APK_USER_ID=802
-ARG APK_USER_GROUP=wso2
-ARG APK_USER_GROUP_ID=802
-ARG APK_USER_HOME=/home/${APK_USER}
-ARG TARGETARCH
+COPY . .
 
-ARG MOTD="\n\
- Welcome to WSO2 Docker Resources \n\
- --------------------------------- \n\
- This Docker container comprises of a WSO2 product, running with its latest GA release \n\
- which is under the Apache License, Version 2.0. \n\
- Read more about Apache License, Version 2.0 here @ http://www.apache.org/licenses/LICENSE-2.0.\n"
-
-RUN \
-    addgroup -S -g ${APK_USER_GROUP_ID} ${APK_USER_GROUP} \
-    && adduser -S -u ${APK_USER_ID} -h ${APK_USER_HOME} -G ${APK_USER_GROUP} ${APK_USER} \
-    && mkdir ${APK_USER_HOME}/logs && mkdir -p ${APK_USER_HOME}/artifacts/apis \
-    && chown -R ${APK_USER}:${APK_USER_GROUP} ${APK_USER_HOME} \
-    && echo '[ ! -z "${TERM}" -a -r /etc/motd ] && cat /etc/motd' >> /etc/bash.bashrc; echo "${MOTD}" > /etc/motd
-
-WORKDIR ${APK_USER_HOME}
-USER ${APK_USER}
-
-COPY ./${TARGETARCH}/main integration
-
-CMD ./integration
+CMD go test -v integration_test.go

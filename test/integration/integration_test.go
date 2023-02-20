@@ -15,7 +15,7 @@
  *
  */
 
-package integration_test
+package integration
 
 import (
 	"strings"
