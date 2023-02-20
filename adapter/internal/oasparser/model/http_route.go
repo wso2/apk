@@ -38,6 +38,7 @@ type HTTPRouteParams struct {
 	APIPolicies            map[string]dpv1alpha1.APIPolicy
 	ResourceAPIPolicies    map[string]dpv1alpha1.APIPolicy
 	BackendPropertyMapping dpv1alpha1.BackendPropertyMapping
+	ResourceScopes         map[string]dpv1alpha1.Scope
 }
 
 // SetInfoHTTPRouteCR populates resources and endpoints of mgwSwagger. httpRoute.Spec.Rules.Matches
@@ -63,6 +64,7 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, ht
 		resourceAuthScheme := authScheme
 		resourceAPIPolicy := apiPolicy
 		hasPolicies := false
+		var scopes []string
 		for _, filter := range rule.Filters {
 			hasPolicies = true
 			switch filter.Type {
@@ -104,6 +106,16 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, ht
 					} else {
 						return fmt.Errorf(`apipolicy: %s has not been resolved, spec.targetRef.kind should be 
 						'Resource' in resource level APIPolicies`, filter.ExtensionRef.Name)
+					}
+				}
+				if filter.ExtensionRef.Kind == constants.KindScope {
+					if ref, found := httpRouteParams.ResourceScopes[types.NamespacedName{
+						Name:      string(filter.ExtensionRef.Name),
+						Namespace: httpRoute.Namespace,
+					}.String()]; found {
+						scopes = append(scopes, ref.Spec.Names...)
+					} else {
+						return fmt.Errorf("scope: %s has not been resolved in namespace %s", filter.ExtensionRef.Name, httpRoute.Namespace)
 					}
 				}
 			case gwapiv1b1.HTTPRouteFilterRequestHeaderModifier:

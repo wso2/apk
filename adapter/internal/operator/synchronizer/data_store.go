@@ -193,6 +193,28 @@ func updateHTTPRoute(httpRoute *HTTPRouteState, cachedHTTPRoute *HTTPRouteState,
 		}
 	}
 
+	if len(httpRoute.Scopes) != len(cachedHTTPRoute.Scopes) {
+		cachedHTTPRoute.Scopes = httpRoute.Scopes
+		updated = true
+		events = append(events, endpointType+" Endpoint Resource Scopes")
+	} else {
+		for key, scope := range httpRoute.Scopes {
+			if existingScope, found := cachedHTTPRoute.Scopes[key]; found {
+				if scope.UID != existingScope.UID || scope.Generation > existingScope.Generation {
+					cachedHTTPRoute.Scopes = httpRoute.Scopes
+					updated = true
+					events = append(events, endpointType+" Endpoint Resource Scopes")
+					break
+				}
+			} else {
+				cachedHTTPRoute.Scopes = httpRoute.Scopes
+				updated = true
+				events = append(events, endpointType+" Endpoint Resource Scopes")
+				break
+			}
+		}
+	}
+
 	if !reflect.DeepEqual(cachedHTTPRoute.BackendPropertyMapping, httpRoute.BackendPropertyMapping) {
 		cachedHTTPRoute.BackendPropertyMapping = httpRoute.BackendPropertyMapping
 		updated = true

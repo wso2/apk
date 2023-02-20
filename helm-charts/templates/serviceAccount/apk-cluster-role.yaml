@@ -79,5 +79,12 @@ rules:
     verbs: ["update"]
   - apiGroups: ["dp.wso2.com"]
     resources: ["apipolicies/status"]
+    resources: ["scopes"]
+    verbs: ["get","list","watch","update","delete","create"]
+  - apiGroups: ["dp.wso2.com"]
+    resources: ["scopes/finalizers"]
+    verbs: ["update"]
+  - apiGroups: ["dp.wso2.com"]
+    resources: ["scopes/status"]
     verbs: ["get","patch","update"]
 {{- end -}}

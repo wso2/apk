@@ -58,7 +58,8 @@ const (
 	// Index for resource level apipolicies
 	httpRouteAPIPolicyResourceIndex = "httpRouteAPIPolicyResourceIndex"
 	serviceHTTPRouteIndex           = "serviceHTTPRouteIndex"
-	serviceBackendPolicy            = "serviceBackendPolicy"
+	serviceBackendPolicyIndex       = "serviceBackendPolicyIndex"
+	apiScopeIndex                   = "apiScopeIndex"
 )
 
 // APIReconciler reconciles a API object
@@ -67,6 +68,7 @@ type APIReconciler struct {
 	ods           *synchronizer.OperatorDataStore
 	ch            *chan synchronizer.APIEvent
 	statusUpdater *status.UpdateHandler
+	mgr           manager.Manager
 }
 
 // NewAPIController creates a new API controller instance. API Controllers watches for dpv1alpha1.API and gwapiv1b1.HTTPRoute.
@@ -77,6 +79,7 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 		ods:           operatorDataStore,
 		ch:            ch,
 		statusUpdater: statusUpdater,
+		mgr:           mgr,
 	}
 	c, err := controller.New(constants.APIController, mgr, controller.Options{Reconciler: r})
 	if err != nil {
@@ -160,6 +163,16 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 		return err
 	}
 
+	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.Scope{}}, handler.EnqueueRequestsFromMapFunc(r.getAPIsForScope),
+		predicates...); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("Error watching scope resources: %v", err),
+			Severity:  logging.BLOCKER,
+			ErrorCode: 2612,
+		})
+		return err
+	}
+
 	loggers.LoggerAPKOperator.Info("API Controller successfully started. Watching API Objects....")
 	return nil
 }
@@ -176,6 +189,9 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 //+kubebuilder:rbac:groups=dp.wso2.com,resources=apipolicies,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=dp.wso2.com,resources=apipolicies/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=dp.wso2.com,resources=apipolicies/finalizers,verbs=update
+//+kubebuilder:rbac:groups=dp.wso2.com,resources=scopes,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=dp.wso2.com,resources=scopes/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=dp.wso2.com,resources=scopes/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -207,7 +223,7 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 
 	// Retrieve HTTPRoutes
 	prodHTTPRoute, sandHTTPRoute, err := apiReconciler.resolveAPIRefs(ctx, req.Namespace, apiDef.Spec.ProdHTTPRouteRef,
-		apiDef.Spec.SandHTTPRouteRef)
+		apiDef.Spec.SandHTTPRouteRef, req.NamespacedName.String())
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
 			Message:   fmt.Sprintf("Error retrieving ref CRs for API in namespace : %s, %v", req.NamespacedName.String(), err),
@@ -233,8 +249,8 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 
 // resolveAPIRefs validates following references related to the API
 // - HTTPRoutes
-func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, namespace string,
-	prodHTTPRouteRef string, sandHTTPRouteRef string) (*synchronizer.HTTPRouteState, *synchronizer.HTTPRouteState, error) {
+func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, namespace, prodHTTPRouteRef, sandHTTPRouteRef,
+	api string) (*synchronizer.HTTPRouteState, *synchronizer.HTTPRouteState, error) {
 	prodHTTPRoute := &synchronizer.HTTPRouteState{
 		HTTPRoute: &gwapiv1b1.HTTPRoute{},
 	}
@@ -243,14 +259,14 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, namespac
 	}
 	var err error
 	if prodHTTPRouteRef != "" {
-		if prodHTTPRoute, err = apiReconciler.resolveHTTPRouteRefs(ctx, namespace, prodHTTPRouteRef); err != nil {
+		if prodHTTPRoute, err = apiReconciler.resolveHTTPRouteRefs(ctx, namespace, prodHTTPRouteRef, api); err != nil {
 			return nil, nil, fmt.Errorf("error while resolving production httpRouteref %s in namespace :%s has not found. %s",
 				prodHTTPRouteRef, namespace, err.Error())
 		}
 	}
 
 	if sandHTTPRouteRef != "" {
-		if sandHTTPRoute, err = apiReconciler.resolveHTTPRouteRefs(ctx, namespace, sandHTTPRouteRef); err != nil {
+		if sandHTTPRoute, err = apiReconciler.resolveHTTPRouteRefs(ctx, namespace, sandHTTPRouteRef, api); err != nil {
 			return nil, nil, fmt.Errorf("error while resolving sandbox httpRouteref %s in namespace :%s has not found. %s",
 				sandHTTPRouteRef, namespace, err.Error())
 		}
@@ -260,8 +276,7 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, namespac
 
 // resolveHTTPRouteRefs validates following references related to the API
 // - Authentications
-func (apiReconciler *APIReconciler) resolveHTTPRouteRefs(ctx context.Context, namespace string,
-	httpRouteRef string) (*synchronizer.HTTPRouteState, error) {
+func (apiReconciler *APIReconciler) resolveHTTPRouteRefs(ctx context.Context, namespace, httpRouteRef, api string) (*synchronizer.HTTPRouteState, error) {
 	httpRouteState := &synchronizer.HTTPRouteState{
 		HTTPRoute: &gwapiv1b1.HTTPRoute{},
 	}
@@ -287,7 +302,9 @@ func (apiReconciler *APIReconciler) resolveHTTPRouteRefs(ctx context.Context, na
 			namespace, err.Error())
 	}
 	httpRouteState.BackendPropertyMapping = apiReconciler.getBackendProperties(ctx, httpRouteState.HTTPRoute)
-	return httpRouteState, nil
+	httpRouteState.Scopes, err = apiReconciler.getScopesForHTTPRoute(ctx, httpRouteState.HTTPRoute, api)
+
+	return httpRouteState, err
 }
 
 func (apiReconciler *APIReconciler) getAuthenticationsForHTTPRoute(ctx context.Context,
@@ -303,6 +320,27 @@ func (apiReconciler *APIReconciler) getAuthenticationsForHTTPRoute(ctx context.C
 		authentications[utils.NamespacedName(&item).String()] = item
 	}
 	return authentications, nil
+}
+
+func (apiReconciler *APIReconciler) getScopesForHTTPRoute(ctx context.Context,
+	httpRoute *gwapiv1b1.HTTPRoute, api string) (map[string]dpv1alpha1.Scope, error) {
+	scopes := make(map[string]dpv1alpha1.Scope)
+	for _, rule := range httpRoute.Spec.Rules {
+		for _, filter := range rule.Filters {
+			if filter.Type == gwapiv1b1.HTTPRouteFilterExtensionRef && filter.ExtensionRef != nil && filter.ExtensionRef.Kind == constants.KindScope {
+				scope := &dpv1alpha1.Scope{}
+				if err := apiReconciler.client.Get(ctx, types.NamespacedName{Namespace: httpRoute.Namespace, Name: string(filter.ExtensionRef.Name)},
+					scope); err != nil {
+					return nil, fmt.Errorf("error while getting scope %s in namespace :%s, %s", filter.ExtensionRef.Name,
+						httpRoute.Namespace, err.Error())
+				}
+				scopes[utils.NamespacedName(scope).String()] = *scope
+				setIndexScopeForAPI(ctx, apiReconciler.mgr, scope, api)
+			}
+		}
+	}
+
+	return scopes, nil
 }
 
 func (apiReconciler *APIReconciler) getAuthenticationsForResources(ctx context.Context,
@@ -397,7 +435,7 @@ func (apiReconciler *APIReconciler) getBackendConfigs(ctx context.Context,
 	protocol := dpv1alpha1.HTTPProtocol
 	backendPolicyList := &dpv1alpha1.BackendPolicyList{}
 	if err := apiReconciler.client.List(ctx, backendPolicyList, &k8client.ListOptions{
-		FieldSelector: fields.OneTermEqualSelector(serviceBackendPolicy, serviceNamespacedName.String()),
+		FieldSelector: fields.OneTermEqualSelector(serviceBackendPolicyIndex, serviceNamespacedName.String()),
 	}); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
 			Message:   fmt.Sprintf("Unable to find associated BackendPolicies for service: %s", serviceNamespacedName),
@@ -669,6 +707,52 @@ func (apiReconciler *APIReconciler) getAPIsForAPIPolicy(obj k8client.Object) []r
 	return requests
 }
 
+// getAPIsForScope triggers the API controller reconcile method based on the changes detected
+// from scope objects. If the changes are done for an API stored in the Operator Data store,
+// a new reconcile event will be created and added to the reconcile event queue.
+func (apiReconciler *APIReconciler) getAPIsForScope(obj k8client.Object) []reconcile.Request {
+	scope, ok := obj.(*dpv1alpha1.Scope)
+	ctx := context.Background()
+	if !ok {
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("unexpected object type, bypassing reconciliation: %v", scope),
+			Severity:  logging.TRIVIAL,
+			ErrorCode: 2608,
+		})
+		return []reconcile.Request{}
+	}
+
+	requests := []reconcile.Request{}
+
+	apiList := &dpv1alpha1.APIList{}
+
+	if err := apiReconciler.client.List(ctx, apiList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(httpRouteAPIIndex, utils.NamespacedName(scope).String())}); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("Unable to find associated APIs: %s", utils.NamespacedName(scope).String()),
+			Severity:  logging.CRITICAL,
+			ErrorCode: 2610,
+		})
+		return []reconcile.Request{}
+	}
+
+	if len(apiList.Items) == 0 {
+		loggers.LoggerAPKOperator.Debugf("APIs for HTTPRoute not found: %s", utils.NamespacedName(scope).String())
+		return []reconcile.Request{}
+	}
+
+	for _, api := range apiList.Items {
+		req := reconcile.Request{
+			NamespacedName: types.NamespacedName{
+				Name:      api.Name,
+				Namespace: api.Namespace},
+		}
+		requests = append(requests, req)
+		loggers.LoggerAPKOperator.Infof("Adding reconcile request for API: %s/%s", api.Namespace, api.Name)
+	}
+	return requests
+}
+
 // addIndexes adds indexing on API, for
 //   - prodution and sandbox HTTPRoutes
 //     referenced in API objects via `.spec.prodHTTPRouteRef` and `.spec.sandHTTPRouteRef`
@@ -723,7 +807,7 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 	}
 
 	// Service to BackendPolicy indexer
-	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.BackendPolicy{}, serviceBackendPolicy,
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.BackendPolicy{}, serviceBackendPolicyIndex,
 		func(rawObj k8client.Object) []string {
 			backendPolicy := rawObj.(*dpv1alpha1.BackendPolicy)
 			var services []string
@@ -818,6 +902,14 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 			return httpRoutes
 		})
 	return err
+}
+
+// setIndexScopeForAPI sets the index for the Scope CR to API CR
+func setIndexScopeForAPI(ctx context.Context, mgr manager.Manager, scope *dpv1alpha1.Scope, api string) error {
+	return mgr.GetFieldIndexer().IndexField(ctx, scope, apiScopeIndex,
+		func(rawObj k8client.Object) []string {
+			return []string{api}
+		})
 }
 
 // handleStatus updates the API CR update

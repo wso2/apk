@@ -161,3 +161,29 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - dp.wso2.com
+  resources:
+  - scopes
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - dp.wso2.com
+  resources:
+  - scopes/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - dp.wso2.com
+  resources:
+  - scopes/status
+  verbs:
+  - get
+  - patch
+  - update

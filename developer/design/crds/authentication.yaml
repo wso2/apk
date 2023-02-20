@@ -15,7 +15,6 @@ Spec:
       tokenValidation: true
       scopeValidation: true
       subscriptionValidation: true
-      backendJWTEnabled: true
       authTypes:
           - type: jwt
           - type: basic
