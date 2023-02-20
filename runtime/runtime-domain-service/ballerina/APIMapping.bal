@@ -16,15 +16,76 @@
 // under the License.
 //
 import runtime_domain_service.model;
+import wso2/apk_common_lib as commons;
+import ballerina/http;
 
-isolated function convertK8sAPItoAPI(model:API api) returns API {
-    API convetedModel = {
-        id: api.metadata.uid,
-        name: api.spec.apiDisplayName,
-        context: api.spec.context,
-        'version: api.spec.apiVersion,
-        'type: api.spec.apiType,
-        createdTime: api.metadata.creationTimestamp
-    };
-    return convetedModel;
+isolated function convertK8sAPItoAPI(model:API api, boolean lightWeight) returns API|commons:APKError {
+    do {
+
+        API convertedModel = {
+            id: api.metadata.uid,
+            name: api.spec.apiDisplayName,
+            context: api.spec.context,
+            'version: api.spec.apiVersion,
+            'type: api.spec.apiType,
+            createdTime: api.metadata.creationTimestamp
+        };
+        model:APIStatus? status = api.status;
+        if status is model:APIStatus {
+            convertedModel.lastUpdatedTime = status.transitionTime;
+        }
+        if !lightWeight {
+            http:Response internalAPIResponse = check getInternalAPI(api.metadata.name, api.metadata.namespace);
+            json jsonPayload = check internalAPIResponse.getJsonPayload();
+            model:RuntimeAPI internalAPI = check jsonPayload.cloneWithType(model:RuntimeAPI);
+            record {|anydata...;|}? endpointConfig = internalAPI.spec.endpointConfig;
+            if endpointConfig is record {} {
+                convertedModel.endpointConfig = endpointConfig;
+            }
+            model:OperationPolicies? apiPolicies = internalAPI.spec.apiPolicies;
+            if apiPolicies is model:OperationPolicies {
+                convertedModel.apiPolicies = convertOperationPolicies(apiPolicies);
+            }
+            APIOperations[] apiOperations = [];
+            model:Operations[]? operations = internalAPI.spec.operations;
+            if operations is model:Operations[] {
+                foreach model:Operations operation in operations {
+                    apiOperations.push({
+                        verb: operation.verb,
+                        target: operation.target,
+                        authTypeEnabled: operation.authTypeEnabled,
+                        scopes: operation.scopes,
+                        endpointConfig: operation.endpointConfig,
+                        operationPolicies: convertOperationPolicies(operation.operationPolicies)
+                    });
+                }
+            }
+            convertedModel.operations = apiOperations;
+            model:ServiceInfo? serviceInfo = internalAPI.spec.serviceInfo;
+            if serviceInfo is model:ServiceInfo {
+                convertedModel.serviceInfo = {name: serviceInfo.name, namespace: serviceInfo.namespace};
+            }
+        }
+        return convertedModel;
+    } on fail var e {
+        return error commons:APKError("Error while converting k8s API to API",e,code=900900,message = "Internal Server Error",statusCode = 500,description = "Internal Server Error");
+    }
+}
+
+isolated function convertOperationPolicies(model:OperationPolicies? operation) returns APIOperationPolicies|() {
+    if operation is model:OperationPolicies {
+        OperationPolicy[] requestPolicies = [];
+        OperationPolicy[] responsePolicies = [];
+        foreach model:OperationPolicy requestPolicy in operation.request {
+            OperationPolicy policy = {...requestPolicy};
+            requestPolicies.push(policy);
+        }
+        foreach model:OperationPolicy responsePolicy in operation.response {
+            OperationPolicy policy = {...responsePolicy};
+            responsePolicies.push(policy);
+        }
+        return {request: requestPolicies, response: responsePolicies};
+    } else {
+        return ();
+    }
 }

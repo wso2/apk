@@ -4,6 +4,7 @@ Httproute productionRoute?;
 Httproute sandboxRoute?;
 ConfigMap definition?;
 K8sServiceMapping[] serviceMapping = [];
+RuntimeAPI runtimeAPI?;
 map<Service> backendServices = {};
 map<BackendPolicy> backendPolicies = {};
 map<Authentication> authenticationMap = {};

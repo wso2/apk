@@ -15,7 +15,7 @@ public type RuntimeAPISpec record {|
     string context;
     string 'type;
     string 'version;
-    anydata endpointConfig?;
+    record {} endpointConfig?;
     Operations[] operations?;
     OperationPolicies apiPolicies?;
     ServiceInfo serviceInfo?;
@@ -23,7 +23,7 @@ public type RuntimeAPISpec record {|
 
 public type Operations record {|
     boolean authTypeEnabled = true;
-    anydata endpointConfig?;
+    record {} endpointConfig?;
     string[] scopes = [];
     string target;
     string verb;
@@ -36,6 +36,6 @@ public type OperationPolicy record {
 };
 
 public type OperationPolicies record {|
-    OperationPolicy[] request?;
-    OperationPolicy[] response?;
+    OperationPolicy[] request = [];
+    OperationPolicy[] response=[];
 |};
