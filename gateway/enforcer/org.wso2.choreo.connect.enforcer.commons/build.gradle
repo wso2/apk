@@ -25,5 +25,5 @@ dependencies {
     implementation libs.log4j.core
     implementation libs.minidev.json
     testImplementation libs.junit
-    annotationProcessor('org.apache.logging.log4j:log4j-core:2.13.3')
+    annotationProcessor('org.apache.logging.log4j:log4j-core:2.19.0')
 }
