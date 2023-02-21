@@ -279,7 +279,7 @@ public distinct class List {
     # The function that maps to the `toArray` method of `java.util.List`.
     #
     # + return - The `javalang:Object[]` value returning from the Java mapping.
-    public function toArray() returns javalang:Object[]|error {
+    public isolated function toArray() returns javalang:Object[]|error {
         handle externalObj = java_util_List_toArray(self.jObj);
         javalang:Object[] newObj = [];
         handle[] anyObj = <handle[]>check jarrays:fromHandle(externalObj, "handle");
@@ -757,7 +757,7 @@ function java_util_List_subList(handle receiver, int arg0, int arg1) returns han
     paramTypes: ["int", "int"]
 } external;
 
-function java_util_List_toArray(handle receiver) returns handle = @java:Method {
+isolated function java_util_List_toArray(handle receiver) returns handle = @java:Method {
     name: "toArray",
     'class: "java.util.List",
     paramTypes: []
