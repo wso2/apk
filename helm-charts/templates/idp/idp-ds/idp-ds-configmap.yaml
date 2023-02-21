@@ -54,11 +54,6 @@ data:
     organizations = ["org1"]
 
     [[wso2.idp_domain_service.idpConfiguration.user]]
-    username = "org1user"
-    password = "org1user"
-    organizations = ["default"]
-
-    [[wso2.idp_domain_service.idpConfiguration.user]]
     username = "org2user"
     password = "org2user"
     organizations = ["org2"]

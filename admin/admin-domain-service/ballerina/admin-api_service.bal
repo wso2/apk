@@ -279,7 +279,7 @@ service /api/am/admin on ep0 {
     }
 
 
-    isolated resource function post organizations(http:RequestContext requestContext, @http:Payload Organization payload) returns CreatedOrganization|BadRequestError|InternalServerErrorError {
+    isolated resource function post organizations(@http:Payload Organization payload) returns CreatedOrganization|BadRequestError|InternalServerErrorError {
         CreatedOrganization|APKError createdOrganization = addOrganization(payload);
         if createdOrganization is CreatedOrganization {
             return createdOrganization;

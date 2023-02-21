@@ -15,7 +15,6 @@ public service class JWTValidationInterceptor {
         if path[0] == "health" {
             return ctx.next();
         }
-        
         string|http:HeaderNotFoundError authorizationHeader = request.getHeader(self.idpConfiguration.authorizationHeader);
         if authorizationHeader is string {
             UserContext userContext = check self.validateJWT(authorizationHeader);
@@ -59,8 +58,7 @@ public service class JWTValidationInterceptor {
                     return userContext;
                 } else {
                     APKError apkError = error("Organization not found in APK system", code = 900952, description = "Organization not found in APK system", statusCode = 401, message = "Organization not found in APK system");
-                    return apkError;
-                  
+                    return apkError;  
                 }
             }
         }
