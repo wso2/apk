@@ -37,4 +37,4 @@ jobs:
       - name: Run Integration Tests
         run: |
           cd apk-repo/test/integration
-          gradle build
+          ./gradlew build
