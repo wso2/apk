@@ -21,6 +21,7 @@ import runtime_domain_service.model;
 import ballerina/url;
 import ballerina/log;
 import ballerina/http;
+import wso2/apk_common_lib as commons;
 
 const string K8S_API_ENDPOINT = "/api/v1";
 final string token = check io:fileReadString(runtimeConfiguration.k8sConfiguration.serviceAccountPath + "/token");
@@ -89,6 +90,11 @@ isolated function deployAPICR(model:API api, string namespace) returns http:Resp
     return k8sApiServerEp->post(endpoint, api, targetType = http:Response);
 }
 
+isolated function updateAPICR(model:API api, string namespace) returns http:Response|http:ClientError {
+    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/apis/" + api.metadata.name;
+    return k8sApiServerEp->put(endpoint, api, targetType = http:Response);
+}
+
 isolated function deployServiceMappingCR(model:K8sServiceMapping serviceMapping, string namespace) returns http:Response|http:ClientError {
     string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/servicemappings";
     return k8sApiServerEp->post(endpoint, serviceMapping, targetType = http:Response);
@@ -98,6 +104,11 @@ isolated function deployServiceMappingCR(model:K8sServiceMapping serviceMapping,
 isolated function deployConfigMap(model:ConfigMap configMap, string namespace) returns http:Response|http:ClientError {
     string endpoint = "/api/v1/namespaces/" + namespace + "/configmaps";
     return k8sApiServerEp->post(endpoint, configMap, targetType = http:Response);
+}
+
+isolated function updateConfigMap(model:ConfigMap configMap, string namespace) returns http:Response|http:ClientError {
+    string endpoint = "/api/v1/namespaces/" + namespace + "/configmaps/" + configMap.metadata.name;
+    return k8sApiServerEp->put(endpoint, configMap, targetType = http:Response);
 }
 
 isolated function deployService(model:Service 'service, string namespace) returns http:Response|http:ClientError {
@@ -172,17 +183,20 @@ isolated function getServiceByNameAndNamespace(string name, string namespace) re
     }
 }
 
-isolated function getK8sAPIByNameAndNamespace(string name, string namespace) returns json|error {
+public isolated function getK8sAPIByNameAndNamespace(string name, string namespace) returns model:API?|commons:APKError {
     string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/apis/" + name;
-    http:Response|http:ClientError response = k8sApiServerEp->get(endpoint);
-    if response is http:Response {
+    do {
+        http:Response response = check k8sApiServerEp->get(endpoint);
         if response.statusCode == 200 {
-            return response.getJsonPayload();
+            json jsonPayload = check response.getJsonPayload();
+            return check jsonPayload.cloneWithType(model:API);
         } else if (response.statusCode == 404) {
-            return error("API not found");
+            return ();
+        }else{
+        return error("Internal Error occured", message = "Internal Error occured", statusCode = 500, code = 909101, description = "Internal Error occured");
         }
-    } else {
-        return error(response.message());
+    } on fail var e {
+        return error("Internal Error occured", e, message = "Internal Error occured", statusCode = 500, code = 909101, description = "Internal Error occured");
     }
 }
 
@@ -219,12 +233,12 @@ isolated function deleteBackendPolicyCR(string name, string namespace) returns h
 isolated function deployBackendPolicyCR(model:BackendPolicy backendPolciy, string namespace) returns http:Response|http:ClientError {
     string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/backendpolicies";
     return k8sApiServerEp->post(endpoint, backendPolciy, targetType = http:Response);
-} 
+}
+
 isolated function getBackendPolicyCRsForAPI(string apiName, string apiVersion, string namespace) returns model:BackendPolicyList|http:ClientError|error {
     string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/backendpolicies?labelSelector=" + check generateUrlEncodedLabelSelector(apiName, apiVersion);
     return k8sApiServerEp->get(endpoint, targetType = model:BackendPolicyList);
 }
-
 
 isolated function generateUrlEncodedLabelSelector(string apiName, string apiVersion) returns string|error {
     string labelSelector = string:'join("", "api-name=", apiName, ",api-version=", apiVersion);
@@ -236,6 +250,11 @@ isolated function getBackendServicesForAPI(string apiName, string apiVersion, st
     return k8sApiServerEp->get(endpoint, targetType = model:ServiceList);
 }
 
+public isolated function getHttproutesForAPIS(string apiName, string apiVersion, string namespace) returns model:HttprouteList|http:ClientError|error {
+    string endpoint = "/apis/gateway.networking.k8s.io/v1beta1/namespaces/" + namespace + "/httproutes/?labelSelector=" + check generateUrlEncodedLabelSelector(apiName, apiVersion);
+    return k8sApiServerEp->get(endpoint, targetType = model:HttprouteList);
+}
+
 public function retrieveAllOrganizations(string? continueToken) returns model:OrganizationList|http:ClientError {
     string? continueTokenValue = continueToken;
     string endpoint = "/apis/cp.wso2.com/v1alpha1/organizations";
@@ -243,4 +262,19 @@ public function retrieveAllOrganizations(string? continueToken) returns model:Or
         endpoint = endpoint + "?continue=" + continueTokenValue;
     }
     return k8sApiServerEp->get(endpoint, targetType = model:OrganizationList);
+}
+
+public isolated function createInternalAPI(model:RuntimeAPI runtimeAPI, string namespace) returns http:Response|http:ClientError {
+    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/runtimeapis";
+    return k8sApiServerEp->post(endpoint, runtimeAPI, targetType = http:Response);
+}
+
+public isolated function getInternalAPI(string name, string namespace) returns http:Response|error {
+    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/runtimeapis/" + name;
+    return k8sApiServerEp->get(endpoint, targetType = http:Response);
+}
+
+public isolated function deleteInternalAPI(string name, string namespace) returns http:Response|http:ClientError {
+    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/runtimeapis/" + name;
+    return k8sApiServerEp->delete(endpoint, targetType = http:Response);
 }

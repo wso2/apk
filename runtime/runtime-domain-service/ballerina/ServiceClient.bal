@@ -110,12 +110,16 @@ public class ServiceClient {
         model:Service serviceByNameAndNamespace = check getServiceByNameAndNamespace(name, namespace);
         return createServiceModel(serviceByNameAndNamespace);
     }
+    public isolated function getServiceByNameandNamespace(string name, string namespace) returns Service|error {
+        model:Service serviceByNameAndNamespace = check getServiceByNameAndNamespace(name, namespace);
+        return createServiceModel(serviceByNameAndNamespace);
+    }
 
-    public isolated function getServiceUsageByServiceId(string serviceId, commons:Organization organization) returns APIList|BadRequestError|NotFoundError|InternalServerErrorError {
+    public isolated function getServiceUsageByServiceId(string serviceId, commons:Organization organization) returns APIList|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
         APIInfo[] apiInfos = [];
         Service|BadRequestError|NotFoundError|InternalServerErrorError serviceEntry = self.getServiceById(serviceId,organization);
         if serviceEntry is Service {
-            model:API[] k8sAPIS = retrieveAPIMappingsForService(serviceEntry, organization);
+            model:API[] k8sAPIS = check retrieveAPIMappingsForService(serviceEntry, organization);
             foreach model:API k8sAPI in k8sAPIS {
                 apiInfos.push({
                     context: k8sAPI.spec.context,

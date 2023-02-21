@@ -147,7 +147,7 @@ isolated function putAllServiceMappings(map<model:K8sServiceMapping> serviceMapp
     }
 }
 
-isolated function retrieveAPIMappingsForService(Service serviceEntry,commons:Organization organization) returns model:API[] {
+isolated function retrieveAPIMappingsForService(Service serviceEntry,commons:Organization organization) returns model:API[]|commons:APKError {
     lock {
         string[] keys = k8sServiceMappings.keys();
         model:API[] apis = [];
@@ -156,7 +156,7 @@ isolated function retrieveAPIMappingsForService(Service serviceEntry,commons:Org
             model:ServiceReference serviceRef = serviceMapping.spec.serviceRef;
             if (serviceRef.name == serviceEntry.name && serviceRef.namespace == serviceEntry.namespace) {
                 model:APIReference apiRef = serviceMapping.spec.apiRef;
-                model:API? k8sAPI = getAPIByNameAndNamespace(apiRef.name, apiRef.namespace,organization.clone());
+                model:API? k8sAPI = check getAPIByNameAndNamespace(apiRef.name, apiRef.namespace,organization.clone());
                 if k8sAPI is model:API {
                     apis.push(k8sAPI);
                 }

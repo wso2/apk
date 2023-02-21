@@ -345,6 +345,85 @@
 			"response": []
 		},
 		{
+			"name": "change a one resource",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.variables.set(\"APIUUID\",pm.collectionVariables.get('APIUUID'))",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"_.each(pm.response.json().operations, (operation) => {",
+							"    if(operation.target === \"/headers\") {",
+							"        pm.expect(operation.verb===\"GET\");",
+							"    }",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					},
+					{
+						"key": "X-JWT-ASSERTION",
+						"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IlpUYzJOV1UyTXprM01XRXhNRE0zWVRjeE1HSTFNVGcxWlRCaVl6YzJNakpoWm1Sak1XWTFaQT09In0.eyJzdWIiOiI0NWYxYzVjOC1hOTJlLTExZWQtYWZhMS0wMjQyYWMxMjAwMDIiLCJjbGllbnRJZCI6IjQ1ZjFjNWM4LWE5MmUtMTFlZC1hZmExLTAyNDJhYzEyMDAwMiIsImh0dHA6XC9cL3dzbzIub3JnXC9jbGFpbXNcL2FwcGxpY2F0aW9udGllciI6IlVubGltaXRlZCIsImh0dHA6XC9cL3dzbzIub3JnXC9jbGFpbXNcL3ZlcnNpb24iOiIxLjAuMCIsImh0dHA6XC9cL3dzbzIub3JnXC9jbGFpbXNcL2tleXR5cGUiOiJQUk9EVUNUSU9OIiwiaXNzIjoid3NvMi5vcmdcL3Byb2R1Y3RzXC9hbSIsImh0dHA6XC9cL3dzbzIub3JnXC9jbGFpbXNcL2FwcGxpY2F0aW9ubmFtZSI6ImFub246Tm9uIFByb2R1Y3Rpb24gSURQIiwiaHR0cDpcL1wvd3NvMi5vcmdcL2NsYWltc1wvZW5kdXNlclRlbmFudElkIjoiMCIsImh0dHA6XC9cL3dzbzIub3JnXC9jbGFpbXNcL2FwcGxpY2F0aW9uVVVJZCI6IjAyMDYzYmJkLTcyYTQtMzIzOC1hOGY0LTcyNjI1NTM0OWM3YiIsInNjb3BlcyI6ImRlZmF1bHQiLCJleHAiOjE2NzY5NjU1NjIsImh0dHA6XC9cL3dzbzIub3JnXC9jbGFpbXNcL2FwcGxpY2F0aW9uaWQiOiIwMjA2M2JiZC03MmE0LTMyMzgtYThmNC03MjYyNTUzNDljN2IiLCJodHRwOlwvXC93c28yLm9yZ1wvY2xhaW1zXC91c2VydHlwZSI6IkFwcGxpY2F0aW9uX1VzZXIiLCJpYXQiOjE2NzY5NjE5NjIsImp0aSI6IjcyZmNkMzVkLTgyNDYtNDY2Yi04Y2JlLTNhM2YyOTdmNjFjMyIsImh0dHA6XC9cL3dzbzIub3JnXC9jbGFpbXNcL2FwaWNvbnRleHQiOiJcL2FwaVwvYW1cL3J1bnRpbWVcLzEuMC4wIn0.EpzZrmtK5U6NVb4qsv2YRrZd_aeJ2A-wcEpjWe1_QUVA86wCC2E76nHUzE5ErNRpQSrDICvtBHbLMEx2bdDRhcphEOwL_AWrd9PKrT2xSLqLj_u-y5fhQiOkRRd-EwT31UJETBaWd6P0jBswx5gWblPfG4lrF4bfB0I0ZQmlNxiA5kEv6z5EnKoBlLA3ot2MeW4R9kE13cC4p3RZ8P76tPiAS2Z-rzOwmFpzDR7-gFWDmre5dqlJEhuAcvJVq7F78dYesF9YEE_-SGRg3d3Xw3QJvI2kE8eiljYExvUKqGgUR4Ft8Y9nv_oj20C3DLhb3k8Qf_i_z-lPKV_YQayBWw",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": \"b93340c0-a3c5-4742-ac93-4d4850394231\",\n    \"name\": \"testAPI\",\n    \"context\": \"/testAPI/1.0.0\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"PUT\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"POST\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"DELETE\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"PATCH\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        }\n    ],\n    \"serviceInfo\": {\n        \"name\": \"backend\",\n        \"namespace\": \"default\"\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/apis/{{APIUUID}}",
+					"host": [
+						"{{runtimeAPIServerBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIUUID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "RuntimeAPI Delete API",
 			"event": [
 				{
@@ -774,6 +853,182 @@
 			"response": []
 		},
 		{
+			"name": "change one resource api2",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.variables.set(\"APIUUID\",pm.collectionVariables.get('APIUUID'))",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"_.each(pm.response.json().operations, (operation) => {",
+							"    if(operation.target === \"/headers\") {",
+							"        pm.expect(operation.verb===\"GET\");",
+							"    }",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": \"{{APIV2UUID}}\",\n    \"name\": \"{{testAPIV2Name}}\",\n    \"context\": \"/testAPIV2/1.0.0\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"PUT\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"POST\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"DELETE\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"PATCH\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        }\n    ],\n    \"serviceInfo\": {\n        \"name\": \"backend\",\n        \"namespace\": \"default\"\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/apis/{{APIV2UUID}}",
+					"host": [
+						"{{runtimeAPIServerBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIV2UUID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "call newly added resource",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Check API response and status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "HOST",
+						"value": "a3b58ccf-6ecc-4557-b5bb-0a35cce38256.gw.wso2.com",
+						"type": "text"
+					},
+					{
+						"key": "Internal-Key",
+						"value": "{{APITestKey}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURL}}{{testAPIV2Context}}/get",
+					"host": [
+						"{{gatewayBaseURL}}{{testAPIV2Context}}"
+					],
+					"path": [
+						"get"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "call previously available resource",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Check API response and status code is 200\", function () {",
+							"  pm.response.to.have.status(404);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "HOST",
+						"value": "a3b58ccf-6ecc-4557-b5bb-0a35cce38256.gw.wso2.com",
+						"type": "text"
+					},
+					{
+						"key": "Internal-Key",
+						"value": "{{APITestKey}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURL}}{{testAPIV2Context}}/get",
+					"host": [
+						"{{gatewayBaseURL}}{{testAPIV2Context}}"
+					],
+					"path": [
+						"get"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "RuntimeAPI Delete API",
 			"event": [
 				{
@@ -875,14 +1130,12 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURL}}/t/carbon.super{{testAPIV2Context}}/get",
+					"raw": "{{gatewayBaseURL}}{{testAPIV2Context}}/headers",
 					"host": [
-						"{{gatewayBaseURL}}"
+						"{{gatewayBaseURL}}{{testAPIV2Context}}"
 					],
 					"path": [
-						"t",
-						"carbon.super{{testAPIV2Context}}",
-						"get"
+						"headers"
 					]
 				}
 			},

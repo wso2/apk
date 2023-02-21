@@ -143,3 +143,9 @@ public type ParentReference record {|
     string port?;
 
 |};
+public type HttprouteList record {|
+    string apiVersion = "gateway.networking.k8s.io/v1beta1";
+    string kind = "HTTPRouteList";
+    ListMeta metadata;
+    Httproute[] items;
+|};

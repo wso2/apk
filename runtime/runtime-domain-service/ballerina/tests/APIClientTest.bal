@@ -21,6 +21,7 @@ import ballerina/uuid;
 import ballerina/http;
 import runtime_domain_service.model as model;
 import wso2/apk_common_lib as commons;
+
 commons:Organization organiztion1 = {
     name: "org1",
     displayName: "org1",
@@ -39,6 +40,7 @@ commons:Organization organiztion2 = {
     serviceListingNamespaces: ["*"],
     properties: []
 };
+
 @test:Mock {functionName: "startAndAttachServices"}
 function getMockStartandAttachServices() returns error? {
 }
@@ -149,6 +151,7 @@ function getMockK8sClient() returns http:Client {
     test:prepare(mockK8sClient).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis/01ed7b08-f2b1-1166-82d5-649ae706d29e").thenReturn(mock404Response());
     test:prepare(mockK8sClient).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk/apis/pizzashackAPI1").thenReturn(mock404Response());
     test:prepare(mockK8sClient).when("get").withArguments("/api/v1/namespaces/apk-platform/configmaps/01ed7aca-eb6b-1178-a200-f604a4ce114a-definition").thenReturn(mockConfigMaps());
+    test:prepare(mockK8sClient).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis/01ed7aca-eb6b-1178-a200-f604a4ce114a").thenReturn(getMockInternalAPI());
     http:ClientError clientError = error("Backend Failure");
     test:prepare(mockK8sClient).when("get").withArguments("/api/v1/namespaces/apk-platform/configmaps/01ed7b08-f2b1-1166-82d5-649ae706d29d-definition").thenReturn(mock404ConfigMap());
     test:prepare(mockK8sClient).when("get").withArguments("/api/v1/namespaces/apk-platform/configmaps/01ed7aca-eb6b-1178-a200-f604a4ce114b-definition").thenReturn(clientError);
@@ -176,14 +179,16 @@ function getMockOrganizationList() returns model:OrganizationList {
                     uid: "01ed7aca-eb6b-1178-a200-f604a4ce114b"
                 },
                 spec: {
-                    name:"og1",
+                    name: "og1",
                     displayName: "org1",
                     uuid: "01ed7aca-eb6b-1178-a200-f604a4ce114b",
-                    organizationClaimValue:"org1",
+                    organizationClaimValue: "org1",
                     enabled: true
-}
-            }]};
-return organizationList;
+                }
+            }
+        ]
+    };
+    return organizationList;
 }
 
 @test:Config {
@@ -290,7 +295,7 @@ public function testGetAPIById(string id, commons:Organization organization, mod
 function apiIDDataprovider() returns map<[string, commons:Organization, model:API & readonly|error]>|error {
 
     map<[string, commons:Organization, model:API & readonly|error]> dataSet = {
-        "1": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e8",organiztion1, getMockPizzaShakK8sAPI()]
+        "1": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e8", organiztion1, getMockPizzaShakK8sAPI()]
     };
     return dataSet;
 }
@@ -343,11 +348,25 @@ public function testgetApiById(string apiid, commons:Organization organization, 
 }
 
 public function apiByIdDataProvider() returns map<[string, commons:Organization, API|NotFoundError]> {
-    API & readonly api1 = {name: "pizzashackAPI", context: "/pizzashack/1.0.0", 'version: "1.0.0", id: "c5ab2423-b9e8-432b-92e8-35e6907ed5e8", createdTime: "2022-12-13T09:45:47Z"};
+    API & readonly api1 = {
+        id: "c5ab2423-b9e8-432b-92e8-35e6907ed5e8",
+        name: "pizzashackAPI",
+        context: "/pizzashack/1.0.0",
+        'version: "1.0.0",
+        'type: "REST",
+        endpointConfig: {"endpoint_type": "http", "sandbox_endpoints": {"url": "https://pizzashack-service:8080/am/sample/pizzashack/v3/api/"}, "production_endpoints": {"url": "https://pizzashack-service:8080/am/sample/pizzashack/v3/api/"}},
+        operations: [
+            {"target": "/*", "verb": "GET", "authTypeEnabled": true, "scopes": []},
+            {"target": "/*", "verb": "PUT", "authTypeEnabled": true, "scopes": []},
+            {"target": "/*", "verb": "POST", "authTypeEnabled": true, "scopes": []},
+            {"target": "/*", "verb": "DELETE", "authTypeEnabled": true, "scopes": []}
+        ],
+        createdTime: "2022-12-13T09:45:47Z"
+    };
     NotFoundError notfound = {body: {code: 909100, message: "c5ab2423-b9e8-432b-92e8-35e6907ed5e9 not found."}};
     map<[string, commons:Organization, API & readonly|NotFoundError]> dataset = {
         "1": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e8", organiztion1, api1],
-        "2": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e9",organiztion1, notfound]
+        "2": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e9", organiztion1, notfound]
     };
     return dataset;
 }
@@ -1774,7 +1793,7 @@ function testDataGeneratedSwaggerDefinition() returns map<[API, string?, json|co
 @test:Config {dataProvider: validateExistenceDataProvider}
 function testValidateAPIExistence(string query, anydata expected) {
     APIClient apiClient = new;
-    test:assertEquals(apiClient.validateAPIExistence(query,organiztion1), expected);
+    test:assertEquals(apiClient.validateAPIExistence(query, organiztion1), expected);
 }
 
 function validateExistenceDataProvider() returns map<[string, NotFoundError|BadRequestError|http:Ok]> {
@@ -1793,16 +1812,39 @@ function validateExistenceDataProvider() returns map<[string, NotFoundError|BadR
 }
 
 @test:Config {dataProvider: createApiFromServiceDataProvider}
-function testCreateAPIFromService(string serviceUUId, string apiUUID, [model:ConfigMap, any] configmapResponse, [model:Httproute, any] httproute, [model:K8sServiceMapping, any] servicemapping, [model:API, any] k8sAPI, API api, string k8sapiUUID, anydata expected) {
+function testCreateAPIFromService(string serviceUUId, string apiUUID, [model:ConfigMap, any] configmapResponse, [model:Httproute, any] httproute, [model:K8sServiceMapping, any] servicemapping, [model:API, any] k8sAPI, [model:RuntimeAPI, any] runtimeAPI, API api, string k8sapiUUID, anydata expected) returns error? {
+    APIClient apiClient = new;
+    http:Response configmapResponse404 = new;
+    configmapResponse404.statusCode = 404;
+    http:Response internalApiResponse = new;
+    internalApiResponse.statusCode = 404;
+    model:HttprouteList httpRouteList = {metadata: {}, items: []};
+    model:ServiceMappingList serviceMappingList = {metadata: {}, items: []};
+    model:AuthenticationList authenticationList = {metadata: {}, items: []};
+    model:BackendPolicyList backendPolicyList = {metadata: {}, items: []};
+    model:ServiceList serviceList = {metadata: {}, items: []};
+    http:Response httpokRuntimeAPIResponse = new;
+    httpokRuntimeAPIResponse.statusCode = 200;
+    httpokRuntimeAPIResponse.setJsonPayload(runtimeAPI[0].toJson());
     test:prepare(k8sApiServerEp).when("post").withArguments("/api/v1/namespaces/apk-platform/configmaps", configmapResponse[0]).thenReturn(configmapResponse[1]);
     test:prepare(k8sApiServerEp).when("post").withArguments("/apis/gateway.networking.k8s.io/v1beta1/namespaces/apk-platform/httproutes", httproute[0]).thenReturn(httproute[1]);
     test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/servicemappings", servicemapping[0]).thenReturn(servicemapping[1]);
     test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis", k8sAPI[0]).thenReturn(k8sAPI[1]);
-    APIClient apiClient = new;
+    test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis", runtimeAPI[0]).thenReturn(runtimeAPI[1]);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/api/v1/namespaces/apk-platform/configmaps/" + apiClient.retrieveDefinitionName(apiUUID)).thenReturn(configmapResponse404);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/gateway.networking.k8s.io/v1beta1/namespaces/apk-platform/httproutes/?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(httpRouteList);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/servicemappings?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(serviceMappingList);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/authentications?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(authenticationList);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/backendpolicies?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(backendPolicyList);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/api/v1/namespaces/apk-platform/services?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(serviceList);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis/" + k8sAPI[0].metadata.name).thenReturn(internalApiResponse);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis/" + k8sAPI[0].metadata.name).thenReturn(httpokRuntimeAPIResponse);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis/" + k8sAPI[0].metadata.name).thenReturn(configmapResponse404);
     test:assertEquals(apiClient.createAPIFromService(serviceUUId, api, organiztion1), expected);
+
 }
 
-function createApiFromServiceDataProvider() returns map<[string, string, [model:ConfigMap, any], [model:Httproute, any], [model:K8sServiceMapping, any], [model:API, any], API, string, CreatedAPI|BadRequestError|InternalServerErrorError|commons:APKError]> {
+function createApiFromServiceDataProvider() returns map<[string, string, [model:ConfigMap, any], [model:Httproute, any], [model:K8sServiceMapping, any], [model:API, any], [model:RuntimeAPI, any], API, string, CreatedAPI|BadRequestError|InternalServerErrorError|commons:APKError]> {
     string k8sAPIUUID1 = uuid:createType1AsString();
     API api = {
         name: "PizzaAPI",
@@ -1817,11 +1859,19 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
     string apiUUID = getUniqueIdForAPI(api.name, api.'version, organiztion1);
     model:ConfigMap configmap = getMockConfigMap1(apiUUID, api);
     http:Response mockConfigMapResponse = getMockConfigMapResponse(configmap.clone());
-    model:Httproute httpRoute = getMockHttpRoute(api, apiUUID,organiztion1);
+    model:Httproute httpRoute = getMockHttpRoute(api, apiUUID, organiztion1);
     http:Response httpRouteResponse = getMockHttpRouteResponse(httpRoute.clone());
     model:K8sServiceMapping mockServiceMappingRequest = getMockServiceMappingRequest(api, apiUUID);
     model:API mockAPI = getMockAPI(api, apiUUID, organiztion1.uuid);
     http:Response mockAPIResponse = getMockAPIResponse(mockAPI.clone(), k8sAPIUUID1);
+    Service serviceRecord = {
+        name: "backend",
+        namespace: "apk",
+        id: "275b00d1-722c-4df2-b65a-9b14677abe4b",
+        'type: "ClusterIP"
+    };
+    model:RuntimeAPI mockRuntimeAPI = getMockRuntimeAPI(api, apiUUID, organiztion1, serviceRecord);
+    http:Response mockRuntimeResponse = getMockRuntimeAPIResponse(mockRuntimeAPI.clone());
     http:Response serviceMappingResponse = getMockServiceMappingResponse(mockServiceMappingRequest.clone());
     BadRequestError nameAlreadyExistError = {body: {code: 90911, message: "API Name - " + alreadyNameExist.name + " already exist.", description: "API Name - " + alreadyNameExist.name + " already exist."}};
     API contextAlreadyExist = {
@@ -1832,20 +1882,21 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
     BadRequestError contextAlreadyExistError = {body: {code: 90911, message: "API Context - " + contextAlreadyExist.context + " already exist.", description: "API Context " + contextAlreadyExist.context + " already exist."}};
     BadRequestError serviceNotExist = {body: {code: 90913, message: "Service from 275b00d1-722c-4df2-b65a-9b14677abe4a not found."}};
 
-    CreatedAPI createdAPI = {
-        body: {
-            "id": k8sAPIUUID1,
-            "name": "PizzaAPI",
-            "context": "/pizzaAPI/1.0.0",
-            "version": "1.0.0",
-            "type": "REST"
-        }
-    };
-    map<[string, string, [model:ConfigMap, any], [model:Httproute, any], [model:K8sServiceMapping, any], [model:API, any], API, string, CreatedAPI|BadRequestError|InternalServerErrorError|commons:APKError]> data = {
-        "1": ["275b00d1-722c-4df2-b65a-9b14677abe4b", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], api, k8sAPIUUID1, createdAPI],
-        "2": ["275b00d1-722c-4df2-b65a-9b14677abe4b", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], alreadyNameExist, k8sAPIUUID1, nameAlreadyExistError],
-        "3": ["275b00d1-722c-4df2-b65a-9b14677abe4b", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], contextAlreadyExist, k8sAPIUUID1, contextAlreadyExistError],
-        "4": ["275b00d1-722c-4df2-b65a-9b14677abe4a", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], api, k8sAPIUUID1, serviceNotExist]
+    CreatedAPI createdAPI = {body:{id:k8sAPIUUID1,name:"PizzaAPI",
+                            context:"/pizzaAPI/1.0.0",'version:"1.0.0",'type:"REST",
+                            operations:[
+                                {target:"/*",verb:"GET",authTypeEnabled:true,scopes:[],operationPolicies:{request:[],response:[]}},
+                                {target:"/*",verb:"PUT",authTypeEnabled:true,scopes:[],operationPolicies:{request:[],response:[]}},
+                                {target:"/*",verb:"POST",authTypeEnabled:true,scopes:[],operationPolicies:{request:[],response:[]}},
+                                {target:"/*",verb:"DELETE",authTypeEnabled:true,scopes:[],operationPolicies:{request:[],response:[]}},
+                                {target:"/*",verb:"PATCH",authTypeEnabled:true,scopes:[],operationPolicies:{request:[],response:[]}}],
+                                serviceInfo:{name:"backend",namespace:"apk"},
+                                createdTime:"2023-01-17T11:23:49Z"}};
+    map<[string, string, [model:ConfigMap, any], [model:Httproute, any], [model:K8sServiceMapping, any], [model:API, any], [model:RuntimeAPI, any], API, string, CreatedAPI|BadRequestError|InternalServerErrorError|commons:APKError]> data = {
+        "1": ["275b00d1-722c-4df2-b65a-9b14677abe4b", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], api, k8sAPIUUID1, createdAPI],
+        "2": ["275b00d1-722c-4df2-b65a-9b14677abe4b", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], alreadyNameExist, k8sAPIUUID1, nameAlreadyExistError],
+        "3": ["275b00d1-722c-4df2-b65a-9b14677abe4b", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], contextAlreadyExist, k8sAPIUUID1, contextAlreadyExistError],
+        "4": ["275b00d1-722c-4df2-b65a-9b14677abe4a", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], api, k8sAPIUUID1, serviceNotExist]
     };
     return data;
 }
@@ -1870,10 +1921,10 @@ function getMockAPIResponse1(API api, string apiUUID, string k8sAPIUUID) returns
 function getMockAPI(API api, string apiUUID, string organization) returns model:API {
     APIClient apiClient = new;
     model:API k8sapi = {
-        "kind": "API",
-        "apiVersion": "dp.wso2.com/v1alpha1",
+                "kind" : "API"            ,
+        "apiVersion":         "dp.wso2.com/v1alpha1",
         "metadata": {"name": apiUUID, "namespace": "apk-platform", "labels": {"api-name": api.name, "api-version": api.'version}},
-        "spec": {
+        "spec":         {
             "apiDisplayName": api.name,
             "apiType": "REST",
             "apiVersion": api.'version,
@@ -1882,9 +1933,58 @@ function getMockAPI(API api, string apiUUID, string organization) returns model:
             "definitionFileRef": apiUUID + "-definition",
             "prodHTTPRouteRef": apiUUID + "-production"
         },
-        "status": null
+        "status"
+                : null
     };
     return k8sapi;
+}
+
+function getMockRuntimeAPI(API api, string apiUUID, commons:Organization organization, Service? serviceEntry) returns model:RuntimeAPI {
+    APIClient apiClient = new;
+    model:RuntimeAPI runtimeAPI = apiClient.generateRuntimeAPIArtifact(api, serviceEntry, organization);
+    if api.operations is () {
+        runtimeAPI.spec.operations = [
+            {
+                target: "/*",
+                verb: "GET",
+                authTypeEnabled: true,
+                operationPolicies: {request: [], response: []}
+            },
+            {
+                target: "/*",
+                verb: "PUT",
+                authTypeEnabled: true,
+                operationPolicies: {request: [], response: []}
+            },
+            {
+                target: "/*",
+                verb: "POST",
+                authTypeEnabled: true,
+                operationPolicies: {request: [], response: []}
+            },
+            {
+                target: "/*",
+                verb: "DELETE",
+                authTypeEnabled: true,
+                operationPolicies: {request: [], response: []}
+            },
+            {
+                target: "/*",
+                verb: "PATCH",
+                authTypeEnabled: true,
+                operationPolicies: {request: [], response: []}
+            }
+        ];
+    }
+    return runtimeAPI;
+}
+
+function getMockRuntimeAPIResponse(model:RuntimeAPI runtimeApi) returns http:Response {
+    http:Response response = new ();
+    response.statusCode = 201;
+    runtimeApi.metadata.uid = "275b00d1-722c-4df2-b65a-9b14677abe4b";
+    response.setJsonPayload(runtimeApi.toJson());
+    return response;
 }
 
 function getMockAPI1(API api, string apiUUID, string organization) returns model:API {
@@ -1920,13 +2020,13 @@ function getMockServiceMappingResponse(model:K8sServiceMapping serviceMapping) r
     return response;
 }
 
-function getMockHttpRoute(API api, string apiUUID,commons:Organization organiztion) returns model:Httproute {
+function getMockHttpRoute(API api, string apiUUID, commons:Organization organiztion) returns model:Httproute {
     return {
         "apiVersion": "gateway.networking.k8s.io/v1beta1",
         "kind": "HTTPRoute",
         "metadata": {"name": apiUUID + "-production", "namespace": "apk-platform", "labels": {"api-name": api.name, "api-version": api.'version}},
         "spec": {
-            "hostnames": [string:concat(organiztion.uuid,".","gw.wso2.com")],
+            "hostnames": [string:concat(organiztion.uuid, ".", "gw.wso2.com")],
             "rules": [
                 {
                     "matches": [{"path": {"type": "RegularExpression", "value": "/pizzaAPI/1.0.0(.*)"}, "method": "GET"}],
@@ -1999,8 +2099,8 @@ function testCreateAPI(string apiUUID, string backenduuid, API api, model:Config
         any configmapDeployingResponse, model:Httproute? prodhttpRoute,
         any prodhttpResponse, model:Httproute? sandHttpRoute, any sandhttpResponse,
         [model:Service, any][] backendServices, [model:BackendPolicy, any][] backendPolicies,
-        model:API k8sApi, any k8sapiResponse,
-        string k8sapiUUID, anydata expected) {
+        model:API k8sApi, any k8sapiResponse, model:RuntimeAPI runtimeAPI, any runtimeAPIResponse
+, string k8sapiUUID, anydata expected) returns error? {
     APIClient apiClient = new;
     test:prepare(k8sApiServerEp).when("post").withArguments("/api/v1/namespaces/apk-platform/configmaps", configmap).thenReturn(configmapDeployingResponse);
     if prodhttpRoute is model:Httproute {
@@ -2015,7 +2115,30 @@ function testCreateAPI(string apiUUID, string backenduuid, API api, model:Config
     foreach [model:BackendPolicy, any] backendPolicy in backendPolicies {
         test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/backendpolicies", backendPolicy[0]).thenReturn(backendPolicy[1]);
     }
+    http:Response configmapResponse = new;
+    configmapResponse.statusCode = 404;
+    http:Response internalApiResponse = new;
+    internalApiResponse.statusCode = 404;
+    model:HttprouteList httpRouteList = {metadata: {}, items: []};
+    model:ServiceMappingList serviceMappingList = {metadata: {}, items: []};
+    model:AuthenticationList authenticationList = {metadata: {}, items: []};
+    model:BackendPolicyList backendPolicyList = {metadata: {}, items: []};
+    model:ServiceList serviceList = {metadata: {}, items: []};
+    http:Response httpokRuntimeAPIResponse = new;
+    httpokRuntimeAPIResponse.statusCode = 200;
+    httpokRuntimeAPIResponse.setJsonPayload(runtimeAPI.toJson());
     test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis", k8sApi).thenReturn(k8sapiResponse);
+    test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis", runtimeAPI).thenReturn(runtimeAPIResponse);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/api/v1/namespaces/apk-platform/configmaps/" + apiClient.retrieveDefinitionName(apiUUID)).thenReturn(configmapResponse);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/gateway.networking.k8s.io/v1beta1/namespaces/apk-platform/httproutes/?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(httpRouteList);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/servicemappings?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(serviceMappingList);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/authentications?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(authenticationList);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/backendpolicies?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(backendPolicyList);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/api/v1/namespaces/apk-platform/services?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(serviceList);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis/" + k8sApi.metadata.name).thenReturn(internalApiResponse);
+    test:prepare(k8sApiServerEp).when("delete").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis/" + k8sApi.metadata.name).thenReturn(httpokRuntimeAPIResponse);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis/" + k8sApi.metadata.name).thenReturn(httpokRuntimeAPIResponse);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis/" + k8sApi.metadata.name).thenReturn(configmapResponse);
     commons:APKError|CreatedAPI|BadRequestError aPI = apiClient.createAPI(api, (), organiztion1);
     if aPI is BadRequestError || aPI is CreatedAPI {
         test:assertEquals(aPI, expected);
@@ -2040,8 +2163,8 @@ function getMockHttpRouteErrorResponse() returns http:Response {
     return response;
 }
 
-function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid, string 'type,commons:Organization organization) returns model:Httproute {
-    string hostnames = 'type == PRODUCTION_TYPE ? string:concat(organization.uuid,".","gw.wso2.com") : string:concat(organization.uuid,".","sandbox.gw.wso2.com");
+function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid, string 'type, commons:Organization organization) returns model:Httproute {
+    string hostnames = 'type == PRODUCTION_TYPE ? string:concat(organization.uuid, ".", "gw.wso2.com") : string:concat(organization.uuid, ".", "sandbox.gw.wso2.com");
     return {
         "apiVersion": "gateway.networking.k8s.io/v1beta1",
         "kind": "HTTPRoute",
@@ -2223,7 +2346,7 @@ function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid
     };
 }
 
-function createAPIDataProvider() returns map<[string, string, API, model:ConfigMap, any, model:Httproute?, any, model:Httproute?, any, [model:Service, any][], [model:BackendPolicy, any][], model:API, any, string, string|CreatedAPI|BadRequestError]> {
+function createAPIDataProvider() returns map<[string, string, API, model:ConfigMap, any, model:Httproute?, any, model:Httproute?, any, [model:Service, any][], [model:BackendPolicy, any][], model:API, any, model:RuntimeAPI, any, string, string|CreatedAPI|BadRequestError]> {
     API api = {
         name: "PizzaAPI",
         context: "/pizzaAPI/1.0.0",
@@ -2312,10 +2435,10 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
     backendPolicies.push([backendPolicy, backendPolicyResponse]);
     backendPolicies.push([backendPolicy1, backendPolicy1Response]);
     model:ConfigMap configmap = getMockConfigMap1(apiUUID, api);
-    model:Httproute prodhttpRoute = getMockHttpRouteWithBackend(api, apiUUID, backenduuid, PRODUCTION_TYPE,organiztion1);
-    model:Httproute sandhttpRoute = getMockHttpRouteWithBackend(api, apiUUID, backenduuid1, SANDBOX_TYPE,organiztion1);
+    model:Httproute prodhttpRoute = getMockHttpRouteWithBackend(api, apiUUID, backenduuid, PRODUCTION_TYPE, organiztion1);
+    model:Httproute sandhttpRoute = getMockHttpRouteWithBackend(api, apiUUID, backenduuid1, SANDBOX_TYPE, organiztion1);
 
-    CreatedAPI createdAPI = {body: {name: "PizzaAPI", context: "/pizzaAPI/1.0.0", 'version: "1.0.0", id: k8sapiUUID}};
+    CreatedAPI createdAPI = {body: {name: "PizzaAPI", context: "/pizzaAPI/1.0.0", 'version: "1.0.0", id: k8sapiUUID, createdTime: "2023-01-17T11:23:49Z"}};
     commons:APKError productionEndpointNotSpecifiedError = error("Production Endpoint Not specified", message = "Endpoint Not specified", description = "Production Endpoint Not specified", code = 90911, statusCode = 400);
     commons:APKError sandboxEndpointNotSpecifiedError = error("Sandbox Endpoint Not specified", message = "Endpoint Not specified", description = "Sandbox Endpoint Not specified", code = 90911, statusCode = 400);
     commons:APKError k8sLevelError = error("Internal Error occured while deploying API", code = 909000, message
@@ -2323,7 +2446,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
     commons:APKError invalidAPINameError = error("Invalid API Name", code = 90911, message = "Invalid API Name", statusCode = 400, description = "API Name PizzaAPI Invalid", moreInfo = {});
     map<[string, string, API, model:ConfigMap,
     any, model:Httproute|(), any, model:Httproute|(),
-    any, [model:Service, any][], [model:BackendPolicy, any][], model:API, any, string,
+    any, [model:Service, any][], [model:BackendPolicy, any][], model:API, any, model:RuntimeAPI, any, string,
     string|CreatedAPI|BadRequestError]> data = {
         "1": [
             apiUUID,
@@ -2339,6 +2462,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             backendPolicies,
             getMockAPI(api, apiUUID, organiztion1.uuid),
             getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
+            getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
+            getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
             k8sapiUUID,
             createdAPI
         ]
@@ -2357,6 +2482,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             backendPolicies,
             getMockAPI(api, apiUUID, organiztion1.uuid),
             getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
+            getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
+            getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
             k8sapiUUID,
             nameAlreadyExistError
         ],
@@ -2374,6 +2501,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             backendPolicies,
             getMockAPI(api, apiUUID, organiztion1.uuid),
             getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
+            getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
+            getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
             k8sapiUUID,
             contextAlreadyExistError
         ],
@@ -2391,6 +2520,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             backendPolicies,
             getMockAPI1(api, apiUUID, organiztion1.uuid),
             getMockAPIResponse(getMockAPI1(api, apiUUID, organiztion1.uuid), k8sapiUUID),
+            getMockRuntimeAPI(sandboxOnlyAPI, apiUUID, organiztion1, ()),
+            getMockRuntimeAPIResponse(getMockRuntimeAPI(sandboxOnlyAPI, apiUUID, organiztion1, ())),
             k8sapiUUID,
             createdAPI
         ]
@@ -2409,6 +2540,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             backendPolicies,
             getMockAPI(api, apiUUID, organiztion1.uuid),
             getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
+            getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
+            getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
             k8sapiUUID,
             productionEndpointNotSpecifiedError.toBalString()
         ],
@@ -2426,6 +2559,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             backendPolicies,
             getMockAPI(api, apiUUID, organiztion1.uuid),
             getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
+            getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
+            getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
             k8sapiUUID,
             sandboxEndpointNotSpecifiedError.toBalString()
         ]
@@ -2444,6 +2579,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             backendPolicies,
             getMockAPI(api, apiUUID, organiztion1.uuid),
             getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
+            getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
+            getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
             k8sapiUUID,
             k8sLevelError.toBalString()
         ]
@@ -2462,6 +2599,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             backendPolicies,
             getMockAPI(api, apiUUID, organiztion1.uuid),
             getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
+            getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
+            getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
             k8sapiUUID,
             k8sLevelError.toBalString()
         ]
@@ -2480,6 +2619,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             backendPolicies,
             getMockAPI(api, apiUUID, organiztion1.uuid),
             getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
+            getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
+            getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
             k8sapiUUID,
             k8sLevelError.toBalString()
         ]
@@ -2498,6 +2639,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             backendPolicies,
             getMockAPI(api, apiUUID, organiztion1.uuid),
             getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
+            getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
+            getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
             k8sapiUUID,
             k8sLevelError.toBalString()
         ]
@@ -2516,6 +2659,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             backendPolicies,
             getMockAPI(api, apiUUID, organiztion1.uuid),
             getMockAPIErrorResponse(),
+            getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
+            getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
             k8sapiUUID,
             k8sLevelError.toBalString()
         ]
@@ -2534,6 +2679,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             backendPolicies,
             getMockAPI(api, apiUUID, organiztion1.uuid),
             getMockAPIErrorNameExist(),
+            getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
+            getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
             k8sapiUUID,
             invalidAPINameError.toBalString()
         ]
