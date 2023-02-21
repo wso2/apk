@@ -29,7 +29,7 @@ spec:
   context: "/api/am/runtime/1.0.0"
   organization: "carbon.super"
   definitionFileRef: ""
-  prodHTTPRouteRef: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-httproute
-  sandHTTPRouteRef: ""
+  prodHTTPRouteRef:
+    - {{ template "apk-helm.resource.prefix" . }}-runtime-ds-httproute
   systemAPI: true
 {{- end -}}

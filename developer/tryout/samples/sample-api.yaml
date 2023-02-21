@@ -23,14 +23,17 @@ spec:
   apiVersion: 1.0.8
   context: /http-bin-api/1.0.8
   definitionFileRef: swagger-definition-http-bin-api
-  prodHTTPRouteRef: prod-http-route-http-bin-api
-  sandHTTPRouteRef: sand-http-route-http-bin-api
-  organization: 01edb285-6304-1b20-a090-4d02067ed56e
+  prodHTTPRouteRef:
+  - prod-http-route-http-bin-api-p1
+  - prod-http-route-http-bin-api-p2
+  sandHTTPRouteRef:
+  - sand-http-route-http-bin-api
+  organization: 01edb285-6304-1b20-a090-4d02067ed56ev
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: HTTPRoute
 metadata:
-  name: prod-http-route-http-bin-api
+  name: prod-http-route-http-bin-api-p1
 spec:
   hostnames:
     - prod.gw.wso2.com
@@ -64,18 +67,47 @@ spec:
     matches:
     - path:
         type: PathPrefix
-        value: /http-bin-api/1.0.8/secure/get/
+        value: /http-bin-api/1.0.8/secure/post/
+      method: POST
     filters:
       - type: URLRewrite
         urlRewrite:
           path:
             type: ReplacePrefixMatch
-            replacePrefixMatch: /get
-      - type: ExtensionRef
-        extensionRef:
-          group: dp.wso2.com
-          kind: Scope
-          name: pet
+            replacePrefixMatch: /post
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: prod-http-route-http-bin-api-p2
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: Default
+  rules:
+    - backendRefs:
+        - group: ""
+          kind: Service
+          name: secure-backend
+          port: 443
+          weight: 1
+      matches:
+        - path:
+            type: PathPrefix
+            value: /http-bin-api/1.0.8/secure/get/
+          method: GET
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /get
+        - type: ExtensionRef
+          extensionRef:
+            group: dp.wso2.com
+            kind: Scope
+            name: pet
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: HTTPRoute

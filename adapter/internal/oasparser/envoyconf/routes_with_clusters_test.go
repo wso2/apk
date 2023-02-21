@@ -43,7 +43,7 @@ func TestCreateRoutesWithClustersWithExactAndRegularExpressionRules(t *testing.T
 			APIDisplayName:   "test-api-2",
 			APIVersion:       "2.0.0",
 			Context:          "/test-api/2.0.0",
-			ProdHTTPRouteRef: "test-api-2-prod-http-route",
+			ProdHTTPRouteRef: []string{"test-api-2-prod-http-route"},
 		},
 	}
 	apiState.APIDefinition = &apiDefinition
@@ -185,7 +185,7 @@ func TestCreateRoutesWithClustersWithMultiplePathPrefixRules(t *testing.T) {
 			APIDisplayName:   "test-api",
 			APIVersion:       "1.0.0",
 			Context:          "/test-api/1.0.0",
-			ProdHTTPRouteRef: "test-api-1-prod-http-route",
+			ProdHTTPRouteRef: []string{"test-api-1-prod-http-route"},
 		},
 	}
 	apiState.APIDefinition = &apiDefinition
@@ -350,7 +350,7 @@ func TestCreateRoutesWithClustersWithBackendTLSConfigs(t *testing.T) {
 			APIDisplayName:   "test-api-3",
 			APIVersion:       "1.0.0",
 			Context:          "/test-api-3/1.0.0",
-			ProdHTTPRouteRef: "test-api-3-prod-http-route",
+			ProdHTTPRouteRef: []string{"test-api-3-prod-http-route"},
 		},
 	}
 	apiState.APIDefinition = &apiDefinition

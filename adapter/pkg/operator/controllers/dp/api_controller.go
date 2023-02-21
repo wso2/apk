@@ -222,8 +222,8 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	}
 
 	// Retrieve HTTPRoutes
-	prodHTTPRoute, sandHTTPRoute, err := apiReconciler.resolveAPIRefs(ctx, req.Namespace, apiDef.Spec.ProdHTTPRouteRef,
-		apiDef.Spec.SandHTTPRouteRef, req.NamespacedName.String())
+	prodHTTPRoute, sandHTTPRoute, err := apiReconciler.resolveAPIRefs(ctx, apiDef.Spec.ProdHTTPRouteRef,
+		apiDef.Spec.SandHTTPRouteRef, req.NamespacedName.String(), req.Namespace)
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
 			Message:   fmt.Sprintf("Error retrieving ref CRs for API in namespace : %s, %v", req.NamespacedName.String(), err),
@@ -249,8 +249,8 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 
 // resolveAPIRefs validates following references related to the API
 // - HTTPRoutes
-func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, namespace, prodHTTPRouteRef, sandHTTPRouteRef,
-	api string) (*synchronizer.HTTPRouteState, *synchronizer.HTTPRouteState, error) {
+func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, prodHTTPRouteRef, sandHTTPRouteRef []string,
+	api, namespace string) (*synchronizer.HTTPRouteState, *synchronizer.HTTPRouteState, error) {
 	prodHTTPRoute := &synchronizer.HTTPRouteState{
 		HTTPRoute: &gwapiv1b1.HTTPRoute{},
 	}
@@ -258,15 +258,15 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, namespac
 		HTTPRoute: &gwapiv1b1.HTTPRoute{},
 	}
 	var err error
-	if prodHTTPRouteRef != "" {
-		if prodHTTPRoute, err = apiReconciler.resolveHTTPRouteRefs(ctx, namespace, prodHTTPRouteRef, api); err != nil {
+	if len(prodHTTPRouteRef) > 0 {
+		if prodHTTPRoute, err = apiReconciler.resolveHTTPRouteRefs(ctx, prodHTTPRouteRef, namespace, api); err != nil {
 			return nil, nil, fmt.Errorf("error while resolving production httpRouteref %s in namespace :%s has not found. %s",
 				prodHTTPRouteRef, namespace, err.Error())
 		}
 	}
 
-	if sandHTTPRouteRef != "" {
-		if sandHTTPRoute, err = apiReconciler.resolveHTTPRouteRefs(ctx, namespace, sandHTTPRouteRef, api); err != nil {
+	if len(sandHTTPRouteRef) > 0 {
+		if sandHTTPRoute, err = apiReconciler.resolveHTTPRouteRefs(ctx, sandHTTPRouteRef, namespace, api); err != nil {
 			return nil, nil, fmt.Errorf("error while resolving sandbox httpRouteref %s in namespace :%s has not found. %s",
 				sandHTTPRouteRef, namespace, err.Error())
 		}
@@ -276,14 +276,14 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, namespac
 
 // resolveHTTPRouteRefs validates following references related to the API
 // - Authentications
-func (apiReconciler *APIReconciler) resolveHTTPRouteRefs(ctx context.Context, namespace, httpRouteRef, api string) (*synchronizer.HTTPRouteState, error) {
+func (apiReconciler *APIReconciler) resolveHTTPRouteRefs(ctx context.Context, httpRouteRef []string, namespace, api string) (*synchronizer.HTTPRouteState, error) {
 	httpRouteState := &synchronizer.HTTPRouteState{
 		HTTPRoute: &gwapiv1b1.HTTPRoute{},
 	}
 	var err error
-	if err := apiReconciler.client.Get(ctx, types.NamespacedName{Namespace: namespace, Name: httpRouteRef},
-		httpRouteState.HTTPRoute); err != nil {
-		return nil, fmt.Errorf("error while getting httproute %s in namespace :%s, %s", httpRouteRef, namespace, err.Error())
+	httpRouteState.HTTPRoute, err = apiReconciler.concatHTTPRoutes(ctx, httpRouteRef, namespace)
+	if err != nil {
+		return nil, err
 	}
 	if httpRouteState.Authentications, err = apiReconciler.getAuthenticationsForHTTPRoute(ctx, httpRouteState.HTTPRoute); err != nil {
 		return nil, fmt.Errorf("error while getting httproute auth defaults %s in namespace :%s, %s", httpRouteRef,
@@ -305,6 +305,24 @@ func (apiReconciler *APIReconciler) resolveHTTPRouteRefs(ctx context.Context, na
 	httpRouteState.Scopes, err = apiReconciler.getScopesForHTTPRoute(ctx, httpRouteState.HTTPRoute, api)
 
 	return httpRouteState, err
+}
+
+func (apiReconciler *APIReconciler) concatHTTPRoutes(ctx context.Context, httpRouteRefs []string,
+	namespace string) (*gwapiv1b1.HTTPRoute, error) {
+	var combinedHTTPRoute *gwapiv1b1.HTTPRoute
+	for _, httpRouteRef := range httpRouteRefs {
+		var httpRoute gwapiv1b1.HTTPRoute
+		if err := apiReconciler.client.Get(ctx, types.NamespacedName{Namespace: namespace, Name: httpRouteRef},
+			&httpRoute); err != nil {
+			return nil, fmt.Errorf("error while getting httproute %s in namespace :%s, %s", httpRouteRef, namespace, err.Error())
+		}
+		if combinedHTTPRoute == nil {
+			combinedHTTPRoute = &httpRoute
+		} else {
+			combinedHTTPRoute.Spec.Rules = append(combinedHTTPRoute.Spec.Rules, httpRoute.Spec.Rules...)
+		}
+	}
+	return combinedHTTPRoute, nil
 }
 
 func (apiReconciler *APIReconciler) getAuthenticationsForHTTPRoute(ctx context.Context,
@@ -768,19 +786,23 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 		func(rawObj k8client.Object) []string {
 			api := rawObj.(*dpv1alpha1.API)
 			var httpRoutes []string
-			if api.Spec.ProdHTTPRouteRef != "" {
-				httpRoutes = append(httpRoutes,
-					types.NamespacedName{
-						Namespace: api.Namespace,
-						Name:      api.Spec.ProdHTTPRouteRef,
-					}.String())
+			for _, ref := range api.Spec.ProdHTTPRouteRef {
+				if ref != "" {
+					httpRoutes = append(httpRoutes,
+						types.NamespacedName{
+							Namespace: api.Namespace,
+							Name:      ref,
+						}.String())
+				}
 			}
-			if api.Spec.SandHTTPRouteRef != "" {
-				httpRoutes = append(httpRoutes,
-					types.NamespacedName{
-						Namespace: api.Namespace,
-						Name:      api.Spec.SandHTTPRouteRef,
-					}.String())
+			for _, ref := range api.Spec.SandHTTPRouteRef {
+				if ref != "" {
+					httpRoutes = append(httpRoutes,
+						types.NamespacedName{
+							Namespace: api.Namespace,
+							Name:      ref,
+						}.String())
+				}
 			}
 			return httpRoutes
 		}); err != nil {
