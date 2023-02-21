@@ -55,3 +55,9 @@ jobs:
           cd apk-repo/idp/idp-ui
           gradle docker_push -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Pimage_version=latest -PmultiArch=true
           gradle docker_push -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Pimage_version=${{ github.sha }} -PmultiArch=true                    
+      - name: run codecov
+        uses: codecov/codecov-action@v3
+        with:
+          verbose: true # optional (default = false)
+          directory: apk-repo/idp/idp-ui
+          flags: idp-ui                                   
