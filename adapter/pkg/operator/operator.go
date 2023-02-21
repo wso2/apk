@@ -28,10 +28,10 @@ import (
 	gwapiv1a2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 
-	cpcontrollers "github.com/wso2/apk/adapter/internal/operator/controllers/cp"
-	dpcontrollers "github.com/wso2/apk/adapter/internal/operator/controllers/dp"
-	"github.com/wso2/apk/adapter/internal/operator/status"
-	"github.com/wso2/apk/adapter/internal/operator/synchronizer"
+	cpcontrollers "github.com/wso2/apk/adapter/pkg/operator/controllers/cp"
+	dpcontrollers "github.com/wso2/apk/adapter/pkg/operator/controllers/dp"
+	"github.com/wso2/apk/adapter/pkg/operator/status"
+	"github.com/wso2/apk/adapter/pkg/operator/synchronizer"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
@@ -44,8 +44,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	cpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/cp/v1alpha1"
-	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
+	cpv1alpha1 "github.com/wso2/apk/adapter/pkg/operator/apis/cp/v1alpha1"
+	dpv1alpha1 "github.com/wso2/apk/adapter/pkg/operator/apis/dp/v1alpha1"
 	//+kubebuilder:scaffold:imports
 )
 

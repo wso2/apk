@@ -20,7 +20,7 @@ package utils
 import (
 	"fmt"
 
-	constants "github.com/wso2/apk/adapter/internal/operator/constants"
+	constants "github.com/wso2/apk/adapter/pkg/operator/constants"
 	"github.com/wso2/apk/adapter/pkg/utils/envutils"
 	"github.com/wso2/apk/adapter/pkg/utils/stringutils"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
