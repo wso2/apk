@@ -50,7 +50,13 @@ spec:
                 - mountPath: /home/wso2apk/backoffice/conf/Config.toml
                   name: config-toml-volume
                   subPath: Config.toml
+                - mountPath: /home/wso2apk/backoffice/security/mg.pem
+                  name: backoffice-ds-jwt-validation-key-volume
+                  subPath: mg.pem
       volumes:
+        - name: backoffice-ds-jwt-validation-key-volume
+          secret: 
+            secretName: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-jwt-validaion-secret
         - name: config-toml-volume
           configMap:
             name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-configmap

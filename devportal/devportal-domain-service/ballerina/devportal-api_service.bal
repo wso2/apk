@@ -20,10 +20,6 @@ import ballerina/http;
 import ballerina/log;
 import devportal_service.org.wso2.apk.devportal.sdk as sdk;
 
-configurable int DEVPORTAL_PORT = 9443;
-
-listener http:Listener ep0 = new (DEVPORTAL_PORT);
-
 service /api/am/devportal on ep0 {
     isolated resource function get apis(@http:Header string? 'x\-wso2\-tenant, string? query, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0) returns APIList|BadRequestError|InternalServerErrorError {
         string organization = "carbon.super";

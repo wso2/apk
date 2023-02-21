@@ -21,7 +21,7 @@ import ballerina/log;
 
 configurable int BACKOFFICE_PORT = 9443;
 
-listener http:Listener ep0 = new (BACKOFFICE_PORT);
+listener http:Listener ep0 = new (BACKOFFICE_PORT, {interceptors: [jwtValidationInterceptor,requestErrorInterceptor]});
 
 @http:ServiceConfig {
     cors: {
