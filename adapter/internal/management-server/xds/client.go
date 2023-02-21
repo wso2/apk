@@ -29,13 +29,13 @@ import (
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/management-server/utils"
-	cpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/cp/v1alpha1"
+	cpv1alpha1 "github.com/wso2/apk/adapter/pkg/operator/apis/cp/v1alpha1"
 
 	apkmgt_model "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/apkmgt"
 	stub "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/apkmgt"
 	"github.com/wso2/apk/adapter/pkg/logging"
 
-	operatorutils "github.com/wso2/apk/adapter/internal/operator/utils"
+	operatorutils "github.com/wso2/apk/adapter/pkg/operator/utils"
 	"github.com/wso2/apk/adapter/pkg/utils/stringutils"
 	"google.golang.org/genproto/googleapis/rpc/status"
 	"google.golang.org/grpc"

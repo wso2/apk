@@ -6,8 +6,8 @@ import (
 	"fmt"
 
 	"github.com/wso2/apk/adapter/internal/loggers"
-	cpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/cp/v1alpha1"
 	"github.com/wso2/apk/adapter/pkg/logging"
+	cpv1alpha1 "github.com/wso2/apk/adapter/pkg/operator/apis/cp/v1alpha1"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
