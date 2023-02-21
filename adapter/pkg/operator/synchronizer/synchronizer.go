@@ -142,6 +142,7 @@ func GenerateMGWSwagger(apiState APIState, httpRoute *HTTPRouteState, envType st
 		BackendPropertyMapping: httpRoute.BackendPropertyMapping,
 		APIPolicies:            httpRoute.APIPolicies,
 		ResourceAPIPolicies:    httpRoute.ResourceAPIPolicies,
+		ResourceScopes:         httpRoute.Scopes,
 	}
 	if err := mgwSwagger.SetInfoHTTPRouteCR(httpRoute.HTTPRoute, httpRouteParams); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
