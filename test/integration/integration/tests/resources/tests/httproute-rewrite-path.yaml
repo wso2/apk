@@ -18,7 +18,7 @@ apiVersion: dp.wso2.com/v1alpha1
 kind: API
 metadata:
   name: rewrite-path-api
-  namespace: gateway-conformance-infra
+  namespace: gateway-integration-test-infra
 spec:
   apiDisplayName: Rewrite Path API
   apiType: REST
@@ -32,7 +32,7 @@ apiVersion: gateway.networking.k8s.io/v1beta1
 kind: HTTPRoute
 metadata:
   name: rewrite-path-httproute
-  namespace: gateway-conformance-infra
+  namespace: gateway-integration-test-infra
 spec:
   parentRefs:
   - group: gateway.networking.k8s.io
@@ -74,7 +74,7 @@ apiVersion: dp.wso2.com/v1alpha1
 kind: Authentication
 metadata:
   name: disable-api-authentication
-  namespace: gateway-conformance-infra
+  namespace: gateway-integration-test-infra
 spec:
   override:
     ext:
@@ -84,4 +84,4 @@ spec:
     group: gateway.networking.k8s.io
     kind: HTTPRoute
     name: rewrite-path-httproute
-    namespace: gateway-conformance-infra
+    namespace: gateway-integration-test-infra

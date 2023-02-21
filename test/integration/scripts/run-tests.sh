@@ -17,18 +17,17 @@
 # under the License.
 
 # Create new namespace to install chart
-kubectl create ns apk
+kubectl create ns apk-integration-test
 
-# Install wso2 apk chart with cp diasabled
-helm repo add bitnami https://charts.bitnami.com/bitnami
+# Install wso2 apk chart with cp disabled
 helm repo add jetstack https://charts.jetstack.io
 helm dependency build ../../helm-charts
-helm install apk-test ../../helm-charts -n apk --set wso2.apk.cp.enabled=false
+helm install apk-test-setup ../../helm-charts -n apk-integration-test --set wso2.apk.cp.enabled=false
 
 # Wait gateway resources to be available.
 kubectl wait --timeout=5m -n gateway-system deployment/gateway-api-admission-server --for=condition=Available
 kubectl wait --timeout=5m -n gateway-system job/gateway-api-admission --for=condition=Complete
-kubectl wait --timeout=5m -n apk deployment/apk-test-wso2-apk-adapter-deployment --for=condition=Available
+kubectl wait --timeout=5m -n apk-integration-test deployment/apk-test-setup-wso2-apk-adapter-deployment --for=condition=Available
 
 # Run tests
 go test -v integration_test.go

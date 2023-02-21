@@ -35,7 +35,7 @@ var HTTPRouteRewritePath = suite.IntegrationTest{
 	Description: "An HTTPRoute with path rewrite filter",
 	Manifests:   []string{"tests/httproute-rewrite-path.yaml"},
 	Test: func(t *testing.T, suite *suite.IntegrationTestSuite) {
-		ns := "gateway-conformance-infra"
+		ns := "gateway-integration-test-infra"
 		gwAddr := kubernetes.WaitForGatewayAddress(t, suite.Client, suite.TimeoutConfig)
 
 		testCases := []http.ExpectedResponse{

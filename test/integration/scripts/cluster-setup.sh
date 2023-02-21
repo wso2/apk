@@ -16,8 +16,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
-# Create a kind cluster with k8s version 1.25.3
-kind create cluster --image "kindest/node:v1.25.3" --name "apk-dp-tests"
+# Create a kind cluster with k8s version 1.26.0
+kind create cluster --image "kindest/node:v1.26.0" --name "apk-dp-tests"
 
 # Install metalLB
 kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.7/config/manifests/metallb-native.yaml
