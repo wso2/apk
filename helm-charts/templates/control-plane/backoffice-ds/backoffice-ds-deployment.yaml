@@ -43,6 +43,8 @@ spec:
           ports:
             - containerPort: 9443
               protocol: "TCP"
+            - containerPort: 9444
+              protocol: "TCP"
 {{ include "apk-helm.deployment.readinessProbe.http" .Values.wso2.apk.cp.backoffice.deployment | indent 10 }}
 {{ include "apk-helm.deployment.livenessProbe.http" .Values.wso2.apk.cp.backoffice.deployment | indent 10 }}
 {{ include "apk-helm.deployment.resources" .Values.wso2.apk.cp.backoffice.deployment.resources | indent 10 }}
