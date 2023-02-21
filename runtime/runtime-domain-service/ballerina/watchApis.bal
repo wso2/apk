@@ -220,20 +220,15 @@ isolated function removeAPI(model:API api) {
     }
 }
 
-isolated function getAPIByNameAndNamespace(string name, string namespace, commons:Organization organization) returns model:API|() {
+isolated function getAPIByNameAndNamespace(string name, string namespace, commons:Organization organization) returns model:API|()|commons:APKError {
     foreach model:API api in getAPIs(organization) {
         if (api.metadata.name == name && api.metadata.namespace == namespace) {
             return api;
         }
     }
-    json|error k8sAPIByNameAndNamespace = getK8sAPIByNameAndNamespace(name, namespace);
-    if k8sAPIByNameAndNamespace is json {
-        model:API|error k8sAPI = k8sAPIByNameAndNamespace.cloneWithType(model:API);
-        if k8sAPI is model:API {
-            return k8sAPI;
-        } else {
-            log:printError("Error occued while converting json", k8sAPI);
-        }
+    model:API? k8sAPIByNameAndNamespace = check getK8sAPIByNameAndNamespace(name, namespace);
+    if k8sAPIByNameAndNamespace is model:API {
+            return k8sAPIByNameAndNamespace;
     }
     return ();
 }

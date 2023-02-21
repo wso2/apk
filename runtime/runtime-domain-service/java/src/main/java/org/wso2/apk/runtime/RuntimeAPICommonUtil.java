@@ -32,7 +32,7 @@ public class RuntimeAPICommonUtil {
                                                                             boolean returnContent)
             throws APIManagementException {
         APIDefinitionValidationResponse validationResponse = new APIDefinitionValidationResponse();
-        if (APIConstants.ParserType.OAS3.name().equals(type)){
+        if (APIConstants.ParserType.REST.name().equals(type)){
             if (inputByteArray != null && inputByteArray.length>0) {
                 if (fileName != null) {
                     if (fileName.endsWith(".zip")) {
