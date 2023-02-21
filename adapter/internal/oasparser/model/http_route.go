@@ -187,7 +187,7 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, ht
 			}
 		}
 		loggers.LoggerOasparser.Debug("Calculating auths for API ...")
-		securities, securityDefinitions, disabledSecurity := getSecurity(concatAuthScheme(resourceAuthScheme))
+		securities, securityDefinitions, disabledSecurity := getSecurity(concatAuthScheme(resourceAuthScheme), scopes)
 		securitySchemes = append(securitySchemes, securityDefinitions...)
 		if len(rule.BackendRefs) < 1 {
 			return fmt.Errorf("no backendref were provided")
@@ -381,7 +381,7 @@ func concatAPIPolicies(schemeUp *dpv1alpha1.APIPolicy, schemeDown *dpv1alpha1.AP
 // getSecurity returns security schemes and it's definitions with flag to indicate if security is disabled
 // make sure authscheme only has external service override values. (i.e. empty default values)
 // tip: use concatScheme method
-func getSecurity(authScheme *dpv1alpha1.Authentication) ([]map[string][]string, []SecurityScheme, bool) {
+func getSecurity(authScheme *dpv1alpha1.Authentication, scopes []string) ([]map[string][]string, []SecurityScheme, bool) {
 	authSecurities := []map[string][]string{}
 	securitySchemes := []SecurityScheme{}
 	if authScheme != nil {
@@ -393,12 +393,17 @@ func getSecurity(authScheme *dpv1alpha1.Authentication) ([]map[string][]string, 
 			switch auth.AuthType {
 			case constants.JWTAuth:
 				securityName := fmt.Sprintf("%s_%v", constants.JWTAuth, rand.Intn(999999999))
-				authSecurities = append(authSecurities, map[string][]string{securityName: {}})
+				authSecurities = append(authSecurities, map[string][]string{securityName: scopes})
 				securitySchemes = append(securitySchemes, SecurityScheme{DefinitionName: securityName, Type: constants.Oauth2TypeInOAS})
 			}
 		}
 	} else {
 		loggers.LoggerOasparser.Debug("No auths were provided")
+		//todo(amali) remove this default security after scope remodelling is done.
+		// apply default security
+		securityName := fmt.Sprintf("%s_%v", constants.JWTAuth, rand.Intn(999999999))
+		authSecurities = append(authSecurities, map[string][]string{securityName: scopes})
+		securitySchemes = append(securitySchemes, SecurityScheme{DefinitionName: securityName, Type: constants.Oauth2TypeInOAS})
 	}
 	return authSecurities, securitySchemes, false
 }
