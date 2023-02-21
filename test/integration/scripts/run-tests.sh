@@ -20,6 +20,7 @@
 kubectl create ns apk-integration-test
 
 # Install wso2 apk chart with cp disabled
+helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo add jetstack https://charts.jetstack.io
 helm dependency build ../../helm-charts
 helm install apk-test-setup ../../helm-charts -n apk-integration-test --set wso2.apk.cp.enabled=false
