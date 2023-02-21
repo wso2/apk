@@ -24,6 +24,8 @@ data:
   Config.toml: |
     [ballerina.log]
     level = "DEBUG"
+    [ballerina.http]
+    traceLogConsole = true
     # [runtime_domain_service.runtimeConfiguration.keyStores.tls]
     # path = ""
     # [runtime_domain_service.runtimeConfiguration.keyStores.signing]

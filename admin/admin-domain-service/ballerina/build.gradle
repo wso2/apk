@@ -17,17 +17,23 @@
 //
 
 apply from: "$rootDir/../../common-gradle-scripts/ballerina.gradle"
+apply from: "$rootDir/../../common-gradle-scripts/docker.gradle"
 
 tasks.register('build') {
     group 'build'
     description 'Build ballerina component'
+    dependsOn 'test'
+    mustRunAfter('test')
     dependsOn 'bal_build'
 }
 
 tasks.register('test') {
     group 'test'
     description 'Test ballerina component'
-    dependsOn 'bal_test'
+    dependsOn('start_postgres_image')
+    dependsOn('bal_test')
+    finalizedBy('stop_postgres_image')
+    mustRunAfter('start_postgres_image')
 }
 
 task clean{

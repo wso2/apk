@@ -24,8 +24,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
-	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
-	"github.com/wso2/apk/adapter/internal/operator/utils"
+	dpv1alpha1 "github.com/wso2/apk/adapter/pkg/operator/apis/dp/v1alpha1"
+	"github.com/wso2/apk/adapter/pkg/operator/utils"
 	"golang.org/x/exp/maps"
 	"k8s.io/apimachinery/pkg/types"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
@@ -38,6 +38,7 @@ type HTTPRouteParams struct {
 	APIPolicies            map[string]dpv1alpha1.APIPolicy
 	ResourceAPIPolicies    map[string]dpv1alpha1.APIPolicy
 	BackendPropertyMapping dpv1alpha1.BackendPropertyMapping
+	ResourceScopes         map[string]dpv1alpha1.Scope
 }
 
 // SetInfoHTTPRouteCR populates resources and endpoints of mgwSwagger. httpRoute.Spec.Rules.Matches
@@ -63,6 +64,7 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, ht
 		resourceAuthScheme := authScheme
 		resourceAPIPolicy := apiPolicy
 		hasPolicies := false
+		var scopes []string
 		for _, filter := range rule.Filters {
 			hasPolicies = true
 			switch filter.Type {
@@ -104,6 +106,16 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, ht
 					} else {
 						return fmt.Errorf(`apipolicy: %s has not been resolved, spec.targetRef.kind should be 
 						'Resource' in resource level APIPolicies`, filter.ExtensionRef.Name)
+					}
+				}
+				if filter.ExtensionRef.Kind == constants.KindScope {
+					if ref, found := httpRouteParams.ResourceScopes[types.NamespacedName{
+						Name:      string(filter.ExtensionRef.Name),
+						Namespace: httpRoute.Namespace,
+					}.String()]; found {
+						scopes = append(scopes, ref.Spec.Names...)
+					} else {
+						return fmt.Errorf("scope: %s has not been resolved in namespace %s", filter.ExtensionRef.Name, httpRoute.Namespace)
 					}
 				}
 			case gwapiv1b1.HTTPRouteFilterRequestHeaderModifier:
@@ -175,7 +187,7 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, ht
 			}
 		}
 		loggers.LoggerOasparser.Debug("Calculating auths for API ...")
-		securities, securityDefinitions, disabledSecurity := getSecurity(concatAuthScheme(resourceAuthScheme))
+		securities, securityDefinitions, disabledSecurity := getSecurity(concatAuthScheme(resourceAuthScheme), scopes)
 		securitySchemes = append(securitySchemes, securityDefinitions...)
 		if len(rule.BackendRefs) < 1 {
 			return fmt.Errorf("no backendref were provided")
@@ -369,7 +381,7 @@ func concatAPIPolicies(schemeUp *dpv1alpha1.APIPolicy, schemeDown *dpv1alpha1.AP
 // getSecurity returns security schemes and it's definitions with flag to indicate if security is disabled
 // make sure authscheme only has external service override values. (i.e. empty default values)
 // tip: use concatScheme method
-func getSecurity(authScheme *dpv1alpha1.Authentication) ([]map[string][]string, []SecurityScheme, bool) {
+func getSecurity(authScheme *dpv1alpha1.Authentication, scopes []string) ([]map[string][]string, []SecurityScheme, bool) {
 	authSecurities := []map[string][]string{}
 	securitySchemes := []SecurityScheme{}
 	if authScheme != nil {
@@ -381,12 +393,17 @@ func getSecurity(authScheme *dpv1alpha1.Authentication) ([]map[string][]string, 
 			switch auth.AuthType {
 			case constants.JWTAuth:
 				securityName := fmt.Sprintf("%s_%v", constants.JWTAuth, rand.Intn(999999999))
-				authSecurities = append(authSecurities, map[string][]string{securityName: {}})
+				authSecurities = append(authSecurities, map[string][]string{securityName: scopes})
 				securitySchemes = append(securitySchemes, SecurityScheme{DefinitionName: securityName, Type: constants.Oauth2TypeInOAS})
 			}
 		}
 	} else {
 		loggers.LoggerOasparser.Debug("No auths were provided")
+		//todo(amali) remove this default security after scope remodelling is done.
+		// apply default security
+		securityName := fmt.Sprintf("%s_%v", constants.JWTAuth, rand.Intn(999999999))
+		authSecurities = append(authSecurities, map[string][]string{securityName: scopes})
+		securitySchemes = append(securitySchemes, SecurityScheme{DefinitionName: securityName, Type: constants.Oauth2TypeInOAS})
 	}
 	return authSecurities, securitySchemes, false
 }

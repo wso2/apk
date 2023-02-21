@@ -1,0 +1,8 @@
+apiVersion: wso2.com/v1beta1
+kind: Scope
+metadata:
+  name: pet-store-authentication-1-resource-override
+Spec:
+  override:
+    names:
+      - read:pets

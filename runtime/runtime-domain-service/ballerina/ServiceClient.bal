@@ -1,6 +1,7 @@
 import runtime_domain_service.model;
 import ballerina/http;
 import ballerina/regex;
+import wso2/apk_common_lib as commons;
 
 //
 // Copyright (c) 2022, WSO2 LLC. (http://www.wso2.com).
@@ -22,8 +23,8 @@ import ballerina/regex;
 
 public class ServiceClient {
 
-    public isolated function getServices(string? query, string sortBy, string sortOrder, int 'limit, int offset) returns ServiceList|BadRequestError|InternalServerErrorError {
-        Service[] serviceList = getServicesList().clone();
+    public isolated function getServices(string? query, string sortBy, string sortOrder, int 'limit, int offset,commons:Organization organization) returns ServiceList|BadRequestError|InternalServerErrorError {
+        Service[] serviceList = getServicesList(organization).clone();
         if query is string && query.toString().trim().length() > 0 {
             return self.filterServicesBasedOnQuery(serviceList, query, sortBy, sortOrder, 'limit, offset);
         }
@@ -31,7 +32,7 @@ public class ServiceClient {
         return self.sortAndLimitServices(serviceList, sortBy, sortOrder, 'limit, offset);
     }
 
-    public isolated function getServiceById(string serviceId) returns Service|BadRequestError|NotFoundError|InternalServerErrorError {
+    public isolated function getServiceById(string serviceId,commons:Organization organization) returns Service|BadRequestError|NotFoundError|InternalServerErrorError {
         Service|error retrievedService = getServiceById(serviceId);
         if retrievedService is Service {
             return retrievedService;
@@ -110,9 +111,9 @@ public class ServiceClient {
         return createServiceModel(serviceByNameAndNamespace);
     }
 
-    public isolated function getServiceUsageByServiceId(string serviceId, string organization) returns APIList|BadRequestError|NotFoundError|InternalServerErrorError {
+    public isolated function getServiceUsageByServiceId(string serviceId, commons:Organization organization) returns APIList|BadRequestError|NotFoundError|InternalServerErrorError {
         APIInfo[] apiInfos = [];
-        Service|BadRequestError|NotFoundError|InternalServerErrorError serviceEntry = self.getServiceById(serviceId);
+        Service|BadRequestError|NotFoundError|InternalServerErrorError serviceEntry = self.getServiceById(serviceId,organization);
         if serviceEntry is Service {
             model:API[] k8sAPIS = retrieveAPIMappingsForService(serviceEntry, organization);
             foreach model:API k8sAPI in k8sAPIS {

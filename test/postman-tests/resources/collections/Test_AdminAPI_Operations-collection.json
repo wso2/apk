@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "37714d22-83e7-42af-b8e0-d3df83aa2be4",
+		"_postman_id": "0aeb3f90-f0da-4436-88fb-9514cfb4e90c",
 		"name": "Test Admin API Operations",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -652,6 +652,264 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "AdminAPI Organization Create",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"  pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Assert Organization creation response\", () => {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.name).equals(pm.collectionVariables.get('organizationName'));",
+							"    pm.expect(responseJson.displayName).equals(pm.collectionVariables.get('organizationDisplayName'));",
+							"    pm.expect(responseJson.organizationClaimValue).equals(pm.collectionVariables.get('organizationClaimValue'));",
+							"    pm.collectionVariables.set(\"organizationId\",responseJson.id)",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "default"
+					},
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"{{organizationName}}\",\n    \"displayName\": \"{{organizationDisplayName}}\",\n    \"organizationClaimValue\": \"{{organizationClaimValue}}\",\n    \"serviceNamespaces\": [\n    \"{{serviceNamespace}}\"\n    ]\n}"
+				},
+				"url": {
+					"raw": "{{adminAPIServerBaseURL}}/api/am/admin/organizations",
+					"host": [
+						"{{adminAPIServerBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"admin",
+						"organizations"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "AdminAPI Organization Update",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "default"
+					},
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n      \"name\": \"{{organizationName}}\",\n      \"displayName\": \"{{organizationDisplayNameUpdate}}\",\n      \"organizationClaimValue\": \"{{organizationClaimValue}}\",\n      \"serviceNamespaces\": [\n        \"{{serviceNamespace}}\"\n      ]\n    }"
+				},
+				"url": {
+					"raw": "{{adminAPIServerBaseURL}}/api/am/admin/organizations/{{organizationId}}",
+					"host": [
+						"{{adminAPIServerBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"admin",
+						"organizations",
+						"{{organizationId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "AdminAPI Organizations List",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"url": {
+					"raw": "{{adminAPIServerBaseURL}}/api/am/admin/organizations",
+					"host": [
+						"{{adminAPIServerBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"admin",
+						"organizations"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "AdminAPI Organization Get By Organization Id",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"url": {
+					"raw": "{{adminAPIServerBaseURL}}/api/am/admin/organizations/{{organizationId}}",
+					"host": [
+						"{{adminAPIServerBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"admin",
+						"organizations",
+						"{{organizationId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "AdminAPI Organization Remove",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"url": {
+					"raw": "{{adminAPIServerBaseURL}}/api/am/admin/organizations/{{organizationId}}",
+					"host": [
+						"{{adminAPIServerBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"admin",
+						"organizations",
+						"{{organizationId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "AdminAPI Oraganizatin Info",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"url": {
+					"raw": "{{adminAPIServerBaseURL}}/api/am/admin/organization-info",
+					"host": [
+						"{{adminAPIServerBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"admin",
+						"organization-info"
+					]
+				}
+			},
+			"response": []
 		}
 	],
 	"event": [
@@ -773,6 +1031,36 @@
 		{
 			"key": "access_token",
 			"value": ""
+		},
+		{
+			"key": "organizationName",
+			"value": "Finance",
+			"type": "default"
+		},
+		{
+			"key": "organizationDisplayName",
+			"value": "Finance",
+			"type": "default"
+		},
+		{
+			"key": "organizationClaimValue",
+			"value": "0123-456-789-101",
+			"type": "default"
+		},
+		{
+			"key": "serviceNamespace",
+			"value": "Test",
+			"type": "default"
+		},
+		{
+			"key": "organizationDisplayNameUpdate",
+			"value": "FinanceMarketing",
+			"type": "default"
+		},
+		{
+			"key": "organizationId",
+			"value": "",
+			"type": "default"
 		}
 	]
 }

@@ -235,3 +235,12 @@ isolated function getBackendServicesForAPI(string apiName, string apiVersion, st
     string endpoint = "/api/v1/namespaces/" + namespace + "/services?labelSelector=" + check generateUrlEncodedLabelSelector(apiName, apiVersion);
     return k8sApiServerEp->get(endpoint, targetType = model:ServiceList);
 }
+
+public function retrieveAllOrganizations(string? continueToken) returns model:OrganizationList|http:ClientError {
+    string? continueTokenValue = continueToken;
+    string endpoint = "/apis/cp.wso2.com/v1alpha1/organizations";
+    if continueTokenValue is string && continueTokenValue.length() > 0 {
+        endpoint = endpoint + "?continue=" + continueTokenValue;
+    }
+    return k8sApiServerEp->get(endpoint, targetType = model:OrganizationList);
+}

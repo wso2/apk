@@ -19,6 +19,7 @@ import ballerina/websocket;
 import ballerina/lang.value;
 import runtime_domain_service.model as model;
 import ballerina/log;
+import wso2/apk_common_lib as commons;
 
 string serviceMappingResourceVersion = "";
 isolated map<model:K8sServiceMapping> k8sServiceMappings = {};
@@ -146,7 +147,7 @@ isolated function putAllServiceMappings(map<model:K8sServiceMapping> serviceMapp
     }
 }
 
-isolated function retrieveAPIMappingsForService(Service serviceEntry,string organization) returns model:API[] {
+isolated function retrieveAPIMappingsForService(Service serviceEntry,commons:Organization organization) returns model:API[] {
     lock {
         string[] keys = k8sServiceMappings.keys();
         model:API[] apis = [];
@@ -155,7 +156,7 @@ isolated function retrieveAPIMappingsForService(Service serviceEntry,string orga
             model:ServiceReference serviceRef = serviceMapping.spec.serviceRef;
             if (serviceRef.name == serviceEntry.name && serviceRef.namespace == serviceEntry.namespace) {
                 model:APIReference apiRef = serviceMapping.spec.apiRef;
-                model:API? k8sAPI = getAPIByNameAndNamespace(apiRef.name, apiRef.namespace,organization);
+                model:API? k8sAPI = getAPIByNameAndNamespace(apiRef.name, apiRef.namespace,organization.clone());
                 if k8sAPI is model:API {
                     apis.push(k8sAPI);
                 }

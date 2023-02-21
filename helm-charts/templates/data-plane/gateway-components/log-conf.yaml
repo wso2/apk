@@ -85,6 +85,15 @@ data:
       issuer = "https://apim.wso2.com/publisher"
       validateSubscription = true
       certificateFilePath = "/home/wso2/security/truststore/wso2carbon.pem"
+    [enforcer.jwtGenerator]
+    enabled = true
+    encoding = "base64" # base64,base64url
+    claimDialect = "http://wso2.org/claims"
+    header = "X-JWT-Assertion"
+    signingAlgorithm = "SHA256withRSA"
+    gatewayGeneratorImpl = "org.wso2.carbon.apimgt.common.gateway.jwtgenerator.APIMgtGatewayJWTGeneratorImpl"
+    publicCertificatePath = "/home/wso2/security/truststore/mg.pem"
+    privateKeyPath = "/home/wso2/security/keystore/mg.key"
 
     [enforcer.throttling]
       enableGlobalEventPublishing = false
@@ -108,7 +117,7 @@ data:
       serviceBasePath = "/api/am/runtime"
     
     [managementServer]
-      enabled = true
+      enabled = {{ .Values.wso2.apk.cp.enabled }}
 
   config.toml.template: |
     # The configuration file for mgw

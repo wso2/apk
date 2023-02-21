@@ -13,6 +13,7 @@ Spec:
       includes:
     responseInterceptor:
     responseCaching:
+    backendJWTEnabled: true
   default:
     ...
   targetRef:

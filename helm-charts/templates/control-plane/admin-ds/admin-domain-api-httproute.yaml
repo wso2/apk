@@ -1124,6 +1124,28 @@ spec:
       name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
       namespace: {{ .Release.Namespace }}
       port: 9443
+  - matches:
+    - path:
+        type: "PathPrefix"
+        value: "/api/am/admin/organizations"
+    backendRefs:
+    - weight: 1
+      group: ""
+      kind: "Service"
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
+      namespace: {{ .Release.Namespace }}
+      port: 9443
+  - matches:
+    - path:
+        type: "Exact"
+        value: "/api/am/admin/organization-info"
+    backendRefs:
+    - weight: 1
+      group: ""
+      kind: "Service"
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
+      namespace: {{ .Release.Namespace }}
+      port: 9443
   parentRefs:
   - group: "gateway.networking.k8s.io"
     kind: "Gateway"

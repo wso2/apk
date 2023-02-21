@@ -20,6 +20,7 @@ public type Organizations record {
     string id;
     string name;
     string displayName;
+    boolean enabled;
     string claimKey;
     string claimValue;
 };
@@ -29,6 +30,7 @@ public type Internal_Organization record {
     string id;
     string name;
     string displayName;
+    boolean enabled;
     OrganizationClaim[] claimList;
 };
 

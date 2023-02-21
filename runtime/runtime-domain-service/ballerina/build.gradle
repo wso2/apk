@@ -20,6 +20,7 @@ import org.apache.tools.ant.taskdefs.condition.Os
 
 apply from: "$projectDir/../../../common-gradle-scripts/ballerina.gradle"
 task build{
+    dependsOn 'bal_test'
     dependsOn 'bal_build'
 }
 task clean{

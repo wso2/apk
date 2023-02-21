@@ -26,8 +26,8 @@ isolated function addOrganizationDAO(Internal_Organization payload) returns Inte
         return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
         sql:ParameterizedQuery query = `INSERT INTO ORGANIZATION(UUID, NAME, 
-        DISPLAY_NAME) VALUES (${payload.id},${payload.name},
-        ${payload.displayName})`;
+        DISPLAY_NAME,STATUS) VALUES (${payload.id},${payload.name},
+        ${payload.displayName},${payload.enabled})`;
         sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
         if result is sql:ExecutionResult && result.affectedRowCount == 1 {
            return addOrganizationClaimMappingDAO(dbClient, payload);    
@@ -96,7 +96,7 @@ isolated function updateOrganizationDAO(string id, Internal_Organization payload
         return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
         sql:ParameterizedQuery query = `UPDATE ORGANIZATION SET NAME =${payload.name},
-         DISPLAY_NAME = ${payload.displayName} WHERE UUID = ${id}`;
+         DISPLAY_NAME = ${payload.displayName}, STATUS=${payload.enabled} WHERE UUID = ${id}`;
         sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
         if result is sql:ExecutionResult && result.affectedRowCount == 1 {
                 return updateOrganizationClaimMappingDAO(dbClient, id, payload);
@@ -144,7 +144,7 @@ public isolated function getAllOrganizationDAO() returns Internal_Organization[]
                     organization.get(org.id).claimList.push(claim);
                 } else {
                     OrganizationClaim claim = {claimKey: org.claimKey, claimValue: org.claimValue};
-                    Internal_Organization organizationData = {id: org.id, name: org.name, displayName: org.displayName, claimList: [claim]};
+                    Internal_Organization organizationData = {id: org.id, name: org.name, displayName: org.displayName, enabled: org.enabled,  claimList: [claim]};
                     organization[org.id] = organizationData;
                 }
             };
@@ -171,6 +171,7 @@ isolated function getOrganizationByIdDAO(string id) returns Internal_Organizatio
                 id: "",
                 name: "",
                 displayName: "",
+                enabled: true,
                 claimList: []
             };
             check from Organizations org in orgStream do {
@@ -179,6 +180,7 @@ isolated function getOrganizationByIdDAO(string id) returns Internal_Organizatio
                         id:id,
                         name:org.name,
                         displayName:org.displayName,
+                        enabled: org.enabled,
                         claimList:[{
                             claimKey:org.claimKey,
                             claimValue: org.claimValue
