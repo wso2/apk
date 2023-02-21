@@ -409,7 +409,8 @@ dependencies = [
 	{org = "ballerina", name = "time"},
 	{org = "ballerinai", name = "observe"},
 	{org = "ballerinai", name = "transaction"},
-	{org = "ballerinax", name = "postgresql"}
+	{org = "ballerinax", name = "postgresql"},
+	{org = "wso2", name = "apk_common_lib"}
 ]
 modules = [
 	{org = "wso2", packageName = "backoffice_service", moduleName = "backoffice_service"},

@@ -404,7 +404,8 @@ dependencies = [
 	{org = "ballerina", name = "test"},
 	{org = "ballerina", name = "uuid"},
 	{org = "ballerinai", name = "observe"},
-	{org = "ballerinax", name = "postgresql"}
+	{org = "ballerinax", name = "postgresql"},
+	{org = "wso2", name = "apk_common_lib"}
 ]
 modules = [
 	{org = "wso2", packageName = "devportal_service", moduleName = "devportal_service"},
