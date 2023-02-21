@@ -322,7 +322,17 @@ function prefixMatchDataProvider() returns map<[API, model:Endpoint, APIOperatio
 @test:Config {dataProvider: apiDefinitionDataProvider}
 public function testGetAPIDefinitionByID(string apiid, anydata expectedResponse) returns error? {
     APIClient apiclient = new ();
-    test:assertEquals(apiclient.getAPIDefinitionByID(apiid, organiztion1), expectedResponse);
+    http:Response|NotFoundError|PreconditionFailedError|InternalServerErrorError aPIDefinitionByID = apiclient.getAPIDefinitionByID(apiid, organiztion1);
+    if aPIDefinitionByID is http:Response {
+        json jsonPayload = check aPIDefinitionByID.getJsonPayload();
+        test:assertEquals(jsonPayload, expectedResponse);
+    } else if aPIDefinitionByID is NotFoundError {
+        test:assertEquals(aPIDefinitionByID, expectedResponse);
+    } else if aPIDefinitionByID is PreconditionFailedError {
+        test:assertEquals(aPIDefinitionByID, expectedResponse);
+    } else {
+        test:assertEquals(aPIDefinitionByID, expectedResponse);
+    }
 }
 
 public function apiDefinitionDataProvider() returns map<[string, json|NotFoundError|PreconditionFailedError|InternalServerErrorError]> {
