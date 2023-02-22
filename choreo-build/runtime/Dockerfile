@@ -18,5 +18,5 @@
 #
 #---------------------------------------------------------------
 
-FROM admin-domain-service:12ac3c6d2b9e71cdd1543116f01ce4481da7f639
+FROM wso2/runtime-domain-service:3771a0f3e528eb91eb3ee5f6137d7c68b1878656
 USER 10014

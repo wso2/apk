@@ -18,5 +18,5 @@
 #
 #---------------------------------------------------------------
 
-FROM admin-domain-service:12ac3c6d2b9e71cdd1543116f01ce4481da7f639
+FROM wso2/router:12ac3c6d2b9e71cdd1543116f01ce4481da7f639
 USER 10014

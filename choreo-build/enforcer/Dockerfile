@@ -18,5 +18,5 @@
 #
 #---------------------------------------------------------------
 
-FROM admin-domain-service:12ac3c6d2b9e71cdd1543116f01ce4481da7f639
+FROM wso2/enforcer:8af9e0954af878cfe66bc343079fad324ef4ff8b
 USER 10014
