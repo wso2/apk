@@ -1,36 +1,88 @@
 <!DOCTYPE html>
+<!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8">
-    <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <title>Login Example</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>WSO2 APK - Login</title>
+    <style>
+        body {
+            padding: 50px;
+            font: 13px Helvetica, Arial, sans-serif;
+        }
+
+        .error {
+            color: red
+        }
+
+        .success {
+            color: green;
+        }
+    </style>
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="bootstrap-5.2.3/css/bootstrap.min.css">
     <link rel="stylesheet" href="stylesheets/style.css">
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="bootstrap-5.2.3/js/bootstrap.min.js"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;1,100;1,200;1,300;1,400;1,500;1,600&display=swap"
+        rel="stylesheet">
 </head>
-<body>
-    <div class="container">
-        <div class="form-message" >
-        <%- message %>
-    Try accessing <a href="/admin">/admin</a>, then authenticate with "admin" and "admin".
-        </div>
-    </div>
-    <div class="container">
-        <div class="wrapper">
-            <form action="<%- loginURl %>" method="post" name="Login_Form" class="form-signin">
-                <h3 class="form-signin-heading">SIGN IN</h3>
 
-                <input type="text" class="form-control" id="username" name="username" placeholder="Username" required="" autofocus="" />
-                <input type="password" class="form-control" id="password" name="password" placeholder="Password" required=""/>
-                <input type="text" class="form-control" id="organization" name="organization" placeholder="Organization" autofocus="" />
-                <input type="hidden" class="form-control" id="sessionKey" name="sessionKey" placeholder="sessionKey" value="<%- sessionKey %>"/>                
-                <button class="btn btn-lg btn-primary btn-block" name="Submit" value="Login" type="Submit">SIGN IN</button>
-            </form>
+<body>
+    <div class="container-md container-lg" style="max-width: 900px;">
+        <div class="row">
+            <div class="col add-block d-none d-md-block">
+                <img src="images/apk-people.png" alt="logo" width="300">
+                <p>
+                    WSO2 APK is a Kubernetes-native solution for managing and publishing APIs. It offers a secure and
+                    easy-to-use platform for creating, securing, and managing APIs that can be consumed by internal and
+                    external users.
+                </p>
+            </div>
+            <div class="col login-block">
+                <form action="<%- loginURl %>" method="post" name="Login_Form" class="form-signin">
+                    <h3 class="form-login-heading">SIGN IN</h3>
+                    <div class="form-logo-wrapper"><img src="images/logo.svg" alt="logo" width="200"></div>
+                    <div class="form-message-wrapper">
+                        <%- message %>
+                        Try accessing <a href="/admin">/admin</a>, then authenticate with "admin" and "admin".
+                    </div>
+                    <div class="form-gap">
+                        <input type="text" class="form-control" id="username" name="username" placeholder="Username"
+                            required="" autofocus="" />
+                            <div class="form-text">Please enter your username or email address.</div>
+
+                    </div>
+                    <div class="form-gap">
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Password"
+                            required="" />
+                            <div class="form-text">Please enter your password. Passwords are case-sensitive.</div>
+                    </div>
+                    <div class="form-gap">
+                        <input type="text" class="form-control" id="organization" name="organization"
+                            placeholder="Organization" autofocus="" />
+                            <div class="form-text">Please enter your organization name. Organization name is case-sensitive.</div>
+                    </div>
+                    <div class="form-gap">
+                        <input type="hidden" class="form-control" id="sessionKey" name="sessionKey"
+                            placeholder="sessionKey" value="<%- sessionKey %>" />
+                        <button class="btn btn-md btn-primary btn-block" name="Submit" value="Login" type="Submit">SIGN
+                            IN</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col footer-text">
+                <p><small>©2023 WSO2 LLC. All Rights Reserved.</small></p>
+            </div>
         </div>
     </div>
-<%- include('foot') -%>
+</body>
+
+</html>

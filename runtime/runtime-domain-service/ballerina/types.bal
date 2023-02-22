@@ -199,6 +199,7 @@ public type ServiceList record {
 
 public type API_serviceInfo record {
     string name?;
+    string namespace?;
 };
 
 public type APIInfo record {
@@ -305,6 +306,7 @@ public type API record {
     record {} endpointConfig?;
     APIOperations[] operations?;
     API_serviceInfo serviceInfo?;
+    APIOperationPolicies apiPolicies?;
     string createdTime?;
     string lastUpdatedTime?;
 };

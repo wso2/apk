@@ -514,3 +514,34 @@ public function mockPizzaShackAPI1Definition(string organization) returns json {
     APIClient apiclient = new ();
     return apiclient.retrieveDefaultDefinition(api);
 }
+
+public function getMockInternalAPI() returns http:Response {
+    http:Response response = new;
+    response.statusCode=200;
+    model:RuntimeAPI runtimeAPI = {
+        metadata: {name: "01ed7aca-eb6b-1178-a200-f604a4ce114a", namespace: "apk-platform"},
+        spec: {
+            name: "pizzashackAPI",
+            context: "",
+            'type: "REST",
+            'version: "1.0.0",
+            endpointConfig: {
+                "endpoint_type": "http",
+                "sandbox_endpoints": {
+                    "url": "https://pizzashack-service:8080/am/sample/pizzashack/v3/api/"
+                },
+                "production_endpoints": {
+                    "url": "https://pizzashack-service:8080/am/sample/pizzashack/v3/api/"
+                }
+            },
+            operations: [
+                {verb: "GET", target: "/*", authTypeEnabled: true},
+                {verb: "PUT", target: "/*", authTypeEnabled: true},
+                {verb: "POST", target: "/*", authTypeEnabled: true},
+                {verb: "DELETE", target: "/*", authTypeEnabled: true}
+            ]
+        }
+    };
+    response.setJsonPayload(runtimeAPI.toJson());
+    return response;
+}
