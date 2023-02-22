@@ -171,8 +171,8 @@ public class APIClient {
     }
     private isolated function deleteInternalAPI(string k8sAPIName, string apiNameSpace) returns commons:APKError? {
         do {
-            http:Response|error internalAPI = getInternalAPI(k8sAPIName, apiNameSpace);
-            if internalAPI is http:Response && internalAPI.statusCode == http:STATUS_OK {
+            model:RuntimeAPI|http:ClientError internalAPI = getInternalAPI(k8sAPIName, apiNameSpace);
+            if internalAPI is model:RuntimeAPI {
                 http:Response internalAPIDeletionResponse = check deleteInternalAPI(k8sAPIName, apiNameSpace);
                 if internalAPIDeletionResponse.statusCode != http:STATUS_OK {
                     json responsePayLoad = check internalAPIDeletionResponse.getJsonPayload();
@@ -1345,20 +1345,20 @@ public class APIClient {
         string definitionType = "REST";
         string|() inlineAPIDefinition = ();
         mime:Entity[] payLoadParts = check message.getBodyParts();
-            foreach mime:Entity payLoadPart in payLoadParts {
-                mime:ContentDisposition contentDisposition = payLoadPart.getContentDisposition();
-                string fieldName = contentDisposition.name;
-                if fieldName == "url" {
-                    url = check payLoadPart.getText();
-                }
-                else if fieldName == "file" {
-                    fileName = contentDisposition.fileName;
-                    fileContent = check payLoadPart.getByteArray();
-                } else if fieldName == "type" {
-                    definitionType = check payLoadPart.getText();
-                } else if fieldName == "inlineAPIDefinition" {
-                    inlineAPIDefinition = check payLoadPart.getText();
-                }
+        foreach mime:Entity payLoadPart in payLoadParts {
+            mime:ContentDisposition contentDisposition = payLoadPart.getContentDisposition();
+            string fieldName = contentDisposition.name;
+            if fieldName == "url" {
+                url = check payLoadPart.getText();
+            }
+            else if fieldName == "file" {
+                fileName = contentDisposition.fileName;
+                fileContent = check payLoadPart.getByteArray();
+            } else if fieldName == "type" {
+                definitionType = check payLoadPart.getText();
+            } else if fieldName == "inlineAPIDefinition" {
+                inlineAPIDefinition = check payLoadPart.getText();
+            }
         }
         DefinitionValidationRequest definitionValidationRequest = {
             content: fileContent,
@@ -1845,7 +1845,7 @@ public class APIClient {
                     if serviceId is string && serviceId.toString().trim().length() > 0 {
                         Service|error serviceById = getServiceById(serviceId);
                         if serviceById is Service {
-                            self.prepareApiArtifactforNewVersion(apiArtifact, serviceById, api, newVersion, organization);
+                            check self.prepareApiArtifactforNewVersion(apiArtifact, serviceById, api, newVersion, organization);
                             model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact);
                             CreatedAPI createdAPI = {body: {name: deployAPIToK8sResult.spec.apiDisplayName, context: self.returnFullContext(deployAPIToK8sResult.spec.context, deployAPIToK8sResult.spec.apiVersion), 'version: deployAPIToK8sResult.spec.apiVersion, id: deployAPIToK8sResult.metadata.uid}};
                             return createdAPI;
@@ -1855,7 +1855,7 @@ public class APIClient {
                         }
                     }
                 }
-                self.prepareApiArtifactforNewVersion(apiArtifact, (), api, newVersion, organization);
+                check self.prepareApiArtifactforNewVersion(apiArtifact, (), api, newVersion, organization);
                 model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact);
                 CreatedAPI createdAPI = {body: {name: deployAPIToK8sResult.spec.apiDisplayName, context: self.returnFullContext(deployAPIToK8sResult.spec.context, deployAPIToK8sResult.spec.apiVersion), 'version: deployAPIToK8sResult.spec.apiVersion, id: deployAPIToK8sResult.metadata.uid}};
                 return createdAPI;
@@ -1870,21 +1870,19 @@ public class APIClient {
             return error("Internal Error occured", code = 909000, message = "Internal Error occured", description = "Internal Error occured", statusCode = 500);
         }
     }
-    private isolated function prepareApiArtifactforNewVersion(model:APIArtifact apiArtifact, Service? serviceEntry, API oldAPI, string newVersion, commons:Organization organization) {
-        do {
-            API newAPI = {
-                name: oldAPI.name,
-                context: regex:replace(oldAPI.context, oldAPI.'version, newVersion),
-                'version: newVersion
-            };
-            self.prepareAPICr(apiArtifact, oldAPI, newAPI, organization);
-            check self.prepareConfigMap(apiArtifact, oldAPI, newAPI);
-            self.prepareHttpRoute(apiArtifact, serviceEntry, oldAPI, newAPI, PRODUCTION_TYPE, organization);
-            self.prepareHttpRoute(apiArtifact, serviceEntry, oldAPI, newAPI, SANDBOX_TYPE, organization);
-            self.prepareK8sServiceMapping(apiArtifact, serviceEntry, oldAPI, newAPI, organization);
-        } on fail var e {
-            log:printError("", e);
-        }
+    private isolated function prepareApiArtifactforNewVersion(model:APIArtifact apiArtifact, Service? serviceEntry, API oldAPI, string newVersion, commons:Organization organization) returns error? {
+        API newAPI = {
+            name: oldAPI.name,
+            context: regex:replace(oldAPI.context, oldAPI.'version, newVersion),
+            'version: newVersion
+        };
+        self.prepareAPICr(apiArtifact, oldAPI, newAPI, organization);
+        check self.prepareConfigMap(apiArtifact, oldAPI, newAPI);
+        self.prepareHttpRoute(apiArtifact, serviceEntry, oldAPI, newAPI, PRODUCTION_TYPE, organization);
+        self.prepareHttpRoute(apiArtifact, serviceEntry, oldAPI, newAPI, SANDBOX_TYPE, organization);
+        self.prepareK8sServiceMapping(apiArtifact, serviceEntry, oldAPI, newAPI, organization);
+        apiArtifact.runtimeAPI = self.generateRuntimeAPIArtifact(newAPI, serviceEntry, organization);
+
     }
     private isolated function prepareK8sServiceMapping(model:APIArtifact apiArtifact, Service? serviceEntry, API oldAPI, API newAPI, commons:Organization organization) {
         model:K8sServiceMapping[] serviceMappings = apiArtifact.serviceMapping;
@@ -2073,9 +2071,25 @@ public class APIClient {
         foreach model:BackendPolicy backendPolicy in backendPolicyList.items {
             apiArtifact.backendPolicies[backendPolicy.metadata.name] = self.sanitizeBackendPolicyCrs(backendPolicy);
         }
-
+        model:RuntimeAPI|http:ClientError internalAPI = getInternalAPI(k8sapi.metadata.name, k8sapi.metadata.namespace);
+        if internalAPI is model:RuntimeAPI {
+            apiArtifact.runtimeAPI = self.sanitizeRuntimeAPI(internalAPI);
+        } else if (internalAPI is http:ApplicationResponseError) {
+            if internalAPI.detail().statusCode != 404 {
+                return internalAPI;
+            }
+        } else {
+            return internalAPI;
+        }
         apiArtifact.api = self.sanitizeAPICR(k8sapi);
         return apiArtifact;
+    }
+    private isolated function sanitizeRuntimeAPI(model:RuntimeAPI runtimeAPI) returns model:RuntimeAPI {
+        model:RuntimeAPI sanitizedAPI = {
+            metadata: {name: runtimeAPI.metadata.name, namespace: runtimeAPI.metadata.namespace},
+            spec: runtimeAPI.spec
+        };
+        return sanitizedAPI;
     }
     private isolated function sanitizeAPICR(model:API api) returns model:API {
         model:API modifiedAPI = {
@@ -2195,6 +2209,10 @@ public class APIClient {
                     foreach model:BackendPolicy backendPolicy in apiArtifact.backendPolicies {
                         _ = check self.convertAndStoreYamlFile(backendPolicy.toJsonString(), backendPolicy.metadata.name, zipDir, "policies/backendPolicies");
 
+                    }
+                    model:RuntimeAPI? runtimeAPI = apiArtifact.runtimeAPI;
+                    if runtimeAPI is model:RuntimeAPI {
+                        _ = check self.convertAndStoreYamlFile(runtimeAPI.toJsonString(), runtimeAPI.metadata.name, zipDir, "runtimeapi");
                     }
                     [string, string] zipName = check self.zipDirectory(apiId, zipDir);
                     http:Response response = new;
@@ -2317,7 +2335,7 @@ public class APIClient {
             API|NotFoundError api = check self.getAPIById(apiId, organization);
             if api is API {
                 API updateAPI = {...api};
-            DefinitionValidationRequest|BadRequestError definitionValidationRequest = check self.mapApiDefinitionPayload(payload);
+                DefinitionValidationRequest|BadRequestError definitionValidationRequest = check self.mapApiDefinitionPayload(payload);
                 if definitionValidationRequest is DefinitionValidationRequest {
                     runtimeapi:APIDefinitionValidationResponse|runtimeapi:APIManagementException|BadRequestError validateAndRetrieveDefinitionResult = check self.validateAndRetrieveDefinition(updateAPI.'type, definitionValidationRequest.url, definitionValidationRequest.inlineAPIDefinition, definitionValidationRequest.content, definitionValidationRequest.fileName);
                     if validateAndRetrieveDefinitionResult is runtimeapi:APIDefinitionValidationResponse {
@@ -2335,28 +2353,27 @@ public class APIClient {
                                 foreach lang:Object uritemplate in uriTemplates {
                                     runtimeModels:URITemplate template = check java:cast(uritemplate);
                                     boolean found = false;
-                                        foreach APIOperations operation in operations {
-                                            if operation.target == template.getUriTemplate() && operation.verb == template.getHTTPVerb() {
-                                                sortedOperations.push(operation);
-                                                found = true;
-                                                break;
-                                            }
+                                    foreach APIOperations operation in operations {
+                                        if operation.target == template.getUriTemplate() && operation.verb == template.getHTTPVerb() {
+                                            sortedOperations.push(operation);
+                                            found = true;
+                                            break;
                                         }
-                                        if !found {
-                                            string[] scopes = [];
-                                            utilapis:List scopeSet = template.getScopes();
-                                            lang:Object[] scopeArray = check scopeSet.toArray();
-                                            foreach lang:Object scope in scopeArray {
-                                                scopes.push(scope.toString());
-                                            }
-                                            sortedOperations.push({
-                                                target: template.getUriTemplate(),
-                                                verb: template.getHTTPVerb(),
-                                                scopes: scopes
-                                            });
+                                    }
+                                    if !found {
+                                        string[] scopes = [];
+                                        utilapis:List scopeSet = template.getScopes();
+                                        lang:Object[] scopeArray = check scopeSet.toArray();
+                                        foreach lang:Object scope in scopeArray {
+                                            scopes.push(scope.toString());
                                         }
+                                        sortedOperations.push({
+                                            target: template.getUriTemplate(),
+                                            verb: template.getHTTPVerb(),
+                                            scopes: scopes
+                                        });
+                                    }
 
-                                    
                                 }
                                 updateAPI.operations = sortedOperations;
                                 _ = check self.updateAPI(apiId, updateAPI, validateAndRetrieveDefinitionResult.getContent(), organization);

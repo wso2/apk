@@ -515,9 +515,7 @@ public function mockPizzaShackAPI1Definition(string organization) returns json {
     return apiclient.retrieveDefaultDefinition(api);
 }
 
-public function getMockInternalAPI() returns http:Response {
-    http:Response response = new;
-    response.statusCode=200;
+public function getMockInternalAPI() returns model:RuntimeAPI {
     model:RuntimeAPI runtimeAPI = {
         metadata: {name: "01ed7aca-eb6b-1178-a200-f604a4ce114a", namespace: "apk-platform"},
         spec: {
@@ -542,6 +540,5 @@ public function getMockInternalAPI() returns http:Response {
             ]
         }
     };
-    response.setJsonPayload(runtimeAPI.toJson());
-    return response;
+    return runtimeAPI;
 }
