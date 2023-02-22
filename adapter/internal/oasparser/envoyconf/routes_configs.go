@@ -231,12 +231,8 @@ func generateRewritePathRouteConfig(routePath, resourcePath, endpointBasepath st
 		string(rewritePathType) == "" {
 		return nil, errors.New("policy parameter map must include rewritePathType")
 	}
-	rewritePathIndexedWrtResourcePath, err := getRewriteRegexFromPathTemplate(resourcePath, rewritePath)
-	if err != nil {
-		return nil, err
-	}
 
-	substitutionString := generateSubstitutionStringWithRewritePathType(endpointBasepath, rewritePathIndexedWrtResourcePath,
+	substitutionString := generateSubstitutionStringWithRewritePathType(rewritePath,
 		pathMatchType, rewritePathType)
 
 	return &envoy_type_matcherv3.RegexMatchAndSubstitute{
@@ -252,23 +248,23 @@ func generateRewritePathRouteConfig(routePath, resourcePath, endpointBasepath st
 	}, nil
 }
 
-func generateSubstitutionStringWithRewritePathType(endpointBasepath string, resourcePath string,
+func generateSubstitutionStringWithRewritePathType(rewritePath string,
 	pathMatchType gwapiv1b1.PathMatchType, rewritePathType gwapiv1b1.HTTPPathModifierType) string {
 	var resourceRegex string
 	switch pathMatchType {
 	case gwapiv1b1.PathMatchExact:
-		resourceRegex = resourcePath
+		resourceRegex = rewritePath
 	case gwapiv1b1.PathMatchPathPrefix:
 		switch rewritePathType {
 		case gwapiv1b1.FullPathHTTPPathModifier:
-			resourceRegex = strings.TrimSuffix(resourcePath, "/")
+			resourceRegex = strings.TrimSuffix(rewritePath, "/")
 		case gwapiv1b1.PrefixMatchHTTPPathModifier:
-			resourceRegex = fmt.Sprintf("%s\\1", strings.TrimSuffix(resourcePath, "/"))
+			resourceRegex = fmt.Sprintf("%s\\1", strings.TrimSuffix(rewritePath, "/"))
 		}
 	case gwapiv1b1.PathMatchRegularExpression:
-		resourceRegex = resourcePath
+		resourceRegex = rewritePath
 	}
-	return endpointBasepath + resourceRegex
+	return resourceRegex
 }
 
 func generateFilterConfigToSkipEnforcer() map[string]*anypb.Any {
