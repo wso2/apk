@@ -19,11 +19,20 @@
 import ballerina/log;
 import ballerinax/postgresql;
 import ballerina/sql;
+import wso2/apk_common_lib as commons;
 
 configurable DatasourceConfiguration datasourceConfiguration = ?;
 final postgresql:Client|sql:Error dbClient;
+
+commons:IDPConfiguration idpConfiguration = {
+        publicKey:{path: "/home/wso2apk/backoffice/security/mg.pem"}
+    };
+commons:DBBasedOrgResolver organizationResolver = new(datasourceConfiguration);
+commons:JWTValidationInterceptor jwtValidationInterceptor = new (idpConfiguration, organizationResolver);
+commons:RequestErrorInterceptor requestErrorInterceptor = new;
+
 function init() {
-    log:printInfo("Starting APK Backoffice internal Domain Service...");
+    log:printInfo("Starting APK Backoffice Domain Service...");
 
     dbClient = 
         new (host = datasourceConfiguration.host,

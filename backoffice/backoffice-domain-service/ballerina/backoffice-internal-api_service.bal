@@ -1,10 +1,9 @@
 import ballerina/http;
 
-// configurable int BACKOFFICE_PORT = 9443;
+configurable int BACKOFFICE_PORT_INT = 9444;
+listener http:Listener ep1 = new (BACKOFFICE_PORT_INT);
 
-// listener http:Listener ep0 = new (BACKOFFICE_PORT);
-
-service /api/am/backoffice/internal on ep0 {
+service /api/am/backoffice/internal on ep1 {
     isolated resource function post apis(@http:Payload json payload) returns CreatedAPI|BadRequestError|UnsupportedMediaTypeError|error {
         APIBody apiBody = check payload.cloneWithType(APIBody);
          

@@ -14,5 +14,5 @@ public type Organization record {|
     string organizationClaimValue;
     boolean enabled;
     string[] serviceListingNamespaces = ["*"];
-    OrganizationProperties[] properties;
+    OrganizationProperties[] properties = [];
 |};

@@ -8,6 +8,6 @@ data:
   config.toml: | 
     [backOffice]
       host = "{{ template "apk-helm.resource.prefix" . }}-backoffice-ds-service"
-      port = 9443
+      port = 9444
       serviceBasePath = "/api/am/backoffice/internal/apis"
 {{- end -}}
