@@ -1,0 +1,171 @@
+# Copyright (c) 2023, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
+#
+# WSO2 LLC. licenses this file to you under the Apache License,
+# Version 2.0 (the "License"); you may not use this file except
+# in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+apiVersion: dp.wso2.com/v1alpha1
+kind: API
+metadata:
+  name: trailing-slash
+  namespace: gateway-integration-test-infra
+spec:
+  apiDisplayName: API with Backend Base Path
+  apiType: REST
+  apiVersion: 1.0.0
+  context: /trailing-slash/v1.0.0
+  definitionFileRef: definition-file
+  prodHTTPRouteRef: trailing-slash-httproute
+  organization: wso2-org
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: trailing-slash-httproute
+  namespace: gateway-integration-test-infra
+spec:
+  parentRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: Default
+  hostnames:
+  - test.api.gw.wso2.com
+  rules:
+  - matches:
+    - path:
+        type: Exact
+        value: /trailing-slash/v1.0.0/echo-full/no-slash/findByStatus
+      method: GET
+    filters:
+    - type: URLRewrite
+      urlRewrite:
+        path:
+          type: ReplaceFullPath
+          replaceFullPath: /v2/echo-full/no-slash/findByStatus
+    backendRefs:
+    - name: infra-backend-v1
+      port: 8080
+  - matches:
+    - path:
+        type: RegularExpression
+        value: /trailing-slash/v1.0.0/echo-full/no-slash/([^/]+)
+      method: GET
+    filters:
+    - type: URLRewrite
+      urlRewrite:
+        path:
+          type: ReplaceFullPath
+          replaceFullPath: /v2/echo-full/no-slash/\1
+    backendRefs:
+    - name: infra-backend-v1
+      port: 8080
+  - matches:
+    - path:
+        type: RegularExpression
+        value: /trailing-slash/v1.0.0/echo-full/no-slash/([^/]+)/pet/([^/]+)
+      method: GET
+    filters:
+    - type: URLRewrite
+      urlRewrite:
+        path:
+          type: ReplaceFullPath
+          replaceFullPath: /v2/echo-full/no-slash/\1/pet/\2
+    backendRefs:
+    - name: infra-backend-v1
+      port: 8080
+  - matches:
+    - path:
+        type: Exact
+        value: /trailing-slash/v1.0.0/echo-full/with-slash/findByStatus
+      method: GET
+    filters:
+    - type: URLRewrite
+      urlRewrite:
+        path:
+          type: ReplaceFullPath
+          replaceFullPath: /v2/echo-full/with-slash/findByStatus/
+    backendRefs:
+    - name: infra-backend-v1
+      port: 8080
+  - matches:
+    - path:
+        type: RegularExpression
+        value: /trailing-slash/v1.0.0/echo-full/with-slash/([^/]+)
+      method: GET
+    filters:
+    - type: URLRewrite
+      urlRewrite:
+        path:
+          type: ReplaceFullPath
+          replaceFullPath: /v2/echo-full/with-slash/\1/
+    backendRefs:
+    - name: infra-backend-v1
+      port: 8080
+  - matches:
+    - path:
+        type: RegularExpression
+        value: /trailing-slash/v1.0.0/echo-full/with-slash/([^/]+)/pet/([^/]+)
+      method: GET
+    filters:
+    - type: URLRewrite
+      urlRewrite:
+        path:
+          type: ReplaceFullPath
+          replaceFullPath: /v2/echo-full/with-slash/\1/pet/\2/
+    backendRefs:
+    - name: infra-backend-v1
+      port: 8080
+  - matches:
+    - path:
+        type: Exact
+        value: /trailing-slash/v1.0.0/echo-full/chars
+      method: GET
+    filters:
+    - type: URLRewrite
+      urlRewrite:
+        path:
+          type: ReplaceFullPath
+          replaceFullPath: /v2/echo-full/chars
+    backendRefs:
+    - name: infra-backend-v1
+      port: 8080
+  - matches:
+    - path:
+        type: RegularExpression
+        value: /trailing-slash/v1.0.0/echo-full/with-param/([^/]+)
+      method: GET
+    filters:
+    - type: URLRewrite
+      urlRewrite:
+        path:
+          type: ReplaceFullPath
+          replaceFullPath: /v2/echo-full/with-param/\1
+    backendRefs:
+    - name: infra-backend-v1
+      port: 8080
+---
+apiVersion: dp.wso2.com/v1alpha1
+kind: Authentication
+metadata:
+  name: trailing-slash-disable-auth
+  namespace: gateway-integration-test-infra
+spec:
+  override:
+    ext:
+      disabled: true
+    type: ext
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: trailing-slash-httproute
+    namespace: gateway-integration-test-infra
