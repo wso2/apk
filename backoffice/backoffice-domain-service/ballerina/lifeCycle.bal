@@ -17,15 +17,26 @@
 //
 
 
+# Description
+#
+# + States - The states of the life cycle
 public type StatesList record {
     States[] States;
 };
 
+# Description
+#
+# + State -  The state of the life cycle  
+# + Transitions -   The transitions of the life cycle
 public type States record {
     string State;
     Transitions[] Transitions?;
 };
 
+# Description
+#
+# + event -   The event of the life cycle 
+# + targetState -   The target state of the life cycle
 public type Transitions record {
     string event?;
     string targetState?;
