@@ -18,14 +18,5 @@
 #
 #---------------------------------------------------------------
 
-
-FROM bitnami/postgresql
-ENV POSTGRESQL_USERNAME wso2carbon
-ENV POSTGRESQL_PASSWORD wso2carbon
-ENV POSTGRESQL_DATABASE WSO2AM_DB
-ENV PGDATA /tmp/data1
-COPY db.sql /docker-entrypoint-initdb.d/
-USER root 
-
-# this 777 will be replaced by 700 at runtime (allows semi-arbitrary "--user" values)
-USER 10001
+FROM wso2/runtime-domain-service:3771a0f3e528eb91eb3ee5f6137d7c68b1878656
+USER 10014
