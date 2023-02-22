@@ -20,9 +20,9 @@ package tests
 import (
 	"testing"
 
+	"github.com/wso2/apk/test/integration/integration/utils/http"
 	"github.com/wso2/apk/test/integration/integration/utils/kubernetes"
 	"github.com/wso2/apk/test/integration/integration/utils/suite"
-	"sigs.k8s.io/gateway-api/conformance/utils/http"
 )
 
 func init() {

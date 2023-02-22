@@ -59,7 +59,7 @@ spec:
 apiVersion: dp.wso2.com/v1alpha1
 kind: Authentication
 metadata:
-  name: disable-api-authentication
+  name: test-api-with-backend-base-path-disable-auth
   namespace: gateway-integration-test-infra
 spec:
   override:
