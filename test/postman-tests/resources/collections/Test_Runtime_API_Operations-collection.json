@@ -85,7 +85,6 @@
 							"console.log('Getting all services in namespace and find sample service required for test');",
 							"_.each(pm.response.json().list, (serviceEntry) => {",
 							"    if(serviceEntry.name === pm.collectionVariables.get('testServiceName')) {",
-							"        pm.environment.set('serviceUUID', serviceEntry.id)",
 							"        pm.collectionVariables.set('serviceUUID', serviceEntry.id)",
 							"        console.log(\"HTTP bin service found, serviceUUID is\", serviceEntry.id);",
 							"    }",
@@ -159,6 +158,7 @@
 							"    pm.expect(responseJson.context).equals( pm.collectionVariables.get('testAPIContext'));",
 							"    pm.expect(responseJson.version).equals(\"1.0.0\");",
 							"    pm.expect(responseJson.type).equals(\"REST\");",
+							"    pm.collectionVariables.set(\"APIUUID\",responseJson.id)",
 							"});"
 						],
 						"type": "text/javascript"
@@ -252,7 +252,6 @@
 							"    pm.expect(APIEntry.context).equals( pm.collectionVariables.get('testAPIContext'));",
 							"    pm.expect(APIEntry.version).equals(\"1.0.0\");",
 							"    pm.expect(APIEntry.type).equals(\"REST\");",
-							"    pm.collectionVariables.set(\"APIUUID\",APIEntry.id)",
 							"    console.log(\"API entry found and verified details\");",
 							"    }",
 							"})"
@@ -302,7 +301,6 @@
 					"listen": "prerequest",
 					"script": {
 						"exec": [
-							"pm.variables.set(\"APIUUID\",pm.collectionVariables.get('APIUUID'))",
 							""
 						],
 						"type": "text/javascript"
@@ -374,6 +372,9 @@
 					}
 				}
 			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
 			"request": {
 				"auth": {
 					"type": "bearer",
@@ -385,7 +386,7 @@
 						}
 					]
 				},
-				"method": "PUT",
+				"method": "GET",
 				"header": [
 					{
 						"key": "Host",
@@ -400,7 +401,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"id\": \"b93340c0-a3c5-4742-ac93-4d4850394231\",\n    \"name\": \"testAPI\",\n    \"context\": \"/testAPI/1.0.0\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"PUT\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"POST\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"DELETE\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"PATCH\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        }\n    ],\n    \"serviceInfo\": {\n        \"name\": \"backend\",\n        \"namespace\": \"default\"\n    }\n}",
+					"raw": "{\n    \"id\": \"{{APIUUID}}\",\n    \"name\": \"{{testAPIName}}\",\n    \"context\": \"/testAPI/1.0.0\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"PUT\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"POST\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"DELETE\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"PATCH\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        }\n    ],\n    \"serviceInfo\": {\n        \"name\": \"backend\",\n        \"namespace\": \"default\"\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -424,13 +425,79 @@
 			"response": []
 		},
 		{
+			"name": "RuntimeAPI GET API definition by id",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"var exists = false;",
+							"_.each(pm.response.json().paths, (operation) => {",
+							"    if(operation[0] === \"/headers\") {",
+							"        exist=true;",
+							"    }",
+							"})",
+							"pm.expect(exists===true);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"url": {
+					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/apis/{{APIUUID}}/definition",
+					"host": [
+						"{{runtimeAPIServerBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIUUID}}",
+						"definition"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "RuntimeAPI Delete API",
 			"event": [
 				{
 					"listen": "prerequest",
 					"script": {
 						"exec": [
-							"pm.variables.set(\"APIUUID\",pm.collectionVariables.get('APIUUID'))",
 							""
 						],
 						"type": "text/javascript"
@@ -554,7 +621,6 @@
 					"listen": "prerequest",
 					"script": {
 						"exec": [
-							"pm.variables.set(\"serviceUUID\",pm.collectionVariables.get('serviceUUID'))",
 							""
 						],
 						"type": "text/javascript"
@@ -575,7 +641,7 @@
 							"    pm.expect(responseJson.context).equals(pm.collectionVariables.get('testAPIV2Context'));",
 							"    pm.expect(responseJson.version).equals(\"1.0.0\");",
 							"    pm.expect(responseJson.type).equals(\"REST\");",
-							"    pm.collectionVariables.set(\"APIUUID\",responseJson.id)",
+							"    pm.collectionVariables.set(\"APIV2UUID\",responseJson.id)",
 							"});"
 						],
 						"type": "text/javascript"
@@ -669,17 +735,8 @@
 							"    pm.expect(APIEntry.context).equals(pm.collectionVariables.get('testAPIV2Context'));",
 							"    pm.expect(APIEntry.version).equals(\"1.0.0\");",
 							"    pm.expect(APIEntry.type).equals(\"REST\");",
-							"    pm.collectionVariables.set(\"APIV2UUID\",APIEntry.id)",
 							"    console.log(\"API entry found and verified details\");",
 							"    }",
-							"",
-							"    // var settings = {",
-							"    // async: false,",
-							"    // crossDomain: true,",
-							"    // url: \"http://localhost/api/am/runtime/apis/\" + APIEntry.id,",
-							"    // method: 'DELETE',};",
-							"    // pm.sendRequest(settings, (err, res) => { ",
-							"    // eval(res.text()); });",
 							"})"
 						],
 						"type": "text/javascript"
@@ -943,14 +1000,51 @@
 			],
 			"request": {
 				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{access_token}}",
-							"type": "string"
-						}
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "HOST",
+						"value": "a3b58ccf-6ecc-4557-b5bb-0a35cce38256.gw.wso2.com",
+						"type": "text"
+					},
+					{
+						"key": "Internal-Key",
+						"value": "{{APITestKey}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURL}}{{testAPIV2Context}}/headers",
+					"host": [
+						"{{gatewayBaseURL}}{{testAPIV2Context}}"
+					],
+					"path": [
+						"headers"
 					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "call previously available resource",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Check API response and status code is 200\", function () {",
+							"  pm.response.to.have.status(404);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
 				},
 				"method": "GET",
 				"header": [
@@ -978,14 +1072,185 @@
 			"response": []
 		},
 		{
-			"name": "call previously available resource",
+			"name": "RuntimeAPI Copy API",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Check API response and status code is 200\", function () {",
-							"  pm.response.to.have.status(404);",
+							"pm.test(\"Status code is 201\", function () {",
+							"  pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Assert API creation response\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.name).equals(pm.collectionVariables.get('testAPIV2Name'));",
+							"    pm.expect(responseJson.version).equals(\"2.0.0\");",
+							"    pm.expect(responseJson.type).equals(\"REST\");",
+							"    pm.collectionVariables.set(\"APIV3UUID\",responseJson.id)",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"url": {
+					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/apis/copy-api?apiId={{APIV2UUID}}&newVersion=2.0.0",
+					"host": [
+						"{{runtimeAPIServerBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"copy-api"
+					],
+					"query": [
+						{
+							"key": "apiId",
+							"value": "{{APIV2UUID}}"
+						},
+						{
+							"key": "newVersion",
+							"value": "2.0.0"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "RuntimeAPI retrieve definition of copy api",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"context\": \"/{{testAPIV2Context}}\" ,\n    \"name\": \"{{testAPIV2Name}}\" ,\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\"\n}\n"
+				},
+				"url": {
+					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/apis/{{APIV3UUID}}/definition",
+					"host": [
+						"{{runtimeAPIServerBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIV3UUID}}",
+						"definition"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "RuntimeAPI Create Access Key for APIV2 Copy",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"  pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Assert token generation response\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(parseInt(responseJson.validityTime)).greaterThan(100);",
+							"    pm.collectionVariables.set('API2TestKey', responseJson.apikey);",
 							"});"
 						],
 						"type": "text/javascript"
@@ -1003,6 +1268,60 @@
 						}
 					]
 				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"url": {
+					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/apis/{{APIV3UUID}}/generate-key",
+					"host": [
+						"{{runtimeAPIServerBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIV3UUID}}",
+						"generate-key"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "RuntimeAPI Invoke new Version",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Check API response and status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
 				"method": "GET",
 				"header": [
 					{
@@ -1012,17 +1331,19 @@
 					},
 					{
 						"key": "Internal-Key",
-						"value": "{{APITestKey}}",
+						"value": "{{API2TestKey}}",
 						"type": "text"
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURL}}{{testAPIV2Context}}/get",
+					"raw": "{{gatewayBaseURL}}/testAPIV2/2.0.0/headers",
 					"host": [
-						"{{gatewayBaseURL}}{{testAPIV2Context}}"
+						"{{gatewayBaseURL}}"
 					],
 					"path": [
-						"get"
+						"testAPIV2",
+						"2.0.0",
+						"headers"
 					]
 				}
 			},
@@ -1107,14 +1428,7 @@
 			],
 			"request": {
 				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{access_token}}",
-							"type": "string"
-						}
-					]
+					"type": "noauth"
 				},
 				"method": "GET",
 				"header": [
@@ -1135,6 +1449,160 @@
 						"{{gatewayBaseURL}}{{testAPIV2Context}}"
 					],
 					"path": [
+						"headers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "RuntimeAPI Invoke new Version after deleting API",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Check API response and status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "HOST",
+						"value": "a3b58ccf-6ecc-4557-b5bb-0a35cce38256.gw.wso2.com",
+						"type": "text"
+					},
+					{
+						"key": "Internal-Key",
+						"value": "{{API2TestKey}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURL}}/testAPIV2/2.0.0/headers",
+					"host": [
+						"{{gatewayBaseURL}}"
+					],
+					"path": [
+						"testAPIV2",
+						"2.0.0",
+						"headers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "RuntimeAPI Delete NEW Version API",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.variables.set(\"APIUUID\",pm.collectionVariables.get('APIUUID'))",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"url": {
+					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/apis/{{APIV3UUID}}",
+					"host": [
+						"{{runtimeAPIServerBaseURL}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIV3UUID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "RuntimeAPI Invoke new Version after deleting API Copy",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Check API response and status code is 404\", function () {",
+							"  pm.response.to.have.status(404);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "HOST",
+						"value": "a3b58ccf-6ecc-4557-b5bb-0a35cce38256.gw.wso2.com",
+						"type": "text"
+					},
+					{
+						"key": "Internal-Key",
+						"value": "{{API2TestKey}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURL}}/testAPIV2/2.0.0/headers",
+					"host": [
+						"{{gatewayBaseURL}}"
+					],
+					"path": [
+						"testAPIV2",
+						"2.0.0",
 						"headers"
 					]
 				}
@@ -1206,6 +1674,14 @@
 		},
 		{
 			"key": "access_token",
+			"value": ""
+		},
+		{
+			"key": "APIV3UUID",
+			"value": ""
+		},
+		{
+			"key": "API2TestKey",
 			"value": ""
 		}
 	]

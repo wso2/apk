@@ -2459,6 +2459,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
     commons:APKError sandboxEndpointNotSpecifiedError = error("Sandbox Endpoint Not specified", message = "Endpoint Not specified", description = "Sandbox Endpoint Not specified", code = 90911, statusCode = 400);
     commons:APKError k8sLevelError = error("Internal Error occured while deploying API", code = 909000, message
         = "Internal Error occured while deploying API", statusCode = 500, description = "Internal Error occured while deploying API", moreInfo = {});
+    commons:APKError k8sLevelError1 = error("Internal Server Error", code = 900900, message
+        = "Internal Server Error", statusCode = 500, description = "Internal Server Error", moreInfo = {});
     commons:APKError invalidAPINameError = error("Invalid API Name", code = 90911, message = "Invalid API Name", statusCode = 400, description = "API Name PizzaAPI Invalid", moreInfo = {});
     map<[string, string, API, model:ConfigMap,
     any, model:Httproute|(), any, model:Httproute|(),
@@ -2598,7 +2600,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
             getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
             k8sapiUUID,
-            k8sLevelError.toBalString()
+            k8sLevelError1.toBalString()
         ]
         ,
         "8": [
@@ -2618,7 +2620,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
             getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
             k8sapiUUID,
-            k8sLevelError.toBalString()
+            k8sLevelError1.toBalString()
         ]
         ,
         "9": [
@@ -2638,7 +2640,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
             getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
             k8sapiUUID,
-            k8sLevelError.toBalString()
+            k8sLevelError1.toBalString()
         ]
         ,
         "10": [
@@ -2698,7 +2700,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
             getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
             k8sapiUUID,
-            invalidAPINameError.toBalString()
+            k8sLevelError.toBalString()
         ]
     };
     return data;
