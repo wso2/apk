@@ -50,26 +50,36 @@ function testgetBackendPolicyUid(API api, string? endpointType, commons:Organiza
     return "backendpolicy-uuid";
 }
 
+int index = 0;
+
 @test:Mock {functionName: "getServiceMappingClient"}
-function getMockServiceMappingClient(string resourceVersion) returns websocket:Client|error|() {
+function getMockServiceMappingClient(string resourceVersion) returns websocket:Client|error {
     string initialConectionId = uuid:createType1AsString();
-    websocket:Client mock;
     if resourceVersion == "39433" {
-        mock = test:mock(websocket:Client);
+        websocket:Client mock = test:mock(websocket:Client);
         test:prepare(mock).when("isOpen").thenReturnSequence(true, true, false);
         test:prepare(mock).when("getConnectionId").thenReturn(initialConectionId);
         test:prepare(mock).when("readMessage").thenReturn(getServiceMappingEvent());
+        return mock;
     } else if resourceVersion == "5834" {
         string connectionId = uuid:createType1AsString();
-        mock = test:mock(websocket:Client);
-        test:prepare(mock).when("isOpen").thenReturn(true);
+        websocket:Client mock = test:mock(websocket:Client);
+        test:prepare(mock).when("isOpen").thenReturnSequence(true, true, false);
         test:prepare(mock).when("getConnectionId").thenReturn(connectionId);
         test:prepare(mock).when("readMessage").thenReturnSequence(getNextServiceMappingEvent(), ());
+        return mock;
+    } else if resourceVersion == "23555" {
+        if index == 0 {
+            websocket:Error websocketError = error("Error", message = "Error");
+            index+=1;
+            return websocketError;
+        } else {
+            return test:mock(websocket:Client);
+        }
     } else {
-        mock = test:mock(websocket:Client);
+        return test:mock(websocket:Client);
     }
 
-    return mock;
 }
 
 @test:Mock {functionName: "getOrganizationWatchClient"}
@@ -1826,7 +1836,7 @@ function testCreateAPIFromService(string serviceUUId, string apiUUID, [model:Con
     APIClient apiClient = new;
     http:Response configmapResponse404 = new;
     configmapResponse404.statusCode = 404;
-    http:ApplicationResponseError internalApiResponse = error("",statusCode = 404,body = "Not Found",headers = {});
+    http:ApplicationResponseError internalApiResponse = error("", statusCode = 404, body = "Not Found", headers = {});
     model:HttprouteList httpRouteList = {metadata: {}, items: []};
     model:ServiceMappingList serviceMappingList = {metadata: {}, items: []};
     model:AuthenticationList authenticationList = {metadata: {}, items: []};
@@ -2132,9 +2142,9 @@ function testCreateAPI(string apiUUID, string backenduuid, API api, model:Config
         }
         http:Response configmapResponse = new;
         configmapResponse.statusCode = 404;
-        http:ApplicationResponseError internalApiResponse = error("internal api not found",statusCode = 404,body = {},headers = {});
+        http:ApplicationResponseError internalApiResponse = error("internal api not found", statusCode = 404, body = {}, headers = {});
         http:Response internalAPIDeletionResponse = new;
-        internalAPIDeletionResponse.statusCode=200;
+        internalAPIDeletionResponse.statusCode = 200;
         model:HttprouteList httpRouteList = {metadata: {}, items: []};
         model:ServiceMappingList serviceMappingList = {metadata: {}, items: []};
         model:AuthenticationList authenticationList = {metadata: {}, items: []};
@@ -2700,7 +2710,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
             getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
             k8sapiUUID,
-            k8sLevelError.toBalString()
+            invalidAPINameError.toBalString()
         ]
     };
     return data;

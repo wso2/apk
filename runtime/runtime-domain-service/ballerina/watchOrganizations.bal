@@ -167,7 +167,7 @@ function handleOganizationWatchGone(model:Status statusEvent) returns error? {
         lock {
             organizationList = organizationsMap.clone();
         }
-        watchAPIService = getClient(resourceVersion);
+        watchAPIService = getOrganizationWatchClient(organizationResourceVersion);
     }
 }
 
