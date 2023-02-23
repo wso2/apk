@@ -28,7 +28,7 @@ configurable ThrottlingConfiguration throttleConfig = ?;
 
 configurable int ADMIN_PORT = 9443;
 
-commons:IDPConfiguration idpConfiguration = {
+configurable commons:IDPConfiguration idpConfiguration = {
         publicKey:{path: "/home/wso2apk/admin/security/mg.pem"}
     };
 commons:DBBasedOrgResolver organizationResolver = new(datasourceConfiguration);

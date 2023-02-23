@@ -24,7 +24,7 @@ import wso2/apk_common_lib as commons;
 configurable DatasourceConfiguration datasourceConfiguration = ?;
 final postgresql:Client|sql:Error dbClient;
 
-commons:IDPConfiguration idpConfiguration = {
+configurable commons:IDPConfiguration idpConfiguration = {
         publicKey:{path: "/home/wso2apk/backoffice/security/mg.pem"}
     };
 commons:DBBasedOrgResolver organizationResolver = new(datasourceConfiguration);

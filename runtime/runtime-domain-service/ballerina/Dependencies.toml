@@ -297,6 +297,17 @@ modules = [
 
 [[package]]
 org = "ballerina"
+name = "sql"
+version = "1.6.2"
+dependencies = [
+	{org = "ballerina", name = "io"},
+	{org = "ballerina", name = "jballerina.java"},
+	{org = "ballerina", name = "lang.object"},
+	{org = "ballerina", name = "time"}
+]
+
+[[package]]
+org = "ballerina"
 name = "task"
 version = "2.3.0"
 dependencies = [
@@ -375,6 +386,18 @@ modules = [
 ]
 
 [[package]]
+org = "ballerinax"
+name = "postgresql"
+version = "1.6.2"
+dependencies = [
+	{org = "ballerina", name = "crypto"},
+	{org = "ballerina", name = "io"},
+	{org = "ballerina", name = "jballerina.java"},
+	{org = "ballerina", name = "sql"},
+	{org = "ballerina", name = "time"}
+]
+
+[[package]]
 org = "wso2"
 name = "apk_common_lib"
 version = "0.0.1-SNAPSHOT"
@@ -382,7 +405,9 @@ dependencies = [
 	{org = "ballerina", name = "http"},
 	{org = "ballerina", name = "jwt"},
 	{org = "ballerina", name = "lang.value"},
-	{org = "ballerina", name = "log"}
+	{org = "ballerina", name = "log"},
+	{org = "ballerina", name = "sql"},
+	{org = "ballerinax", name = "postgresql"}
 ]
 modules = [
 	{org = "wso2", packageName = "apk_common_lib", moduleName = "apk_common_lib"}

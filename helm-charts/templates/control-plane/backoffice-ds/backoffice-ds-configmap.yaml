@@ -34,4 +34,8 @@ data:
     validationTimeout = {{ .Values.wso2.apk.cp.database.validationTimeout }}
     testQuery = "{{ .Values.wso2.apk.cp.database.validationQuery }}"
     driver = "{{ .Values.wso2.apk.cp.database.driver }}"
+    [wso2.backoffice_service.idpConfiguration]
+    organizationClaim = "{{ .Values.wso2.apk.idp.organizationClaim }}"
+    [wso2.backoffice_service.idpConfiguration.publicKey]
+    path = "/home/wso2apk/admin/security/mg.pem"
 {{- end -}}
