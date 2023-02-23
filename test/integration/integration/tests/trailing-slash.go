@@ -31,7 +31,7 @@ func init() {
 
 // TrailingSlash test
 var TrailingSlash = suite.IntegrationTest{
-	ShortName:   "APIWithPathParams",
+	ShortName:   "TrailingSlash",
 	Description: "Invoking API with and without trailing slash",
 	Manifests:   []string{"tests/trailing-slash.yaml"},
 	Test: func(t *testing.T, suite *suite.IntegrationTestSuite) {
@@ -42,7 +42,7 @@ var TrailingSlash = suite.IntegrationTest{
 			// test path with trailing slash but without path parameters
 			{
 				Request: http.Request{
-					Host: "test.api.gw.wso2.com",
+					Host: "trailing-slash.test.gw.wso2.com",
 					Path: "/trailing-slash/v1.0.0/echo-full/no-slash/findByStatus",
 				},
 				ExpectedRequest: &http.ExpectedRequest{
@@ -55,7 +55,7 @@ var TrailingSlash = suite.IntegrationTest{
 			},
 			{
 				Request: http.Request{
-					Host: "test.api.gw.wso2.com",
+					Host: "trailing-slash.test.gw.wso2.com",
 					Path: "/trailing-slash/v1.0.0/echo-full/no-slash/findByStatus/",
 				},
 				ExpectedRequest: &http.ExpectedRequest{
@@ -69,7 +69,7 @@ var TrailingSlash = suite.IntegrationTest{
 			// test path with trailing slash with path parameter
 			{
 				Request: http.Request{
-					Host: "test.api.gw.wso2.com",
+					Host: "trailing-slash.test.gw.wso2.com",
 					Path: "/trailing-slash/v1.0.0/echo-full/no-slash/1",
 				},
 				ExpectedRequest: &http.ExpectedRequest{
@@ -82,7 +82,7 @@ var TrailingSlash = suite.IntegrationTest{
 			},
 			{
 				Request: http.Request{
-					Host: "test.api.gw.wso2.com",
+					Host: "trailing-slash.test.gw.wso2.com",
 					Path: "/trailing-slash/v1.0.0/echo-full/no-slash/1/",
 				},
 				ExpectedRequest: &http.ExpectedRequest{
@@ -96,7 +96,7 @@ var TrailingSlash = suite.IntegrationTest{
 			// test path with trailing slash with multiple path parameters
 			{
 				Request: http.Request{
-					Host: "test.api.gw.wso2.com",
+					Host: "trailing-slash.test.gw.wso2.com",
 					Path: "/trailing-slash/v1.0.0/echo-full/no-slash/1/pet/123",
 				},
 				ExpectedRequest: &http.ExpectedRequest{
@@ -109,7 +109,7 @@ var TrailingSlash = suite.IntegrationTest{
 			},
 			{
 				Request: http.Request{
-					Host: "test.api.gw.wso2.com",
+					Host: "trailing-slash.test.gw.wso2.com",
 					Path: "/trailing-slash/v1.0.0/echo-full/no-slash/1/pet/123/",
 				},
 				ExpectedRequest: &http.ExpectedRequest{
@@ -123,7 +123,7 @@ var TrailingSlash = suite.IntegrationTest{
 			// test path with trailing slash but without path parameters
 			{
 				Request: http.Request{
-					Host: "test.api.gw.wso2.com",
+					Host: "trailing-slash.test.gw.wso2.com",
 					Path: "/trailing-slash/v1.0.0/echo-full/with-slash/findByStatus",
 				},
 				ExpectedRequest: &http.ExpectedRequest{
@@ -136,7 +136,7 @@ var TrailingSlash = suite.IntegrationTest{
 			},
 			{
 				Request: http.Request{
-					Host: "test.api.gw.wso2.com",
+					Host: "trailing-slash.test.gw.wso2.com",
 					Path: "/trailing-slash/v1.0.0/echo-full/with-slash/findByStatus/",
 				},
 				ExpectedRequest: &http.ExpectedRequest{
@@ -150,7 +150,7 @@ var TrailingSlash = suite.IntegrationTest{
 			// test path with trailing slash but without path parameters
 			{
 				Request: http.Request{
-					Host: "test.api.gw.wso2.com",
+					Host: "trailing-slash.test.gw.wso2.com",
 					Path: "/trailing-slash/v1.0.0/echo-full/with-slash/1",
 				},
 				ExpectedRequest: &http.ExpectedRequest{
@@ -163,7 +163,7 @@ var TrailingSlash = suite.IntegrationTest{
 			},
 			{
 				Request: http.Request{
-					Host: "test.api.gw.wso2.com",
+					Host: "trailing-slash.test.gw.wso2.com",
 					Path: "/trailing-slash/v1.0.0/echo-full/with-slash/1/",
 				},
 				ExpectedRequest: &http.ExpectedRequest{
@@ -177,7 +177,7 @@ var TrailingSlash = suite.IntegrationTest{
 			// test path with trailing slash with multiple path parameters
 			{
 				Request: http.Request{
-					Host: "test.api.gw.wso2.com",
+					Host: "trailing-slash.test.gw.wso2.com",
 					Path: "/trailing-slash/v1.0.0/echo-full/with-slash/1/pet/123",
 				},
 				ExpectedRequest: &http.ExpectedRequest{
@@ -190,7 +190,7 @@ var TrailingSlash = suite.IntegrationTest{
 			},
 			{
 				Request: http.Request{
-					Host: "test.api.gw.wso2.com",
+					Host: "trailing-slash.test.gw.wso2.com",
 					Path: "/trailing-slash/v1.0.0/echo-full/with-slash/1/pet/123/",
 				},
 				ExpectedRequest: &http.ExpectedRequest{
@@ -204,7 +204,7 @@ var TrailingSlash = suite.IntegrationTest{
 			// test path with additional chars
 			{
 				Request: http.Request{
-					Host: "test.api.gw.wso2.com",
+					Host: "trailing-slash.test.gw.wso2.com",
 					Path: "/trailing-slash/v1.0.0/echo-full/chars",
 				},
 				ExpectedRequest: &http.ExpectedRequest{
@@ -217,7 +217,7 @@ var TrailingSlash = suite.IntegrationTest{
 			},
 			{
 				Request: http.Request{
-					Host: "test.api.gw.wso2.com",
+					Host: "trailing-slash.test.gw.wso2.com",
 					Path: "/trailing-slash/v1.0.0/echo-full/charsAdditional",
 				},
 				Response: http.Response{StatusCode: 404},
@@ -225,7 +225,7 @@ var TrailingSlash = suite.IntegrationTest{
 			// test path with additional chars after trailing slash
 			{
 				Request: http.Request{
-					Host: "test.api.gw.wso2.com",
+					Host: "trailing-slash.test.gw.wso2.com",
 					Path: "/trailing-slash/v1.0.0/echo-full/with-param/1/",
 				},
 				ExpectedRequest: &http.ExpectedRequest{
@@ -238,7 +238,7 @@ var TrailingSlash = suite.IntegrationTest{
 			},
 			{
 				Request: http.Request{
-					Host: "test.api.gw.wso2.com",
+					Host: "trailing-slash.test.gw.wso2.com",
 					Path: "/trailing-slash/v1.0.0/echo-full/with-param/1/additional",
 				},
 				Response: http.Response{StatusCode: 404},

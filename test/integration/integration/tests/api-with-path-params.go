@@ -41,7 +41,7 @@ var APIWithPathParams = suite.IntegrationTest{
 		testCases := []http.ExpectedResponse{
 			{
 				Request: http.Request{
-					Host: "test.api.gw.wso2.com",
+					Host: "path-param-api.test.gw.wso2.com",
 					Path: "/test-api-with-path-params/v1.0.0/user/user123/playlist/watch-later",
 				},
 				ExpectedRequest: &http.ExpectedRequest{
@@ -54,7 +54,7 @@ var APIWithPathParams = suite.IntegrationTest{
 			},
 			{
 				Request: http.Request{
-					Host: "test.api.gw.wso2.com",
+					Host: "path-param-api.test.gw.wso2.com",
 					Path: "/test-api-with-path-params/v1.0.0/user/user123/other-path",
 				},
 				Response: http.Response{StatusCode: 404},
