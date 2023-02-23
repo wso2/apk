@@ -31,7 +31,7 @@ public class OrgClient {
             }
             string? resourceVersion = metadata.'resourceVersion;
             if resourceVersion is string {
-                setResourceVersion(resourceVersion);
+                setOrganizationResourceVersion(resourceVersion);
             }
         }
     }

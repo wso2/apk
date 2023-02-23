@@ -171,8 +171,8 @@ public class APIClient {
     }
     private isolated function deleteInternalAPI(string k8sAPIName, string apiNameSpace) returns commons:APKError? {
         do {
-            http:Response|error internalAPI = getInternalAPI(k8sAPIName, apiNameSpace);
-            if internalAPI is http:Response && internalAPI.statusCode == http:STATUS_OK {
+            model:RuntimeAPI|http:ClientError internalAPI = getInternalAPI(k8sAPIName, apiNameSpace);
+            if internalAPI is model:RuntimeAPI {
                 http:Response internalAPIDeletionResponse = check deleteInternalAPI(k8sAPIName, apiNameSpace);
                 if internalAPIDeletionResponse.statusCode != http:STATUS_OK {
                     json responsePayLoad = check internalAPIDeletionResponse.getJsonPayload();
@@ -648,156 +648,175 @@ public class APIClient {
             }
             model:API? api = apiArtifact.api;
             if api is model:API {
-                _ = check self.deleteHttpRoutes(api);
-                _ = check self.deleteServiceMappings(api);
-                _ = check self.deleteAuthneticationCRs(api);
-                _ = check self.deleteBackendPolicies(api);
-                _ = check self.deleteBackendServices(api);
-                _ = check self.deleteInternalAPI(api.metadata.name, api.metadata.namespace);
+                check self.deleteHttpRoutes(api);
+                check self.deleteServiceMappings(api);
+                check self.deleteAuthneticationCRs(api);
+                check self.deleteBackendPolicies(api);
+                check self.deleteBackendServices(api);
+                check self.deleteInternalAPI(api.metadata.name, api.metadata.namespace);
             }
-            foreach model:Service backendService in apiArtifact.backendServices {
-                http:Response deployServiceResult = check deployService(backendService, getNameSpace(runtimeConfiguration.apiCreationNamespace));
-                if deployServiceResult.statusCode == http:STATUS_CREATED {
-                    log:printDebug("Deployed HttpRoute Successfully" + backendService.toString());
-                } else {
-                    json responsePayLoad = check deployServiceResult.getJsonPayload();
-                    model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
-                    check self.handleK8sTimeout(statusResponse);
-                }
+            check self.deployBackendServices(apiArtifact);
+            check self.deployBackendPolicies(apiArtifact);
+            check self.deployAuthneticationCRs(apiArtifact);
+            check self.deployHttpRoutes(apiArtifact.productionRoute);
+            check self.deployHttpRoutes(apiArtifact.sandboxRoute);
+            check self.deployServiceMappings(apiArtifact);
+            check self.deployRuntimeAPI(apiArtifact);
+            return check self.deployK8sAPICr(apiArtifact);
+        } on fail var e {
+            if e is commons:APKError {
+                return e;
             }
-            foreach model:BackendPolicy backendPolicy in apiArtifact.backendPolicies {
-                http:Response deployBackendPolicyResult = check deployBackendPolicyCR(backendPolicy, getNameSpace(runtimeConfiguration.apiCreationNamespace));
-                if deployBackendPolicyResult.statusCode == http:STATUS_CREATED {
-                    log:printDebug("Deployed BackendPolicy Successfully" + backendPolicy.toString());
+            log:printError("Internal Error occured while deploying API", e);
+            commons:APKError internalError = error("Internal Error occured while deploying API", code = 909000, statusCode = 500, description = "Internal Error occured while deploying API", message = "Internal Error occured while deploying API");
+            return internalError;
+        }
+    }
+    private isolated function deployK8sAPICr(model:APIArtifact apiArtifact) returns model:API|commons:APKError|error {
+        model:API? k8sAPI = apiArtifact.api;
+        if k8sAPI is model:API {
+            model:API? k8sAPIByNameAndNamespace = check getK8sAPIByNameAndNamespace(k8sAPI.metadata.name, k8sAPI.metadata.namespace);
+            if k8sAPIByNameAndNamespace is model:API {
+                k8sAPI.metadata.resourceVersion = k8sAPIByNameAndNamespace.metadata.resourceVersion;
+                http:Response deployAPICRResult = check updateAPICR(k8sAPI, getNameSpace(runtimeConfiguration.apiCreationNamespace));
+                if deployAPICRResult.statusCode == http:STATUS_OK {
+                    json responsePayLoad = check deployAPICRResult.getJsonPayload();
+                    log:printDebug("Updated K8sAPI Successfully" + responsePayLoad.toJsonString());
+                    return check responsePayLoad.cloneWithType(model:API);
                 } else {
-                    json responsePayLoad = check deployBackendPolicyResult.getJsonPayload();
-                    model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
-                    check self.handleK8sTimeout(statusResponse);
-                }
-            }
-            string[] keys = apiArtifact.authenticationMap.keys();
-            foreach string authenticationCrName in keys {
-                model:Authentication authenticationCr = apiArtifact.authenticationMap.get(authenticationCrName);
-                http:Response authenticationCrDeployResponse = check deployAuthenticationCR(authenticationCr, getNameSpace(runtimeConfiguration.apiCreationNamespace));
-                if authenticationCrDeployResponse.statusCode == http:STATUS_CREATED {
-                    log:printDebug("Deployed HttpRoute Successfully" + authenticationCr.toString());
-                } else {
-                    json responsePayLoad = check authenticationCrDeployResponse.getJsonPayload();
-                    model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
-                    check self.handleK8sTimeout(statusResponse);
-                }
-            }
-            model:Httproute? productionRoute = apiArtifact.productionRoute;
-            if productionRoute is model:Httproute && productionRoute.spec.rules.length() > 0 {
-                http:Response deployHttpRouteResult = check deployHttpRoute(productionRoute, getNameSpace(runtimeConfiguration.apiCreationNamespace));
-                if deployHttpRouteResult.statusCode == http:STATUS_CREATED {
-                    log:printDebug("Deployed HttpRoute Successfully" + productionRoute.toString());
-                } else {
-                    json responsePayLoad = check deployHttpRouteResult.getJsonPayload();
-                    model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
-                    check self.handleK8sTimeout(statusResponse);
-                }
-            }
-            model:Httproute? sandboxRoute = apiArtifact.sandboxRoute;
-            if sandboxRoute is model:Httproute && sandboxRoute.spec.rules.length() > 0 {
-                http:Response deployHttpRouteResult = check deployHttpRoute(sandboxRoute, getNameSpace(runtimeConfiguration.apiCreationNamespace));
-                if deployHttpRouteResult.statusCode == http:STATUS_CREATED {
-                    log:printDebug("Deployed HttpRoute Successfully" + sandboxRoute.toString());
-                } else {
-                    json responsePayLoad = check deployHttpRouteResult.getJsonPayload();
-                    model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
-                    check self.handleK8sTimeout(statusResponse);
-
-                }
-            }
-            foreach model:K8sServiceMapping k8sServiceMapping in apiArtifact.serviceMapping {
-                http:Response deployServiceMappingCRResult = check deployServiceMappingCR(k8sServiceMapping, getNameSpace(runtimeConfiguration.apiCreationNamespace));
-                if deployServiceMappingCRResult.statusCode == http:STATUS_CREATED {
-                    log:printDebug("Deployed K8sAPI Successfully" + k8sServiceMapping.toString());
-                } else {
-                    json responsePayLoad = check deployServiceMappingCRResult.getJsonPayload();
-                    model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
-                    check self.handleK8sTimeout(statusResponse);
-                }
-            }
-            model:RuntimeAPI? runtimeapi = apiArtifact.runtimeAPI;
-            if runtimeapi is model:RuntimeAPI {
-                http:Response deployRuntimeAPICRResult = check createInternalAPI(runtimeapi, getNameSpace(runtimeConfiguration.apiCreationNamespace));
-                if deployRuntimeAPICRResult.statusCode == http:STATUS_CREATED {
-                    json responsePayLoad = check deployRuntimeAPICRResult.getJsonPayload();
-                    log:printDebug("Deployed RuntimeAPI Successfully" + responsePayLoad.toJsonString());
-                } else {
-                    json responsePayLoad = check deployRuntimeAPICRResult.getJsonPayload();
+                    json responsePayLoad = check deployAPICRResult.getJsonPayload();
                     model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
                     model:StatusDetails? details = statusResponse.details;
                     if details is model:StatusDetails {
-                        return error("Invalid API Request", code = 90911, description = "Invalid API Request", message = "Invalid API Request", statusCode = 400);
+                        model:StatusCause[] 'causes = details.'causes;
+                        foreach model:StatusCause 'cause in 'causes {
+                            if 'cause.'field == "spec.context" {
+                                commons:APKError badeRequestError = error("Invalid API Context", code = 90911, description = "API Context " + k8sAPI.spec.context + " Invalid", message = "Invalid API context", statusCode = 400);
+                                return badeRequestError;
+                            } else if 'cause.'field == "spec.apiDisplayName" {
+                                commons:APKError badeRequestError = error("Invalid API Name", code = 90911, description = "API Name " + k8sAPI.spec.apiDisplayName + " Invalid", message = "Invalid API Name", statusCode = 400);
+                                return badeRequestError;
+                            }
+                        }
+                        commons:APKError badeRequestError = error("Invalid API Request", code = 90911, description = "Invalid API Request", message = "Invalid API Request", statusCode = 400);
+                        return badeRequestError;
                     }
                     return self.handleK8sTimeout(statusResponse);
                 }
             } else {
-                return error("Internal Error occured", code = 909000, message = "Internal Error occured", description = "Internal Error occured", statusCode = 500);
-            }
-            model:API? k8sAPI = apiArtifact.api;
-            if k8sAPI is model:API {
-                model:API? k8sAPIByNameAndNamespace = check getK8sAPIByNameAndNamespace(k8sAPI.metadata.name, k8sAPI.metadata.namespace);
-                if k8sAPIByNameAndNamespace is model:API {
-                    k8sAPI.metadata.resourceVersion = k8sAPIByNameAndNamespace.metadata.resourceVersion;
-                    http:Response deployAPICRResult = check updateAPICR(k8sAPI, getNameSpace(runtimeConfiguration.apiCreationNamespace));
-                    if deployAPICRResult.statusCode == http:STATUS_OK {
-                        json responsePayLoad = check deployAPICRResult.getJsonPayload();
-                        log:printDebug("Updated K8sAPI Successfully" + responsePayLoad.toJsonString());
-                        return check responsePayLoad.cloneWithType(model:API);
-                    } else {
-                        json responsePayLoad = check deployAPICRResult.getJsonPayload();
-                        model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
-                        model:StatusDetails? details = statusResponse.details;
-                        if details is model:StatusDetails {
-                            model:StatusCause[] 'causes = details.'causes;
-                            foreach model:StatusCause 'cause in 'causes {
-                                if 'cause.'field == "spec.context" {
-                                    return error("Invalid API Context", code = 90911, description = "API Context " + k8sAPI.spec.context + " Invalid", message = "Invalid API context", statusCode = 400);
-
-                                } else if 'cause.'field == "spec.apiDisplayName" {
-                                    return error("Invalid API Name", code = 90911, description = "API Name " + k8sAPI.spec.apiDisplayName + " Invalid", message = "Invalid API Name", statusCode = 400);
-                                }
-                            }
-                            return error("Invalid API Request", code = 90911, description = "Invalid API Request", message = "Invalid API Request", statusCode = 400);
-                        }
-                        return self.handleK8sTimeout(statusResponse);
-                    }
+                http:Response deployAPICRResult = check deployAPICR(k8sAPI, getNameSpace(runtimeConfiguration.apiCreationNamespace));
+                if deployAPICRResult.statusCode == http:STATUS_CREATED {
+                    json responsePayLoad = check deployAPICRResult.getJsonPayload();
+                    log:printDebug("Deployed K8sAPI Successfully" + responsePayLoad.toJsonString());
+                    return check responsePayLoad.cloneWithType(model:API);
                 } else {
-                    http:Response deployAPICRResult = check deployAPICR(k8sAPI, getNameSpace(runtimeConfiguration.apiCreationNamespace));
-                    if deployAPICRResult.statusCode == http:STATUS_CREATED {
-                        json responsePayLoad = check deployAPICRResult.getJsonPayload();
-                        log:printDebug("Deployed K8sAPI Successfully" + responsePayLoad.toJsonString());
-                        return check responsePayLoad.cloneWithType(model:API);
-                    } else {
-                        json responsePayLoad = check deployAPICRResult.getJsonPayload();
-                        model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
-                        model:StatusDetails? details = statusResponse.details;
-                        if details is model:StatusDetails {
-                            model:StatusCause[] 'causes = details.'causes;
-                            foreach model:StatusCause 'cause in 'causes {
-                                if 'cause.'field == "spec.context" {
-                                    return error("Invalid API Context", code = 90911, description = "API Context " + k8sAPI.spec.context + " Invalid", message = "Invalid API context", statusCode = 400);
-
-                                } else if 'cause.'field == "spec.apiDisplayName" {
-                                    return error("Invalid API Name", code = 90911, description = "API Name " + k8sAPI.spec.apiDisplayName + " Invalid", message = "Invalid API Name", statusCode = 400);
-                                }
+                    json responsePayLoad = check deployAPICRResult.getJsonPayload();
+                    model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                    model:StatusDetails? details = statusResponse.details;
+                    if details is model:StatusDetails {
+                        model:StatusCause[] 'causes = details.'causes;
+                        foreach model:StatusCause 'cause in 'causes {
+                            if 'cause.'field == "spec.context" {
+                                commons:APKError badRequestError = error("Invalid API Context", code = 90911, description = "API Context " + k8sAPI.spec.context + " Invalid", message = "Invalid API context", statusCode = 400);
+                                return badRequestError;
+                            } else if 'cause.'field == "spec.apiDisplayName" {
+                                commons:APKError badRequestError = error("Invalid API Name", code = 90911, description = "API Name " + k8sAPI.spec.apiDisplayName + " Invalid", message = "Invalid API Name", statusCode = 400);
+                                return badRequestError;
                             }
-                            return error("Invalid API Request", code = 90911, description = "Invalid API Request", message = "Invalid API Request", statusCode = 400);
                         }
-                        return self.handleK8sTimeout(statusResponse);
+                        commons:APKError badRequestError = error("Invalid API Request", code = 90911, description = "Invalid API Request", message = "Invalid API Request", statusCode = 400);
+                        return badRequestError;
+
                     }
+                    return self.handleK8sTimeout(statusResponse);
                 }
-            } else {
-                return error("Internal Error occured", code = 909000, message = "Internal Error occured", description = "Internal Error occured", statusCode = 500);
             }
-        } on fail var e {
-            log:printError("Internal Error occured while deploying API", e);
-            commons:APKError internalError = error("Internal Error occured while deploying API", code = 909000, statusCode = 500, description = "Internal Error occured while deploying API", message = "Internal Error occured while deploying API");
-            return internalError;
+        } else {
+            commons:APKError badRequestError = error("Internal Error occured", code = 909000, message = "Internal Error occured", description = "Internal Error occured", statusCode = 500);
+            return badRequestError;
+        }
+    }
+    private isolated function deployRuntimeAPI(model:APIArtifact apiArtifact) returns error? {
+        model:RuntimeAPI? runtimeapi = apiArtifact.runtimeAPI;
+        if runtimeapi is model:RuntimeAPI {
+            http:Response deployRuntimeAPICRResult = check createInternalAPI(runtimeapi, getNameSpace(runtimeConfiguration.apiCreationNamespace));
+            if deployRuntimeAPICRResult.statusCode == http:STATUS_CREATED {
+                json responsePayLoad = check deployRuntimeAPICRResult.getJsonPayload();
+                log:printDebug("Deployed RuntimeAPI Successfully" + responsePayLoad.toJsonString());
+            } else {
+                json responsePayLoad = check deployRuntimeAPICRResult.getJsonPayload();
+                model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                model:StatusDetails? details = statusResponse.details;
+                if details is model:StatusDetails {
+                    return error("Invalid API Request", code = 90911, description = "Invalid API Request", message = "Invalid API Request", statusCode = 400);
+                }
+                return self.handleK8sTimeout(statusResponse);
+            }
+        } else {
+            return error("Internal Error occured", code = 909000, message = "Internal Error occured", description = "Internal Error occured", statusCode = 500);
+        }
+    }
+    private isolated function deployHttpRoutes(model:Httproute? httproute) returns error? {
+        if httproute is model:Httproute && httproute.spec.rules.length() > 0 {
+            http:Response deployHttpRouteResult = check deployHttpRoute(httproute, getNameSpace(runtimeConfiguration.apiCreationNamespace));
+            if deployHttpRouteResult.statusCode == http:STATUS_CREATED {
+                log:printDebug("Deployed HttpRoute Successfully" + httproute.toString());
+            } else {
+                json responsePayLoad = check deployHttpRouteResult.getJsonPayload();
+                model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                check self.handleK8sTimeout(statusResponse);
+            }
+        }
+    }
+    private isolated function deployServiceMappings(model:APIArtifact apiArtifact) returns error? {
+        foreach model:K8sServiceMapping k8sServiceMapping in apiArtifact.serviceMapping {
+            http:Response deployServiceMappingCRResult = check deployServiceMappingCR(k8sServiceMapping, getNameSpace(runtimeConfiguration.apiCreationNamespace));
+            if deployServiceMappingCRResult.statusCode == http:STATUS_CREATED {
+                log:printDebug("Deployed K8sAPI Successfully" + k8sServiceMapping.toString());
+            } else {
+                json responsePayLoad = check deployServiceMappingCRResult.getJsonPayload();
+                model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                check self.handleK8sTimeout(statusResponse);
+            }
+        }
+    }
+    private isolated function deployAuthneticationCRs(model:APIArtifact apiArtifact) returns error? {
+        string[] keys = apiArtifact.authenticationMap.keys();
+        foreach string authenticationCrName in keys {
+            model:Authentication authenticationCr = apiArtifact.authenticationMap.get(authenticationCrName);
+            http:Response authenticationCrDeployResponse = check deployAuthenticationCR(authenticationCr, getNameSpace(runtimeConfiguration.apiCreationNamespace));
+            if authenticationCrDeployResponse.statusCode == http:STATUS_CREATED {
+                log:printDebug("Deployed HttpRoute Successfully" + authenticationCr.toString());
+            } else {
+                json responsePayLoad = check authenticationCrDeployResponse.getJsonPayload();
+                model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                check self.handleK8sTimeout(statusResponse);
+            }
+        }
+    }
+    private isolated function deployBackendPolicies(model:APIArtifact apiArtifact) returns error? {
+        foreach model:BackendPolicy backendPolicy in apiArtifact.backendPolicies {
+            http:Response deployBackendPolicyResult = check deployBackendPolicyCR(backendPolicy, getNameSpace(runtimeConfiguration.apiCreationNamespace));
+            if deployBackendPolicyResult.statusCode == http:STATUS_CREATED {
+                log:printDebug("Deployed BackendPolicy Successfully" + backendPolicy.toString());
+            } else {
+                json responsePayLoad = check deployBackendPolicyResult.getJsonPayload();
+                model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                check self.handleK8sTimeout(statusResponse);
+            }
+        }
+    }
+
+    private isolated function deployBackendServices(model:APIArtifact apiArtifact) returns error? {
+        foreach model:Service backendService in apiArtifact.backendServices {
+            http:Response deployServiceResult = check deployService(backendService, getNameSpace(runtimeConfiguration.apiCreationNamespace));
+            if deployServiceResult.statusCode == http:STATUS_CREATED {
+                log:printDebug("Deployed HttpRoute Successfully" + backendService.toString());
+            } else {
+                json responsePayLoad = check deployServiceResult.getJsonPayload();
+                model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                check self.handleK8sTimeout(statusResponse);
+            }
         }
     }
     private isolated function deployConfigMap(model:ConfigMap definition) returns commons:APKError|error? {
@@ -1345,20 +1364,20 @@ public class APIClient {
         string definitionType = "REST";
         string|() inlineAPIDefinition = ();
         mime:Entity[] payLoadParts = check message.getBodyParts();
-            foreach mime:Entity payLoadPart in payLoadParts {
-                mime:ContentDisposition contentDisposition = payLoadPart.getContentDisposition();
-                string fieldName = contentDisposition.name;
-                if fieldName == "url" {
-                    url = check payLoadPart.getText();
-                }
-                else if fieldName == "file" {
-                    fileName = contentDisposition.fileName;
-                    fileContent = check payLoadPart.getByteArray();
-                } else if fieldName == "type" {
-                    definitionType = check payLoadPart.getText();
-                } else if fieldName == "inlineAPIDefinition" {
-                    inlineAPIDefinition = check payLoadPart.getText();
-                }
+        foreach mime:Entity payLoadPart in payLoadParts {
+            mime:ContentDisposition contentDisposition = payLoadPart.getContentDisposition();
+            string fieldName = contentDisposition.name;
+            if fieldName == "url" {
+                url = check payLoadPart.getText();
+            }
+            else if fieldName == "file" {
+                fileName = contentDisposition.fileName;
+                fileContent = check payLoadPart.getByteArray();
+            } else if fieldName == "type" {
+                definitionType = check payLoadPart.getText();
+            } else if fieldName == "inlineAPIDefinition" {
+                inlineAPIDefinition = check payLoadPart.getText();
+            }
         }
         DefinitionValidationRequest definitionValidationRequest = {
             content: fileContent,
@@ -1845,7 +1864,7 @@ public class APIClient {
                     if serviceId is string && serviceId.toString().trim().length() > 0 {
                         Service|error serviceById = getServiceById(serviceId);
                         if serviceById is Service {
-                            self.prepareApiArtifactforNewVersion(apiArtifact, serviceById, api, newVersion, organization);
+                            check self.prepareApiArtifactforNewVersion(apiArtifact, serviceById, api, newVersion, organization);
                             model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact);
                             CreatedAPI createdAPI = {body: {name: deployAPIToK8sResult.spec.apiDisplayName, context: self.returnFullContext(deployAPIToK8sResult.spec.context, deployAPIToK8sResult.spec.apiVersion), 'version: deployAPIToK8sResult.spec.apiVersion, id: deployAPIToK8sResult.metadata.uid}};
                             return createdAPI;
@@ -1855,7 +1874,7 @@ public class APIClient {
                         }
                     }
                 }
-                self.prepareApiArtifactforNewVersion(apiArtifact, (), api, newVersion, organization);
+                check self.prepareApiArtifactforNewVersion(apiArtifact, (), api, newVersion, organization);
                 model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact);
                 CreatedAPI createdAPI = {body: {name: deployAPIToK8sResult.spec.apiDisplayName, context: self.returnFullContext(deployAPIToK8sResult.spec.context, deployAPIToK8sResult.spec.apiVersion), 'version: deployAPIToK8sResult.spec.apiVersion, id: deployAPIToK8sResult.metadata.uid}};
                 return createdAPI;
@@ -1870,21 +1889,19 @@ public class APIClient {
             return error("Internal Error occured", code = 909000, message = "Internal Error occured", description = "Internal Error occured", statusCode = 500);
         }
     }
-    private isolated function prepareApiArtifactforNewVersion(model:APIArtifact apiArtifact, Service? serviceEntry, API oldAPI, string newVersion, commons:Organization organization) {
-        do {
-            API newAPI = {
-                name: oldAPI.name,
-                context: regex:replace(oldAPI.context, oldAPI.'version, newVersion),
-                'version: newVersion
-            };
-            self.prepareAPICr(apiArtifact, oldAPI, newAPI, organization);
-            check self.prepareConfigMap(apiArtifact, oldAPI, newAPI);
-            self.prepareHttpRoute(apiArtifact, serviceEntry, oldAPI, newAPI, PRODUCTION_TYPE, organization);
-            self.prepareHttpRoute(apiArtifact, serviceEntry, oldAPI, newAPI, SANDBOX_TYPE, organization);
-            self.prepareK8sServiceMapping(apiArtifact, serviceEntry, oldAPI, newAPI, organization);
-        } on fail var e {
-            log:printError("", e);
-        }
+    private isolated function prepareApiArtifactforNewVersion(model:APIArtifact apiArtifact, Service? serviceEntry, API oldAPI, string newVersion, commons:Organization organization) returns error? {
+        API newAPI = {
+            name: oldAPI.name,
+            context: regex:replace(oldAPI.context, oldAPI.'version, newVersion),
+            'version: newVersion
+        };
+        self.prepareAPICr(apiArtifact, oldAPI, newAPI, organization);
+        check self.prepareConfigMap(apiArtifact, oldAPI, newAPI);
+        self.prepareHttpRoute(apiArtifact, serviceEntry, oldAPI, newAPI, PRODUCTION_TYPE, organization);
+        self.prepareHttpRoute(apiArtifact, serviceEntry, oldAPI, newAPI, SANDBOX_TYPE, organization);
+        self.prepareK8sServiceMapping(apiArtifact, serviceEntry, oldAPI, newAPI, organization);
+        apiArtifact.runtimeAPI = self.generateRuntimeAPIArtifact(newAPI, serviceEntry, organization);
+
     }
     private isolated function prepareK8sServiceMapping(model:APIArtifact apiArtifact, Service? serviceEntry, API oldAPI, API newAPI, commons:Organization organization) {
         model:K8sServiceMapping[] serviceMappings = apiArtifact.serviceMapping;
@@ -2073,9 +2090,25 @@ public class APIClient {
         foreach model:BackendPolicy backendPolicy in backendPolicyList.items {
             apiArtifact.backendPolicies[backendPolicy.metadata.name] = self.sanitizeBackendPolicyCrs(backendPolicy);
         }
-
+        model:RuntimeAPI|http:ClientError internalAPI = getInternalAPI(k8sapi.metadata.name, k8sapi.metadata.namespace);
+        if internalAPI is model:RuntimeAPI {
+            apiArtifact.runtimeAPI = self.sanitizeRuntimeAPI(internalAPI);
+        } else if (internalAPI is http:ApplicationResponseError) {
+            if internalAPI.detail().statusCode != 404 {
+                return internalAPI;
+            }
+        } else {
+            return internalAPI;
+        }
         apiArtifact.api = self.sanitizeAPICR(k8sapi);
         return apiArtifact;
+    }
+    private isolated function sanitizeRuntimeAPI(model:RuntimeAPI runtimeAPI) returns model:RuntimeAPI {
+        model:RuntimeAPI sanitizedAPI = {
+            metadata: {name: runtimeAPI.metadata.name, namespace: runtimeAPI.metadata.namespace},
+            spec: runtimeAPI.spec
+        };
+        return sanitizedAPI;
     }
     private isolated function sanitizeAPICR(model:API api) returns model:API {
         model:API modifiedAPI = {
@@ -2195,6 +2228,10 @@ public class APIClient {
                     foreach model:BackendPolicy backendPolicy in apiArtifact.backendPolicies {
                         _ = check self.convertAndStoreYamlFile(backendPolicy.toJsonString(), backendPolicy.metadata.name, zipDir, "policies/backendPolicies");
 
+                    }
+                    model:RuntimeAPI? runtimeAPI = apiArtifact.runtimeAPI;
+                    if runtimeAPI is model:RuntimeAPI {
+                        _ = check self.convertAndStoreYamlFile(runtimeAPI.toJsonString(), runtimeAPI.metadata.name, zipDir, "runtimeapi");
                     }
                     [string, string] zipName = check self.zipDirectory(apiId, zipDir);
                     http:Response response = new;
@@ -2317,7 +2354,7 @@ public class APIClient {
             API|NotFoundError api = check self.getAPIById(apiId, organization);
             if api is API {
                 API updateAPI = {...api};
-            DefinitionValidationRequest|BadRequestError definitionValidationRequest = check self.mapApiDefinitionPayload(payload);
+                DefinitionValidationRequest|BadRequestError definitionValidationRequest = check self.mapApiDefinitionPayload(payload);
                 if definitionValidationRequest is DefinitionValidationRequest {
                     runtimeapi:APIDefinitionValidationResponse|runtimeapi:APIManagementException|BadRequestError validateAndRetrieveDefinitionResult = check self.validateAndRetrieveDefinition(updateAPI.'type, definitionValidationRequest.url, definitionValidationRequest.inlineAPIDefinition, definitionValidationRequest.content, definitionValidationRequest.fileName);
                     if validateAndRetrieveDefinitionResult is runtimeapi:APIDefinitionValidationResponse {
@@ -2335,28 +2372,27 @@ public class APIClient {
                                 foreach lang:Object uritemplate in uriTemplates {
                                     runtimeModels:URITemplate template = check java:cast(uritemplate);
                                     boolean found = false;
-                                        foreach APIOperations operation in operations {
-                                            if operation.target == template.getUriTemplate() && operation.verb == template.getHTTPVerb() {
-                                                sortedOperations.push(operation);
-                                                found = true;
-                                                break;
-                                            }
+                                    foreach APIOperations operation in operations {
+                                        if operation.target == template.getUriTemplate() && operation.verb == template.getHTTPVerb() {
+                                            sortedOperations.push(operation);
+                                            found = true;
+                                            break;
                                         }
-                                        if !found {
-                                            string[] scopes = [];
-                                            utilapis:List scopeSet = template.getScopes();
-                                            lang:Object[] scopeArray = check scopeSet.toArray();
-                                            foreach lang:Object scope in scopeArray {
-                                                scopes.push(scope.toString());
-                                            }
-                                            sortedOperations.push({
-                                                target: template.getUriTemplate(),
-                                                verb: template.getHTTPVerb(),
-                                                scopes: scopes
-                                            });
+                                    }
+                                    if !found {
+                                        string[] scopes = [];
+                                        utilapis:List scopeSet = template.getScopes();
+                                        lang:Object[] scopeArray = check scopeSet.toArray();
+                                        foreach lang:Object scope in scopeArray {
+                                            scopes.push(scope.toString());
                                         }
+                                        sortedOperations.push({
+                                            target: template.getUriTemplate(),
+                                            verb: template.getHTTPVerb(),
+                                            scopes: scopes
+                                        });
+                                    }
 
-                                    
                                 }
                                 updateAPI.operations = sortedOperations;
                                 _ = check self.updateAPI(apiId, updateAPI, validateAndRetrieveDefinitionResult.getContent(), organization);
