@@ -22,12 +22,12 @@ import ballerina/log;
 
 isolated map<model:Organization> organizationList = {};
 string organizationResourceVersion = "";
-websocket:Client|error|() watchOrganizationService = ();
 
 class OrganizationListingTask {
+    websocket:Client|error watchOrganizationService;
 
     function init(string organizationResourceVersion) {
-        watchOrganizationService = getOrganizationWatchClient(organizationResourceVersion);
+        self.watchOrganizationService = getOrganizationWatchClient(organizationResourceVersion);
     }
 
     public function startListening() returns error? {
@@ -35,32 +35,81 @@ class OrganizationListingTask {
         worker WatchOrganizationThread {
             while true {
                 do {
-                    websocket:Client|error|() orgClientResult = watchOrganizationService;
-                    if orgClientResult is websocket:Client {
-                        boolean connectionOpen = orgClientResult.isOpen();
-                        if !connectionOpen {
-                            log:printDebug("Websocket Client connection closed conectionId: " + orgClientResult.getConnectionId() + " state: " + connectionOpen.toString());
-                            watchOrganizationService = getOrganizationWatchClient(organizationResourceVersion);
-                            websocket:Client|error|() retryClient = watchOrganizationService;
-                            if retryClient is websocket:Client {
-                                log:printDebug("Reinitializing client..");
-                                connectionOpen = retryClient.isOpen();
-                                log:printDebug("Intializd new Client Connection conectionId: " + retryClient.getConnectionId() + " state: " + connectionOpen.toString());
-                                _ = check readOrganizationEvent(retryClient);
-                            } else if retryClient is error {
-                                log:printError("error while reading organization message", retryClient);
-                            }
-                        } else {
-                            _ = check readOrganizationEvent(orgClientResult);
-                        }
-
-                    } else if orgClientResult is error {
-                        log:printError("error while reading organization message", orgClientResult);
+                    websocket:Client orgClientResult = check self.watchOrganizationService;
+                    boolean connectionOpen = orgClientResult.isOpen();
+                    if !connectionOpen {
+                        log:printDebug("Websocket Client connection closed conectionId: " + orgClientResult.getConnectionId() + " state: " + connectionOpen.toString());
+                        self.watchOrganizationService = getOrganizationWatchClient(organizationResourceVersion);
+                        websocket:Client retryClient = check self.watchOrganizationService;
+                        log:printDebug("Reinitializing client..");
+                        connectionOpen = retryClient.isOpen();
+                        log:printDebug("Intializd new Client Connection conectionId: " + retryClient.getConnectionId() + " state: " + connectionOpen.toString());
+                        _ = check self.readOrganizationEvent(retryClient);
+                    } else {
+                        _ = check self.readOrganizationEvent(orgClientResult);
                     }
                 } on fail var e {
                     log:printError("Unable to read organization messages", e);
+                    self.watchOrganizationService = getOrganizationWatchClient(organizationResourceVersion);
                 }
             }
+        }
+    }
+    function readOrganizationEvent(websocket:Client organizationWebSocketClient) returns error? {
+        boolean connectionOpen = organizationWebSocketClient.isOpen();
+
+        log:printDebug("Using Client Connection conectionId: " + organizationWebSocketClient.getConnectionId() + " state: " + connectionOpen.toString());
+        if !connectionOpen {
+            error err = error("connection closed");
+            return err;
+        }
+        string message = check organizationWebSocketClient->readMessage();
+        log:printDebug(message);
+        json value = check value:fromJsonString(message);
+        string eventType = <string>check value.'type;
+        json eventValue = <json>check value.'object;
+        json metadata = <json>check eventValue.metadata;
+        if eventType == "ERROR" {
+            model:Status|error statusEvent = eventValue.cloneWithType(model:Status);
+            if (statusEvent is model:Status) {
+                _ = check self.handleOganizationWatchGone(statusEvent);
+            }
+        } else {
+            string latestResourceVersion = <string>check metadata.resourceVersion;
+            setOrganizationResourceVersion(latestResourceVersion);
+            model:Organization|error organization = eventValue.cloneWithType(model:Organization);
+            if organization is model:Organization {
+                if (organization.metadata.namespace == getNameSpace(runtimeConfiguration.apiCreationNamespace)) {
+                    if eventType == "ADDED" {
+                        lock {
+                            putOrganization(organization);
+                        }
+                    } else if (eventType == "MODIFIED") {
+                        lock {
+                            updateOrganization(organization);
+                        }
+                    } else if (eventType == "DELETED") {
+                        lock {
+                            removeOrganization(organization);
+                        }
+                    }
+                }
+            } else {
+                log:printError("error while converting organization event", organization);
+            }
+        }
+    }
+
+    function handleOganizationWatchGone(model:Status statusEvent) returns error? {
+        if statusEvent.code == 410 {
+            log:printDebug("Re-initializing watch service for API due to cache clear.");
+            map<model:Organization> organizationsMap = {};
+            OrgClient orgClient = new ();
+            _ = check orgClient.retrieveAllOrganizationsAtStartup(organizationsMap, ());
+            lock {
+                organizationList = organizationsMap.clone();
+            }
+            self.watchOrganizationService = getOrganizationWatchClient(organizationResourceVersion);
         }
     }
 }
@@ -96,7 +145,7 @@ isolated function getOrganization(string organization) returns model:Organizatio
     }
 }
 
-isolated function putAllOrganizations(map<model:Organization> organizationMap,model:Organization[] organizations) {
+isolated function putAllOrganizations(map<model:Organization> organizationMap, model:Organization[] organizations) {
     foreach model:Organization organization in organizations {
         lock {
             organizationMap[organization.spec.uuid] = organization.clone();
@@ -108,72 +157,9 @@ function setOrganizationResourceVersion(string resourceVersion) {
     organizationResourceVersion = resourceVersion;
 }
 
-function readOrganizationEvent(websocket:Client organizationWebSocketClient) returns error? {
-    boolean connectionOpen = organizationWebSocketClient.isOpen();
-
-    log:printDebug("Using Client Connection conectionId: " + organizationWebSocketClient.getConnectionId() + " state: " + connectionOpen.toString());
-    if !connectionOpen {
-        error err = error("connection closed");
-        return err;
-    }
-    string|error message = check organizationWebSocketClient->readMessage();
-    if message is string {
-        log:printDebug(message);
-        json value = check value:fromJsonString(message);
-        string eventType = <string>check value.'type;
-        json eventValue = <json>check value.'object;
-        json metadata = <json>check eventValue.metadata;
-        if eventType == "ERROR" {
-            model:Status|error statusEvent = eventValue.cloneWithType(model:Status);
-            if (statusEvent is model:Status) {
-                _ = check handleOganizationWatchGone(statusEvent);
-            }
-        } else {
-            string latestResourceVersion = <string>check metadata.resourceVersion;
-            setOrganizationResourceVersion(latestResourceVersion);
-            model:Organization|error organization = eventValue.cloneWithType(model:Organization);
-            if organization is model:Organization {
-                if (organization.metadata.namespace == getNameSpace(runtimeConfiguration.apiCreationNamespace)) {
-                    if eventType == "ADDED" {
-                        lock {
-                            putOrganization(organization);
-                        }
-                    } else if (eventType == "MODIFIED") {
-                        lock {
-                            updateOrganization(organization);
-                        }
-                    } else if (eventType == "DELETED") {
-                        lock {
-                            removeOrganization(organization);
-                        }
-                    }
-                }
-            } else {
-                log:printError("error while converting organization event",organization);
-            }
-        }
-    } else {
-        log:printError("error while reading organization event message", message);
-    }
-
-}
-
-function handleOganizationWatchGone(model:Status statusEvent) returns error? {
-    if statusEvent.code == 410 {
-        log:printDebug("Re-initializing watch service for API due to cache clear.");
-        map<model:Organization> organizationsMap = {};
-        OrgClient orgClient = new ();
-        _ = check orgClient.retrieveAllOrganizationsAtStartup(organizationsMap,());
-        lock {
-            organizationList = organizationsMap.clone();
-        }
-        watchAPIService = getOrganizationWatchClient(organizationResourceVersion);
-    }
-}
-
 isolated function putOrganization(model:Organization organization) {
-    lock{
-        organizationList[organization.spec.uuid]=organization.clone();
+    lock {
+        organizationList[organization.spec.uuid] = organization.clone();
     }
 }
 
