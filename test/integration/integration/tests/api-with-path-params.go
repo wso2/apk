@@ -37,6 +37,7 @@ var APIWithPathParams = suite.IntegrationTest{
 	Test: func(t *testing.T, suite *suite.IntegrationTestSuite) {
 		ns := "gateway-integration-test-infra"
 		gwAddr := kubernetes.WaitForGatewayAddress(t, suite.Client, suite.TimeoutConfig)
+		token := http.GetTestToken(t, gwAddr)
 
 		testCases := []http.ExpectedResponse{
 			{
@@ -62,6 +63,7 @@ var APIWithPathParams = suite.IntegrationTest{
 		}
 		for i := range testCases {
 			tc := testCases[i]
+			tc.Request.Headers = http.AddBearerTokenToHeader(token, tc.Request.Headers)
 			t.Run(tc.GetTestCaseName(i), func(t *testing.T) {
 				t.Parallel()
 				http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, gwAddr, tc)

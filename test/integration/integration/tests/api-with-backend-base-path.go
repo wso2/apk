@@ -20,9 +20,9 @@ package tests
 import (
 	"testing"
 
+	"github.com/wso2/apk/test/integration/integration/utils/http"
 	"github.com/wso2/apk/test/integration/integration/utils/kubernetes"
 	"github.com/wso2/apk/test/integration/integration/utils/suite"
-	"sigs.k8s.io/gateway-api/conformance/utils/http"
 )
 
 func init() {
@@ -37,6 +37,7 @@ var APIWithBackendBasePath = suite.IntegrationTest{
 	Test: func(t *testing.T, suite *suite.IntegrationTestSuite) {
 		ns := "gateway-integration-test-infra"
 		gwAddr := kubernetes.WaitForGatewayAddress(t, suite.Client, suite.TimeoutConfig)
+		token := http.GetTestToken(t, gwAddr)
 
 		testCases := []http.ExpectedResponse{
 			{
@@ -68,6 +69,7 @@ var APIWithBackendBasePath = suite.IntegrationTest{
 		}
 		for i := range testCases {
 			tc := testCases[i]
+			tc.Request.Headers = http.AddBearerTokenToHeader(token, tc.Request.Headers)
 			t.Run(tc.GetTestCaseName(i), func(t *testing.T) {
 				t.Parallel()
 				http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, gwAddr, tc)

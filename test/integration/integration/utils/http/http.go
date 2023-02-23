@@ -19,6 +19,8 @@ package http
 
 import (
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"net/url"
 	"strings"
 	"testing"
@@ -358,4 +360,29 @@ func setRedirectRequestDefaults(req *roundtripper.Request, cRes *roundtripper.Ca
 	if expected.RedirectRequest.Path == "" {
 		expected.RedirectRequest.Path = req.URL.Path
 	}
+}
+
+// GetTestToken get test token from test token endpoint call
+func GetTestToken(t *testing.T, gwAddr string) string {
+	t.Helper()
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", fmt.Sprintf("http://%s/testkey", gwAddr), nil)
+	req.Header.Set("Authorization", "Basic YWRtaW46YWRtaW4=")
+	req.Host = "gw.wso2.com"
+	if err != nil {
+		t.Fatalf("failed to create request: %v", err)
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		t.Fatalf("failed to get token: %v", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("failed to get token: %v", err)
+	}
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("failed to read token response: %v", err)
+	}
+	return string(body)
 }

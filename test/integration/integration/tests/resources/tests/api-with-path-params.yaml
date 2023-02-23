@@ -55,19 +55,3 @@ spec:
     backendRefs:
     - name: infra-backend-v1
       port: 8080
----
-apiVersion: dp.wso2.com/v1alpha1
-kind: Authentication
-metadata:
-  name: test-api-with-path-params-disable-auth
-  namespace: gateway-integration-test-infra
-spec:
-  override:
-    ext:
-      disabled: true
-    type: ext
-  targetRef:
-    group: gateway.networking.k8s.io
-    kind: HTTPRoute
-    name: test-api-with-path-params-httproute
-    namespace: gateway-integration-test-infra
