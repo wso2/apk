@@ -20,24 +20,21 @@ import wso2/apk_common_lib as commons;
 import ballerina/http;
 
 isolated function convertK8sAPItoAPI(model:API api, boolean lightWeight) returns API|commons:APKError {
-    do {
-
-        API convertedModel = {
-            id: api.metadata.uid,
-            name: api.spec.apiDisplayName,
-            context: api.spec.context,
-            'version: api.spec.apiVersion,
-            'type: api.spec.apiType,
-            createdTime: api.metadata.creationTimestamp
-        };
-        model:APIStatus? status = api.status;
-        if status is model:APIStatus {
-            convertedModel.lastUpdatedTime = status.transitionTime;
-        }
-        if !lightWeight {
-            http:Response internalAPIResponse = check getInternalAPI(api.metadata.name, api.metadata.namespace);
-            json jsonPayload = check internalAPIResponse.getJsonPayload();
-            model:RuntimeAPI internalAPI = check jsonPayload.cloneWithType(model:RuntimeAPI);
+    API convertedModel = {
+        id: api.metadata.uid,
+        name: api.spec.apiDisplayName,
+        context: api.spec.context,
+        'version: api.spec.apiVersion,
+        'type: api.spec.apiType,
+        createdTime: api.metadata.creationTimestamp
+    };
+    model:APIStatus? status = api.status;
+    if status is model:APIStatus {
+        convertedModel.lastUpdatedTime = status.transitionTime;
+    }
+    if !lightWeight {
+        model:RuntimeAPI|http:ClientError internalAPI = getInternalAPI(api.metadata.name, api.metadata.namespace);
+        if internalAPI is model:RuntimeAPI {
             record {|anydata...;|}? endpointConfig = internalAPI.spec.endpointConfig;
             if endpointConfig is record {} {
                 convertedModel.endpointConfig = endpointConfig;
@@ -65,11 +62,15 @@ isolated function convertK8sAPItoAPI(model:API api, boolean lightWeight) returns
             if serviceInfo is model:ServiceInfo {
                 convertedModel.serviceInfo = {name: serviceInfo.name, namespace: serviceInfo.namespace};
             }
+        } else if internalAPI is http:ApplicationResponseError {
+            if internalAPI.detail().statusCode != 404 {
+                return error("Error while converting k8s API to API", internalAPI, code = 900900, message = "Internal Server Error", statusCode = 500, description = "Internal Server Error");
+            }
+        } else {
+            return error("Error while converting k8s API to API", internalAPI, code = 900900, message = "Internal Server Error", statusCode = 500, description = "Internal Server Error");
         }
-        return convertedModel;
-    } on fail var e {
-        return error commons:APKError("Error while converting k8s API to API",e,code=900900,message = "Internal Server Error",statusCode = 500,description = "Internal Server Error");
     }
+    return convertedModel;
 }
 
 isolated function convertOperationPolicies(model:OperationPolicies? operation) returns APIOperationPolicies|() {
