@@ -21,11 +21,11 @@ import (
 	"testing"
 
 	"github.com/wso2/apk/test/integration/integration/utils/kubernetes"
+	"github.com/wso2/apk/test/integration/integration/utils/roundtripper"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/gateway-api/apis/v1beta1"
 	"sigs.k8s.io/gateway-api/conformance/utils/config"
-	"sigs.k8s.io/gateway-api/conformance/utils/roundtripper"
 	gwapisuite "sigs.k8s.io/gateway-api/conformance/utils/suite"
 )
 

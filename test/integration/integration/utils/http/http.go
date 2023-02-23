@@ -18,6 +18,7 @@
 package http
 
 import (
+	"crypto/tls"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -26,8 +27,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/wso2/apk/test/integration/integration/utils/roundtripper"
 	"sigs.k8s.io/gateway-api/conformance/utils/config"
-	"sigs.k8s.io/gateway-api/conformance/utils/roundtripper"
 )
 
 // ExpectedResponse defines the response expected for a given request.
@@ -93,7 +94,7 @@ type Response struct {
 func MakeRequestAndExpectEventuallyConsistentResponse(t *testing.T, r roundtripper.RoundTripper, timeoutConfig config.TimeoutConfig, gwAddr string, expected ExpectedResponse) {
 	t.Helper()
 
-	req := MakeRequest(t, &expected, gwAddr, "HTTP", "http")
+	req := MakeRequest(t, &expected, gwAddr, "HTTPS", "https")
 
 	WaitForConsistentResponse(t, r, req, expected, timeoutConfig.RequiredConsecutiveSuccesses, timeoutConfig.MaxTimeToConsistency)
 }
@@ -365,8 +366,14 @@ func setRedirectRequestDefaults(req *roundtripper.Request, cRes *roundtripper.Ca
 // GetTestToken get test token from test token endpoint call
 func GetTestToken(t *testing.T, gwAddr string) string {
 	t.Helper()
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", fmt.Sprintf("http://%s/testkey", gwAddr), nil)
+	transport := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
+	}
+	client := &http.Client{Transport: transport}
+	req, err := http.NewRequest("GET", fmt.Sprintf("https://%s/testkey", gwAddr), nil)
+
 	req.Header.Set("Authorization", "Basic YWRtaW46YWRtaW4=")
 	req.Host = "gw.wso2.com"
 	if err != nil {
