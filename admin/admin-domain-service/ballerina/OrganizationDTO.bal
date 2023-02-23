@@ -16,6 +16,14 @@
 // under the License.
 //
 
+# Description
+#
+# + id - Org ID  
+# + name - Org Name 
+# + displayName - Org Display Name
+# + enabled -   Org Enabled
+# + claimKey -  Org Claim Key 
+# + claimValue -    Org Claim Value
 public type Organizations record {
     string id;
     string name;

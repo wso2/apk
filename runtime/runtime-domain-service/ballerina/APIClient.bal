@@ -37,12 +37,15 @@ import wso2/apk_common_lib as commons;
 
 public class APIClient {
 
-    public isolated function getAPIDefinitionByID(string id, commons:Organization organization) returns json|NotFoundError|PreconditionFailedError|InternalServerErrorError {
+    public isolated function getAPIDefinitionByID(string id, commons:Organization organization) returns http:Response|NotFoundError|PreconditionFailedError|InternalServerErrorError {
         model:API|error api = getAPI(id, organization);
         if api is model:API {
             json|error definition = self.getDefinition(api);
             if definition is json {
-                return definition;
+                http:Response response = new;
+                response.setJsonPayload(definition);
+                response.statusCode = 200;
+                return response;
             } else {
                 log:printError("Error while reading definition:", definition);
                 InternalServerErrorError internalError = {body: {code: 909000, message: "Internal Error Occured while retrieving definition"}};
@@ -1287,7 +1290,7 @@ public class APIClient {
 
     public isolated function validateDefinition(http:Request message, boolean returnContent) returns InternalServerErrorError|BadRequestError|APIDefinitionValidationResponse|commons:APKError {
         do {
-            DefinitionValidationRequest|BadRequestError|error definitionValidationRequest = self.mapApiDefinitionPayload(message);
+            DefinitionValidationRequest|BadRequestError definitionValidationRequest = check self.mapApiDefinitionPayload(message);
             if definitionValidationRequest is DefinitionValidationRequest {
                 runtimeapi:APIDefinitionValidationResponse|runtimeapi:APIManagementException|error|BadRequestError validationResponse = self.validateAndRetrieveDefinition(definitionValidationRequest.'type, definitionValidationRequest.url, definitionValidationRequest.inlineAPIDefinition, definitionValidationRequest.content, definitionValidationRequest.fileName);
                 if validationResponse is runtimeapi:APIDefinitionValidationResponse {
@@ -1326,11 +1329,8 @@ public class APIClient {
                     return badeRequest;
                 }
             }
-            else if definitionValidationRequest is BadRequestError {
+            else {
                 return definitionValidationRequest;
-            } else {
-                InternalServerErrorError internalError = {body: {code: 909000, message: "InternalServerError"}};
-                return internalError;
             }
         } on fail var e {
             commons:APKError apkError = error("Internal Error", e, code = 900900, message = "InternalServer Error", description = "InternalServer Error", statusCode = 500);
@@ -1342,10 +1342,9 @@ public class APIClient {
         string|() url = ();
         string|() fileName = ();
         byte[]|() fileContent = ();
-        string|() definitionType = ();
+        string definitionType = "REST";
         string|() inlineAPIDefinition = ();
-        mime:Entity[]|http:ClientError payLoadParts = message.getBodyParts();
-        if payLoadParts is mime:Entity[] {
+        mime:Entity[] payLoadParts = check message.getBodyParts();
             foreach mime:Entity payLoadPart in payLoadParts {
                 mime:ContentDisposition contentDisposition = payLoadPart.getContentDisposition();
                 string fieldName = contentDisposition.name;
@@ -1360,19 +1359,15 @@ public class APIClient {
                 } else if fieldName == "inlineAPIDefinition" {
                     inlineAPIDefinition = check payLoadPart.getText();
                 }
-            }
         }
-        if definitionType is () {
-            BadRequestError badeRequest = {body: {code: 90914, message: "type not specified in Request"}};
-            return badeRequest;
-        }
-        return {
+        DefinitionValidationRequest definitionValidationRequest = {
             content: fileContent,
             fileName: fileName,
             inlineAPIDefinition: inlineAPIDefinition,
             url: url,
             'type: definitionType
         };
+        return definitionValidationRequest;
     }
 
     private isolated function retrieveDefinitionFromUrl(string url) returns string|error {
@@ -2237,7 +2232,7 @@ public class APIClient {
         _ = check runtimeUtil:ZIPUtils_zipDir(directoryPath, zipPath);
         return [zipName, zipPath];
     }
-    public isolated function updateAPI(string apiId, API payload, commons:Organization organization) returns API|BadRequestError|ForbiddenError|NotFoundError|PreconditionFailedError|InternalServerErrorError|commons:APKError {
+    public isolated function updateAPI(string apiId, API payload, string? definition, commons:Organization organization) returns API|BadRequestError|ForbiddenError|NotFoundError|PreconditionFailedError|InternalServerErrorError|commons:APKError {
         API|NotFoundError api = check self.getAPIById(apiId, organization);
         if api is API {
             if payload.'type != api.'type {
@@ -2286,7 +2281,7 @@ public class APIClient {
                     return badRequestError;
                 }
                 if endpoint is model:Endpoint {
-                   _= check self.setHttpRoute(apiArtifact, payload, endpoint, uniqueId, PRODUCTION_TYPE, organization);
+                    _ = check self.setHttpRoute(apiArtifact, payload, endpoint, uniqueId, PRODUCTION_TYPE, organization);
                 } else {
                     record {}? endpointConfig = payload.endpointConfig;
                     map<model:Endpoint|()> createdEndpoints = {};
@@ -2296,9 +2291,12 @@ public class APIClient {
                     _ = check self.setHttpRoute(apiArtifact, payload, createdEndpoints.hasKey(PRODUCTION_TYPE) ? createdEndpoints.get(PRODUCTION_TYPE) : (), uniqueId, PRODUCTION_TYPE, organization);
                     _ = check self.setHttpRoute(apiArtifact, payload, createdEndpoints.hasKey(SANDBOX_TYPE) ? createdEndpoints.get(SANDBOX_TYPE) : (), uniqueId, SANDBOX_TYPE, organization);
                 }
-
-                json generatedSwagger = check self.retrieveGeneratedSwaggerDefinition(payload, ());
-                self.retrieveGeneratedConfigmapForDefinition(apiArtifact, payload, generatedSwagger, uniqueId);
+                if definition is string {
+                    self.retrieveGeneratedConfigmapForDefinition(apiArtifact, payload, definition, uniqueId);
+                } else {
+                    json generatedSwagger = check self.retrieveGeneratedSwaggerDefinition(payload, ());
+                    self.retrieveGeneratedConfigmapForDefinition(apiArtifact, payload, generatedSwagger, uniqueId);
+                }
                 self.generateAndSetAPICRArtifact(apiArtifact, payload, organization);
                 self.generateAndSetRuntimeAPIArtifact(apiArtifact, payload, (), organization);
                 model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact);
@@ -2312,6 +2310,94 @@ public class APIClient {
             }
         } else {
             return api;
+        }
+    }
+    public isolated function updateAPIDefinition(string apiId, http:Request payload, commons:Organization organization) returns http:Response|NotFoundError|PreconditionFailedError|InternalServerErrorError|BadRequestError|commons:APKError {
+        do {
+            API|NotFoundError api = check self.getAPIById(apiId, organization);
+            if api is API {
+                API updateAPI = {...api};
+            DefinitionValidationRequest|BadRequestError definitionValidationRequest = check self.mapApiDefinitionPayload(payload);
+                if definitionValidationRequest is DefinitionValidationRequest {
+                    runtimeapi:APIDefinitionValidationResponse|runtimeapi:APIManagementException|BadRequestError validateAndRetrieveDefinitionResult = check self.validateAndRetrieveDefinition(updateAPI.'type, definitionValidationRequest.url, definitionValidationRequest.inlineAPIDefinition, definitionValidationRequest.content, definitionValidationRequest.fileName);
+                    if validateAndRetrieveDefinitionResult is runtimeapi:APIDefinitionValidationResponse {
+                        if validateAndRetrieveDefinitionResult.isValid() {
+                            runtimeapi:APIDefinition parser = validateAndRetrieveDefinitionResult.getParser();
+                            log:printDebug("content available ==", contentAvailable = (validateAndRetrieveDefinitionResult.getContent() is string));
+                            utilapis:Set|runtimeapi:APIManagementException uRITemplates = parser.getURITemplates(<string>validateAndRetrieveDefinitionResult.getContent());
+                            if uRITemplates is utilapis:Set {
+                                APIOperations[]? operations = updateAPI.operations;
+                                if !(operations is APIOperations[]) {
+                                    operations = [];
+                                }
+                                lang:Object[] uriTemplates = check uRITemplates.toArray();
+                                APIOperations[] sortedOperations = [];
+                                foreach lang:Object uritemplate in uriTemplates {
+                                    runtimeModels:URITemplate template = check java:cast(uritemplate);
+                                    boolean found = false;
+                                        foreach APIOperations operation in operations {
+                                            if operation.target == template.getUriTemplate() && operation.verb == template.getHTTPVerb() {
+                                                sortedOperations.push(operation);
+                                                found = true;
+                                                break;
+                                            }
+                                        }
+                                        if !found {
+                                            string[] scopes = [];
+                                            utilapis:List scopeSet = template.getScopes();
+                                            lang:Object[] scopeArray = check scopeSet.toArray();
+                                            foreach lang:Object scope in scopeArray {
+                                                scopes.push(scope.toString());
+                                            }
+                                            sortedOperations.push({
+                                                target: template.getUriTemplate(),
+                                                verb: template.getHTTPVerb(),
+                                                scopes: scopes
+                                            });
+                                        }
+
+                                    
+                                }
+                                updateAPI.operations = sortedOperations;
+                                _ = check self.updateAPI(apiId, updateAPI, validateAndRetrieveDefinitionResult.getContent(), organization);
+                                return self.getAPIDefinitionByID(apiId, organization);
+                            } else {
+                                log:printError("Error occured retrieving uri templates from definition", uRITemplates);
+                                runtimeapi:JAPIManagementException excetion = check uRITemplates.ensureType(runtimeapi:JAPIManagementException);
+                                runtimeapi:ErrorHandler errorHandler = excetion.getErrorHandler();
+                                BadRequestError badeRequest = {body: {code: errorHandler.getErrorCode(), message: errorHandler.getErrorMessage().toString()}};
+                                return badeRequest;
+                            }
+                        }
+                        // Error definition.
+                        ErrorListItem[] errorItems = [];
+                        utilapis:ArrayList errorItemsResult = validateAndRetrieveDefinitionResult.getErrorItems();
+                        foreach int i in 0 ... errorItemsResult.size() - 1 {
+                            runtimeapi:ErrorItem errorItem = check java:cast(errorItemsResult.get(i));
+                            ErrorListItem errorListItem = {code: errorItem.getErrorCode().toString(), message: <string>errorItem.getErrorMessage(), description: errorItem.getErrorDescription()};
+                            errorItems.push(errorListItem);
+                        }
+                        BadRequestError badRequest = {body: {code: 90091, message: "Invalid API Definition", 'error: errorItems}};
+                        return badRequest;
+                    } else if validateAndRetrieveDefinitionResult is BadRequestError {
+                        return validateAndRetrieveDefinitionResult;
+                    } else {
+                        log:printError("Error occured creating api from defintion", validateAndRetrieveDefinitionResult);
+                        runtimeapi:JAPIManagementException excetion = check validateAndRetrieveDefinitionResult.ensureType(runtimeapi:JAPIManagementException);
+                        runtimeapi:ErrorHandler errorHandler = excetion.getErrorHandler();
+                        BadRequestError badeRequest = {body: {code: errorHandler.getErrorCode(), message: errorHandler.getErrorMessage().toString()}};
+                        return badeRequest;
+                    }
+                } else {
+                    return <BadRequestError>definitionValidationRequest;
+                }
+            } else {
+                return <NotFoundError>api;
+            }
+        } on fail var e {
+            log:printError("Error occured importing API", e);
+            InternalServerErrorError internalError = {body: {code: 900900, message: "Internal Error."}};
+            return internalError;
         }
     }
 }

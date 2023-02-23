@@ -47,7 +47,7 @@ http:Service runtimeService = service object {
         final APIClient apiService = new ();
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
-        return apiService.updateAPI(apiId, payload, organization);
+        return apiService.updateAPI(apiId, payload,(), organization);
     }
     isolated resource function delete apis/[string apiId](http:RequestContext requestContext) returns http:Ok|ForbiddenError|NotFoundError|InternalServerErrorError|BadRequestError|commons:APKError {
         final APIClient apiService = new ();
@@ -83,15 +83,17 @@ http:Service runtimeService = service object {
         commons:Organization organization = authenticatedUserContext.organization;
         return apiService.validateAPIExistence(query, organization);
     }
-    isolated resource function get apis/[string apiId]/definition(http:RequestContext requestContext) returns json|NotFoundError|PreconditionFailedError|InternalServerErrorError|commons:APKError {
+    isolated resource function get apis/[string apiId]/definition(http:RequestContext requestContext) returns http:Response|NotFoundError|PreconditionFailedError|InternalServerErrorError|commons:APKError {
         final APIClient apiService = new ();
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
         return apiService.getAPIDefinitionByID(apiId, organization);
     }
-    isolated resource function put apis/[string apiId]/definition(http:RequestContext requestContext, @http:Payload json payload) returns string|BadRequestError|ForbiddenError|NotFoundError|PreconditionFailedError|InternalServerErrorError {
-        BadRequestError badRequest = {body: {code: 900910, message: "Not implemented"}};
-        return badRequest;
+    isolated resource function put apis/[string apiId]/definition(http:RequestContext requestContext, http:Request message) returns http:Response|BadRequestError|ForbiddenError|NotFoundError|PreconditionFailedError|InternalServerErrorError|commons:APKError {
+         final APIClient apiService = new ();
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        return apiService.updateAPIDefinition(apiId,message,organization);
     }
     isolated resource function get apis/export(http:RequestContext requestContext, string? apiId, string? name, string? 'version, string? format) returns http:Response|NotFoundError|InternalServerErrorError|BadRequestError|commons:APKError {
         final APIClient apiService = new ();

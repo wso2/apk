@@ -43,6 +43,8 @@ spec:
           ports:
             - containerPort: 9443
               protocol: "TCP"
+            - containerPort: 9444
+              protocol: "TCP"
 {{ include "apk-helm.deployment.readinessProbe.http" .Values.wso2.apk.cp.backoffice.deployment | indent 10 }}
 {{ include "apk-helm.deployment.livenessProbe.http" .Values.wso2.apk.cp.backoffice.deployment | indent 10 }}
 {{ include "apk-helm.deployment.resources" .Values.wso2.apk.cp.backoffice.deployment.resources | indent 10 }}
@@ -50,7 +52,13 @@ spec:
                 - mountPath: /home/wso2apk/backoffice/conf/Config.toml
                   name: config-toml-volume
                   subPath: Config.toml
+                - mountPath: /home/wso2apk/backoffice/security/mg.pem
+                  name: backoffice-ds-jwt-validation-key-volume
+                  subPath: mg.pem
       volumes:
+        - name: backoffice-ds-jwt-validation-key-volume
+          secret: 
+            secretName: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-jwt-validaion-secret
         - name: config-toml-volume
           configMap:
             name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-configmap

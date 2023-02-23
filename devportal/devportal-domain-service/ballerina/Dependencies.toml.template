@@ -372,6 +372,24 @@ modules = [
 
 [[package]]
 org = "wso2"
+name = "apk_common_lib"
+version = "0.0.1-SNAPSHOT"
+dependencies = [
+	{org = "ballerina", name = "http"},
+	{org = "ballerina", name = "io"},
+	{org = "ballerina", name = "jwt"},
+	{org = "ballerina", name = "lang.value"},
+	{org = "ballerina", name = "log"},
+	{org = "ballerina", name = "sql"},
+	{org = "ballerinax", name = "postgresql"}
+]
+modules = [
+	{org = "wso2", packageName = "apk_common_lib", moduleName = "apk_common_lib"}
+]
+
+
+[[package]]
+org = "wso2"
 name = "devportal_service"
 version = "PROJECT_VERSION"
 dependencies = [
@@ -386,7 +404,8 @@ dependencies = [
 	{org = "ballerina", name = "test"},
 	{org = "ballerina", name = "uuid"},
 	{org = "ballerinai", name = "observe"},
-	{org = "ballerinax", name = "postgresql"}
+	{org = "ballerinax", name = "postgresql"},
+	{org = "wso2", name = "apk_common_lib"}
 ]
 modules = [
 	{org = "wso2", packageName = "devportal_service", moduleName = "devportal_service"},

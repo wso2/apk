@@ -20,6 +20,10 @@ import ballerina/log;
 import ballerinax/postgresql;
 import ballerina/sql;
 
+#  DAO for GET Subscription plan
+#
+# + policyName -   Policy Name
+# + return -      Policy ID
 public isolated function getBusinessPlanByNameDAO(string policyName) returns string|APKError|NotFoundError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {

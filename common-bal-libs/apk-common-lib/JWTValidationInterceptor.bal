@@ -58,7 +58,7 @@ public service class JWTValidationInterceptor {
                     return userContext;
                 } else {
                     APKError apkError = error("Organization not found in APK system", code = 900952, description = "Organization not found in APK system", statusCode = 401, message = "Organization not found in APK system");
-                    return apkError;
+                    return apkError;  
                 }
             }
         }

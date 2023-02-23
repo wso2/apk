@@ -45,8 +45,8 @@ data:
     [[wso2.idp_domain_service.idpConfiguration.fileBaseApp]]
     clientId = "45f1c5c8-a92e-11ed-afa1-0242ac120002"
     clientSecret = "4fbd62ec-a92e-11ed-afa1-0242ac120002"
-    callbackUrls = []
-    grantTypes = ["client_credentials","refresh_token"]
+    callbackUrls = ["http://httpbin.org"]
+    grantTypes = ["client_credentials","refresh_token", "authorization_code"]
 
     [[wso2.idp_domain_service.idpConfiguration.user]]
     username = "org1user"

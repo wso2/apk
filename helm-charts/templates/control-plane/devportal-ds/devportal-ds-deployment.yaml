@@ -53,11 +53,16 @@ spec:
             - mountPath: /home/wso2apk/devportal/conf/Config.toml
               name: config-toml-volume
               subPath: Config.toml
-
+            - mountPath: /home/wso2apk/devportal/security/mg.pem
+              name: devportal-ds-jwt-validation-key-volume
+              subPath: mg.pem
       volumes:
         - name: devportal-signing-keystore-volume
           secret:
             secretName: {{ template "apk-helm.resource.prefix" . }}-signing-keystore-secret
+        - name: devportal-ds-jwt-validation-key-volume
+          secret: 
+            secretName: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-jwt-validaion-secret
         - name: config-toml-volume
           configMap:
             name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-configmap

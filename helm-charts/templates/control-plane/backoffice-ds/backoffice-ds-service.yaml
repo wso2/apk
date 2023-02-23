@@ -26,7 +26,10 @@ spec:
 {{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.wso2.apk.cp.backoffice.appName ) | indent 4}}
   ports:
     # ports that this service should serve on
-    - name: servlet-https
+    - name: backoffice-https
       protocol: TCP
       port: 9443
+    - name: backoffice-internal-https
+      protocol: TCP
+      port: 9444
 {{- end -}}

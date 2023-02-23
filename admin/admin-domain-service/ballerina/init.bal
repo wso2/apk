@@ -20,6 +20,7 @@ import ballerina/log;
 import ballerinax/postgresql;
 import ballerina/sql;
 import ballerina/http;
+import wso2/apk_common_lib as commons;
 
 configurable DatasourceConfiguration datasourceConfiguration = ?;
 final postgresql:Client|sql:Error dbClient;
@@ -27,7 +28,13 @@ configurable ThrottlingConfiguration throttleConfig = ?;
 
 configurable int ADMIN_PORT = 9443;
 
-listener http:Listener ep0 = new (ADMIN_PORT);
+commons:IDPConfiguration idpConfiguration = {
+        publicKey:{path: "/home/wso2apk/admin/security/mg.pem"}
+    };
+commons:DBBasedOrgResolver organizationResolver = new(datasourceConfiguration);
+commons:JWTValidationInterceptor jwtValidationInterceptor = new (idpConfiguration, organizationResolver);
+commons:RequestErrorInterceptor requestErrorInterceptor = new;
+listener http:Listener ep0 = new (ADMIN_PORT, {interceptors: [jwtValidationInterceptor,requestErrorInterceptor]});
 
 function init() {
     log:printInfo("Starting APK Admin Domain Service...");
