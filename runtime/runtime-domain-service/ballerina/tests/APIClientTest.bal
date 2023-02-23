@@ -50,7 +50,7 @@ function testgetBackendPolicyUid(API api, string? endpointType, commons:Organiza
     return "backendpolicy-uuid";
 }
 
-int index = 0;
+int serviceMappingIndex = 0;
 
 @test:Mock {functionName: "getServiceMappingClient"}
 function getMockServiceMappingClient(string resourceVersion) returns websocket:Client|error {
@@ -69,43 +69,73 @@ function getMockServiceMappingClient(string resourceVersion) returns websocket:C
         test:prepare(mock).when("readMessage").thenReturnSequence(getNextServiceMappingEvent(), ());
         return mock;
     } else if resourceVersion == "23555" {
-        if index == 0 {
+        if serviceMappingIndex == 0 {
             websocket:Error websocketError = error("Error", message = "Error");
-            index+=1;
+            serviceMappingIndex += 1;
             return websocketError;
         } else {
-            return test:mock(websocket:Client);
+            initialConectionId = uuid:createType1AsString();
+            websocket:Client mock = test:mock(websocket:Client);
+            test:prepare(mock).when("isOpen").thenReturn(true);
+            test:prepare(mock).when("getConnectionId").thenReturn(initialConectionId);
+            test:prepare(mock).when("readMessage").thenReturn(());
+            return mock;
         }
     } else {
-        return test:mock(websocket:Client);
+        initialConectionId = uuid:createType1AsString();
+        websocket:Client mock = test:mock(websocket:Client);
+        test:prepare(mock).when("isOpen").thenReturn(true);
+        test:prepare(mock).when("getConnectionId").thenReturn(initialConectionId);
+        test:prepare(mock).when("readMessage").thenReturn(());
+        return mock;
     }
 
 }
+
+int orgWatchIndex = 0;
 
 @test:Mock {functionName: "getOrganizationWatchClient"}
 function getMockOrganiationClient(string resourceVersion) returns websocket:Client|error {
     string initialConectionId = uuid:createType1AsString();
-    websocket:Client mock;
     if resourceVersion == "28702" {
-        mock = test:mock(websocket:Client);
+        websocket:Client mock = test:mock(websocket:Client);
         test:prepare(mock).when("isOpen").thenReturnSequence(true, true, false);
         test:prepare(mock).when("getConnectionId").thenReturn(initialConectionId);
         test:prepare(mock).when("readMessage").thenReturn(getOrganizationWatchEvent());
+        return mock;
     } else if resourceVersion == "28705" {
         string connectionId = uuid:createType1AsString();
-        mock = test:mock(websocket:Client);
+        websocket:Client mock = test:mock(websocket:Client);
         test:prepare(mock).when("isOpen").thenReturn(true);
         test:prepare(mock).when("getConnectionId").thenReturn(connectionId);
         test:prepare(mock).when("readMessage").thenReturnSequence(getNextOrganizationEvent(), ());
+        return mock;
+    } else if resourceVersion == "28714" {
+        if orgWatchIndex == 0 {
+            websocket:Error websocketError = error("Error", message = "Error");
+            orgWatchIndex += 1;
+            return websocketError;
+        } else {
+            initialConectionId = uuid:createType1AsString();
+            websocket:Client mock = test:mock(websocket:Client);
+            test:prepare(mock).when("isOpen").thenReturn(true);
+            test:prepare(mock).when("getConnectionId").thenReturn(initialConectionId);
+            test:prepare(mock).when("readMessage").thenReturn(());
+            return mock;
+        }
     } else {
-        mock = test:mock(websocket:Client);
+        websocket:Client mock = test:mock(websocket:Client);
+        test:prepare(mock).when("isOpen").thenReturn(true);
+        test:prepare(mock).when("getConnectionId").thenReturn(initialConectionId);
+        test:prepare(mock).when("readMessage").thenReturn(());
+        return mock;
     }
-
-    return mock;
 }
 
+int serviceWatchIndex = 0;
+
 @test:Mock {functionName: "getServiceClient"}
-function getMockServiceClient(string resourceVersion) returns websocket:Client|error|() {
+function getMockServiceClient(string resourceVersion) returns websocket:Client|error {
     websocket:Client mock;
     if resourceVersion == "39691" {
         string initialConectionId = uuid:createType1AsString();
@@ -119,13 +149,31 @@ function getMockServiceClient(string resourceVersion) returns websocket:Client|e
         test:prepare(mock).when("isOpen").thenReturn(true);
         test:prepare(mock).when("getConnectionId").thenReturn(initialConectionId);
         test:prepare(mock).when("readMessage").thenReturnSequence(getNextMockServiceEvent(), ());
+    } else if resourceVersion == "1517" {
+        if serviceWatchIndex == 0 {
+            websocket:Error websocketError = error("Error", message = "Error");
+            serviceWatchIndex += 1;
+            return websocketError;
+        } else {
+            string initialConectionId = uuid:createType1AsString();
+            mock = test:mock(websocket:Client);
+            test:prepare(mock).when("isOpen").thenReturn(true);
+            test:prepare(mock).when("getConnectionId").thenReturn(initialConectionId);
+            test:prepare(mock).when("readMessage").thenReturn(());
+        }
     } else {
+        string initialConectionId = uuid:createType1AsString();
         mock = test:mock(websocket:Client);
+        test:prepare(mock).when("isOpen").thenReturn(true);
+        test:prepare(mock).when("getConnectionId").thenReturn(initialConectionId);
+        test:prepare(mock).when("readMessage").thenReturn(());
     }
     return mock;
 }
 
-@test:Mock {functionName: "getClient"}
+int apiIndex = 0;
+
+@test:Mock {functionName: "getAPIClient"}
 function getMockClient(string resourceVersion) returns websocket:Client|error {
     websocket:Client mock;
     if resourceVersion == "40316" {
@@ -140,8 +188,24 @@ function getMockClient(string resourceVersion) returns websocket:Client|error {
         test:prepare(mock).when("isOpen").thenReturn(true);
         test:prepare(mock).when("getConnectionId").thenReturn(initialConectionId);
         test:prepare(mock).when("readMessage").thenReturnSequence(getNextMockWatchAPIEvent(), ());
+    } else if resourceVersion == "28712" {
+        if apiIndex == 0 {
+            websocket:Error websocketError = error("Error", message = "Error");
+            apiIndex += 1;
+            return websocketError;
+        } else {
+            string initialConectionId = uuid:createType1AsString();
+            mock = test:mock(websocket:Client);
+            test:prepare(mock).when("isOpen").thenReturn(true);
+            test:prepare(mock).when("getConnectionId").thenReturn(initialConectionId);
+            test:prepare(mock).when("readMessage").thenReturn(());
+        }
     } else {
+        string initialConectionId = uuid:createType1AsString();
         mock = test:mock(websocket:Client);
+        test:prepare(mock).when("isOpen").thenReturn(true);
+        test:prepare(mock).when("getConnectionId").thenReturn(initialConectionId);
+        test:prepare(mock).when("readMessage").thenReturn(());
     }
     return mock;
 }

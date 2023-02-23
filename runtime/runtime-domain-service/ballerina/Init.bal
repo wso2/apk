@@ -57,7 +57,7 @@ function init() returns error? {
     if retrieveAllOrganizationsAtStartup is error {
         log:printError("Error occured while retrieving Organization List", retrieveAllOrganizationsAtStartup);
     }
-    APIListingTask apiListingTask = new (resourceVersion);
+    APIListingTask apiListingTask = new (apiResourceVersion);
     _ = check apiListingTask.startListening();
     ServiceTask serviceTask = new (servicesResourceVersion);
     _ = check serviceTask.startListening();
