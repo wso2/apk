@@ -32,7 +32,7 @@ final postgresql:Client|sql:Error dbClient;
 final APKConfiguration & readonly apkConfig;
 configurable int DEVPORTAL_PORT = 9443;
 
-commons:IDPConfiguration idpConfiguration = {
+configurable commons:IDPConfiguration idpConfiguration = {
         publicKey:{path: "/home/wso2apk/devportal/security/mg.pem"}
     };
 commons:DBBasedOrgResolver organizationResolver = new(datasourceConfiguration);

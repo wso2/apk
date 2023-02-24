@@ -14,24 +14,24 @@
 # specific language governing permissions and limitations
 # under the License.
 
-{{- if .Values.wso2.apk.idp.enabled }}
+{{- if .Values.idp.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ template "apk-helm.resource.prefix" . }}-idpds-deployment
   namespace: {{ .Release.Namespace }}
 spec:
-  replicas: {{ .Values.wso2.apk.idp.idpds.deployment.replicas }}
+  replicas: {{ .Values.idp.idpds.deployment.replicas }}
   strategy:
-    type: {{ .Values.wso2.apk.idp.idpds.deployment.strategy }}
+    type: {{ .Values.idp.idpds.deployment.strategy }}
   selector:
     matchLabels:
-{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.wso2.apk.idp.idpds.appName ) | indent 6}}
+{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.idp.idpds.appName ) | indent 6}}
   template:
     metadata:
       labels:
-        # networkPolicyId: {{ .Values.wso2.apk.idp.idpds.deployment.npi }}
-{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.wso2.apk.idp.idpds.appName ) | indent 8}}
+        # networkPolicyId: {{ .Values.idp.idpds.deployment.npi }}
+{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.idp.idpds.appName ) | indent 8}}
     spec:
       initContainers:
         - name: init-db
@@ -39,14 +39,14 @@ spec:
           command: ['sh', '-c', 'echo -e "Checking for the availability of DB Server deployment"; while ! nc -z "{{ .Values.postgresql.fullnameOverride }}" {{ .Values.postgresql.primary.service.ports.postgresql }}; do sleep 1; printf "-"; done; echo -e "  >> DB Server has started";']
       containers:
         - name: idpds
-          image: {{ .Values.wso2.apk.idp.idpds.deployment.image }}
-          imagePullPolicy: {{ .Values.wso2.apk.idp.idpds.deployment.imagePullPolicy }}
+          image: {{ .Values.idp.idpds.deployment.image }}
+          imagePullPolicy: {{ .Values.idp.idpds.deployment.imagePullPolicy }}
           ports:
             - containerPort: 9443
               protocol: "TCP"
-{{ include "apk-helm.deployment.readinessProbe.http" .Values.wso2.apk.idp.idpds.deployment | indent 10 }}
-{{ include "apk-helm.deployment.livenessProbe.http" .Values.wso2.apk.idp.idpds.deployment | indent 10 }}
-{{ include "apk-helm.deployment.resources" .Values.wso2.apk.idp.idpds.deployment.resources | indent 10 }}
+{{ include "apk-helm.deployment.readinessProbe.http" .Values.idp.idpds.deployment | indent 10 }}
+{{ include "apk-helm.deployment.livenessProbe.http" .Values.idp.idpds.deployment | indent 10 }}
+{{ include "apk-helm.deployment.resources" .Values.idp.idpds.deployment.resources | indent 10 }}
           volumeMounts:
             - mountPath: /home/wso2apk/idp/conf/Config.toml
               name: config-toml-volume
