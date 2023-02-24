@@ -54,19 +54,10 @@ data:
     
     [enforcer.security]
     [[enforcer.security.tokenService]]
-      name = "Resident Key Manager"
-      issuer = "https://apim.wso2.com/oauth2/token"
+      name = "Domain-service-idp"
+      issuer = "{{ .Values.wso2.apk.idp.issuer }}"
       certificateAlias = "wso2carbon"
-      jwksURL = ""
-      validateSubscription = false
-      consumerKeyClaim = "azp"
-      certificateFilePath = "/home/wso2/security/truststore/wso2carbon.pem"
-
-    [[enforcer.security.tokenService]]
-      name = "Non Production IDP"
-      issuer = "https://idp.am.wso2.com/token"
-      certificateAlias = "wso2carbon"
-      jwksURL = ""
+      jwksURL = "{{ .Values.wso2.apk.idp.jwksEndpoint }}"
       validateSubscription = true
       consumerKeyClaim = "clientId"
       certificateFilePath = "/home/wso2/security/truststore/wso2carbon.pem"

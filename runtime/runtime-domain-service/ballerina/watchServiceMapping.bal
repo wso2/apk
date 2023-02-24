@@ -99,7 +99,7 @@ class ServiceMappingTask {
             lock {
                 k8sServiceMappings = serviceMappingMap.clone();
             }
-            self.watchK8sServiceClient = getServiceMappingClient(resourceVersion);
+            self.watchK8sServiceClient = getServiceMappingClient(serviceMappingResourceVersion);
         }
     }
 }

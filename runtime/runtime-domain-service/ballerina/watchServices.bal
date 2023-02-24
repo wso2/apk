@@ -254,6 +254,6 @@ function handleWatchServicesGone(model:Status statusEvent) returns error? {
         lock {
             services = servicesMap.clone();
         }
-        watchAPIService = getServiceClient(resourceVersion);
+        watchServices = getServiceClient(servicesResourceVersion);
     }
 }
