@@ -40,10 +40,10 @@ func TestCreateRoutesWithClustersWithExactAndRegularExpressionRules(t *testing.T
 			Name:      "test-api-2",
 		},
 		Spec: v1alpha1.APISpec{
-			APIDisplayName:   "test-api-2",
-			APIVersion:       "2.0.0",
-			Context:          "/test-api/2.0.0",
-			ProdHTTPRouteRef: []string{"test-api-2-prod-http-route"},
+			APIDisplayName:    "test-api-2",
+			APIVersion:        "2.0.0",
+			Context:           "/test-api/2.0.0",
+			ProdHTTPRouteRefs: []string{"test-api-2-prod-http-route"},
 		},
 	}
 	apiState.APIDefinition = &apiDefinition
@@ -182,10 +182,10 @@ func TestCreateRoutesWithClustersWithMultiplePathPrefixRules(t *testing.T) {
 			Name:      "test-api-1",
 		},
 		Spec: v1alpha1.APISpec{
-			APIDisplayName:   "test-api",
-			APIVersion:       "1.0.0",
-			Context:          "/test-api/1.0.0",
-			ProdHTTPRouteRef: []string{"test-api-1-prod-http-route"},
+			APIDisplayName:    "test-api",
+			APIVersion:        "1.0.0",
+			Context:           "/test-api/1.0.0",
+			ProdHTTPRouteRefs: []string{"test-api-1-prod-http-route"},
 		},
 	}
 	apiState.APIDefinition = &apiDefinition
@@ -347,10 +347,10 @@ func TestCreateRoutesWithClustersWithBackendTLSConfigs(t *testing.T) {
 			Name:      "test-api-3",
 		},
 		Spec: v1alpha1.APISpec{
-			APIDisplayName:   "test-api-3",
-			APIVersion:       "1.0.0",
-			Context:          "/test-api-3/1.0.0",
-			ProdHTTPRouteRef: []string{"test-api-3-prod-http-route"},
+			APIDisplayName:    "test-api-3",
+			APIVersion:        "1.0.0",
+			Context:           "/test-api-3/1.0.0",
+			ProdHTTPRouteRefs: []string{"test-api-3-prod-http-route"},
 		},
 	}
 	apiState.APIDefinition = &apiDefinition

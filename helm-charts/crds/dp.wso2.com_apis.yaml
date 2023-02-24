@@ -73,14 +73,14 @@ spec:
                   description: Organization denotes the organization. related to the
                     API
                   type: string
-                prodHTTPRouteRef:
+                prodHTTPRouteRefs:
                   description: 'ProdHTTPRouteRefs contains a list of references to HttpRoutes
                   of type HttpRoute. xref: https://github.com/kubernetes-sigs/gateway-api/blob/main/apis/v1beta1/httproute_types.go'
                   items:
                     type: string
                   nullable: true
                   type: array
-                sandHTTPRouteRef:
+                sandHTTPRouteRefs:
                   description: 'SandHTTPRouteRef contains a list of references to HttpRoutes
                   of type HttpRoute. xref: https://github.com/kubernetes-sigs/gateway-api/blob/main/apis/v1beta1/httproute_types.go'
                   items:

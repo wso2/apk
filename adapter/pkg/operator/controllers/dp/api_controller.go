@@ -222,8 +222,8 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	}
 
 	// Retrieve HTTPRoutes
-	prodHTTPRoute, sandHTTPRoute, err := apiReconciler.resolveAPIRefs(ctx, apiDef.Spec.ProdHTTPRouteRef,
-		apiDef.Spec.SandHTTPRouteRef, req.NamespacedName.String(), req.Namespace)
+	prodHTTPRoute, sandHTTPRoute, err := apiReconciler.resolveAPIRefs(ctx, apiDef.Spec.ProdHTTPRouteRefs,
+		apiDef.Spec.SandHTTPRouteRefs, req.NamespacedName.String(), req.Namespace)
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
 			Message:   fmt.Sprintf("Error retrieving ref CRs for API in namespace : %s, %v", req.NamespacedName.String(), err),
@@ -786,7 +786,7 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 		func(rawObj k8client.Object) []string {
 			api := rawObj.(*dpv1alpha1.API)
 			var httpRoutes []string
-			for _, ref := range api.Spec.ProdHTTPRouteRef {
+			for _, ref := range api.Spec.ProdHTTPRouteRefs {
 				if ref != "" {
 					httpRoutes = append(httpRoutes,
 						types.NamespacedName{
@@ -795,7 +795,7 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 						}.String())
 				}
 			}
-			for _, ref := range api.Spec.SandHTTPRouteRef {
+			for _, ref := range api.Spec.SandHTTPRouteRefs {
 				if ref != "" {
 					httpRoutes = append(httpRoutes,
 						types.NamespacedName{
