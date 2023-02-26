@@ -54,9 +54,9 @@
 					]
 				},
 				"url": {
-					"raw": "{{idpEndpointUrl}}/oauth2/token",
+					"raw": "{{gatewayBaseURl}}/oauth2/token",
 					"host": [
-						"{{idpEndpointUrl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"oauth2",
@@ -134,9 +134,9 @@
 					"raw": "{\n    \"context\": \"{{testAPIContext}}\",\n    \"name\": \"{{testAPIName}}\",\n    \"version\": \"{{testAPIVersion}}\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/get\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"endpointConfig\": {\n                \"endpoint_type\": \"http\",\n                \"production_endpoints\": {\n                    \"url\": \"http://httpbin.org\"\n                }\n            }\n        },\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"endpointConfig\": {\n                \"endpoint_type\": \"http\",\n                \"production_endpoints\": {\n                    \"url\": \"http://httpbin.org\"\n                }\n            }\n        }\n    ]\n}"
 				},
 				"url": {
-					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/apis",
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis",
 					"host": [
-						"{{runtimeAPIServerBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -192,9 +192,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{backOfficeAPIServerBaseURL}}/api/am/backoffice/apis",
+					"raw": "{{gatewayBaseURl}}/api/am/backoffice/apis",
 					"host": [
-						"{{backOfficeAPIServerBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -247,9 +247,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{devPortalBaseURL}}/api/am/devportal/apis",
+					"raw": "{{gatewayBaseURl}}/api/am/devportal/apis",
 					"host": [
-						"{{devPortalBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -302,9 +302,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{backOfficeAPIServerBaseURL}}/api/am/backoffice/apis/change-lifecycle?apiId={{backOfficeApiUUID}}&targetState={{lifeCycleStatusTest2}}",
+					"raw": "{{gatewayBaseURl}}/api/am/backoffice/apis/change-lifecycle?apiId={{backOfficeApiUUID}}&targetState={{lifeCycleStatusTest2}}",
 					"host": [
-						"{{backOfficeAPIServerBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -377,9 +377,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{devPortalBaseURL}}/api/am/devportal/apis",
+					"raw": "{{gatewayBaseURl}}/api/am/devportal/apis",
 					"host": [
-						"{{devPortalBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -432,9 +432,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{devPortalBaseURL}}/api/am/devportal/apis",
+					"raw": "{{gatewayBaseURl}}/api/am/devportal/apis",
 					"host": [
-						"{{devPortalBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -489,9 +489,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{devPortalBaseURL}}/api/am/devportal/apis/{{backOfficeApiUUID}}",
+					"raw": "{{gatewayBaseURl}}/api/am/devportal/apis/{{backOfficeApiUUID}}",
 					"host": [
-						"{{devPortalBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -540,9 +540,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{devPortalBaseURL}}/api/am/devportal/apis/{{backOfficeApiUUID}}/definition",
+					"raw": "{{gatewayBaseURl}}/api/am/devportal/apis/{{backOfficeApiUUID}}/definition",
 					"host": [
-						"{{devPortalBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -591,9 +591,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{devPortalBaseURL}}/api/am/devportal/sdk-gen/languages",
+					"raw": "{{gatewayBaseURl}}/api/am/devportal/sdk-gen/languages",
 					"host": [
-						"{{devPortalBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -641,9 +641,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{devPortalBaseURL}}/api/am/devportal/apis/{{backOfficeApiUUID}}/sdks/java",
+					"raw": "{{gatewayBaseURl}}/api/am/devportal/apis/{{backOfficeApiUUID}}/sdks/java",
 					"host": [
-						"{{devPortalBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -720,9 +720,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{adminAPIServerBaseURL}}/api/am/admin/application-rate-plans",
+					"raw": "{{gatewayBaseURl}}/api/am/admin/application-rate-plans",
 					"host": [
-						"{{adminAPIServerBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -789,9 +789,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{devPortalBaseURL}}/api/am/devportal/applications",
+					"raw": "{{gatewayBaseURl}}/api/am/devportal/applications",
 					"host": [
-						"{{devPortalBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -825,9 +825,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{devPortalBaseURL}}/api/am/devportal/applications/{{testApplicationID}}",
+					"raw": "{{gatewayBaseURl}}/api/am/devportal/applications/{{testApplicationID}}",
 					"host": [
-						"{{devPortalBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -895,9 +895,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{devPortalBaseURL}}/api/am/devportal/applications/{{testApplicationID}}",
+					"raw": "{{gatewayBaseURl}}/api/am/devportal/applications/{{testApplicationID}}",
 					"host": [
-						"{{devPortalBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -932,9 +932,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{devPortalBaseURL}}/api/am/devportal/applications",
+					"raw": "{{gatewayBaseURl}}/api/am/devportal/applications",
 					"host": [
-						"{{devPortalBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -968,9 +968,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{devPortalBaseURL}}/api/am/devportal/applications/{{testApplicationID}}",
+					"raw": "{{gatewayBaseURl}}/api/am/devportal/applications/{{testApplicationID}}",
 					"host": [
-						"{{devPortalBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -1018,9 +1018,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{devPortalBaseURL}}/api/am/devportal/applications/{{testApplicationID}}",
+					"raw": "{{gatewayBaseURl}}/api/am/devportal/applications/{{testApplicationID}}",
 					"host": [
-						"{{devPortalBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -1078,9 +1078,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{adminAPIServerBaseURL}}/api/am/admin/application-rate-plans/{{applicationRatePlanID}}",
+					"raw": "{{gatewayBaseURl}}/api/am/admin/application-rate-plans/{{applicationRatePlanID}}",
 					"host": [
-						"{{adminAPIServerBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -1141,9 +1141,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{adminAPIServerBaseURL}}/api/am/admin/application-rate-plans/{{applicationRatePlanID}}",
+					"raw": "{{gatewayBaseURl}}/api/am/admin/application-rate-plans/{{applicationRatePlanID}}",
 					"host": [
-						"{{adminAPIServerBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -1203,9 +1203,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/apis/{{runtimeAPIUUID}}",
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{runtimeAPIUUID}}",
 					"host": [
-						"{{runtimeAPIServerBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",

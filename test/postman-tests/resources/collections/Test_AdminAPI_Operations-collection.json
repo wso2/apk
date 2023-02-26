@@ -54,9 +54,9 @@
 					]
 				},
 				"url": {
-					"raw": "{{idpEndpointUrl}}/oauth2/token",
+					"raw": "{{gatewayBaseURl}}/oauth2/token",
 					"host": [
-						"{{idpEndpointUrl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"oauth2",
@@ -128,9 +128,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{adminAPIServerBaseURL}}/api/am/admin/application-rate-plans",
+					"raw": "{{gatewayBaseURl}}/api/am/admin/application-rate-plans",
 					"host": [
-						"{{adminAPIServerBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -191,9 +191,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{adminAPIServerBaseURL}}/api/am/admin/application-rate-plans/{{applicationRatePlanID}}",
+					"raw": "{{gatewayBaseURl}}/api/am/admin/application-rate-plans/{{applicationRatePlanID}}",
 					"host": [
-						"{{adminAPIServerBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -266,9 +266,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{adminAPIServerBaseURL}}/api/am/admin/application-rate-plans/{{applicationRatePlanID}}",
+					"raw": "{{gatewayBaseURl}}/api/am/admin/application-rate-plans/{{applicationRatePlanID}}",
 					"host": [
-						"{{adminAPIServerBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -303,9 +303,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{adminAPIServerBaseURL}}/api/am/admin/application-rate-plans",
+					"raw": "{{gatewayBaseURl}}/api/am/admin/application-rate-plans",
 					"host": [
-						"{{adminAPIServerBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -362,9 +362,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{adminAPIServerBaseURL}}/api/am/admin/application-rate-plans/{{applicationRatePlanID}}",
+					"raw": "{{gatewayBaseURl}}/api/am/admin/application-rate-plans/{{applicationRatePlanID}}",
 					"host": [
-						"{{adminAPIServerBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -429,9 +429,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{adminAPIServerBaseURL}}/api/am/admin/deny-policies",
+					"raw": "{{gatewayBaseURl}}/api/am/admin/deny-policies",
 					"host": [
-						"{{adminAPIServerBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -485,9 +485,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{adminAPIServerBaseURL}}/api/am/admin/deny-policies/{{applicationDenyPolicyID}}",
+					"raw": "{{gatewayBaseURl}}/api/am/admin/deny-policies/{{applicationDenyPolicyID}}",
 					"host": [
-						"{{adminAPIServerBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -541,9 +541,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{adminAPIServerBaseURL}}/api/am/admin/deny-policies",
+					"raw": "{{gatewayBaseURl}}/api/am/admin/deny-policies",
 					"host": [
-						"{{adminAPIServerBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -600,9 +600,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{adminAPIServerBaseURL}}/api/am/admin/deny-policies/{{applicationDenyPolicyID}}",
+					"raw": "{{gatewayBaseURl}}/api/am/admin/deny-policies/{{applicationDenyPolicyID}}",
 					"host": [
-						"{{adminAPIServerBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -705,9 +705,9 @@
 					"raw": "{\n    \"name\": \"{{organizationName}}\",\n    \"displayName\": \"{{organizationDisplayName}}\",\n    \"organizationClaimValue\": \"{{organizationClaimValue}}\",\n    \"serviceNamespaces\": [\n    \"{{serviceNamespace}}\"\n    ]\n}"
 				},
 				"url": {
-					"raw": "{{adminAPIServerBaseURL}}/api/am/admin/organizations",
+					"raw": "{{gatewayBaseURl}}/api/am/admin/organizations",
 					"host": [
-						"{{adminAPIServerBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -750,9 +750,9 @@
 					"raw": "{\n      \"name\": \"{{organizationName}}\",\n      \"displayName\": \"{{organizationDisplayNameUpdate}}\",\n      \"organizationClaimValue\": \"{{organizationClaimValue}}\",\n      \"serviceNamespaces\": [\n        \"{{serviceNamespace}}\"\n      ]\n    }"
 				},
 				"url": {
-					"raw": "{{adminAPIServerBaseURL}}/api/am/admin/organizations/{{organizationId}}",
+					"raw": "{{gatewayBaseURl}}/api/am/admin/organizations/{{organizationId}}",
 					"host": [
-						"{{adminAPIServerBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -787,9 +787,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{adminAPIServerBaseURL}}/api/am/admin/organizations",
+					"raw": "{{gatewayBaseURl}}/api/am/admin/organizations",
 					"host": [
-						"{{adminAPIServerBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -823,9 +823,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{adminAPIServerBaseURL}}/api/am/admin/organizations/{{organizationId}}",
+					"raw": "{{gatewayBaseURl}}/api/am/admin/organizations/{{organizationId}}",
 					"host": [
-						"{{adminAPIServerBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -860,9 +860,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{adminAPIServerBaseURL}}/api/am/admin/organizations/{{organizationId}}",
+					"raw": "{{gatewayBaseURl}}/api/am/admin/organizations/{{organizationId}}",
 					"host": [
-						"{{adminAPIServerBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -897,9 +897,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{adminAPIServerBaseURL}}/api/am/admin/organization-info",
+					"raw": "{{gatewayBaseURl}}/api/am/admin/organization-info",
 					"host": [
-						"{{adminAPIServerBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
