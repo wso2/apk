@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { restApi } from "../../../public/conf/Settings";
 import { settings, tenant, apiCategories, applicationThrottlePolicies } from './dummyPayloads';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const Settings = require('Settings');
+const restApi = Settings.server.restApi;
 
 type JSONValue =
     | string

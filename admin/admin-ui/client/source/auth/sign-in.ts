@@ -1,6 +1,7 @@
+import axios from 'axios';
 import { getCodeVerifier, getCodeChallenge, getJWKForTheIdToken, isValidIdToken } from './crypto';
-import { OIDCRequestParamsInterface } from './models/oidc-request-params';
-import { TokenResponseInterface } from './models/token-response';
+import { OIDCRequestParamsInterface } from './types/oidc-request-params';
+import { TokenResponseInterface } from './types/token-response';
 import {
     AUTHORIZATION_CODE,
     PKCE_CODE_VERIFIER,
@@ -10,50 +11,51 @@ import {
 } from './constants/token';
 import { getSessionParameter, removeSessionParameter, setSessionParameter } from "./session";
 import { getAuthorizeEndpoint, getTokenEndpoint, getJwksUri, getIssuer, getToken } from "./op-config";
-import Settings from '../../public/conf/Settings'
-const axios = require('axios');
-
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const Settings = require('Settings');
 /**
- * Checks whether authorization code present in the request.
- *
- * @returns {boolean} true if authorization code is present.
+ * Send authorization request.
+ * @param requestParams  Request parameters.
+ * @returns  Promise.
  */
-export const hasAuthorizationCode = (): boolean => {
-    return !!new URL(window.location.href).searchParams.get(AUTHORIZATION_CODE);
-};
-
-export const hasValidToken = (): boolean => {
-    return !!getToken();
-};
-
 export const sendAuthorizationRequest = (requestParams: OIDCRequestParamsInterface): Promise<never> | any => {
     const authorizeEndpoint = getAuthorizeEndpoint();
-
     if (!authorizeEndpoint || authorizeEndpoint.trim().length === 0) {
         return Promise.reject(new Error("Invalid authorize endpoint found."));
     }
-
-    let authorizeRequest = authorizeEndpoint + "?response_type=code&client_id="
-        + requestParams.clientId;
-
-    authorizeRequest += "&scope=" + requestParams.scope;
-
-    authorizeRequest += "&state=" + requestParams.state;
-
+    // Generate code verifier and code challenge.
     const codeVerifier = getCodeVerifier();
     const codeChallenge = getCodeChallenge(codeVerifier);
     setSessionParameter(PKCE_CODE_VERIFIER, codeVerifier);
 
-    authorizeRequest += "&code_challenge_method=S256&code_challenge=" + codeChallenge;
-    authorizeRequest += `&redirect_uri=${Settings.loginUri}/token`;
-
+    const authorizeRequest = `${authorizeEndpoint}?` +
+        `response_type=code` +
+        `&client_id=${requestParams.clientId}` +
+        `&scope=${requestParams.scope}` +
+        `&state=${requestParams.state}` +
+        `&code_challenge_method=S256` +
+        `&code_challenge=${codeChallenge}` +
+        `&redirect_uri=${Settings.idp.loginUri}`;
     document.location.href = authorizeRequest;
-
     return false;
 };
 
 /**
- * Validate id_token.
+ *  
+This function is used to validate an ID token obtained from the authorization server after exchanging an authorization code.
+
+The ID token is a JSON Web Token (JWT) that contains information about the authenticated user and the authorization transaction. 
+The ID token is signed by the authorization server using a private key and can be verified using the public key obtained from the
+ server's JSON Web Key Set (JWKS) endpoint.
+
+The purpose of the validateIdToken function is to retrieve the public key from the JWKS endpoint and use it to verify the 
+signature on the ID token. The function also checks that the iss (issuer) claim in the ID token matches the expected issuer 
+(i.e., the authorization server), that the aud (audience) claim in the ID token matches the client ID, and that the nonce 
+value passed during the authentication request matches the nonce value in the ID token.
+
+By validating the ID token, the function ensures that the token was issued by a trusted authority, 
+that it has not been tampered with, and that it contains the expected claims. This helps prevent impersonation and other 
+security threats in the SPA.
  *
  * @param {string} clientId client ID.
  * @param {string} idToken id_token received from the IdP.
@@ -61,25 +63,28 @@ export const sendAuthorizationRequest = (requestParams: OIDCRequestParamsInterfa
  */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const validateIdToken = (clientId: string, idToken: string, serverOrigin: string): Promise<any> => {
+    // Get the JWKS endpoint from the OP configuration.
     const jwksEndpoint = getJwksUri();
 
+    // If the JWKS endpoint is not available, return an error.
     if (!jwksEndpoint || jwksEndpoint.trim().length === 0) {
         return Promise.reject("Invalid JWKS URI found.");
     }
-
+    // Get the public key from the JWKS endpoint.
     return axios.get(jwksEndpoint)
         .then((response: any) => {
             if (response.status !== 200) {
                 return Promise.reject(new Error("Failed to load public keys from JWKS URI: "
                     + jwksEndpoint));
             }
-
+            // Get the public key from the JWKS endpoint.
             const jwk = getJWKForTheIdToken(idToken.split(".")[0], response.data.keys);
             let issuer = getIssuer();
+            // If the issuer is not available, use the server origin.
             if (!issuer || issuer.trim().length === 0) {
                 issuer = serverOrigin + SERVICE_RESOURCES.token;
             }
-
+            // Validate the ID token.
             return Promise.resolve(isValidIdToken(idToken, jwk, clientId, issuer));
         }).catch((error: any) => {
             return Promise.reject(error);
@@ -110,7 +115,7 @@ export const sendTokenRequest = (
         `client_id=${requestParams.clientId}`,
         `code=${code}`,
         "grant_type=authorization_code",
-        `redirect_uri=${Settings.loginUri}/users`,
+        `redirect_uri=${Settings.idp.loginUri}/users`,
         `code_verifier=${getSessionParameter(PKCE_CODE_VERIFIER)}`];
 
     return axios.post(tokenEndpoint, body.join("&"))
@@ -137,20 +142,6 @@ export const sendTokenRequest = (
                     }
                     return Promise.reject(new Error("Invalid id_token in the token response: " + response.data.id_token));
                 });
-
-            // const body = [];
-            // body.push(`client_id=${requestParams.clientId}`);
-            // body.push(`scope=apim:api_manage apim:subscription_manage apim:tier_manage apim:admin`);
-            // body.push("grant_type=urn:ietf:params:oauth:grant-type:token-exchange");
-            // body.push(`subject_token_type=urn:ietf:params:oauth:token-type:jwt`);
-            // body.push(`requested_token_type=urn:ietf:params:oauth:token-type:jwt`);
-            // body.push(`subject_token=${response.data.access_token}`);
-            // body.push(`org_handle=organization`);
-            // return axios.post(stsEndoint, body.join("&"))
-            //     .then((response: any) => {
-            //         window.sessionStorage.setItem("exchanged_token", response.data.access_token);
-            //         window.location.href = "https://localhost:4000/users";
-            //     });
         }).catch((error: any) => {
             return Promise.reject(error);
         });

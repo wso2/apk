@@ -7,7 +7,7 @@ import Loader from "components/Loader";
 
 type Props = {}
 
-export default function ListApplicationPolicies({ }: Props) {
+export default function ListApplicationRatePlans({ }: Props) {
   const { data, loading, error } = useAxios({ url: '/throttling/policies/application' });
   const columns = React.useMemo(
     () => [

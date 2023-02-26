@@ -5,10 +5,15 @@ import { useState } from 'react';
 // material-ui
 import { useTheme } from '@mui/material/styles';
 import { List, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
+import { sendSignOutRequest } from "auth/sign-out";
+import { endAuthenticatedSession } from "auth/session";
+import { resetOPConfiguration } from "auth/op-config";
 
 // assets
 import { EditOutlined, ProfileOutlined, LogoutOutlined, UserOutlined, WalletOutlined } from '@ant-design/icons';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires, no-undef
+const Settings = require('Settings');
 // ==============================|| HEADER PROFILE - PROFILE TAB ||============================== //
 
 const ProfileTab = ({ handleLogout }) => {
@@ -50,7 +55,10 @@ const ProfileTab = ({ handleLogout }) => {
                 <ListItemIcon>
                     <LogoutOutlined />
                 </ListItemIcon>
-                <ListItemText primary="Logout" />
+                <ListItemText primary="Logout" onClick={() => sendSignOutRequest(Settings.idp.loginUri, () => {
+                    endAuthenticatedSession();
+                    resetOPConfiguration();
+                })} />
             </ListItemButton>
         </List>
     );

@@ -3,8 +3,8 @@ import React from 'react';
 import { styled, Theme } from '@mui/material/styles';
 import AppBar, { AppBarProps } from '@mui/material/AppBar';
 
-// project import
-import { drawerWidth } from 'config';
+// eslint-disable-next-line @typescript-eslint/no-var-requires, no-undef
+const Settings = require('Settings');
 
 interface AppBarStyledProps extends AppBarProps {
     open: boolean,
@@ -19,8 +19,8 @@ const AppBarStyled = styled(AppBar, { shouldForwardProp: (prop) => prop !== 'ope
         duration: theme.transitions.duration.leavingScreen
     }),
     ...(open && {
-        marginLeft: drawerWidth,
-        width: `calc(100% - ${drawerWidth}px)`,
+        marginLeft: Settings.theme.drawerWidth,
+        width: `calc(100% - ${Settings.theme.drawerWidth}px)`,
         transition: theme.transitions.create(['width', 'margin'], {
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.enteringScreen

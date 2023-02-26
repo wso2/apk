@@ -12,13 +12,22 @@ import MainCard from '../MainCard';
 
 // ==============================|| BREADCRUMBS ||============================== //
 
-const Breadcrumbs = ({ navigation, title, ...others }) => {
+interface BreadcrumbsProps {
+    navigation: any;
+    title: boolean;
+    titleBottom?: boolean;
+    card?: boolean;
+    divider?: boolean;
+    others?: any;
+}
+
+const Breadcrumbs = ({ navigation, title, ...others }: BreadcrumbsProps) => {
     const location = useLocation();
-    const [main, setMain] = useState();
-    const [item, setItem] = useState();
+    const [main, setMain] = useState<{ type?: string; title?: string; url?: string, breadcrumbs?: any}>();
+    const [item, setItem] = useState<{ type?: string; title?: string; url?: string, breadcrumbs?: any}>();
 
     // set active item state
-    const getCollapse = (menu) => {
+    const getCollapse = (menu: any) => {
         if (menu.children) {
             menu.children.filter((collapse) => {
                 if (collapse.type && collapse.type === 'collapse') {
@@ -51,7 +60,6 @@ const Breadcrumbs = ({ navigation, title, ...others }) => {
     let mainContent;
     let itemContent;
     let breadcrumbContent = <Typography />;
-    let itemTitle = '';
 
     // collapse item
     if (main && main.type === 'collapse') {
@@ -64,17 +72,16 @@ const Breadcrumbs = ({ navigation, title, ...others }) => {
 
     // items
     if (item && item.type === 'item') {
-        itemTitle = item.title;
         itemContent = (
             <Typography variant="subtitle1" color="textPrimary">
-                {itemTitle}
+                {item.title}
             </Typography>
         );
 
         // main
         if (item.breadcrumbs !== false) {
             breadcrumbContent = (
-                <MainCard border={false} sx={{ mb: 3, bgcolor: 'transparent' }} {...others} content={false}>
+                <MainCard border={false} {...others} content={false}>
                     <Grid container direction="column" justifyContent="flex-start" alignItems="flex-start" spacing={1}>
                         <Grid item>
                             <MuiBreadcrumbs aria-label="breadcrumb">

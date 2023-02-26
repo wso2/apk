@@ -5,13 +5,13 @@ import { Link } from 'react-router-dom';
 // material-ui
 import { ButtonBase } from '@mui/material';
 
-// project import
-import config from 'config';
+// eslint-disable-next-line @typescript-eslint/no-var-requires, no-undef
+const Settings = require('Settings');
 
 // ==============================|| MAIN LOGO ||============================== //
 
 const LogoSection = ({ sx, to }) => (
-    <ButtonBase disableRipple component={Link} to={!to ? config.defaultPath : to} sx={sx}>
+    <ButtonBase disableRipple component={Link} to={!to ? Settings.theme.defaultPath : to} sx={sx}>
         <img src="/images/logo.svg" />
     </ButtonBase>
 );

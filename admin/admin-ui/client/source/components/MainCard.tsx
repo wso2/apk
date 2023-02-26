@@ -17,13 +17,12 @@ export type CardSXProps = {
     sx: SxProps;
 }
 
-interface MainCardProps {
+interface MainCardProps extends Omit<CardProps, 'sx'> {
     border?: boolean,
     boxShadow?: boolean,
-    contentSX?: object,
+    contentSX?: SxProps,
     darkTitle?: boolean,
     divider?: boolean,
-    elevation?: number,
     secondary?: ReactNode,
     shadow?: string,
     sx?: CardSXProps,
@@ -33,7 +32,7 @@ interface MainCardProps {
     children?: ReactNode
 }
 
-export type Ref = HTMLDivElement;
+type Ref = HTMLDivElement | null;
 
 const MainCard = forwardRef<Ref, MainCardProps>(
     (
@@ -54,7 +53,7 @@ const MainCard = forwardRef<Ref, MainCardProps>(
             ...others
         },
         ref
-    ) => {
+    ): JSX.Element => {
         const theme = useTheme();
         boxShadow = theme.palette.mode === 'dark' ? boxShadow || true : boxShadow;
 
@@ -63,10 +62,14 @@ const MainCard = forwardRef<Ref, MainCardProps>(
                 elevation={elevation || 0}
                 ref={ref}
                 sx={{
-                    ...sx,
+                    ...sx.sx,
                     border: border ? '1px solid' : 'none',
                     borderRadius: 2,
                     borderColor: theme.palette.mode === 'dark' ? theme.palette.divider : theme.palette.grey[100],
+                    boxShadow: boxShadow && (!border || theme.palette.mode === 'dark') ? shadow || theme.customShadows.z1 : 'inherit',
+                    ':hover': {
+                        boxShadow: boxShadow ? shadow || theme.customShadows.z1 : 'inherit'
+                    },
                     '& pre': {
                         m: 0,
                         p: '16px !important',
@@ -74,22 +77,6 @@ const MainCard = forwardRef<Ref, MainCardProps>(
                         fontSize: '0.75rem'
                     }
                 }}
-                // sx={{
-                //     ...sx,
-                //     border: border ? '1px solid' : 'none',
-                //     borderRadius: 2,
-                //     borderColor: theme.palette.mode === 'dark' ? theme.palette.divider : theme.palette.grey[100],
-                //     boxShadow: boxShadow && (!border || theme.palette.mode === 'dark') ? shadow || theme.customShadows.z1 : 'inherit',
-                //     ':hover': {
-                //         boxShadow: boxShadow //? shadow || theme.customShadows.z1 : 'inherit'
-                //     },
-                //     '& pre': {
-                //         m: 0,
-                //         p: '16px !important',
-                //         fontFamily: theme.typography.fontFamily,
-                //         fontSize: '0.75rem'
-                //     }
-                // }}
                 {...others}
 
             >
@@ -112,5 +99,5 @@ const MainCard = forwardRef<Ref, MainCardProps>(
         );
     }
 );
-
+MainCard.displayName = 'MainCard';
 export default MainCard;

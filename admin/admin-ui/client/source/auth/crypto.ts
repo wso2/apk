@@ -2,7 +2,7 @@ import Base64 from "crypto-js/enc-base64";
 import WordArray from "crypto-js/lib-typedarrays";
 import sha256 from "crypto-js/sha256";
 import { KEYUTIL, KJUR } from "jsrsasign";
-import { JWKInterface } from "./models/crypto";
+import { JWKInterface } from "./types/crypto";
 /**
  * Get URL encoded string.
  *
