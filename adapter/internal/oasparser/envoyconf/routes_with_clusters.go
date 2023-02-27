@@ -35,6 +35,7 @@ import (
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	endpointv3 "github.com/envoyproxy/go-control-plane/envoy/config/endpoint/v3"
 	routev3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
+	cors_filter_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/cors/v3"
 	extAuthService "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ext_authz/v3"
 	lua "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/lua/v3"
 	tlsv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/transport_sockets/tls/v3"
@@ -612,9 +613,12 @@ end`
 		Value:   luaMarshelled.Bytes(),
 	}
 
+	corsFilter, _ := anypb.New(corsPolicy)
+
 	perRouteFilterConfigs := map[string]*any.Any{
 		wellknown.HTTPExternalAuthorization: extAuthzFilter,
 		wellknown.Lua:                       luaFilter,
+		wellknown.CORS:                      corsFilter,
 	}
 
 	logger.LoggerOasparser.Debugf("adding route : %s for API : %s", resourcePath, title)
@@ -736,8 +740,8 @@ end`
 				metadataValue := operation.GetMethod() + "_to_" + newMethod
 				match2.DynamicMetadata = generateMetadataMatcherForInternalRoutes(metadataValue)
 
-				action1 := generateRouteAction(apiType, routeConfig, corsPolicy)
-				action2 := generateRouteAction(apiType, routeConfig, corsPolicy)
+				action1 := generateRouteAction(apiType, routeConfig)
+				action2 := generateRouteAction(apiType, routeConfig)
 
 				// Create route1 for current method.
 				// Do not add policies to route config. Send via enforcer
@@ -760,7 +764,7 @@ end`
 			} else {
 				logger.LoggerOasparser.Debug("Creating routes for resource with policies", resourcePath, operation.GetMethod())
 				// create route for current method. Add policies to route config. Send via enforcer
-				action := generateRouteAction(apiType, routeConfig, corsPolicy)
+				action := generateRouteAction(apiType, routeConfig)
 				match := generateRouteMatch(routePath)
 				match.Headers = generateHTTPMethodMatcher(operation.GetMethod(), clusterName)
 				match.DynamicMetadata = generateMetadataMatcherForExternalRoutes()
@@ -784,7 +788,7 @@ end`
 		}
 		match := generateRouteMatch(routePath)
 		match.Headers = generateHTTPMethodMatcher(methodRegex, clusterName)
-		action := generateRouteAction(apiType, routeConfig, corsPolicy)
+		action := generateRouteAction(apiType, routeConfig)
 		rewritePath := generateRoutePathForReWrite(basePath, resourcePath, pathMatchType)
 		action.Route.RegexRewrite = generateRegexMatchAndSubstitute(rewritePath, endpointBasepath, resourcePath, pathMatchType)
 
@@ -890,11 +894,6 @@ func CreateTokenRoute() *routev3.Route {
 			HostRewriteSpecifier: hostRewriteSpecifier,
 			RegexRewrite: &envoy_type_matcherv3.RegexMatchAndSubstitute{
 				Pattern: &envoy_type_matcherv3.RegexMatcher{
-					EngineType: &envoy_type_matcherv3.RegexMatcher_GoogleRe2{
-						GoogleRe2: &envoy_type_matcherv3.RegexMatcher_GoogleRE2{
-							MaxProgramSize: nil,
-						},
-					},
 					Regex: testKeyPath,
 				},
 				Substitution: "/",
@@ -1138,7 +1137,7 @@ func getUpgradeConfig(apiType string) []*routev3.RouteAction_UpgradeConfig {
 	return upgradeConfig
 }
 
-func getCorsPolicy(corsConfig *model.CorsConfig) *routev3.CorsPolicy {
+func getCorsPolicy(corsConfig *model.CorsConfig) *cors_filter_v3.CorsPolicy {
 
 	if corsConfig == nil || !corsConfig.Enabled {
 		return nil
@@ -1154,11 +1153,6 @@ func getCorsPolicy(corsConfig *model.CorsConfig) *routev3.CorsPolicy {
 		regexMatcher := &envoy_type_matcherv3.StringMatcher{
 			MatchPattern: &envoy_type_matcherv3.StringMatcher_SafeRegex{
 				SafeRegex: &envoy_type_matcherv3.RegexMatcher{
-					EngineType: &envoy_type_matcherv3.RegexMatcher_GoogleRe2{
-						GoogleRe2: &envoy_type_matcherv3.RegexMatcher_GoogleRE2{
-							MaxProgramSize: nil,
-						},
-					},
 					Regex: formattedString,
 				},
 			},
@@ -1166,7 +1160,7 @@ func getCorsPolicy(corsConfig *model.CorsConfig) *routev3.CorsPolicy {
 		stringMatcherArray = append(stringMatcherArray, regexMatcher)
 	}
 
-	corsPolicy := &routev3.CorsPolicy{
+	corsPolicy := &cors_filter_v3.CorsPolicy{
 		AllowCredentials: &wrapperspb.BoolValue{
 			Value: corsConfig.AccessControlAllowCredentials,
 		},
