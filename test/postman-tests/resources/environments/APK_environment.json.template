@@ -4,7 +4,7 @@
 	"values": [
 		{
 			"key": "gatewayBaseURl",
-			"value": "https://10.104.175.38:9095",
+			"value": "https://GW_HOST:9095",
 			"type": "default",
 			"enabled": true
 		},

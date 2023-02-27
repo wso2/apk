@@ -37,5 +37,5 @@ data:
     [wso2.backoffice_service.idpConfiguration]
     organizationClaim = "{{ .Values.wso2.apk.idp.organizationClaim }}"
     [wso2.backoffice_service.idpConfiguration.publicKey]
-    path = "/home/wso2apk/admin/security/mg.pem"
+    path = "/home/wso2apk/backoffice/security/mg.pem"
 {{- end -}}
