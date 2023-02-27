@@ -37,7 +37,7 @@ data:
     [wso2.devportal_service.idpConfiguration]
     organizationClaim = "{{ .Values.wso2.apk.idp.organizationClaim }}"
     [wso2.devportal_service.idpConfiguration.publicKey]
-    path = "/home/wso2apk/admin/security/mg.pem"
+    path = "/home/wso2apk/devportal/security/mg.pem"
     [wso2.devportal_service.throttleConfig.blockCondition]
     enabled = true
     [wso2.devportal_service.keyStores.tls]

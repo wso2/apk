@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "3f008829-7935-4d46-bd9b-440db3490925",
+		"_postman_id": "926725e8-8db5-4cd9-9f89-fab60c0d2e2c",
 		"name": "APK-Devportal API Operations",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -86,14 +86,15 @@
 							"  pm.response.to.have.status(201);",
 							"});",
 							"",
+							"const responseJson = pm.response.json();",
+							"pm.collectionVariables.set(\"runtimeAPIUUID\",responseJson.id);",
+							"",
 							"pm.test(\"Assert API creation response\", () => {",
 							"    //parse the response JSON and test three properties",
-							"    const responseJson = pm.response.json();",
 							"    pm.expect(responseJson.name).equals(pm.collectionVariables.get('testAPIName'));",
-							"    pm.expect(responseJson.context).equals( \"/t/carbon.super\"+pm.collectionVariables.get('testAPIContext')+\"/\"+pm.collectionVariables.get('testAPIVersion'));",
+							"    pm.expect(responseJson.context).equals( pm.collectionVariables.get('testAPIContext')+\"/\"+pm.collectionVariables.get('testAPIVersion'));",
 							"    pm.expect(responseJson.version).equals(pm.collectionVariables.get('testAPIVersion'));",
 							"    pm.expect(responseJson.type).equals(\"REST\");",
-							"    pm.collectionVariables.set(\"runtimeAPIUUID\",responseJson.id);",
 							"});"
 						],
 						"type": "text/javascript"

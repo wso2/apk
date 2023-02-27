@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "17aaa1f5-e116-4f25-a538-7d18ae4493e1",
+		"_postman_id": "f7d64fd3-9903-4b97-aeb5-350299bfbf35",
 		"name": "Test Runtime API Operations",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -84,7 +84,7 @@
 							"});",
 							"console.log('Getting all services in namespace and find sample service required for test');",
 							"_.each(pm.response.json().list, (serviceEntry) => {",
-							"    if(serviceEntry.name === pm.collectionVariables.get('testServiceName')) {",
+							"    if(serviceEntry.name === pm.collectionVariables.get('testServiceName')&& serviceEntry.namespace === pm.collectionVariables.get('testServiceNamespace')) {",
 							"        pm.collectionVariables.set('serviceUUID', serviceEntry.id)",
 							"        console.log(\"HTTP bin service found, serviceUUID is\", serviceEntry.id);",
 							"    }",
@@ -916,7 +916,6 @@
 					"listen": "prerequest",
 					"script": {
 						"exec": [
-							"pm.variables.set(\"APIUUID\",pm.collectionVariables.get('APIUUID'))",
 							""
 						],
 						"type": "text/javascript"
@@ -960,7 +959,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"id\": \"{{APIV2UUID}}\",\n    \"name\": \"{{testAPIV2Name}}\",\n    \"context\": \"/testAPIV2/1.0.0\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"PUT\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"POST\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"DELETE\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"PATCH\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        }\n    ],\n    \"serviceInfo\": {\n        \"name\": \"backend\",\n        \"namespace\": \"default\"\n    }\n}",
+					"raw": "{\n    \"id\": \"{{APIV2UUID}}\",\n    \"name\": \"{{testAPIV2Name}}\",\n    \"context\": \"/testAPIV2/1.0.0\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"PUT\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"POST\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"DELETE\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"PATCH\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        }\n    ],\n    \"serviceInfo\": {\n        \"name\": \"{{testServiceName}}\",\n        \"namespace\": \"{{testServiceNamespace}}\"\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -1683,6 +1682,11 @@
 		{
 			"key": "API2TestKey",
 			"value": ""
+		},
+		{
+			"key": "testServiceNamespace",
+			"value": "test-apk",
+			"type": "default"
 		}
 	]
 }

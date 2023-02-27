@@ -7,22 +7,22 @@
 tasks.register('admin_postman_collection', Exec) {
     group 'postman'
     description 'Run postman collection'
-    commandLine 'newman', 'run', 'resources/collections/Test_AdminAPI_Operations-collection.json', '--environment', "$buildDir/APK_environment.json", '--insecure', '--reporters', 'junit,cli', '--reporter-junit-export', "$buildDir/admin-test-report.xml", '--suppress-exit-code'
+    commandLine 'newman', 'run', 'resources/collections/Test_AdminAPI_Operations-collection.json', '--environment', "$buildDir/APK_environment.json", '--insecure', '--reporters', 'junit,cli', '--reporter-junit-export', "$buildDir/admin-test-report.xml", '--suppress-exit-code', '--verbose', '--delay-request', '1000'
 }
 tasks.register('devportal_postman_collection', Exec) {
     group 'postman'
     description 'Run postman collection'
-    commandLine 'newman', 'run', 'resources/collections/Test_DevPortalAPI_Operations-collection.json', '--environment', "$buildDir/APK_environment.json", '--insecure', '--reporters', 'junit,cli', '--reporter-junit-export', "$buildDir/devportal-test-report.xml", '--suppress-exit-code'
+    commandLine 'newman', 'run', 'resources/collections/Test_DevPortalAPI_Operations-collection.json', '--environment', "$buildDir/APK_environment.json", '--insecure', '--reporters', 'junit,cli', '--reporter-junit-export', "$buildDir/devportal-test-report.xml", '--suppress-exit-code', '--verbose', '--delay-request', '1000'
 }
 tasks.register('backoffice_postman_collection', Exec) {
     group 'postman'
     description 'Run postman collection'
-    commandLine 'newman', 'run', 'resources/collections/Test_DevPortalAPI_Operations-collection.json', '--environment', "$buildDir/APK_environment.json", '--insecure', '--reporters', 'junit,cli', '--reporter-junit-export', "$buildDir/backoffice-test-report.xml", '--suppress-exit-code'
+    commandLine 'newman', 'run', 'resources/collections/Test_DevPortalAPI_Operations-collection.json', '--environment', "$buildDir/APK_environment.json", '--insecure', '--reporters', 'junit,cli', '--reporter-junit-export', "$buildDir/backoffice-test-report.xml", '--suppress-exit-code', '--verbose', '--delay-request', '1000'
 }
 tasks.register('runtime_postman_collection', Exec) {
     group 'postman'
     description 'Run postman collection'
-    commandLine 'newman', 'run', 'resources/collections/Test_Runtime_API_Operations-collection.json', '--environment', "$buildDir/APK_environment.json", '--insecure', '--reporters', 'junit,cli', '--reporter-junit-export', "$buildDir/runtime-test-report.xml", '--suppress-exit-code'
+    commandLine 'newman', 'run', 'resources/collections/Test_Runtime_API_Operations-collection.json', '--environment', "$buildDir/APK_environment.json", '--insecure', '--reporters', 'junit,cli', '--reporter-junit-export', "$buildDir/runtime-test-report.xml", '--suppress-exit-code', '--verbose', '--delay-request', '1000'
 }
 tasks.register('create_build_dir'){
     group 'postman'
