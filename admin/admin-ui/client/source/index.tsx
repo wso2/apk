@@ -7,6 +7,7 @@ import 'simplebar/src/simplebar.css';
 // project import
 import App from './App';
 
+
 // ==============================|| MAIN - REACT DOM RENDER  ||============================== //
 
 const container = document.getElementById('root');

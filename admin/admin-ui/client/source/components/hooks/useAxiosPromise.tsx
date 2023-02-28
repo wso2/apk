@@ -1,6 +1,7 @@
 import axios from "axios";
-import { restApi } from "../../../public/conf/Settings";
-
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const Settings = require('Settings');
+const restApi = Settings.server.restApi;
 interface useFetchProps {
     url: string,
 }

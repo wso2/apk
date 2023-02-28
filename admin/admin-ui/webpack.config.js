@@ -80,9 +80,6 @@ module.exports = (env) => {
     },
     externals: {
       Settings: 'Settings',
-      Config: 'OldSettings',
-      Themes: 'AppThemes', // Should use long names for preventing global scope JS variable conflicts
-      MaterialIcons: 'MaterialIcons',
     },
     devtool: 'source-map',
   }

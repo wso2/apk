@@ -1,4 +1,5 @@
 import { Semaphore } from "await-semaphore";
+import jwtDecode from 'jwt-decode';
 import {
     ACCESS_TOKEN,
     ID_TOKEN,
@@ -10,7 +11,7 @@ import {
     ACCESS_TOKEN_ISSUED_AT
 } from "./constants/token";
 import { sendRefreshTokenRequest } from "./sign-in";
-import { TokenResponseInterface } from "./models/token-response";
+import { TokenResponseInterface } from "./types/token-response";
 
 /**
  * Semaphore used for synchronizing the refresh token requests.
@@ -51,7 +52,7 @@ export const getSessionParameter = (key: string): string => {
 /**
  * End authenticated user session.
  */
- export const endAuthenticatedSession = (): void => {
+export const endAuthenticatedSession = (): void => {
     removeSessionParameter(ACCESS_TOKEN);
     removeSessionParameter(ID_TOKEN);
     removeSessionParameter(ACCESS_TOKEN_EXPIRE_IN);
@@ -84,45 +85,49 @@ export const initUserSession = (tokenResponse: TokenResponseInterface): void => 
  *
  * @returns {Promise<string>} access token.
  */
-export const getAccessToken = (): Promise<string> => {
+export const getAccessTokenFromRefreshToken = async (): Promise<string | null | false> => {
     const accessToken = getSessionParameter(ACCESS_TOKEN);
     const expiresIn = getSessionParameter(ACCESS_TOKEN_EXPIRE_IN);
     const issuedAt = getSessionParameter(ACCESS_TOKEN_ISSUED_AT);
 
+    // Check if session parameters are present
     if (!accessToken || accessToken.trim().length === 0 || !expiresIn || expiresIn.length === 0 || !issuedAt
         || issuedAt.length === 0) {
+        // If not, end the authenticated session and reject the promise
         endAuthenticatedSession();
-
-        return Promise.reject(new Error("Invalid user session."));
+        return null;
     }
 
     function getValidityPeriod(): number {
         const currentExpiresIn = getSessionParameter(ACCESS_TOKEN_EXPIRE_IN);
         const currentIssuedAt = getSessionParameter(ACCESS_TOKEN_ISSUED_AT);
-
+        // Return validity period in seconds
         return (parseInt(currentIssuedAt, 10) + parseInt(currentExpiresIn, 10)) - Math.floor(Date.now() / 1000);
     }
 
     let validityPeriod = getValidityPeriod();
 
+    // Check if token is about to expire
     if (validityPeriod <= 300) {
-
-        return semaphore.use(() => {
+        try {
             validityPeriod = getValidityPeriod();
             if (validityPeriod <= 300) {
                 const requestParams = JSON.parse(getSessionParameter(REQUEST_PARAMS));
-                return sendRefreshTokenRequest(requestParams, getSessionParameter(REFRESH_TOKEN))
-                    .then((tokenResponse: any) => {
-                        initUserSession(tokenResponse);
-                        return Promise.resolve(tokenResponse.accessToken);
-                    }).catch((error: any) => {
-                        return Promise.reject(error);
-                    });
+                // Send refresh token request and init new session with the response
+                const tokenResponse: any = await sendRefreshTokenRequest(requestParams, getSessionParameter(REFRESH_TOKEN));
+                initUserSession(tokenResponse);
+                return tokenResponse.accessToken;
             } else {
-                return Promise.resolve(getSessionParameter(ACCESS_TOKEN));
+                // Return existing access token if validity period is greater than 300 seconds
+                return getSessionParameter(ACCESS_TOKEN);
             }
-        });
+        } catch (error) {
+            return null;
+        }
     } else {
-        return Promise.resolve(accessToken);
+        // Return existing access token if validity period is greater than 300 seconds
+        return accessToken;
     }
+    return false;
 };
+  

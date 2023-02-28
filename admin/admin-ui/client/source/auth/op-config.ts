@@ -6,10 +6,12 @@ import {
     END_SESSION_ENDPOINT,
     JWKS_ENDPOINT,
     ISSUER,
-    OP_CONFIG_INITIATED
+    OP_CONFIG_INITIATED,
+    USERINFO_ENDPOINT,
 } from './constants/token';
 import { getSessionParameter, removeSessionParameter, setSessionParameter } from "./session";
-import Settings from '../../public/conf/Settings';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const Settings = require('Settings');
 
 /**
  * Checks whether openid configuration initiated.
@@ -73,6 +75,13 @@ export const setEndSessionEndpoint = (endSessionEndpoint: string): void => {
 };
 
 /**
+ * Set userinfo endpoint.
+ * @param userinfoEndpoint 
+ */
+export const setUserinfoEndpoint = (userinfoEndpoint: string): void => {
+    setSessionParameter(USERINFO_ENDPOINT, userinfoEndpoint);
+};
+/**
  * Initialize openid provider configuration.
  *
  * @param {string} wellKnownEndpoint openid provider configuration.
@@ -101,9 +110,10 @@ export const initOPConfiguration = (
             }
             setAuthorizeEndpoint(response.data.authorization_endpoint);
             setTokenEndpoint(response.data.token_endpoint);
-            setEndSessionEndpoint(Settings.logoutEndpoint);
+            setEndSessionEndpoint(Settings.idp.logoutEndpoint);
             setJwksUri(response.data.jwks_uri);
             setIssuer(response.data.issuer);
+            setUserinfoEndpoint(response.data.userinfo_endpoint);
             setOPConfigInitiated();
 
             return Promise.resolve("success");
@@ -169,3 +179,7 @@ export const getEndSessionEndpoint = (): string | null => {
 export const getToken = (): string => {
     return getSessionParameter(ACCESS_TOKEN);
 };
+
+export const getUserInfoEndpoint = (): string => {
+    return getSessionParameter(USERINFO_ENDPOINT);
+}

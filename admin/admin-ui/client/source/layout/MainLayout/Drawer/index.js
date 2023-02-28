@@ -9,7 +9,9 @@ import { Box, Drawer, useMediaQuery } from '@mui/material';
 import DrawerHeader from './DrawerHeader';
 import DrawerContent from './DrawerContent';
 import MiniDrawerStyled from './MiniDrawerStyled';
-import { drawerWidth } from 'config';
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires, no-undef
+const Settings = require('Settings');
 
 // ==============================|| MAIN LAYOUT - DRAWER ||============================== //
 
@@ -42,7 +44,7 @@ const MainDrawer = ({ open, handleDrawerToggle, window }) => {
                         display: { xs: 'block', lg: 'none' },
                         '& .MuiDrawer-paper': {
                             boxSizing: 'border-box',
-                            width: drawerWidth,
+                            width: Settings.theme.drawerWidth,
                             borderRight: `1px solid ${theme.palette.divider}`,
                             backgroundImage: 'none',
                             boxShadow: 'inherit'

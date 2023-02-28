@@ -51,26 +51,26 @@ const menuItems = {
                 icon: () => <FontAwesomeIcon icon={faShieldAlt} />,
             },
             {
-                id: 'application-policies',
-                title: 'Application Policies',
+                id: 'application-rate-plans',
+                title: 'Application Rate Plans',
                 type: 'item',
-                url: '/application-policies',
+                url: '/application-rate-plans',
                 icon: () => <FontAwesomeIcon icon={faBuildingShield} />,
             }, 
             {
-                id: 'subscription-policies',
-                title: 'Subscription Policies',
+                id: 'business-plans',
+                title: 'Business Plans',
                 type: 'item',
-                url: '/subscription-policies',
+                url: '/business-plans',
                 icon: () => <FontAwesomeIcon icon={faRssSquare} />,
             }, 
-            {
-                id: 'custom-policies',
-                title: 'Custom Policies',
-                type: 'item',
-                url: '/custom-policies',
-                icon: () => <FontAwesomeIcon icon={faFilePen} />,
-            }, 
+            // {
+            //     id: 'custom-policies',
+            //     title: 'Custom Policies',
+            //     type: 'item',
+            //     url: '/custom-policies',
+            //     icon: () => <FontAwesomeIcon icon={faFilePen} />,
+            // }, 
             {
                 id: 'deny-policies',
                 title: 'Deny Policies',
@@ -80,20 +80,20 @@ const menuItems = {
             }
         ]
     }, 
-    {
-        id: 'gateways',
-        title: '',
-        type: 'group',
-        children: [
-            {
-                id: 'gateways',
-                title: 'Gateways',
-                type: 'item',
-                url: '/gateways',
-                icon: () => <FontAwesomeIcon icon={faServer} />,
-            }
-        ]
-    },
+    // {
+    //     id: 'gateways',
+    //     title: '',
+    //     type: 'group',
+    //     children: [
+    //         {
+    //             id: 'gateways',
+    //             title: 'Gateways',
+    //             type: 'item',
+    //             url: '/gateways',
+    //             icon: () => <FontAwesomeIcon icon={faServer} />,
+    //         }
+    //     ]
+    // },
     {
         id: 'api-categories',
         title: '',
@@ -108,83 +108,21 @@ const menuItems = {
             }
         ]
     },
+    // {
+    //     id: 'key-managers',
+    //     title: '',
+    //     type: 'group',
+    //     children: [
+    //         {
+    //             id: 'key-managers',
+    //             title: 'Key Managers',
+    //             type: 'item',
+    //             url: '/key-managers',
+    //             icon: () => <FontAwesomeIcon icon={faKey} />,
+    //         }
+    //     ]
+    // },
     {
-        id: 'key-managers',
-        title: '',
-        type: 'group',
-        children: [
-            {
-                id: 'key-managers',
-                title: 'Key Managers',
-                type: 'item',
-                url: '/key-managers',
-                icon: () => <FontAwesomeIcon icon={faKey} />,
-            }
-        ]
-    },
-    {
-        id: 'tasks',
-        title: 'Tasks',
-        type: 'group',
-        children: [
-            {
-                id: 'user-creation',
-                title: 'User Creation',
-                type: 'item',
-                url: '/user-creation',
-                icon: () => <FontAwesomeIcon icon={faUserPlus} />,
-            },
-            {
-                id: 'application-creation',
-                title: 'Application Creation',
-                type: 'item',
-                url: '/application-creation',
-                icon: () => <FontAwesomeIcon icon={faSquarePlus} />,
-            },
-            {
-                id: 'application-deletion',
-                title: 'Application Deletion',
-                type: 'item',
-                url: '/application-deletion',
-                icon: () => <FontAwesomeIcon icon={faSquareMinus} />,
-            },
-            {
-                id: 'subscription-creation',
-                title: 'Subscription Creation',
-                type: 'item',
-                url: '/subscription-creation',
-                icon: () => <FontAwesomeIcon icon={faNewspaper} />,
-            },
-            {
-                id: 'subscription-deletion',
-                title: 'Subscription Deletion',
-                type: 'item',
-                url: '/subscription-deletion',
-                icon: () => <FontAwesomeIcon icon={faPersonCircleMinus} />,
-            }, 
-            {
-                id: 'subscription-update',
-                title: 'Subscription Update',
-                type: 'item',
-                url: '/subscription-update',
-                icon: () => <FontAwesomeIcon icon={faPersonCircleQuestion} />,
-            }, 
-            {
-                id: 'application-registration',
-                title: 'Application Registration',
-                type: 'item',
-                url: '/application-registration',
-                icon: () => <FontAwesomeIcon icon={faHandshake} />,
-            }, 
-            {
-                id: 'api-state-change',
-                title: 'API State Change',
-                type: 'item',
-                url: '/api-state-change',
-                icon: () => <FontAwesomeIcon icon={faPenToSquare} />,
-            }
-        ]
-    }, {
         id: 'settings',
         title: 'Settings',
         type: 'group',
@@ -196,20 +134,6 @@ const menuItems = {
                 url: '/applications',
                 icon: () => <FontAwesomeIcon icon={faScrewdriverWrench} />,
             },
-            {
-                id: 'scope-assignments',
-                title: 'Scope Assignments',
-                type: 'item',
-                url: '/scope-assignments',
-                icon: () => <FontAwesomeIcon icon={faShapes} />,
-            },
-            {
-                id: 'advanced',
-                title: 'Advanced',
-                type: 'item',
-                url: '/advanced',
-                icon: () => <FontAwesomeIcon icon={faGears} />,
-            }
             // {
             //     id: 'scope-assignments',
             //     title: 'Documentation',
