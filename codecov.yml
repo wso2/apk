@@ -1,4 +1,6 @@
 coverage:
+  max_report_age: off
+
   status:
     project: off
     patch: off
