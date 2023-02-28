@@ -136,6 +136,7 @@ public class APIClient {
                 _ = check self.deleteHttpRoutes(api);
                 _ = check self.deleteServiceMappings(api);
                 _ = check self.deleteAuthneticationCRs(api);
+                _ = check self.deleteScopeCrsForAPI(api);
                 _ = check self.deleteBackendPolicies(api);
                 _ = check self.deleteBackendServices(api);
                 _ = check self.deleteInternalAPI(api.metadata.name, api.metadata.namespace);
@@ -252,6 +253,29 @@ public class APIClient {
         } on fail var e {
             log:printError("Error occured deleting servicemapping", e);
             return error("Error occured deleting servicemapping", message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = 500);
+        }
+    }
+    private isolated function deleteScopeCrsForAPI(model:API api) returns commons:APKError? {
+        do {
+            model:ScopeList|http:ClientError scopeCrListResponse = check getScopeCrsForAPI(api.spec.apiDisplayName, api.spec.apiVersion, api.metadata.namespace);
+            if scopeCrListResponse is model:ScopeList {
+                foreach model:Scope item in scopeCrListResponse.items {
+                    http:Response|http:ClientError scopeCrDeletionResponse = deleteScopeCr(item.metadata.name, item.metadata.namespace);
+                    if scopeCrDeletionResponse is http:Response {
+                        if scopeCrDeletionResponse.statusCode != http:STATUS_OK {
+                            json responsePayLoad = check scopeCrDeletionResponse.getJsonPayload();
+                            model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                            check self.handleK8sTimeout(statusResponse);
+                        }
+                    } else {
+                        log:printError("Error occured while deleting scopes");
+                    }
+                }
+                return;
+            }
+        } on fail var e {
+            log:printError("Error occured deleting scope", e);
+            return error("Error occured deleting scopes", message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = 500);
         }
     }
 
@@ -651,10 +675,12 @@ public class APIClient {
                 check self.deleteHttpRoutes(api);
                 check self.deleteServiceMappings(api);
                 check self.deleteAuthneticationCRs(api);
+                _ = check self.deleteScopeCrsForAPI(api);
                 check self.deleteBackendPolicies(api);
                 check self.deleteBackendServices(api);
                 check self.deleteInternalAPI(api.metadata.name, api.metadata.namespace);
             }
+            check self.deployScopeCrs(apiArtifact);
             check self.deployBackendServices(apiArtifact);
             check self.deployBackendPolicies(apiArtifact);
             check self.deployAuthneticationCRs(apiArtifact);
@@ -670,6 +696,18 @@ public class APIClient {
             log:printError("Internal Error occured while deploying API", e);
             commons:APKError internalError = error("Internal Error occured while deploying API", code = 909000, statusCode = 500, description = "Internal Error occured while deploying API", message = "Internal Error occured while deploying API");
             return internalError;
+        }
+    }
+    private isolated function deployScopeCrs(model:APIArtifact apiArtifact) returns error? {
+        foreach model:Scope scope in apiArtifact.scopes {
+            http:Response deployScopeResult = check deployScopeCR(scope, getNameSpace(runtimeConfiguration.apiCreationNamespace));
+            if deployScopeResult.statusCode == http:STATUS_CREATED {
+                log:printDebug("Deployed Scope Successfully" + scope.toString());
+            } else {
+                json responsePayLoad = check deployScopeResult.getJsonPayload();
+                model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                check self.handleK8sTimeout(statusResponse);
+            }
         }
     }
     private isolated function deployK8sAPICr(model:APIArtifact apiArtifact) returns model:API|commons:APKError|error {
@@ -970,10 +1008,16 @@ public class APIClient {
     private isolated function generateHttpRouteRules(model:APIArtifact apiArtifact, API api, model:Endpoint? endpoint, string endpointType, commons:Organization organization) returns model:HTTPRouteRule[]|commons:APKError {
         model:HTTPRouteRule[] httpRouteRules = [];
         APIOperations[]? operations = api.operations;
+        map<model:Scope> scopeCRmapping = {};
         if operations is APIOperations[] {
             foreach APIOperations operation in operations {
                 model:HTTPRouteRule|() httpRouteRule = check self.generateHttpRouteRule(apiArtifact, api, endpoint, operation, endpointType, organization);
                 if httpRouteRule is model:HTTPRouteRule {
+                    model:HTTPRouteFilter[]? filters = httpRouteRule.filters;
+                    if filters is () {
+                        filters = [];
+                        httpRouteRule.filters = filters;
+                    }
                     if !(operation.authTypeEnabled ?: true) {
                         string disableAuthenticationRefName = self.retrieveDisableAuthenticationRefName(api, endpointType, organization);
                         if !apiArtifact.authenticationMap.hasKey(disableAuthenticationRefName) {
@@ -981,11 +1025,20 @@ public class APIClient {
                             apiArtifact.authenticationMap[disableAuthenticationRefName] = generateDisableAuthenticationCR;
                         }
                         model:HTTPRouteFilter disableAuthenticationFilter = {'type: "ExtensionRef", extensionRef: {group: "dp.wso2.com", kind: "Authentication", name: disableAuthenticationRefName}};
-                        model:HTTPRouteFilter[]? filters = httpRouteRule.filters;
-                        if filters is model:HTTPRouteFilter[] {
-                            filters.push(disableAuthenticationFilter);
-                        } else {
-                            filters = [disableAuthenticationFilter];
+                        (<model:HTTPRouteFilter[]>filters).push(disableAuthenticationFilter);
+                    }
+                    string[]? scopes = operation.scopes;
+                    if scopes is string[] {
+                        foreach string scope in scopes {
+                            model:Scope scopeCr;
+                            if scopeCRmapping.hasKey(scope) {
+                                scopeCr = apiArtifact.scopes.get(scope);
+                            } else {
+                                scopeCr = self.generateScopeCR(apiArtifact, api, organization, scope);
+                                scopeCRmapping[scope] = scopeCr;
+                            }
+                            model:HTTPRouteFilter scopeFilter = {'type: "ExtensionRef", extensionRef: {group: "dp.wso2.com", kind: scopeCr.kind, name: scopeCr.metadata.name}};
+                            (<model:HTTPRouteFilter[]>filters).push(scopeFilter);
                         }
                     }
                     httpRouteRules.push(httpRouteRule);
@@ -994,7 +1047,17 @@ public class APIClient {
         }
         return httpRouteRules;
     }
-
+    private isolated function generateScopeCR(model:APIArtifact apiArtifact, API api, commons:Organization organization, string scope) returns model:Scope {
+        string scopeName = uuid:createType1AsString();
+        model:Scope scopeCr = {
+            metadata: {name: scopeName, namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace), labels: self.getLabels(api)},
+            spec: {
+                names: [scope]
+            }
+        };
+        apiArtifact.scopes[scope] = scopeCr;
+        return scopeCr;
+    }
     private isolated function generateDisableAuthenticationCR(model:APIArtifact apiArtifact, API api, string endpointType, commons:Organization organization) returns model:Authentication {
         string retrieveDisableAuthenticationRefName = self.retrieveDisableAuthenticationRefName(api, endpointType, organization);
         string nameSpace = getNameSpace(runtimeConfiguration.apiCreationNamespace);
@@ -1166,7 +1229,16 @@ public class APIClient {
                 } else {
                     uriTemplate.setAuthEnabled(true);
                 }
-
+                string[]? scopes = apiOperation.scopes;
+                if scopes is string[] {
+                    foreach string item in scopes {
+                        runtimeModels:Scope scope = runtimeModels:newScope1();
+                        scope.setId(item);
+                        scope.setName(item);
+                        scope.setKey(item);
+                        uriTemplate.setScopes(scope);
+                    }
+                }
                 _ = uritemplatesSet.add(uriTemplate);
             }
         }
@@ -1964,6 +2036,15 @@ public class APIClient {
                                     extenstionRefMappings[extensionRef.name] = newAuthenticationCR.metadata.name;
                                     extensionRef.name = newAuthenticationCR.metadata.name;
                                 }
+                            } else if extensionRef.kind == "Scope" {
+                                if apiArtifact.scopes.hasKey(extensionRef.name) {
+                                    model:Scope scope = apiArtifact.scopes.get(extensionRef.name).clone();
+                                    model:Scope newScopeCR = self.prepareScopeCR(apiArtifact, newAPI, scope, organization);
+                                    _ = apiArtifact.scopes.remove(extensionRef.name);
+                                    apiArtifact.scopes[newScopeCR.metadata.name] = newScopeCR;
+                                    extenstionRefMappings[extensionRef.name] = newScopeCR.metadata.name;
+                                    extensionRef.name = newScopeCR.metadata.name;
+                                }
                             }
                         }
                     }
@@ -1973,6 +2054,11 @@ public class APIClient {
             httproute.metadata.name = self.retrieveHttpRouteRefName(newAPI, endpointType, organization);
             httproute.metadata.labels = self.getLabels(newAPI);
         }
+    }
+    private isolated function prepareScopeCR(model:APIArtifact apiArtifact, API api, model:Scope scope, commons:Organization organization) returns model:Scope {
+        scope.metadata.name = uuid:createType1AsString();
+        scope.metadata.labels = self.getLabels(api);
+        return scope;
     }
     private isolated function prepareBackendPolicyCR(model:APIArtifact apiArtifact, API api, string endpointType, map<string> backendServiceMapping, commons:Organization organization) {
         foreach model:BackendPolicy backendPolicy in apiArtifact.backendPolicies {
@@ -2100,12 +2186,23 @@ public class APIClient {
         } else {
             return internalAPI;
         }
+        model:ScopeList scopeList = check getScopeCrsForAPI(k8sapi.spec.apiDisplayName, k8sapi.spec.apiVersion, k8sapi.metadata.namespace);
+        foreach model:Scope scope in scopeList.items {
+            apiArtifact.scopes[scope.metadata.name] = self.sanitizeScopeCR(scope);
+        }
         apiArtifact.api = self.sanitizeAPICR(k8sapi);
         return apiArtifact;
     }
+    private isolated function sanitizeScopeCR(model:Scope scope) returns model:Scope {
+        model:Scope sanitizedScope = {
+            metadata: {name: scope.metadata.name, namespace: scope.metadata.namespace, labels: scope.metadata.labels},
+            spec: scope.spec
+        };
+        return sanitizedScope;
+    }
     private isolated function sanitizeRuntimeAPI(model:RuntimeAPI runtimeAPI) returns model:RuntimeAPI {
         model:RuntimeAPI sanitizedAPI = {
-            metadata: {name: runtimeAPI.metadata.name, namespace: runtimeAPI.metadata.namespace},
+            metadata: {name: runtimeAPI.metadata.name, namespace: runtimeAPI.metadata.namespace, labels: runtimeAPI.metadata.labels},
             spec: runtimeAPI.spec
         };
         return sanitizedAPI;
@@ -2229,6 +2326,9 @@ public class APIClient {
                         _ = check self.convertAndStoreYamlFile(backendPolicy.toJsonString(), backendPolicy.metadata.name, zipDir, "policies/backendPolicies");
 
                     }
+                    foreach model:Scope scope in apiArtifact.scopes {
+                        _ = check self.convertAndStoreYamlFile(scope.toJsonString(), scope.metadata.name, zipDir, "scopes");
+                    }
                     model:RuntimeAPI? runtimeAPI = apiArtifact.runtimeAPI;
                     if runtimeAPI is model:RuntimeAPI {
                         _ = check self.convertAndStoreYamlFile(runtimeAPI.toJsonString(), runtimeAPI.metadata.name, zipDir, "runtimeapi");
@@ -2331,7 +2431,8 @@ public class APIClient {
                 if definition is string {
                     self.retrieveGeneratedConfigmapForDefinition(apiArtifact, payload, definition, uniqueId);
                 } else {
-                    json generatedSwagger = check self.retrieveGeneratedSwaggerDefinition(payload, ());
+                    json internalDefinition = check self.getDefinition(check getAPI(apiId, organization));
+                    json generatedSwagger = check self.retrieveGeneratedSwaggerDefinition(payload,internalDefinition.toJsonString());
                     self.retrieveGeneratedConfigmapForDefinition(apiArtifact, payload, generatedSwagger, uniqueId);
                 }
                 self.generateAndSetAPICRArtifact(apiArtifact, payload, organization);
@@ -2349,6 +2450,12 @@ public class APIClient {
             return api;
         }
     }
+    # Description
+    #
+    # + apiId - Parameter Description  
+    # + payload - Parameter Description  
+    # + organization - Parameter Description
+    # + return - Return Value Description
     public isolated function updateAPIDefinition(string apiId, http:Request payload, commons:Organization organization) returns http:Response|NotFoundError|PreconditionFailedError|InternalServerErrorError|BadRequestError|commons:APKError {
         do {
             API|NotFoundError api = check self.getAPIById(apiId, organization);
