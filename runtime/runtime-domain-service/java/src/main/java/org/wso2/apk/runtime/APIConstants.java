@@ -125,7 +125,7 @@ public final class APIConstants {
     public static final String AUTH_NO_AUTHENTICATION = "None";
 
     public enum ParserType {
-        OAS3, OAS2, ASYNC
+        REST, ASYNC
     }
 
 

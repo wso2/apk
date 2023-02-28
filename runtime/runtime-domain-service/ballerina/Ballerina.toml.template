@@ -7,6 +7,11 @@ distribution = "2201.2.3"
 [build-options]
 observabilityIncluded = false
 
+[[dependency]]
+org = "wso2"
+name = "apk_common_lib"
+version = "0.0.1-SNAPSHOT"
+repository = "local"
 
 [[platform.java11.dependency]]
 groupId = "org.wso2.apk"

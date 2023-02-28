@@ -135,4 +135,5 @@ const (
 const (
 	KindAuthentication = "Authentication"
 	KindAPIPolicy      = "APIPolicy"
+	KindScope          = "Scope"
 )

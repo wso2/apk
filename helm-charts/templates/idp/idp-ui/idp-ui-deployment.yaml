@@ -14,38 +14,38 @@
 # specific language governing permissions and limitations
 # under the License.
 
-{{- if .Values.wso2.apk.idp.enabled }}
+{{- if .Values.idp.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ template "apk-helm.resource.prefix" . }}-idpui-deployment
   namespace: {{ .Release.Namespace }}
 spec:
-  replicas: {{ .Values.wso2.apk.idp.idpui.deployment.replicas }}
+  replicas: {{ .Values.idp.idpui.deployment.replicas }}
   strategy:
-    type: {{ .Values.wso2.apk.idp.idpui.deployment.strategy }}
+    type: {{ .Values.idp.idpui.deployment.strategy }}
   selector:
     matchLabels:
-{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.wso2.apk.idp.idpui.appName ) | indent 6}}
+{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.idp.idpui.appName ) | indent 6}}
   template:
     metadata:
       labels:
-        # networkPolicyId: {{ .Values.wso2.apk.idp.idpui.deployment.npi }}
-{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.wso2.apk.idp.idpui.appName ) | indent 8}}
+        # networkPolicyId: {{ .Values.idp.idpui.deployment.npi }}
+{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.idp.idpui.appName ) | indent 8}}
     spec:
       containers:
         - name: idpui
-          image: {{ .Values.wso2.apk.idp.idpui.deployment.image }}
-          imagePullPolicy: {{ .Values.wso2.apk.idp.idpui.deployment.imagePullPolicy }}
+          image: {{ .Values.idp.idpui.deployment.image }}
+          imagePullPolicy: {{ .Values.idp.idpui.deployment.imagePullPolicy }}
           ports:
             - containerPort: 9443
               protocol: "TCP"
           env:
           - name: IDP_LOGIN_URL
-            value: {{ .Values.wso2.apk.idp.idpui.configs.idpLoginUrl }}
+            value: {{ .Values.idp.idpui.configs.idpLoginUrl }}
           - name: IDP_AUTH_CALLBACK_URL
-            value: {{ .Values.wso2.apk.idp.idpui.configs.idpAuthCallBackUrl }}
-{{ include "apk-helm.deployment.readinessProbe.http" .Values.wso2.apk.idp.idpui.deployment | indent 10 }}
-{{ include "apk-helm.deployment.livenessProbe.http" .Values.wso2.apk.idp.idpui.deployment | indent 10 }}
-{{ include "apk-helm.deployment.resources" .Values.wso2.apk.idp.idpui.deployment.resources | indent 10 }}
+            value: {{ .Values.idp.idpui.configs.idpAuthCallBackUrl }}
+{{ include "apk-helm.deployment.readinessProbe.http" .Values.idp.idpui.deployment | indent 10 }}
+{{ include "apk-helm.deployment.livenessProbe.http" .Values.idp.idpui.deployment | indent 10 }}
+{{ include "apk-helm.deployment.resources" .Values.idp.idpui.deployment.resources | indent 10 }}
 {{- end -}}

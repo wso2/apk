@@ -19,6 +19,8 @@
 import ballerina/log;
 import ballerinax/postgresql;
 import ballerina/sql;
+import ballerina/http;
+import wso2/apk_common_lib as commons;
 
 configurable DatasourceConfiguration datasourceConfiguration = ?;
 configurable ThrottlingConfiguration throttleConfig = ?;
@@ -28,6 +30,16 @@ configurable SDKConfiguration sdkConfig = ?;
 
 final postgresql:Client|sql:Error dbClient;
 final APKConfiguration & readonly apkConfig;
+configurable int DEVPORTAL_PORT = 9443;
+
+configurable commons:IDPConfiguration idpConfiguration = {
+        publicKey:{path: "/home/wso2apk/devportal/security/mg.pem"}
+    };
+commons:DBBasedOrgResolver organizationResolver = new(datasourceConfiguration);
+commons:JWTValidationInterceptor jwtValidationInterceptor = new (idpConfiguration, organizationResolver);
+commons:RequestErrorInterceptor requestErrorInterceptor = new;
+listener http:Listener ep0 = new (DEVPORTAL_PORT, {interceptors: [jwtValidationInterceptor,requestErrorInterceptor]});
+
 
 function init() {
     log:printInfo("Starting APK Devportal Domain Service...");

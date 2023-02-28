@@ -24,8 +24,15 @@ data:
   Config.toml: |
     [ballerina.log]
     level = "DEBUG"
-    # [runtime_domain_service.runtimeConfiguration.keyStores.tls]
-    # path = ""
-    # [runtime_domain_service.runtimeConfiguration.keyStores.signing]
-    # path = ""
+    [ballerina.http]
+    traceLogConsole = true
+    [wso2.runtime_domain_service.runtimeConfiguration.idpConfiguration]
+    organizationClaim = "{{ .Values.wso2.apk.idp.organizationClaim }}"
+    [wso2.runtime_domain_service.runtimeConfiguration.idpConfiguration.publicKey]
+    path = "/home/wso2apk/runtime/security/mg.pem"
+    [wso2.runtime_domain_service.runtimeConfiguration.keyStores.tls]
+    path = "/home/wso2apk/runtime/security/wso2carbon.key"
+    [wso2.runtime_domain_service.runtimeConfiguration.keyStores.signing]
+    path = "/home/wso2apk/runtime/security/wso2carbon.key"
+
 {{- end -}}

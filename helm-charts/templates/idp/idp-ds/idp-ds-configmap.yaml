@@ -14,7 +14,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-{{- if .Values.wso2.apk.idp.enabled }}
+{{- if .Values.idp.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -25,36 +25,52 @@ data:
     # Sample configurations      
     [wso2.idp_domain_service.datasourceConfiguration]
     description = "Database for idp"
-    url = "{{ .Values.wso2.apk.idp.database.url }}"
-    host = "{{ .Values.wso2.apk.idp.database.host }}"
-    port = {{ .Values.wso2.apk.idp.database.port }}
-    databaseName = "{{ .Values.wso2.apk.idp.database.databaseName }}"
-    username = "{{ .Values.wso2.apk.idp.database.username }}"
-    password = "{{ .Values.wso2.apk.idp.database.password }}"
-    validationTimeout = {{ .Values.wso2.apk.idp.database.validationTimeout }}
-    testQuery = "{{ .Values.wso2.apk.idp.database.validationQuery }}"
-    driver = "{{ .Values.wso2.apk.idp.database.driver }}"
+    url = "{{ .Values.idp.database.url }}"
+    host = "{{ .Values.idp.database.host }}"
+    port = {{ .Values.idp.database.port }}
+    databaseName = "{{ .Values.idp.database.databaseName }}"
+    username = "{{ .Values.idp.database.username }}"
+    password = "{{ .Values.idp.database.password }}"
+    validationTimeout = {{ .Values.idp.database.validationTimeout }}
+    testQuery = "{{ .Values.idp.database.validationQuery }}"
+    driver = "{{ .Values.idp.database.driver }}"
     [wso2.idp_domain_service.idpConfiguration]
-    hostname = "{{ .Values.wso2.apk.idp.idpds.config.hostname }}"
-    loginPageURl = "{{ .Values.wso2.apk.idp.idpds.config.loginPageURl }}"
-    loginErrorPageUrl = "{{ .Values.wso2.apk.idp.idpds.config.loginErrorPageUrl }}"
-    loginCallBackURl = "{{ .Values.wso2.apk.idp.idpds.config.loginCallBackURl }}"
+    hostname = "{{ .Values.idp.idpds.config.hostname }}"
+    loginPageURl = "{{ .Values.idp.idpds.config.loginPageURl }}"
+    loginErrorPageUrl = "{{ .Values.idp.idpds.config.loginErrorPageUrl }}"
+    loginCallBackURl = "{{ .Values.idp.idpds.config.loginCallBackURl }}"
     [wso2.idp_domain_service.idpConfiguration.tokenIssuerConfiguration]
-    issuer = "{{ .Values.wso2.apk.idp.idpds.config.issuer }}"
-    keyId="{{ .Values.wso2.apk.idp.idpds.config.keyId }}"
+    issuer = "{{ .Values.idp.idpds.config.issuer }}"
+    keyId="{{ .Values.idp.idpds.config.keyId }}"
     [[wso2.idp_domain_service.idpConfiguration.fileBaseApp]]
     clientId = "45f1c5c8-a92e-11ed-afa1-0242ac120002"
     clientSecret = "4fbd62ec-a92e-11ed-afa1-0242ac120002"
-    callbackUrls = []
-    grantTypes = ["client_credentials","refresh_token"]
+    callbackUrls = ["http://httpbin.org"]
+    grantTypes = ["client_credentials","refresh_token", "authorization_code"]
+
     [[wso2.idp_domain_service.idpConfiguration.user]]
-    username = "admin"
-    password = "admin"
+    username = "org1user"
+    password = "org1user"
     organizations = ["org1"]
 
     [[wso2.idp_domain_service.idpConfiguration.user]]
-    username = "user1"
-    password = "user1"
+    username = "org2user"
+    password = "org2user"
+    organizations = ["org2"]
+
+    [[wso2.idp_domain_service.idpConfiguration.user]]
+    username = "org2user"
+    password = "org2user"
+    organizations = ["org2"]
+
+    [[wso2.idp_domain_service.idpConfiguration.user]]
+    username = "multiorguser"
+    password = "multiorguser"
+    organizations = ["org1","org2"]
+
+    [[wso2.idp_domain_service.idpConfiguration.user]]
+    username = "superAdmin"
+    password = "superAdmin"
     organizations = [""]
     superAdmin = true
 

@@ -19,15 +19,25 @@
 import org.apache.tools.ant.taskdefs.condition.Os
 
 apply from: "$projectDir/../../../common-gradle-scripts/ballerina.gradle"
-task build{
+apply from: "$rootDir/../../common-gradle-scripts/docker.gradle"
+
+tasks.register('build') {
+    group 'build'
+    description 'Build ballerina component'
+    dependsOn 'test'
+    mustRunAfter('test')
     dependsOn 'bal_build'
-}
-task clean{
-    dependsOn 'bal_clean'
 }
 
 tasks.register('test') {
     group 'test'
     description 'Test ballerina component'
-    dependsOn 'bal_test'
+    dependsOn('start_postgres_image')
+    dependsOn('bal_test')
+    finalizedBy('stop_postgres_image')
+    mustRunAfter('start_postgres_image')
+}
+
+task clean{
+    dependsOn 'bal_clean'
 }

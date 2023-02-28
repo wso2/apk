@@ -1,0 +1,17 @@
+[wso2.runtime_domain_service.runtimeConfiguration.k8sConfiguration]
+host = "192.168.49.2:8443"
+serviceAccountPath = "/media/tharindud/dev/satoken"
+[wso2.runtime_domain_service.runtimeConfiguration.keyStores.tls]
+path = "/media/tharindud/dev/satoken/wso2carbon.key"
+[wso2.runtime_domain_service.runtimeConfiguration.keyStores.signing]
+path = "/media/tharindud/dev/satoken/wso2carbon.key"
+[wso2.runtime_domain_service.runtimeConfiguration.idpConfiguration.publicKey]
+path = "/media/tharindud/dev/satoken/mg.pem"
+
+[ballerina.http]
+traceLogConsole = true
+
+
+[ballerina.log]
+level = "DEBUG"
+

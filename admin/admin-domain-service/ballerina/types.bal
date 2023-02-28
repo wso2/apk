@@ -461,7 +461,10 @@ public type Organization record {
     string name;
     @constraint:String {maxLength: 255, minLength: 1}
     string displayName;
-    OrganizationClaim[] claimList;
+    @constraint:String {maxLength: 255, minLength: 1}
+    string organizationClaimValue?;
+    boolean enabled = true;
+    string[] serviceNamespaces?;
 };
 
 public type MonetizationUsagePublishInfo record {
@@ -592,11 +595,6 @@ public type BotDetectionDataList record {
     # Number of Bot Detection Data returned.
     int count?;
     BotDetectionData[] list?;
-};
-
-public type OrganizationClaim record {
-    string claimKey?;
-    string claimValue?;
 };
 
 public type PublishStatus record {

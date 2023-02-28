@@ -31,5 +31,7 @@ task build{
     dependsOn 'docker_build'
 }
 
-build.mustRunAfter ":ballerina:build"
-build.dependsOn ":ballerina:build"
+build.configure{
+    mustRunAfter(":ballerina:build")
+    dependsOn(":ballerina:build")
+    }

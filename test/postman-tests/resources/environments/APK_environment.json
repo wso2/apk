@@ -3,50 +3,8 @@
 	"name": "LocalMinikube",
 	"values": [
 		{
-			"key": "runtimeAPIServerBaseURL",
-			"value": "https://127.0.0.1:9095",
-			"type": "default",
-			"enabled": true
-		},
-		{
-			"key": "serviceUUID",
-			"value": "91f04c0f-936e-40bc-9ca2-987757be0c93",
-			"type": "any",
-			"enabled": true
-		},
-		{
-			"key": "gatewayBaseURL",
-			"value": "https://127.0.0.1:9095",
-			"type": "default",
-			"enabled": true
-		},
-		{
-			"key": "adminAPIServerBaseURL",
-			"value": "https://127.0.0.1:9095",
-			"type": "default",
-			"enabled": true
-		},
-		{
-			"key": "backOfficeAPIServerBaseURL",
-			"value": "https://127.0.0.1:9095",
-			"type": "default",
-			"enabled": true
-		},
-		{
-			"key": "internalBackOfficeAPIServerBaseURL",
-			"value": "http://192.168.49.2",
-			"type": "default",
-			"enabled": true
-		},
-		{
-			"key": "devPortalBaseURL",
-			"value": "https://127.0.0.1:9095",
-			"type": "default",
-			"enabled": true
-		},
-		{
-			"key": "idpEndpointUrl",
-			"value": "https://127.0.0.1:9095",
+			"key": "gatewayBaseURl",
+			"value": "https://10.104.175.38:9095",
 			"type": "default",
 			"enabled": true
 		},

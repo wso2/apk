@@ -109,3 +109,8 @@ tasks.register('start_postgres_image', Exec) {
     commandLine 'docker', 'run','--rm', '-itd', '-e', 'POSTGRES_USER=wso2carbon', '-e', 'POSTGRES_PASSWORD=wso2carbon',
             '-p', '10320:5432','--name','postgresql_test','test-postgres-db'
 }
+tasks.register('stop_postgres_image', Exec) {
+    group 'docker'
+    description 'Start postgres docker container'
+    commandLine 'docker', 'stop', 'postgresql_test'
+}

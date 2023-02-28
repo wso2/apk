@@ -51,7 +51,13 @@ spec:
             - mountPath: /home/wso2apk/admin/conf/Config.toml
               name: config-toml-volume
               subPath: Config.toml
+            - mountPath: /home/wso2apk/admin/security/mg.pem
+              name: admin-ds-jwt-validation-key-volume
+              subPath: mg.pem
       volumes:
+        - name: admin-ds-jwt-validation-key-volume
+          secret: 
+            secretName: {{ template "apk-helm.resource.prefix" . }}-admin-ds-jwt-validaion-secret
         - name: config-toml-volume
           configMap:
             name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-configmap

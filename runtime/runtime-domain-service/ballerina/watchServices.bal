@@ -20,6 +20,7 @@ import ballerina/lang.value;
 import ballerina/log;
 import ballerina/url;
 import runtime_domain_service.model;
+import wso2/apk_common_lib as commons;
 
 isolated map<Service> services = {};
 string servicesResourceVersion = "";
@@ -105,9 +106,22 @@ isolated function mapPortMapping(model:Service 'service) returns PortMapping[]|e
     return portmappings;
 }
 
-isolated function getServicesList() returns Service[] {
-    lock {
-        return services.clone().toArray();
+isolated function getServicesList(commons:Organization organization) returns Service[] {
+    string[] serviceListingNamespaces = organization.serviceListingNamespaces;
+    if serviceListingNamespaces.indexOf(ALL_NAMESPACES) != () {
+        lock {
+            return services.clone().toArray();
+        }
+    } else {
+        lock {
+            Service[] servicesList = [];
+            foreach Service 'service in services.clone().toArray() {
+                if serviceListingNamespaces.indexOf('service.namespace) !=() {
+                    servicesList.push('service);
+                }
+            }
+            return servicesList.clone();
+        }
     }
 }
 
@@ -115,9 +129,10 @@ isolated function getServicesList() returns Service[] {
 #
 # + name - name of service.
 # + namespace - namespace of service.
+# + organization - organization of requested user.
 # + return - service in namespace.
-isolated function getService(string name, string namespace) returns Service? {
-    foreach Service s in getServicesList() {
+isolated function getService(string name, string namespace, commons:Organization organization) returns Service? {
+    foreach Service s in getServicesList(organization) {
         if (s.name == name && s.namespace == namespace) {
             return s;
         }
@@ -239,6 +254,6 @@ function handleWatchServicesGone(model:Status statusEvent) returns error? {
         lock {
             services = servicesMap.clone();
         }
-        watchAPIService = getServiceClient(resourceVersion);
+        watchServices = getServiceClient(servicesResourceVersion);
     }
 }

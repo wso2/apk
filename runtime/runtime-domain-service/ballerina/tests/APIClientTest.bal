@@ -20,40 +20,122 @@ import ballerina/websocket;
 import ballerina/uuid;
 import ballerina/http;
 import runtime_domain_service.model as model;
+import wso2/apk_common_lib as commons;
+
+commons:Organization organiztion1 = {
+    name: "org1",
+    displayName: "org1",
+    uuid: "01ed7aca-eb6b-1178-a200-f604a4ce114b",
+    organizationClaimValue: "org1",
+    enabled: true,
+    serviceListingNamespaces: ["*"],
+    properties: []
+};
+commons:Organization organiztion2 = {
+    name: "wso2.com",
+    displayName: "wso2.com",
+    uuid: "01ed7aca-eb6b-1178-a200-f604a4ce114c",
+    organizationClaimValue: "wso2.com",
+    enabled: true,
+    serviceListingNamespaces: ["*"],
+    properties: []
+};
 
 @test:Mock {functionName: "startAndAttachServices"}
 function getMockStartandAttachServices() returns error? {
 }
 
 @test:Mock {functionName: "getBackendPolicyUid"}
-function testgetBackendPolicyUid(API api, string? endpointType, string organization) returns string {
+function testgetBackendPolicyUid(API api, string? endpointType, commons:Organization organization) returns string {
     return "backendpolicy-uuid";
 }
 
+int serviceMappingIndex = 0;
+
 @test:Mock {functionName: "getServiceMappingClient"}
-function getMockServiceMappingClient(string resourceVersion) returns websocket:Client|error|() {
+function getMockServiceMappingClient(string resourceVersion) returns websocket:Client|error {
     string initialConectionId = uuid:createType1AsString();
-    websocket:Client mock;
     if resourceVersion == "39433" {
-        mock = test:mock(websocket:Client);
+        websocket:Client mock = test:mock(websocket:Client);
         test:prepare(mock).when("isOpen").thenReturnSequence(true, true, false);
         test:prepare(mock).when("getConnectionId").thenReturn(initialConectionId);
         test:prepare(mock).when("readMessage").thenReturn(getServiceMappingEvent());
+        return mock;
     } else if resourceVersion == "5834" {
         string connectionId = uuid:createType1AsString();
-        mock = test:mock(websocket:Client);
-        test:prepare(mock).when("isOpen").thenReturn(true);
+        websocket:Client mock = test:mock(websocket:Client);
+        test:prepare(mock).when("isOpen").thenReturnSequence(true, true, false);
         test:prepare(mock).when("getConnectionId").thenReturn(connectionId);
         test:prepare(mock).when("readMessage").thenReturnSequence(getNextServiceMappingEvent(), ());
+        return mock;
+    } else if resourceVersion == "23555" {
+        if serviceMappingIndex == 0 {
+            websocket:Error websocketError = error("Error", message = "Error");
+            serviceMappingIndex += 1;
+            return websocketError;
+        } else {
+            initialConectionId = uuid:createType1AsString();
+            websocket:Client mock = test:mock(websocket:Client);
+            test:prepare(mock).when("isOpen").thenReturn(true);
+            test:prepare(mock).when("getConnectionId").thenReturn(initialConectionId);
+            test:prepare(mock).when("readMessage").thenReturn(());
+            return mock;
+        }
     } else {
-        mock = test:mock(websocket:Client);
+        initialConectionId = uuid:createType1AsString();
+        websocket:Client mock = test:mock(websocket:Client);
+        test:prepare(mock).when("isOpen").thenReturn(true);
+        test:prepare(mock).when("getConnectionId").thenReturn(initialConectionId);
+        test:prepare(mock).when("readMessage").thenReturn(());
+        return mock;
     }
 
-    return mock;
 }
 
+int orgWatchIndex = 0;
+
+@test:Mock {functionName: "getOrganizationWatchClient"}
+function getMockOrganiationClient(string resourceVersion) returns websocket:Client|error {
+    string initialConectionId = uuid:createType1AsString();
+    if resourceVersion == "28702" {
+        websocket:Client mock = test:mock(websocket:Client);
+        test:prepare(mock).when("isOpen").thenReturnSequence(true, true, false);
+        test:prepare(mock).when("getConnectionId").thenReturn(initialConectionId);
+        test:prepare(mock).when("readMessage").thenReturn(getOrganizationWatchEvent());
+        return mock;
+    } else if resourceVersion == "28705" {
+        string connectionId = uuid:createType1AsString();
+        websocket:Client mock = test:mock(websocket:Client);
+        test:prepare(mock).when("isOpen").thenReturn(true);
+        test:prepare(mock).when("getConnectionId").thenReturn(connectionId);
+        test:prepare(mock).when("readMessage").thenReturnSequence(getNextOrganizationEvent(), ());
+        return mock;
+    } else if resourceVersion == "28714" {
+        if orgWatchIndex == 0 {
+            websocket:Error websocketError = error("Error", message = "Error");
+            orgWatchIndex += 1;
+            return websocketError;
+        } else {
+            initialConectionId = uuid:createType1AsString();
+            websocket:Client mock = test:mock(websocket:Client);
+            test:prepare(mock).when("isOpen").thenReturn(true);
+            test:prepare(mock).when("getConnectionId").thenReturn(initialConectionId);
+            test:prepare(mock).when("readMessage").thenReturn(());
+            return mock;
+        }
+    } else {
+        websocket:Client mock = test:mock(websocket:Client);
+        test:prepare(mock).when("isOpen").thenReturn(true);
+        test:prepare(mock).when("getConnectionId").thenReturn(initialConectionId);
+        test:prepare(mock).when("readMessage").thenReturn(());
+        return mock;
+    }
+}
+
+int serviceWatchIndex = 0;
+
 @test:Mock {functionName: "getServiceClient"}
-function getMockServiceClient(string resourceVersion) returns websocket:Client|error|() {
+function getMockServiceClient(string resourceVersion) returns websocket:Client|error {
     websocket:Client mock;
     if resourceVersion == "39691" {
         string initialConectionId = uuid:createType1AsString();
@@ -67,13 +149,31 @@ function getMockServiceClient(string resourceVersion) returns websocket:Client|e
         test:prepare(mock).when("isOpen").thenReturn(true);
         test:prepare(mock).when("getConnectionId").thenReturn(initialConectionId);
         test:prepare(mock).when("readMessage").thenReturnSequence(getNextMockServiceEvent(), ());
+    } else if resourceVersion == "1517" {
+        if serviceWatchIndex == 0 {
+            websocket:Error websocketError = error("Error", message = "Error");
+            serviceWatchIndex += 1;
+            return websocketError;
+        } else {
+            string initialConectionId = uuid:createType1AsString();
+            mock = test:mock(websocket:Client);
+            test:prepare(mock).when("isOpen").thenReturn(true);
+            test:prepare(mock).when("getConnectionId").thenReturn(initialConectionId);
+            test:prepare(mock).when("readMessage").thenReturn(());
+        }
     } else {
+        string initialConectionId = uuid:createType1AsString();
         mock = test:mock(websocket:Client);
+        test:prepare(mock).when("isOpen").thenReturn(true);
+        test:prepare(mock).when("getConnectionId").thenReturn(initialConectionId);
+        test:prepare(mock).when("readMessage").thenReturn(());
     }
     return mock;
 }
 
-@test:Mock {functionName: "getClient"}
+int apiIndex = 0;
+
+@test:Mock {functionName: "getAPIClient"}
 function getMockClient(string resourceVersion) returns websocket:Client|error {
     websocket:Client mock;
     if resourceVersion == "40316" {
@@ -88,8 +188,24 @@ function getMockClient(string resourceVersion) returns websocket:Client|error {
         test:prepare(mock).when("isOpen").thenReturn(true);
         test:prepare(mock).when("getConnectionId").thenReturn(initialConectionId);
         test:prepare(mock).when("readMessage").thenReturnSequence(getNextMockWatchAPIEvent(), ());
+    } else if resourceVersion == "28712" {
+        if apiIndex == 0 {
+            websocket:Error websocketError = error("Error", message = "Error");
+            apiIndex += 1;
+            return websocketError;
+        } else {
+            string initialConectionId = uuid:createType1AsString();
+            mock = test:mock(websocket:Client);
+            test:prepare(mock).when("isOpen").thenReturn(true);
+            test:prepare(mock).when("getConnectionId").thenReturn(initialConectionId);
+            test:prepare(mock).when("readMessage").thenReturn(());
+        }
     } else {
+        string initialConectionId = uuid:createType1AsString();
         mock = test:mock(websocket:Client);
+        test:prepare(mock).when("isOpen").thenReturn(true);
+        test:prepare(mock).when("getConnectionId").thenReturn(initialConectionId);
+        test:prepare(mock).when("readMessage").thenReturn(());
     }
     return mock;
 }
@@ -109,10 +225,44 @@ function getMockK8sClient() returns http:Client {
     test:prepare(mockK8sClient).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis/01ed7b08-f2b1-1166-82d5-649ae706d29e").thenReturn(mock404Response());
     test:prepare(mockK8sClient).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk/apis/pizzashackAPI1").thenReturn(mock404Response());
     test:prepare(mockK8sClient).when("get").withArguments("/api/v1/namespaces/apk-platform/configmaps/01ed7aca-eb6b-1178-a200-f604a4ce114a-definition").thenReturn(mockConfigMaps());
+    test:prepare(mockK8sClient).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis/01ed7aca-eb6b-1178-a200-f604a4ce114a").thenReturn(getMockInternalAPI());
     http:ClientError clientError = error("Backend Failure");
     test:prepare(mockK8sClient).when("get").withArguments("/api/v1/namespaces/apk-platform/configmaps/01ed7b08-f2b1-1166-82d5-649ae706d29d-definition").thenReturn(mock404ConfigMap());
     test:prepare(mockK8sClient).when("get").withArguments("/api/v1/namespaces/apk-platform/configmaps/01ed7aca-eb6b-1178-a200-f604a4ce114b-definition").thenReturn(clientError);
+    test:prepare(mockK8sClient).when("get").withArguments("/apis/cp.wso2.com/v1alpha1/organizations").thenReturn(getMockOrganizationList());
     return mockK8sClient;
+}
+
+function getMockOrganizationList() returns model:OrganizationList {
+    model:OrganizationList organizationList = {
+        apiVersion: "cp.wso2.com/v1alpha1",
+        kind: "OrganizationList",
+        metadata: {
+            resourceVersion: "28702",
+            selfLink: "/apis/cp.wso2.com/v1alpha1/organizations"
+        },
+        items: [
+            {
+                apiVersion: "cp.wso2.com/v1alpha1",
+                kind: "Organization",
+                metadata: {
+                    name: "org1",
+                    namespace: "apk-platform",
+                    resourceVersion: "28702",
+                    selfLink: "/apis/cp.wso2.com/v1alpha1/namespaces/apk-platform/organizations/org1",
+                    uid: "01ed7aca-eb6b-1178-a200-f604a4ce114b"
+                },
+                spec: {
+                    name: "og1",
+                    displayName: "org1",
+                    uuid: "01ed7aca-eb6b-1178-a200-f604a4ce114b",
+                    organizationClaimValue: "org1",
+                    enabled: true
+                }
+            }
+        ]
+    };
+    return organizationList;
 }
 
 @test:Config {
@@ -120,21 +270,21 @@ function getMockK8sClient() returns http:Client {
 }
 public function testretrievePathPrefix(string context, string 'version, string path, string expected) {
     APIClient apiclient = new ();
-    string retrievePathPrefix = apiclient.retrievePathPrefix(context, 'version, path, "carbon.super");
+    string retrievePathPrefix = apiclient.retrievePathPrefix(context, 'version, path, organiztion1);
     test:assertEquals(retrievePathPrefix, expected);
 }
 
 function pathProvider() returns map<[string, string, string, string]>|error {
     map<[string, string, string, string]> dataSet = {
-        "1": ["/abc/1.0.0", "1.0.0", "/abc", "/t/carbon.super/abc/1.0.0/abc"],
-        "2": ["/abc", "1.0.0", "/abc", "/t/carbon.super/abc/1.0.0/abc"],
-        "3": ["/abc", "1.0.0", "/*", "/t/carbon.super/abc/1.0.0(.*)"],
-        "4": ["/abc/1.0.0", "1.0.0", "/*", "/t/carbon.super/abc/1.0.0(.*)"],
-        "5": ["/abc/1.0.0", "1.0.0", "/{path}/abcd", "/t/carbon.super/abc/1.0.0/(.*)/abcd"],
-        "6": ["/abc/1.0.0", "1.0.0", "/path1/{bcd}", "/t/carbon.super/abc/1.0.0/path1/(.*)"],
-        "7": ["/abc/1.0.0", "1.0.0", "/path1/{bcd}/path2", "/t/carbon.super/abc/1.0.0/path1/(.*)/path2"],
-        "8": ["/abc/1.0.0", "1.0.0", "/path1/{bcd}/{pathparam2}", "/t/carbon.super/abc/1.0.0/path1/(.*)/(.*)"],
-        "9": ["/abc", "1.0.0", "/path1/*", "/t/carbon.super/abc/1.0.0/path1(.*)"]
+        "1": ["/abc/1.0.0", "1.0.0", "/abc", "/abc/1.0.0/abc"],
+        "2": ["/abc", "1.0.0", "/abc", "/abc/1.0.0/abc"],
+        "3": ["/abc", "1.0.0", "/*", "/abc/1.0.0(.*)"],
+        "4": ["/abc/1.0.0", "1.0.0", "/*", "/abc/1.0.0(.*)"],
+        "5": ["/abc/1.0.0", "1.0.0", "/{path}/abcd", "/abc/1.0.0/(.*)/abcd"],
+        "6": ["/abc/1.0.0", "1.0.0", "/path1/{bcd}", "/abc/1.0.0/path1/(.*)"],
+        "7": ["/abc/1.0.0", "1.0.0", "/path1/{bcd}/path2", "/abc/1.0.0/path1/(.*)/path2"],
+        "8": ["/abc/1.0.0", "1.0.0", "/path1/{bcd}/{pathparam2}", "/abc/1.0.0/path1/(.*)/(.*)"],
+        "9": ["/abc", "1.0.0", "/path1/*", "/abc/1.0.0/path1(.*)"]
     };
     return dataSet;
 }
@@ -142,7 +292,7 @@ function pathProvider() returns map<[string, string, string, string]>|error {
 @test:Config {dataProvider: contextVersionDataProvider}
 public function testValidateContextAndVersion(string context, string 'version, boolean expected) {
     APIClient apiclient = new ();
-    test:assertEquals(apiclient.validateContextAndVersion(context, 'version, "carbon.super"), expected);
+    test:assertEquals(apiclient.validateContextAndVersion(context, 'version, organiztion1), expected);
 }
 
 function contextVersionDataProvider() returns map<[string, string, boolean]>|error {
@@ -158,16 +308,16 @@ function contextVersionDataProvider() returns map<[string, string, boolean]>|err
 }
 
 @test:Config {dataProvider: nameDataProvider}
-public function testValidateName(string name, string organization, boolean expected) {
+public function testValidateName(string name, commons:Organization organization, boolean expected) {
     APIClient apiclient = new ();
     test:assertEquals(apiclient.validateName(name, organization), expected);
 }
 
-function nameDataProvider() returns map<[string, string, boolean]>|error {
-    map<[string, string, boolean]> dataSet = {
-        "1": ["pizzashackAPI1", "carbon.super", true],
-        "2": ["pizzashackAPInew", "carbon.super", false],
-        "3": ["pizzashackAPI1", "wso2.com", false]
+function nameDataProvider() returns map<[string, commons:Organization, boolean]>|error {
+    map<[string, commons:Organization, boolean]> dataSet = {
+        "1": ["pizzashackAPI1", organiztion1, true],
+        "2": ["pizzashackAPInew", organiztion1, false],
+        "3": ["pizzashackAPI1", organiztion2, false]
 
     };
     return dataSet;
@@ -199,7 +349,7 @@ function hostnameDataProvider() returns map<[string, string, string, int, string
 
 @test:Config {dataProvider: apiNameDataProvider}
 public function testGetAPIByNameAndNamespace(string name, string namespace, model:API & readonly|() expected) {
-    test:assertEquals(getAPIByNameAndNamespace(name, namespace, "carbon.super"), expected);
+    test:assertEquals(getAPIByNameAndNamespace(name, namespace, organiztion1), expected);
 }
 
 function apiNameDataProvider() returns map<[string, string, model:API & readonly|()]>|error {
@@ -212,14 +362,14 @@ function apiNameDataProvider() returns map<[string, string, model:API & readonly
 }
 
 @test:Config {dataProvider: apiIDDataprovider}
-public function testGetAPIById(string id, string organization, model:API & readonly|error expected) returns error? {
+public function testGetAPIById(string id, commons:Organization organization, model:API & readonly|error expected) returns error? {
     test:assertEquals(getAPI(id, organization), check expected);
 }
 
-function apiIDDataprovider() returns map<[string, string, model:API & readonly|error]>|error {
+function apiIDDataprovider() returns map<[string, commons:Organization, model:API & readonly|error]>|error {
 
-    map<[string, string, model:API & readonly|error]> dataSet = {
-        "1": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e8", "carbon.super", getMockPizzaShakK8sAPI()]
+    map<[string, commons:Organization, model:API & readonly|error]> dataSet = {
+        "1": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e8", organiztion1, getMockPizzaShakK8sAPI()]
     };
     return dataSet;
 }
@@ -246,7 +396,17 @@ function prefixMatchDataProvider() returns map<[API, model:Endpoint, APIOperatio
 @test:Config {dataProvider: apiDefinitionDataProvider}
 public function testGetAPIDefinitionByID(string apiid, anydata expectedResponse) returns error? {
     APIClient apiclient = new ();
-    test:assertEquals(apiclient.getAPIDefinitionByID(apiid, "carbon.super"), expectedResponse);
+    http:Response|NotFoundError|PreconditionFailedError|InternalServerErrorError aPIDefinitionByID = apiclient.getAPIDefinitionByID(apiid, organiztion1);
+    if aPIDefinitionByID is http:Response {
+        json jsonPayload = check aPIDefinitionByID.getJsonPayload();
+        test:assertEquals(jsonPayload, expectedResponse);
+    } else if aPIDefinitionByID is NotFoundError {
+        test:assertEquals(aPIDefinitionByID, expectedResponse);
+    } else if aPIDefinitionByID is PreconditionFailedError {
+        test:assertEquals(aPIDefinitionByID, expectedResponse);
+    } else {
+        test:assertEquals(aPIDefinitionByID, expectedResponse);
+    }
 }
 
 public function apiDefinitionDataProvider() returns map<[string, json|NotFoundError|PreconditionFailedError|InternalServerErrorError]> {
@@ -258,7 +418,7 @@ public function apiDefinitionDataProvider() returns map<[string, json|NotFoundEr
         "2": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e9", notfound],
         "3": ["c5ab2423-b9e8-432b-92e8-35e6907ed5f9", mockpizzashackAPI11Definition()],
         "4": ["c5ab2423-b9e8-432b-92e8-35e6907ed5f1", mockPizzashackAPI12Definition()],
-        "5": ["7b7db1f0-0a9a-4f72-9f9d-5a1696d590c1", mockPizzaShackAPI1Definition()],
+        "5": ["7b7db1f0-0a9a-4f72-9f9d-5a1696d590c1", mockPizzaShackAPI1Definition(organiztion1.uuid)],
         "6": ["c5ab2423-b9e8-432b-92e8-35e6907ed5f3", internalError]
 
     };
@@ -266,17 +426,31 @@ public function apiDefinitionDataProvider() returns map<[string, json|NotFoundEr
 }
 
 @test:Config {dataProvider: apiByIdDataProvider}
-public function testgetApiById(string apiid, string organization, anydata expectedData) {
+public function testgetApiById(string apiid, commons:Organization organization, anydata expectedData) {
     APIClient apiclient = new ();
     test:assertEquals(apiclient.getAPIById(apiid, organization), expectedData);
 }
 
-public function apiByIdDataProvider() returns map<[string, string, API|NotFoundError]> {
-    API & readonly api1 = {name: "pizzashackAPI", context: "/t/carbon.super/pizzashack/1.0.0", 'version: "1.0.0", id: "c5ab2423-b9e8-432b-92e8-35e6907ed5e8", createdTime: "2022-12-13T09:45:47Z"};
+public function apiByIdDataProvider() returns map<[string, commons:Organization, API|NotFoundError]> {
+    API & readonly api1 = {
+        id: "c5ab2423-b9e8-432b-92e8-35e6907ed5e8",
+        name: "pizzashackAPI",
+        context: "/pizzashack/1.0.0",
+        'version: "1.0.0",
+        'type: "REST",
+        endpointConfig: {"endpoint_type": "http", "sandbox_endpoints": {"url": "https://pizzashack-service:8080/am/sample/pizzashack/v3/api/"}, "production_endpoints": {"url": "https://pizzashack-service:8080/am/sample/pizzashack/v3/api/"}},
+        operations: [
+            {"target": "/*", "verb": "GET", "authTypeEnabled": true, "scopes": []},
+            {"target": "/*", "verb": "PUT", "authTypeEnabled": true, "scopes": []},
+            {"target": "/*", "verb": "POST", "authTypeEnabled": true, "scopes": []},
+            {"target": "/*", "verb": "DELETE", "authTypeEnabled": true, "scopes": []}
+        ],
+        createdTime: "2022-12-13T09:45:47Z"
+    };
     NotFoundError notfound = {body: {code: 909100, message: "c5ab2423-b9e8-432b-92e8-35e6907ed5e9 not found."}};
-    map<[string, string, API & readonly|NotFoundError]> dataset = {
-        "1": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e8", "carbon.super", api1],
-        "2": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e9", "carbon.super", notfound]
+    map<[string, commons:Organization, API & readonly|NotFoundError]> dataset = {
+        "1": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e8", organiztion1, api1],
+        "2": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e9", organiztion1, notfound]
     };
     return dataset;
 }
@@ -284,7 +458,7 @@ public function apiByIdDataProvider() returns map<[string, string, API|NotFoundE
 @test:Config {dataProvider: getApilistDataProvider}
 public function testGetAPIList(string? query, int 'limit, int offset, string sortBy, string sortOrder, anydata expected) {
     APIClient apiclient = new ();
-    test:assertEquals(apiclient.getAPIList(query, 'limit, offset, sortBy, sortOrder, "carbon.super"), expected);
+    test:assertEquals(apiclient.getAPIList(query, 'limit, offset, sortBy, sortOrder, organiztion1), expected);
 }
 
 function getApilistDataProvider() returns map<[string?, int, int, string, string, APIList|InternalServerErrorError|BadRequestError]> {
@@ -304,7 +478,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "8a1eb4f9-efab-4682-a051-4df4050812d2",
                         "name": "DemoAPI",
-                        "context": "/t/carbon.super/demoapi/1.0.0",
+                        "context": "/demoapi/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-14T18:51:26Z"
@@ -312,7 +486,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5e8",
                         "name": "pizzashackAPI",
-                        "context": "/t/carbon.super/pizzashack/1.0.0",
+                        "context": "/pizzashack/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -320,7 +494,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "7b7db1f0-0a9a-4f72-9f9d-5a1696d590c1",
                         "name": "pizzashackAPI1",
-                        "context": "/t/carbon.super/pizzashack1/1.0.0",
+                        "context": "/pizzashack1/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T17:09:49Z"
@@ -328,7 +502,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f9",
                         "name": "pizzashackAPI11",
-                        "context": "/t/carbon.super/pizzashack11/1.0.0",
+                        "context": "/pizzashack11/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -336,7 +510,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f1",
                         "name": "pizzashackAPI12",
-                        "context": "/t/carbon.super/pizzashack12/1.0.0",
+                        "context": "/pizzashack12/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -344,7 +518,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f3",
                         "name": "pizzashackAPI13",
-                        "context": "/t/carbon.super/pizzashack13/1.0.0",
+                        "context": "/pizzashack13/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -369,7 +543,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f3",
                         "name": "pizzashackAPI13",
-                        "context": "/t/carbon.super/pizzashack13/1.0.0",
+                        "context": "/pizzashack13/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -377,7 +551,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f1",
                         "name": "pizzashackAPI12",
-                        "context": "/t/carbon.super/pizzashack12/1.0.0",
+                        "context": "/pizzashack12/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -385,7 +559,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f9",
                         "name": "pizzashackAPI11",
-                        "context": "/t/carbon.super/pizzashack11/1.0.0",
+                        "context": "/pizzashack11/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -393,7 +567,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "7b7db1f0-0a9a-4f72-9f9d-5a1696d590c1",
                         "name": "pizzashackAPI1",
-                        "context": "/t/carbon.super/pizzashack1/1.0.0",
+                        "context": "/pizzashack1/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T17:09:49Z"
@@ -401,7 +575,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5e8",
                         "name": "pizzashackAPI",
-                        "context": "/t/carbon.super/pizzashack/1.0.0",
+                        "context": "/pizzashack/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -409,7 +583,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "8a1eb4f9-efab-4682-a051-4df4050812d2",
                         "name": "DemoAPI",
-                        "context": "/t/carbon.super/demoapi/1.0.0",
+                        "context": "/demoapi/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-14T18:51:26Z"
@@ -434,7 +608,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5e8",
                         "name": "pizzashackAPI",
-                        "context": "/t/carbon.super/pizzashack/1.0.0",
+                        "context": "/pizzashack/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -442,7 +616,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f9",
                         "name": "pizzashackAPI11",
-                        "context": "/t/carbon.super/pizzashack11/1.0.0",
+                        "context": "/pizzashack11/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -450,7 +624,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f1",
                         "name": "pizzashackAPI12",
-                        "context": "/t/carbon.super/pizzashack12/1.0.0",
+                        "context": "/pizzashack12/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -458,7 +632,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f3",
                         "name": "pizzashackAPI13",
-                        "context": "/t/carbon.super/pizzashack13/1.0.0",
+                        "context": "/pizzashack13/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -466,7 +640,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "7b7db1f0-0a9a-4f72-9f9d-5a1696d590c1",
                         "name": "pizzashackAPI1",
-                        "context": "/t/carbon.super/pizzashack1/1.0.0",
+                        "context": "/pizzashack1/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T17:09:49Z"
@@ -474,7 +648,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "8a1eb4f9-efab-4682-a051-4df4050812d2",
                         "name": "DemoAPI",
-                        "context": "/t/carbon.super/demoapi/1.0.0",
+                        "context": "/demoapi/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-14T18:51:26Z"
@@ -499,7 +673,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "8a1eb4f9-efab-4682-a051-4df4050812d2",
                         "name": "DemoAPI",
-                        "context": "/t/carbon.super/demoapi/1.0.0",
+                        "context": "/demoapi/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-14T18:51:26Z"
@@ -507,7 +681,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "7b7db1f0-0a9a-4f72-9f9d-5a1696d590c1",
                         "name": "pizzashackAPI1",
-                        "context": "/t/carbon.super/pizzashack1/1.0.0",
+                        "context": "/pizzashack1/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T17:09:49Z"
@@ -515,7 +689,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5e8",
                         "name": "pizzashackAPI",
-                        "context": "/t/carbon.super/pizzashack/1.0.0",
+                        "context": "/pizzashack/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -523,7 +697,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f9",
                         "name": "pizzashackAPI11",
-                        "context": "/t/carbon.super/pizzashack11/1.0.0",
+                        "context": "/pizzashack11/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -531,7 +705,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f1",
                         "name": "pizzashackAPI12",
-                        "context": "/t/carbon.super/pizzashack12/1.0.0",
+                        "context": "/pizzashack12/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -539,7 +713,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f3",
                         "name": "pizzashackAPI13",
-                        "context": "/t/carbon.super/pizzashack13/1.0.0",
+                        "context": "/pizzashack13/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -565,7 +739,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "8a1eb4f9-efab-4682-a051-4df4050812d2",
                         "name": "DemoAPI",
-                        "context": "/t/carbon.super/demoapi/1.0.0",
+                        "context": "/demoapi/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-14T18:51:26Z"
@@ -573,7 +747,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5e8",
                         "name": "pizzashackAPI",
-                        "context": "/t/carbon.super/pizzashack/1.0.0",
+                        "context": "/pizzashack/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -581,7 +755,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "7b7db1f0-0a9a-4f72-9f9d-5a1696d590c1",
                         "name": "pizzashackAPI1",
-                        "context": "/t/carbon.super/pizzashack1/1.0.0",
+                        "context": "/pizzashack1/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T17:09:49Z"
@@ -606,7 +780,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f9",
                         "name": "pizzashackAPI11",
-                        "context": "/t/carbon.super/pizzashack11/1.0.0",
+                        "context": "/pizzashack11/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -614,7 +788,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f1",
                         "name": "pizzashackAPI12",
-                        "context": "/t/carbon.super/pizzashack12/1.0.0",
+                        "context": "/pizzashack12/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -622,7 +796,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f3",
                         "name": "pizzashackAPI13",
-                        "context": "/t/carbon.super/pizzashack13/1.0.0",
+                        "context": "/pizzashack13/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -663,7 +837,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5e8",
                         "name": "pizzashackAPI",
-                        "context": "/t/carbon.super/pizzashack/1.0.0",
+                        "context": "/pizzashack/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -671,7 +845,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "7b7db1f0-0a9a-4f72-9f9d-5a1696d590c1",
                         "name": "pizzashackAPI1",
-                        "context": "/t/carbon.super/pizzashack1/1.0.0",
+                        "context": "/pizzashack1/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T17:09:49Z"
@@ -679,7 +853,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f9",
                         "name": "pizzashackAPI11",
-                        "context": "/t/carbon.super/pizzashack11/1.0.0",
+                        "context": "/pizzashack11/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -687,7 +861,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f1",
                         "name": "pizzashackAPI12",
-                        "context": "/t/carbon.super/pizzashack12/1.0.0",
+                        "context": "/pizzashack12/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -695,7 +869,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f3",
                         "name": "pizzashackAPI13",
-                        "context": "/t/carbon.super/pizzashack13/1.0.0",
+                        "context": "/pizzashack13/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -720,7 +894,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5e8",
                         "name": "pizzashackAPI",
-                        "context": "/t/carbon.super/pizzashack/1.0.0",
+                        "context": "/pizzashack/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -728,7 +902,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "7b7db1f0-0a9a-4f72-9f9d-5a1696d590c1",
                         "name": "pizzashackAPI1",
-                        "context": "/t/carbon.super/pizzashack1/1.0.0",
+                        "context": "/pizzashack1/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T17:09:49Z"
@@ -736,7 +910,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f9",
                         "name": "pizzashackAPI11",
-                        "context": "/t/carbon.super/pizzashack11/1.0.0",
+                        "context": "/pizzashack11/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -744,7 +918,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f1",
                         "name": "pizzashackAPI12",
-                        "context": "/t/carbon.super/pizzashack12/1.0.0",
+                        "context": "/pizzashack12/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -752,7 +926,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f3",
                         "name": "pizzashackAPI13",
-                        "context": "/t/carbon.super/pizzashack13/1.0.0",
+                        "context": "/pizzashack13/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -777,7 +951,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "8a1eb4f9-efab-4682-a051-4df4050812d2",
                         "name": "DemoAPI",
-                        "context": "/t/carbon.super/demoapi/1.0.0",
+                        "context": "/demoapi/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-14T18:51:26Z"
@@ -785,7 +959,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5e8",
                         "name": "pizzashackAPI",
-                        "context": "/t/carbon.super/pizzashack/1.0.0",
+                        "context": "/pizzashack/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -793,7 +967,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "7b7db1f0-0a9a-4f72-9f9d-5a1696d590c1",
                         "name": "pizzashackAPI1",
-                        "context": "/t/carbon.super/pizzashack1/1.0.0",
+                        "context": "/pizzashack1/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T17:09:49Z"
@@ -801,7 +975,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f9",
                         "name": "pizzashackAPI11",
-                        "context": "/t/carbon.super/pizzashack11/1.0.0",
+                        "context": "/pizzashack11/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -809,7 +983,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f1",
                         "name": "pizzashackAPI12",
-                        "context": "/t/carbon.super/pizzashack12/1.0.0",
+                        "context": "/pizzashack12/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -817,7 +991,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     {
                         "id": "c5ab2423-b9e8-432b-92e8-35e6907ed5f3",
                         "name": "pizzashackAPI13",
-                        "context": "/t/carbon.super/pizzashack13/1.0.0",
+                        "context": "/pizzashack13/1.0.0",
                         "version": "1.0.0",
                         "type": "REST",
                         "createdTime": "2022-12-13T09:45:47Z"
@@ -864,8 +1038,8 @@ public function testRetrieveGeneratedSwaggerDefinition(API api, string? definiti
     test:assertEquals(apiclient.retrieveGeneratedSwaggerDefinition(api, definition), expectedOutput);
 }
 
-function testDataGeneratedSwaggerDefinition() returns map<[API, string?, json|APKError]> {
-    map<[API, string?, json|APKError]> data = {
+function testDataGeneratedSwaggerDefinition() returns map<[API, string?, json|commons:APKError]> {
+    map<[API, string?, json|commons:APKError]> data = {
         "1": [
             {
                 "name": "demoAPI",
@@ -1703,7 +1877,7 @@ function testDataGeneratedSwaggerDefinition() returns map<[API, string?, json|AP
 @test:Config {dataProvider: validateExistenceDataProvider}
 function testValidateAPIExistence(string query, anydata expected) {
     APIClient apiClient = new;
-    test:assertEquals(apiClient.validateAPIExistence(query), expected);
+    test:assertEquals(apiClient.validateAPIExistence(query, organiztion1), expected);
 }
 
 function validateExistenceDataProvider() returns map<[string, NotFoundError|BadRequestError|http:Ok]> {
@@ -1722,16 +1896,35 @@ function validateExistenceDataProvider() returns map<[string, NotFoundError|BadR
 }
 
 @test:Config {dataProvider: createApiFromServiceDataProvider}
-function testCreateAPIFromService(string serviceUUId, string apiUUID, [model:ConfigMap, any] configmapResponse, [model:Httproute, any] httproute, [model:K8sServiceMapping, any] servicemapping, [model:API, any] k8sAPI, API api, string k8sapiUUID, anydata expected) {
+function testCreateAPIFromService(string serviceUUId, string apiUUID, [model:ConfigMap, any] configmapResponse, [model:Httproute, any] httproute, [model:K8sServiceMapping, any] servicemapping, [model:API, any] k8sAPI, [model:RuntimeAPI, any] runtimeAPI, API api, string k8sapiUUID, anydata expected) returns error? {
+    APIClient apiClient = new;
+    http:Response configmapResponse404 = new;
+    configmapResponse404.statusCode = 404;
+    http:ApplicationResponseError internalApiResponse = error("", statusCode = 404, body = "Not Found", headers = {});
+    model:HttprouteList httpRouteList = {metadata: {}, items: []};
+    model:ServiceMappingList serviceMappingList = {metadata: {}, items: []};
+    model:AuthenticationList authenticationList = {metadata: {}, items: []};
+    model:BackendPolicyList backendPolicyList = {metadata: {}, items: []};
+    model:ServiceList serviceList = {metadata: {}, items: []};
     test:prepare(k8sApiServerEp).when("post").withArguments("/api/v1/namespaces/apk-platform/configmaps", configmapResponse[0]).thenReturn(configmapResponse[1]);
     test:prepare(k8sApiServerEp).when("post").withArguments("/apis/gateway.networking.k8s.io/v1beta1/namespaces/apk-platform/httproutes", httproute[0]).thenReturn(httproute[1]);
     test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/servicemappings", servicemapping[0]).thenReturn(servicemapping[1]);
     test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis", k8sAPI[0]).thenReturn(k8sAPI[1]);
-    APIClient apiClient = new;
-    test:assertEquals(apiClient.createAPIFromService(serviceUUId, api, "carbon.super"), expected);
+    test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis", runtimeAPI[0]).thenReturn(runtimeAPI[1]);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/api/v1/namespaces/apk-platform/configmaps/" + apiClient.retrieveDefinitionName(apiUUID)).thenReturn(configmapResponse404);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/gateway.networking.k8s.io/v1beta1/namespaces/apk-platform/httproutes/?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(httpRouteList);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/servicemappings?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(serviceMappingList);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/authentications?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(authenticationList);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/backendpolicies?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(backendPolicyList);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/api/v1/namespaces/apk-platform/services?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(serviceList);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis/" + k8sAPI[0].metadata.name).thenReturn(internalApiResponse);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis/" + k8sAPI[0].metadata.name).thenReturn(runtimeAPI[0]);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis/" + k8sAPI[0].metadata.name).thenReturn(configmapResponse404);
+    test:assertEquals(apiClient.createAPIFromService(serviceUUId, api, organiztion1), expected);
+
 }
 
-function createApiFromServiceDataProvider() returns map<[string, string, [model:ConfigMap, any], [model:Httproute, any], [model:K8sServiceMapping, any], [model:API, any], API, string, CreatedAPI|BadRequestError|InternalServerErrorError|APKError]> {
+function createApiFromServiceDataProvider() returns map<[string, string, [model:ConfigMap, any], [model:Httproute, any], [model:K8sServiceMapping, any], [model:API, any], [model:RuntimeAPI, any], API, string, CreatedAPI|BadRequestError|InternalServerErrorError|commons:APKError]> {
     string k8sAPIUUID1 = uuid:createType1AsString();
     API api = {
         name: "PizzaAPI",
@@ -1743,14 +1936,22 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
         context: "/pizzaAPI/1.0.0",
         'version: "1.0.0"
     };
-    string apiUUID = getUniqueIdForAPI(api.name, api.'version, "carbon.super");
+    string apiUUID = getUniqueIdForAPI(api.name, api.'version, organiztion1);
     model:ConfigMap configmap = getMockConfigMap1(apiUUID, api);
     http:Response mockConfigMapResponse = getMockConfigMapResponse(configmap.clone());
-    model:Httproute httpRoute = getMockHttpRoute(api, apiUUID);
+    model:Httproute httpRoute = getMockHttpRoute(api, apiUUID, organiztion1);
     http:Response httpRouteResponse = getMockHttpRouteResponse(httpRoute.clone());
     model:K8sServiceMapping mockServiceMappingRequest = getMockServiceMappingRequest(api, apiUUID);
-    model:API mockAPI = getMockAPI(api, apiUUID, "carbon.super");
+    model:API mockAPI = getMockAPI(api, apiUUID, organiztion1.uuid);
     http:Response mockAPIResponse = getMockAPIResponse(mockAPI.clone(), k8sAPIUUID1);
+    Service serviceRecord = {
+        name: "backend",
+        namespace: "apk",
+        id: "275b00d1-722c-4df2-b65a-9b14677abe4b",
+        'type: "ClusterIP"
+    };
+    model:RuntimeAPI mockRuntimeAPI = getMockRuntimeAPI(api, apiUUID, organiztion1, serviceRecord);
+    http:Response mockRuntimeResponse = getMockRuntimeAPIResponse(mockRuntimeAPI.clone());
     http:Response serviceMappingResponse = getMockServiceMappingResponse(mockServiceMappingRequest.clone());
     BadRequestError nameAlreadyExistError = {body: {code: 90911, message: "API Name - " + alreadyNameExist.name + " already exist.", description: "API Name - " + alreadyNameExist.name + " already exist."}};
     API contextAlreadyExist = {
@@ -1763,18 +1964,27 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
 
     CreatedAPI createdAPI = {
         body: {
-            "id": k8sAPIUUID1,
-            "name": "PizzaAPI",
-            "context": "/t/carbon.super/pizzaAPI/1.0.0",
-            "version": "1.0.0",
-            "type": "REST"
+            id: k8sAPIUUID1,
+            name: "PizzaAPI",
+            context: "/pizzaAPI/1.0.0",
+            'version: "1.0.0",
+            'type: "REST",
+            operations: [
+                {target: "/*", verb: "GET", authTypeEnabled: true, scopes: [], operationPolicies: {request: [], response: []}},
+                {target: "/*", verb: "PUT", authTypeEnabled: true, scopes: [], operationPolicies: {request: [], response: []}},
+                {target: "/*", verb: "POST", authTypeEnabled: true, scopes: [], operationPolicies: {request: [], response: []}},
+                {target: "/*", verb: "DELETE", authTypeEnabled: true, scopes: [], operationPolicies: {request: [], response: []}},
+                {target: "/*", verb: "PATCH", authTypeEnabled: true, scopes: [], operationPolicies: {request: [], response: []}}
+            ],
+            serviceInfo: {name: "backend", namespace: "apk"},
+            createdTime: "2023-01-17T11:23:49Z"
         }
     };
-    map<[string, string, [model:ConfigMap, any], [model:Httproute, any], [model:K8sServiceMapping, any], [model:API, any], API, string, CreatedAPI|BadRequestError|InternalServerErrorError|APKError]> data = {
-        "1": ["275b00d1-722c-4df2-b65a-9b14677abe4b", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], api, k8sAPIUUID1, createdAPI],
-        "2": ["275b00d1-722c-4df2-b65a-9b14677abe4b", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], alreadyNameExist, k8sAPIUUID1, nameAlreadyExistError],
-        "3": ["275b00d1-722c-4df2-b65a-9b14677abe4b", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], contextAlreadyExist, k8sAPIUUID1, contextAlreadyExistError],
-        "4": ["275b00d1-722c-4df2-b65a-9b14677abe4a", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], api, k8sAPIUUID1, serviceNotExist]
+    map<[string, string, [model:ConfigMap, any], [model:Httproute, any], [model:K8sServiceMapping, any], [model:API, any], [model:RuntimeAPI, any], API, string, CreatedAPI|BadRequestError|InternalServerErrorError|commons:APKError]> data = {
+        "1": ["275b00d1-722c-4df2-b65a-9b14677abe4b", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], api, k8sAPIUUID1, createdAPI],
+        "2": ["275b00d1-722c-4df2-b65a-9b14677abe4b", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], alreadyNameExist, k8sAPIUUID1, nameAlreadyExistError],
+        "3": ["275b00d1-722c-4df2-b65a-9b14677abe4b", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], contextAlreadyExist, k8sAPIUUID1, contextAlreadyExistError],
+        "4": ["275b00d1-722c-4df2-b65a-9b14677abe4a", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], api, k8sAPIUUID1, serviceNotExist]
     };
     return data;
 }
@@ -1806,14 +2016,63 @@ function getMockAPI(API api, string apiUUID, string organization) returns model:
             "apiDisplayName": api.name,
             "apiType": "REST",
             "apiVersion": api.'version,
-            "context": apiClient.returnFullContext(api.context, api.'version, organization),
+            "context": apiClient.returnFullContext(api.context, api.'version),
             "organization": organization,
             "definitionFileRef": apiUUID + "-definition",
             "prodHTTPRouteRef": apiUUID + "-production"
         },
-        "status": null
+        "status"
+                : null
     };
     return k8sapi;
+}
+
+function getMockRuntimeAPI(API api, string apiUUID, commons:Organization organization, Service? serviceEntry) returns model:RuntimeAPI {
+    APIClient apiClient = new;
+    model:RuntimeAPI runtimeAPI = apiClient.generateRuntimeAPIArtifact(api, serviceEntry, organization);
+    if api.operations is () {
+        runtimeAPI.spec.operations = [
+            {
+                target: "/*",
+                verb: "GET",
+                authTypeEnabled: true,
+                operationPolicies: {request: [], response: []}
+            },
+            {
+                target: "/*",
+                verb: "PUT",
+                authTypeEnabled: true,
+                operationPolicies: {request: [], response: []}
+            },
+            {
+                target: "/*",
+                verb: "POST",
+                authTypeEnabled: true,
+                operationPolicies: {request: [], response: []}
+            },
+            {
+                target: "/*",
+                verb: "DELETE",
+                authTypeEnabled: true,
+                operationPolicies: {request: [], response: []}
+            },
+            {
+                target: "/*",
+                verb: "PATCH",
+                authTypeEnabled: true,
+                operationPolicies: {request: [], response: []}
+            }
+        ];
+    }
+    return runtimeAPI;
+}
+
+function getMockRuntimeAPIResponse(model:RuntimeAPI runtimeApi) returns http:Response {
+    http:Response response = new ();
+    response.statusCode = 201;
+    runtimeApi.metadata.uid = "275b00d1-722c-4df2-b65a-9b14677abe4b";
+    response.setJsonPayload(runtimeApi.toJson());
+    return response;
 }
 
 function getMockAPI1(API api, string apiUUID, string organization) returns model:API {
@@ -1826,7 +2085,7 @@ function getMockAPI1(API api, string apiUUID, string organization) returns model
             "apiDisplayName": api.name,
             "apiType": "REST",
             "apiVersion": api.'version,
-            "context": apiClient.returnFullContext(api.context, api.'version, organization),
+            "context": apiClient.returnFullContext(api.context, api.'version),
             "organization": organization,
             "definitionFileRef": apiUUID + "-definition",
             "sandHTTPRouteRef": apiUUID + "-sandbox"
@@ -1849,36 +2108,36 @@ function getMockServiceMappingResponse(model:K8sServiceMapping serviceMapping) r
     return response;
 }
 
-function getMockHttpRoute(API api, string apiUUID) returns model:Httproute {
+function getMockHttpRoute(API api, string apiUUID, commons:Organization organiztion) returns model:Httproute {
     return {
         "apiVersion": "gateway.networking.k8s.io/v1beta1",
         "kind": "HTTPRoute",
         "metadata": {"name": apiUUID + "-production", "namespace": "apk-platform", "labels": {"api-name": api.name, "api-version": api.'version}},
         "spec": {
-            "hostnames": ["gw.wso2.com"],
+            "hostnames": [string:concat(organiztion.uuid, ".", "gw.wso2.com")],
             "rules": [
                 {
-                    "matches": [{"path": {"type": "RegularExpression", "value": "/t/carbon.super/pizzaAPI/1.0.0(.*)"}, "method": "GET"}],
+                    "matches": [{"path": {"type": "RegularExpression", "value": "/pizzaAPI/1.0.0(.*)"}, "method": "GET"}],
                     "filters": [{"type": "URLRewrite", "urlRewrite": {"path": {"type": "ReplaceFullPath", "replaceFullPath": "\\1"}}}],
                     "backendRefs": [{"weight": 1, "group": "", "kind": "Service", "name": "backend", "namespace": "apk", "port": 80}]
                 },
                 {
-                    "matches": [{"path": {"type": "RegularExpression", "value": "/t/carbon.super/pizzaAPI/1.0.0(.*)"}, "method": "PUT"}],
+                    "matches": [{"path": {"type": "RegularExpression", "value": "/pizzaAPI/1.0.0(.*)"}, "method": "PUT"}],
                     "filters": [{"type": "URLRewrite", "urlRewrite": {"path": {"type": "ReplaceFullPath", "replaceFullPath": "\\1"}}}],
                     "backendRefs": [{"weight": 1, "group": "", "kind": "Service", "name": "backend", "namespace": "apk", "port": 80}]
                 },
                 {
-                    "matches": [{"path": {"type": "RegularExpression", "value": "/t/carbon.super/pizzaAPI/1.0.0(.*)"}, "method": "POST"}],
+                    "matches": [{"path": {"type": "RegularExpression", "value": "/pizzaAPI/1.0.0(.*)"}, "method": "POST"}],
                     "filters": [{"type": "URLRewrite", "urlRewrite": {"path": {"type": "ReplaceFullPath", "replaceFullPath": "\\1"}}}],
                     "backendRefs": [{"weight": 1, "group": "", "kind": "Service", "name": "backend", "namespace": "apk", "port": 80}]
                 },
                 {
-                    "matches": [{"path": {"type": "RegularExpression", "value": "/t/carbon.super/pizzaAPI/1.0.0(.*)"}, "method": "DELETE"}],
+                    "matches": [{"path": {"type": "RegularExpression", "value": "/pizzaAPI/1.0.0(.*)"}, "method": "DELETE"}],
                     "filters": [{"type": "URLRewrite", "urlRewrite": {"path": {"type": "ReplaceFullPath", "replaceFullPath": "\\1"}}}],
                     "backendRefs": [{"weight": 1, "group": "", "kind": "Service", "name": "backend", "namespace": "apk", "port": 80}]
                 },
                 {
-                    "matches": [{"path": {"type": "RegularExpression", "value": "/t/carbon.super/pizzaAPI/1.0.0(.*)"}, "method": "PATCH"}],
+                    "matches": [{"path": {"type": "RegularExpression", "value": "/pizzaAPI/1.0.0(.*)"}, "method": "PATCH"}],
                     "filters": [{"type": "URLRewrite", "urlRewrite": {"path": {"type": "ReplaceFullPath", "replaceFullPath": "\\1"}}}],
                     "backendRefs": [{"weight": 1, "group": "", "kind": "Service", "name": "backend", "namespace": "apk", "port": 80}]
                 }
@@ -1928,28 +2187,53 @@ function testCreateAPI(string apiUUID, string backenduuid, API api, model:Config
         any configmapDeployingResponse, model:Httproute? prodhttpRoute,
         any prodhttpResponse, model:Httproute? sandHttpRoute, any sandhttpResponse,
         [model:Service, any][] backendServices, [model:BackendPolicy, any][] backendPolicies,
-        model:API k8sApi, any k8sapiResponse,
-        string k8sapiUUID, anydata expected) {
-    APIClient apiClient = new;
-    test:prepare(k8sApiServerEp).when("post").withArguments("/api/v1/namespaces/apk-platform/configmaps", configmap).thenReturn(configmapDeployingResponse);
-    if prodhttpRoute is model:Httproute {
-        test:prepare(k8sApiServerEp).when("post").withArguments("/apis/gateway.networking.k8s.io/v1beta1/namespaces/apk-platform/httproutes", prodhttpRoute).thenReturn(prodhttpResponse);
-    }
-    if sandHttpRoute is model:Httproute {
-        test:prepare(k8sApiServerEp).when("post").withArguments("/apis/gateway.networking.k8s.io/v1beta1/namespaces/apk-platform/httproutes", sandHttpRoute).thenReturn(sandhttpResponse);
-    }
-    foreach [model:Service, any] servicesResponse in backendServices {
-        test:prepare(k8sApiServerEp).when("post").withArguments("/api/v1/namespaces/apk-platform/services", servicesResponse[0]).thenReturn(servicesResponse[1]);
-    }
-    foreach [model:BackendPolicy, any] backendPolicy in backendPolicies {
-        test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/backendpolicies", backendPolicy[0]).thenReturn(backendPolicy[1]);
-    }
-    test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis", k8sApi).thenReturn(k8sapiResponse);
-    APKError|CreatedAPI|BadRequestError aPI = apiClient.createAPI(api, (), "carbon.super");
-    if aPI is BadRequestError || aPI is CreatedAPI {
-        test:assertEquals(aPI, expected);
-    } else if aPI is APKError {
-        test:assertEquals(aPI.toBalString(), expected);
+        model:API k8sApi, any k8sapiResponse, model:RuntimeAPI runtimeAPI, any runtimeAPIResponse
+, string k8sapiUUID, anydata expected) {
+    do {
+        APIClient apiClient = new;
+        test:prepare(k8sApiServerEp).when("post").withArguments("/api/v1/namespaces/apk-platform/configmaps", configmap).thenReturn(configmapDeployingResponse);
+        if prodhttpRoute is model:Httproute {
+            test:prepare(k8sApiServerEp).when("post").withArguments("/apis/gateway.networking.k8s.io/v1beta1/namespaces/apk-platform/httproutes", prodhttpRoute).thenReturn(prodhttpResponse);
+        }
+        if sandHttpRoute is model:Httproute {
+            test:prepare(k8sApiServerEp).when("post").withArguments("/apis/gateway.networking.k8s.io/v1beta1/namespaces/apk-platform/httproutes", sandHttpRoute).thenReturn(sandhttpResponse);
+        }
+        foreach [model:Service, any] servicesResponse in backendServices {
+            test:prepare(k8sApiServerEp).when("post").withArguments("/api/v1/namespaces/apk-platform/services", servicesResponse[0]).thenReturn(servicesResponse[1]);
+        }
+        foreach [model:BackendPolicy, any] backendPolicy in backendPolicies {
+            test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/backendpolicies", backendPolicy[0]).thenReturn(backendPolicy[1]);
+        }
+        http:Response configmapResponse = new;
+        configmapResponse.statusCode = 404;
+        http:ApplicationResponseError internalApiResponse = error("internal api not found", statusCode = 404, body = {}, headers = {});
+        http:Response internalAPIDeletionResponse = new;
+        internalAPIDeletionResponse.statusCode = 200;
+        model:HttprouteList httpRouteList = {metadata: {}, items: []};
+        model:ServiceMappingList serviceMappingList = {metadata: {}, items: []};
+        model:AuthenticationList authenticationList = {metadata: {}, items: []};
+        model:BackendPolicyList backendPolicyList = {metadata: {}, items: []};
+        model:ServiceList serviceList = {metadata: {}, items: []};
+        test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis", k8sApi).thenReturn(k8sapiResponse);
+        test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis", runtimeAPI).thenReturn(runtimeAPIResponse);
+        test:prepare(k8sApiServerEp).when("get").withArguments("/api/v1/namespaces/apk-platform/configmaps/" + apiClient.retrieveDefinitionName(apiUUID)).thenReturn(configmapResponse);
+        test:prepare(k8sApiServerEp).when("get").withArguments("/apis/gateway.networking.k8s.io/v1beta1/namespaces/apk-platform/httproutes/?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(httpRouteList);
+        test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/servicemappings?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(serviceMappingList);
+        test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/authentications?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(authenticationList);
+        test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/backendpolicies?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(backendPolicyList);
+        test:prepare(k8sApiServerEp).when("get").withArguments("/api/v1/namespaces/apk-platform/services?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(serviceList);
+        test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis/" + k8sApi.metadata.name).thenReturn(internalApiResponse);
+        test:prepare(k8sApiServerEp).when("delete").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis/" + k8sApi.metadata.name).thenReturn(internalAPIDeletionResponse);
+        test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis/" + k8sApi.metadata.name).thenReturn(runtimeAPI);
+        test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis/" + k8sApi.metadata.name).thenReturn(configmapResponse);
+        commons:APKError|CreatedAPI|BadRequestError aPI = apiClient.createAPI(api, (), organiztion1);
+        if aPI is BadRequestError || aPI is CreatedAPI {
+            test:assertEquals(aPI, expected);
+        } else if aPI is commons:APKError {
+            test:assertEquals(aPI.toBalString(), expected);
+        }
+    } on fail var e {
+        test:assertFail(msg = e.message());
     }
 }
 
@@ -1969,8 +2253,8 @@ function getMockHttpRouteErrorResponse() returns http:Response {
     return response;
 }
 
-function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid, string 'type) returns model:Httproute {
-    string hostnames = 'type == PRODUCTION_TYPE ? "gw.wso2.com" : "sandbox.gw.wso2.com";
+function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid, string 'type, commons:Organization organization) returns model:Httproute {
+    string hostnames = 'type == PRODUCTION_TYPE ? string:concat(organization.uuid, ".", "gw.wso2.com") : string:concat(organization.uuid, ".", "sandbox.gw.wso2.com");
     return {
         "apiVersion": "gateway.networking.k8s.io/v1beta1",
         "kind": "HTTPRoute",
@@ -1985,7 +2269,7 @@ function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/t/carbon.super/pizzaAPI/1.0.0(.*)"
+                                "value": "/pizzaAPI/1.0.0(.*)"
                             },
                             "method": "GET"
                         }
@@ -2017,7 +2301,7 @@ function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/t/carbon.super/pizzaAPI/1.0.0(.*)"
+                                "value": "/pizzaAPI/1.0.0(.*)"
                             },
                             "method": "PUT"
                         }
@@ -2049,7 +2333,7 @@ function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/t/carbon.super/pizzaAPI/1.0.0(.*)"
+                                "value": "/pizzaAPI/1.0.0(.*)"
                             },
                             "method": "POST"
                         }
@@ -2081,7 +2365,7 @@ function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/t/carbon.super/pizzaAPI/1.0.0(.*)"
+                                "value": "/pizzaAPI/1.0.0(.*)"
                             },
                             "method": "DELETE"
                         }
@@ -2113,7 +2397,7 @@ function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid
                         {
                             "path": {
                                 "type": "RegularExpression",
-                                "value": "/t/carbon.super/pizzaAPI/1.0.0(.*)"
+                                "value": "/pizzaAPI/1.0.0(.*)"
                             },
                             "method": "PATCH"
                         }
@@ -2152,7 +2436,7 @@ function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid
     };
 }
 
-function createAPIDataProvider() returns map<[string, string, API, model:ConfigMap, any, model:Httproute?, any, model:Httproute?, any, [model:Service, any][], [model:BackendPolicy, any][], model:API, any, string, string|CreatedAPI|BadRequestError]> {
+function createAPIDataProvider() returns map<[string, string, API, model:ConfigMap, any, model:Httproute?, any, model:Httproute?, any, [model:Service, any][], [model:BackendPolicy, any][], model:API, any, model:RuntimeAPI, any, string, string|CreatedAPI|BadRequestError]> {
     API api = {
         name: "PizzaAPI",
         context: "/pizzaAPI/1.0.0",
@@ -2189,9 +2473,9 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
         'version: "1.0.0"
     };
     BadRequestError contextAlreadyExistError = {body: {code: 90911, message: "API Context - " + contextAlreadyExist.context + " already exist.", description: "API Context " + contextAlreadyExist.context + " already exist."}};
-    string apiUUID = getUniqueIdForAPI(api.name, api.'version, "carbon.super");
-    string backenduuid = getBackendServiceUid(api, (), PRODUCTION_TYPE, "carbon.super");
-    string backenduuid1 = getBackendServiceUid(api, (), SANDBOX_TYPE, "carbon.super");
+    string apiUUID = getUniqueIdForAPI(api.name, api.'version, organiztion1);
+    string backenduuid = getBackendServiceUid(api, (), PRODUCTION_TYPE, organiztion1);
+    string backenduuid1 = getBackendServiceUid(api, (), SANDBOX_TYPE, organiztion1);
     string k8sapiUUID = uuid:createType1AsString();
     model:Service backendService = {
         metadata: {name: backenduuid, namespace: "apk-platform", labels: {"api-name": api.name, "api-version": api.'version}},
@@ -2241,18 +2525,20 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
     backendPolicies.push([backendPolicy, backendPolicyResponse]);
     backendPolicies.push([backendPolicy1, backendPolicy1Response]);
     model:ConfigMap configmap = getMockConfigMap1(apiUUID, api);
-    model:Httproute prodhttpRoute = getMockHttpRouteWithBackend(api, apiUUID, backenduuid, PRODUCTION_TYPE);
-    model:Httproute sandhttpRoute = getMockHttpRouteWithBackend(api, apiUUID, backenduuid1, SANDBOX_TYPE);
+    model:Httproute prodhttpRoute = getMockHttpRouteWithBackend(api, apiUUID, backenduuid, PRODUCTION_TYPE, organiztion1);
+    model:Httproute sandhttpRoute = getMockHttpRouteWithBackend(api, apiUUID, backenduuid1, SANDBOX_TYPE, organiztion1);
 
-    CreatedAPI createdAPI = {body: {name: "PizzaAPI", context: "/t/carbon.super/pizzaAPI/1.0.0", 'version: "1.0.0", id: k8sapiUUID}};
-    APKError productionEndpointNotSpecifiedError = error("Production Endpoint Not specified", message = "Endpoint Not specified", description = "Production Endpoint Not specified", code = 90911, statusCode = "400");
-    APKError sandboxEndpointNotSpecifiedError = error("Sandbox Endpoint Not specified", message = "Endpoint Not specified", description = "Sandbox Endpoint Not specified", code = 90911, statusCode = "400");
-    APKError k8sLevelError = error("Internal Error occured while deploying API", code = 909000, message
-        = "Internal Error occured while deploying API", statusCode = "500", description = "Internal Error occured while deploying API", moreInfo = {});
-    APKError invalidAPINameError = error("Invalid API Name", code = 90911, message = "Invalid API Name", statusCode = "400", description = "API Name PizzaAPI Invalid", moreInfo = {});
+    CreatedAPI createdAPI = {body: {name: "PizzaAPI", context: "/pizzaAPI/1.0.0", 'version: "1.0.0", id: k8sapiUUID, createdTime: "2023-01-17T11:23:49Z"}};
+    commons:APKError productionEndpointNotSpecifiedError = error("Production Endpoint Not specified", message = "Endpoint Not specified", description = "Production Endpoint Not specified", code = 90911, statusCode = 400);
+    commons:APKError sandboxEndpointNotSpecifiedError = error("Sandbox Endpoint Not specified", message = "Endpoint Not specified", description = "Sandbox Endpoint Not specified", code = 90911, statusCode = 400);
+    commons:APKError k8sLevelError = error("Internal Error occured while deploying API", code = 909000, message
+        = "Internal Error occured while deploying API", statusCode = 500, description = "Internal Error occured while deploying API", moreInfo = {});
+    commons:APKError k8sLevelError1 = error("Internal Server Error", code = 900900, message
+        = "Internal Server Error", statusCode = 500, description = "Internal Server Error", moreInfo = {});
+    commons:APKError invalidAPINameError = error("Invalid API Name", code = 90911, message = "Invalid API Name", statusCode = 400, description = "API Name PizzaAPI Invalid", moreInfo = {});
     map<[string, string, API, model:ConfigMap,
     any, model:Httproute|(), any, model:Httproute|(),
-    any, [model:Service, any][], [model:BackendPolicy, any][], model:API, any, string,
+    any, [model:Service, any][], [model:BackendPolicy, any][], model:API, any, model:RuntimeAPI, any, string,
     string|CreatedAPI|BadRequestError]> data = {
         "1": [
             apiUUID,
@@ -2266,8 +2552,10 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             (),
             services,
             backendPolicies,
-            getMockAPI(api, apiUUID, "carbon.super"),
-            getMockAPIResponse(getMockAPI(api, apiUUID, "carbon.super"), k8sapiUUID),
+            getMockAPI(api, apiUUID, organiztion1.uuid),
+            getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
+            getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
+            getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
             k8sapiUUID,
             createdAPI
         ]
@@ -2284,8 +2572,10 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             (),
             services,
             backendPolicies,
-            getMockAPI(api, apiUUID, "carbon.super"),
-            getMockAPIResponse(getMockAPI(api, apiUUID, "carbon.super"), k8sapiUUID),
+            getMockAPI(api, apiUUID, organiztion1.uuid),
+            getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
+            getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
+            getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
             k8sapiUUID,
             nameAlreadyExistError
         ],
@@ -2301,8 +2591,10 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             (),
             services,
             backendPolicies,
-            getMockAPI(api, apiUUID, "carbon.super"),
-            getMockAPIResponse(getMockAPI(api, apiUUID, "carbon.super"), k8sapiUUID),
+            getMockAPI(api, apiUUID, organiztion1.uuid),
+            getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
+            getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
+            getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
             k8sapiUUID,
             contextAlreadyExistError
         ],
@@ -2318,8 +2610,10 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             getMockHttpRouteResponse(sandhttpRoute.clone()),
             services1,
             backendPolicies,
-            getMockAPI1(api, apiUUID, "carbon.super"),
-            getMockAPIResponse(getMockAPI1(api, apiUUID, "carbon.super"), k8sapiUUID),
+            getMockAPI1(api, apiUUID, organiztion1.uuid),
+            getMockAPIResponse(getMockAPI1(api, apiUUID, organiztion1.uuid), k8sapiUUID),
+            getMockRuntimeAPI(sandboxOnlyAPI, apiUUID, organiztion1, ()),
+            getMockRuntimeAPIResponse(getMockRuntimeAPI(sandboxOnlyAPI, apiUUID, organiztion1, ())),
             k8sapiUUID,
             createdAPI
         ]
@@ -2336,8 +2630,10 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             (),
             services,
             backendPolicies,
-            getMockAPI(api, apiUUID, "carbon.super"),
-            getMockAPIResponse(getMockAPI(api, apiUUID, "carbon.super"), k8sapiUUID),
+            getMockAPI(api, apiUUID, organiztion1.uuid),
+            getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
+            getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
+            getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
             k8sapiUUID,
             productionEndpointNotSpecifiedError.toBalString()
         ],
@@ -2353,8 +2649,10 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             (),
             services,
             backendPolicies,
-            getMockAPI(api, apiUUID, "carbon.super"),
-            getMockAPIResponse(getMockAPI(api, apiUUID, "carbon.super"), k8sapiUUID),
+            getMockAPI(api, apiUUID, organiztion1.uuid),
+            getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
+            getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
+            getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
             k8sapiUUID,
             sandboxEndpointNotSpecifiedError.toBalString()
         ]
@@ -2371,10 +2669,12 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             (),
             services,
             backendPolicies,
-            getMockAPI(api, apiUUID, "carbon.super"),
-            getMockAPIResponse(getMockAPI(api, apiUUID, "carbon.super"), k8sapiUUID),
+            getMockAPI(api, apiUUID, organiztion1.uuid),
+            getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
+            getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
+            getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
             k8sapiUUID,
-            k8sLevelError.toBalString()
+            k8sLevelError1.toBalString()
         ]
         ,
         "8": [
@@ -2389,10 +2689,12 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             getMockHttpRouteErrorResponse(),
             services1,
             backendPolicies,
-            getMockAPI(api, apiUUID, "carbon.super"),
-            getMockAPIResponse(getMockAPI(api, apiUUID, "carbon.super"), k8sapiUUID),
+            getMockAPI(api, apiUUID, organiztion1.uuid),
+            getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
+            getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
+            getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
             k8sapiUUID,
-            k8sLevelError.toBalString()
+            k8sLevelError1.toBalString()
         ]
         ,
         "9": [
@@ -2407,10 +2709,12 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             (),
             services,
             backendPolicies,
-            getMockAPI(api, apiUUID, "carbon.super"),
-            getMockAPIResponse(getMockAPI(api, apiUUID, "carbon.super"), k8sapiUUID),
+            getMockAPI(api, apiUUID, organiztion1.uuid),
+            getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
+            getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
+            getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
             k8sapiUUID,
-            k8sLevelError.toBalString()
+            k8sLevelError1.toBalString()
         ]
         ,
         "10": [
@@ -2425,8 +2729,10 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             (),
             servicesError,
             backendPolicies,
-            getMockAPI(api, apiUUID, "carbon.super"),
-            getMockAPIResponse(getMockAPI(api, apiUUID, "carbon.super"), k8sapiUUID),
+            getMockAPI(api, apiUUID, organiztion1.uuid),
+            getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
+            getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
+            getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
             k8sapiUUID,
             k8sLevelError.toBalString()
         ]
@@ -2443,8 +2749,10 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             (),
             services,
             backendPolicies,
-            getMockAPI(api, apiUUID, "carbon.super"),
+            getMockAPI(api, apiUUID, organiztion1.uuid),
             getMockAPIErrorResponse(),
+            getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
+            getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
             k8sapiUUID,
             k8sLevelError.toBalString()
         ]
@@ -2461,8 +2769,10 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             (),
             services,
             backendPolicies,
-            getMockAPI(api, apiUUID, "carbon.super"),
+            getMockAPI(api, apiUUID, organiztion1.uuid),
             getMockAPIErrorNameExist(),
+            getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
+            getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
             k8sapiUUID,
             invalidAPINameError.toBalString()
         ]

@@ -59,8 +59,8 @@ public function getMockAPIList() returns model:APIList {
                     "apiDisplayName": "pizzashackAPI",
                     "apiType": "REST",
                     "apiVersion": "1.0.0",
-                    "context": "/t/carbon.super/pizzashack/1.0.0",
-                    "organization": "carbon.super",
+                    "context": "/pizzashack/1.0.0",
+                    "organization": "01ed7aca-eb6b-1178-a200-f604a4ce114b",
                     "definitionFileRef": "01ed7aca-eb6b-1178-a200-f604a4ce114a-definition",
                     "prodHTTPRouteRef": "01ed7aca-eb6b-1178-a200-f604a4ce114a-production"
                 }
@@ -101,8 +101,8 @@ public function getMockAPIList() returns model:APIList {
                     "apiDisplayName": "pizzashackAPI1",
                     "apiType": "REST",
                     "apiVersion": "1.0.0",
-                    "context": "/t/carbon.super/pizzashack1/1.0.0",
-                    "organization": "carbon.super",
+                    "context": "/pizzashack1/1.0.0",
+                    "organization": "01ed7aca-eb6b-1178-a200-f604a4ce114b",
                     "definitionFileRef": "01ed7b08-f2b1-1166-82d5-649ae706d29d-definition",
                     "prodHTTPRouteRef": "01ed7b08-f2b1-1166-82d5-649ae706d29d-production"
                 }
@@ -143,8 +143,8 @@ public function getMockAPIList() returns model:APIList {
                     "apiDisplayName": "pizzashackAPI11",
                     "apiType": "REST",
                     "apiVersion": "1.0.0",
-                    "context": "/t/carbon.super/pizzashack11/1.0.0",
-                    "organization": "carbon.super",
+                    "context": "/pizzashack11/1.0.0",
+                    "organization": "01ed7aca-eb6b-1178-a200-f604a4ce114b",
                     "prodHTTPRouteRef": "01ed7aca-eb6b-1178-a200-f604a4ce114a-production"
                 }
             },
@@ -184,8 +184,8 @@ public function getMockAPIList() returns model:APIList {
                     "apiDisplayName": "pizzashackAPI12",
                     "apiType": "REST",
                     "apiVersion": "1.0.0",
-                    "context": "/t/carbon.super/pizzashack12/1.0.0",
-                    "organization": "carbon.super",
+                    "context": "/pizzashack12/1.0.0",
+                    "organization": "01ed7aca-eb6b-1178-a200-f604a4ce114b",
                     "prodHTTPRouteRef": "01ed7aca-eb6b-1178-a200-f604a4ce114a-production",
                     "definitionFileRef": ""
                 }
@@ -226,8 +226,8 @@ public function getMockAPIList() returns model:APIList {
                     "apiDisplayName": "pizzashackAPI13",
                     "apiType": "REST",
                     "apiVersion": "1.0.0",
-                    "context": "/t/carbon.super/pizzashack13/1.0.0",
-                    "organization": "carbon.super",
+                    "context": "/pizzashack13/1.0.0",
+                    "organization": "01ed7aca-eb6b-1178-a200-f604a4ce114b",
                     "prodHTTPRouteRef": "01ed7aca-eb6b-1178-a200-f604a4ce114a-production",
                     "definitionFileRef": "01ed7aca-eb6b-1178-a200-f604a4ce114b-definition"
                 }
@@ -264,8 +264,8 @@ public function getMockWatchAPIEvent() returns string {
                 "apiDisplayName": "pizzashackAPI6",
                 "apiType": "REST",
                 "apiVersion": "1.0.0",
-                "context": "/t/carbon.super/pizzashack6/1.0.0",
-                "organization": "carbon.super",
+                "context": "/pizzashack6/1.0.0",
+                "organization": "01ed7aca-eb6b-1178-a200-f604a4ce114b",
                 "definitionFileRef": "01ed7b16-90f7-1a88-8113-a7e71796d460-definition",
                 "prodHTTPRouteRef": "01ed7b16-90f7-1a88-8113-a7e71796d460-production"
             }
@@ -296,10 +296,10 @@ public function getNextMockWatchAPIEvent() returns string {
                 "apiDisplayName": "DemoAPI",
                 "apiType": "REST",
                 "apiVersion": "1.0.0",
-                "context": "/t/carbon.super/demoapi/1.0.0",
+                "context": "/demoapi/1.0.0",
                 "definitionFileRef": "01ed7b16-90f7-1a88-8114-a7e71796d460-definition",
                 "prodHTTPRouteRef": "01ed7b16-90f7-1a88-8114-a7e71796d460-production",
-                "organization": "carbon.super"
+                "organization": "01ed7aca-eb6b-1178-a200-f604a4ce114b"
             }
         }
     };
@@ -323,10 +323,10 @@ public function getMockPizzaShakK8sAPI() returns model:API & readonly {
             apiDisplayName: "pizzashackAPI",
             apiType: "REST",
             apiVersion: "1.0.0",
-            context: "/t/carbon.super/pizzashack/1.0.0",
+            context: "/pizzashack/1.0.0",
             definitionFileRef: "01ed7aca-eb6b-1178-a200-f604a4ce114a-definition",
             prodHTTPRouteRef: "01ed7aca-eb6b-1178-a200-f604a4ce114a-production",
-            organization: "carbon.super"
+            organization: "01ed7aca-eb6b-1178-a200-f604a4ce114b"
         }
     };
     return k8sAPI.cloneReadOnly();
@@ -462,7 +462,7 @@ public function mockpizzashackAPI11Definition() returns json {
             apiType: "REST",
             apiVersion: "1.0.0",
             context: "/pizzashack11/1.0.0",
-            organization: "carbon.super",
+            organization: "01ed7aca-eb6b-1178-a200-f604a4ce114b",
             prodHTTPRouteRef: "01ed7aca-eb6b-1178-a200-f604a4ce114a-production"
         }
     };
@@ -482,8 +482,8 @@ public function mockPizzashackAPI12Definition() returns json {
             apiDisplayName: "pizzashackAPI12",
             apiType: "REST",
             apiVersion: "1.0.0",
-            context: "/t/carbon.super/pizzashack12/1.0.0",
-            organization: "carbon.super",
+            context: "/pizzashack12/1.0.0",
+            organization: "01ed7aca-eb6b-1178-a200-f604a4ce114b",
             prodHTTPRouteRef: "01ed7aca-eb6b-1178-a200-f604a4ce114a-production",
             definitionFileRef: ""
         }
@@ -492,7 +492,7 @@ public function mockPizzashackAPI12Definition() returns json {
     return apiclient.retrieveDefaultDefinition(api);
 }
 
-public function mockPizzaShackAPI1Definition() returns json {
+public function mockPizzaShackAPI1Definition(string organization) returns json {
     model:API api = {
         kind: "API",
         metadata: {
@@ -505,12 +505,40 @@ public function mockPizzaShackAPI1Definition() returns json {
             apiDisplayName: "pizzashackAPI1",
             apiType: "REST",
             apiVersion: "1.0.0",
-            context: "/t/carbon.super/pizzashack1/1.0.0",
-            organization: "carbon.super",
+            context: "/pizzashack1/1.0.0",
+            organization: organization,
             definitionFileRef: "01ed7b08-f2b1-1166-82d5-649ae706d29d-definition",
             prodHTTPRouteRef: "01ed7b08-f2b1-1166-82d5-649ae706d29d-production"
         }
     };
     APIClient apiclient = new ();
     return apiclient.retrieveDefaultDefinition(api);
+}
+
+public function getMockInternalAPI() returns model:RuntimeAPI {
+    model:RuntimeAPI runtimeAPI = {
+        metadata: {name: "01ed7aca-eb6b-1178-a200-f604a4ce114a", namespace: "apk-platform"},
+        spec: {
+            name: "pizzashackAPI",
+            context: "",
+            'type: "REST",
+            'version: "1.0.0",
+            endpointConfig: {
+                "endpoint_type": "http",
+                "sandbox_endpoints": {
+                    "url": "https://pizzashack-service:8080/am/sample/pizzashack/v3/api/"
+                },
+                "production_endpoints": {
+                    "url": "https://pizzashack-service:8080/am/sample/pizzashack/v3/api/"
+                }
+            },
+            operations: [
+                {verb: "GET", target: "/*", authTypeEnabled: true},
+                {verb: "PUT", target: "/*", authTypeEnabled: true},
+                {verb: "POST", target: "/*", authTypeEnabled: true},
+                {verb: "DELETE", target: "/*", authTypeEnabled: true}
+            ]
+        }
+    };
+    return runtimeAPI;
 }

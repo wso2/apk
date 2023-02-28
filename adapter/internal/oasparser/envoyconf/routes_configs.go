@@ -69,11 +69,6 @@ func generateRouteMatch(routeRegex string) *routev3.RouteMatch {
 	match := &routev3.RouteMatch{
 		PathSpecifier: &routev3.RouteMatch_SafeRegex{
 			SafeRegex: &envoy_type_matcherv3.RegexMatcher{
-				EngineType: &envoy_type_matcherv3.RegexMatcher_GoogleRe2{
-					GoogleRe2: &envoy_type_matcherv3.RegexMatcher_GoogleRE2{
-						MaxProgramSize: nil,
-					},
-				},
 				Regex: routeRegex,
 			},
 		},
@@ -81,8 +76,7 @@ func generateRouteMatch(routeRegex string) *routev3.RouteMatch {
 	return match
 }
 
-func generateRouteAction(apiType string, routeConfig *model.EndpointConfig,
-	corsPolicy *routev3.CorsPolicy) (action *routev3.Route_Route) {
+func generateRouteAction(apiType string, routeConfig *model.EndpointConfig) (action *routev3.Route_Route) {
 
 	config := config.ReadConfigs()
 
@@ -122,7 +116,6 @@ func generateRouteAction(apiType string, routeConfig *model.EndpointConfig,
 		}
 		action.Route.RetryPolicy = commonRetryPolicy
 	}
-	action.Route.Cors = corsPolicy
 	return action
 }
 
@@ -139,11 +132,6 @@ func generateHeaderMatcher(headerName, valueRegex string) *routev3.HeaderMatcher
 			StringMatch: &envoy_type_matcherv3.StringMatcher{
 				MatchPattern: &envoy_type_matcherv3.StringMatcher_SafeRegex{
 					SafeRegex: &envoy_type_matcherv3.RegexMatcher{
-						EngineType: &envoy_type_matcherv3.RegexMatcher_GoogleRe2{
-							GoogleRe2: &envoy_type_matcherv3.RegexMatcher_GoogleRE2{
-								MaxProgramSize: nil,
-							},
-						},
 						Regex: "^" + valueRegex + "$",
 					},
 				},
@@ -160,11 +148,6 @@ func generateRegexMatchAndSubstitute(routePath, endpointBasePath,
 
 	return &envoy_type_matcherv3.RegexMatchAndSubstitute{
 		Pattern: &envoy_type_matcherv3.RegexMatcher{
-			EngineType: &envoy_type_matcherv3.RegexMatcher_GoogleRe2{
-				GoogleRe2: &envoy_type_matcherv3.RegexMatcher_GoogleRE2{
-					MaxProgramSize: nil,
-				},
-			},
 			Regex: routePath,
 		},
 		Substitution: substitutionString,
@@ -192,9 +175,7 @@ func generateHeaderToAddRouteConfig(policyParams interface{}) (*corev3.HeaderVal
 			Key:   headerName,
 			Value: headerValue,
 		},
-		Append: &wrapperspb.BoolValue{
-			Value: false,
-		}, // if true the header values are appended to the existing value
+		AppendAction: *corev3.HeaderValueOption_OVERWRITE_IF_EXISTS_OR_ADD.Enum(),
 	}
 	return &headerToAdd, nil
 }
@@ -231,44 +212,35 @@ func generateRewritePathRouteConfig(routePath, resourcePath, endpointBasepath st
 		string(rewritePathType) == "" {
 		return nil, errors.New("policy parameter map must include rewritePathType")
 	}
-	rewritePathIndexedWrtResourcePath, err := getRewriteRegexFromPathTemplate(resourcePath, rewritePath)
-	if err != nil {
-		return nil, err
-	}
 
-	substitutionString := generateSubstitutionStringWithRewritePathType(endpointBasepath, rewritePathIndexedWrtResourcePath,
+	substitutionString := generateSubstitutionStringWithRewritePathType(rewritePath,
 		pathMatchType, rewritePathType)
 
 	return &envoy_type_matcherv3.RegexMatchAndSubstitute{
 		Pattern: &envoy_type_matcherv3.RegexMatcher{
-			EngineType: &envoy_type_matcherv3.RegexMatcher_GoogleRe2{
-				GoogleRe2: &envoy_type_matcherv3.RegexMatcher_GoogleRE2{
-					MaxProgramSize: nil,
-				},
-			},
 			Regex: routePath,
 		},
 		Substitution: substitutionString,
 	}, nil
 }
 
-func generateSubstitutionStringWithRewritePathType(endpointBasepath string, resourcePath string,
+func generateSubstitutionStringWithRewritePathType(rewritePath string,
 	pathMatchType gwapiv1b1.PathMatchType, rewritePathType gwapiv1b1.HTTPPathModifierType) string {
 	var resourceRegex string
 	switch pathMatchType {
 	case gwapiv1b1.PathMatchExact:
-		resourceRegex = resourcePath
+		resourceRegex = rewritePath
 	case gwapiv1b1.PathMatchPathPrefix:
 		switch rewritePathType {
 		case gwapiv1b1.FullPathHTTPPathModifier:
-			resourceRegex = strings.TrimSuffix(resourcePath, "/")
+			resourceRegex = strings.TrimSuffix(rewritePath, "/")
 		case gwapiv1b1.PrefixMatchHTTPPathModifier:
-			resourceRegex = fmt.Sprintf("%s\\1", strings.TrimSuffix(resourcePath, "/"))
+			resourceRegex = fmt.Sprintf("%s\\1", strings.TrimSuffix(rewritePath, "/"))
 		}
 	case gwapiv1b1.PathMatchRegularExpression:
-		resourceRegex = resourcePath
+		resourceRegex = rewritePath
 	}
-	return endpointBasepath + resourceRegex
+	return resourceRegex
 }
 
 func generateFilterConfigToSkipEnforcer() map[string]*anypb.Any {

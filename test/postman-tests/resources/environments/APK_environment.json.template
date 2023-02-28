@@ -1,0 +1,31 @@
+{
+	"id": "9e8a2d98-52d7-422b-9a29-4e5cb74a9061",
+	"name": "LocalMinikube",
+	"values": [
+		{
+			"key": "gatewayBaseURl",
+			"value": "https://GW_HOST:9095",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "client_id",
+			"value": "45f1c5c8-a92e-11ed-afa1-0242ac120002",
+			"enabled": true
+		},
+		{
+			"key": "client_secret",
+			"value": "4fbd62ec-a92e-11ed-afa1-0242ac120002",
+			"enabled": true
+		},
+		{
+			"key": "testAPIID",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		}
+	],
+	"_postman_variable_scope": "environment",
+	"_postman_exported_at": "2023-02-13T05:07:36.379Z",
+	"_postman_exported_using": "Postman/10.9.4"
+}
