@@ -4,6 +4,7 @@ import React from 'react';
 import PaginatedClientSide from 'components/data-table/PaginatedClientSide'
 import useAxios from "components/hooks/useAxios";
 import Loader from "components/Loader";
+import { components, paths, operations } from 'types/Types';
 
 type Props = {}
 
