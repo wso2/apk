@@ -53,7 +53,8 @@ type APISpec struct {
 	//
 	//
 	// +optional
-	ProdHTTPRouteRef string `json:"prodHTTPRouteRef"`
+	// +nullable
+	ProdHTTPRouteRefs []string `json:"prodHTTPRouteRefs"`
 
 	// SandHTTPRouteRef contains a list of references to HttpRoutes
 	// of type HttpRoute.
@@ -61,7 +62,8 @@ type APISpec struct {
 	//
 	//
 	// +optional
-	SandHTTPRouteRef string `json:"sandHTTPRouteRef"`
+	// +nullable
+	SandHTTPRouteRefs []string `json:"sandHTTPRouteRefs"`
 
 	// APIType denotes the type of the API.
 	// Possible values could be REST, GraphQL, Async

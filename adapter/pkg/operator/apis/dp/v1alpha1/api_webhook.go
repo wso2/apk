@@ -111,9 +111,19 @@ func (r *API) validateAPI() error {
 		r.Spec.APIType = "REST"
 	}
 
-	if r.Spec.ProdHTTPRouteRef == "" && r.Spec.SandHTTPRouteRef == "" {
+	if !(r.Spec.ProdHTTPRouteRefs != nil && len(r.Spec.ProdHTTPRouteRefs) > 0) && !(r.Spec.SandHTTPRouteRefs != nil && len(r.Spec.SandHTTPRouteRefs) > 0) {
 		allErrs = append(allErrs, field.Required(field.NewPath("spec"),
 			"both API production and sandbox endpoint references cannot be empty"))
+	}
+
+	if isEmptyStringsInArray(r.Spec.ProdHTTPRouteRefs) {
+		allErrs = append(allErrs, field.Required(field.NewPath("spec").Child("prodHTTPRouteRef"),
+			"API production endpoint reference cannot be empty"))
+	}
+
+	if isEmptyStringsInArray(r.Spec.SandHTTPRouteRefs) {
+		allErrs = append(allErrs, field.Required(field.NewPath("spec").Child("sandHTTPRouteRef"),
+			"API sandbox endpoint reference cannot be empty"))
 	}
 
 	if len(allErrs) > 0 {
@@ -122,6 +132,15 @@ func (r *API) validateAPI() error {
 			r.Name, allErrs)
 	}
 	return nil
+}
+
+func isEmptyStringsInArray(strings []string) bool {
+	for _, str := range strings {
+		if str == "" {
+			return true
+		}
+	}
+	return false
 }
 
 func (r *API) validateAPIContextExists() *field.Error {
