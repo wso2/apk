@@ -63,7 +63,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "http"
-version = "2.5.2"
+version = "2.5.3"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "cache"},
@@ -365,7 +365,7 @@ modules = [
 [[package]]
 org = "wso2"
 name = "idp_domain_service"
-version = "0.0.1-SNAPSHOT"
+version = "0.0.1-m5"
 dependencies = [
 	{org = "ballerina", name = "http"},
 	{org = "ballerina", name = "jwt"},

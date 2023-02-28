@@ -3,21 +3,21 @@ module github.com/wso2/apk/adapter
 go 1.19
 
 require (
-	github.com/envoyproxy/go-control-plane v0.10.3
+	github.com/envoyproxy/go-control-plane v0.11.0
 	github.com/fsnotify/fsnotify v1.6.0
 	github.com/go-openapi/errors v0.19.8
 	github.com/go-openapi/strfmt v0.21.1
 	github.com/go-openapi/swag v0.19.15
 	github.com/go-openapi/validate v0.19.11
 	github.com/golang/protobuf v1.5.2
-	github.com/google/uuid v1.1.2
+	github.com/google/uuid v1.3.0
 	github.com/onsi/ginkgo/v2 v2.6.0
 	github.com/onsi/gomega v1.24.1
 	github.com/pelletier/go-toml v1.8.1
 	github.com/sirupsen/logrus v1.9.0
 	golang.org/x/exp v0.0.0-20220407100705-7b9b53b0aca4
-	google.golang.org/genproto v0.0.0-20220505152158-f39f71e6c8f3
-	google.golang.org/grpc v1.50.1
+	google.golang.org/genproto v0.0.0-20221118155620-16455021b5e6
+	google.golang.org/grpc v1.52.0
 	google.golang.org/protobuf v1.28.1
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.26.1
@@ -31,12 +31,12 @@ require (
 	github.com/acomagu/bufpipe v1.0.3 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20200907205600-7a23bdc65eef // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
-	github.com/census-instrumentation/opencensus-proto v0.3.0 // indirect
+	github.com/census-instrumentation/opencensus-proto v0.4.1 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/cncf/xds/go v0.0.0-20220314180256-7f1daf1720fc // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/emicklei/go-restful/v3 v3.9.0 // indirect
-	github.com/envoyproxy/protoc-gen-validate v0.6.7 // indirect
+	github.com/envoyproxy/protoc-gen-validate v0.9.1 // indirect
 	github.com/evanphx/json-patch/v5 v5.6.0 // indirect
 	github.com/go-git/gcfg v1.5.0 // indirect
 	github.com/go-git/go-billy/v5 v5.3.1 // indirect
@@ -80,10 +80,10 @@ require (
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.24.0 // indirect
 	golang.org/x/crypto v0.1.0 // indirect
-	golang.org/x/net v0.3.1-0.20221206200815-1e63c2f08a10 // indirect
-	golang.org/x/oauth2 v0.0.0-20220223155221-ee480838109b // indirect
-	golang.org/x/term v0.3.0 // indirect
-	golang.org/x/text v0.5.0 // indirect
+	golang.org/x/net v0.7.0 // indirect
+	golang.org/x/oauth2 v0.0.0-20221014153046-6fdb5e3db783 // indirect
+	golang.org/x/term v0.5.0 // indirect
+	golang.org/x/text v0.7.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
@@ -107,7 +107,7 @@ require (
 	github.com/go-openapi/spec v0.20.7
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/stretchr/testify v1.8.1
-	golang.org/x/sys v0.3.0 // indirect
+	golang.org/x/sys v0.5.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 	sigs.k8s.io/gateway-api v0.6.1
 )

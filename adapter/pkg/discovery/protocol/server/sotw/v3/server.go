@@ -171,13 +171,15 @@ func (s *server) process(stream streamv3.Stream, reqCh <-chan *discovery.Discove
 	streamState := streamv3.NewStreamState(false, map[string]string{})
 	lastDiscoveryResponses := map[string]lastDiscoveryResponse{}
 
+	var node = &core.Node{}
+
 	// a collection of stack allocated watches per request type
 	var values watches
 	values.Init()
 	defer func() {
 		values.Cancel()
 		if s.callbacks != nil {
-			s.callbacks.OnStreamClosed(streamID)
+			s.callbacks.OnStreamClosed(streamID, node)
 		}
 	}()
 
@@ -217,8 +219,6 @@ func (s *server) process(stream streamv3.Stream, reqCh <-chan *discovery.Discove
 		}
 	}
 
-	// node may only be set on the first discovery request
-	var node = &core.Node{}
 
 	for {
 		select {

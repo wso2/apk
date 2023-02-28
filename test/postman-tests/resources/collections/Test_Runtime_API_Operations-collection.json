@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "17aaa1f5-e116-4f25-a538-7d18ae4493e1",
+		"_postman_id": "f7d64fd3-9903-4b97-aeb5-350299bfbf35",
 		"name": "Test Runtime API Operations",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -54,9 +54,9 @@
 					]
 				},
 				"url": {
-					"raw": "{{idpEndpointUrl}}/oauth2/token",
+					"raw": "{{gatewayBaseURl}}/oauth2/token",
 					"host": [
-						"{{idpEndpointUrl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"oauth2",
@@ -84,7 +84,7 @@
 							"});",
 							"console.log('Getting all services in namespace and find sample service required for test');",
 							"_.each(pm.response.json().list, (serviceEntry) => {",
-							"    if(serviceEntry.name === pm.collectionVariables.get('testServiceName')) {",
+							"    if(serviceEntry.name === pm.collectionVariables.get('testServiceName')&& serviceEntry.namespace === pm.collectionVariables.get('testServiceNamespace')) {",
 							"        pm.collectionVariables.set('serviceUUID', serviceEntry.id)",
 							"        console.log(\"HTTP bin service found, serviceUUID is\", serviceEntry.id);",
 							"    }",
@@ -116,9 +116,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/services",
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/services",
 					"host": [
-						"{{runtimeAPIServerBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -199,9 +199,9 @@
 					"raw": "{\n    \"context\": \"{{testAPIContext}}\" ,\n    \"name\": \"{{testAPIName}}\" ,\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\"\n}"
 				},
 				"url": {
-					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/apis/import-service?serviceKey={{serviceUUID}}",
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/import-service?serviceKey={{serviceUUID}}",
 					"host": [
-						"{{runtimeAPIServerBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -280,9 +280,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/apis",
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis",
 					"host": [
-						"{{runtimeAPIServerBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -327,9 +327,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/apis/{{APIUUID}}",
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}",
 					"host": [
-						"{{runtimeAPIServerBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -409,9 +409,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/apis/{{APIUUID}}",
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}",
 					"host": [
-						"{{runtimeAPIServerBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -475,9 +475,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/apis/{{APIUUID}}/definition",
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}/definition",
 					"host": [
-						"{{runtimeAPIServerBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -537,9 +537,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/apis/{{APIUUID}}",
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}",
 					"host": [
-						"{{runtimeAPIServerBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -599,9 +599,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/apis/{{APIUUID}}",
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}",
 					"host": [
-						"{{runtimeAPIServerBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -682,9 +682,9 @@
 					"raw": "{\n    \"context\": \"{{testAPIV2Context}}\" ,\n    \"name\": \"{{testAPIV2Name}}\" ,\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\"\n}"
 				},
 				"url": {
-					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/apis/import-service?serviceKey={{serviceUUID}}",
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/import-service?serviceKey={{serviceUUID}}",
 					"host": [
-						"{{runtimeAPIServerBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -763,9 +763,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/apis",
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis",
 					"host": [
-						"{{runtimeAPIServerBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -842,9 +842,9 @@
 					"raw": "{\n    \"context\": \"/{{testAPIV2Context}}\" ,\n    \"name\": \"{{testAPIV2Name}}\" ,\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\"\n}\n"
 				},
 				"url": {
-					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/apis/{{APIV2UUID}}/generate-key",
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIV2UUID}}/generate-key",
 					"host": [
-						"{{runtimeAPIServerBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -898,9 +898,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURL}}{{testAPIV2Context}}/get",
+					"raw": "{{gatewayBaseURl}}{{testAPIV2Context}}/get",
 					"host": [
-						"{{gatewayBaseURL}}{{testAPIV2Context}}"
+						"{{gatewayBaseURl}}{{testAPIV2Context}}"
 					],
 					"path": [
 						"get"
@@ -916,7 +916,6 @@
 					"listen": "prerequest",
 					"script": {
 						"exec": [
-							"pm.variables.set(\"APIUUID\",pm.collectionVariables.get('APIUUID'))",
 							""
 						],
 						"type": "text/javascript"
@@ -960,7 +959,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"id\": \"{{APIV2UUID}}\",\n    \"name\": \"{{testAPIV2Name}}\",\n    \"context\": \"/testAPIV2/1.0.0\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"PUT\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"POST\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"DELETE\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"PATCH\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        }\n    ],\n    \"serviceInfo\": {\n        \"name\": \"backend\",\n        \"namespace\": \"default\"\n    }\n}",
+					"raw": "{\n    \"id\": \"{{APIV2UUID}}\",\n    \"name\": \"{{testAPIV2Name}}\",\n    \"context\": \"/testAPIV2/1.0.0\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"PUT\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"POST\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"DELETE\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"PATCH\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        }\n    ],\n    \"serviceInfo\": {\n        \"name\": \"{{testServiceName}}\",\n        \"namespace\": \"{{testServiceNamespace}}\"\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -968,9 +967,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/apis/{{APIV2UUID}}",
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIV2UUID}}",
 					"host": [
-						"{{runtimeAPIServerBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -1016,9 +1015,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURL}}{{testAPIV2Context}}/headers",
+					"raw": "{{gatewayBaseURl}}{{testAPIV2Context}}/headers",
 					"host": [
-						"{{gatewayBaseURL}}{{testAPIV2Context}}"
+						"{{gatewayBaseURl}}{{testAPIV2Context}}"
 					],
 					"path": [
 						"headers"
@@ -1060,9 +1059,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURL}}{{testAPIV2Context}}/get",
+					"raw": "{{gatewayBaseURl}}{{testAPIV2Context}}/get",
 					"host": [
-						"{{gatewayBaseURL}}{{testAPIV2Context}}"
+						"{{gatewayBaseURl}}{{testAPIV2Context}}"
 					],
 					"path": [
 						"get"
@@ -1124,9 +1123,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/apis/copy-api?apiId={{APIV2UUID}}&newVersion=2.0.0",
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/copy-api?apiId={{APIV2UUID}}&newVersion=2.0.0",
 					"host": [
-						"{{runtimeAPIServerBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -1210,9 +1209,9 @@
 					"raw": "{\n    \"context\": \"/{{testAPIV2Context}}\" ,\n    \"name\": \"{{testAPIV2Name}}\" ,\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\"\n}\n"
 				},
 				"url": {
-					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/apis/{{APIV3UUID}}/definition",
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIV3UUID}}/definition",
 					"host": [
-						"{{runtimeAPIServerBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -1287,9 +1286,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/apis/{{APIV3UUID}}/generate-key",
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIV3UUID}}/generate-key",
 					"host": [
-						"{{runtimeAPIServerBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -1336,9 +1335,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURL}}/testAPIV2/2.0.0/headers",
+					"raw": "{{gatewayBaseURl}}/testAPIV2/2.0.0/headers",
 					"host": [
-						"{{gatewayBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"testAPIV2",
@@ -1396,9 +1395,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/apis/{{APIV2UUID}}",
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIV2UUID}}",
 					"host": [
-						"{{runtimeAPIServerBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -1444,9 +1443,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURL}}{{testAPIV2Context}}/headers",
+					"raw": "{{gatewayBaseURl}}{{testAPIV2Context}}/headers",
 					"host": [
-						"{{gatewayBaseURL}}{{testAPIV2Context}}"
+						"{{gatewayBaseURl}}{{testAPIV2Context}}"
 					],
 					"path": [
 						"headers"
@@ -1488,9 +1487,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURL}}/testAPIV2/2.0.0/headers",
+					"raw": "{{gatewayBaseURl}}/testAPIV2/2.0.0/headers",
 					"host": [
-						"{{gatewayBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"testAPIV2",
@@ -1548,9 +1547,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{runtimeAPIServerBaseURL}}/api/am/runtime/apis/{{APIV3UUID}}",
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIV3UUID}}",
 					"host": [
-						"{{runtimeAPIServerBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -1596,9 +1595,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURL}}/testAPIV2/2.0.0/headers",
+					"raw": "{{gatewayBaseURl}}/testAPIV2/2.0.0/headers",
 					"host": [
-						"{{gatewayBaseURL}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"testAPIV2",
@@ -1683,6 +1682,11 @@
 		{
 			"key": "API2TestKey",
 			"value": ""
+		},
+		{
+			"key": "testServiceNamespace",
+			"value": "test-apk",
+			"type": "default"
 		}
 	]
 }
