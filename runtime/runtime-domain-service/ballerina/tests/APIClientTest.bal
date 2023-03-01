@@ -76,7 +76,7 @@ function getMockServiceMappingClient(string resourceVersion) returns websocket:C
         } else {
             initialConectionId = uuid:createType1AsString();
             websocket:Client mock = test:mock(websocket:Client);
-            test:prepare(mock).when("isOpen").thenReturn(true);
+            test:prepare(mock).when("isOpen").thenReturnSequence(true, true, false);
             test:prepare(mock).when("getConnectionId").thenReturn(initialConectionId);
             test:prepare(mock).when("readMessage").thenReturn(());
             return mock;
@@ -106,7 +106,7 @@ function getMockOrganiationClient(string resourceVersion) returns websocket:Clie
     } else if resourceVersion == "28705" {
         string connectionId = uuid:createType1AsString();
         websocket:Client mock = test:mock(websocket:Client);
-        test:prepare(mock).when("isOpen").thenReturn(true);
+        test:prepare(mock).when("isOpen").thenReturnSequence(true, true, false);
         test:prepare(mock).when("getConnectionId").thenReturn(connectionId);
         test:prepare(mock).when("readMessage").thenReturnSequence(getNextOrganizationEvent(), ());
         return mock;
@@ -120,14 +120,14 @@ function getMockOrganiationClient(string resourceVersion) returns websocket:Clie
             websocket:Client mock = test:mock(websocket:Client);
             test:prepare(mock).when("isOpen").thenReturn(true);
             test:prepare(mock).when("getConnectionId").thenReturn(initialConectionId);
-            test:prepare(mock).when("readMessage").thenReturn(());
+            test:prepare(mock).when("readMessage").thenReturnSequence(getOrganizationWatchDeleteEvent(),());
             return mock;
         }
     } else {
         websocket:Client mock = test:mock(websocket:Client);
         test:prepare(mock).when("isOpen").thenReturn(true);
         test:prepare(mock).when("getConnectionId").thenReturn(initialConectionId);
-        test:prepare(mock).when("readMessage").thenReturn(());
+        test:prepare(mock).when("readMessage").thenReturnSequence(());
         return mock;
     }
 }
@@ -1906,6 +1906,7 @@ function testCreateAPIFromService(string serviceUUId, string apiUUID, [model:Con
     model:AuthenticationList authenticationList = {metadata: {}, items: []};
     model:BackendPolicyList backendPolicyList = {metadata: {}, items: []};
     model:ServiceList serviceList = {metadata: {}, items: []};
+    model:ScopeList scopeList = {metadata: {}, items: []};
     test:prepare(k8sApiServerEp).when("post").withArguments("/api/v1/namespaces/apk-platform/configmaps", configmapResponse[0]).thenReturn(configmapResponse[1]);
     test:prepare(k8sApiServerEp).when("post").withArguments("/apis/gateway.networking.k8s.io/v1beta1/namespaces/apk-platform/httproutes", httproute[0]).thenReturn(httproute[1]);
     test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/servicemappings", servicemapping[0]).thenReturn(servicemapping[1]);
@@ -1916,6 +1917,7 @@ function testCreateAPIFromService(string serviceUUId, string apiUUID, [model:Con
     test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/servicemappings?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(serviceMappingList);
     test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/authentications?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(authenticationList);
     test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/backendpolicies?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(backendPolicyList);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/scopes?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(scopeList);
     test:prepare(k8sApiServerEp).when("get").withArguments("/api/v1/namespaces/apk-platform/services?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(serviceList);
     test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis/" + k8sAPI[0].metadata.name).thenReturn(internalApiResponse);
     test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis/" + k8sAPI[0].metadata.name).thenReturn(runtimeAPI[0]);
@@ -2214,6 +2216,8 @@ function testCreateAPI(string apiUUID, string backenduuid, API api, model:Config
         model:AuthenticationList authenticationList = {metadata: {}, items: []};
         model:BackendPolicyList backendPolicyList = {metadata: {}, items: []};
         model:ServiceList serviceList = {metadata: {}, items: []};
+        model:ScopeList scopeList = {metadata: {}, items: []};
+        test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/scopes?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(scopeList);
         test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis", k8sApi).thenReturn(k8sapiResponse);
         test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis", runtimeAPI).thenReturn(runtimeAPIResponse);
         test:prepare(k8sApiServerEp).when("get").withArguments("/api/v1/namespaces/apk-platform/configmaps/" + apiClient.retrieveDefinitionName(apiUUID)).thenReturn(configmapResponse);
