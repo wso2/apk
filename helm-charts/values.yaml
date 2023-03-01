@@ -201,8 +201,8 @@ wso2:
             failureThreshold: 5
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: IfNotPresent
-          image: runtime-domain-service:latest
+          imagePullPolicy: Always
+          image: wso2/runtime-domain-service:latest
       adapter:
         appName: "adapter"
         deployment:
@@ -233,8 +233,8 @@ wso2:
             failureThreshold: 5
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: IfNotPresent
-          image: adapter:latest
+          imagePullPolicy: Always
+          image: wso2/adapter:latest
           security:
             sslHostname: "adapter"
       gatewayRuntime:
