@@ -19,28 +19,14 @@ package logging
 
 import (
 	"fmt"
-
-	logging "github.com/wso2/apk/adapter/pkg/logging"
 )
 
-// Mapper used to keep error details for error logs
-var Mapper map[int]logging.ErrorDetails = make(map[int]logging.ErrorDetails)
-
-// CombineMapper used to keep error details for error logs
-func CombineMapper(comMap map[int]logging.ErrorDetails) map[int]logging.ErrorDetails {
-	for key, value := range comMap {
-		Mapper[key] = value
-	}
-	return Mapper
-}
-
 // GetErrorByCode used to keep error details for error logs
-func GetErrorByCode(code int, args ...interface{}) logging.ErrorDetails {
-	errorLog := Mapper[error1101]
+func GetErrorByCode(code int, args ...interface{}) ErrorDetails {
+	errorLog := Mapper[code]
 	message := errorLog.Message
-	for item := range args {
-		message += fmt.Sprintf(" %v", item)
-	}
+	message = fmt.Sprintf(message, args...)
+
 	errorLog.Message = message
 	return errorLog
 }

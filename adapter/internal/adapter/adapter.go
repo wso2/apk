@@ -34,7 +34,6 @@ import (
 	wso2_server "github.com/wso2/apk/adapter/pkg/discovery/protocol/server/v3"
 	"github.com/wso2/apk/adapter/pkg/health"
 	healthservice "github.com/wso2/apk/adapter/pkg/health/api/wso2/health/service"
-	"github.com/wso2/apk/adapter/pkg/logging"
 	"github.com/wso2/apk/adapter/pkg/operator"
 	"github.com/wso2/apk/adapter/pkg/utils/tlsutils"
 
@@ -49,6 +48,7 @@ import (
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/discovery/xds"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
+	loggin "github.com/wso2/apk/adapter/internal/logging"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/keepalive"
@@ -118,11 +118,7 @@ func runManagementServer(conf *config.Config, server xdsv3.Server, enforcerServe
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
-		logger.LoggerMgw.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("Failed to listen on port: %v, error: %v", port, err.Error()),
-			Severity:  logging.BLOCKER,
-			ErrorCode: 1100,
-		})
+		logger.LoggerMgw.ErrorC(loggin.GetErrorByCode(1100, port, err.Error()))
 	}
 
 	// register services
@@ -151,11 +147,7 @@ func runManagementServer(conf *config.Config, server xdsv3.Server, enforcerServe
 		}
 		logger.LoggerMgw.Info("Starting XDS GRPC server.")
 		if err = grpcServer.Serve(lis); err != nil {
-			logger.LoggerMgw.ErrorC(logging.ErrorDetails{
-				Message:   fmt.Sprintf("Failed to start XDS GRPC server : %v", err.Error()),
-				Severity:  logging.BLOCKER,
-				ErrorCode: 1101,
-			})
+			logger.LoggerMgw.ErrorC(loggin.GetErrorByCode(1101, err.Error()))
 		}
 	}()
 }
@@ -178,11 +170,7 @@ func Run(conf *config.Config) {
 	}
 
 	if errC != nil {
-		logger.LoggerMgw.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("Error reading the log configs. %v", errC.Error()),
-			Severity:  logging.CRITICAL,
-			ErrorCode: 1102,
-		})
+		logger.LoggerMgw.ErrorC(loggin.GetErrorByCode(1102, errC.Error()))
 	}
 
 	logger.LoggerMgw.Info("Starting adapter ....")

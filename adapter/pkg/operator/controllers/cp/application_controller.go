@@ -54,21 +54,13 @@ func NewApplicationController(mgr manager.Manager) error {
 	}
 	c, err := controller.New(constants.ApplicationController, mgr, controller.Options{Reconciler: r})
 	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("Error creating Application controller: %v", err.Error()),
-			Severity:  logging.BLOCKER,
-			ErrorCode: 2801,
-		})
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2606, err.Error()))
 		return err
 	}
 
 	if err := c.Watch(&source.Kind{Type: &cpv1alpha1.Application{}}, &handler.EnqueueRequestForObject{},
 		predicate.NewPredicateFuncs(utils.FilterByNamespaces([]string{utils.GetOperatorPodNamespace()}))); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("Error watching Application resources: %v", err.Error()),
-			Severity:  logging.BLOCKER,
-			ErrorCode: 2802,
-		})
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2607, err.Error()))
 		return err
 	}
 

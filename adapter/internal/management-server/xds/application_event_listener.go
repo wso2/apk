@@ -3,10 +3,9 @@ package xds
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/wso2/apk/adapter/internal/loggers"
-	"github.com/wso2/apk/adapter/pkg/logging"
+	loggin "github.com/wso2/apk/adapter/internal/logging"
 	cpv1alpha1 "github.com/wso2/apk/adapter/pkg/operator/apis/cp/v1alpha1"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -22,11 +21,7 @@ func HandleApplicationEventsFromMgtServer(c client.Client, cReader client.Reader
 		case ApplicationCreate:
 			if found, _, err := checkApplicationExists(applicationEvent.Application, c, cReader); err == nil && !found {
 				if err := c.Create(context.Background(), *&applicationEvent.Application); err != nil {
-					loggers.LoggerXds.ErrorC(logging.ErrorDetails{
-						Message:   fmt.Sprint("Error creating application: ", err.Error()),
-						Severity:  logging.CRITICAL,
-						ErrorCode: 1707,
-					})
+					loggers.LoggerXds.ErrorC(loggin.GetErrorByCode(1707, err.Error()))
 				} else {
 					loggers.LoggerXds.Info("Application created: " + applicationEvent.Application.Name)
 				}
@@ -37,11 +32,7 @@ func HandleApplicationEventsFromMgtServer(c client.Client, cReader client.Reader
 				application.Spec = applicationEvent.Application.Spec
 				err := c.Update(context.Background(), application)
 				if err != nil {
-					loggers.LoggerXds.ErrorC(logging.ErrorDetails{
-						Message:   fmt.Sprint("Error updating application: ", err.Error()),
-						Severity:  logging.CRITICAL,
-						ErrorCode: 1709,
-					})
+					loggers.LoggerXds.ErrorC(loggin.GetErrorByCode(1709, err.Error()))
 				} else {
 					loggers.LoggerXds.Info("Application updated: " + applicationEvent.Application.Name)
 				}
@@ -50,11 +41,7 @@ func HandleApplicationEventsFromMgtServer(c client.Client, cReader client.Reader
 		case ApplicationDelete:
 			err := c.Delete(context.Background(), *&applicationEvent.Application)
 			if err != nil {
-				loggers.LoggerXds.ErrorC(logging.ErrorDetails{
-					Message:   fmt.Sprint("Error deleting application: ", err.Error()),
-					Severity:  logging.CRITICAL,
-					ErrorCode: 1710,
-				})
+				loggers.LoggerXds.ErrorC(loggin.GetErrorByCode(1710, err.Error()))
 			} else {
 				loggers.LoggerXds.Info("Application deleted: " + applicationEvent.Application.Name)
 			}
@@ -80,21 +67,13 @@ func checkApplicationExists(application *cpv1alpha1.Application, c client.Client
 				Namespace: application.Namespace}, retrivedApplication); err != nil {
 
 				if !apierrors.IsNotFound(err) {
-					loggers.LoggerXds.ErrorC(logging.ErrorDetails{
-						Message:   fmt.Sprint("Error retrieving application: ", err.Error()),
-						Severity:  logging.CRITICAL,
-						ErrorCode: 1711,
-					})
+					loggers.LoggerXds.ErrorC(loggin.GetErrorByCode(1711, err.Error()))
 					return false, nil, err
 				}
 				return false, nil, nil
 			}
 		} else if !apierrors.IsNotFound(err) {
-			loggers.LoggerXds.ErrorC(logging.ErrorDetails{
-				Message:   fmt.Sprint("Error retrieving application: ", err.Error()),
-				Severity:  logging.CRITICAL,
-				ErrorCode: 1712,
-			})
+			loggers.LoggerXds.ErrorC(loggin.GetErrorByCode(1711, err.Error()))
 			return false, nil, err
 		} else {
 			return false, nil, nil

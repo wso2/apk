@@ -19,13 +19,12 @@ package routercallbacks
 
 import (
 	"context"
-	"fmt"
 
-    core "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
+	core "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	discovery "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
 	"github.com/wso2/apk/adapter/internal/discovery/xds/common"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
-	"github.com/wso2/apk/adapter/pkg/logging"
+	loggin "github.com/wso2/apk/adapter/internal/logging"
 )
 
 var nodeQueueInstance *common.NodeQueue
@@ -62,12 +61,8 @@ func (cb *Callbacks) OnStreamRequest(id int64, request *discovery.DiscoveryReque
 	logger.LoggerRouterXdsCallbacks.Debugf("stream request on stream id: %d, from node: %s, version: %s, for type: %s",
 		id, nodeIdentifier, request.VersionInfo, request.TypeUrl)
 	if request.ErrorDetail != nil {
-		logger.LoggerRouterXdsCallbacks.ErrorC(logging.ErrorDetails{
-			Message: fmt.Sprintf("Stream request for type %s on stream id: %d, from node: %s, Error: %s", request.GetTypeUrl(),
-				id, nodeIdentifier, request.ErrorDetail.Message),
-			Severity:  logging.CRITICAL,
-			ErrorCode: 1401,
-		})
+		logger.LoggerRouterXdsCallbacks.ErrorC(loggin.GetErrorByCode(1401, request.GetTypeUrl(),
+			id, nodeIdentifier, request.ErrorDetail.Message))
 	}
 	return nil
 }

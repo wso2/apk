@@ -18,22 +18,17 @@
 package logging
 
 import (
+	"fmt"
+
 	logging "github.com/wso2/apk/adapter/pkg/logging"
 )
 
-func init() {
-	Mapper = CombineMapper(apiMapper)
-}
+// GetErrorByCode used to keep error details for error logs
+func GetErrorByCode(code int, args ...interface{}) logging.ErrorDetails {
+	errorLog := Mapper[code]
+	message := errorLog.Message
+	message = fmt.Sprintf(message, args...)
 
-// Error Log Internal Adapter Constants
-const (
-	error1200 = 1200
-)
-
-var apiMapper = map[int]logging.ErrorDetails{
-	error1200: {
-		ErrorCode: error1200,
-		Message:   "The provided port value for the REST Api Server :%v is not an integer. %v",
-		Severity:  "BLOCKER",
-	},
+	errorLog.Message = message
+	return errorLog
 }

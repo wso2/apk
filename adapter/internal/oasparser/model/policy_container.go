@@ -25,7 +25,7 @@ import (
 	"text/template"
 
 	"github.com/wso2/apk/adapter/internal/loggers"
-	"github.com/wso2/apk/adapter/pkg/logging"
+	loggin "github.com/wso2/apk/adapter/internal/logging"
 	"gopkg.in/yaml.v2"
 )
 
@@ -138,43 +138,27 @@ func (p PolicyContainerMap) getFormattedPolicyFromTemplated(policy Policy, flow 
 	spec := p[policyFullName].Specification
 	if err := spec.validatePolicy(policy, flow); err != nil {
 		swagger.GetID()
-		loggers.LoggerOasparser.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("Operation policy validation failed for API %q in org %q:, policy %q: %v", swagger.GetID(), swagger.OrganizationID, policyFullName, err),
-			Severity:  logging.MINOR,
-			ErrorCode: 2204,
-		})
+		loggers.LoggerOasparser.ErrorC(loggin.GetErrorByCode(2204, swagger.GetID(), swagger.OrganizationID, policyFullName, err))
 		return policy, err
 	}
 
 	defRaw := p[policyFullName].Definition.RawData
 	t, err := template.New("policy-def").Funcs(policyDefFuncMap).Parse(string(defRaw))
 	if err != nil {
-		loggers.LoggerOasparser.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("Error parsing the operation policy definition %q into go template of the API %q in org %q: %v", policyFullName, swagger.GetID(), swagger.OrganizationID, err),
-			Severity:  logging.MINOR,
-			ErrorCode: 2205,
-		})
+		loggers.LoggerOasparser.ErrorC(loggin.GetErrorByCode(2205, policyFullName, swagger.GetID(), swagger.OrganizationID, err))
 		return Policy{}, err
 	}
 
 	var out bytes.Buffer
 	err = t.Execute(&out, policy.Parameters)
 	if err != nil {
-		loggers.LoggerOasparser.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("Error parsing operation policy definition %q of the API %q in org %q: %v", policyFullName, swagger.GetID(), swagger.OrganizationID, err),
-			Severity:  logging.MINOR,
-			ErrorCode: 2206,
-		})
+		loggers.LoggerOasparser.ErrorC(loggin.GetErrorByCode(2206, policyFullName, swagger.GetID(), swagger.OrganizationID, err))
 		return Policy{}, err
 	}
 
 	def := PolicyDefinition{}
 	if err := yaml.Unmarshal(out.Bytes(), &def); err != nil {
-		loggers.LoggerOasparser.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("Error parsing formalized operation policy definition %q into yaml of the API %q in org %q: %v", policyFullName, swagger.GetID(), swagger.OrganizationID, err),
-			Severity:  logging.MINOR,
-			ErrorCode: 2207,
-		})
+		loggers.LoggerOasparser.ErrorC(loggin.GetErrorByCode(2207, policyFullName, swagger.GetID(), swagger.OrganizationID, err))
 		return Policy{}, err
 	}
 
@@ -189,11 +173,7 @@ func (p PolicyContainerMap) getFormattedPolicyFromTemplated(policy Policy, flow 
 	// Required params may be comming from default values as defined in the policy specification
 	// Hence do the validation after filling default values
 	if err := validatePolicyAction(&policy); err != nil {
-		loggers.LoggerOasparser.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("API policy validation failed, policy: %q of the API %q in org %q: %v", policyFullName, swagger.GetID(), swagger.OrganizationID, err),
-			Severity:  logging.MINOR,
-			ErrorCode: 0,
-		})
+		loggers.LoggerOasparser.ErrorC(loggin.GetErrorByCode(2208, policyFullName, swagger.GetID(), swagger.OrganizationID, err))
 		return Policy{}, err
 	}
 	return policy, nil

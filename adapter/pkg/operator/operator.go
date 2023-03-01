@@ -19,7 +19,6 @@ package operator
 
 import (
 	"flag"
-	"fmt"
 
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/loggers"
@@ -104,11 +103,7 @@ func InitOperator() {
 		// LeaderElectionReleaseOnCancel: true,
 	})
 	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("unable to start manager: %v", err),
-			Severity:  logging.BLOCKER,
-			ErrorCode: 2600,
-		})
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2600, err))
 	}
 
 	// TODO: Decide on a buffer size and add to config.
@@ -124,11 +119,7 @@ func InitOperator() {
 	}
 
 	if err = (&dpv1alpha1.API{}).SetupWebhookWithManager(mgr); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("Unable to create webhook API: %v", err),
-			Severity:  logging.BLOCKER,
-			ErrorCode: 2600,
-		})
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2601, err))
 	}
 
 	if err := cpcontrollers.NewApplicationController(mgr); err != nil {
@@ -140,18 +131,10 @@ func InitOperator() {
 	}
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("unable to set up health check: %v", err),
-			Severity:  logging.BLOCKER,
-			ErrorCode: 2600,
-		})
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2602, err))
 	}
 	if err := mgr.AddReadyzCheck("readyz", healthz.Ping); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("unable to set up ready check: %v", err),
-			Severity:  logging.BLOCKER,
-			ErrorCode: 2600,
-		})
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2603, err))
 	}
 
 	go synchronizer.HandleAPILifeCycleEvents(&ch)
@@ -162,10 +145,6 @@ func InitOperator() {
 	}
 
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("problem running manager: %v", err),
-			Severity:  logging.BLOCKER,
-			ErrorCode: 2600,
-		})
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2604, err))
 	}
 }

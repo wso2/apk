@@ -21,7 +21,6 @@ package utils
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"path/filepath"
 	"strings"
 
@@ -30,8 +29,8 @@ import (
 
 	"github.com/ghodss/yaml"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
+	loggin "github.com/wso2/apk/adapter/internal/logging"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
-	"github.com/wso2/apk/adapter/pkg/logging"
 )
 
 // ToJSON converts a single YAML document into a JSON document
@@ -62,11 +61,7 @@ func FindAPIDefinitionVersion(jsn []byte) string {
 
 	err := json.Unmarshal(jsn, &result)
 	if err != nil {
-		logger.LoggerOasparser.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("Error while JSON unmarshalling to find the API definition version. %s", err.Error()),
-			Severity:  logging.MINOR,
-			ErrorCode: 2209,
-		})
+		logger.LoggerOasparser.ErrorC(loggin.GetErrorByCode(2209, err.Error()))
 	}
 
 	if _, ok := result[constants.Swagger]; ok {
@@ -77,18 +72,10 @@ func FindAPIDefinitionVersion(jsn []byte) string {
 		if strings.HasPrefix(versionNumber.(string), "2") {
 			return constants.AsyncAPI2
 		}
-		logger.LoggerOasparser.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("AsyncAPI version %s is not supported.", versionNumber.(string)),
-			Severity:  logging.MINOR,
-			ErrorCode: 2210,
-		})
+		logger.LoggerOasparser.ErrorC(loggin.GetErrorByCode(2210, versionNumber.(string)))
 		return constants.NotSupported
 	}
-	logger.LoggerOasparser.ErrorC(logging.ErrorDetails{
-		Message:   "API definition version is not defined.",
-		Severity:  logging.MINOR,
-		ErrorCode: 2211,
-	})
+	logger.LoggerOasparser.ErrorC(loggin.GetErrorByCode(2211))
 	return constants.NotDefined
 }
 
