@@ -124,7 +124,7 @@ public type HTTPRouteRule record {
 public type HTTPRouteSpec record {
     *CommonRouteSpec;
     string[] hostnames?;
-    HTTPRouteRule[] rules;
+    HTTPRouteRule[] rules=[];
 };
 
 public type Httproute record {|
