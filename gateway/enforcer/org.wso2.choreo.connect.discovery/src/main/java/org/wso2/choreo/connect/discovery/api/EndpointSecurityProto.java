@@ -30,14 +30,13 @@ public final class EndpointSecurityProto {
     java.lang.String[] descriptorData = {
       "\n*wso2/discovery/api/endpoint_security.p" +
       "roto\022\022wso2.discovery.api\032&wso2/discovery" +
-      "/api/security_info.proto\"\223\001\n\020EndpointSec" +
-      "urity\022=\n\023SandBoxSecurityInfo\030\001 \001(\0132 .wso" +
-      "2.discovery.api.SecurityInfo\022@\n\026Producti" +
-      "onSecurityInfo\030\002 \001(\0132 .wso2.discovery.ap" +
-      "i.SecurityInfoB\177\n%org.wso2.choreo.connec" +
-      "t.discovery.apiB\025EndpointSecurityProtoP\001" +
-      "Z=github.com/envoyproxy/go-control-plane" +
-      "/wso2/discovery/api;apib\006proto3"
+      "/api/security_info.proto\"U\n\020EndpointSecu" +
+      "rity\022\020\n\010password\030\001 \001(\t\022\014\n\004type\030\002 \001(\t\022\017\n\007" +
+      "enabled\030\003 \001(\010\022\020\n\010username\030\004 \001(\tB\177\n%org.w" +
+      "so2.choreo.connect.discovery.apiB\025Endpoi" +
+      "ntSecurityProtoP\001Z=github.com/envoyproxy" +
+      "/go-control-plane/wso2/discovery/api;api" +
+      "b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -49,7 +48,7 @@ public final class EndpointSecurityProto {
     internal_static_wso2_discovery_api_EndpointSecurity_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_wso2_discovery_api_EndpointSecurity_descriptor,
-        new java.lang.String[] { "SandBoxSecurityInfo", "ProductionSecurityInfo", });
+        new java.lang.String[] { "Password", "Type", "Enabled", "Username", });
     org.wso2.choreo.connect.discovery.api.SecurityInfoProto.getDescriptor();
   }
 

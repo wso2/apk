@@ -9,11 +9,12 @@ option java_package = "org.wso2.choreo.connect.discovery.api";
 option java_outer_classname = "EndpointSecurityProto";
 option java_multiple_files = true;
 
-// [#protodoc-title: Endpoint]
+// [#protodoc-title: EndpointSecurity]
 
-// Endpoint config model
-// todo(amali) fix endpoint security
+// Endpoint Security config model
 message EndpointSecurity {
-  SecurityInfo SandBoxSecurityInfo = 1;
-  SecurityInfo ProductionSecurityInfo = 2;
+  string password = 1;
+  string type = 2;
+  bool enabled = 3;
+  string username = 4;
 }

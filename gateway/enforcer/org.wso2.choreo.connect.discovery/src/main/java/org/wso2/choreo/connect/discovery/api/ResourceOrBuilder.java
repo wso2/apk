@@ -71,6 +71,21 @@ public interface ResourceOrBuilder extends
   org.wso2.choreo.connect.discovery.api.EndpointClusterOrBuilder getEndpointsOrBuilder();
 
   /**
+   * <code>.wso2.discovery.api.EndpointSecurity endpointSecurity = 7;</code>
+   * @return Whether the endpointSecurity field is set.
+   */
+  boolean hasEndpointSecurity();
+  /**
+   * <code>.wso2.discovery.api.EndpointSecurity endpointSecurity = 7;</code>
+   * @return The endpointSecurity.
+   */
+  org.wso2.choreo.connect.discovery.api.EndpointSecurity getEndpointSecurity();
+  /**
+   * <code>.wso2.discovery.api.EndpointSecurity endpointSecurity = 7;</code>
+   */
+  org.wso2.choreo.connect.discovery.api.EndpointSecurityOrBuilder getEndpointSecurityOrBuilder();
+
+  /**
    * <code>map&lt;string, string&gt; security = 8;</code>
    */
   int getSecurityCount();

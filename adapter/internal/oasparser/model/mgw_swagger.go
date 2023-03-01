@@ -75,7 +75,7 @@ type EndpointCluster struct {
 	// EndpointType enum {failover, loadbalance}. if any other value provided, consider as the default value; which is loadbalance
 	EndpointType   string
 	Config         *EndpointConfig
-	SecurityConfig EndpointSecurity
+	SecurityConfig *EndpointSecurity
 	// Is http2 protocol enabled
 	HTTP2BackendEnabled bool
 }

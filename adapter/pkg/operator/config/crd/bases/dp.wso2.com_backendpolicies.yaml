@@ -47,6 +47,20 @@ spec:
                     - ws
                     - wss
                     type: string
+                  security:
+                    description: SecurityConfig defines enpoint security configurations
+                    properties:
+                      basic:
+                        description: BasicSecurityConfig defines basic security configurations
+                        properties:
+                          password:
+                            type: string
+                          username:
+                            type: string
+                        type: object
+                      type:
+                        type: string
+                    type: object
                   tls:
                     description: TLSConfig defines enpoint TLS configurations
                     properties:
@@ -68,6 +82,20 @@ spec:
                     - ws
                     - wss
                     type: string
+                  security:
+                    description: SecurityConfig defines enpoint security configurations
+                    properties:
+                      basic:
+                        description: BasicSecurityConfig defines basic security configurations
+                        properties:
+                          password:
+                            type: string
+                          username:
+                            type: string
+                        type: object
+                      type:
+                        type: string
+                    type: object
                   tls:
                     description: TLSConfig defines enpoint TLS configurations
                     properties:

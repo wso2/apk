@@ -53,11 +53,24 @@ type BackendConfigs struct {
 	// +kubebuilder:validation:Enum=http;https;ws;wss
 	Protocol BackendProtocolType `json:"protocol"`
 	TLS      TLSConfig           `json:"tls,omitempty"`
+	Security SecurityConfig      `json:"security,omitempty"`
 }
 
 // TLSConfig defines enpoint TLS configurations
 type TLSConfig struct {
 	CertificateInline string `json:"certificateInline,omitempty"`
+}
+
+// SecurityConfig defines enpoint security configurations
+type SecurityConfig struct {
+	Type  string              `json:"type,omitempty"`
+	Basic BasicSecurityConfig `json:"basic,omitempty"`
+}
+
+// BasicSecurityConfig defines basic security configurations
+type BasicSecurityConfig struct {
+	Username string `json:"username,omitempty"`
+	Password string `json:"password,omitempty"`
 }
 
 // BackendPolicyStatus defines the observed state of BackendPolicy

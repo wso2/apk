@@ -415,12 +415,13 @@ func (apiReconciler *APIReconciler) getBackendProperties(ctx context.Context,
 				Name:      string(backend.Name),
 				Namespace: utils.GetNamespace(backend.Namespace, httpRoute.Namespace),
 			}
-			tls, protocol := apiReconciler.getBackendConfigs(ctx, backendNamespacedName)
+			tls, protocol, security := apiReconciler.getBackendConfigs(ctx, backendNamespacedName)
 			backendPropertyMapping[backendNamespacedName] = dpv1alpha1.BackendProperties{
 				ResolvedHostname: apiReconciler.getHostNameForBackend(ctx,
 					backend, httpRoute.Namespace),
 				TLS:      tls,
 				Protocol: protocol,
+				Security: security,
 			}
 		}
 	}
@@ -448,9 +449,10 @@ func (apiReconciler *APIReconciler) getHostNameForBackend(ctx context.Context, b
 
 // getTLSConfigForBackend resolves backend TLS configurations.
 func (apiReconciler *APIReconciler) getBackendConfigs(ctx context.Context,
-	serviceNamespacedName types.NamespacedName) (dpv1alpha1.TLSConfig, dpv1alpha1.BackendProtocolType) {
+	serviceNamespacedName types.NamespacedName) (dpv1alpha1.TLSConfig, dpv1alpha1.BackendProtocolType, dpv1alpha1.SecurityConfig) {
 	tlsConfig := dpv1alpha1.TLSConfig{}
 	protocol := dpv1alpha1.HTTPProtocol
+	security := dpv1alpha1.SecurityConfig{}
 	backendPolicyList := &dpv1alpha1.BackendPolicyList{}
 	if err := apiReconciler.client.List(ctx, backendPolicyList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(serviceBackendPolicyIndex, serviceNamespacedName.String()),
@@ -467,9 +469,11 @@ func (apiReconciler *APIReconciler) getBackendConfigs(ctx context.Context,
 		if backendPolicy.Spec.Override != nil {
 			tlsConfig = backendPolicy.Spec.Override.TLS
 			backendProtocol = backendPolicy.Spec.Override.Protocol
+			security = backendPolicy.Spec.Override.Security
 		} else if backendPolicy.Spec.Default != nil {
 			tlsConfig = backendPolicy.Spec.Default.TLS
 			backendProtocol = backendPolicy.Spec.Default.Protocol
+			security = backendPolicy.Spec.Default.Security
 		}
 		if len(backendProtocol) > 0 {
 			switch protocol {
@@ -486,7 +490,7 @@ func (apiReconciler *APIReconciler) getBackendConfigs(ctx context.Context,
 			}
 		}
 	}
-	return tlsConfig, protocol
+	return tlsConfig, protocol, security
 }
 
 // getAPIForHTTPRoute triggers the API controller reconcile method based on the changes detected

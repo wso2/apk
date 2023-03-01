@@ -91,6 +91,19 @@ private static final long serialVersionUID = 0L;
 
             break;
           }
+          case 58: {
+            org.wso2.choreo.connect.discovery.api.EndpointSecurity.Builder subBuilder = null;
+            if (endpointSecurity_ != null) {
+              subBuilder = endpointSecurity_.toBuilder();
+            }
+            endpointSecurity_ = input.readMessage(org.wso2.choreo.connect.discovery.api.EndpointSecurity.parser(), extensionRegistry);
+            if (subBuilder != null) {
+              subBuilder.mergeFrom(endpointSecurity_);
+              endpointSecurity_ = subBuilder.buildPartial();
+            }
+
+            break;
+          }
           case 66: {
             if (!((mutable_bitField0_ & 0x00000002) != 0)) {
               security_ = com.google.protobuf.MapField.newMapField(
@@ -305,6 +318,32 @@ private static final long serialVersionUID = 0L;
     return getEndpoints();
   }
 
+  public static final int ENDPOINTSECURITY_FIELD_NUMBER = 7;
+  private org.wso2.choreo.connect.discovery.api.EndpointSecurity endpointSecurity_;
+  /**
+   * <code>.wso2.discovery.api.EndpointSecurity endpointSecurity = 7;</code>
+   * @return Whether the endpointSecurity field is set.
+   */
+  @java.lang.Override
+  public boolean hasEndpointSecurity() {
+    return endpointSecurity_ != null;
+  }
+  /**
+   * <code>.wso2.discovery.api.EndpointSecurity endpointSecurity = 7;</code>
+   * @return The endpointSecurity.
+   */
+  @java.lang.Override
+  public org.wso2.choreo.connect.discovery.api.EndpointSecurity getEndpointSecurity() {
+    return endpointSecurity_ == null ? org.wso2.choreo.connect.discovery.api.EndpointSecurity.getDefaultInstance() : endpointSecurity_;
+  }
+  /**
+   * <code>.wso2.discovery.api.EndpointSecurity endpointSecurity = 7;</code>
+   */
+  @java.lang.Override
+  public org.wso2.choreo.connect.discovery.api.EndpointSecurityOrBuilder getEndpointSecurityOrBuilder() {
+    return getEndpointSecurity();
+  }
+
   public static final int SECURITY_FIELD_NUMBER = 8;
   private static final class SecurityDefaultEntryHolder {
     static final com.google.protobuf.MapEntry<
@@ -447,6 +486,9 @@ private static final long serialVersionUID = 0L;
     if (endpoints_ != null) {
       output.writeMessage(6, getEndpoints());
     }
+    if (endpointSecurity_ != null) {
+      output.writeMessage(7, getEndpointSecurity());
+    }
     com.google.protobuf.GeneratedMessageV3
       .serializeStringMapTo(
         output,
@@ -478,6 +520,10 @@ private static final long serialVersionUID = 0L;
     if (endpoints_ != null) {
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(6, getEndpoints());
+    }
+    if (endpointSecurity_ != null) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(7, getEndpointSecurity());
     }
     for (java.util.Map.Entry<java.lang.String, java.lang.String> entry
          : internalGetSecurity().getMap().entrySet()) {
@@ -523,6 +569,11 @@ private static final long serialVersionUID = 0L;
       if (!getEndpoints()
           .equals(other.getEndpoints())) return false;
     }
+    if (hasEndpointSecurity() != other.hasEndpointSecurity()) return false;
+    if (hasEndpointSecurity()) {
+      if (!getEndpointSecurity()
+          .equals(other.getEndpointSecurity())) return false;
+    }
     if (!internalGetSecurity().equals(
         other.internalGetSecurity())) return false;
     if (!getSchemesList()
@@ -549,6 +600,10 @@ private static final long serialVersionUID = 0L;
     if (hasEndpoints()) {
       hash = (37 * hash) + ENDPOINTS_FIELD_NUMBER;
       hash = (53 * hash) + getEndpoints().hashCode();
+    }
+    if (hasEndpointSecurity()) {
+      hash = (37 * hash) + ENDPOINTSECURITY_FIELD_NUMBER;
+      hash = (53 * hash) + getEndpointSecurity().hashCode();
     }
     if (!internalGetSecurity().getMap().isEmpty()) {
       hash = (37 * hash) + SECURITY_FIELD_NUMBER;
@@ -734,6 +789,12 @@ private static final long serialVersionUID = 0L;
         endpoints_ = null;
         endpointsBuilder_ = null;
       }
+      if (endpointSecurityBuilder_ == null) {
+        endpointSecurity_ = null;
+      } else {
+        endpointSecurity_ = null;
+        endpointSecurityBuilder_ = null;
+      }
       internalGetMutableSecurity().clear();
       schemes_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       bitField0_ = (bitField0_ & ~0x00000004);
@@ -779,6 +840,11 @@ private static final long serialVersionUID = 0L;
         result.endpoints_ = endpoints_;
       } else {
         result.endpoints_ = endpointsBuilder_.build();
+      }
+      if (endpointSecurityBuilder_ == null) {
+        result.endpointSecurity_ = endpointSecurity_;
+      } else {
+        result.endpointSecurity_ = endpointSecurityBuilder_.build();
       }
       result.security_ = internalGetSecurity();
       result.security_.makeImmutable();
@@ -871,6 +937,9 @@ private static final long serialVersionUID = 0L;
       }
       if (other.hasEndpoints()) {
         mergeEndpoints(other.getEndpoints());
+      }
+      if (other.hasEndpointSecurity()) {
+        mergeEndpointSecurity(other.getEndpointSecurity());
       }
       internalGetMutableSecurity().mergeFrom(
           other.internalGetSecurity());
@@ -1423,6 +1492,125 @@ private static final long serialVersionUID = 0L;
         endpoints_ = null;
       }
       return endpointsBuilder_;
+    }
+
+    private org.wso2.choreo.connect.discovery.api.EndpointSecurity endpointSecurity_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+        org.wso2.choreo.connect.discovery.api.EndpointSecurity, org.wso2.choreo.connect.discovery.api.EndpointSecurity.Builder, org.wso2.choreo.connect.discovery.api.EndpointSecurityOrBuilder> endpointSecurityBuilder_;
+    /**
+     * <code>.wso2.discovery.api.EndpointSecurity endpointSecurity = 7;</code>
+     * @return Whether the endpointSecurity field is set.
+     */
+    public boolean hasEndpointSecurity() {
+      return endpointSecurityBuilder_ != null || endpointSecurity_ != null;
+    }
+    /**
+     * <code>.wso2.discovery.api.EndpointSecurity endpointSecurity = 7;</code>
+     * @return The endpointSecurity.
+     */
+    public org.wso2.choreo.connect.discovery.api.EndpointSecurity getEndpointSecurity() {
+      if (endpointSecurityBuilder_ == null) {
+        return endpointSecurity_ == null ? org.wso2.choreo.connect.discovery.api.EndpointSecurity.getDefaultInstance() : endpointSecurity_;
+      } else {
+        return endpointSecurityBuilder_.getMessage();
+      }
+    }
+    /**
+     * <code>.wso2.discovery.api.EndpointSecurity endpointSecurity = 7;</code>
+     */
+    public Builder setEndpointSecurity(org.wso2.choreo.connect.discovery.api.EndpointSecurity value) {
+      if (endpointSecurityBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        endpointSecurity_ = value;
+        onChanged();
+      } else {
+        endpointSecurityBuilder_.setMessage(value);
+      }
+
+      return this;
+    }
+    /**
+     * <code>.wso2.discovery.api.EndpointSecurity endpointSecurity = 7;</code>
+     */
+    public Builder setEndpointSecurity(
+        org.wso2.choreo.connect.discovery.api.EndpointSecurity.Builder builderForValue) {
+      if (endpointSecurityBuilder_ == null) {
+        endpointSecurity_ = builderForValue.build();
+        onChanged();
+      } else {
+        endpointSecurityBuilder_.setMessage(builderForValue.build());
+      }
+
+      return this;
+    }
+    /**
+     * <code>.wso2.discovery.api.EndpointSecurity endpointSecurity = 7;</code>
+     */
+    public Builder mergeEndpointSecurity(org.wso2.choreo.connect.discovery.api.EndpointSecurity value) {
+      if (endpointSecurityBuilder_ == null) {
+        if (endpointSecurity_ != null) {
+          endpointSecurity_ =
+            org.wso2.choreo.connect.discovery.api.EndpointSecurity.newBuilder(endpointSecurity_).mergeFrom(value).buildPartial();
+        } else {
+          endpointSecurity_ = value;
+        }
+        onChanged();
+      } else {
+        endpointSecurityBuilder_.mergeFrom(value);
+      }
+
+      return this;
+    }
+    /**
+     * <code>.wso2.discovery.api.EndpointSecurity endpointSecurity = 7;</code>
+     */
+    public Builder clearEndpointSecurity() {
+      if (endpointSecurityBuilder_ == null) {
+        endpointSecurity_ = null;
+        onChanged();
+      } else {
+        endpointSecurity_ = null;
+        endpointSecurityBuilder_ = null;
+      }
+
+      return this;
+    }
+    /**
+     * <code>.wso2.discovery.api.EndpointSecurity endpointSecurity = 7;</code>
+     */
+    public org.wso2.choreo.connect.discovery.api.EndpointSecurity.Builder getEndpointSecurityBuilder() {
+      
+      onChanged();
+      return getEndpointSecurityFieldBuilder().getBuilder();
+    }
+    /**
+     * <code>.wso2.discovery.api.EndpointSecurity endpointSecurity = 7;</code>
+     */
+    public org.wso2.choreo.connect.discovery.api.EndpointSecurityOrBuilder getEndpointSecurityOrBuilder() {
+      if (endpointSecurityBuilder_ != null) {
+        return endpointSecurityBuilder_.getMessageOrBuilder();
+      } else {
+        return endpointSecurity_ == null ?
+            org.wso2.choreo.connect.discovery.api.EndpointSecurity.getDefaultInstance() : endpointSecurity_;
+      }
+    }
+    /**
+     * <code>.wso2.discovery.api.EndpointSecurity endpointSecurity = 7;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+        org.wso2.choreo.connect.discovery.api.EndpointSecurity, org.wso2.choreo.connect.discovery.api.EndpointSecurity.Builder, org.wso2.choreo.connect.discovery.api.EndpointSecurityOrBuilder> 
+        getEndpointSecurityFieldBuilder() {
+      if (endpointSecurityBuilder_ == null) {
+        endpointSecurityBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+            org.wso2.choreo.connect.discovery.api.EndpointSecurity, org.wso2.choreo.connect.discovery.api.EndpointSecurity.Builder, org.wso2.choreo.connect.discovery.api.EndpointSecurityOrBuilder>(
+                getEndpointSecurity(),
+                getParentForChildren(),
+                isClean());
+        endpointSecurity_ = null;
+      }
+      return endpointSecurityBuilder_;
     }
 
     private com.google.protobuf.MapField<

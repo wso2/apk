@@ -8,32 +8,44 @@ public interface EndpointSecurityOrBuilder extends
     com.google.protobuf.MessageOrBuilder {
 
   /**
-   * <code>.wso2.discovery.api.SecurityInfo SandBoxSecurityInfo = 1;</code>
-   * @return Whether the sandBoxSecurityInfo field is set.
+   * <code>string password = 1;</code>
+   * @return The password.
    */
-  boolean hasSandBoxSecurityInfo();
+  java.lang.String getPassword();
   /**
-   * <code>.wso2.discovery.api.SecurityInfo SandBoxSecurityInfo = 1;</code>
-   * @return The sandBoxSecurityInfo.
+   * <code>string password = 1;</code>
+   * @return The bytes for password.
    */
-  org.wso2.choreo.connect.discovery.api.SecurityInfo getSandBoxSecurityInfo();
-  /**
-   * <code>.wso2.discovery.api.SecurityInfo SandBoxSecurityInfo = 1;</code>
-   */
-  org.wso2.choreo.connect.discovery.api.SecurityInfoOrBuilder getSandBoxSecurityInfoOrBuilder();
+  com.google.protobuf.ByteString
+      getPasswordBytes();
 
   /**
-   * <code>.wso2.discovery.api.SecurityInfo ProductionSecurityInfo = 2;</code>
-   * @return Whether the productionSecurityInfo field is set.
+   * <code>string type = 2;</code>
+   * @return The type.
    */
-  boolean hasProductionSecurityInfo();
+  java.lang.String getType();
   /**
-   * <code>.wso2.discovery.api.SecurityInfo ProductionSecurityInfo = 2;</code>
-   * @return The productionSecurityInfo.
+   * <code>string type = 2;</code>
+   * @return The bytes for type.
    */
-  org.wso2.choreo.connect.discovery.api.SecurityInfo getProductionSecurityInfo();
+  com.google.protobuf.ByteString
+      getTypeBytes();
+
   /**
-   * <code>.wso2.discovery.api.SecurityInfo ProductionSecurityInfo = 2;</code>
+   * <code>bool enabled = 3;</code>
+   * @return The enabled.
    */
-  org.wso2.choreo.connect.discovery.api.SecurityInfoOrBuilder getProductionSecurityInfoOrBuilder();
+  boolean getEnabled();
+
+  /**
+   * <code>string username = 4;</code>
+   * @return The username.
+   */
+  java.lang.String getUsername();
+  /**
+   * <code>string username = 4;</code>
+   * @return The bytes for username.
+   */
+  com.google.protobuf.ByteString
+      getUsernameBytes();
 }

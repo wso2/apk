@@ -145,42 +145,29 @@ private static final long serialVersionUID = 0L;
             break;
           }
           case 114: {
-            org.wso2.choreo.connect.discovery.api.EndpointSecurity.Builder subBuilder = null;
-            if (endpointSecurity_ != null) {
-              subBuilder = endpointSecurity_.toBuilder();
-            }
-            endpointSecurity_ = input.readMessage(org.wso2.choreo.connect.discovery.api.EndpointSecurity.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(endpointSecurity_);
-              endpointSecurity_ = subBuilder.buildPartial();
-            }
-
-            break;
-          }
-          case 122: {
             java.lang.String s = input.readStringRequireUtf8();
 
             authorizationHeader_ = s;
             break;
           }
-          case 128: {
+          case 120: {
 
             disableSecurity_ = input.readBool();
             break;
           }
-          case 138: {
+          case 130: {
             java.lang.String s = input.readStringRequireUtf8();
 
             vhost_ = s;
             break;
           }
-          case 146: {
+          case 138: {
             java.lang.String s = input.readStringRequireUtf8();
 
             organizationId_ = s;
             break;
           }
-          case 162: {
+          case 154: {
             if (!((mutable_bitField0_ & 0x00000008) != 0)) {
               clientCertificates_ = new java.util.ArrayList<org.wso2.choreo.connect.discovery.api.Certificate>();
               mutable_bitField0_ |= 0x00000008;
@@ -189,18 +176,18 @@ private static final long serialVersionUID = 0L;
                 input.readMessage(org.wso2.choreo.connect.discovery.api.Certificate.parser(), extensionRegistry));
             break;
           }
-          case 170: {
+          case 162: {
             java.lang.String s = input.readStringRequireUtf8();
 
             mutualSSL_ = s;
             break;
           }
-          case 176: {
+          case 168: {
 
             applicationSecurity_ = input.readBool();
             break;
           }
-          case 200: {
+          case 192: {
 
             systemAPI_ = input.readBool();
             break;
@@ -681,36 +668,10 @@ private static final long serialVersionUID = 0L;
     return security_.get(index);
   }
 
-  public static final int ENDPOINTSECURITY_FIELD_NUMBER = 14;
-  private org.wso2.choreo.connect.discovery.api.EndpointSecurity endpointSecurity_;
-  /**
-   * <code>.wso2.discovery.api.EndpointSecurity endpointSecurity = 14;</code>
-   * @return Whether the endpointSecurity field is set.
-   */
-  @java.lang.Override
-  public boolean hasEndpointSecurity() {
-    return endpointSecurity_ != null;
-  }
-  /**
-   * <code>.wso2.discovery.api.EndpointSecurity endpointSecurity = 14;</code>
-   * @return The endpointSecurity.
-   */
-  @java.lang.Override
-  public org.wso2.choreo.connect.discovery.api.EndpointSecurity getEndpointSecurity() {
-    return endpointSecurity_ == null ? org.wso2.choreo.connect.discovery.api.EndpointSecurity.getDefaultInstance() : endpointSecurity_;
-  }
-  /**
-   * <code>.wso2.discovery.api.EndpointSecurity endpointSecurity = 14;</code>
-   */
-  @java.lang.Override
-  public org.wso2.choreo.connect.discovery.api.EndpointSecurityOrBuilder getEndpointSecurityOrBuilder() {
-    return getEndpointSecurity();
-  }
-
-  public static final int AUTHORIZATIONHEADER_FIELD_NUMBER = 15;
+  public static final int AUTHORIZATIONHEADER_FIELD_NUMBER = 14;
   private volatile java.lang.Object authorizationHeader_;
   /**
-   * <code>string authorizationHeader = 15;</code>
+   * <code>string authorizationHeader = 14;</code>
    * @return The authorizationHeader.
    */
   @java.lang.Override
@@ -727,7 +688,7 @@ private static final long serialVersionUID = 0L;
     }
   }
   /**
-   * <code>string authorizationHeader = 15;</code>
+   * <code>string authorizationHeader = 14;</code>
    * @return The bytes for authorizationHeader.
    */
   @java.lang.Override
@@ -745,10 +706,10 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int DISABLESECURITY_FIELD_NUMBER = 16;
+  public static final int DISABLESECURITY_FIELD_NUMBER = 15;
   private boolean disableSecurity_;
   /**
-   * <code>bool disableSecurity = 16;</code>
+   * <code>bool disableSecurity = 15;</code>
    * @return The disableSecurity.
    */
   @java.lang.Override
@@ -756,10 +717,10 @@ private static final long serialVersionUID = 0L;
     return disableSecurity_;
   }
 
-  public static final int VHOST_FIELD_NUMBER = 17;
+  public static final int VHOST_FIELD_NUMBER = 16;
   private volatile java.lang.Object vhost_;
   /**
-   * <code>string vhost = 17;</code>
+   * <code>string vhost = 16;</code>
    * @return The vhost.
    */
   @java.lang.Override
@@ -776,7 +737,7 @@ private static final long serialVersionUID = 0L;
     }
   }
   /**
-   * <code>string vhost = 17;</code>
+   * <code>string vhost = 16;</code>
    * @return The bytes for vhost.
    */
   @java.lang.Override
@@ -794,10 +755,10 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int ORGANIZATIONID_FIELD_NUMBER = 18;
+  public static final int ORGANIZATIONID_FIELD_NUMBER = 17;
   private volatile java.lang.Object organizationId_;
   /**
-   * <code>string organizationId = 18;</code>
+   * <code>string organizationId = 17;</code>
    * @return The organizationId.
    */
   @java.lang.Override
@@ -814,7 +775,7 @@ private static final long serialVersionUID = 0L;
     }
   }
   /**
-   * <code>string organizationId = 18;</code>
+   * <code>string organizationId = 17;</code>
    * @return The bytes for organizationId.
    */
   @java.lang.Override
@@ -832,14 +793,14 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int CLIENTCERTIFICATES_FIELD_NUMBER = 20;
+  public static final int CLIENTCERTIFICATES_FIELD_NUMBER = 19;
   private java.util.List<org.wso2.choreo.connect.discovery.api.Certificate> clientCertificates_;
   /**
    * <pre>
-   * bool isMockedApi = 19;
+   * bool isMockedApi = 18;
    * </pre>
    *
-   * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
+   * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
    */
   @java.lang.Override
   public java.util.List<org.wso2.choreo.connect.discovery.api.Certificate> getClientCertificatesList() {
@@ -847,10 +808,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * bool isMockedApi = 19;
+   * bool isMockedApi = 18;
    * </pre>
    *
-   * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
+   * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
    */
   @java.lang.Override
   public java.util.List<? extends org.wso2.choreo.connect.discovery.api.CertificateOrBuilder> 
@@ -859,10 +820,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * bool isMockedApi = 19;
+   * bool isMockedApi = 18;
    * </pre>
    *
-   * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
+   * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
    */
   @java.lang.Override
   public int getClientCertificatesCount() {
@@ -870,10 +831,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * bool isMockedApi = 19;
+   * bool isMockedApi = 18;
    * </pre>
    *
-   * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
+   * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
    */
   @java.lang.Override
   public org.wso2.choreo.connect.discovery.api.Certificate getClientCertificates(int index) {
@@ -881,10 +842,10 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * bool isMockedApi = 19;
+   * bool isMockedApi = 18;
    * </pre>
    *
-   * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
+   * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
    */
   @java.lang.Override
   public org.wso2.choreo.connect.discovery.api.CertificateOrBuilder getClientCertificatesOrBuilder(
@@ -892,10 +853,10 @@ private static final long serialVersionUID = 0L;
     return clientCertificates_.get(index);
   }
 
-  public static final int MUTUALSSL_FIELD_NUMBER = 21;
+  public static final int MUTUALSSL_FIELD_NUMBER = 20;
   private volatile java.lang.Object mutualSSL_;
   /**
-   * <code>string mutualSSL = 21;</code>
+   * <code>string mutualSSL = 20;</code>
    * @return The mutualSSL.
    */
   @java.lang.Override
@@ -912,7 +873,7 @@ private static final long serialVersionUID = 0L;
     }
   }
   /**
-   * <code>string mutualSSL = 21;</code>
+   * <code>string mutualSSL = 20;</code>
    * @return The bytes for mutualSSL.
    */
   @java.lang.Override
@@ -930,10 +891,10 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int APPLICATIONSECURITY_FIELD_NUMBER = 22;
+  public static final int APPLICATIONSECURITY_FIELD_NUMBER = 21;
   private boolean applicationSecurity_;
   /**
-   * <code>bool applicationSecurity = 22;</code>
+   * <code>bool applicationSecurity = 21;</code>
    * @return The applicationSecurity.
    */
   @java.lang.Override
@@ -941,15 +902,15 @@ private static final long serialVersionUID = 0L;
     return applicationSecurity_;
   }
 
-  public static final int SYSTEMAPI_FIELD_NUMBER = 25;
+  public static final int SYSTEMAPI_FIELD_NUMBER = 24;
   private boolean systemAPI_;
   /**
    * <pre>
-   *&#47; string graphQLSchema = 23;
-   * repeated GraphqlComplexity graphqlComplexityInfo = 24;
+   *&#47; string graphQLSchema = 22;
+   * repeated GraphqlComplexity graphqlComplexityInfo = 23;
    * </pre>
    *
-   * <code>bool systemAPI = 25;</code>
+   * <code>bool systemAPI = 24;</code>
    * @return The systemAPI.
    */
   @java.lang.Override
@@ -1004,32 +965,29 @@ private static final long serialVersionUID = 0L;
     for (int i = 0; i < security_.size(); i++) {
       output.writeMessage(13, security_.get(i));
     }
-    if (endpointSecurity_ != null) {
-      output.writeMessage(14, getEndpointSecurity());
-    }
     if (!getAuthorizationHeaderBytes().isEmpty()) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 15, authorizationHeader_);
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 14, authorizationHeader_);
     }
     if (disableSecurity_ != false) {
-      output.writeBool(16, disableSecurity_);
+      output.writeBool(15, disableSecurity_);
     }
     if (!getVhostBytes().isEmpty()) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 17, vhost_);
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 16, vhost_);
     }
     if (!getOrganizationIdBytes().isEmpty()) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 18, organizationId_);
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 17, organizationId_);
     }
     for (int i = 0; i < clientCertificates_.size(); i++) {
-      output.writeMessage(20, clientCertificates_.get(i));
+      output.writeMessage(19, clientCertificates_.get(i));
     }
     if (!getMutualSSLBytes().isEmpty()) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 21, mutualSSL_);
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 20, mutualSSL_);
     }
     if (applicationSecurity_ != false) {
-      output.writeBool(22, applicationSecurity_);
+      output.writeBool(21, applicationSecurity_);
     }
     if (systemAPI_ != false) {
-      output.writeBool(25, systemAPI_);
+      output.writeBool(24, systemAPI_);
     }
     unknownFields.writeTo(output);
   }
@@ -1076,37 +1034,33 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(13, security_.get(i));
     }
-    if (endpointSecurity_ != null) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(14, getEndpointSecurity());
-    }
     if (!getAuthorizationHeaderBytes().isEmpty()) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(15, authorizationHeader_);
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(14, authorizationHeader_);
     }
     if (disableSecurity_ != false) {
       size += com.google.protobuf.CodedOutputStream
-        .computeBoolSize(16, disableSecurity_);
+        .computeBoolSize(15, disableSecurity_);
     }
     if (!getVhostBytes().isEmpty()) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(17, vhost_);
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(16, vhost_);
     }
     if (!getOrganizationIdBytes().isEmpty()) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(18, organizationId_);
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(17, organizationId_);
     }
     for (int i = 0; i < clientCertificates_.size(); i++) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(20, clientCertificates_.get(i));
+        .computeMessageSize(19, clientCertificates_.get(i));
     }
     if (!getMutualSSLBytes().isEmpty()) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(21, mutualSSL_);
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(20, mutualSSL_);
     }
     if (applicationSecurity_ != false) {
       size += com.google.protobuf.CodedOutputStream
-        .computeBoolSize(22, applicationSecurity_);
+        .computeBoolSize(21, applicationSecurity_);
     }
     if (systemAPI_ != false) {
       size += com.google.protobuf.CodedOutputStream
-        .computeBoolSize(25, systemAPI_);
+        .computeBoolSize(24, systemAPI_);
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -1145,11 +1099,6 @@ private static final long serialVersionUID = 0L;
         .equals(other.getSecuritySchemeList())) return false;
     if (!getSecurityList()
         .equals(other.getSecurityList())) return false;
-    if (hasEndpointSecurity() != other.hasEndpointSecurity()) return false;
-    if (hasEndpointSecurity()) {
-      if (!getEndpointSecurity()
-          .equals(other.getEndpointSecurity())) return false;
-    }
     if (!getAuthorizationHeader()
         .equals(other.getAuthorizationHeader())) return false;
     if (getDisableSecurity()
@@ -1204,10 +1153,6 @@ private static final long serialVersionUID = 0L;
     if (getSecurityCount() > 0) {
       hash = (37 * hash) + SECURITY_FIELD_NUMBER;
       hash = (53 * hash) + getSecurityList().hashCode();
-    }
-    if (hasEndpointSecurity()) {
-      hash = (37 * hash) + ENDPOINTSECURITY_FIELD_NUMBER;
-      hash = (53 * hash) + getEndpointSecurity().hashCode();
     }
     hash = (37 * hash) + AUTHORIZATIONHEADER_FIELD_NUMBER;
     hash = (53 * hash) + getAuthorizationHeader().hashCode();
@@ -1405,12 +1350,6 @@ private static final long serialVersionUID = 0L;
       } else {
         securityBuilder_.clear();
       }
-      if (endpointSecurityBuilder_ == null) {
-        endpointSecurity_ = null;
-      } else {
-        endpointSecurity_ = null;
-        endpointSecurityBuilder_ = null;
-      }
       authorizationHeader_ = "";
 
       disableSecurity_ = false;
@@ -1492,11 +1431,6 @@ private static final long serialVersionUID = 0L;
         result.security_ = security_;
       } else {
         result.security_ = securityBuilder_.build();
-      }
-      if (endpointSecurityBuilder_ == null) {
-        result.endpointSecurity_ = endpointSecurity_;
-      } else {
-        result.endpointSecurity_ = endpointSecurityBuilder_.build();
       }
       result.authorizationHeader_ = authorizationHeader_;
       result.disableSecurity_ = disableSecurity_;
@@ -1671,9 +1605,6 @@ private static final long serialVersionUID = 0L;
             securityBuilder_.addAllMessages(other.security_);
           }
         }
-      }
-      if (other.hasEndpointSecurity()) {
-        mergeEndpointSecurity(other.getEndpointSecurity());
       }
       if (!other.getAuthorizationHeader().isEmpty()) {
         authorizationHeader_ = other.authorizationHeader_;
@@ -3104,128 +3035,9 @@ private static final long serialVersionUID = 0L;
       return securityBuilder_;
     }
 
-    private org.wso2.choreo.connect.discovery.api.EndpointSecurity endpointSecurity_;
-    private com.google.protobuf.SingleFieldBuilderV3<
-        org.wso2.choreo.connect.discovery.api.EndpointSecurity, org.wso2.choreo.connect.discovery.api.EndpointSecurity.Builder, org.wso2.choreo.connect.discovery.api.EndpointSecurityOrBuilder> endpointSecurityBuilder_;
-    /**
-     * <code>.wso2.discovery.api.EndpointSecurity endpointSecurity = 14;</code>
-     * @return Whether the endpointSecurity field is set.
-     */
-    public boolean hasEndpointSecurity() {
-      return endpointSecurityBuilder_ != null || endpointSecurity_ != null;
-    }
-    /**
-     * <code>.wso2.discovery.api.EndpointSecurity endpointSecurity = 14;</code>
-     * @return The endpointSecurity.
-     */
-    public org.wso2.choreo.connect.discovery.api.EndpointSecurity getEndpointSecurity() {
-      if (endpointSecurityBuilder_ == null) {
-        return endpointSecurity_ == null ? org.wso2.choreo.connect.discovery.api.EndpointSecurity.getDefaultInstance() : endpointSecurity_;
-      } else {
-        return endpointSecurityBuilder_.getMessage();
-      }
-    }
-    /**
-     * <code>.wso2.discovery.api.EndpointSecurity endpointSecurity = 14;</code>
-     */
-    public Builder setEndpointSecurity(org.wso2.choreo.connect.discovery.api.EndpointSecurity value) {
-      if (endpointSecurityBuilder_ == null) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        endpointSecurity_ = value;
-        onChanged();
-      } else {
-        endpointSecurityBuilder_.setMessage(value);
-      }
-
-      return this;
-    }
-    /**
-     * <code>.wso2.discovery.api.EndpointSecurity endpointSecurity = 14;</code>
-     */
-    public Builder setEndpointSecurity(
-        org.wso2.choreo.connect.discovery.api.EndpointSecurity.Builder builderForValue) {
-      if (endpointSecurityBuilder_ == null) {
-        endpointSecurity_ = builderForValue.build();
-        onChanged();
-      } else {
-        endpointSecurityBuilder_.setMessage(builderForValue.build());
-      }
-
-      return this;
-    }
-    /**
-     * <code>.wso2.discovery.api.EndpointSecurity endpointSecurity = 14;</code>
-     */
-    public Builder mergeEndpointSecurity(org.wso2.choreo.connect.discovery.api.EndpointSecurity value) {
-      if (endpointSecurityBuilder_ == null) {
-        if (endpointSecurity_ != null) {
-          endpointSecurity_ =
-            org.wso2.choreo.connect.discovery.api.EndpointSecurity.newBuilder(endpointSecurity_).mergeFrom(value).buildPartial();
-        } else {
-          endpointSecurity_ = value;
-        }
-        onChanged();
-      } else {
-        endpointSecurityBuilder_.mergeFrom(value);
-      }
-
-      return this;
-    }
-    /**
-     * <code>.wso2.discovery.api.EndpointSecurity endpointSecurity = 14;</code>
-     */
-    public Builder clearEndpointSecurity() {
-      if (endpointSecurityBuilder_ == null) {
-        endpointSecurity_ = null;
-        onChanged();
-      } else {
-        endpointSecurity_ = null;
-        endpointSecurityBuilder_ = null;
-      }
-
-      return this;
-    }
-    /**
-     * <code>.wso2.discovery.api.EndpointSecurity endpointSecurity = 14;</code>
-     */
-    public org.wso2.choreo.connect.discovery.api.EndpointSecurity.Builder getEndpointSecurityBuilder() {
-      
-      onChanged();
-      return getEndpointSecurityFieldBuilder().getBuilder();
-    }
-    /**
-     * <code>.wso2.discovery.api.EndpointSecurity endpointSecurity = 14;</code>
-     */
-    public org.wso2.choreo.connect.discovery.api.EndpointSecurityOrBuilder getEndpointSecurityOrBuilder() {
-      if (endpointSecurityBuilder_ != null) {
-        return endpointSecurityBuilder_.getMessageOrBuilder();
-      } else {
-        return endpointSecurity_ == null ?
-            org.wso2.choreo.connect.discovery.api.EndpointSecurity.getDefaultInstance() : endpointSecurity_;
-      }
-    }
-    /**
-     * <code>.wso2.discovery.api.EndpointSecurity endpointSecurity = 14;</code>
-     */
-    private com.google.protobuf.SingleFieldBuilderV3<
-        org.wso2.choreo.connect.discovery.api.EndpointSecurity, org.wso2.choreo.connect.discovery.api.EndpointSecurity.Builder, org.wso2.choreo.connect.discovery.api.EndpointSecurityOrBuilder> 
-        getEndpointSecurityFieldBuilder() {
-      if (endpointSecurityBuilder_ == null) {
-        endpointSecurityBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-            org.wso2.choreo.connect.discovery.api.EndpointSecurity, org.wso2.choreo.connect.discovery.api.EndpointSecurity.Builder, org.wso2.choreo.connect.discovery.api.EndpointSecurityOrBuilder>(
-                getEndpointSecurity(),
-                getParentForChildren(),
-                isClean());
-        endpointSecurity_ = null;
-      }
-      return endpointSecurityBuilder_;
-    }
-
     private java.lang.Object authorizationHeader_ = "";
     /**
-     * <code>string authorizationHeader = 15;</code>
+     * <code>string authorizationHeader = 14;</code>
      * @return The authorizationHeader.
      */
     public java.lang.String getAuthorizationHeader() {
@@ -3241,7 +3053,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>string authorizationHeader = 15;</code>
+     * <code>string authorizationHeader = 14;</code>
      * @return The bytes for authorizationHeader.
      */
     public com.google.protobuf.ByteString
@@ -3258,7 +3070,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>string authorizationHeader = 15;</code>
+     * <code>string authorizationHeader = 14;</code>
      * @param value The authorizationHeader to set.
      * @return This builder for chaining.
      */
@@ -3273,7 +3085,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>string authorizationHeader = 15;</code>
+     * <code>string authorizationHeader = 14;</code>
      * @return This builder for chaining.
      */
     public Builder clearAuthorizationHeader() {
@@ -3283,7 +3095,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>string authorizationHeader = 15;</code>
+     * <code>string authorizationHeader = 14;</code>
      * @param value The bytes for authorizationHeader to set.
      * @return This builder for chaining.
      */
@@ -3301,7 +3113,7 @@ private static final long serialVersionUID = 0L;
 
     private boolean disableSecurity_ ;
     /**
-     * <code>bool disableSecurity = 16;</code>
+     * <code>bool disableSecurity = 15;</code>
      * @return The disableSecurity.
      */
     @java.lang.Override
@@ -3309,7 +3121,7 @@ private static final long serialVersionUID = 0L;
       return disableSecurity_;
     }
     /**
-     * <code>bool disableSecurity = 16;</code>
+     * <code>bool disableSecurity = 15;</code>
      * @param value The disableSecurity to set.
      * @return This builder for chaining.
      */
@@ -3320,7 +3132,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>bool disableSecurity = 16;</code>
+     * <code>bool disableSecurity = 15;</code>
      * @return This builder for chaining.
      */
     public Builder clearDisableSecurity() {
@@ -3332,7 +3144,7 @@ private static final long serialVersionUID = 0L;
 
     private java.lang.Object vhost_ = "";
     /**
-     * <code>string vhost = 17;</code>
+     * <code>string vhost = 16;</code>
      * @return The vhost.
      */
     public java.lang.String getVhost() {
@@ -3348,7 +3160,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>string vhost = 17;</code>
+     * <code>string vhost = 16;</code>
      * @return The bytes for vhost.
      */
     public com.google.protobuf.ByteString
@@ -3365,7 +3177,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>string vhost = 17;</code>
+     * <code>string vhost = 16;</code>
      * @param value The vhost to set.
      * @return This builder for chaining.
      */
@@ -3380,7 +3192,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>string vhost = 17;</code>
+     * <code>string vhost = 16;</code>
      * @return This builder for chaining.
      */
     public Builder clearVhost() {
@@ -3390,7 +3202,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>string vhost = 17;</code>
+     * <code>string vhost = 16;</code>
      * @param value The bytes for vhost to set.
      * @return This builder for chaining.
      */
@@ -3408,7 +3220,7 @@ private static final long serialVersionUID = 0L;
 
     private java.lang.Object organizationId_ = "";
     /**
-     * <code>string organizationId = 18;</code>
+     * <code>string organizationId = 17;</code>
      * @return The organizationId.
      */
     public java.lang.String getOrganizationId() {
@@ -3424,7 +3236,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>string organizationId = 18;</code>
+     * <code>string organizationId = 17;</code>
      * @return The bytes for organizationId.
      */
     public com.google.protobuf.ByteString
@@ -3441,7 +3253,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>string organizationId = 18;</code>
+     * <code>string organizationId = 17;</code>
      * @param value The organizationId to set.
      * @return This builder for chaining.
      */
@@ -3456,7 +3268,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>string organizationId = 18;</code>
+     * <code>string organizationId = 17;</code>
      * @return This builder for chaining.
      */
     public Builder clearOrganizationId() {
@@ -3466,7 +3278,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>string organizationId = 18;</code>
+     * <code>string organizationId = 17;</code>
      * @param value The bytes for organizationId to set.
      * @return This builder for chaining.
      */
@@ -3496,10 +3308,10 @@ private static final long serialVersionUID = 0L;
 
     /**
      * <pre>
-     * bool isMockedApi = 19;
+     * bool isMockedApi = 18;
      * </pre>
      *
-     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
+     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
      */
     public java.util.List<org.wso2.choreo.connect.discovery.api.Certificate> getClientCertificatesList() {
       if (clientCertificatesBuilder_ == null) {
@@ -3510,10 +3322,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * bool isMockedApi = 19;
+     * bool isMockedApi = 18;
      * </pre>
      *
-     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
+     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
      */
     public int getClientCertificatesCount() {
       if (clientCertificatesBuilder_ == null) {
@@ -3524,10 +3336,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * bool isMockedApi = 19;
+     * bool isMockedApi = 18;
      * </pre>
      *
-     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
+     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
      */
     public org.wso2.choreo.connect.discovery.api.Certificate getClientCertificates(int index) {
       if (clientCertificatesBuilder_ == null) {
@@ -3538,10 +3350,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * bool isMockedApi = 19;
+     * bool isMockedApi = 18;
      * </pre>
      *
-     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
+     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
      */
     public Builder setClientCertificates(
         int index, org.wso2.choreo.connect.discovery.api.Certificate value) {
@@ -3559,10 +3371,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * bool isMockedApi = 19;
+     * bool isMockedApi = 18;
      * </pre>
      *
-     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
+     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
      */
     public Builder setClientCertificates(
         int index, org.wso2.choreo.connect.discovery.api.Certificate.Builder builderForValue) {
@@ -3577,10 +3389,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * bool isMockedApi = 19;
+     * bool isMockedApi = 18;
      * </pre>
      *
-     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
+     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
      */
     public Builder addClientCertificates(org.wso2.choreo.connect.discovery.api.Certificate value) {
       if (clientCertificatesBuilder_ == null) {
@@ -3597,10 +3409,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * bool isMockedApi = 19;
+     * bool isMockedApi = 18;
      * </pre>
      *
-     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
+     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
      */
     public Builder addClientCertificates(
         int index, org.wso2.choreo.connect.discovery.api.Certificate value) {
@@ -3618,10 +3430,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * bool isMockedApi = 19;
+     * bool isMockedApi = 18;
      * </pre>
      *
-     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
+     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
      */
     public Builder addClientCertificates(
         org.wso2.choreo.connect.discovery.api.Certificate.Builder builderForValue) {
@@ -3636,10 +3448,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * bool isMockedApi = 19;
+     * bool isMockedApi = 18;
      * </pre>
      *
-     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
+     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
      */
     public Builder addClientCertificates(
         int index, org.wso2.choreo.connect.discovery.api.Certificate.Builder builderForValue) {
@@ -3654,10 +3466,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * bool isMockedApi = 19;
+     * bool isMockedApi = 18;
      * </pre>
      *
-     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
+     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
      */
     public Builder addAllClientCertificates(
         java.lang.Iterable<? extends org.wso2.choreo.connect.discovery.api.Certificate> values) {
@@ -3673,10 +3485,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * bool isMockedApi = 19;
+     * bool isMockedApi = 18;
      * </pre>
      *
-     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
+     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
      */
     public Builder clearClientCertificates() {
       if (clientCertificatesBuilder_ == null) {
@@ -3690,10 +3502,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * bool isMockedApi = 19;
+     * bool isMockedApi = 18;
      * </pre>
      *
-     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
+     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
      */
     public Builder removeClientCertificates(int index) {
       if (clientCertificatesBuilder_ == null) {
@@ -3707,10 +3519,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * bool isMockedApi = 19;
+     * bool isMockedApi = 18;
      * </pre>
      *
-     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
+     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
      */
     public org.wso2.choreo.connect.discovery.api.Certificate.Builder getClientCertificatesBuilder(
         int index) {
@@ -3718,10 +3530,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * bool isMockedApi = 19;
+     * bool isMockedApi = 18;
      * </pre>
      *
-     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
+     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
      */
     public org.wso2.choreo.connect.discovery.api.CertificateOrBuilder getClientCertificatesOrBuilder(
         int index) {
@@ -3732,10 +3544,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * bool isMockedApi = 19;
+     * bool isMockedApi = 18;
      * </pre>
      *
-     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
+     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
      */
     public java.util.List<? extends org.wso2.choreo.connect.discovery.api.CertificateOrBuilder> 
          getClientCertificatesOrBuilderList() {
@@ -3747,10 +3559,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * bool isMockedApi = 19;
+     * bool isMockedApi = 18;
      * </pre>
      *
-     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
+     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
      */
     public org.wso2.choreo.connect.discovery.api.Certificate.Builder addClientCertificatesBuilder() {
       return getClientCertificatesFieldBuilder().addBuilder(
@@ -3758,10 +3570,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * bool isMockedApi = 19;
+     * bool isMockedApi = 18;
      * </pre>
      *
-     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
+     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
      */
     public org.wso2.choreo.connect.discovery.api.Certificate.Builder addClientCertificatesBuilder(
         int index) {
@@ -3770,10 +3582,10 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * bool isMockedApi = 19;
+     * bool isMockedApi = 18;
      * </pre>
      *
-     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
+     * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
      */
     public java.util.List<org.wso2.choreo.connect.discovery.api.Certificate.Builder> 
          getClientCertificatesBuilderList() {
@@ -3796,7 +3608,7 @@ private static final long serialVersionUID = 0L;
 
     private java.lang.Object mutualSSL_ = "";
     /**
-     * <code>string mutualSSL = 21;</code>
+     * <code>string mutualSSL = 20;</code>
      * @return The mutualSSL.
      */
     public java.lang.String getMutualSSL() {
@@ -3812,7 +3624,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>string mutualSSL = 21;</code>
+     * <code>string mutualSSL = 20;</code>
      * @return The bytes for mutualSSL.
      */
     public com.google.protobuf.ByteString
@@ -3829,7 +3641,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>string mutualSSL = 21;</code>
+     * <code>string mutualSSL = 20;</code>
      * @param value The mutualSSL to set.
      * @return This builder for chaining.
      */
@@ -3844,7 +3656,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>string mutualSSL = 21;</code>
+     * <code>string mutualSSL = 20;</code>
      * @return This builder for chaining.
      */
     public Builder clearMutualSSL() {
@@ -3854,7 +3666,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>string mutualSSL = 21;</code>
+     * <code>string mutualSSL = 20;</code>
      * @param value The bytes for mutualSSL to set.
      * @return This builder for chaining.
      */
@@ -3872,7 +3684,7 @@ private static final long serialVersionUID = 0L;
 
     private boolean applicationSecurity_ ;
     /**
-     * <code>bool applicationSecurity = 22;</code>
+     * <code>bool applicationSecurity = 21;</code>
      * @return The applicationSecurity.
      */
     @java.lang.Override
@@ -3880,7 +3692,7 @@ private static final long serialVersionUID = 0L;
       return applicationSecurity_;
     }
     /**
-     * <code>bool applicationSecurity = 22;</code>
+     * <code>bool applicationSecurity = 21;</code>
      * @param value The applicationSecurity to set.
      * @return This builder for chaining.
      */
@@ -3891,7 +3703,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>bool applicationSecurity = 22;</code>
+     * <code>bool applicationSecurity = 21;</code>
      * @return This builder for chaining.
      */
     public Builder clearApplicationSecurity() {
@@ -3904,11 +3716,11 @@ private static final long serialVersionUID = 0L;
     private boolean systemAPI_ ;
     /**
      * <pre>
-     *&#47; string graphQLSchema = 23;
-     * repeated GraphqlComplexity graphqlComplexityInfo = 24;
+     *&#47; string graphQLSchema = 22;
+     * repeated GraphqlComplexity graphqlComplexityInfo = 23;
      * </pre>
      *
-     * <code>bool systemAPI = 25;</code>
+     * <code>bool systemAPI = 24;</code>
      * @return The systemAPI.
      */
     @java.lang.Override
@@ -3917,11 +3729,11 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     *&#47; string graphQLSchema = 23;
-     * repeated GraphqlComplexity graphqlComplexityInfo = 24;
+     *&#47; string graphQLSchema = 22;
+     * repeated GraphqlComplexity graphqlComplexityInfo = 23;
      * </pre>
      *
-     * <code>bool systemAPI = 25;</code>
+     * <code>bool systemAPI = 24;</code>
      * @param value The systemAPI to set.
      * @return This builder for chaining.
      */
@@ -3933,11 +3745,11 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     *&#47; string graphQLSchema = 23;
-     * repeated GraphqlComplexity graphqlComplexityInfo = 24;
+     *&#47; string graphQLSchema = 22;
+     * repeated GraphqlComplexity graphqlComplexityInfo = 23;
      * </pre>
      *
-     * <code>bool systemAPI = 25;</code>
+     * <code>bool systemAPI = 24;</code>
      * @return This builder for chaining.
      */
     public Builder clearSystemAPI() {

@@ -5,8 +5,7 @@ package org.wso2.choreo.connect.discovery.api;
 
 /**
  * <pre>
- * Endpoint config model
- * todo(amali) fix endpoint security
+ * Endpoint Security config model
  * </pre>
  *
  * Protobuf type {@code wso2.discovery.api.EndpointSecurity}
@@ -21,6 +20,9 @@ private static final long serialVersionUID = 0L;
     super(builder);
   }
   private EndpointSecurity() {
+    password_ = "";
+    type_ = "";
+    username_ = "";
   }
 
   @java.lang.Override
@@ -54,29 +56,26 @@ private static final long serialVersionUID = 0L;
             done = true;
             break;
           case 10: {
-            org.wso2.choreo.connect.discovery.api.SecurityInfo.Builder subBuilder = null;
-            if (sandBoxSecurityInfo_ != null) {
-              subBuilder = sandBoxSecurityInfo_.toBuilder();
-            }
-            sandBoxSecurityInfo_ = input.readMessage(org.wso2.choreo.connect.discovery.api.SecurityInfo.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(sandBoxSecurityInfo_);
-              sandBoxSecurityInfo_ = subBuilder.buildPartial();
-            }
+            java.lang.String s = input.readStringRequireUtf8();
 
+            password_ = s;
             break;
           }
           case 18: {
-            org.wso2.choreo.connect.discovery.api.SecurityInfo.Builder subBuilder = null;
-            if (productionSecurityInfo_ != null) {
-              subBuilder = productionSecurityInfo_.toBuilder();
-            }
-            productionSecurityInfo_ = input.readMessage(org.wso2.choreo.connect.discovery.api.SecurityInfo.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(productionSecurityInfo_);
-              productionSecurityInfo_ = subBuilder.buildPartial();
-            }
+            java.lang.String s = input.readStringRequireUtf8();
 
+            type_ = s;
+            break;
+          }
+          case 24: {
+
+            enabled_ = input.readBool();
+            break;
+          }
+          case 34: {
+            java.lang.String s = input.readStringRequireUtf8();
+
+            username_ = s;
             break;
           }
           default: {
@@ -111,56 +110,129 @@ private static final long serialVersionUID = 0L;
             org.wso2.choreo.connect.discovery.api.EndpointSecurity.class, org.wso2.choreo.connect.discovery.api.EndpointSecurity.Builder.class);
   }
 
-  public static final int SANDBOXSECURITYINFO_FIELD_NUMBER = 1;
-  private org.wso2.choreo.connect.discovery.api.SecurityInfo sandBoxSecurityInfo_;
+  public static final int PASSWORD_FIELD_NUMBER = 1;
+  private volatile java.lang.Object password_;
   /**
-   * <code>.wso2.discovery.api.SecurityInfo SandBoxSecurityInfo = 1;</code>
-   * @return Whether the sandBoxSecurityInfo field is set.
+   * <code>string password = 1;</code>
+   * @return The password.
    */
   @java.lang.Override
-  public boolean hasSandBoxSecurityInfo() {
-    return sandBoxSecurityInfo_ != null;
+  public java.lang.String getPassword() {
+    java.lang.Object ref = password_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = 
+          (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      password_ = s;
+      return s;
+    }
   }
   /**
-   * <code>.wso2.discovery.api.SecurityInfo SandBoxSecurityInfo = 1;</code>
-   * @return The sandBoxSecurityInfo.
+   * <code>string password = 1;</code>
+   * @return The bytes for password.
    */
   @java.lang.Override
-  public org.wso2.choreo.connect.discovery.api.SecurityInfo getSandBoxSecurityInfo() {
-    return sandBoxSecurityInfo_ == null ? org.wso2.choreo.connect.discovery.api.SecurityInfo.getDefaultInstance() : sandBoxSecurityInfo_;
-  }
-  /**
-   * <code>.wso2.discovery.api.SecurityInfo SandBoxSecurityInfo = 1;</code>
-   */
-  @java.lang.Override
-  public org.wso2.choreo.connect.discovery.api.SecurityInfoOrBuilder getSandBoxSecurityInfoOrBuilder() {
-    return getSandBoxSecurityInfo();
+  public com.google.protobuf.ByteString
+      getPasswordBytes() {
+    java.lang.Object ref = password_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString.copyFromUtf8(
+              (java.lang.String) ref);
+      password_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
   }
 
-  public static final int PRODUCTIONSECURITYINFO_FIELD_NUMBER = 2;
-  private org.wso2.choreo.connect.discovery.api.SecurityInfo productionSecurityInfo_;
+  public static final int TYPE_FIELD_NUMBER = 2;
+  private volatile java.lang.Object type_;
   /**
-   * <code>.wso2.discovery.api.SecurityInfo ProductionSecurityInfo = 2;</code>
-   * @return Whether the productionSecurityInfo field is set.
+   * <code>string type = 2;</code>
+   * @return The type.
    */
   @java.lang.Override
-  public boolean hasProductionSecurityInfo() {
-    return productionSecurityInfo_ != null;
+  public java.lang.String getType() {
+    java.lang.Object ref = type_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = 
+          (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      type_ = s;
+      return s;
+    }
   }
   /**
-   * <code>.wso2.discovery.api.SecurityInfo ProductionSecurityInfo = 2;</code>
-   * @return The productionSecurityInfo.
+   * <code>string type = 2;</code>
+   * @return The bytes for type.
    */
   @java.lang.Override
-  public org.wso2.choreo.connect.discovery.api.SecurityInfo getProductionSecurityInfo() {
-    return productionSecurityInfo_ == null ? org.wso2.choreo.connect.discovery.api.SecurityInfo.getDefaultInstance() : productionSecurityInfo_;
+  public com.google.protobuf.ByteString
+      getTypeBytes() {
+    java.lang.Object ref = type_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString.copyFromUtf8(
+              (java.lang.String) ref);
+      type_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
+  }
+
+  public static final int ENABLED_FIELD_NUMBER = 3;
+  private boolean enabled_;
+  /**
+   * <code>bool enabled = 3;</code>
+   * @return The enabled.
+   */
+  @java.lang.Override
+  public boolean getEnabled() {
+    return enabled_;
+  }
+
+  public static final int USERNAME_FIELD_NUMBER = 4;
+  private volatile java.lang.Object username_;
+  /**
+   * <code>string username = 4;</code>
+   * @return The username.
+   */
+  @java.lang.Override
+  public java.lang.String getUsername() {
+    java.lang.Object ref = username_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = 
+          (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      username_ = s;
+      return s;
+    }
   }
   /**
-   * <code>.wso2.discovery.api.SecurityInfo ProductionSecurityInfo = 2;</code>
+   * <code>string username = 4;</code>
+   * @return The bytes for username.
    */
   @java.lang.Override
-  public org.wso2.choreo.connect.discovery.api.SecurityInfoOrBuilder getProductionSecurityInfoOrBuilder() {
-    return getProductionSecurityInfo();
+  public com.google.protobuf.ByteString
+      getUsernameBytes() {
+    java.lang.Object ref = username_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString.copyFromUtf8(
+              (java.lang.String) ref);
+      username_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
   }
 
   private byte memoizedIsInitialized = -1;
@@ -177,11 +249,17 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
-    if (sandBoxSecurityInfo_ != null) {
-      output.writeMessage(1, getSandBoxSecurityInfo());
+    if (!getPasswordBytes().isEmpty()) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 1, password_);
     }
-    if (productionSecurityInfo_ != null) {
-      output.writeMessage(2, getProductionSecurityInfo());
+    if (!getTypeBytes().isEmpty()) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 2, type_);
+    }
+    if (enabled_ != false) {
+      output.writeBool(3, enabled_);
+    }
+    if (!getUsernameBytes().isEmpty()) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 4, username_);
     }
     unknownFields.writeTo(output);
   }
@@ -192,13 +270,18 @@ private static final long serialVersionUID = 0L;
     if (size != -1) return size;
 
     size = 0;
-    if (sandBoxSecurityInfo_ != null) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(1, getSandBoxSecurityInfo());
+    if (!getPasswordBytes().isEmpty()) {
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, password_);
     }
-    if (productionSecurityInfo_ != null) {
+    if (!getTypeBytes().isEmpty()) {
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, type_);
+    }
+    if (enabled_ != false) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(2, getProductionSecurityInfo());
+        .computeBoolSize(3, enabled_);
+    }
+    if (!getUsernameBytes().isEmpty()) {
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, username_);
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -215,16 +298,14 @@ private static final long serialVersionUID = 0L;
     }
     org.wso2.choreo.connect.discovery.api.EndpointSecurity other = (org.wso2.choreo.connect.discovery.api.EndpointSecurity) obj;
 
-    if (hasSandBoxSecurityInfo() != other.hasSandBoxSecurityInfo()) return false;
-    if (hasSandBoxSecurityInfo()) {
-      if (!getSandBoxSecurityInfo()
-          .equals(other.getSandBoxSecurityInfo())) return false;
-    }
-    if (hasProductionSecurityInfo() != other.hasProductionSecurityInfo()) return false;
-    if (hasProductionSecurityInfo()) {
-      if (!getProductionSecurityInfo()
-          .equals(other.getProductionSecurityInfo())) return false;
-    }
+    if (!getPassword()
+        .equals(other.getPassword())) return false;
+    if (!getType()
+        .equals(other.getType())) return false;
+    if (getEnabled()
+        != other.getEnabled()) return false;
+    if (!getUsername()
+        .equals(other.getUsername())) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -236,14 +317,15 @@ private static final long serialVersionUID = 0L;
     }
     int hash = 41;
     hash = (19 * hash) + getDescriptor().hashCode();
-    if (hasSandBoxSecurityInfo()) {
-      hash = (37 * hash) + SANDBOXSECURITYINFO_FIELD_NUMBER;
-      hash = (53 * hash) + getSandBoxSecurityInfo().hashCode();
-    }
-    if (hasProductionSecurityInfo()) {
-      hash = (37 * hash) + PRODUCTIONSECURITYINFO_FIELD_NUMBER;
-      hash = (53 * hash) + getProductionSecurityInfo().hashCode();
-    }
+    hash = (37 * hash) + PASSWORD_FIELD_NUMBER;
+    hash = (53 * hash) + getPassword().hashCode();
+    hash = (37 * hash) + TYPE_FIELD_NUMBER;
+    hash = (53 * hash) + getType().hashCode();
+    hash = (37 * hash) + ENABLED_FIELD_NUMBER;
+    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+        getEnabled());
+    hash = (37 * hash) + USERNAME_FIELD_NUMBER;
+    hash = (53 * hash) + getUsername().hashCode();
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -341,8 +423,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Endpoint config model
-   * todo(amali) fix endpoint security
+   * Endpoint Security config model
    * </pre>
    *
    * Protobuf type {@code wso2.discovery.api.EndpointSecurity}
@@ -382,18 +463,14 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public Builder clear() {
       super.clear();
-      if (sandBoxSecurityInfoBuilder_ == null) {
-        sandBoxSecurityInfo_ = null;
-      } else {
-        sandBoxSecurityInfo_ = null;
-        sandBoxSecurityInfoBuilder_ = null;
-      }
-      if (productionSecurityInfoBuilder_ == null) {
-        productionSecurityInfo_ = null;
-      } else {
-        productionSecurityInfo_ = null;
-        productionSecurityInfoBuilder_ = null;
-      }
+      password_ = "";
+
+      type_ = "";
+
+      enabled_ = false;
+
+      username_ = "";
+
       return this;
     }
 
@@ -420,16 +497,10 @@ private static final long serialVersionUID = 0L;
     @java.lang.Override
     public org.wso2.choreo.connect.discovery.api.EndpointSecurity buildPartial() {
       org.wso2.choreo.connect.discovery.api.EndpointSecurity result = new org.wso2.choreo.connect.discovery.api.EndpointSecurity(this);
-      if (sandBoxSecurityInfoBuilder_ == null) {
-        result.sandBoxSecurityInfo_ = sandBoxSecurityInfo_;
-      } else {
-        result.sandBoxSecurityInfo_ = sandBoxSecurityInfoBuilder_.build();
-      }
-      if (productionSecurityInfoBuilder_ == null) {
-        result.productionSecurityInfo_ = productionSecurityInfo_;
-      } else {
-        result.productionSecurityInfo_ = productionSecurityInfoBuilder_.build();
-      }
+      result.password_ = password_;
+      result.type_ = type_;
+      result.enabled_ = enabled_;
+      result.username_ = username_;
       onBuilt();
       return result;
     }
@@ -478,11 +549,20 @@ private static final long serialVersionUID = 0L;
 
     public Builder mergeFrom(org.wso2.choreo.connect.discovery.api.EndpointSecurity other) {
       if (other == org.wso2.choreo.connect.discovery.api.EndpointSecurity.getDefaultInstance()) return this;
-      if (other.hasSandBoxSecurityInfo()) {
-        mergeSandBoxSecurityInfo(other.getSandBoxSecurityInfo());
+      if (!other.getPassword().isEmpty()) {
+        password_ = other.password_;
+        onChanged();
       }
-      if (other.hasProductionSecurityInfo()) {
-        mergeProductionSecurityInfo(other.getProductionSecurityInfo());
+      if (!other.getType().isEmpty()) {
+        type_ = other.type_;
+        onChanged();
+      }
+      if (other.getEnabled() != false) {
+        setEnabled(other.getEnabled());
+      }
+      if (!other.getUsername().isEmpty()) {
+        username_ = other.username_;
+        onChanged();
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -513,242 +593,263 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private org.wso2.choreo.connect.discovery.api.SecurityInfo sandBoxSecurityInfo_;
-    private com.google.protobuf.SingleFieldBuilderV3<
-        org.wso2.choreo.connect.discovery.api.SecurityInfo, org.wso2.choreo.connect.discovery.api.SecurityInfo.Builder, org.wso2.choreo.connect.discovery.api.SecurityInfoOrBuilder> sandBoxSecurityInfoBuilder_;
+    private java.lang.Object password_ = "";
     /**
-     * <code>.wso2.discovery.api.SecurityInfo SandBoxSecurityInfo = 1;</code>
-     * @return Whether the sandBoxSecurityInfo field is set.
+     * <code>string password = 1;</code>
+     * @return The password.
      */
-    public boolean hasSandBoxSecurityInfo() {
-      return sandBoxSecurityInfoBuilder_ != null || sandBoxSecurityInfo_ != null;
-    }
-    /**
-     * <code>.wso2.discovery.api.SecurityInfo SandBoxSecurityInfo = 1;</code>
-     * @return The sandBoxSecurityInfo.
-     */
-    public org.wso2.choreo.connect.discovery.api.SecurityInfo getSandBoxSecurityInfo() {
-      if (sandBoxSecurityInfoBuilder_ == null) {
-        return sandBoxSecurityInfo_ == null ? org.wso2.choreo.connect.discovery.api.SecurityInfo.getDefaultInstance() : sandBoxSecurityInfo_;
+    public java.lang.String getPassword() {
+      java.lang.Object ref = password_;
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs =
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        password_ = s;
+        return s;
       } else {
-        return sandBoxSecurityInfoBuilder_.getMessage();
+        return (java.lang.String) ref;
       }
     }
     /**
-     * <code>.wso2.discovery.api.SecurityInfo SandBoxSecurityInfo = 1;</code>
+     * <code>string password = 1;</code>
+     * @return The bytes for password.
      */
-    public Builder setSandBoxSecurityInfo(org.wso2.choreo.connect.discovery.api.SecurityInfo value) {
-      if (sandBoxSecurityInfoBuilder_ == null) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        sandBoxSecurityInfo_ = value;
-        onChanged();
+    public com.google.protobuf.ByteString
+        getPasswordBytes() {
+      java.lang.Object ref = password_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        password_ = b;
+        return b;
       } else {
-        sandBoxSecurityInfoBuilder_.setMessage(value);
+        return (com.google.protobuf.ByteString) ref;
       }
-
-      return this;
     }
     /**
-     * <code>.wso2.discovery.api.SecurityInfo SandBoxSecurityInfo = 1;</code>
+     * <code>string password = 1;</code>
+     * @param value The password to set.
+     * @return This builder for chaining.
      */
-    public Builder setSandBoxSecurityInfo(
-        org.wso2.choreo.connect.discovery.api.SecurityInfo.Builder builderForValue) {
-      if (sandBoxSecurityInfoBuilder_ == null) {
-        sandBoxSecurityInfo_ = builderForValue.build();
-        onChanged();
-      } else {
-        sandBoxSecurityInfoBuilder_.setMessage(builderForValue.build());
-      }
-
-      return this;
-    }
-    /**
-     * <code>.wso2.discovery.api.SecurityInfo SandBoxSecurityInfo = 1;</code>
-     */
-    public Builder mergeSandBoxSecurityInfo(org.wso2.choreo.connect.discovery.api.SecurityInfo value) {
-      if (sandBoxSecurityInfoBuilder_ == null) {
-        if (sandBoxSecurityInfo_ != null) {
-          sandBoxSecurityInfo_ =
-            org.wso2.choreo.connect.discovery.api.SecurityInfo.newBuilder(sandBoxSecurityInfo_).mergeFrom(value).buildPartial();
-        } else {
-          sandBoxSecurityInfo_ = value;
-        }
-        onChanged();
-      } else {
-        sandBoxSecurityInfoBuilder_.mergeFrom(value);
-      }
-
-      return this;
-    }
-    /**
-     * <code>.wso2.discovery.api.SecurityInfo SandBoxSecurityInfo = 1;</code>
-     */
-    public Builder clearSandBoxSecurityInfo() {
-      if (sandBoxSecurityInfoBuilder_ == null) {
-        sandBoxSecurityInfo_ = null;
-        onChanged();
-      } else {
-        sandBoxSecurityInfo_ = null;
-        sandBoxSecurityInfoBuilder_ = null;
-      }
-
-      return this;
-    }
-    /**
-     * <code>.wso2.discovery.api.SecurityInfo SandBoxSecurityInfo = 1;</code>
-     */
-    public org.wso2.choreo.connect.discovery.api.SecurityInfo.Builder getSandBoxSecurityInfoBuilder() {
-      
+    public Builder setPassword(
+        java.lang.String value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  
+      password_ = value;
       onChanged();
-      return getSandBoxSecurityInfoFieldBuilder().getBuilder();
-    }
-    /**
-     * <code>.wso2.discovery.api.SecurityInfo SandBoxSecurityInfo = 1;</code>
-     */
-    public org.wso2.choreo.connect.discovery.api.SecurityInfoOrBuilder getSandBoxSecurityInfoOrBuilder() {
-      if (sandBoxSecurityInfoBuilder_ != null) {
-        return sandBoxSecurityInfoBuilder_.getMessageOrBuilder();
-      } else {
-        return sandBoxSecurityInfo_ == null ?
-            org.wso2.choreo.connect.discovery.api.SecurityInfo.getDefaultInstance() : sandBoxSecurityInfo_;
-      }
-    }
-    /**
-     * <code>.wso2.discovery.api.SecurityInfo SandBoxSecurityInfo = 1;</code>
-     */
-    private com.google.protobuf.SingleFieldBuilderV3<
-        org.wso2.choreo.connect.discovery.api.SecurityInfo, org.wso2.choreo.connect.discovery.api.SecurityInfo.Builder, org.wso2.choreo.connect.discovery.api.SecurityInfoOrBuilder> 
-        getSandBoxSecurityInfoFieldBuilder() {
-      if (sandBoxSecurityInfoBuilder_ == null) {
-        sandBoxSecurityInfoBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-            org.wso2.choreo.connect.discovery.api.SecurityInfo, org.wso2.choreo.connect.discovery.api.SecurityInfo.Builder, org.wso2.choreo.connect.discovery.api.SecurityInfoOrBuilder>(
-                getSandBoxSecurityInfo(),
-                getParentForChildren(),
-                isClean());
-        sandBoxSecurityInfo_ = null;
-      }
-      return sandBoxSecurityInfoBuilder_;
-    }
-
-    private org.wso2.choreo.connect.discovery.api.SecurityInfo productionSecurityInfo_;
-    private com.google.protobuf.SingleFieldBuilderV3<
-        org.wso2.choreo.connect.discovery.api.SecurityInfo, org.wso2.choreo.connect.discovery.api.SecurityInfo.Builder, org.wso2.choreo.connect.discovery.api.SecurityInfoOrBuilder> productionSecurityInfoBuilder_;
-    /**
-     * <code>.wso2.discovery.api.SecurityInfo ProductionSecurityInfo = 2;</code>
-     * @return Whether the productionSecurityInfo field is set.
-     */
-    public boolean hasProductionSecurityInfo() {
-      return productionSecurityInfoBuilder_ != null || productionSecurityInfo_ != null;
-    }
-    /**
-     * <code>.wso2.discovery.api.SecurityInfo ProductionSecurityInfo = 2;</code>
-     * @return The productionSecurityInfo.
-     */
-    public org.wso2.choreo.connect.discovery.api.SecurityInfo getProductionSecurityInfo() {
-      if (productionSecurityInfoBuilder_ == null) {
-        return productionSecurityInfo_ == null ? org.wso2.choreo.connect.discovery.api.SecurityInfo.getDefaultInstance() : productionSecurityInfo_;
-      } else {
-        return productionSecurityInfoBuilder_.getMessage();
-      }
-    }
-    /**
-     * <code>.wso2.discovery.api.SecurityInfo ProductionSecurityInfo = 2;</code>
-     */
-    public Builder setProductionSecurityInfo(org.wso2.choreo.connect.discovery.api.SecurityInfo value) {
-      if (productionSecurityInfoBuilder_ == null) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        productionSecurityInfo_ = value;
-        onChanged();
-      } else {
-        productionSecurityInfoBuilder_.setMessage(value);
-      }
-
       return this;
     }
     /**
-     * <code>.wso2.discovery.api.SecurityInfo ProductionSecurityInfo = 2;</code>
+     * <code>string password = 1;</code>
+     * @return This builder for chaining.
      */
-    public Builder setProductionSecurityInfo(
-        org.wso2.choreo.connect.discovery.api.SecurityInfo.Builder builderForValue) {
-      if (productionSecurityInfoBuilder_ == null) {
-        productionSecurityInfo_ = builderForValue.build();
-        onChanged();
-      } else {
-        productionSecurityInfoBuilder_.setMessage(builderForValue.build());
-      }
-
-      return this;
-    }
-    /**
-     * <code>.wso2.discovery.api.SecurityInfo ProductionSecurityInfo = 2;</code>
-     */
-    public Builder mergeProductionSecurityInfo(org.wso2.choreo.connect.discovery.api.SecurityInfo value) {
-      if (productionSecurityInfoBuilder_ == null) {
-        if (productionSecurityInfo_ != null) {
-          productionSecurityInfo_ =
-            org.wso2.choreo.connect.discovery.api.SecurityInfo.newBuilder(productionSecurityInfo_).mergeFrom(value).buildPartial();
-        } else {
-          productionSecurityInfo_ = value;
-        }
-        onChanged();
-      } else {
-        productionSecurityInfoBuilder_.mergeFrom(value);
-      }
-
-      return this;
-    }
-    /**
-     * <code>.wso2.discovery.api.SecurityInfo ProductionSecurityInfo = 2;</code>
-     */
-    public Builder clearProductionSecurityInfo() {
-      if (productionSecurityInfoBuilder_ == null) {
-        productionSecurityInfo_ = null;
-        onChanged();
-      } else {
-        productionSecurityInfo_ = null;
-        productionSecurityInfoBuilder_ = null;
-      }
-
-      return this;
-    }
-    /**
-     * <code>.wso2.discovery.api.SecurityInfo ProductionSecurityInfo = 2;</code>
-     */
-    public org.wso2.choreo.connect.discovery.api.SecurityInfo.Builder getProductionSecurityInfoBuilder() {
+    public Builder clearPassword() {
       
+      password_ = getDefaultInstance().getPassword();
       onChanged();
-      return getProductionSecurityInfoFieldBuilder().getBuilder();
+      return this;
     }
     /**
-     * <code>.wso2.discovery.api.SecurityInfo ProductionSecurityInfo = 2;</code>
+     * <code>string password = 1;</code>
+     * @param value The bytes for password to set.
+     * @return This builder for chaining.
      */
-    public org.wso2.choreo.connect.discovery.api.SecurityInfoOrBuilder getProductionSecurityInfoOrBuilder() {
-      if (productionSecurityInfoBuilder_ != null) {
-        return productionSecurityInfoBuilder_.getMessageOrBuilder();
+    public Builder setPasswordBytes(
+        com.google.protobuf.ByteString value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+      
+      password_ = value;
+      onChanged();
+      return this;
+    }
+
+    private java.lang.Object type_ = "";
+    /**
+     * <code>string type = 2;</code>
+     * @return The type.
+     */
+    public java.lang.String getType() {
+      java.lang.Object ref = type_;
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs =
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        type_ = s;
+        return s;
       } else {
-        return productionSecurityInfo_ == null ?
-            org.wso2.choreo.connect.discovery.api.SecurityInfo.getDefaultInstance() : productionSecurityInfo_;
+        return (java.lang.String) ref;
       }
     }
     /**
-     * <code>.wso2.discovery.api.SecurityInfo ProductionSecurityInfo = 2;</code>
+     * <code>string type = 2;</code>
+     * @return The bytes for type.
      */
-    private com.google.protobuf.SingleFieldBuilderV3<
-        org.wso2.choreo.connect.discovery.api.SecurityInfo, org.wso2.choreo.connect.discovery.api.SecurityInfo.Builder, org.wso2.choreo.connect.discovery.api.SecurityInfoOrBuilder> 
-        getProductionSecurityInfoFieldBuilder() {
-      if (productionSecurityInfoBuilder_ == null) {
-        productionSecurityInfoBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-            org.wso2.choreo.connect.discovery.api.SecurityInfo, org.wso2.choreo.connect.discovery.api.SecurityInfo.Builder, org.wso2.choreo.connect.discovery.api.SecurityInfoOrBuilder>(
-                getProductionSecurityInfo(),
-                getParentForChildren(),
-                isClean());
-        productionSecurityInfo_ = null;
+    public com.google.protobuf.ByteString
+        getTypeBytes() {
+      java.lang.Object ref = type_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        type_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
       }
-      return productionSecurityInfoBuilder_;
+    }
+    /**
+     * <code>string type = 2;</code>
+     * @param value The type to set.
+     * @return This builder for chaining.
+     */
+    public Builder setType(
+        java.lang.String value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  
+      type_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>string type = 2;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearType() {
+      
+      type_ = getDefaultInstance().getType();
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>string type = 2;</code>
+     * @param value The bytes for type to set.
+     * @return This builder for chaining.
+     */
+    public Builder setTypeBytes(
+        com.google.protobuf.ByteString value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+      
+      type_ = value;
+      onChanged();
+      return this;
+    }
+
+    private boolean enabled_ ;
+    /**
+     * <code>bool enabled = 3;</code>
+     * @return The enabled.
+     */
+    @java.lang.Override
+    public boolean getEnabled() {
+      return enabled_;
+    }
+    /**
+     * <code>bool enabled = 3;</code>
+     * @param value The enabled to set.
+     * @return This builder for chaining.
+     */
+    public Builder setEnabled(boolean value) {
+      
+      enabled_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>bool enabled = 3;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearEnabled() {
+      
+      enabled_ = false;
+      onChanged();
+      return this;
+    }
+
+    private java.lang.Object username_ = "";
+    /**
+     * <code>string username = 4;</code>
+     * @return The username.
+     */
+    public java.lang.String getUsername() {
+      java.lang.Object ref = username_;
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs =
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        username_ = s;
+        return s;
+      } else {
+        return (java.lang.String) ref;
+      }
+    }
+    /**
+     * <code>string username = 4;</code>
+     * @return The bytes for username.
+     */
+    public com.google.protobuf.ByteString
+        getUsernameBytes() {
+      java.lang.Object ref = username_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        username_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    /**
+     * <code>string username = 4;</code>
+     * @param value The username to set.
+     * @return This builder for chaining.
+     */
+    public Builder setUsername(
+        java.lang.String value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  
+      username_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>string username = 4;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearUsername() {
+      
+      username_ = getDefaultInstance().getUsername();
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>string username = 4;</code>
+     * @param value The bytes for username to set.
+     * @return This builder for chaining.
+     */
+    public Builder setUsernameBytes(
+        com.google.protobuf.ByteString value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+      
+      username_ = value;
+      onChanged();
+      return this;
     }
     @java.lang.Override
     public final Builder setUnknownFields(

@@ -159,12 +159,10 @@ func GetEnforcerAPI(mgwSwagger model.MgwSwagger, vhost string) *api.Api {
 			Path:    res.GetPath(),
 		}
 		if res.GetEndpoints() != nil {
-			resource.Endpoints = generateRPCEndpointCluster(res.GetEndpoints())
+			resource.Endpoints, resource.EndpointSecurity = generateRPCEndpointCluster(res.GetEndpoints())
 		}
 		resources = append(resources, resource)
 	}
-
-	endpointSecurityDetails := &api.EndpointSecurity{}
 
 	for _, cert := range mgwSwagger.GetClientCerts() {
 		certificate := &api.Certificate{
@@ -186,7 +184,6 @@ func GetEnforcerAPI(mgwSwagger model.MgwSwagger, vhost string) *api.Api {
 		Tier:                mgwSwagger.GetXWso2ThrottlingTier(),
 		SecurityScheme:      securitySchemes,
 		Security:            securityList,
-		EndpointSecurity:    endpointSecurityDetails,
 		AuthorizationHeader: mgwSwagger.GetXWSO2AuthHeader(),
 		DisableSecurity:     mgwSwagger.GetDisableSecurity(),
 		OrganizationId:      mgwSwagger.OrganizationID,
@@ -268,9 +265,9 @@ func castPoliciesToEnforcerPolicies(policies []model.Policy) []*api.Policy {
 	return enforcerPolicies
 }
 
-func generateRPCEndpointCluster(inputEndpointCluster *model.EndpointCluster) *api.EndpointCluster {
+func generateRPCEndpointCluster(inputEndpointCluster *model.EndpointCluster) (*api.EndpointCluster, *api.EndpointSecurity) {
 	if inputEndpointCluster == nil || len(inputEndpointCluster.Endpoints) == 0 {
-		return nil
+		return nil, nil
 	}
 	urls := []*api.Endpoint{}
 	for _, ep := range inputEndpointCluster.Endpoints {
@@ -309,5 +306,13 @@ func generateRPCEndpointCluster(inputEndpointCluster *model.EndpointCluster) *ap
 			TimeoutConfig: timeoutConfig,
 		}
 	}
-	return endpoints
+	var security *api.EndpointSecurity
+	if inputEndpointCluster.SecurityConfig != nil {
+		security = &api.EndpointSecurity{
+			Type:     inputEndpointCluster.SecurityConfig.Type,
+			Username: inputEndpointCluster.SecurityConfig.Username,
+			Password: inputEndpointCluster.SecurityConfig.Password,
+		}
+	}
+	return endpoints, security
 }
