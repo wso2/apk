@@ -14,7 +14,7 @@ public distinct class Scope {
     # The init function of the Ballerina class mapping the `org.wso2.apk.runtime.model.Scope` Java class.
     #
     # + obj - The `handle` value containing the Java reference of the object.
-    public function init(handle obj) {
+    public isolated function init(handle obj) {
         self.jObj = obj;
     }
 
@@ -110,21 +110,21 @@ public distinct class Scope {
     # The function that maps to the `setId` method of `org.wso2.apk.runtime.model.Scope`.
     #
     # + arg0 - The `string` value required to map with the Java method parameter.
-    public function setId(string arg0) {
+    public isolated function setId(string arg0) {
         org_wso2_apk_runtime_model_Scope_setId(self.jObj, java:fromString(arg0));
     }
 
     # The function that maps to the `setKey` method of `org.wso2.apk.runtime.model.Scope`.
     #
     # + arg0 - The `string` value required to map with the Java method parameter.
-    public function setKey(string arg0) {
+    public isolated function setKey(string arg0) {
         org_wso2_apk_runtime_model_Scope_setKey(self.jObj, java:fromString(arg0));
     }
 
     # The function that maps to the `setName` method of `org.wso2.apk.runtime.model.Scope`.
     #
     # + arg0 - The `string` value required to map with the Java method parameter.
-    public function setName(string arg0) {
+    public isolated function setName(string arg0) {
         org_wso2_apk_runtime_model_Scope_setName(self.jObj, java:fromString(arg0));
     }
 
@@ -183,7 +183,7 @@ public distinct class Scope {
 # The constructor function to generate an object of `org.wso2.apk.runtime.model.Scope`.
 #
 # + return - The new `Scope` class generated.
-public function newScope1() returns Scope {
+public isolated function newScope1() returns Scope {
     handle externalObj = org_wso2_apk_runtime_model_Scope_newScope1();
     Scope newObj = new (externalObj);
     return newObj;
@@ -261,19 +261,19 @@ function org_wso2_apk_runtime_model_Scope_setDescription(handle receiver, handle
     paramTypes: ["java.lang.String"]
 } external;
 
-function org_wso2_apk_runtime_model_Scope_setId(handle receiver, handle arg0) = @java:Method {
+isolated function org_wso2_apk_runtime_model_Scope_setId(handle receiver, handle arg0) = @java:Method {
     name: "setId",
     'class: "org.wso2.apk.runtime.model.Scope",
     paramTypes: ["java.lang.String"]
 } external;
 
-function org_wso2_apk_runtime_model_Scope_setKey(handle receiver, handle arg0) = @java:Method {
+isolated function org_wso2_apk_runtime_model_Scope_setKey(handle receiver, handle arg0) = @java:Method {
     name: "setKey",
     'class: "org.wso2.apk.runtime.model.Scope",
     paramTypes: ["java.lang.String"]
 } external;
 
-function org_wso2_apk_runtime_model_Scope_setName(handle receiver, handle arg0) = @java:Method {
+isolated function org_wso2_apk_runtime_model_Scope_setName(handle receiver, handle arg0) = @java:Method {
     name: "setName",
     'class: "org.wso2.apk.runtime.model.Scope",
     paramTypes: ["java.lang.String"]
@@ -309,7 +309,7 @@ function org_wso2_apk_runtime_model_Scope_wait3(handle receiver, int arg0, int a
     paramTypes: ["long", "int"]
 } external;
 
-function org_wso2_apk_runtime_model_Scope_newScope1() returns handle = @java:Constructor {
+isolated function org_wso2_apk_runtime_model_Scope_newScope1() returns handle = @java:Constructor {
     'class: "org.wso2.apk.runtime.model.Scope",
     paramTypes: []
 } external;
