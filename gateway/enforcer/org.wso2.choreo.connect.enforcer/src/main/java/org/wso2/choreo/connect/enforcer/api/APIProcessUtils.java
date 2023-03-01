@@ -17,20 +17,20 @@
  */
 package org.wso2.choreo.connect.enforcer.api;
 
-import org.wso2.choreo.connect.enforcer.commons.model.SecurityInfo;
+import org.wso2.choreo.connect.enforcer.commons.model.EndpointSecurity;
 
 /**
  * APIProcessUtils is used to convert the Endpoint Security DTO used in proto files into Enforcer specific
  * Object.
  */
 public class APIProcessUtils {
-    public static SecurityInfo convertProtoEndpointSecurity
-            (org.wso2.choreo.connect.discovery.api.SecurityInfo protoSecurityInfo) {
-        SecurityInfo securityInfo = new SecurityInfo();
-        securityInfo.setSecurityType(protoSecurityInfo.getSecurityType());
+    public static EndpointSecurity convertProtoEndpointSecurity
+            (org.wso2.choreo.connect.discovery.api.EndpointSecurity protoSecurityInfo) {
+        EndpointSecurity securityInfo = new EndpointSecurity();
+        securityInfo.setSecurityType(protoSecurityInfo.getType());
         securityInfo.setUsername(protoSecurityInfo.getUsername());
         securityInfo.setPassword(protoSecurityInfo.getPassword().toCharArray());
-        securityInfo.setCustomParameters(protoSecurityInfo.getCustomParametersMap());
+        //securityInfo.setCustomParameters(protoSecurityInfo.getCustomParametersMap());
         securityInfo.setEnabled(protoSecurityInfo.getEnabled());
         return securityInfo;
     }

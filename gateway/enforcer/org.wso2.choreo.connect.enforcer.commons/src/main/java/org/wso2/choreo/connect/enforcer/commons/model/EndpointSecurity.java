@@ -16,42 +16,87 @@
  * under the License.
  */
 package org.wso2.choreo.connect.enforcer.commons.model;
+import java.util.Map;
 
 /**
  * EndpointSecurity holds the EndpointSecurity configuration for an API.
  */
 public class EndpointSecurity {
-    private SecurityInfo sandBoxSecurityInfo;
-    private SecurityInfo productionSecurityInfo;
+    private char[] password;
+    private String username;
+    private boolean enabled;
+    private String securityType;
+    private Map<String, String> customParameters;
 
     /**
-     * EndpointSecurity Information for Sandbox Endpoints.
+     * Get the password for endpoint (Basic Auth)
      *
-     * @return {@code SecurityInfo} entity for Sandbox Environment.
+     * @return password (as a char array) under endpoint security
      */
-    public SecurityInfo getSandBoxSecurityInfo() {
-        return sandBoxSecurityInfo;
+    public char[] getPassword() {
+        return password;
     }
 
-    // TODO: (VirajSalaka) Sandbox Security Info is not populated.
-    public void setSandBoxSecurityInfo(SecurityInfo sandBoxSecurityInfo) {
-        this.sandBoxSecurityInfo = sandBoxSecurityInfo;
-    }
-
-    /**
-     * EndpointSecurity Information for Production Endpoints.
-     *
-     * @return {@code SecurityInfo} entity for Production Environment.
-     */
-    public SecurityInfo getProductionSecurityInfo() {
-        return productionSecurityInfo;
+    public void setPassword(char[] password) {
+        this.password = password;
     }
 
     /**
+     * Get the username for endpoint (Basic Auth)
      *
-     * @param productionSecurityInfo
+     * @return username under endpoint security
      */
-    public void setProductionSecurityInfo(SecurityInfo productionSecurityInfo) {
-        this.productionSecurityInfo = productionSecurityInfo;
+    public String getUsername() {
+        return username;
     }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    /**
+     * true if Endpoint Security is enabled.
+     *
+     * @return whether endpoint security is enabled or not
+     */
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    /**
+     * The endpoint security type for Endpoint Security object.
+     *
+     * Note:
+     *  Only supported security type is "Basic" at the moment.
+     *
+     * @return security Type
+     */
+    public String getSecurityType() {
+        return securityType;
+    }
+
+    public void setSecurityType(String securityType) {
+        this.securityType = securityType;
+    }
+
+    /**
+     * The Custom Parameters listed under endpoint security object are returned as a string.
+     *
+     * Note:
+     *  Only supported security type is "Basic" at the moment.
+     *
+     * @return security Type
+     */
+    public Map<String, String> getCustomParameters() {
+        return customParameters;
+    }
+
+    public void setCustomParameters(Map<String, String> customParameters) {
+        this.customParameters = customParameters;
+    }
+
 }

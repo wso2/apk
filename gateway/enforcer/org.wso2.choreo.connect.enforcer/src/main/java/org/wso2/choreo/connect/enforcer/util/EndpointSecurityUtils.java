@@ -18,11 +18,13 @@
 
 package org.wso2.choreo.connect.enforcer.util;
 
+import org.wso2.choreo.connect.enforcer.commons.model.EndpointSecurity;
 import org.wso2.choreo.connect.enforcer.commons.model.RequestContext;
-import org.wso2.choreo.connect.enforcer.commons.model.SecurityInfo;
+import org.wso2.choreo.connect.enforcer.commons.model.ResourceConfig;
 import org.wso2.choreo.connect.enforcer.constants.APIConstants;
 
 import java.util.Base64;
+import java.util.List;
 
 /**
  * Util methods related to backend endpoint security.
@@ -35,13 +37,13 @@ public class EndpointSecurityUtils {
      * @param requestContext requestContext instance to add the backend endpoint security header
      */
     public static void addEndpointSecurity(RequestContext requestContext) {
-        SecurityInfo securityInfo = null;
-        if (requestContext.getMatchedAPI().getEndpointSecurity() != null) {
-            if (requestContext.getMatchedAPI().getEndpointSecurity().getProductionSecurityInfo() != null) {
-                securityInfo = requestContext.getMatchedAPI().getEndpointSecurity().getProductionSecurityInfo();
-            } else {
-                securityInfo = requestContext.getMatchedAPI().getEndpointSecurity().
-                        getSandBoxSecurityInfo();
+        EndpointSecurity securityInfo = null;
+        if (requestContext.getMatchedAPI().getResources() != null) {
+            List<ResourceConfig> resources = requestContext.getMatchedAPI().getResources();
+            for (ResourceConfig resourceConfig : resources) {
+                if (resourceConfig.getEndpointSecurity() != null) {
+                    securityInfo = resourceConfig.getEndpointSecurity();
+                }
             }
         }
         if (securityInfo != null && securityInfo.isEnabled() &&

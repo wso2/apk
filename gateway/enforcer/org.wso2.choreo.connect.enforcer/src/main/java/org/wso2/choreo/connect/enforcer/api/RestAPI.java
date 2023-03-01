@@ -123,22 +123,23 @@ public class RestAPI implements API {
                 ResourceConfig resConfig = Utils.buildResource(operation, res.getPath(), securityScopesMap);
                 resConfig.setPolicyConfig(Utils.genPolicyConfig(operation.getPolicies()));
                 resConfig.setEndpoints(Utils.processEndpoints(res.getEndpoints()));
+                resConfig.setEndpointSecurity(endpointSecurity);
 //                resConfig.setMockApiConfig(getMockedApiOperationConfig(operation.getMockedApiConfig(),
 //                        operation.getMethod()));
                 resources.add(resConfig);
             }
         }
 
-        if (api.getEndpointSecurity().hasProductionSecurityInfo()) {
-            endpointSecurity.setProductionSecurityInfo(
-                    APIProcessUtils.convertProtoEndpointSecurity(
-                            api.getEndpointSecurity().getProductionSecurityInfo()));
-        }
-        if (api.getEndpointSecurity().hasSandBoxSecurityInfo()) {
-            endpointSecurity.setSandBoxSecurityInfo(
-                    APIProcessUtils.convertProtoEndpointSecurity(
-                            api.getEndpointSecurity().getSandBoxSecurityInfo()));
-        }
+        // if (api.getEndpointSecurity().hasProductionSecurityInfo()) {
+        //     endpointSecurity.setProductionSecurityInfo(
+        //             APIProcessUtils.convertProtoEndpointSecurity(
+        //                     api.getEndpointSecurity().getProductionSecurityInfo()));
+        // }
+        // if (api.getEndpointSecurity().hasSandBoxSecurityInfo()) {
+        //     endpointSecurity.setSandBoxSecurityInfo(
+        //             APIProcessUtils.convertProtoEndpointSecurity(
+        //                     api.getEndpointSecurity().getSandBoxSecurityInfo()));
+        // }
 
         KeyStore trustStore;
         try {
@@ -156,7 +157,6 @@ public class RestAPI implements API {
                 .resources(resources).apiType(apiType).apiLifeCycleState(apiLifeCycleState).tier(api.getTier())
                 .apiSecurity(securityScopesMap).securitySchemeDefinitions(securitySchemeDefinitions)
                 .disableSecurity(api.getDisableSecurity()).authHeader(api.getAuthorizationHeader())
-                .envType(api.getEnvType()).endpointSecurity(endpointSecurity)
                 .trustStore(trustStore).organizationId(api.getOrganizationId())
                 .mtlsCertificateTiers(mtlsCertificateTiers).mutualSSL(mutualSSL).systemAPI(api.getSystemAPI())
                 .applicationSecurity(applicationSecurity).build();
