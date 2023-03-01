@@ -70,7 +70,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/devportal-domain-service:0.0.1-m5
+          image: wso2/devportal-domain-service:latest
       admin:
         appName: "admin-ds"
         deployment:
@@ -97,7 +97,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/admin-domain-service:0.0.1-m5
+          image: wso2/admin-domain-service:latest
       backoffice:
         appName: "backoffice-ds"
         deployment:
@@ -124,7 +124,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/backoffice-domain-service:0.0.1-m5
+          image: wso2/backoffice-domain-service:latest
       devportalUI:
         appName: "devportal-ui"
         deployment:
@@ -167,7 +167,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/management-server:0.0.1-m5
+          image: wso2/management-server:latest
       cnpg:
         npi: cnpg-npi
         instances: 1
@@ -202,7 +202,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: IfNotPresent
-          image: runtime-domain-service:0.0.1-SNAPSHOT
+          image: runtime-domain-service:latest
       adapter:
         appName: "adapter"
         deployment:
@@ -234,7 +234,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: IfNotPresent
-          image: adapter:0.0.1-SNAPSHOT
+          image: adapter:latest
           security:
             sslHostname: "adapter"
       gatewayRuntime:
@@ -277,7 +277,7 @@ wso2:
               failureThreshold: 5
             strategy: Recreate
             imagePullPolicy: Always
-            image: wso2/router:0.0.1-m5
+            image: wso2/router:latest
           enforcer:
             npi: enforcer-npi
             resources:
@@ -316,7 +316,7 @@ wso2:
               failureThreshold: 5
             strategy: Recreate
             imagePullPolicy: Always
-            image: wso2/enforcer:0.0.1-m5
+            image: wso2/enforcer:latest
             security:
               sslHostname: "enforcer"
 
@@ -386,7 +386,7 @@ idp:
       strategy: Recreate
       replicas: 1
       imagePullPolicy: Always
-      image: wso2/idp-domain-service:0.0.1-m5
+      image: wso2/idp-domain-service:latest
   idpui:
     appName: "idp-ui"
     deployment:
@@ -413,7 +413,7 @@ idp:
       strategy: Recreate
       replicas: 1
       imagePullPolicy: Always
-      image: wso2/idp-ui:0.0.1-m5
+      image: wso2/idp-ui:latest
     configs:
       idpLoginUrl: "https://idp.am.wso2.com:9095/commonauth/login"
       idpAuthCallBackUrl: "https://idp.am.wso2.com:9095/oauth2/auth-callback"
