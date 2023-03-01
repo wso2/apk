@@ -23,7 +23,7 @@ spec:
   apiVersion: 1.0.8
   context: /http-bin-api/1.0.8
   definitionFileRef: swagger-definition-http-bin-api
-  prodHTTPRouteRef: prod-http-route-http-bin-api
+  prodHTTPRouteRefs: prod-http-route-http-bin-api
   sandHTTPRouteRef: sand-http-route-http-bin-api
   organization: carbon.super
 ---

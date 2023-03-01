@@ -10,7 +10,7 @@ spec:
     valueFrom:
      configRef: swagger-definition-SwaggerPetstore.namespace
      uRL: http://example.com
-  prodHTTPRouteRef:
+  prodHTTPRouteRefs:
   - http-route-SwaggerPetstore-p1
   - http-route-SwaggerPetstore-p2
   sandHTTPRouteRef:
