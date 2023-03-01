@@ -80,7 +80,7 @@ class APIListingTask {
         log:printDebug(message);
         json value = check value:fromJsonString(message);
         string eventType = <string>check value.'type;
-        json eventValue = <json>check value.'object;
+        map<json> eventValue = <map<json>>check value.'object;
         json metadata = <json>check eventValue.metadata;
         if eventType == "ERROR" {
             model:Status|error statusEvent = eventValue.cloneWithType(model:Status);
