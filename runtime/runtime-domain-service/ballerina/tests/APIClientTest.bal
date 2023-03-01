@@ -49,7 +49,10 @@ function getMockStartandAttachServices() returns error? {
 function testgetBackendPolicyUid(API api, string? endpointType, commons:Organization organization) returns string {
     return "backendpolicy-uuid";
 }
-
+@test:Mock{functionName: "retrieveHttpRouteRefName"}
+function testRetrieveHttpRouteRefName(API api, string 'type, commons:Organization organization) returns string {
+    return "http-route-ref-name";
+}
 int serviceMappingIndex = 0;
 
 @test:Mock {functionName: "getServiceMappingClient"}
@@ -2021,7 +2024,7 @@ function getMockAPI(API api, string apiUUID, string organization) returns model:
             "context": apiClient.returnFullContext(api.context, api.'version),
             "organization": organization,
             "definitionFileRef": apiUUID + "-definition",
-            "prodHTTPRouteRef": apiUUID + "-production"
+            "prodHTTPRouteRefs": ["http-route-ref-name"]
         },
         "status"
                 : null
@@ -2090,7 +2093,7 @@ function getMockAPI1(API api, string apiUUID, string organization) returns model
             "context": apiClient.returnFullContext(api.context, api.'version),
             "organization": organization,
             "definitionFileRef": apiUUID + "-definition",
-            "sandHTTPRouteRef": apiUUID + "-sandbox"
+            "sandHTTPRouteRefs": ["http-route-ref-name"]
         },
         "status": null
     };
@@ -2114,7 +2117,7 @@ function getMockHttpRoute(API api, string apiUUID, commons:Organization organizt
     return {
         "apiVersion": "gateway.networking.k8s.io/v1beta1",
         "kind": "HTTPRoute",
-        "metadata": {"name": apiUUID + "-production", "namespace": "apk-platform", "labels": {"api-name": api.name, "api-version": api.'version}},
+        "metadata": {"name": "http-route-ref-name", "namespace": "apk-platform", "labels": {"api-name": api.name, "api-version": api.'version}},
         "spec": {
             "hostnames": [string:concat(organiztion.uuid, ".", "gw.wso2.com")],
             "rules": [
@@ -2262,7 +2265,7 @@ function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid
     return {
         "apiVersion": "gateway.networking.k8s.io/v1beta1",
         "kind": "HTTPRoute",
-        "metadata": {"name": apiUUID + "-" + 'type, "namespace": "apk-platform", "labels": {"api-name": api.name, "api-version": api.'version}},
+        "metadata": {"name": "http-route-ref-name", "namespace": "apk-platform", "labels": {"api-name": api.name, "api-version": api.'version}},
         "spec": {
             "hostnames": [
                 hostnames

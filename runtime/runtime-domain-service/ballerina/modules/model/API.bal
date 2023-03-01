@@ -31,8 +31,8 @@ public type APISpec record {|
     string context;
     string organization;
     string definitionFileRef?;
-    string prodHTTPRouteRef?;
-    string sandHTTPRouteRef?;
+    string[]|() prodHTTPRouteRefs= ();
+    string[]|() sandHTTPRouteRefs=();
     boolean systemAPI?;
 |};
 

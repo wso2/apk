@@ -30,7 +30,7 @@ spec:
   context: "/api/am/backoffice/1.0.0"
   organization: "carbon.super"
   definitionFileRef: ""
-  prodHTTPRouteRef:
+  prodHTTPRouteRefs:
     - {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-httproute
   systemAPI: true
 {{- end -}}

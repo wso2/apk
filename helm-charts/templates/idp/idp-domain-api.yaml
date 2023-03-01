@@ -28,7 +28,7 @@ spec:
   apiVersion: "1.0.0"
   context: "/idp/1.0.0"
   organization: "carbon.super"
-  prodHTTPRouteRef:
+  prodHTTPRouteRefs:
     - {{ template "apk-helm.resource.prefix" . }}-idp-ds-httproute
   systemAPI: true
 {{- end -}}
