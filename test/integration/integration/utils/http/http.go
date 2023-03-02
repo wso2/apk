@@ -364,7 +364,7 @@ func setRedirectRequestDefaults(req *roundtripper.Request, cRes *roundtripper.Ca
 }
 
 // GetTestToken get test token from test token endpoint call
-func GetTestToken(t *testing.T, gwAddr string) string {
+func GetTestToken(t *testing.T, gwAddr string, scopes ...string) string {
 	t.Helper()
 	transport := &http.Transport{
 		TLSClientConfig: &tls.Config{
@@ -372,9 +372,11 @@ func GetTestToken(t *testing.T, gwAddr string) string {
 		},
 	}
 	client := &http.Client{Transport: transport}
-	req, err := http.NewRequest("GET", fmt.Sprintf("https://%s/testkey", gwAddr), nil)
+	req, err := http.NewRequest("POST", fmt.Sprintf("https://%s/testkey", gwAddr),
+		strings.NewReader(fmt.Sprintf("scope=%s", strings.Join(scopes, " "))))
 
 	req.Header.Set("Authorization", "Basic YWRtaW46YWRtaW4=")
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.Host = "gw.wso2.com"
 	if err != nil {
 		t.Fatalf("failed to create request: %v", err)
