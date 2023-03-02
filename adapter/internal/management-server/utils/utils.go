@@ -22,7 +22,7 @@ import (
 
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/loggers"
-	loggin "github.com/wso2/apk/adapter/internal/logging"
+	logging "github.com/wso2/apk/adapter/internal/logging"
 	"github.com/wso2/apk/adapter/pkg/utils/tlsutils"
 	"google.golang.org/grpc/credentials"
 )
@@ -34,7 +34,7 @@ func GenerateTLSCredentials() (credentials.TransportCredentials, error) {
 	certificate, err := tlsutils.GetServerCertificate(conf.Adapter.Keystore.CertPath,
 		conf.Adapter.Keystore.KeyPath)
 	if err != nil {
-		loggers.LoggerGRPCClient.ErrorC(loggin.GetErrorByCode(2700, err.Error()))
+		loggers.LoggerGRPCClient.ErrorC(logging.GetErrorByCode(2700, err.Error()))
 		return nil, err
 	}
 	tlsConfig := &tls.Config{

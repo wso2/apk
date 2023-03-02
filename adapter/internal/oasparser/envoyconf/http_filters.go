@@ -39,7 +39,7 @@ import (
 	"github.com/golang/protobuf/ptypes"
 	"github.com/wso2/apk/adapter/config"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
-	loggin "github.com/wso2/apk/adapter/internal/logging"
+	logging "github.com/wso2/apk/adapter/internal/logging"
 
 	//mgw_websocket "github.com/wso2/micro-gw/internal/oasparser/envoyconf/api"
 	"github.com/golang/protobuf/ptypes/any"
@@ -62,7 +62,7 @@ func getHTTPFilters() []*hcmv3.HttpFilter {
 	if conf.Envoy.Filters.Compression.Enabled {
 		compressionFilter, err := getCompressorFilter()
 		if err != nil {
-			logger.LoggerXds.ErrorC(loggin.GetErrorByCode(2234, err.Error()))
+			logger.LoggerXds.ErrorC(logging.GetErrorByCode(2234, err.Error()))
 			return httpFilters
 		}
 		httpFilters = httpFilters[:len(httpFilters)-1]

@@ -40,7 +40,7 @@ import (
 	"github.com/wso2/apk/adapter/config"
 	apiModel "github.com/wso2/apk/adapter/internal/api/models"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
-	loggin "github.com/wso2/apk/adapter/internal/logging"
+	logging "github.com/wso2/apk/adapter/internal/logging"
 	oasParser "github.com/wso2/apk/adapter/internal/oasparser"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
 	"github.com/wso2/apk/adapter/internal/oasparser/envoyconf"
@@ -241,7 +241,7 @@ func DeleteAPICREvent(labels []string, apiUUID string, organizationID string) er
 	for _, vhost := range vHosts {
 		apiIdentifier := GenerateIdentifierForAPIWithUUID(vhost, apiUUID)
 		if err := deleteAPI(apiIdentifier, labels, organizationID); err != nil {
-			logger.LoggerXds.ErrorC(loggin.GetErrorByCode(1410, apiIdentifier, organizationID, labels))
+			logger.LoggerXds.ErrorC(logging.GetErrorByCode(1410, apiIdentifier, organizationID, labels))
 			return err
 		}
 		// if no error, update internal vhost maps
@@ -362,7 +362,7 @@ func GenerateEnvoyResoucesForLabel(label string) ([]types.Resource, []types.Reso
 			if stringutils.StringInSlice(label, labels) {
 				vhost, err := ExtractVhostFromAPIIdentifier(apiKey)
 				if err != nil {
-					logger.LoggerXds.ErrorC(loggin.GetErrorByCode(1411, err.Error(), organizationID))
+					logger.LoggerXds.ErrorC(logging.GetErrorByCode(1411, err.Error(), organizationID))
 					continue
 				}
 				isDefaultVersion := false
@@ -446,14 +446,14 @@ func updateXdsCache(label string, endpoints []types.Resource, clusters []types.R
 		envoy_resource.RouteType:    routes,
 	})
 	if errNewSnap != nil {
-		logger.LoggerXds.ErrorC(loggin.GetErrorByCode(1413, errNewSnap.Error()))
+		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1413, errNewSnap.Error()))
 		return false
 	}
 	snap.Consistent()
 	//TODO: (VirajSalaka) check
 	errSetSnap := cache.SetSnapshot(context.Background(), label, snap)
 	if errSetSnap != nil {
-		logger.LoggerXds.ErrorC(loggin.GetErrorByCode(1414, errSetSnap.Error()))
+		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
 		return false
 	}
 	logger.LoggerXds.Infof("New Router cache updated for the label: " + label + " version: " + fmt.Sprint(version))
@@ -470,13 +470,13 @@ func UpdateEnforcerConfig(configFile *config.Config) {
 		wso2_resource.ConfigType: configs,
 	})
 	if errNewSnap != nil {
-		logger.LoggerXds.ErrorC(loggin.GetErrorByCode(1413, errNewSnap.Error()))
+		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1413, errNewSnap.Error()))
 	}
 	snap.Consistent()
 
 	errSetSnap := enforcerCache.SetSnapshot(context.Background(), label, snap)
 	if errSetSnap != nil {
-		logger.LoggerXds.ErrorC(loggin.GetErrorByCode(1414, errSetSnap.Error()))
+		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
 	}
 
 	enforcerConfigMap[label] = configs
@@ -497,7 +497,7 @@ func UpdateEnforcerApis(label string, apis []types.Resource, version string) {
 
 	errSetSnap := enforcerCache.SetSnapshot(context.Background(), label, snap)
 	if errSetSnap != nil {
-		logger.LoggerXds.ErrorC(loggin.GetErrorByCode(1414, errSetSnap.Error()))
+		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
 	}
 	logger.LoggerXds.Infof("New API cache update for the label: " + label + " version: " + fmt.Sprint(version))
 }
@@ -519,7 +519,7 @@ func UpdateEnforcerSubscriptions(subscriptions *subscription.SubscriptionList) {
 
 	errSetSnap := enforcerSubscriptionCache.SetSnapshot(context.Background(), label, snap)
 	if errSetSnap != nil {
-		logger.LoggerXds.ErrorC(loggin.GetErrorByCode(1414, errSetSnap.Error()))
+		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
 	}
 	enforcerSubscriptionMap[label] = subscriptionList
 	logger.LoggerXds.Infof("New Subscription cache update for the label: " + label + " version: " + fmt.Sprint(version))
@@ -540,7 +540,7 @@ func UpdateEnforcerApplications(applications *subscription.ApplicationList) {
 
 	errSetSnap := enforcerApplicationCache.SetSnapshot(context.Background(), label, snap)
 	if errSetSnap != nil {
-		logger.LoggerXds.ErrorC(loggin.GetErrorByCode(1414, errSetSnap.Error()))
+		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
 	}
 	enforcerApplicationMap[label] = applicationList
 	logger.LoggerXds.Infof("New Application cache update for the label: " + label + " version: " + fmt.Sprint(version))
@@ -560,7 +560,7 @@ func UpdateEnforcerAPIList(label string, apis *subscription.APIList) {
 
 	errSetSnap := enforcerAPICache.SetSnapshot(context.Background(), label, snap)
 	if errSetSnap != nil {
-		logger.LoggerXds.ErrorC(loggin.GetErrorByCode(1414, errSetSnap.Error()))
+		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
 	}
 	enforcerAPIListMap[label] = apiList
 	logger.LoggerXds.Infof("New API List cache update for the label: " + label + " version: " + fmt.Sprint(version))
@@ -581,7 +581,7 @@ func UpdateEnforcerApplicationPolicies(applicationPolicies *subscription.Applica
 
 	errSetSnap := enforcerApplicationPolicyCache.SetSnapshot(context.Background(), label, snap)
 	if errSetSnap != nil {
-		logger.LoggerXds.ErrorC(loggin.GetErrorByCode(1414, errSetSnap.Error()))
+		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
 	}
 	enforcerApplicationPolicyMap[label] = applicationPolicyList
 	logger.LoggerXds.Infof("New Application Policy cache update for the label: " + label + " version: " + fmt.Sprint(version))
@@ -602,7 +602,7 @@ func UpdateEnforcerSubscriptionPolicies(subscriptionPolicies *subscription.Subsc
 
 	errSetSnap := enforcerSubscriptionPolicyCache.SetSnapshot(context.Background(), label, snap)
 	if errSetSnap != nil {
-		logger.LoggerXds.ErrorC(loggin.GetErrorByCode(1414, errSetSnap.Error()))
+		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
 	}
 	enforcerSubscriptionPolicyMap[label] = subscriptionPolicyList
 	logger.LoggerXds.Infof("New Subscription Policy cache update for the label: " + label + " version: " + fmt.Sprint(version))
@@ -623,7 +623,7 @@ func UpdateEnforcerApplicationKeyMappings(applicationKeyMappings *subscription.A
 
 	errSetSnap := enforcerApplicationKeyMappingCache.SetSnapshot(context.Background(), label, snap)
 	if errSetSnap != nil {
-		logger.LoggerXds.ErrorC(loggin.GetErrorByCode(1414, errSetSnap.Error()))
+		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
 	}
 	enforcerApplicationKeyMappingMap[label] = applicationKeyMappingList
 	logger.LoggerXds.Infof("New Application Key Mapping cache update for the label: " + label + " version: " + fmt.Sprint(version))
@@ -736,7 +736,7 @@ func UpdateEnforcerKeyManagers(keyManagerConfigList []types.Resource) {
 
 	errSetSnap := enforcerKeyManagerCache.SetSnapshot(context.Background(), label, snap)
 	if errSetSnap != nil {
-		logger.LoggerXds.ErrorC(loggin.GetErrorByCode(1414, errSetSnap.Error()))
+		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
 	}
 	enforcerKeyManagerMap[label] = keyManagerConfigList
 	logger.LoggerXds.Infof("New key manager cache update for the label: " + label + " version: " + fmt.Sprint(version))
@@ -758,7 +758,7 @@ func UpdateEnforcerRevokedTokens(revokedTokens []types.Resource) {
 
 	errSetSnap := enforcerRevokedTokensCache.SetSnapshot(context.Background(), label, snap)
 	if errSetSnap != nil {
-		logger.LoggerXds.ErrorC(loggin.GetErrorByCode(1414, errSetSnap.Error()))
+		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
 	}
 	enforcerRevokedTokensMap[label] = tokens
 	logger.LoggerXds.Infof("New Revoked token cache update for the label: " + label + " version: " + fmt.Sprint(version))

@@ -27,7 +27,7 @@ import (
 	hcmv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/http_connection_manager/v3"
 	"github.com/wso2/apk/adapter/config"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
-	loggin "github.com/wso2/apk/adapter/internal/logging"
+	logging "github.com/wso2/apk/adapter/internal/logging"
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
@@ -51,25 +51,25 @@ func getGzipConfigurations(config config.Config) *gzip_compressor.Gzip {
 	if memoryLevel != 0 {
 		gzipConf.MemoryLevel = wrapperspb.UInt32(memoryLevel)
 	} else {
-		logger.LoggerXds.ErrorC(loggin.GetErrorByCode(2235, err1.Error()))
+		logger.LoggerXds.ErrorC(logging.GetErrorByCode(2235, err1.Error()))
 	}
 	windowBits, err2 := getUInt32Value(config.Envoy.Filters.Compression.LibraryProperties["windowBits"])
 	if windowBits != 0 && err2 == nil {
 		gzipConf.WindowBits = wrapperspb.UInt32(windowBits)
 	} else {
-		logger.LoggerXds.ErrorC(loggin.GetErrorByCode(2236, err2.Error()))
+		logger.LoggerXds.ErrorC(logging.GetErrorByCode(2236, err2.Error()))
 	}
 	compressionLevel, err3 := getUInt32Value(config.Envoy.Filters.Compression.LibraryProperties["compressionLevel"])
 	if compressionLevel != 0 && err3 == nil {
 		gzipConf.CompressionLevel = getGzipCompressionLevel(compressionLevel)
 	} else {
-		logger.LoggerXds.ErrorC(loggin.GetErrorByCode(2237, err3.Error()))
+		logger.LoggerXds.ErrorC(logging.GetErrorByCode(2237, err3.Error()))
 	}
 	chunkSize, err4 := getUInt32Value(config.Envoy.Filters.Compression.LibraryProperties["chunkSize"])
 	if chunkSize != 0 && err4 == nil {
 		gzipConf.ChunkSize = wrapperspb.UInt32(chunkSize)
 	} else {
-		logger.LoggerXds.ErrorC(loggin.GetErrorByCode(2238, err4.Error()))
+		logger.LoggerXds.ErrorC(logging.GetErrorByCode(2238, err4.Error()))
 	}
 	gzipConf.CompressionStrategy = getGzipCompressionStrategy(compressionStrategy)
 	logger.LoggerOasparser.Debug("gzip configuration values parsed successfully.")

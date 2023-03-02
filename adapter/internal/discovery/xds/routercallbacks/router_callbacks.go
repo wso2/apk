@@ -24,7 +24,7 @@ import (
 	discovery "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
 	"github.com/wso2/apk/adapter/internal/discovery/xds/common"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
-	loggin "github.com/wso2/apk/adapter/internal/logging"
+	logging "github.com/wso2/apk/adapter/internal/logging"
 )
 
 var nodeQueueInstance *common.NodeQueue
@@ -61,7 +61,7 @@ func (cb *Callbacks) OnStreamRequest(id int64, request *discovery.DiscoveryReque
 	logger.LoggerRouterXdsCallbacks.Debugf("stream request on stream id: %d, from node: %s, version: %s, for type: %s",
 		id, nodeIdentifier, request.VersionInfo, request.TypeUrl)
 	if request.ErrorDetail != nil {
-		logger.LoggerRouterXdsCallbacks.ErrorC(loggin.GetErrorByCode(1401, request.GetTypeUrl(),
+		logger.LoggerRouterXdsCallbacks.ErrorC(logging.GetErrorByCode(1401, request.GetTypeUrl(),
 			id, nodeIdentifier, request.ErrorDetail.Message))
 	}
 	return nil

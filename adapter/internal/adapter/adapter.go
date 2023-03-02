@@ -48,7 +48,7 @@ import (
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/discovery/xds"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
-	loggin "github.com/wso2/apk/adapter/internal/logging"
+	logging "github.com/wso2/apk/adapter/internal/logging"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/keepalive"
@@ -118,7 +118,7 @@ func runManagementServer(conf *config.Config, server xdsv3.Server, enforcerServe
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
-		logger.LoggerMgw.ErrorC(loggin.GetErrorByCode(1100, port, err.Error()))
+		logger.LoggerMgw.ErrorC(logging.GetErrorByCode(1100, port, err.Error()))
 	}
 
 	// register services
@@ -147,7 +147,7 @@ func runManagementServer(conf *config.Config, server xdsv3.Server, enforcerServe
 		}
 		logger.LoggerMgw.Info("Starting XDS GRPC server.")
 		if err = grpcServer.Serve(lis); err != nil {
-			logger.LoggerMgw.ErrorC(loggin.GetErrorByCode(1101, err.Error()))
+			logger.LoggerMgw.ErrorC(logging.GetErrorByCode(1101, err.Error()))
 		}
 	}()
 }
@@ -170,7 +170,7 @@ func Run(conf *config.Config) {
 	}
 
 	if errC != nil {
-		logger.LoggerMgw.ErrorC(loggin.GetErrorByCode(1102, errC.Error()))
+		logger.LoggerMgw.ErrorC(logging.GetErrorByCode(1102, errC.Error()))
 	}
 
 	logger.LoggerMgw.Info("Starting adapter ....")

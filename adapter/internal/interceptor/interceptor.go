@@ -22,7 +22,7 @@ import (
 	"text/template"
 
 	logger "github.com/wso2/apk/adapter/internal/loggers"
-	loggin "github.com/wso2/apk/adapter/internal/logging"
+	logging "github.com/wso2/apk/adapter/internal/logging"
 )
 
 // Interceptor hold values used for interceptor
@@ -157,7 +157,7 @@ var (
 func GetInterceptor(templateValues any, templateString string) string {
 	t, err := template.New("lua-filter").Parse(templateString)
 	if err != nil {
-		logger.LoggerInterceptor.ErrorC(loggin.GetErrorByCode(1800, err.Error()))
+		logger.LoggerInterceptor.ErrorC(logging.GetErrorByCode(1800, err.Error()))
 		return emptyInterceptorTemplate
 	}
 	templ := template.Must(t, err)
@@ -165,7 +165,7 @@ func GetInterceptor(templateValues any, templateString string) string {
 
 	err = templ.Execute(&out, templateValues)
 	if err != nil {
-		logger.LoggerInterceptor.ErrorC(loggin.GetErrorByCode(1801, err.Error()))
+		logger.LoggerInterceptor.ErrorC(logging.GetErrorByCode(1801, err.Error()))
 		return emptyInterceptorTemplate
 	}
 	return out.String()

@@ -29,7 +29,7 @@ import (
 
 	"github.com/ghodss/yaml"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
-	loggin "github.com/wso2/apk/adapter/internal/logging"
+	logging "github.com/wso2/apk/adapter/internal/logging"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
 )
 
@@ -61,7 +61,7 @@ func FindAPIDefinitionVersion(jsn []byte) string {
 
 	err := json.Unmarshal(jsn, &result)
 	if err != nil {
-		logger.LoggerOasparser.ErrorC(loggin.GetErrorByCode(2209, err.Error()))
+		logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2209, err.Error()))
 	}
 
 	if _, ok := result[constants.Swagger]; ok {
@@ -72,10 +72,10 @@ func FindAPIDefinitionVersion(jsn []byte) string {
 		if strings.HasPrefix(versionNumber.(string), "2") {
 			return constants.AsyncAPI2
 		}
-		logger.LoggerOasparser.ErrorC(loggin.GetErrorByCode(2210, versionNumber.(string)))
+		logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2210, versionNumber.(string)))
 		return constants.NotSupported
 	}
-	logger.LoggerOasparser.ErrorC(loggin.GetErrorByCode(2211))
+	logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2211))
 	return constants.NotDefined
 }
 

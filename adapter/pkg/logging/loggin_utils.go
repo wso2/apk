@@ -23,7 +23,14 @@ import (
 
 // GetErrorByCode used to keep error details for error logs
 func GetErrorByCode(code int, args ...interface{}) ErrorDetails {
-	errorLog := Mapper[code]
+	errorLog, ok := Mapper[code]
+	if !ok {
+		errorLog = ErrorDetails{
+			ErrorCode: 0000,
+			Message:   fmt.Sprintf("No error message found for error code: %v", code),
+			Severity:  "BLOCKER",
+		}
+	}
 	message := errorLog.Message
 	message = fmt.Sprintf(message, args...)
 

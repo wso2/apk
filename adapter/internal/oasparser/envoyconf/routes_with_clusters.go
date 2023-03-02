@@ -46,7 +46,7 @@ import (
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/interceptor"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
-	loggin "github.com/wso2/apk/adapter/internal/logging"
+	logging "github.com/wso2/apk/adapter/internal/logging"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
 	"github.com/wso2/apk/adapter/internal/svcdiscovery"
@@ -116,7 +116,7 @@ func CreateRoutesWithClusters(mgwSwagger model.MgwSwagger, interceptorCerts map[
 
 		routeP, err := createRoutes(genRouteCreateParams(&mgwSwagger, resource, vHost, basePath, clusterName, *operationalReqInterceptors, *operationalRespInterceptorVal, organizationID, false))
 		if err != nil {
-			logger.LoggerXds.ErrorC(loggin.GetErrorByCode(2231, mgwSwagger.GetTitle(), mgwSwagger.GetVersion(), resource.GetPath(), err.Error()))
+			logger.LoggerXds.ErrorC(logging.GetErrorByCode(2231, mgwSwagger.GetTitle(), mgwSwagger.GetVersion(), resource.GetPath(), err.Error()))
 			return nil, nil, nil, fmt.Errorf("error while creating routes. %v", err)
 		}
 		routes = append(routes, routeP...)
@@ -665,7 +665,7 @@ end`
 					if err != nil {
 						errMsg := fmt.Sprintf("Error adding request policy %s to operation %s of resource %s. %v",
 							constants.ActionRewritePath, operation.GetMethod(), resourcePath, err)
-						logger.LoggerOasparser.ErrorC(loggin.GetErrorByCode(2212, constants.ActionRewritePath, operation.GetMethod(), resourcePath, err))
+						logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2212, constants.ActionRewritePath, operation.GetMethod(), resourcePath, err))
 						return nil, errors.New(errMsg)
 					}
 					pathRewriteConfig = regexRewrite

@@ -28,8 +28,7 @@ import (
 	"github.com/golang/protobuf/ptypes"
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/loggers"
-	"github.com/wso2/apk/adapter/internal/logging"
-	loggin "github.com/wso2/apk/adapter/internal/logging"
+	logging "github.com/wso2/apk/adapter/internal/logging"
 	"github.com/wso2/apk/adapter/internal/management-server/utils"
 	cpv1alpha1 "github.com/wso2/apk/adapter/pkg/operator/apis/cp/v1alpha1"
 
@@ -95,7 +94,7 @@ func initConnection(xdsURL string) error {
 	conn, err := grpc.Dial(xdsURL, grpc.WithTransportCredentials(transportCredentials), grpc.WithBlock())
 	if err != nil {
 		// TODO: (AmaliMatharaarachchi) retries
-		loggers.LoggerXds.ErrorC(loggin.GetErrorByCode(1700, err.Error()))
+		loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1700, err.Error()))
 		return err
 	}
 
@@ -105,7 +104,7 @@ func initConnection(xdsURL string) error {
 
 	if err != nil {
 		// TODO: (AmaliMatharaarachchi) handle error.
-		loggers.LoggerXds.ErrorC(loggin.GetErrorByCode(1701, err.Error()))
+		loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1701, err.Error()))
 		return err
 	}
 	loggers.LoggerXds.Infof("Connection to the APK Management Server: %s is successful.", xdsURL)
@@ -120,10 +119,10 @@ func watchApplications() {
 			return
 		}
 		if err != nil {
-			loggers.LoggerXds.ErrorC(loggin.GetErrorByCode(1703, err.Error()))
+			loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1703, err.Error()))
 			errStatus, _ := grpcStatus.FromError(err)
 			if errStatus.Code() == codes.Unavailable {
-				loggers.LoggerXds.ErrorC(loggin.GetErrorByCode(1704, err.Error()))
+				loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1704, err.Error()))
 			}
 			nack(err.Error())
 		} else {
@@ -183,7 +182,7 @@ func InitApkMgtXDSClient() {
 		}
 		xdsStream.Send(discoveryRequest)
 	} else {
-		loggers.LoggerXds.ErrorC(loggin.GetErrorByCode(1705, err.Error()))
+		loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1705, err.Error()))
 	}
 }
 
@@ -195,7 +194,7 @@ func addApplicationsToChannel(resp *discovery.DiscoveryResponse) {
 		err := ptypes.UnmarshalAny(res, application)
 
 		if err != nil {
-			loggers.LoggerXds.ErrorC(loggin.GetErrorByCode(1706, err.Error()))
+			loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1706, err.Error()))
 			continue
 		}
 

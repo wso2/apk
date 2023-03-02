@@ -24,7 +24,7 @@ import (
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	endpointv3 "github.com/envoyproxy/go-control-plane/envoy/config/endpoint/v3"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
-	loggin "github.com/wso2/apk/adapter/internal/logging"
+	logging "github.com/wso2/apk/adapter/internal/logging"
 	"github.com/wso2/apk/adapter/internal/svcdiscovery"
 	"google.golang.org/protobuf/types/known/anypb"
 )
@@ -49,7 +49,7 @@ func startConsulServiceDiscovery(organizationID string) {
 				})
 				query, errConSyn := svcdiscovery.ParseQueryString(consulSyntax)
 				if errConSyn != nil {
-					logger.LoggerXds.ErrorC(loggin.GetErrorByCode(1402, errConSyn.Error()))
+					logger.LoggerXds.ErrorC(logging.GetErrorByCode(1402, errConSyn.Error()))
 					return
 				}
 				logger.LoggerXds.Debugln("consul query values: ", query)
@@ -83,7 +83,7 @@ func updateCertsForServiceMesh(organizationID string) {
 
 			marshalledTLSContext, err := anypb.New(upstreamTLSContext)
 			if err != nil {
-				logger.LoggerXds.ErrorC(loggin.GetErrorByCode(1403, err.Error()))
+				logger.LoggerXds.ErrorC(logging.GetErrorByCode(1403, err.Error()))
 			} else {
 				//envoy config
 				upstreamTransportSocket := &corev3.TransportSocket{
