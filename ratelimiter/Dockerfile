@@ -36,13 +36,13 @@ ENV LOG_LEVEL=INFO
 ENV LOCAL_CACHE_SIZE_IN_BYTES=1024000
 
 ENV GRPC_SERVER_USE_TLS=true
-ENV GRPC_SERVER_TLS_KEY=/home/wso2/security/keystore/rate-limiter.key
-ENV GRPC_SERVER_TLS_CERT=/home/wso2/security/keystore/rate-limiter.pem
+ENV GRPC_SERVER_TLS_KEY=/home/wso2/security/keystore/ratelimiter.key
+ENV GRPC_SERVER_TLS_CERT=/home/wso2/security/keystore/ratelimiter.pem
 ENV GRPC_CLIENT_TLS_CACERT=/home/wso2/security/truststore/mg.pem
 
 ENV CONFIG_GRPC_XDS_SERVER_USE_TLS=true
-ENV CONFIG_GRPC_XDS_CLIENT_TLS_KEY=/home/wso2/security/keystore/rate-limiter.key
-ENV CONFIG_GRPC_XDS_CLIENT_TLS_CERT=/home/wso2/security/keystore/rate-limiter.pem
+ENV CONFIG_GRPC_XDS_CLIENT_TLS_KEY=/home/wso2/security/keystore/ratelimiter.key
+ENV CONFIG_GRPC_XDS_CLIENT_TLS_CERT=/home/wso2/security/keystore/ratelimiter.pem
 ENV CONFIG_GRPC_XDS_SERVER_TLS_CACERT=/home/wso2/security/truststore/mg.pem
 
 ARG MOTD="\n\
@@ -60,9 +60,8 @@ RUN \
 
 WORKDIR ${MG_USER_HOME}
 USER ${MG_USER}
-COPY maven/security security
-COPY maven/start-server.sh .
-COPY maven/LICENSE.txt .
+COPY resources/security security
+COPY resources/start-server.sh .
 
 EXPOSE 8090 8091 6070
 

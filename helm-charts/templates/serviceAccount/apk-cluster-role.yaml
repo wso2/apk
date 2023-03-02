@@ -77,6 +77,7 @@ rules:
   - apiGroups: ["dp.wso2.com"]
     resources: ["apipolicies/finalizers"]
     verbs: ["update"]
+#    todo(amali)
   - apiGroups: ["dp.wso2.com"]
     resources: ["apipolicies/status"]
     resources: ["scopes"]

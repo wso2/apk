@@ -20,10 +20,9 @@ plugins {
 }
 
 apply from: "$rootDir/../common-gradle-scripts/docker.gradle"
-apply from: "$rootDir/../common-gradle-scripts/go.gradle"
 
 release {
-    tagTemplate = 'management-server-$version'
+    tagTemplate = 'ratelimiter-$version'
 
     git {
         requireBranch= "main"
@@ -36,18 +35,7 @@ allprojects {
     version = project.version
 }
 
-tasks.named('go_revive_run').configure { 
-    finalizedBy go_tidy
-}
-
-tasks.named('go_build').configure {
-    dependsOn go_revive_run
-    dependsOn go_vet
-    finalizedBy docker_build
-}
-
 task build{
-    dependsOn go_build
     dependsOn docker_build
 }
 
