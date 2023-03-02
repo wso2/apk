@@ -20,33 +20,34 @@ package tests
 import (
 	"testing"
 
+	"github.com/wso2/apk/test/integration/integration/utils/http"
 	"github.com/wso2/apk/test/integration/integration/utils/kubernetes"
 	"github.com/wso2/apk/test/integration/integration/utils/suite"
-	"sigs.k8s.io/gateway-api/conformance/utils/http"
 )
 
 func init() {
-	IntegrationTests = append(IntegrationTests, HTTPRouteRewritePath)
+	IntegrationTests = append(IntegrationTests, APIWithBackendBasePath)
 }
 
-// HTTPRouteRewritePath test
-var HTTPRouteRewritePath = suite.IntegrationTest{
-	ShortName:   "HTTPRouteRewritePath",
-	Description: "An HTTPRoute with path rewrite filter",
-	Manifests:   []string{"tests/httproute-rewrite-path.yaml"},
+// APIWithBackendBasePath test
+var APIWithBackendBasePath = suite.IntegrationTest{
+	ShortName:   "APIWithBackendBasePath",
+	Description: "An API with a backend base path should be able to route requests to the backend",
+	Manifests:   []string{"tests/api-with-backend-base-path.yaml"},
 	Test: func(t *testing.T, suite *suite.IntegrationTestSuite) {
 		ns := "gateway-integration-test-infra"
 		gwAddr := kubernetes.WaitForGatewayAddress(t, suite.Client, suite.TimeoutConfig)
+		token := http.GetTestToken(t, gwAddr)
 
 		testCases := []http.ExpectedResponse{
 			{
 				Request: http.Request{
-					Host: "urlrewrite.gw.wso2.com",
-					Path: "/rewrite-path-api/1.0.0/prefix/one/two",
+					Host: "backend-base-path.test.gw.wso2.com",
+					Path: "/test-api-with-backend-base-path/1.0.0/orders",
 				},
 				ExpectedRequest: &http.ExpectedRequest{
 					Request: http.Request{
-						Path: "/one/two",
+						Path: "/backend-base-path/orders",
 					},
 				},
 				Backend:   "infra-backend-v1",
@@ -54,12 +55,12 @@ var HTTPRouteRewritePath = suite.IntegrationTest{
 			},
 			{
 				Request: http.Request{
-					Host: "urlrewrite.gw.wso2.com",
-					Path: "/rewrite-path-api/1.0.0/full/one/two",
+					Host: "backend-base-path.test.gw.wso2.com",
+					Path: "/test-api-with-backend-base-path/1.0.0/users",
 				},
 				ExpectedRequest: &http.ExpectedRequest{
 					Request: http.Request{
-						Path: "/one",
+						Path: "/backend-base-path/users",
 					},
 				},
 				Backend:   "infra-backend-v1",
@@ -67,9 +68,8 @@ var HTTPRouteRewritePath = suite.IntegrationTest{
 			},
 		}
 		for i := range testCases {
-			// Declare tc here to avoid loop variable
-			// reuse issues across parallel tests.
 			tc := testCases[i]
+			tc.Request.Headers = http.AddBearerTokenToHeader(token, tc.Request.Headers)
 			t.Run(tc.GetTestCaseName(i), func(t *testing.T) {
 				t.Parallel()
 				http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, gwAddr, tc)

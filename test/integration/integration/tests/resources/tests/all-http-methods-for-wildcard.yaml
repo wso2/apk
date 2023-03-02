@@ -17,21 +17,22 @@
 apiVersion: dp.wso2.com/v1alpha1
 kind: API
 metadata:
-  name: rewrite-path-api
+  name: all-http-methods-for-wildcard
   namespace: gateway-integration-test-infra
 spec:
-  apiDisplayName: Rewrite Path API
+  apiDisplayName: API with Backend Base Path
   apiType: REST
-  apiVersion: 1.0.0
-  context: /rewrite-path-api/1.0.0
-  definitionFileRef: swagger-definition-webhook
-  prodHTTPRouteRefs: ["rewrite-path-httproute"]
+  apiVersion: v1
+  context: /all-http-methods-for-wildcard/v1
+  definitionFileRef: definition-file
+  prodHTTPRouteRefs:
+  - all-http-methods-for-wildcard-httproute
   organization: wso2-org
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: HTTPRoute
 metadata:
-  name: rewrite-path-httproute
+  name: all-http-methods-for-wildcard-httproute
   namespace: gateway-integration-test-infra
 spec:
   parentRefs:
@@ -39,49 +40,18 @@ spec:
     kind: Gateway
     name: Default
   hostnames:
-  - urlrewrite.gw.wso2.com
+  - all-http-methods-for-wildcard.test.gw.wso2.com
   rules:
   - matches:
     - path:
         type: PathPrefix
-        value: /rewrite-path-api/1.0.0/prefix/one
-      method: GET
+        value: /all-http-methods-for-wildcard/v1.0.0
     filters:
     - type: URLRewrite
       urlRewrite:
         path:
           type: ReplacePrefixMatch
-          replacePrefixMatch: /one
+          replacePrefixMatch: /v2/echo-full
     backendRefs:
     - name: infra-backend-v1
       port: 8080
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /rewrite-path-api/1.0.0/full/one
-      method: GET
-    filters:
-    - type: URLRewrite
-      urlRewrite:
-        path:
-          type: ReplaceFullPath
-          replaceFullPath: /one
-    backendRefs:
-    - name: infra-backend-v1
-      port: 8080
----
-apiVersion: dp.wso2.com/v1alpha1
-kind: Authentication
-metadata:
-  name: disable-api-authentication
-  namespace: gateway-integration-test-infra
-spec:
-  override:
-    ext:
-      disabled: true
-    type: ext
-  targetRef:
-    group: gateway.networking.k8s.io
-    kind: HTTPRoute
-    name: rewrite-path-httproute
-    namespace: gateway-integration-test-infra

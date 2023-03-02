@@ -15,11 +15,17 @@
  *
  */
 
-package constants
+package http
 
-// gateway service properties
-const (
-	GatewayServiceName      string = "apk-test-setup-wso2-apk-router-service"
-	GatewayServiceNamespace string = "apk-integration-test"
-	GatewayServicePort      int16  = 9095
+import (
+	"fmt"
 )
+
+// AddBearerTokenToHeader adds a bearer token to the request.
+func AddBearerTokenToHeader(token string, headers map[string]string) map[string]string {
+	if headers == nil {
+		headers = make(map[string]string)
+	}
+	headers["Authorization"] = fmt.Sprintf("Bearer %s", token)
+	return headers
+}
