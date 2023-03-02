@@ -41,8 +41,14 @@ type Resource struct {
 	methods          []*Operation
 	iD               string
 	endpoints        *EndpointCluster
+	endpointSecurity *EndpointSecurity
 	vendorExtensions map[string]interface{}
 	hasPolicies      bool
+}
+
+// GetEndpointSecurity returns the endpoint security object of a given resource.
+func (resource *Resource) GetEndpointSecurity() *EndpointSecurity {
+	return resource.endpointSecurity
 }
 
 // GetEndpoints returns the endpoints object of a given resource.

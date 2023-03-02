@@ -220,9 +220,9 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, ht
 				iD:            uuid.New().String(),
 			}
 			resource.endpoints = &EndpointCluster{
-				Endpoints:      endPoints,
-				SecurityConfig: &securityConfig,
+				Endpoints: endPoints,
 			}
+			resource.endpointSecurity = &securityConfig
 			resources = append(resources, resource)
 		}
 	}

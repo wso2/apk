@@ -86,7 +86,6 @@ public class RestAPI implements API {
         Map<String, SecuritySchemaConfig> securitySchemeDefinitions = new HashMap<>();
         Map<String, List<String>> securityScopesMap = new HashMap<>();
         List<ResourceConfig> resources = new ArrayList<>();
-        EndpointSecurity endpointSecurity = new EndpointSecurity();
         Map<String, String> mtlsCertificateTiers = new HashMap<>();
         String mutualSSL = api.getMutualSSL();
         boolean applicationSecurity = api.getApplicationSecurity();
@@ -120,26 +119,15 @@ public class RestAPI implements API {
 
         for (Resource res : api.getResourcesList()) {
             for (Operation operation : res.getMethodsList()) {
-                ResourceConfig resConfig = Utils.buildResource(operation, res.getPath(), securityScopesMap);
+                ResourceConfig resConfig = Utils.buildResource(operation, res.getPath(), securityScopesMap,
+                APIProcessUtils.convertProtoEndpointSecurity(res.getEndpointSecurity()));
                 resConfig.setPolicyConfig(Utils.genPolicyConfig(operation.getPolicies()));
                 resConfig.setEndpoints(Utils.processEndpoints(res.getEndpoints()));
-                resConfig.setEndpointSecurity(endpointSecurity);
 //                resConfig.setMockApiConfig(getMockedApiOperationConfig(operation.getMockedApiConfig(),
 //                        operation.getMethod()));
                 resources.add(resConfig);
             }
         }
-
-        // if (api.getEndpointSecurity().hasProductionSecurityInfo()) {
-        //     endpointSecurity.setProductionSecurityInfo(
-        //             APIProcessUtils.convertProtoEndpointSecurity(
-        //                     api.getEndpointSecurity().getProductionSecurityInfo()));
-        // }
-        // if (api.getEndpointSecurity().hasSandBoxSecurityInfo()) {
-        //     endpointSecurity.setSandBoxSecurityInfo(
-        //             APIProcessUtils.convertProtoEndpointSecurity(
-        //                     api.getEndpointSecurity().getSandBoxSecurityInfo()));
-        // }
 
         KeyStore trustStore;
         try {

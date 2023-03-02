@@ -25,7 +25,7 @@ import org.wso2.choreo.connect.enforcer.commons.model.EndpointSecurity;
  */
 public class APIProcessUtils {
     public static EndpointSecurity convertProtoEndpointSecurity
-            (org.wso2.choreo.connect.discovery.api.EndpointSecurity protoSecurityInfo) {
+        (org.wso2.choreo.connect.discovery.api.EndpointSecurity protoSecurityInfo) {
         EndpointSecurity securityInfo = new EndpointSecurity();
         securityInfo.setSecurityType(protoSecurityInfo.getType());
         securityInfo.setUsername(protoSecurityInfo.getUsername());

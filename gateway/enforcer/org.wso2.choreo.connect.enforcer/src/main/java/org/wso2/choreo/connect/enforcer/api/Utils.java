@@ -23,6 +23,7 @@ import org.wso2.choreo.connect.discovery.api.OperationPolicies;
 import org.wso2.choreo.connect.discovery.api.Scopes;
 import org.wso2.choreo.connect.discovery.api.SecurityList;
 import org.wso2.choreo.connect.enforcer.commons.model.EndpointCluster;
+import org.wso2.choreo.connect.enforcer.commons.model.EndpointSecurity;
 import org.wso2.choreo.connect.enforcer.commons.model.Policy;
 import org.wso2.choreo.connect.enforcer.commons.model.PolicyConfig;
 import org.wso2.choreo.connect.enforcer.commons.model.RequestContext;
@@ -85,12 +86,13 @@ public class Utils {
     }
 
     public static ResourceConfig buildResource(Operation operation, String resPath, Map<String,
-            List<String>> apiLevelSecurityList) {
+            List<String>> apiLevelSecurityList, EndpointSecurity endpointSecurity) {
         ResourceConfig resource = new ResourceConfig();
         resource.setPath(resPath);
         resource.setMethod(ResourceConfig.HttpMethods.valueOf(operation.getMethod().toUpperCase()));
         resource.setTier(operation.getTier());
         resource.setDisableSecurity(operation.getDisableSecurity());
+        resource.setEndpointSecurity(endpointSecurity);
         Map<String, List<String>> securityMap = new HashMap<>();
         if (operation.getSecurityList().size() > 0) {
             for (SecurityList securityList : operation.getSecurityList()) {

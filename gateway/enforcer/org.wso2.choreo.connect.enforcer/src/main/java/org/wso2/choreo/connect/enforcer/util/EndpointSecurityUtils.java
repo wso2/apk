@@ -38,8 +38,8 @@ public class EndpointSecurityUtils {
      */
     public static void addEndpointSecurity(RequestContext requestContext) {
         EndpointSecurity securityInfo = null;
-        if (requestContext.getMatchedAPI().getResources() != null) {
-            List<ResourceConfig> resources = requestContext.getMatchedAPI().getResources();
+        if (requestContext.getMatchedResourcePaths() != null ) {
+            List<ResourceConfig> resources = requestContext.getMatchedResourcePaths();
             for (ResourceConfig resourceConfig : resources) {
                 if (resourceConfig.getEndpointSecurity() != null) {
                     securityInfo = resourceConfig.getEndpointSecurity();
