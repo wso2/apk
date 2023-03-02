@@ -38,10 +38,15 @@ spec:
           imagePullPolicy: {{ .Values.wso2.apk.cp.managementServer.deployment.imagePullPolicy }}
 {{ include "apk-helm.deployment.resources" .Values.wso2.apk.cp.managementServer.deployment.resources | indent 10 }}
           volumeMounts:
-            - mountPath: /home/wso2/security/keystore
-              name: management-server-keystore-secret-volume
-            - mountPath: /home/wso2/security/truststore
-              name:  management-server-truststore-secret-volume
+            - name: management-server-keystore-secret-volume
+              mountPath: /home/wso2/security/keystore/mg.key
+              subPath: tls.key
+            - name: management-server-keystore-secret-volume
+              mountPath: /home/wso2/security/keystore/mg.pem
+              subPath: tls.crt
+            - name: adapter-truststore-secret-volume
+              mountPath: /home/wso2/security/truststore/adapter.crt
+              subPath: tls.crt
             - name: management-server-config-toml-volume
               mountPath: /home/wso2/conf/
           ports:
@@ -51,10 +56,10 @@ spec:
       volumes:
         - name: management-server-keystore-secret-volume
           secret: 
-            secretName: {{ template "apk-helm.resource.prefix" . }}-management-server-keystore-secret
-        - name: management-server-truststore-secret-volume
+            secretName: {{ template "apk-helm.resource.prefix" . }}-management-server-cert
+        - name: adapter-truststore-secret-volume
           secret: 
-            secretName: {{ template "apk-helm.resource.prefix" . }}-management-server-truststore-secret
+            secretName: {{ template "apk-helm.resource.prefix" . }}-adapter-server-cert
         - name: management-server-config-toml-volume
           configMap: 
             name: {{ template "apk-helm.resource.prefix" . }}-management-server-config-toml

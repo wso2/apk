@@ -53,8 +53,12 @@ spec:
           volumeMounts:
             - name: adapter-keystore-secret-volume
               mountPath: /home/wso2/security/keystore
-            - name: adapter-truststore-secret-volume
-              mountPath: /home/wso2/security/truststore
+            - name: router-truststore-secret-volume
+              mountPath: /home/wso2/security/truststore/router.crt
+              subPath: tls.crt
+            - name: enforcer-truststore-secret-volume
+              mountPath: /home/wso2/security/truststore/enforcer.crt
+              subPath: tls.crt
             - name: adapter-truststore-consul-secret-volume
               mountPath: /home/wso2/security/truststore/consul
             - name: log-conf-volume
@@ -65,6 +69,9 @@ spec:
             - mountPath: /tmp/k8s-webhook-server/serving-certs
               name: adapter-webhook-server-cert
               readOnly: true
+            - name:  management-server-truststore-secret-volume
+              mountPath: /home/wso2/security/truststore/management-server.crt
+              subPath: tls.crt
           # readinessProbe:
           #   exec:
           #     command: [ "sh", "check_health.sh" ]
@@ -72,11 +79,9 @@ spec:
           #   periodSeconds: 5
       volumes: 
         - name: adapter-keystore-secret-volume
-          secret: 
-            secretName: {{ template "apk-helm.resource.prefix" . }}-adapter-keystore-secret
-        - name: adapter-truststore-secret-volume
-          secret: 
-            secretName: {{ template "apk-helm.resource.prefix" . }}-adapter-truststore-secret
+          secret:
+            secretName: {{ template "apk-helm.resource.prefix" . }}-adapter-server-cert
+            defaultMode: 420
         - name: adapter-truststore-consul-secret-volume
           secret: 
             secretName: {{ template "apk-helm.resource.prefix" . }}-adapter-truststore-consul-secret
@@ -91,4 +96,13 @@ spec:
           secret:
             secretName: {{ template "apk-helm.resource.prefix" . }}-webhook-server-cert
             defaultMode: 420
+        - name: router-truststore-secret-volume
+          secret: 
+            secretName: {{ template "apk-helm.resource.prefix" . }}-router-server-cert
+        - name: enforcer-truststore-secret-volume
+          secret: 
+            secretName: {{ template "apk-helm.resource.prefix" . }}-enforcer-server-cert
+        - name: management-server-truststore-secret-volume
+          secret: 
+            secretName: {{ template "apk-helm.resource.prefix" . }}-management-server-cert
 {{- end -}}

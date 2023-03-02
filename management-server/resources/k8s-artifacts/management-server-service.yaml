@@ -21,7 +21,7 @@ kind: Service
 metadata:
   labels:
     app: management-server
-  name: management-server
+  name: {{ template "apk-helm.resource.prefix" . }}-management-service
 spec:
   type: ClusterIP
   selector:
