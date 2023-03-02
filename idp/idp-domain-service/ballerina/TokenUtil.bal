@@ -262,6 +262,8 @@ public class TokenUtil {
         }
         on fail var e {
             log:printError("Error on authorizing request", e);
+            string loginPageRedirect = idpConfiguration.loginErrorPageUrl + "?error=server_error&error_description=Internal Server Error";
+            return {headers: {"Location": loginPageRedirect}};
         }
     }
     public isolated function redirectRequest(Application application, string redirectUri, string[] scopes, string? state) returns http:Found {
