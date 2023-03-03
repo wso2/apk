@@ -45,19 +45,39 @@ spec:
 {{ include "apk-helm.deployment.resources" .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.resources | indent 10 }}
 {{ include "apk-helm.deployment.env" .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.env | indent 10 }}
             - name: ADAPTER_HOST_NAME
-              value: adapter
+              value: {{ template "apk-helm.resource.prefix" . }}-adapter-service.{{ .Release.Namespace }}.svc
             - name: ADAPTER_HOST
-              value: {{ template "apk-helm.resource.prefix" . }}-adapter-service
+              value: {{ template "apk-helm.resource.prefix" . }}-adapter-service.{{ .Release.Namespace }}.svc
           volumeMounts:
             - name: enforcer-keystore-secret-volume
-              mountPath: /home/wso2/security/keystore
-            - name: enforcer-truststore-secret-volume
-              mountPath: /home/wso2/security/truststore
+              mountPath: /home/wso2/security/keystore/tls.key
+              subPath: tls.key
+            - name: enforcer-keystore-secret-volume
+              mountPath: /home/wso2/security/keystore/tls.crt
+              subPath: tls.crt
+            - name: adapter-truststore-secret-volume
+              mountPath: /home/wso2/security/truststore/adapter.crt
+              subPath: tls.crt
+            - name: router-truststore-secret-volume
+              mountPath: /home/wso2/security/truststore/router.crt
+              subPath: tls.crt              
             - name: log-conf-volume
               mountPath: /home/wso2/conf/
             - mountPath: /home/wso2/check_health.sh
               name: enforcer-grpc-probe-script-conf-volume
               subPath: "check_health.sh"
+            - name: enforcer-jwt-secret-volume
+              mountPath: /home/wso2/security/keystore/mg.pem
+              subPath: mg.pem
+            - name: enforcer-jwt-secret-volume
+              mountPath: /home/wso2/security/truststore/mg.pem
+              subPath: mg.pem
+            - name: enforcer-jwt-secret-volume
+              mountPath: /home/wso2/security/keystore/mg.key
+              subPath: mg.key
+            - name: enforcer-trusted-certs
+              mountPath: /home/wso2/security/truststore/wso2carbon.pem
+              subPath: wso2carbon.pem
           # readinessProbe:
           #   exec:
           #     command: [ "sh", "check_health.sh" ]
@@ -76,18 +96,22 @@ spec:
 {{ include "apk-helm.deployment.resources" .Values.wso2.apk.dp.gatewayRuntime.deployment.router.resources | indent 10 }}
 {{ include "apk-helm.deployment.env" .Values.wso2.apk.dp.gatewayRuntime.deployment.router.env | indent 10 }}
             - name: ADAPTER_HOST_NAME
-              value: {{ template "apk-helm.resource.prefix" . }}-adapter-service
+              value: {{ template "apk-helm.resource.prefix" . }}-adapter-service.{{ .Release.Namespace }}.svc
             - name: ADAPTER_HOST
-              value: {{ template "apk-helm.resource.prefix" . }}-adapter-service
+              value: {{ template "apk-helm.resource.prefix" . }}-adapter-service.{{ .Release.Namespace }}.svc
             - name: ENFORCER_HOST_NAME
-              value: {{ template "apk-helm.resource.prefix" . }}-enforcer-service
+              value: {{ template "apk-helm.resource.prefix" . }}-enforcer-service.{{ .Release.Namespace }}.svc
             - name: ENFORCER_HOST
               value: "127.0.0.1"
           volumeMounts:
             - name: router-keystore-secret-volume
               mountPath: /home/wso2/security/keystore
-            - name: router-truststore-secret-volume
-              mountPath: /home/wso2/security/truststore
+            - name: adapter-truststore-secret-volume
+              mountPath: /home/wso2/security/truststore/adapter.crt
+              subPath: tls.crt
+            - name: enforcer-truststore-secret-volume
+              mountPath: /home/wso2/security/truststore/enforcer.crt
+              subPath: tls.crt
             - name: log-conf-volume
               mountPath: /home/wso2/conf/
           # readinessProbe:
@@ -102,10 +126,10 @@ spec:
       volumes: 
         - name: enforcer-keystore-secret-volume
           secret: 
-            secretName: {{ template "apk-helm.resource.prefix" . }}-enforcer-keystore-secret
+            secretName: {{ template "apk-helm.resource.prefix" . }}-enforcer-server-cert
         - name: enforcer-truststore-secret-volume
           secret: 
-            secretName: {{ template "apk-helm.resource.prefix" . }}-enforcer-truststore-secret
+            secretName: {{ template "apk-helm.resource.prefix" . }}-enforcer-server-cert
         - name: log-conf-volume
           configMap: 
             name: {{ template "apk-helm.resource.prefix" . }}-log-conf
@@ -115,8 +139,17 @@ spec:
             defaultMode: 0777
         - name: router-keystore-secret-volume
           secret: 
-            secretName: {{ template "apk-helm.resource.prefix" . }}-router-keystore-secret
+            secretName: {{ template "apk-helm.resource.prefix" . }}-router-server-cert
         - name: router-truststore-secret-volume
           secret: 
-            secretName: {{ template "apk-helm.resource.prefix" . }}-router-truststore-secret
+            secretName: {{ template "apk-helm.resource.prefix" . }}-router-server-cert
+        - name: adapter-truststore-secret-volume
+          secret: 
+            secretName: {{ template "apk-helm.resource.prefix" . }}-adapter-server-cert
+        - name: enforcer-jwt-secret-volume
+          secret: 
+            secretName: {{ template "apk-helm.resource.prefix" . }}-enforcer-keystore-secret
+        - name: enforcer-trusted-certs
+          secret: 
+            secretName: {{ template "apk-helm.resource.prefix" . }}-enforcer-truststore-secret 
 {{- end -}}

@@ -10,7 +10,7 @@ data:
     [adapter.server]
       enabled = true
       port = "9843"
-      tokenPrivateKeyPath = "/home/wso2/security/keystore/mg.key"
+      tokenPrivateKeyPath = "/home/wso2/security/keystore/tls.key"
       [[adapter.server.users]]
         username = "admin"
         password = "$env{adapter_admin_pwd}"
@@ -21,8 +21,8 @@ data:
       vhost = "gw.wso2.com"
 
     [adapter.keystore]
-      certPath = "/home/wso2/security/keystore/mg.pem"
-      keyPath = "/home/wso2/security/keystore/mg.key"
+      certPath = "/home/wso2/security/keystore/tls.crt"
+      keyPath = "/home/wso2/security/keystore/tls.key"
 
     [adapter.truststore]
       location = "/home/wso2/security/truststore"
@@ -34,8 +34,8 @@ data:
       useRemoteAddress = false
 
     [router.keystore]
-      certPath = "/home/wso2/security/keystore/mg.pem"
-      keyPath = "/home/wso2/security/keystore/mg.key"
+      certPath = "/home/wso2/security/keystore/tls.crt"
+      keyPath = "/home/wso2/security/keystore/tls.key"
 
     [router.upstream]
     [router.upstream.tls]
@@ -109,6 +109,7 @@ data:
     
     [managementServer]
       enabled = {{ .Values.wso2.apk.cp.enabled }}
+      host = "{{ template "apk-helm.resource.prefix" . }}-management-server.{{ .Release.Namespace }}.svc"
 
   config.toml.template: |
     # The configuration file for mgw

@@ -215,8 +215,8 @@ wso2:
               memory: "1028Mi"
               cpu: "1000m"
           env:
-            ADAPTER_PRIVATE_KEY_PATH: /home/wso2/security/keystore/mg.key
-            ADAPTER_PUBLIC_CERT_PATH: /home/wso2/security/keystore/mg.pem
+            ADAPTER_PRIVATE_KEY_PATH: /home/wso2/security/keystore/tls.key
+            ADAPTER_PUBLIC_CERT_PATH: /home/wso2/security/keystore/tls.crt
             cp_admin_pwd: admin
             adapter_admin_pwd: admin
           readinessProbe:
@@ -255,13 +255,13 @@ wso2:
               ROUTER_ADMIN_PORT: "9000"
               ROUTER_CLUSTER: default_cluster
               ROUTER_LABEL: Default
-              ROUTER_PRIVATE_KEY_PATH: /home/wso2/security/keystore/mg.key
-              ROUTER_PUBLIC_CERT_PATH: /home/wso2/security/keystore/mg.pem
+              ROUTER_PRIVATE_KEY_PATH: /home/wso2/security/keystore/tls.key
+              ROUTER_PUBLIC_CERT_PATH: /home/wso2/security/keystore/tls.crt
               ADAPTER_PORT: "18000"
-              ADAPTER_CA_CERT_PATH: /home/wso2/security/truststore/mg.pem
+              ADAPTER_CA_CERT_PATH: /home/wso2/security/truststore/adapter.crt
               ENFORCER_PORT: "8081"
               ENFORCER_ANALYTICS_RECEIVER_PORT: "18090"
-              ENFORCER_CA_CERT_PATH: /home/wso2/security/truststore/mg.pem
+              ENFORCER_CA_CERT_PATH: /home/wso2/security/truststore/enforcer.crt
               CONCURRENCY: 2
             readinessProbe:
               path: /api/am/devportal/v2/apis?limit=2&offset=2
@@ -288,8 +288,8 @@ wso2:
                 memory: "1028Mi"
                 cpu: "1000m"
             env:
-              ENFORCER_PRIVATE_KEY_PATH: /home/wso2/security/keystore/mg.key
-              ENFORCER_PUBLIC_CERT_PATH: /home/wso2/security/keystore/mg.pem
+              ENFORCER_PRIVATE_KEY_PATH: /home/wso2/security/keystore/tls.key
+              ENFORCER_PUBLIC_CERT_PATH: /home/wso2/security/keystore/tls.crt
               TRUSTED_CA_CERTS_PATH: /home/wso2/security/truststore
               ADAPTER_XDS_PORT: "18000"
               ENFORCER_LABEL: Default
