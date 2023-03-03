@@ -18,11 +18,13 @@
 package utils
 
 import (
+	"context"
 	"fmt"
 
 	constants "github.com/wso2/apk/adapter/pkg/operator/constants"
 	"github.com/wso2/apk/adapter/pkg/utils/envutils"
 	"github.com/wso2/apk/adapter/pkg/utils/stringutils"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -125,4 +127,30 @@ func GetPtrSlice[T any](inputSlice []T) []*T {
 		outputSlice = append(outputSlice, &inputSlice[i])
 	}
 	return outputSlice
+}
+
+// GetConfigMapValue call kubernetes client and get the configmap and key
+func GetConfigMapValue(ctx context.Context, client client.Client,
+	namespace, configMapName, key string) (string, error) {
+	configMap := &corev1.ConfigMap{}
+	err := client.Get(ctx, types.NamespacedName{
+		Name:      configMapName,
+		Namespace: namespace}, configMap)
+	if err != nil {
+		return "", err
+	}
+	return configMap.Data[key], nil
+}
+
+// GetSecretValue call kubernetes client and get the secret and key
+func GetSecretValue(ctx context.Context, client client.Client,
+	namespace, secretName, key string) (string, error) {
+	secret := &corev1.Secret{}
+	err := client.Get(ctx, types.NamespacedName{
+		Name:      secretName,
+		Namespace: namespace}, secret)
+	if err != nil {
+		return "", err
+	}
+	return string(secret.Data[key]), nil
 }

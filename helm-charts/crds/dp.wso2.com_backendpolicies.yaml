@@ -68,6 +68,32 @@ spec:
                     properties:
                       certificateInline:
                         type: string
+                      configMapRef:
+                        description: RefConfig holds a config for a secret or a configmap
+                        properties:
+                          key:
+                            type: string
+                          name:
+                            type: string
+                        required:
+                        - key
+                        - name
+                        type: object
+                      secretRef:
+                        description: RefConfig holds a config for a secret or a configmap
+                        properties:
+                          key:
+                            type: string
+                          name:
+                            type: string
+                        required:
+                        - key
+                        - name
+                        type: object
+                      verifySANs:
+                        items:
+                          type: string
+                        type: array
                     type: object
                 required:
                 - protocol
@@ -89,6 +115,32 @@ spec:
                     properties:
                       certificateInline:
                         type: string
+                      configMapRef:
+                        description: RefConfig holds a config for a secret or a configmap
+                        properties:
+                          key:
+                            type: string
+                          name:
+                            type: string
+                        required:
+                        - key
+                        - name
+                        type: object
+                      secretRef:
+                        description: RefConfig holds a config for a secret or a configmap
+                        properties:
+                          key:
+                            type: string
+                          name:
+                            type: string
+                        required:
+                        - key
+                        - name
+                        type: object
+                      verifySANs:
+                        items:
+                          type: string
+                        type: array
                     type: object
                 required:
                 - protocol
