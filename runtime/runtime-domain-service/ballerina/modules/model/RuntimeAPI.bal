@@ -35,6 +35,34 @@ public type OperationPolicy record {
     map<string> parameters?;
 };
 
+public type MediationPolicy record {
+    string 'type?;
+    string id?;
+    string name?;
+    string displayName?;
+    string description?;
+    string[] applicableFlows?;
+    string[] supportedApiTypes?;
+    boolean isApplicableforAPILevel?;
+    boolean isApplicableforOperationLevel?;
+    MediationPolicySpecAttribute[] policyAttributes?;
+};
+
+public type MediationPolicySpecAttribute record {
+    # Name of the attibute
+    string name?;
+    # Description of the attibute
+    string description?;
+    # Is this option mandetory for the policy
+    boolean required?;
+    # UI validation regex for the attibute
+    string validationRegex?;
+    # Type of the attibute
+    string 'type?;
+    # Default value for the attribute
+    string defaultValue?;
+};
+
 public type OperationPolicies record {|
     OperationPolicy[] request = [];
     OperationPolicy[] response=[];

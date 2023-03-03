@@ -129,9 +129,11 @@ http:Service runtimeService = service object {
         commons:Organization organization = authenticatedUserContext.organization;
         return serviceClient.getServiceUsageByServiceId(serviceId, organization);
     }
-    isolated resource function get policies(string? query, int 'limit = 25, int offset = 0, string sortBy = "createdTime", string sortOrder = "desc", @http:Header string? accept = "application/json") returns MediationPolicyList|InternalServerErrorError {
-        InternalServerErrorError internalError = {body: {code: 900910, message: "Not implemented"}};
-        return internalError;
+    isolated resource function get policies(http:RequestContext requestContext, string? query, int 'limit = 25, int offset = 0, string sortBy = "createdTime", string sortOrder = "desc", @http:Header string? accept = "application/json") returns MediationPolicyDataList|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
+        final APIClient apiService = new ();
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        return apiService.getMediationPolicyList(query, 'limit, offset, sortBy, sortOrder, organization);
     }
     isolated resource function get policies/[string policyId]() returns MediationPolicy|NotFoundError|InternalServerErrorError {
         InternalServerErrorError internalError = {body: {code: 900910, message: "Not implemented"}};

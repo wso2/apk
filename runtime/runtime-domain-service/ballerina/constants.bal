@@ -34,3 +34,10 @@ const string ZIP_FILE_EXTENSTION = ".zip";
 const string PROTOCOL_HTTP = "http";
 const string PROTOCOL_HTTPS = "https";
 isolated string[] ALLOWED_API_TYPES = [API_TYPE_REST];
+
+const string MEDIATION_POLICY_TYPE_REQUEST_HEADER_MODIFIER = "RequestHeaderModifier";
+const string MEDIATION_POLICY_TYPE_RESPONSE_HEADER_MODIFIER = "ResponseHeaderModifier";
+const string MEDIATION_POLICY_TYPE_URL_REWRITE = "URLRewrite";
+const string MEDIATION_POLICY_FLOW_REQUEST  = "request";
+const string MEDIATION_POLICY_FLOW_RESPONSET  = "response";
+

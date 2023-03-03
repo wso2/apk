@@ -2579,6 +2579,56 @@ public class APIClient {
             return internalError;
         }
     }
+
+    # This returns list of Policies.
+    #
+    # + query - Parameter Description  
+    # + 'limit - Parameter Description  
+    # + offset - Parameter Description  
+    # + sortBy - Parameter Description  
+    # + sortOrder - Parameter Description  
+    # + organization - Parameter Description
+    # + return - Return list of Policies.
+    public isolated function getMediationPolicyList(string? query, int 'limit, int offset, string sortBy, string sortOrder, commons:Organization organization) returns MediationPolicyDataList|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
+        MediationPolicyData[] MediationPolicyList = [];
+        
+        model:MediationPolicy[] MediationPolicylst;
+        lock {
+            MediationPolicylst = avilableMediationPolicyList.clone();
+         }
+
+        foreach model:MediationPolicy MediationPolicy in MediationPolicylst {
+            MediationPolicyData policyItem = {
+                id: MediationPolicy.id,
+                'type: MediationPolicy.'type,
+                name: MediationPolicy.name,
+                displayName: MediationPolicy.displayName,
+                description: MediationPolicy.description,
+                applicableFlows: MediationPolicy.applicableFlows,
+                supportedApiTypes: MediationPolicy.supportedApiTypes,
+                isApplicableforAPILevel: MediationPolicy.isApplicableforAPILevel,
+                isApplicableforOperationLevel: MediationPolicy.isApplicableforOperationLevel,
+                policyAttributes: MediationPolicy.policyAttributes
+
+            };
+            MediationPolicyList.push(policyItem);
+            
+        } on fail var e {
+            //return error("Error occured while getting API list", e, message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = 500);
+            log:printError("Error occured importing API", e);
+        }
+        // if query is string && query.toString().trim().length() > 0 {
+        //     return self.filterAPISBasedOnQuery(apilist, query, 'limit, offset, sortBy, sortOrder);
+        // } else {
+        //     return self.filterAPIS(apilist, 'limit, offset, sortBy, sortOrder);
+        // }
+        MediationPolicyDataList oplist = {
+            list: MediationPolicyList,
+            count: MediationPolicyList.length()
+        };
+        return oplist ;
+    }
+
 }
 
 type ImportDefintionRequest record {
