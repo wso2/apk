@@ -1,0 +1,87 @@
+# Copyright (c) 2023, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
+#
+# WSO2 LLC. licenses this file to you under the Apache License,
+# Version 2.0 (the "License"); you may not use this file except
+# in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+apiVersion: dp.wso2.com/v1alpha1
+kind: API
+metadata:
+  name: resource-scopes
+  namespace: gateway-integration-test-infra
+spec:
+  apiDisplayName: API with resource scopes
+  apiType: REST
+  apiVersion: v1
+  context: /resource-scopes/v1
+  definitionFileRef: definition-file
+  prodHTTPRouteRefs: 
+  - resource-scopes-httproute
+  organization: wso2-org
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: resource-scopes-httproute
+  namespace: gateway-integration-test-infra
+spec:
+  parentRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: Default
+  hostnames:
+  - resource-scopes.test.gw.wso2.com
+  rules:
+  - matches:
+    - path:
+        type: Exact
+        value: /resource-scopes/v1/pets/findByTags
+      method: GET
+    filters:
+    - type: URLRewrite
+      urlRewrite:
+        path:
+          type: ReplaceFullPath
+          replaceFullPath: /pets/findByTags
+    - type: ExtensionRef
+      extensionRef:
+        group: dp.wso2.com
+        kind: Scope
+        name: pet-scopes
+    backendRefs:
+    - name: infra-backend-v1
+      port: 8080
+  - matches:
+    - path:
+        type: RegularExpression
+        value: /resource-scopes/v1/pet/(\d{1,3})
+      method: GET
+    filters:
+    - type: URLRewrite
+      urlRewrite:
+        path:
+          type: ReplaceFullPath
+          replaceFullPath: /pet/\1
+    backendRefs:
+    - name: infra-backend-v1
+      port: 8080
+---
+apiVersion: dp.wso2.com/v1alpha1
+kind: Scope
+metadata:
+  name: pet-scopes
+  namespace: gateway-integration-test-infra
+spec:
+  names:
+    - read:pets
+    - write:pets

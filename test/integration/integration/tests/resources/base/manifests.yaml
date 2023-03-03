@@ -64,3 +64,49 @@ spec:
         resources:
           requests:
             cpu: 10m
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: infra-backend-v2
+  namespace: gateway-integration-test-infra
+spec:
+  selector:
+    app: infra-backend-v2
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 3000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: infra-backend-v2
+  namespace: gateway-integration-test-infra
+  labels:
+    app: infra-backend-v2
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: infra-backend-v2
+  template:
+    metadata:
+      labels:
+        app: infra-backend-v2
+    spec:
+      containers:
+      - name: infra-backend-v2
+        image: gcr.io/k8s-staging-ingressconformance/echoserver:v20221109-7ee2f3e
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        resources:
+          requests:
+            cpu: 10m

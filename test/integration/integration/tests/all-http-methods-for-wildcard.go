@@ -83,20 +83,20 @@ var ALLHTTPMethodsForWildCard = suite.IntegrationTest{
 				Backend:   "infra-backend-v1",
 				Namespace: ns,
 			},
-			// {
-			// 	Request: http.Request{
-			// 		Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
-			// 		Path:   "/all-http-methods-for-wildcard/v1.0.0/test1/test2/test3?foo=foo1&bar=bar1",
-			// 		Method: "GET",
-			// 	},
-			// 	ExpectedRequest: &http.ExpectedRequest{
-			// 		Request: http.Request{
-			// 			Path: "/v2/echo-full/test1/test2/test3",
-			// 		},
-			// 	},
-			// 	Backend:   "infra-backend-v1",
-			// 	Namespace: ns,
-			// },
+			{
+				Request: http.Request{
+					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
+					Path:   "/all-http-methods-for-wildcard/v1.0.0/test1/test2/test3?foo=foo1&bar=bar1",
+					Method: "GET",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path: "/v2/echo-full/test1/test2/test3?foo=foo1&bar=bar1",
+					},
+				},
+				Backend:   "infra-backend-v1",
+				Namespace: ns,
+			},
 			// test path with trailing slash for POST
 			{
 				Request: http.Request{
