@@ -44,10 +44,10 @@ spec:
     #     rqXRfboQnoZsG4q5WTP468SQvvG5
     #       -----END CERTIFICATE-----
     security:
-      type: Basic
-      basic:
-        username: admin
-        password: admin
+      - type: Basic
+        basic:
+          username: admin
+          password: admin
   targetRef:
     group: ""
     kind: Service

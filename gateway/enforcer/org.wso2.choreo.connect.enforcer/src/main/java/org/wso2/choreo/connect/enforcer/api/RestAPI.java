@@ -30,8 +30,6 @@ import org.wso2.choreo.connect.discovery.api.SecurityScheme;
 import org.wso2.choreo.connect.enforcer.analytics.AnalyticsFilter;
 import org.wso2.choreo.connect.enforcer.commons.Filter;
 import org.wso2.choreo.connect.enforcer.commons.model.APIConfig;
-import org.wso2.choreo.connect.enforcer.commons.model.EndpointCluster;
-import org.wso2.choreo.connect.enforcer.commons.model.EndpointSecurity;
 import org.wso2.choreo.connect.enforcer.commons.model.MockedApiConfig;
 import org.wso2.choreo.connect.enforcer.commons.model.MockedContentExamples;
 import org.wso2.choreo.connect.enforcer.commons.model.MockedHeaderConfig;
@@ -120,7 +118,7 @@ public class RestAPI implements API {
         for (Resource res : api.getResourcesList()) {
             for (Operation operation : res.getMethodsList()) {
                 ResourceConfig resConfig = Utils.buildResource(operation, res.getPath(), securityScopesMap,
-                APIProcessUtils.convertProtoEndpointSecurity(res.getEndpointSecurity()));
+                APIProcessUtils.convertProtoEndpointSecurity(res.getEndpointSecurityList()));
                 resConfig.setPolicyConfig(Utils.genPolicyConfig(operation.getPolicies()));
                 resConfig.setEndpoints(Utils.processEndpoints(res.getEndpoints()));
 //                resConfig.setMockApiConfig(getMockedApiOperationConfig(operation.getMockedApiConfig(),

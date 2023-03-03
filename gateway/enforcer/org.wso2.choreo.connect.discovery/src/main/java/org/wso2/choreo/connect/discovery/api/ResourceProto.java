@@ -56,39 +56,38 @@ public final class ResourceProto {
       "\n!wso2/discovery/api/Resource.proto\022\022wso" +
       "2.discovery.api\032)wso2/discovery/api/endp" +
       "oint_cluster.proto\032(wso2/discovery/api/s" +
-      "ecurity_scheme.proto\032*wso2/discovery/api" +
-      "/endpoint_security.proto\"\314\002\n\010Resource\022\n\n" +
-      "\002id\030\001 \001(\t\022\014\n\004path\030\002 \001(\t\022.\n\007methods\030\003 \003(\013" +
-      "2\035.wso2.discovery.api.Operation\0226\n\tendpo" +
-      "ints\030\006 \001(\0132#.wso2.discovery.api.Endpoint" +
-      "Cluster\022>\n\020endpointSecurity\030\007 \001(\0132$.wso2" +
-      ".discovery.api.EndpointSecurity\022<\n\010secur" +
-      "ity\030\010 \003(\0132*.wso2.discovery.api.Resource." +
-      "SecurityEntry\022\017\n\007schemes\030\n \003(\t\032/\n\rSecuri" +
-      "tyEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001\"" +
-      "\257\001\n\tOperation\022\016\n\006method\030\001 \001(\t\0222\n\010securit" +
-      "y\030\002 \003(\0132 .wso2.discovery.api.SecurityLis" +
-      "t\022\014\n\004tier\030\003 \001(\t\022\027\n\017disableSecurity\030\004 \001(\010" +
-      "\0227\n\010policies\030\005 \001(\0132%.wso2.discovery.api." +
-      "OperationPolicies\"\231\001\n\021OperationPolicies\022" +
-      "+\n\007request\030\001 \003(\0132\032.wso2.discovery.api.Po" +
-      "licy\022,\n\010response\030\002 \003(\0132\032.wso2.discovery." +
-      "api.Policy\022)\n\005fault\030\003 \003(\0132\032.wso2.discove" +
-      "ry.api.Policy\"\213\001\n\006Policy\022\016\n\006action\030\001 \001(\t" +
-      "\022>\n\nparameters\030\002 \003(\0132*.wso2.discovery.ap" +
-      "i.Policy.ParametersEntry\0321\n\017ParametersEn" +
-      "try\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001Bw\n%o" +
-      "rg.wso2.choreo.connect.discovery.apiB\rRe" +
-      "sourceProtoP\001Z=github.com/envoyproxy/go-" +
-      "control-plane/wso2/discovery/api;apib\006pr" +
-      "oto3"
+      "ecurity_scheme.proto\032&wso2/discovery/api" +
+      "/security_info.proto\"\310\002\n\010Resource\022\n\n\002id\030" +
+      "\001 \001(\t\022\014\n\004path\030\002 \001(\t\022.\n\007methods\030\003 \003(\0132\035.w" +
+      "so2.discovery.api.Operation\0226\n\tendpoints" +
+      "\030\006 \001(\0132#.wso2.discovery.api.EndpointClus" +
+      "ter\022:\n\020endpointSecurity\030\007 \003(\0132 .wso2.dis" +
+      "covery.api.SecurityInfo\022<\n\010security\030\010 \003(" +
+      "\0132*.wso2.discovery.api.Resource.Security" +
+      "Entry\022\017\n\007schemes\030\n \003(\t\032/\n\rSecurityEntry\022" +
+      "\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001\"\257\001\n\tOper" +
+      "ation\022\016\n\006method\030\001 \001(\t\0222\n\010security\030\002 \003(\0132" +
+      " .wso2.discovery.api.SecurityList\022\014\n\004tie" +
+      "r\030\003 \001(\t\022\027\n\017disableSecurity\030\004 \001(\010\0227\n\010poli" +
+      "cies\030\005 \001(\0132%.wso2.discovery.api.Operatio" +
+      "nPolicies\"\231\001\n\021OperationPolicies\022+\n\007reque" +
+      "st\030\001 \003(\0132\032.wso2.discovery.api.Policy\022,\n\010" +
+      "response\030\002 \003(\0132\032.wso2.discovery.api.Poli" +
+      "cy\022)\n\005fault\030\003 \003(\0132\032.wso2.discovery.api.P" +
+      "olicy\"\213\001\n\006Policy\022\016\n\006action\030\001 \001(\t\022>\n\npara" +
+      "meters\030\002 \003(\0132*.wso2.discovery.api.Policy" +
+      ".ParametersEntry\0321\n\017ParametersEntry\022\013\n\003k" +
+      "ey\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001Bw\n%org.wso2." +
+      "choreo.connect.discovery.apiB\rResourcePr" +
+      "otoP\001Z=github.com/envoyproxy/go-control-" +
+      "plane/wso2/discovery/api;apib\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
           org.wso2.choreo.connect.discovery.api.EndpointClusterProto.getDescriptor(),
           org.wso2.choreo.connect.discovery.api.SecuritySchemeProto.getDescriptor(),
-          org.wso2.choreo.connect.discovery.api.EndpointSecurityProto.getDescriptor(),
+          org.wso2.choreo.connect.discovery.api.SecurityInfoProto.getDescriptor(),
         });
     internal_static_wso2_discovery_api_Resource_descriptor =
       getDescriptor().getMessageTypes().get(0);
@@ -128,7 +127,7 @@ public final class ResourceProto {
         new java.lang.String[] { "Key", "Value", });
     org.wso2.choreo.connect.discovery.api.EndpointClusterProto.getDescriptor();
     org.wso2.choreo.connect.discovery.api.SecuritySchemeProto.getDescriptor();
-    org.wso2.choreo.connect.discovery.api.EndpointSecurityProto.getDescriptor();
+    org.wso2.choreo.connect.discovery.api.SecurityInfoProto.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)

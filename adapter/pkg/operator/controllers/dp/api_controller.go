@@ -449,10 +449,10 @@ func (apiReconciler *APIReconciler) getHostNameForBackend(ctx context.Context, b
 
 // getTLSConfigForBackend resolves backend TLS configurations.
 func (apiReconciler *APIReconciler) getBackendConfigs(ctx context.Context,
-	serviceNamespacedName types.NamespacedName) (dpv1alpha1.TLSConfig, dpv1alpha1.BackendProtocolType, dpv1alpha1.SecurityConfig) {
+	serviceNamespacedName types.NamespacedName) (dpv1alpha1.TLSConfig, dpv1alpha1.BackendProtocolType, []dpv1alpha1.SecurityConfig) {
 	tlsConfig := dpv1alpha1.TLSConfig{}
 	protocol := dpv1alpha1.HTTPProtocol
-	security := dpv1alpha1.SecurityConfig{}
+	security := []dpv1alpha1.SecurityConfig{}
 	backendPolicyList := &dpv1alpha1.BackendPolicyList{}
 	if err := apiReconciler.client.List(ctx, backendPolicyList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(serviceBackendPolicyIndex, serviceNamespacedName.String()),

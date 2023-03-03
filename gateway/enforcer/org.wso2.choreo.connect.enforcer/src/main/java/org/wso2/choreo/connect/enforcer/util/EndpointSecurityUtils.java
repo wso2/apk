@@ -24,7 +24,6 @@ import org.wso2.choreo.connect.enforcer.commons.model.ResourceConfig;
 import org.wso2.choreo.connect.enforcer.constants.APIConstants;
 
 import java.util.Base64;
-import java.util.List;
 
 /**
  * Util methods related to backend endpoint security.
@@ -37,24 +36,26 @@ public class EndpointSecurityUtils {
      * @param requestContext requestContext instance to add the backend endpoint security header
      */
     public static void addEndpointSecurity(RequestContext requestContext) {
-        EndpointSecurity securityInfo = null;
+        EndpointSecurity[] endpointSecurities = null;
         if (requestContext.getMatchedResourcePaths() != null ) {
-            List<ResourceConfig> resources = requestContext.getMatchedResourcePaths();
-            for (ResourceConfig resourceConfig : resources) {
-                if (resourceConfig.getEndpointSecurity() != null) {
-                    securityInfo = resourceConfig.getEndpointSecurity();
-                }
+            // getting only first element as there could be only one resourcepaths for APIs except for graphQL APIs. 
+            // For GQL APIs too would only have one endpoint for all resources.
+            ResourceConfig resourceConfig = requestContext.getMatchedResourcePaths().get(0);
+            if (resourceConfig.getEndpointSecurity() != null) {
+                endpointSecurities = resourceConfig.getEndpointSecurity();
             }
         }
-        if (securityInfo != null && securityInfo.isEnabled() &&
-                APIConstants.AUTHORIZATION_HEADER_BASIC.
-                        equalsIgnoreCase(securityInfo.getSecurityType())) {
-            requestContext.getRemoveHeaders().remove(APIConstants.AUTHORIZATION_HEADER_DEFAULT
-                    .toLowerCase());
-            requestContext.addOrModifyHeaders(APIConstants.AUTHORIZATION_HEADER_DEFAULT,
-                    APIConstants.AUTHORIZATION_HEADER_BASIC + ' ' +
-                            Base64.getEncoder().encodeToString((securityInfo.getUsername() +
-                                    ':' + String.valueOf(securityInfo.getPassword())).getBytes()));
+        for (EndpointSecurity securityInfo : endpointSecurities) {
+            if (securityInfo != null && securityInfo.isEnabled() && 
+            APIConstants.AUTHORIZATION_HEADER_BASIC.
+                    equalsIgnoreCase(securityInfo.getSecurityType())) {
+                requestContext.getRemoveHeaders().remove(APIConstants.AUTHORIZATION_HEADER_DEFAULT
+                .toLowerCase());
+                requestContext.addOrModifyHeaders(APIConstants.AUTHORIZATION_HEADER_DEFAULT,
+                APIConstants.AUTHORIZATION_HEADER_BASIC + ' ' +
+                Base64.getEncoder().encodeToString((securityInfo.getUsername() +
+                ':' + String.valueOf(securityInfo.getPassword())).getBytes()));
+            }
         }
     }
 }

@@ -30,32 +30,30 @@ public final class ApiProto {
     java.lang.String[] descriptorData = {
       "\n\034wso2/discovery/api/api.proto\022\022wso2.dis" +
       "covery.api\032!wso2/discovery/api/Resource." +
-      "proto\032*wso2/discovery/api/endpoint_secur" +
-      "ity.proto\032(wso2/discovery/api/security_s" +
-      "cheme.proto\032$wso2/discovery/api/Certific" +
-      "ate.proto\"\214\004\n\003Api\022\n\n\002id\030\001 \001(\t\022\r\n\005title\030\002" +
-      " \001(\t\022\017\n\007version\030\003 \001(\t\022\017\n\007apiType\030\004 \001(\t\022\017" +
-      "\n\007envType\030\006 \001(\t\022/\n\tresources\030\010 \003(\0132\034.wso" +
-      "2.discovery.api.Resource\022\020\n\010basePath\030\t \001" +
-      "(\t\022\014\n\004tier\030\n \001(\t\022\031\n\021apiLifeCycleState\030\013 " +
-      "\001(\t\022:\n\016securityScheme\030\014 \003(\0132\".wso2.disco" +
-      "very.api.SecurityScheme\0222\n\010security\030\r \003(" +
-      "\0132 .wso2.discovery.api.SecurityList\022\033\n\023a" +
-      "uthorizationHeader\030\016 \001(\t\022\027\n\017disableSecur" +
-      "ity\030\017 \001(\010\022\r\n\005vhost\030\020 \001(\t\022\026\n\016organization" +
-      "Id\030\021 \001(\t\022;\n\022clientCertificates\030\023 \003(\0132\037.w" +
-      "so2.discovery.api.Certificate\022\021\n\tmutualS" +
-      "SL\030\024 \001(\t\022\033\n\023applicationSecurity\030\025 \001(\010\022\021\n" +
-      "\tsystemAPI\030\030 \001(\010Br\n%org.wso2.choreo.conn" +
-      "ect.discovery.apiB\010ApiProtoP\001Z=github.co" +
-      "m/envoyproxy/go-control-plane/wso2/disco" +
-      "very/api;apib\006proto3"
+      "proto\032(wso2/discovery/api/security_schem" +
+      "e.proto\032$wso2/discovery/api/Certificate." +
+      "proto\"\214\004\n\003Api\022\n\n\002id\030\001 \001(\t\022\r\n\005title\030\002 \001(\t" +
+      "\022\017\n\007version\030\003 \001(\t\022\017\n\007apiType\030\004 \001(\t\022\017\n\007en" +
+      "vType\030\006 \001(\t\022/\n\tresources\030\010 \003(\0132\034.wso2.di" +
+      "scovery.api.Resource\022\020\n\010basePath\030\t \001(\t\022\014" +
+      "\n\004tier\030\n \001(\t\022\031\n\021apiLifeCycleState\030\013 \001(\t\022" +
+      ":\n\016securityScheme\030\014 \003(\0132\".wso2.discovery" +
+      ".api.SecurityScheme\0222\n\010security\030\r \003(\0132 ." +
+      "wso2.discovery.api.SecurityList\022\033\n\023autho" +
+      "rizationHeader\030\016 \001(\t\022\027\n\017disableSecurity\030" +
+      "\017 \001(\010\022\r\n\005vhost\030\020 \001(\t\022\026\n\016organizationId\030\021" +
+      " \001(\t\022;\n\022clientCertificates\030\023 \003(\0132\037.wso2." +
+      "discovery.api.Certificate\022\021\n\tmutualSSL\030\024" +
+      " \001(\t\022\033\n\023applicationSecurity\030\025 \001(\010\022\021\n\tsys" +
+      "temAPI\030\030 \001(\010Br\n%org.wso2.choreo.connect." +
+      "discovery.apiB\010ApiProtoP\001Z=github.com/en" +
+      "voyproxy/go-control-plane/wso2/discovery" +
+      "/api;apib\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
           org.wso2.choreo.connect.discovery.api.ResourceProto.getDescriptor(),
-          org.wso2.choreo.connect.discovery.api.EndpointSecurityProto.getDescriptor(),
           org.wso2.choreo.connect.discovery.api.SecuritySchemeProto.getDescriptor(),
           org.wso2.choreo.connect.discovery.api.CertificateProto.getDescriptor(),
         });
@@ -66,7 +64,6 @@ public final class ApiProto {
         internal_static_wso2_discovery_api_Api_descriptor,
         new java.lang.String[] { "Id", "Title", "Version", "ApiType", "EnvType", "Resources", "BasePath", "Tier", "ApiLifeCycleState", "SecurityScheme", "Security", "AuthorizationHeader", "DisableSecurity", "Vhost", "OrganizationId", "ClientCertificates", "MutualSSL", "ApplicationSecurity", "SystemAPI", });
     org.wso2.choreo.connect.discovery.api.ResourceProto.getDescriptor();
-    org.wso2.choreo.connect.discovery.api.EndpointSecurityProto.getDescriptor();
     org.wso2.choreo.connect.discovery.api.SecuritySchemeProto.getDescriptor();
     org.wso2.choreo.connect.discovery.api.CertificateProto.getDescriptor();
   }

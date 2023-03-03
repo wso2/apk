@@ -312,18 +312,19 @@ func generateRPCEndpointCluster(inputEndpointCluster *model.EndpointCluster) *ap
 	return endpoints
 }
 
-func generateRPCEndpointSecurity(inputEndpointSecurity *model.EndpointSecurity) *api.EndpointSecurity {
+func generateRPCEndpointSecurity(inputEndpointSecurity []*model.EndpointSecurity) []*api.SecurityInfo {
 	if inputEndpointSecurity == nil {
 		return nil
 	}
-	var security *api.EndpointSecurity
-	if inputEndpointSecurity != nil {
-		security = &api.EndpointSecurity{
-			Type:     inputEndpointSecurity.Type,
-			Username: inputEndpointSecurity.Username,
-			Password: inputEndpointSecurity.Password,
-			Enabled:  inputEndpointSecurity.Enabled,
-		}
+	var securityConfig []*api.SecurityInfo
+	for _, security := range inputEndpointSecurity {
+		securityConfig = append(securityConfig, &api.SecurityInfo{
+			SecurityType:     security.Type,
+			Username:         security.Username,
+			Password:         security.Password,
+			Enabled:          security.Enabled,
+			CustomParameters: security.CustomParameters,
+		})
 	}
-	return security
+	return securityConfig
 }

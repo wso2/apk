@@ -86,7 +86,7 @@ public class Utils {
     }
 
     public static ResourceConfig buildResource(Operation operation, String resPath, Map<String,
-            List<String>> apiLevelSecurityList, EndpointSecurity endpointSecurity) {
+            List<String>> apiLevelSecurityList, EndpointSecurity[] endpointSecurity) {
         ResourceConfig resource = new ResourceConfig();
         resource.setPath(resPath);
         resource.setMethod(ResourceConfig.HttpMethods.valueOf(operation.getMethod().toUpperCase()));

@@ -71,19 +71,28 @@ public interface ResourceOrBuilder extends
   org.wso2.choreo.connect.discovery.api.EndpointClusterOrBuilder getEndpointsOrBuilder();
 
   /**
-   * <code>.wso2.discovery.api.EndpointSecurity endpointSecurity = 7;</code>
-   * @return Whether the endpointSecurity field is set.
+   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
    */
-  boolean hasEndpointSecurity();
+  java.util.List<org.wso2.choreo.connect.discovery.api.SecurityInfo> 
+      getEndpointSecurityList();
   /**
-   * <code>.wso2.discovery.api.EndpointSecurity endpointSecurity = 7;</code>
-   * @return The endpointSecurity.
+   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
    */
-  org.wso2.choreo.connect.discovery.api.EndpointSecurity getEndpointSecurity();
+  org.wso2.choreo.connect.discovery.api.SecurityInfo getEndpointSecurity(int index);
   /**
-   * <code>.wso2.discovery.api.EndpointSecurity endpointSecurity = 7;</code>
+   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
    */
-  org.wso2.choreo.connect.discovery.api.EndpointSecurityOrBuilder getEndpointSecurityOrBuilder();
+  int getEndpointSecurityCount();
+  /**
+   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+   */
+  java.util.List<? extends org.wso2.choreo.connect.discovery.api.SecurityInfoOrBuilder> 
+      getEndpointSecurityOrBuilderList();
+  /**
+   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+   */
+  org.wso2.choreo.connect.discovery.api.SecurityInfoOrBuilder getEndpointSecurityOrBuilder(
+      int index);
 
   /**
    * <code>map&lt;string, string&gt; security = 8;</code>
