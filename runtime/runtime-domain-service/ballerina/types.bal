@@ -156,6 +156,21 @@ public type APIOperationPolicies record {
     OperationPolicy[] fault?;
 };
 
+public type MediationPolicySpecAttribute record {
+    # Name of the attibute
+    string name?;
+    # Description of the attibute
+    string description?;
+    # Is this option mandetory for the policy
+    boolean required?;
+    # UI validation regex for the attibute
+    string validationRegex?;
+    # Type of the attibute
+    string 'type?;
+    # Default value for the attribute
+    string defaultValue?;
+};
+
 public type APIList record {
     # Number of APIs returned.
     int count?;
@@ -166,6 +181,19 @@ public type APIList record {
 public type MediationPolicyList record {
     MediationPolicy[] list?;
     Pagination pagination?;
+};
+
+public type MediationPolicyData record {
+    string 'type?;
+    string id?;
+    string name?;
+    string displayName?;
+    string description?;
+    string[] applicableFlows?;
+    string[] supportedApiTypes?;
+    boolean isApplicableforAPILevel?;
+    boolean isApplicableforOperationLevel?;
+    MediationPolicySpecAttribute[] policyAttributes?;
 };
 
 public type PortMapping record {
@@ -266,6 +294,13 @@ public type APIKey record {
     # API Key
     string apikey?;
     int validityTime?;
+};
+
+public type MediationPolicyDataList record {
+    # Number of operation policies returned.
+    int count?;
+    MediationPolicyData[] list?;
+    Pagination pagination?;
 };
 
 public type OperationPolicy record {

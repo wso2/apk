@@ -875,12 +875,12 @@ paths:
   /policies:
     get:
       tags:
-        - Policies
+        - Operation Policies
       summary: |
-        Retrieve/Search Policies
+        Get all common operation policies to all the APIs
       description: |
-        This operation provides you a list of available Policies
-      operationId: getAllPolicies
+        This operation provides you a list of available operation Policies that can be used by any API
+      operationId: getAllCommonOperationPolicies
       parameters:
         - name: limit
           in: query
@@ -946,57 +946,57 @@ paths:
             type: string
             default: application/json
       responses:
-        "200":
+        200:
           description: |
             OK.
-            List of Policies is returned.
+            List of qualifying policies is returned.
           headers:
             Content-Type:
               description: The content type of the body.
-              style: simple
-              explode: false
               schema:
                 type: string
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/MediationPolicyList"
+                $ref: '#/components/schemas/MediationPolicyDataList'
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
   /policies/{policyId}:
     get:
       tags:
-        - Policies
-      summary: Get Details of a Policy
+        - Mediation Policies
+      summary: Get the details of a common operation policy by providing policy ID
       description: |
-        Using this operation, you can retrieve complete details of a single Policy. You need to provide the Id of the Policy to retrive it.
-      operationId: getPolicy
+        This operation can be used to retrieve a particular common operation policy.
+      operationId: getCommonOperationPolicyByPolicyId
       parameters:
         - name: policyId
           in: path
-          description: name of the gateway
+          description: Mediation policy Id
           required: true
           style: simple
           explode: false
           schema:
             type: string
       responses:
-        "200":
+        200:
           description: |
             OK.
-            Requested Policy is returned
+            Mediation policy returned.
           headers:
             Content-Type:
               description: |
                 The content type of the body.
-              style: simple
-              explode: false
               schema:
                 type: string
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/MediationPolicy"
+                $ref: '#/components/schemas/MediationPolicyData'
         "404":
           $ref: "#/components/responses/NotFound"
         "500":
@@ -1223,6 +1223,87 @@ components:
           example: admin--HackerNewsAPI.graphql
         schemaDefinition:
           type: string
+    MediationPolicyDataList:
+      title: Mediation policy List
+      type: object
+      properties:
+        count:
+          type: integer
+          description: |
+            Number of operation policies returned.
+          example: 1
+        list:
+          type: array
+          items:
+            $ref: '#/components/schemas/MediationPolicyData'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+    MediationPolicyData:
+      title: Mediation Policy Data
+      type: object
+      properties:
+        type:
+          type: string
+          example: RequestHeaderModifier
+        id:
+          type: string
+          example: 1
+        name:
+          type: string
+          example: addHeader
+        displayName:
+          type: string
+          example: Add Header
+        description:
+          type: string
+          example: With this policy, user can add a new header to the request
+        applicableFlows:
+          type: array
+          items:
+            type: string
+            example: request
+        supportedApiTypes:
+          type: array
+          items:
+            type: string
+            example: REST
+        isApplicableforAPILevel:
+          type: boolean
+          example: true
+        isApplicableforOperationLevel:
+          type: boolean
+          example: true
+        policyAttributes:
+          type: array
+          items:
+            $ref: '#/components/schemas/MediationPolicySpecAttribute'
+    MediationPolicySpecAttribute:
+      title: MediationPolicySpecAttribute
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the attibute
+          example: headerName
+        description:
+          type: string
+          description: Description of the attibute
+          example:  Name of the header to be added
+        required:
+          type: boolean
+          description: Is this option mandetory for the policy
+          example: true
+        validationRegex:
+          type: string
+          description: UI validation regex for the attibute
+        type:
+          type: string
+          description: Type of the attibute
+          example: string
+        defaultValue:
+          type: string
+          description: Default value for the attribute
+          example: true
     MediationPolicyList:
       title: Paginated List of Policies
       type: object
