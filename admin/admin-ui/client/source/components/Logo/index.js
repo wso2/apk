@@ -11,7 +11,7 @@ const Settings = require('Settings');
 // ==============================|| MAIN LOGO ||============================== //
 
 const LogoSection = ({ sx, to }) => (
-    <ButtonBase disableRipple component={Link} to={!to ? Settings.theme.defaultPath : to} sx={sx}>
+    <ButtonBase disableRipple component={Link} to={!to ? '/' : to} sx={sx}>
         <img src="/images/logo.svg" />
     </ButtonBase>
 );

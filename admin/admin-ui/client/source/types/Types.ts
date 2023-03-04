@@ -428,7 +428,7 @@ export interface paths {
      */
     delete: operations["removeOrganization"];
   };
-  "/organization-info/{claimValue}": {
+  "/organization-info": {
     /**
      * Authenticate Organization info
      *  
@@ -1151,14 +1151,11 @@ export interface components {
       name: string;
       /** @example Finance */
       displayName: string;
-      claimList: (components["schemas"]["OrganizationClaim"])[];
-    };
-    /** Organization Claim */
-    OrganizationClaim: {
-      /** @example null */
-      claimKey?: string;
-      /** @example 01234567-0123-0123-0123-012345678901 */
-      claimValue?: string;
+      /** @example 01234567-0123-0123-0123 */
+      organizationClaimValue?: string;
+      /** @default true */
+      enabled?: boolean;
+      serviceNamespaces?: (string)[];
     };
     /** Organization List */
     OrganizationList: {
@@ -1765,8 +1762,6 @@ export interface components {
     apiCategoryId: string;
     /** @description Organization UUID */
     organizationId: string;
-    /** @description Organization claimValue */
-    claimValue: string;
     /** @description Key Manager UUID */
     keyManagerId: string;
     /**

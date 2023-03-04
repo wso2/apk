@@ -2,14 +2,14 @@
 /* eslint-disable no-empty-pattern */
 import React from 'react';
 import PaginatedClientSide from 'components/data-table/PaginatedClientSide'
-import useAxios from "components/hooks/useAxios";
+import useApplicationRatePlans from "components/hooks/useApplicationRatePlans";
 import Loader from "components/Loader";
-import { components, paths, operations } from 'types/Types';
+// import { components, paths, operations } from 'types/Types';
 
 type Props = {}
 
 export default function ListApplicationRatePlans({ }: Props) {
-  const { data, loading, error } = useAxios({ url: '/throttling/policies/application' });
+  const { data, loading, error } = useApplicationRatePlans();
   const columns = React.useMemo(
     () => [
       {

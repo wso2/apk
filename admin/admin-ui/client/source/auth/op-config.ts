@@ -6,21 +6,11 @@ import {
     END_SESSION_ENDPOINT,
     JWKS_ENDPOINT,
     ISSUER,
-    OP_CONFIG_INITIATED,
     USERINFO_ENDPOINT,
 } from './constants/token';
 import { getSessionParameter, removeSessionParameter, setSessionParameter } from "./session";
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Settings = require('Settings');
-
-/**
- * Checks whether openid configuration initiated.
- *
- * @returns {boolean}
- */
- export const isOPConfigInitiated = (): boolean => {
-    return getSessionParameter(OP_CONFIG_INITIATED) === "true";
-};
 
 /**
  * Set OAuth2 authorize endpoint.
@@ -54,15 +44,8 @@ export const setEndSessionEndpoint = (endSessionEndpoint: string): void => {
  *
  * @param jwksEndpoint
  */
- export const setJwksUri = (jwksEndpoint: string): void => {
+export const setJwksUri = (jwksEndpoint: string): void => {
     setSessionParameter(JWKS_ENDPOINT, jwksEndpoint);
-};
-
-/**
- * Set openid configuration initiated.
- */
- export const setOPConfigInitiated = (): void => {
-    setSessionParameter(OP_CONFIG_INITIATED, "true");
 };
 
 /**
@@ -70,7 +53,7 @@ export const setEndSessionEndpoint = (endSessionEndpoint: string): void => {
  *
  * @param issuer id_token issuer.
  */
- export const setIssuer = (issuer: string): void => {
+export const setIssuer = (issuer: string): void => {
     setSessionParameter(ISSUER, issuer);
 };
 
@@ -85,41 +68,41 @@ export const setUserinfoEndpoint = (userinfoEndpoint: string): void => {
  * Initialize openid provider configuration.
  *
  * @param {string} wellKnownEndpoint openid provider configuration.
- * @param {boolean} forceInit whether to initialize the configuration again.
  * @returns {Promise<any>} promise.
  */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export const initOPConfiguration = (
     wellKnownEndpoint: string,
-    forceInit: boolean
 ): Promise<any> => {
-
-    if (!forceInit && isOPConfigInitiated()) {
-        Promise.resolve("success");
+    if (wellKnownEndpoint && wellKnownEndpoint.trim().length > 0) {
+        if (!wellKnownEndpoint || wellKnownEndpoint.trim().length === 0) {
+            return Promise.reject(new Error("OpenID provider configuration endpoint is not defined."));
+        }
+        return axios.get(wellKnownEndpoint)
+            .then((response) => {
+                if (response.status !== 200) {
+                    return Promise.reject(new Error("Failed to load OpenID provider configuration from: "
+                        + wellKnownEndpoint));
+                }
+                setAuthorizeEndpoint(response.data.authorization_endpoint);
+                setTokenEndpoint(response.data.token_endpoint);
+                setEndSessionEndpoint(Settings.idp.logout_endpoint);
+                setJwksUri(response.data.jwks_uri);
+                setIssuer(response.data.issuer);
+                setUserinfoEndpoint(response.data.userinfo_endpoint);
+                return Promise.resolve("success");
+            }).catch((error) => {
+                return Promise.reject(error);
+            });
+    } else {
+        setAuthorizeEndpoint(Settings.idp.authorization_endpoint);
+        setTokenEndpoint(Settings.idp.token_endpoint);
+        setEndSessionEndpoint(Settings.idp.logout_endpoint);
+        setJwksUri(Settings.idp.jwks_uri);
+        setIssuer(Settings.idp.issuer);
+        setUserinfoEndpoint(Settings.idp.userinfo_endpoint);
+        return Promise.resolve("success");
     }
-
-    if (!wellKnownEndpoint || wellKnownEndpoint.trim().length === 0) {
-        return Promise.reject(new Error("OpenID provider configuration endpoint is not defined."));
-    }
-
-    return axios.get(wellKnownEndpoint)
-        .then((response) => {
-            if (response.status !== 200) {
-                return Promise.reject(new Error("Failed to load OpenID provider configuration from: "
-                    + wellKnownEndpoint));
-            }
-            setAuthorizeEndpoint(response.data.authorization_endpoint);
-            setTokenEndpoint(response.data.token_endpoint);
-            setEndSessionEndpoint(Settings.idp.logoutEndpoint);
-            setJwksUri(response.data.jwks_uri);
-            setIssuer(response.data.issuer);
-            setUserinfoEndpoint(response.data.userinfo_endpoint);
-            setOPConfigInitiated();
-
-            return Promise.resolve("success");
-        }).catch((error) => {
-            return Promise.reject(error);
-        });
 };
 
 /**
@@ -129,6 +112,9 @@ export const resetOPConfiguration = (): void => {
     removeSessionParameter(AUTHORIZATION_ENDPOINT);
     removeSessionParameter(TOKEN_ENDPOINT);
     removeSessionParameter(END_SESSION_ENDPOINT);
+    removeSessionParameter(JWKS_ENDPOINT);
+    removeSessionParameter(ISSUER);
+    removeSessionParameter(USERINFO_ENDPOINT);
 };
 
 /**
@@ -163,7 +149,7 @@ export const getEndSessionEndpoint = (): string | null => {
  *
  * @returns {string|null}
  */
- export const getJwksUri = (): string|null => {
+export const getJwksUri = (): string | null => {
     return getSessionParameter(JWKS_ENDPOINT);
 };
 
@@ -172,7 +158,7 @@ export const getEndSessionEndpoint = (): string | null => {
  *
  * @returns {any}
  */
- export const getIssuer = (): string => {
+export const getIssuer = (): string => {
     return getSessionParameter(ISSUER);
 };
 

@@ -14,7 +14,7 @@ const Navigation = () => {
         switch (item.type) {
             case 'group':
                 return item.children?.length === 1 ?
-                    <Box sx={{ backgroundColor: 'secondary.lighter' }}><NavGroup key={item.id} item={item} /></Box>
+                    <Box sx={{ backgroundColor: 'secondary.lighter' }} key={item.id}><NavGroup item={item} /></Box>
                     : <NavGroup key={item.id} item={item} />;
             default:
                 return (

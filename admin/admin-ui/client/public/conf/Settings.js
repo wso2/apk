@@ -1,35 +1,35 @@
 
 
 const Settings = {
+    // oath0 config
+    // idp: {
+    //     client_id: 'wqCauPZqUn6UigcAZbU9Z6jxwNTfzOAb',
+    //     well_known: 'https://construct.auth0.com/.well-known/openid-configuration',
+    //     serverOrigin: 'https://construct.auth0.com/',
+    //     redirect_uri: 'https://localhost:4000',
+    //     logout_endpoint: 'https://construct.auth0.com/v2/logout',
+    //     scope: 'openid offline_access',
+    //     state: 'RlZyVjlqYUpHTzltWC42c2FNRDRJT1JPfk1+TUFEa0RLb04yZldwYkpxVA==',
+    //     pkce: true,
+    // },
     idp: {
-        IDP_CLIENT_ID: 'wqCauPZqUn6UigcAZbU9Z6jxwNTfzOAb',
-        wellKnown: 'https://construct.auth0.com/.well-known/openid-configuration',
-        serverOrigin: 'https://construct.auth0.com/',
-        loginUri: 'https://localhost:4000',
-        logoutEndpoint: 'https://construct.auth0.com/v2/logout',
+        client_id: '01edb99d-d4d3-1ae8-b8b9-f09c5a557009',
+        client_secret: '01edb99d-d4d3-1ae8-97f9-55a7256d84e4',
+        host: 'idp.am.wso2.com:9095',
+        server_origin: 'https://idp.am.wso2.com:9095/',
+        redirect_uri: 'https://localhost:4000',
+        logout_endpoint: 'https://idp.am.wso2.com:9095/logout',
         scope: 'openid offline_access',
         state: 'RlZyVjlqYUpHTzltWC42c2FNRDRJT1JPfk1+TUFEa0RLb04yZldwYkpxVA==',
+        authorization_endpoint: 'https://idp.am.wso2.com:9095/oauth2/authorize',
+        token_endpoint: 'https://idp.am.wso2.com:9095/oauth2/token',
+        jwks_uri: 'https://idp.am.wso2.com:9095/oauth2/jwks',
+        issuer: 'https://idp.am.wso2.com:9095/oauth2/token',
+        userinfo_endpoint: 'https://idp.am.wso2.com:9095/oauth2/userinfo',
+        pkce: false,
     },
-    server: {
-        API_PORT: 9443,
-        API_HOST: 'localhost',
-        API_TRANSPORT: 'http',
-        restApi: 'http://localhost:9445/api/am/admin/v3/',
-    },
-    theme: {
-        defaultPath: '/dashboard/default',
-        fontFamily: `'Montserrat', sans-serif;`,
-        i18n: 'en',
-        miniDrawer: false,
-        container: true,
-        mode: 'light',
-        presetColor: 'default',
-        themeDirection: 'ltr',
-        docUrl: 'https://apim.docs.wso2.com/en/',
-        drawerWidth: 260,
-        twitterColor: '#1DA1F2',
-        facebookColor: '#3b5998',
-        linkedInColor: '#0e76a8',
+    app: {
+        rest_api: 'https://api.am.wso2.com:9095/api/am/admin',
     }
 };
 

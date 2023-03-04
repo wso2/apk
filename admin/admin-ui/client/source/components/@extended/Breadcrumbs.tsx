@@ -15,8 +15,6 @@ import MainCard from '../MainCard';
 interface BreadcrumbsProps {
     navigation: any;
     title: boolean;
-    titleBottom?: boolean;
-    card?: boolean;
     divider?: boolean;
     others?: any;
 }

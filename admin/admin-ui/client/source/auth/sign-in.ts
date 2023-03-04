@@ -7,7 +7,6 @@ import {
     PKCE_CODE_VERIFIER,
     SERVICE_RESOURCES,
     REQUEST_PARAMS,
-    REQUEST_STATUS,
 } from './constants/token';
 import { getSessionParameter, removeSessionParameter, setSessionParameter } from "./session";
 import { getAuthorizeEndpoint, getTokenEndpoint, getJwksUri, getIssuer, getToken } from "./op-config";
@@ -24,10 +23,10 @@ export const sendAuthorizationRequest = (requestParams: OIDCRequestParamsInterfa
         return Promise.reject(new Error("Invalid authorize endpoint found."));
     }
     // Generate code verifier and code challenge.
+
     const codeVerifier = getCodeVerifier();
     const codeChallenge = getCodeChallenge(codeVerifier);
     setSessionParameter(PKCE_CODE_VERIFIER, codeVerifier);
-
     const authorizeRequest = `${authorizeEndpoint}?` +
         `response_type=code` +
         `&client_id=${requestParams.clientId}` +
@@ -35,7 +34,8 @@ export const sendAuthorizationRequest = (requestParams: OIDCRequestParamsInterfa
         `&state=${requestParams.state}` +
         `&code_challenge_method=S256` +
         `&code_challenge=${codeChallenge}` +
-        `&redirect_uri=${Settings.idp.loginUri}`;
+        `&redirect_uri=${Settings.idp.redirect_uri}`;
+    
     document.location.href = authorizeRequest;
     return false;
 };
@@ -109,14 +109,16 @@ export const sendTokenRequest = (
     }
 
     const code = new URL(window.location.href).searchParams.get(AUTHORIZATION_CODE);
-    removeSessionParameter(REQUEST_STATUS);
 
     const body = [
         `client_id=${requestParams.clientId}`,
         `code=${code}`,
         "grant_type=authorization_code",
-        `redirect_uri=${Settings.idp.loginUri}/users`,
-        `code_verifier=${getSessionParameter(PKCE_CODE_VERIFIER)}`];
+        `redirect_uri=${Settings.idp.redirect_uri}`];
+
+    if (Settings.idp.pkce) {
+        body.push(`code_verifier=${getSessionParameter(PKCE_CODE_VERIFIER)}`);
+    }
 
     return axios.post(tokenEndpoint, body.join("&"))
         .then((response: any) => {
@@ -124,24 +126,30 @@ export const sendTokenRequest = (
                 return Promise.reject(new Error("Invalid status code received in the token response: "
                     + response.status));
             }
-            removeSessionParameter(PKCE_CODE_VERIFIER);
+            const tokenResponse: TokenResponseInterface = {
+                accessToken: response.data.access_token,
+                expiresIn: response.data.expires_in,
+                idToken: response.data.id_token,
+                refreshToken: response.data.refresh_token,
+                scope: response.data.scope,
+                tokenType: response.data.token_type
+            };
+            if (Settings.idp.pkce) {
+                removeSessionParameter(PKCE_CODE_VERIFIER);
+                return validateIdToken(requestParams.clientId, response.data.id_token, requestParams.serverOrigin)
+                    .then((valid) => {
+                        if (valid) {
+                            setSessionParameter(REQUEST_PARAMS, JSON.stringify(requestParams));
 
-            return validateIdToken(requestParams.clientId, response.data.id_token, requestParams.serverOrigin)
-                .then((valid) => {
-                    if (valid) {
-                        setSessionParameter(REQUEST_PARAMS, JSON.stringify(requestParams));
-                        const tokenResponse: TokenResponseInterface = {
-                            accessToken: response.data.access_token,
-                            expiresIn: response.data.expires_in,
-                            idToken: response.data.id_token,
-                            refreshToken: response.data.refresh_token,
-                            scope: response.data.scope,
-                            tokenType: response.data.token_type
-                        };
-                        return Promise.resolve(tokenResponse)
-                    }
-                    return Promise.reject(new Error("Invalid id_token in the token response: " + response.data.id_token));
-                });
+                            return Promise.resolve(tokenResponse)
+                        }
+                        return Promise.reject(new Error("Invalid id_token in the token response: " + response.data.id_token));
+                    });
+            } else {
+                // If PKCE is disabled, set the request parameters in the session storage without the verification.
+                return Promise.resolve(tokenResponse)
+            }
+
         }).catch((error: any) => {
             return Promise.reject(error);
         });

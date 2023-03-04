@@ -8,6 +8,7 @@ import { List, ListItemButton, ListItemIcon, ListItemText } from '@mui/material'
 import { sendSignOutRequest } from "auth/sign-out";
 import { endAuthenticatedSession } from "auth/session";
 import { resetOPConfiguration } from "auth/op-config";
+import { useAuth } from 'auth/AuthProvider';
 
 // assets
 import { EditOutlined, ProfileOutlined, LogoutOutlined, UserOutlined, WalletOutlined } from '@ant-design/icons';
@@ -16,8 +17,9 @@ import { EditOutlined, ProfileOutlined, LogoutOutlined, UserOutlined, WalletOutl
 const Settings = require('Settings');
 // ==============================|| HEADER PROFILE - PROFILE TAB ||============================== //
 
-const ProfileTab = ({ handleLogout }) => {
+const ProfileTab = () => {
     const theme = useTheme();
+    const { logout } = useAuth();
 
     const [selectedIndex, setSelectedIndex] = useState(0);
     const handleListItemClick = (event, index) => {
@@ -51,14 +53,11 @@ const ProfileTab = ({ handleLogout }) => {
                 </ListItemIcon>
                 <ListItemText primary="Billing" />
             </ListItemButton>
-            <ListItemButton selected={selectedIndex === 2} onClick={handleLogout}>
+            <ListItemButton selected={selectedIndex === 2} onClick={logout}>
                 <ListItemIcon>
                     <LogoutOutlined />
                 </ListItemIcon>
-                <ListItemText primary="Logout" onClick={() => sendSignOutRequest(Settings.idp.loginUri, () => {
-                    endAuthenticatedSession();
-                    resetOPConfiguration();
-                })} />
+                <ListItemText primary="Logout" onClick={logout} />
             </ListItemButton>
         </List>
     );
