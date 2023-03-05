@@ -1241,16 +1241,17 @@ components:
     MediationPolicyData:
       title: Mediation Policy Data
       required:
+        - id
         - name
         - type
       type: object
       properties:
-        type:
-          type: string
-          example: RequestHeaderModifier
         id:
           type: string
           example: 1
+        type:
+          type: string
+          example: RequestHeaderModifier
         name:
           type: string
           example: addHeader

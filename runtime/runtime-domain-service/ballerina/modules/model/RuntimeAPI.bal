@@ -36,8 +36,8 @@ public type OperationPolicy record {
 };
 
 public type MediationPolicy record {
+    string id;
     string 'type;
-    string id?;
     string name;
     string displayName?;
     string description?;

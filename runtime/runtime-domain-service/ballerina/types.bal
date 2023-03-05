@@ -184,8 +184,8 @@ public type MediationPolicyList record {
 };
 
 public type MediationPolicyData record {
+    string id;
     string 'type;
-    string id?;
     string name;
     string displayName?;
     string description?;

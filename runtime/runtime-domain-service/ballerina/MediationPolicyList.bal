@@ -24,8 +24,7 @@ enum PolicyFlows {
     response
 }
 
-
-isolated model:MediationPolicy[] avilableMediationPolicyList = [
+isolated final model:MediationPolicy[] avilableMediationPolicyList = [
     {
         id: "1",
         'type: MEDIATION_POLICY_TYPE_REQUEST_HEADER_MODIFIER,
@@ -53,13 +52,60 @@ isolated model:MediationPolicy[] avilableMediationPolicyList = [
             }
         ]
     },
-        {
+    {
         id: "2",
         'type: MEDIATION_POLICY_TYPE_REQUEST_HEADER_MODIFIER,
         name: "removeHeader",
         displayName: "Remove Header",
         description: "This policy allows you to remove a header from the request",
         applicableFlows: [request],
+        supportedApiTypes: [API_TYPE_REST],
+        isApplicableforAPILevel: true,
+        isApplicableforOperationLevel: true,
+        policyAttributes: [
+            {
+                name: "headerName",
+                description: "Name of the header to be removed",
+                'type: "String",
+                required: true,
+                validationRegex: "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$"
+            }
+        ]
+    },
+    {
+        id: "3",
+        'type: MEDIATION_POLICY_TYPE_RESPONSE_HEADER_MODIFIER,
+        name: "addHeader",
+        displayName: "Add Header",
+        description: "This policy allows you to add a new header to the response",
+        applicableFlows: [response],
+        supportedApiTypes: [API_TYPE_REST],
+        isApplicableforAPILevel: true,
+        isApplicableforOperationLevel: true,
+        policyAttributes: [
+            {
+                name: "headerName",
+                description: "Name of the header to be added",
+                'type: "String",
+                required: true,
+                validationRegex: "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$"
+            },
+            {
+                name: "headerValue",
+                description: "Value of the header",
+                'type: "String",
+                required: true,
+                validationRegex: "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$"
+            }
+        ]
+    },
+    {
+        id: "4",
+        'type: MEDIATION_POLICY_TYPE_RESPONSE_HEADER_MODIFIER,
+        name: "removeHeader",
+        displayName: "Remove Header",
+        description: "This policy allows you to remove a header from the response",
+        applicableFlows: [response],
         supportedApiTypes: [API_TYPE_REST],
         isApplicableforAPILevel: true,
         isApplicableforOperationLevel: true,
