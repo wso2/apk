@@ -17,6 +17,8 @@ const string APK_USER = "apkuser";
 const string CURRENT_NAMESPACE = "CURRENT_NAME_SPACE";
 
 const string SORT_BY_API_NAME = "apiName";
+const string SORT_BY_POLICY_NAME = "policyName";
+const string SORT_BY_ID = "id";
 const string SORT_BY_CREATED_TIME = "createdTime";
 const string SORT_ORDER_ASC = "asc";
 const string SORT_ORDER_DESC = "desc";

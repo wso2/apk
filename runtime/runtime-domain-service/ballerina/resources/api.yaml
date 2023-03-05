@@ -875,12 +875,12 @@ paths:
   /policies:
     get:
       tags:
-        - Operation Policies
+        - Mediation Policies
       summary: |
-        Get all common operation policies to all the APIs
+        Get all common meiation policies to all the APIs
       description: |
         This operation provides you a list of available operation Policies that can be used by any API
-      operationId: getAllCommonOperationPolicies
+      operationId: getMediationPolicyList
       parameters:
         - name: limit
           in: query
@@ -946,7 +946,7 @@ paths:
             type: string
             default: application/json
       responses:
-        200:
+        "200":
           description: |
             OK.
             List of qualifying policies is returned.
@@ -969,12 +969,12 @@ paths:
     get:
       tags:
         - Mediation Policies
-      summary: Get the details of a common operation policy by providing policy ID
+      summary: Get the details of a common mediation policy by providing mediation policy ID
       description: |
-        This operation can be used to retrieve a particular common operation policy.
-      operationId: getCommonOperationPolicyByPolicyId
+        This operation can be used to retrieve a particular common mediation policy.
+      operationId: getMediationPolicyByPolicyId
       parameters:
-        - name: policyId
+        - name: mediationPolicyId
           in: path
           description: Mediation policy Id
           required: true
@@ -983,7 +983,7 @@ paths:
           schema:
             type: string
       responses:
-        200:
+        "200":
           description: |
             OK.
             Mediation policy returned.
@@ -1230,7 +1230,7 @@ components:
         count:
           type: integer
           description: |
-            Number of operation policies returned.
+            Number of mediation policies returned.
           example: 1
         list:
           type: array
@@ -1240,6 +1240,9 @@ components:
           $ref: '#/components/schemas/Pagination'
     MediationPolicyData:
       title: Mediation Policy Data
+      required:
+        - name
+        - type
       type: object
       properties:
         type:

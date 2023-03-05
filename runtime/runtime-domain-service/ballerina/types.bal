@@ -184,9 +184,9 @@ public type MediationPolicyList record {
 };
 
 public type MediationPolicyData record {
-    string 'type?;
+    string 'type;
     string id?;
-    string name?;
+    string name;
     string displayName?;
     string description?;
     string[] applicableFlows?;
@@ -297,7 +297,7 @@ public type APIKey record {
 };
 
 public type MediationPolicyDataList record {
-    # Number of operation policies returned.
+    # Number of mediation policies returned.
     int count?;
     MediationPolicyData[] list?;
     Pagination pagination?;

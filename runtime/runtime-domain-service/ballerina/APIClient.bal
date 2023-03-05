@@ -2580,53 +2580,117 @@ public class APIClient {
         }
     }
 
-    # This returns list of Policies.
+      private isolated function filterMediationPoliciesBasedOnQuery(MediationPolicyData[] mediationPolicyList, string query, int 'limit, int offset, string sortBy, string sortOrder) returns MediationPolicyDataList|BadRequestError {
+        MediationPolicyData[] filteredList = [];
+        if query.length() > 0 {
+            int? semiCollonIndex = string:indexOf(query, ":", 0);
+            if semiCollonIndex is int && semiCollonIndex > 0 {
+                string keyWord = query.substring(0, semiCollonIndex);
+                string keyWordValue = query.substring(keyWord.length() + 1, query.length());
+                keyWordValue = keyWordValue + "|\\w+" + keyWordValue + "\\w+" + "|" + keyWordValue + "\\w+" + "|\\w+" + keyWordValue;
+                if keyWord.trim() == SEARCH_CRITERIA_NAME {
+                    foreach MediationPolicyData mediationPolicy in mediationPolicyList {
+                        if (regex:matches(mediationPolicy.name, keyWordValue)) {
+                            filteredList.push(mediationPolicy);
+                        }
+                    }
+                } else if keyWord.trim() == SEARCH_CRITERIA_TYPE {
+                    foreach MediationPolicyData mediationPolicy in mediationPolicyList {
+                        if (regex:matches(mediationPolicy.'type, keyWordValue)) {
+                            filteredList.push(mediationPolicy);
+                        }
+                    }
+                } else {
+                    BadRequestError badRequest = {body: {code: 90912, message: "Invalid KeyWord " + keyWord}};
+                    return badRequest;
+                }
+            } else {
+                string keyWordValue = query + "|\\w+" + query + "\\w+" + "|" + query + "\\w+" + "|\\w+" + query;
+
+                foreach MediationPolicyData mediationPolicy in mediationPolicyList {
+
+                    if (regex:matches(mediationPolicy.name, keyWordValue)) {
+                        filteredList.push(mediationPolicy);
+                    }
+                }
+            }
+        } else {
+            filteredList = mediationPolicyList;
+        }
+        return self.filterMediationPolicies(filteredList, 'limit, offset, sortBy, sortOrder);
+    }
+
+    private isolated function filterMediationPolicies(MediationPolicyData[] mediationPolicyList, int 'limit, int offset, string sortBy, string sortOrder) returns MediationPolicyDataList|BadRequestError {
+        MediationPolicyData[] clonedMediationPolicyList = mediationPolicyList.clone();
+        MediationPolicyData[] sortedMediationPolicies = [];
+        if sortBy == SORT_BY_POLICY_NAME && sortOrder == SORT_ORDER_ASC {
+            sortedMediationPolicies = from var mediationPolicy in clonedMediationPolicyList
+                order by mediationPolicy.name ascending
+                select mediationPolicy;
+        } else if sortBy == SORT_BY_POLICY_NAME && sortOrder == SORT_ORDER_DESC {
+            sortedMediationPolicies = from var mediationPolicy in clonedMediationPolicyList
+                order by mediationPolicy.name descending
+                select mediationPolicy;
+        } else if sortBy == SORT_BY_ID && sortOrder == SORT_ORDER_ASC {
+            sortedMediationPolicies = from var mediationPolicy in clonedMediationPolicyList
+                order by mediationPolicy.id ascending
+                select mediationPolicy;
+        } else {
+            BadRequestError badRequest = {body: {code: 90912, message: "Invalid Sort By/Sort Order Value "}};
+            return badRequest;
+        }
+        MediationPolicyData[] limitSet = [];
+        if sortedMediationPolicies.length() > offset {
+            foreach int i in offset ... (sortedMediationPolicies.length() - 1) {
+                if limitSet.length() < 'limit {
+                    limitSet.push(sortedMediationPolicies[i]);
+                }
+            }
+        }
+        return {list: limitSet, count: limitSet.length(), pagination: {total: mediationPolicyList.length(), 'limit: 'limit, offset: offset}};
+
+    }
+
+    # This returns list of Mediation Policies.
     #
-    # + query - Parameter Description  
-    # + 'limit - Parameter Description  
-    # + offset - Parameter Description  
-    # + sortBy - Parameter Description  
-    # + sortOrder - Parameter Description  
-    # + organization - Parameter Description
-    # + return - Return list of Policies.
+    # + query - Search Query
+    # + 'limit - Limit 
+    # + offset - Offset 
+    # + sortBy - SortBy Parameter
+    # + sortOrder - SortOrder  Parameter
+    # + organization - Organization
+    # + return - Return list of Mediation Policies.
     public isolated function getMediationPolicyList(string? query, int 'limit, int offset, string sortBy, string sortOrder, commons:Organization organization) returns MediationPolicyDataList|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
-        MediationPolicyData[] MediationPolicyList = [];
-        
-        model:MediationPolicy[] MediationPolicylst;
+        MediationPolicyData[] mediationPolicyList = [];
+        model:MediationPolicy[] avilableMediationPolicies;
         lock {
-            MediationPolicylst = avilableMediationPolicyList.clone();
+            avilableMediationPolicies = avilableMediationPolicyList.clone();
          }
 
-        foreach model:MediationPolicy MediationPolicy in MediationPolicylst {
+        foreach model:MediationPolicy mediationPolicy in avilableMediationPolicies {
             MediationPolicyData policyItem = {
-                id: MediationPolicy.id,
-                'type: MediationPolicy.'type,
-                name: MediationPolicy.name,
-                displayName: MediationPolicy.displayName,
-                description: MediationPolicy.description,
-                applicableFlows: MediationPolicy.applicableFlows,
-                supportedApiTypes: MediationPolicy.supportedApiTypes,
-                isApplicableforAPILevel: MediationPolicy.isApplicableforAPILevel,
-                isApplicableforOperationLevel: MediationPolicy.isApplicableforOperationLevel,
-                policyAttributes: MediationPolicy.policyAttributes
+                id: mediationPolicy.id,
+                'type: mediationPolicy.'type,
+                name: mediationPolicy.name,
+                displayName: mediationPolicy.displayName,
+                description: mediationPolicy.description,
+                applicableFlows: mediationPolicy.applicableFlows,
+                supportedApiTypes: mediationPolicy.supportedApiTypes,
+                isApplicableforAPILevel: mediationPolicy.isApplicableforAPILevel,
+                isApplicableforOperationLevel: mediationPolicy.isApplicableforOperationLevel,
+                policyAttributes: mediationPolicy.policyAttributes
 
             };
-            MediationPolicyList.push(policyItem);
+            mediationPolicyList.push(policyItem);
             
         } on fail var e {
-            //return error("Error occured while getting API list", e, message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = 500);
-            log:printError("Error occured importing API", e);
+            return error("Error occured while getting Mediation policy list", e, message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = 500);
         }
-        // if query is string && query.toString().trim().length() > 0 {
-        //     return self.filterAPISBasedOnQuery(apilist, query, 'limit, offset, sortBy, sortOrder);
-        // } else {
-        //     return self.filterAPIS(apilist, 'limit, offset, sortBy, sortOrder);
-        // }
-        MediationPolicyDataList oplist = {
-            list: MediationPolicyList,
-            count: MediationPolicyList.length()
-        };
-        return oplist ;
+        if query is string && query.toString().trim().length() > 0 {
+            return self.filterMediationPoliciesBasedOnQuery(mediationPolicyList, query, 'limit, offset, sortBy, sortOrder);
+        } else {
+            return self.filterMediationPolicies(mediationPolicyList, 'limit, offset, sortBy, sortOrder);
+        }
     }
 
 }
