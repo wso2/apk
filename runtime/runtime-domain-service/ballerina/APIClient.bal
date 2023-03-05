@@ -2651,6 +2651,37 @@ public class APIClient {
 
     }
 
+    //Get Mediation policies by mediationPolicyId.
+    public isolated function getMediationPolicyById(string id, commons:Organization organization) returns MediationPolicyData|NotFoundError|commons:APKError {
+        boolean mediationPolicyIDAvailable = id.length() > 0 ? true : false;
+        if (mediationPolicyIDAvailable && string:length(id.toString()) > 0)
+        {
+            lock {
+                foreach model:MediationPolicy mediationPolicy in avilableMediationPolicyList {
+                    if mediationPolicy.id == id {
+                         MediationPolicyData matchedPolicy = {
+                            id: mediationPolicy.id,
+                            'type: mediationPolicy.'type,
+                            name: mediationPolicy.name,
+                            displayName: mediationPolicy.displayName,
+                            description: mediationPolicy.description,
+                            applicableFlows: mediationPolicy.applicableFlows,
+                            supportedApiTypes: mediationPolicy.supportedApiTypes,
+                            isApplicableforAPILevel: mediationPolicy.isApplicableforAPILevel,
+                            isApplicableforOperationLevel: mediationPolicy.isApplicableforOperationLevel,
+                            policyAttributes: mediationPolicy.policyAttributes
+                        };
+                        return matchedPolicy.cloneReadOnly();
+                    }
+                }
+            } on fail var e {
+                return error("Error while retrieving Mediation policy", e, message = "Error while retrieving Mediation policy", description = "Error while retrieving Mediation policy", code = 909000, statusCode = 500);
+            }
+        }
+        NotFoundError notfound = {body: {code: 909100, message: id + " not found."}};
+        return notfound;
+    }
+
     # This returns list of Mediation Policies.
     #
     # + query - Search Query
