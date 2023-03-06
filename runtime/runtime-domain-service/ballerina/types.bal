@@ -191,8 +191,8 @@ public type MediationPolicyData record {
     string description?;
     string[] applicableFlows?;
     string[] supportedApiTypes?;
-    boolean isApplicableforAPILevel?;
-    boolean isApplicableforOperationLevel?;
+    boolean canApplyforAPILevel?;
+    boolean canApplyforOperationLevel?;
     MediationPolicySpecAttribute[] policyAttributes?;
 };
 

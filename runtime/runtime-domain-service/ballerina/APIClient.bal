@@ -2580,7 +2580,7 @@ public class APIClient {
         }
     }
 
-      private isolated function filterMediationPoliciesBasedOnQuery(MediationPolicyData[] mediationPolicyList, string query, int 'limit, int offset, string sortBy, string sortOrder) returns MediationPolicyDataList|BadRequestError {
+    private isolated function filterMediationPoliciesBasedOnQuery(MediationPolicyData[] mediationPolicyList, string query, int 'limit, int offset, string sortBy, string sortOrder) returns MediationPolicyDataList|BadRequestError {
         MediationPolicyData[] filteredList = [];
         if query.length() > 0 {
             int? semiCollonIndex = string:indexOf(query, ":", 0);
@@ -2659,18 +2659,7 @@ public class APIClient {
             lock {
                 foreach model:MediationPolicy mediationPolicy in avilableMediationPolicyList {
                     if mediationPolicy.id == id {
-                         MediationPolicyData matchedPolicy = {
-                            id: mediationPolicy.id,
-                            'type: mediationPolicy.'type,
-                            name: mediationPolicy.name,
-                            displayName: mediationPolicy.displayName,
-                            description: mediationPolicy.description,
-                            applicableFlows: mediationPolicy.applicableFlows,
-                            supportedApiTypes: mediationPolicy.supportedApiTypes,
-                            isApplicableforAPILevel: mediationPolicy.isApplicableforAPILevel,
-                            isApplicableforOperationLevel: mediationPolicy.isApplicableforOperationLevel,
-                            policyAttributes: mediationPolicy.policyAttributes
-                        };
+                        MediationPolicyData matchedPolicy = convertPolicyModeltoPolicy(mediationPolicy);
                         return matchedPolicy.cloneReadOnly();
                     }
                 }
@@ -2696,24 +2685,12 @@ public class APIClient {
         model:MediationPolicy[] avilableMediationPolicies;
         lock {
             avilableMediationPolicies = avilableMediationPolicyList.clone();
-         }
+        }
 
         foreach model:MediationPolicy mediationPolicy in avilableMediationPolicies {
-            MediationPolicyData policyItem = {
-                id: mediationPolicy.id,
-                'type: mediationPolicy.'type,
-                name: mediationPolicy.name,
-                displayName: mediationPolicy.displayName,
-                description: mediationPolicy.description,
-                applicableFlows: mediationPolicy.applicableFlows,
-                supportedApiTypes: mediationPolicy.supportedApiTypes,
-                isApplicableforAPILevel: mediationPolicy.isApplicableforAPILevel,
-                isApplicableforOperationLevel: mediationPolicy.isApplicableforOperationLevel,
-                policyAttributes: mediationPolicy.policyAttributes
-
-            };
+            MediationPolicyData policyItem = convertPolicyModeltoPolicy(mediationPolicy);
             mediationPolicyList.push(policyItem);
-            
+
         } on fail var e {
             return error("Error occured while getting Mediation policy list", e, message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = 500);
         }
