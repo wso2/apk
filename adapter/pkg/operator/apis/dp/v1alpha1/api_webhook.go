@@ -147,11 +147,7 @@ func (r *API) validateAPIContextExists() *field.Error {
 	ctx := context.Background()
 	apiList := &APIList{}
 	if err := c.List(ctx, apiList); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-			Message:   "unable to list APIs for API context validation",
-			Severity:  logging.CRITICAL,
-			ErrorCode: 2900,
-		})
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2605, err.Error()))
 		return field.InternalError(field.NewPath("spec").Child("context"),
 			errors.New("unable to list APIs for API context validation"))
 	}
