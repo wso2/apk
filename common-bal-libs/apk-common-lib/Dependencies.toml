@@ -237,7 +237,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "observe"
-version = "1.0.6"
+version = "1.0.7"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
@@ -263,7 +263,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "sql"
-version = "1.6.2"
+version = "1.6.3"
 dependencies = [
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"},
@@ -329,5 +329,4 @@ dependencies = [
 modules = [
 	{org = "wso2", packageName = "apk_common_lib", moduleName = "apk_common_lib"}
 ]
-
 

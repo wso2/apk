@@ -17,21 +17,22 @@
 apiVersion: dp.wso2.com/v1alpha1
 kind: API
 metadata:
-  name: rewrite-path-api
+  name: disable-api-security
   namespace: gateway-integration-test-infra
 spec:
-  apiDisplayName: Rewrite Path API
+  apiDisplayName: Backend with no basepath
   apiType: REST
-  apiVersion: 1.0.0
-  context: /rewrite-path-api/1.0.0
-  definitionFileRef: swagger-definition-webhook
-  prodHTTPRouteRef: rewrite-path-httproute
+  apiVersion: v1
+  context: /disable-api-security/v1
+  definitionFileRef: definition-file
+  prodHTTPRouteRefs:
+  - disable-api-security-httproute
   organization: wso2-org
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: HTTPRoute
 metadata:
-  name: rewrite-path-httproute
+  name: disable-api-security-httproute
   namespace: gateway-integration-test-infra
 spec:
   parentRefs:
@@ -39,33 +40,33 @@ spec:
     kind: Gateway
     name: Default
   hostnames:
-  - urlrewrite.gw.wso2.com
+  - disable-api-security.test.gw.wso2.com
   rules:
   - matches:
     - path:
-        type: PathPrefix
-        value: /rewrite-path-api/1.0.0/prefix/one
-      method: GET
-    filters:
-    - type: URLRewrite
-      urlRewrite:
-        path:
-          type: ReplacePrefixMatch
-          replacePrefixMatch: /one
-    backendRefs:
-    - name: infra-backend-v1
-      port: 8080
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /rewrite-path-api/1.0.0/full/one
+        type: Exact
+        value: /disable-api-security/v1/users
       method: GET
     filters:
     - type: URLRewrite
       urlRewrite:
         path:
           type: ReplaceFullPath
-          replaceFullPath: /one
+          replaceFullPath: /users
+    backendRefs:
+    - name: infra-backend-v1
+      port: 8080
+  - matches:
+    - path:
+        type: Exact
+        value: /disable-api-security/v1/orders
+      method: GET
+    filters:
+    - type: URLRewrite
+      urlRewrite:
+        path:
+          type: ReplaceFullPath
+          replaceFullPath: /orders
     backendRefs:
     - name: infra-backend-v1
       port: 8080
@@ -73,15 +74,25 @@ spec:
 apiVersion: dp.wso2.com/v1alpha1
 kind: Authentication
 metadata:
-  name: disable-api-authentication
+  name: disable-api-security
   namespace: gateway-integration-test-infra
 spec:
   override:
-    ext:
-      disabled: true
     type: ext
+    ext:
+      disabled: true            
+  default:
+    type: ext
+    ext:
+      serviceRef: 
+        group: wso2/v1alpha2
+        kind: Backend
+        name: ext_authz-server
+        port: 1234
+      authTypes:
+        - type: jwt
   targetRef:
     group: gateway.networking.k8s.io
     kind: HTTPRoute
-    name: rewrite-path-httproute
     namespace: gateway-integration-test-infra
+    name: disable-api-security-httproute

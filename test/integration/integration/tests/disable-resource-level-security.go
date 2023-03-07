@@ -20,20 +20,20 @@ package tests
 import (
 	"testing"
 
+	"github.com/wso2/apk/test/integration/integration/utils/http"
 	"github.com/wso2/apk/test/integration/integration/utils/kubernetes"
 	"github.com/wso2/apk/test/integration/integration/utils/suite"
-	"sigs.k8s.io/gateway-api/conformance/utils/http"
 )
 
 func init() {
-	IntegrationTests = append(IntegrationTests, HTTPRouteRewritePath)
+	IntegrationTests = append(IntegrationTests, DisableResourceSecurity)
 }
 
-// HTTPRouteRewritePath test
-var HTTPRouteRewritePath = suite.IntegrationTest{
-	ShortName:   "HTTPRouteRewritePath",
-	Description: "An HTTPRoute with path rewrite filter",
-	Manifests:   []string{"tests/httproute-rewrite-path.yaml"},
+// DisableResourceSecurity test
+var DisableResourceSecurity = suite.IntegrationTest{
+	ShortName:   "DisableResourceSecurity",
+	Description: "Tests API with disabled security",
+	Manifests:   []string{"tests/disable-resource-level-security.yaml"},
 	Test: func(t *testing.T, suite *suite.IntegrationTestSuite) {
 		ns := "gateway-integration-test-infra"
 		gwAddr := kubernetes.WaitForGatewayAddress(t, suite.Client, suite.TimeoutConfig)
@@ -41,12 +41,12 @@ var HTTPRouteRewritePath = suite.IntegrationTest{
 		testCases := []http.ExpectedResponse{
 			{
 				Request: http.Request{
-					Host: "urlrewrite.gw.wso2.com",
-					Path: "/rewrite-path-api/1.0.0/prefix/one/two",
+					Host: "disable-resource-security.test.gw.wso2.com",
+					Path: "/disable-resource-security/v1/users",
 				},
 				ExpectedRequest: &http.ExpectedRequest{
 					Request: http.Request{
-						Path: "/one/two",
+						Path: "/users",
 					},
 				},
 				Backend:   "infra-backend-v1",
@@ -54,22 +54,15 @@ var HTTPRouteRewritePath = suite.IntegrationTest{
 			},
 			{
 				Request: http.Request{
-					Host: "urlrewrite.gw.wso2.com",
-					Path: "/rewrite-path-api/1.0.0/full/one/two",
+					Host: "disable-resource-security.test.gw.wso2.com",
+					Path: "/disable-resource-security/v1/orders",
 				},
-				ExpectedRequest: &http.ExpectedRequest{
-					Request: http.Request{
-						Path: "/one",
-					},
-				},
-				Backend:   "infra-backend-v1",
-				Namespace: ns,
+				Response: http.Response{StatusCode: 401},
 			},
 		}
 		for i := range testCases {
-			// Declare tc here to avoid loop variable
-			// reuse issues across parallel tests.
 			tc := testCases[i]
+			// No test token added to the request header
 			t.Run(tc.GetTestCaseName(i), func(t *testing.T) {
 				t.Parallel()
 				http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, gwAddr, tc)

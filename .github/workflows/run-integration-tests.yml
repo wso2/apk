@@ -26,6 +26,7 @@ jobs:
       - name: Checkout apk-repo
         uses: actions/checkout@v3
         with:
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: "0"
           path: apk-repo
           token: ${{ secrets.WSO2_BOT_TOKEN }}

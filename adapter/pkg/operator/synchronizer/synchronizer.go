@@ -81,7 +81,9 @@ func HandleAPILifeCycleEvents(ch *chan APIEvent) {
 				Severity:  logging.MAJOR,
 			})
 		} else {
-			mgtServerCh <- event
+			if config.ReadConfigs().ManagementServer.Enabled {
+				mgtServerCh <- event
+			}
 		}
 	}
 }

@@ -50,6 +50,11 @@ function testgetBackendPolicyUid(API api, string? endpointType, commons:Organiza
     return "backendpolicy-uuid";
 }
 
+@test:Mock {functionName: "retrieveHttpRouteRefName"}
+function testRetrieveHttpRouteRefName(API api, string 'type, commons:Organization organization) returns string {
+    return "http-route-ref-name";
+}
+
 int serviceMappingIndex = 0;
 
 @test:Mock {functionName: "getServiceMappingClient"}
@@ -76,7 +81,7 @@ function getMockServiceMappingClient(string resourceVersion) returns websocket:C
         } else {
             initialConectionId = uuid:createType1AsString();
             websocket:Client mock = test:mock(websocket:Client);
-            test:prepare(mock).when("isOpen").thenReturn(true);
+            test:prepare(mock).when("isOpen").thenReturnSequence(true, true, false);
             test:prepare(mock).when("getConnectionId").thenReturn(initialConectionId);
             test:prepare(mock).when("readMessage").thenReturn(());
             return mock;
@@ -106,7 +111,7 @@ function getMockOrganiationClient(string resourceVersion) returns websocket:Clie
     } else if resourceVersion == "28705" {
         string connectionId = uuid:createType1AsString();
         websocket:Client mock = test:mock(websocket:Client);
-        test:prepare(mock).when("isOpen").thenReturn(true);
+        test:prepare(mock).when("isOpen").thenReturnSequence(true, true, false);
         test:prepare(mock).when("getConnectionId").thenReturn(connectionId);
         test:prepare(mock).when("readMessage").thenReturnSequence(getNextOrganizationEvent(), ());
         return mock;
@@ -120,14 +125,14 @@ function getMockOrganiationClient(string resourceVersion) returns websocket:Clie
             websocket:Client mock = test:mock(websocket:Client);
             test:prepare(mock).when("isOpen").thenReturn(true);
             test:prepare(mock).when("getConnectionId").thenReturn(initialConectionId);
-            test:prepare(mock).when("readMessage").thenReturn(());
+            test:prepare(mock).when("readMessage").thenReturnSequence(getOrganizationWatchDeleteEvent(), ());
             return mock;
         }
     } else {
         websocket:Client mock = test:mock(websocket:Client);
         test:prepare(mock).when("isOpen").thenReturn(true);
         test:prepare(mock).when("getConnectionId").thenReturn(initialConectionId);
-        test:prepare(mock).when("readMessage").thenReturn(());
+        test:prepare(mock).when("readMessage").thenReturnSequence(());
         return mock;
     }
 }
@@ -362,13 +367,18 @@ function apiNameDataProvider() returns map<[string, string, model:API & readonly
 }
 
 @test:Config {dataProvider: apiIDDataprovider}
-public function testGetAPIById(string id, commons:Organization organization, model:API & readonly|error expected) returns error? {
-    test:assertEquals(getAPI(id, organization), check expected);
+public function testGetAPIById(string id, commons:Organization organization, anydata expected) returns error? {
+    model:API|error aPI = getAPI(id, organization);
+    if aPI is model:API {
+        test:assertEquals(aPI, expected);
+    } else {
+        test:assertEquals(aPI.toBalString(), expected);
+    }
 }
 
-function apiIDDataprovider() returns map<[string, commons:Organization, model:API & readonly|error]>|error {
+function apiIDDataprovider() returns map<[string, commons:Organization, anydata]>|error {
 
-    map<[string, commons:Organization, model:API & readonly|error]> dataSet = {
+    map<[string, commons:Organization, anydata]> dataSet = {
         "1": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e8", organiztion1, getMockPizzaShakK8sAPI()]
     };
     return dataSet;
@@ -399,27 +409,23 @@ public function testGetAPIDefinitionByID(string apiid, anydata expectedResponse)
     http:Response|NotFoundError|PreconditionFailedError|InternalServerErrorError aPIDefinitionByID = apiclient.getAPIDefinitionByID(apiid, organiztion1);
     if aPIDefinitionByID is http:Response {
         json jsonPayload = check aPIDefinitionByID.getJsonPayload();
-        test:assertEquals(jsonPayload, expectedResponse);
-    } else if aPIDefinitionByID is NotFoundError {
-        test:assertEquals(aPIDefinitionByID, expectedResponse);
-    } else if aPIDefinitionByID is PreconditionFailedError {
-        test:assertEquals(aPIDefinitionByID, expectedResponse);
+        test:assertEquals(jsonPayload.toBalString(), expectedResponse);
     } else {
-        test:assertEquals(aPIDefinitionByID, expectedResponse);
+        test:assertEquals(aPIDefinitionByID.toBalString(), expectedResponse);
     }
 }
 
-public function apiDefinitionDataProvider() returns map<[string, json|NotFoundError|PreconditionFailedError|InternalServerErrorError]> {
+public function apiDefinitionDataProvider() returns map<[string, anydata]> {
     NotFoundError notfound = {body: {code: 909100, message: "c5ab2423-b9e8-432b-92e8-35e6907ed5e9 not found."}};
     InternalServerErrorError internalError = {body: {code: 909000, message: "Internal Error Occured while retrieving definition"}};
 
-    map<[string, json|NotFoundError|PreconditionFailedError|InternalServerErrorError]> dataSet = {
-        "1": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e8", mockOpenAPIJson()],
-        "2": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e9", notfound],
-        "3": ["c5ab2423-b9e8-432b-92e8-35e6907ed5f9", mockpizzashackAPI11Definition()],
-        "4": ["c5ab2423-b9e8-432b-92e8-35e6907ed5f1", mockPizzashackAPI12Definition()],
-        "5": ["7b7db1f0-0a9a-4f72-9f9d-5a1696d590c1", mockPizzaShackAPI1Definition(organiztion1.uuid)],
-        "6": ["c5ab2423-b9e8-432b-92e8-35e6907ed5f3", internalError]
+    map<[string, anydata]> dataSet = {
+        "1": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e8", mockOpenAPIJson().toBalString()],
+        "2": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e9", notfound.toBalString()],
+        "3": ["c5ab2423-b9e8-432b-92e8-35e6907ed5f9", mockpizzashackAPI11Definition().toBalString()],
+        "4": ["c5ab2423-b9e8-432b-92e8-35e6907ed5f1", mockPizzashackAPI12Definition().toBalString()],
+        "5": ["7b7db1f0-0a9a-4f72-9f9d-5a1696d590c1", mockPizzaShackAPI1Definition(organiztion1.uuid).toBalString()],
+        "6": ["c5ab2423-b9e8-432b-92e8-35e6907ed5f3", internalError.toBalString()]
 
     };
     return dataSet;
@@ -428,10 +434,15 @@ public function apiDefinitionDataProvider() returns map<[string, json|NotFoundEr
 @test:Config {dataProvider: apiByIdDataProvider}
 public function testgetApiById(string apiid, commons:Organization organization, anydata expectedData) {
     APIClient apiclient = new ();
-    test:assertEquals(apiclient.getAPIById(apiid, organization), expectedData);
+    API|NotFoundError|commons:APKError aPIById = apiclient.getAPIById(apiid, organization);
+    if aPIById is any {
+        test:assertEquals(aPIById.toBalString(),expectedData);
+    } else {
+        test:assertEquals(aPIById.toBalString(),expectedData);
+    }
 }
 
-public function apiByIdDataProvider() returns map<[string, commons:Organization, API|NotFoundError]> {
+public function apiByIdDataProvider() returns map<[string, commons:Organization, anydata]> {
     API & readonly api1 = {
         id: "c5ab2423-b9e8-432b-92e8-35e6907ed5e8",
         name: "pizzashackAPI",
@@ -448,9 +459,9 @@ public function apiByIdDataProvider() returns map<[string, commons:Organization,
         createdTime: "2022-12-13T09:45:47Z"
     };
     NotFoundError notfound = {body: {code: 909100, message: "c5ab2423-b9e8-432b-92e8-35e6907ed5e9 not found."}};
-    map<[string, commons:Organization, API & readonly|NotFoundError]> dataset = {
-        "1": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e8", organiztion1, api1],
-        "2": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e9", organiztion1, notfound]
+    map<[string, commons:Organization, anydata]> dataset = {
+        "1": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e8", organiztion1, api1.toBalString()],
+        "2": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e9", organiztion1, notfound.toBalString()]
     };
     return dataset;
 }
@@ -458,14 +469,19 @@ public function apiByIdDataProvider() returns map<[string, commons:Organization,
 @test:Config {dataProvider: getApilistDataProvider}
 public function testGetAPIList(string? query, int 'limit, int offset, string sortBy, string sortOrder, anydata expected) {
     APIClient apiclient = new ();
-    test:assertEquals(apiclient.getAPIList(query, 'limit, offset, sortBy, sortOrder, organiztion1), expected);
+    any|error aPIList = apiclient.getAPIList(query, 'limit, offset, sortBy, sortOrder, organiztion1);
+    if aPIList is any {
+        test:assertEquals(aPIList.toBalString(), expected);
+    } else {
+        test:assertEquals(aPIList.toBalString(), expected);
+    }
 }
 
-function getApilistDataProvider() returns map<[string?, int, int, string, string, APIList|InternalServerErrorError|BadRequestError]> {
+function getApilistDataProvider() returns map<[string?, int, int, string, string, anydata]> {
     BadRequestError badRequestError = {"body": {"code": 90912, "message": "Invalid Sort By/Sort Order Value "}};
     BadRequestError badRequest = {body: {code: 90912, message: "Invalid KeyWord type1"}};
 
-    map<[string?, int, int, string, string, APIList|InternalServerErrorError|BadRequestError]> dataSet = {
+    map<[string?, int, int, string, string, anydata]> dataSet = {
         "1": [
             (),
             10,
@@ -529,7 +545,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     "limit": 10,
                     "total": 6
                 }
-            }
+            }.toBalString()
         ],
         "2": [
             (),
@@ -594,7 +610,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     "limit": 10,
                     "total": 6
                 }
-            }
+            }.toBalString()
         ],
         "3": [
             (),
@@ -659,7 +675,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     "limit": 10,
                     "total": 6
                 }
-            }
+            }.toBalString()
         ],
         "4": [
             (),
@@ -724,9 +740,9 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     "limit": 10,
                     "total": 6
                 }
-            }
+            }.toBalString()
         ],
-        "5": [(), 10, 0, "description", SORT_ORDER_DESC, badRequestError],
+        "5": [(), 10, 0, "description", SORT_ORDER_DESC, badRequestError.toBalString()],
         "6": [
             (),
             3,
@@ -766,7 +782,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     "limit": 3,
                     "total": 6
                 }
-            }
+            }.toBalString()
         ],
         "7": [
             (),
@@ -807,7 +823,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     "limit": 3,
                     "total": 6
                 }
-            }
+            }.toBalString()
         ],
         "8": [
             (),
@@ -823,7 +839,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     "limit": 3,
                     "total": 6
                 }
-            }
+            }.toBalString()
         ],
         "9": [
             "name:pizzashackAPI",
@@ -880,7 +896,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     "limit": 10,
                     "total": 5
                 }
-            }
+            }.toBalString()
         ],
         "10": [
             "pizzashackAPI",
@@ -937,7 +953,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     "limit": 10,
                     "total": 5
                 }
-            }
+            }.toBalString()
         ],
         "11": [
             "type:REST",
@@ -1002,7 +1018,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     "limit": 10,
                     "total": 6
                 }
-            }
+            }.toBalString()
         ],
         "12": [
             "type:WS",
@@ -1018,7 +1034,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     "limit": 10,
                     "total": 0
                 }
-            }
+            }.toBalString()
         ],
         "13": [
             "type1:WS",
@@ -1026,7 +1042,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
             0,
             SORT_BY_API_NAME,
             SORT_ORDER_ASC,
-            badRequest
+            badRequest.toBalString()
         ]
     };
     return dataSet;
@@ -1877,20 +1893,20 @@ function testDataGeneratedSwaggerDefinition() returns map<[API, string?, json|co
 @test:Config {dataProvider: validateExistenceDataProvider}
 function testValidateAPIExistence(string query, anydata expected) {
     APIClient apiClient = new;
-    test:assertEquals(apiClient.validateAPIExistence(query, organiztion1), expected);
+    test:assertEquals(apiClient.validateAPIExistence(query, organiztion1).toBalString(), expected);
 }
 
-function validateExistenceDataProvider() returns map<[string, NotFoundError|BadRequestError|http:Ok]> {
+function validateExistenceDataProvider() returns map<[string, anydata]> {
     http:Ok ok = {};
     BadRequestError badRequest = {body: {code: 90912, message: "Invalid KeyWord type"}};
     NotFoundError notFound = {body: {code: 900914, message: "context/name doesn't exist"}};
-    map<[string, NotFoundError|BadRequestError|http:Ok]> data = {
-        "1": ["name:pizzashackAPI", ok],
-        "2": ["name:mockapi", notFound],
-        "3": ["context:/api/v1", notFound],
-        "4": ["context:/pizzashack/1.0.0", ok],
-        "5": ["pizzashackAPI", ok],
-        "6": ["type:pizzashackAPI", badRequest]
+    map<[string, anydata]> data = {
+        "1": ["name:pizzashackAPI", ok.toBalString()],
+        "2": ["name:mockapi", notFound.toBalString()],
+        "3": ["context:/api/v1", notFound.toBalString()],
+        "4": ["context:/pizzashack/1.0.0", ok.toBalString()],
+        "5": ["pizzashackAPI", ok.toBalString()],
+        "6": ["type:pizzashackAPI", badRequest.toBalString()]
     };
     return data;
 }
@@ -1906,6 +1922,7 @@ function testCreateAPIFromService(string serviceUUId, string apiUUID, [model:Con
     model:AuthenticationList authenticationList = {metadata: {}, items: []};
     model:BackendPolicyList backendPolicyList = {metadata: {}, items: []};
     model:ServiceList serviceList = {metadata: {}, items: []};
+    model:ScopeList scopeList = {metadata: {}, items: []};
     test:prepare(k8sApiServerEp).when("post").withArguments("/api/v1/namespaces/apk-platform/configmaps", configmapResponse[0]).thenReturn(configmapResponse[1]);
     test:prepare(k8sApiServerEp).when("post").withArguments("/apis/gateway.networking.k8s.io/v1beta1/namespaces/apk-platform/httproutes", httproute[0]).thenReturn(httproute[1]);
     test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/servicemappings", servicemapping[0]).thenReturn(servicemapping[1]);
@@ -1916,15 +1933,20 @@ function testCreateAPIFromService(string serviceUUId, string apiUUID, [model:Con
     test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/servicemappings?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(serviceMappingList);
     test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/authentications?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(authenticationList);
     test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/backendpolicies?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(backendPolicyList);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/scopes?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(scopeList);
     test:prepare(k8sApiServerEp).when("get").withArguments("/api/v1/namespaces/apk-platform/services?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(serviceList);
     test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis/" + k8sAPI[0].metadata.name).thenReturn(internalApiResponse);
     test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis/" + k8sAPI[0].metadata.name).thenReturn(runtimeAPI[0]);
     test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis/" + k8sAPI[0].metadata.name).thenReturn(configmapResponse404);
-    test:assertEquals(apiClient.createAPIFromService(serviceUUId, api, organiztion1), expected);
-
+    any|error aPIFromService = apiClient.createAPIFromService(serviceUUId, api, organiztion1);
+    if aPIFromService is any {
+        test:assertEquals(aPIFromService.toBalString(), expected);
+    } else {
+        test:assertEquals(aPIFromService.toBalString(), expected);
+    }
 }
 
-function createApiFromServiceDataProvider() returns map<[string, string, [model:ConfigMap, any], [model:Httproute, any], [model:K8sServiceMapping, any], [model:API, any], [model:RuntimeAPI, any], API, string, CreatedAPI|BadRequestError|InternalServerErrorError|commons:APKError]> {
+function createApiFromServiceDataProvider() returns map<[string, string, [model:ConfigMap, any], [model:Httproute, any], [model:K8sServiceMapping, any], [model:API, any], [model:RuntimeAPI, any], API, string, anydata]> {
     string k8sAPIUUID1 = uuid:createType1AsString();
     API api = {
         name: "PizzaAPI",
@@ -1980,11 +2002,11 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
             createdTime: "2023-01-17T11:23:49Z"
         }
     };
-    map<[string, string, [model:ConfigMap, any], [model:Httproute, any], [model:K8sServiceMapping, any], [model:API, any], [model:RuntimeAPI, any], API, string, CreatedAPI|BadRequestError|InternalServerErrorError|commons:APKError]> data = {
-        "1": ["275b00d1-722c-4df2-b65a-9b14677abe4b", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], api, k8sAPIUUID1, createdAPI],
-        "2": ["275b00d1-722c-4df2-b65a-9b14677abe4b", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], alreadyNameExist, k8sAPIUUID1, nameAlreadyExistError],
-        "3": ["275b00d1-722c-4df2-b65a-9b14677abe4b", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], contextAlreadyExist, k8sAPIUUID1, contextAlreadyExistError],
-        "4": ["275b00d1-722c-4df2-b65a-9b14677abe4a", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], api, k8sAPIUUID1, serviceNotExist]
+    map<[string, string, [model:ConfigMap, any], [model:Httproute, any], [model:K8sServiceMapping, any], [model:API, any], [model:RuntimeAPI, any], API, string, anydata]> data = {
+        "1": ["275b00d1-722c-4df2-b65a-9b14677abe4b", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], api, k8sAPIUUID1, createdAPI.toBalString()],
+        "2": ["275b00d1-722c-4df2-b65a-9b14677abe4b", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], alreadyNameExist, k8sAPIUUID1, nameAlreadyExistError.toBalString()],
+        "3": ["275b00d1-722c-4df2-b65a-9b14677abe4b", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], contextAlreadyExist, k8sAPIUUID1, contextAlreadyExistError.toBalString()],
+        "4": ["275b00d1-722c-4df2-b65a-9b14677abe4a", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], api, k8sAPIUUID1, serviceNotExist.toBalString()]
     };
     return data;
 }
@@ -2019,7 +2041,7 @@ function getMockAPI(API api, string apiUUID, string organization) returns model:
             "context": apiClient.returnFullContext(api.context, api.'version),
             "organization": organization,
             "definitionFileRef": apiUUID + "-definition",
-            "prodHTTPRouteRef": apiUUID + "-production"
+            "prodHTTPRouteRefs": ["http-route-ref-name"]
         },
         "status"
                 : null
@@ -2088,7 +2110,7 @@ function getMockAPI1(API api, string apiUUID, string organization) returns model
             "context": apiClient.returnFullContext(api.context, api.'version),
             "organization": organization,
             "definitionFileRef": apiUUID + "-definition",
-            "sandHTTPRouteRef": apiUUID + "-sandbox"
+            "sandHTTPRouteRefs": ["http-route-ref-name"]
         },
         "status": null
     };
@@ -2112,7 +2134,7 @@ function getMockHttpRoute(API api, string apiUUID, commons:Organization organizt
     return {
         "apiVersion": "gateway.networking.k8s.io/v1beta1",
         "kind": "HTTPRoute",
-        "metadata": {"name": apiUUID + "-production", "namespace": "apk-platform", "labels": {"api-name": api.name, "api-version": api.'version}},
+        "metadata": {"name": "http-route-ref-name", "namespace": "apk-platform", "labels": {"api-name": api.name, "api-version": api.'version}},
         "spec": {
             "hostnames": [string:concat(organiztion.uuid, ".", "gw.wso2.com")],
             "rules": [
@@ -2188,52 +2210,50 @@ function testCreateAPI(string apiUUID, string backenduuid, API api, model:Config
         any prodhttpResponse, model:Httproute? sandHttpRoute, any sandhttpResponse,
         [model:Service, any][] backendServices, [model:BackendPolicy, any][] backendPolicies,
         model:API k8sApi, any k8sapiResponse, model:RuntimeAPI runtimeAPI, any runtimeAPIResponse
-, string k8sapiUUID, anydata expected) {
-    do {
-        APIClient apiClient = new;
-        test:prepare(k8sApiServerEp).when("post").withArguments("/api/v1/namespaces/apk-platform/configmaps", configmap).thenReturn(configmapDeployingResponse);
-        if prodhttpRoute is model:Httproute {
-            test:prepare(k8sApiServerEp).when("post").withArguments("/apis/gateway.networking.k8s.io/v1beta1/namespaces/apk-platform/httproutes", prodhttpRoute).thenReturn(prodhttpResponse);
-        }
-        if sandHttpRoute is model:Httproute {
-            test:prepare(k8sApiServerEp).when("post").withArguments("/apis/gateway.networking.k8s.io/v1beta1/namespaces/apk-platform/httproutes", sandHttpRoute).thenReturn(sandhttpResponse);
-        }
-        foreach [model:Service, any] servicesResponse in backendServices {
-            test:prepare(k8sApiServerEp).when("post").withArguments("/api/v1/namespaces/apk-platform/services", servicesResponse[0]).thenReturn(servicesResponse[1]);
-        }
-        foreach [model:BackendPolicy, any] backendPolicy in backendPolicies {
-            test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/backendpolicies", backendPolicy[0]).thenReturn(backendPolicy[1]);
-        }
-        http:Response configmapResponse = new;
-        configmapResponse.statusCode = 404;
-        http:ApplicationResponseError internalApiResponse = error("internal api not found", statusCode = 404, body = {}, headers = {});
-        http:Response internalAPIDeletionResponse = new;
-        internalAPIDeletionResponse.statusCode = 200;
-        model:HttprouteList httpRouteList = {metadata: {}, items: []};
-        model:ServiceMappingList serviceMappingList = {metadata: {}, items: []};
-        model:AuthenticationList authenticationList = {metadata: {}, items: []};
-        model:BackendPolicyList backendPolicyList = {metadata: {}, items: []};
-        model:ServiceList serviceList = {metadata: {}, items: []};
-        test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis", k8sApi).thenReturn(k8sapiResponse);
-        test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis", runtimeAPI).thenReturn(runtimeAPIResponse);
-        test:prepare(k8sApiServerEp).when("get").withArguments("/api/v1/namespaces/apk-platform/configmaps/" + apiClient.retrieveDefinitionName(apiUUID)).thenReturn(configmapResponse);
-        test:prepare(k8sApiServerEp).when("get").withArguments("/apis/gateway.networking.k8s.io/v1beta1/namespaces/apk-platform/httproutes/?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(httpRouteList);
-        test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/servicemappings?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(serviceMappingList);
-        test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/authentications?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(authenticationList);
-        test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/backendpolicies?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(backendPolicyList);
-        test:prepare(k8sApiServerEp).when("get").withArguments("/api/v1/namespaces/apk-platform/services?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(serviceList);
-        test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis/" + k8sApi.metadata.name).thenReturn(internalApiResponse);
-        test:prepare(k8sApiServerEp).when("delete").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis/" + k8sApi.metadata.name).thenReturn(internalAPIDeletionResponse);
-        test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis/" + k8sApi.metadata.name).thenReturn(runtimeAPI);
-        test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis/" + k8sApi.metadata.name).thenReturn(configmapResponse);
-        commons:APKError|CreatedAPI|BadRequestError aPI = apiClient.createAPI(api, (), organiztion1);
-        if aPI is BadRequestError || aPI is CreatedAPI {
-            test:assertEquals(aPI, expected);
-        } else if aPI is commons:APKError {
-            test:assertEquals(aPI.toBalString(), expected);
-        }
-    } on fail var e {
-        test:assertFail(msg = e.message());
+, string k8sapiUUID, anydata expected) returns error? {
+    APIClient apiClient = new;
+    test:prepare(k8sApiServerEp).when("post").withArguments("/api/v1/namespaces/apk-platform/configmaps", configmap).thenReturn(configmapDeployingResponse);
+    if prodhttpRoute is model:Httproute {
+        test:prepare(k8sApiServerEp).when("post").withArguments("/apis/gateway.networking.k8s.io/v1beta1/namespaces/apk-platform/httproutes", prodhttpRoute).thenReturn(prodhttpResponse);
+    }
+    if sandHttpRoute is model:Httproute {
+        test:prepare(k8sApiServerEp).when("post").withArguments("/apis/gateway.networking.k8s.io/v1beta1/namespaces/apk-platform/httproutes", sandHttpRoute).thenReturn(sandhttpResponse);
+    }
+    foreach [model:Service, any] servicesResponse in backendServices {
+        test:prepare(k8sApiServerEp).when("post").withArguments("/api/v1/namespaces/apk-platform/services", servicesResponse[0]).thenReturn(servicesResponse[1]);
+    }
+    foreach [model:BackendPolicy, any] backendPolicy in backendPolicies {
+        test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/backendpolicies", backendPolicy[0]).thenReturn(backendPolicy[1]);
+    }
+    http:Response configmapResponse = new;
+    configmapResponse.statusCode = 404;
+    http:ApplicationResponseError internalApiResponse = error("internal api not found", statusCode = 404, body = {}, headers = {});
+    http:Response internalAPIDeletionResponse = new;
+    internalAPIDeletionResponse.statusCode = 200;
+    model:HttprouteList httpRouteList = {metadata: {}, items: []};
+    model:ServiceMappingList serviceMappingList = {metadata: {}, items: []};
+    model:AuthenticationList authenticationList = {metadata: {}, items: []};
+    model:BackendPolicyList backendPolicyList = {metadata: {}, items: []};
+    model:ServiceList serviceList = {metadata: {}, items: []};
+    model:ScopeList scopeList = {metadata: {}, items: []};
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/scopes?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(scopeList);
+    test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis", k8sApi).thenReturn(k8sapiResponse);
+    test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis", runtimeAPI).thenReturn(runtimeAPIResponse);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/api/v1/namespaces/apk-platform/configmaps/" + apiClient.retrieveDefinitionName(apiUUID)).thenReturn(configmapResponse);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/gateway.networking.k8s.io/v1beta1/namespaces/apk-platform/httproutes/?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(httpRouteList);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/servicemappings?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(serviceMappingList);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/authentications?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(authenticationList);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/backendpolicies?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(backendPolicyList);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/api/v1/namespaces/apk-platform/services?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(serviceList);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis/" + k8sApi.metadata.name).thenReturn(internalApiResponse);
+    test:prepare(k8sApiServerEp).when("delete").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis/" + k8sApi.metadata.name).thenReturn(internalAPIDeletionResponse);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis/" + k8sApi.metadata.name).thenReturn(runtimeAPI);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis/" + k8sApi.metadata.name).thenReturn(configmapResponse);
+    any|error aPI = apiClient.createAPI(api, (), organiztion1);
+    if aPI is any {
+        test:assertEquals(aPI.toBalString(), expected);
+    } else {
+        test:assertEquals(aPI.toBalString(), expected);
     }
 }
 
@@ -2258,7 +2278,7 @@ function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid
     return {
         "apiVersion": "gateway.networking.k8s.io/v1beta1",
         "kind": "HTTPRoute",
-        "metadata": {"name": apiUUID + "-" + 'type, "namespace": "apk-platform", "labels": {"api-name": api.name, "api-version": api.'version}},
+        "metadata": {"name": "http-route-ref-name", "namespace": "apk-platform", "labels": {"api-name": api.name, "api-version": api.'version}},
         "spec": {
             "hostnames": [
                 hostnames
@@ -2436,7 +2456,7 @@ function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid
     };
 }
 
-function createAPIDataProvider() returns map<[string, string, API, model:ConfigMap, any, model:Httproute?, any, model:Httproute?, any, [model:Service, any][], [model:BackendPolicy, any][], model:API, any, model:RuntimeAPI, any, string, string|CreatedAPI|BadRequestError]> {
+function createAPIDataProvider() returns map<[string, string, API, model:ConfigMap, any, model:Httproute?, any, model:Httproute?, any, [model:Service, any][], [model:BackendPolicy, any][], model:API, any, model:RuntimeAPI, any, string, anydata]> {
     API api = {
         name: "PizzaAPI",
         context: "/pizzaAPI/1.0.0",
@@ -2539,7 +2559,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
     map<[string, string, API, model:ConfigMap,
     any, model:Httproute|(), any, model:Httproute|(),
     any, [model:Service, any][], [model:BackendPolicy, any][], model:API, any, model:RuntimeAPI, any, string,
-    string|CreatedAPI|BadRequestError]> data = {
+    anydata]> data = {
         "1": [
             apiUUID,
             backenduuid,
@@ -2557,7 +2577,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
             getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
             k8sapiUUID,
-            createdAPI
+            createdAPI.toBalString()
         ]
         ,
         "2": [
@@ -2577,7 +2597,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
             getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
             k8sapiUUID,
-            nameAlreadyExistError
+            nameAlreadyExistError.toBalString()
         ],
         "3": [
             apiUUID,
@@ -2596,7 +2616,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
             getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
             k8sapiUUID,
-            contextAlreadyExistError
+            contextAlreadyExistError.toBalString()
         ],
         "4": [
             apiUUID,
@@ -2615,7 +2635,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             getMockRuntimeAPI(sandboxOnlyAPI, apiUUID, organiztion1, ()),
             getMockRuntimeAPIResponse(getMockRuntimeAPI(sandboxOnlyAPI, apiUUID, organiztion1, ())),
             k8sapiUUID,
-            createdAPI
+            createdAPI.toBalString()
         ]
         ,
         "5": [

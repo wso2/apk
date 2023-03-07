@@ -136,6 +136,7 @@ public class APIClient {
                 _ = check self.deleteHttpRoutes(api);
                 _ = check self.deleteServiceMappings(api);
                 _ = check self.deleteAuthneticationCRs(api);
+                _ = check self.deleteScopeCrsForAPI(api);
                 _ = check self.deleteBackendPolicies(api);
                 _ = check self.deleteBackendServices(api);
                 _ = check self.deleteInternalAPI(api.metadata.name, api.metadata.namespace);
@@ -252,6 +253,29 @@ public class APIClient {
         } on fail var e {
             log:printError("Error occured deleting servicemapping", e);
             return error("Error occured deleting servicemapping", message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = 500);
+        }
+    }
+    private isolated function deleteScopeCrsForAPI(model:API api) returns commons:APKError? {
+        do {
+            model:ScopeList|http:ClientError scopeCrListResponse = check getScopeCrsForAPI(api.spec.apiDisplayName, api.spec.apiVersion, api.metadata.namespace);
+            if scopeCrListResponse is model:ScopeList {
+                foreach model:Scope item in scopeCrListResponse.items {
+                    http:Response|http:ClientError scopeCrDeletionResponse = deleteScopeCr(item.metadata.name, item.metadata.namespace);
+                    if scopeCrDeletionResponse is http:Response {
+                        if scopeCrDeletionResponse.statusCode != http:STATUS_OK {
+                            json responsePayLoad = check scopeCrDeletionResponse.getJsonPayload();
+                            model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                            check self.handleK8sTimeout(statusResponse);
+                        }
+                    } else {
+                        log:printError("Error occured while deleting scopes");
+                    }
+                }
+                return;
+            }
+        } on fail var e {
+            log:printError("Error occured deleting scope", e);
+            return error("Error occured deleting scopes", message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = 500);
         }
     }
 
@@ -651,10 +675,12 @@ public class APIClient {
                 check self.deleteHttpRoutes(api);
                 check self.deleteServiceMappings(api);
                 check self.deleteAuthneticationCRs(api);
+                _ = check self.deleteScopeCrsForAPI(api);
                 check self.deleteBackendPolicies(api);
                 check self.deleteBackendServices(api);
                 check self.deleteInternalAPI(api.metadata.name, api.metadata.namespace);
             }
+            check self.deployScopeCrs(apiArtifact);
             check self.deployBackendServices(apiArtifact);
             check self.deployBackendPolicies(apiArtifact);
             check self.deployAuthneticationCRs(apiArtifact);
@@ -670,6 +696,18 @@ public class APIClient {
             log:printError("Internal Error occured while deploying API", e);
             commons:APKError internalError = error("Internal Error occured while deploying API", code = 909000, statusCode = 500, description = "Internal Error occured while deploying API", message = "Internal Error occured while deploying API");
             return internalError;
+        }
+    }
+    private isolated function deployScopeCrs(model:APIArtifact apiArtifact) returns error? {
+        foreach model:Scope scope in apiArtifact.scopes {
+            http:Response deployScopeResult = check deployScopeCR(scope, getNameSpace(runtimeConfiguration.apiCreationNamespace));
+            if deployScopeResult.statusCode == http:STATUS_CREATED {
+                log:printDebug("Deployed Scope Successfully" + scope.toString());
+            } else {
+                json responsePayLoad = check deployScopeResult.getJsonPayload();
+                model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                check self.handleK8sTimeout(statusResponse);
+            }
         }
     }
     private isolated function deployK8sAPICr(model:APIArtifact apiArtifact) returns model:API|commons:APKError|error {
@@ -756,15 +794,17 @@ public class APIClient {
             return error("Internal Error occured", code = 909000, message = "Internal Error occured", description = "Internal Error occured", statusCode = 500);
         }
     }
-    private isolated function deployHttpRoutes(model:Httproute? httproute) returns error? {
-        if httproute is model:Httproute && httproute.spec.rules.length() > 0 {
-            http:Response deployHttpRouteResult = check deployHttpRoute(httproute, getNameSpace(runtimeConfiguration.apiCreationNamespace));
-            if deployHttpRouteResult.statusCode == http:STATUS_CREATED {
-                log:printDebug("Deployed HttpRoute Successfully" + httproute.toString());
-            } else {
-                json responsePayLoad = check deployHttpRouteResult.getJsonPayload();
-                model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
-                check self.handleK8sTimeout(statusResponse);
+    private isolated function deployHttpRoutes(model:Httproute[] httproutes) returns error? {
+        foreach model:Httproute httpRoute in httproutes {
+            if httpRoute.spec.rules.length() > 0 {
+                http:Response deployHttpRouteResult = check deployHttpRoute(httpRoute, getNameSpace(runtimeConfiguration.apiCreationNamespace));
+                if deployHttpRouteResult.statusCode == http:STATUS_CREATED {
+                    log:printDebug("Deployed HttpRoute Successfully" + httpRoute.toString());
+                } else {
+                    json responsePayLoad = check deployHttpRouteResult.getJsonPayload();
+                    model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                    check self.handleK8sTimeout(statusResponse);
+                }
             }
         }
     }
@@ -901,13 +941,23 @@ public class APIClient {
         if definition is model:ConfigMap {
             k8sAPI.spec.definitionFileRef = definition.metadata.name;
         }
-        model:Httproute? productionRoute = apiArtifact.productionRoute;
-        if productionRoute is model:Httproute && productionRoute.spec.rules.length() > 0 {
-            k8sAPI.spec.prodHTTPRouteRef = productionRoute.metadata.name;
+        string[] productionHttpRoutes = [];
+        foreach model:Httproute httpRoute in apiArtifact.productionRoute {
+            if httpRoute.spec.rules.length() > 0 {
+                productionHttpRoutes.push(httpRoute.metadata.name);
+            }
         }
-        model:Httproute? sandboxRoute = apiArtifact.sandboxRoute;
-        if sandboxRoute is model:Httproute && sandboxRoute.spec.rules.length() > 0 {
-            k8sAPI.spec.sandHTTPRouteRef = sandboxRoute.metadata.name;
+        string[] sandBoxHttpRoutes = [];
+        foreach model:Httproute httpRoute in apiArtifact.sandboxRoute {
+            if httpRoute.spec.rules.length() > 0 {
+                sandBoxHttpRoutes.push(httpRoute.metadata.name);
+            }
+        }
+        if productionHttpRoutes.length() > 0 {
+            k8sAPI.spec.prodHTTPRouteRefs = productionHttpRoutes;
+        }
+        if sandBoxHttpRoutes.length() > 0 {
+            k8sAPI.spec.sandHTTPRouteRefs = sandBoxHttpRoutes;
         }
         apiArtifact.api = k8sAPI;
     }
@@ -916,18 +966,34 @@ public class APIClient {
         return uniqueId + "-definition";
     }
 
-    private isolated function retrieveHttpRouteRefName(API api, string 'type, commons:Organization organization) returns string {
-        return getUniqueIdForAPI(api.name, api.'version, organization) + "-" + 'type;
-    }
     private isolated function retrieveDisableAuthenticationRefName(API api, string 'type, commons:Organization organization) returns string {
         return getUniqueIdForAPI(api.name, api.'version, organization) + "-" + 'type + "-authentication";
     }
 
     private isolated function setHttpRoute(model:APIArtifact apiArtifact, API api, model:Endpoint? endpoint, string uniqueId, string endpointType, commons:Organization organization) returns commons:APKError? {
+        APIOperations[] apiOperations = api.operations ?: [];
+        APIOperations[][] operationsArray = [];
+        int row = 0;
+        int column = 0;
+        foreach APIOperations item in apiOperations {
+            if column > 7 {
+                row = row + 1;
+                column = 0;
+            }
+            operationsArray[row][column] = item;
+            column = column + 1;
+        }
+        foreach APIOperations[] item in operationsArray {
+            API clonedAPI = api.clone();
+            clonedAPI.operations = item.clone();
+            _ = check self.putHttpRouteForPartition(apiArtifact, clonedAPI, endpoint, uniqueId, endpointType, organization);
+        }
+    }
+    private isolated function putHttpRouteForPartition(model:APIArtifact apiArtifact, API api, model:Endpoint? endpoint, string uniqueId, string endpointType, commons:Organization organization) returns commons:APKError? {
         model:Httproute httpRoute = {
             metadata:
                 {
-                name: self.retrieveHttpRouteRefName(api, endpointType, organization),
+                name: retrieveHttpRouteRefName(api, endpointType, organization),
                 namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace),
                 uid: (),
                 creationTimestamp: (),
@@ -940,10 +1006,11 @@ public class APIClient {
             }
         };
         if endpointType == PRODUCTION_TYPE {
-            apiArtifact.productionRoute = httpRoute;
+            apiArtifact.productionRoute.push(httpRoute);
         } else {
-            apiArtifact.sandboxRoute = httpRoute;
+            apiArtifact.sandboxRoute.push(httpRoute);
         }
+        return;
     }
 
     private isolated function getHostNames(API api, string uniqueId, string endpointType, commons:Organization organization) returns string[] {
@@ -974,6 +1041,11 @@ public class APIClient {
             foreach APIOperations operation in operations {
                 model:HTTPRouteRule|() httpRouteRule = check self.generateHttpRouteRule(apiArtifact, api, endpoint, operation, endpointType, organization);
                 if httpRouteRule is model:HTTPRouteRule {
+                    model:HTTPRouteFilter[]? filters = httpRouteRule.filters;
+                    if filters is () {
+                        filters = [];
+                        httpRouteRule.filters = filters;
+                    }
                     if !(operation.authTypeEnabled ?: true) {
                         string disableAuthenticationRefName = self.retrieveDisableAuthenticationRefName(api, endpointType, organization);
                         if !apiArtifact.authenticationMap.hasKey(disableAuthenticationRefName) {
@@ -981,11 +1053,19 @@ public class APIClient {
                             apiArtifact.authenticationMap[disableAuthenticationRefName] = generateDisableAuthenticationCR;
                         }
                         model:HTTPRouteFilter disableAuthenticationFilter = {'type: "ExtensionRef", extensionRef: {group: "dp.wso2.com", kind: "Authentication", name: disableAuthenticationRefName}};
-                        model:HTTPRouteFilter[]? filters = httpRouteRule.filters;
-                        if filters is model:HTTPRouteFilter[] {
-                            filters.push(disableAuthenticationFilter);
-                        } else {
-                            filters = [disableAuthenticationFilter];
+                        (<model:HTTPRouteFilter[]>filters).push(disableAuthenticationFilter);
+                    }
+                    string[]? scopes = operation.scopes;
+                    if scopes is string[] {
+                        foreach string scope in scopes {
+                            model:Scope scopeCr;
+                            if apiArtifact.scopes.hasKey(scope) {
+                                scopeCr = apiArtifact.scopes.get(scope);
+                            } else {
+                                scopeCr = self.generateScopeCR(apiArtifact, api, organization, scope);
+                            }
+                            model:HTTPRouteFilter scopeFilter = {'type: "ExtensionRef", extensionRef: {group: "dp.wso2.com", kind: scopeCr.kind, name: scopeCr.metadata.name}};
+                            (<model:HTTPRouteFilter[]>filters).push(scopeFilter);
                         }
                     }
                     httpRouteRules.push(httpRouteRule);
@@ -994,7 +1074,17 @@ public class APIClient {
         }
         return httpRouteRules;
     }
-
+    private isolated function generateScopeCR(model:APIArtifact apiArtifact, API api, commons:Organization organization, string scope) returns model:Scope {
+        string scopeName = uuid:createType1AsString();
+        model:Scope scopeCr = {
+            metadata: {name: scopeName, namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace), labels: self.getLabels(api)},
+            spec: {
+                names: [scope]
+            }
+        };
+        apiArtifact.scopes[scope] = scopeCr;
+        return scopeCr;
+    }
     private isolated function generateDisableAuthenticationCR(model:APIArtifact apiArtifact, API api, string endpointType, commons:Organization organization) returns model:Authentication {
         string retrieveDisableAuthenticationRefName = self.retrieveDisableAuthenticationRefName(api, endpointType, organization);
         string nameSpace = getNameSpace(runtimeConfiguration.apiCreationNamespace);
@@ -1004,7 +1094,7 @@ public class APIClient {
                 targetRef: {
                     group: "",
                     kind: "Resource",
-                    name: self.retrieveHttpRouteRefName(api, endpointType, organization),
+                    name: retrieveHttpRouteRefName(api, endpointType, organization),
                     namespace: nameSpace
                 },
                 override: {
@@ -1166,7 +1256,16 @@ public class APIClient {
                 } else {
                     uriTemplate.setAuthEnabled(true);
                 }
-
+                string[]? scopes = apiOperation.scopes;
+                if scopes is string[] {
+                    foreach string item in scopes {
+                        runtimeModels:Scope scope = runtimeModels:newScope1();
+                        scope.setId(item);
+                        scope.setName(item);
+                        scope.setKey(item);
+                        uriTemplate.setScopes(scope);
+                    }
+                }
                 _ = uritemplatesSet.add(uriTemplate);
             }
         }
@@ -1895,11 +1994,11 @@ public class APIClient {
             context: regex:replace(oldAPI.context, oldAPI.'version, newVersion),
             'version: newVersion
         };
-        self.prepareAPICr(apiArtifact, oldAPI, newAPI, organization);
         check self.prepareConfigMap(apiArtifact, oldAPI, newAPI);
         self.prepareHttpRoute(apiArtifact, serviceEntry, oldAPI, newAPI, PRODUCTION_TYPE, organization);
         self.prepareHttpRoute(apiArtifact, serviceEntry, oldAPI, newAPI, SANDBOX_TYPE, organization);
         self.prepareK8sServiceMapping(apiArtifact, serviceEntry, oldAPI, newAPI, organization);
+        self.prepareAPICr(apiArtifact, oldAPI, newAPI, organization);
         apiArtifact.runtimeAPI = self.generateRuntimeAPIArtifact(newAPI, serviceEntry, organization);
 
     }
@@ -1912,16 +2011,17 @@ public class APIClient {
         }
     }
     private isolated function prepareHttpRoute(model:APIArtifact apiArtifact, Service? serviceEntry, API oldAPI, API newAPI, string endpointType, commons:Organization organization) {
-        model:Httproute? httproute;
+        model:Httproute[] httproutes;
         if endpointType == PRODUCTION_TYPE {
-            httproute = apiArtifact.productionRoute;
+            httproutes = apiArtifact.productionRoute;
         } else {
-            httproute = apiArtifact.sandboxRoute;
+            httproutes = apiArtifact.sandboxRoute;
         }
-        if httproute is model:Httproute {
-            map<string> serviceMapping = {};
-            map<string> extenstionRefMappings = {};
-            httproute.metadata.name = self.retrieveHttpRouteRefName(newAPI, endpointType, organization);
+        map<string> serviceMapping = {};
+        map<string> extenstionRefMappings = {};
+        foreach model:Httproute httproute in httproutes {
+            httproute.metadata.name = retrieveHttpRouteRefName(newAPI, endpointType, organization);
+            httproute.metadata.labels = self.getLabels(newAPI);
             model:HTTPRouteRule[] routeRules = httproute.spec.rules;
             foreach model:HTTPRouteRule routeRule in routeRules {
                 model:HTTPBackendRef[]? backendRefs = routeRule.backendRefs;
@@ -1964,15 +2064,27 @@ public class APIClient {
                                     extenstionRefMappings[extensionRef.name] = newAuthenticationCR.metadata.name;
                                     extensionRef.name = newAuthenticationCR.metadata.name;
                                 }
+                            } else if extensionRef.kind == "Scope" {
+                                if apiArtifact.scopes.hasKey(extensionRef.name) {
+                                    model:Scope scope = apiArtifact.scopes.get(extensionRef.name).clone();
+                                    model:Scope newScopeCR = self.prepareScopeCR(apiArtifact, newAPI, scope, organization);
+                                    _ = apiArtifact.scopes.remove(extensionRef.name);
+                                    apiArtifact.scopes[newScopeCR.metadata.name] = newScopeCR;
+                                    extenstionRefMappings[extensionRef.name] = newScopeCR.metadata.name;
+                                    extensionRef.name = newScopeCR.metadata.name;
+                                }
                             }
                         }
                     }
                 }
             }
             self.prepareBackendPolicyCR(apiArtifact, newAPI, endpointType, serviceMapping, organization);
-            httproute.metadata.name = self.retrieveHttpRouteRefName(newAPI, endpointType, organization);
-            httproute.metadata.labels = self.getLabels(newAPI);
         }
+    }
+    private isolated function prepareScopeCR(model:APIArtifact apiArtifact, API api, model:Scope scope, commons:Organization organization) returns model:Scope {
+        scope.metadata.name = uuid:createType1AsString();
+        scope.metadata.labels = self.getLabels(api);
+        return scope;
     }
     private isolated function prepareBackendPolicyCR(model:APIArtifact apiArtifact, API api, string endpointType, map<string> backendServiceMapping, commons:Organization organization) {
         foreach model:BackendPolicy backendPolicy in apiArtifact.backendPolicies {
@@ -1986,7 +2098,7 @@ public class APIClient {
     private isolated function prepareAuthenticationCR(model:APIArtifact apiArtifact, API api, model:Authentication authentication, string endpointType, commons:Organization organization) returns model:Authentication {
         authentication.metadata.name = self.retrieveDisableAuthenticationRefName(api, endpointType, organization);
         authentication.metadata.labels = self.getLabels(api);
-        authentication.spec.targetRef.name = self.retrieveHttpRouteRefName(api, endpointType, organization);
+        authentication.spec.targetRef.name = retrieveHttpRouteRefName(api, endpointType, organization);
         return authentication;
     }
     private isolated function prepareBackendRef(model:HTTPBackendRef backendRef, model:APIArtifact apiArtifact, Service? serviceEntry, API oldAPI, API newAPI, string endpointType, commons:Organization organization) returns [string, string]? {
@@ -2026,13 +2138,19 @@ public class APIClient {
             api.metadata.name = uuid;
             api.metadata.labels = self.getLabels(newAPI);
             api.spec.context = newAPI.context;
-            string? prodHTTPRouteRef = api.spec.prodHTTPRouteRef;
-            if prodHTTPRouteRef is string {
-                api.spec.prodHTTPRouteRef = regex:replaceAll(prodHTTPRouteRef, oldName, uuid);
+            string[] prodHTTPRouteRefs = [];
+            foreach model:Httproute httpRoute in apiArtifact.productionRoute {
+                prodHTTPRouteRefs.push(httpRoute.metadata.name);
             }
-            string? sandHTTPRouteRef = api.spec.sandHTTPRouteRef;
-            if sandHTTPRouteRef is string {
-                api.spec.sandHTTPRouteRef = regex:replaceAll(sandHTTPRouteRef, oldName, uuid);
+            if prodHTTPRouteRefs.length() > 0 {
+                api.spec.prodHTTPRouteRefs = prodHTTPRouteRefs;
+            }
+            string[] sandHTTPRouteRefs = [];
+            foreach model:Httproute httpRoute in apiArtifact.sandboxRoute {
+                sandHTTPRouteRefs.push(httpRoute.metadata.name);
+            }
+            if sandHTTPRouteRefs.length() > 0 {
+                api.spec.sandHTTPRouteRefs = sandHTTPRouteRefs;
             }
             string? definitionFileRef = api.spec.definitionFileRef;
             if definitionFileRef is string {
@@ -2064,15 +2182,19 @@ public class APIClient {
                 apiArtifact.definition = self.sanitizeConfigMapData(definitionConfigmap);
             }
         }
-        string? prodHTTPRouteRef = k8sapi.spec.prodHTTPRouteRef;
-        if prodHTTPRouteRef is string && prodHTTPRouteRef.trim().length() > 0 {
-            model:Httproute httpRoute = check getHttpRoute(prodHTTPRouteRef, k8sapi.metadata.namespace);
-            apiArtifact.productionRoute = self.sanitizeHttpRoute(httpRoute);
+        json[]? prodHTTPRouteRefs = k8sapi.spec.prodHTTPRouteRefs;
+        if prodHTTPRouteRefs is json[] && prodHTTPRouteRefs.length() > 0 {
+            foreach json prodHTTPRouteRef in prodHTTPRouteRefs {
+                model:Httproute httpRoute = check getHttpRoute(prodHTTPRouteRef.toString(), k8sapi.metadata.namespace);
+                apiArtifact.productionRoute.push(self.sanitizeHttpRoute(httpRoute));
+            }
         }
-        string? sandboxHTTPRouteRef = k8sapi.spec.sandHTTPRouteRef;
-        if sandboxHTTPRouteRef is string && sandboxHTTPRouteRef.trim().length() > 0 {
-            model:Httproute httpRoute = check getHttpRoute(sandboxHTTPRouteRef, k8sapi.metadata.namespace);
-            apiArtifact.sandboxRoute = self.sanitizeHttpRoute(httpRoute);
+        json[]? sandHTTPRouteRefs = k8sapi.spec.sandHTTPRouteRefs;
+        if sandHTTPRouteRefs is json[] && sandHTTPRouteRefs.length() > 0 {
+            foreach json sandHTTPRouteRef in sandHTTPRouteRefs {
+                model:Httproute httpRoute = check getHttpRoute(sandHTTPRouteRef.toString(), k8sapi.metadata.namespace);
+                apiArtifact.sandboxRoute.push(self.sanitizeHttpRoute(httpRoute));
+            }
         }
         model:ServiceMappingList k8sServiceMapingsForAPI = check getK8sServiceMapingsForAPI(api.name, api.'version, k8sapi.metadata.namespace);
         foreach model:K8sServiceMapping serviceMapping in k8sServiceMapingsForAPI.items {
@@ -2100,12 +2222,23 @@ public class APIClient {
         } else {
             return internalAPI;
         }
+        model:ScopeList scopeList = check getScopeCrsForAPI(k8sapi.spec.apiDisplayName, k8sapi.spec.apiVersion, k8sapi.metadata.namespace);
+        foreach model:Scope scope in scopeList.items {
+            apiArtifact.scopes[scope.metadata.name] = self.sanitizeScopeCR(scope);
+        }
         apiArtifact.api = self.sanitizeAPICR(k8sapi);
         return apiArtifact;
     }
+    private isolated function sanitizeScopeCR(model:Scope scope) returns model:Scope {
+        model:Scope sanitizedScope = {
+            metadata: {name: scope.metadata.name, namespace: scope.metadata.namespace, labels: scope.metadata.labels},
+            spec: scope.spec
+        };
+        return sanitizedScope;
+    }
     private isolated function sanitizeRuntimeAPI(model:RuntimeAPI runtimeAPI) returns model:RuntimeAPI {
         model:RuntimeAPI sanitizedAPI = {
-            metadata: {name: runtimeAPI.metadata.name, namespace: runtimeAPI.metadata.namespace},
+            metadata: {name: runtimeAPI.metadata.name, namespace: runtimeAPI.metadata.namespace, labels: runtimeAPI.metadata.labels},
             spec: runtimeAPI.spec
         };
         return sanitizedAPI;
@@ -2118,11 +2251,13 @@ public class APIClient {
         if api.spec.definitionFileRef is string && api.spec.definitionFileRef.toString().trim().length() > 0 {
             modifiedAPI.spec.definitionFileRef = api.spec.definitionFileRef;
         }
-        if api.spec.prodHTTPRouteRef is string && api.spec.prodHTTPRouteRef.toString().trim().length() > 0 {
-            modifiedAPI.spec.prodHTTPRouteRef = api.spec.prodHTTPRouteRef;
+        string[]|() prodHTTPRouteRefs = api.spec.prodHTTPRouteRefs;
+        if prodHTTPRouteRefs is string[] && prodHTTPRouteRefs.length() > 0 {
+            modifiedAPI.spec.prodHTTPRouteRefs = prodHTTPRouteRefs;
         }
-        if api.spec.sandHTTPRouteRef is string && api.spec.sandHTTPRouteRef.toString().trim().length() > 0 {
-            modifiedAPI.spec.sandHTTPRouteRef = api.spec.sandHTTPRouteRef;
+        string[]|() sandHTTPRouteRefs = api.spec.sandHTTPRouteRefs;
+        if sandHTTPRouteRefs is string[] && sandHTTPRouteRefs.length() > 0 {
+            modifiedAPI.spec.sandHTTPRouteRefs = sandHTTPRouteRefs;
         }
         return modifiedAPI;
     }
@@ -2213,21 +2348,22 @@ public class APIClient {
                     foreach model:Service backendService in apiArtifact.backendServices {
                         _ = check self.convertAndStoreYamlFile(backendService.toJsonString(), backendService.metadata.name, zipDir, "backends");
                     }
-                    model:Httproute? productionRoute = apiArtifact.productionRoute;
+                    foreach model:Httproute httpRoute in apiArtifact.productionRoute {
+                        _ = check self.convertAndStoreYamlFile(httpRoute.toJsonString(), httpRoute.metadata.name, zipDir, "httproutes");
+                    }
+                    foreach model:Httproute httpRoute in apiArtifact.sandboxRoute {
+                        _ = check self.convertAndStoreYamlFile(httpRoute.toJsonString(), httpRoute.metadata.name, zipDir, "httproutes");
+                    }
 
-                    if productionRoute is model:Httproute {
-                        _ = check self.convertAndStoreYamlFile(productionRoute.toJsonString(), productionRoute.metadata.name, zipDir, "httproutes");
-                    }
-                    model:Httproute? sandboxRoute = apiArtifact.sandboxRoute;
-                    if sandboxRoute is model:Httproute {
-                        _ = check self.convertAndStoreYamlFile(sandboxRoute.toJsonString(), sandboxRoute.metadata.name, zipDir, "httproutes");
-                    }
                     foreach model:K8sServiceMapping servicemapping in apiArtifact.serviceMapping {
                         _ = check self.convertAndStoreYamlFile(servicemapping.toJsonString(), servicemapping.metadata.name, zipDir, "servicemappings");
                     }
                     foreach model:BackendPolicy backendPolicy in apiArtifact.backendPolicies {
                         _ = check self.convertAndStoreYamlFile(backendPolicy.toJsonString(), backendPolicy.metadata.name, zipDir, "policies/backendPolicies");
 
+                    }
+                    foreach model:Scope scope in apiArtifact.scopes {
+                        _ = check self.convertAndStoreYamlFile(scope.toJsonString(), scope.metadata.name, zipDir, "scopes");
                     }
                     model:RuntimeAPI? runtimeAPI = apiArtifact.runtimeAPI;
                     if runtimeAPI is model:RuntimeAPI {
@@ -2331,7 +2467,8 @@ public class APIClient {
                 if definition is string {
                     self.retrieveGeneratedConfigmapForDefinition(apiArtifact, payload, definition, uniqueId);
                 } else {
-                    json generatedSwagger = check self.retrieveGeneratedSwaggerDefinition(payload, ());
+                    json internalDefinition = check self.getDefinition(check getAPI(apiId, organization));
+                    json generatedSwagger = check self.retrieveGeneratedSwaggerDefinition(payload, internalDefinition.toJsonString());
                     self.retrieveGeneratedConfigmapForDefinition(apiArtifact, payload, generatedSwagger, uniqueId);
                 }
                 self.generateAndSetAPICRArtifact(apiArtifact, payload, organization);
@@ -2349,6 +2486,12 @@ public class APIClient {
             return api;
         }
     }
+    # Description
+    #
+    # + apiId - Parameter Description  
+    # + payload - Parameter Description  
+    # + organization - Parameter Description
+    # + return - Return Value Description
     public isolated function updateAPIDefinition(string apiId, http:Request payload, commons:Organization organization) returns http:Response|NotFoundError|PreconditionFailedError|InternalServerErrorError|BadRequestError|commons:APKError {
         do {
             API|NotFoundError api = check self.getAPIById(apiId, organization);
@@ -2477,4 +2620,8 @@ public isolated function getUniqueIdForAPI(string name, string 'version, commons
     string concatanatedString = string:'join("-", organization.uuid, name, 'version);
     byte[] hashedValue = crypto:hashSha1(concatanatedString.toBytes());
     return hashedValue.toBase16();
+}
+
+public isolated function retrieveHttpRouteRefName(API api, string 'type, commons:Organization organization) returns string {
+    return uuid:createType1AsString();
 }

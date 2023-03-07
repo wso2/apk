@@ -45,8 +45,9 @@ func TestIntegration(t *testing.T) {
 	// dpv1alpha1.Install(client.Scheme())
 
 	cSuite := suite.New(suite.Options{
-		Client: client,
-		Debug:  true,
+		Client:               client,
+		Debug:                true,
+		CleanupBaseResources: true,
 	})
 	cSuite.Setup(t)
 	cSuite.Run(t, tests.IntegrationTests)
