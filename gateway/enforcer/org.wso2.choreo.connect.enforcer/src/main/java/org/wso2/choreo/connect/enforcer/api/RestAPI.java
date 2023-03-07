@@ -30,8 +30,6 @@ import org.wso2.choreo.connect.discovery.api.SecurityScheme;
 import org.wso2.choreo.connect.enforcer.analytics.AnalyticsFilter;
 import org.wso2.choreo.connect.enforcer.commons.Filter;
 import org.wso2.choreo.connect.enforcer.commons.model.APIConfig;
-import org.wso2.choreo.connect.enforcer.commons.model.EndpointCluster;
-import org.wso2.choreo.connect.enforcer.commons.model.EndpointSecurity;
 import org.wso2.choreo.connect.enforcer.commons.model.MockedApiConfig;
 import org.wso2.choreo.connect.enforcer.commons.model.MockedContentExamples;
 import org.wso2.choreo.connect.enforcer.commons.model.MockedHeaderConfig;
@@ -86,7 +84,6 @@ public class RestAPI implements API {
         Map<String, SecuritySchemaConfig> securitySchemeDefinitions = new HashMap<>();
         Map<String, List<String>> securityScopesMap = new HashMap<>();
         List<ResourceConfig> resources = new ArrayList<>();
-        EndpointSecurity endpointSecurity = new EndpointSecurity();
         Map<String, String> mtlsCertificateTiers = new HashMap<>();
         String mutualSSL = api.getMutualSSL();
         boolean applicationSecurity = api.getApplicationSecurity();
@@ -120,24 +117,14 @@ public class RestAPI implements API {
 
         for (Resource res : api.getResourcesList()) {
             for (Operation operation : res.getMethodsList()) {
-                ResourceConfig resConfig = Utils.buildResource(operation, res.getPath(), securityScopesMap);
+                ResourceConfig resConfig = Utils.buildResource(operation, res.getPath(), securityScopesMap,
+                APIProcessUtils.convertProtoEndpointSecurity(res.getEndpointSecurityList()));
                 resConfig.setPolicyConfig(Utils.genPolicyConfig(operation.getPolicies()));
                 resConfig.setEndpoints(Utils.processEndpoints(res.getEndpoints()));
 //                resConfig.setMockApiConfig(getMockedApiOperationConfig(operation.getMockedApiConfig(),
 //                        operation.getMethod()));
                 resources.add(resConfig);
             }
-        }
-
-        if (api.getEndpointSecurity().hasProductionSecurityInfo()) {
-            endpointSecurity.setProductionSecurityInfo(
-                    APIProcessUtils.convertProtoEndpointSecurity(
-                            api.getEndpointSecurity().getProductionSecurityInfo()));
-        }
-        if (api.getEndpointSecurity().hasSandBoxSecurityInfo()) {
-            endpointSecurity.setSandBoxSecurityInfo(
-                    APIProcessUtils.convertProtoEndpointSecurity(
-                            api.getEndpointSecurity().getSandBoxSecurityInfo()));
         }
 
         KeyStore trustStore;
@@ -156,7 +143,6 @@ public class RestAPI implements API {
                 .resources(resources).apiType(apiType).apiLifeCycleState(apiLifeCycleState).tier(api.getTier())
                 .apiSecurity(securityScopesMap).securitySchemeDefinitions(securitySchemeDefinitions)
                 .disableSecurity(api.getDisableSecurity()).authHeader(api.getAuthorizationHeader())
-                .envType(api.getEnvType()).endpointSecurity(endpointSecurity)
                 .trustStore(trustStore).organizationId(api.getOrganizationId())
                 .mtlsCertificateTiers(mtlsCertificateTiers).mutualSSL(mutualSSL).systemAPI(api.getSystemAPI())
                 .applicationSecurity(applicationSecurity).build();

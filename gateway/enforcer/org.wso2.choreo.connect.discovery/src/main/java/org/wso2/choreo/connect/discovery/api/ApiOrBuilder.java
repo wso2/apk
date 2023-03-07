@@ -184,57 +184,42 @@ public interface ApiOrBuilder extends
       int index);
 
   /**
-   * <code>.wso2.discovery.api.EndpointSecurity endpointSecurity = 14;</code>
-   * @return Whether the endpointSecurity field is set.
-   */
-  boolean hasEndpointSecurity();
-  /**
-   * <code>.wso2.discovery.api.EndpointSecurity endpointSecurity = 14;</code>
-   * @return The endpointSecurity.
-   */
-  org.wso2.choreo.connect.discovery.api.EndpointSecurity getEndpointSecurity();
-  /**
-   * <code>.wso2.discovery.api.EndpointSecurity endpointSecurity = 14;</code>
-   */
-  org.wso2.choreo.connect.discovery.api.EndpointSecurityOrBuilder getEndpointSecurityOrBuilder();
-
-  /**
-   * <code>string authorizationHeader = 15;</code>
+   * <code>string authorizationHeader = 14;</code>
    * @return The authorizationHeader.
    */
   java.lang.String getAuthorizationHeader();
   /**
-   * <code>string authorizationHeader = 15;</code>
+   * <code>string authorizationHeader = 14;</code>
    * @return The bytes for authorizationHeader.
    */
   com.google.protobuf.ByteString
       getAuthorizationHeaderBytes();
 
   /**
-   * <code>bool disableSecurity = 16;</code>
+   * <code>bool disableSecurity = 15;</code>
    * @return The disableSecurity.
    */
   boolean getDisableSecurity();
 
   /**
-   * <code>string vhost = 17;</code>
+   * <code>string vhost = 16;</code>
    * @return The vhost.
    */
   java.lang.String getVhost();
   /**
-   * <code>string vhost = 17;</code>
+   * <code>string vhost = 16;</code>
    * @return The bytes for vhost.
    */
   com.google.protobuf.ByteString
       getVhostBytes();
 
   /**
-   * <code>string organizationId = 18;</code>
+   * <code>string organizationId = 17;</code>
    * @return The organizationId.
    */
   java.lang.String getOrganizationId();
   /**
-   * <code>string organizationId = 18;</code>
+   * <code>string organizationId = 17;</code>
    * @return The bytes for organizationId.
    */
   com.google.protobuf.ByteString
@@ -242,73 +227,73 @@ public interface ApiOrBuilder extends
 
   /**
    * <pre>
-   * bool isMockedApi = 19;
+   * bool isMockedApi = 18;
    * </pre>
    *
-   * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
+   * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
    */
   java.util.List<org.wso2.choreo.connect.discovery.api.Certificate> 
       getClientCertificatesList();
   /**
    * <pre>
-   * bool isMockedApi = 19;
+   * bool isMockedApi = 18;
    * </pre>
    *
-   * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
+   * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
    */
   org.wso2.choreo.connect.discovery.api.Certificate getClientCertificates(int index);
   /**
    * <pre>
-   * bool isMockedApi = 19;
+   * bool isMockedApi = 18;
    * </pre>
    *
-   * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
+   * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
    */
   int getClientCertificatesCount();
   /**
    * <pre>
-   * bool isMockedApi = 19;
+   * bool isMockedApi = 18;
    * </pre>
    *
-   * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
+   * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
    */
   java.util.List<? extends org.wso2.choreo.connect.discovery.api.CertificateOrBuilder> 
       getClientCertificatesOrBuilderList();
   /**
    * <pre>
-   * bool isMockedApi = 19;
+   * bool isMockedApi = 18;
    * </pre>
    *
-   * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 20;</code>
+   * <code>repeated .wso2.discovery.api.Certificate clientCertificates = 19;</code>
    */
   org.wso2.choreo.connect.discovery.api.CertificateOrBuilder getClientCertificatesOrBuilder(
       int index);
 
   /**
-   * <code>string mutualSSL = 21;</code>
+   * <code>string mutualSSL = 20;</code>
    * @return The mutualSSL.
    */
   java.lang.String getMutualSSL();
   /**
-   * <code>string mutualSSL = 21;</code>
+   * <code>string mutualSSL = 20;</code>
    * @return The bytes for mutualSSL.
    */
   com.google.protobuf.ByteString
       getMutualSSLBytes();
 
   /**
-   * <code>bool applicationSecurity = 22;</code>
+   * <code>bool applicationSecurity = 21;</code>
    * @return The applicationSecurity.
    */
   boolean getApplicationSecurity();
 
   /**
    * <pre>
-   *&#47; string graphQLSchema = 23;
-   * repeated GraphqlComplexity graphqlComplexityInfo = 24;
+   *&#47; string graphQLSchema = 22;
+   * repeated GraphqlComplexity graphqlComplexityInfo = 23;
    * </pre>
    *
-   * <code>bool systemAPI = 25;</code>
+   * <code>bool systemAPI = 24;</code>
    * @return The systemAPI.
    */
   boolean getSystemAPI();

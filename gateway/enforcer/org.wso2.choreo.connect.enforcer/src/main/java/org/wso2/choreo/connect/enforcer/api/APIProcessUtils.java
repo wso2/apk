@@ -17,21 +17,27 @@
  */
 package org.wso2.choreo.connect.enforcer.api;
 
-import org.wso2.choreo.connect.enforcer.commons.model.SecurityInfo;
+import java.util.List;
+
+import org.wso2.choreo.connect.enforcer.commons.model.EndpointSecurity;
 
 /**
  * APIProcessUtils is used to convert the Endpoint Security DTO used in proto files into Enforcer specific
  * Object.
  */
 public class APIProcessUtils {
-    public static SecurityInfo convertProtoEndpointSecurity
-            (org.wso2.choreo.connect.discovery.api.SecurityInfo protoSecurityInfo) {
-        SecurityInfo securityInfo = new SecurityInfo();
-        securityInfo.setSecurityType(protoSecurityInfo.getSecurityType());
-        securityInfo.setUsername(protoSecurityInfo.getUsername());
-        securityInfo.setPassword(protoSecurityInfo.getPassword().toCharArray());
-        securityInfo.setCustomParameters(protoSecurityInfo.getCustomParametersMap());
-        securityInfo.setEnabled(protoSecurityInfo.getEnabled());
+    public static EndpointSecurity[] convertProtoEndpointSecurity
+        (List<org.wso2.choreo.connect.discovery.api.SecurityInfo> protoSecurityInfo) {
+        EndpointSecurity[] securityInfo = new EndpointSecurity[protoSecurityInfo.size()];
+        for (int i = 0; i < protoSecurityInfo.size(); i++) {
+            EndpointSecurity security = new EndpointSecurity();
+            security.setSecurityType(protoSecurityInfo.get(i).getSecurityType());
+            security.setUsername(protoSecurityInfo.get(i).getUsername());
+            security.setPassword(protoSecurityInfo.get(i).getPassword().toCharArray());
+            security.setCustomParameters(protoSecurityInfo.get(i).getCustomParametersMap());
+            security.setEnabled(protoSecurityInfo.get(i).getEnabled());
+            securityInfo[i] = security;
+        }
         return securityInfo;
     }
 }

@@ -97,7 +97,7 @@ func (in *HTTPRouteState) DeepCopyInto(out *HTTPRouteState) {
 		in, out := &in.BackendPropertyMapping, &out.BackendPropertyMapping
 		*out = make(v1alpha1.BackendPropertyMapping, len(*in))
 		for key, val := range *in {
-			(*out)[key] = val
+			(*out)[key] = *val.DeepCopy()
 		}
 	}
 	if in.Scopes != nil {

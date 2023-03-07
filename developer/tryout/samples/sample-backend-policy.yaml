@@ -43,6 +43,11 @@ spec:
     #     5MsI+yMRQ+hDKXJioaldXgjUkK642M4UwtBV8ob2xJNDd2ZhwLnoQdeXeGADbkpy
     #     rqXRfboQnoZsG4q5WTP468SQvvG5
     #       -----END CERTIFICATE-----
+    security:
+      - type: Basic
+        basic:
+          username: admin
+          password: admin
   targetRef:
     group: ""
     kind: Service
