@@ -29,6 +29,9 @@ dependencies = [
 	{org = "ballerina", name = "task"},
 	{org = "ballerina", name = "time"}
 ]
+modules = [
+	{org = "ballerina", packageName = "cache", moduleName = "cache"}
+]
 
 [[package]]
 org = "ballerina"
@@ -298,7 +301,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "sql"
-version = "1.6.3"
+version = "1.7.0"
 dependencies = [
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"},
@@ -388,7 +391,7 @@ modules = [
 [[package]]
 org = "ballerinax"
 name = "postgresql"
-version = "1.6.2"
+version = "1.7.0"
 dependencies = [
 	{org = "ballerina", name = "crypto"},
 	{org = "ballerina", name = "io"},
@@ -418,6 +421,7 @@ org = "wso2"
 name = "runtime_domain_service"
 version = "0.0.1-SNAPSHOT"
 dependencies = [
+	{org = "ballerina", name = "cache"},
 	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "crypto"},
 	{org = "ballerina", name = "file"},

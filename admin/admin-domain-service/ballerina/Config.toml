@@ -1,6 +1,3 @@
-[wso2.admin_service]
-ADMIN_PORT = 9443
-
 # Sample configurations
 [wso2.admin_service.datasourceConfiguration]
 description = ""

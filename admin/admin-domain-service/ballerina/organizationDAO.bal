@@ -242,4 +242,54 @@ isolated function getOrganizationByOrganizationClaimDAO(string claim) returns In
             return error(message, message = message, description = message, code = 909000, statusCode = "500"); 
         }
     }
+    
+}
+isolated function getOrganizationByNameDAO(string name) returns Internal_Organization|APKError {
+    postgresql:Client | error dbClient  = getConnection();
+    if dbClient is error {
+        string message = "Error while retrieving connection";
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+    } else {
+        do {
+            sql:ParameterizedQuery query = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName, claim_key as claimKey, 
+                    claim_value as claimValue FROM ORGANIZATION, ORGANIZATION_CLAIM_MAPPING where ORGANIZATION.UUID = ORGANIZATION_CLAIM_MAPPING.UUID and ORGANIZATION.NAME =${name}`;
+            stream<Organizations, sql:Error?> orgStream = dbClient->query(query);
+            Internal_Organization organization1 = {
+                id: "",
+                name: "",
+                displayName: "",
+                enabled: true,
+                claimList: []
+            };
+            check from Organizations org in orgStream do {
+                if (organization1.id == "") {
+                    organization1 = {
+                        id:org.id,
+                        name:org.name,
+                        displayName:org.displayName,
+                        enabled: org.enabled,
+                        claimList:[{
+                            claimKey:org.claimKey,
+                            claimValue: org.claimValue
+                        }]
+                    };
+                } else {
+                    organization1.claimList.push({
+                        claimKey:org.claimKey,
+                        claimValue: org.claimValue
+                    });
+                }
+            }; 
+            if (organization1.id == "") {
+                string message = "Organization not found";
+                return error(message, message = message, description = message, code = 909000, statusCode = "404");
+            } else {
+                 return organization1;
+            }
+
+            } on fail var e {
+        	string message = "Internal Error occured while retrieving organization data from Database";
+            return error(message, e, message = message, description = message, code = 909001, statusCode = "500");
+        }
+    }
 }

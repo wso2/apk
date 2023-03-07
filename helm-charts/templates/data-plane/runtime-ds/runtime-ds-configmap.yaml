@@ -34,5 +34,23 @@ data:
     path = "/home/wso2apk/runtime/security/wso2carbon.key"
     [wso2.runtime_domain_service.runtimeConfiguration.keyStores.signing]
     path = "/home/wso2apk/runtime/security/wso2carbon.key"
+    {{  if .Values.wso2.apk.dp.controlPlane }}
+    [wso2.runtime_domain_service.runtimeConfiguration.controlPlane]
+    serviceBaseURl = "{{ .Values.wso2.apk.dp.controlPlane.serviceUrl | default (printf "http://%s-admin-ds-service:9444" (include "apk-helm.resource.prefix" .)) }}"
+    enableAuthentication = {{ .Values.wso2.apk.dp.controlPlane.enableAuthentication | default true}}
+    enableHostNameVerification = {{ .Values.wso2.apk.dp.controlPlane.enableHostNameVerification | default true}}
+    [wso2.runtime_domain_service.runtimeConfiguration.controlPlane.certificate]
+    path = "/home/wso2apk/runtime/security/controlplane.pem"
+    {{  if .Values.wso2.apk.dp.controlPlane.headers }}
+    {{- range $name, $val := $.Values.wso2.apk.dp.controlPlane.headers }}
+    [[wso2.runtime_domain_service.runtimeConfiguration.controlPlane.headers]]
+     name = "{{ $val.name }}"
+     value = "{{ $val.value }}"
+    {{- end }}
+    {{- end }}
+    {{ else }}
+    [wso2.runtime_domain_service.runtimeConfiguration.controlPlane]
+    serviceBaseURl = "http://{{ template "apk-helm.resource.prefix" . }}-admin-ds-service:9444/api/am/internal/v1"
+    {{- end }}   
 
 {{- end -}}

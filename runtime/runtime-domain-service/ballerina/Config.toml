@@ -7,6 +7,10 @@ path = "/media/tharindud/dev/satoken/wso2carbon.key"
 path = "/media/tharindud/dev/satoken/wso2carbon.key"
 [wso2.runtime_domain_service.runtimeConfiguration.idpConfiguration.publicKey]
 path = "/media/tharindud/dev/satoken/mg.pem"
+[wso2.runtime_domain_service.runtimeConfiguration.controlPlane]
+serviceBaseURl = "https://api.am.wso2.com:9095/api/am/internal/v1"
+[wso2.runtime_domain_service.runtimeConfiguration.controlPlane.certificate]
+path = "/media/tharindud/dev/satoken/router.pem"
 
 [ballerina.http]
 traceLogConsole = true

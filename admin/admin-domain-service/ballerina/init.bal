@@ -26,7 +26,6 @@ configurable DatasourceConfiguration datasourceConfiguration = ?;
 final postgresql:Client|sql:Error dbClient;
 configurable ThrottlingConfiguration throttleConfig = ?;
 
-configurable int ADMIN_PORT = 9443;
 
 configurable commons:IDPConfiguration idpConfiguration = {
         publicKey:{path: "/home/wso2apk/admin/security/mg.pem"}
@@ -34,7 +33,8 @@ configurable commons:IDPConfiguration idpConfiguration = {
 commons:DBBasedOrgResolver organizationResolver = new(datasourceConfiguration);
 commons:JWTValidationInterceptor jwtValidationInterceptor = new (idpConfiguration, organizationResolver);
 commons:RequestErrorInterceptor requestErrorInterceptor = new;
-listener http:Listener ep0 = new (ADMIN_PORT, {interceptors: [jwtValidationInterceptor,requestErrorInterceptor]});
+listener http:Listener ep0 = new (9443, {interceptors: [jwtValidationInterceptor,requestErrorInterceptor]});
+listener http:Listener internalAdminEp = new (9444, {interceptors: [requestErrorInterceptor]});
 
 function init() {
     log:printInfo("Starting APK Admin Domain Service...");

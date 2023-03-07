@@ -175,6 +175,17 @@ wso2:
         appUserPassword: password
         superUserPassword: password
     dp:
+      # controlPlane:
+      #   enableAuth: true
+      #   tls:
+      #     enabled: true
+      #     secretName: "apk-control-plane-secret"
+      #     fileName: "ca.crt"
+      #   headers:
+      #     - name: "X-Forwarded-Proto"
+      #       value: "https"
+      #     - name: "X-Forwarded-Port"
+      #       value: "443"    
       enabled: true
       runtime:
         appName: "runtime-ds"
