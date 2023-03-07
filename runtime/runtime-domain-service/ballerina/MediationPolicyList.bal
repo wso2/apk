@@ -21,13 +21,11 @@ isolated final model:MediationPolicy[] avilableMediationPolicyList = [
     {
         id: "1",
         'type: MEDIATION_POLICY_TYPE_REQUEST_HEADER_MODIFIER,
-        name: "addHeader",
+        name: MEDIATION_POLICY_NAME_ADD_HEADER,
         displayName: "Add Header",
         description: "This policy allows you to add a new header to the request",
         applicableFlows: [MEDIATION_POLICY_FLOW_REQUEST],
         supportedApiTypes: [API_TYPE_REST],
-        canApplyforAPILevel: true,
-        canApplyforOperationLevel: true,
         policyAttributes: [
             {
                 name: "headerName",
@@ -48,13 +46,11 @@ isolated final model:MediationPolicy[] avilableMediationPolicyList = [
     {
         id: "2",
         'type: MEDIATION_POLICY_TYPE_REQUEST_HEADER_MODIFIER,
-        name: "removeHeader",
+        name: MEDIATION_POLICY_NAME_REMOVE_HEADER,
         displayName: "Remove Header",
         description: "This policy allows you to remove a header from the request",
         applicableFlows: [MEDIATION_POLICY_FLOW_REQUEST],
         supportedApiTypes: [API_TYPE_REST],
-        canApplyforAPILevel: true,
-        canApplyforOperationLevel: true,
         policyAttributes: [
             {
                 name: "headerName",
@@ -68,13 +64,11 @@ isolated final model:MediationPolicy[] avilableMediationPolicyList = [
     {
         id: "3",
         'type: MEDIATION_POLICY_TYPE_RESPONSE_HEADER_MODIFIER,
-        name: "addHeader",
+        name: MEDIATION_POLICY_NAME_ADD_HEADER,
         displayName: "Add Header",
         description: "This policy allows you to add a new header to the response",
         applicableFlows: [MEDIATION_POLICY_FLOW_RESPONSE],
         supportedApiTypes: [API_TYPE_REST],
-        canApplyforAPILevel: true,
-        canApplyforOperationLevel: true,
         policyAttributes: [
             {
                 name: "headerName",
@@ -95,13 +89,11 @@ isolated final model:MediationPolicy[] avilableMediationPolicyList = [
     {
         id: "4",
         'type: MEDIATION_POLICY_TYPE_RESPONSE_HEADER_MODIFIER,
-        name: "removeHeader",
+        name: MEDIATION_POLICY_NAME_REMOVE_HEADER,
         displayName: "Remove Header",
         description: "This policy allows you to remove a header from the response",
         applicableFlows: [MEDIATION_POLICY_FLOW_RESPONSE],
         supportedApiTypes: [API_TYPE_REST],
-        canApplyforAPILevel: true,
-        canApplyforOperationLevel: true,
         policyAttributes: [
             {
                 name: "headerName",

@@ -129,13 +129,13 @@ http:Service runtimeService = service object {
         commons:Organization organization = authenticatedUserContext.organization;
         return serviceClient.getServiceUsageByServiceId(serviceId, organization);
     }
-    isolated resource function get policies(http:RequestContext requestContext, string? query, int 'limit = 25, int offset = 0, string sortBy = "id", string sortOrder = "asc", @http:Header string? accept = "application/json") returns MediationPolicyDataList|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
+    isolated resource function get policies(http:RequestContext requestContext, string? query, int 'limit = 25, int offset = 0, string sortBy = "id", string sortOrder = "asc", @http:Header string? accept = "application/json") returns MediationPolicyList|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
         final APIClient apiService = new ();
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
         return apiService.getMediationPolicyList(query, 'limit, offset, sortBy, sortOrder, organization);
     }
-    isolated resource function get policies/[string policyId](http:RequestContext requestContext) returns MediationPolicyData|NotFoundError|InternalServerErrorError|commons:APKError {
+    isolated resource function get policies/[string policyId](http:RequestContext requestContext) returns MediationPolicy|NotFoundError|InternalServerErrorError|commons:APKError {
         final APIClient apiService = new ();
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;

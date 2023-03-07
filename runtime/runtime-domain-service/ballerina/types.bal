@@ -63,8 +63,14 @@ public type ErrorListItem record {
 };
 
 public type MediationPolicy record {
+    string id;
+    string 'type;
     string name;
-    string 'type?;
+    string displayName?;
+    string description?;
+    string[] applicableFlows?;
+    string[] supportedApiTypes?;
+    MediationPolicySpecAttribute[] policyAttributes?;
 };
 
 public type Apis_importdefinition_body record {
@@ -179,21 +185,10 @@ public type APIList record {
 };
 
 public type MediationPolicyList record {
+    # Number of mediation policies returned.
+    int count?;
     MediationPolicy[] list?;
     Pagination pagination?;
-};
-
-public type MediationPolicyData record {
-    string id;
-    string 'type;
-    string name;
-    string displayName?;
-    string description?;
-    string[] applicableFlows?;
-    string[] supportedApiTypes?;
-    boolean canApplyforAPILevel?;
-    boolean canApplyforOperationLevel?;
-    MediationPolicySpecAttribute[] policyAttributes?;
 };
 
 public type PortMapping record {
@@ -294,13 +289,6 @@ public type APIKey record {
     # API Key
     string apikey?;
     int validityTime?;
-};
-
-public type MediationPolicyDataList record {
-    # Number of mediation policies returned.
-    int count?;
-    MediationPolicyData[] list?;
-    Pagination pagination?;
 };
 
 public type OperationPolicy record {

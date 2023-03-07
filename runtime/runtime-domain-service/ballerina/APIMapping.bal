@@ -91,8 +91,8 @@ isolated function convertOperationPolicies(model:OperationPolicies? operation) r
     }
 }
 
-isolated function convertPolicyModeltoPolicy(model:MediationPolicy mediationPolicy) returns MediationPolicyData {
-    MediationPolicyData mediationPolicyData = {
+isolated function convertPolicyModeltoPolicy(model:MediationPolicy mediationPolicy) returns MediationPolicy {
+    MediationPolicy mediationPolicyData = {
         id: mediationPolicy.id,
         'type: mediationPolicy.'type,
         name: mediationPolicy.name,
@@ -100,8 +100,6 @@ isolated function convertPolicyModeltoPolicy(model:MediationPolicy mediationPoli
         description: mediationPolicy.description,
         applicableFlows: mediationPolicy.applicableFlows,
         supportedApiTypes: mediationPolicy.supportedApiTypes,
-        canApplyforAPILevel: mediationPolicy.canApplyforAPILevel,
-        canApplyforOperationLevel: mediationPolicy.canApplyforOperationLevel,
         policyAttributes: mediationPolicy.policyAttributes
 
     };

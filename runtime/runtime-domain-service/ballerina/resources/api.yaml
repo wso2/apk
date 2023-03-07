@@ -958,7 +958,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MediationPolicyDataList'
+                $ref: '#/components/schemas/MediationPolicyList'
         "400":
           $ref: "#/components/responses/BadRequest"
         "404":
@@ -996,7 +996,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MediationPolicyData'
+                $ref: '#/components/schemas/MediationPolicy'
         "404":
           $ref: "#/components/responses/NotFound"
         "500":
@@ -1223,8 +1223,8 @@ components:
           example: admin--HackerNewsAPI.graphql
         schemaDefinition:
           type: string
-    MediationPolicyDataList:
-      title: Mediation policy List
+    MediationPolicyList:
+      title: Paginated List of Policies
       type: object
       properties:
         count:
@@ -1235,10 +1235,10 @@ components:
         list:
           type: array
           items:
-            $ref: '#/components/schemas/MediationPolicyData'
+            $ref: '#/components/schemas/MediationPolicy'
         pagination:
           $ref: '#/components/schemas/Pagination'
-    MediationPolicyData:
+    MediationPolicy:
       title: Mediation Policy Data
       required:
         - id
@@ -1271,18 +1271,12 @@ components:
           items:
             type: string
             example: REST
-        canApplyforAPILevel:
-          type: boolean
-          example: true
-        canApplyforOperationLevel:
-          type: boolean
-          example: true
         policyAttributes:
           type: array
           items:
             $ref: '#/components/schemas/MediationPolicySpecAttribute'
     MediationPolicySpecAttribute:
-      title: MediationPolicySpecAttribute
+      title: Mediation Policy Attribute Specs
       type: object
       properties:
         name:
@@ -1308,29 +1302,6 @@ components:
           type: string
           description: Default value for the attribute
           example: true
-    MediationPolicyList:
-      title: Paginated List of Policies
-      type: object
-      properties:
-        list:
-          title: List of Policies
-          type: array
-          items:
-            $ref: "#/components/schemas/MediationPolicy"
-        pagination:
-          $ref: "#/components/schemas/Pagination"
-    MediationPolicy:
-      title: Mediation Policy
-      required:
-        - name
-      type: object
-      properties:
-        name:
-          type: string
-          example: log_in_message
-        type:
-          type: string
-          example: in
     Error:
       title: Error object returned with 4XX HTTP Status
       required:

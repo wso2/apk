@@ -2580,8 +2580,8 @@ public class APIClient {
         }
     }
 
-    private isolated function filterMediationPoliciesBasedOnQuery(MediationPolicyData[] mediationPolicyList, string query, int 'limit, int offset, string sortBy, string sortOrder) returns MediationPolicyDataList|BadRequestError {
-        MediationPolicyData[] filteredList = [];
+    private isolated function filterMediationPoliciesBasedOnQuery(MediationPolicy[] mediationPolicyList, string query, int 'limit, int offset, string sortBy, string sortOrder) returns MediationPolicyList|BadRequestError {
+        MediationPolicy[] filteredList = [];
         if query.length() > 0 {
             int? semiCollonIndex = string:indexOf(query, ":", 0);
             if semiCollonIndex is int && semiCollonIndex > 0 {
@@ -2589,13 +2589,13 @@ public class APIClient {
                 string keyWordValue = query.substring(keyWord.length() + 1, query.length());
                 keyWordValue = keyWordValue + "|\\w+" + keyWordValue + "\\w+" + "|" + keyWordValue + "\\w+" + "|\\w+" + keyWordValue;
                 if keyWord.trim() == SEARCH_CRITERIA_NAME {
-                    foreach MediationPolicyData mediationPolicy in mediationPolicyList {
+                    foreach MediationPolicy mediationPolicy in mediationPolicyList {
                         if (regex:matches(mediationPolicy.name, keyWordValue)) {
                             filteredList.push(mediationPolicy);
                         }
                     }
                 } else if keyWord.trim() == SEARCH_CRITERIA_TYPE {
-                    foreach MediationPolicyData mediationPolicy in mediationPolicyList {
+                    foreach MediationPolicy mediationPolicy in mediationPolicyList {
                         if (regex:matches(mediationPolicy.'type, keyWordValue)) {
                             filteredList.push(mediationPolicy);
                         }
@@ -2607,7 +2607,7 @@ public class APIClient {
             } else {
                 string keyWordValue = query + "|\\w+" + query + "\\w+" + "|" + query + "\\w+" + "|\\w+" + query;
 
-                foreach MediationPolicyData mediationPolicy in mediationPolicyList {
+                foreach MediationPolicy mediationPolicy in mediationPolicyList {
 
                     if (regex:matches(mediationPolicy.name, keyWordValue)) {
                         filteredList.push(mediationPolicy);
@@ -2620,9 +2620,9 @@ public class APIClient {
         return self.filterMediationPolicies(filteredList, 'limit, offset, sortBy, sortOrder);
     }
 
-    private isolated function filterMediationPolicies(MediationPolicyData[] mediationPolicyList, int 'limit, int offset, string sortBy, string sortOrder) returns MediationPolicyDataList|BadRequestError {
-        MediationPolicyData[] clonedMediationPolicyList = mediationPolicyList.clone();
-        MediationPolicyData[] sortedMediationPolicies = [];
+    private isolated function filterMediationPolicies(MediationPolicy[] mediationPolicyList, int 'limit, int offset, string sortBy, string sortOrder) returns MediationPolicyList|BadRequestError {
+        MediationPolicy[] clonedMediationPolicyList = mediationPolicyList.clone();
+        MediationPolicy[] sortedMediationPolicies = [];
         if sortBy == SORT_BY_POLICY_NAME && sortOrder == SORT_ORDER_ASC {
             sortedMediationPolicies = from var mediationPolicy in clonedMediationPolicyList
                 order by mediationPolicy.name ascending
@@ -2643,7 +2643,7 @@ public class APIClient {
             BadRequestError badRequest = {body: {code: 90912, message: "Invalid Sort By/Sort Order Value "}};
             return badRequest;
         }
-        MediationPolicyData[] limitSet = [];
+        MediationPolicy[] limitSet = [];
         if sortedMediationPolicies.length() > offset {
             foreach int i in offset ... (sortedMediationPolicies.length() - 1) {
                 if limitSet.length() < 'limit {
@@ -2655,15 +2655,19 @@ public class APIClient {
 
     }
 
-    //Get Mediation policies by mediationPolicyId.
-    public isolated function getMediationPolicyById(string id, commons:Organization organization) returns MediationPolicyData|NotFoundError|commons:APKError {
+    # This return a Mediation policy by id.
+    #
+    # + id - Policy Id
+    # + organization - Organization
+    # + return - Return a Mediation Policy.
+    public isolated function getMediationPolicyById(string id, commons:Organization organization) returns MediationPolicy|NotFoundError|commons:APKError {
         boolean mediationPolicyIDAvailable = id.length() > 0 ? true : false;
         if (mediationPolicyIDAvailable && string:length(id.toString()) > 0)
         {
             lock {
                 foreach model:MediationPolicy mediationPolicy in avilableMediationPolicyList {
                     if mediationPolicy.id == id {
-                        MediationPolicyData matchedPolicy = convertPolicyModeltoPolicy(mediationPolicy);
+                        MediationPolicy matchedPolicy = convertPolicyModeltoPolicy(mediationPolicy);
                         return matchedPolicy.cloneReadOnly();
                     }
                 }
@@ -2684,15 +2688,15 @@ public class APIClient {
     # + sortOrder - SortOrder  Parameter
     # + organization - Organization
     # + return - Return list of Mediation Policies.
-    public isolated function getMediationPolicyList(string? query, int 'limit, int offset, string sortBy, string sortOrder, commons:Organization organization) returns MediationPolicyDataList|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
-        MediationPolicyData[] mediationPolicyList = [];
+    public isolated function getMediationPolicyList(string? query, int 'limit, int offset, string sortBy, string sortOrder, commons:Organization organization) returns MediationPolicyList|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
+        MediationPolicy[] mediationPolicyList = [];
         model:MediationPolicy[] avilableMediationPolicies;
         lock {
             avilableMediationPolicies = avilableMediationPolicyList.clone();
         }
 
         foreach model:MediationPolicy mediationPolicy in avilableMediationPolicies {
-            MediationPolicyData policyItem = convertPolicyModeltoPolicy(mediationPolicy);
+            MediationPolicy policyItem = convertPolicyModeltoPolicy(mediationPolicy);
             mediationPolicyList.push(policyItem);
 
         } on fail var e {
