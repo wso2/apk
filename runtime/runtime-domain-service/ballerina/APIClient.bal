@@ -2635,6 +2635,10 @@ public class APIClient {
             sortedMediationPolicies = from var mediationPolicy in clonedMediationPolicyList
                 order by mediationPolicy.id ascending
                 select mediationPolicy;
+        } else if sortBy == SORT_BY_ID && sortOrder == SORT_ORDER_DESC {
+            sortedMediationPolicies = from var mediationPolicy in clonedMediationPolicyList
+                order by mediationPolicy.id descending
+                select mediationPolicy;
         } else {
             BadRequestError badRequest = {body: {code: 90912, message: "Invalid Sort By/Sort Order Value "}};
             return badRequest;
