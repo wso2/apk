@@ -2665,7 +2665,7 @@ public class APIClient {
         if (mediationPolicyIDAvailable && string:length(id.toString()) > 0)
         {
             lock {
-                foreach model:MediationPolicy mediationPolicy in avilableMediationPolicyList {
+                foreach model:MediationPolicy mediationPolicy in getAvailableMediaionPolicies(organization) {
                     if mediationPolicy.id == id {
                         MediationPolicy matchedPolicy = convertPolicyModeltoPolicy(mediationPolicy);
                         return matchedPolicy.cloneReadOnly();
@@ -2690,15 +2690,9 @@ public class APIClient {
     # + return - Return list of Mediation Policies.
     public isolated function getMediationPolicyList(string? query, int 'limit, int offset, string sortBy, string sortOrder, commons:Organization organization) returns MediationPolicyList|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
         MediationPolicy[] mediationPolicyList = [];
-        model:MediationPolicy[] avilableMediationPolicies;
-        lock {
-            avilableMediationPolicies = avilableMediationPolicyList.clone();
-        }
-
-        foreach model:MediationPolicy mediationPolicy in avilableMediationPolicies {
+        foreach model:MediationPolicy mediationPolicy in getAvailableMediaionPolicies(organization) {
             MediationPolicy policyItem = convertPolicyModeltoPolicy(mediationPolicy);
             mediationPolicyList.push(policyItem);
-
         } on fail var e {
             return error("Error occured while getting Mediation policy list", e, message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = 500);
         }

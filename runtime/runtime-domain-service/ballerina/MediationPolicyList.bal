@@ -15,7 +15,8 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-import runtime_domain_service.model;
+import runtime_domain_service.model as model;
+import wso2/apk_common_lib as commons;
 
 isolated final model:MediationPolicy[] avilableMediationPolicyList = [
     {
@@ -105,3 +106,14 @@ isolated final model:MediationPolicy[] avilableMediationPolicyList = [
         ]
     }
 ];
+
+isolated function getAvailableMediaionPolicies(commons:Organization organization) returns MediationPolicy[] {
+    lock {
+        MediationPolicy[]|error & readonly readOnlyMediationPolicyList = trap avilableMediationPolicyList.cloneReadOnly();
+        if readOnlyMediationPolicyList is MediationPolicy[] & readonly {
+            return readOnlyMediationPolicyList;
+        } else {
+            return [];
+        }
+    }
+}
