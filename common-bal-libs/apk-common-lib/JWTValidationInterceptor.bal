@@ -35,7 +35,7 @@ public service class JWTValidationInterceptor {
         if validatedJWT is jwt:Payload {
             if (validatedJWT.hasKey(self.idpConfiguration.organizationClaim)) {
                 string organizationClaim = <string>validatedJWT.get(self.idpConfiguration.organizationClaim);
-                Organization? retrievedorg = self.organizationResolver.retrieveOrganizationFromIDPClaimValue(organizationClaim);
+                Organization? retrievedorg = check self.organizationResolver.retrieveOrganizationFromIDPClaimValue(organizationClaim);
                 if retrievedorg is Organization {
                     if retrievedorg.enabled {
                         UserContext userContext = {username: <string>validatedJWT.sub, organization: retrievedorg};
@@ -51,7 +51,7 @@ public service class JWTValidationInterceptor {
                 }
             } else {
                 // find default organization
-                Organization? retrievedorg = self.organizationResolver.retrieveOrganizationByName(DEFAULT_ORGANIZATION_NAME);
+                Organization? retrievedorg = check self.organizationResolver.retrieveOrganizationByName(DEFAULT_ORGANIZATION_NAME);
                 if retrievedorg is Organization {
                     UserContext userContext = {username: <string>validatedJWT.sub, organization: retrievedorg};
                     userContext.claims = self.extractCustomClaims(validatedJWT);

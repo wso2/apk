@@ -63,6 +63,16 @@ data:
       certificateFilePath = "/home/wso2/security/truststore/wso2carbon.pem"
 
     [[enforcer.security.tokenService]]
+      name = ""
+      issuer = "{{ .Values.wso2.apk.idp.issuer }}"
+      certificateAlias = "wso2carbon"
+      jwksURL = "{{ .Values.wso2.apk.idp.jwksEndpoint }}"
+      validateSubscription = true
+      consumerKeyClaim = "clientId"
+      certificateFilePath = "/home/wso2/security/truststore/wso2carbon.pem"
+
+
+    [[enforcer.security.tokenService]]
       name = "MGW"
       issuer = "https://gw.wso2.com/testkey"
       certificateAlias = "mgw"
