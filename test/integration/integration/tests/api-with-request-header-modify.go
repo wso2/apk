@@ -29,7 +29,7 @@ func init() {
 	IntegrationTests = append(IntegrationTests, APIWithRequestHeaderModify)
 }
 
-// APIWithBackendBasePath test
+// APIWithRequestHeaderModify test
 var APIWithRequestHeaderModify = suite.IntegrationTest{
 	ShortName:   "APIWithRequestHeaderModify",
 	Description: "An API with request header modify",
