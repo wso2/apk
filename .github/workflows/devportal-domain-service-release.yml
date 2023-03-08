@@ -18,6 +18,8 @@ on:
       - '**/devportal/devportal-domain-service/**'
     branches:
       - 'main'
+env:
+  GH_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
 concurrency:
   group: devportal-domain-service-${{ github.event.number }}
   cancel-in-progress: true

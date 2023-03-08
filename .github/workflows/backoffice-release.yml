@@ -21,6 +21,8 @@ on:
 concurrency:
   group: backoffice-${{ github.event.number }}
   cancel-in-progress: true
+env:
+  GH_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
 jobs:
   build:
     runs-on: ubuntu-latest
