@@ -54,11 +54,11 @@ spec:
             - mountPath: /home/wso2apk/runtime/conf/Config.toml
               name: config-toml-volume
               subPath: Config.toml
-            {{- if and .Values.wso2.apk.dp.controlPlane .Values.wso2.apk.dp.controlPlane.tls -}}
-            - name: cp-public-key-volume
-              mountPath: /home/wso2apk/runtime/security/controlplane.pem
+            {{ if and .Values.wso2.apk.dp.controlPlane .Values.wso2.apk.dp.controlPlane.tls }}
+            - mountPath: /home/wso2apk/runtime/security/controlplane.pem
+              name: cp-public-key-volume
               subPath: {{ .Values.wso2.apk.dp.controlPlane.tls.fileName | default "tls.crt"}}
-            {{- end }}
+            {{ end }}
       volumes:
         - name: runtime-signing-keystore-volume
           secret: 
@@ -66,13 +66,13 @@ spec:
         - name: runtime-ds-jwt-validation-key-volume
           secret: 
             secretName: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-jwt-validaion-secret
-       {{- if and .Values.wso2.apk.dp.controlPlane .Values.wso2.apk.dp.controlPlane.tls -}}
-        - name: cp-public-key-volume
-          secret:
-            secretName: {{ .Values.wso2.apk.dp.controlPlane.tls.secretName | default (printf "%s-router-server-cert" (include "apk-helm.resource.prefix" .)) }}
-       {{- end }}
         - name: config-toml-volume
           configMap:
             name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-configmap
+       {{ if and .Values.wso2.apk.dp.controlPlane .Values.wso2.apk.dp.controlPlane.tls }}
+        - name: cp-public-key-volume
+          secret:
+            secretName: {{ .Values.wso2.apk.dp.controlPlane.tls.certificatesSecret | default (printf "%s-router-server-cert" (include "apk-helm.resource.prefix" .)) }}
+       {{ end }}
         
 {{- end -}}
