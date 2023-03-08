@@ -18,6 +18,9 @@ on:
       - '**/runtime/runtime-domain-service/**'
     branches:
       - 'main'
+env:
+  GH_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
+
 concurrency:
   group: runtime-domain-service-${{ github.event.number }}
   cancel-in-progress: true
