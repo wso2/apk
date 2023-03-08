@@ -176,6 +176,8 @@ wso2:
         superUserPassword: password
     dp:
       enabled: true
+      gatewayAPI:
+        enabled: true
       # controlPlane:
       #   serviceUrl: "https://apk.org.com:9090/orgmanagement/v1"    
       #   enableHostNameVerification: true
@@ -248,11 +250,11 @@ wso2:
           image: wso2/adapter:latest
           security:
             sslHostname: "adapter"
-        configs:
-          tls:
-            secretName: "adapter-cert"
-            privateKey: ""
-            publicKey: ""
+        # configs:
+        #   tls:
+        #     secretName: "adapter-cert"
+        #     privateKey: ""
+        #     publicKey: ""
       gatewayRuntime:
         appName: "router"
         deployment:
@@ -281,11 +283,11 @@ wso2:
             strategy: Recreate
             imagePullPolicy: Always
             image: wso2/router:latest
-            configs:
-              tls:
-                secretName: "router-cert"
-                privateKey: ""
-                publicKey: ""
+            # configs:
+            #   tls:
+            #     secretName: "router-cert"
+            #     privateKey: ""
+            #     publicKey: ""
           enforcer:
             npi: enforcer-npi
             resources:
@@ -312,11 +314,11 @@ wso2:
             image: wso2/enforcer:latest
             security:
               sslHostname: "enforcer"
-            configs:
-              tls:
-                secretName: "router-cert"
-                privateKey: ""
-                publicKey: ""
+            # configs:
+            #   tls:
+            #     secretName: "router-cert"
+            #     privateKey: ""
+            #     publicKey: ""
 
 postgresql:
   fullnameOverride: "wso2apk-db-service"
