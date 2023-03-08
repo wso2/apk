@@ -102,7 +102,7 @@ type Endpoint struct {
 	// Trusted CA Cerificate for the endpoint
 	Certificate []byte
 	// Subject Alternative Names to verify in the public certificate
-	VerifySANs []string
+	AllowedSANs []string
 }
 
 // EndpointSecurity contains parameters of endpoint security at api.json

@@ -61,7 +61,7 @@ type TLSConfig struct {
 	CertificateInline string     `json:"certificateInline,omitempty"`
 	SecretRef         *RefConfig `json:"secretRef,omitempty"`
 	ConfigMapRef      *RefConfig `json:"configMapRef,omitempty"`
-	VerifySANs        []string   `json:"verifySANs,omitempty"`
+	AllowedSANs       []string   `json:"allowedSANs,omitempty"`
 }
 
 // RefConfig holds a config for a secret or a configmap

@@ -67,6 +67,10 @@ spec:
                   tls:
                     description: TLSConfig defines enpoint TLS configurations
                     properties:
+                      allowedSANs:
+                        items:
+                          type: string
+                        type: array
                       certificateInline:
                         type: string
                       configMapRef:
@@ -91,10 +95,6 @@ spec:
                         - key
                         - name
                         type: object
-                      verifySANs:
-                        items:
-                          type: string
-                        type: array
                     type: object
                 required:
                 - protocol
@@ -131,6 +131,10 @@ spec:
                   tls:
                     description: TLSConfig defines enpoint TLS configurations
                     properties:
+                      allowedSANs:
+                        items:
+                          type: string
+                        type: array
                       certificateInline:
                         type: string
                       configMapRef:
@@ -155,10 +159,6 @@ spec:
                         - key
                         - name
                         type: object
-                      verifySANs:
-                        items:
-                          type: string
-                        type: array
                     type: object
                 required:
                 - protocol
