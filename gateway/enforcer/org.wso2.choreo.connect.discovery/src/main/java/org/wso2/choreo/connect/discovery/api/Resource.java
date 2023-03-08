@@ -23,6 +23,7 @@ private static final long serialVersionUID = 0L;
     id_ = "";
     path_ = "";
     methods_ = java.util.Collections.emptyList();
+    endpointSecurity_ = java.util.Collections.emptyList();
     schemes_ = com.google.protobuf.LazyStringArrayList.EMPTY;
   }
 
@@ -91,11 +92,20 @@ private static final long serialVersionUID = 0L;
 
             break;
           }
-          case 66: {
+          case 58: {
             if (!((mutable_bitField0_ & 0x00000002) != 0)) {
+              endpointSecurity_ = new java.util.ArrayList<org.wso2.choreo.connect.discovery.api.SecurityInfo>();
+              mutable_bitField0_ |= 0x00000002;
+            }
+            endpointSecurity_.add(
+                input.readMessage(org.wso2.choreo.connect.discovery.api.SecurityInfo.parser(), extensionRegistry));
+            break;
+          }
+          case 66: {
+            if (!((mutable_bitField0_ & 0x00000004) != 0)) {
               security_ = com.google.protobuf.MapField.newMapField(
                   SecurityDefaultEntryHolder.defaultEntry);
-              mutable_bitField0_ |= 0x00000002;
+              mutable_bitField0_ |= 0x00000004;
             }
             com.google.protobuf.MapEntry<java.lang.String, java.lang.String>
             security__ = input.readMessage(
@@ -106,9 +116,9 @@ private static final long serialVersionUID = 0L;
           }
           case 82: {
             java.lang.String s = input.readStringRequireUtf8();
-            if (!((mutable_bitField0_ & 0x00000004) != 0)) {
+            if (!((mutable_bitField0_ & 0x00000008) != 0)) {
               schemes_ = new com.google.protobuf.LazyStringArrayList();
-              mutable_bitField0_ |= 0x00000004;
+              mutable_bitField0_ |= 0x00000008;
             }
             schemes_.add(s);
             break;
@@ -131,7 +141,10 @@ private static final long serialVersionUID = 0L;
       if (((mutable_bitField0_ & 0x00000001) != 0)) {
         methods_ = java.util.Collections.unmodifiableList(methods_);
       }
-      if (((mutable_bitField0_ & 0x00000004) != 0)) {
+      if (((mutable_bitField0_ & 0x00000002) != 0)) {
+        endpointSecurity_ = java.util.Collections.unmodifiableList(endpointSecurity_);
+      }
+      if (((mutable_bitField0_ & 0x00000008) != 0)) {
         schemes_ = schemes_.getUnmodifiableView();
       }
       this.unknownFields = unknownFields.build();
@@ -305,6 +318,46 @@ private static final long serialVersionUID = 0L;
     return getEndpoints();
   }
 
+  public static final int ENDPOINTSECURITY_FIELD_NUMBER = 7;
+  private java.util.List<org.wso2.choreo.connect.discovery.api.SecurityInfo> endpointSecurity_;
+  /**
+   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+   */
+  @java.lang.Override
+  public java.util.List<org.wso2.choreo.connect.discovery.api.SecurityInfo> getEndpointSecurityList() {
+    return endpointSecurity_;
+  }
+  /**
+   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+   */
+  @java.lang.Override
+  public java.util.List<? extends org.wso2.choreo.connect.discovery.api.SecurityInfoOrBuilder> 
+      getEndpointSecurityOrBuilderList() {
+    return endpointSecurity_;
+  }
+  /**
+   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+   */
+  @java.lang.Override
+  public int getEndpointSecurityCount() {
+    return endpointSecurity_.size();
+  }
+  /**
+   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+   */
+  @java.lang.Override
+  public org.wso2.choreo.connect.discovery.api.SecurityInfo getEndpointSecurity(int index) {
+    return endpointSecurity_.get(index);
+  }
+  /**
+   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+   */
+  @java.lang.Override
+  public org.wso2.choreo.connect.discovery.api.SecurityInfoOrBuilder getEndpointSecurityOrBuilder(
+      int index) {
+    return endpointSecurity_.get(index);
+  }
+
   public static final int SECURITY_FIELD_NUMBER = 8;
   private static final class SecurityDefaultEntryHolder {
     static final com.google.protobuf.MapEntry<
@@ -447,6 +500,9 @@ private static final long serialVersionUID = 0L;
     if (endpoints_ != null) {
       output.writeMessage(6, getEndpoints());
     }
+    for (int i = 0; i < endpointSecurity_.size(); i++) {
+      output.writeMessage(7, endpointSecurity_.get(i));
+    }
     com.google.protobuf.GeneratedMessageV3
       .serializeStringMapTo(
         output,
@@ -478,6 +534,10 @@ private static final long serialVersionUID = 0L;
     if (endpoints_ != null) {
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(6, getEndpoints());
+    }
+    for (int i = 0; i < endpointSecurity_.size(); i++) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(7, endpointSecurity_.get(i));
     }
     for (java.util.Map.Entry<java.lang.String, java.lang.String> entry
          : internalGetSecurity().getMap().entrySet()) {
@@ -523,6 +583,8 @@ private static final long serialVersionUID = 0L;
       if (!getEndpoints()
           .equals(other.getEndpoints())) return false;
     }
+    if (!getEndpointSecurityList()
+        .equals(other.getEndpointSecurityList())) return false;
     if (!internalGetSecurity().equals(
         other.internalGetSecurity())) return false;
     if (!getSchemesList()
@@ -549,6 +611,10 @@ private static final long serialVersionUID = 0L;
     if (hasEndpoints()) {
       hash = (37 * hash) + ENDPOINTS_FIELD_NUMBER;
       hash = (53 * hash) + getEndpoints().hashCode();
+    }
+    if (getEndpointSecurityCount() > 0) {
+      hash = (37 * hash) + ENDPOINTSECURITY_FIELD_NUMBER;
+      hash = (53 * hash) + getEndpointSecurityList().hashCode();
     }
     if (!internalGetSecurity().getMap().isEmpty()) {
       hash = (37 * hash) + SECURITY_FIELD_NUMBER;
@@ -713,6 +779,7 @@ private static final long serialVersionUID = 0L;
       if (com.google.protobuf.GeneratedMessageV3
               .alwaysUseFieldBuilders) {
         getMethodsFieldBuilder();
+        getEndpointSecurityFieldBuilder();
       }
     }
     @java.lang.Override
@@ -734,9 +801,15 @@ private static final long serialVersionUID = 0L;
         endpoints_ = null;
         endpointsBuilder_ = null;
       }
+      if (endpointSecurityBuilder_ == null) {
+        endpointSecurity_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000002);
+      } else {
+        endpointSecurityBuilder_.clear();
+      }
       internalGetMutableSecurity().clear();
       schemes_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      bitField0_ = (bitField0_ & ~0x00000004);
+      bitField0_ = (bitField0_ & ~0x00000008);
       return this;
     }
 
@@ -780,11 +853,20 @@ private static final long serialVersionUID = 0L;
       } else {
         result.endpoints_ = endpointsBuilder_.build();
       }
+      if (endpointSecurityBuilder_ == null) {
+        if (((bitField0_ & 0x00000002) != 0)) {
+          endpointSecurity_ = java.util.Collections.unmodifiableList(endpointSecurity_);
+          bitField0_ = (bitField0_ & ~0x00000002);
+        }
+        result.endpointSecurity_ = endpointSecurity_;
+      } else {
+        result.endpointSecurity_ = endpointSecurityBuilder_.build();
+      }
       result.security_ = internalGetSecurity();
       result.security_.makeImmutable();
-      if (((bitField0_ & 0x00000004) != 0)) {
+      if (((bitField0_ & 0x00000008) != 0)) {
         schemes_ = schemes_.getUnmodifiableView();
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000008);
       }
       result.schemes_ = schemes_;
       onBuilt();
@@ -872,12 +954,38 @@ private static final long serialVersionUID = 0L;
       if (other.hasEndpoints()) {
         mergeEndpoints(other.getEndpoints());
       }
+      if (endpointSecurityBuilder_ == null) {
+        if (!other.endpointSecurity_.isEmpty()) {
+          if (endpointSecurity_.isEmpty()) {
+            endpointSecurity_ = other.endpointSecurity_;
+            bitField0_ = (bitField0_ & ~0x00000002);
+          } else {
+            ensureEndpointSecurityIsMutable();
+            endpointSecurity_.addAll(other.endpointSecurity_);
+          }
+          onChanged();
+        }
+      } else {
+        if (!other.endpointSecurity_.isEmpty()) {
+          if (endpointSecurityBuilder_.isEmpty()) {
+            endpointSecurityBuilder_.dispose();
+            endpointSecurityBuilder_ = null;
+            endpointSecurity_ = other.endpointSecurity_;
+            bitField0_ = (bitField0_ & ~0x00000002);
+            endpointSecurityBuilder_ = 
+              com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                 getEndpointSecurityFieldBuilder() : null;
+          } else {
+            endpointSecurityBuilder_.addAllMessages(other.endpointSecurity_);
+          }
+        }
+      }
       internalGetMutableSecurity().mergeFrom(
           other.internalGetSecurity());
       if (!other.schemes_.isEmpty()) {
         if (schemes_.isEmpty()) {
           schemes_ = other.schemes_;
-          bitField0_ = (bitField0_ & ~0x00000004);
+          bitField0_ = (bitField0_ & ~0x00000008);
         } else {
           ensureSchemesIsMutable();
           schemes_.addAll(other.schemes_);
@@ -1425,6 +1533,246 @@ private static final long serialVersionUID = 0L;
       return endpointsBuilder_;
     }
 
+    private java.util.List<org.wso2.choreo.connect.discovery.api.SecurityInfo> endpointSecurity_ =
+      java.util.Collections.emptyList();
+    private void ensureEndpointSecurityIsMutable() {
+      if (!((bitField0_ & 0x00000002) != 0)) {
+        endpointSecurity_ = new java.util.ArrayList<org.wso2.choreo.connect.discovery.api.SecurityInfo>(endpointSecurity_);
+        bitField0_ |= 0x00000002;
+       }
+    }
+
+    private com.google.protobuf.RepeatedFieldBuilderV3<
+        org.wso2.choreo.connect.discovery.api.SecurityInfo, org.wso2.choreo.connect.discovery.api.SecurityInfo.Builder, org.wso2.choreo.connect.discovery.api.SecurityInfoOrBuilder> endpointSecurityBuilder_;
+
+    /**
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+     */
+    public java.util.List<org.wso2.choreo.connect.discovery.api.SecurityInfo> getEndpointSecurityList() {
+      if (endpointSecurityBuilder_ == null) {
+        return java.util.Collections.unmodifiableList(endpointSecurity_);
+      } else {
+        return endpointSecurityBuilder_.getMessageList();
+      }
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+     */
+    public int getEndpointSecurityCount() {
+      if (endpointSecurityBuilder_ == null) {
+        return endpointSecurity_.size();
+      } else {
+        return endpointSecurityBuilder_.getCount();
+      }
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+     */
+    public org.wso2.choreo.connect.discovery.api.SecurityInfo getEndpointSecurity(int index) {
+      if (endpointSecurityBuilder_ == null) {
+        return endpointSecurity_.get(index);
+      } else {
+        return endpointSecurityBuilder_.getMessage(index);
+      }
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+     */
+    public Builder setEndpointSecurity(
+        int index, org.wso2.choreo.connect.discovery.api.SecurityInfo value) {
+      if (endpointSecurityBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureEndpointSecurityIsMutable();
+        endpointSecurity_.set(index, value);
+        onChanged();
+      } else {
+        endpointSecurityBuilder_.setMessage(index, value);
+      }
+      return this;
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+     */
+    public Builder setEndpointSecurity(
+        int index, org.wso2.choreo.connect.discovery.api.SecurityInfo.Builder builderForValue) {
+      if (endpointSecurityBuilder_ == null) {
+        ensureEndpointSecurityIsMutable();
+        endpointSecurity_.set(index, builderForValue.build());
+        onChanged();
+      } else {
+        endpointSecurityBuilder_.setMessage(index, builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+     */
+    public Builder addEndpointSecurity(org.wso2.choreo.connect.discovery.api.SecurityInfo value) {
+      if (endpointSecurityBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureEndpointSecurityIsMutable();
+        endpointSecurity_.add(value);
+        onChanged();
+      } else {
+        endpointSecurityBuilder_.addMessage(value);
+      }
+      return this;
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+     */
+    public Builder addEndpointSecurity(
+        int index, org.wso2.choreo.connect.discovery.api.SecurityInfo value) {
+      if (endpointSecurityBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureEndpointSecurityIsMutable();
+        endpointSecurity_.add(index, value);
+        onChanged();
+      } else {
+        endpointSecurityBuilder_.addMessage(index, value);
+      }
+      return this;
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+     */
+    public Builder addEndpointSecurity(
+        org.wso2.choreo.connect.discovery.api.SecurityInfo.Builder builderForValue) {
+      if (endpointSecurityBuilder_ == null) {
+        ensureEndpointSecurityIsMutable();
+        endpointSecurity_.add(builderForValue.build());
+        onChanged();
+      } else {
+        endpointSecurityBuilder_.addMessage(builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+     */
+    public Builder addEndpointSecurity(
+        int index, org.wso2.choreo.connect.discovery.api.SecurityInfo.Builder builderForValue) {
+      if (endpointSecurityBuilder_ == null) {
+        ensureEndpointSecurityIsMutable();
+        endpointSecurity_.add(index, builderForValue.build());
+        onChanged();
+      } else {
+        endpointSecurityBuilder_.addMessage(index, builderForValue.build());
+      }
+      return this;
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+     */
+    public Builder addAllEndpointSecurity(
+        java.lang.Iterable<? extends org.wso2.choreo.connect.discovery.api.SecurityInfo> values) {
+      if (endpointSecurityBuilder_ == null) {
+        ensureEndpointSecurityIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, endpointSecurity_);
+        onChanged();
+      } else {
+        endpointSecurityBuilder_.addAllMessages(values);
+      }
+      return this;
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+     */
+    public Builder clearEndpointSecurity() {
+      if (endpointSecurityBuilder_ == null) {
+        endpointSecurity_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000002);
+        onChanged();
+      } else {
+        endpointSecurityBuilder_.clear();
+      }
+      return this;
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+     */
+    public Builder removeEndpointSecurity(int index) {
+      if (endpointSecurityBuilder_ == null) {
+        ensureEndpointSecurityIsMutable();
+        endpointSecurity_.remove(index);
+        onChanged();
+      } else {
+        endpointSecurityBuilder_.remove(index);
+      }
+      return this;
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+     */
+    public org.wso2.choreo.connect.discovery.api.SecurityInfo.Builder getEndpointSecurityBuilder(
+        int index) {
+      return getEndpointSecurityFieldBuilder().getBuilder(index);
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+     */
+    public org.wso2.choreo.connect.discovery.api.SecurityInfoOrBuilder getEndpointSecurityOrBuilder(
+        int index) {
+      if (endpointSecurityBuilder_ == null) {
+        return endpointSecurity_.get(index);  } else {
+        return endpointSecurityBuilder_.getMessageOrBuilder(index);
+      }
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+     */
+    public java.util.List<? extends org.wso2.choreo.connect.discovery.api.SecurityInfoOrBuilder> 
+         getEndpointSecurityOrBuilderList() {
+      if (endpointSecurityBuilder_ != null) {
+        return endpointSecurityBuilder_.getMessageOrBuilderList();
+      } else {
+        return java.util.Collections.unmodifiableList(endpointSecurity_);
+      }
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+     */
+    public org.wso2.choreo.connect.discovery.api.SecurityInfo.Builder addEndpointSecurityBuilder() {
+      return getEndpointSecurityFieldBuilder().addBuilder(
+          org.wso2.choreo.connect.discovery.api.SecurityInfo.getDefaultInstance());
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+     */
+    public org.wso2.choreo.connect.discovery.api.SecurityInfo.Builder addEndpointSecurityBuilder(
+        int index) {
+      return getEndpointSecurityFieldBuilder().addBuilder(
+          index, org.wso2.choreo.connect.discovery.api.SecurityInfo.getDefaultInstance());
+    }
+    /**
+     * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+     */
+    public java.util.List<org.wso2.choreo.connect.discovery.api.SecurityInfo.Builder> 
+         getEndpointSecurityBuilderList() {
+      return getEndpointSecurityFieldBuilder().getBuilderList();
+    }
+    private com.google.protobuf.RepeatedFieldBuilderV3<
+        org.wso2.choreo.connect.discovery.api.SecurityInfo, org.wso2.choreo.connect.discovery.api.SecurityInfo.Builder, org.wso2.choreo.connect.discovery.api.SecurityInfoOrBuilder> 
+        getEndpointSecurityFieldBuilder() {
+      if (endpointSecurityBuilder_ == null) {
+        endpointSecurityBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+            org.wso2.choreo.connect.discovery.api.SecurityInfo, org.wso2.choreo.connect.discovery.api.SecurityInfo.Builder, org.wso2.choreo.connect.discovery.api.SecurityInfoOrBuilder>(
+                endpointSecurity_,
+                ((bitField0_ & 0x00000002) != 0),
+                getParentForChildren(),
+                isClean());
+        endpointSecurity_ = null;
+      }
+      return endpointSecurityBuilder_;
+    }
+
     private com.google.protobuf.MapField<
         java.lang.String, java.lang.String> security_;
     private com.google.protobuf.MapField<java.lang.String, java.lang.String>
@@ -1555,9 +1903,9 @@ private static final long serialVersionUID = 0L;
 
     private com.google.protobuf.LazyStringList schemes_ = com.google.protobuf.LazyStringArrayList.EMPTY;
     private void ensureSchemesIsMutable() {
-      if (!((bitField0_ & 0x00000004) != 0)) {
+      if (!((bitField0_ & 0x00000008) != 0)) {
         schemes_ = new com.google.protobuf.LazyStringArrayList(schemes_);
-        bitField0_ |= 0x00000004;
+        bitField0_ |= 0x00000008;
        }
     }
     /**
@@ -1642,7 +1990,7 @@ private static final long serialVersionUID = 0L;
      */
     public Builder clearSchemes() {
       schemes_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      bitField0_ = (bitField0_ & ~0x00000004);
+      bitField0_ = (bitField0_ & ~0x00000008);
       onChanged();
       return this;
     }

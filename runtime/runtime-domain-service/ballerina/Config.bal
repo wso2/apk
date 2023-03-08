@@ -17,6 +17,18 @@
 //
 import wso2/apk_common_lib as commons;
 
+public type ControlPlaneConfiguration record {
+    string serviceBaseURl;
+    KeyStore certificate?;
+    boolean enableAuthentication=true;
+    boolean enableHostNameVerification=false;
+    Header[] headers = [];
+};
+
+public type Header record {|
+    string name;
+    string value;
+|};
 # This Record contains the Runtime related configurations
 #
 # + serviceListingNamespaces - Namespaces for List Services  
@@ -25,8 +37,9 @@ import wso2/apk_common_lib as commons;
 # + keyStores - KeyStore Configuration  
 # + k8sConfiguration - K8s Configuration (debug purpose only.)  
 # + vhost - Field Description  
-# + idpConfiguration - IDP configuration for JWT generated from Enforcer.
-# 
+# + idpConfiguration - IDP configuration for JWT generated from Enforcer.  
+# + controlPlane - Field Description  
+# + orgResolver - Field Description 
 public type RuntimeConfiguratation record {|
     
     (string[] & readonly) serviceListingNamespaces = [ALL_NAMESPACES];
@@ -36,6 +49,9 @@ public type RuntimeConfiguratation record {|
     (K8sConfigurations & readonly) k8sConfiguration = {};
     (Vhost[] & readonly) vhost = [{name:"Default",hosts:["gw.wso2.com"],'type:PRODUCTION_TYPE},{name:"Default",hosts:["sandbox.gw.wso2.com"],'type:SANDBOX_TYPE}];
     commons:IDPConfiguration idpConfiguration;
+    ControlPlaneConfiguration controlPlane;
+
+    string orgResolver = "controlPlane"; // controlPlane, k8s
 |};
 
 public type Vhost record {|
@@ -46,7 +62,7 @@ string 'type;
 
 
 public type TokenIssuerConfiguration record {|
-    string issuer = "https://localhost:9443/oauth2/token";
+    string issuer = "https://apim.wso2.com/publisher";
     string audience = "https://localhost:9443/oauth2/token";
     string keyId = "gateway_certificate_alias";
     decimal expTime = 3600;

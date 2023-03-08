@@ -4,7 +4,7 @@ import wso2/apk_common_lib as commons;
 public class K8sBaseOrgResolver {
     *commons:OrganizationResolver;
 
-    public isolated function retrieveOrganizationFromIDPClaimValue(string organizationClaim) returns commons:Organization? {
+    public isolated function retrieveOrganizationFromIDPClaimValue(string organizationClaim) returns commons:Organization|commons:APKError|() {
         OrgClient orgClient = new;
         model:Organization? retrievedOrg = orgClient.retrieveOrganizationFromIDPClaimValue(organizationClaim);
         if retrievedOrg is model:Organization {
@@ -14,7 +14,7 @@ public class K8sBaseOrgResolver {
         return;
     }
 
-    public isolated function retrieveOrganizationByName(string organizationName) returns commons:Organization? {
+    public isolated function retrieveOrganizationByName(string organizationName) returns commons:Organization|commons:APKError|() {
         OrgClient orgClient = new;
         model:Organization? organization = orgClient.retrieveOrganizationByName(organizationName);
         if organization is model:Organization {

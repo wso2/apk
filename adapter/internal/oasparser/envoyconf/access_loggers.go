@@ -18,8 +18,6 @@
 package envoyconf
 
 import (
-	"fmt"
-
 	config_access_logv3 "github.com/envoyproxy/go-control-plane/envoy/config/accesslog/v3"
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	file_accesslogv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/access_loggers/file/v3"
@@ -27,7 +25,7 @@ import (
 	"github.com/golang/protobuf/ptypes"
 	"github.com/wso2/apk/adapter/config"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
-	"github.com/wso2/apk/adapter/pkg/logging"
+	logging "github.com/wso2/apk/adapter/internal/logging"
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
@@ -72,11 +70,7 @@ func getFileAccessLogConfigs() *config_access_logv3.AccessLog {
 
 	accessLogTypedConf, err := anypb.New(accessLogConf)
 	if err != nil {
-		logger.LoggerOasparser.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("Error marsheling access log configs. %v", err.Error()),
-			Severity:  logging.CRITICAL,
-			ErrorCode: 2200,
-		})
+		logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2200, err.Error()))
 		return nil
 	}
 
@@ -115,11 +109,7 @@ func getGRPCAccessLogConfigs(conf *config.Config) *config_access_logv3.AccessLog
 	}
 	accessLogTypedConf, err := anypb.New(accessLogConf)
 	if err != nil {
-		logger.LoggerOasparser.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("Error marshalling gRPC access log configs. %v", err.Error()),
-			Severity:  logging.CRITICAL,
-			ErrorCode: 2201,
-		})
+		logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2201, err.Error()))
 		return nil
 	}
 

@@ -161,10 +161,11 @@ func GetEnforcerAPI(mgwSwagger model.MgwSwagger, vhost string) *api.Api {
 		if res.GetEndpoints() != nil {
 			resource.Endpoints = generateRPCEndpointCluster(res.GetEndpoints())
 		}
+		if res.GetEndpointSecurity() != nil {
+			resource.EndpointSecurity = generateRPCEndpointSecurity(res.GetEndpointSecurity())
+		}
 		resources = append(resources, resource)
 	}
-
-	endpointSecurityDetails := &api.EndpointSecurity{}
 
 	for _, cert := range mgwSwagger.GetClientCerts() {
 		certificate := &api.Certificate{
@@ -186,7 +187,6 @@ func GetEnforcerAPI(mgwSwagger model.MgwSwagger, vhost string) *api.Api {
 		Tier:                mgwSwagger.GetXWso2ThrottlingTier(),
 		SecurityScheme:      securitySchemes,
 		Security:            securityList,
-		EndpointSecurity:    endpointSecurityDetails,
 		AuthorizationHeader: mgwSwagger.GetXWSO2AuthHeader(),
 		DisableSecurity:     mgwSwagger.GetDisableSecurity(),
 		OrganizationId:      mgwSwagger.OrganizationID,
@@ -310,4 +310,21 @@ func generateRPCEndpointCluster(inputEndpointCluster *model.EndpointCluster) *ap
 		}
 	}
 	return endpoints
+}
+
+func generateRPCEndpointSecurity(inputEndpointSecurity []*model.EndpointSecurity) []*api.SecurityInfo {
+	if inputEndpointSecurity == nil {
+		return nil
+	}
+	var securityConfig []*api.SecurityInfo
+	for _, security := range inputEndpointSecurity {
+		securityConfig = append(securityConfig, &api.SecurityInfo{
+			SecurityType:     security.Type,
+			Username:         security.Username,
+			Password:         security.Password,
+			Enabled:          security.Enabled,
+			CustomParameters: security.CustomParameters,
+		})
+	}
+	return securityConfig
 }

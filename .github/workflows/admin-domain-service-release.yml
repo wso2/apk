@@ -21,6 +21,8 @@ on:
 concurrency:
   group: admin-domain-service-${{ github.event.number }}
   cancel-in-progress: true
+env:
+  GH_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -49,6 +51,14 @@ jobs:
           fetch-depth: "0"
           path: apk-repo
           token: ${{ secrets.WSO2_BOT_TOKEN }}
+      - name: checkout pull request and merge.
+        shell: sh
+        if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize'
+        run: |
+          gh pr checkout ${{ github.event.number }} -b pr-${{ github.event.number }}
+          git checkout pr-${{ github.event.number }}
+          git merge origin/main
+          
       - name: Set release username and email
         shell: sh
         run: |

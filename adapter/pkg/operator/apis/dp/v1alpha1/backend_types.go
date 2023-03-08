@@ -28,4 +28,5 @@ type BackendProperties struct {
 	ResolvedHostname string
 	Protocol         BackendProtocolType
 	TLS              TLSConfig
+	Security         []SecurityConfig
 }

@@ -32,6 +32,7 @@ public class ResourceConfig {
     private String tier = "Unlimited";
     private boolean disableSecurity = false;
     private EndpointCluster endpoints;
+    private EndpointSecurity[] endpointSecurity;
     private PolicyConfig policyConfig;
     private MockedApiConfig mockedApiConfig;
 
@@ -151,6 +152,14 @@ public class ResourceConfig {
 
     public void setPolicyConfig(PolicyConfig policyConfig) {
         this.policyConfig = policyConfig;
+    }
+
+    public EndpointSecurity[] getEndpointSecurity() {
+        return endpointSecurity;
+    }
+
+    public void setEndpointSecurity(EndpointSecurity[] endpointSecurity) {
+        this.endpointSecurity = endpointSecurity;
     }
 }
 

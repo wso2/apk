@@ -71,6 +71,30 @@ public interface ResourceOrBuilder extends
   org.wso2.choreo.connect.discovery.api.EndpointClusterOrBuilder getEndpointsOrBuilder();
 
   /**
+   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+   */
+  java.util.List<org.wso2.choreo.connect.discovery.api.SecurityInfo> 
+      getEndpointSecurityList();
+  /**
+   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+   */
+  org.wso2.choreo.connect.discovery.api.SecurityInfo getEndpointSecurity(int index);
+  /**
+   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+   */
+  int getEndpointSecurityCount();
+  /**
+   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+   */
+  java.util.List<? extends org.wso2.choreo.connect.discovery.api.SecurityInfoOrBuilder> 
+      getEndpointSecurityOrBuilderList();
+  /**
+   * <code>repeated .wso2.discovery.api.SecurityInfo endpointSecurity = 7;</code>
+   */
+  org.wso2.choreo.connect.discovery.api.SecurityInfoOrBuilder getEndpointSecurityOrBuilder(
+      int index);
+
+  /**
    * <code>map&lt;string, string&gt; security = 8;</code>
    */
   int getSecurityCount();

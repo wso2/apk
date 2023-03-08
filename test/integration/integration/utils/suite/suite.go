@@ -167,7 +167,7 @@ func (test *IntegrationTest) Run(t *testing.T, suite *IntegrationTestSuite) {
 
 	for _, manifestLocation := range test.Manifests {
 		t.Logf("Applying %s", manifestLocation)
-		suite.Applier.MustApplyWithCleanup(t, suite.Client, suite.TimeoutConfig, manifestLocation, false)
+		suite.Applier.MustApplyWithCleanup(t, suite.Client, suite.TimeoutConfig, manifestLocation, true)
 	}
 
 	test.Test(t, suite)

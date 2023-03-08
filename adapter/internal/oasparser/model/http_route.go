@@ -192,6 +192,7 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, ht
 		if len(rule.BackendRefs) < 1 {
 			return fmt.Errorf("no backendref were provided")
 		}
+		var securityConfig []EndpointSecurity
 		for _, backend := range rule.BackendRefs {
 			backendProperties := httpRouteParams.BackendPropertyMapping[types.NamespacedName{
 				Name:      string(backend.Name),
@@ -204,8 +205,18 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, ht
 					Certificate: []byte(backendProperties.TLS.CertificateInline),
 					VerifySANs:  backendProperties.TLS.VerifySANs,
 				})
+			for _, security := range backendProperties.Security {
+				switch security.Type {
+				case "Basic":
+					securityConfig = append(securityConfig, EndpointSecurity{
+						Password: string(security.Basic.Password),
+						Username: string(security.Basic.Username),
+						Type:     string(security.Type),
+						Enabled:  true,
+					})
+				}
+			}
 		}
-
 		for _, match := range rule.Matches {
 			resourcePath := *match.Path.Value
 			resource := &Resource{path: resourcePath,
@@ -217,6 +228,7 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, ht
 			resource.endpoints = &EndpointCluster{
 				Endpoints: endPoints,
 			}
+			resource.endpointSecurity = utils.GetPtrSlice(securityConfig)
 			resources = append(resources, resource)
 		}
 	}

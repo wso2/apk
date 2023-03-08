@@ -20,7 +20,6 @@ package auth
 import (
 	"encoding/base64"
 	"errors"
-	"fmt"
 	"io/ioutil"
 
 	"github.com/go-git/go-git/v5/plumbing/transport"
@@ -55,21 +54,13 @@ func GetGitAuth() (transport.AuthMethod, error) {
 	} else if sshKeyFile != "" {
 		sshKey, err := ioutil.ReadFile(sshKeyFile)
 		if err != nil {
-			loggers.LoggerAuth.ErrorC(logging.ErrorDetails{
-				Message:   fmt.Sprintf("Error reading ssh key file: %s", err.Error()),
-				Severity:  logging.CRITICAL,
-				ErrorCode: 3001,
-			})
+			loggers.LoggerAuth.ErrorC(logging.GetErrorByCode(3001, err.Error()))
 			return nil, err
 		}
 
 		publicKey, err := ssh.NewPublicKeys(ssh.DefaultUsername, sshKey, "")
 		if err != nil {
-			loggers.LoggerAuth.ErrorC(logging.ErrorDetails{
-				Message:   fmt.Sprintf("Error creating ssh public key: %s", err.Error()),
-				Severity:  logging.CRITICAL,
-				ErrorCode: 3002,
-			})
+			loggers.LoggerAuth.ErrorC(logging.GetErrorByCode(3002, err.Error()))
 			return nil, err
 		}
 

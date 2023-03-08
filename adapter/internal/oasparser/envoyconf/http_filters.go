@@ -20,7 +20,6 @@
 package envoyconf
 
 import (
-	"fmt"
 	"time"
 
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
@@ -40,7 +39,7 @@ import (
 	"github.com/golang/protobuf/ptypes"
 	"github.com/wso2/apk/adapter/config"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
-	"github.com/wso2/apk/adapter/pkg/logging"
+	logging "github.com/wso2/apk/adapter/internal/logging"
 
 	//mgw_websocket "github.com/wso2/micro-gw/internal/oasparser/envoyconf/api"
 	"github.com/golang/protobuf/ptypes/any"
@@ -63,11 +62,7 @@ func getHTTPFilters() []*hcmv3.HttpFilter {
 	if conf.Envoy.Filters.Compression.Enabled {
 		compressionFilter, err := getCompressorFilter()
 		if err != nil {
-			logger.LoggerXds.ErrorC(logging.ErrorDetails{
-				Message:   fmt.Sprintf("Error occurred while creating the compression filter: %v", err.Error()),
-				Severity:  logging.MINOR,
-				ErrorCode: 2234,
-			})
+			logger.LoggerXds.ErrorC(logging.GetErrorByCode(2234, err.Error()))
 			return httpFilters
 		}
 		httpFilters = httpFilters[:len(httpFilters)-1]
@@ -180,13 +175,13 @@ func getExtAuthzHTTPFilter() *hcmv3.HttpFilter {
 func getLuaFilter() *hcmv3.HttpFilter {
 	luaConfig := &luav3.Lua{
 		DefaultSourceCode: &corev3.DataSource{
- 			Specifier: &corev3.DataSource_InlineString{
- 				InlineString: "function envoy_on_request(request_handle)" +
- 					"\nend" +
- 					"\nfunction envoy_on_response(response_handle)" +
- 					"\nend",
- 			},
- 		},
+			Specifier: &corev3.DataSource_InlineString{
+				InlineString: "function envoy_on_request(request_handle)" +
+					"\nend" +
+					"\nfunction envoy_on_response(response_handle)" +
+					"\nend",
+			},
+		},
 	}
 	ext, err2 := anypb.New(luaConfig)
 	if err2 != nil {

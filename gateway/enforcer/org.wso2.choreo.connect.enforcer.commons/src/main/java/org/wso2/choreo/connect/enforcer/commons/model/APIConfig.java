@@ -37,7 +37,6 @@ public class APIConfig {
     private Map<String, SecuritySchemaConfig> securitySchemeDefinitions; // security scheme def name -> scheme def
     private String apiLifeCycleState;
     private String authorizationHeader;
-    private EndpointSecurity endpointSecurity;
     private String organizationId;
     private String uuid;
 
@@ -110,16 +109,6 @@ public class APIConfig {
      */
     public String getVersion() {
         return version;
-    }
-
-    /**
-     * Corresponding API's Backend Endpoint Security Object is returned.
-     * If the backend endpoint is protected with BasicAuth, those information could
-     * be fetched from here.
-     * @return {@code EndpointSecurity} object of the API
-     */
-    public EndpointSecurity getEndpointSecurity() {
-        return endpointSecurity;
     }
 
     /**
@@ -264,7 +253,6 @@ public class APIConfig {
         private String envType;
         private String apiLifeCycleState;
         private String authorizationHeader;
-        private EndpointSecurity endpointSecurity;
         private String organizationId;
         private String uuid;
         private Map<String, SecuritySchemaConfig> securitySchemeDefinitions;
@@ -333,11 +321,6 @@ public class APIConfig {
             return this;
         }
 
-        public Builder endpointSecurity(EndpointSecurity endpointSecurity) {
-            this.endpointSecurity = endpointSecurity;
-            return this;
-        }
-
         public Builder authHeader(String authorizationHeader) {
             this.authorizationHeader = authorizationHeader;
             return this;
@@ -402,7 +385,6 @@ public class APIConfig {
             apiConfig.envType = this.envType;
             apiConfig.apiSecurity = this.apiSecurity;
             apiConfig.tier = this.tier;
-            apiConfig.endpointSecurity = this.endpointSecurity;
             apiConfig.authorizationHeader = this.authorizationHeader;
             apiConfig.disableSecurity = this.disableSecurity;
             apiConfig.organizationId = this.organizationId;

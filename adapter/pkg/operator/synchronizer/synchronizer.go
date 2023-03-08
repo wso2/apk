@@ -58,11 +58,7 @@ func HandleAPILifeCycleEvents(ch *chan APIEvent) {
 	loggers.LoggerAPKOperator.Info("Operator synchronizer listening for API lifecycle events...")
 	for event := range *ch {
 		if event.Event.APIDefinition == nil {
-			loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-				Message:   "API Event is nil",
-				Severity:  logging.BLOCKER,
-				ErrorCode: 2600,
-			})
+			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2628))
 		}
 		loggers.LoggerAPKOperator.Infof("%s event received for %v", event.EventType, event.Event.APIDefinition.Name)
 		var err error
@@ -75,11 +71,7 @@ func HandleAPILifeCycleEvents(ch *chan APIEvent) {
 			err = deployAPIInGateway(event.Event)
 		}
 		if err != nil {
-			loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-				Message:   fmt.Sprintf("API deployment failed for %s event : %v", event.EventType, err),
-				ErrorCode: 2616,
-				Severity:  logging.MAJOR,
-			})
+			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2629, event.EventType, err))
 		} else {
 			if config.ReadConfigs().ManagementServer.Enabled {
 				mgtServerCh <- event
@@ -95,14 +87,8 @@ func undeployAPIInGateway(apiState APIState) error {
 		err = deleteAPIFromEnv(apiState.ProdHTTPRoute.HTTPRoute, apiState)
 	}
 	if err != nil {
-		loggers.LoggerXds.ErrorC(logging.ErrorDetails{
-			Message: fmt.Sprintf("Error undeploying prod httpRoute of API : %v in Organization %v from environments %v."+
-				" Hence not checking on deleting the sand httpRoute of the API",
-				string(apiState.APIDefinition.ObjectMeta.UID), apiState.APIDefinition.Spec.Organization,
-				getLabelsForAPI(apiState.ProdHTTPRoute.HTTPRoute)),
-			Severity:  logging.MAJOR,
-			ErrorCode: 1415,
-		})
+		loggers.LoggerXds.ErrorC(logging.GetErrorByCode(2630, string(apiState.APIDefinition.ObjectMeta.UID), apiState.APIDefinition.Spec.Organization,
+			getLabelsForAPI(apiState.ProdHTTPRoute.HTTPRoute)))
 		return err
 	}
 	if apiState.SandHTTPRoute != nil {
@@ -147,19 +133,11 @@ func GenerateMGWSwagger(apiState APIState, httpRoute *HTTPRouteState, envType st
 		ResourceScopes:         httpRoute.Scopes,
 	}
 	if err := mgwSwagger.SetInfoHTTPRouteCR(httpRoute.HTTPRoute, httpRouteParams); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("Error setting HttpRoute CR info to mgwSwagger. %v", err),
-			Severity:  logging.MAJOR,
-			ErrorCode: 2613,
-		})
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2631, err))
 		return nil, err
 	}
 	if err := mgwSwagger.Validate(); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("Error validating mgwSwagger intermediate representation. %v", err),
-			Severity:  logging.MAJOR,
-			ErrorCode: 2615,
-		})
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2632, err))
 		return nil, err
 	}
 	vHosts := getVhostsForAPI(httpRoute.HTTPRoute)
@@ -167,12 +145,7 @@ func GenerateMGWSwagger(apiState APIState, httpRoute *HTTPRouteState, envType st
 
 	err := xds.UpdateAPICache(vHosts, labels, mgwSwagger)
 	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-			Message: fmt.Sprintf("Error updating the API : %s:%s in vhosts: %s. %v",
-				mgwSwagger.GetTitle(), mgwSwagger.GetVersion(), vHosts, err),
-			Severity:  logging.MAJOR,
-			ErrorCode: 2614,
-		})
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2633, mgwSwagger.GetTitle(), mgwSwagger.GetVersion(), vHosts, err))
 	}
 	return &mgwSwagger, nil
 }
@@ -207,11 +180,7 @@ func SendAPIToAPKMgtServer() {
 			conn, err := client.GetConnection(address)
 			apiClient := apiProtos.NewAPIServiceClient(conn)
 			if err != nil {
-				loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-					Message:   fmt.Sprintf("Error creating connection for %v : %v", address, err),
-					ErrorCode: 6000,
-					Severity:  logging.BLOCKER,
-				})
+				loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2634, address, err))
 			}
 			_, err = client.ExecuteGRPCCall(func() (interface{}, error) {
 				if strings.Compare(apiEvent.EventType, constants.Create) == 0 {
@@ -250,11 +219,7 @@ func SendAPIToAPKMgtServer() {
 				return nil, nil
 			})
 			if err != nil {
-				loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-					Message:   fmt.Sprintf("Error sending API to APK management server : %v", err),
-					ErrorCode: 6001,
-					Severity:  logging.MAJOR,
-				})
+				loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2635, err))
 			}
 		}
 	}
