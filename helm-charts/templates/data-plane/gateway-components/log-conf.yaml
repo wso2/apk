@@ -10,7 +10,7 @@ data:
     [adapter.server]
       enabled = true
       port = "9843"
-      tokenPrivateKeyPath = "/home/wso2/security/keystore/tls.key"
+      tokenPrivateKeyPath = "/home/wso2/security/keystore/adapter.key"
       [[adapter.server.users]]
         username = "admin"
         password = "$env{adapter_admin_pwd}"
@@ -21,8 +21,8 @@ data:
       vhost = "gw.wso2.com"
 
     [adapter.keystore]
-      certPath = "/home/wso2/security/keystore/tls.crt"
-      keyPath = "/home/wso2/security/keystore/tls.key"
+      certPath = "/home/wso2/security/keystore/adapter.crt"
+      keyPath = "/home/wso2/security/keystore/adapter.key"
 
     [adapter.truststore]
       location = "/home/wso2/security/truststore"
@@ -34,8 +34,8 @@ data:
       useRemoteAddress = false
 
     [router.keystore]
-      certPath = "/home/wso2/security/keystore/tls.crt"
-      keyPath = "/home/wso2/security/keystore/tls.key"
+      certPath = "/home/wso2/security/keystore/router.crt"
+      keyPath = "/home/wso2/security/keystore/router.key"
 
     [router.upstream]
     [router.upstream.tls]
@@ -118,8 +118,13 @@ data:
       serviceBasePath = "/api/am/runtime"
     
     [managementServer]
-      enabled = {{ .Values.wso2.apk.cp.enabled }}
+    {{ if .Values.wso2.apk.dp.managementServer }}
+      enabled = {{ .Values.wso2.apk.dp.managementServer.enabled | default true }}
+      host = "{{ .Values.wso2.apk.dp.managementServer.host | default (printf "%s-management-server.%s.svc" (include "apk-helm.resource.prefix" .) .Release.Namespace) }}"
+      {{else}}
+      enabled = true
       host = "{{ template "apk-helm.resource.prefix" . }}-management-server.{{ .Release.Namespace }}.svc"
+      {{- end}}
 
   config.toml.template: |
     # The configuration file for mgw

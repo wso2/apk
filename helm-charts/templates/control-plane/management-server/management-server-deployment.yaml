@@ -46,7 +46,12 @@ spec:
               subPath: tls.crt
             - name: adapter-truststore-secret-volume
               mountPath: /home/wso2/security/truststore/adapter.crt
+              mountPath: /home/wso2/security/keystore/adapter.crt
+            {{- if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.dp.adapter.configs.tls }}
+              subPath: {{ .Values.wso2.apk.dp.adapter.configs.tls.publicKey | default "tls.crt" }}
+            {{- else }}
               subPath: tls.crt
+            {{- end }}
             - name: management-server-config-toml-volume
               mountPath: /home/wso2/conf/
           ports:
@@ -58,8 +63,12 @@ spec:
           secret: 
             secretName: {{ template "apk-helm.resource.prefix" . }}-management-server-cert
         - name: adapter-truststore-secret-volume
-          secret: 
+          secret:
+          {{- if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.dp.adapter.configs.tls }}
+            secretName: {{ .Values.wso2.apk.dp.adapter.configs.tls.secretName | default (printf "%s-adapter-server-cert" (include "apk-helm.resource.prefix" .)) }}
+          {{- else }}
             secretName: {{ template "apk-helm.resource.prefix" . }}-adapter-server-cert
+          {{- end }}
         - name: management-server-config-toml-volume
           configMap: 
             name: {{ template "apk-helm.resource.prefix" . }}-management-server-config-toml

@@ -175,18 +175,23 @@ wso2:
         appUserPassword: password
         superUserPassword: password
     dp:
+      enabled: true
       # controlPlane:
-      #   enableAuth: true
+      #   serviceUrl: "https://apk.org.com:9090/orgmanagement/v1"    
+      #   enableHostNameVerification: true
       #   tls:
       #     enabled: true
-      #     secretName: "apk-control-plane-secret"
-      #     fileName: "ca.crt"
+      #     secretName: "organization-managetment-server-cert"
+      #     fileName: "certificate.crt"
       #   headers:
-      #     - name: "X-Forwarded-Proto"
-      #       value: "https"
-      #     - name: "X-Forwarded-Port"
-      #       value: "443"    
-      enabled: true
+      #     - name: "apiKey"
+      #       value: "123-456-789"
+      # managementServer:
+      #   enabled: true
+      #   serviceUrl: "https://apk.org.com:9090/orgmanagement/v1"
+      #   tls:
+      #     secretName: "organization-managetment-server-cert"
+      #     fileName: "certificate.crt"
       runtime:
         appName: "runtime-ds"
         deployment:
@@ -225,11 +230,6 @@ wso2:
             limits:
               memory: "1028Mi"
               cpu: "1000m"
-          env:
-            ADAPTER_PRIVATE_KEY_PATH: /home/wso2/security/keystore/tls.key
-            ADAPTER_PUBLIC_CERT_PATH: /home/wso2/security/keystore/tls.crt
-            cp_admin_pwd: admin
-            adapter_admin_pwd: admin
           readinessProbe:
             path: /api/am/devportal/v2/apis?limit=2&offset=2
             port: 9443
@@ -248,6 +248,11 @@ wso2:
           image: wso2/adapter:latest
           security:
             sslHostname: "adapter"
+        configs:
+          tls:
+            secretName: "adapter-cert"
+            privateKey: ""
+            publicKey: ""
       gatewayRuntime:
         appName: "router"
         deployment:
@@ -261,19 +266,6 @@ wso2:
               limits:
                 memory: "1028Mi"
                 cpu: "1000m"
-            env:
-              ROUTER_ADMIN_HOST: 0.0.0.0
-              ROUTER_ADMIN_PORT: "9000"
-              ROUTER_CLUSTER: default_cluster
-              ROUTER_LABEL: Default
-              ROUTER_PRIVATE_KEY_PATH: /home/wso2/security/keystore/tls.key
-              ROUTER_PUBLIC_CERT_PATH: /home/wso2/security/keystore/tls.crt
-              ADAPTER_PORT: "18000"
-              ADAPTER_CA_CERT_PATH: /home/wso2/security/truststore/adapter.crt
-              ENFORCER_PORT: "8081"
-              ENFORCER_ANALYTICS_RECEIVER_PORT: "18090"
-              ENFORCER_CA_CERT_PATH: /home/wso2/security/truststore/enforcer.crt
-              CONCURRENCY: 2
             readinessProbe:
               path: /api/am/devportal/v2/apis?limit=2&offset=2
               port: 9443
@@ -289,6 +281,11 @@ wso2:
             strategy: Recreate
             imagePullPolicy: Always
             image: wso2/router:latest
+            configs:
+              tls:
+                secretName: "router-cert"
+                privateKey: ""
+                publicKey: ""
           enforcer:
             npi: enforcer-npi
             resources:
@@ -298,21 +295,6 @@ wso2:
               limits:
                 memory: "1028Mi"
                 cpu: "1000m"
-            env:
-              ENFORCER_PRIVATE_KEY_PATH: /home/wso2/security/keystore/tls.key
-              ENFORCER_PUBLIC_CERT_PATH: /home/wso2/security/keystore/tls.crt
-              TRUSTED_CA_CERTS_PATH: /home/wso2/security/truststore
-              ADAPTER_XDS_PORT: "18000"
-              ENFORCER_LABEL: Default
-              ENFORCER_REGION: UNKNOWN
-              XDS_MAX_MSG_SIZE: "4194304"
-              XDS_MAX_RETRIES: "3"
-              apim_admin_pwd: admin
-              enforcer_admin_pwd: admin
-              tm_admin_pwd: admin
-              analytics_authURL: https://localhost:8080
-              analytics_authToken:
-              JAVA_OPTS: -Dhttpclient.hostnameVerifier=AllowAll -Xms512m -Xmx512m -XX:MaxRAMFraction=2
             readinessProbe:
               path: /api/am/devportal/v2/apis?limit=2&offset=2
               port: 9443
@@ -330,6 +312,11 @@ wso2:
             image: wso2/enforcer:latest
             security:
               sslHostname: "enforcer"
+            configs:
+              tls:
+                secretName: "router-cert"
+                privateKey: ""
+                publicKey: ""
 
 postgresql:
   fullnameOverride: "wso2apk-db-service"
