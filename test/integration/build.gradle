@@ -32,6 +32,12 @@ tasks.register('cluster_setup', Exec).configure {
     commandLine 'sh', "$rootDir/scripts/cluster-setup.sh"
 }
 
+tasks.register('build_setup', Exec).configure { 
+    group 'integration'
+    description 'build latest docker images'
+    commandLine 'sh', "$rootDir/scripts/build.sh"
+}
+
 tasks.register('cluster_cleanup', Exec).configure { 
     group 'integration'
     description 'Cleans up the kind cluster'
@@ -56,8 +62,12 @@ tasks.named('go_revive_run').configure {
 }
 
 tasks.named('integration_test').configure { 
-    dependsOn cluster_setup
+    dependsOn build_setup
     finalizedBy cluster_cleanup
+}
+
+task.named('build_setup').configure { 
+    dependsOn cluster_setup
 }
 
 tasks.named('cluster_setup').configure { 
