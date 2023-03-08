@@ -63,11 +63,8 @@ tasks.named('go_revive_run').configure {
 
 tasks.named('integration_test').configure { 
     dependsOn build_setup
-    finalizedBy cluster_cleanup
-}
-
-task.named('build_setup').configure { 
     dependsOn cluster_setup
+    finalizedBy cluster_cleanup
 }
 
 tasks.named('cluster_setup').configure { 
