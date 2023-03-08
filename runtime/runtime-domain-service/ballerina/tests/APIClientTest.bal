@@ -436,9 +436,9 @@ public function testgetApiById(string apiid, commons:Organization organization, 
     APIClient apiclient = new ();
     API|NotFoundError|commons:APKError aPIById = apiclient.getAPIById(apiid, organization);
     if aPIById is any {
-        test:assertEquals(aPIById.toBalString(),expectedData);
+        test:assertEquals(aPIById.toBalString(), expectedData);
     } else {
-        test:assertEquals(aPIById.toBalString(),expectedData);
+        test:assertEquals(aPIById.toBalString(), expectedData);
     }
 }
 
@@ -2798,6 +2798,888 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
         ]
     };
     return data;
+}
+
+@test:Config {dataProvider: mediationPolicyByIdDataProvider}
+public function testGetMediationPolicyById(string policyId, commons:Organization organization, anydata expectedData) {
+    APIClient apiclient = new ();
+    MediationPolicy|NotFoundError|commons:APKError mediationPolicyById = apiclient.getMediationPolicyById(policyId, organization);
+    if mediationPolicyById is any {
+        test:assertEquals(mediationPolicyById.toBalString(), expectedData);
+    } else {
+        test:assertEquals(mediationPolicyById.toBalString(), expectedData);
+    }
+}
+
+public function mediationPolicyByIdDataProvider() returns map<[string, commons:Organization, anydata]> {
+    MediationPolicy & readonly mediationPolicy1 =    {
+        id: "1",
+        'type: MEDIATION_POLICY_TYPE_REQUEST_HEADER_MODIFIER,
+        name: MEDIATION_POLICY_NAME_ADD_HEADER,
+        displayName: "Add Header",
+        description: "This policy allows you to add a new header to the request",
+        applicableFlows: [MEDIATION_POLICY_FLOW_REQUEST],
+        supportedApiTypes: [API_TYPE_REST],
+        policyAttributes: [
+            {
+                name: "headerName",
+                description: "Name of the header to be added",
+                'type: "String",
+                required: true,
+                validationRegex: "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$"
+            },
+            {
+                name: "headerValue",
+                description: "Value of the header",
+                'type: "String",
+                required: true,
+                validationRegex: "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$"
+            }
+        ]
+    };
+    NotFoundError notfound = {body: {code: 909100, message: "6 not found."}};
+    map<[string, commons:Organization, anydata]> dataset = {
+        "1": ["1", organiztion1, mediationPolicy1.toBalString()],
+        "2": ["6", organiztion1, notfound.toBalString()]
+    };
+    return dataset;
+}
+
+@test:Config {dataProvider: getMediationPolicyListDataProvider}
+public function testGetMediationPolicyList(string? query, int 'limit, int offset, string sortBy, string sortOrder, anydata expected) {
+    APIClient apiclient = new ();
+    any|error mediationPolicyList = apiclient.getMediationPolicyList(query, 'limit, offset, sortBy, sortOrder, organiztion1);
+    if mediationPolicyList is any {
+        test:assertEquals(mediationPolicyList.toBalString(), expected);
+    } else {
+        test:assertEquals(mediationPolicyList.toBalString(), expected);
+    }
+}
+
+function getMediationPolicyListDataProvider() returns map<[string?, int, int, string, string, anydata]> {
+    BadRequestError badRequestError = {"body": {"code": 90912, "message": "Invalid Sort By/Sort Order Value "}};
+    BadRequestError badRequest = {body: {code: 90912, message: "Invalid KeyWord name1"}};
+
+    map<[string?, int, int, string, string, anydata]> dataSet = {
+        "1": [
+            (),
+            10,
+            0,
+            SORT_BY_POLICY_NAME,
+            SORT_ORDER_ASC,
+            {
+                "count": 4,
+                "list": [
+                    {
+                        "id": "1",
+                        "type": "RequestHeaderModifier",
+                        "name": "addHeader",
+                        "displayName": "Add Header",
+                        "description": "This policy allows you to add a new header to the request",
+                        "applicableFlows": [
+                            "request"
+                        ],
+                        "supportedApiTypes": [
+                            "REST"
+                        ],
+                        "policyAttributes": [
+                            {
+                                "name": "headerName",
+                                "description": "Name of the header to be added",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            },
+                            {
+                                "name": "headerValue",
+                                "description": "Value of the header",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "3",
+                        "type": "ResponseHeaderModifier",
+                        "name": "addHeader",
+                        "displayName": "Add Header",
+                        "description": "This policy allows you to add a new header to the response",
+                        "applicableFlows": [
+                            "response"
+                        ],
+                        "supportedApiTypes": [
+                            "REST"
+                        ],
+                        "policyAttributes": [
+                            {
+                                "name": "headerName",
+                                "description": "Name of the header to be added",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            },
+                            {
+                                "name": "headerValue",
+                                "description": "Value of the header",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "2",
+                        "type": "RequestHeaderModifier",
+                        "name": "removeHeader",
+                        "displayName": "Remove Header",
+                        "description": "This policy allows you to remove a header from the request",
+                        "applicableFlows": [
+                            "request"
+                        ],
+                        "supportedApiTypes": [
+                            "REST"
+                        ],
+                        "policyAttributes": [
+                            {
+                                "name": "headerName",
+                                "description": "Name of the header to be removed",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "4",
+                        "type": "ResponseHeaderModifier",
+                        "name": "removeHeader",
+                        "displayName": "Remove Header",
+                        "description": "This policy allows you to remove a header from the response",
+                        "applicableFlows": [
+                            "response"
+                        ],
+                        "supportedApiTypes": [
+                            "REST"
+                        ],
+                        "policyAttributes": [
+                            {
+                                "name": "headerName",
+                                "description": "Name of the header to be removed",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            }
+                        ]
+                    }
+                ],
+                "pagination": {
+                    "offset": 0,
+                    "limit": 10,
+                    "total": 4
+                }
+            }.toBalString()
+        ],
+        "2": [
+            (),
+            10,
+            0,
+            SORT_BY_POLICY_NAME,
+            SORT_ORDER_DESC,
+            {
+                "count": 4,
+                "list": [
+                    {
+                        "id": "2",
+                        "type": "RequestHeaderModifier",
+                        "name": "removeHeader",
+                        "displayName": "Remove Header",
+                        "description": "This policy allows you to remove a header from the request",
+                        "applicableFlows": [
+                            "request"
+                        ],
+                        "supportedApiTypes": [
+                            "REST"
+                        ],
+                        "policyAttributes": [
+                            {
+                                "name": "headerName",
+                                "description": "Name of the header to be removed",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "4",
+                        "type": "ResponseHeaderModifier",
+                        "name": "removeHeader",
+                        "displayName": "Remove Header",
+                        "description": "This policy allows you to remove a header from the response",
+                        "applicableFlows": [
+                            "response"
+                        ],
+                        "supportedApiTypes": [
+                            "REST"
+                        ],
+                        "policyAttributes": [
+                            {
+                                "name": "headerName",
+                                "description": "Name of the header to be removed",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "1",
+                        "type": "RequestHeaderModifier",
+                        "name": "addHeader",
+                        "displayName": "Add Header",
+                        "description": "This policy allows you to add a new header to the request",
+                        "applicableFlows": [
+                            "request"
+                        ],
+                        "supportedApiTypes": [
+                            "REST"
+                        ],
+                        "policyAttributes": [
+                            {
+                                "name": "headerName",
+                                "description": "Name of the header to be added",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            },
+                            {
+                                "name": "headerValue",
+                                "description": "Value of the header",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "3",
+                        "type": "ResponseHeaderModifier",
+                        "name": "addHeader",
+                        "displayName": "Add Header",
+                        "description": "This policy allows you to add a new header to the response",
+                        "applicableFlows": [
+                            "response"
+                        ],
+                        "supportedApiTypes": [
+                            "REST"
+                        ],
+                        "policyAttributes": [
+                            {
+                                "name": "headerName",
+                                "description": "Name of the header to be added",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            },
+                            {
+                                "name": "headerValue",
+                                "description": "Value of the header",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            }
+                        ]
+                    }
+                ],
+                "pagination": {
+                    "offset": 0,
+                    "limit": 10,
+                    "total": 4
+                }
+            }.toBalString()
+        ],
+        "3": [
+            (),
+            10,
+            0,
+            SORT_BY_ID,
+            SORT_ORDER_ASC,
+            {
+                "count": 4,
+                "list": [
+                    {
+                        "id": "1",
+                        "type": "RequestHeaderModifier",
+                        "name": "addHeader",
+                        "displayName": "Add Header",
+                        "description": "This policy allows you to add a new header to the request",
+                        "applicableFlows": [
+                            "request"
+                        ],
+                        "supportedApiTypes": [
+                            "REST"
+                        ],
+                        "policyAttributes": [
+                            {
+                                "name": "headerName",
+                                "description": "Name of the header to be added",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            },
+                            {
+                                "name": "headerValue",
+                                "description": "Value of the header",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "2",
+                        "type": "RequestHeaderModifier",
+                        "name": "removeHeader",
+                        "displayName": "Remove Header",
+                        "description": "This policy allows you to remove a header from the request",
+                        "applicableFlows": [
+                            "request"
+                        ],
+                        "supportedApiTypes": [
+                            "REST"
+                        ],
+                        "policyAttributes": [
+                            {
+                                "name": "headerName",
+                                "description": "Name of the header to be removed",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "3",
+                        "type": "ResponseHeaderModifier",
+                        "name": "addHeader",
+                        "displayName": "Add Header",
+                        "description": "This policy allows you to add a new header to the response",
+                        "applicableFlows": [
+                            "response"
+                        ],
+                        "supportedApiTypes": [
+                            "REST"
+                        ],
+                        "policyAttributes": [
+                            {
+                                "name": "headerName",
+                                "description": "Name of the header to be added",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            },
+                            {
+                                "name": "headerValue",
+                                "description": "Value of the header",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "4",
+                        "type": "ResponseHeaderModifier",
+                        "name": "removeHeader",
+                        "displayName": "Remove Header",
+                        "description": "This policy allows you to remove a header from the response",
+                        "applicableFlows": [
+                            "response"
+                        ],
+                        "supportedApiTypes": [
+                            "REST"
+                        ],
+                        "policyAttributes": [
+                            {
+                                "name": "headerName",
+                                "description": "Name of the header to be removed",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            }
+                        ]
+                    }
+                ],
+                "pagination": {
+                    "offset": 0,
+                    "limit": 10,
+                    "total": 4
+                }
+            }.toBalString()
+        ],
+        "4": [
+            (),
+            10,
+            0,
+            SORT_BY_ID,
+            SORT_ORDER_DESC,
+            {
+                "count": 4,
+                "list": [
+                    {
+                        "id": "4",
+                        "type": "ResponseHeaderModifier",
+                        "name": "removeHeader",
+                        "displayName": "Remove Header",
+                        "description": "This policy allows you to remove a header from the response",
+                        "applicableFlows": [
+                            "response"
+                        ],
+                        "supportedApiTypes": [
+                            "REST"
+                        ],
+                        "policyAttributes": [
+                            {
+                                "name": "headerName",
+                                "description": "Name of the header to be removed",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "3",
+                        "type": "ResponseHeaderModifier",
+                        "name": "addHeader",
+                        "displayName": "Add Header",
+                        "description": "This policy allows you to add a new header to the response",
+                        "applicableFlows": [
+                            "response"
+                        ],
+                        "supportedApiTypes": [
+                            "REST"
+                        ],
+                        "policyAttributes": [
+                            {
+                                "name": "headerName",
+                                "description": "Name of the header to be added",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            },
+                            {
+                                "name": "headerValue",
+                                "description": "Value of the header",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "2",
+                        "type": "RequestHeaderModifier",
+                        "name": "removeHeader",
+                        "displayName": "Remove Header",
+                        "description": "This policy allows you to remove a header from the request",
+                        "applicableFlows": [
+                            "request"
+                        ],
+                        "supportedApiTypes": [
+                            "REST"
+                        ],
+                        "policyAttributes": [
+                            {
+                                "name": "headerName",
+                                "description": "Name of the header to be removed",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "1",
+                        "type": "RequestHeaderModifier",
+                        "name": "addHeader",
+                        "displayName": "Add Header",
+                        "description": "This policy allows you to add a new header to the request",
+                        "applicableFlows": [
+                            "request"
+                        ],
+                        "supportedApiTypes": [
+                            "REST"
+                        ],
+                        "policyAttributes": [
+                            {
+                                "name": "headerName",
+                                "description": "Name of the header to be added",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            },
+                            {
+                                "name": "headerValue",
+                                "description": "Value of the header",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            }
+                        ]
+                    }
+                ],
+                "pagination": {
+                    "offset": 0,
+                    "limit": 10,
+                    "total": 4
+                }
+            }.toBalString()
+        ],
+        "5": [(), 10, 0, "description", SORT_ORDER_DESC, badRequestError.toBalString()],
+        "6": [
+            (),
+            2,
+            0,
+            SORT_BY_POLICY_NAME,
+            SORT_ORDER_ASC,
+            {
+                "count": 2,
+                "list": [
+                    {
+                        "id": "1",
+                        "type": "RequestHeaderModifier",
+                        "name": "addHeader",
+                        "displayName": "Add Header",
+                        "description": "This policy allows you to add a new header to the request",
+                        "applicableFlows": [
+                            "request"
+                        ],
+                        "supportedApiTypes": [
+                            "REST"
+                        ],
+                        "policyAttributes": [
+                            {
+                                "name": "headerName",
+                                "description": "Name of the header to be added",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            },
+                            {
+                                "name": "headerValue",
+                                "description": "Value of the header",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "3",
+                        "type": "ResponseHeaderModifier",
+                        "name": "addHeader",
+                        "displayName": "Add Header",
+                        "description": "This policy allows you to add a new header to the response",
+                        "applicableFlows": [
+                            "response"
+                        ],
+                        "supportedApiTypes": [
+                            "REST"
+                        ],
+                        "policyAttributes": [
+                            {
+                                "name": "headerName",
+                                "description": "Name of the header to be added",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            },
+                            {
+                                "name": "headerValue",
+                                "description": "Value of the header",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            }
+                        ]
+                    }
+                ],
+                "pagination": {
+                    "offset": 0,
+                    "limit": 2,
+                    "total": 4
+                }
+            }.toBalString()
+        ],
+        "7": [
+            (),
+            2,
+            2,
+            SORT_BY_POLICY_NAME,
+            SORT_ORDER_DESC,
+            {
+                "count": 2,
+                "list": [
+                    {
+                        "id": "1",
+                        "type": "RequestHeaderModifier",
+                        "name": "addHeader",
+                        "displayName": "Add Header",
+                        "description": "This policy allows you to add a new header to the request",
+                        "applicableFlows": [
+                            "request"
+                        ],
+                        "supportedApiTypes": [
+                            "REST"
+                        ],
+                        "policyAttributes": [
+                            {
+                                "name": "headerName",
+                                "description": "Name of the header to be added",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            },
+                            {
+                                "name": "headerValue",
+                                "description": "Value of the header",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "3",
+                        "type": "ResponseHeaderModifier",
+                        "name": "addHeader",
+                        "displayName": "Add Header",
+                        "description": "This policy allows you to add a new header to the response",
+                        "applicableFlows": [
+                            "response"
+                        ],
+                        "supportedApiTypes": [
+                            "REST"
+                        ],
+                        "policyAttributes": [
+                            {
+                                "name": "headerName",
+                                "description": "Name of the header to be added",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            },
+                            {
+                                "name": "headerValue",
+                                "description": "Value of the header",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            }
+                        ]
+                    }
+                ],
+                "pagination": {
+                    "offset": 2,
+                    "limit": 2,
+                    "total": 4
+                }
+            }.toBalString()
+        ],
+        "8": [
+            (),
+            3,
+            6,
+            SORT_BY_POLICY_NAME,
+            SORT_ORDER_ASC,
+            {
+                "count": 0,
+                "list": [],
+                "pagination": {
+                    "offset": 6,
+                    "limit": 3,
+                    "total": 4
+                }
+            }.toBalString()
+        ],
+        "9": [
+            "name:add",
+            10,
+            0,
+            SORT_BY_POLICY_NAME,
+            SORT_ORDER_ASC,
+            {
+                "count": 2,
+                "list": [
+                    {
+                        "id": "1",
+                        "type": "RequestHeaderModifier",
+                        "name": "addHeader",
+                        "displayName": "Add Header",
+                        "description": "This policy allows you to add a new header to the request",
+                        "applicableFlows": [
+                            "request"
+                        ],
+                        "supportedApiTypes": [
+                            "REST"
+                        ],
+                        "policyAttributes": [
+                            {
+                                "name": "headerName",
+                                "description": "Name of the header to be added",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            },
+                            {
+                                "name": "headerValue",
+                                "description": "Value of the header",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "3",
+                        "type": "ResponseHeaderModifier",
+                        "name": "addHeader",
+                        "displayName": "Add Header",
+                        "description": "This policy allows you to add a new header to the response",
+                        "applicableFlows": [
+                            "response"
+                        ],
+                        "supportedApiTypes": [
+                            "REST"
+                        ],
+                        "policyAttributes": [
+                            {
+                                "name": "headerName",
+                                "description": "Name of the header to be added",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            },
+                            {
+                                "name": "headerValue",
+                                "description": "Value of the header",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            }
+                        ]
+                    }
+                ],
+                "pagination": {
+                    "offset": 0,
+                    "limit": 10,
+                    "total": 2
+                }
+            }.toBalString()
+        ],
+        "10": [
+            "add",
+            10,
+            0,
+            SORT_BY_POLICY_NAME,
+            SORT_ORDER_ASC,
+            {
+                "count": 2,
+                "list": [
+                    {
+                        "id": "1",
+                        "type": "RequestHeaderModifier",
+                        "name": "addHeader",
+                        "displayName": "Add Header",
+                        "description": "This policy allows you to add a new header to the request",
+                        "applicableFlows": [
+                            "request"
+                        ],
+                        "supportedApiTypes": [
+                            "REST"
+                        ],
+                        "policyAttributes": [
+                            {
+                                "name": "headerName",
+                                "description": "Name of the header to be added",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            },
+                            {
+                                "name": "headerValue",
+                                "description": "Value of the header",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "3",
+                        "type": "ResponseHeaderModifier",
+                        "name": "addHeader",
+                        "displayName": "Add Header",
+                        "description": "This policy allows you to add a new header to the response",
+                        "applicableFlows": [
+                            "response"
+                        ],
+                        "supportedApiTypes": [
+                            "REST"
+                        ],
+                        "policyAttributes": [
+                            {
+                                "name": "headerName",
+                                "description": "Name of the header to be added",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            },
+                            {
+                                "name": "headerValue",
+                                "description": "Value of the header",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            }
+                        ]
+                    }
+                ],
+                "pagination": {
+                    "offset": 0,
+                    "limit": 10,
+                    "total": 2
+                }
+            }.toBalString()
+        ],
+        "11": [
+            "type:modify",
+            10,
+            0,
+            SORT_BY_POLICY_NAME,
+            SORT_ORDER_ASC,
+            {
+                "count": 0,
+                "list": [],
+                "pagination": {
+                    "offset": 0,
+                    "limit": 10,
+                    "total": 0
+                }
+            }.toBalString()
+        ],
+        "12": [
+            "name1:add",
+            10,
+            0,
+            SORT_BY_POLICY_NAME,
+            SORT_ORDER_ASC,
+            badRequest.toBalString()
+        ]
+    };
+    return dataSet;
 }
 
 function getOKBackendServiceResponse(model:Service backendService) returns http:Response {

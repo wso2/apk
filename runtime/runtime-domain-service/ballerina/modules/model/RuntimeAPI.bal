@@ -35,6 +35,26 @@ public type OperationPolicy record {
     map<string> parameters?;
 };
 
+public type MediationPolicy record {
+    string id;
+    string 'type;
+    string name;
+    string displayName?;
+    string description?;
+    string[] applicableFlows?;
+    string[] supportedApiTypes?;
+    MediationPolicySpecAttribute[] policyAttributes?;
+};
+
+public type MediationPolicySpecAttribute record {
+    string name?;
+    string description?;
+    boolean required?;
+    string validationRegex?;
+    string 'type?;
+    string defaultValue?;
+};
+
 public type OperationPolicies record {|
     OperationPolicy[] request = [];
     OperationPolicy[] response=[];

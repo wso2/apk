@@ -2579,6 +2579,130 @@ public class APIClient {
             return internalError;
         }
     }
+
+    private isolated function filterMediationPoliciesBasedOnQuery(MediationPolicy[] mediationPolicyList, string query, int 'limit, int offset, string sortBy, string sortOrder) returns MediationPolicyList|BadRequestError {
+        MediationPolicy[] filteredList = [];
+        if query.length() > 0 {
+            int? semiCollonIndex = string:indexOf(query, ":", 0);
+            if semiCollonIndex is int && semiCollonIndex > 0 {
+                string keyWord = query.substring(0, semiCollonIndex);
+                string keyWordValue = query.substring(keyWord.length() + 1, query.length());
+                keyWordValue = keyWordValue + "|\\w+" + keyWordValue + "\\w+" + "|" + keyWordValue + "\\w+" + "|\\w+" + keyWordValue;
+                if keyWord.trim() == SEARCH_CRITERIA_NAME {
+                    foreach MediationPolicy mediationPolicy in mediationPolicyList {
+                        if (regex:matches(mediationPolicy.name, keyWordValue)) {
+                            filteredList.push(mediationPolicy);
+                        }
+                    }
+                } else if keyWord.trim() == SEARCH_CRITERIA_TYPE {
+                    foreach MediationPolicy mediationPolicy in mediationPolicyList {
+                        if (regex:matches(mediationPolicy.'type, keyWordValue)) {
+                            filteredList.push(mediationPolicy);
+                        }
+                    }
+                } else {
+                    BadRequestError badRequest = {body: {code: 90912, message: "Invalid KeyWord " + keyWord}};
+                    return badRequest;
+                }
+            } else {
+                string keyWordValue = query + "|\\w+" + query + "\\w+" + "|" + query + "\\w+" + "|\\w+" + query;
+
+                foreach MediationPolicy mediationPolicy in mediationPolicyList {
+
+                    if (regex:matches(mediationPolicy.name, keyWordValue)) {
+                        filteredList.push(mediationPolicy);
+                    }
+                }
+            }
+        } else {
+            filteredList = mediationPolicyList;
+        }
+        return self.filterMediationPolicies(filteredList, 'limit, offset, sortBy, sortOrder);
+    }
+
+    private isolated function filterMediationPolicies(MediationPolicy[] mediationPolicyList, int 'limit, int offset, string sortBy, string sortOrder) returns MediationPolicyList|BadRequestError {
+        MediationPolicy[] clonedMediationPolicyList = mediationPolicyList.clone();
+        MediationPolicy[] sortedMediationPolicies = [];
+        if sortBy == SORT_BY_POLICY_NAME && sortOrder == SORT_ORDER_ASC {
+            sortedMediationPolicies = from var mediationPolicy in clonedMediationPolicyList
+                order by mediationPolicy.name ascending
+                select mediationPolicy;
+        } else if sortBy == SORT_BY_POLICY_NAME && sortOrder == SORT_ORDER_DESC {
+            sortedMediationPolicies = from var mediationPolicy in clonedMediationPolicyList
+                order by mediationPolicy.name descending
+                select mediationPolicy;
+        } else if sortBy == SORT_BY_ID && sortOrder == SORT_ORDER_ASC {
+            sortedMediationPolicies = from var mediationPolicy in clonedMediationPolicyList
+                order by mediationPolicy.id ascending
+                select mediationPolicy;
+        } else if sortBy == SORT_BY_ID && sortOrder == SORT_ORDER_DESC {
+            sortedMediationPolicies = from var mediationPolicy in clonedMediationPolicyList
+                order by mediationPolicy.id descending
+                select mediationPolicy;
+        } else {
+            BadRequestError badRequest = {body: {code: 90912, message: "Invalid Sort By/Sort Order Value "}};
+            return badRequest;
+        }
+        MediationPolicy[] limitSet = [];
+        if sortedMediationPolicies.length() > offset {
+            foreach int i in offset ... (sortedMediationPolicies.length() - 1) {
+                if limitSet.length() < 'limit {
+                    limitSet.push(sortedMediationPolicies[i]);
+                }
+            }
+        }
+        return {list: limitSet, count: limitSet.length(), pagination: {total: mediationPolicyList.length(), 'limit: 'limit, offset: offset}};
+
+    }
+
+    # This return a Mediation policy by id.
+    #
+    # + id - Policy Id
+    # + organization - Organization
+    # + return - Return a Mediation Policy.
+    public isolated function getMediationPolicyById(string id, commons:Organization organization) returns MediationPolicy|NotFoundError|commons:APKError {
+        boolean mediationPolicyIDAvailable = id.length() > 0 ? true : false;
+        if (mediationPolicyIDAvailable && string:length(id.toString()) > 0)
+        {
+            lock {
+                foreach model:MediationPolicy mediationPolicy in getAvailableMediaionPolicies(organization) {
+                    if mediationPolicy.id == id {
+                        MediationPolicy matchedPolicy = convertPolicyModeltoPolicy(mediationPolicy);
+                        return matchedPolicy.cloneReadOnly();
+                    }
+                }
+            } on fail var e {
+                return error("Error while retrieving Mediation policy", e, message = "Error while retrieving Mediation policy", description = "Error while retrieving Mediation policy", code = 909000, statusCode = 500);
+            }
+        }
+        NotFoundError notfound = {body: {code: 909100, message: id + " not found."}};
+        return notfound;
+    }
+
+    # This returns list of Mediation Policies.
+    #
+    # + query - Search Query
+    # + 'limit - Limit 
+    # + offset - Offset 
+    # + sortBy - SortBy Parameter
+    # + sortOrder - SortOrder  Parameter
+    # + organization - Organization
+    # + return - Return list of Mediation Policies.
+    public isolated function getMediationPolicyList(string? query, int 'limit, int offset, string sortBy, string sortOrder, commons:Organization organization) returns MediationPolicyList|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
+        MediationPolicy[] mediationPolicyList = [];
+        foreach model:MediationPolicy mediationPolicy in getAvailableMediaionPolicies(organization) {
+            MediationPolicy policyItem = convertPolicyModeltoPolicy(mediationPolicy);
+            mediationPolicyList.push(policyItem);
+        } on fail var e {
+            return error("Error occured while getting Mediation policy list", e, message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = 500);
+        }
+        if query is string && query.toString().trim().length() > 0 {
+            return self.filterMediationPoliciesBasedOnQuery(mediationPolicyList, query, 'limit, offset, sortBy, sortOrder);
+        } else {
+            return self.filterMediationPolicies(mediationPolicyList, 'limit, offset, sortBy, sortOrder);
+        }
+    }
+
 }
 
 type ImportDefintionRequest record {
