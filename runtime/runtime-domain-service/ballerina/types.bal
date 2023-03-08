@@ -63,8 +63,14 @@ public type ErrorListItem record {
 };
 
 public type MediationPolicy record {
+    string id;
+    string 'type;
     string name;
-    string 'type?;
+    string displayName?;
+    string description?;
+    string[] applicableFlows?;
+    string[] supportedApiTypes?;
+    MediationPolicySpecAttribute[] policyAttributes?;
 };
 
 public type Apis_importdefinition_body record {
@@ -156,6 +162,21 @@ public type APIOperationPolicies record {
     OperationPolicy[] fault?;
 };
 
+public type MediationPolicySpecAttribute record {
+    # Name of the attibute
+    string name?;
+    # Description of the attibute
+    string description?;
+    # Is this option mandetory for the policy
+    boolean required?;
+    # UI validation regex for the attibute
+    string validationRegex?;
+    # Type of the attibute
+    string 'type?;
+    # Default value for the attribute
+    string defaultValue?;
+};
+
 public type APIList record {
     # Number of APIs returned.
     int count?;
@@ -164,6 +185,8 @@ public type APIList record {
 };
 
 public type MediationPolicyList record {
+    # Number of mediation policies returned.
+    int count?;
     MediationPolicy[] list?;
     Pagination pagination?;
 };
