@@ -73,28 +73,28 @@ spec:
             - name: enforcer-keystore-secret-volume
               mountPath: /home/wso2/security/keystore/enforcer.key
             {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls }}
-              subPath: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.privateKey | default "tls.key" }}
+              subPath: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls.certKeyFilename | default "tls.key" }}
             {{- else }}
               subPath: tls.key
             {{- end }}
             - name: enforcer-keystore-secret-volume
               mountPath: /home/wso2/security/keystore/enforcer.crt
             {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls }}
-              subPath: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.publicKey | default "tls.crt" }}
+              subPath: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls.certFilename | default "tls.crt" }}
             {{- else }}
               subPath: tls.crt
             {{- end }}
             - name: adapter-truststore-secret-volume
               mountPath: /home/wso2/security/truststore/adapter.crt
             {{- if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.dp.adapter.configs.tls }}
-              subPath: {{ .Values.wso2.apk.dp.adapter.configs.tls.publicKey | default "tls.crt" }}
+              subPath: {{ .Values.wso2.apk.dp.adapter.configs.tls.certFilename | default "tls.crt" }}
             {{- else }}
               subPath: tls.crt
             {{- end }}
             - name: router-keystore-secret-volume
               mountPath: /home/wso2/security/keystore/router.crt
             {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls }}
-              subPath: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls.publicKey | default "tls.crt" }}
+              subPath: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls.certFilename | default "tls.crt" }}
             {{- else }}
               subPath: tls.crt
             {{- end }}
@@ -168,21 +168,21 @@ spec:
             - name: router-keystore-secret-volume
               mountPath: /home/wso2/security/keystore/router.key
             {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls }}
-              subPath: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls.privateKey | default "tls.key" }}
+              subPath: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls.certKeyFilename | default "tls.key" }}
             {{- else }}
               subPath: tls.key
             {{- end }}
             - name: router-keystore-secret-volume
               mountPath: /home/wso2/security/keystore/router.crt
             {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls }}
-              subPath: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls.publicKey | default "tls.crt" }}
+              subPath: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls.certFilename | default "tls.crt" }}
             {{- else }}
               subPath: tls.crt
             {{- end }}
             - name: adapter-truststore-secret-volume
               mountPath: /home/wso2/security/truststore/adapter.crt
             {{- if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.dp.adapter.configs.tls }}
-              subPath: {{ .Values.wso2.apk.dp.adapter.configs.tls.publicKey | default "tls.crt" }}
+              subPath: {{ .Values.wso2.apk.dp.adapter.configs.tls.certFilename | default "tls.crt" }}
             {{- else }}
               subPath: tls.crt
             {{- end }}
@@ -229,7 +229,7 @@ spec:
         - name: adapter-truststore-secret-volume
           secret: 
           {{- if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.dp.adapter.configs.tls }}
-            secretName: {{ .Values.wso2.apk.dp.adapter.configs.tls.secretName | default (printf "%s-adapter-server-cert" (include "apk-helm.resource.prefix" .)) }}
+            secretName: {{ .Values.wso2.apk.dp.adapter.configs.tls.certificatesSecret | default (printf "%s-adapter-server-cert" (include "apk-helm.resource.prefix" .)) }}
           {{- else }}
             secretName: {{ template "apk-helm.resource.prefix" . }}-adapter-server-cert
           {{- end }}

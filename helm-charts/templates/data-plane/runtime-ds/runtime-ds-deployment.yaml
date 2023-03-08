@@ -72,7 +72,7 @@ spec:
        {{ if and .Values.wso2.apk.dp.controlPlane .Values.wso2.apk.dp.controlPlane.tls }}
         - name: cp-public-key-volume
           secret:
-            secretName: {{ .Values.wso2.apk.dp.controlPlane.tls.secretName | default (printf "%s-router-server-cert" (include "apk-helm.resource.prefix" .)) }}
+            secretName: {{ .Values.wso2.apk.dp.controlPlane.tls.certificatesSecret | default (printf "%s-router-server-cert" (include "apk-helm.resource.prefix" .)) }}
        {{ end }}
         
 {{- end -}}

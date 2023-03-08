@@ -183,7 +183,7 @@ wso2:
       #   enableHostNameVerification: true
       #   tls:
       #     enabled: true
-      #     secretName: "organization-managetment-server-cert"
+      #     certificatesSecret: "organization-managetment-server-cert"
       #     fileName: "certificate.crt"
       #   headers:
       #     - name: "apiKey"
@@ -192,7 +192,7 @@ wso2:
       #   enabled: true
       #   serviceUrl: "https://apk.org.com:9090/orgmanagement/v1"
       #   tls:
-      #     secretName: "organization-managetment-server-cert"
+      #     certificatesSecret: "organization-managetment-server-cert"
       #     fileName: "certificate.crt"
       runtime:
         appName: "runtime-ds"
@@ -252,9 +252,9 @@ wso2:
             sslHostname: "adapter"
         # configs:
         #   tls:
-        #     secretName: "adapter-cert"
-        #     privateKey: ""
-        #     publicKey: ""
+        #     certificatesSecret: "adapter-cert"
+        #     certKeyFilename: ""
+        #     certFilename: ""
       gatewayRuntime:
         appName: "router"
         deployment:
@@ -285,9 +285,9 @@ wso2:
             image: wso2/router:latest
             # configs:
             #   tls:
-            #     secretName: "router-cert"
-            #     privateKey: ""
-            #     publicKey: ""
+            #     certificatesSecret: "router-cert"
+            #     certKeyFilename: ""
+            #     certFilename: ""
           enforcer:
             npi: enforcer-npi
             resources:
@@ -316,9 +316,9 @@ wso2:
               sslHostname: "enforcer"
             # configs:
             #   tls:
-            #     secretName: "router-cert"
-            #     privateKey: ""
-            #     publicKey: ""
+            #     certificatesSecret: "router-cert"
+            #     certKeyFilename: ""
+            #     certFilename: ""
 
 postgresql:
   fullnameOverride: "wso2apk-db-service"
