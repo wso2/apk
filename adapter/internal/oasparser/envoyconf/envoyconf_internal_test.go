@@ -458,9 +458,9 @@ func TestCreateUpstreamTLSContext(t *testing.T) {
 	}}
 
 	tlsCert := generateTLSCert(defaultMgwKeyPath, defaultMgwCertPath)
-	upstreamTLSContextWithCerts := createUpstreamTLSContext(certByteArr, hostNameAddress, false)
-	upstreamTLSContextWithoutCerts := createUpstreamTLSContext(nil, hostNameAddress, false)
-	upstreamTLSContextWithIP := createUpstreamTLSContext(certByteArr, hostNameAddressWithIP, false)
+	upstreamTLSContextWithCerts := createUpstreamTLSContext(certByteArr, nil, hostNameAddress, false)
+	upstreamTLSContextWithoutCerts := createUpstreamTLSContext(nil, nil, hostNameAddress, false)
+	upstreamTLSContextWithIP := createUpstreamTLSContext(certByteArr, nil, hostNameAddressWithIP, false)
 
 	assert.NotEmpty(t, upstreamTLSContextWithCerts, "Upstream TLS Context should not be null when certs provided")
 	assert.NotEmpty(t, upstreamTLSContextWithCerts.CommonTlsContext, "CommonTLSContext should not be "+
@@ -559,14 +559,14 @@ func TestGetCorsPolicy(t *testing.T) {
 	assert.Nil(t, err, "Error while creating routeWithoutCors")
 
 	corsConfig1 := &cors_filter_v3.CorsPolicy{}
- 	err = routeWithoutCors[0].GetTypedPerFilterConfig()[wellknown.CORS].UnmarshalTo(corsConfig1)
+	err = routeWithoutCors[0].GetTypedPerFilterConfig()[wellknown.CORS].UnmarshalTo(corsConfig1)
 
- 	assert.Nilf(t, err, "Error while parsing Cors Configuration %v", corsConfig1)
- 	assert.Empty(t, corsConfig1.GetAllowHeaders(), "Cors AllowHeaders should be empty.")
- 	assert.Empty(t, corsConfig1.GetAllowCredentials(), "Cors AllowCredentials should be empty.")
- 	assert.Empty(t, corsConfig1.GetAllowMethods(), "Cors AllowMethods should be empty.")
- 	assert.Empty(t, corsConfig1.GetAllowOriginStringMatch(), "Cors AllowOriginStringMatch should be empty.")
- 	assert.Empty(t, corsConfig1.GetExposeHeaders(), "Cors ExposeHeaders should be empty.")
+	assert.Nilf(t, err, "Error while parsing Cors Configuration %v", corsConfig1)
+	assert.Empty(t, corsConfig1.GetAllowHeaders(), "Cors AllowHeaders should be empty.")
+	assert.Empty(t, corsConfig1.GetAllowCredentials(), "Cors AllowCredentials should be empty.")
+	assert.Empty(t, corsConfig1.GetAllowMethods(), "Cors AllowMethods should be empty.")
+	assert.Empty(t, corsConfig1.GetAllowOriginStringMatch(), "Cors AllowOriginStringMatch should be empty.")
+	assert.Empty(t, corsConfig1.GetExposeHeaders(), "Cors ExposeHeaders should be empty.")
 
 	// Route with CORS configuration
 	routeWithCors, err := createRoutes(generateRouteCreateParamsForUnitTests("test", "HTTP", "localhost", "/test", "1.0.0", "/test",
@@ -574,14 +574,14 @@ func TestGetCorsPolicy(t *testing.T) {
 	assert.Nil(t, err, "Error while creating routeWithCors")
 
 	corsConfig2 := &cors_filter_v3.CorsPolicy{}
- 	err = routeWithCors[0].GetTypedPerFilterConfig()[wellknown.CORS].UnmarshalTo(corsConfig2)
+	err = routeWithCors[0].GetTypedPerFilterConfig()[wellknown.CORS].UnmarshalTo(corsConfig2)
 
- 	assert.Nilf(t, err, "Error while parsing Cors Configuration %v", corsConfig2)
- 	assert.NotEmpty(t, corsConfig2.GetAllowOriginStringMatch(), "Cors AllowOriginStringMatch should not be empty.")
- 	assert.NotEmpty(t, corsConfig2.GetAllowMethods(), "Cors AllowMethods should not be empty.")
- 	assert.Empty(t, corsConfig2.GetAllowHeaders(), "Cors AllowHeaders should be empty.")
- 	assert.Empty(t, corsConfig2.GetExposeHeaders(), "Cors ExposeHeaders should be empty.")
- 	assert.Empty(t, corsConfig2.GetAllowCredentials(), "Cors AllowCredentials should be empty.")
+	assert.Nilf(t, err, "Error while parsing Cors Configuration %v", corsConfig2)
+	assert.NotEmpty(t, corsConfig2.GetAllowOriginStringMatch(), "Cors AllowOriginStringMatch should not be empty.")
+	assert.NotEmpty(t, corsConfig2.GetAllowMethods(), "Cors AllowMethods should not be empty.")
+	assert.Empty(t, corsConfig2.GetAllowHeaders(), "Cors AllowHeaders should be empty.")
+	assert.Empty(t, corsConfig2.GetExposeHeaders(), "Cors ExposeHeaders should be empty.")
+	assert.Empty(t, corsConfig2.GetAllowCredentials(), "Cors AllowCredentials should be empty.")
 }
 
 func generateRouteCreateParamsForUnitTests(title string, apiType string, vhost string, xWso2Basepath string, version string, endpointBasepath string,

@@ -101,6 +101,8 @@ type Endpoint struct {
 	RawURL                 string
 	// Trusted CA Cerificate for the endpoint
 	Certificate []byte
+	// Subject Alternative Names to verify in the public certificate
+	AllowedSANs []string
 }
 
 // EndpointSecurity contains parameters of endpoint security at api.json

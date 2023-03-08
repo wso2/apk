@@ -203,6 +203,7 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, ht
 					URLType:     string(backendProperties.Protocol),
 					Port:        uint32(*backend.Port),
 					Certificate: []byte(backendProperties.TLS.CertificateInline),
+					AllowedSANs: backendProperties.TLS.AllowedSANs,
 				})
 			for _, security := range backendProperties.Security {
 				switch security.Type {

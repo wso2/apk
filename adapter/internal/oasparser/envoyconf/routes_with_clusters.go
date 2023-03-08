@@ -217,7 +217,7 @@ func processEndpoints(clusterName string, clusterDetails *model.EndpointCluster,
 
 		// create tls configs
 		if strings.HasPrefix(ep.URLType, httpsURLType) || strings.HasPrefix(ep.URLType, wssURLType) {
-			upstreamtlsContext := createUpstreamTLSContext(ep.Certificate, address, clusterDetails.HTTP2BackendEnabled)
+			upstreamtlsContext := createUpstreamTLSContext(ep.Certificate, ep.AllowedSANs, address, clusterDetails.HTTP2BackendEnabled)
 			marshalledTLSContext, err := anypb.New(upstreamtlsContext)
 			if err != nil {
 				return nil, nil, errors.New("internal Error while marshalling the upstream TLS Context")
@@ -367,7 +367,7 @@ func createHealthCheck() []*corev3.HealthCheck {
 	}
 }
 
-func createUpstreamTLSContext(upstreamCerts []byte, address *corev3.Address, hTTP2BackendEnabled bool) *tlsv3.UpstreamTlsContext {
+func createUpstreamTLSContext(upstreamCerts []byte, allowedSANs []string, address *corev3.Address, hTTP2BackendEnabled bool) *tlsv3.UpstreamTlsContext {
 	conf := config.ReadConfigs()
 	tlsCert := generateTLSCert(conf.Envoy.KeyStore.KeyPath, conf.Envoy.KeyStore.CertPath)
 	// Convert the cipher string to a string array
@@ -434,6 +434,18 @@ func createUpstreamTLSContext(upstreamCerts []byte, address *corev3.Address, hTT
 					},
 				},
 			},
+		}
+		for _, san := range allowedSANs {
+			subjectAltNames = append(subjectAltNames, &tlsv3.SubjectAltNameMatcher{
+				SanType: sanType,
+				Matcher: &envoy_type_matcherv3.StringMatcher{
+					MatchPattern: &envoy_type_matcherv3.StringMatcher_SafeRegex{
+						SafeRegex: &envoy_type_matcherv3.RegexMatcher{
+							Regex: san,
+						},
+					},
+				},
+			})
 		}
 		upstreamTLSContext.CommonTlsContext.GetValidationContext().MatchTypedSubjectAltNames = subjectAltNames
 	}

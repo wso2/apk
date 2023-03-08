@@ -19,6 +19,9 @@ package controllers
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
+	"encoding/pem"
 	"fmt"
 
 	"github.com/wso2/apk/adapter/config"
@@ -60,6 +63,8 @@ const (
 	serviceHTTPRouteIndex           = "serviceHTTPRouteIndex"
 	serviceBackendPolicyIndex       = "serviceBackendPolicyIndex"
 	apiScopeIndex                   = "apiScopeIndex"
+	configMapBackendPolicy          = "configMapBackendPolicy"
+	secretBackendPolicy             = "secretBackendPolicy"
 )
 
 // APIReconciler reconciles a API object
@@ -134,6 +139,26 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.Scope{}}, handler.EnqueueRequestsFromMapFunc(r.getAPIsForScope),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2618, err))
+		return err
+	}
+
+	if err := c.Watch(&source.Kind{Type: &corev1.ConfigMap{}}, handler.EnqueueRequestsFromMapFunc(r.getAPIsForConfigMap),
+		predicates...); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("Error watching ConfigMap resources: %v", err),
+			Severity:  logging.BLOCKER,
+			ErrorCode: 2625,
+		})
+		return err
+	}
+
+	if err := c.Watch(&source.Kind{Type: &corev1.Secret{}}, handler.EnqueueRequestsFromMapFunc(r.getAPIsForSecret),
+		predicates...); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("Error watching Secret resources: %v", err),
+			Severity:  logging.BLOCKER,
+			ErrorCode: 2625,
+		})
 		return err
 	}
 
@@ -418,10 +443,14 @@ func (apiReconciler *APIReconciler) getBackendConfigs(ctx context.Context,
 		var backendProtocol dpv1alpha1.BackendProtocolType
 		if backendPolicy.Spec.Override != nil {
 			tlsConfig = backendPolicy.Spec.Override.TLS
+			tlsConfig.CertificateInline = resolveCertificate(ctx, apiReconciler.client,
+				backendPolicy.Namespace, tlsConfig)
 			backendProtocol = backendPolicy.Spec.Override.Protocol
 			security = backendPolicy.Spec.Override.Security
 		} else if backendPolicy.Spec.Default != nil {
 			tlsConfig = backendPolicy.Spec.Default.TLS
+			tlsConfig.CertificateInline = resolveCertificate(ctx, apiReconciler.client,
+				backendPolicy.Namespace, tlsConfig)
 			backendProtocol = backendPolicy.Spec.Default.Protocol
 			security = backendPolicy.Spec.Default.Security
 		}
@@ -441,6 +470,67 @@ func (apiReconciler *APIReconciler) getBackendConfigs(ctx context.Context,
 		}
 	}
 	return tlsConfig, protocol, security
+}
+
+// resolveCertificate reads the certificate from TLSConfig, first checks the certificateInline field,
+// if no value then load the certificate from secretRef using util function called GetSecretValue
+func resolveCertificate(ctx context.Context, client k8client.Client, namespace string, tlsConfig dpv1alpha1.TLSConfig) string {
+	var certificate string
+	var err error
+	if len(tlsConfig.CertificateInline) > 0 {
+		certificate = tlsConfig.CertificateInline
+	} else if tlsConfig.SecretRef != nil {
+		if certificate, err = utils.GetSecretValue(ctx, client,
+			namespace, tlsConfig.SecretRef.Name, tlsConfig.SecretRef.Key); err != nil {
+			loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+				Message:   fmt.Sprintf("Error while reading certificate from secretRef: %s", tlsConfig.SecretRef),
+				Severity:  logging.MINOR,
+				ErrorCode: 2609,
+			})
+		}
+	} else if tlsConfig.ConfigMapRef != nil {
+		if certificate, err = utils.GetConfigMapValue(ctx, client,
+			namespace, tlsConfig.ConfigMapRef.Name, tlsConfig.ConfigMapRef.Key); err != nil {
+			loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+				Message:   fmt.Sprintf("Error while reading certificate from configMapRef: %s", tlsConfig.ConfigMapRef),
+				Severity:  logging.MINOR,
+				ErrorCode: 2609,
+			})
+		}
+	}
+	block, _ := pem.Decode([]byte(certificate))
+	if block == nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprint("Failed to parse certificate PEM"),
+			Severity:  logging.MINOR,
+			ErrorCode: 2619,
+		})
+		return ""
+	}
+	_, err = x509.ParseCertificate(block.Bytes)
+	if block == nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("Error while parsing certificate: %s", err.Error()),
+			Severity:  logging.MINOR,
+			ErrorCode: 2619,
+		})
+		return ""
+	}
+	return certificate
+}
+
+// function parse a public certificate and say its success or not
+func (apiReconciler *APIReconciler) parseCertificate(certificate string) bool {
+	_, err := tls.X509KeyPair([]byte(certificate), []byte{})
+	if err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("Error while parsing certificate: %s", err.Error()),
+			Severity:  logging.MINOR,
+			ErrorCode: 2619,
+		})
+		return false
+	}
+	return true
 }
 
 // getAPIForHTTPRoute triggers the API controller reconcile method based on the changes detected
@@ -531,6 +621,72 @@ func (apiReconciler *APIReconciler) getAPIsForBackendPolicy(obj k8client.Object)
 		return []reconcile.Request{}
 	}
 	return apiReconciler.getAPIsForService(service)
+}
+
+// getAPIsForConfigMap triggers the API controller reconcile method based on the changes detected
+// in configMap resources.
+func (apiReconciler *APIReconciler) getAPIsForConfigMap(obj k8client.Object) []reconcile.Request {
+	ctx := context.Background()
+	configMap, ok := obj.(*corev1.ConfigMap)
+	if !ok {
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("Unexpected object type, bypassing reconciliation: %v", configMap),
+			Severity:  logging.TRIVIAL,
+			ErrorCode: 2626,
+		})
+		return []reconcile.Request{}
+	}
+
+	backendPolicyList := &dpv1alpha1.BackendPolicyList{}
+	if err := apiReconciler.client.List(ctx, backendPolicyList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(configMapBackendPolicy, utils.NamespacedName(configMap).String()),
+	}); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("Unable to find associated BackendPolicies for ConfigMap: %s", utils.NamespacedName(configMap).String()),
+			Severity:  logging.CRITICAL,
+			ErrorCode: 2627,
+		})
+		return []reconcile.Request{}
+	}
+
+	requests := []reconcile.Request{}
+	for _, backendPolicy := range backendPolicyList.Items {
+		requests = append(requests, apiReconciler.getAPIsForBackendPolicy(&backendPolicy)...)
+	}
+	return requests
+}
+
+// getAPIsForSecret triggers the API controller reconcile method based on the changes detected
+// in secret resources.
+func (apiReconciler *APIReconciler) getAPIsForSecret(obj k8client.Object) []reconcile.Request {
+	ctx := context.Background()
+	secret, ok := obj.(*corev1.Secret)
+	if !ok {
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("Unexpected object type, bypassing reconciliation: %v", secret),
+			Severity:  logging.TRIVIAL,
+			ErrorCode: 2626,
+		})
+		return []reconcile.Request{}
+	}
+
+	backendPolicyList := &dpv1alpha1.BackendPolicyList{}
+	if err := apiReconciler.client.List(ctx, backendPolicyList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(secretBackendPolicy, utils.NamespacedName(secret).String()),
+	}); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+			Message:   fmt.Sprintf("Unable to find associated BackendPolicies for Secret: %s", utils.NamespacedName(secret).String()),
+			Severity:  logging.CRITICAL,
+			ErrorCode: 2627,
+		})
+		return []reconcile.Request{}
+	}
+
+	requests := []reconcile.Request{}
+	for _, backendPolicy := range backendPolicyList.Items {
+		requests = append(requests, apiReconciler.getAPIsForBackendPolicy(&backendPolicy)...)
+	}
+	return requests
 }
 
 // getAPIForAuthentication triggers the API controller reconcile method based on the changes detected
@@ -747,6 +903,58 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 					}.String())
 			}
 			return services
+		}); err != nil {
+		return err
+	}
+
+	// ConfigMap to BackendPolicy indexer
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.BackendPolicy{}, configMapBackendPolicy,
+		func(rawObj k8client.Object) []string {
+			backendPolicy := rawObj.(*dpv1alpha1.BackendPolicy)
+			var configMaps []string
+			if backendPolicy.Spec.Default != nil &&
+				backendPolicy.Spec.Default.TLS.ConfigMapRef != nil && len(backendPolicy.Spec.Default.TLS.ConfigMapRef.Name) > 0 {
+				configMaps = append(configMaps,
+					types.NamespacedName{
+						Name:      string(backendPolicy.Spec.Default.TLS.ConfigMapRef.Name),
+						Namespace: backendPolicy.Namespace,
+					}.String())
+			}
+			if backendPolicy.Spec.Override != nil &&
+				backendPolicy.Spec.Override.TLS.ConfigMapRef != nil && len(backendPolicy.Spec.Override.TLS.ConfigMapRef.Name) > 0 {
+				configMaps = append(configMaps,
+					types.NamespacedName{
+						Name:      string(backendPolicy.Spec.Override.TLS.ConfigMapRef.Name),
+						Namespace: backendPolicy.Namespace,
+					}.String())
+			}
+			return configMaps
+		}); err != nil {
+		return err
+	}
+
+	// Secret to BackendPolicy indexer
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.BackendPolicy{}, secretBackendPolicy,
+		func(rawObj k8client.Object) []string {
+			backendPolicy := rawObj.(*dpv1alpha1.BackendPolicy)
+			var secrets []string
+			if backendPolicy.Spec.Default != nil &&
+				backendPolicy.Spec.Default.TLS.SecretRef != nil && len(backendPolicy.Spec.Default.TLS.SecretRef.Name) > 0 {
+				secrets = append(secrets,
+					types.NamespacedName{
+						Name:      string(backendPolicy.Spec.Default.TLS.SecretRef.Name),
+						Namespace: backendPolicy.Namespace,
+					}.String())
+			}
+			if backendPolicy.Spec.Override != nil &&
+				backendPolicy.Spec.Override.TLS.SecretRef != nil && len(backendPolicy.Spec.Override.TLS.SecretRef.Name) > 0 {
+				secrets = append(secrets,
+					types.NamespacedName{
+						Name:      string(backendPolicy.Spec.Override.TLS.SecretRef.Name),
+						Namespace: backendPolicy.Namespace,
+					}.String())
+			}
+			return secrets
 		}); err != nil {
 		return err
 	}
