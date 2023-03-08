@@ -37,6 +37,7 @@ jobs:
         shell: sh
         if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize'
         run: |
+          cd apk-repo
           gh pr checkout ${{ github.event.number }} -b pr-${{ github.event.number }}
           git checkout pr-${{ github.event.number }}
           git merge origin/main
