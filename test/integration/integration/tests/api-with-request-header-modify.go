@@ -49,6 +49,7 @@ var APIWithRequestHeaderModify = suite.IntegrationTest{
 					Request: http.Request{
 						Path: "/users",
 					},
+					AbsentHeaders: []string{"X-Header-Remove"},
 				},
 				Backend:   "infra-backend-v1",
 				Namespace: ns,

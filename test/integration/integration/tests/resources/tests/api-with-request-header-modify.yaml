@@ -51,7 +51,7 @@ spec:
     - type: URLRewrite
       urlRewrite:
         path:
-          type: ReplaceFullPath
+          type: ReplacePrefixMatch
           replacePrefixMatch: /users
     - type: RequestHeaderModifier
       requestHeaderModifier:
