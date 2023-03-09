@@ -198,13 +198,19 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, ht
 				Name:      string(backend.Name),
 				Namespace: utils.GetNamespace(backend.Namespace, httpRoute.Namespace),
 			}]
-			endPoints = append(endPoints,
-				Endpoint{Host: backendProperties.ResolvedHostname,
-					URLType:     string(backendProperties.Protocol),
-					Port:        uint32(*backend.Port),
-					Certificate: []byte(backendProperties.TLS.CertificateInline),
-					AllowedSANs: backendProperties.TLS.AllowedSANs,
-				})
+			port := uint32(8080)
+			if backend.Port != nil {
+				port = uint32(*backend.Port)
+			}
+			if &backendProperties != nil {
+				endPoints = append(endPoints,
+					Endpoint{Host: backendProperties.ResolvedHostname,
+						URLType:     string(backendProperties.Protocol),
+						Port:        port,
+						Certificate: []byte(backendProperties.TLS.CertificateInline),
+						AllowedSANs: backendProperties.TLS.AllowedSANs,
+					})
+			}
 			for _, security := range backendProperties.Security {
 				switch security.Type {
 				case "Basic":

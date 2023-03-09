@@ -1,0 +1,145 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.9.2
+  creationTimestamp: null
+  name: backends.dp.wso2.com
+spec:
+  group: dp.wso2.com
+  names:
+    kind: Backend
+    listKind: BackendList
+    plural: backends
+    singular: backend
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: Backend is the Schema for the backends API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: BackendSpec defines the desired state of Backend
+            properties:
+              protocol:
+                description: BackendProtocolType defines the backend protocol type.
+                enum:
+                - http
+                - https
+                - ws
+                - wss
+                type: string
+              security:
+                items:
+                  description: SecurityConfig defines enpoint security configurations
+                  properties:
+                    basic:
+                      description: BasicSecurityConfig defines basic security configurations
+                      properties:
+                        password:
+                          type: string
+                        username:
+                          type: string
+                      type: object
+                    type:
+                      type: string
+                  type: object
+                type: array
+              services:
+                items:
+                  description: Service holds host and port information for the service
+                  properties:
+                    host:
+                      type: string
+                    port:
+                      format: int32
+                      type: integer
+                  required:
+                  - host
+                  - port
+                  type: object
+                minItems: 1
+                type: array
+              tls:
+                description: TLSConfig defines enpoint TLS configurations
+                properties:
+                  allowedSANs:
+                    items:
+                      type: string
+                    type: array
+                  certificateInline:
+                    type: string
+                  configMapRef:
+                    description: RefConfig holds a config for a secret or a configmap
+                    properties:
+                      key:
+                        type: string
+                      name:
+                        type: string
+                    required:
+                    - key
+                    - name
+                    type: object
+                  secretRef:
+                    description: RefConfig holds a config for a secret or a configmap
+                    properties:
+                      key:
+                        type: string
+                      name:
+                        type: string
+                    required:
+                    - key
+                    - name
+                    type: object
+                type: object
+            type: object
+          status:
+            description: BackendStatus defines the observed state of Backend
+            properties:
+              accepted:
+                description: Accepted represents whether the BackendPolicy is accepted
+                  or not.
+                type: boolean
+              events:
+                description: Events contains a list of events related to the BackendPolicy.
+                items:
+                  type: string
+                type: array
+              message:
+                description: Message represents a user friendly message that explains
+                  the current state of the BackendPolicy.
+                minLength: 4
+                type: string
+              status:
+                description: Status denotes the state of the BackendPolicy in its
+                  lifecycle. Possible values could be Accepted, Invalid, Deploy etc.
+                minLength: 4
+                type: string
+              transitionTime:
+                description: TransitionTime represents the last known transition timestamp.
+                format: date-time
+                type: string
+            required:
+            - accepted
+            - status
+            - transitionTime
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

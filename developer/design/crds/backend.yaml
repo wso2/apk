@@ -1,0 +1,21 @@
+apiVersion: dp.wso2.com/v1alpha1
+kind: Backend
+metadata:
+  name: sample-backend
+spec:
+  services:
+    - host: <svc-name>.<namespace> / domain name of a external service
+      port: 80
+  protocol: https
+  # Uncomment following to validate certificate via a given ca cert (this should be a root level cert)
+  tls:
+    certificateInline: |
+      -----BEGIN CERTIFICATE-----
+      <cert-data>
+      -----END CERTIFICATE-----
+  security:
+    - type: Basic
+      basic:
+  # global resiliency configs will be duplicated in the gateway properties too.
+  retries:
+  timeout:
