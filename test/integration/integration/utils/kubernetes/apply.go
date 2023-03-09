@@ -26,6 +26,7 @@ import (
 	"net/http"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -212,8 +213,17 @@ func (a Applier) MustApplyWithCleanup(t *testing.T, c client.Client, timeoutConf
 			}
 			t.Logf("Creating %s %s", uObj.GetName(), uObj.GetKind())
 			err = c.Create(ctx, uObj)
+			rounds := 4
+			for err != nil {
+				if rounds > 0 {
+					err = c.Create(ctx, uObj)
+					time.Sleep(15 * time.Second)
+					rounds--
+				} else {
+					break
+				}
+			}
 			require.NoErrorf(t, err, "error creating resource")
-
 			if cleanup {
 				t.Cleanup(func() {
 					ctx, cancel = context.WithTimeout(context.Background(), timeoutConfig.DeleteTimeout)
