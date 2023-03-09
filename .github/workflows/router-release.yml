@@ -16,7 +16,6 @@ on:
       - synchronize
     paths:
       - '**/gateway/router**'
-      - '**/test/**'
     branches:
       - 'main'
 concurrency:

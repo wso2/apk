@@ -8,6 +8,9 @@ on:
       - synchronize
     paths:
       - '**/test/**'
+      - '**/adapter/**'
+      - '**/gateway/enforcer/**'
+      - '**/gateway/router**'
 concurrency:
   group: test-${{ github.event.number }}
   cancel-in-progress: true

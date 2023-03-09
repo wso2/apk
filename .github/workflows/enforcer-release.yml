@@ -16,7 +16,6 @@ on:
       - synchronize
     paths:
       - '**/gateway/enforcer/**'
-      - '**/test/**'
     branches:
       - 'main'
 env:
