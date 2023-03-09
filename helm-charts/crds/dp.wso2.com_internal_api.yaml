@@ -162,9 +162,9 @@ spec:
                                   items:
                                     type: object
                                     properties:
-                                      name:
+                                      headerName:
                                         type: string
-                                      value:
+                                      headerValue:
                                         type: string
                           response:
                             type: array
@@ -178,9 +178,9 @@ spec:
                                   items:
                                     type: object
                                     properties:
-                                      name:
+                                      headerName:
                                         type: string
-                                      value:
+                                      headerValue:
                                         type: string
                 serviceInfo:
                   type: object

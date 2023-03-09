@@ -1216,9 +1216,9 @@ components:
       title: API Operation Policy Parameters
       type: object
       properties:
-        name:
+        headerName:
           type: string
-        value:
+        headerValue:
           type: string
     GraphQLSchema:
       title: GraphQL Schema
