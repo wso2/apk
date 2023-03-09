@@ -25,6 +25,7 @@ func init() {
 	IntegrationTests = append(IntegrationTests, APIWithResoponseHeaderModify)
 }
 
+// APIWithResoponseHeaderModify test
 var APIWithResoponseHeaderModify = suite.IntegrationTest{
 	ShortName:   "APIWithResoponseHeaderModify",
 	Description: "An API with response header modify",
