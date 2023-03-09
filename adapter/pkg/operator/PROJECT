@@ -61,6 +61,7 @@ resources:
   group: cp
   kind: Subscription
   path: github.com/wso2/apk/adapter/pkg/operator/apis/cp/v1alpha1
+  version: v1alpha1
 - api:
     crdVersion: v1
     namespaced: true
@@ -68,6 +69,14 @@ resources:
   domain: wso2.com
   group: dp
   kind: Scope
+  path: github.com/wso2/apk/adapter/pkg/operator/apis/dp/v1alpha1
+  version: v1alpha1
+- api:
+    crdVersion: v1
+    namespaced: true
+  domain: wso2.com
+  group: dp
+  kind: Backend
   path: github.com/wso2/apk/adapter/pkg/operator/apis/dp/v1alpha1
   version: v1alpha1
 version: "3"

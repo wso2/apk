@@ -65,6 +65,7 @@ const (
 	apiScopeIndex                   = "apiScopeIndex"
 	configMapBackendPolicy          = "configMapBackendPolicy"
 	secretBackendPolicy             = "secretBackendPolicy"
+	backendHTTPRouteIndex           = "backendHTTPRouteIndex"
 )
 
 // APIReconciler reconciles a API object
@@ -118,7 +119,7 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 		return err
 	}
 
-	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.BackendPolicy{}}, handler.EnqueueRequestsFromMapFunc(r.getAPIsForBackendPolicy),
+	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.Backend{}}, handler.EnqueueRequestsFromMapFunc(r.getAPIsForBackend),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2615, err))
 		return err
@@ -188,6 +189,7 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.13.0/pkg/reconcile
 func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+	loggers.LoggerAPKOperator.Infof("Reconciling for API %s", req.NamespacedName.String())
 
 	// Check whether the API CR exist, if not consider as a DELETE event.
 	var apiDef dpv1alpha1.API
@@ -833,6 +835,36 @@ func (apiReconciler *APIReconciler) getAPIsForScope(obj k8client.Object) []recon
 	return requests
 }
 
+// getAPIsForBackend triggers the API controller reconcile method based on the changes detected
+// in backend resources.
+func (apiReconciler *APIReconciler) getAPIsForBackend(obj k8client.Object) []reconcile.Request {
+	ctx := context.Background()
+	backend, ok := obj.(*dpv1alpha1.Backend)
+	if !ok {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2624, backend))
+		return []reconcile.Request{}
+	}
+
+	httpRouteList := &gwapiv1b1.HTTPRouteList{}
+	if err := apiReconciler.client.List(ctx, httpRouteList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(backendHTTPRouteIndex, utils.NamespacedName(backend).String()),
+	}); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2625, utils.NamespacedName(backend).String()))
+		return []reconcile.Request{}
+	}
+
+	if len(httpRouteList.Items) == 0 {
+		loggers.LoggerAPKOperator.Debugf("HTTPRoutes for Backend not found: %s", utils.NamespacedName(backend).String())
+		return []reconcile.Request{}
+	}
+
+	requests := []reconcile.Request{}
+	for _, httpRoute := range httpRouteList.Items {
+		requests = append(requests, apiReconciler.getAPIForHTTPRoute(&httpRoute)...)
+	}
+	return requests
+}
+
 // addIndexes adds indexing on API, for
 //   - prodution and sandbox HTTPRoutes
 //     referenced in API objects via `.spec.prodHTTPRouteRef` and `.spec.sandHTTPRouteRef`
@@ -871,21 +903,23 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 		return err
 	}
 
-	// Service (BackendRefs) to HTTPRoute indexer
-	if err := mgr.GetFieldIndexer().IndexField(ctx, &gwapiv1b1.HTTPRoute{}, serviceHTTPRouteIndex,
+	// Backend to HTTPRoute indexer
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &gwapiv1b1.HTTPRoute{}, backendHTTPRouteIndex,
 		func(rawObj k8client.Object) []string {
 			httpRoute := rawObj.(*gwapiv1b1.HTTPRoute)
-			var services []string
+			var backends []string
 			for _, rule := range httpRoute.Spec.Rules {
 				for _, backendRef := range rule.BackendRefs {
-					services = append(services, types.NamespacedName{
-						Namespace: utils.GetNamespace(backendRef.Namespace,
-							httpRoute.ObjectMeta.Namespace),
-						Name: string(backendRef.Name),
-					}.String())
+					if backendRef.Kind != nil && *backendRef.Kind == constants.KindBackend {
+						backends = append(backends, types.NamespacedName{
+							Namespace: utils.GetNamespace(backendRef.Namespace,
+								httpRoute.ObjectMeta.Namespace),
+							Name: string(backendRef.Name),
+						}.String())
+					}
 				}
 			}
-			return services
+			return backends
 		}); err != nil {
 		return err
 	}
