@@ -20,6 +20,7 @@ set -e
 #This is a sample script to build APK. When you build project please run this script in project root level.
 #All relative paths etc designed from root directory. Users can customize this as per demand. Ex: If you wish to 
 #build and run runtime domain service then can build it alone and do deployment.
+
 # mkdir -p ballerina-dist
 # wget 'https://dist.ballerina.io/downloads/2201.4.0/ballerina-2201.4.0-swan-lake-linux-x64.deb' -P ballerina-dist
 # sudo dpkg -i ballerina-dist/ballerina-2201.4.0-swan-lake-linux-x64.deb
@@ -35,12 +36,3 @@ cd $current_dir;
 cd ../../gateway/router;./gradlew build -Pversion='test';
 cd $current_dir;
 cd ../../gateway/enforcer;./gradlew build -Pversion='test';
-
-# minikube image load runtime-domain-service:test
-# sleep 60s
-# minikube image load adapter:test
-# sleep 60s
-# minikube image load router:test
-# sleep 60s
-# minikube image load enforcer:test
-# sleep 60s
