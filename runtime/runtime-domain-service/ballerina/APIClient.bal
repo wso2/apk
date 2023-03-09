@@ -463,21 +463,19 @@ public class APIClient {
                     OperationPolicy[]? request = operationPolicies.request;
                     if request is OperationPolicy[] {
                         foreach OperationPolicy policy in request {
-                            model:OperationPolicy runtimeAPIRequestPolicy = {
-                                policyName: <string>policy.policyName,
-                                parameters: <map<string>>policy.parameters
-                            };
-                            runtimeAPIRequestPolicies.push(runtimeAPIRequestPolicy);
+                            model:OperationPolicy|error runtimeAPIRequestPolicy = policy.cloneWithType(model:OperationPolicy);
+                            if (runtimeAPIRequestPolicy is model:OperationPolicy) {
+                                runtimeAPIRequestPolicies.push(runtimeAPIRequestPolicy);
+                            }
                         }
                     }
                     OperationPolicy[]? response = operationPolicies.response;
                     if response is OperationPolicy[] {
                         foreach OperationPolicy policy in response {
-                            model:OperationPolicy runtimeAPIResponsePolicy = {
-                                policyName: <string>policy.policyName,
-                                parameters: <map<string>>policy.parameters
-                            };
-                            runtimeAPIResponsePolicies.push(runtimeAPIResponsePolicy);
+                            model:OperationPolicy|error runtimeAPIResponsePolicy = policy.cloneWithType(model:OperationPolicy);
+                            if (runtimeAPIResponsePolicy is model:OperationPolicy) {
+                                runtimeAPIResponsePolicies.push(runtimeAPIResponsePolicy);
+                            }
                         }
                     }
                 }
@@ -1137,7 +1135,52 @@ public class APIClient {
         model:HTTPRouteFilter[] routeFilters = [];
         model:HTTPRouteFilter replacePathFilter = {'type: "URLRewrite", urlRewrite: {path: {'type: "ReplaceFullPath", replaceFullPath: self.generatePrefixMatch(api, endpoint, operation, endpointType)}}};
         routeFilters.push(replacePathFilter);
+        APIOperationPolicies? operationPolicies = operation.operationPolicies;
+        if operationPolicies is APIOperationPolicies {
+            OperationPolicy[]? request = operationPolicies.request;
+            if request is OperationPolicy[] {
+                model:HTTPRouteFilter requestHeaderFilter = {'type: "RequestHeaderModifier",
+                    requestHeaderModifier: self.extractHttpHeaderFilterData(request)};
+                routeFilters.push(requestHeaderFilter);
+            }
+            OperationPolicy[]? response = operationPolicies.response;
+            if response is OperationPolicy[] {
+                model:HTTPRouteFilter responseHeaderFilter = {'type: "RequestHeaderModifier",
+                    requestHeaderModifier: self.extractHttpHeaderFilterData(response)};
+                routeFilters.push(responseHeaderFilter);
+            }
+        }
         return routeFilters;
+    }
+
+    isolated function extractHttpHeaderFilterData(OperationPolicy[] operationPolicy) returns model:HTTPHeaderFilter {
+        model:HTTPHeader[] setPolicies = [];
+        string[] removePolicies = [];
+        foreach OperationPolicy policy in operationPolicy {
+            string policyName = policy.policyName;
+            OperationPolicyParameters[]? policyParameters = policy.parameters;
+            if (policyParameters is OperationPolicyParameters[]) {
+                if (policyName == "addHeader") {
+                    model:HTTPHeader httpHeader = {
+                        name: <string>policyParameters[0].name,
+                        value: <string>policyParameters[0].value
+                    };
+                    setPolicies.push(httpHeader);
+                }
+                if (policyName == "removeHeader") {
+                    string httpHeader = <string>policyParameters[0].name;
+                    removePolicies.push(httpHeader);
+                }
+            }
+        }
+        model:HTTPHeaderFilter headerModifier = {};
+        if (setPolicies != []) {
+            headerModifier.set = setPolicies;
+        }
+        if (removePolicies != []) {
+            headerModifier.remove = removePolicies;
+        }
+        return headerModifier;
     }
 
     isolated function generatePrefixMatch(API api, model:Endpoint endpoint, APIOperations operation, string endpointType) returns string {
