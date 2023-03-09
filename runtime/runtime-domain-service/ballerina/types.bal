@@ -295,7 +295,12 @@ public type OperationPolicy record {
     string policyName;
     string policyVersion = "v1";
     string policyId?;
-    record {} parameters?;
+    OperationPolicyParameters[] parameters?;
+};
+
+public type OperationPolicyParameters record {
+    string name?;
+    string value?;
 };
 
 public type Apis_import_body record {
