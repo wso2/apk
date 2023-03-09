@@ -69,7 +69,7 @@ spec:
               subPath: tls.crt
             {{- end }}
             - name: router-truststore-secret-volume
-              mountPath: /home/wso2/security/keystore/router.crt
+              mountPath: /home/wso2/security/truststore/router.crt
             {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls }}
               subPath: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls.certFilename | default "tls.crt" }}
             {{- else }}
