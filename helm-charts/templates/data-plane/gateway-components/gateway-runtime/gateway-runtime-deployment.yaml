@@ -64,7 +64,8 @@ spec:
               value: "4194304"
             - name: XDS_MAX_RETRIES 
               value: "3"
-              enforcer_admin_pwd: admin
+            - name: enforcer_admin_pwd
+              value: admin
             - name: analytics_authURL
               value: "https://localhost:8080"
             - name: JAVA_OPTS
@@ -163,7 +164,7 @@ spec:
             - name: ENFORCER_CA_CERT_PATH
               value: "/home/wso2/security/truststore/enforcer.crt"
             - name: CONCURRENCY
-              value: 2
+              value: "2"
           volumeMounts:
             - name: router-keystore-secret-volume
               mountPath: /home/wso2/security/keystore/router.key
