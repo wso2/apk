@@ -46,7 +46,6 @@ spec:
               subPath: tls.crt
             - name: adapter-truststore-secret-volume
               mountPath: /home/wso2/security/truststore/adapter.crt
-              mountPath: /home/wso2/security/keystore/adapter.crt
             {{- if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.dp.adapter.configs.tls }}
               subPath: {{ .Values.wso2.apk.dp.adapter.configs.tls.certFilename | default "tls.crt" }}
             {{- else }}
