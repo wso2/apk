@@ -4,7 +4,7 @@ metadata:
   name: sand-http-bin-ratelimit
 spec:
   policies:
-    - type: API
+    - type: Api
       api:
         requestPerUnit: 5
         unit: Minute
