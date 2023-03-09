@@ -32,7 +32,12 @@ public type Operations record {|
 
 public type OperationPolicy record {
     string policyName;
-    map<string> parameters?;
+    OperationPolicyParameters[] parameters?;
+};
+
+public type OperationPolicyParameters record {
+    string name?;
+    string value?;
 };
 
 public type MediationPolicy record {
