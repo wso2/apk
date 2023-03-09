@@ -455,12 +455,17 @@ public class APIClient {
                     authTypeEnabled: operation.authTypeEnabled ?: true,
                     scopes: operation.scopes ?: []
                 };
-                APIOperationPolicies? operationPolicies = operation.operationPolicies;
+                APIOperationPolicies? operationPoliciesToUse = ();
+                if (api.apiPolicies is APIOperationPolicies) {
+                    operationPoliciesToUse = api.apiPolicies;
+                } else {
+                    operationPoliciesToUse = operation.operationPolicies;
+                }
                 model:OperationPolicy[] runtimeAPIRequestPolicies = [];
                 model:OperationPolicy[] runtimeAPIResponsePolicies = [];
 
-                if operationPolicies is APIOperationPolicies {
-                    OperationPolicy[]? request = operationPolicies.request;
+                if operationPoliciesToUse is APIOperationPolicies {
+                    OperationPolicy[]? request = operationPoliciesToUse.request;
                     if request is OperationPolicy[] {
                         foreach OperationPolicy policy in request {
                             model:OperationPolicy|error runtimeAPIRequestPolicy = policy.cloneWithType(model:OperationPolicy);
@@ -469,7 +474,7 @@ public class APIClient {
                             }
                         }
                     }
-                    OperationPolicy[]? response = operationPolicies.response;
+                    OperationPolicy[]? response = operationPoliciesToUse.response;
                     if response is OperationPolicy[] {
                         foreach OperationPolicy policy in response {
                             model:OperationPolicy|error runtimeAPIResponsePolicy = policy.cloneWithType(model:OperationPolicy);
@@ -1135,15 +1140,20 @@ public class APIClient {
         model:HTTPRouteFilter[] routeFilters = [];
         model:HTTPRouteFilter replacePathFilter = {'type: "URLRewrite", urlRewrite: {path: {'type: "ReplaceFullPath", replaceFullPath: self.generatePrefixMatch(api, endpoint, operation, endpointType)}}};
         routeFilters.push(replacePathFilter);
-        APIOperationPolicies? operationPolicies = operation.operationPolicies;
-        if operationPolicies is APIOperationPolicies {
-            OperationPolicy[]? request = operationPolicies.request;
+        APIOperationPolicies? operationPoliciesToUse = ();
+        if (api.apiPolicies is APIOperationPolicies) {
+            operationPoliciesToUse = api.apiPolicies;
+        } else {
+            operationPoliciesToUse = operation.operationPolicies;
+        }
+        if operationPoliciesToUse is APIOperationPolicies {
+            OperationPolicy[]? request = operationPoliciesToUse.request;
             if request is OperationPolicy[] {
                 model:HTTPRouteFilter requestHeaderFilter = {'type: "RequestHeaderModifier",
                     requestHeaderModifier: self.extractHttpHeaderFilterData(request)};
                 routeFilters.push(requestHeaderFilter);
             }
-            OperationPolicy[]? response = operationPolicies.response;
+            OperationPolicy[]? response = operationPoliciesToUse.response;
             if response is OperationPolicy[] {
                 model:HTTPRouteFilter responseHeaderFilter = {'type: "RequestHeaderModifier",
                     requestHeaderModifier: self.extractHttpHeaderFilterData(response)};
