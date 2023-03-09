@@ -56,6 +56,8 @@ const (
 	error2634 = 2634
 	error2635 = 2635
 	error2636 = 2636
+	error2637 = 2637
+	error2638 = 2638
 )
 
 // Error Log Pkg auth(3001-3099) Config Constants
@@ -252,6 +254,16 @@ var Mapper = map[int]ErrorDetails{
 		ErrorCode: error2636,
 		Message:   "Error while generating the soap fault message. %s",
 		Severity:  MINOR,
+	},
+	error2637: {
+		ErrorCode: error2637,
+		Message:   "Unable to create webhook for Ratelimit: %v",
+		Severity:  BLOCKER,
+	},
+	error2638: {
+		ErrorCode: error2638,
+		Message:   "Unable to create webhook for APIPolicy: %v",
+		Severity:  BLOCKER,
 	},
 	error3001: {
 		ErrorCode: error3001,

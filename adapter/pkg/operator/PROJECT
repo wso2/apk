@@ -53,6 +53,10 @@ resources:
   kind: APIPolicy
   path: github.com/wso2/apk/adapter/pkg/operator/apis/dp/v1alpha1
   version: v1alpha1
+  webhooks:
+    defaulting: true
+    validation: true
+    webhookVersion: v1
 - api:
     crdVersion: v1
     namespaced: true
@@ -61,6 +65,7 @@ resources:
   group: cp
   kind: Subscription
   path: github.com/wso2/apk/adapter/pkg/operator/apis/cp/v1alpha1
+  version: ""
 - api:
     crdVersion: v1
     namespaced: true
@@ -70,4 +75,17 @@ resources:
   kind: Scope
   path: github.com/wso2/apk/adapter/pkg/operator/apis/dp/v1alpha1
   version: v1alpha1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: wso2.com
+  group: dp
+  kind: RateLimitPolicy
+  path: github.com/wso2/apk/adapter/pkg/operator/apis/dp/v1alpha1
+  version: v1alpha1
+  webhooks:
+    defaulting: true
+    validation: true
+    webhookVersion: v1
 version: "3"

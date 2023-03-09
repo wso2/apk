@@ -25,6 +25,46 @@ webhooks:
     resources:
     - apis
   sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /mutate-dp-wso2-com-v1alpha1-apipolicy
+  failurePolicy: Fail
+  name: mapipolicy.kb.io
+  rules:
+  - apiGroups:
+    - dp.wso2.com
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - apipolicies
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /mutate-dp-wso2-com-v1alpha1-ratelimitpolicy
+  failurePolicy: Fail
+  name: mratelimitpolicy.kb.io
+  rules:
+  - apiGroups:
+    - dp.wso2.com
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - ratelimitpolicies
+  sideEffects: None
 ---
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
@@ -51,4 +91,44 @@ webhooks:
     - UPDATE
     resources:
     - apis
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-dp-wso2-com-v1alpha1-apipolicy
+  failurePolicy: Fail
+  name: vapipolicy.kb.io
+  rules:
+  - apiGroups:
+    - dp.wso2.com
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - apipolicies
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-dp-wso2-com-v1alpha1-ratelimitpolicy
+  failurePolicy: Fail
+  name: vratelimitpolicy.kb.io
+  rules:
+  - apiGroups:
+    - dp.wso2.com
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - ratelimitpolicies
   sideEffects: None
