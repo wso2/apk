@@ -121,19 +121,6 @@ public class OAS3Parser extends APIDefinition {
                             template = OASParserUtil.setScopesToTemplate(template, opScopes, scopes);
                         }
                     }
-                    Map<String, Object> extensions = operation.getExtensions();
-                    if (extensions != null) {
-                        if (extensions.containsKey(APIConstants.SWAGGER_X_AUTH_TYPE)) {
-                            Boolean authType = (Boolean) extensions.get(APIConstants.SWAGGER_X_AUTH_TYPE);
-                            template.setAuthEnabled(authType);
-                        } else {
-                            template.setAuthEnabled(true);
-                        }
-                        if (extensions.containsKey(APIConstants.SWAGGER_X_THROTTLING_TIER)) {
-                            String throttlingTier = (String) extensions.get(APIConstants.SWAGGER_X_THROTTLING_TIER);
-                            template.setThrottlingTier(throttlingTier);
-                        }
-                    }
                     urlTemplates.add(template);
                 }
             }
