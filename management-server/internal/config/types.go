@@ -26,10 +26,20 @@ type Config struct {
 }
 
 type managementServer struct {
-	XDSPort          int32    `toml:"xdsPort"`
-	NodeLabels       []string `toml:"nodeLabels"`
-	GRPCPort         uint     `toml:"gRPCPort"`
-	NotificationPort uint     `toml:"notificationPort"`
+	XDSPort          int32      `toml:"xdsPort"`
+	NodeLabels       []string   `toml:"nodeLabels"`
+	GRPCPort         uint       `toml:"gRPCPort"`
+	NotificationPort uint       `toml:"notificationPort"`
+	Keystore         keystore   `toml:"keystore"`
+	Truststore       truststore `toml:"truststore"`
+}
+
+type keystore struct {
+	KeyPath  string
+	CertPath string
+}
+type truststore struct {
+	Location string
 }
 
 type backOffice struct {

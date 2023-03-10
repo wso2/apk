@@ -30,6 +30,7 @@ import (
 	"github.com/wso2/apk/management-server/internal/backoffice"
 	"github.com/wso2/apk/management-server/internal/config"
 	"github.com/wso2/apk/management-server/internal/logger"
+	"github.com/wso2/apk/management-server/internal/utils"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/keepalive"
@@ -79,7 +80,7 @@ func (s *apiService) DeleteAPI(ctx context.Context, api *apiProtos.API) (*apiPro
 // StartGRPCServer start the GRPC server
 func StartGRPCServer() {
 	var grpcOptions []grpc.ServerOption
-	publicKeyLocation, privateKeyLocation, truststoreLocation := tlsutils.GetKeyLocations()
+	publicKeyLocation, privateKeyLocation, truststoreLocation := utils.GetKeyLocations()
 	cert, err := tlsutils.GetServerCertificate(publicKeyLocation, privateKeyLocation)
 	caCertPool := tlsutils.GetTrustedCertPool(truststoreLocation)
 	if err == nil {

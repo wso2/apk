@@ -188,9 +188,9 @@ wso2:
       enabled: true
       gatewayAPI:
         enabled: true
-      controlPlane:
-        serviceUrl: "http://control-plane-wso2-apk-admin-ds-service.control-plane.svc.cluster.local:9444/api/am/internal/v1"    
-        enableHostNameVerification: true
+      # controlPlane:
+      #   serviceUrl: "http://control-plane-wso2-apk-admin-ds-service.control-plane.svc.cluster.local:9444/api/am/internal/v1"    
+      #   enableHostNameVerification: true
         # tls:
         #   enabled: false
         #   certificatesSecret: "organization-managetment-server-cert"
@@ -198,9 +198,9 @@ wso2:
         # headers:
         #   - name: "apiKey"
         #     value: "123-456-789"
-      managementServer:
-        enabled: false
-        serviceUrl: "https://control-plane-wso2-apk-management-server.control-plane.svc.cluster.local"
+      # managementServer:
+      #   enabled: false
+      #   serviceUrl: "https://control-plane-wso2-apk-management-server.control-plane.svc.cluster.local"
         # tls:
         #   certificatesSecret: "organization-managetment-server-cert"
         #   fileName: "certificate.crt"
