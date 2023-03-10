@@ -1607,6 +1607,118 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "RuntimeAPI List Mediation Policies",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Mediation Policies available in Runtime\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.list.length).to.be.above(1);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/policies",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"policies"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "RuntimeAPI GET Mediation Policy by ID",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/policies/{{POLICYID}}",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"policies",
+						"{{POLICYID}}"
+					]
+				}
+			},
+			"response": []
 		}
 	],
 	"event": [
@@ -1687,6 +1799,10 @@
 			"key": "testServiceNamespace",
 			"value": "test-apk",
 			"type": "default"
+		},
+		{
+			"key": "POLICYID",
+			"value": "1"
 		}
 	]
 }
