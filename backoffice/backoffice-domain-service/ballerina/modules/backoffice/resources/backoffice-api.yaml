@@ -14,7 +14,7 @@
 ################################################################################
 openapi: 3.0.1
 info:
-  title: WSO2 API Manager - BackOffice REST API
+  title: WSO2 API Platform for Kubernetes(APK) - BackOffice REST API
   description: This document specifies a **RESTful API** for WSO2 **APK** - **BackOffice**.
   contact:
     name: WSO2
@@ -25,7 +25,7 @@ info:
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   version: v1
 servers:
-  - url: https://apis.wso2.com/api/am/backoffice/v1
+  - url: https://apis.wso2.com/api/am/backoffice/
 
 paths:
   ######################################################
@@ -103,7 +103,6 @@ paths:
       security:
         - OAuth2Security:
             - apim:api_view
-            - apim:api_list_view
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1990,9 +1989,6 @@ components:
             - Unlimited
           items:
             type: string
-          x-otherScopes:
-            - apim:api_publish
-            - apim:api_manage
         additionalProperties:
           type: object
           additionalProperties:
@@ -2005,16 +2001,10 @@ components:
               display:
                 type: boolean
                 default: false
-          x-otherScopes:
-            - apim:api_publish
-            - apim:api_manage
         createdTime:
           type: string
         lastUpdatedTime:
           type: string
-          x-otherScopes:
-            - apim:api_publish
-            - apim:api_manage
         operations:
           type: array
           example:
@@ -2031,9 +2021,6 @@ components:
           description: The API level usage policy selected for the particular Runtime
             API
           example: Unlimited
-          x-otherScopes:
-            - apim:api_publish
-            - apim:api_manage
         monetization:
           $ref: '#/components/schemas/APIMonetizationInfo'
         businessInformation:
@@ -2050,9 +2037,6 @@ components:
               deployedTime: 2022-10-28T06:13:35.024Z
           items:
             $ref: '#/components/schemas/APIDeployment'
-      x-scopes:
-        - apim:api_create
-        - apim:api_manage
 
     BusinessPlanList:
       title: Business Plan List
@@ -2070,8 +2054,6 @@ components:
     BusinessPlan:
       title: Business Plan
       allOf:
-        - $ref: '#/components/schemas/Policy'
-        - $ref: '#/components/schemas/GraphQLQuery'
         - required:
             - defaultLimit
           type: object
@@ -2260,9 +2242,6 @@ components:
             - Unlimited
           items:
             type: string
-          x-otherScopes:
-            - apim:api_publish
-            - apim:api_manage
     ResourcePath:
       title: ResourcePath
       required:
@@ -3087,14 +3066,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Environment'
-        scopes:
-          type: array
-          example:
-            - apim:api_create
-            - apim:api_manage
-            - apim:api_publish
-          items:
-            type: string
         monetizationAttributes:
           type: array
           example: []
@@ -3708,22 +3679,5 @@ components:
         password:
           tokenUrl: https://localhost:9443/oauth2/token
           scopes:
-            openid: Authorize access to user details
-            apim:api_view: View API
-            apim:api_create: Create API
-            apim:api_delete: Delete API
-            apim:api_publish: Publish API
-            apim:api_manage: Manage all API related operations
-            apim:subscription_view: View Subscription
-            apim:subscription_block: Block Subscription
-            apim:subscription_manage: Manage all Subscription related operations
-            apim:document_manage: Create, update and delete API documents
-            apim:backoffice_settings: Retrieve BackOffice settings
-            apim:app_import_export: Import and export applications related operations
-            apim:admin: Manage all admin operations
-            apim:comment_view: Read permission to comments
-            apim:comment_write: Write permission to comments
-            apim:comment_manage: Read and Write comments
-            apim:tier_view: View Usage plans
-            apim:api_list_view: View, Retrieve API list
-            apim:api_definition_view: View, Retrieve API definition
+            type: array
+            items: test
