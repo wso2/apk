@@ -14,7 +14,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-{{- if .Values.wso2.apk.dp.enabled }}
+{{- if or .Values.wso2.apk.dp.enabled .Values.wso2.apk.cp.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -94,7 +94,11 @@ spec:
               readOnly: true
             - name:  management-server-truststore-secret-volume
               mountPath: /home/wso2/security/truststore/management-server.crt
+            {{- if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.cp.managementServer.configs.tls }}
+              subPath: {{ .Values.wso2.apk.cp.managementServer.configs.tls.certFilename | default "tls.key" }}
+            {{- else }}
               subPath: tls.crt
+            {{- end }}
           # readinessProbe:
           #   exec:
           #     command: [ "sh", "check_health.sh" ]
@@ -139,5 +143,5 @@ spec:
           {{- end }}
         - name: management-server-truststore-secret-volume
           secret: 
-            secretName: {{ template "apk-helm.resource.prefix" . }}-management-server-cert
+            secretName: "apk-root-certificate"
 {{- end -}}
