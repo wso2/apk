@@ -32,6 +32,7 @@ import (
 	envoy "github.com/wso2/apk/adapter/internal/oasparser/envoyconf"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/api"
+	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
 // GetRoutesClustersEndpoints generates the routes, clusters and endpoints (envoy)
@@ -87,6 +88,20 @@ func GetGlobalClusters() ([]*clusterv3.Cluster, []*corev3.Address) {
 // The RouteConfiguration is named as "default"
 func GetProductionListenerAndRouteConfig(vhostToRouteArrayMap map[string][]*routev3.Route) ([]*listenerv3.Listener, *routev3.RouteConfiguration) {
 	listeners := envoy.CreateListenersWithRds()
+	vHosts := envoy.CreateVirtualHosts(vhostToRouteArrayMap)
+	routeConfig := envoy.CreateRoutesConfigForRds(vHosts)
+
+	return listeners, routeConfig
+}
+
+// GetProductionListenerAndRouteConfigs generates the listener and routesconfiguration configurations.
+//
+// The VirtualHost is named as "default".
+// The provided set of envoy routes will be assigned under the virtual host
+//
+// The RouteConfiguration is named as "default"
+func GetProductionListenerAndRouteConfigs(vhostToRouteArrayMap map[string][]*routev3.Route, gateway *gwapiv1b1.Gateway) ([]*listenerv3.Listener, *routev3.RouteConfiguration) {
+	listeners := envoy.CreateListenerByGateway(gateway)
 	vHosts := envoy.CreateVirtualHosts(vhostToRouteArrayMap)
 	routeConfig := envoy.CreateRoutesConfigForRds(vHosts)
 
