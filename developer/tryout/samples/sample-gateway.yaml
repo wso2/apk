@@ -7,11 +7,17 @@ metadata:
 spec:
   gatewayClassName: defaultnew
   listeners:
-    - name: http
-      hostname: example2.com
-      port: 443
+    - name: httplistenernew
+      hostname: 0.0.0.0
+      port: 9092
+      protocol: HTTP
+    - name: httpslistenernew
+      hostname: 0.0.0.0
+      port: 9097
       protocol: HTTPS
       tls:
         mode: Terminate
         certificateRefs:
-          - name: example-com-tls
+          - kind: Secret
+            group: ""
+            name: default-example-com-cert

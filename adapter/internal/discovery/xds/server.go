@@ -52,6 +52,7 @@ import (
 	eventhubTypes "github.com/wso2/apk/adapter/pkg/eventhub/types"
 	operatorconsts "github.com/wso2/apk/adapter/pkg/operator/constants"
 	"github.com/wso2/apk/adapter/pkg/utils/stringutils"
+	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
 var (
@@ -437,6 +438,85 @@ func GenerateEnvoyResoucesForLabel(label string) ([]types.Resource, []types.Reso
 	}
 	clusterArray = append(clusterArray, envoyClusterConfigMap[label]...)
 	endpointArray = append(endpointArray, envoyEndpointConfigMap[label]...)
+	endpoints, clusters, listeners, routeConfigs := oasParser.GetCacheResources(endpointArray, clusterArray, listenerArray, routesConfig)
+	return endpoints, clusters, listeners, routeConfigs, apis
+}
+
+// GenerateEnvoyResoucesForGateway generates envoy resources for a given gateway
+// This method will list out all APIs mapped to the label. and generate envoy resources for all of these APIs.
+func GenerateEnvoyResoucesForGateway(gateway *gwapiv1b1.Gateway) ([]types.Resource, []types.Resource, []types.Resource,
+	[]types.Resource, []types.Resource) {
+	var clusterArray []*clusterv3.Cluster
+	var vhostToRouteArrayMap = make(map[string][]*routev3.Route)
+	var endpointArray []*corev3.Address
+	var apis []types.Resource
+
+	for organizationID, entityMap := range orgIDOpenAPIEnvoyMap {
+		for apiKey, labels := range entityMap {
+			if stringutils.StringInSlice(gateway.Name, labels) {
+				vhost, err := ExtractVhostFromAPIIdentifier(apiKey)
+				if err != nil {
+					logger.LoggerXds.ErrorC(logging.GetErrorByCode(1411, err.Error(), organizationID))
+					continue
+				}
+				isDefaultVersion := false
+				if enforcerAPISwagger, ok := orgIDAPIMgwSwaggerMap[organizationID][apiKey]; ok {
+					isDefaultVersion = enforcerAPISwagger.IsDefaultVersion
+				} else {
+					// If the mgwSwagger is not found, proceed with other APIs. (Unreachable condition at this point)
+					// If that happens, there is no purpose in processing clusters too.
+					continue
+				}
+				// If it is a default versioned API, the routes are added to the end of the existing array.
+				// Otherwise the routes would be added to the front.
+				// /fooContext/2.0.0/* resource path should be matched prior to the /fooContext/* .
+				if isDefaultVersion {
+					vhostToRouteArrayMap[vhost] = append(vhostToRouteArrayMap[vhost], orgIDOpenAPIRoutesMap[organizationID][apiKey]...)
+				} else {
+					vhostToRouteArrayMap[vhost] = append(orgIDOpenAPIRoutesMap[organizationID][apiKey], vhostToRouteArrayMap[vhost]...)
+				}
+				clusterArray = append(clusterArray, orgIDOpenAPIClustersMap[organizationID][apiKey]...)
+				endpointArray = append(endpointArray, orgIDOpenAPIEndpointsMap[organizationID][apiKey]...)
+				enfocerAPI, ok := orgIDOpenAPIEnforcerApisMap[organizationID][apiKey]
+				if ok {
+					apis = append(apis, enfocerAPI)
+				}
+				// listenerArrays = append(listenerArrays, openAPIListenersMap[apiKey])
+			}
+		}
+	}
+
+	// If the token endpoint is enabled, the token endpoint also needs to be added.
+	conf := config.ReadConfigs()
+	enableJwtIssuer := conf.Enforcer.JwtIssuer.Enabled
+	systemHost := conf.Envoy.SystemHost
+	if enableJwtIssuer {
+		routeToken := envoyconf.CreateTokenRoute()
+		vhostToRouteArrayMap[systemHost] = append(vhostToRouteArrayMap[systemHost], routeToken)
+	}
+
+	// Add health endpoint
+	routeHealth := envoyconf.CreateHealthEndpoint()
+	vhostToRouteArrayMap[systemHost] = append(vhostToRouteArrayMap[systemHost], routeHealth)
+
+	// Add the readiness endpoint. isReady flag will be set to true once all the apis are fetched from the control plane
+	if isReady {
+		readynessEndpoint := envoyconf.CreateReadyEndpoint()
+		vhostToRouteArrayMap[systemHost] = append(vhostToRouteArrayMap[systemHost], readynessEndpoint)
+	}
+
+	listenerArray, listenerFound := envoyListenerConfigMap[gateway.Name]
+	routesConfig, routesConfigFound := envoyRouteConfigMap[gateway.Name]
+	if !listenerFound && !routesConfigFound {
+		listenerArray, routesConfig = oasParser.GetProductionListenerAndRouteConfigs(vhostToRouteArrayMap, gateway)
+		envoyListenerConfigMap[gateway.Name] = listenerArray
+		envoyRouteConfigMap[gateway.Name] = routesConfig
+	} else {
+		// If the routesConfig exists, the listener exists too
+		oasParser.UpdateRoutesConfig(routesConfig, vhostToRouteArrayMap)
+	}
+	clusterArray = append(clusterArray, envoyClusterConfigMap[gateway.Name]...)
+	endpointArray = append(endpointArray, envoyEndpointConfigMap[gateway.Name]...)
 	endpoints, clusters, listeners, routeConfigs := oasParser.GetCacheResources(endpointArray, clusterArray, listenerArray, routesConfig)
 	return endpoints, clusters, listeners, routeConfigs, apis
 }
