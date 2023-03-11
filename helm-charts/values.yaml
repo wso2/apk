@@ -301,16 +301,16 @@ wso2:
             GRPC_PORT: 8091
             GRPC_SERVER_USE_TLS: true
             GRPC_SERVER_TLS_KEY: /home/wso2/security/keystore/ratelimiter.key
-            GRPC_SERVER_TLS_CERT: /home/wso2/security/keystore/ratelimiter.pem
-            GRPC_CLIENT_TLS_CACERT: /home/wso2/security/truststore/mg.pem
+            GRPC_SERVER_TLS_CERT: /home/wso2/security/keystore/ratelimiter.crt
+            GRPC_CLIENT_TLS_CACERT: /home/wso2/security/keystore/ca.crt
             GRPC_CLIENT_TLS_SAN: localhost
             # xDS config server
             RATE_LIMITER_LABEL: Default
             CONFIG_GRPC_XDS_SERVER_URL: localhost:18001
             CONFIG_GRPC_XDS_SERVER_USE_TLS: true
             CONFIG_GRPC_XDS_CLIENT_TLS_KEY: /home/wso2/security/keystore/ratelimiter.key
-            CONFIG_GRPC_XDS_CLIENT_TLS_CERT: /home/wso2/security/keystore/ratelimiter.pem
-            CONFIG_GRPC_XDS_SERVER_TLS_CACERT: /home/wso2/security/truststore/mg.pem
+            CONFIG_GRPC_XDS_CLIENT_TLS_CERT: /home/wso2/security/keystore/ratelimiter.crt
+            CONFIG_GRPC_XDS_SERVER_TLS_CACERT: /home/wso2/security/keystore/ca.crt
             CONFIG_GRPC_XDS_SERVER_TLS_SAN: localhost
           readinessProbe:
             path: /healthcheck
@@ -335,6 +335,7 @@ wso2:
         #     certificatesSecret: "ratelimiter-cert"
         #     certKeyFilename: ""
         #     certFilename: ""
+        #     certCAFilename: ""
       gatewayRuntime:
         appName: "router"
         deployment:

@@ -63,8 +63,15 @@ spec:
             {{- else }}
               subPath: tls.crt
             {{- end }}
+            - name: ratelimiter-keystore-secret-volume
+              mountPath: /home/wso2/security/keystore/ca.crt
+            {{- if and .Values.wso2.apk.dp.ratelimiter.configs .Values.wso2.apk.dp.ratelimiter.configs.tls }}
+              subPath: {{ .Values.wso2.apk.dp.ratelimiter.configs.tls.certCAFilename | default "ca.crt" }}
+            {{- else }}
+              subPath: ca.crt
+            {{- end }}
             - name: adapter-truststore-secret-volume
-              mountPath: /home/wso2/security/truststore/adapter.crt
+              mountPath: /home/wso2/security/truststore/adapter.pem
             {{- if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.dp.adapter.configs.tls }}
               subPath: {{ .Values.wso2.apk.dp.adapter.configs.tls.certFilename | default "tls.crt" }}
             {{- else }}
