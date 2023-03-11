@@ -433,27 +433,31 @@ public class APIClient {
     }
 
     isolated function validateOperationPolicies(APIOperationPolicies? apiPolicies, APIOperations[] operations, commons:Organization organization) returns BadRequestError|() {
-        if (apiPolicies is APIOperationPolicies) {
-            if (apiPolicies.length() == 0) {
-                // Validating resource level operation policy data
-                return self.validateOperationPolicyData(apiPolicies, organization);
-            } else {
-                foreach APIOperations operation in operations {
-                    APIOperationPolicies? operationPolicies = operation.operationPolicies;
-                    if operationPolicies is APIOperationPolicies {
-                        if (operationPolicies.length() > 0) {
-                            // Presence of both resource level and API level operation policies.
-                            BadRequestError badRequestError = {body: {code: 91111, message: "Presence of both resource level and API level operation policies"}};
-                            return badRequestError;
-                        } else {
-                            // Validating API level operation policy data
-                            return self.validateOperationPolicyData(operationPolicies, organization);
-                        }
+        foreach APIOperations operation in operations {
+            APIOperationPolicies? operationPolicies = operation.operationPolicies;
+            if (!self.isPolicyEmpty(operationPolicies)) {
+                if (self.isPolicyEmpty(apiPolicies)) {
+                    // Validating resource level operation policy data
+                    BadRequestError|() badRequestError = self.validateOperationPolicyData(operationPolicies, organization);
+                    if (badRequestError is BadRequestError) {
+                        return badRequestError;
                     }
+                } else {
+                     // Presence of both resource level and API level operation policies.
+                    BadRequestError badRequestError = {body: {code: 91111, message: "Presence of both resource level and API level operation policies"}};
+                    return badRequestError;
                 }
             }
         }
+        if (!self.isPolicyEmpty(apiPolicies)) {
+            // Validating API level operation policy data
+            return self.validateOperationPolicyData(apiPolicies, organization);
+        }
         return ();
+    }
+
+    isolated function isPolicyEmpty(APIOperationPolicies? policies) returns boolean {
+        return policies == () || policies.length() == 0;
     }
 
     isolated function validateOperationPolicyData(APIOperationPolicies? operationPolicies, commons:Organization organization) returns BadRequestError|() {
@@ -474,25 +478,34 @@ public class APIClient {
                 string policyName = policy.policyName;
                 OperationPolicyParameters[]? policyParameters = policy.parameters;
                 if (policyParameters is OperationPolicyParameters[]) {
-                    string[] policyAttributes = [];
-                    any|error mediationPolicyList = self.getMediationPolicyList("name:" + policyName, 10, 0,
+                    string[] allowedPolicyAttributes = [];
+                    string[] receivedPolicyParameters = [];
+                    any|error mediationPolicyList = self.getMediationPolicyList("name:" + policyName, 1, 0,
                         SORT_BY_POLICY_NAME, SORT_ORDER_ASC, organization);
-                    if (mediationPolicyList is MediationPolicyList) {
-                        if (mediationPolicyList.count > 0) {
-                            MediationPolicy[]? listing = mediationPolicyList.list;
-                            if (listing is MediationPolicy[]) {
-                                MediationPolicySpecAttribute[]? parameters = listing[0].policyAttributes;
-                                if (parameters is MediationPolicySpecAttribute[]) {
-                                    foreach MediationPolicySpecAttribute params in parameters {
-                                        policyAttributes.push(<string>params.name);
-                                    }
+                    if (mediationPolicyList is MediationPolicyList && mediationPolicyList.count > 0) {
+                        MediationPolicy[]? listing = mediationPolicyList.list;
+                        if (listing is MediationPolicy[]) {
+                            MediationPolicySpecAttribute[]? parameters = listing[0].policyAttributes;
+                            if (parameters is MediationPolicySpecAttribute[]) {
+                                foreach MediationPolicySpecAttribute params in parameters {
+                                    allowedPolicyAttributes.push(<string>params.name);
                                 }
                             }
+                            foreach OperationPolicyParameters policyParam in policyParameters {
+                                string[] keys = policyParam.keys();
+                                foreach string key in keys {
+                                    receivedPolicyParameters.push(key);
+                                }
+                            }
+                            if (allowedPolicyAttributes != receivedPolicyParameters) {
+                                // Allowed policy attributes does not match with the parameters provided
+                                BadRequestError badRequestError = {body: {code: 91112, message: "Allowed policy attributes does not match with the parameters provided"}};
+                                return badRequestError;
+                            }
                         }
-                    }
-                    if (policyAttributes != policyParameters[0].keys()) {
-                        // Allowed policy attributes does not match with the parameters provided
-                        BadRequestError badRequestError = {body: {code: 91112, message: "Allowed policy attributes does not match with the parameters provided"}};
+                    } else {
+                        // Invalid operation policy name.
+                        BadRequestError badRequestError = {body: {code: 91112, message: "Invalid operation policy name"}};
                         return badRequestError;
                     }
                 }
