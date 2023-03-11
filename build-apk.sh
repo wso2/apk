@@ -25,3 +25,5 @@ cd $current_dir;
 cd idp/idp-domain-service;./gradlew build;
 cd $current_dir;
 cd idp/idp-ui;./gradlew build;
+cd $current_dir;
+cd ratelimiter;./gradlew build;

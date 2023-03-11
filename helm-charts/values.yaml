@@ -271,6 +271,7 @@ wso2:
           #   certKeyFilename: ""
           #   certFilename: ""
       ratelimiter:
+        enabled: true
         appName: "ratelimiter"
         deployment:
           npi: ratelimiter-npi
@@ -329,6 +330,11 @@ wso2:
           image: ratelimiter:0.0.1-SNAPSHOT
           security:
             sslHostname: "ratelimiter"
+        # configs:
+        #   tls:
+        #     certificatesSecret: "ratelimiter-cert"
+        #     certKeyFilename: ""
+        #     certFilename: ""
       gatewayRuntime:
         appName: "router"
         deployment:

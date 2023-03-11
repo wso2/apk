@@ -14,7 +14,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-{{- if .Values.wso2.apk.dp.enabled }}
+{{- if and .Values.wso2.apk.dp.enabled .Values.wso2.apk.dp.ratelimiter.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -50,14 +50,41 @@ spec:
 
           volumeMounts:
             - name: ratelimiter-keystore-secret-volume
-              mountPath: /home/wso2/security/keystore
-            - name: ratelimiter-truststore-secret-volume
-              mountPath: /home/wso2/security/truststore
-      volumes: 
+              mountPath: /home/wso2/security/keystore/ratelimiter.key
+            {{- if and .Values.wso2.apk.dp.ratelimiter.configs .Values.wso2.apk.dp.ratelimiter.configs.tls }}
+              subPath: {{ .Values.wso2.apk.dp.ratelimiter.configs.tls.certKeyFilename | default "tls.key" }}
+            {{- else }}
+              subPath: tls.key
+            {{- end }}
+            - name: ratelimiter-keystore-secret-volume
+              mountPath: /home/wso2/security/keystore/ratelimiter.crt
+            {{- if and .Values.wso2.apk.dp.ratelimiter.configs .Values.wso2.apk.dp.ratelimiter.configs.tls }}
+              subPath: {{ .Values.wso2.apk.dp.ratelimiter.configs.tls.certFilename | default "tls.crt" }}
+            {{- else }}
+              subPath: tls.crt
+            {{- end }}
+            - name: adapter-truststore-secret-volume
+              mountPath: /home/wso2/security/truststore/adapter.crt
+            {{- if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.dp.adapter.configs.tls }}
+              subPath: {{ .Values.wso2.apk.dp.adapter.configs.tls.certFilename | default "tls.crt" }}
+            {{- else }}
+              subPath: tls.crt
+  {{- end }}
+      volumes:
         - name: ratelimiter-keystore-secret-volume
-          secret: 
-            secretName: {{ template "apk-helm.resource.prefix" . }}-ratelimiter-keystore-secret
-        - name: ratelimiter-truststore-secret-volume
-          secret: 
-            secretName: {{ template "apk-helm.resource.prefix" . }}-ratelimiter-truststore-secret
+          secret:
+          {{- if and .Values.wso2.apk.dp.ratelimiter.configs .Values.wso2.apk.dp.ratelimiter.configs.tls }}
+            secretName: {{ .Values.wso2.apk.dp.ratelimiter.configs.tls.certificatesSecret | default (printf "%s-ratelimiter-server-cert" (include "apk-helm.resource.prefix" .)) }}
+          {{- else }}
+            secretName: {{ template "apk-helm.resource.prefix" . }}-ratelimiter-server-cert
+          {{- end }}
+            defaultMode: 420
+        - name: adapter-truststore-secret-volume
+          secret:
+          {{- if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.dp.adapter.configs.tls }}
+            secretName: {{ .Values.wso2.apk.dp.adapter.configs.tls.certificatesSecret | default (printf "%s-adapter-server-cert" (include "apk-helm.resource.prefix" .)) }}
+          {{- else }}
+            secretName: {{ template "apk-helm.resource.prefix" . }}-adapter-server-cert
+          {{- end }}
+            defaultMode: 420
 {{- end -}}
