@@ -464,10 +464,10 @@ public class APIClient {
     isolated function validateOperationPolicyData(APIOperationPolicies? operationPolicies, commons:Organization organization) returns BadRequestError|() {
         if operationPolicies is APIOperationPolicies {
             // Validating request operation policy data.
-            BadRequestError|() badRequestError = self.validateData(operationPolicies.request, organization);
+            BadRequestError|() badRequestError = self.validatePolicyDetails(operationPolicies.request, organization);
             if (badRequestError == ()) {
                 // Validating response operation policy data.
-                return self.validateData(operationPolicies.response, organization);
+                return self.validatePolicyDetails(operationPolicies.response, organization);
             } else {
                 return badRequestError;
             }
@@ -475,7 +475,7 @@ public class APIClient {
         return ();
     }
 
-    isolated function validateData(OperationPolicy[]? policyData, commons:Organization organization) returns BadRequestError|() {
+    isolated function validatePolicyDetails(OperationPolicy[]? policyData, commons:Organization organization) returns BadRequestError|() {
         if (policyData is OperationPolicy[]) {
             foreach OperationPolicy policy in policyData {
                 string policyName = policy.policyName;
@@ -1246,8 +1246,8 @@ public class APIClient {
             }
             OperationPolicy[]? response = operationPoliciesToUse.response;
             if response is OperationPolicy[] {
-                model:HTTPRouteFilter responseHeaderFilter = {'type: "RequestHeaderModifier",
-                    requestHeaderModifier: self.extractHttpHeaderFilterData(response, organization)};
+                model:HTTPRouteFilter responseHeaderFilter = {'type: "ResponseHeaderModifier",
+                    responseHeaderModifier: self.extractHttpHeaderFilterData(response, organization)};
                 routeFilters.push(responseHeaderFilter);
             }
         }
