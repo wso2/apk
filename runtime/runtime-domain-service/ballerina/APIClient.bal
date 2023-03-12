@@ -401,6 +401,7 @@ public class APIClient {
                     BadRequestError badRequestError = {body: {code: 90912, message: "Atleast one operation need to specified"}};
                     return badRequestError;
                 }
+                // Validating operation policies.
                 BadRequestError|() badRequestError = self.validateOperationPolicies(api.apiPolicies, operations, organization);
                 if (badRequestError is BadRequestError) {
                     return badRequestError;
@@ -444,7 +445,7 @@ public class APIClient {
                     }
                 } else {
                      // Presence of both resource level and API level operation policies.
-                    BadRequestError badRequestError = {body: {code: 91111, message: "Presence of both resource level and API level operation policies"}};
+                    BadRequestError badRequestError = {body: {code: 90917, message: "Presence of both resource level and API level operation policies is not allowed"}};
                     return badRequestError;
                 }
             }
@@ -462,8 +463,10 @@ public class APIClient {
 
     isolated function validateOperationPolicyData(APIOperationPolicies? operationPolicies, commons:Organization organization) returns BadRequestError|() {
         if operationPolicies is APIOperationPolicies {
+            // Validating request operation policy data.
             BadRequestError|() badRequestError = self.validateData(operationPolicies.request, organization);
             if (badRequestError == ()) {
+                // Validating response operation policy data.
                 return self.validateData(operationPolicies.response, organization);
             } else {
                 return badRequestError;
@@ -480,7 +483,7 @@ public class APIClient {
                 if (policyParameters is OperationPolicyParameters[]) {
                     string[] allowedPolicyAttributes = [];
                     string[] receivedPolicyParameters = [];
-                    any|error mediationPolicyList = self.getMediationPolicyList("name:" + policyName, 1, 0,
+                    any|error mediationPolicyList = self.getMediationPolicyList(SEARCH_CRITERIA_NAME + ":" + policyName, 1, 0,
                         SORT_BY_POLICY_NAME, SORT_ORDER_ASC, organization);
                     if (mediationPolicyList is MediationPolicyList && mediationPolicyList.count > 0) {
                         MediationPolicy[]? listing = mediationPolicyList.list;
@@ -499,13 +502,13 @@ public class APIClient {
                             }
                             if (allowedPolicyAttributes != receivedPolicyParameters) {
                                 // Allowed policy attributes does not match with the parameters provided
-                                BadRequestError badRequestError = {body: {code: 91112, message: "Allowed policy attributes does not match with the parameters provided"}};
+                                BadRequestError badRequestError = {body: {code: 90916, message: "Invalid parameters provided for policy " + policyName}};
                                 return badRequestError;
                             }
                         }
                     } else {
                         // Invalid operation policy name.
-                        BadRequestError badRequestError = {body: {code: 91112, message: "Invalid operation policy name"}};
+                        BadRequestError badRequestError = {body: {code: 90915, message: "Invalid operation policy name"}};
                         return badRequestError;
                     }
                 }
