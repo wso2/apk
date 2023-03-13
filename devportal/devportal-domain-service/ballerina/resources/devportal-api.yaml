@@ -19,7 +19,7 @@ info:
     This document specifies a **RESTful API** for WSO2 **API Platform for Kubernetes(APK)** - **Developer Portal**.
 
     # Authentication
-    The Developer Portal REST API is protected using OAuth2 and access control is achieved through scopes(in the intitial release 
+    The Developer Portal REST API is protected using OAuth2 and access control is achieved through scopes (in the initial release 
     we wont have scope support for APIs). Before you start invoking the API, you need to obtain an access token with the required scopes. 
     This guide will walk you through the steps that you will need to follow to obtain an access token.
     First you need to obtain the consumer key/secret key pair by calling the dynamic client registration (DCR) endpoint. You can add your preferred 
