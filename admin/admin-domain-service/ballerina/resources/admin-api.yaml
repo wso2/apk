@@ -14,9 +14,9 @@
 ################################################################################
 openapi: 3.0.1
 info:
-  title: WSO2 API Manager - Admin
+  title: WSO2 API Platform for Kubernetes (APK) - Admin
   description: |
-    This document specifies a **RESTful API** for WSO2 **API Manager** - **Admin Portal**.
+    This document specifies a **RESTful API** for WSO2 **API Platform for Kubernetes (APK)** - **Admin Portal**.
     Please see [full OpenAPI Specification](https://raw.githubusercontent.com/wso2/carbon-apimgt/master/components/apimgt/org.wso2.carbon.apimgt.rest.api.admin.v1/src/main/resources/admin-api.yaml) of the API which is written using [OAS 3.0](http://swagger.io/) specification.
 
     # Authentication
@@ -66,22 +66,22 @@ info:
     of this document and scope for each resource is given in **authorizations** section of resource documentation.
     Following is the format of the request if you are using the password grant type.
     ```
-    curl -k -d "grant_type=password&username=<admin_username>&password=<admin_passowrd>&scope=<scopes seperated by space>"
-    \ -H "Authorization: Basic base64(cliet_id:client_secret)"
+    curl -k -d "grant_type=password&username=<admin_username>&password=<admin_password>&scope=<scopes separated by space>"
+    \ -H "Authorization: Basic base64(client_id:client_secret)"
     \ https://<host>:<server_port>/oauth2/token
     ```
     **Sample request**
     ```
     curl https://localhost:9443/oauth2/token -k \
     -H "Authorization: Basic Zk9DaTR2Tko1OVBwSHVjQzJDQVlmWXVBRGRNYTphNEZ3SGxxMGlDSUtWczJNUElJRG5lcFpuWU1h" \
-    -d "grant_type=password&username=admin&password=admin&scope=apim:admin apim:tier_view"
+    -d "grant_type=password&username=admin&password=admin&scope=apk:admin apk:tier_view"
     ```
     Shown below is a sample response to the above request.
     ```
     {
     "access_token": "e79bda48-3406-3178-acce-f6e4dbdcbb12",
     "refresh_token": "a757795d-e69f-38b8-bd85-9aded677a97c",
-    "scope": "apim:admin apim:tier_view",
+    "scope": "apk:admin apk:tier_view",
     "token_type": "Bearer",
     "expires_in": 3600
     }
@@ -93,8 +93,8 @@ info:
     # Try out in Postman
     If you want to try-out the embedded postman collection with "Run in Postman" option, please follow the guidelines listed below.
     * All of the OAuth2 secured endpoints have been configured with an Authorization Bearer header with a parameterized access token. Before invoking any REST API resource make sure you run the `Register DCR Application` and `Generate Access Token` requests to fetch an access token with all required scopes.
-    * Make sure you have an API Manager instance up and running.
-    * Update the `basepath` parameter to match the hostname and port of the APIM instance.
+    * Make sure you have an API Platform for Kubernetes (APK) instance up and running.
+    * Update the `basepath` parameter to match the hostname and port of the APK instance.
 
     [![Run in Postman](https://run.pstmn.io/button.svg)](https://god.gw.postman.com/run-collection/17491134-b263aa69-7494-4fc5-90fa-daa2f63880ae)
   contact:
@@ -143,9 +143,9 @@ paths:
                 $ref: '#/components/schemas/PolicyDetailsList'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:tier_view
-            - apim:policies_import_export
+            - apk:admin
+            - apk:tier_view
+            - apk:policies_import_export
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -183,8 +183,8 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:tier_view
+            - apk:admin
+            - apk:tier_view
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -246,8 +246,8 @@ paths:
           $ref: '#/components/responses/UnsupportedMediaType'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:tier_manage
+            - apk:admin
+            - apk:tier_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -299,8 +299,8 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:tier_view
+            - apk:admin
+            - apk:tier_view
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -312,7 +312,7 @@ paths:
         - Application Rate Plan (Individual)
       summary: Update an Application Rate Plan
       description: |
-        Updates an existing application level rate plan. Upon a succesfull update, you will receive the updated application plan as the response.
+        Updates an existing application level rate plan. Upon a successful update, you will receive the updated application plan as the response.
       parameters:
         - $ref: '#/components/parameters/planId'
         - $ref: '#/components/parameters/Content-Type'
@@ -362,8 +362,8 @@ paths:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:tier_manage
+            - apk:admin
+            - apk:tier_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -388,9 +388,9 @@ paths:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:tier_manage
-            - apim:policies_import_export
+            - apk:admin
+            - apk:tier_manage
+            - apk:policies_import_export
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -429,8 +429,8 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:tier_view
+            - apk:admin
+            - apk:tier_view
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -496,8 +496,8 @@ paths:
           $ref: '#/components/responses/UnsupportedMediaType'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:tier_manage
+            - apk:admin
+            - apk:tier_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -513,7 +513,7 @@ paths:
         - Business Plan (Individual)
       summary: Get a Business Plan
       description: |
-        This operation can be used to retrieves Business Plan by specifying the Id of the plan as a path paramter
+        This operation can be used to retrieves Business Plan by specifying the Id of the plan as a path parameter
       parameters:
         - $ref: '#/components/parameters/planId'
       responses:
@@ -553,8 +553,8 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:tier_view
+            - apk:admin
+            - apk:tier_view
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -620,8 +620,8 @@ paths:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:tier_manage
+            - apk:admin
+            - apk:tier_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -633,7 +633,7 @@ paths:
         - Business Plan (Individual)
       summary: Delete a Business Plan
       description: |
-        This operation can be used to delete a business plan by specifying the Id of the plan as a path paramter.
+        This operation can be used to delete a business plan by specifying the Id of the plan as a path parameter.
       parameters:
         - $ref: '#/components/parameters/planId'
       responses:
@@ -646,9 +646,9 @@ paths:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:tier_manage
-            - apim:policies_import_export
+            - apk:admin
+            - apk:tier_manage
+            - apk:policies_import_export
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -686,8 +686,8 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:tier_view
+            - apk:admin
+            - apk:tier_view
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -750,8 +750,8 @@ paths:
           $ref: '#/components/responses/UnsupportedMediaType'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:tier_manage
+            - apk:admin
+            - apk:tier_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -804,8 +804,8 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:tier_view
+            - apk:admin
+            - apk:tier_view
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -868,8 +868,8 @@ paths:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:tier_manage
+            - apk:admin
+            - apk:tier_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -894,9 +894,9 @@ paths:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:tier_manage
-            - apim:policies_import_export
+            - apk:admin
+            - apk:tier_manage
+            - apk:policies_import_export
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -992,9 +992,9 @@ paths:
           $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:tier_manage
-            - apim:policies_import_export
+            - apk:admin
+            - apk:tier_manage
+            - apk:policies_import_export
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1009,12 +1009,12 @@ paths:
         - Import Export
       summary: Import a Throttling Policy
       description: |
-        This operation can be used to import a Throttling Policy
+        This operation can be used to import a Throttling Policy.
       parameters:
         - name: overwrite
           in: query
           description: |
-            Update an existing throttlingpolicy with the same name
+            Update an existing throttling policy with the same name.
           required: false
           schema:
             type: boolean
@@ -1045,9 +1045,9 @@ paths:
           $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:tier_manage
-            - apim:policies_import_export
+            - apk:admin
+            - apk:tier_manage
+            - apk:policies_import_export
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1084,8 +1084,8 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:bl_view
+            - apk:admin
+            - apk:bl_view
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1135,8 +1135,8 @@ paths:
           $ref: '#/components/responses/UnsupportedMediaType'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:bl_manage
+            - apk:admin
+            - apk:bl_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1176,8 +1176,8 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:bl_view
+            - apk:admin
+            - apk:bl_view
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1202,8 +1202,8 @@ paths:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:bl_manage
+            - apk:admin
+            - apk:bl_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1242,8 +1242,8 @@ paths:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:bl_manage
+            - apk:admin
+            - apk:bl_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X PATCH -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1319,10 +1319,10 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:app_owner_change
-            - apim:app_import_export
-            - apim:admin_application_view
+            - apk:admin
+            - apk:app_owner_change
+            - apk:app_import_export
+            - apk:admin_application_view
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1359,9 +1359,9 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:app_import_export
-            - apim:admin_application_view
+            - apk:admin
+            - apk:app_import_export
+            - apk:admin_application_view
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X GET -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1401,8 +1401,8 @@ paths:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:app_import_export
+            - apk:admin
+            - apk:app_import_export
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1436,8 +1436,8 @@ paths:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:app_owner_change
+            - apk:admin
+            - apk:app_owner_change
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1465,8 +1465,8 @@ paths:
                 $ref: '#/components/schemas/EnvironmentList'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:environment_read
+            - apk:admin
+            - apk:environment_read
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1500,8 +1500,8 @@ paths:
           $ref: '#/components/responses/BadRequest'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:environment_manage
+            - apk:admin
+            - apk:environment_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1543,8 +1543,8 @@ paths:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:environment_manage
+            - apk:admin
+            - apk:environment_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1569,8 +1569,8 @@ paths:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:environment_manage
+            - apk:admin
+            - apk:environment_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1608,8 +1608,8 @@ paths:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:bot_data
+            - apk:admin
+            - apk:bot_data
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1644,8 +1644,8 @@ paths:
           $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:monetization_usage_publish
+            - apk:admin
+            - apk:monetization_usage_publish
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1670,8 +1670,8 @@ paths:
                 $ref: '#/components/schemas/MonetizationUsagePublishInfo'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:monetization_usage_publish
+            - apk:admin
+            - apk:monetization_usage_publish
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1714,7 +1714,7 @@ paths:
         200:
           description: |
             OK.
-            Workflow pendding process list returned.
+            Workflow pending process list returned.
           headers:
             Content-Type:
               description: |
@@ -1733,8 +1733,8 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:api_workflow_view
+            - apk:admin
+            - apk:api_workflow_view
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1748,12 +1748,12 @@ paths:
       summary: |
         Get Pending Workflow Details by External Workflow Reference
       description: |
-        Using this operation, you can retrieve complete details of a pending workflow request that either belongs to application creation, application subscription, application registration, api state change, user self sign up.. You need to provide the External_Workflow_Reference of the workflow Request to retrive it.
+        Using this operation, you can retrieve complete details of a pending workflow request that either belongs to application creation, application subscription, application registration, api state change, user self sign up.. You need to provide the External_Workflow_Reference of the workflow Request to retrieve it.
       parameters:
         - name: externalWorkflowRef
           in: path
           description: |
-            from the externel workflow reference we decide what is the the pending request that the are requesting.
+            from the external workflow reference we decide what is the the pending request that the are requesting.
           required: true
           schema:
             type: string
@@ -1777,8 +1777,8 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:api_workflow_view
+            - apk:admin
+            - apk:api_workflow_view
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1823,8 +1823,8 @@ paths:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:api_workflow_approve
+            - apk:admin
+            - apk:api_workflow_approve
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1873,8 +1873,8 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:tenantInfo
+            - apk:admin
+            - apk:tenantInfo
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1921,8 +1921,8 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:tenantInfo
+            - apk:admin
+            - apk:tenantInfo
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1949,8 +1949,8 @@ paths:
                 $ref: '#/components/schemas/APICategoryList'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:admin_operations
+            - apk:admin
+            - apk:admin_operations
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1984,8 +1984,8 @@ paths:
           $ref: '#/components/responses/BadRequest'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:admin_operations
+            - apk:admin
+            - apk:admin_operations
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -2027,8 +2027,8 @@ paths:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:admin_operations
+            - apk:admin
+            - apk:admin_operations
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -2053,8 +2053,8 @@ paths:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:admin_operations
+            - apk:admin
+            - apk:admin_operations
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -2068,9 +2068,9 @@ paths:
     get:
       tags:
         - Settings
-      summary: Retreive Admin Settings
+      summary: Retrieve Admin Settings
       description: |
-        Retreive admin settings
+        Retrieve admin settings
       responses:
         200:
           description: |
@@ -2084,8 +2084,8 @@ paths:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:admin_settings
+            - apk:admin
+            - apk:admin_settings
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -2125,8 +2125,8 @@ paths:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:scope_manage
+            - apk:admin
+            - apk:scope_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -2139,7 +2139,7 @@ paths:
       summary: |
         Get Role Scope Mappings
       description: |
-        This operation is used to get the list of role scope mapping from tenant-conf for the apim admin dashboard
+        This operation is used to get the list of role scope mapping from tenant-conf for the APK admin dashboard
       operationId: systemScopesGet
       responses:
         200:
@@ -2160,8 +2160,8 @@ paths:
           $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
-            - apim:scope_manage
-            - apim:admin
+            - apk:scope_manage
+            - apk:admin
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -2204,8 +2204,8 @@ paths:
           $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:scope_manage
+            - apk:admin
+            - apk:scope_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -2217,7 +2217,7 @@ paths:
         - System Scopes
       summary: Retrieve Role Alias Mappings
       description: |
-        This operation can be used to retreive role alias mapping
+        This operation can be used to retrieve role alias mapping
       responses:
         200:
           description: |
@@ -2237,8 +2237,8 @@ paths:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:scope_manage
+            - apk:admin
+            - apk:scope_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -2273,8 +2273,8 @@ paths:
           $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
-            - apim:scope_manage
-            - apim:admin
+            - apk:scope_manage
+            - apk:admin
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -2304,8 +2304,8 @@ paths:
           $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:role_manage
+            - apk:admin
+            - apk:role_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -I -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -2346,8 +2346,8 @@ paths:
           $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:tenant_theme_manage
+            - apk:admin
+            - apk:tenant_theme_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -2387,8 +2387,8 @@ paths:
           $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:tenant_theme_manage
+            - apk:admin
+            - apk:tenant_theme_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -2428,7 +2428,7 @@ paths:
           $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
-            - apim:admin
+            - apk:admin
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -2464,7 +2464,7 @@ paths:
           $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
-            - apim:admin
+            - apk:admin
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -2504,7 +2504,7 @@ paths:
           $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
-            - apim:admin
+            - apk:admin
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -2531,8 +2531,8 @@ paths:
                 $ref: '#/components/schemas/KeyManagerList'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:admin_operations
+            - apk:admin
+            - apk:admin_operations
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -2566,8 +2566,8 @@ paths:
           $ref: '#/components/responses/BadRequest'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:admin_operations
+            - apk:admin
+            - apk:admin_operations
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -2607,8 +2607,8 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:admin_operations
+            - apk:admin
+            - apk:admin_operations
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -2620,7 +2620,7 @@ paths:
         - Key Manager (Individual)
       summary: Update a Key Manager
       description: |
-        Update a Key Manager by keyManager id
+        Update a Key Manager by keyManager ID
       parameters:
         - $ref: '#/components/parameters/keyManagerId'
       requestBody:
@@ -2646,8 +2646,8 @@ paths:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:admin_operations
+            - apk:admin
+            - apk:admin_operations
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -2672,8 +2672,8 @@ paths:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:admin_operations
+            - apk:admin
+            - apk:admin_operations
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -2711,8 +2711,8 @@ paths:
                 $ref: '#/components/schemas/KeyManagerWellKnownResponse'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:admin_operations
+            - apk:admin
+            - apk:admin_operations
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -2740,7 +2740,7 @@ paths:
                 $ref: '#/components/schemas/OrganizationList'
       security:
         - OAuth2Security:
-            - apim:admin
+            - apk:admin
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -2774,7 +2774,7 @@ paths:
           $ref: '#/components/responses/BadRequest'
       security:
         - OAuth2Security:
-            - apim:admin
+            - apk:admin
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -2807,7 +2807,7 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
-            - apim:admin
+            - apk:admin
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X GET -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -2844,7 +2844,7 @@ paths:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
-            - apim:admin
+            - apk:admin
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -2868,7 +2868,7 @@ paths:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
-            - apim:admin
+            - apk:admin
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -2897,7 +2897,7 @@ paths:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
-            - apim:admin
+            - apk:admin
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X GET -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -3281,7 +3281,7 @@ components:
           description: |
             Specifies whether inversion of the condition to be matched against the request.
 
-            **Note:** When you add conditional groups for advanced throttling policies, this paramater should have the
+            **Note:** When you add conditional groups for advanced throttling policies, this parameter should have the
             same value ('true' or 'false') for the same type of conditional group.
           default: false
         headerCondition:
@@ -3327,7 +3327,7 @@ components:
           type: string
           description: Ending IP when "IPRANGE" is used as the ipConditionType
     JWTClaimsCondition:
-      title: JWT claim attibute based throttling condition
+      title: JWT claim attribute based throttling condition
       required:
         - attribute
         - claimUrl
@@ -3420,12 +3420,12 @@ components:
           properties:
             dataAmount:
               type: integer
-              description: Amount of data allowed to be transfered
+              description: Amount of data allowed to be transferred
               format: int64
               example: 1000
             dataUnit:
               type: string
-              description: Unit of data allowed to be transfered. Allowed values are
+              description: Unit of data allowed to be transferred. Allowed values are
                 "KB", "MB" and "GB"
               example: KB
     RequestCountLimit:
@@ -3756,7 +3756,7 @@ components:
         status:
           type: string
           description: Status of the usage publish request
-          example: successfull
+          example: successful
         message:
           type: string
           description: detailed message of the status
@@ -3999,7 +3999,7 @@ components:
           type: string
           description: |
             Scope name.
-          example: apim:api_publish
+          example: apk:api_publish
         description:
           type: string
           description: |
@@ -4309,7 +4309,7 @@ components:
       properties:
         name:
           type: string
-          example: apim:subscribe
+          example: apk:subscribe
     WorkflowList:
       title: WorkflowList
       type: object
@@ -4817,32 +4817,32 @@ components:
           tokenUrl: https://localhost:9443/oauth2/token
           scopes:
             openid: Authorize access to user details
-            apim:policies_import_export: Export and import policies related operations
-            apim:admin: Manage all admin operations
-            apim:tier_view: View throttling policies
-            apim:tier_manage: Update and delete throttling policies
-            apim:bl_view: View deny policies
-            apim:bl_manage: Update and delete deny policies
-            apim:mediation_policy_view: View mediation policies
-            apim:mediation_policy_create: Create and update mediation policies
-            apim:app_owner_change: Retrieve and manage applications
-            apim:app_import_export: Import and export applications related operations
-            apim:api_import_export: Import and export APIs related operations
-            apim:api_product_import_export: Import and export API Products related
+            apk:policies_import_export: Export and import policies related operations
+            apk:admin: Manage all admin operations
+            apk:tier_view: View throttling policies
+            apk:tier_manage: Update and delete throttling policies
+            apk:bl_view: View deny policies
+            apk:bl_manage: Update and delete deny policies
+            apk:mediation_policy_view: View mediation policies
+            apk:mediation_policy_create: Create and update mediation policies
+            apk:app_owner_change: Retrieve and manage applications
+            apk:app_import_export: Import and export applications related operations
+            apk:api_import_export: Import and export APIs related operations
+            apk:api_product_import_export: Import and export API Products related
               operations
-            apim:environment_manage: Manage gateway environments
-            apim:environment_read: Retrieve gateway environments
-            apim:monetization_usage_publish: Retrieve and publish Monetization related
+            apk:environment_manage: Manage gateway environments
+            apk:environment_read: Retrieve gateway environments
+            apk:monetization_usage_publish: Retrieve and publish Monetization related
               usage records
-            apim:api_workflow_approve: Manage workflows
-            apim:bot_data: Retrieve bot detection data
-            apim:tenantInfo: Retrieve tenant related information
-            apim:tenant_theme_manage: Manage tenant themes
-            apim:admin_operations: Manage API categories and Key Managers related
+            apk:api_workflow_approve: Manage workflows
+            apk:bot_data: Retrieve bot detection data
+            apk:tenantInfo: Retrieve tenant related information
+            apk:tenant_theme_manage: Manage tenant themes
+            apk:admin_operations: Manage API categories and Key Managers related
               operations
-            apim:admin_settings: Retrieve admin settings
-            apim:admin_alert_manage: Manage admin alerts
-            apim:api_workflow_view: Retrive workflow requests
-            apim:scope_manage: Manage system scopes
-            apim:role_manage: Manage system roles
-            apim:admin_application_view: View Applications
+            apk:admin_settings: Retrieve admin settings
+            apk:admin_alert_manage: Manage admin alerts
+            apk:api_workflow_view: Retrieve workflow requests
+            apk:scope_manage: Manage system scopes
+            apk:role_manage: Manage system roles
+            apk:admin_application_view: View Applications
