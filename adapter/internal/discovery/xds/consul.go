@@ -99,9 +99,9 @@ func updateCertsForServiceMesh(organizationID string) {
 	}
 
 	//send the update to Router
-	for apiKey := range orgIDOpenAPIClustersMap[organizationID] {
-		updateXDSClusterCache(apiKey, organizationID)
-	}
+	// for apiKey := range orgIDOpenAPIClustersMap[organizationID] {
+	// 	updateXDSClusterCache(apiKey, organizationID)
+	// }
 }
 
 func getServiceDiscoveryData(query svcdiscovery.Query, clusterName string, apiKey string, organizationID string) {
@@ -175,7 +175,7 @@ func updateCluster(apiKey string, clusterName string, organizationID string, que
 						},
 					},
 				}
-				updateXDSClusterCache(apiKey, organizationID)
+				// updateXDSClusterCache(apiKey, organizationID)
 			}
 		}
 	}

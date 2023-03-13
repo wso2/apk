@@ -1,19 +1,19 @@
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: Gateway
 metadata:
-  name: defaultnew
+  name: default
   annotations:
     cert-manager.io/issuer: selfsigned-issuer
 spec:
-  gatewayClassName: defaultnew
+  gatewayClassName: default
   listeners:
     - name: httplistenernew
       hostname: 0.0.0.0
-      port: 9092
+      port: 9093
       protocol: HTTP
     - name: httpslistenernew
       hostname: 0.0.0.0
-      port: 9097
+      port: 9098
       protocol: HTTPS
       tls:
         mode: Terminate

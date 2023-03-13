@@ -278,7 +278,7 @@ func deleteAPI(apiIdentifier string, environments []string, organizationID strin
 		if isAllowedToDelete {
 			// do not delete from all environments, hence do not clear routes, clusters, endpoints, enforcerAPIs
 			orgIDOpenAPIEnvoyMap[organizationID][apiIdentifier] = toBeKeptEnvs
-			updateXdsCacheOnAPIChange(toBeDelEnvs, []string{})
+			//updateXdsCacheOnAPIChange(toBeDelEnvs, []string{})
 			existingLabels = orgIDOpenAPIEnvoyMap[organizationID][apiIdentifier]
 			if len(existingLabels) != 0 {
 				return nil
@@ -313,7 +313,7 @@ func cleanMapResources(apiIdentifier string, organizationID string, toBeDelEnvs 
 	//updateXdsCacheOnAPIAdd is called after cleaning maps of routes, clusters, endpoints, enforcerAPIs.
 	//Therefore resources that belongs to the deleting API do not exist. Caches updated only with
 	//resources that belongs to the remaining APIs
-	updateXdsCacheOnAPIChange(toBeDelEnvs, []string{})
+	//updateXdsCacheOnAPIChange(toBeDelEnvs, []string{})
 
 	deleteBasepathForVHost(organizationID, apiIdentifier)
 	delete(orgIDOpenAPIEnvoyMap[organizationID], apiIdentifier)  //delete labels
@@ -505,16 +505,16 @@ func GenerateEnvoyResoucesForGateway(gateway *gwapiv1b1.Gateway) ([]types.Resour
 		vhostToRouteArrayMap[systemHost] = append(vhostToRouteArrayMap[systemHost], readynessEndpoint)
 	}
 
-	listenerArray, listenerFound := envoyListenerConfigMap[gateway.Name]
-	routesConfig, routesConfigFound := envoyRouteConfigMap[gateway.Name]
-	if !listenerFound && !routesConfigFound {
-		listenerArray, routesConfig = oasParser.GetProductionListenerAndRouteConfigs(vhostToRouteArrayMap, gateway)
-		envoyListenerConfigMap[gateway.Name] = listenerArray
-		envoyRouteConfigMap[gateway.Name] = routesConfig
-	} else {
-		// If the routesConfig exists, the listener exists too
-		oasParser.UpdateRoutesConfig(routesConfig, vhostToRouteArrayMap)
-	}
+	// listenerArray := envoyListenerConfigMap["Default"]
+	// routesConfig := envoyRouteConfigMap["Default"]
+	// if !listenerFound && !routesConfigFound {
+	listenerArray, routesConfig := oasParser.GetProductionListenerAndRouteConfigs(vhostToRouteArrayMap, gateway)
+	envoyListenerConfigMap[gateway.Name] = listenerArray
+	envoyRouteConfigMap[gateway.Name] = routesConfig
+	// } else {
+	// 	// If the routesConfig exists, the listener exists too
+	// 	oasParser.UpdateRoutesConfig(routesConfig, vhostToRouteArrayMap)
+	// }
 	clusterArray = append(clusterArray, envoyClusterConfigMap[gateway.Name]...)
 	endpointArray = append(endpointArray, envoyEndpointConfigMap[gateway.Name]...)
 	endpoints, clusters, listeners, routeConfigs := oasParser.GetCacheResources(endpointArray, clusterArray, listenerArray, routesConfig)
@@ -940,14 +940,14 @@ func UpdateAPICache(vHosts []string, newLabels []string, mgwSwagger model.MgwSwa
 		delete(orgIDOpenAPIClustersMap[mgwSwagger.GetOrganizationID()], apiIdentifier)
 		delete(orgIDOpenAPIEndpointsMap[mgwSwagger.GetOrganizationID()], apiIdentifier)
 		delete(orgIDOpenAPIEnforcerApisMap[mgwSwagger.GetOrganizationID()], apiIdentifier)
-		oldLabels := orgIDOpenAPIEnvoyMap[mgwSwagger.GetOrganizationID()][apiIdentifier]
-		updateXdsCacheOnAPIChange(oldLabels, newLabels)
+		//oldLabels := orgIDOpenAPIEnvoyMap[mgwSwagger.GetOrganizationID()][apiIdentifier]
+		//updateXdsCacheOnAPIChange(oldLabels, newLabels)
 	}
 
 	// Create internal mappigs for new vHosts
 	for _, vHost := range vHosts {
 		apiIdentifier := GenerateIdentifierForAPIWithUUID(vHost, mgwSwagger.UUID)
-		oldLabels := orgIDOpenAPIEnvoyMap[mgwSwagger.GetOrganizationID()][apiIdentifier]
+		//oldLabels := orgIDOpenAPIEnvoyMap[mgwSwagger.GetOrganizationID()][apiIdentifier]
 
 		if _, ok := orgIDAPIMgwSwaggerMap[mgwSwagger.OrganizationID]; ok {
 			orgIDAPIMgwSwaggerMap[mgwSwagger.GetOrganizationID()][apiIdentifier] = mgwSwagger
@@ -1005,8 +1005,8 @@ func UpdateAPICache(vHosts []string, newLabels []string, mgwSwagger model.MgwSwa
 			orgIDOpenAPIEnforcerApisMap[mgwSwagger.GetOrganizationID()] = enforcerAPIMap
 		}
 
-		revisionStatus := updateXdsCacheOnAPIChange(oldLabels, newLabels)
-		logger.LoggerXds.Infof("Deployed Revision: %v:%v", apiIdentifier, revisionStatus)
+		// revisionStatus := updateXdsCacheOnAPIChange(oldLabels, newLabels)
+		// logger.LoggerXds.Infof("Deployed Revision: %v:%v", apiIdentifier, revisionStatus)
 	}
 	return nil
 }

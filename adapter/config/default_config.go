@@ -35,7 +35,7 @@ var defaultConfig = &Config{
 		},
 		VhostMapping: []vhostMapping{
 			{
-				Environment: "Default",
+				Environment: "default",
 				Vhost:       "localhost",
 			},
 		},
@@ -359,7 +359,7 @@ var defaultConfig = &Config{
 		ServiceURLDeprecated: UnassignedAsDeprecated,
 		Username:             "admin",
 		Password:             "$env{cp_admin_pwd}",
-		EnvironmentLabels:    []string{"Default"},
+		EnvironmentLabels:    []string{"default"},
 		RetryInterval:        5,
 		SkipSSLVerification:  false,
 		BrokerConnectionParameters: brokerConnectionParameters{
