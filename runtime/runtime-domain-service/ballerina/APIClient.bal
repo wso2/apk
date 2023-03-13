@@ -733,6 +733,14 @@ public class APIClient {
             return badRequest;
         }
         self.setDefaultOperationsIfNotExist(api);
+        APIOperations[]? operations = api.operations;
+        if operations is APIOperations[] {
+            // Validating operation policies.
+            BadRequestError|() badRequestError = self.validateOperationPolicies(api.apiPolicies, operations, organization);
+            if (badRequestError is BadRequestError) {
+                return badRequestError;
+            }
+        }
         api.context = self.returnFullContext(api.context, api.'version);
         Service|error serviceRetrieved = getServiceById(serviceKey);
         string uniqueId = getUniqueIdForAPI(api.name, api.'version, organization);
@@ -2591,6 +2599,11 @@ public class APIClient {
                 if operations is APIOperations[] {
                     if operations.length() == 0 {
                         BadRequestError badRequestError = {body: {code: 90912, message: "Atleast one operation need to specified"}};
+                        return badRequestError;
+                    }
+                    // Validating operation policies.
+                    BadRequestError|() badRequestError = self.validateOperationPolicies(api.apiPolicies, operations, organization);
+                    if (badRequestError is BadRequestError) {
                         return badRequestError;
                     }
                 } else {
