@@ -26,7 +26,7 @@ spec:
   prodHTTPRouteRefs:
   - prod-http-route-http-bin-api-p1
   - prod-http-route-http-bin-api-p2
-  sandHTTPRouteRef:
+  sandHTTPRouteRefs:
   - sand-http-route-http-bin-api
   organization: 01edb285-6304-1b20-a090-4d02067ed56ev
 ---

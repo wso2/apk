@@ -26,14 +26,14 @@ import (
 )
 
 func init() {
-	IntegrationTests = append(IntegrationTests, APIWithRequestHeaderModify)
+	IntegrationTests = append(IntegrationTests, APIWithOperationalPolicy)
 }
 
-// APIWithRequestHeaderModify test
-var APIWithRequestHeaderModify = suite.IntegrationTest{
-	ShortName:   "APIWithRequestHeaderModify",
-	Description: "An API with request header modify",
-	Manifests:   []string{"tests/api-with-request-header-modify.yaml"},
+// APIWithOperationalPolicy test
+var APIWithOperationalPolicy = suite.IntegrationTest{
+	ShortName:   "APIWithOperationalPolicy",
+	Description: "An API with operatinal policy",
+	Manifests:   []string{"tests/api-with-operational-policy.yaml"},
 	Test: func(t *testing.T, suite *suite.IntegrationTestSuite) {
 		ns := "gateway-integration-test-infra"
 		gwAddr := kubernetes.WaitForGatewayAddress(t, suite.Client, suite.TimeoutConfig)
@@ -42,29 +42,29 @@ var APIWithRequestHeaderModify = suite.IntegrationTest{
 		testCases := []http.ExpectedResponse{
 			{
 				Request: http.Request{
-					Host: "backend-base-path.test.gw.wso2.com",
-					Path: "/test-api-with-request-header-remove/1.0.0",
+					Host:   "backend-base-path.test.gw.wso2.com",
+					Path:   "/test-api-with-operatinal-policy/1.0.0",
+					Method: "GET",
 				},
 				ExpectedRequest: &http.ExpectedRequest{
 					Request: http.Request{
-						Path: "/users",
+						Path:   "/test-get-path",
+						Method: "GET",
 					},
-					AbsentHeaders: []string{"X-Header-Remove"},
 				},
 				Backend:   "infra-backend-v1",
 				Namespace: ns,
-			},
-			{
+			}, {
 				Request: http.Request{
-					Host: "backend-base-path.test.gw.wso2.com",
-					Path: "/test-api-with-request-header-add/1.0.0",
+					Host:   "backend-base-path.test.gw.wso2.com",
+					Path:   "/test-api-with-operatinal-policy/1.0.0",
+					Method: "POST",
 				},
 				ExpectedRequest: &http.ExpectedRequest{
 					Request: http.Request{
-						Path:    "/orders",
-						Headers: map[string]string{"test-header": "test"},
+						Path:   "/test-post-path",
+						Method: "POST",
 					},
-					AbsentHeaders: []string{"X-Header-add"},
 				},
 				Backend:   "infra-backend-v1",
 				Namespace: ns,

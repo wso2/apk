@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # -----------------------------------------------------------------------
+{{ if or .Values.wso2.apk.dp.enabled .Values.wso2.apk.cp.enabled }}
 
 apiVersion: v1
 kind: ConfigMap
@@ -46,3 +47,4 @@ data:
         -tls-client-key "${ENFORCER_PRIVATE_KEY_PATH}" \
         -tls-server-name {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.security.sslHostname }} \
         -connect-timeout=3s
+{{ end }}

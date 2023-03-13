@@ -17,22 +17,22 @@
 apiVersion: dp.wso2.com/v1alpha1
 kind: API
 metadata:
-  name: test-api-with-request-header-modify
+  name: test-api-with-response-header-modify
   namespace: gateway-integration-test-infra
 spec:
-  apiDisplayName: API with Request Header Modify
+  apiDisplayName: API with Response Header Modify
   apiType: REST
   apiVersion: 1.0.0
-  context: /request-header-modify/1.0.0
+  context: /response-header-modify/1.0.0
   definitionFileRef: swagger-definition-webhook
   prodHTTPRouteRefs:
-  - test-api-with-request-header-modify-httproute
+  - test-api-with-response-header-modify-httproute
   organization: wso2-org
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: HTTPRoute
 metadata:
-  name: test-api-with-request-header-modify-httproute
+  name: test-api-with-response-header-modify-httproute
   namespace: gateway-integration-test-infra
 spec:
   parentRefs:
@@ -40,42 +40,45 @@ spec:
     kind: Gateway
     name: Default
   hostnames:
-  - backend-base-path.test.gw.wso2.com
+  - infra-backend-v1.gateway-integration-test-infra
   rules:
   - matches:
     - path:
         type: PathPrefix
-        value: /test-api-with-request-header-remove/1.0.0
-      method: GET
+        value: /set
     filters:
-    - type: URLRewrite
-      urlRewrite:
-        path:
-          type: ReplacePrefixMatch
-          replacePrefixMatch: /users
-    - type: RequestHeaderModifier
-      requestHeaderModifier:
-        remove:
-          - X-Header-Remove
+    - type: ResponseHeaderModifier
+      responseHeaderModifier:
+        set:
+        - name: X-Header-Set
+          value: set-overwrites-values
     backendRefs:
     - name: infra-backend-v1
       port: 8080
   - matches:
     - path:
         type: PathPrefix
-        value: /test-api-with-request-header-add/1.0.0
+        value: /add
       method: GET
     filters:
-    - type: URLRewrite
-      urlRewrite:
-        path:
-          type: ReplacePrefixMatch
-          replacePrefixMatch: /orders
-    - type: RequestHeaderModifier
-      requestHeaderModifier:
+    - type: ResponseHeaderModifier
+      responseHeaderModifier:
         add:
-          - name: "test-header"
-            value: "test"
+        - name: X-Header-Add
+          value: add-appends-values
     backendRefs:
     - name: infra-backend-v1
       port: 8080
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /remove
+    filters:
+    - type: ResponseHeaderModifier
+      responseHeaderModifier:
+        remove:
+        - X-Header-Remove
+    backendRefs:
+    - name: infra-backend-v1
+      port: 8080
+  

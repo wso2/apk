@@ -59,7 +59,7 @@ spec:
       volumes:
         - name: devportal-signing-keystore-volume
           secret:
-            secretName: {{ template "apk-helm.resource.prefix" . }}-signing-keystore-secret
+            secretName: {{ template "apk-helm.resource.prefix" . }}-apikey-signing-keystore-secret
         - name: devportal-ds-jwt-validation-key-volume
           secret: 
             secretName: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-jwt-validaion-secret

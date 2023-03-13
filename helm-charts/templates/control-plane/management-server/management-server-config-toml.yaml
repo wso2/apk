@@ -10,4 +10,10 @@ data:
       host = "{{ template "apk-helm.resource.prefix" . }}-backoffice-ds-service"
       port = 9444
       serviceBasePath = "/api/am/backoffice/internal/apis"
+    [managementServer.keystore]
+      certPath = "/home/wso2/security/keystore/management-server.pem"
+      keyPath = "/home/wso2/security/keystore/management-server.key"
+    [managementServer.truststore]
+      location = "/home/wso2/security/truststore"
+      
 {{- end -}}

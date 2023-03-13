@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # -----------------------------------------------------------------------
+{{- if .Values.wso2.apk.dp.gatewayAPI.enabled }}
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -250,3 +251,4 @@ spec:
       securityContext:
         runAsNonRoot: true
         runAsUser: 2000
+{{- end -}}

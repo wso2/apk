@@ -13,13 +13,12 @@
 # KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations
 # under the License.
-
-{{- if .Values.wso2.apk.dp.enabled }}
+{{ if and .Values.certmanager .Values.certmanager.enableClusterIssuer }}
 apiVersion: cert-manager.io/v1
-kind: Issuer
+kind: ClusterIssuer
 metadata:
   name: selfsigned-issuer
-  namespace: {{ .Release.Namespace }}
 spec:
-  selfSigned: {}
-{{- end -}}
+  ca:
+    secretName: apk-root-certificate
+{{ end }}

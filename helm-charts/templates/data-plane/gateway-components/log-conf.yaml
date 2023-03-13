@@ -1,4 +1,4 @@
-{{- if .Values.wso2.apk.dp.enabled }}
+{{- if or .Values.wso2.apk.dp.enabled .Values.wso2.apk.cp.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -10,19 +10,25 @@ data:
     [adapter.server]
       enabled = true
       port = "9843"
-      tokenPrivateKeyPath = "/home/wso2/security/keystore/tls.key"
+      tokenPrivateKeyPath = "/home/wso2/security/keystore/adapter.key"
       [[adapter.server.users]]
         username = "admin"
         password = "$env{adapter_admin_pwd}"
 
+      {{ if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.dp.adapter.configs.apiNamespaces }}
+      [adapter.operator]
+        namespaces = [{{ include "commaJoinedQuotedList" .Values.wso2.apk.dp.adapter.configs.apiNamespaces}}]
+      {{ end}}    
+
+    # 
     # default vhosts mapping for standalone mode
     [[adapter.vhostMapping]]
       environment = "Default"
       vhost = "gw.wso2.com"
 
     [adapter.keystore]
-      certPath = "/home/wso2/security/keystore/tls.crt"
-      keyPath = "/home/wso2/security/keystore/tls.key"
+      certPath = "/home/wso2/security/keystore/adapter.crt"
+      keyPath = "/home/wso2/security/keystore/adapter.key"
 
     [adapter.truststore]
       location = "/home/wso2/security/truststore"
@@ -34,8 +40,8 @@ data:
       useRemoteAddress = false
 
     [router.keystore]
-      certPath = "/home/wso2/security/keystore/tls.crt"
-      keyPath = "/home/wso2/security/keystore/tls.key"
+      certPath = "/home/wso2/security/keystore/router.crt"
+      keyPath = "/home/wso2/security/keystore/router.key"
 
     [router.upstream]
     [router.upstream.tls]
@@ -118,8 +124,13 @@ data:
       serviceBasePath = "/api/am/runtime"
     
     [managementServer]
-      enabled = {{ .Values.wso2.apk.cp.enabled }}
+    {{ if .Values.wso2.apk.dp.managementServer }}
+      enabled = {{.Values.wso2.apk.dp.managementServer.enabled}}
+      host = "{{ .Values.wso2.apk.dp.managementServer.serviceUrl | default (printf "%s-management-server.%s.svc" (include "apk-helm.resource.prefix" .) .Release.Namespace) }}"
+      {{else}}
+      enabled = true
       host = "{{ template "apk-helm.resource.prefix" . }}-management-server.{{ .Release.Namespace }}.svc"
+      {{end}}
 
   config.toml.template: |
     # The configuration file for mgw
