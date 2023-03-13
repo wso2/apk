@@ -22,6 +22,7 @@ import (
 	"context"
 	"fmt"
 
+	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	discovery "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	"github.com/wso2/apk/management-server/internal/logger"
@@ -41,7 +42,7 @@ func (cb *Callbacks) OnStreamOpen(_ context.Context, id int64, typ string) error
 }
 
 // OnStreamClosed prints debug logs
-func (cb *Callbacks) OnStreamClosed(id int64) {
+func (cb *Callbacks) OnStreamClosed(id int64, node *corev3.Node) {
 	logger.LoggerXds.Infof("stream %d closed\n", id)
 }
 
@@ -82,7 +83,7 @@ func (cb *Callbacks) OnDeltaStreamOpen(_ context.Context, id int64, typ string) 
 }
 
 // OnDeltaStreamClosed is unused.
-func (cb *Callbacks) OnDeltaStreamClosed(id int64) {
+func (cb *Callbacks) OnDeltaStreamClosed(id int64, node *corev3.Node) {
 }
 
 // OnStreamDeltaResponse is unused.
