@@ -498,23 +498,25 @@ func resolveCertificate(ctx context.Context, client k8client.Client, namespace s
 			})
 		}
 	}
-	block, _ := pem.Decode([]byte(certificate))
-	if block == nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprint("Failed to parse certificate PEM"),
-			Severity:  logging.MINOR,
-			ErrorCode: 2619,
-		})
-		return ""
-	}
-	_, err = x509.ParseCertificate(block.Bytes)
-	if block == nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("Error while parsing certificate: %s", err.Error()),
-			Severity:  logging.MINOR,
-			ErrorCode: 2619,
-		})
-		return ""
+	if len(certificate) > 0 {
+		block, _ := pem.Decode([]byte(certificate))
+		if block == nil {
+			loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+				Message:   fmt.Sprint("Failed to parse certificate PEM"),
+				Severity:  logging.MINOR,
+				ErrorCode: 2619,
+			})
+			return ""
+		}
+		_, err = x509.ParseCertificate(block.Bytes)
+		if block == nil {
+			loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
+				Message:   fmt.Sprintf("Error while parsing certificate: %s", err.Error()),
+				Severity:  logging.MINOR,
+				ErrorCode: 2619,
+			})
+			return ""
+		}
 	}
 	return certificate
 }

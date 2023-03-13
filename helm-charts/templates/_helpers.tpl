@@ -83,3 +83,11 @@ env:
 {{- end }}
 {{- end -}}
 {{- end -}}
+
+{{- define "commaJoinedQuotedList" -}}
+{{- $list := list }}
+{{- range .}}
+{{- $list = append $list (printf "\"%s\"" .) }}
+{{- end }}
+{{- join ", " $list }}
+{{- end }}

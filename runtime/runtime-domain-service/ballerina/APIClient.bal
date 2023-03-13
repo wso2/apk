@@ -1897,7 +1897,7 @@ public class APIClient {
         string|() fileName = ();
         byte[]|() fileContent = ();
         string|() inlineAPIDefinition = ();
-        string|() additinalProperties = ();
+        string|() additionalProperties = ();
         string|() 'type = ();
         mime:Entity[]|http:ClientError payLoadParts = message.getBodyParts();
         if payLoadParts is mime:Entity[] {
@@ -1912,8 +1912,8 @@ public class APIClient {
                     fileContent = check payLoadPart.getByteArray();
                 } else if fieldName == "inlineAPIDefinition" {
                     inlineAPIDefinition = check payLoadPart.getText();
-                } else if fieldName == "additinalProperties" {
-                    additinalProperties = check payLoadPart.getText();
+                } else if fieldName == "additionalProperties" {
+                    additionalProperties = check payLoadPart.getText();
                 } else if fieldName == "type" {
                     'type = check payLoadPart.getText();
                 }
@@ -1927,11 +1927,11 @@ public class APIClient {
             BadRequestError badRequest = {body: {code: 90914, message: "atleast one of the field required (file,inlineApiDefinition,url)."}};
             return badRequest;
         }
-        if additinalProperties is () || additinalProperties.length() == 0 {
+        if additionalProperties is () || additionalProperties.length() == 0 {
             BadRequestError badRequest = {body: {code: 90914, message: "additionalProperties not provided."}};
             return badRequest;
         }
-        json apiObject = check value:fromJsonString(additinalProperties);
+        json apiObject = check value:fromJsonString(additionalProperties);
         API api = check apiObject.cloneWithType(API);
         ImportDefintionRequest importDefintionRequest = {
             fileName: fileName,

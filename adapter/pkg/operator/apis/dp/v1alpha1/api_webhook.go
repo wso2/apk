@@ -23,9 +23,11 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
@@ -145,8 +147,10 @@ func isEmptyStringsInArray(strings []string) bool {
 
 func (r *API) validateAPIContextExists() *field.Error {
 	ctx := context.Background()
+	conf := config.ReadConfigs()
 	apiList := &APIList{}
-	if err := c.List(ctx, apiList); err != nil {
+	listOptions := RetrieveNamespaceListOptions(conf.Adapter.Operator.Namespaces)
+	if err := c.List(ctx, apiList, &listOptions); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2605, err.Error()))
 		return field.InternalError(field.NewPath("spec").Child("context"),
 			errors.New("unable to list APIs for API context validation"))
@@ -164,6 +168,16 @@ func (r *API) validateAPIContextExists() *field.Error {
 	return nil
 }
 
+// RetrieveNamespaceListOptions retrieve namespace list options for the given namespaces
+func RetrieveNamespaceListOptions(namespaces []string) client.ListOptions {
+	var listOptions client.ListOptions
+	if namespaces == nil {
+		listOptions = client.ListOptions{}
+	} else {
+		listOptions = client.ListOptions{FieldSelector: fields.SelectorFromSet(fields.Set{"metadata.namespace": strings.Join(namespaces, ",")})}
+	}
+	return listOptions
+}
 func validateAPIContextFormat(context string, apiVersion string) string {
 	if len(context) > 232 {
 		return "API context character length should not exceed 232."

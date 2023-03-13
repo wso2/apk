@@ -39,18 +39,34 @@ spec:
 {{ include "apk-helm.deployment.resources" .Values.wso2.apk.cp.managementServer.deployment.resources | indent 10 }}
           volumeMounts:
             - name: management-server-keystore-secret-volume
-              mountPath: /home/wso2/security/keystore/mg.key
+              mountPath: /home/wso2/security/keystore/management-server.key
+            {{- if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.cp.managementServer.configs.tls }}
+              subPath: {{ .Values.wso2.apk.cp.managementServer.configs.tls.certKeyFilename | default "tls.key" }}
+            {{- else }}
               subPath: tls.key
+            {{- end }}
             - name: management-server-keystore-secret-volume
-              mountPath: /home/wso2/security/keystore/mg.pem
-              subPath: tls.crt
-            - name: adapter-truststore-secret-volume
-              mountPath: /home/wso2/security/truststore/adapter.crt
-            {{- if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.dp.adapter.configs.tls }}
-              subPath: {{ .Values.wso2.apk.dp.adapter.configs.tls.certFilename | default "tls.crt" }}
+              mountPath: /home/wso2/security/keystore/management-server.pem
+            {{- if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.cp.managementServer.configs.tls }}
+              subPath: {{ .Values.wso2.apk.cp.managementServer.configs.tls.certFilename | default "tls.key" }}
             {{- else }}
               subPath: tls.crt
             {{- end }}
+            - name: adapter-truststore-secret-volume
+              mountPath: /home/wso2/security/truststore/adapter.crt
+            {{ if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.dp.adapter.configs.tls }}
+              subPath: {{ .Values.wso2.apk.dp.adapter.configs.tls.certFilename | default "tls.crt" }}
+            {{ else }}
+              subPath: tls.crt
+            {{ end }}
+            {{ if and .Values.wso2.apk.cp.managementServer.configs .Values.wso2.apk.cp.managementServer.configs.adapter }}
+            {{ range $key, $value := .Values.wso2.apk.cp.managementServer.configs.adapter }}
+            - name: adapter-cert-{{ $key}}
+              mountPath: /home/wso2/security/truststore/adapter-{{ $key }}.crt
+              subPath: {{$value.fileName}}
+            {{ end }}
+            {{ end }}
+
             - name: management-server-config-toml-volume
               mountPath: /home/wso2/conf/
           ports:
@@ -59,15 +75,26 @@ spec:
             - containerPort: 8766
       volumes:
         - name: management-server-keystore-secret-volume
-          secret: 
+          secret:
+          {{- if and .Values.wso2.apk.cp.managementServer.configs .Values.wso2.apk.cp.managementServer.configs.tls }}
+            secretName: {{ .Values.wso2.apk.cp.managementServer.configs.tls.certificatesSecret | default (printf "%s-management-server-cert" (include "apk-helm.resource.prefix" .)) }}
+          {{- else }}
             secretName: {{ template "apk-helm.resource.prefix" . }}-management-server-cert
+          {{- end }}
         - name: adapter-truststore-secret-volume
           secret:
-          {{- if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.dp.adapter.configs.tls }}
-            secretName: {{ .Values.wso2.apk.dp.adapter.configs.tls.certificatesSecret | default (printf "%s-adapter-server-cert" (include "apk-helm.resource.prefix" .)) }}
-          {{- else }}
-            secretName: {{ template "apk-helm.resource.prefix" . }}-adapter-server-cert
-          {{- end }}
+          {{ if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.dp.adapter.configs.tls }}
+            secretName: {{ .Values.wso2.apk.dp.adapter.configs.tls.certificatesSecret | default "apk-root-certificate"}}
+          {{ else }}
+            secretName: apk-root-certificate
+          {{ end }}
+        {{ if and .Values.wso2.apk.cp.managementServer.configs .Values.wso2.apk.cp.managementServer.configs.adapter }}
+        {{ range $key, $value := .Values.wso2.apk.cp.managementServer.configs.adapter }}
+        - name: adapter-cert-{{ $key}}
+          secret: 
+            secretName: {{ $value.certificatesSecret}}
+        {{ end }}
+        {{ end }}
         - name: management-server-config-toml-volume
           configMap: 
             name: {{ template "apk-helm.resource.prefix" . }}-management-server-config-toml
