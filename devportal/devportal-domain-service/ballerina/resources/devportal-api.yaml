@@ -14,17 +14,16 @@
 ################################################################################
 openapi: 3.0.1
 info:
-  title: WSO2 API Manager - Developer Portal
+  title: WSO2 API Platform for Kubernetes - Developer Portal
   description: |
-    This document specifies a **RESTful API** for WSO2 **API Manager** - **Developer Portal**.
-    Please see [full OpenAPI Specification](https://raw.githubusercontent.com/wso2/carbon-apimgt/master/components/apimgt/org.wso2.carbon.apimgt.rest.api.store.v1/src/main/resources/devportal-api.yaml) of the API which is written using [OAS 3.0](http://swagger.io/) specification.
+    This document specifies a **RESTful API** for WSO2 **API Platform for Kubernetes(APK)** - **Developer Portal**.
 
     # Authentication
-    The Developer Portal REST API is protected using OAuth2 and access control is achieved through scopes. Before you start invoking
-    the API, you need to obtain an access token with the required scopes. This guide will walk you through the steps
-    that you will need to follow to obtain an access token.
-    First you need to obtain the consumer key/secret key pair by calling the dynamic client registration (DCR) endpoint. You can add your preferred grant types
-    in the payload. A Sample payload is shown below.
+    The Developer Portal REST API is protected using OAuth2 and access control is achieved through scopes (in the initial release 
+    WSO2 does not provide scope support for APIs). Before you start invoking the API, you need to obtain an access token with the required scopes. 
+    This guide will walk you through the steps that you will need to follow to obtain an access token.
+    First you need to obtain the consumer key/secret key pair by calling the dynamic client registration (DCR) endpoint. You can add your preferred 
+    grant types in the payload. A Sample payload is shown below.
     ```
       {
       "callbackUrl":"www.google.lk",
@@ -74,14 +73,13 @@ info:
     ```
     curl https://localhost:9443/oauth2/token -k \
     -H "Authorization: Basic Zk9DaTR2Tko1OVBwSHVjQzJDQVlmWXVBRGRNYTphNEZ3SGxxMGlDSUtWczJNUElJRG5lcFpuWU1h" \
-    -d "grant_type=password&username=admin&password=admin&scope=apim:subscribe apim:api_key"
+    -d "grant_type=password&username=admin&password=admin&scope=apk:subscribe apk:api_key"
     ```
     Shown below is a sample response to the above request.
     ```
     {
     "access_token": "e79bda48-3406-3178-acce-f6e4dbdcbb12",
     "refresh_token": "a757795d-e69f-38b8-bd85-9aded677a97c",
-    "scope": "apim:subscribe apim:api_key",
     "token_type": "Bearer",
     "expires_in": 3600
     }
@@ -92,11 +90,11 @@ info:
 
     # Try out in Postman
     If you want to try-out the embedded postman collection with "Run in Postman" option, please follow the guidelines listed below.
-    * All of the OAuth2 secured endpoints have been configured with an Authorization Bearer header with a parameterized access token. Before invoking any REST API resource make sure you run the `Register DCR Application` and `Generate Access Token` requests to fetch an access token with all required scopes.
-    * Make sure you have an API Manager instance up and running.
-    * Update the `basepath` parameter to match the hostname and port of the APIM instance.
+    * All of the OAuth2 secured endpoints have been configured with an Authorization Bearer header with a parameterized access token. 
+    * Before invoking any REST API resource make sure you run the `Register DCR Application` and `Generate Access Token` requests to fetch an access token with all required scopes.
+    * Make sure you have an API Platform for Kubernetes(APK) instance up and running.
+    * Update the `basepath` parameter to match the hostname and port of the APK instance.
 
-    [![Run in Postman](https://run.pstmn.io/button.svg)](https://god.gw.postman.com/run-collection/17491134-b8760354-b3c3-4019-b60a-e813cba8d7c0)
   contact:
     name: WSO2
     url: https://wso2.com/api-manager/
@@ -106,7 +104,7 @@ info:
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   version: v2.1
 servers:
-  - url: https://apis.wso2.com/api/am/devportal/v2
+  - url: https://apk.wso2.com/api/am/devportal
 ######################################################
 # The "API Collection" resource APIs
 ######################################################
@@ -121,8 +119,6 @@ paths:
         This operation provides you a list of available APIs qualifying under a given search condition.
 
         Each retrieved API is represented with a minimal amount of attributes. If you want to get complete details of an API, you need to use **Get details of an API** operation.
-
-        This operation supports retrieving APIs of other tenants. The required tenant domain need to be specified as a header `X-WSO2-Tenant`. If not specified super tenant's APIs will be retrieved. If you used an Authorization header, the user's tenant associated with the access token will be used.
 
         **NOTE:**
         * By default, this operation retrieves Published APIs. In order to retrieve Prototyped APIs, you need to use **query** parameter and specify **status:PROTOTYPED**.
@@ -176,7 +172,7 @@ paths:
         - OAuth2Security: []
       x-code-samples:
         - lang: Curl
-          source: curl -k "https://localhost:9443/api/am/devportal/v2/apis"
+          source: curl -k "https://localhost:9443/api/am/devportal/apis"
 
   /apis/{apiId}:
     get:
@@ -186,8 +182,6 @@ paths:
         Get Details of an API
       description: |
         Using this operation, you can retrieve complete details of a single API. You need to provide the Id of the API to retrive it.
-
-        `X-WSO2-Tenant` header can be used to retrieve an API of a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user's tenant associated with the access token will be used.
 
         **NOTE:**
         * This operation does not require an Authorization header by default. But if it is provided, it will be validated and checked for permissions of the user, hence you may be able to see APIs which are restricted for special permissions/roles. \n
@@ -229,7 +223,7 @@ paths:
         - OAuth2Security: []
       x-code-samples:
         - lang: Curl
-          source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/c43a325c-260b-4302-81cb-768eafaa3aed"
+          source: curl -k "https://localhost:9443/api/am/devportal/apis/c43a325c-260b-4302-81cb-768eafaa3aed"
   
   /apis/{apiId}/definition:
     get:
@@ -322,11 +316,11 @@ paths:
           $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
-            - apim:subscribe
+            - apk:subscribe
       x-code-samples:
         - lang: Curl
           source: curl -k -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-            "https://localhost:9443/api/am/devportal/v2/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/sdks/java"
+            "https://localhost:9443/api/am/devportal/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/sdks/java"
             > Petstore_java_1.0.0.zip
 
   ######################################################
@@ -340,8 +334,6 @@ paths:
         Get a List of Documents of an API
       description: |
         This operation can be used to retrive a list of documents belonging to an API by providing the id of the API.
-
-        `X-WSO2-Tenant` header can be used to retrive documents of an API that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user's tenant associated with the access token will be used.
 
         **NOTE:**
         * This operation does not require an Authorization header by default. But in order to see a restricted API's documents, you need to provide Authorization header.
@@ -379,7 +371,7 @@ paths:
         - OAuth2Security: []
       x-code-samples:
         - lang: Curl
-          source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/c43a325c-260b-4302-81cb-768eafaa3aed/documents"
+          source: curl -k "https://localhost:9443/api/am/devportal/apis/c43a325c-260b-4302-81cb-768eafaa3aed/documents"
 
   ######################################################
   # The "Individual Document" resource APIs
@@ -393,7 +385,6 @@ paths:
       description: |
         This operation can be used to retrieve a particular document's metadata associated with an API.
 
-        `X-WSO2-Tenant` header can be used to retrive a document of an API that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user's tenant associated with the access token will be used.
 
         **NOTE:**
         * This operation does not require an Authorization header by default. But in order to see a restricted API's document, you need to provide Authorization header.
@@ -431,7 +422,7 @@ paths:
         - OAuth2Security: []
       x-code-samples:
         - lang: Curl
-          source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/c43a325c-260b-4302-81cb-768eafaa3aed/documents/850a4f34-db2c-4d23-9d85-3f95fbfb082c"
+          source: curl -k "https://localhost:9443/api/am/devportal/apis/c43a325c-260b-4302-81cb-768eafaa3aed/documents/850a4f34-db2c-4d23-9d85-3f95fbfb082c"
 
   /apis/{apiId}/documents/{documentId}/content:
     get:
@@ -451,7 +442,6 @@ paths:
         3. **URL type**:
             The client will recieve the URL of the document as the Location header with the response with - `303 See Other`
 
-        `X-WSO2-Tenant` header can be used to retrive the content of a document of an API that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user's tenant associated with the access token will be used.
 
         **NOTE:**
         * This operation does not require an Authorization header by default. But in order to see a restricted API's document content, you need to provide Authorization header.
@@ -503,7 +493,7 @@ paths:
         - OAuth2Security: []
       x-code-samples:
         - lang: Curl
-          source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/documents/0bcb7f05-599d-4e1a-adce-5cb89bfe58d5/content"
+          source: curl -k "https://localhost:9443/api/am/devportal/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/documents/0bcb7f05-599d-4e1a-adce-5cb89bfe58d5/content"
 
   /apis/{apiId}/thumbnail:
     get:
@@ -513,7 +503,6 @@ paths:
       description: |
         This operation can be used to download a thumbnail image of an API.
 
-        `X-WSO2-Tenant` header can be used to retrive a thumbnail of an API that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user's tenant associated with the access token will be used.
 
         **NOTE:**
         * This operation does not require an Authorization header by default. But in order to see a restricted API's thumbnail, you need to provide Authorization header.
@@ -558,7 +547,7 @@ paths:
         - OAuth2Security: []
       x-code-samples:
         - lang: Curl
-          source: 'curl -k "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/thumbnail" > image.jpeg'
+          source: 'curl -k "https://localhost:9443/api/am/devportal/apis/e93fb282-b456-48fc-8981-003fb89086ae/thumbnail" > image.jpeg'
 
   /apis/{apiId}/ratings:
     get:
@@ -568,7 +557,6 @@ paths:
       description: |
         This operation can be used to retrieve the list of ratings of an API.
 
-        `X-WSO2-Tenant` header can be used to retrieve ratings of an API that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user's tenant associated with the access token will be used.
       parameters:
         - $ref: '#/components/parameters/apiId'
         - $ref: '#/components/parameters/limit'
@@ -589,7 +577,7 @@ paths:
         - OAuth2Security: []
       x-code-samples:
         - lang: Curl
-          source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/ratings"
+          source: curl -k "https://localhost:9443/api/am/devportal/apis/e93fb282-b456-48fc-8981-003fb89086ae/ratings"
 
   /apis/{apiId}/user-rating:
     get:
@@ -599,7 +587,6 @@ paths:
       description: |
         This operation can be used to get the user rating of an API.
 
-        `X-WSO2-Tenant` header can be used to retrieve the logged in user rating of an API that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user's tenant associated with the access token will be used.
       parameters:
         - $ref: '#/components/parameters/apiId'
         - $ref: '#/components/parameters/requestedTenant'
@@ -637,11 +624,11 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
-            - apim:subscribe
+            - apk:subscribe
       x-code-samples:
         - lang: Curl
           source: curl -k -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-            "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/user-rating"
+            "https://localhost:9443/api/am/devportal/apis/e93fb282-b456-48fc-8981-003fb89086ae/user-rating"
 
     put:
       tags:
@@ -650,7 +637,6 @@ paths:
       description: |
         This operation can be used to add or update an API rating.
 
-        `X-WSO2-Tenant` header can be used to add or update the logged in user rating of an API that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user's tenant associated with the access token will be used.
       parameters:
         - $ref: '#/components/parameters/apiId'
         - $ref: '#/components/parameters/requestedTenant'
@@ -683,11 +669,11 @@ paths:
           $ref: '#/components/responses/UnsupportedMediaType'
       security:
         - OAuth2Security:
-            - apim:subscribe
+            - apk:subscribe
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X PUT -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/user-rating"'
+          -H "Content-Type: application/json" -d @data.json "https://localhost:9443/api/am/devportal/apis/e93fb282-b456-48fc-8981-003fb89086ae/user-rating"'
 
     delete:
       tags:
@@ -696,7 +682,6 @@ paths:
       description: |
         This operation can be used to delete logged in user API rating.
 
-        `X-WSO2-Tenant` header can be used to delete the logged in user rating of an API that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user's tenant associated with the access token will be used.
       parameters:
         - $ref: '#/components/parameters/apiId'
         - $ref: '#/components/parameters/requestedTenant'
@@ -709,11 +694,11 @@ paths:
           content: {}
       security:
         - OAuth2Security:
-            - apim:subscribe
+            - apk:subscribe
       x-code-samples:
         - lang: Curl
           source: curl -k -X DELETE -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-            "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/user-rating"
+            "https://localhost:9443/api/am/devportal/apis/e93fb282-b456-48fc-8981-003fb89086ae/user-rating"
 
   /apis/{apiId}/comments:
     get:
@@ -746,7 +731,7 @@ paths:
         - OAuth2Security: []
       x-code-samples:
         - lang: Curl
-          source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments"
+          source: curl -k "https://localhost:9443/api/am/devportal/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments"
 
     post:
       tags:
@@ -812,11 +797,11 @@ paths:
           $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
-            - apim:subscribe
+            - apk:subscribe
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments"'
+          -H "Content-Type: application/json" -d @data.json "https://localhost:9443/api/am/devportal/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments"'
 
   /apis/{apiId}/comments/{commentId}:
     get:
@@ -868,7 +853,7 @@ paths:
         - OAuth2Security: []
       x-code-samples:
         - lang: Curl
-          source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"
+          source: curl -k "https://localhost:9443/api/am/devportal/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"
 
     patch:
       tags:
@@ -937,11 +922,11 @@ paths:
           $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
-            - apim:subscribe
+            - apk:subscribe
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X PATCH -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"'
+          -H "Content-Type: application/json" -d @data.json "https://localhost:9443/api/am/devportal/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"'
 
     delete:
       tags:
@@ -978,12 +963,12 @@ paths:
           $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
-            - apim:subscribe
-            - apim:admin # special scope added to moderate comments
+            - apk:subscribe
+            - apk:admin # special scope added to moderate comments
       x-code-samples:
         - lang: Curl
           source: curl -k -X DELETE -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-            "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"
+            "https://localhost:9443/api/am/devportal/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"
 
   /apis/{apiId}/comments/{commentId}/replies:
     get:
@@ -1035,7 +1020,7 @@ paths:
         - OAuth2Security: []
       x-code-samples:
         - lang: Curl
-          source: curl -k -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8" "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4/replies"
+          source: curl -k -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8" "https://localhost:9443/api/am/devportal/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4/replies"
 
   /apis/{apiId}/topics:
     get:
@@ -1073,7 +1058,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: curl -k -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-            "https://localhost:9443/api/am/devportal/v2/apis/5b65808c-cdf2-43e1-a695-de63e3ad0ae9/topics"
+            "https://localhost:9443/api/am/devportal/apis/5b65808c-cdf2-43e1-a695-de63e3ad0ae9/topics"
 
   /apis/{apiId}/subscription-policies:
     get:
@@ -1084,7 +1069,6 @@ paths:
       description: |
         This operation can be used to retrieve details of the subscription throttling policy of an API by specifying the API Id.
 
-        `X-WSO2-Tenant` header can be used to retrive API subscription throttling policies that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user's tenant associated with the access token will be used.
       parameters:
         - $ref: '#/components/parameters/apiId'
         - $ref: '#/components/parameters/requestedTenant'
@@ -1124,7 +1108,7 @@ paths:
         - OAuth2Security: []
       x-code-samples:
         - lang: Curl
-          source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/268c9e55-3dc1-4f47-82e7-977e5343d077/subscription-policies"
+          source: curl -k "https://localhost:9443/api/am/devportal/apis/268c9e55-3dc1-4f47-82e7-977e5343d077/subscription-policies"
 
   ######################################################
   # The "Application Collection" resource APIs
@@ -1197,13 +1181,13 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
-            - apim:subscribe
-            - apim:app_manage
-            - apim:app_import_export
+            - apk:subscribe
+            - apk:app_manage
+            - apk:app_import_export
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/devportal/v2/applications?query=CalculatorApp"'
+          "https://localhost:9443/api/am/devportal/applications?query=CalculatorApp"'
 
     post:
       tags:
@@ -1263,12 +1247,12 @@ paths:
           $ref: '#/components/responses/UnsupportedMediaType'
       security:
         - OAuth2Security:
-            - apim:subscribe
-            - apim:app_manage
+            - apk:subscribe
+            - apk:app_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v2/applications"'
+          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/applications"'
 
   ######################################################
   # The "Individual Application" resource APIs
@@ -1317,12 +1301,12 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
-            - apim:subscribe
-            - apim:app_manage
+            - apk:subscribe
+            - apk:app_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/devportal/v2/applications/896658a0-b4ee-4535-bbfa-806c894a4015"'
+          "https://localhost:9443/api/am/devportal/applications/896658a0-b4ee-4535-bbfa-806c894a4015"'
 
     put:
       tags:
@@ -1376,12 +1360,12 @@ paths:
           $ref: '#/components/responses/PreconditionFailed'
       security:
         - OAuth2Security:
-            - apim:subscribe
-            - apim:app_manage
+            - apk:subscribe
+            - apk:app_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X PUT -d @data.json "https://localhost:9443/api/am/devportal/v2/applications/896658a0-b4ee-4535-bbfa-806c894a4015"'
+          -H "Content-Type: application/json" -X PUT -d @data.json "https://localhost:9443/api/am/devportal/applications/896658a0-b4ee-4535-bbfa-806c894a4015"'
 
     delete:
       tags:
@@ -1419,13 +1403,13 @@ paths:
           $ref: '#/components/responses/PreconditionFailed'
       security:
         - OAuth2Security:
-            - apim:subscribe
-            - apim:app_manage
-            - apim:app_import_export
+            - apk:subscribe
+            - apk:app_manage
+            - apk:app_import_export
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -X DELETE "https://localhost:9443/api/am/devportal/v2/applications/896658a0-b4ee-4535-bbfa-806c894a4015"'
+          -X DELETE "https://localhost:9443/api/am/devportal/applications/896658a0-b4ee-4535-bbfa-806c894a4015"'
 
   /applications/{applicationId}/generate-keys:
     post:
@@ -1462,12 +1446,12 @@ paths:
           $ref: '#/components/responses/PreconditionFailed'
       security:
         - OAuth2Security:
-            - apim:subscribe
-            - apim:app_manage
+            - apk:subscribe
+            - apk:app_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v2/applications/896658a0-b4ee-4535-bbfa-806c894a4015/generate-keys"'
+          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/applications/896658a0-b4ee-4535-bbfa-806c894a4015/generate-keys"'
 
   /applications/{applicationId}/map-keys:
     post:
@@ -1504,12 +1488,12 @@ paths:
           $ref: '#/components/responses/PreconditionFailed'
       security:
         - OAuth2Security:
-            - apim:subscribe
-            - apim:app_manage
+            - apk:subscribe
+            - apk:app_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v2/applications/896658a0-b4ee-4535-bbfa-806c894a4015/map-keys"'
+          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/applications/896658a0-b4ee-4535-bbfa-806c894a4015/map-keys"'
 
   /applications/{applicationId}/keys:
     get:
@@ -1538,12 +1522,12 @@ paths:
       deprecated: true
       security:
         - OAuth2Security:
-            - apim:subscribe
-            - apim:app_manage
+            - apk:subscribe
+            - apk:app_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/devportal/v2/applications/896658a0-b4ee-4535-bbfa-806c894a4015/keys"'
+          "https://localhost:9443/api/am/devportal/applications/896658a0-b4ee-4535-bbfa-806c894a4015/keys"'
 
   /applications/{applicationId}/keys/{keyType}:
     get:
@@ -1575,12 +1559,12 @@ paths:
       deprecated: true
       security:
         - OAuth2Security:
-            - apim:subscribe
-            - apim:app_manage
+            - apk:subscribe
+            - apk:app_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/devportal/v2/applications/896658a0-b4ee-4535-bbfa-806c894a4015/keys/PRODUCTION"'
+          "https://localhost:9443/api/am/devportal/applications/896658a0-b4ee-4535-bbfa-806c894a4015/keys/PRODUCTION"'
 
     put:
       tags:
@@ -1618,12 +1602,12 @@ paths:
       deprecated: true
       security:
         - OAuth2Security:
-            - apim:subscribe
-            - apim:app_manage
+            - apk:subscribe
+            - apk:app_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X PUT -d @data.json "https://localhost:9443/api/am/devportal/v2/applications/896658a0-b4ee-4535-bbfa-806c894a4015/keys/PRODUCTION"'
+          -H "Content-Type: application/json" -X PUT -d @data.json "https://localhost:9443/api/am/devportal/applications/896658a0-b4ee-4535-bbfa-806c894a4015/keys/PRODUCTION"'
 
   /applications/{applicationId}/keys/{keyType}/regenerate-secret:
     post:
@@ -1672,12 +1656,12 @@ paths:
       deprecated: true
       security:
         - OAuth2Security:
-            - apim:subscribe
-            - apim:app_manage
+            - apk:subscribe
+            - apk:app_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST "https://localhost:9443/api/am/devportal/v2/applications/896658a0-b4ee-4535-bbfa-806c894a4015/keys/PRODUCTION/regenerate-secret"'
+          -H "Content-Type: application/json" -X POST "https://localhost:9443/api/am/devportal/applications/896658a0-b4ee-4535-bbfa-806c894a4015/keys/PRODUCTION/regenerate-secret"'
 
   /applications/{applicationId}/keys/{keyType}/clean-up:
     post:
@@ -1705,12 +1689,12 @@ paths:
       deprecated: true
       security:
         - OAuth2Security:
-            - apim:subscribe
-            - apim:app_manage
+            - apk:subscribe
+            - apk:app_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST "https://localhost:9443/api/am/devportal/v2/applications/896658a0-b4ee-4535-bbfa-806c894a4015/keys/PRODUCTION/clean-up"'
+          -H "Content-Type: application/json" -X POST "https://localhost:9443/api/am/devportal/applications/896658a0-b4ee-4535-bbfa-806c894a4015/keys/PRODUCTION/clean-up"'
 
   /applications/{applicationId}/keys/{keyType}/generate-token:
     post:
@@ -1749,12 +1733,12 @@ paths:
       deprecated: true
       security:
         - OAuth2Security:
-            - apim:subscribe
-            - apim:app_manage
+            - apk:subscribe
+            - apk:app_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v2/applications/16cd2684-9657-4a01-a956-4efd89e96077/keys/PRODUCTION/generate-token"'
+          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/applications/16cd2684-9657-4a01-a956-4efd89e96077/keys/PRODUCTION/generate-token"'
 
   /applications/{applicationId}/oauth-keys:
     get:
@@ -1783,12 +1767,12 @@ paths:
           $ref: '#/components/responses/PreconditionFailed'
       security:
         - OAuth2Security:
-            - apim:subscribe
-            - apim:app_manage
+            - apk:subscribe
+            - apk:app_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/devportal/v2/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys"'
+          "https://localhost:9443/api/am/devportal/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys"'
 
   /applications/{applicationId}/oauth-keys/{keyMappingId}:
     get:
@@ -1819,12 +1803,12 @@ paths:
           $ref: '#/components/responses/PreconditionFailed'
       security:
         - OAuth2Security:
-            - apim:subscribe
-            - apim:app_manage
+            - apk:subscribe
+            - apk:app_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/devportal/v2/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys/df972173-c957-46d4-96ac-99be8e303584"'
+          "https://localhost:9443/api/am/devportal/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys/df972173-c957-46d4-96ac-99be8e303584"'
 
     put:
       tags:
@@ -1861,12 +1845,12 @@ paths:
           $ref: '#/components/responses/PreconditionFailed'
       security:
         - OAuth2Security:
-            - apim:subscribe
-            - apim:app_manage
+            - apk:subscribe
+            - apk:app_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X PUT -d @data.json "https://localhost:9443/api/am/devportal/v2/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys/df972173-c957-46d4-96ac-99be8e303584"'
+          -H "Content-Type: application/json" -X PUT -d @data.json "https://localhost:9443/api/am/devportal/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys/df972173-c957-46d4-96ac-99be8e303584"'
 
   /applications/{applicationId}/oauth-keys/{keyMappingId}/regenerate-secret:
     post:
@@ -1914,12 +1898,12 @@ paths:
           $ref: '#/components/responses/PreconditionFailed'
       security:
         - OAuth2Security:
-            - apim:subscribe
-            - apim:app_manage
+            - apk:subscribe
+            - apk:app_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST "https://localhost:9443/api/am/devportal/v2/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys/df972173-c957-46d4-96ac-99be8e303584/regenerate-secret"'
+          -H "Content-Type: application/json" -X POST "https://localhost:9443/api/am/devportal/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys/df972173-c957-46d4-96ac-99be8e303584/regenerate-secret"'
 
   /applications/{applicationId}/oauth-keys/{keyMappingId}/clean-up:
     post:
@@ -1946,12 +1930,12 @@ paths:
           $ref: '#/components/responses/PreconditionFailed'
       security:
         - OAuth2Security:
-            - apim:subscribe
-            - apim:app_manage
+            - apk:subscribe
+            - apk:app_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST "https://localhost:9443/api/am/devportal/v2/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys/df972173-c957-46d4-96ac-99be8e303584/clean-up"'
+          -H "Content-Type: application/json" -X POST "https://localhost:9443/api/am/devportal/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys/df972173-c957-46d4-96ac-99be8e303584/clean-up"'
 
   /applications/{applicationId}/oauth-keys/{keyMappingId}/generate-token:
     post:
@@ -1989,12 +1973,12 @@ paths:
           $ref: '#/components/responses/PreconditionFailed'
       security:
         - OAuth2Security:
-            - apim:subscribe
-            - apim:app_manage
+            - apk:subscribe
+            - apk:app_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v2/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys/{keyMappingId}/generate-token"'
+          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/applications/16cd2684-9657-4a01-a956-4efd89e96077/oauth-keys/{keyMappingId}/generate-token"'
 
   /applications/{applicationId}/api-keys/{keyType}/generate:
     post:
@@ -2032,13 +2016,13 @@ paths:
           $ref: '#/components/responses/PreconditionFailed'
       security:
         - OAuth2Security:
-            - apim:subscribe
-            - apim:app_manage
-            - apim:api_key
+            - apk:subscribe
+            - apk:app_manage
+            - apk:api_key
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v2/applications/16cd2684-9657-4a01-a956-4efd89e96077/api-keys/PRODUCTION/generate"'
+          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/applications/16cd2684-9657-4a01-a956-4efd89e96077/api-keys/PRODUCTION/generate"'
 
   /applications/{applicationId}/api-keys/{keyType}/revoke:
     post:
@@ -2071,13 +2055,13 @@ paths:
           $ref: '#/components/responses/PreconditionFailed'
       security:
         - OAuth2Security:
-            - apim:subscribe
-            - apim:app_manage
-            - apim:api_key
+            - apk:subscribe
+            - apk:app_manage
+            - apk:api_key
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v2/applications/16cd2684-9657-4a01-a956-4efd89e96077/api-keys/PRODUCTION/revoke"'
+          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/applications/16cd2684-9657-4a01-a956-4efd89e96077/api-keys/PRODUCTION/revoke"'
 
   /applications/export:
     get:
@@ -2140,11 +2124,11 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
-            - apim:app_import_export
+            - apk:app_import_export
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/devportal/v2/applications/export?appName=sampleApp&appOwner=admin&withKeys=true"
+          "https://localhost:9443/api/am/devportal/applications/export?appName=sampleApp&appOwner=admin&withKeys=true"
           > exportedApplication.zip'
 
   /applications/import:
@@ -2227,11 +2211,11 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
-            - apim:app_import_export
+            - apk:app_import_export
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -F file=@exportedApplication.zip "https://127.0.0.1:9443/api/am/devportal/v2/applications/import?preserveOwner=true&skipSubscriptions=false&appOwner=admin&skipApplicationKeys=false&update=true"'
+          -F file=@exportedApplication.zip "https://127.0.0.1:9443/api/am/devportal/applications/import?preserveOwner=true&skipSubscriptions=false&appOwner=admin&skipApplicationKeys=false&update=true"'
 
   ######################################################
   # The "Subscription Collection" resource APIs
@@ -2246,10 +2230,10 @@ paths:
         This operation can be used to retrieve a list of subscriptions of the user associated with the provided access token. This operation is capable of
 
         1. Retrieving applications which are subscribed to a specific API.
-        `GET https://localhost:9443/api/am/devportal/v2/subscriptions?apiId=c43a325c-260b-4302-81cb-768eafaa3aed`
+        `GET https://localhost:9443/api/am/devportal/subscriptions?apiId=c43a325c-260b-4302-81cb-768eafaa3aed`
 
         2. Retrieving APIs which are subscribed by a specific application.
-        `GET https://localhost:9443/api/am/devportal/v2/subscriptions?applicationId=c43a325c-260b-4302-81cb-768eafaa3aed`
+        `GET https://localhost:9443/api/am/devportal/subscriptions?applicationId=c43a325c-260b-4302-81cb-768eafaa3aed`
 
         **IMPORTANT:**
         * It is mandatory to provide either **apiId** or **applicationId**.
@@ -2286,12 +2270,12 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
-            - apim:subscribe
-            - apim:sub_manage
+            - apk:subscribe
+            - apk:sub_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/devportal/v2/subscriptions?apiId=02e658e7-71c7-4b1d-a623-be145b789340"'
+          "https://localhost:9443/api/am/devportal/subscriptions?apiId=02e658e7-71c7-4b1d-a623-be145b789340"'
 
     post:
       tags:
@@ -2355,12 +2339,12 @@ paths:
           $ref: '#/components/responses/UnsupportedMediaType'
       security:
         - OAuth2Security:
-            - apim:subscribe
-            - apim:sub_manage
+            - apk:subscribe
+            - apk:sub_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v2/subscriptions"'
+          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/subscriptions"'
 
   /subscriptions/multiple:
     post:
@@ -2417,12 +2401,12 @@ paths:
           $ref: '#/components/responses/UnsupportedMediaType'
       security:
         - OAuth2Security:
-            - apim:subscribe
-            - apim:sub_manage
+            - apk:subscribe
+            - apk:sub_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v2/subscriptions/multiple"'
+          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/subscriptions/multiple"'
 
   ######################################################
   # The "Subscriptions related to API" resource API
@@ -2467,7 +2451,7 @@ paths:
         - OAuth2Security: []
       x-code-samples:
         - lang: Curl
-          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8" "https://localhost:9443/api/am/devportal/v2/subscriptions/e93fb282-b456-48fc-8981-003fb89086ae/additionalInfo"'
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8" "https://localhost:9443/api/am/devportal/subscriptions/e93fb282-b456-48fc-8981-003fb89086ae/additionalInfo"'
 
   ######################################################
   # The "Individual Subscription" resource APIs
@@ -2512,12 +2496,12 @@ paths:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
-            - apim:subscribe
-            - apim:sub_manage
+            - apk:subscribe
+            - apk:sub_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/devportal/v2/subscriptions/5b65808c-cdf2-43e1-a695-de63e3ad0ae9"'
+          "https://localhost:9443/api/am/devportal/subscriptions/5b65808c-cdf2-43e1-a695-de63e3ad0ae9"'
 
     put:
       tags:
@@ -2591,12 +2575,12 @@ paths:
           content: {}
       security:
         - OAuth2Security:
-            - apim:subscribe
-            - apim:sub_manage
+            - apk:subscribe
+            - apk:sub_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X PUT -d @data.json "https://localhost:9443/api/am/devportal/v2/subscriptions/80369180-7d90-4ee8-99a1-19fa68512aa5"'
+          -H "Content-Type: application/json" -X PUT -d @data.json "https://localhost:9443/api/am/devportal/subscriptions/80369180-7d90-4ee8-99a1-19fa68512aa5"'
 
     delete:
       tags:
@@ -2634,12 +2618,12 @@ paths:
           $ref: '#/components/responses/PreconditionFailed'
       security:
         - OAuth2Security:
-            - apim:subscribe
-            - apim:sub_manage
+            - apk:subscribe
+            - apk:sub_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X DELETE "https://localhost:9443/api/am/devportal/v2/subscriptions/80369180-7d90-4ee8-99a1-19fa68512aa5"'
+          -H "Content-Type: application/json" -X DELETE "https://localhost:9443/api/am/devportal/subscriptions/80369180-7d90-4ee8-99a1-19fa68512aa5"'
 
   /subscriptions/{subscriptionId}/usage:
     get:
@@ -2684,12 +2668,12 @@ paths:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
-            - apim:subscribe
-            - apim:sub_manage
+            - apk:subscribe
+            - apk:sub_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/devportal/v2/subscriptions/5b65808c-cdf2-43e1-a695-de63e3ad0ae9/usage"'
+          "https://localhost:9443/api/am/devportal/subscriptions/5b65808c-cdf2-43e1-a695-de63e3ad0ae9/usage"'
 
   ######################################################
   # The "Throttling Policy Collection" resource APIs
@@ -2734,7 +2718,7 @@ paths:
         - OAuth2Security: []
       x-code-samples:
         - lang: Curl
-          source: curl -k "https://localhost:9443/api/am/devportal/v2/throttling-policies/application"
+          source: curl -k "https://localhost:9443/api/am/devportal/throttling-policies/application"
 
   ######################################################
   # The "Individual Throttling Policy" resource APIs
@@ -2748,7 +2732,6 @@ paths:
       description: |
         This operation can be used to retrieve details of a single throttling policy by specifying the policy level and policy name.
 
-        `X-WSO2-Tenant` header can be used to retrive throttling policy that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user's tenant associated with the access token will be used.
       parameters:
         - $ref: '#/components/parameters/policyId'
         - $ref: '#/components/parameters/policyLevel'
@@ -2789,7 +2772,7 @@ paths:
         - OAuth2Security: []
       x-code-samples:
         - lang: Curl
-          source: curl -k "https://localhost:9443/api/am/devportal/v2/throttling-policies/application/10PerMin"
+          source: curl -k "https://localhost:9443/api/am/devportal/throttling-policies/application/10PerMin"
 
   ######################################################
   # The "Tag Collection" resource API
@@ -2802,8 +2785,6 @@ paths:
         Get All Tags
       description: |
         This operation can be used to retrieve a list of tags that are already added to APIs.
-
-        `X-WSO2-Tenant` header can be used to retrive tags that belongs to a different tenant domain. If not specified super tenant will be used. If Authorization header is present in the request, the user's tenant associated with the access token will be used.
 
         **NOTE:**
         * This operation does not require an Authorization header by default. But in order to see a restricted API's tags, you need to provide Authorization header.
@@ -2841,7 +2822,7 @@ paths:
         - OAuth2Security: []
       x-code-samples:
         - lang: Curl
-          source: curl -k "https://localhost:9443/api/am/devportal/v2/tags"
+          source: curl -k "https://localhost:9443/api/am/devportal/tags"
 
   ######################################################
   # The "Content Search Results" resource APIs
@@ -2897,7 +2878,7 @@ paths:
         - OAuth2Security: []
       x-code-samples:
         - lang: Curl
-          source: curl -k "https://localhost:9443/api/am/devportal/v2/search?query=PizzaShackAPI"
+          source: curl -k "https://localhost:9443/api/am/devportal/search?query=PizzaShackAPI"
 
   ######################################################
   # The "SDK Generation Languages" list resource APIs
@@ -2909,7 +2890,7 @@ paths:
       summary: |
         Get a List of Supported SDK Languages
       description: |
-        This operation will provide a list of programming languages that are supported by the swagger codegen library for generating System Development Kits (SDKs) for APIs available in the API Manager Developer Portal
+        This operation will provide a list of programming languages that are supported by the swagger codegen library for generating System Development Kits (SDKs) for APIs available in the API Platform for Kubernetes (APK) Developer Portal.
       responses:
         200:
           description: |
@@ -2924,11 +2905,11 @@ paths:
           $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
-            - apim:subscribe
+            - apk:subscribe
       x-code-samples:
         - lang: Curl
           source: curl -k -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-            "https://localhost:9443/api/am/devportal/v2/sdk-gen/languages"
+            "https://localhost:9443/api/am/devportal/sdk-gen/languages"
 
   ######################################################
   # The Web hook API topic details
@@ -2971,7 +2952,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: curl -k -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-            "https://localhost:9443/api/am/devportal/v2/webhooks/subscriptions?applicationId=5b65808c-cdf2-43e1-a695-de63e3ad0ae9&apiId=ae4eae22-3f65-387b-a171-d37eaa366fa8"
+            "https://localhost:9443/api/am/devportal/webhooks/subscriptions?applicationId=5b65808c-cdf2-43e1-a695-de63e3ad0ae9&apiId=ae4eae22-3f65-387b-a171-d37eaa366fa8"
 
   ######################################################
   # The Developer Portal settings List
@@ -2998,11 +2979,11 @@ paths:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
-            - apim:store_settings
+            - apk:store_settings
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/devportal/v2/settings"'
+          "https://localhost:9443/api/am/devportal/settings"'
 
   /settings/application-attributes:
     get:
@@ -3035,11 +3016,11 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
-            - apim:subscribe
+            - apk:subscribe
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/devportal/v2/settings/application-attributes"'
+          "https://localhost:9443/api/am/devportal/settings/application-attributes"'
 
   ######################################################
   # The tenant resource APIs
@@ -3090,7 +3071,7 @@ paths:
         - OAuth2Security: []
       x-code-samples:
         - lang: Curl
-          source: curl -k "https://localhost:9443/api/am/devportal/v2/tenants"
+          source: curl -k "https://localhost:9443/api/am/devportal/tenants"
 
   ######################################################
   # The "Recommendations" resource API
@@ -3121,11 +3102,11 @@ paths:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
-            - apim:subscribe
+            - apk:subscribe
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/devportal/v2/recommendations"'
+          "https://localhost:9443/api/am/devportal/recommendations"'
 
   ######################################################
   # The "Category Collection" resource API
@@ -3152,7 +3133,7 @@ paths:
         - OAuth2Security: []
       x-code-samples:
         - lang: Curl
-          source: curl -k "https://localhost:9443/api/am/devportal/v2/api-categories"
+          source: curl -k "https://localhost:9443/api/am/devportal/api-categories"
 
   ######################################################
   # The "Key Manager Collection" resource API
@@ -3177,11 +3158,11 @@ paths:
                 $ref: '#/components/schemas/KeyManagerList'
       security:
         - OAuth2Security:
-            - apim:subscribe
+            - apk:subscribe
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://localhost:9443/api/am/devportal/v2/key-managers"'
+          "https://localhost:9443/api/am/devportal/key-managers"'
 
   ######################################################
   # GraphQL "Query Complexity" resource APIs
@@ -3220,7 +3201,7 @@ paths:
         - OAuth2Security: []
       x-code-samples:
         - lang: Curl
-          source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/graphql-policies/complexity"
+          source: curl -k "https://localhost:9443/api/am/devportal/apis/e93fb282-b456-48fc-8981-003fb89086ae/graphql-policies/complexity"
 
   /apis/{apiId}/graphql-policies/complexity/types:
     get:
@@ -3256,7 +3237,7 @@ paths:
         - OAuth2Security: []
       x-code-samples:
         - lang: Curl
-          source: curl -k "https://localhost:9443/api/am/devportal/v2/apis/e93fb282-b456-48fc-8981-003fb89086ae/graphql-policies/complexity/types"
+          source: curl -k "https://localhost:9443/api/am/devportal/apis/e93fb282-b456-48fc-8981-003fb89086ae/graphql-policies/complexity/types"
 
   ######################################################
   # User resource APIs
@@ -3285,11 +3266,11 @@ paths:
           $ref: '#/components/responses/BadRequest'
       security:
         - OAuth2Security:
-            - apim:subscribe
+            - apk:subscribe
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/v2/me/change-password"'
+          -H "Content-Type: application/json" -X POST -d @data.json "https://localhost:9443/api/am/devportal/me/change-password"'
 
 components:
   schemas:
@@ -4497,14 +4478,6 @@ components:
           type: string
           description: Callback URL
           example: http://sample.com/callback/url
-        scopes:
-          type: array
-          description: Allowed scopes for the access token
-          example:
-            - am_application_scope
-            - default
-          items:
-            type: string
         validityTime:
           type: string
           example: "3600"
@@ -4561,13 +4534,6 @@ components:
           description: Token validity period
           format: int64
           example: 3600
-        scopes:
-          type: array
-          description: Allowed scopes (space seperated) for the access token
-          example:
-            - apim:subscribe
-          items:
-            type: string
         revokeToken:
           type: string
           description: Token to be revoked, if any
@@ -4937,19 +4903,6 @@ components:
             - iwa:ntlm
             - authorization_code
             - urn:ietf:params:oauth:grant-type:jwt-bearer
-        scopes:
-          type: array
-          items:
-            type: string
-          example:
-            - apim:api_key
-            - apim:app_import_export
-            - apim:app_manage
-            - apim:store_settings
-            - apim:sub_alert_manage
-            - apim:sub_manage
-            - apim:subscribe
-            - openid
         applicationSharingEnabled:
           type: boolean
           default: false
@@ -5547,7 +5500,7 @@ components:
       name: X-WSO2-Tenant
       in: header
       description: |
-        For cross-tenant invocations, this is used to specify the tenant domain, where the resource need to be
+        For cross-tenant invocations, this is used to specify the tenant/organization domain, where the resource need to be
           retrieved from.
       schema:
         type: string
@@ -5787,12 +5740,5 @@ components:
         password:
           tokenUrl: https://localhost:9443/oauth2/token
           scopes:
-            openid: Authorize access to user details
-            apim:subscribe: Subscribe API
-            apim:api_key: Generate API Keys
-            apim:app_manage: Retrieve, Manage and Import, Export applications
-            apim:sub_manage: Retrieve, Manage subscriptions
-            apim:store_settings: Retrieve Developer Portal settings
-            apim:sub_alert_manage: Retrieve, subscribe and configure Developer Portal alert types
-            apim:app_import_export: Import and export applications related operations
-            apim:admin: Manage all admin operations
+            type: array
+            items: test
