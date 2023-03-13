@@ -12,7 +12,7 @@ dependencies:
   - name: redis
     version: "17.8.0"
     repository: "https://charts.bitnami.com/bitnami"
-    condition: wso2.apk.dp.redis.enabled
+    condition: redis.enabled
   - name: cert-manager
     version: "v1.10.1"
     repository: "https://charts.jetstack.io"

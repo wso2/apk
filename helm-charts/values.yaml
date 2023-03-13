@@ -188,8 +188,6 @@ wso2:
       enabled: true
       gatewayAPI:
         enabled: true
-      redis:
-        enabled: true
       # controlPlane:
       #   serviceUrl: "http://control-plane-wso2-apk-admin-ds-service.control-plane.svc.cluster.local:9444/api/am/internal/v1"    
       #   enableHostNameVerification: true
@@ -504,6 +502,8 @@ idp:
       idpLoginUrl: "https://idp.am.wso2.com:9095/commonauth/login"
       idpAuthCallBackUrl: "https://idp.am.wso2.com:9095/oauth2/auth-callback"
 redis:
+  enabled: true
+  architecture: standalone
   fullnameOverride: redis
   primary:
     service:
@@ -511,7 +511,5 @@ redis:
         redis: 6379
   auth:
     enabled: false
-  replica:
-    replicaCount: 0
   image:
     debug: true

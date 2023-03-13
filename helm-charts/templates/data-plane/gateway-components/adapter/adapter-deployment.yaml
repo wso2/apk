@@ -84,13 +84,22 @@ spec:
             {{- else }}
               subPath: tls.crt
             {{- end }}
+        {{ if .Values.wso2.apk.dp.ratelimiter.enabled }}
             - name: ratelimiter-truststore-secret-volume
               mountPath: /home/wso2/security/truststore/ratelimiter.crt
             {{- if and .Values.wso2.apk.dp.ratelimiter.configs .Values.wso2.apk.dp.ratelimiter.configs.tls }}
-              subPath: {{ .Values.wso2.apk.dp.ratelimiter.configs.publicKey | default "tls.crt" }}
+              subPath: {{ .Values.wso2.apk.dp.ratelimiter.configs.tls.certFilename | default "tls.crt" }}
             {{- else }}
               subPath: tls.crt
             {{- end }}
+            - name: ratelimiter-truststore-secret-volume
+              mountPath: /home/wso2/security/truststore/ca-ratelimiter.crt
+            {{- if and .Values.wso2.apk.dp.ratelimiter.configs .Values.wso2.apk.dp.ratelimiter.configs.tls }}
+              subPath: {{ .Values.wso2.apk.dp.ratelimiter.configs.tls.certCAFilename | default "ca.crt" }}
+            {{- else }}
+              subPath: ca.crt
+            {{- end }}
+        {{ end }}
             - name: adapter-truststore-consul-secret-volume
               mountPath: /home/wso2/security/truststore/consul
             - name: log-conf-volume
@@ -143,6 +152,7 @@ spec:
           {{- else }}
             secretName: {{ template "apk-helm.resource.prefix" . }}-router-server-cert
           {{- end }}
+      {{ if .Values.wso2.apk.dp.ratelimiter.enabled }}
         - name: ratelimiter-truststore-secret-volume
           secret:
             {{- if and .Values.wso2.apk.dp.ratelimiter.configs .Values.wso2.apk.dp.ratelimiter.configs.tls }}
@@ -150,6 +160,7 @@ spec:
           {{- else }}
             secretName: {{ template "apk-helm.resource.prefix" . }}-ratelimiter-server-cert
           {{- end }}
+      {{ end }}
         - name: enforcer-truststore-secret-volume
           secret: 
             {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls }}
