@@ -19,14 +19,19 @@ package v1alpha1
 
 import "k8s.io/apimachinery/pkg/types"
 
-// BackendPropertyMapping keep a two level map using rule index and backend index to
-// a backend properties
-type BackendPropertyMapping map[types.NamespacedName]BackendProperties
+// BackendMapping maps read reconciled Backend and resolve properties into ResolvedBackend struct
+type BackendMapping map[types.NamespacedName]*ResolvedBackend
 
-// BackendProperties holds backend properties
-type BackendProperties struct {
-	ResolvedHostname string
-	Protocol         BackendProtocolType
-	TLS              TLSConfig
-	Security         []SecurityConfig
+// ResolvedBackend holds backend properties
+type ResolvedBackend struct {
+	Services []Service
+	Protocol BackendProtocolType
+	TLS      ResolvedTLSConfig
+	Security []SecurityConfig
+}
+
+// ResolvedTLSConfig defines enpoint TLS configurations
+type ResolvedTLSConfig struct {
+	ResolvedCertificate string
+	AllowedSANs         []string
 }

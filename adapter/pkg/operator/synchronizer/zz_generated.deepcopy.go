@@ -93,11 +93,19 @@ func (in *HTTPRouteState) DeepCopyInto(out *HTTPRouteState) {
 			(*out)[key] = *val.DeepCopy()
 		}
 	}
-	if in.BackendPropertyMapping != nil {
-		in, out := &in.BackendPropertyMapping, &out.BackendPropertyMapping
-		*out = make(v1alpha1.BackendPropertyMapping, len(*in))
+	if in.BackendMapping != nil {
+		in, out := &in.BackendMapping, &out.BackendMapping
+		*out = make(v1alpha1.BackendMapping, len(*in))
 		for key, val := range *in {
-			(*out)[key] = *val.DeepCopy()
+			var outVal *v1alpha1.ResolvedBackend
+			if val == nil {
+				(*out)[key] = nil
+			} else {
+				in, out := &val, &outVal
+				*out = new(v1alpha1.ResolvedBackend)
+				(*in).DeepCopyInto(*out)
+			}
+			(*out)[key] = outVal
 		}
 	}
 	if in.Scopes != nil {
