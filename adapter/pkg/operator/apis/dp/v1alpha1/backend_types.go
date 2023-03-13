@@ -31,6 +31,7 @@ type BackendSpec struct {
 
 	// +optional
 	// +kubebuilder:validation:Enum=http;https;ws;wss
+	// +kubebuilder:default=http
 	Protocol BackendProtocolType `json:"protocol"`
 
 	// +optional
@@ -43,7 +44,7 @@ type BackendSpec struct {
 // Service holds host and port information for the service
 type Service struct {
 	Host string `json:"host"`
-	Port int32  `json:"port"`
+	Port uint32 `json:"port"`
 }
 
 // BackendStatus defines the observed state of Backend

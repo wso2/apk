@@ -52,6 +52,7 @@ spec:
             description: BackendSpec defines the desired state of Backend
             properties:
               protocol:
+                default: http
                 description: BackendProtocolType defines the backend protocol type.
                 enum:
                 - http
