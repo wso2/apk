@@ -94,7 +94,7 @@ info:
     * All of the OAuth2 secured endpoints have been configured with an Authorization Bearer header with a parameterized access token. 
     * Before invoking any REST API resource make sure you run the `Register DCR Application` and `Generate Access Token` requests to fetch an access token with all required scopes.
     * Make sure you have an API Platform for Kubernetes(APK) instance up and running.
-    * Update the `basepath` parameter to match the hostname and port of the APIM instance.
+    * Update the `basepath` parameter to match the hostname and port of the APK instance.
 
   contact:
     name: WSO2
