@@ -653,3 +653,215 @@ func TestCreateHealthEndpoint(t *testing.T) {
 
 // 	assert.Equal(t, 2, len(routes), "Number of routes created is incorrect")
 // }
+
+func TestCreateRoutesWithClustersDifferentBackendRefs(t *testing.T) {
+	apiState := synchronizer.APIState{}
+	apiDefinition := v1alpha1.API{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "default",
+			Name:      "test-api-different-backendrefs",
+		},
+		Spec: v1alpha1.APISpec{
+			APIDisplayName:    "test-api-different-backendrefs",
+			APIVersion:        "1.0.0",
+			Context:           "/test-api-different-backendrefs/1.0.0",
+			ProdHTTPRouteRefs: []string{"test-api-different-backendrefs-prod-http-route"},
+		},
+	}
+	apiState.APIDefinition = &apiDefinition
+	httpRouteState := synchronizer.HTTPRouteState{}
+	methodTypeGet := gwapiv1b1.HTTPMethodGet
+
+	httpRoute := gwapiv1b1.HTTPRoute{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "default",
+			Name:      "test-api-different-backendrefs-prod-http-route",
+		},
+		Spec: gwapiv1b1.HTTPRouteSpec{
+			Hostnames:       []gwapiv1b1.Hostname{"prod.gw.wso2.com"},
+			CommonRouteSpec: createDefaultCommonRouteSpec(),
+			Rules: []gwapiv1b1.HTTPRouteRule{
+				{
+					Matches: []gwapiv1b1.HTTPRouteMatch{
+						{
+							Path: &gwapiv1b1.HTTPPathMatch{
+								Type:  operatorutils.PathMatchTypePtr(gwapiv1b1.PathMatchExact),
+								Value: operatorutils.StringPtr("/resource-path-1"),
+							},
+							Method: &methodTypeGet,
+						},
+					},
+					Filters: []gwapiv1b1.HTTPRouteFilter{
+						{
+							Type: gwapiv1b1.HTTPRouteFilterType("URLRewrite"),
+							URLRewrite: &gwapiv1b1.HTTPURLRewriteFilter{
+								Path: &gwapiv1b1.HTTPPathModifier{
+									Type:               gwapiv1b1.PrefixMatchHTTPPathModifier,
+									ReplacePrefixMatch: operatorutils.StringPtr("/backend-base-path-1"),
+								},
+							},
+						},
+					},
+					BackendRefs: []gwapiv1b1.HTTPBackendRef{
+						createDefaultBackendRef("test-service-1", 443, 1),
+					},
+				},
+				{
+					Matches: []gwapiv1b1.HTTPRouteMatch{
+						{
+							Path: &gwapiv1b1.HTTPPathMatch{
+								Type:  operatorutils.PathMatchTypePtr(gwapiv1b1.PathMatchExact),
+								Value: operatorutils.StringPtr("/resource-path-2"),
+							},
+							Method: &methodTypeGet,
+						},
+					},
+					Filters: []gwapiv1b1.HTTPRouteFilter{
+						{
+							Type: gwapiv1b1.HTTPRouteFilterType("URLRewrite"),
+							URLRewrite: &gwapiv1b1.HTTPURLRewriteFilter{
+								Path: &gwapiv1b1.HTTPPathModifier{
+									Type:               gwapiv1b1.PrefixMatchHTTPPathModifier,
+									ReplacePrefixMatch: operatorutils.StringPtr("/backend-base-path-2"),
+								},
+							},
+						},
+					},
+					BackendRefs: []gwapiv1b1.HTTPBackendRef{
+						createDefaultBackendRef("test-service-2", 443, 1),
+					},
+				},
+
+			},
+		},
+	}
+
+	httpRouteState.HTTPRoute = &httpRoute
+	httpRouteState.Authentications = make(map[string]v1alpha1.Authentication)
+	httpRouteState.ResourceAuthentications = make(map[string]v1alpha1.Authentication)
+
+	backendPropertyMapping := make(v1alpha1.BackendPropertyMapping)
+	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "test-service-1"}] =
+		v1alpha1.BackendProperties{ResolvedHostname: "webhook.site.1",
+			Protocol: v1alpha1.HTTPSProtocol,
+			TLS: v1alpha1.TLSConfig{
+				CertificateInline: `-----BEGIN CERTIFICATE-----test-cert-data-----END CERTIFICATE-----`,
+			}}
+	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "test-service-2"}] =
+		v1alpha1.BackendProperties{ResolvedHostname: "webhook.site.2",
+		Protocol: v1alpha1.HTTPSProtocol,
+		TLS: v1alpha1.TLSConfig{
+			CertificateInline: `-----BEGIN CERTIFICATE-----test-cert-data-----END CERTIFICATE-----`,
+		}}
+	httpRouteState.BackendPropertyMapping = backendPropertyMapping
+
+	apiState.ProdHTTPRoute = &httpRouteState
+
+	mgwSwagger, err := synchronizer.GenerateMGWSwagger(apiState, &httpRouteState, constants.Production)
+	assert.Nil(t, err, "Error should not be present when apiState is converted to a MgwSwagger object")
+	_, clusters, _, _ := envoy.CreateRoutesWithClusters(*mgwSwagger, nil, "prod.gw.wso2.com", "carbon.super")
+	assert.Equal(t, 2, len(clusters), "Number of production clusters created is incorrect.")
+}
+
+func TestCreateRoutesWithClustersSameBackendRefs(t *testing.T) {
+	apiState := synchronizer.APIState{}
+	apiDefinition := v1alpha1.API{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "default",
+			Name:      "test-api-same-backendrefs",
+		},
+		Spec: v1alpha1.APISpec{
+			APIDisplayName:    "test-api-same-backendrefs",
+			APIVersion:        "1.0.0",
+			Context:           "/test-api-same-backendrefs/1.0.0",
+			ProdHTTPRouteRefs: []string{"test-api-same-backendrefs-prod-http-route"},
+		},
+	}
+	apiState.APIDefinition = &apiDefinition
+	httpRouteState := synchronizer.HTTPRouteState{}
+	methodTypeGet := gwapiv1b1.HTTPMethodGet
+
+	httpRoute := gwapiv1b1.HTTPRoute{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "default",
+			Name:      "test-api-same-backendrefs-prod-http-route",
+		},
+		Spec: gwapiv1b1.HTTPRouteSpec{
+			Hostnames:       []gwapiv1b1.Hostname{"prod.gw.wso2.com"},
+			CommonRouteSpec: createDefaultCommonRouteSpec(),
+			Rules: []gwapiv1b1.HTTPRouteRule{
+				{
+					Matches: []gwapiv1b1.HTTPRouteMatch{
+						{
+							Path: &gwapiv1b1.HTTPPathMatch{
+								Type:  operatorutils.PathMatchTypePtr(gwapiv1b1.PathMatchExact),
+								Value: operatorutils.StringPtr("/resource-path-1"),
+							},
+							Method: &methodTypeGet,
+						},
+					},
+					Filters: []gwapiv1b1.HTTPRouteFilter{
+						{
+							Type: gwapiv1b1.HTTPRouteFilterType("URLRewrite"),
+							URLRewrite: &gwapiv1b1.HTTPURLRewriteFilter{
+								Path: &gwapiv1b1.HTTPPathModifier{
+									Type:               gwapiv1b1.PrefixMatchHTTPPathModifier,
+									ReplacePrefixMatch: operatorutils.StringPtr("/backend-base-path-1"),
+								},
+							},
+						},
+					},
+					BackendRefs: []gwapiv1b1.HTTPBackendRef{
+						createDefaultBackendRef("test-service-1", 443, 1),
+					},
+				},
+				{
+					Matches: []gwapiv1b1.HTTPRouteMatch{
+						{
+							Path: &gwapiv1b1.HTTPPathMatch{
+								Type:  operatorutils.PathMatchTypePtr(gwapiv1b1.PathMatchExact),
+								Value: operatorutils.StringPtr("/resource-path-2"),
+							},
+							Method: &methodTypeGet,
+						},
+					},
+					Filters: []gwapiv1b1.HTTPRouteFilter{
+						{
+							Type: gwapiv1b1.HTTPRouteFilterType("URLRewrite"),
+							URLRewrite: &gwapiv1b1.HTTPURLRewriteFilter{
+								Path: &gwapiv1b1.HTTPPathModifier{
+									Type:               gwapiv1b1.PrefixMatchHTTPPathModifier,
+									ReplacePrefixMatch: operatorutils.StringPtr("/backend-base-path-2"),
+								},
+							},
+						},
+					},
+					BackendRefs: []gwapiv1b1.HTTPBackendRef{
+						createDefaultBackendRef("test-service-1", 443, 1),
+					},
+				},
+
+			},
+		},
+	}
+
+	httpRouteState.HTTPRoute = &httpRoute
+	httpRouteState.Authentications = make(map[string]v1alpha1.Authentication)
+	httpRouteState.ResourceAuthentications = make(map[string]v1alpha1.Authentication)
+
+	backendPropertyMapping := make(v1alpha1.BackendPropertyMapping)
+	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "test-service-1"}] =
+		v1alpha1.BackendProperties{ResolvedHostname: "webhook.site",
+			Protocol: v1alpha1.HTTPSProtocol,
+			TLS: v1alpha1.TLSConfig{
+				CertificateInline: `-----BEGIN CERTIFICATE-----test-cert-data-----END CERTIFICATE-----`,
+			}}
+	httpRouteState.BackendPropertyMapping = backendPropertyMapping
+
+	apiState.ProdHTTPRoute = &httpRouteState
+
+	mgwSwagger, err := synchronizer.GenerateMGWSwagger(apiState, &httpRouteState, constants.Production)
+	assert.Nil(t, err, "Error should not be present when apiState is converted to a MgwSwagger object")
+	_, clusters, _, _ := envoy.CreateRoutesWithClusters(*mgwSwagger, nil, "prod.gw.wso2.com", "carbon.super")
+	assert.Equal(t, 1, len(clusters), "Number of production clusters created is incorrect.")
+}
