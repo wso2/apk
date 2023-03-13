@@ -1,4 +1,4 @@
-{{- if .Values.wso2.apk.dp.enabled }}
+{{- if or .Values.wso2.apk.dp.enabled .Values.wso2.apk.cp.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -15,6 +15,12 @@ data:
         username = "admin"
         password = "$env{adapter_admin_pwd}"
 
+      {{ if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.dp.adapter.configs.apiNamespaces }}
+      [adapter.operator]
+        namespaces = [{{ include "commaJoinedQuotedList" .Values.wso2.apk.dp.adapter.configs.apiNamespaces}}]
+      {{ end}}    
+
+    # 
     # default vhosts mapping for standalone mode
     [[adapter.vhostMapping]]
       environment = "Default"
@@ -119,12 +125,12 @@ data:
     
     [managementServer]
     {{ if .Values.wso2.apk.dp.managementServer }}
-      enabled = {{ .Values.wso2.apk.dp.managementServer.enabled | default true }}
-      host = "{{ .Values.wso2.apk.dp.managementServer.host | default (printf "%s-management-server.%s.svc" (include "apk-helm.resource.prefix" .) .Release.Namespace) }}"
+      enabled = {{.Values.wso2.apk.dp.managementServer.enabled}}
+      host = "{{ .Values.wso2.apk.dp.managementServer.serviceUrl | default (printf "%s-management-server.%s.svc" (include "apk-helm.resource.prefix" .) .Release.Namespace) }}"
       {{else}}
       enabled = true
       host = "{{ template "apk-helm.resource.prefix" . }}-management-server.{{ .Release.Namespace }}.svc"
-      {{- end}}
+      {{end}}
 
   config.toml.template: |
     # The configuration file for mgw

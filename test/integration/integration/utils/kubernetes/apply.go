@@ -217,13 +217,14 @@ func (a Applier) MustApplyWithCleanup(t *testing.T, c client.Client, timeoutConf
 			for err != nil {
 				if rounds > 0 {
 					err = c.Create(ctx, uObj)
+					t.Logf("Waitning to create resource")
 					time.Sleep(15 * time.Second)
 					rounds--
 				} else {
+					require.NoErrorf(t, err, "error creating resource")
 					break
 				}
 			}
-			require.NoErrorf(t, err, "error creating resource")
 			if cleanup {
 				t.Cleanup(func() {
 					ctx, cancel = context.WithTimeout(context.Background(), timeoutConfig.DeleteTimeout)

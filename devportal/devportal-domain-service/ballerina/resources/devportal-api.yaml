@@ -19,8 +19,8 @@ info:
     This document specifies a **RESTful API** for WSO2 **API Platform for Kubernetes(APK)** - **Developer Portal**.
 
     # Authentication
-    The Developer Portal REST API is protected using OAuth2 and access control is achieved through scopes(in the intitial release 
-    we wont have scope support for APIs). Before you start invoking the API, you need to obtain an access token with the required scopes. 
+    The Developer Portal REST API is protected using OAuth2 and access control is achieved through scopes (in the initial release 
+    WSO2 does not provide scope support for APIs). Before you start invoking the API, you need to obtain an access token with the required scopes. 
     This guide will walk you through the steps that you will need to follow to obtain an access token.
     First you need to obtain the consumer key/secret key pair by calling the dynamic client registration (DCR) endpoint. You can add your preferred 
     grant types in the payload. A Sample payload is shown below.
@@ -93,7 +93,7 @@ info:
     * All of the OAuth2 secured endpoints have been configured with an Authorization Bearer header with a parameterized access token. 
     * Before invoking any REST API resource make sure you run the `Register DCR Application` and `Generate Access Token` requests to fetch an access token with all required scopes.
     * Make sure you have an API Platform for Kubernetes(APK) instance up and running.
-    * Update the `basepath` parameter to match the hostname and port of the APIM instance.
+    * Update the `basepath` parameter to match the hostname and port of the APK instance.
 
   contact:
     name: WSO2
@@ -2890,7 +2890,7 @@ paths:
       summary: |
         Get a List of Supported SDK Languages
       description: |
-        This operation will provide a list of programming languages that are supported by the swagger codegen library for generating System Development Kits (SDKs) for APIs available in the API Platform for Kubernetes(APK) Developer Portal
+        This operation will provide a list of programming languages that are supported by the swagger codegen library for generating System Development Kits (SDKs) for APIs available in the API Platform for Kubernetes (APK) Developer Portal.
       responses:
         200:
           description: |

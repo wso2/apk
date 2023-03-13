@@ -220,7 +220,7 @@ function getMockClient(string resourceVersion) returns websocket:Client|error {
 }
 function getMockK8sClient() returns http:Client {
     http:Client mockK8sClient = test:mock(http:Client);
-    test:prepare(mockK8sClient).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/apis")
+    test:prepare(mockK8sClient).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis")
         .thenReturn(getMockAPIList());
     string fieldSlector = "metadata.namespace%21%3Dkube-system%2Cmetadata.namespace%21%3Dkubernetes-dashboard%2Cmetadata.namespace%21%3Dgateway-system%2Cmetadata.namespace%21%3Dingress-nginx%2Cmetadata.namespace%21%3Dapk-platform";
     test:prepare(mockK8sClient).when("get").withArguments("/api/v1/services?fieldSelector=" + fieldSlector)
@@ -234,7 +234,7 @@ function getMockK8sClient() returns http:Client {
     http:ClientError clientError = error("Backend Failure");
     test:prepare(mockK8sClient).when("get").withArguments("/api/v1/namespaces/apk-platform/configmaps/01ed7b08-f2b1-1166-82d5-649ae706d29d-definition").thenReturn(mock404ConfigMap());
     test:prepare(mockK8sClient).when("get").withArguments("/api/v1/namespaces/apk-platform/configmaps/01ed7aca-eb6b-1178-a200-f604a4ce114b-definition").thenReturn(clientError);
-    test:prepare(mockK8sClient).when("get").withArguments("/apis/cp.wso2.com/v1alpha1/organizations").thenReturn(getMockOrganizationList());
+    test:prepare(mockK8sClient).when("get").withArguments("/apis/cp.wso2.com/v1alpha1/namespaces/apk-platform/organizations").thenReturn(getMockOrganizationList());
     return mockK8sClient;
 }
 

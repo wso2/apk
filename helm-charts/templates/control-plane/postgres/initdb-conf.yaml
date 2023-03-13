@@ -13,6 +13,7 @@
 # KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations
 # under the License.
+{{ if and .Values.postgresql .Values.postgresql.enabled }}
 
 apiVersion: v1
 kind: ConfigMap
@@ -441,3 +442,4 @@ data:
         INSERT INTO ORGANIZATION_NAMESPACE_MAPPING(UUID, NAMESPACE) VALUES ( 'a3b58ccf-6ecc-4557-b5bb-0a35cce38256', '*');
         -- End Insert Demo APK data        
         commit;
+{{ end }}

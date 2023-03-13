@@ -38,9 +38,9 @@ public function initializeK8sClient() returns http:Client|error {
         token: token
     },
         secureSocket = {
-        cert: caCertPath
+            cert: caCertPath
 
-    }
+        }
     );
     return k8sApiClient;
 }
@@ -123,7 +123,7 @@ isolated function deployHttpRoute(model:Httproute httproute, string namespace) r
 
 isolated function retrieveAllAPIS(string? continueToken) returns model:APIList|http:ClientError {
     string? continueTokenValue = continueToken;
-    string endpoint = "/apis/dp.wso2.com/v1alpha1/apis";
+    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + currentNameSpace + "/apis";
     if continueTokenValue is string {
         if continueTokenValue.length() > 0 {
             int? questionMarkIndex = endpoint.lastIndexOf("?");
@@ -229,10 +229,12 @@ isolated function getScopeCrsForAPI(string apiName, string apiVersion, string na
     string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/scopes?labelSelector=" + check generateUrlEncodedLabelSelector(apiName, apiVersion);
     return k8sApiServerEp->get(endpoint, targetType = model:ScopeList);
 }
+
 isolated function deleteScopeCr(string name, string namespace) returns http:Response|http:ClientError {
     string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/scopes/" + name;
     return k8sApiServerEp->delete(endpoint, targetType = http:Response);
 }
+
 isolated function deleteBackendPolicyCR(string name, string namespace) returns http:Response|http:ClientError {
     string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/backendpolicies/" + name;
     return k8sApiServerEp->delete(endpoint, targetType = http:Response);
@@ -242,6 +244,7 @@ isolated function deployBackendPolicyCR(model:BackendPolicy backendPolciy, strin
     string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/backendpolicies";
     return k8sApiServerEp->post(endpoint, backendPolciy, targetType = http:Response);
 }
+
 isolated function deployScopeCR(model:Scope scope, string namespace) returns http:Response|http:ClientError {
     string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/scopes";
     return k8sApiServerEp->post(endpoint, scope, targetType = http:Response);
@@ -269,7 +272,7 @@ public isolated function getHttproutesForAPIS(string apiName, string apiVersion,
 
 public function retrieveAllOrganizations(string? continueToken) returns model:OrganizationList|http:ClientError {
     string? continueTokenValue = continueToken;
-    string endpoint = "/apis/cp.wso2.com/v1alpha1/organizations";
+    string endpoint = "/apis/cp.wso2.com/v1alpha1/namespaces/" + currentNameSpace + "/organizations";
     if continueTokenValue is string && continueTokenValue.length() > 0 {
         endpoint = endpoint + "?continue=" + continueTokenValue;
     }
