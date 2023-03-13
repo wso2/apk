@@ -42,7 +42,7 @@ var (
 )
 
 // DefaultGatewayName represents the name of the default gateway
-const DefaultGatewayName = "Default"
+const DefaultGatewayName = "default"
 
 // DefaultGatewayVHost represents the default vhost of default gateway environment if it is not configured
 // for /testtoken and /health check, if user not configured default env, we have no vhost

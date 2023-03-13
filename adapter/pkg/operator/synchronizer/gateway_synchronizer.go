@@ -78,6 +78,11 @@ func undeployGateway(gatewayState GatewayState) error {
 func AddGateway(gateway *gwapiv1b1.Gateway) (string, error) {
 	xds.GenerateGlobalClusters(gateway.Name)
 	listeners, clusters, routes, endpoints, apis := xds.GenerateEnvoyResoucesForGateway(gateway)
+	loggers.LoggerAPKOperator.Infof("listeners: %v", listeners)
+	loggers.LoggerAPKOperator.Infof("clusters: %v", clusters)
+	loggers.LoggerAPKOperator.Infof("routes: %v", routes)
+	loggers.LoggerAPKOperator.Infof("endpoints: %v", endpoints)
+	loggers.LoggerAPKOperator.Infof("apis: %v", apis)
 	xds.UpdateXdsCacheWithLock(gateway.Name, endpoints, clusters, routes, listeners)
 	xds.UpdateEnforcerApis(gateway.Name, apis, "")
 	return "", nil

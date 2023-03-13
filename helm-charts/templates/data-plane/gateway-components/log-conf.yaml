@@ -23,7 +23,7 @@ data:
     # 
     # default vhosts mapping for standalone mode
     [[adapter.vhostMapping]]
-      environment = "Default"
+      environment = "default"
       vhost = "gw.wso2.com"
 
     [adapter.keystore]
@@ -180,7 +180,7 @@ data:
     # Default virtual host mapping for standalone mode
     [[adapter.vhostMapping]]
     # The Adapter environment
-    environment = "Default"
+    environment = "default"
     # Virtual host to map to the environment
     vhost = "localhost"
 
@@ -614,7 +614,7 @@ data:
     # Password of the API Manager user
     password = "$env{cp_admin_pwd}"
     # Environment labels list
-    environmentLabels = ["Default"]
+    environmentLabels = ["default"]
     # Connection retry interval
     retryInterval = 5
     # Skip SSL verification
