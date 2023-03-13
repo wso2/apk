@@ -102,7 +102,7 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
-            - apim:api_view
+            - apk:api_view
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -159,7 +159,7 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
-            - apim:api_view
+            - apk:api_view
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -223,8 +223,8 @@ paths:
           $ref: '#/components/responses/PreconditionFailed'
       security:
         - OAuth2Security:
-            - apim:api_publish
-            - apim:api_manage
+            - apk:api_publish
+            - apk:api_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -278,8 +278,8 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
-            - apim:api_view
-            - apim:api_definition_view
+            - apk:api_view
+            - apk:api_definition_view
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -336,8 +336,8 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
-            - apim:api_view
-            - apim:api_manage
+            - apk:api_view
+            - apk:api_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -390,9 +390,9 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
-            - apim:api_view
-            - apim:api_publish
-            - apim:api_manage
+            - apk:api_view
+            - apk:api_publish
+            - apk:api_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -461,8 +461,8 @@ paths:
           $ref: '#/components/responses/PreconditionFailed'
       security:
         - OAuth2Security:
-            - apim:api_publish
-            - apim:api_manage
+            - apk:api_publish
+            - apk:api_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -513,8 +513,8 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
-            - apim:api_view
-            - apim:document_manage
+            - apk:api_view
+            - apk:document_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -569,8 +569,8 @@ paths:
           $ref: '#/components/responses/UnsupportedMediaType'
       security:
         - OAuth2Security:
-            - apim:api_view
-            - apim:document_manage
+            - apk:api_view
+            - apk:document_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -627,8 +627,8 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
-            - apim:api_view
-            - apim:document_manage
+            - apk:api_view
+            - apk:document_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -692,8 +692,8 @@ paths:
           $ref: '#/components/responses/PreconditionFailed'
       security:
         - OAuth2Security:
-            - apim:api_view
-            - apim:document_manage
+            - apk:api_view
+            - apk:document_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -722,8 +722,8 @@ paths:
           $ref: '#/components/responses/PreconditionFailed'
       security:
         - OAuth2Security:
-            - apim:api_view
-            - apim:document_manage
+            - apk:api_view
+            - apk:document_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -799,8 +799,8 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
-            - apim:api_view
-            - apim:document_manage
+            - apk:api_view
+            - apk:document_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -874,8 +874,8 @@ paths:
           $ref: '#/components/responses/PreconditionFailed'
       security:
         - OAuth2Security:
-            - apim:api_view
-            - apim:document_manage
+            - apk:api_view
+            - apk:document_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -910,9 +910,9 @@ paths:
           $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
-            - apim:api_view
-            - apim:comment_view
-            - apim:comment_manage
+            - apk:api_view
+            - apk:comment_view
+            - apk:comment_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -982,8 +982,8 @@ paths:
           $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
-            - apim:comment_write
-            - apim:comment_manage
+            - apk:comment_write
+            - apk:comment_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1036,9 +1036,9 @@ paths:
           $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
-            - apim:api_view
-            - apim:comment_view
-            - apim:comment_manage
+            - apk:api_view
+            - apk:comment_view
+            - apk:comment_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1109,8 +1109,8 @@ paths:
           $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
-            - apim:comment_write
-            - apim:comment_manage
+            - apk:comment_write
+            - apk:comment_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X PATCH -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1148,9 +1148,9 @@ paths:
           $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
-            - apim:comment_write
-            - apim:comment_manage
-            - apim:admin # special scope added to moderate other comments as well
+            - apk:comment_write
+            - apk:comment_manage
+            - apk:admin # special scope added to moderate other comments as well
       x-code-samples:
         - lang: Curl
           source: curl -k -X DELETE -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1203,9 +1203,9 @@ paths:
           $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
-            - apim:api_view
-            - apim:comment_view
-            - apim:comment_manage
+            - apk:api_view
+            - apk:comment_view
+            - apk:comment_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1269,9 +1269,9 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
-            - apim:api_view
-            - apim:subscription_view
-            - apim:subscription_manage
+            - apk:api_view
+            - apk:subscription_view
+            - apk:subscription_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1300,9 +1300,9 @@ paths:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
-            - apim:api_view
-            - apim:subscription_view
-            - apim:subscription_manage
+            - apk:api_view
+            - apk:subscription_view
+            - apk:subscription_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1359,8 +1359,8 @@ paths:
           $ref: '#/components/responses/PreconditionFailed'
       security:
         - OAuth2Security:
-            - apim:subscription_block
-            - apim:subscription_manage
+            - apk:subscription_block
+            - apk:subscription_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1404,8 +1404,8 @@ paths:
           $ref: '#/components/responses/PreconditionFailed'
       security:
         - OAuth2Security:
-            - apim:subscription_block
-            - apim:subscription_manage
+            - apk:subscription_block
+            - apk:subscription_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1457,8 +1457,8 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
-            - apim:api_view
-            - apim:tier_view
+            - apk:api_view
+            - apk:tier_view
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1515,8 +1515,8 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
-            - apim:api_view
-            - apim:api_manage
+            - apk:api_view
+            - apk:api_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1546,8 +1546,8 @@ paths:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
-            - apim:api_view
-            - apim:backoffice_settings
+            - apk:api_view
+            - apk:backoffice_settings
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1575,8 +1575,8 @@ paths:
                 $ref: '#/components/schemas/APICategoryList'
       security:
         - OAuth2Security:
-            - apim:api_view
-            - apim:api_manage
+            - apk:api_view
+            - apk:api_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1631,8 +1631,8 @@ paths:
           $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
-            - apim:api_publish
-            - apim:api_manage
+            - apk:api_publish
+            - apk:api_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1666,8 +1666,8 @@ paths:
           $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
-            - apim:api_publish
-            - apim:api_manage
+            - apk:api_publish
+            - apk:api_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1701,9 +1701,9 @@ paths:
           $ref: '#/components/responses/InternalServerError'
       security:
         - OAuth2Security:
-            - apim:api_publish
-            - apim:api_create
-            - apim:api_manage
+            - apk:api_publish
+            - apk:api_create
+            - apk:api_manage
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -1740,8 +1740,8 @@ paths:
           $ref: '#/components/responses/NotAcceptable'
       security:
         - OAuth2Security:
-            - apim:admin
-            - apim:tier_view
+            - apk:admin
+            - apk:tier_view
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -2795,7 +2795,7 @@ components:
           type: string
           description: |
             name of Scope
-          example: apim:api_view
+          example: apk:api_view
         displayName:
           maxLength: 255
           type: string
