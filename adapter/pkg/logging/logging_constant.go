@@ -58,6 +58,13 @@ const (
 	error2636 = 2636
 	error2637 = 2637
 	error2638 = 2638
+	error2639 = 2639
+	error2640 = 2640
+	error2641 = 2641
+	error2642 = 2642
+	error2643 = 2643
+	error2644 = 2644
+	error2645 = 2645
 )
 
 // Error Log Pkg auth(3001-3099) Config Constants
@@ -257,12 +264,47 @@ var Mapper = map[int]ErrorDetails{
 	},
 	error2637: {
 		ErrorCode: error2637,
-		Message:   "Unable to create webhook for Ratelimit: %v",
-		Severity:  BLOCKER,
+		Message:   "Error while getting backend: %v, error: %v",
+		Severity:  CRITICAL,
 	},
 	error2638: {
 		ErrorCode: error2638,
-		Message:   "Unable to create webhook for APIPolicy: %v",
+		Message:   "Unable to find associated Backends for ConfigMap: %s",
+		Severity:  CRITICAL,
+	},
+	error2639: {
+		ErrorCode: error2639,
+		Message:   "Unable to find associated Backends for Secret: %s",
+		Severity:  CRITICAL,
+	},
+	error2640: {
+		ErrorCode: error2640,
+		Message:   "Failed to decode certificate PEM",
+		Severity:  CRITICAL,
+	},
+	error2641: {
+		ErrorCode: error2641,
+		Message:   "Error while parsing certificate: %s",
+		Severity:  CRITICAL,
+	},
+	error2642: {
+		ErrorCode: error2642,
+		Message:   "Error while reading certificate from secretRef: %s",
+		Severity:  CRITICAL,
+	},
+	error2643: {
+		ErrorCode: error2643,
+		Message:   "Error while reading certificate from configMapRef: %s",
+		Severity:  CRITICAL,
+	},
+	error2644: {
+		ErrorCode: error2644,
+		Message:   "Error watching ConfigMap resources: %v",
+		Severity:  BLOCKER,
+	},
+	error2645: {
+		ErrorCode: error2645,
+		Message:   "Error watching Secret resources: %v",
 		Severity:  BLOCKER,
 	},
 	error3001: {
