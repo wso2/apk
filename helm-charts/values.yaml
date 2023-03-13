@@ -18,6 +18,8 @@ wso2:
   apk:
     auth:
       enabled: true
+      enableServiceAccountCreation: true
+      enableClusterRoleCreation: true
       serviceAccountName: wso2apk-platform
       roleName: wso2apk-role
     idp:
@@ -168,6 +170,14 @@ wso2:
           replicas: 1
           imagePullPolicy: Always
           image: wso2/management-server:latest
+        # configs:
+        #   tls:
+            # certificatesSecret: "management-server-cert"
+            # fileName: "certificate.crt"
+          # adapters:
+          #   - name: adapter-1
+          #     certificatesSecret: "adapter-1-cert"
+          #     fileName: "certificate.crt"
       cnpg:
         npi: cnpg-npi
         instances: 1
@@ -179,21 +189,21 @@ wso2:
       gatewayAPI:
         enabled: true
       # controlPlane:
-      #   serviceUrl: "https://apk.org.com:9090/orgmanagement/v1"    
+      #   serviceUrl: "http://control-plane-wso2-apk-admin-ds-service.control-plane.svc.cluster.local:9444/api/am/internal/v1"    
       #   enableHostNameVerification: true
-      #   tls:
-      #     enabled: true
-      #     certificatesSecret: "organization-managetment-server-cert"
-      #     fileName: "certificate.crt"
-      #   headers:
-      #     - name: "apiKey"
-      #       value: "123-456-789"
+        # tls:
+        #   enabled: false
+        #   certificatesSecret: "organization-managetment-server-cert"
+        #   fileName: "certificate.crt"
+        # headers:
+        #   - name: "apiKey"
+        #     value: "123-456-789"
       # managementServer:
-      #   enabled: true
-      #   serviceUrl: "https://apk.org.com:9090/orgmanagement/v1"
-      #   tls:
-      #     certificatesSecret: "organization-managetment-server-cert"
-      #     fileName: "certificate.crt"
+      #   enabled: false
+      #   serviceUrl: "https://control-plane-wso2-apk-management-server.control-plane.svc.cluster.local"
+        # tls:
+        #   certificatesSecret: "organization-managetment-server-cert"
+        #   fileName: "certificate.crt"
       runtime:
         appName: "runtime-ds"
         deployment:
@@ -251,10 +261,13 @@ wso2:
           security:
             sslHostname: "adapter"
         # configs:
-        #   tls:
-        #     certificatesSecret: "adapter-cert"
-        #     certKeyFilename: ""
-        #     certFilename: ""
+          # apiNamespaces:
+          #   - "dataplane-1"
+          #   - "dataplane-2"
+          # tls:
+          #   certificatesSecret: "adapter-cert"
+          #   certKeyFilename: ""
+          #   certFilename: ""
       gatewayRuntime:
         appName: "router"
         deployment:
@@ -320,7 +333,12 @@ wso2:
             #     certKeyFilename: ""
             #     certFilename: ""
 
+certmanager:
+  enabled: true
+  enableClusterIssuer: true
+  enableRootCa: true
 postgresql:
+  enabled: true
   fullnameOverride: "wso2apk-db-service"
   auth:
     database: WSO2AM_DB
