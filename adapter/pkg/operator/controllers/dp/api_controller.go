@@ -166,21 +166,24 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 	return nil
 }
 
-//+kubebuilder:rbac:groups=dp.wso2.com,resources=apis,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=dp.wso2.com,resources=apis/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=dp.wso2.com,resources=apis/finalizers,verbs=update
-//+kubebuilder:rbac:groups=dp.wso2.com,resources=httproutes,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=dp.wso2.com,resources=httproutes/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=dp.wso2.com,resources=httproutes/finalizers,verbs=update
-//+kubebuilder:rbac:groups=dp.wso2.com,resources=authentications,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=dp.wso2.com,resources=authentications/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=dp.wso2.com,resources=authentications/finalizers,verbs=update
-//+kubebuilder:rbac:groups=dp.wso2.com,resources=apipolicies,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=dp.wso2.com,resources=apipolicies/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=dp.wso2.com,resources=apipolicies/finalizers,verbs=update
-//+kubebuilder:rbac:groups=dp.wso2.com,resources=scopes,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=dp.wso2.com,resources=scopes/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=dp.wso2.com,resources=scopes/finalizers,verbs=update
+// +kubebuilder:rbac:groups=dp.wso2.com,resources=apis,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=dp.wso2.com,resources=apis/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=dp.wso2.com,resources=apis/finalizers,verbs=update
+// +kubebuilder:rbac:groups=dp.wso2.com,resources=httproutes,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=dp.wso2.com,resources=httproutes/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=dp.wso2.com,resources=httproutes/finalizers,verbs=update
+// +kubebuilder:rbac:groups=dp.wso2.com,resources=authentications,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=dp.wso2.com,resources=authentications/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=dp.wso2.com,resources=authentications/finalizers,verbs=update
+// +kubebuilder:rbac:groups=dp.wso2.com,resources=apipolicies,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=dp.wso2.com,resources=apipolicies/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=dp.wso2.com,resources=apipolicies/finalizers,verbs=update
+// +kubebuilder:rbac:groups=dp.wso2.com,resources=scopes,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=dp.wso2.com,resources=scopes/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=dp.wso2.com,resources=scopes/finalizers,verbs=update
+// +kubebuilder:rbac:groups=dp.wso2.com,resources=ratelimitpolicies,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=dp.wso2.com,resources=ratelimitpolicies/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=dp.wso2.com,resources=ratelimitpolicies/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.

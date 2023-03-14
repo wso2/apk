@@ -221,3 +221,15 @@ Other than the basic validations we can add using [kubebuilder markers](https://
 In that case We can write the validating and defaulting logic by generating more scaffold code as described in [Implementing defaulting/validating webhooks](https://book.kubebuilder.io/cronjob-tutorial/webhook-implementation.html) section in kubebuilder docs.
 
 Refer to this example [PR](https://github.com/wso2/apk/pull/370) for more information.
+
+1. Create webhook resources. Example command would be similar to;
+
+```
+kubebuilder create webhook --group dp --version v1alpha1 --kind APIPolicy --defaulting --programmatic-validation
+```
+2. copy `manifests.yaml` new entries to helm chart.
+
+3. Add webhook setup to operator.go 
+```
+&dpv1alpha1.APIPolicy{}).SetupWebhookWithManager(mgr)
+```

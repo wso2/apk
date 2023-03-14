@@ -1,5 +1,6 @@
+#!/bin/bash
 # --------------------------------------------------------------------
-# Copyright (c) 2022, WSO2 LLC. (http://wso2.com) All Rights Reserved.
+# Copyright (c) 2023, WSO2 LLC. (http://wso2.com) All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,28 +15,10 @@
 # limitations under the License.
 # -----------------------------------------------------------------------
 
-# Service for Mgt Server
+set -e
 
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    app: management-server
-  name: {{ template "apk-helm.resource.prefix" . }}-management-service
-spec:
-  type: ClusterIP
-  selector:
-    app: management-server
-  ports:
-    - name: "xds-management-server"
-      port: 18000
-      targetPort: 18000
-      protocol: TCP
-    - name: "grpc-management-server"
-      port: 8765
-      targetPort: 8765
-      protocol: TCP
-    - name: "notification-management-server"
-      port: 8766
-      targetPort: 8766
-      protocol: TCP
+export CONFIG_TYPE=GRPC_XDS_SOTW
+export CONFIG_GRPC_XDS_NODE_ID="${RATE_LIMITER_LABEL:-Default}"
+
+# Start the server
+ratelimit "$@"
