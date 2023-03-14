@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -94,26 +95,35 @@ func CreateRoutesWithClusters(mgwSwagger model.MgwSwagger, interceptorCerts map[
 	clusters = append(clusters, clustersI...)
 	endpoints = append(endpoints, endpointsI...)
 
+	// Maintain a clusterName-EndpointCluster mapping to prevent duplicate
+	// creation of clusters.
+	processedEndpoints := map[string]model.EndpointCluster{}
+
 	for _, resource := range mgwSwagger.GetResources() {
+		var clusterName string
 		resourcePath := resource.GetPath()
 		endpoint := resource.GetEndpoints()
 		basePath := strings.TrimSuffix(endpoint.Endpoints[0].Basepath, "/")
-		clusterName := getClusterName(endpoint.EndpointPrefix, organizationID, vHost, mgwSwagger.GetTitle(), apiVersion, resource.GetID())
-		cluster, address, err := processEndpoints(clusterName, endpoint, timeout, basePath)
-		if err != nil {
-			logger.LoggerOasparser.Errorf("Error while adding resource level endpoints for %s:%v-%v. %v",
-				apiTitle, apiVersion, resourcePath, err.Error())
+		existingClusterName := getExistingClusterName(*endpoint, processedEndpoints)
+		
+		if existingClusterName == "" {
+			clusterName = getClusterName(endpoint.EndpointPrefix, organizationID, vHost, mgwSwagger.GetTitle(), apiVersion, resource.GetID())
+			cluster, address, err := processEndpoints(clusterName, endpoint, timeout, basePath)
+			if err != nil {
+				logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2239, apiTitle, apiVersion, resourcePath, err.Error()))
+			} else {
+				clusters = append(clusters, cluster)
+				endpoints = append(endpoints, address...)
+				processedEndpoints[clusterName] = *endpoint
+			}
 		} else {
-			clusters = append(clusters, cluster)
-			endpoints = append(endpoints, address...)
+			clusterName = existingClusterName
 		}
-
 		// Create resource level interceptor clusters if required
 		clustersI, endpointsI, operationalReqInterceptors, operationalRespInterceptorVal := createInterceptorResourceClusters(mgwSwagger,
 			interceptorCerts, vHost, organizationID, apiRequestInterceptor, apiResponseInterceptor, resource)
 		clusters = append(clusters, clustersI...)
 		endpoints = append(endpoints, endpointsI...)
-
 		routeP, err := createRoutes(genRouteCreateParams(&mgwSwagger, resource, vHost, basePath, clusterName, *operationalReqInterceptors, *operationalRespInterceptorVal, organizationID, false))
 		if err != nil {
 			logger.LoggerXds.ErrorC(logging.GetErrorByCode(2231, mgwSwagger.GetTitle(), mgwSwagger.GetVersion(), resource.GetPath(), err.Error()))
@@ -133,6 +143,15 @@ func getClusterName(epPrefix string, organizationID string, vHost string, swagge
 	}
 	return strings.TrimSpace(organizationID + "_" + epPrefix + "_" + vHost + "_" + strings.Replace(swaggerTitle, " ", "", -1) +
 		swaggerVersion)
+}
+
+func getExistingClusterName(endpoint model.EndpointCluster, clusterEndpointMapping map[string]model.EndpointCluster) string {
+	for clusterName, endpointValue := range clusterEndpointMapping {
+		if reflect.DeepEqual(endpoint, endpointValue) {
+			return clusterName
+		}
+	}
+	return ""
 }
 
 // CreateLuaCluster creates lua cluster configuration.

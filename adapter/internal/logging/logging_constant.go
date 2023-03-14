@@ -95,6 +95,7 @@ const (
 	error2236 = 2236
 	error2237 = 2237
 	error2238 = 2238
+	error2239 = 2239
 )
 
 // Error Log Internal GRPC(2700-2799) Config Constants
@@ -323,6 +324,11 @@ var Mapper = map[int]logging.ErrorDetails{
 		ErrorCode: error2238,
 		Message:   "Error while parsing the gzip configuration value for the chunk size: %v",
 		Severity:  MINOR,
+	},
+	error2239: {
+		ErrorCode: error2239,
+		Message: "Error while adding resource level endpoints for %s:%v-%v. %v",
+		Severity: MAJOR,
 	},
 	error2700: {
 		ErrorCode: error2700,

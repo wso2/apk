@@ -20,7 +20,7 @@ import org.apache.tools.ant.taskdefs.condition.*
 task bal_build(type: Exec) {
     group 'ballerina'
     description 'Build ballerina code'
-    commandLine 'bal', 'build'
+    commandLine 'bal', 'build', '--sticky'
 }
 task bal_test(type: Exec) {
     group 'ballerina'
@@ -73,7 +73,7 @@ task commit_toml_files {
 task bal_pack(type: Exec) {
     group 'ballerina'
     description 'Pack ballerina code'
-    commandLine 'bal', 'pack'
+    commandLine 'bal', 'pack', '--sticky'
     dependsOn 'bal_build'
 }
 task bal_push(type: Exec) {
