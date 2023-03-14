@@ -701,7 +701,7 @@ func TestCreateRoutesWithClustersDifferentBackendRefs(t *testing.T) {
 						},
 					},
 					BackendRefs: []gwapiv1b1.HTTPBackendRef{
-						createDefaultBackendRef("test-service-1", 443, 1),
+						createDefaultBackendRef("test-backend-1"),
 					},
 				},
 				{
@@ -726,10 +726,9 @@ func TestCreateRoutesWithClustersDifferentBackendRefs(t *testing.T) {
 						},
 					},
 					BackendRefs: []gwapiv1b1.HTTPBackendRef{
-						createDefaultBackendRef("test-service-2", 443, 1),
+						createDefaultBackendRef("test-backend-2"),
 					},
 				},
-
 			},
 		},
 	}
@@ -738,20 +737,20 @@ func TestCreateRoutesWithClustersDifferentBackendRefs(t *testing.T) {
 	httpRouteState.Authentications = make(map[string]v1alpha1.Authentication)
 	httpRouteState.ResourceAuthentications = make(map[string]v1alpha1.Authentication)
 
-	backendPropertyMapping := make(v1alpha1.BackendPropertyMapping)
-	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "test-service-1"}] =
-		v1alpha1.BackendProperties{ResolvedHostname: "webhook.site.1",
+	backendMapping := make(v1alpha1.BackendMapping)
+	backendMapping[k8types.NamespacedName{Namespace: "default", Name: "test-backend-1"}] =
+		&v1alpha1.ResolvedBackend{Services: []v1alpha1.Service{{Host: "webhook.site.1", Port: 443}},
 			Protocol: v1alpha1.HTTPSProtocol,
-			TLS: v1alpha1.TLSConfig{
-				CertificateInline: `-----BEGIN CERTIFICATE-----test-cert-data-----END CERTIFICATE-----`,
+			TLS: v1alpha1.ResolvedTLSConfig{
+				ResolvedCertificate: `-----BEGIN CERTIFICATE-----test-cert-data-----END CERTIFICATE-----`,
 			}}
-	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "test-service-2"}] =
-		v1alpha1.BackendProperties{ResolvedHostname: "webhook.site.2",
-		Protocol: v1alpha1.HTTPSProtocol,
-		TLS: v1alpha1.TLSConfig{
-			CertificateInline: `-----BEGIN CERTIFICATE-----test-cert-data-----END CERTIFICATE-----`,
-		}}
-	httpRouteState.BackendPropertyMapping = backendPropertyMapping
+	backendMapping[k8types.NamespacedName{Namespace: "default", Name: "test-backend-2"}] =
+		&v1alpha1.ResolvedBackend{Services: []v1alpha1.Service{{Host: "webhook.site.2", Port: 443}},
+			Protocol: v1alpha1.HTTPSProtocol,
+			TLS: v1alpha1.ResolvedTLSConfig{
+				ResolvedCertificate: `-----BEGIN CERTIFICATE-----test-cert-data-----END CERTIFICATE-----`,
+			}}
+	httpRouteState.BackendMapping = backendMapping
 
 	apiState.ProdHTTPRoute = &httpRouteState
 
@@ -810,7 +809,7 @@ func TestCreateRoutesWithClustersSameBackendRefs(t *testing.T) {
 						},
 					},
 					BackendRefs: []gwapiv1b1.HTTPBackendRef{
-						createDefaultBackendRef("test-service-1", 443, 1),
+						createDefaultBackendRef("test-backend-1"),
 					},
 				},
 				{
@@ -835,10 +834,9 @@ func TestCreateRoutesWithClustersSameBackendRefs(t *testing.T) {
 						},
 					},
 					BackendRefs: []gwapiv1b1.HTTPBackendRef{
-						createDefaultBackendRef("test-service-1", 443, 1),
+						createDefaultBackendRef("test-backend-1"),
 					},
 				},
-
 			},
 		},
 	}
@@ -847,14 +845,14 @@ func TestCreateRoutesWithClustersSameBackendRefs(t *testing.T) {
 	httpRouteState.Authentications = make(map[string]v1alpha1.Authentication)
 	httpRouteState.ResourceAuthentications = make(map[string]v1alpha1.Authentication)
 
-	backendPropertyMapping := make(v1alpha1.BackendPropertyMapping)
-	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "test-service-1"}] =
-		v1alpha1.BackendProperties{ResolvedHostname: "webhook.site",
+	backendMapping := make(v1alpha1.BackendMapping)
+	backendMapping[k8types.NamespacedName{Namespace: "default", Name: "test-backend-1"}] =
+		&v1alpha1.ResolvedBackend{Services: []v1alpha1.Service{{Host: "webhook.site", Port: 443}},
 			Protocol: v1alpha1.HTTPSProtocol,
-			TLS: v1alpha1.TLSConfig{
-				CertificateInline: `-----BEGIN CERTIFICATE-----test-cert-data-----END CERTIFICATE-----`,
+			TLS: v1alpha1.ResolvedTLSConfig{
+				ResolvedCertificate: `-----BEGIN CERTIFICATE-----test-cert-data-----END CERTIFICATE-----`,
 			}}
-	httpRouteState.BackendPropertyMapping = backendPropertyMapping
+	httpRouteState.BackendMapping = backendMapping
 
 	apiState.ProdHTTPRoute = &httpRouteState
 
