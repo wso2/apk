@@ -20,6 +20,9 @@ on:
       - 'main'
 env:
   GH_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
+  NEXUS_REPO_URL: ${{ secrets.NEXUS_REPO_URL }}
+  NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+  NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
 concurrency:
   group: enforcer-${{ github.event.number }}
   cancel-in-progress: true
