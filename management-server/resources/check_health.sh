@@ -15,12 +15,12 @@
 # limitations under the License.
 # -----------------------------------------------------------------------
 
-ENFORCER_PORT="${ENFORCER_PORT:-8081}"
-ENFORCER_SERVER_NAME="${ENFORCER_SERVER_NAME:-enforcer}"
-grpc_health_probe -addr "127.0.0.1:${ENFORCER_PORT}" \
+MGT_SERVER_XDS_PORT="${MGT_SERVER_XDS_PORT:-8765}"
+MGT_SERVER_NAME="${MGT_SERVER_NAME:-management-server}"
+grpc_health_probe -addr "127.0.0.1:${MGT_SERVER_XDS_PORT}" \
     -tls \
-    -tls-ca-cert "${ENFORCER_PUBLIC_CERT_PATH}" \
-    -tls-client-cert "${ENFORCER_PUBLIC_CERT_PATH}" \
-    -tls-client-key "${ENFORCER_PRIVATE_KEY_PATH}" \
-    -tls-server-name ${ENFORCER_SERVER_NAME} \
+    -tls-ca-cert "${MGT_SERVER_PUBLIC_CERT_PATH}" \
+    -tls-client-cert "${MGT_SERVER_PUBLIC_CERT_PATH}" \
+    -tls-client-key "${MGT_SERVER_PRIVATE_KEY_PATH}" \
+    -tls-server-name ${MGT_SERVER_NAME} \
     -connect-timeout=3s

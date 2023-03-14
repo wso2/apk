@@ -25,6 +25,8 @@ import (
 	"time"
 
 	apiProtos "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/apkmgt"
+	"github.com/wso2/apk/adapter/pkg/health"
+	healthservice "github.com/wso2/apk/adapter/pkg/health/api/wso2/health/service"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	"github.com/wso2/apk/adapter/pkg/utils/tlsutils"
 	"github.com/wso2/apk/management-server/internal/backoffice"
@@ -118,6 +120,7 @@ func StartGRPCServer() {
 	// register services
 	apiService := newAPIService()
 	apiProtos.RegisterAPIServiceServer(grpcServer, apiService)
+	healthservice.RegisterHealthServer(grpcServer, &health.Server{})
 	logger.LoggerMGTServer.Infof("Management server is listening for GRPC connections on port: %v.", port)
 	grpcServer.Serve(lis)
 }

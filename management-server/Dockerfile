@@ -46,11 +46,19 @@ RUN \
     && chown -R ${APK_USER}:${APK_USER_GROUP} ${APK_USER_HOME} \
     && echo '[ ! -z "${TERM}" -a -r /etc/motd ] && cat /etc/motd' >> /etc/bash.bashrc; echo "${MOTD}" > /etc/motd
 
+RUN \
+    wget -q https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/v0.4.16/grpc_health_probe-linux-${TARGETARCH} \
+    && mv grpc_health_probe-linux-${TARGETARCH} ${GRPC_HEALTH_PROBE_PATH}
+RUN \
+    chmod +x ${GRPC_HEALTH_PROBE_PATH} \
+    && chown ${APK_USER}:${APK_USER_GROUP} ${GRPC_HEALTH_PROBE_PATH}
+
 WORKDIR ${APK_USER_HOME}
 USER ${APK_USER}
 
 COPY resources/conf/config.toml conf/
 COPY resources/conf/log_config.toml conf/
 COPY ./${TARGETARCH}/main mgt_server
+COPY resources/check_health.sh .
 
 CMD ./mgt_server

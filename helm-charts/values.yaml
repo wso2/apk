@@ -169,7 +169,16 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/management-server:0.0.1-m6
+          image: wso2/management-server:latest
+          readinessProbe:
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 5
+          livenessProbe:
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 5
+
         # configs:
         #   tls:
             # certificatesSecret: "management-server-cert"
@@ -243,21 +252,17 @@ wso2:
               memory: "1028Mi"
               cpu: "1000m"
           readinessProbe:
-            path: /api/am/devportal/v2/apis?limit=2&offset=2
-            port: 9443
             initialDelaySeconds: 20
             periodSeconds: 20
             failureThreshold: 5
           livenessProbe:
-            path: /api/am/devportal/v2/apis?limit=2&offset=2
-            port: 9443
             initialDelaySeconds: 20
             periodSeconds: 20
             failureThreshold: 5
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/adapter:0.0.1-m6
+          image: wso2/adapter:latest
           security:
             sslHostname: "adapter"
         # configs:
@@ -377,20 +382,16 @@ wso2:
                 memory: "1028Mi"
                 cpu: "1000m"
             readinessProbe:
-              path: /api/am/devportal/v2/apis?limit=2&offset=2
-              port: 9443
               initialDelaySeconds: 20
               periodSeconds: 20
               failureThreshold: 5
             livenessProbe:
-              path: /api/am/devportal/v2/apis?limit=2&offset=2
-              port: 9443
               initialDelaySeconds: 20
               periodSeconds: 20
               failureThreshold: 5
             strategy: Recreate
             imagePullPolicy: Always
-            image: wso2/enforcer:0.0.1-m6
+            image: wso2/enforcer:latest
             security:
               sslHostname: "enforcer"
             # configs:

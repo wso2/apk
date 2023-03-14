@@ -55,6 +55,8 @@ spec:
             value: /home/wso2/security/keystore/adapter.key
           - name: ADAPTER_PUBLIC_CERT_PATH
             value: /home/wso2/security/keystore/adapter.crt
+          - name: ADAPTER_SERVER_NAME
+            value: {{ template "apk-helm.resource.prefix" . }}-adapter-service.{{ .Release.Namespace }}.svc
           volumeMounts:
             - name: adapter-keystore-secret-volume
               mountPath: /home/wso2/security/keystore/adapter.key
@@ -104,9 +106,6 @@ spec:
               mountPath: /home/wso2/security/truststore/consul
             - name: log-conf-volume
               mountPath: /home/wso2/conf/
-            - mountPath: /home/wso2/check_health.sh
-              name: adapter-grpc-probe-script-conf-volume
-              subPath: "check_health.sh"
             - mountPath: /tmp/k8s-webhook-server/serving-certs
               name: adapter-webhook-server-cert
               readOnly: true
@@ -117,11 +116,19 @@ spec:
             {{- else }}
               subPath: tls.crt
             {{- end }}
-          # readinessProbe:
-          #   exec:
-          #     command: [ "sh", "check_health.sh" ]
-          #   initialDelaySeconds: 8
-          #   periodSeconds: 5
+          readinessProbe:
+            exec:
+              command: [ "sh", "check_health.sh" ]
+            initialDelaySeconds: {{ .Values.wso2.apk.dp.adapter.deployment.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.wso2.apk.dp.adapter.deployment.readinessProbe.periodSeconds }}
+            failureThreshold: {{ .Values.wso2.apk.dp.adapter.deployment.readinessProbe.failureThreshold }}
+          livenessProbe:
+            exec:
+              command: [ "sh", "check_health.sh" ]
+            initialDelaySeconds: {{ .Values.wso2.apk.dp.adapter.deployment.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.wso2.apk.dp.adapter.deployment.livenessProbe.periodSeconds }}
+            failureThreshold: {{ .Values.wso2.apk.dp.adapter.deployment.livenessProbe.failureThreshold }}
+
       volumes: 
         - name: adapter-keystore-secret-volume
           secret:
@@ -137,10 +144,6 @@ spec:
         - name: log-conf-volume
           configMap: 
             name: {{ template "apk-helm.resource.prefix" . }}-log-conf
-        - name: adapter-grpc-probe-script-conf-volume
-          configMap: 
-            name: {{ template "apk-helm.resource.prefix" . }}-adapter-grpc-probe-script-conf
-            defaultMode: 0777
         - name: adapter-webhook-server-cert
           secret:
             secretName: {{ template "apk-helm.resource.prefix" . }}-webhook-server-cert
