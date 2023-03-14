@@ -23,7 +23,8 @@ kubectl create ns apk-integration-test
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo add jetstack https://charts.jetstack.io
 helm dependency build ../../helm-charts
-helm install apk-test-setup ../../helm-charts -n apk-integration-test --set wso2.apk.cp.enabled=false \
+helm install apk-test-setup ../../helm-charts -n apk-integration-test \
+--set wso2.apk.cp.enabled=false --set wso2.apk.dp.managementServer.enabled=false \
 --set dp.adapter.deployment.image=adapter:test --set dp.adapter.deployment.imagePullPolicy=IfNotPresent \
 --set dp.gatewayRuntime.deployment.router.image=router:test --set dp.gatewayRuntime.deployment.router.imagePullPolicy=IfNotPresent \
 --set dp.runtime.deployment.enforcer.image=enforcer:test --set dp.runtime.deployment.enforcer.imagePullPolicy=IfNotPresent \
