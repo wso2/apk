@@ -110,8 +110,7 @@ func CreateRoutesWithClusters(mgwSwagger model.MgwSwagger, interceptorCerts map[
 			clusterName = getClusterName(endpoint.EndpointPrefix, organizationID, vHost, mgwSwagger.GetTitle(), apiVersion, resource.GetID())
 			cluster, address, err := processEndpoints(clusterName, endpoint, timeout, basePath)
 			if err != nil {
-				logger.LoggerOasparser.Errorf("Error while adding resource level endpoints for %s:%v-%v. %v",
-					apiTitle, apiVersion, resourcePath, err.Error())
+				logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2239, apiTitle, apiVersion, resourcePath, err.Error()))
 			} else {
 				clusters = append(clusters, cluster)
 				endpoints = append(endpoints, address...)
