@@ -1958,11 +1958,93 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
         context: "/pizzaAPI/1.0.0",
         'version: "1.0.0"
     };
+    API apiWithOperationPolicies = {
+        name: "PizzaAPI",
+        context: "/pizzaAPI/1.0.0",
+        'version: "1.0.0",
+        operations: [
+        {
+            "target": "/*",
+            "verb": "GET",
+            "authTypeEnabled": true,
+            "throttlingPolicy": 1000,
+            "operationPolicies": {
+                "request": [
+                    {
+                        "policyName": "addHeader",
+                        "parameters": [{
+                            "headerName": "customadd",
+                            "headerValue": "customvalue"
+                        }]
+                    }
+                ],
+                "response": [
+                    {
+                        "policyName": "removeHeader",
+                        "parameters": [{
+                            "headerName": "content-length"
+                        }]
+                    }
+                ]
+            }
+        },
+        {
+            "target": "/*",
+            "verb": "PUT",
+            "authTypeEnabled": true,
+            "throttlingPolicy": 1000
+        },
+        {
+            "target": "/*",
+            "verb": "POST",
+            "authTypeEnabled": true,
+            "throttlingPolicy": 1000
+        },
+        {
+            "target": "/*",
+            "verb": "DELETE",
+            "authTypeEnabled": true,
+            "throttlingPolicy": 1000
+        },
+        {
+            "target": "/*",
+            "verb": "PATCH",
+            "authTypeEnabled": true,
+            "throttlingPolicy": 1000
+        }]
+    };
+    API apiWithInvalidPolicyName = {
+        name: "PizzaAPIOps",
+        context: "/pizzaAPIOps/1.0.0",
+        'version: "1.0.0",
+        endpointConfig: {"production_endpoints": {"url": "https://localhost"}},
+        operations: [
+        {
+            "target": "/menu",
+            "verb": "GET",
+            "authTypeEnabled": true,
+            "throttlingPolicy": 1000,
+            "operationPolicies": {
+                "request": [
+                    {
+                        "policyName": "addHeader1",
+                        "parameters": [{
+                            "headerName": "customadd",
+                            "headerValue": "customvalue"
+                        }]
+                    }
+                ]
+            }
+        }]
+    };
+    BadRequestError invalidPolicyNameError = {body: {code: 90915, message: "Invalid operation policy name"}};
     string apiUUID = getUniqueIdForAPI(api.name, api.'version, organiztion1);
     model:ConfigMap configmap = getMockConfigMap1(apiUUID, api);
     http:Response mockConfigMapResponse = getMockConfigMapResponse(configmap.clone());
     model:Httproute httpRoute = getMockHttpRoute(api, apiUUID, organiztion1);
     http:Response httpRouteResponse = getMockHttpRouteResponse(httpRoute.clone());
+    model:Httproute httpRouteWithPolicies = getMockHttpRouteWithOperationPolicies1(api, apiUUID, organiztion1);
+    http:Response httpRouteWithPoliciesResponse = getMockHttpRouteResponse(httpRouteWithPolicies.clone());
     model:K8sServiceMapping mockServiceMappingRequest = getMockServiceMappingRequest(api, apiUUID);
     model:API mockAPI = getMockAPI(api, apiUUID, organiztion1.uuid);
     http:Response mockAPIResponse = getMockAPIResponse(mockAPI.clone(), k8sAPIUUID1);
@@ -1974,6 +2056,8 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
     };
     model:RuntimeAPI mockRuntimeAPI = getMockRuntimeAPI(api, apiUUID, organiztion1, serviceRecord);
     http:Response mockRuntimeResponse = getMockRuntimeAPIResponse(mockRuntimeAPI.clone());
+    model:RuntimeAPI mockRuntimeAPIWithPolicies = getMockRuntimeAPI(apiWithOperationPolicies, apiUUID, organiztion1, serviceRecord);
+    http:Response mockRuntimeResponseWithPolicies = getMockRuntimeAPIResponse(mockRuntimeAPIWithPolicies.clone());
     http:Response serviceMappingResponse = getMockServiceMappingResponse(mockServiceMappingRequest.clone());
     BadRequestError nameAlreadyExistError = {body: {code: 90911, message: "API Name - " + alreadyNameExist.name + " already exist.", description: "API Name - " + alreadyNameExist.name + " already exist."}};
     API contextAlreadyExist = {
@@ -2002,11 +2086,72 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
             createdTime: "2023-01-17T11:23:49Z"
         }
     };
+    OperationPolicy requestPolicy = {
+        policyName: "addHeader",
+        policyVersion: "v1",
+        parameters: [
+            {
+                headerName: "customadd",
+                headerValue: "customvalue"
+            }
+        ]
+    };
+    OperationPolicy responsePolicy = {
+        policyName: "removeHeader",
+        policyVersion: "v1",
+        parameters: [
+            {
+                headerName: "content-length"
+            }
+        ]
+    };
+    CreatedAPI createdAPIWithPolicies = {
+        body: {
+            id: k8sAPIUUID1,
+            name: "PizzaAPI",
+            context: "/pizzaAPI/1.0.0",
+            'version: "1.0.0",
+            'type: "REST",
+            operations: [
+                {target: "/*", verb: "GET", authTypeEnabled: true, scopes: [], operationPolicies: {request: [requestPolicy], response: [responsePolicy]}},
+                {target: "/*", verb: "PUT", authTypeEnabled: true, scopes: [], operationPolicies: {request: [], response: []}},
+                {target: "/*", verb: "POST", authTypeEnabled: true, scopes: [], operationPolicies: {request: [], response: []}},
+                {target: "/*", verb: "DELETE", authTypeEnabled: true, scopes: [], operationPolicies: {request: [], response: []}},
+                {target: "/*", verb: "PATCH", authTypeEnabled: true, scopes: [], operationPolicies: {request: [], response: []}}
+            ],
+            serviceInfo: {name: "backend", namespace: "apk"},
+            createdTime: "2023-01-17T11:23:49Z"
+        }
+    };
     map<[string, string, [model:ConfigMap, any], [model:Httproute, any], [model:K8sServiceMapping, any], [model:API, any], [model:RuntimeAPI, any], API, string, anydata]> data = {
         "1": ["275b00d1-722c-4df2-b65a-9b14677abe4b", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], api, k8sAPIUUID1, createdAPI.toBalString()],
         "2": ["275b00d1-722c-4df2-b65a-9b14677abe4b", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], alreadyNameExist, k8sAPIUUID1, nameAlreadyExistError.toBalString()],
         "3": ["275b00d1-722c-4df2-b65a-9b14677abe4b", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], contextAlreadyExist, k8sAPIUUID1, contextAlreadyExistError.toBalString()],
-        "4": ["275b00d1-722c-4df2-b65a-9b14677abe4a", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], api, k8sAPIUUID1, serviceNotExist.toBalString()]
+        "4": ["275b00d1-722c-4df2-b65a-9b14677abe4a", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], api, k8sAPIUUID1, serviceNotExist.toBalString()],
+        "5": [
+            "275b00d1-722c-4df2-b65a-9b14677abe4b",
+            apiUUID,
+            [configmap, mockConfigMapResponse],
+            [httpRouteWithPolicies, httpRouteWithPoliciesResponse],
+            [mockServiceMappingRequest, serviceMappingResponse],
+            [mockAPI, mockAPIResponse],
+            [mockRuntimeAPIWithPolicies, mockRuntimeResponseWithPolicies],
+            apiWithOperationPolicies,
+            k8sAPIUUID1,
+            createdAPIWithPolicies.toBalString()
+        ],
+        "6": [
+            "275b00d1-722c-4df2-b65a-9b14677abe4b",
+            apiUUID,
+            [configmap, mockConfigMapResponse],
+            [httpRouteWithPolicies, httpRouteWithPoliciesResponse],
+            [mockServiceMappingRequest, serviceMappingResponse],
+            [mockAPI, mockAPIResponse],
+            [mockRuntimeAPIWithPolicies, mockRuntimeResponseWithPolicies],
+            apiWithInvalidPolicyName,
+            k8sAPIUUID1,
+            invalidPolicyNameError.toBalString()
+        ]
     };
     return data;
 }
@@ -2165,6 +2310,205 @@ function getMockHttpRoute(API api, string apiUUID, commons:Organization organizt
                 }
             ],
             "parentRefs": [{"group": "gateway.networking.k8s.io", "kind": "Gateway", "name": "Default"}]
+        }
+    };
+}
+
+function getMockHttpRouteWithOperationPolicies1(API api, string apiUUID, commons:Organization organiztion) returns model:Httproute {
+    return {
+        "apiVersion": "gateway.networking.k8s.io/v1beta1",
+        "kind": "HTTPRoute",
+        "metadata": {"name": "http-route-ref-name", "namespace": "apk-platform", "labels": {"api-name": api.name, "api-version": api.'version}},
+        "spec": {
+            "hostnames": [
+                string:concat(organiztion.uuid, ".", "gw.wso2.com")
+            ],
+            "rules": [
+                {
+                    "matches": [
+                        {
+                            "path": {
+                                "type": "RegularExpression",
+                                "value": "/pizzaAPI/1.0.0(.*)"
+                            },
+                            "method": "GET"
+                        }
+                    ],
+                    "filters": [
+                        {
+                            "type": "URLRewrite",
+                            "urlRewrite": {
+                                "path": {
+                                    "type": "ReplaceFullPath",
+                                    "replaceFullPath": "\\1"
+                                }
+                            }
+                        },
+                        {
+                            "type": "RequestHeaderModifier",
+                            "requestHeaderModifier": {
+                                "set": [
+                                    {
+                                        "name": "customadd",
+                                        "value": "customvalue"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "ResponseHeaderModifier",
+                            "responseHeaderModifier": {
+                                "remove": ["content-length"]
+                            }
+                        }
+                    ],
+                    "backendRefs": [
+                        {
+                            "weight": 1,
+                            "group": "",
+                            "kind": "Service",
+                            "name": "backend",
+                            "namespace": "apk",
+                            "port": 80
+                        }
+                    ]
+                },
+                {
+                    "matches": [
+                        {
+                            "path": {
+                                "type": "RegularExpression",
+                                "value": "/pizzaAPI/1.0.0(.*)"
+                            },
+                            "method": "PUT"
+                        }
+                    ],
+                    "filters": [
+                        {
+                            "type": "URLRewrite",
+                            "urlRewrite": {
+                                "path": {
+                                    "type": "ReplaceFullPath",
+                                    "replaceFullPath": "\\1"
+                                }
+                            }
+                        }
+                    ],
+                    "backendRefs": [
+                        {
+                            "weight": 1,
+                            "group": "",
+                            "kind": "Service",
+                            "name": "backend",
+                            "namespace": "apk",
+                            "port": 80
+                        }
+                    ]
+                },
+                {
+                    "matches": [
+                        {
+                            "path": {
+                                "type": "RegularExpression",
+                                "value": "/pizzaAPI/1.0.0(.*)"
+                            },
+                            "method": "POST"
+                        }
+                    ],
+                    "filters": [
+                        {
+                            "type": "URLRewrite",
+                            "urlRewrite": {
+                                "path": {
+                                    "type": "ReplaceFullPath",
+                                    "replaceFullPath": "\\1"
+                                }
+                            }
+                        }
+                    ],
+                    "backendRefs": [
+                        {
+                            "weight": 1,
+                            "group": "",
+                            "kind": "Service",
+                            "name": "backend",
+                            "namespace": "apk",
+                            "port": 80
+                        }
+                    ]
+                },
+                {
+                    "matches": [
+                        {
+                            "path": {
+                                "type": "RegularExpression",
+                                "value": "/pizzaAPI/1.0.0(.*)"
+                            },
+                            "method": "DELETE"
+                        }
+                    ],
+                    "filters": [
+                        {
+                            "type": "URLRewrite",
+                            "urlRewrite": {
+                                "path": {
+                                    "type": "ReplaceFullPath",
+                                    "replaceFullPath": "\\1"
+                                }
+                            }
+                        }
+                    ],
+                    "backendRefs": [
+                        {
+                            "weight": 1,
+                            "group": "",
+                            "kind": "Service",
+                            "name": "backend",
+                            "namespace": "apk",
+                            "port": 80
+                        }
+                    ]
+                },
+                {
+                    "matches": [
+                        {
+                            "path": {
+                                "type": "RegularExpression",
+                                "value": "/pizzaAPI/1.0.0(.*)"
+                            },
+                            "method": "PATCH"
+                        }
+                    ],
+                    "filters": [
+                        {
+                            "type": "URLRewrite",
+                            "urlRewrite": {
+                                "path": {
+                                    "type": "ReplaceFullPath",
+                                    "replaceFullPath": "\\1"
+                                }
+                            }
+                        }
+                    ],
+                    "backendRefs": [
+                        {
+                            "weight": 1,
+                            "group": "",
+                            "kind": "Service",
+                            "name": "backend",
+                            "namespace": "apk",
+                            "port": 80
+                        }
+                    ]
+                }
+            ],
+            "parentRefs": [
+                {
+                    "group": "gateway.networking.k8s.io",
+                    "kind": "Gateway",
+                    "name": "Default"
+                }
+            ]
         }
     };
 }
