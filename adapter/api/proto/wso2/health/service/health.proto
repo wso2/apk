@@ -3,7 +3,7 @@ syntax = "proto3";
 package grpc.health.v1;
 
 option go_package = "github.com/envoyproxy/go-control-plane/wso2/health/service";
-option java_package = "org.wso2.choreo.connect.discovery.service.health";
+option java_package = "org.wso2.apk.discovery.service.health";
 option java_outer_classname = "HealthProto";
 option java_multiple_files = true;
 option java_generic_services = true;

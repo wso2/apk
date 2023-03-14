@@ -276,7 +276,7 @@ soapErrorInXMLEnabled = false
 # Position starts from 1
 [[enforcer.filters]]
     # ClassName of the filter
-    className = "org.wso2.choreo.connect.custom.CCCustomFilter"
+    className = "org.wso2.apk.custom.CCCustomFilter"
     # Position of the filter within final filter-chain
     position = 3
     # Filter specific custom configurations. Only `(string, string)` key-value pairs are accepted
