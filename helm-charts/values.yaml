@@ -398,7 +398,12 @@ wso2:
             #     certificatesSecret: "router-cert"
             #     certKeyFilename: ""
             #     certFilename: ""
-
+            #   filters:
+            #     - className: org.wso2.micro.gateway.enforcer.filter.RequestFilter
+            #       position: 1
+            #       properties:
+            #         - name: filterConfig1
+            #           value: filterConfig1
 certmanager:
   enabled: true
   enableClusterIssuer: true
