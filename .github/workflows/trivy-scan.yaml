@@ -11,15 +11,10 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: 'wso2/backoffice-domain-service:latest'
-          format: 'sarif'
+          format: 'table'
           ignore-unfixed: true
           vuln-type: 'os,library'
-          output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
-      - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: 'trivy-results.sarif'
   scan-runtime-domain-service:
     runs-on: ubuntu-latest
     steps:
@@ -71,15 +66,10 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: 'wso2/idp-ui:latest'
-          format: 'sarif'
+          format: 'table'
           ignore-unfixed: true
           vuln-type: 'os,library'
-          output: 'trivy-results.sarif'
-          severity: 'CRITICAL,HIGH'  
-      - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: 'trivy-results.sarif'               
+          severity: 'CRITICAL,HIGH'                 
   scan-adapter:
     runs-on: ubuntu-latest
     steps:
