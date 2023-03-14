@@ -402,7 +402,7 @@ modules = [
 [[package]]
 org = "wso2"
 name = "backoffice_service"
-version = "0.0.1-SNAPSHOT"
+version = "0.0.1-m6"
 dependencies = [
 	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "http"},
