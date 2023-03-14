@@ -26,7 +26,8 @@ helm dependency build ../../helm-charts
 helm install apk-test-setup ../../helm-charts -n apk-integration-test --set wso2.apk.cp.enabled=false \
 --set dp.adapter.deployment.image=adapter:test --set dp.adapter.deployment.imagePullPolicy=IfNotPresent \
 --set dp.gatewayRuntime.deployment.router.image=router:test --set dp.gatewayRuntime.deployment.router.imagePullPolicy=IfNotPresent \
---set dp.runtime.deployment.enforcer.image=enforcer:test --set dp.runtime.deployment.enforcer.imagePullPolicy=IfNotPresent
+--set dp.runtime.deployment.enforcer.image=enforcer:test --set dp.runtime.deployment.enforcer.imagePullPolicy=IfNotPresent \
+--set wso2.apk.dp.ratelimiter.enabled=false --set wso2.apk.dp.redis.enabled=false
 
 
 # Wait gateway resources to be available.

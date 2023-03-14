@@ -401,6 +401,11 @@ public class APIClient {
                     BadRequestError badRequestError = {body: {code: 90912, message: "Atleast one operation need to specified"}};
                     return badRequestError;
                 }
+                // Validating operation policies.
+                BadRequestError|() badRequestError = self.validateOperationPolicies(api.apiPolicies, operations, organization);
+                if (badRequestError is BadRequestError) {
+                    return badRequestError;
+                }
             } else {
                 BadRequestError badRequestError = {body: {code: 90912, message: "Atleast one operation need to specified"}};
                 return badRequestError;
@@ -427,6 +432,92 @@ public class APIClient {
             return error("Internal Error occured", code = 909000, message = "Internal Error occured", description = "Internal Error occured", statusCode = 500);
         }
     }
+
+    isolated function validateOperationPolicies(APIOperationPolicies? apiPolicies, APIOperations[] operations, commons:Organization organization) returns BadRequestError|() {
+        foreach APIOperations operation in operations {
+            APIOperationPolicies? operationPolicies = operation.operationPolicies;
+            if (!self.isPolicyEmpty(operationPolicies)) {
+                if (self.isPolicyEmpty(apiPolicies)) {
+                    // Validating resource level operation policy data
+                    BadRequestError|() badRequestError = self.validateOperationPolicyData(operationPolicies, organization);
+                    if (badRequestError is BadRequestError) {
+                        return badRequestError;
+                    }
+                } else {
+                     // Presence of both resource level and API level operation policies.
+                    BadRequestError badRequestError = {body: {code: 90917, message: "Presence of both resource level and API level operation policies is not allowed"}};
+                    return badRequestError;
+                }
+            }
+        }
+        if (!self.isPolicyEmpty(apiPolicies)) {
+            // Validating API level operation policy data
+            return self.validateOperationPolicyData(apiPolicies, organization);
+        }
+        return ();
+    }
+
+    isolated function isPolicyEmpty(APIOperationPolicies? policies) returns boolean {
+        return policies == () || policies.length() == 0;
+    }
+
+    isolated function validateOperationPolicyData(APIOperationPolicies? operationPolicies, commons:Organization organization) returns BadRequestError|() {
+        if operationPolicies is APIOperationPolicies {
+            // Validating request operation policy data.
+            BadRequestError|() badRequestError = self.validatePolicyDetails(operationPolicies.request, organization);
+            if (badRequestError == ()) {
+                // Validating response operation policy data.
+                return self.validatePolicyDetails(operationPolicies.response, organization);
+            } else {
+                return badRequestError;
+            }
+        }
+        return ();
+    }
+
+    isolated function validatePolicyDetails(OperationPolicy[]? policyData, commons:Organization organization) returns BadRequestError|() {
+        if (policyData is OperationPolicy[]) {
+            foreach OperationPolicy policy in policyData {
+                string policyName = policy.policyName;
+                OperationPolicyParameters[]? policyParameters = policy.parameters;
+                if (policyParameters is OperationPolicyParameters[]) {
+                    string[] allowedPolicyAttributes = [];
+                    string[] receivedPolicyParameters = [];
+                    any|error mediationPolicyList = self.getMediationPolicyList(SEARCH_CRITERIA_NAME + ":" + policyName, 1, 0,
+                        SORT_BY_POLICY_NAME, SORT_ORDER_ASC, organization);
+                    if (mediationPolicyList is MediationPolicyList && mediationPolicyList.count > 0) {
+                        MediationPolicy[]? listing = mediationPolicyList.list;
+                        if (listing is MediationPolicy[]) {
+                            MediationPolicySpecAttribute[]? parameters = listing[0].policyAttributes;
+                            if (parameters is MediationPolicySpecAttribute[]) {
+                                foreach MediationPolicySpecAttribute params in parameters {
+                                    allowedPolicyAttributes.push(<string>params.name);
+                                }
+                            }
+                            foreach OperationPolicyParameters policyParam in policyParameters {
+                                string[] keys = policyParam.keys();
+                                foreach string key in keys {
+                                    receivedPolicyParameters.push(key);
+                                }
+                            }
+                            if (allowedPolicyAttributes != receivedPolicyParameters) {
+                                // Allowed policy attributes does not match with the parameters provided
+                                BadRequestError badRequestError = {body: {code: 90916, message: "Invalid parameters provided for policy " + policyName}};
+                                return badRequestError;
+                            }
+                        }
+                    } else {
+                        // Invalid operation policy name.
+                        BadRequestError badRequestError = {body: {code: 90915, message: "Invalid operation policy name"}};
+                        return badRequestError;
+                    }
+                }
+            }
+        }
+        return ();
+    }
+
+
     private isolated function generateAndSetRuntimeAPIArtifact(model:APIArtifact apiArtifact, API api, Service? serviceEntry, commons:Organization organization) {
 
         apiArtifact.runtimeAPI = self.generateRuntimeAPIArtifact(api, serviceEntry, organization);
@@ -455,29 +546,32 @@ public class APIClient {
                     authTypeEnabled: operation.authTypeEnabled ?: true,
                     scopes: operation.scopes ?: []
                 };
-                APIOperationPolicies? operationPolicies = operation.operationPolicies;
+                APIOperationPolicies? operationPoliciesToUse = ();
+                if (api.apiPolicies is APIOperationPolicies) {
+                    operationPoliciesToUse = api.apiPolicies;
+                } else {
+                    operationPoliciesToUse = operation.operationPolicies;
+                }
                 model:OperationPolicy[] runtimeAPIRequestPolicies = [];
                 model:OperationPolicy[] runtimeAPIResponsePolicies = [];
 
-                if operationPolicies is APIOperationPolicies {
-                    OperationPolicy[]? request = operationPolicies.request;
+                if operationPoliciesToUse is APIOperationPolicies {
+                    OperationPolicy[]? request = operationPoliciesToUse.request;
                     if request is OperationPolicy[] {
                         foreach OperationPolicy policy in request {
-                            model:OperationPolicy runtimeAPIRequestPolicy = {
-                                policyName: <string>policy.policyName,
-                                parameters: <map<string>>policy.parameters
-                            };
-                            runtimeAPIRequestPolicies.push(runtimeAPIRequestPolicy);
+                            model:OperationPolicy|error runtimeAPIRequestPolicy = policy.cloneWithType(model:OperationPolicy);
+                            if (runtimeAPIRequestPolicy is model:OperationPolicy) {
+                                runtimeAPIRequestPolicies.push(runtimeAPIRequestPolicy);
+                            }
                         }
                     }
-                    OperationPolicy[]? response = operationPolicies.response;
+                    OperationPolicy[]? response = operationPoliciesToUse.response;
                     if response is OperationPolicy[] {
                         foreach OperationPolicy policy in response {
-                            model:OperationPolicy runtimeAPIResponsePolicy = {
-                                policyName: <string>policy.policyName,
-                                parameters: <map<string>>policy.parameters
-                            };
-                            runtimeAPIResponsePolicies.push(runtimeAPIResponsePolicy);
+                            model:OperationPolicy|error runtimeAPIResponsePolicy = policy.cloneWithType(model:OperationPolicy);
+                            if (runtimeAPIResponsePolicy is model:OperationPolicy) {
+                                runtimeAPIResponsePolicies.push(runtimeAPIResponsePolicy);
+                            }
                         }
                     }
                 }
@@ -639,6 +733,14 @@ public class APIClient {
             return badRequest;
         }
         self.setDefaultOperationsIfNotExist(api);
+        APIOperations[]? operations = api.operations;
+        if operations is APIOperations[] {
+            // Validating operation policies.
+            BadRequestError|() badRequestError = self.validateOperationPolicies(api.apiPolicies, operations, organization);
+            if (badRequestError is BadRequestError) {
+                return badRequestError;
+            }
+        }
         api.context = self.returnFullContext(api.context, api.'version);
         Service|error serviceRetrieved = getServiceById(serviceKey);
         string uniqueId = getUniqueIdForAPI(api.name, api.'version, organization);
@@ -1122,7 +1224,7 @@ public class APIClient {
                 }
             }
             if endpointToUse != () {
-                model:HTTPRouteRule httpRouteRule = {matches: self.retrieveMatches(api, operation, organization), backendRefs: self.retrieveGeneratedBackend(api, endpointToUse, endpointType), filters: self.generateFilters(apiArtifact, api, endpointToUse, operation, endpointType)};
+                model:HTTPRouteRule httpRouteRule = {matches: self.retrieveMatches(api, operation, organization), backendRefs: self.retrieveGeneratedBackend(api, endpointToUse, endpointType), filters: self.generateFilters(apiArtifact, api, endpointToUse, operation, endpointType, organization)};
                 return httpRouteRule;
             } else {
                 return ();
@@ -1133,11 +1235,61 @@ public class APIClient {
         }
     }
 
-    private isolated function generateFilters(model:APIArtifact apiArtifact, API api, model:Endpoint endpoint, APIOperations operation, string endpointType) returns model:HTTPRouteFilter[] {
+    private isolated function generateFilters(model:APIArtifact apiArtifact, API api, model:Endpoint endpoint, APIOperations operation, string endpointType, commons:Organization organization) returns model:HTTPRouteFilter[] {
         model:HTTPRouteFilter[] routeFilters = [];
         model:HTTPRouteFilter replacePathFilter = {'type: "URLRewrite", urlRewrite: {path: {'type: "ReplaceFullPath", replaceFullPath: self.generatePrefixMatch(api, endpoint, operation, endpointType)}}};
         routeFilters.push(replacePathFilter);
+        APIOperationPolicies? operationPoliciesToUse = ();
+        if (api.apiPolicies is APIOperationPolicies) {
+            operationPoliciesToUse = api.apiPolicies;
+        } else {
+            operationPoliciesToUse = operation.operationPolicies;
+        }
+        if operationPoliciesToUse is APIOperationPolicies {
+            OperationPolicy[]? request = operationPoliciesToUse.request;
+            if request is OperationPolicy[] {
+                model:HTTPRouteFilter requestHeaderFilter = {'type: "RequestHeaderModifier",
+                    requestHeaderModifier: self.extractHttpHeaderFilterData(request, organization)};
+                routeFilters.push(requestHeaderFilter);
+            }
+            OperationPolicy[]? response = operationPoliciesToUse.response;
+            if response is OperationPolicy[] {
+                model:HTTPRouteFilter responseHeaderFilter = {'type: "ResponseHeaderModifier",
+                    responseHeaderModifier: self.extractHttpHeaderFilterData(response, organization)};
+                routeFilters.push(responseHeaderFilter);
+            }
+        }
         return routeFilters;
+    }
+
+    isolated function extractHttpHeaderFilterData(OperationPolicy[] operationPolicy, commons:Organization organization) returns model:HTTPHeaderFilter {
+        model:HTTPHeader[] setPolicies = [];
+        string[] removePolicies = [];
+        foreach OperationPolicy policy in operationPolicy {
+            string policyName = policy.policyName;
+            OperationPolicyParameters[]? policyParameters = policy.parameters;
+            if (policyParameters is OperationPolicyParameters[]) {
+                if (policyName == "addHeader") {
+                    model:HTTPHeader httpHeader = {
+                        name: <string>policyParameters[0].headerName,
+                        value: <string>policyParameters[0].headerValue
+                    };
+                    setPolicies.push(httpHeader);
+                }
+                if (policyName == "removeHeader") {
+                    string httpHeader = <string>policyParameters[0].headerName;
+                    removePolicies.push(httpHeader);
+                }
+            }
+        }
+        model:HTTPHeaderFilter headerModifier = {};
+        if (setPolicies != []) {
+            headerModifier.set = setPolicies;
+        }
+        if (removePolicies != []) {
+            headerModifier.remove = removePolicies;
+        }
+        return headerModifier;
     }
 
     isolated function generatePrefixMatch(API api, model:Endpoint endpoint, APIOperations operation, string endpointType) returns string {
@@ -2447,6 +2599,11 @@ public class APIClient {
                 if operations is APIOperations[] {
                     if operations.length() == 0 {
                         BadRequestError badRequestError = {body: {code: 90912, message: "Atleast one operation need to specified"}};
+                        return badRequestError;
+                    }
+                    // Validating operation policies.
+                    BadRequestError|() badRequestError = self.validateOperationPolicies(api.apiPolicies, operations, organization);
+                    if (badRequestError is BadRequestError) {
                         return badRequestError;
                     }
                 } else {

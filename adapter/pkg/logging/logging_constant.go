@@ -65,6 +65,8 @@ const (
 	error2643 = 2643
 	error2644 = 2644
 	error2645 = 2645
+	error2646 = 2646
+	error2647 = 2647
 )
 
 // Error Log Pkg auth(3001-3099) Config Constants
@@ -254,13 +256,13 @@ var Mapper = map[int]ErrorDetails{
 	},
 	error2637: {
 		ErrorCode: error2637,
-		Message:   "Error while getting backend: %v, error: %v",
-		Severity:  CRITICAL,
+		Message:   "Unable to create webhook for Ratelimit: %v",
+		Severity:  BLOCKER,
 	},
 	error2638: {
 		ErrorCode: error2638,
-		Message:   "Unable to find associated Backends for ConfigMap: %s",
-		Severity:  CRITICAL,
+		Message:   "Unable to create webhook for APIPolicy: %v",
+		Severity:  BLOCKER,
 	},
 	error2639: {
 		ErrorCode: error2639,
@@ -296,6 +298,16 @@ var Mapper = map[int]ErrorDetails{
 		ErrorCode: error2645,
 		Message:   "Error watching Secret resources: %v",
 		Severity:  BLOCKER,
+	},
+	error2646: {
+		ErrorCode: error2646,
+		Message:   "Error while getting backend: %v, error: %v",
+		Severity:  CRITICAL,
+	},
+	error2647: {
+		ErrorCode: error2647,
+		Message:   "Unable to find associated Backends for ConfigMap: %s",
+		Severity:  CRITICAL,
 	},
 	error3001: {
 		ErrorCode: error3001,

@@ -164,6 +164,32 @@ rules:
 - apiGroups:
   - dp.wso2.com
   resources:
+  - ratelimitpolicies
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - dp.wso2.com
+  resources:
+  - ratelimitpolicies/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - dp.wso2.com
+  resources:
+  - ratelimitpolicies/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - dp.wso2.com
+  resources:
   - scopes
   verbs:
   - create

@@ -153,21 +153,24 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 	return nil
 }
 
-//+kubebuilder:rbac:groups=dp.wso2.com,resources=apis,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=dp.wso2.com,resources=apis/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=dp.wso2.com,resources=apis/finalizers,verbs=update
-//+kubebuilder:rbac:groups=dp.wso2.com,resources=httproutes,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=dp.wso2.com,resources=httproutes/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=dp.wso2.com,resources=httproutes/finalizers,verbs=update
-//+kubebuilder:rbac:groups=dp.wso2.com,resources=authentications,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=dp.wso2.com,resources=authentications/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=dp.wso2.com,resources=authentications/finalizers,verbs=update
-//+kubebuilder:rbac:groups=dp.wso2.com,resources=apipolicies,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=dp.wso2.com,resources=apipolicies/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=dp.wso2.com,resources=apipolicies/finalizers,verbs=update
-//+kubebuilder:rbac:groups=dp.wso2.com,resources=scopes,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=dp.wso2.com,resources=scopes/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=dp.wso2.com,resources=scopes/finalizers,verbs=update
+// +kubebuilder:rbac:groups=dp.wso2.com,resources=apis,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=dp.wso2.com,resources=apis/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=dp.wso2.com,resources=apis/finalizers,verbs=update
+// +kubebuilder:rbac:groups=dp.wso2.com,resources=httproutes,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=dp.wso2.com,resources=httproutes/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=dp.wso2.com,resources=httproutes/finalizers,verbs=update
+// +kubebuilder:rbac:groups=dp.wso2.com,resources=authentications,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=dp.wso2.com,resources=authentications/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=dp.wso2.com,resources=authentications/finalizers,verbs=update
+// +kubebuilder:rbac:groups=dp.wso2.com,resources=apipolicies,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=dp.wso2.com,resources=apipolicies/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=dp.wso2.com,resources=apipolicies/finalizers,verbs=update
+// +kubebuilder:rbac:groups=dp.wso2.com,resources=scopes,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=dp.wso2.com,resources=scopes/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=dp.wso2.com,resources=scopes/finalizers,verbs=update
+// +kubebuilder:rbac:groups=dp.wso2.com,resources=ratelimitpolicies,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=dp.wso2.com,resources=ratelimitpolicies/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=dp.wso2.com,resources=ratelimitpolicies/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -421,7 +424,7 @@ func (apiReconciler *APIReconciler) getResolvedBackend(ctx context.Context,
 
 	if err != nil {
 		if !apierrors.IsNotFound(err) {
-			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2637, backendNamespacedName, err.Error()))
+			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2646, backendNamespacedName, err.Error()))
 		}
 		return nil
 	}
@@ -532,7 +535,7 @@ func (apiReconciler *APIReconciler) getAPIsForConfigMap(obj k8client.Object) []r
 	if err := apiReconciler.client.List(ctx, backendList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(configMapBackend, utils.NamespacedName(configMap).String()),
 	}); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2638, utils.NamespacedName(configMap).String()))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2647, utils.NamespacedName(configMap).String()))
 		return []reconcile.Request{}
 	}
 

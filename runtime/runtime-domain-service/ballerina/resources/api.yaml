@@ -1209,9 +1209,17 @@ components:
         policyId:
           type: string
         parameters:
-          type: object
-          additionalProperties:
-            type: object
+          type: array
+          items:
+            $ref: "#/components/schemas/OperationPolicyParameters"
+    OperationPolicyParameters:
+      title: API Operation Policy Parameters
+      type: object
+      properties:
+        headerName:
+          type: string
+        headerValue:
+          type: string
     GraphQLSchema:
       title: GraphQL Schema
       required:

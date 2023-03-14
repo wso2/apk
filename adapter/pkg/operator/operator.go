@@ -122,6 +122,14 @@ func InitOperator() {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2601, err))
 	}
 
+	if err = (&dpv1alpha1.RateLimitPolicy{}).SetupWebhookWithManager(mgr); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2637, err))
+	}
+
+	if err = (&dpv1alpha1.APIPolicy{}).SetupWebhookWithManager(mgr); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2638, err))
+	}
+
 	if err := cpcontrollers.NewApplicationController(mgr); err != nil {
 		loggers.LoggerAPKOperator.Errorf("Error creating Application controller: %v", err)
 	}
