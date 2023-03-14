@@ -420,7 +420,7 @@ modules = [
 [[package]]
 org = "wso2"
 name = "runtime_domain_service"
-version = "0.0.1-SNAPSHOT"
+version = "0.0.1-m6"
 dependencies = [
 	{org = "ballerina", name = "cache"},
 	{org = "ballerina", name = "constraint"},
