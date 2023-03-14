@@ -25,18 +25,21 @@ import (
 	dpv1alpha1 "github.com/wso2/apk/adapter/pkg/operator/apis/dp/v1alpha1"
 	"github.com/wso2/apk/adapter/pkg/operator/utils"
 	"k8s.io/apimachinery/pkg/types"
+	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
 // OperatorDataStore holds the APIStore and API, HttpRoute mappings
 type OperatorDataStore struct {
-	apiStore map[types.NamespacedName]*APIState
-	mu       sync.Mutex
+	apiStore     map[types.NamespacedName]*APIState
+	gatewayStore map[types.NamespacedName]*GatewayState
+	mu           sync.Mutex
 }
 
 // CreateNewOperatorDataStore creates a new OperatorDataStore.
 func CreateNewOperatorDataStore() *OperatorDataStore {
 	return &OperatorDataStore{
-		apiStore: map[types.NamespacedName]*APIState{},
+		apiStore:     map[types.NamespacedName]*APIState{},
+		gatewayStore: map[types.NamespacedName]*GatewayState{},
 	}
 }
 
@@ -236,4 +239,59 @@ func (ods *OperatorDataStore) DeleteCachedAPI(apiName types.NamespacedName) {
 	ods.mu.Lock()
 	defer ods.mu.Unlock()
 	delete(ods.apiStore, apiName)
+}
+
+// AddGatewayState stores a new Gateway in the OperatorDataStore.
+func (ods *OperatorDataStore) AddGatewayState(gateway gwapiv1b1.Gateway) GatewayState {
+	ods.mu.Lock()
+	defer ods.mu.Unlock()
+
+	gatewayNamespacedName := utils.NamespacedName(&gateway)
+	ods.gatewayStore[gatewayNamespacedName] = &GatewayState{
+		GatewayDefinition: &gateway,
+	}
+	return *ods.gatewayStore[gatewayNamespacedName]
+}
+
+// UpdateGatewayState update/create the GatewayState on ref updates
+func (ods *OperatorDataStore) UpdateGatewayState(gatewayDef *gwapiv1b1.Gateway) (GatewayState, []string, bool) {
+	_, found := ods.gatewayStore[utils.NamespacedName(gatewayDef)]
+	if !found {
+		loggers.LoggerAPKOperator.Infof("Adding new gatewaystate as Gateway : %s has not found in memory datastore.", gatewayDef.Name)
+		gatewayState := ods.AddGatewayState(*gatewayDef)
+		return gatewayState, []string{"GATEWAY"}, true
+	}
+	return ods.processGatewayState(gatewayDef)
+}
+
+// processGatewayState process and update the GatewayState on ref updates
+func (ods *OperatorDataStore) processGatewayState(gatewayDef *gwapiv1b1.Gateway) (GatewayState, []string, bool) {
+	ods.mu.Lock()
+	defer ods.mu.Unlock()
+	var updated bool
+	events := []string{}
+	cachedGateway := ods.gatewayStore[utils.NamespacedName(gatewayDef)]
+
+	if gatewayDef.Generation > cachedGateway.GatewayDefinition.Generation {
+		cachedGateway.GatewayDefinition = gatewayDef
+		updated = true
+		events = append(events, "Gateway Definition")
+	}
+
+	return *cachedGateway, events, updated
+}
+
+// GetCachedGateway get cached gatewaystate
+func (ods *OperatorDataStore) GetCachedGateway(gatewayName types.NamespacedName) (GatewayState, bool) {
+	if cachedGateway, found := ods.gatewayStore[gatewayName]; found {
+		return *cachedGateway, true
+	}
+	return GatewayState{}, false
+}
+
+// DeleteCachedGateway delete from gatewaystate cache
+func (ods *OperatorDataStore) DeleteCachedGateway(gatewayName types.NamespacedName) {
+	ods.mu.Lock()
+	defer ods.mu.Unlock()
+	delete(ods.gatewayStore, gatewayName)
 }
