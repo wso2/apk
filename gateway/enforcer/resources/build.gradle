@@ -18,7 +18,7 @@
 description = 'WSO2 Enforcer Distribution Resources'
 
 dependencies {
-    implementation project(':org.wso2.choreo.connect.enforcer')
+    implementation project(':org.wso2.apk.enforcer')
     implementation project(':org.wso2.apk.enforcer.commons')
     implementation project(':org.wso2.choreo.connect.discovery')
 }
