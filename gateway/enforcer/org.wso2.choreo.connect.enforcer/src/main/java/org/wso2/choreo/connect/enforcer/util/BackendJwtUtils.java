@@ -28,7 +28,7 @@ import org.wso2.carbon.apimgt.common.gateway.jwtgenerator.APIMgtGatewayJWTGenera
 import org.wso2.carbon.apimgt.common.gateway.jwtgenerator.AbstractAPIMgtGatewayJWTGenerator;
 import org.wso2.carbon.apimgt.common.gateway.jwttransformer.JWTTransformer;
 import org.wso2.choreo.connect.enforcer.common.CacheProvider;
-import org.wso2.choreo.connect.enforcer.commons.exception.APISecurityException;
+import org.wso2.apk.enforcer.commons.exception.APISecurityException;
 import org.wso2.choreo.connect.enforcer.config.ConfigHolder;
 import org.wso2.choreo.connect.enforcer.constants.APIConstants;
 import org.wso2.choreo.connect.enforcer.constants.APISecurityConstants;

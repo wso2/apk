@@ -21,7 +21,7 @@ package org.wso2.choreo.connect.enforcer.util;
 import java.util.Objects;
 import org.junit.Assert;
 import org.junit.Test;
-import org.wso2.choreo.connect.enforcer.commons.exception.EnforcerException;
+import org.wso2.apk.enforcer.commons.exception.EnforcerException;
 
 import java.io.File;
 import java.io.IOException;

@@ -18,9 +18,9 @@
 
 package org.wso2.choreo.connect.enforcer.util;
 
-import org.wso2.choreo.connect.enforcer.commons.model.EndpointSecurity;
-import org.wso2.choreo.connect.enforcer.commons.model.RequestContext;
-import org.wso2.choreo.connect.enforcer.commons.model.ResourceConfig;
+import org.wso2.apk.enforcer.commons.model.EndpointSecurity;
+import org.wso2.apk.enforcer.commons.model.RequestContext;
+import org.wso2.apk.enforcer.commons.model.ResourceConfig;
 import org.wso2.choreo.connect.enforcer.constants.APIConstants;
 
 import java.util.Base64;

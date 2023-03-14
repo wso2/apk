@@ -28,11 +28,11 @@ import org.wso2.carbon.apimgt.common.analytics.collectors.AnalyticsCustomDataPro
 import org.wso2.carbon.apimgt.common.analytics.collectors.impl.GenericRequestDataCollector;
 import org.wso2.carbon.apimgt.common.analytics.exceptions.AnalyticsException;
 import org.wso2.choreo.connect.discovery.service.websocket.WebSocketFrameRequest;
-import org.wso2.choreo.connect.enforcer.commons.logging.ErrorDetails;
-import org.wso2.choreo.connect.enforcer.commons.logging.LoggingConstants;
-import org.wso2.choreo.connect.enforcer.commons.model.AuthenticationContext;
-import org.wso2.choreo.connect.enforcer.commons.model.RequestContext;
-import org.wso2.choreo.connect.enforcer.commons.model.ResourceConfig;
+import org.wso2.apk.enforcer.commons.logging.ErrorDetails;
+import org.wso2.apk.enforcer.commons.logging.LoggingConstants;
+import org.wso2.apk.enforcer.commons.model.AuthenticationContext;
+import org.wso2.apk.enforcer.commons.model.RequestContext;
+import org.wso2.apk.enforcer.commons.model.ResourceConfig;
 import org.wso2.choreo.connect.enforcer.config.ConfigHolder;
 import org.wso2.choreo.connect.enforcer.constants.APIConstants;
 import org.wso2.choreo.connect.enforcer.constants.Constants;

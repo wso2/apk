@@ -27,12 +27,12 @@ import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.wso2.choreo.connect.enforcer.commons.logging.ErrorDetails;
-import org.wso2.choreo.connect.enforcer.commons.logging.LoggingConstants;
-import org.wso2.choreo.connect.enforcer.commons.model.RequestContext;
-import org.wso2.choreo.connect.enforcer.commons.opa.OPAConstants;
-import org.wso2.choreo.connect.enforcer.commons.opa.OPARequestGenerator;
-import org.wso2.choreo.connect.enforcer.commons.opa.OPASecurityException;
+import org.wso2.apk.enforcer.commons.logging.ErrorDetails;
+import org.wso2.apk.enforcer.commons.logging.LoggingConstants;
+import org.wso2.apk.enforcer.commons.model.RequestContext;
+import org.wso2.apk.enforcer.commons.opa.OPAConstants;
+import org.wso2.apk.enforcer.commons.opa.OPARequestGenerator;
+import org.wso2.apk.enforcer.commons.opa.OPASecurityException;
 import org.wso2.choreo.connect.enforcer.config.ConfigHolder;
 import org.wso2.choreo.connect.enforcer.constants.APIConstants;
 import org.wso2.choreo.connect.enforcer.constants.APISecurityConstants;
@@ -54,7 +54,7 @@ import java.util.ServiceLoader;
 public class OPAClient {
     private static final Logger log = LogManager.getLogger(OPAClient.class);
     private static final String DEFAULT_REQUEST_GENERATOR_CLASS =
-            "org.wso2.choreo.connect.enforcer.commons.model.RequestContext.OPADefaultRequestGenerator";
+            "org.wso2.apk.enforcer.commons.model.RequestContext.OPADefaultRequestGenerator";
     private static final OPAClient opaClient = new OPAClient();
 
     private final OPARequestGenerator defaultRequestGenerator = new OPADefaultRequestGenerator();

@@ -19,7 +19,7 @@ package org.wso2.choreo.connect.enforcer.api;
 
 import java.util.List;
 
-import org.wso2.choreo.connect.enforcer.commons.model.EndpointSecurity;
+import org.wso2.apk.enforcer.commons.model.EndpointSecurity;
 
 /**
  * APIProcessUtils is used to convert the Endpoint Security DTO used in proto files into Enforcer specific

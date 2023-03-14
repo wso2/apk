@@ -35,12 +35,12 @@ import org.wso2.carbon.apimgt.common.gateway.graphql.QueryValidator;
 import org.wso2.choreo.connect.discovery.api.GraphqlComplexity;
 import org.wso2.choreo.connect.enforcer.api.API;
 import org.wso2.choreo.connect.enforcer.api.APIFactory;
-import org.wso2.choreo.connect.enforcer.commons.exception.EnforcerException;
-import org.wso2.choreo.connect.enforcer.commons.logging.ErrorDetails;
-import org.wso2.choreo.connect.enforcer.commons.logging.LoggingConstants;
-import org.wso2.choreo.connect.enforcer.commons.model.GraphQLCustomComplexityInfoDTO;
-import org.wso2.choreo.connect.enforcer.commons.model.GraphQLSchemaDTO;
-import org.wso2.choreo.connect.enforcer.commons.model.ResourceConfig;
+import org.wso2.apk.enforcer.commons.exception.EnforcerException;
+import org.wso2.apk.enforcer.commons.logging.ErrorDetails;
+import org.wso2.apk.enforcer.commons.logging.LoggingConstants;
+import org.wso2.apk.enforcer.commons.model.GraphQLCustomComplexityInfoDTO;
+import org.wso2.apk.enforcer.commons.model.GraphQLSchemaDTO;
+import org.wso2.apk.enforcer.commons.model.ResourceConfig;
 import org.wso2.choreo.connect.enforcer.constants.APIConstants;
 
 import java.util.ArrayList;

@@ -25,10 +25,10 @@
 //import org.wso2.choreo.connect.discovery.service.websocket.WebSocketFrameRequest;
 //import org.wso2.choreo.connect.enforcer.api.APIFactory;
 //import org.wso2.choreo.connect.enforcer.api.WebSocketAPI;
-//import org.wso2.choreo.connect.enforcer.commons.model.APIConfig;
-//import org.wso2.choreo.connect.enforcer.commons.model.AuthenticationContext;
-//import org.wso2.choreo.connect.enforcer.commons.model.RequestContext;
-//import org.wso2.choreo.connect.enforcer.commons.model.WebSocketFrameContext;
+//import org.wso2.apk.enforcer.commons.model.APIConfig;
+//import org.wso2.apk.enforcer.commons.model.AuthenticationContext;
+//import org.wso2.apk.enforcer.commons.model.RequestContext;
+//import org.wso2.apk.enforcer.commons.model.WebSocketFrameContext;
 //import org.wso2.choreo.connect.enforcer.constants.APIConstants;
 //import org.wso2.choreo.connect.enforcer.tracing.TracingConstants;
 //import org.wso2.choreo.connect.enforcer.tracing.TracingSpan;

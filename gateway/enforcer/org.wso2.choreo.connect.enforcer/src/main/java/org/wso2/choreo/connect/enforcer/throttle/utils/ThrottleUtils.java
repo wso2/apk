@@ -26,7 +26,7 @@ import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
-import org.wso2.choreo.connect.enforcer.commons.model.RequestContext;
+import org.wso2.apk.enforcer.commons.model.RequestContext;
 import org.wso2.choreo.connect.enforcer.throttle.PolicyConstants;
 import org.wso2.choreo.connect.enforcer.throttle.ThrottleConstants;
 import org.wso2.choreo.connect.enforcer.throttle.ThrottleFilter;

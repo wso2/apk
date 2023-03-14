@@ -17,8 +17,8 @@ package org.wso2.choreo.connect.enforcer.jmx;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.wso2.choreo.connect.enforcer.commons.logging.ErrorDetails;
-import org.wso2.choreo.connect.enforcer.commons.logging.LoggingConstants;
+import org.wso2.apk.enforcer.commons.logging.ErrorDetails;
+import org.wso2.apk.enforcer.commons.logging.LoggingConstants;
 
 import java.util.ArrayList;
 import java.util.List;

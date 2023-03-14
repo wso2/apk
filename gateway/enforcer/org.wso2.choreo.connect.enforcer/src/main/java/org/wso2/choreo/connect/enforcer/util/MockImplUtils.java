@@ -21,11 +21,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.wso2.choreo.connect.enforcer.api.ResponseObject;
-import org.wso2.choreo.connect.enforcer.commons.model.MockedApiConfig;
-import org.wso2.choreo.connect.enforcer.commons.model.MockedContentExamples;
-import org.wso2.choreo.connect.enforcer.commons.model.MockedHeaderConfig;
-import org.wso2.choreo.connect.enforcer.commons.model.MockedResponseConfig;
-import org.wso2.choreo.connect.enforcer.commons.model.RequestContext;
+import org.wso2.apk.enforcer.commons.model.MockedApiConfig;
+import org.wso2.apk.enforcer.commons.model.MockedContentExamples;
+import org.wso2.apk.enforcer.commons.model.MockedHeaderConfig;
+import org.wso2.apk.enforcer.commons.model.MockedResponseConfig;
+import org.wso2.apk.enforcer.commons.model.RequestContext;
 import org.wso2.choreo.connect.enforcer.constants.APIConstants;
 import org.wso2.choreo.connect.enforcer.constants.GeneralErrorCodeConstants;
 

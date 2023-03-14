@@ -22,10 +22,10 @@
 //import org.apache.logging.log4j.Logger;
 //import org.apache.logging.log4j.ThreadContext;
 //import org.wso2.choreo.connect.enforcer.api.WebSocketAPI;
-//import org.wso2.choreo.connect.enforcer.commons.Filter;
-//import org.wso2.choreo.connect.enforcer.commons.model.APIConfig;
-//import org.wso2.choreo.connect.enforcer.commons.model.AuthenticationContext;
-//import org.wso2.choreo.connect.enforcer.commons.model.RequestContext;
+//import org.wso2.apk.enforcer.commons.Filter;
+//import org.wso2.apk.enforcer.commons.model.APIConfig;
+//import org.wso2.apk.enforcer.commons.model.AuthenticationContext;
+//import org.wso2.apk.enforcer.commons.model.RequestContext;
 //import org.wso2.choreo.connect.enforcer.constants.APIConstants;
 //import org.wso2.choreo.connect.enforcer.throttle.ThrottleConstants;
 //import org.wso2.choreo.connect.enforcer.tracing.TracingConstants;

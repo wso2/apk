@@ -25,12 +25,12 @@ import org.json.simple.parser.ParseException;
 import org.wso2.carbon.apimgt.common.gateway.constants.GraphQLConstants;
 import org.wso2.carbon.apimgt.common.gateway.dto.QueryAnalyzerResponseDTO;
 import org.wso2.carbon.apimgt.common.gateway.graphql.QueryAnalyzer;
-import org.wso2.choreo.connect.enforcer.commons.Filter;
-import org.wso2.choreo.connect.enforcer.commons.logging.ErrorDetails;
-import org.wso2.choreo.connect.enforcer.commons.logging.LoggingConstants;
-import org.wso2.choreo.connect.enforcer.commons.model.APIConfig;
-import org.wso2.choreo.connect.enforcer.commons.model.GraphQLCustomComplexityInfoDTO;
-import org.wso2.choreo.connect.enforcer.commons.model.RequestContext;
+import org.wso2.apk.enforcer.commons.Filter;
+import org.wso2.apk.enforcer.commons.logging.ErrorDetails;
+import org.wso2.apk.enforcer.commons.logging.LoggingConstants;
+import org.wso2.apk.enforcer.commons.model.APIConfig;
+import org.wso2.apk.enforcer.commons.model.GraphQLCustomComplexityInfoDTO;
+import org.wso2.apk.enforcer.commons.model.RequestContext;
 import org.wso2.choreo.connect.enforcer.constants.APIConstants;
 import org.wso2.choreo.connect.enforcer.constants.APISecurityConstants;
 

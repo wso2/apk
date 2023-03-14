@@ -46,7 +46,7 @@ import org.wso2.choreo.connect.discovery.config.enforcer.TMURLGroup;
 import org.wso2.choreo.connect.discovery.config.enforcer.ThrottleAgent;
 import org.wso2.choreo.connect.discovery.config.enforcer.Throttling;
 import org.wso2.choreo.connect.discovery.config.enforcer.Tracing;
-import org.wso2.choreo.connect.enforcer.commons.exception.EnforcerException;
+import org.wso2.apk.enforcer.commons.exception.EnforcerException;
 import org.wso2.choreo.connect.enforcer.config.dto.AdminRestServerDto;
 import org.wso2.choreo.connect.enforcer.config.dto.AnalyticsDTO;
 import org.wso2.choreo.connect.enforcer.config.dto.AnalyticsReceiverConfigDTO;
