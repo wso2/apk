@@ -58,8 +58,9 @@ spec:
         remove:
           - X-Header-Remove
     backendRefs:
-    - name: infra-backend-v1
-      port: 8080
+    - group: dp.wso2.com
+      kind: Backend
+      name: infra-backend-v1
   - matches:
     - path:
         type: PathPrefix
@@ -77,5 +78,6 @@ spec:
           - name: "test-header"
             value: "test"
     backendRefs:
-    - name: infra-backend-v1
-      port: 8080
+    - group: dp.wso2.com
+      kind: Backend
+      name: infra-backend-v1

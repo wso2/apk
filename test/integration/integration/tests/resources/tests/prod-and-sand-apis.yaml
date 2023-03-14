@@ -56,8 +56,9 @@ spec:
           type: ReplacePrefixMatch
           replacePrefixMatch: /
     backendRefs:
-    - name: infra-backend-v1
-      port: 8080
+    - group: dp.wso2.com
+      kind: Backend
+      name: infra-backend-v1
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: HTTPRoute
@@ -84,8 +85,9 @@ spec:
           type: ReplacePrefixMatch
           replacePrefixMatch: /
     backendRefs:
-    - name: infra-backend-v2
-      port: 8080
+    - group: dp.wso2.com
+      kind: Backend
+      name: infra-backend-v2
 ---
 apiVersion: dp.wso2.com/v1alpha1
 kind: Authentication
