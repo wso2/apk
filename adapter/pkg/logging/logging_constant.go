@@ -152,7 +152,7 @@ var Mapper = map[int]ErrorDetails{
 	},
 	error2615: {
 		ErrorCode: error2615,
-		Message:   "Error watching BackendPolicy resources: %v",
+		Message:   "Error watching Backend resources: %v",
 		Severity:  BLOCKER,
 	},
 	error2616: {
@@ -181,11 +181,6 @@ var Mapper = map[int]ErrorDetails{
 		Message:   "Error retrieving ref CRs for API in namespace : %s, %v",
 		Severity:  TRIVIAL,
 	},
-	error2621: {
-		ErrorCode: error2621,
-		Message:   "Unable to find associated BackendPolicies for service: %s",
-		Severity:  CRITICAL,
-	},
 	error2622: {
 		ErrorCode: error2622,
 		Message:   "Unexpected object type, bypassing reconciliation: %v",
@@ -209,11 +204,6 @@ var Mapper = map[int]ErrorDetails{
 	error2626: {
 		ErrorCode: error2626,
 		Message:   "Unsupported object type %T",
-		Severity:  BLOCKER,
-	},
-	error2627: {
-		ErrorCode: error2627,
-		Message:   "Unable to find associated Service for BackendPolicy: %s",
 		Severity:  BLOCKER,
 	},
 	error2628: {
