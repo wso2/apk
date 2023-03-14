@@ -197,6 +197,13 @@ wso2:
       enabled: true
       gatewayAPI:
         enabled: true
+      gateway:
+        name: default
+        listener:
+          name: httpslistener
+          hostname: 0.0.0.0
+          port: 9095
+          protocol: HTTPS
       # controlPlane:
       #   serviceUrl: "http://control-plane-wso2-apk-admin-ds-service.control-plane.svc.cluster.local:9444/api/am/internal/v1"    
       #   enableHostNameVerification: true

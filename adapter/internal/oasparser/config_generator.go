@@ -94,18 +94,27 @@ func GetProductionListenerAndRouteConfig(vhostToRouteArrayMap map[string][]*rout
 	return listeners, routeConfig
 }
 
-// GetProductionListenerAndRouteConfigs generates the listener and routesconfiguration configurations.
+// GetProductionListener generates the listener configurations.
 //
 // The VirtualHost is named as "default".
 // The provided set of envoy routes will be assigned under the virtual host
 //
 // The RouteConfiguration is named as "default"
-func GetProductionListenerAndRouteConfigs(vhostToRouteArrayMap map[string][]*routev3.Route, gateway *gwapiv1b1.Gateway) ([]*listenerv3.Listener, *routev3.RouteConfiguration) {
+func GetProductionListener(gateway *gwapiv1b1.Gateway) []*listenerv3.Listener {
 	listeners := envoy.CreateListenerByGateway(gateway)
+	return listeners
+}
+
+// GetRouteConfigs generates routesconfiguration configurations.
+//
+// The VirtualHost is named as "default".
+// The provided set of envoy routes will be assigned under the virtual host
+//
+// The RouteConfiguration is named as "default"
+func GetRouteConfigs(vhostToRouteArrayMap map[string][]*routev3.Route) *routev3.RouteConfiguration {
 	vHosts := envoy.CreateVirtualHosts(vhostToRouteArrayMap)
 	routeConfig := envoy.CreateRoutesConfigForRds(vHosts)
-
-	return listeners, routeConfig
+	return routeConfig
 }
 
 // GetCacheResources converts the envoy endpoints, clusters, routes, and listener to
