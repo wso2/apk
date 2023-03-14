@@ -2656,6 +2656,274 @@ function getMockHttpRouteWithOperationPolicies(API api, string apiUUID, string b
     };
 }
 
+function getMockHttpRouteWithAPIPolicies(API api, string apiUUID, string backenduuid, string 'type, commons:Organization organization) returns model:Httproute {
+    string hostnames = 'type == PRODUCTION_TYPE ? string:concat(organization.uuid, ".", "gw.wso2.com") : string:concat(organization.uuid, ".", "sandbox.gw.wso2.com");
+    return {
+        "apiVersion": "gateway.networking.k8s.io/v1beta1",
+        "kind": "HTTPRoute",
+        "metadata": {"name": "http-route-ref-name", "namespace": "apk-platform", "labels": {"api-name": api.name, "api-version": api.'version}},
+        "spec": {
+            "hostnames": [
+                hostnames
+            ],
+            "rules": [
+                {
+                    "matches": [
+                        {
+                            "path": {
+                                "type": "RegularExpression",
+                                "value": "/pizzaAPI/1.0.0(.*)"
+                            },
+                            "method": "GET"
+                        }
+                    ],
+                    "filters": [
+                        {
+                            "type": "URLRewrite",
+                            "urlRewrite": {
+                                "path": {
+                                    "type": "ReplaceFullPath",
+                                    "replaceFullPath": "\\1"
+                                }
+                            }
+                        },
+                        {
+                            "type": "RequestHeaderModifier",
+                            "requestHeaderModifier": {
+                                "set": [
+                                    {
+                                        "name": "customadd",
+                                        "value": "customvalue"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "ResponseHeaderModifier",
+                            "responseHeaderModifier": {
+                                "remove": ["content-length"]
+                            }
+                        }
+                    ],
+                    "backendRefs": [
+                        {
+                            "weight": 1,
+                            "group": "",
+                            "kind": "Service",
+                            "name": backenduuid,
+                            "namespace": "apk-platform",
+                            "port": 443
+                        }
+                    ]
+                },
+                {
+                    "matches": [
+                        {
+                            "path": {
+                                "type": "RegularExpression",
+                                "value": "/pizzaAPI/1.0.0(.*)"
+                            },
+                            "method": "PUT"
+                        }
+                    ],
+                    "filters": [
+                        {
+                            "type": "URLRewrite",
+                            "urlRewrite": {
+                                "path": {
+                                    "type": "ReplaceFullPath",
+                                    "replaceFullPath": "\\1"
+                                }
+                            }
+                        },
+                        {
+                            "type": "RequestHeaderModifier",
+                            "requestHeaderModifier": {
+                                "set": [
+                                    {
+                                        "name": "customadd",
+                                        "value": "customvalue"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "ResponseHeaderModifier",
+                            "responseHeaderModifier": {
+                                "remove": ["content-length"]
+                            }
+                        }
+                    ],
+                    "backendRefs": [
+                        {
+                            "weight": 1,
+                            "group": "",
+                            "kind": "Service",
+                            "name": backenduuid,
+                            "namespace": "apk-platform",
+                            "port": 443
+                        }
+                    ]
+                },
+                {
+                    "matches": [
+                        {
+                            "path": {
+                                "type": "RegularExpression",
+                                "value": "/pizzaAPI/1.0.0(.*)"
+                            },
+                            "method": "POST"
+                        }
+                    ],
+                    "filters": [
+                        {
+                            "type": "URLRewrite",
+                            "urlRewrite": {
+                                "path": {
+                                    "type": "ReplaceFullPath",
+                                    "replaceFullPath": "\\1"
+                                }
+                            }
+                        },
+                        {
+                            "type": "RequestHeaderModifier",
+                            "requestHeaderModifier": {
+                                "set": [
+                                    {
+                                        "name": "customadd",
+                                        "value": "customvalue"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "ResponseHeaderModifier",
+                            "responseHeaderModifier": {
+                                "remove": ["content-length"]
+                            }
+                        }
+                    ],
+                    "backendRefs": [
+                        {
+                            "weight": 1,
+                            "group": "",
+                            "kind": "Service",
+                            "name": backenduuid,
+                            "namespace": "apk-platform",
+                            "port": 443
+                        }
+                    ]
+                },
+                {
+                    "matches": [
+                        {
+                            "path": {
+                                "type": "RegularExpression",
+                                "value": "/pizzaAPI/1.0.0(.*)"
+                            },
+                            "method": "DELETE"
+                        }
+                    ],
+                    "filters": [
+                        {
+                            "type": "URLRewrite",
+                            "urlRewrite": {
+                                "path": {
+                                    "type": "ReplaceFullPath",
+                                    "replaceFullPath": "\\1"
+                                }
+                            }
+                        },
+                        {
+                            "type": "RequestHeaderModifier",
+                            "requestHeaderModifier": {
+                                "set": [
+                                    {
+                                        "name": "customadd",
+                                        "value": "customvalue"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "ResponseHeaderModifier",
+                            "responseHeaderModifier": {
+                                "remove": ["content-length"]
+                            }
+                        }
+                    ],
+                    "backendRefs": [
+                        {
+                            "weight": 1,
+                            "group": "",
+                            "kind": "Service",
+                            "name": backenduuid,
+                            "namespace": "apk-platform",
+                            "port": 443
+                        }
+                    ]
+                },
+                {
+                    "matches": [
+                        {
+                            "path": {
+                                "type": "RegularExpression",
+                                "value": "/pizzaAPI/1.0.0(.*)"
+                            },
+                            "method": "PATCH"
+                        }
+                    ],
+                    "filters": [
+                        {
+                            "type": "URLRewrite",
+                            "urlRewrite": {
+                                "path": {
+                                    "type": "ReplaceFullPath",
+                                    "replaceFullPath": "\\1"
+                                }
+                            }
+                        },
+                        {
+                            "type": "RequestHeaderModifier",
+                            "requestHeaderModifier": {
+                                "set": [
+                                    {
+                                        "name": "customadd",
+                                        "value": "customvalue"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "ResponseHeaderModifier",
+                            "responseHeaderModifier": {
+                                "remove": ["content-length"]
+                            }
+                        }
+                    ],
+                    "backendRefs": [
+                        {
+                            "weight": 1,
+                            "group": "",
+                            "kind": "Service",
+                            "name": backenduuid,
+                            "namespace": "apk-platform",
+                            "port": 443
+                        }
+                    ]
+                }
+            ],
+            "parentRefs": [
+                {
+                    "group": "gateway.networking.k8s.io",
+                    "kind": "Gateway",
+                    "name": "Default"
+                }
+            ]
+        }
+    };
+}
+
 function createAPIDataProvider() returns map<[string, string, API, model:ConfigMap, any, model:Httproute?, any, model:Httproute?, any, [model:Service, any][], [model:BackendPolicy, any][], model:API, any, model:RuntimeAPI, any, string, anydata]> {
     API api = {
         name: "PizzaAPI",
@@ -2748,6 +3016,62 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             "authTypeEnabled": true,
             "throttlingPolicy": 1000
         }]
+    };
+    API apiWithAPIPolicies = {
+        name: "PizzaAPI",
+        context: "/pizzaAPI/1.0.0",
+        'version: "1.0.0",
+        endpointConfig: {"production_endpoints": {"url": "https://localhost"}},
+        operations: [
+        {
+            "target": "/*",
+            "verb": "GET",
+            "authTypeEnabled": true,
+            "throttlingPolicy": 1000
+        },
+        {
+            "target": "/*",
+            "verb": "PUT",
+            "authTypeEnabled": true,
+            "throttlingPolicy": 1000
+        },
+        {
+            "target": "/*",
+            "verb": "POST",
+            "authTypeEnabled": true,
+            "throttlingPolicy": 1000
+        },
+        {
+            "target": "/*",
+            "verb": "DELETE",
+            "authTypeEnabled": true,
+            "throttlingPolicy": 1000
+        },
+        {
+            "target": "/*",
+            "verb": "PATCH",
+            "authTypeEnabled": true,
+            "throttlingPolicy": 1000
+        }],
+        apiPolicies: {
+            "request": [
+                {
+                    "policyName": "addHeader",
+                    "parameters": [{
+                        "headerName": "customadd",
+                        "headerValue": "customvalue"
+                    }]
+                }
+            ],
+            "response": [
+                {
+                    "policyName": "removeHeader",
+                    "parameters": [{
+                        "headerName": "content-length"
+                    }]
+                }
+            ]
+        }
     };
     API apiWithBothPolicies = {
         name: "PizzaAPIPolicies",
@@ -2888,7 +3212,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
     model:ConfigMap configmap = getMockConfigMap1(apiUUID, api);
     model:Httproute prodhttpRoute = getMockHttpRouteWithBackend(api, apiUUID, backenduuid, PRODUCTION_TYPE, organiztion1);
     model:Httproute sandhttpRoute = getMockHttpRouteWithBackend(api, apiUUID, backenduuid1, SANDBOX_TYPE, organiztion1);
-    model:Httproute prodhttpRouteWithPolicies = getMockHttpRouteWithOperationPolicies(api, apiUUID, backenduuid, PRODUCTION_TYPE, organiztion1);
+    model:Httproute prodhttpRouteWithOperationPolicies = getMockHttpRouteWithOperationPolicies(api, apiUUID, backenduuid, PRODUCTION_TYPE, organiztion1);
+    model:Httproute prodhttpRouteWithAPIPolicies = getMockHttpRouteWithAPIPolicies(api, apiUUID, backenduuid, PRODUCTION_TYPE, organiztion1);
 
     CreatedAPI createdAPI = {body: {name: "PizzaAPI", context: "/pizzaAPI/1.0.0", 'version: "1.0.0", id: k8sapiUUID, createdTime: "2023-01-17T11:23:49Z"}};
     commons:APKError productionEndpointNotSpecifiedError = error("Production Endpoint Not specified", message = "Endpoint Not specified", description = "Production Endpoint Not specified", code = 90911, statusCode = 400);
@@ -3205,8 +3530,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             apiWithOperationPolicies,
             configmap,
             getMockConfigMapResponse(configmap.clone()),
-            prodhttpRouteWithPolicies,
-            getMockHttpRouteResponse(prodhttpRouteWithPolicies.clone()),
+            prodhttpRouteWithOperationPolicies,
+            getMockHttpRouteResponse(prodhttpRouteWithOperationPolicies.clone()),
             (),
             (),
             services,
@@ -3215,6 +3540,26 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
             getMockRuntimeAPI(apiWithOperationPolicies, apiUUID, organiztion1, ()),
             getMockRuntimeAPIResponse(getMockRuntimeAPI(apiWithOperationPolicies, apiUUID, organiztion1, ())),
+            k8sapiUUID,
+            createdAPI.toBalString()
+        ]
+        ,
+        "17": [
+            apiUUID,
+            backenduuid,
+            apiWithAPIPolicies,
+            configmap,
+            getMockConfigMapResponse(configmap.clone()),
+            prodhttpRouteWithAPIPolicies,
+            getMockHttpRouteResponse(prodhttpRouteWithAPIPolicies.clone()),
+            (),
+            (),
+            services,
+            backendPolicies,
+            getMockAPI(api, apiUUID, organiztion1.uuid),
+            getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
+            getMockRuntimeAPI(apiWithAPIPolicies, apiUUID, organiztion1, ()),
+            getMockRuntimeAPIResponse(getMockRuntimeAPI(apiWithAPIPolicies, apiUUID, organiztion1, ())),
             k8sapiUUID,
             createdAPI.toBalString()
         ]
