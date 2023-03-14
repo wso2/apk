@@ -1,19 +1,16 @@
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: Gateway
 metadata:
-  name: example
+  name: defaultnew
   annotations:
-    cert-manager.io/issuer: foo
+    cert-manager.io/issuer: selfsigned-issuer
 spec:
-  gatewayClassName: foo
+  gatewayClassName: defaultnew
   listeners:
     - name: http
-      hostname: example.com
+      hostname: example2.com
       port: 443
       protocol: HTTPS
-      allowedRoutes:
-        namespaces:
-          from: All
       tls:
         mode: Terminate
         certificateRefs:
