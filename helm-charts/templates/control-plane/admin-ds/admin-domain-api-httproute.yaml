@@ -38,12 +38,7 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/policies/search"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - 
   - matches:
     - path:
         type: "RegularExpression"
@@ -56,12 +51,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/application-rate-plans"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -74,12 +66,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/application-rate-plans"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -92,12 +81,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/application-rate-plans/\\1"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -110,12 +96,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/application-rate-plans/\\1"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -128,12 +111,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/application-rate-plans/\\1"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -146,12 +126,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/business-plans"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -164,12 +141,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/business-plans"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -182,12 +156,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/business-plans/\\1"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -200,12 +171,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/business-plans/\\1"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -218,12 +186,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/business-plans/\\1"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -236,12 +201,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/throttling/policies/advanced"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -254,12 +216,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/throttling/policies/advanced"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -272,12 +231,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/throttling/policies/advanced/\\1"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -290,12 +246,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/throttling/policies/advanced/\\1"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -308,12 +261,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/throttling/policies/advanced/\\1"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -326,12 +276,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/throttling/policies/export"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -344,12 +291,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/throttling/policies/import"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -362,12 +306,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/deny-policies"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -380,12 +321,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/deny-policies"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -398,12 +336,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/deny-policies/\\1"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -416,12 +351,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/deny-policies/\\1"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -434,12 +366,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/deny-policies/\\1"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -452,12 +381,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/applications"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -470,12 +396,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/applications/\\1"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -488,12 +411,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/applications/\\1"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -506,12 +426,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/applications/\\1/change-owner"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -524,12 +441,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/environments"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -542,12 +456,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/environments"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -560,12 +471,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/environments/\\1"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -578,12 +486,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/environments/\\1"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -596,12 +501,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/bot-detection-data"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -614,12 +516,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/monetization/publish-usage"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -632,12 +531,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/monetization/publish-usage/status"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -650,12 +546,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/workflows"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -668,12 +561,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/workflows/\\1"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -686,12 +576,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/workflows/update-workflow-status"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -704,12 +591,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/tenant-info/\\1"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -722,12 +606,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/custom-urls/\\1"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -740,12 +621,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/api-categories"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -758,12 +636,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/api-categories"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -776,12 +651,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/api-categories/\\1"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -794,12 +666,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/api-categories/\\1"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -812,12 +681,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/settings"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -830,12 +696,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/system-scopes/\\1"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -848,12 +711,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/system-scopes"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -866,12 +726,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/system-scopes"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -884,12 +741,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/system-scopes/role-aliases"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -902,12 +756,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/system-scopes/role-aliases"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -920,12 +771,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/roles/\\1"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -938,12 +786,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/tenant-theme"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -956,12 +801,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/tenant-theme"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -974,12 +816,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/tenant-config"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -992,12 +831,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/tenant-config"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -1010,12 +846,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/tenant-config-schema"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -1028,12 +861,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/key-managers"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -1046,12 +876,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/key-managers"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -1064,12 +891,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/key-managers/\\1"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -1082,12 +906,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/key-managers/\\1"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -1100,12 +921,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/key-managers/\\1"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -1118,34 +936,25 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/key-managers/discover"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "PathPrefix"
         value: "/api/am/admin/organizations"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "Exact"
         value: "/api/am/admin/organization-info"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   parentRefs:
   - group: "gateway.networking.k8s.io"
     kind: "Gateway"
