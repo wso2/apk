@@ -132,6 +132,20 @@ data:
       host = "{{ template "apk-helm.resource.prefix" . }}-management-server.{{ .Release.Namespace }}.svc"
       {{end}}
 
+{{ if and .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.filters }}
+{{ range $index, $filter := .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.filters}}
+    [[enforcer.filters]]
+        className = "{{$filter.className}}"
+        position = {{$filter.position}}
+        {{ if $filter.properties }}
+        [enforcer.filters.configProperties]
+        {{range $key, $value := $filter.properties}}
+        {{$value.name}} = "{{$value.value}}"
+        {{end}}
+        {{end}}
+{{end}}
+{{end}}
+
   config.toml.template: |
     # The configuration file for mgw
 
