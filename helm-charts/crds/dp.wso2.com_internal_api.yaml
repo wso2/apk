@@ -158,9 +158,14 @@ spec:
                                 policyName:
                                   type: string
                                 parameters:
-                                  type: object
-                                  additionalProperties:
+                                  type: array
+                                  items:
                                     type: object
+                                    properties:
+                                      headerName:
+                                        type: string
+                                      headerValue:
+                                        type: string
                           response:
                             type: array
                             items:
@@ -169,9 +174,14 @@ spec:
                                 policyName:
                                   type: string
                                 parameters:
-                                  type: object
-                                  additionalProperties:
+                                  type: array
+                                  items:
                                     type: object
+                                    properties:
+                                      headerName:
+                                        type: string
+                                      headerValue:
+                                        type: string
                 serviceInfo:
                   type: object
                   properties:
