@@ -39,14 +39,6 @@ resources:
 - api:
     crdVersion: v1
     namespaced: true
-  domain: wso2.com
-  group: dp
-  kind: BackendPolicy
-  path: github.com/wso2/apk/adapter/pkg/operator/apis/dp/v1alpha1
-  version: v1alpha1
-- api:
-    crdVersion: v1
-    namespaced: true
   controller: true
   domain: wso2.com
   group: dp

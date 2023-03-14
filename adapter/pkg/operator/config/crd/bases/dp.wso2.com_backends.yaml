@@ -112,22 +112,22 @@ spec:
             description: BackendStatus defines the observed state of Backend
             properties:
               accepted:
-                description: Accepted represents whether the BackendPolicy is accepted
-                  or not.
+                description: Accepted represents whether the Backend is accepted or
+                  not.
                 type: boolean
               events:
-                description: Events contains a list of events related to the BackendPolicy.
+                description: Events contains a list of events related to the Backend.
                 items:
                   type: string
                 type: array
               message:
                 description: Message represents a user friendly message that explains
-                  the current state of the BackendPolicy.
+                  the current state of the Backend.
                 minLength: 4
                 type: string
               status:
-                description: Status denotes the state of the BackendPolicy in its
-                  lifecycle. Possible values could be Accepted, Invalid, Deploy etc.
+                description: Status denotes the state of the Backend in its lifecycle.
+                  Possible values could be Accepted, Invalid, Deploy etc.
                 minLength: 4
                 type: string
               transitionTime:
