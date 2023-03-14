@@ -24,6 +24,28 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
+// BackendProtocolType defines the backend protocol type.
+type BackendProtocolType string
+
+const (
+	// HTTPProtocol is the http protocol
+	HTTPProtocol BackendProtocolType = "http"
+	// HTTPSProtocol is the https protocol
+	HTTPSProtocol BackendProtocolType = "https"
+	// WSProtocol is the ws protocol
+	WSProtocol BackendProtocolType = "ws"
+	// WSSProtocol is the wss protocol
+	WSSProtocol BackendProtocolType = "wss"
+)
+
+// BackendConfigs holds different backend configurations
+type BackendConfigs struct {
+	// +kubebuilder:validation:Enum=http;https;ws;wss
+	Protocol BackendProtocolType `json:"protocol"`
+	TLS      TLSConfig           `json:"tls,omitempty"`
+	Security []SecurityConfig    `json:"security,omitempty"`
+}
+
 // BackendSpec defines the desired state of Backend
 type BackendSpec struct {
 	// +kubebuilder:validation:MinItems=1
@@ -47,9 +69,35 @@ type Service struct {
 	Port uint32 `json:"port"`
 }
 
+// TLSConfig defines enpoint TLS configurations
+type TLSConfig struct {
+	CertificateInline string     `json:"certificateInline,omitempty"`
+	SecretRef         *RefConfig `json:"secretRef,omitempty"`
+	ConfigMapRef      *RefConfig `json:"configMapRef,omitempty"`
+	AllowedSANs       []string   `json:"allowedSANs,omitempty"`
+}
+
+// RefConfig holds a config for a secret or a configmap
+type RefConfig struct {
+	Name string `json:"name"`
+	Key  string `json:"key"`
+}
+
+// SecurityConfig defines enpoint security configurations
+type SecurityConfig struct {
+	Type  string              `json:"type,omitempty"`
+	Basic BasicSecurityConfig `json:"basic,omitempty"`
+}
+
+// BasicSecurityConfig defines basic security configurations
+type BasicSecurityConfig struct {
+	Username string `json:"username,omitempty"`
+	Password string `json:"password,omitempty"`
+}
+
 // BackendStatus defines the observed state of Backend
 type BackendStatus struct {
-	// Status denotes the state of the BackendPolicy in its lifecycle.
+	// Status denotes the state of the Backend in its lifecycle.
 	// Possible values could be Accepted, Invalid, Deploy etc.
 	//
 	//
@@ -57,14 +105,14 @@ type BackendStatus struct {
 	Status string `json:"status"`
 
 	// Message represents a user friendly message that explains the
-	// current state of the BackendPolicy.
+	// current state of the Backend.
 	//
 	//
 	// +kubebuilder:validation:MinLength=4
 	// +optional
 	Message string `json:"message"`
 
-	// Accepted represents whether the BackendPolicy is accepted or not.
+	// Accepted represents whether the Backend is accepted or not.
 	//
 	//
 	Accepted bool `json:"accepted"`
@@ -74,7 +122,7 @@ type BackendStatus struct {
 	//
 	TransitionTime *metav1.Time `json:"transitionTime"`
 
-	// Events contains a list of events related to the BackendPolicy.
+	// Events contains a list of events related to the Backend.
 	//
 	//
 	// +optional
