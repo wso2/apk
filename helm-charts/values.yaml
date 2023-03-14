@@ -269,7 +269,7 @@ wso2:
           #   certKeyFilename: ""
           #   certFilename: ""
       ratelimiter:
-        enabled: true
+        enabled: false
         appName: "ratelimiter"
         deployment:
           npi: ratelimiter-npi
@@ -502,7 +502,7 @@ idp:
       idpLoginUrl: "https://idp.am.wso2.com:9095/commonauth/login"
       idpAuthCallBackUrl: "https://idp.am.wso2.com:9095/oauth2/auth-callback"
 redis:
-  enabled: true
+  enabled: false
   architecture: standalone
   fullnameOverride: redis
   primary:
