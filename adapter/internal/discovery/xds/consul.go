@@ -26,7 +26,9 @@ import (
 	logger "github.com/wso2/apk/adapter/internal/loggers"
 	logging "github.com/wso2/apk/adapter/internal/logging"
 	"github.com/wso2/apk/adapter/internal/svcdiscovery"
+	"github.com/wso2/apk/adapter/pkg/operator/constants"
 	"google.golang.org/protobuf/types/known/anypb"
+	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
 var (
@@ -99,9 +101,9 @@ func updateCertsForServiceMesh(organizationID string) {
 	}
 
 	//send the update to Router
-	// for apiKey := range orgIDOpenAPIClustersMap[organizationID] {
-	// 	updateXDSClusterCache(apiKey, organizationID)
-	// }
+	for apiKey := range orgIDOpenAPIClustersMap[organizationID] {
+		updateXDSClusterCache(apiKey, organizationID)
+	}
 }
 
 func getServiceDiscoveryData(query svcdiscovery.Query, clusterName string, apiKey string, organizationID string) {
@@ -175,7 +177,7 @@ func updateCluster(apiKey string, clusterName string, organizationID string, que
 						},
 					},
 				}
-				// updateXDSClusterCache(apiKey, organizationID)
+				updateXDSClusterCache(apiKey, organizationID)
 			}
 		}
 	}
@@ -185,7 +187,9 @@ func updateXDSClusterCache(apiKey string, organizationID string) {
 	for key, envoyLabelList := range orgIDOpenAPIEnvoyMap[organizationID] {
 		if key == apiKey {
 			for _, label := range envoyLabelList {
-				listeners, clusters, routes, endpoints, _ := GenerateEnvoyResoucesForLabel(label)
+				gateway := new(gwapiv1b1.Gateway)
+				gateway.Name = label
+				listeners, clusters, routes, endpoints, _ := GenerateEnvoyResoucesForGateway(gateway, true, constants.APIController)
 				UpdateXdsCacheWithLock(label, endpoints, clusters, routes, listeners)
 				logger.LoggerXds.Info("Updated XDS cache by consul service discovery for API: ", apiKey)
 			}

@@ -71,7 +71,6 @@ func NewGatewayController(mgr manager.Manager, operatorDataStore *synchronizer.O
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2610, err))
 		return err
 	}
-	//ctx := context.Background()
 
 	conf := config.ReadConfigs()
 	predicates := []predicate.Predicate{predicate.NewPredicateFuncs(utils.FilterByNamespaces(conf.Adapter.Operator.Namespaces))}
@@ -81,10 +80,6 @@ func NewGatewayController(mgr manager.Manager, operatorDataStore *synchronizer.O
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2611, err))
 		return err
 	}
-	// if err := addIndexes(ctx, mgr); err != nil {
-	// 	loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2612, err))
-	// 	return err
-	// }
 
 	loggers.LoggerAPKOperator.Info("Gateway Controller successfully started. Watching Gateway Objects....")
 	return nil
