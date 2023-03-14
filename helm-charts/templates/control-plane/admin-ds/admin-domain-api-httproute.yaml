@@ -38,7 +38,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/admin/policies/search"
     backendRefs:
-    - 
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
