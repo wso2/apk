@@ -70,8 +70,9 @@ spec:
           type: ReplacePrefixMatch
           replacePrefixMatch: /test-get-path
     backendRefs:
-    - name: infra-backend-v1
-      port: 8080
+    - group: dp.wso2.com
+      kind: Backend
+      name: infra-backend-v1
   - matches:
     - path:
         type: PathPrefix
@@ -84,5 +85,6 @@ spec:
           type: ReplacePrefixMatch
           replacePrefixMatch: /test-post-path
     backendRefs:
-    - name: infra-backend-v1
-      port: 8080
+    - group: dp.wso2.com
+      kind: Backend
+      name: infra-backend-v1

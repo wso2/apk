@@ -54,8 +54,9 @@ spec:
           type: ReplaceFullPath
           replaceFullPath: /v2/echo-full/no-slash/findByStatus
     backendRefs:
-    - name: infra-backend-v1
-      port: 8080
+    - group: dp.wso2.com
+      kind: Backend
+      name: infra-backend-v1
   - matches:
     - path:
         type: RegularExpression
@@ -68,8 +69,9 @@ spec:
           type: ReplaceFullPath
           replaceFullPath: /v2/echo-full/no-slash/\1
     backendRefs:
-    - name: infra-backend-v1
-      port: 8080
+    - group: dp.wso2.com
+      kind: Backend
+      name: infra-backend-v1
   - matches:
     - path:
         type: RegularExpression
@@ -82,8 +84,9 @@ spec:
           type: ReplaceFullPath
           replaceFullPath: /v2/echo-full/no-slash/\1/pet/\2
     backendRefs:
-    - name: infra-backend-v1
-      port: 8080
+    - group: dp.wso2.com
+      kind: Backend
+      name: infra-backend-v1
   - matches:
     - path:
         type: Exact
@@ -96,8 +99,9 @@ spec:
           type: ReplaceFullPath
           replaceFullPath: /v2/echo-full/with-slash/findByStatus/
     backendRefs:
-    - name: infra-backend-v1
-      port: 8080
+    - group: dp.wso2.com
+      kind: Backend
+      name: infra-backend-v1
   - matches:
     - path:
         type: RegularExpression
@@ -110,8 +114,9 @@ spec:
           type: ReplaceFullPath
           replaceFullPath: /v2/echo-full/with-slash/\1/
     backendRefs:
-    - name: infra-backend-v1
-      port: 8080
+    - group: dp.wso2.com
+      kind: Backend
+      name: infra-backend-v1
   - matches:
     - path:
         type: RegularExpression
@@ -124,8 +129,9 @@ spec:
           type: ReplaceFullPath
           replaceFullPath: /v2/echo-full/with-slash/\1/pet/\2/
     backendRefs:
-    - name: infra-backend-v1
-      port: 8080
+    - group: dp.wso2.com
+      kind: Backend
+      name: infra-backend-v1
   - matches:
     - path:
         type: Exact
@@ -138,8 +144,9 @@ spec:
           type: ReplaceFullPath
           replaceFullPath: /v2/echo-full/chars
     backendRefs:
-    - name: infra-backend-v1
-      port: 8080
+    - group: dp.wso2.com
+      kind: Backend
+      name: infra-backend-v1
   - matches:
     - path:
         type: RegularExpression
@@ -152,5 +159,6 @@ spec:
           type: ReplaceFullPath
           replaceFullPath: /v2/echo-full/with-param/\1
     backendRefs:
-    - name: infra-backend-v1
-      port: 8080
+    - group: dp.wso2.com
+      kind: Backend
+      name: infra-backend-v1
