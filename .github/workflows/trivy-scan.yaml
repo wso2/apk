@@ -16,10 +16,6 @@ jobs:
           vuln-type: 'os,library'
           output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
-      - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: 'trivy-results.sarif'
   scan-runtime-domain-service:
     runs-on: ubuntu-latest
     steps:
