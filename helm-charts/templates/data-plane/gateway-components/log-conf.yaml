@@ -128,7 +128,7 @@ data:
       enabled = {{.Values.wso2.apk.dp.managementServer.enabled}}
       host = "{{ .Values.wso2.apk.dp.managementServer.serviceUrl | default (printf "%s-management-server.%s.svc" (include "apk-helm.resource.prefix" .) .Release.Namespace) }}"
       {{else}}
-      enabled = true
+      enabled = false
       host = "{{ template "apk-helm.resource.prefix" . }}-management-server.{{ .Release.Namespace }}.svc"
       {{end}}
 
