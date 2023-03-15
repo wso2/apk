@@ -144,7 +144,7 @@ public isolated function getAllOrganizationDAO() returns Internal_Organization[]
                     organization.get(org.id).claimList.push(claim);
                 } else {
                     OrganizationClaim claim = {claimKey: org.claimKey, claimValue: org.claimValue};
-                    Internal_Organization organizationData = {id: org.id, name: org.name, displayName: org.displayName, enabled: org.enabled,  claimList: [claim]};
+                    Internal_Organization organizationData = {id: org.id, name: org.name, displayName: org.displayName, enabled: true,  claimList: [claim]};
                     organization[org.id] = organizationData;
                 }
             };
@@ -180,7 +180,7 @@ isolated function getOrganizationByIdDAO(string id) returns Internal_Organizatio
                         id:id,
                         name:org.name,
                         displayName:org.displayName,
-                        enabled: org.enabled,
+                        enabled: true,
                         claimList:[{
                             claimKey:org.claimKey,
                             claimValue: org.claimValue
@@ -267,7 +267,7 @@ isolated function getOrganizationByNameDAO(string name) returns Internal_Organiz
                         id:org.id,
                         name:org.name,
                         displayName:org.displayName,
-                        enabled: org.enabled,
+                        enabled: true,
                         claimList:[{
                             claimKey:org.claimKey,
                             claimValue: org.claimValue
