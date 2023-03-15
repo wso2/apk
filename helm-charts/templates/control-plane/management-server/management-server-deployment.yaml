@@ -36,19 +36,30 @@ spec:
         - name: management-server
           image: {{ .Values.wso2.apk.cp.managementServer.deployment.image }}
           imagePullPolicy: {{ .Values.wso2.apk.cp.managementServer.deployment.imagePullPolicy }}
+          ports:
+            - containerPort: 18000
+            - containerPort: 8765
+            - containerPort: 8766
+{{ include "apk-helm.deployment.env" .Values.wso2.apk.cp.managementServer.deployment.env | indent 10 }}
+          - name: MGT_SERVER_PRIVATE_KEY_PATH
+            value: /home/wso2/security/keystore/management-server.key
+          - name: MGT_SERVER_PUBLIC_CERT_PATH
+            value: /home/wso2/security/keystore/management-server.pem
+          - name: MGT_SERVER_NAME
+            value: {{ template "apk-helm.resource.prefix" . }}-management-server.{{ .Release.Namespace }}.svc
 {{ include "apk-helm.deployment.resources" .Values.wso2.apk.cp.managementServer.deployment.resources | indent 10 }}
           volumeMounts:
             - name: management-server-keystore-secret-volume
               mountPath: /home/wso2/security/keystore/management-server.key
-            {{- if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.cp.managementServer.configs.tls }}
+            {{- if and .Values.wso2.apk.cp.managementServer.configs .Values.wso2.apk.cp.managementServer.configs.tls }}
               subPath: {{ .Values.wso2.apk.cp.managementServer.configs.tls.certKeyFilename | default "tls.key" }}
             {{- else }}
               subPath: tls.key
             {{- end }}
             - name: management-server-keystore-secret-volume
               mountPath: /home/wso2/security/keystore/management-server.pem
-            {{- if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.cp.managementServer.configs.tls }}
-              subPath: {{ .Values.wso2.apk.cp.managementServer.configs.tls.certFilename | default "tls.key" }}
+            {{- if and .Values.wso2.apk.cp.managementServer.configs .Values.wso2.apk.cp.managementServer.configs.tls }}
+              subPath: {{ .Values.wso2.apk.cp.managementServer.configs.tls.certFilename | default "tls.crt" }}
             {{- else }}
               subPath: tls.crt
             {{- end }}
@@ -66,13 +77,20 @@ spec:
               subPath: {{$value.fileName}}
             {{ end }}
             {{ end }}
-
             - name: management-server-config-toml-volume
               mountPath: /home/wso2/conf/
-          ports:
-            - containerPort: 18000
-            - containerPort: 8765
-            - containerPort: 8766
+          readinessProbe:
+            exec:
+              command: [ "sh", "check_health.sh" ]
+            initialDelaySeconds: {{ .Values.wso2.apk.cp.managementServer.deployment.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.wso2.apk.cp.managementServer.deployment.readinessProbe.periodSeconds }}
+            failureThreshold: {{ .Values.wso2.apk.cp.managementServer.deployment.readinessProbe.failureThreshold }}
+          livenessProbe:
+            exec:
+              command: [ "sh", "check_health.sh" ]
+            initialDelaySeconds: {{ .Values.wso2.apk.cp.managementServer.deployment.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.wso2.apk.cp.managementServer.deployment.livenessProbe.periodSeconds }}
+            failureThreshold: {{ .Values.wso2.apk.cp.managementServer.deployment.livenessProbe.failureThreshold }}
       volumes:
         - name: management-server-keystore-secret-volume
           secret:

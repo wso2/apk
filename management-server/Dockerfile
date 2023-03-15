@@ -31,6 +31,8 @@ ARG GRPC_HEALTH_PROBE_PATH=/bin/grpc_health_probe
 ARG TARGETARCH
 ENV MGT_SERVER_PRIVATE_KEY_PATH=/home/wso2/security/keystore/mg.key
 ENV MGT_SERVER_PUBLIC_CERT_PATH=/home/wso2/security/keystore/mg.pem
+ARG CHECKSUM_AMD64="c72704c9cd49fb18f8df28de26e29c2563b6515e38efee65a6c3a29ec7368a91"
+ARG CHECKSUM_ARM64="a7b42093b702ea83f4dcbd1dd74e4085c118fe93b9cfd3f205e48506a9ac94a0"
 
 ARG MOTD="\n\
     Welcome to WSO2 Docker Resources \n\
@@ -46,11 +48,21 @@ RUN \
     && chown -R ${APK_USER}:${APK_USER_GROUP} ${APK_USER_HOME} \
     && echo '[ ! -z "${TERM}" -a -r /etc/motd ] && cat /etc/motd' >> /etc/bash.bashrc; echo "${MOTD}" > /etc/motd
 
+RUN \
+    wget -q https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/v0.4.16/grpc_health_probe-linux-${TARGETARCH} \
+    && mv grpc_health_probe-linux-${TARGETARCH} ${GRPC_HEALTH_PROBE_PATH}\
+    && if [ "${TARGETARCH}" = "amd64" ]; then echo "${CHECKSUM_AMD64}  ${GRPC_HEALTH_PROBE_PATH}" | sha256sum -c -; fi
+
+RUN \
+    chmod +x ${GRPC_HEALTH_PROBE_PATH} \
+    && chown ${APK_USER}:${APK_USER_GROUP} ${GRPC_HEALTH_PROBE_PATH}
+
 WORKDIR ${APK_USER_HOME}
 USER ${APK_USER}
 
 COPY resources/conf/config.toml conf/
 COPY resources/conf/log_config.toml conf/
 COPY ./${TARGETARCH}/main mgt_server
+COPY resources/check_health.sh .
 
 CMD ./mgt_server

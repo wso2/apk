@@ -52,6 +52,8 @@ spec:
               value: /home/wso2/security/keystore/enforcer.key  
             - name: ENFORCER_PUBLIC_CERT_PATH
               value: /home/wso2/security/keystore/enforcer.crt
+            - name: ENFORCER_SERVER_NAME
+              value: {{ template "apk-helm.resource.prefix" . }}-enforcer-service.{{ .Release.Namespace }}.svc
             - name: TRUSTED_CA_CERTS_PATH
               value: "/home/wso2/security/truststore"
             - name: ADAPTER_XDS_PORT
@@ -85,6 +87,20 @@ spec:
             {{- else }}
               subPath: tls.crt
             {{- end }}
+            - name: enforcer-keystore-secret-volume
+              mountPath: /home/wso2/security/truststore/apk.crt
+            {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls }}
+              subPath: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls.caCertFileName | default "ca.crt" }}
+            {{- else }}
+              subPath: ca.crt
+            {{- end }}
+            - name: enforcer-keystore-secret-volume
+              mountPath: /home/wso2/security/truststore/enforcer.crt
+            {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls }}
+              subPath: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls.certFilename | default "tls.crt" }}
+            {{- else }}
+              subPath: tls.crt
+            {{- end }}
             - name: adapter-truststore-secret-volume
               mountPath: /home/wso2/security/truststore/adapter.crt
             {{- if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.dp.adapter.configs.tls }}
@@ -101,9 +117,6 @@ spec:
             {{- end }}
             - name: log-conf-volume
               mountPath: /home/wso2/conf/
-            - mountPath: /home/wso2/check_health.sh
-              name: enforcer-grpc-probe-script-conf-volume
-              subPath: "check_health.sh"
             - name: enforcer-jwt-secret-volume
               mountPath: /home/wso2/security/keystore/mg.pem
               subPath: mg.pem
@@ -116,11 +129,18 @@ spec:
             - name: enforcer-trusted-certs
               mountPath: /home/wso2/security/truststore/wso2carbon.pem
               subPath: wso2carbon.pem
-          # readinessProbe:
-          #   exec:
-          #     command: [ "sh", "check_health.sh" ]
-          #   initialDelaySeconds: 5
-          #   periodSeconds: 5
+          readinessProbe:
+            exec:
+              command: [ "sh", "check_health.sh" ]
+            initialDelaySeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.readinessProbe.periodSeconds }}
+            failureThreshold: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.readinessProbe.failureThreshold }}
+          livenessProbe:
+            exec:
+              command: [ "sh", "check_health.sh" ]
+            initialDelaySeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.livenessProbe.periodSeconds }}
+            failureThreshold: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.livenessProbe.failureThreshold }}
         - name: router
           image: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.image }}
           imagePullPolicy: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.imagePullPolicy }}
@@ -196,15 +216,17 @@ spec:
             {{- end }}
             - name: log-conf-volume
               mountPath: /home/wso2/conf/
-          # readinessProbe:
-          #   httpGet:
-          #     port: 9095
-          #     path: /ready
-          #     scheme: HTTPS
-          #     httpHeaders:
-          #       - name: Host
-          #         value: localhost
-          #   periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              port: 9095
+              path: /health
+              scheme: HTTPS
+              httpHeaders:
+                - name: Host
+                  value: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.host }}
+            initialDelaySeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.periodSeconds }}
+            failureThreshold: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.failureThreshold }}
       volumes: 
         - name: enforcer-keystore-secret-volume
           secret: 
@@ -216,10 +238,6 @@ spec:
         - name: log-conf-volume
           configMap: 
             name: {{ template "apk-helm.resource.prefix" . }}-log-conf
-        - name: enforcer-grpc-probe-script-conf-volume
-          configMap:
-            name: {{ template "apk-helm.resource.prefix" . }}-enforcer-grpc-probe-script-conf
-            defaultMode: 0777
         - name: router-keystore-secret-volume
           secret: 
             {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls }}
