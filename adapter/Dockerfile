@@ -24,6 +24,8 @@ ENV LANG=C.UTF-8
 
 ARG APK_USER=wso2
 ARG APK_USER_ID=802
+ARG CHECKSUM_AMD64="c72704c9cd49fb18f8df28de26e29c2563b6515e38efee65a6c3a29ec7368a91"
+ARG CHECKSUM_ARM64="a7b42093b702ea83f4dcbd1dd74e4085c118fe93b9cfd3f205e48506a9ac94a0"
 ARG APK_USER_GROUP=wso2
 ARG APK_USER_GROUP_ID=802
 ARG APK_USER_HOME=/home/${APK_USER}
@@ -48,7 +50,9 @@ RUN \
 
 RUN \
     wget -q https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/v0.4.16/grpc_health_probe-linux-${TARGETARCH} \
-    && mv grpc_health_probe-linux-${TARGETARCH} ${GRPC_HEALTH_PROBE_PATH}
+    && mv grpc_health_probe-linux-${TARGETARCH} ${GRPC_HEALTH_PROBE_PATH} \
+    && if [ "${TARGETARCH}" = "amd64" ]; then echo "${CHECKSUM_AMD64}  ${GRPC_HEALTH_PROBE_PATH}" | sha256sum -c -; fi
+    
 RUN \
     chmod +x ${GRPC_HEALTH_PROBE_PATH} \
     && chown ${APK_USER}:${APK_USER_GROUP} ${GRPC_HEALTH_PROBE_PATH}

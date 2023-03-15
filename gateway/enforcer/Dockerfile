@@ -36,7 +36,8 @@ ARG APK_VERSION=1.0-SNAPSHOT
 ENV VERSION=${APK_VERSION}
 ENV JAVA_OPTS=""
 ENV ENFORCER_HOME=${APK_USER_HOME}
-
+ARG CHECKSUM_AMD64="c72704c9cd49fb18f8df28de26e29c2563b6515e38efee65a6c3a29ec7368a91"
+ARG CHECKSUM_ARM64="a7b42093b702ea83f4dcbd1dd74e4085c118fe93b9cfd3f205e48506a9ac94a0"
 ENV ENFORCER_PRIVATE_KEY_PATH=/home/wso2/security/keystore/mg.key
 ENV ENFORCER_PUBLIC_CERT_PATH=/home/wso2/security/keystore/mg.pem
 ENV TRUSTED_CA_CERTS_PATH=/home/wso2/security/truststore
@@ -64,7 +65,9 @@ RUN \
 
 RUN \
     wget -q https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/v0.4.16/grpc_health_probe-linux-${TARGETARCH} \
-    && mv grpc_health_probe-linux-${TARGETARCH} ${GRPC_HEALTH_PROBE_PATH}
+    && mv grpc_health_probe-linux-${TARGETARCH} ${GRPC_HEALTH_PROBE_PATH}\
+    && if [ "${TARGETARCH}" = "amd64" ]; then echo "${CHECKSUM_AMD64}  ${GRPC_HEALTH_PROBE_PATH}" | sha256sum -c -; fi
+
 RUN \
     chmod +x ${GRPC_HEALTH_PROBE_PATH} \
     && chown ${APK_USER}:${APK_USER_GROUP} ${GRPC_HEALTH_PROBE_PATH}
