@@ -1001,6 +1001,248 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
+  /rate-limits/api:
+    get:
+      tags:
+        - API Rate Limit Policies
+      summary: |
+        Retrieve/Search API Rate Limit Policies
+      description: |
+        This operation provides you a list of available API rate limit policies qualifying under a given search condition.
+        The list is sorted by policy name.
+      operationId: getAllAPIRateLimitPolicies
+      parameters:
+        - name: limit
+          in: query
+          description: |
+            Maximum size of resource array to return.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: integer
+            default: 25
+        - name: offset
+          in: query
+          description: |
+            Starting point within the complete list of items qualified.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: integer
+            default: 0
+        - name: sortOrder
+          in: query
+          description: |
+            Order of sorting(ascending/descending).
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            default: desc
+            enum:
+              - asc
+              - desc
+        - name: query
+          in: query
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: |
+            OK.
+            List of qualifying API Rate Limit Policies is returned.
+          headers:
+            Content-Type:
+              description: The content type of the body.
+              style: simple
+              explode: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIRateLimitPolicyList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    post:
+      tags:
+        - API Rate Limit Policies
+      summary: Create a api rate limit policy
+      description: |
+        This operation can be used to create a api rate limit policy.
+      operationId: createAPIRateLimitPolicy
+      requestBody:
+        description: |
+          API rate limit policy object that should to be created
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/APIRateLimitPolicy"
+      responses:
+        "201":
+          description: |
+            Created.
+            Successful response with the newly created object as entity in the body.
+            Location header contains the URL of newly created entity.
+          headers:
+            Location:
+              description: |
+                The URL of the newly created resource.
+              style: simple
+              explode: false
+              schema:
+                type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              style: simple
+              explode: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIRateLimitPolicy"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /rate-limits/api/{policyId}:
+    get:
+      tags:
+        - API Rate Limit Policies
+      summary: Get Details of an API Rate Limit Policy
+      description: |
+        Using this operation, you can retrieve complete details of a single API rate limit policy.
+        You need to provide the id of the rate limit policy to retrive it.
+      operationId: getAPIRateLimitPolicy
+      parameters:
+        - name: policyId
+          in: path
+          description: |
+            **Policy ID** of the API Rate Limit Policy to be retrieved.
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: |
+            OK.
+            Requested API Rate Limit Policy is returned
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              style: simple
+              explode: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIRateLimitPolicy"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    put:
+      tags:
+        - API Rate Limit Policies
+      summary: Update an API Rate Limit Policy
+      description: |
+        This operation can be used to update an existing API rate limit policy.
+      operationId: updateAPIRateLimitPolicy
+      parameters:
+        - name: policyId
+          in: path
+          description: |
+            **Policy ID** of the API Rate Limit Policy to be updated.
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      requestBody:
+        description: API object that needs to be added
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/APIRateLimitPolicy"
+        required: true
+      responses:
+        "200":
+          description: |
+            OK.
+            Successful response with updated APIRateLimitPolicy object
+          headers:
+            Location:
+              description: |
+                The URL of the newly created resource.
+              style: simple
+              explode: false
+              schema:
+                type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              style: simple
+              explode: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIRateLimitPolicy"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    delete:
+      tags:
+        - API Rate Limit Policies
+      summary: Delete an API Rate Limit Policy
+      description: |
+        This operation can be used to delete an existing API rate limit policy by providing
+        the policyId of the API rate limit policy.
+      operationId: deleteAPIRateLimitPolicy
+      parameters:
+        - name: policyId
+          in: path
+          description: |
+            **Policy ID** of the API Rate Limit Policy to be deleted.
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: |
+            OK.
+            Resource successfully deleted.
+          content: {}
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
 components:
   schemas:
     APIList:
@@ -1636,6 +1878,72 @@ components:
           type: integer
           format: int32
           example: 3600
+    APIRateLimitPolicyList:
+      title: Paginated List of API Rate Limit Policies
+      type: object
+      properties:
+        count:
+          type: integer
+          description: |
+            Number of API rate limit policies returned.
+          example: 1
+        list:
+          type: array
+          items:
+            $ref: '#/components/schemas/APIRateLimitPolicy'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+    APIRateLimitPolicy:
+      title: api Type Rate Limit Policy
+      allOf:
+        - $ref: '#/components/schemas/RateLimitPolicy'
+        - $ref: "#/components/schemas/RateLimit"
+    RateLimitPolicy:
+      title: Rate Limit Policy
+      type: object
+      required:
+        - policyName
+      properties:
+        policyId:
+          type: string
+          description: Id of the rate limit policy
+          readOnly: true
+          example: 0c6439fd-9b16-3c2e-be6e-1086e0b9aa93
+        policyName:
+          type: string
+          description: Name of the rate limit policy
+          maxLength: 60
+          minLength: 1
+          example: 30PerMin
+        displayName:
+          type: string
+          description: Display name of the rate limit policy
+          maxLength: 512
+          example: 30PerMin
+        description:
+          type: string
+          description: Description of the rate limit policy
+          maxLength: 1024
+          example: Allows 30 requests per minute
+    RateLimit:
+      title: Rate Limit Details
+      type: object
+      required:
+        - requestPerUnit
+        - unit
+      properties:
+        requestPerUnit:
+          type: integer
+          description: Number of requests allowed per specified unit of time
+          example: 30
+        unit:
+          type: string
+          description: Unit of the time
+          enum:
+          - Minute
+          - Hour
+          - Day
+          example: Minute
   responses:
     BadRequest:
       description: Bad Request. Invalid request or validation error.
