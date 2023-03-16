@@ -16,6 +16,7 @@
 // under the License.
 //
 import ballerina/http;
+import ballerina/test;
 import runtime_domain_service.model;
 
 public function getMockAPIList() returns model:APIList {
@@ -541,4 +542,264 @@ public function getMockInternalAPI() returns model:RuntimeAPI {
         }
     };
     return runtimeAPI;
+}
+@test:Config{}
+public function testConvertion() {
+    json backendList = {
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "dp.wso2.com/v1alpha1",
+            "kind": "Backend",
+            "metadata": {
+                "creationTimestamp": "2023-03-16T08:05:48Z",
+                "generation": 1,
+                "labels": {
+                    "api-name": "testAPIV2",
+                    "api-version": "1.0.0"
+                },
+                "name": "backend-3e5fb4d0a2a8d53915dfa179f3089821f0f6abc5-api",
+                "namespace": "backend-cr",
+                "resourceVersion": "1166701",
+                "uid": "0b16ae85-9a69-4256-a8d2-76b2c32b2522"
+            },
+            "spec": {
+                "protocol": "http",
+                "services": [
+                    {
+                        "host": "backend.test-apk.svc.cluster.local",
+                        "port": 80
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "dp.wso2.com/v1alpha1",
+            "kind": "Backend",
+            "metadata": {
+                "creationTimestamp": "2023-03-16T08:01:21Z",
+                "generation": 1,
+                "labels": {
+                    "api-name": "testAPI",
+                    "api-version": "1.0.0"
+                },
+                "name": "backend-cbe2237e4e97924e88d9300fc28719944ce634d2-api",
+                "namespace": "backend-cr",
+                "resourceVersion": "1166436",
+                "uid": "73766dd5-dacf-4aea-ab60-bd87b25c2693"
+            },
+            "spec": {
+                "protocol": "http",
+                "services": [
+                    {
+                        "host": "backend.test-apk.svc.cluster.local",
+                        "port": 80
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "dp.wso2.com/v1alpha1",
+            "kind": "Backend",
+            "metadata": {
+                "annotations": {
+                    "meta.helm.sh/release-name": "backend-cr",
+                    "meta.helm.sh/release-namespace": "backend-cr"
+                },
+                "creationTimestamp": "2023-03-15T18:11:43Z",
+                "generation": 1,
+                "labels": {
+                    "app.kubernetes.io/managed-by": "Helm"
+                },
+                "name": "backend-cr-wso2-apk-admin-ds-backend",
+                "namespace": "backend-cr",
+                "resourceVersion": "1147899",
+                "uid": "dffb8f27-47b4-4a6c-bb70-df192b9713e7"
+            },
+            "spec": {
+                "protocol": "http",
+                "services": [
+                    {
+                        "host": "backend-cr-wso2-apk-admin-ds-service.backend-cr",
+                        "port": 9443
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "dp.wso2.com/v1alpha1",
+            "kind": "Backend",
+            "metadata": {
+                "annotations": {
+                    "meta.helm.sh/release-name": "backend-cr",
+                    "meta.helm.sh/release-namespace": "backend-cr"
+                },
+                "creationTimestamp": "2023-03-15T18:11:43Z",
+                "generation": 1,
+                "labels": {
+                    "app.kubernetes.io/managed-by": "Helm"
+                },
+                "name": "backend-cr-wso2-apk-backoffice-ds-backend",
+                "namespace": "backend-cr",
+                "resourceVersion": "1147897",
+                "uid": "25b17252-039f-4d24-893b-0e27aab1f675"
+            },
+            "spec": {
+                "protocol": "http",
+                "services": [
+                    {
+                        "host": "backend-cr-wso2-apk-backoffice-ds-service.backend-cr",
+                        "port": 9443
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "dp.wso2.com/v1alpha1",
+            "kind": "Backend",
+            "metadata": {
+                "annotations": {
+                    "meta.helm.sh/release-name": "backend-cr",
+                    "meta.helm.sh/release-namespace": "backend-cr"
+                },
+                "creationTimestamp": "2023-03-15T18:11:43Z",
+                "generation": 1,
+                "labels": {
+                    "app.kubernetes.io/managed-by": "Helm"
+                },
+                "name": "backend-cr-wso2-apk-devportal-ds-backend",
+                "namespace": "backend-cr",
+                "resourceVersion": "1147895",
+                "uid": "69db6be4-5db0-40f7-adaf-bdf62bd42081"
+            },
+            "spec": {
+                "protocol": "http",
+                "services": [
+                    {
+                        "host": "backend-cr-wso2-apk-devportal-ds-service.backend-cr",
+                        "port": 9443
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "dp.wso2.com/v1alpha1",
+            "kind": "Backend",
+            "metadata": {
+                "annotations": {
+                    "meta.helm.sh/release-name": "backend-cr",
+                    "meta.helm.sh/release-namespace": "backend-cr"
+                },
+                "creationTimestamp": "2023-03-15T18:11:43Z",
+                "generation": 1,
+                "labels": {
+                    "app.kubernetes.io/managed-by": "Helm"
+                },
+                "name": "backend-cr-wso2-apk-idp-ds-backend",
+                "namespace": "backend-cr",
+                "resourceVersion": "1147900",
+                "uid": "64544deb-1b09-4055-bc17-8513d5dd895d"
+            },
+            "spec": {
+                "protocol": "http",
+                "services": [
+                    {
+                        "host": "backend-cr-wso2-apk-idp-ds-service.backend-cr",
+                        "port": 9443
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "dp.wso2.com/v1alpha1",
+            "kind": "Backend",
+            "metadata": {
+                "annotations": {
+                    "meta.helm.sh/release-name": "backend-cr",
+                    "meta.helm.sh/release-namespace": "backend-cr"
+                },
+                "creationTimestamp": "2023-03-15T18:11:43Z",
+                "generation": 1,
+                "labels": {
+                    "app.kubernetes.io/managed-by": "Helm"
+                },
+                "name": "backend-cr-wso2-apk-idp-ui-backend",
+                "namespace": "backend-cr",
+                "resourceVersion": "1147896",
+                "uid": "17083578-47f5-4135-b154-69431ab07f9c"
+            },
+            "spec": {
+                "protocol": "http",
+                "services": [
+                    {
+                        "host": "backend-cr-wso2-apk-idp-ui-service.backend-cr",
+                        "port": 9443
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "dp.wso2.com/v1alpha1",
+            "kind": "Backend",
+            "metadata": {
+                "annotations": {
+                    "meta.helm.sh/release-name": "backend-cr",
+                    "meta.helm.sh/release-namespace": "backend-cr"
+                },
+                "creationTimestamp": "2023-03-15T18:11:43Z",
+                "generation": 1,
+                "labels": {
+                    "app.kubernetes.io/managed-by": "Helm"
+                },
+                "name": "backend-cr-wso2-apk-internal-admin-ds-backend",
+                "namespace": "backend-cr",
+                "resourceVersion": "1147901",
+                "uid": "f05bedec-f9b5-4951-b750-266d657ad3ce"
+            },
+            "spec": {
+                "protocol": "http",
+                "services": [
+                    {
+                        "host": "backend-cr-wso2-apk-admin-ds-service.backend-cr",
+                        "port": 9444
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "dp.wso2.com/v1alpha1",
+            "kind": "Backend",
+            "metadata": {
+                "annotations": {
+                    "meta.helm.sh/release-name": "backend-cr",
+                    "meta.helm.sh/release-namespace": "backend-cr"
+                },
+                "creationTimestamp": "2023-03-15T18:11:43Z",
+                "generation": 1,
+                "labels": {
+                    "app.kubernetes.io/managed-by": "Helm"
+                },
+                "name": "backend-cr-wso2-apk-runtime-ds-backend",
+                "namespace": "backend-cr",
+                "resourceVersion": "1147898",
+                "uid": "cba43be3-6f91-4511-9330-12bad6d19837"
+            },
+            "spec": {
+                "protocol": "http",
+                "services": [
+                    {
+                        "host": "backend-cr-wso2-apk-runtime-ds-service.backend-cr",
+                        "port": 9443
+                    }
+                ]
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": ""
+    }
+};
+model:BackendList|error backends =backendList.cloneWithType(model:BackendList);
+test:assertTrue(backends is model:BackendList);
 }

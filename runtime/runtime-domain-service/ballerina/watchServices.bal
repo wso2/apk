@@ -95,7 +95,7 @@ isolated function mapPortMapping(model:Service 'service) returns PortMapping[]|e
             PortMapping portmapping =
             {
                 name: port.name ?: "",
-                protocol: port.protocol,
+                protocol: port.appProtocol ?: "http",
                 port: port.port,
                 targetport: <int>port.targetPort
             };

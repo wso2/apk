@@ -15,30 +15,51 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-public type BackendPolicy record {
+public type Backend record {
     string apiVersion = "dp.wso2.com/v1alpha1";
-    string kind = "BackendPolicy";
+    string kind = "Backend";
     Metadata metadata;
-    BackendPolicySpec spec;
+    BackendSpec spec;
 };
 
-public type BackendPolicySpec record {|
-    BackendConfigs default?;
-    BackendConfigs override?;
-    TargetRef targetRef;
-|};
-
-public type BackendConfigs record {
+public type BackendSpec record {|
+    BackendService[] services;
     string protocol;
     TLSConfig tls?;
+    SecurityConfig[] security?;
+|};
+
+public type BackendService record {
+    string host;
+    int port;
+};
+
+public type BasicSecurityConfig record {
+   string username;
+   string password; 
+};
+
+public type SecurityConfig record {
+    string 'type;
+    BasicSecurityConfig basic;
+};
+
+
+public type RefConfig record {
+    string key;
+    string name;
 };
 
 public type TLSConfig record {
-    string certificateInline;
+    string[] allowedSANs?;
+    string certificateInline?;
+    RefConfig configMapRef?;
+    RefConfig secretRef?;
+
 };
-public type BackendPolicyList record {
+public type BackendList record {
     string apiVersion="dp.wso2.com/v1alpha1";
-    string kind = "BackendPolicyList";
-    BackendPolicy[] items;
+    string kind = "BackendList";
+    Backend [] items;
     ListMeta metadata;
 };
