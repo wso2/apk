@@ -236,13 +236,13 @@ isolated function deleteScopeCr(string name, string namespace) returns http:Resp
 }
 
 isolated function deleteBackendPolicyCR(string name, string namespace) returns http:Response|http:ClientError {
-    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/backendpolicies/" + name;
+    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/backends/" + name;
     return k8sApiServerEp->delete(endpoint, targetType = http:Response);
 }
 
-isolated function deployBackendPolicyCR(model:BackendPolicy backendPolciy, string namespace) returns http:Response|http:ClientError {
-    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/backendpolicies";
-    return k8sApiServerEp->post(endpoint, backendPolciy, targetType = http:Response);
+isolated function deployBackendCR(model:Backend backend, string namespace) returns http:Response|http:ClientError {
+    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/backends";
+    return k8sApiServerEp->post(endpoint, backend, targetType = http:Response);
 }
 
 isolated function deployScopeCR(model:Scope scope, string namespace) returns http:Response|http:ClientError {
@@ -250,9 +250,9 @@ isolated function deployScopeCR(model:Scope scope, string namespace) returns htt
     return k8sApiServerEp->post(endpoint, scope, targetType = http:Response);
 }
 
-isolated function getBackendPolicyCRsForAPI(string apiName, string apiVersion, string namespace) returns model:BackendPolicyList|http:ClientError|error {
-    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/backendpolicies?labelSelector=" + check generateUrlEncodedLabelSelector(apiName, apiVersion);
-    return k8sApiServerEp->get(endpoint, targetType = model:BackendPolicyList);
+isolated function getBackendPolicyCRsForAPI(string apiName, string apiVersion, string namespace) returns model:BackendList|http:ClientError|error {
+    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/backends?labelSelector=" + check generateUrlEncodedLabelSelector(apiName, apiVersion);
+    return k8sApiServerEp->get(endpoint, targetType = model:BackendList);
 }
 
 isolated function generateUrlEncodedLabelSelector(string apiName, string apiVersion) returns string|error {
