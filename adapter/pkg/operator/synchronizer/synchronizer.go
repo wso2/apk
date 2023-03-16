@@ -144,12 +144,13 @@ func GenerateMGWSwagger(apiState APIState, httpRoute *HTTPRouteState, envType st
 	}
 	vHosts := getVhostsForAPI(httpRoute.HTTPRoute)
 	labels := getLabelsForAPI(httpRoute.HTTPRoute)
+	listeners := getListenersForAPI(httpRoute.HTTPRoute)
 
 	conf := config.ReadConfigs()
 	if conf.Envoy.RateLimit.Enabled {
 		xds.UpdateRateLimitXDSCache(vHosts, mgwSwagger)
 	}
-	err := xds.UpdateAPICache(vHosts, labels, mgwSwagger)
+	err := xds.UpdateAPICache(vHosts, labels, listeners, mgwSwagger)
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2633, mgwSwagger.GetTitle(), mgwSwagger.GetVersion(), vHosts, err))
 	}
@@ -172,6 +173,17 @@ func getLabelsForAPI(httpRoute *gwapiv1b1.HTTPRoute) []string {
 		labels = append(labels, string(parentRef.Name))
 	}
 	return labels
+}
+
+// getListenersForAPI returns the listeners related to an API.
+func getListenersForAPI(httpRoute *gwapiv1b1.HTTPRoute) []string {
+	var listeners []string
+	for _, parentRef := range httpRoute.Spec.ParentRefs {
+		loggers.LoggerAPKOperator.Info("Recieved Parent Refs:%v", parentRef)
+		loggers.LoggerAPKOperator.Info("Recieved Parent Refs Section Name:%v", string(*parentRef.SectionName))
+		listeners = append(listeners, string(*parentRef.SectionName))
+	}
+	return listeners
 }
 
 // SendAPIToAPKMgtServer sends the API create/update/delete event to the APK management server.

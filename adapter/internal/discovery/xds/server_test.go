@@ -29,15 +29,17 @@ func TestUpdateAPICache(t *testing.T) {
 		name          string
 		vHosts        []string
 		labels        []string
+		listeners     []string
 		mgwSwagger    model.MgwSwagger
 		EnvType       string
 		action        string
 		deletedvHosts []string
 	}{
 		{
-			name:   "Test creating first prod api",
-			vHosts: []string{"prod1.gw.abc.com", "prod2.gw.abc.com"},
-			labels: []string{"default"},
+			name:      "Test creating first prod api",
+			vHosts:    []string{"prod1.gw.abc.com", "prod2.gw.abc.com"},
+			labels:    []string{"default"},
+			listeners: []string{"httpslistener"},
 			mgwSwagger: model.MgwSwagger{
 				UUID:           "api-1-uuid",
 				EnvType:        "prod",
@@ -47,9 +49,10 @@ func TestUpdateAPICache(t *testing.T) {
 			action:  "CREATE",
 		},
 		{
-			name:   "Test creating first sand api",
-			vHosts: []string{"sand3.gw.abc.com", "sand4.gw.abc.com"},
-			labels: []string{"default"},
+			name:      "Test creating first sand api",
+			vHosts:    []string{"sand3.gw.abc.com", "sand4.gw.abc.com"},
+			labels:    []string{"default"},
+			listeners: []string{"httpslistener"},
 			mgwSwagger: model.MgwSwagger{
 				UUID:           "app-1-uuid",
 				EnvType:        "sand",
@@ -59,9 +62,10 @@ func TestUpdateAPICache(t *testing.T) {
 			action:  "CREATE",
 		},
 		{
-			name:   "Test creating second prod api",
-			vHosts: []string{"prod1.gw.pqr.com", "prod2.gw.pqr.com"},
-			labels: []string{"default"},
+			name:      "Test creating second prod api",
+			vHosts:    []string{"prod1.gw.pqr.com", "prod2.gw.pqr.com"},
+			labels:    []string{"default"},
+			listeners: []string{"httpslistener"},
 			mgwSwagger: model.MgwSwagger{
 				UUID:           "api-2-uuid",
 				EnvType:        "prod",
@@ -71,9 +75,10 @@ func TestUpdateAPICache(t *testing.T) {
 			action:  "CREATE",
 		},
 		{
-			name:   "Test updating first prod api 1 with new vhosts",
-			vHosts: []string{"prod1.gw.abc.com", "prod2.gw.abc.com"},
-			labels: []string{"default"},
+			name:      "Test updating first prod api 1 with new vhosts",
+			vHosts:    []string{"prod1.gw.abc.com", "prod2.gw.abc.com"},
+			labels:    []string{"default"},
+			listeners: []string{"httpslistener"},
 			mgwSwagger: model.MgwSwagger{
 				UUID:           "api-1-uuid",
 				EnvType:        "prod",
@@ -82,8 +87,9 @@ func TestUpdateAPICache(t *testing.T) {
 			action: "UPDATE",
 		},
 		{
-			name:   "Test deleting api 1 both prod and sand",
-			labels: []string{"default"},
+			name:      "Test deleting api 1 both prod and sand",
+			labels:    []string{"default"},
+			listeners: []string{"httpslistener"},
 			mgwSwagger: model.MgwSwagger{
 				UUID:           "app-1-uuid",
 				OrganizationID: "org-1",
@@ -99,7 +105,7 @@ func TestUpdateAPICache(t *testing.T) {
 			switch test.action {
 			case "CREATE":
 			case "UPDATE":
-				UpdateAPICache(test.vHosts, test.labels, test.mgwSwagger)
+				UpdateAPICache(test.vHosts, test.labels, test.listeners, test.mgwSwagger)
 				identifier := GetvHostsIdentifier(test.mgwSwagger.UUID, "prod")
 				actualvHosts, ok := orgIDAPIvHostsMap[test.mgwSwagger.OrganizationID][identifier]
 				if !ok {

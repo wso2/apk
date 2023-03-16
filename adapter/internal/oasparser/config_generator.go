@@ -80,20 +80,6 @@ func GetGlobalClusters() ([]*clusterv3.Cluster, []*corev3.Address) {
 	return clusters, endpoints
 }
 
-// GetProductionListenerAndRouteConfig generates the listener and routesconfiguration configurations.
-//
-// The VirtualHost is named as "default".
-// The provided set of envoy routes will be assigned under the virtual host
-//
-// The RouteConfiguration is named as "default"
-func GetProductionListenerAndRouteConfig(vhostToRouteArrayMap map[string][]*routev3.Route) ([]*listenerv3.Listener, *routev3.RouteConfiguration) {
-	listeners := envoy.CreateListenersWithRds()
-	vHosts := envoy.CreateVirtualHosts(vhostToRouteArrayMap)
-	routeConfig := envoy.CreateRoutesConfigForRds(vHosts)
-
-	return listeners, routeConfig
-}
-
 // GetProductionListener generates the listener configurations.
 //
 // The VirtualHost is named as "default".
@@ -111,9 +97,9 @@ func GetProductionListener(gateway *gwapiv1b1.Gateway) []*listenerv3.Listener {
 // The provided set of envoy routes will be assigned under the virtual host
 //
 // The RouteConfiguration is named as "default"
-func GetRouteConfigs(vhostToRouteArrayMap map[string][]*routev3.Route) *routev3.RouteConfiguration {
+func GetRouteConfigs(vhostToRouteArrayMap map[string][]*routev3.Route, httpListeners []string) *routev3.RouteConfiguration {
 	vHosts := envoy.CreateVirtualHosts(vhostToRouteArrayMap)
-	routeConfig := envoy.CreateRoutesConfigForRds(vHosts)
+	routeConfig := envoy.CreateRoutesConfigForRds(vHosts, httpListeners)
 	return routeConfig
 }
 

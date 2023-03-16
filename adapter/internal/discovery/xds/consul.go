@@ -189,7 +189,7 @@ func updateXDSClusterCache(apiKey string, organizationID string) {
 			for _, label := range envoyLabelList {
 				gateway := new(gwapiv1b1.Gateway)
 				gateway.Name = label
-				listeners, clusters, routes, endpoints, _ := GenerateEnvoyResoucesForGateway(gateway, true, constants.APIController)
+				listeners, clusters, routes, endpoints, _ := GenerateEnvoyResoucesForGateway(gateway, true, nil, constants.APIController)
 				UpdateXdsCacheWithLock(label, endpoints, clusters, routes, listeners)
 				logger.LoggerXds.Info("Updated XDS cache by consul service discovery for API: ", apiKey)
 			}
