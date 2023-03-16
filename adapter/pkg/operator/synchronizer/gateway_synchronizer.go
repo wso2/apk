@@ -80,7 +80,7 @@ func AddOrUpdateGateway(gateway *gwapiv1b1.Gateway, state string) (string, error
 		xds.GenerateGlobalClusters(gateway.Name)
 	}
 	listeners, clusters, routes, endpoints, apis := xds.GenerateEnvoyResoucesForGateway(gateway,
-		false, constants.GatewayController)
+		false, nil, constants.GatewayController)
 	loggers.LoggerAPKOperator.Infof("listeners: %v", listeners)
 	loggers.LoggerAPKOperator.Infof("clusters: %v", clusters)
 	loggers.LoggerAPKOperator.Infof("routes: %v", routes)

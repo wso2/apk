@@ -149,6 +149,8 @@ spec:
               protocol: "TCP"
             - containerPort: 9090
               protocol: "TCP"
+            - containerPort: 9091
+              protocol: "TCP"
             - containerPort: 9000
               protocol: "TCP"
 {{ include "apk-helm.deployment.resources" .Values.wso2.apk.dp.gatewayRuntime.deployment.router.resources | indent 10 }}

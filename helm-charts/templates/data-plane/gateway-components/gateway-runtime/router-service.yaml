@@ -35,4 +35,7 @@ spec:
     - name: endpoint3
       protocol: TCP
       port: 9000
+    - name: endpoint4
+      protocol: TCP
+      port: 9091
 {{- end -}}

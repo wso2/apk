@@ -1020,4 +1020,5 @@ spec:
   - group: "gateway.networking.k8s.io"
     kind: "Gateway"
     name: "default"
+    sectionName: "apilistener"
 {{- end -}}
