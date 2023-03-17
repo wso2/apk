@@ -3489,7 +3489,7 @@ components:
           type: string
           description: |
             Swagger definition of the API which contains details about URI templates and scopes
-          example: '{"paths":{"\/substract":{"get":{"x-auth-type":"Application & Application
+          example: '{"paths":{"\/subtract":{"get":{"x-auth-type":"Application & Application
             User","x-throttling-tier":"Unlimited","parameters":[{"name":"x","required":true,"type":"string","in":"query"},{"name":"y","required":true,"type":"string","in":"query"}],"responses":{"200":{}}}},"\/add":{"get":{"x-auth-type":"Application
             & Application User","x-throttling-tier":"Unlimited","parameters":[{"name":"x","required":true,"type":"string","in":"query"},{"name":"y","required":true,"type":"string","in":"query"}],"responses":{"200":{}}}}},"swagger":"2.0","info":{"title":"CalculatorAPI","version":"1.0.0"}}'
         wsdlUri:
@@ -3542,7 +3542,7 @@ components:
           type: array
           description: Search keywords related to the API
           example:
-            - substract
+            - subtract
             - add
           items:
             type: string
