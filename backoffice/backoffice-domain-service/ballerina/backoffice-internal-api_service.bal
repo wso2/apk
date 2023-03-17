@@ -1,5 +1,4 @@
 import ballerina/http;
-import ballerina/log;
 
 configurable int BACKOFFICE_PORT_INT = 9444;
 listener http:Listener ep1 = new (BACKOFFICE_PORT_INT);
