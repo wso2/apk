@@ -46,22 +46,40 @@ isolated function createAPI(APIBody body, string organization) returns API | err
     }    
 }
 
+# This function used to connect API get service from database
+#
+# + apiId - API Id parameter
+# + organization - organization
+# + return - Return Value API | error
+isolated function getAPI_internal(string apiId, string organization) returns API|NotFoundError|error {
+    API|NotFoundError|error response = db_getAPI_internal(apiId, organization);
+    if response is error {
+        return error("Error while retrieving API data");
+    }
+    return response;
+}
+
 # This function used to connect API update service to database
 #
 # + body - API parameter
 # + apiId - API Id parameter
 # + organization - organization
 # + return - Return Value API | error
-isolated function updateAPI_internal(string apiId, APIBody body, string organization) returns API | error {
-    API | error apiUp = db_updateAPI_internal(apiId, body, organization);
-    if apiUp is error {
-        return error("Error while updating API data");
+isolated function updateAPI_internal(string apiId, APIBody body, string organization) returns API|NotFoundError|error {
+    API|NotFoundError api = check getAPI_internal(apiId, organization);
+    if api is API {
+        API|error apiUp = db_updateAPI_internal(apiId, body, organization);
+        if apiUp is error {
+            return error("Error while updating API data");
+        }
+        API|error defUp = db_updateDefinition(apiId, body);
+        if defUp is error {
+            return error("Error while updating API definition");
+        }
+        return apiUp;
+    } else {
+        return api;
     }
-    API | error defUp = db_updateDefinition(apiId, body);
-    if defUp is error {
-        return error("Error while updating API definition");
-    }
-    return apiUp;
 }
 
 # This function used to connect API update service to database

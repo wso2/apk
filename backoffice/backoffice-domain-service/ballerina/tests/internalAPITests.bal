@@ -136,13 +136,13 @@ function updateInternalAPITest() {
             }
             }
         };
-        API|error updateAPI = updateAPI_internal("01ed75e2-b30b-18c8-wwf2-25da7edd2231", updateBody, "carbon.super");
+        API|NotFoundError|error updateAPI = updateAPI_internal("01ed75e2-b30b-18c8-wwf2-25da7edd2231", updateBody, "carbon.super");
             if updateAPI is API {
                 test:assertTrue(true, "Successfully updtaing API");
             } else if updateAPI is  error {
                 log:printError(updateAPI.toString());
                 test:assertFail("Error occured while updtaing API");
-        }
+            }
 }
 
 @test:Config {}
