@@ -86,6 +86,55 @@ paths:
   # The "Individual API" resource APIs
   ######################################################
   /apis/{apiId}:
+    get:
+      tags:
+        - APIs
+      summary: Get Details of an API
+      description: |
+        Using this operation, you can retrieve complete details of a single API. You need to provide the Id of the API to retrive it.
+      parameters:
+        - $ref: '#/components/parameters/apiId'
+        - $ref: '#/components/parameters/If-None-Match'
+      responses:
+        200:
+          description: |
+            OK.
+            Requested API is returned
+          headers:
+            ETag:
+              description: |
+                Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).
+              schema:
+                type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional requests (Will be supported in future).
+              schema:
+                type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/API'
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
+          content: {}
+        404:
+          $ref: '#/components/responses/NotFound'
+        406:
+          $ref: '#/components/responses/NotAcceptable'
+      x-code-samples:
+        - lang: Curl
+          source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
+          "https://127.0.0.1:9443/api/apk/backoffice/v1/apis/7a2298c4-c905-403f-8fac-38c73301631f"'
+      operationId: getAPI
     put:
       tags:
         - APIs
