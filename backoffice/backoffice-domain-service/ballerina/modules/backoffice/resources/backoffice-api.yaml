@@ -3519,7 +3519,7 @@ components:
         type: string
         enum:
           - api
-          - subscription
+          - subcription
     policyLevel-Q:
       name: policyLevel
       in: query
@@ -3530,7 +3530,7 @@ components:
         type: string
         enum:
           - api
-          - subscription
+          - subcription
     limit:
       name: limit
       in: query
