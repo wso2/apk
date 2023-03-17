@@ -38,7 +38,8 @@ spec:
   parentRefs:
   - group: gateway.networking.k8s.io
     kind: Gateway
-    name: Default
+    name: default
+    sectionName: gatewaylistener
   hostnames:
   - infra-backend-v1.gateway-integration-test-infra
   rules:
