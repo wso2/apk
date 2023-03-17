@@ -91,43 +91,18 @@ type SecurityConfig struct {
 
 // BasicSecurityConfig defines basic security configurations
 type BasicSecurityConfig struct {
-	Username string `json:"username,omitempty"`
-	Password string `json:"password,omitempty"`
+	SecretRef SecretRef `json:"secretRef"`
+}
+
+// SecretRef to credentials
+type SecretRef struct {
+	Name        string `json:"name"`
+	UsernameKey string `json:"usernameKey"`
+	PasswordKey string `json:"passwordKey"`
 }
 
 // BackendStatus defines the observed state of Backend
-type BackendStatus struct {
-	// Status denotes the state of the Backend in its lifecycle.
-	// Possible values could be Accepted, Invalid, Deploy etc.
-	//
-	//
-	// +kubebuilder:validation:MinLength=4
-	Status string `json:"status"`
-
-	// Message represents a user friendly message that explains the
-	// current state of the Backend.
-	//
-	//
-	// +kubebuilder:validation:MinLength=4
-	// +optional
-	Message string `json:"message"`
-
-	// Accepted represents whether the Backend is accepted or not.
-	//
-	//
-	Accepted bool `json:"accepted"`
-
-	// TransitionTime represents the last known transition timestamp.
-	//
-	//
-	TransitionTime *metav1.Time `json:"transitionTime"`
-
-	// Events contains a list of events related to the Backend.
-	//
-	//
-	// +optional
-	Events []string `json:"events,omitempty"`
-}
+type BackendStatus struct{}
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status

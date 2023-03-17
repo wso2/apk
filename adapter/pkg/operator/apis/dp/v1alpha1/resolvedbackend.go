@@ -27,11 +27,23 @@ type ResolvedBackend struct {
 	Services []Service
 	Protocol BackendProtocolType
 	TLS      ResolvedTLSConfig
-	Security []SecurityConfig
+	Security []ResolvedSecurityConfig
 }
 
 // ResolvedTLSConfig defines enpoint TLS configurations
 type ResolvedTLSConfig struct {
 	ResolvedCertificate string
 	AllowedSANs         []string
+}
+
+// ResolvedSecurityConfig defines enpoint resolved security configurations
+type ResolvedSecurityConfig struct {
+	Type  string
+	Basic ResolvedBasicSecurityConfig
+}
+
+// ResolvedBasicSecurityConfig defines resolved basic security configuration
+type ResolvedBasicSecurityConfig struct {
+	Username string
+	Password string
 }

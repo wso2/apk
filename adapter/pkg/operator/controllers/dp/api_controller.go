@@ -437,9 +437,39 @@ func (apiReconciler *APIReconciler) getResolvedBackend(ctx context.Context,
 		resolvedBackend.TLS = resolvedTLSConfig
 	}
 	if backend.Spec.Security != nil {
-		resolvedBackend.Security = backend.Spec.Security
+		resolvedBackend.Security = getResolvedBackendSecurity(ctx, apiReconciler.client,
+			backend.Namespace, backend.Spec.Security)
 	}
 	return &resolvedBackend
+}
+
+// getResolvedBackendSecurity resolves backend security configurations.
+func getResolvedBackendSecurity(ctx context.Context, client k8client.Client,
+	namespace string, security []dpv1alpha1.SecurityConfig) []dpv1alpha1.ResolvedSecurityConfig {
+	resolvedSecurity := make([]dpv1alpha1.ResolvedSecurityConfig, len(security))
+	for _, sec := range security {
+		switch sec.Type {
+		case "Basic":
+			var err error
+			var username string
+			var password string
+			username, err = utils.GetSecretValue(ctx, client,
+				namespace, sec.Basic.SecretRef.Name, sec.Basic.SecretRef.UsernameKey)
+			password, err = utils.GetSecretValue(ctx, client,
+				namespace, sec.Basic.SecretRef.Name, sec.Basic.SecretRef.PasswordKey)
+			if err != nil {
+				loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2648, sec.Basic.SecretRef))
+			}
+			resolvedSecurity = append(resolvedSecurity, dpv1alpha1.ResolvedSecurityConfig{
+				Type: "Basic",
+				Basic: dpv1alpha1.ResolvedBasicSecurityConfig{
+					Username: username,
+					Password: password,
+				},
+			})
+		}
+	}
+	return resolvedSecurity
 }
 
 // resolveCertificate reads the certificate from TLSConfig, first checks the certificateInline field,
@@ -463,7 +493,7 @@ func resolveCertificate(ctx context.Context, client k8client.Client, namespace s
 	if len(certificate) > 0 {
 		block, _ := pem.Decode([]byte(certificate))
 		if block == nil {
-			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2640))
+			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2627))
 			return ""
 		}
 		_, err = x509.ParseCertificate(block.Bytes)
@@ -560,7 +590,7 @@ func (apiReconciler *APIReconciler) getAPIsForSecret(obj k8client.Object) []reco
 	if err := apiReconciler.client.List(ctx, backendList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(secretBackend, utils.NamespacedName(secret).String()),
 	}); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2639, utils.NamespacedName(secret).String()))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2621, utils.NamespacedName(secret).String()))
 		return []reconcile.Request{}
 	}
 
@@ -832,6 +862,17 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 						Name:      string(backend.Spec.TLS.SecretRef.Name),
 						Namespace: backend.Namespace,
 					}.String())
+			}
+			if backend.Spec.Security != nil {
+				for _, security := range backend.Spec.Security {
+					if security.Type == "Basic" {
+						secrets = append(secrets,
+							types.NamespacedName{
+								Name:      string(security.Basic.SecretRef.Name),
+								Namespace: backend.Namespace,
+							}.String())
+					}
+				}
 			}
 			return secrets
 		}); err != nil {
