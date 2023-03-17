@@ -33,6 +33,4 @@ current_dir=$PWD;
 cd $current_dir;
 cd ../../adapter;./gradlew build -Pversion='test';
 cd $current_dir;
-cd ../../gateway/router;./gradlew build -Pversion='test';
-cd $current_dir;
 cd ../../gateway/enforcer;./gradlew build -Pversion='test';

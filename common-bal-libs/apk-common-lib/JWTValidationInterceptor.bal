@@ -42,7 +42,7 @@ public service class JWTValidationInterceptor {
                         userContext.claims = self.extractCustomClaims(validatedJWT);
                         return userContext;
                     } else {
-                        APKError apkError = error("inactive organization", code = 900951, description = "organization is enactive", statusCode = 401, message = "organization is enactive");
+                        APKError apkError = error("Inactive Organization", code = 900951, description = "Organization is inactive", statusCode = 401, message = "Organization is inactive");
                         return apkError;
                     }
                 } else {
