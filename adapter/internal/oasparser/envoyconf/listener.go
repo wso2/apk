@@ -42,12 +42,8 @@ import (
 // CreateRoutesConfigForRds generates the default RouteConfiguration.
 // Only the provided virtual hosts will be assigned inside the configuration.
 // This is used to provide the configuration for RDS.
-func CreateRoutesConfigForRds(vHosts []*routev3.VirtualHost, httpListeners []string) *routev3.RouteConfiguration {
-	var rdsConfigName string
-	rdsConfigName = "default"
-	if httpListeners != nil || len(httpListeners) != 0 {
-		rdsConfigName = httpListeners[0]
-	}
+func CreateRoutesConfigForRds(vHosts []*routev3.VirtualHost, httpListeners string) *routev3.RouteConfiguration {
+	rdsConfigName := httpListeners
 	routeConfiguration := routev3.RouteConfiguration{
 		Name:                   rdsConfigName,
 		VirtualHosts:           vHosts,
@@ -220,7 +216,7 @@ func CreateListenerByGateway(gateway *gwapiv1b1.Gateway) []*listenerv3.Listener 
 			// At the moment, the listener as only one filter chain
 			securedListener.FilterChains[0].TransportSocket = transportSocket
 			listeners = append(listeners, &securedListener)
-			logger.LoggerOasparser.Infof("Secured Listener is added. %s : %d", listenerHostAddress, conf.Envoy.SecuredListenerPort)
+			logger.LoggerOasparser.Infof("Secured Listener is added. %s : %d", listenerHostAddress, uint32(listenerObj.Port))
 		} else {
 			logger.LoggerOasparser.Info("No SecuredListenerPort is included.")
 		}

@@ -107,7 +107,7 @@ func TestCreateRoutesConfigForRds(t *testing.T) {
 		"*":           testCreateRoutesForUnitTests(t),
 		"mg.wso2.com": testCreateRoutesForUnitTests(t),
 	}
-	httpListeners := []string{"httpslistener"}
+	httpListeners := "httpslistener"
 	vHosts := CreateVirtualHosts(vhostToRouteArrayMap)
 	rConfig := CreateRoutesConfigForRds(vHosts, httpListeners)
 
