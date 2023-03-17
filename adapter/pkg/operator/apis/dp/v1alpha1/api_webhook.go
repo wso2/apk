@@ -151,7 +151,7 @@ func (r *API) validateAPIContextExists() *field.Error {
 	apiList := &APIList{}
 	listOptions := RetrieveNamespaceListOptions(conf.Adapter.Operator.Namespaces)
 	if err := c.List(ctx, apiList, &listOptions); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2605, err.Error()))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(logging.Error2605, err.Error()))
 		return field.InternalError(field.NewPath("spec").Child("context"),
 			errors.New("unable to list APIs for API context validation"))
 	}

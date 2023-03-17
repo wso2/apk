@@ -138,27 +138,27 @@ func (p PolicyContainerMap) getFormattedPolicyFromTemplated(policy Policy, flow 
 	spec := p[policyFullName].Specification
 	if err := spec.validatePolicy(policy, flow); err != nil {
 		swagger.GetID()
-		loggers.LoggerOasparser.ErrorC(logging.GetErrorByCode(2204, swagger.GetID(), swagger.OrganizationID, policyFullName, err))
+		loggers.LoggerOasparser.ErrorC(logging.GetErrorByCode(logging.Error2204, swagger.GetID(), swagger.OrganizationID, policyFullName, err))
 		return policy, err
 	}
 
 	defRaw := p[policyFullName].Definition.RawData
 	t, err := template.New("policy-def").Funcs(policyDefFuncMap).Parse(string(defRaw))
 	if err != nil {
-		loggers.LoggerOasparser.ErrorC(logging.GetErrorByCode(2205, policyFullName, swagger.GetID(), swagger.OrganizationID, err))
+		loggers.LoggerOasparser.ErrorC(logging.GetErrorByCode(logging.Error2205, policyFullName, swagger.GetID(), swagger.OrganizationID, err))
 		return Policy{}, err
 	}
 
 	var out bytes.Buffer
 	err = t.Execute(&out, policy.Parameters)
 	if err != nil {
-		loggers.LoggerOasparser.ErrorC(logging.GetErrorByCode(2206, policyFullName, swagger.GetID(), swagger.OrganizationID, err))
+		loggers.LoggerOasparser.ErrorC(logging.GetErrorByCode(logging.Error2206, policyFullName, swagger.GetID(), swagger.OrganizationID, err))
 		return Policy{}, err
 	}
 
 	def := PolicyDefinition{}
 	if err := yaml.Unmarshal(out.Bytes(), &def); err != nil {
-		loggers.LoggerOasparser.ErrorC(logging.GetErrorByCode(2207, policyFullName, swagger.GetID(), swagger.OrganizationID, err))
+		loggers.LoggerOasparser.ErrorC(logging.GetErrorByCode(logging.Error2207, policyFullName, swagger.GetID(), swagger.OrganizationID, err))
 		return Policy{}, err
 	}
 
@@ -173,7 +173,7 @@ func (p PolicyContainerMap) getFormattedPolicyFromTemplated(policy Policy, flow 
 	// Required params may be comming from default values as defined in the policy specification
 	// Hence do the validation after filling default values
 	if err := validatePolicyAction(&policy); err != nil {
-		loggers.LoggerOasparser.ErrorC(logging.GetErrorByCode(2208, policyFullName, swagger.GetID(), swagger.OrganizationID, err))
+		loggers.LoggerOasparser.ErrorC(logging.GetErrorByCode(logging.Error2208, policyFullName, swagger.GetID(), swagger.OrganizationID, err))
 		return Policy{}, err
 	}
 	return policy, nil

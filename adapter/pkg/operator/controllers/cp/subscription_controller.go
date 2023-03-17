@@ -53,13 +53,13 @@ func NewSubscriptionController(mgr manager.Manager) error {
 	}
 	c, err := controller.New(constants.SubscriptionController, mgr, controller.Options{Reconciler: r})
 	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2608, err.Error()))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(logging.Error2608, err.Error()))
 		return err
 	}
 
 	if err := c.Watch(&source.Kind{Type: &cpv1alpha1.Subscription{}}, &handler.EnqueueRequestForObject{},
 		predicate.NewPredicateFuncs(utils.FilterByNamespaces([]string{utils.GetOperatorPodNamespace()}))); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2609, err.Error()))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(logging.Error2609, err.Error()))
 		return err
 	}
 

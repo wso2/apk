@@ -21,7 +21,7 @@ func HandleApplicationEventsFromMgtServer(c client.Client, cReader client.Reader
 		case ApplicationCreate:
 			if found, _, err := checkApplicationExists(applicationEvent.Application, c, cReader); err == nil && !found {
 				if err := c.Create(context.Background(), *&applicationEvent.Application); err != nil {
-					loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1707, err.Error()))
+					loggers.LoggerXds.ErrorC(logging.GetErrorByCode(logging.Error1707, err.Error()))
 				} else {
 					loggers.LoggerXds.Info("Application created: " + applicationEvent.Application.Name)
 				}
@@ -32,7 +32,7 @@ func HandleApplicationEventsFromMgtServer(c client.Client, cReader client.Reader
 				application.Spec = applicationEvent.Application.Spec
 				err := c.Update(context.Background(), application)
 				if err != nil {
-					loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1709, err.Error()))
+					loggers.LoggerXds.ErrorC(logging.GetErrorByCode(logging.Error1709, err.Error()))
 				} else {
 					loggers.LoggerXds.Info("Application updated: " + applicationEvent.Application.Name)
 				}
@@ -41,7 +41,7 @@ func HandleApplicationEventsFromMgtServer(c client.Client, cReader client.Reader
 		case ApplicationDelete:
 			err := c.Delete(context.Background(), *&applicationEvent.Application)
 			if err != nil {
-				loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1710, err.Error()))
+				loggers.LoggerXds.ErrorC(logging.GetErrorByCode(logging.Error1710, err.Error()))
 			} else {
 				loggers.LoggerXds.Info("Application deleted: " + applicationEvent.Application.Name)
 			}
@@ -67,13 +67,13 @@ func checkApplicationExists(application *cpv1alpha1.Application, c client.Client
 				Namespace: application.Namespace}, retrivedApplication); err != nil {
 
 				if !apierrors.IsNotFound(err) {
-					loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1711, err.Error()))
+					loggers.LoggerXds.ErrorC(logging.GetErrorByCode(logging.Error1711, err.Error()))
 					return false, nil, err
 				}
 				return false, nil, nil
 			}
 		} else if !apierrors.IsNotFound(err) {
-			loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1711, err.Error()))
+			loggers.LoggerXds.ErrorC(logging.GetErrorByCode(logging.Error1711, err.Error()))
 			return false, nil, err
 		} else {
 			return false, nil, nil

@@ -61,7 +61,7 @@ func (cb *Callbacks) OnStreamRequest(id int64, request *discovery.DiscoveryReque
 	logger.LoggerEnforcerXdsCallbacks.Debugf("stream request on stream id: %d, from node: %s, version: %s, for type: %s",
 		id, nodeIdentifier, request.GetVersionInfo(), request.GetTypeUrl())
 	if request.ErrorDetail != nil {
-		logger.LoggerEnforcerXdsCallbacks.ErrorC(logging.GetErrorByCode(1400, request.GetTypeUrl(), id, request.ErrorDetail.Message))
+		logger.LoggerEnforcerXdsCallbacks.ErrorC(logging.GetErrorByCode(logging.Error1400, request.GetTypeUrl(), id, request.ErrorDetail.Message))
 	}
 	// TODO: (VirajSalaka) Remove the commented logic once the fallback is implemented.
 	// requestEventChannel := xds.GetRequestEventChannel()

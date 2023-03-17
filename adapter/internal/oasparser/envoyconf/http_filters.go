@@ -62,7 +62,7 @@ func getHTTPFilters() []*hcmv3.HttpFilter {
 	if conf.Envoy.Filters.Compression.Enabled {
 		compressionFilter, err := getCompressorFilter()
 		if err != nil {
-			logger.LoggerXds.ErrorC(logging.GetErrorByCode(2234, err.Error()))
+			logger.LoggerXds.ErrorC(logging.GetErrorByCode(logging.Error2234, err.Error()))
 			return httpFilters
 		}
 		httpFilters = httpFilters[:len(httpFilters)-1]

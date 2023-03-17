@@ -94,7 +94,7 @@ func initConnection(xdsURL string) error {
 	conn, err := grpc.Dial(xdsURL, grpc.WithTransportCredentials(transportCredentials), grpc.WithBlock())
 	if err != nil {
 		// TODO: (AmaliMatharaarachchi) retries
-		loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1700, err.Error()))
+		loggers.LoggerXds.ErrorC(logging.GetErrorByCode(logging.Error1700, err.Error()))
 		return err
 	}
 
@@ -104,7 +104,7 @@ func initConnection(xdsURL string) error {
 
 	if err != nil {
 		// TODO: (AmaliMatharaarachchi) handle error.
-		loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1701, err.Error()))
+		loggers.LoggerXds.ErrorC(logging.GetErrorByCode(logging.Error1701, err.Error()))
 		return err
 	}
 	loggers.LoggerXds.Infof("Connection to the APK Management Server: %s is successful.", xdsURL)
@@ -115,14 +115,14 @@ func watchApplications() {
 	for {
 		discoveryResponse, err := xdsStream.Recv()
 		if err == io.EOF {
-			loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1702, err.Error()))
+			loggers.LoggerXds.ErrorC(logging.GetErrorByCode(logging.Error1702, err.Error()))
 			return
 		}
 		if err != nil {
-			loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1703, err.Error()))
+			loggers.LoggerXds.ErrorC(logging.GetErrorByCode(logging.Error1703, err.Error()))
 			errStatus, _ := grpcStatus.FromError(err)
 			if errStatus.Code() == codes.Unavailable {
-				loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1704, err.Error()))
+				loggers.LoggerXds.ErrorC(logging.GetErrorByCode(logging.Error1704, err.Error()))
 				return
 			}
 			nack(err.Error())
@@ -183,7 +183,7 @@ func InitApkMgtXDSClient() {
 		}
 		xdsStream.Send(discoveryRequest)
 	} else {
-		loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1705, err.Error()))
+		loggers.LoggerXds.ErrorC(logging.GetErrorByCode(logging.Error1705, err.Error()))
 	}
 }
 
@@ -195,7 +195,7 @@ func addApplicationsToChannel(resp *discovery.DiscoveryResponse) {
 		err := ptypes.UnmarshalAny(res, application)
 
 		if err != nil {
-			loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1706, err.Error()))
+			loggers.LoggerXds.ErrorC(logging.GetErrorByCode(logging.Error1706, err.Error()))
 			continue
 		}
 

@@ -103,7 +103,7 @@ func InitOperator() {
 		// LeaderElectionReleaseOnCancel: true,
 	})
 	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2600, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(logging.Error2600, err))
 	}
 
 	// TODO: Decide on a buffer size and add to config.
@@ -119,15 +119,15 @@ func InitOperator() {
 	}
 
 	if err = (&dpv1alpha1.API{}).SetupWebhookWithManager(mgr); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2601, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(logging.Error2601, err))
 	}
 
 	if err = (&dpv1alpha1.RateLimitPolicy{}).SetupWebhookWithManager(mgr); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2637, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(logging.Error2637, err))
 	}
 
 	if err = (&dpv1alpha1.APIPolicy{}).SetupWebhookWithManager(mgr); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2638, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(logging.Error2638, err))
 	}
 
 	if err := cpcontrollers.NewApplicationController(mgr); err != nil {
@@ -139,10 +139,10 @@ func InitOperator() {
 	}
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2602, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(logging.Error2602, err))
 	}
 	if err := mgr.AddReadyzCheck("readyz", healthz.Ping); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2603, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(logging.Error2603, err))
 	}
 
 	go synchronizer.HandleAPILifeCycleEvents(&ch)
@@ -153,6 +153,6 @@ func InitOperator() {
 	}
 
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2604, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(logging.Error2604, err))
 	}
 }

@@ -157,7 +157,7 @@ var (
 func GetInterceptor(templateValues any, templateString string) string {
 	t, err := template.New("lua-filter").Parse(templateString)
 	if err != nil {
-		logger.LoggerInterceptor.ErrorC(logging.GetErrorByCode(1800, err.Error()))
+		logger.LoggerInterceptor.ErrorC(logging.GetErrorByCode(logging.Error1800, err.Error()))
 		return emptyInterceptorTemplate
 	}
 	templ := template.Must(t, err)
@@ -165,7 +165,7 @@ func GetInterceptor(templateValues any, templateString string) string {
 
 	err = templ.Execute(&out, templateValues)
 	if err != nil {
-		logger.LoggerInterceptor.ErrorC(logging.GetErrorByCode(1801, err.Error()))
+		logger.LoggerInterceptor.ErrorC(logging.GetErrorByCode(logging.Error1801, err.Error()))
 		return emptyInterceptorTemplate
 	}
 	return out.String()

@@ -54,13 +54,13 @@ func GetGitAuth() (transport.AuthMethod, error) {
 	} else if sshKeyFile != "" {
 		sshKey, err := ioutil.ReadFile(sshKeyFile)
 		if err != nil {
-			loggers.LoggerAuth.ErrorC(logging.GetErrorByCode(3001, err.Error()))
+			loggers.LoggerAuth.ErrorC(logging.GetErrorByCode(logging.Error3001, err.Error()))
 			return nil, err
 		}
 
 		publicKey, err := ssh.NewPublicKeys(ssh.DefaultUsername, sshKey, "")
 		if err != nil {
-			loggers.LoggerAuth.ErrorC(logging.GetErrorByCode(3002, err.Error()))
+			loggers.LoggerAuth.ErrorC(logging.GetErrorByCode(logging.Error3002, err.Error()))
 			return nil, err
 		}
 

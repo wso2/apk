@@ -54,13 +54,13 @@ func NewApplicationController(mgr manager.Manager) error {
 	}
 	c, err := controller.New(constants.ApplicationController, mgr, controller.Options{Reconciler: r})
 	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2606, err.Error()))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(logging.Error2606, err.Error()))
 		return err
 	}
 
 	if err := c.Watch(&source.Kind{Type: &cpv1alpha1.Application{}}, &handler.EnqueueRequestForObject{},
 		predicate.NewPredicateFuncs(utils.FilterByNamespaces([]string{utils.GetOperatorPodNamespace()}))); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2607, err.Error()))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(logging.Error2607, err.Error()))
 		return err
 	}
 

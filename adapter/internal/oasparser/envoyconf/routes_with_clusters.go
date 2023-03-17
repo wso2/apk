@@ -105,12 +105,12 @@ func CreateRoutesWithClusters(mgwSwagger model.MgwSwagger, interceptorCerts map[
 		endpoint := resource.GetEndpoints()
 		basePath := strings.TrimSuffix(endpoint.Endpoints[0].Basepath, "/")
 		existingClusterName := getExistingClusterName(*endpoint, processedEndpoints)
-		
+
 		if existingClusterName == "" {
 			clusterName = getClusterName(endpoint.EndpointPrefix, organizationID, vHost, mgwSwagger.GetTitle(), apiVersion, resource.GetID())
 			cluster, address, err := processEndpoints(clusterName, endpoint, timeout, basePath)
 			if err != nil {
-				logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2239, apiTitle, apiVersion, resourcePath, err.Error()))
+				logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(logging.Error2239, apiTitle, apiVersion, resourcePath, err.Error()))
 			} else {
 				clusters = append(clusters, cluster)
 				endpoints = append(endpoints, address...)
@@ -126,7 +126,7 @@ func CreateRoutesWithClusters(mgwSwagger model.MgwSwagger, interceptorCerts map[
 		endpoints = append(endpoints, endpointsI...)
 		routeP, err := createRoutes(genRouteCreateParams(&mgwSwagger, resource, vHost, basePath, clusterName, *operationalReqInterceptors, *operationalRespInterceptorVal, organizationID, false))
 		if err != nil {
-			logger.LoggerXds.ErrorC(logging.GetErrorByCode(2231, mgwSwagger.GetTitle(), mgwSwagger.GetVersion(), resource.GetPath(), err.Error()))
+			logger.LoggerXds.ErrorC(logging.GetErrorByCode(logging.Error2231, mgwSwagger.GetTitle(), mgwSwagger.GetVersion(), resource.GetPath(), err.Error()))
 			return nil, nil, nil, fmt.Errorf("error while creating routes. %v", err)
 		}
 		routes = append(routes, routeP...)
@@ -696,7 +696,7 @@ end`
 					if err != nil {
 						errMsg := fmt.Sprintf("Error adding request policy %s to operation %s of resource %s. %v",
 							constants.ActionRewritePath, operation.GetMethod(), resourcePath, err)
-						logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2212, constants.ActionRewritePath, operation.GetMethod(), resourcePath, err))
+						logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(logging.Error2212, constants.ActionRewritePath, operation.GetMethod(), resourcePath, err))
 						return nil, errors.New(errMsg)
 					}
 					pathRewriteConfig = regexRewrite

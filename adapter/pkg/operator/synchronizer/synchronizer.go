@@ -58,7 +58,7 @@ func HandleAPILifeCycleEvents(ch *chan APIEvent) {
 	loggers.LoggerAPKOperator.Info("Operator synchronizer listening for API lifecycle events...")
 	for event := range *ch {
 		if event.Event.APIDefinition == nil {
-			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2628))
+			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(logging.Error2628))
 		}
 		loggers.LoggerAPKOperator.Infof("%s event received for %v", event.EventType, event.Event.APIDefinition.Name)
 		var err error
@@ -71,7 +71,7 @@ func HandleAPILifeCycleEvents(ch *chan APIEvent) {
 			err = deployAPIInGateway(event.Event)
 		}
 		if err != nil {
-			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2629, event.EventType, err))
+			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(logging.Error2629, event.EventType, err))
 		} else {
 			if config.ReadConfigs().ManagementServer.Enabled {
 				mgtServerCh <- event
@@ -87,7 +87,7 @@ func undeployAPIInGateway(apiState APIState) error {
 		err = deleteAPIFromEnv(apiState.ProdHTTPRoute.HTTPRoute, apiState)
 	}
 	if err != nil {
-		loggers.LoggerXds.ErrorC(logging.GetErrorByCode(2630, string(apiState.APIDefinition.ObjectMeta.UID), apiState.APIDefinition.Spec.Organization,
+		loggers.LoggerXds.ErrorC(logging.GetErrorByCode(logging.Error2630, string(apiState.APIDefinition.ObjectMeta.UID), apiState.APIDefinition.Spec.Organization,
 			getLabelsForAPI(apiState.ProdHTTPRoute.HTTPRoute)))
 		return err
 	}
@@ -133,11 +133,11 @@ func GenerateMGWSwagger(apiState APIState, httpRoute *HTTPRouteState, envType st
 		ResourceScopes:         httpRoute.Scopes,
 	}
 	if err := mgwSwagger.SetInfoHTTPRouteCR(httpRoute.HTTPRoute, httpRouteParams); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2631, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(logging.Error2631, err))
 		return nil, err
 	}
 	if err := mgwSwagger.Validate(); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2632, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(logging.Error2632, err))
 		return nil, err
 	}
 	vHosts := getVhostsForAPI(httpRoute.HTTPRoute)
@@ -145,7 +145,7 @@ func GenerateMGWSwagger(apiState APIState, httpRoute *HTTPRouteState, envType st
 
 	err := xds.UpdateAPICache(vHosts, labels, mgwSwagger)
 	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2633, mgwSwagger.GetTitle(), mgwSwagger.GetVersion(), vHosts, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(logging.Error2633, mgwSwagger.GetTitle(), mgwSwagger.GetVersion(), vHosts, err))
 	}
 	return &mgwSwagger, nil
 }
@@ -180,7 +180,7 @@ func SendAPIToAPKMgtServer() {
 			conn, err := client.GetConnection(address)
 			apiClient := apiProtos.NewAPIServiceClient(conn)
 			if err != nil {
-				loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2634, address, err))
+				loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(logging.Error2634, address, err))
 			}
 			_, err = client.ExecuteGRPCCall(func() (interface{}, error) {
 				if strings.Compare(apiEvent.EventType, constants.Create) == 0 {
@@ -219,7 +219,7 @@ func SendAPIToAPKMgtServer() {
 				return nil, nil
 			})
 			if err != nil {
-				loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2635, err))
+				loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(logging.Error2635, err))
 			}
 		}
 	}
