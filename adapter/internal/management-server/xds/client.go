@@ -123,6 +123,7 @@ func watchApplications() {
 			errStatus, _ := grpcStatus.FromError(err)
 			if errStatus.Code() == codes.Unavailable {
 				loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1704, err.Error()))
+				return
 			}
 			nack(err.Error())
 		} else {
