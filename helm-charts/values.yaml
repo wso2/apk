@@ -403,6 +403,10 @@ wso2:
             #       properties:
             #         - name: filterConfig1
             #           value: filterConfig1
+    migration:
+    # This flag should be enabled only in a migration scenario.
+    # It is not recommended to run a production deployment with this flag enabled.
+      enabled: false        
 certmanager:
   enabled: true
   enableClusterIssuer: true
