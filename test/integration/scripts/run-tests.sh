@@ -16,6 +16,9 @@
 # specific language governing permissions and limitations
 # under the License.
 
+# Load test images to kind cluster
+kind load docker-image adapter:test enforcer:test --name apk-dp-tests
+
 # Create new namespace to install chart
 kubectl create ns apk-integration-test
 
