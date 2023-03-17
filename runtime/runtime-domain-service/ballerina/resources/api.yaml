@@ -1,9 +1,9 @@
 ---
 openapi: 3.0.1
 info:
-  title: Runtime Service API
+  title: WSO2 API Platform for Kubernetes - Runtime Service API
   description: |
-    This document specifies a **RESTful API** for WSO2 **APK** - **Runtime Component**.
+    This document specifies a **RESTful API** for WSO2 **API Platform for Kubernetes(APK)** - **Runtime Service**.
   version: 1.0.0
 paths:
   /apis:
@@ -139,7 +139,7 @@ paths:
         - APIs
       summary: Get Details of an API
       description: |
-        Using this operation, you can retrieve complete details of a single API. You need to provide the id of the API to retrive it.
+        Using this operation, you can retrieve complete details of a single API. You need to provide the id of the API to retrieve it.
       operationId: getAPI
       parameters:
         - name: apiId
@@ -177,7 +177,7 @@ paths:
         - APIs
       summary: Update an API
       description: |
-        This operation can be used to update an existing API. This operation will insruct runtime to update deployment.
+        This operation can be used to update an existing API. This operation will instruct runtime to update deployment.
       operationId: updateAPI
       parameters:
         - name: apiId
@@ -732,8 +732,8 @@ paths:
           $ref: '#/components/responses/NotFound'
       security:
         - OAuth2Security:
-            - apim:api_create
-            - apim:api_manage
+            - apk:api_create
+            - apk:api_manage
       operationId: createNewAPIVersion
   /services:
     get:
@@ -746,7 +746,7 @@ paths:
       parameters:
         - name: query
           in: query
-          description: Search K8s Services based on namee or namespace.
+          description: Search K8s Services based on name or namespace.
           required: false
           style: form
           explode: true
@@ -821,7 +821,7 @@ paths:
       parameters:
         - name: serviceId
           in: path
-          description: UUID(unique across all namespaces) of the service
+          description: UUID (unique across all namespaces) of the service
           required: true
           style: simple
           explode: false
@@ -877,7 +877,7 @@ paths:
       tags:
         - Mediation Policies
       summary: |
-        Get all common meiation policies to all the APIs
+        Get all common mediation policies to all the APIs
       description: |
         This operation provides you a list of available operation Policies that can be used by any API
       operationId: getMediationPolicyList
@@ -1289,22 +1289,22 @@ components:
       properties:
         name:
           type: string
-          description: Name of the attibute
+          description: Name of the attribute
           example: headerName
         description:
           type: string
-          description: Description of the attibute
+          description: Description of the attribute
           example:  Name of the header to be added
         required:
           type: boolean
-          description: Is this option mandetory for the policy
+          description: Is this option mandatory for the policy
           example: true
         validationRegex:
           type: string
-          description: UI validation regex for the attibute
+          description: UI validation regex for the attribute
         type:
           type: string
-          description: Type of the attibute
+          description: Type of the attribute
           example: string
         defaultValue:
           type: string
@@ -1568,7 +1568,7 @@ components:
           description: API definition URL of the API
         file:
           type: string
-          description: API definitio as a file
+          description: API definition as a file
           format: binary
     apis_import_body:
       required:
