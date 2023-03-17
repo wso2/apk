@@ -80,12 +80,12 @@ func AddOrUpdateGateway(gateway *gwapiv1b1.Gateway, state string) (string, error
 		xds.GenerateGlobalClusters(gateway.Name)
 	}
 	listeners, clusters, routes, endpoints, apis := xds.GenerateEnvoyResoucesForGateway(gateway,
-		false, nil, constants.GatewayController)
-	loggers.LoggerAPKOperator.Infof("listeners: %v", listeners)
-	loggers.LoggerAPKOperator.Infof("clusters: %v", clusters)
-	loggers.LoggerAPKOperator.Infof("routes: %v", routes)
-	loggers.LoggerAPKOperator.Infof("endpoints: %v", endpoints)
-	loggers.LoggerAPKOperator.Infof("apis: %v", apis)
+		false, constants.GatewayController)
+	loggers.LoggerAPKOperator.Debugf("listeners: %v", listeners)
+	loggers.LoggerAPKOperator.Debugf("clusters: %v", clusters)
+	loggers.LoggerAPKOperator.Debugf("routes: %v", routes)
+	loggers.LoggerAPKOperator.Debugf("endpoints: %v", endpoints)
+	loggers.LoggerAPKOperator.Debugf("apis: %v", apis)
 	xds.UpdateXdsCacheWithLock(gateway.Name, endpoints, clusters, routes, listeners)
 	xds.UpdateEnforcerApis(gateway.Name, apis, "")
 	return "", nil

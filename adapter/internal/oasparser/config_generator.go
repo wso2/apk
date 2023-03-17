@@ -97,9 +97,9 @@ func GetProductionListener(gateway *gwapiv1b1.Gateway) []*listenerv3.Listener {
 // The provided set of envoy routes will be assigned under the virtual host
 //
 // The RouteConfiguration is named as "default"
-func GetRouteConfigs(vhostToRouteArrayMap map[string][]*routev3.Route, httpListeners []string) *routev3.RouteConfiguration {
+func GetRouteConfigs(vhostToRouteArrayMap map[string][]*routev3.Route, httpListener string) *routev3.RouteConfiguration {
 	vHosts := envoy.CreateVirtualHosts(vhostToRouteArrayMap)
-	routeConfig := envoy.CreateRoutesConfigForRds(vHosts, httpListeners)
+	routeConfig := envoy.CreateRoutesConfigForRds(vHosts, httpListener)
 	return routeConfig
 }
 
@@ -108,13 +108,13 @@ func GetRouteConfigs(vhostToRouteArrayMap map[string][]*routev3.Route, httpListe
 //
 // The returned resources are listeners, clusters, routeConfigurations, endpoints
 func GetCacheResources(endpoints []*corev3.Address, clusters []*clusterv3.Cluster,
-	listeners []*listenerv3.Listener, routeConfig *routev3.RouteConfiguration) (
+	listeners []*listenerv3.Listener, routeConfigs []*routev3.RouteConfiguration) (
 	listenerRes []types.Resource, clusterRes []types.Resource, routeConfigRes []types.Resource,
 	endpointRes []types.Resource) {
 
 	listenerRes = []types.Resource{}
 	clusterRes = []types.Resource{}
-	routeConfigRes = []types.Resource{routeConfig}
+	routeConfigRes = []types.Resource{}
 	endpointRes = []types.Resource{}
 	for _, cluster := range clusters {
 		clusterRes = append(clusterRes, cluster)
@@ -124,6 +124,9 @@ func GetCacheResources(endpoints []*corev3.Address, clusters []*clusterv3.Cluste
 	}
 	for _, listener := range listeners {
 		listenerRes = append(listenerRes, listener)
+	}
+	for _, routeConfig := range routeConfigs {
+		routeConfigRes = append(routeConfigRes, routeConfig)
 	}
 	return listenerRes, clusterRes, routeConfigRes, endpointRes
 }
