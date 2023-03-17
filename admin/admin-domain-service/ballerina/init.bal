@@ -21,6 +21,7 @@ import ballerinax/postgresql;
 import ballerina/sql;
 import ballerina/http;
 import wso2/apk_common_lib as commons;
+import ballerina/lang.runtime;
 
 configurable DatasourceConfiguration datasourceConfiguration = ?;
 final postgresql:Client|sql:Error dbClient;
@@ -42,16 +43,29 @@ function init() {
         throttlingConfiguration: throttleConfig,
         datasourceConfiguration: datasourceConfiguration
     };
-    dbClient = 
-        new (host = datasourceConfiguration.host,
-            username = datasourceConfiguration.username, 
-            password = datasourceConfiguration.password, 
-            database = datasourceConfiguration.databaseName, 
-            port = datasourceConfiguration.port,
-            connectionPool = {maxOpenConnections: datasourceConfiguration.maxPoolSize}
-            );
-    if dbClient is error {
-        return log:printError("Error while connecting to database");
+    int retryCount = 0;
+    int maxRetries = 5;
+    while true {
+        dbClient = 
+            new (host = datasourceConfiguration.host,
+                username = datasourceConfiguration.username, 
+                password = datasourceConfiguration.password, 
+                database = datasourceConfiguration.databaseName, 
+                port = datasourceConfiguration.port,
+                connectionPool = {maxOpenConnections: datasourceConfiguration.maxPoolSize}
+                );
+        if dbClient is error {
+            if retryCount < maxRetries {
+                retryCount = retryCount + 1;
+                log:printError("Error while connecting to database. Retrying...");
+                runtime:sleep(5); // wait 5 seconds before retrying
+            } else {
+                return log:printError("Max retries reached. Failed to connect to database.");
+            }
+        } else {
+            log:printInfo("Connected to the database successfully.");
+            return;
+        }
     }
 }
 
