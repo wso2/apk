@@ -82,7 +82,7 @@ paths:
           headers:
             ETag:
               description: |
-                Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).
+                Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in the future).
               schema:
                 type: string
             Content-Type:
@@ -96,7 +96,7 @@ paths:
         304:
           description: |
             Not Modified.
-            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
+            Empty body because the client has already the latest version of the requested resource (Will be supported in the future).
           content: {}
         406:
           $ref: '#/components/responses/NotAcceptable'
@@ -118,7 +118,7 @@ paths:
         - APIs
       summary: Get Details of an API
       description: |
-        Using this operation, you can retrieve complete details of a single API. You need to provide the Id of the API to retrive it.
+        Using this operation, you can retrieve complete details of a single API. You need to provide the Id of the API to retrieve it.
       parameters:
         - $ref: '#/components/parameters/apiId'
         - $ref: '#/components/parameters/If-None-Match'
@@ -130,13 +130,13 @@ paths:
           headers:
             ETag:
               description: |
-                Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).
+                Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in the future).
               schema:
                 type: string
             Last-Modified:
               description: |
-                Date and time the resource has been modifed the last time.
-                Used by caches, or in conditional requests (Will be supported in future).
+                Date and time the resource has been modified the last time.
+                Used by caches, or in conditional requests (Will be supported in the future).
               schema:
                 type: string
             Content-Type:
@@ -151,7 +151,7 @@ paths:
         304:
           description: |
             Not Modified.
-            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
+            Empty body because the client has already the latest version of the requested resource (Will be supported in the future).
           content: {}
         404:
           $ref: '#/components/responses/NotFound'
@@ -190,13 +190,13 @@ paths:
           headers:
             ETag:
               description: |
-                Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).
+                Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in the future).
               schema:
                 type: string
             Last-Modified:
               description: |
-                Date and time the resource has been modifed the last time.
-                Used by caches, or in conditional requests (Will be supported in future).
+                Date and time the resource has been modified the last time.
+                Used by caches, or in conditional requests (Will be supported in the future).
               schema:
                 type: string
             Location:
@@ -249,13 +249,13 @@ paths:
           headers:
             ETag:
               description: |
-                Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).
+                Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in the future).
               schema:
                 type: string
             Last-Modified:
               description: |
-                Date and time the resource has been modifed the last time.
-                Used by caches, or in conditional requests (Will be supported in future).
+                Date and time the resource has been modified the last time.
+                Used by caches, or in conditional requests (Will be supported in the future).
               schema:
                 type: string
             Content-Type:
@@ -270,7 +270,7 @@ paths:
         304:
           description: |
             Not Modified.
-            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
+            Empty body because the client has already the latest version of the requested resource (Will be supported in the future).
           content: {}
         404:
           $ref: '#/components/responses/NotFound'
@@ -307,13 +307,13 @@ paths:
             ETag:
               description: |
                 Entity Tag of the response resource.
-                Used by caches, or in conditional requests (Will be supported in future).
+                Used by caches, or in conditional requests (Will be supported in the future).
               schema:
                 type: string
             Last-Modified:
               description: |
                 Date and time the resource has been modified the last time.
-                Used by caches, or in conditional requests (Will be supported in future).
+                Used by caches, or in conditional requests (Will be supported in the future).
               schema:
                 type: string
             Content-Type:
@@ -328,7 +328,7 @@ paths:
         304:
           description: |
             Not Modified.
-            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
+            Empty body because the client has already the latest version of the requested resource (Will be supported in the future).
           content: {}
         404:
           $ref: '#/components/responses/NotFound'
@@ -364,13 +364,13 @@ paths:
             ETag:
               description: |
                 Entity Tag of the response resource.
-                Used by caches, or in conditional requests (Will be supported in future).
+                Used by caches, or in conditional requests (Will be supported in the future).
               schema:
                 type: string
             Last-Modified:
               description: |
-                Date and time the resource has been modifed the last time.
-                Used by caches, or in conditional requests (Will be supported in future).
+                Date and time the resource has been modified the last time.
+                Used by caches, or in conditional requests (Will be supported in the future).
               schema:
                 type: string
             Content-Type:
@@ -382,7 +382,7 @@ paths:
         304:
           description: |
             Not Modified.
-            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
+            Empty body because the client has already the latest version of the requested resource (Will be supported in the future).
           content: {}
         404:
           $ref: '#/components/responses/NotFound'
@@ -430,13 +430,13 @@ paths:
             ETag:
               description: |
                 Entity Tag of the response resource.
-                Used by caches, or in conditional requests (Will be supported in future).
+                Used by caches, or in conditional requests (Will be supported in the future).
               schema:
                 type: string
             Last-Modified:
               description: |
-                Date and time the resource has been modifed the last time.
-                Used by caches, or in conditional requests (Will be supported in future).
+                Date and time the resource has been modified the last time.
+                Used by caches, or in conditional requests (Will be supported in the future).
               schema:
                 type: string
             Location:
@@ -475,7 +475,7 @@ paths:
         - API Documents
       summary: Get a List of Documents of an API
       description: |
-        This operation can be used to retrive a list of documents belonging to an API by providing the ID of the API.
+        This operation can be used to retrieve a list of documents belonging to an API by providing the ID of the API.
       parameters:
         - $ref: '#/components/parameters/apiId'
         - $ref: '#/components/parameters/limit'
@@ -490,7 +490,7 @@ paths:
           headers:
             ETag:
               description: |
-                Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).
+                Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in the future).
               schema:
                 type: string
             Content-Type:
@@ -505,7 +505,7 @@ paths:
         304:
           description: |
             Not Modified.
-            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
+            Empty body because the client has already the latest version of the requested resource (Will be supported in the future).
           content: {}
         404:
           $ref: '#/components/responses/NotFound'
@@ -546,7 +546,7 @@ paths:
             ETag:
               description: |
                 Entity Tag of the response resource.
-                Used by caches, or in conditional requests (Will be supported in future).
+                Used by caches, or in conditional requests (Will be supported in the future).
               schema:
                 type: string
             Location:
@@ -598,13 +598,13 @@ paths:
             ETag:
               description: |
                 Entity Tag of the response resource.
-                Used by caches, or in conditional requests (Will be supported in future).
+                Used by caches, or in conditional requests (Will be supported in the future).
               schema:
                 type: string
             Last-Modified:
               description: |
-                Date and time the resource has been modifed the last time.
-                Used by caches, or in conditional requests (Will be supported in future).
+                Date and time the resource has been modified the last time.
+                Used by caches, or in conditional requests (Will be supported in the future).
               schema:
                 type: string
             Content-Type:
@@ -619,7 +619,7 @@ paths:
         304:
           description: |
             Not Modified.
-            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
+            Empty body because the client has already the latest version of the requested resource (Will be supported in the future).
           content: {}
         404:
           $ref: '#/components/responses/NotFound'
@@ -661,13 +661,13 @@ paths:
             ETag:
               description: |
                 Entity Tag of the response resource.
-                Used by caches, or in conditional requests (Will be supported in future).
+                Used by caches, or in conditional requests (Will be supported in the future).
               schema:
                 type: string
             Last-Modified:
               description: |
-                Date and time the resource has been modifed the last time.
-                Used by caches, or in conditional requests (Will be supported in future).
+                Date and time the resource has been modified the last time.
+                Used by caches, or in conditional requests (Will be supported in the future).
               schema:
                 type: string
             Location:
@@ -736,7 +736,7 @@ paths:
         - API Documents
       summary: Get the Content of an API Document
       description: |
-        This operation can be used to retrive the content of an API's document.
+        This operation can be used to retrieve the content of an API's document.
 
         The document can be of 3 types. In each cases responses are different.
 
@@ -747,7 +747,7 @@ paths:
         2. **FILE type**:
            The file will be downloaded with the related content type (eg. `application/pdf`)
         3. **URL type**:
-            The client will recieve the URL of the document as the Location header with the response with - `303 See Other`
+            The client will receive the URL of the document as the Location header with the response with - `303 See Other`
       parameters:
         - $ref: '#/components/parameters/apiId'
         - $ref: '#/components/parameters/documentId'
@@ -762,13 +762,13 @@ paths:
             ETag:
               description: |
                 Entity Tag of the response resource.
-                Used by caches, or in conditional requests (Will be supported in future).
+                Used by caches, or in conditional requests (Will be supported in the future).
               schema:
                 type: string
             Last-Modified:
               description: |
-                Date and time the resource has been modifed the last time.
-                Used by caches, or in conditional requests (Will be supported in future).
+                Date and time the resource has been modified the last time.
+                Used by caches, or in conditional requests (Will be supported in the future).
               schema:
                 type: string
             Content-Type:
@@ -780,7 +780,7 @@ paths:
         303:
           description: |
             See Other.
-            Source can be retrived from the URL specified at the Location header.
+            Source can be retrieved from the URL specified at the Location header.
           headers:
             Location:
               description: |
@@ -791,7 +791,7 @@ paths:
         304:
           description: |
             Not Modified.
-            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
+            Empty body because the client has already the latest version of the requested resource (Will be supported in the future).
           content: {}
         404:
           $ref: '#/components/responses/NotFound'
@@ -812,7 +812,7 @@ paths:
         - API Documents
       summary: Upload the Content of an API Document
       description: |
-        Thid operation can be used to upload a file or add inline content to an API document.
+        This operation can be used to upload a file or add inline content to an API document.
 
         **IMPORTANT:**
         * Either **file** or **inlineContent** form data parameters should be specified at one time.
@@ -843,13 +843,13 @@ paths:
             ETag:
               description: |
                 Entity Tag of the response resource.
-                Used by caches, or in conditional requests (Will be supported in future).
+                Used by caches, or in conditional requests (Will be supported in the future).
               schema:
                 type: string
             Last-Modified:
               description: |
-                Date and time the resource has been modifed the last time.
-                Used by caches, or in conditional requests (Will be supported in future).
+                Date and time the resource has been modified the last time.
+                Used by caches, or in conditional requests (Will be supported in the future).
               schema:
                 type: string
             Location:
@@ -1018,7 +1018,7 @@ paths:
                 type: string
             Last-Modified:
               description: |
-                Date and time the resource has been modifed the last time.
+                Date and time the resource has been modified the last time.
                 Used by caches, or in conditional requests.
               schema:
                 type: string
@@ -1185,7 +1185,7 @@ paths:
                 type: string
             Last-Modified:
               description: |
-                Date and time the resource has been modifed the last time.
+                Date and time the resource has been modified the last time.
                 Used by caches, or in conditional requests.
               schema:
                 type: string
@@ -1248,7 +1248,7 @@ paths:
             ETag:
               description: |
                 Entity Tag of the response resource.
-                Used by caches, or in conditional requests (Will be supported in future).
+                Used by caches, or in conditional requests (Will be supported in the future).
               schema:
                 type: string
             Content-Type:
@@ -1263,7 +1263,7 @@ paths:
         304:
           description: |
             Not Modified.
-            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
+            Empty body because the client has already the latest version of the requested resource (Will be supported in the future).
           content: {}
         406:
           $ref: '#/components/responses/NotAcceptable'
@@ -1341,13 +1341,13 @@ paths:
             ETag:
               description: |
                 Entity Tag of the blocked subscription.
-                Used by caches, or in conditional requests (Will be supported in future).
+                Used by caches, or in conditional requests (Will be supported in the future).
               schema:
                 type: string
             Last-Modified:
               description: |
                 Date and time the subscription has been blocked.
-                Used by caches, or in conditional requests (Will be supported in future).
+                Used by caches, or in conditional requests (Will be supported in the future).
               schema:
                 type: string
           content: {}
@@ -1386,13 +1386,13 @@ paths:
             ETag:
               description: |
                 Entity Tag of the unblocked subscription.
-                Used by caches, or in conditional requests (Will be supported in future).
+                Used by caches, or in conditional requests (Will be supported in the future).
               schema:
                 type: string
             Last-Modified:
               description: |
                 Date and time the subscription has been unblocked.
-                Used by caches, or in conditional requests (Will be supported in future).
+                Used by caches, or in conditional requests (Will be supported in the future).
               schema:
                 type: string
           content: {}
@@ -1420,7 +1420,7 @@ paths:
     get:
       tags:
         - Usage Plan
-      summary: Get All Useage Plans
+      summary: Get All Usage Plans
       description: |
         This operation can be used to list the available usage plans.
       operationId: getAllUsagePlans
@@ -1437,7 +1437,7 @@ paths:
             ETag:
               description: |
                 Entity Tag of the response resource.
-                Used by caches, or in conditional requests (Will be supported in future).
+                Used by caches, or in conditional requests (Will be supported in the future).
               schema:
                 type: string
             Content-Type:
@@ -1451,7 +1451,7 @@ paths:
         304:
           description: |
             Not Modified.
-            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
+            Empty body because the client has already the latest version of the requested resource (Will be supported in the future).
           content: {}
         406:
           $ref: '#/components/responses/NotAcceptable'
@@ -1495,7 +1495,7 @@ paths:
           headers:
             ETag:
               description: |
-                Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).
+                Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in the future).
               schema:
                 type: string
             Content-Type:
@@ -1509,7 +1509,7 @@ paths:
         304:
           description: |
             Not Modified.
-            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
+            Empty body because the client has already the latest version of the requested resource (Will be supported in the future).
           content: {}
         406:
           $ref: '#/components/responses/NotAcceptable'
@@ -1530,9 +1530,9 @@ paths:
     get:
       tags:
         - Settings
-      summary: Retreive BackOffice Settings
+      summary: Retrieve BackOffice Settings
       description: |
-        Retreive BackOffice settings
+        Retrieve BackOffice settings
       responses:
         200:
           description: |
@@ -2517,12 +2517,12 @@ components:
           properties:
             dataAmount:
               type: integer
-              description: Amount of data allowed to be transfered
+              description: Amount of data allowed to be transferred
               format: int64
               example: 1000
             dataUnit:
               type: string
-              description: Unit of data allowed to be transfered. Allowed values are
+              description: Unit of data allowed to be transferred. Allowed values are
                 "KB", "MB" and "GB"
               example: KB
     RequestCountLimit:
@@ -3317,14 +3317,14 @@ components:
       name: replyTo
       in: query
       description: |
-        ID of the perent comment.
+        ID of the parent comment.
       schema:
         type: string
     includeCommenterInfo:
       name: includeCommenterInfo
       in: query
       description: |
-        Whether we need to display commentor details.
+        Whether we need to display commenter details.
       schema:
         type: boolean
         default : false
