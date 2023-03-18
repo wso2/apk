@@ -84,7 +84,7 @@ func UpdateAPI(api *apiProtos.API) error {
     }
     defer response.Body.Close()
     
-    if response.StatusCode == 404 {
+    if response.StatusCode == http.StatusNotFound {
         // If the status code indicates an 404, call the create API to create the API in database.
 		// This is done to handle the case where the API is not in the database due to managemnt server failure.
 		CreateAPI(api);
