@@ -91,7 +91,7 @@ isolated function db_getAPI_internal(string apiId, string organization) returns 
         return error("Issue while conecting to databse");
     } else {
         sql:ParameterizedQuery GET_API_Prefix = `SELECT API_UUID AS ID, API_ID as APIID,
-        API_PROVIDER as PROVIDER, API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS,string_to_array(SDK::text,',')::text[] AS SDK,string_to_array(API_TIER::text,',') AS POLICIES, ARTIFACT as ARTIFACT
+        API_PROVIDER as PROVIDER, API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS 
         FROM API where API_UUID = `;
         sql:ParameterizedQuery values = `${apiId}`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(GET_API_Prefix, values);
