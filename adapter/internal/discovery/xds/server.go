@@ -437,6 +437,8 @@ func GenerateEnvoyResoucesForGateway(gateway *gwapiv1b1.Gateway, isUpdate bool, 
 	var listenerArray []*listenerv3.Listener
 	var routesConfig []*routev3.RouteConfiguration
 
+	logger.LoggerXds.Infof("Flow : %v", flow)
+
 	if flow == "GatewayController" {
 		listenerArray = oasParser.GetProductionListener(gateway)
 		envoyListenerConfigMap[gateway.Name] = listenerArray
@@ -445,29 +447,36 @@ func GenerateEnvoyResoucesForGateway(gateway *gwapiv1b1.Gateway, isUpdate bool, 
 	} else if flow == "APIController" {
 		listenerArray = envoyListenerConfigMap[gateway.Name]
 		for _, listener := range listenerArray {
+			logger.LoggerXds.Infof("Listener : %v", listener)
 			routesFromListener := listenerToRouteArrayMap[listener.Name]
+			logger.LoggerXds.Infof("Routes from listener : %v", routesFromListener)
 			var vhostToRouteArrayFilteredMap = make(map[string][]*routev3.Route)
 			for vhost, routes := range vhostToRouteArrayMap {
+				logger.LoggerXds.Infof("Routes from Vhost Map : %v", routes)
 				if vhost == systemHost || checkRoutes(routes, routesFromListener) {
+					logger.LoggerXds.Infof("Equal routes : %v", routes)
 					vhostToRouteArrayFilteredMap[vhost] = routes
-					routesConfig = append(routesConfig, oasParser.GetRouteConfigs(vhostToRouteArrayFilteredMap, listener.Name))
-					envoyRouteConfigMap[gateway.Name] = routesConfig
 				}
 			}
+			routesConfig = append(routesConfig, oasParser.GetRouteConfigs(vhostToRouteArrayFilteredMap, listener.Name))
+			envoyRouteConfigMap[gateway.Name] = routesConfig
+			logger.LoggerXds.Infof("Listener : %v and routes %v", listener, routesConfig)
 		}
 	}
 
+	logger.LoggerXds.Infof("Routes Config : %v", routesConfig)
 	clusterArray = append(clusterArray, envoyClusterConfigMap[gateway.Name]...)
 	endpointArray = append(endpointArray, envoyEndpointConfigMap[gateway.Name]...)
 	endpoints, clusters, listeners, routeConfigs := oasParser.GetCacheResources(endpointArray, clusterArray, listenerArray, routesConfig)
+	logger.LoggerXds.Infof("Routes Config After Get cache : %v", routeConfigs)
 	return endpoints, clusters, listeners, routeConfigs, apis
 }
 
 // function to check routes []*routev3.Route equlas routes []*routev3.Route
 func checkRoutes(routes []*routev3.Route, routesFromListener []*routev3.Route) bool {
-	if len(routes) != len(routesFromListener) {
-		return false
-	}
+	// if len(routes) != len(routesFromListener) {
+	// 	return false
+	// }
 	for i := range routes {
 		flag := false
 		for j := range routesFromListener {
