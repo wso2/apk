@@ -18,6 +18,7 @@
 
 import ballerinax/postgresql;
 import ballerina/sql;
+import ballerina/io;
 
 isolated function addOrganizationDAO(Internal_Organization payload) returns Internal_Organization|APKError {
     postgresql:Client | error dbClient  = getConnection();
@@ -30,12 +31,16 @@ isolated function addOrganizationDAO(Internal_Organization payload) returns Inte
         ${payload.displayName},${payload.enabled})`;
         sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
         if result is sql:ExecutionResult && result.affectedRowCount == 1 {
-           return addOrganizationClaimMappingDAO(dbClient, payload);    
-        } else { 
-            string message = "Error while inserting organization data into Database";
-            return error(message, message = message, description = message, code = 909000, statusCode = "500"); 
+            boolean isVhostAdded = addVhostsDAO(dbClient, payload);
+            if(isVhostAdded) {
+                return addOrganizationClaimMappingDAO(dbClient, payload);
+            } else {
+                string message = "Error while inserting vhosts data into Database";
+                return error(message, message = message, description = message, code = 909000, statusCode = "500");
+            }
         }
     }
+    return payload;
 }
 
 isolated function addOrganizationClaimMappingDAO(postgresql:Client dbClient, Internal_Organization payload) returns Internal_Organization|APKError {
@@ -54,6 +59,17 @@ isolated function addOrganizationClaimMappingDAO(postgresql:Client dbClient, Int
     return payload;
 }
 
+isolated function addVhostsDAO (postgresql:Client dbClient, Internal_Organization payload) returns boolean{
+    postgresql:JsonBinaryValue vhosts = new (payload.vhosts.toJson());
+    sql:ParameterizedQuery query = `INSERT INTO ORGANIZATION_VHOST(UUID, VHOST) VALUES (${payload.id},${vhosts})`;
+        sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
+        if result is sql:ExecutionResult && result.affectedRowCount == 1 {
+            return true;    
+        } else { 
+            return false;    
+        }
+}
+
 isolated function validateOrganizationByNameDAO(string name) returns boolean|APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
@@ -64,7 +80,7 @@ isolated function validateOrganizationByNameDAO(string name) returns boolean|APK
     Organization | sql:Error result =  dbClient->queryRow(query);
     if result is sql:NoRowsError {
         return false;
-    } else if result is APICategory {
+    } else if result is Organization {
         return true;
     } else {
         string message = "Error while validating organization name in Database";
@@ -134,7 +150,8 @@ public isolated function getAllOrganizationDAO() returns Internal_Organization[]
         return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
         do {
-            sql:ParameterizedQuery query = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName, claim_key as claimKey, claim_value as claimValue FROM ORGANIZATION, ORGANIZATION_CLAIM_MAPPING where ORGANIZATION.UUID = ORGANIZATION_CLAIM_MAPPING.UUID`;
+            sql:ParameterizedQuery query = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName, string_to_array(ORGANIZATION_VHOST.VHOST::text,',')::text[] AS vhosts, claim_key as claimKey, claim_value as claimValue FROM ORGANIZATION, ORGANIZATION_CLAIM_MAPPING,ORGANIZATION_VHOST where ORGANIZATION.UUID = ORGANIZATION_CLAIM_MAPPING.UUID
+            AND ORGANIZATION.UUID = ORGANIZATION_VHOST.UUID`;
             stream<Organizations, sql:Error?> orgStream = dbClient->query(query);
             map<Internal_Organization> organization = {};
 
@@ -144,7 +161,8 @@ public isolated function getAllOrganizationDAO() returns Internal_Organization[]
                     organization.get(org.id).claimList.push(claim);
                 } else {
                     OrganizationClaim claim = {claimKey: org.claimKey, claimValue: org.claimValue};
-                    Internal_Organization organizationData = {id: org.id, name: org.name, displayName: org.displayName, enabled: true,  claimList: [claim]};
+                    io:print(org.vhosts);
+                    Internal_Organization organizationData = {id: org.id, name: org.name, displayName: org.displayName, enabled: true, vhosts: org.vhosts,  claimList: [claim]};
                     organization[org.id] = organizationData;
                 }
             };
@@ -164,14 +182,15 @@ isolated function getOrganizationByIdDAO(string id) returns Internal_Organizatio
         return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
         do {
-            sql:ParameterizedQuery query = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName, claim_key as claimKey, 
-                    claim_value as claimValue FROM ORGANIZATION, ORGANIZATION_CLAIM_MAPPING where ORGANIZATION.UUID = ORGANIZATION_CLAIM_MAPPING.UUID and ORGANIZATION.UUID =${id}`;
+            sql:ParameterizedQuery query = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName,string_to_array(VHOST::text,',')::text[] AS vhosts, claim_key as claimKey, 
+                    claim_value as claimValue FROM ORGANIZATION, ORGANIZATION_CLAIM_MAPPING, ORGANIZATION_VHOST where ORGANIZATION.UUID = ORGANIZATION_CLAIM_MAPPING.UUID and ORGANIZATION.UUID = ORGANIZATION_VHOST.UUID and ORGANIZATION.UUID =${id}`;
             stream<Organizations, sql:Error?> orgStream = dbClient->query(query);
             Internal_Organization organization1 = {
                 id: "",
                 name: "",
                 displayName: "",
                 enabled: true,
+                vhosts: [],
                 claimList: []
             };
             check from Organizations org in orgStream do {
@@ -181,6 +200,7 @@ isolated function getOrganizationByIdDAO(string id) returns Internal_Organizatio
                         name:org.name,
                         displayName:org.displayName,
                         enabled: true,
+                        vhosts: org.vhosts,
                         claimList:[{
                             claimKey:org.claimKey,
                             claimValue: org.claimValue
@@ -251,14 +271,15 @@ isolated function getOrganizationByNameDAO(string name) returns Internal_Organiz
         return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
         do {
-            sql:ParameterizedQuery query = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName, claim_key as claimKey, 
-                    claim_value as claimValue FROM ORGANIZATION, ORGANIZATION_CLAIM_MAPPING where ORGANIZATION.UUID = ORGANIZATION_CLAIM_MAPPING.UUID and ORGANIZATION.NAME =${name}`;
+            sql:ParameterizedQuery query = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName,string_to_array(VHOST::text,',')::text[] AS vhosts, claim_key as claimKey, 
+                    claim_value as claimValue FROM ORGANIZATION, ORGANIZATION_CLAIM_MAPPING, ORGANIZATION_VHOST where ORGANIZATION.UUID = ORGANIZATION_CLAIM_MAPPING.UUID and ORGANIZATION_VHOST.UUID = ORGANIZATION.UUID and ORGANIZATION.NAME =${name}`;
             stream<Organizations, sql:Error?> orgStream = dbClient->query(query);
             Internal_Organization organization1 = {
                 id: "",
                 name: "",
                 displayName: "",
                 enabled: true,
+                vhosts: [],
                 claimList: []
             };
             check from Organizations org in orgStream do {
@@ -268,6 +289,7 @@ isolated function getOrganizationByNameDAO(string name) returns Internal_Organiz
                         name:org.name,
                         displayName:org.displayName,
                         enabled: true,
+                        vhosts: org.vhosts,
                         claimList:[{
                             claimKey:org.claimKey,
                             claimValue: org.claimValue
