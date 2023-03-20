@@ -18,6 +18,7 @@
 package logging
 
 // Error Log Pkg operator(2600-2699) Config Constants
+// - LoggerAPKOperator
 const (
 	error2600 = 2600
 	error2601 = 2601

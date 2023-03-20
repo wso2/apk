@@ -535,7 +535,7 @@ func resolveCertificate(ctx context.Context, client k8client.Client, namespace s
 			return ""
 		}
 		_, err = x509.ParseCertificate(block.Bytes)
-		if block == nil {
+		if err != nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2641, err.Error()))
 			return ""
 		}
