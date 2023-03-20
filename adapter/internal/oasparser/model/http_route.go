@@ -262,12 +262,10 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, ht
 func parseRateLimitPolicyToInternal(ratelimitPolicy *dpv1alpha1.RateLimitPolicy) *RateLimitPolicy {
 	var rateLimitPolicyInternal *RateLimitPolicy
 	if ratelimitPolicy != nil {
-		for _, policy := range ratelimitPolicy.Spec.Override {
-			if policy.API.Count > 0 {
-				rateLimitPolicyInternal = &RateLimitPolicy{
-					Count:    policy.API.Count,
-					SpanUnit: policy.API.SpanUnit,
-				}
+		if ratelimitPolicy.Spec.Override.API.Count > 0 {
+			rateLimitPolicyInternal = &RateLimitPolicy{
+				Count:    ratelimitPolicy.Spec.Override.API.Count,
+				SpanUnit: ratelimitPolicy.Spec.Override.API.SpanUnit,
 			}
 		}
 	}
@@ -341,9 +339,9 @@ func concatAuthSchemes(schemeUp *dpv1alpha1.Authentication, schemeDown *dpv1alph
 func concatRateLimitPolicies(schemeUp *dpv1alpha1.RateLimitPolicy, schemeDown *dpv1alpha1.RateLimitPolicy) *dpv1alpha1.RateLimitPolicy {
 	finalRateLimit := dpv1alpha1.RateLimitPolicy{}
 	if schemeUp != nil && schemeDown != nil {
-		finalRateLimit.Spec.Override = *utils.SelectPolicy(schemeUp.Spec.Override, schemeUp.Spec.Default, schemeDown.Spec.Override, schemeDown.Spec.Default)
+		finalRateLimit.Spec.Override = *utils.SelectPolicy(&schemeUp.Spec.Override, &schemeUp.Spec.Default, &schemeDown.Spec.Override, &schemeDown.Spec.Default)
 	} else if schemeUp != nil {
-		finalRateLimit.Spec.Override = *utils.SelectPolicy(schemeUp.Spec.Override, schemeUp.Spec.Default, nil, nil)
+		finalRateLimit.Spec.Override = *utils.SelectPolicy(&schemeUp.Spec.Override, &schemeUp.Spec.Default, nil, nil)
 	}
 	return &finalRateLimit
 }

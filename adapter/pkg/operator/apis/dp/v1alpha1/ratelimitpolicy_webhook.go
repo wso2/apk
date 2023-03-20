@@ -18,8 +18,6 @@
 package v1alpha1
 
 import (
-	"fmt"
-
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -75,44 +73,21 @@ func (r *RateLimitPolicy) ValidateDelete() error {
 // ValidatePolicies validates the policies in the RateLimitPolicy
 func (r *RateLimitPolicy) ValidatePolicies() error {
 	var allErrs field.ErrorList
-	for _, policy := range r.Spec.Override {
-		if err := validatePolicyType(policy.Type); err != nil {
-			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("override").Child("type"),
-				policy.Type, err.Error()))
-		}
-		if err := validateRatelimitPolicyUnit(policy.API.SpanUnit); err != nil {
-			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("override").Child("api").Child("spanUnit"),
-				policy.API.SpanUnit, err.Error()))
-		}
+
+	if r.Spec.Override.Type == "Api" && (r.Spec.Override.API.Count == 0 || r.Spec.Override.API.SpanUnit == "") {
+		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("override").Child("api"),
+			r.Spec.Override.Type, "Count and SpanUnit are required for Api type"))
 	}
-	for _, policy := range r.Spec.Default {
-		if err := validatePolicyType(policy.Type); err != nil {
-			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("default").Child("type"),
-				policy.Type, err.Error()))
-		}
-		if err := validateRatelimitPolicyUnit(policy.API.SpanUnit); err != nil {
-			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("default").Child("api").Child("spanUnit"),
-				policy.API.SpanUnit, err.Error()))
-		}
+
+	if r.Spec.Default.Type == "Api" && (r.Spec.Default.API.Count == 0 || r.Spec.Default.API.SpanUnit == "") {
+		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("default").Child("api"),
+			r.Spec.Default.Type, "Count and SpanUnit are required for Api type"))
 	}
+
 	if len(allErrs) > 0 {
 		return apierrors.NewInvalid(
 			schema.GroupKind{Group: "dp.wso2.com", Kind: "RateLimitPolicy"},
 			r.Name, allErrs)
-	}
-	return nil
-}
-
-func validatePolicyType(policyType string) error {
-	if policyType != "Api" {
-		return fmt.Errorf("invalid policyType. Only Api is supported")
-	}
-	return nil
-}
-
-func validateRatelimitPolicyUnit(policyUnit string) error {
-	if policyUnit != "Minute" && policyUnit != "Hour" && policyUnit != "Day" {
-		return fmt.Errorf("invalid policyUnit. Only Minute, Hour and Day are supported")
 	}
 	return nil
 }

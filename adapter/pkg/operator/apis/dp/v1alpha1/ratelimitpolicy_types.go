@@ -24,8 +24,8 @@ import (
 
 // RateLimitPolicySpec defines the desired state of RateLimitPolicy
 type RateLimitPolicySpec struct {
-	Default   []RateLimitAPIPolicy            `json:"default,omitempty"`
-	Override  []RateLimitAPIPolicy            `json:"override,omitempty"`
+	Default   RateLimitAPIPolicy              `json:"default,omitempty"`
+	Override  RateLimitAPIPolicy              `json:"override,omitempty"`
 	TargetRef gwapiv1b1.PolicyTargetReference `json:"targetRef,omitempty"`
 }
 
@@ -38,6 +38,7 @@ type RateLimitAPIPolicy struct {
 	// API policy
 	//
 	// +optional
+	// +kubebuilder:validation:Enum=Api;Application;Subscription
 	API APIRateLimit `json:"api,omitempty"`
 }
 
@@ -50,6 +51,7 @@ type APIRateLimit struct {
 
 	// SpanUnit is the unit of the requestPerUnit
 	//
+	// +kubebuilder:validation:Enum=Minute;Hour;Day
 	SpanUnit string `json:"spanUnit,omitempty"`
 }
 
