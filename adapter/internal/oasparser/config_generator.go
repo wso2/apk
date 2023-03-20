@@ -28,6 +28,7 @@ import (
 	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
 	"github.com/wso2/apk/adapter/config"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
+	"github.com/wso2/apk/adapter/internal/logging"
 	envoy "github.com/wso2/apk/adapter/internal/oasparser/envoyconf"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/api"
@@ -60,7 +61,7 @@ func GetGlobalClusters() ([]*clusterv3.Cluster, []*corev3.Address) {
 			clusters = append(clusters, rlCluster)
 			endpoints = append(endpoints, rlEP...)
 		} else {
-			logger.LoggerOasparser.Fatalf("Failed to initialize ratelimit cluster. Hence terminating the adapter. Error: %s", errRL)
+			logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2248, errRL))
 		}
 	}
 
@@ -70,7 +71,7 @@ func GetGlobalClusters() ([]*clusterv3.Cluster, []*corev3.Address) {
 			clusters = append(clusters, c)
 			endpoints = append(endpoints, e...)
 		} else {
-			logger.LoggerOasparser.Error("Failed to initialize tracer's cluster. Router tracing will be disabled. ", err)
+			logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2249, err.Error()))
 			conf.Tracing.Enabled = false
 		}
 	}
