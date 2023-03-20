@@ -383,6 +383,11 @@ public class APIClient {
                 if (badRequestError is BadRequestError) {
                     return badRequestError;
                 }
+                // Validating rate limit.
+                BadRequestError|() invalidRateLimitError = self.validateRateLimit(api.apiRateLimit, operations);
+                if (invalidRateLimitError is BadRequestError) {
+                    return invalidRateLimitError;
+                }
             } else {
                 BadRequestError badRequestError = {body: {code: 90912, message: "Atleast one operation need to specified"}};
                 return badRequestError;
@@ -488,6 +493,23 @@ public class APIClient {
                         BadRequestError badRequestError = {body: {code: 90915, message: "Invalid operation policy name"}};
                         return badRequestError;
                     }
+                }
+            }
+        }
+        return ();
+    }
+
+    isolated function validateRateLimit(APIRateLimit? apiRateLimit, APIOperations[] operations) returns BadRequestError|() {
+        if (apiRateLimit == ()) {
+            return ();
+        } else {
+            foreach APIOperations operation in operations {
+                APIRateLimit? operationRateLimit = operation.operationRateLimit;
+                if (operationRateLimit != ()) {
+                    // Presence of both resource level and API level rate limits.
+                    BadRequestError badRequestError = {body: {code: 90918,
+                        message: "Presence of both resource level and API level rate limits is not allowed"}};
+                    return badRequestError;
                 }
             }
         }
