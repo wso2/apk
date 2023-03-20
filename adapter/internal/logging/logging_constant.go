@@ -32,6 +32,7 @@ const (
 )
 
 // Error Log Internal Adapter(1100-1199) Constants
+// - LoggerMgw
 const (
 	error1100 = 1100
 	error1101 = 1101
@@ -39,14 +40,11 @@ const (
 	error1103 = 1103
 	error1104 = 1104
 	error1105 = 1105
-)
-
-// Error Log Internal API(1200-1299) Constants
-const (
-	error1200 = 1200
+	error1106 = 1106
 )
 
 // Error Log Internal discovery(1400-1499) Config Constants
+// - LoggerXds
 const (
 	error1400 = 1400
 	error1401 = 1401
@@ -59,6 +57,7 @@ const (
 )
 
 // Error Log Internal XDS(1700-1799) Config Constants
+// - LoggerXds
 const (
 	error1700 = 1700
 	error1701 = 1701
@@ -79,12 +78,14 @@ const (
 )
 
 // Error Log Internal intercepter(1800-1899) Config Constants
+// - LoggerInterceptor
 const (
 	error1800 = 1800
 	error1801 = 1801
 )
 
 // Error Log Internal OASParser(2200-2299) Config Constants
+// - LoggerOasparser
 const (
 	error2200 = 2200
 	error2201 = 2201
@@ -112,9 +113,12 @@ const (
 	error2245 = 2245
 	error2246 = 2246
 	error2247 = 2247
+	error2248 = 2248
+	error2249 = 2249
 )
 
 // Error Log RateLimiter callbacks(2300-2399) Config Constants
+// - LoggerEnforcerXdsCallbacks
 const (
 	error2300 = 2300
 )
@@ -156,9 +160,9 @@ var Mapper = map[int]logging.ErrorDetails{
 		Message:   "Error serving Rate Limiter xDS gRPC server: %v",
 		Severity:  BLOCKER,
 	},
-	error1200: {
-		ErrorCode: error1200,
-		Message:   "The provided port value for the REST Api Server :%v is not an integer. %v",
+	error1106: {
+		ErrorCode: error1106,
+		Message:   "Failed to listen %v: %v",
 		Severity:  BLOCKER,
 	},
 	error1400: {
@@ -420,6 +424,16 @@ var Mapper = map[int]logging.ErrorDetails{
 		ErrorCode: error2247,
 		Message:   "Error while adding operational level response intercept external cluster for %v:%v-%v-%v. %v",
 		Severity:  MAJOR,
+	},
+	error2248: {
+		ErrorCode: error2248,
+		Message:   "Failed to initialize ratelimit cluster. Hence terminating the adapter. Error: %s",
+		Severity:  BLOCKER,
+	},
+	error2249: {
+		ErrorCode: error2249,
+		Message:   "Failed to initialize tracer's cluster. Router tracing will be disabled. %v",
+		Severity:  CRITICAL,
 	},
 	error2700: {
 		ErrorCode: error2700,
