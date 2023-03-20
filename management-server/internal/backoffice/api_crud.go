@@ -70,14 +70,26 @@ func CreateAPI(api *apiProtos.API) error {
 
 // UpdateAPI updates an API by invoking backoffice service
 func UpdateAPI(api *apiProtos.API) error {
-	putBody, _ := json.Marshal(composeRequestBody(api))
-	requestBody := bytes.NewBuffer(putBody)
-	putRequest, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/%s", getBackOfficeURL(), api.Uuid), requestBody)
-	_, err = backOfficeClient.Do(putRequest)
-	if err != nil {
-		return err
-	}
-	return nil
+    putBody, _ := json.Marshal(composeRequestBody(api))
+    requestBody := bytes.NewBuffer(putBody)
+    putRequest, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/%s", getBackOfficeURL(), api.Uuid), requestBody)
+    if err != nil {
+        return err
+    }
+    
+    // Perform the HTTP request and check the response status code
+    response, err := backOfficeClient.Do(putRequest)
+    if err != nil {
+        return err
+    }
+    defer response.Body.Close()
+    
+    if response.StatusCode == http.StatusNotFound {
+        // If the status code indicates an 404, call the create API to create the API in database.
+		// This is done to handle the case where the API is not in the database due to managemnt server failure.
+		CreateAPI(api);
+    }
+    return nil
 }
 
 // DeleteAPI deletes an API by invoking backoffice service
