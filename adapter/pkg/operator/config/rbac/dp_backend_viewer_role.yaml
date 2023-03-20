@@ -1,31 +1,27 @@
-# permissions for end users to edit backendpolicies.
+# permissions for end users to view backends.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
     app.kubernetes.io/name: clusterrole
-    app.kubernetes.io/instance: backendpolicy-editor-role
+    app.kubernetes.io/instance: backend-viewer-role
     app.kubernetes.io/component: rbac
     app.kubernetes.io/created-by: operator
     app.kubernetes.io/part-of: operator
     app.kubernetes.io/managed-by: kustomize
-  name: backendpolicy-editor-role
+  name: backend-viewer-role
 rules:
 - apiGroups:
   - dp.wso2.com
   resources:
-  - backendpolicies
+  - backends
   verbs:
-  - create
-  - delete
   - get
   - list
-  - patch
-  - update
   - watch
 - apiGroups:
   - dp.wso2.com
   resources:
-  - backendpolicies/status
+  - backends/status
   verbs:
   - get

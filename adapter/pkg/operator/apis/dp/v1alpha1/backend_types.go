@@ -17,16 +17,114 @@
 
 package v1alpha1
 
-import "k8s.io/apimachinery/pkg/types"
+import (
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
 
-// BackendPropertyMapping keep a two level map using rule index and backend index to
-// a backend properties
-type BackendPropertyMapping map[types.NamespacedName]BackendProperties
+// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
+// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
-// BackendProperties holds backend properties
-type BackendProperties struct {
-	ResolvedHostname string
-	Protocol         BackendProtocolType
-	TLS              TLSConfig
-	Security         []SecurityConfig
+// BackendProtocolType defines the backend protocol type.
+type BackendProtocolType string
+
+const (
+	// HTTPProtocol is the http protocol
+	HTTPProtocol BackendProtocolType = "http"
+	// HTTPSProtocol is the https protocol
+	HTTPSProtocol BackendProtocolType = "https"
+	// WSProtocol is the ws protocol
+	WSProtocol BackendProtocolType = "ws"
+	// WSSProtocol is the wss protocol
+	WSSProtocol BackendProtocolType = "wss"
+)
+
+// BackendConfigs holds different backend configurations
+type BackendConfigs struct {
+	// +kubebuilder:validation:Enum=http;https;ws;wss
+	Protocol BackendProtocolType `json:"protocol"`
+	TLS      TLSConfig           `json:"tls,omitempty"`
+	Security []SecurityConfig    `json:"security,omitempty"`
+}
+
+// BackendSpec defines the desired state of Backend
+type BackendSpec struct {
+	// +kubebuilder:validation:MinItems=1
+	Services []Service `json:"services,omitempty"`
+
+	// +optional
+	// +kubebuilder:validation:Enum=http;https;ws;wss
+	// +kubebuilder:default=http
+	Protocol BackendProtocolType `json:"protocol"`
+
+	// +optional
+	TLS *TLSConfig `json:"tls,omitempty"`
+
+	// +optional
+	Security []SecurityConfig `json:"security,omitempty"`
+}
+
+// Service holds host and port information for the service
+type Service struct {
+	Host string `json:"host"`
+	Port uint32 `json:"port"`
+}
+
+// TLSConfig defines enpoint TLS configurations
+type TLSConfig struct {
+	CertificateInline string     `json:"certificateInline,omitempty"`
+	SecretRef         *RefConfig `json:"secretRef,omitempty"`
+	ConfigMapRef      *RefConfig `json:"configMapRef,omitempty"`
+	AllowedSANs       []string   `json:"allowedSANs,omitempty"`
+}
+
+// RefConfig holds a config for a secret or a configmap
+type RefConfig struct {
+	Name string `json:"name"`
+	Key  string `json:"key"`
+}
+
+// SecurityConfig defines enpoint security configurations
+type SecurityConfig struct {
+	Type  string              `json:"type,omitempty"`
+	Basic BasicSecurityConfig `json:"basic,omitempty"`
+}
+
+// BasicSecurityConfig defines basic security configurations
+type BasicSecurityConfig struct {
+	SecretRef SecretRef `json:"secretRef"`
+}
+
+// SecretRef to credentials
+type SecretRef struct {
+	Name        string `json:"name"`
+	UsernameKey string `json:"usernameKey"`
+	PasswordKey string `json:"passwordKey"`
+}
+
+// BackendStatus defines the observed state of Backend
+type BackendStatus struct{}
+
+//+kubebuilder:object:root=true
+//+kubebuilder:subresource:status
+
+// Backend is the Schema for the backends API
+type Backend struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   BackendSpec   `json:"spec,omitempty"`
+	Status BackendStatus `json:"status,omitempty"`
+}
+
+//+kubebuilder:object:root=true
+
+// BackendList contains a list of Backend
+type BackendList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []Backend `json:"items"`
+}
+
+func init() {
+	SchemeBuilder.Register(&Backend{}, &BackendList{})
 }

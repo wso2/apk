@@ -215,8 +215,8 @@ func updateHTTPRoute(httpRoute *HTTPRouteState, cachedHTTPRoute *HTTPRouteState,
 		}
 	}
 
-	if !reflect.DeepEqual(cachedHTTPRoute.BackendPropertyMapping, httpRoute.BackendPropertyMapping) {
-		cachedHTTPRoute.BackendPropertyMapping = httpRoute.BackendPropertyMapping
+	if !reflect.DeepEqual(cachedHTTPRoute.BackendMapping, httpRoute.BackendMapping) {
+		cachedHTTPRoute.BackendMapping = httpRoute.BackendMapping
 		updated = true
 		events = append(events, endpointType+" Backend Properties")
 	}

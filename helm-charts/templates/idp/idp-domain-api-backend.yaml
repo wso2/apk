@@ -14,29 +14,13 @@
 # specific language governing permissions and limitations
 # under the License.
 {{- if .Values.wso2.apk.cp.enabled }}
-apiVersion: "gateway.networking.k8s.io/v1beta1"
-kind: "HTTPRoute"
+kind: "Backend"
+apiVersion: "dp.wso2.com/v1alpha1"
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-internal-ds-httproute
+  name: {{ template "apk-helm.resource.prefix" . }}-idp-ds-backend
   namespace: {{ .Release.Namespace }}
-  labels:
-    api-name: "internal-domain-service"
-    api-version: "v1"
 spec:
-  hostnames:
-  - "api.am.wso2.com"
-  rules:
-  - matches:
-    - path:
-        type: "PathPrefix"
-        value: "/api/am/internal/v1"
-      method: "GET"
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-internal-admin-ds-backend
-  parentRefs:
-  - group: "gateway.networking.k8s.io"
-    kind: "Gateway"
-    name: "Default"
+ services:
+  - host:  {{ template "apk-helm.resource.prefix" . }}-idp-ds-service.{{ .Release.Namespace }}
+    port: 9443
 {{- end -}}

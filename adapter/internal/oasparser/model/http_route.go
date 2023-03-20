@@ -33,12 +33,12 @@ import (
 
 // HTTPRouteParams contains httproute related parameters
 type HTTPRouteParams struct {
-	AuthSchemes            map[string]dpv1alpha1.Authentication
-	ResourceAuthSchemes    map[string]dpv1alpha1.Authentication
-	APIPolicies            map[string]dpv1alpha1.APIPolicy
-	ResourceAPIPolicies    map[string]dpv1alpha1.APIPolicy
-	BackendPropertyMapping dpv1alpha1.BackendPropertyMapping
-	ResourceScopes         map[string]dpv1alpha1.Scope
+	AuthSchemes         map[string]dpv1alpha1.Authentication
+	ResourceAuthSchemes map[string]dpv1alpha1.Authentication
+	APIPolicies         map[string]dpv1alpha1.APIPolicy
+	ResourceAPIPolicies map[string]dpv1alpha1.APIPolicy
+	BackendMapping      dpv1alpha1.BackendMapping
+	ResourceScopes      map[string]dpv1alpha1.Scope
 }
 
 // SetInfoHTTPRouteCR populates resources and endpoints of mgwSwagger. httpRoute.Spec.Rules.Matches
@@ -194,26 +194,33 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, ht
 		}
 		var securityConfig []EndpointSecurity
 		for _, backend := range rule.BackendRefs {
-			backendProperties := httpRouteParams.BackendPropertyMapping[types.NamespacedName{
+			resolvedBackend, ok := httpRouteParams.BackendMapping[types.NamespacedName{
 				Name:      string(backend.Name),
 				Namespace: utils.GetNamespace(backend.Namespace, httpRoute.Namespace),
 			}]
-			endPoints = append(endPoints,
-				Endpoint{Host: backendProperties.ResolvedHostname,
-					URLType:     string(backendProperties.Protocol),
-					Port:        uint32(*backend.Port),
-					Certificate: []byte(backendProperties.TLS.CertificateInline),
-					AllowedSANs: backendProperties.TLS.AllowedSANs,
-				})
-			for _, security := range backendProperties.Security {
-				switch security.Type {
-				case "Basic":
-					securityConfig = append(securityConfig, EndpointSecurity{
-						Password: string(security.Basic.Password),
-						Username: string(security.Basic.Username),
-						Type:     string(security.Type),
-						Enabled:  true,
-					})
+			if ok {
+				for _, service := range resolvedBackend.Services {
+					endpoint := Endpoint{
+						Host:        service.Host,
+						Port:        service.Port,
+						URLType:     string(resolvedBackend.Protocol),
+						AllowedSANs: resolvedBackend.TLS.AllowedSANs,
+					}
+					if len(resolvedBackend.TLS.ResolvedCertificate) > 0 {
+						endpoint.Certificate = []byte(resolvedBackend.TLS.ResolvedCertificate)
+					}
+					endPoints = append(endPoints, endpoint)
+				}
+				for _, security := range resolvedBackend.Security {
+					switch security.Type {
+					case "Basic":
+						securityConfig = append(securityConfig, EndpointSecurity{
+							Password: string(security.Basic.Password),
+							Username: string(security.Basic.Username),
+							Type:     string(security.Type),
+							Enabled:  true,
+						})
+					}
 				}
 			}
 		}

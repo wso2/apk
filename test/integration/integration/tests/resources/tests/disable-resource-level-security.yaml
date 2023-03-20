@@ -59,8 +59,9 @@ spec:
         kind: Authentication
         name: disable-resource-security
     backendRefs:
-    - name: infra-backend-v1
-      port: 8080
+    - group: dp.wso2.com
+      kind: Backend
+      name: infra-backend-v1
   - matches:
     - path:
         type: Exact
@@ -73,8 +74,9 @@ spec:
           type: ReplaceFullPath
           replaceFullPath: /orders
     backendRefs:
-    - name: infra-backend-v1
-      port: 8080
+    - group: dp.wso2.com
+      kind: Backend
+      name: infra-backend-v1
 ---
 apiVersion: dp.wso2.com/v1alpha1
 kind: Authentication

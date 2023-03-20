@@ -83,7 +83,7 @@ func TestCreateRoutesWithClustersWithExactAndRegularExpressionRules(t *testing.T
 						},
 					},
 					BackendRefs: []gwapiv1b1.HTTPBackendRef{
-						createDefaultBackendRef("test-service-1", 7001, 1),
+						createDefaultBackendRef("backend-1"),
 					},
 				},
 				{
@@ -108,7 +108,7 @@ func TestCreateRoutesWithClustersWithExactAndRegularExpressionRules(t *testing.T
 						},
 					},
 					BackendRefs: []gwapiv1b1.HTTPBackendRef{
-						createDefaultBackendRef("test-service-2", 7002, 1),
+						createDefaultBackendRef("backend-2"),
 					},
 				},
 			},
@@ -119,12 +119,12 @@ func TestCreateRoutesWithClustersWithExactAndRegularExpressionRules(t *testing.T
 	httpRouteState.Authentications = make(map[string]v1alpha1.Authentication)
 	httpRouteState.ResourceAuthentications = make(map[string]v1alpha1.Authentication)
 
-	backendPropertyMapping := make(v1alpha1.BackendPropertyMapping)
-	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "test-service-1"}] =
-		v1alpha1.BackendProperties{ResolvedHostname: "test-service-1.default", Protocol: v1alpha1.HTTPProtocol}
-	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "test-service-2"}] =
-		v1alpha1.BackendProperties{ResolvedHostname: "test-service-2.default", Protocol: v1alpha1.HTTPProtocol}
-	httpRouteState.BackendPropertyMapping = backendPropertyMapping
+	backendMapping := make(v1alpha1.BackendMapping)
+	backendMapping[k8types.NamespacedName{Namespace: "default", Name: "backend-1"}] =
+		&v1alpha1.ResolvedBackend{Services: []v1alpha1.Service{{Host: "test-service-1.default", Port: 7001}}, Protocol: v1alpha1.HTTPProtocol}
+	backendMapping[k8types.NamespacedName{Namespace: "default", Name: "backend-2"}] =
+		&v1alpha1.ResolvedBackend{Services: []v1alpha1.Service{{Host: "test-service-2.default", Port: 7002}}, Protocol: v1alpha1.HTTPProtocol}
+	httpRouteState.BackendMapping = backendMapping
 
 	apiState.ProdHTTPRoute = &httpRouteState
 
@@ -174,6 +174,7 @@ func TestCreateRoutesWithClustersWithExactAndRegularExpressionRules(t *testing.T
 		"The route regex for the two paths should not be the same")
 }
 
+// TODO: Fix this test case
 func TestCreateRoutesWithClustersWithMultiplePathPrefixRules(t *testing.T) {
 	apiState := synchronizer.APIState{}
 	apiDefinition := v1alpha1.API{
@@ -221,8 +222,7 @@ func TestCreateRoutesWithClustersWithMultiplePathPrefixRules(t *testing.T) {
 						},
 					},
 					BackendRefs: []gwapiv1b1.HTTPBackendRef{
-						createDefaultBackendRef("order-service", 80, 1),
-						createDefaultBackendRef("order-service-2", 8080, 1),
+						createDefaultBackendRef("order-backend"),
 					},
 				},
 				{
@@ -246,8 +246,7 @@ func TestCreateRoutesWithClustersWithMultiplePathPrefixRules(t *testing.T) {
 						},
 					},
 					BackendRefs: []gwapiv1b1.HTTPBackendRef{
-						createDefaultBackendRef("user-service", 8081, 1),
-						createDefaultBackendRef("user-service-2", 8081, 1),
+						createDefaultBackendRef("user-backend"),
 					},
 				},
 			},
@@ -258,16 +257,18 @@ func TestCreateRoutesWithClustersWithMultiplePathPrefixRules(t *testing.T) {
 	httpRouteState.Authentications = make(map[string]v1alpha1.Authentication)
 	httpRouteState.ResourceAuthentications = make(map[string]v1alpha1.Authentication)
 
-	backendPropertyMapping := make(v1alpha1.BackendPropertyMapping)
-	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "order-service"}] =
-		v1alpha1.BackendProperties{ResolvedHostname: "order-service.default", Protocol: v1alpha1.HTTPProtocol}
-	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "order-service-2"}] =
-		v1alpha1.BackendProperties{ResolvedHostname: "order-service-2.default", Protocol: v1alpha1.HTTPProtocol}
-	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "user-service"}] =
-		v1alpha1.BackendProperties{ResolvedHostname: "user-service.default", Protocol: v1alpha1.HTTPProtocol}
-	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "user-service-2"}] =
-		v1alpha1.BackendProperties{ResolvedHostname: "user-service-2.default", Protocol: v1alpha1.HTTPProtocol}
-	httpRouteState.BackendPropertyMapping = backendPropertyMapping
+	backendMapping := make(v1alpha1.BackendMapping)
+	backendMapping[k8types.NamespacedName{Namespace: "default", Name: "order-backend"}] =
+		&v1alpha1.ResolvedBackend{Services: []v1alpha1.Service{
+			{Host: "order-service.default", Port: 80},
+			{Host: "order-service-2.default", Port: 8080}},
+			Protocol: v1alpha1.HTTPProtocol}
+	backendMapping[k8types.NamespacedName{Namespace: "default", Name: "user-backend"}] =
+		&v1alpha1.ResolvedBackend{Services: []v1alpha1.Service{
+			{Host: "user-service.default", Port: 8081},
+			{Host: "user-service-2.default", Port: 8081}},
+			Protocol: v1alpha1.HTTPProtocol}
+	httpRouteState.BackendMapping = backendMapping
 
 	apiState.ProdHTTPRoute = &httpRouteState
 
@@ -388,7 +389,7 @@ func TestCreateRoutesWithClustersWithBackendTLSConfigs(t *testing.T) {
 						},
 					},
 					BackendRefs: []gwapiv1b1.HTTPBackendRef{
-						createDefaultBackendRef("test-service-3", 443, 1),
+						createDefaultBackendRef("test-backend-3"),
 					},
 				},
 			},
@@ -399,14 +400,14 @@ func TestCreateRoutesWithClustersWithBackendTLSConfigs(t *testing.T) {
 	httpRouteState.Authentications = make(map[string]v1alpha1.Authentication)
 	httpRouteState.ResourceAuthentications = make(map[string]v1alpha1.Authentication)
 
-	backendPropertyMapping := make(v1alpha1.BackendPropertyMapping)
-	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "test-service-3"}] =
-		v1alpha1.BackendProperties{ResolvedHostname: "webhook.site",
+	backendMapping := make(v1alpha1.BackendMapping)
+	backendMapping[k8types.NamespacedName{Namespace: "default", Name: "test-backend-3"}] =
+		&v1alpha1.ResolvedBackend{Services: []v1alpha1.Service{{Host: "webhook.site", Port: 443}},
 			Protocol: v1alpha1.HTTPSProtocol,
-			TLS: v1alpha1.TLSConfig{
-				CertificateInline: `-----BEGIN CERTIFICATE-----test-cert-data-----END CERTIFICATE-----`,
+			TLS: v1alpha1.ResolvedTLSConfig{
+				ResolvedCertificate: `-----BEGIN CERTIFICATE-----test-cert-data-----END CERTIFICATE-----`,
 			}}
-	httpRouteState.BackendPropertyMapping = backendPropertyMapping
+	httpRouteState.BackendMapping = backendMapping
 
 	apiState.ProdHTTPRoute = &httpRouteState
 
@@ -445,17 +446,14 @@ func createDefaultCommonRouteSpec() gwapiv1b1.CommonRouteSpec {
 	}
 }
 
-func createDefaultBackendRef(serviceName string, port int32, weight int32) gwapiv1b1.HTTPBackendRef {
-	backendPort := gwapiv1b1.PortNumber(port)
+func createDefaultBackendRef(backendName string) gwapiv1b1.HTTPBackendRef {
 	return gwapiv1b1.HTTPBackendRef{
 		BackendRef: gwapiv1b1.BackendRef{
 			BackendObjectReference: gwapiv1b1.BackendObjectReference{
-				Group: operatorutils.GroupPtr(""),
-				Kind:  operatorutils.KindPtr("Service"),
-				Name:  gwapiv1b1.ObjectName(serviceName),
-				Port:  &backendPort,
+				Group: (*gwapiv1b1.Group)(&v1alpha1.GroupVersion.Group),
+				Kind:  operatorutils.KindPtr("Backend"),
+				Name:  gwapiv1b1.ObjectName(backendName),
 			},
-			Weight: &weight,
 		},
 	}
 }
@@ -703,7 +701,7 @@ func TestCreateRoutesWithClustersDifferentBackendRefs(t *testing.T) {
 						},
 					},
 					BackendRefs: []gwapiv1b1.HTTPBackendRef{
-						createDefaultBackendRef("test-service-1", 443, 1),
+						createDefaultBackendRef("test-backend-1"),
 					},
 				},
 				{
@@ -728,10 +726,9 @@ func TestCreateRoutesWithClustersDifferentBackendRefs(t *testing.T) {
 						},
 					},
 					BackendRefs: []gwapiv1b1.HTTPBackendRef{
-						createDefaultBackendRef("test-service-2", 443, 1),
+						createDefaultBackendRef("test-backend-2"),
 					},
 				},
-
 			},
 		},
 	}
@@ -740,20 +737,20 @@ func TestCreateRoutesWithClustersDifferentBackendRefs(t *testing.T) {
 	httpRouteState.Authentications = make(map[string]v1alpha1.Authentication)
 	httpRouteState.ResourceAuthentications = make(map[string]v1alpha1.Authentication)
 
-	backendPropertyMapping := make(v1alpha1.BackendPropertyMapping)
-	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "test-service-1"}] =
-		v1alpha1.BackendProperties{ResolvedHostname: "webhook.site.1",
+	backendMapping := make(v1alpha1.BackendMapping)
+	backendMapping[k8types.NamespacedName{Namespace: "default", Name: "test-backend-1"}] =
+		&v1alpha1.ResolvedBackend{Services: []v1alpha1.Service{{Host: "webhook.site.1", Port: 443}},
 			Protocol: v1alpha1.HTTPSProtocol,
-			TLS: v1alpha1.TLSConfig{
-				CertificateInline: `-----BEGIN CERTIFICATE-----test-cert-data-----END CERTIFICATE-----`,
+			TLS: v1alpha1.ResolvedTLSConfig{
+				ResolvedCertificate: `-----BEGIN CERTIFICATE-----test-cert-data-----END CERTIFICATE-----`,
 			}}
-	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "test-service-2"}] =
-		v1alpha1.BackendProperties{ResolvedHostname: "webhook.site.2",
-		Protocol: v1alpha1.HTTPSProtocol,
-		TLS: v1alpha1.TLSConfig{
-			CertificateInline: `-----BEGIN CERTIFICATE-----test-cert-data-----END CERTIFICATE-----`,
-		}}
-	httpRouteState.BackendPropertyMapping = backendPropertyMapping
+	backendMapping[k8types.NamespacedName{Namespace: "default", Name: "test-backend-2"}] =
+		&v1alpha1.ResolvedBackend{Services: []v1alpha1.Service{{Host: "webhook.site.2", Port: 443}},
+			Protocol: v1alpha1.HTTPSProtocol,
+			TLS: v1alpha1.ResolvedTLSConfig{
+				ResolvedCertificate: `-----BEGIN CERTIFICATE-----test-cert-data-----END CERTIFICATE-----`,
+			}}
+	httpRouteState.BackendMapping = backendMapping
 
 	apiState.ProdHTTPRoute = &httpRouteState
 
@@ -812,7 +809,7 @@ func TestCreateRoutesWithClustersSameBackendRefs(t *testing.T) {
 						},
 					},
 					BackendRefs: []gwapiv1b1.HTTPBackendRef{
-						createDefaultBackendRef("test-service-1", 443, 1),
+						createDefaultBackendRef("test-backend-1"),
 					},
 				},
 				{
@@ -837,10 +834,9 @@ func TestCreateRoutesWithClustersSameBackendRefs(t *testing.T) {
 						},
 					},
 					BackendRefs: []gwapiv1b1.HTTPBackendRef{
-						createDefaultBackendRef("test-service-1", 443, 1),
+						createDefaultBackendRef("test-backend-1"),
 					},
 				},
-
 			},
 		},
 	}
@@ -849,14 +845,14 @@ func TestCreateRoutesWithClustersSameBackendRefs(t *testing.T) {
 	httpRouteState.Authentications = make(map[string]v1alpha1.Authentication)
 	httpRouteState.ResourceAuthentications = make(map[string]v1alpha1.Authentication)
 
-	backendPropertyMapping := make(v1alpha1.BackendPropertyMapping)
-	backendPropertyMapping[k8types.NamespacedName{Namespace: "default", Name: "test-service-1"}] =
-		v1alpha1.BackendProperties{ResolvedHostname: "webhook.site",
+	backendMapping := make(v1alpha1.BackendMapping)
+	backendMapping[k8types.NamespacedName{Namespace: "default", Name: "test-backend-1"}] =
+		&v1alpha1.ResolvedBackend{Services: []v1alpha1.Service{{Host: "webhook.site", Port: 443}},
 			Protocol: v1alpha1.HTTPSProtocol,
-			TLS: v1alpha1.TLSConfig{
-				CertificateInline: `-----BEGIN CERTIFICATE-----test-cert-data-----END CERTIFICATE-----`,
+			TLS: v1alpha1.ResolvedTLSConfig{
+				ResolvedCertificate: `-----BEGIN CERTIFICATE-----test-cert-data-----END CERTIFICATE-----`,
 			}}
-	httpRouteState.BackendPropertyMapping = backendPropertyMapping
+	httpRouteState.BackendMapping = backendMapping
 
 	apiState.ProdHTTPRoute = &httpRouteState
 

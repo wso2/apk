@@ -42,6 +42,5 @@ kubectl describe deployment apk-test-setup-wso2-apk-adapter-deployment -n apk-in
 POD=$(kubectl get pod -l networkPolicyId=adapter-npi -n apk-integration-test -o jsonpath="{.items[0].metadata.name}")
 kubectl describe pod $POD -n apk-integration-test
 kubectl logs $POD -n apk-integration-test
-
 # Run tests
 go test -v integration_test.go
