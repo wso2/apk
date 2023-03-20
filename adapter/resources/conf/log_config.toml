@@ -15,11 +15,11 @@ Compress = true
 ## Adapter package Level configurations
 
 [[pkg]]
-name = "github.com/wso2/product-microgateway/adapter/internal/adapter"
+name = "github.com/wso2/apk/adapter/internal/adapter"
 logLevel = "INFO" # LogLevels can be "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC"
 
 [[pkg]]
-name = "github.com/wso2/product-microgateway/adapter/internal/oasparser"
+name = "github.com/wso2/apk/adapter/internal/oasparser"
 logLevel = "INFO"
 
 

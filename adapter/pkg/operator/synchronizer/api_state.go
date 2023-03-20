@@ -35,11 +35,13 @@ type APIState struct {
 // the state of the Kubernetes controller cache to detect updates.
 // +k8s:deepcopy-gen=true
 type HTTPRouteState struct {
-	HTTPRoute               *gwapiv1b1.HTTPRoute
-	Authentications         map[string]v1alpha1.Authentication
-	ResourceAuthentications map[string]v1alpha1.Authentication
-	APIPolicies             map[string]v1alpha1.APIPolicy
-	ResourceAPIPolicies     map[string]v1alpha1.APIPolicy
-	BackendMapping          v1alpha1.BackendMapping
-	Scopes                  map[string]v1alpha1.Scope
+	HTTPRoute                 *gwapiv1b1.HTTPRoute
+	Authentications           map[string]v1alpha1.Authentication
+	ResourceAuthentications   map[string]v1alpha1.Authentication
+	APIPolicies               map[string]v1alpha1.APIPolicy
+	ResourceAPIPolicies       map[string]v1alpha1.APIPolicy
+	BackendMapping            v1alpha1.BackendMapping
+	Scopes                    map[string]v1alpha1.Scope
+	RateLimitPolicies         map[string]v1alpha1.RateLimitPolicy
+	ResourceRateLimitPolicies map[string]v1alpha1.RateLimitPolicy
 }

@@ -24,12 +24,13 @@ import (
 
 // RateLimitPolicySpec defines the desired state of RateLimitPolicy
 type RateLimitPolicySpec struct {
-	Policies  []Policy                        `json:"policies,omitempty"`
+	Default   []RateLimitAPIPolicy            `json:"default,omitempty"`
+	Override  []RateLimitAPIPolicy            `json:"override,omitempty"`
 	TargetRef gwapiv1b1.PolicyTargetReference `json:"targetRef,omitempty"`
 }
 
-// Policy defines the desired state of Policy
-type Policy struct {
+// RateLimitAPIPolicy defines the desired state of Policy
+type RateLimitAPIPolicy struct {
 	// Type of the policy can be either "api" or "application" or "subscription"
 	//
 	Type string `json:"type,omitempty"`
@@ -43,15 +44,13 @@ type Policy struct {
 // APIRateLimit defines the desired state of APIPolicy
 type APIRateLimit struct {
 
-	// RequestPerUnit is the number of requests allowed per minute
+	// Count is the number of requests allowed per unit time
 	//
-	// +optional
-	RequestPerUnit int `json:"requestPerUnit,omitempty"`
+	Count int `json:"count,omitempty"`
 
-	// Unit is the unit of the requestPerUnit
+	// SpanUnit is the unit of the requestPerUnit
 	//
-	// +optional
-	Unit string `json:"unit,omitempty"`
+	SpanUnit string `json:"spanUnit,omitempty"`
 }
 
 // RateLimitPolicyStatus defines the observed state of RateLimitPolicy

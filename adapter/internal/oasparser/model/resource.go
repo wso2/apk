@@ -111,8 +111,7 @@ func (resource *Resource) HasPolicies() bool {
 
 // CreateMinimalDummyResourceForTests create a resource object with minimal required set of values
 // which could be used for unit tests.
-func CreateMinimalDummyResourceForTests(path string, methods []*Operation, id string, urls,
-	sandboxUrls []Endpoint, hasPolicies bool) Resource {
+func CreateMinimalDummyResourceForTests(path string, methods []*Operation, id string, urls []Endpoint, hasPolicies bool) Resource {
 
 	endpints := generateEndpointCluster(urls, constants.LoadBalance)
 

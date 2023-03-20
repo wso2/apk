@@ -32,32 +32,34 @@ When you add a new logger instance add the related package name as a constant
 
 // package name constants
 const (
-	pkgAPKOperator          = "github.com/wso2/apk/adapter/pkg/operator"
-	pkgEnforcerXdsCallbacks = "github.com/wso2/apk/adapter/internal/discovery/xds/enforcercallbacks"
-	pkgRouterXdsCallbacks   = "github.com/wso2/apk/adapter/internal/discovery/xds/routercallbacks"
-	pkgGrpcClient           = "github.com/wso2/apk/adapter/internal/grpc-client"
-	pkgXds                  = "github.com/wso2/apk/adapter/internal/discovery/xds"
-	pkgOasParser            = "github.com/wso2/apk/adapter/internal/oasparser"
-	pkgInterceptor          = "github.com/wso2/apk/adapter/internal/interceptor"
-	pkgSvcDiscovery         = "github.com/wso2/apk/adapter/internal/svcdiscovery"
-	pkgNotifier             = "github.com/wso2/apk/adapter/internal/notifier"
-	pkgAPI                  = "github.com/wso2/apk/adapter/internal/api"
-	pkgMgw                  = "github.com/wso2/apk/adapter/internal/adapter"
+	pkgAPKOperator             = "github.com/wso2/apk/adapter/pkg/operator"
+	pkgEnforcerXdsCallbacks    = "github.com/wso2/apk/adapter/internal/discovery/xds/enforcercallbacks"
+	pkgRouterXdsCallbacks      = "github.com/wso2/apk/adapter/internal/discovery/xds/routercallbacks"
+	pkgGrpcClient              = "github.com/wso2/apk/adapter/internal/grpc-client"
+	pkgXds                     = "github.com/wso2/apk/adapter/internal/discovery/xds"
+	pkgOasParser               = "github.com/wso2/apk/adapter/internal/oasparser"
+	pkgInterceptor             = "github.com/wso2/apk/adapter/internal/interceptor"
+	pkgSvcDiscovery            = "github.com/wso2/apk/adapter/internal/svcdiscovery"
+	pkgNotifier                = "github.com/wso2/apk/adapter/internal/notifier"
+	pkgAPI                     = "github.com/wso2/apk/adapter/internal/api"
+	pkgMgw                     = "github.com/wso2/apk/adapter/internal/adapter"
+	pkgRateLimiterXdsCallbacks = "github.com/wso2/apk/adapter/internal/discovery/xds/ratelimitercallbacks"
 )
 
 // logger package references
 var (
-	LoggerAPKOperator          logging.Log
-	LoggerEnforcerXdsCallbacks logging.Log
-	LoggerRouterXdsCallbacks   logging.Log
-	LoggerXds                  logging.Log
-	LoggerGRPCClient           logging.Log
-	LoggerOasparser            logging.Log
-	LoggerInterceptor          logging.Log
-	LoggerSvcDiscovery         logging.Log
-	LoggerNotifier             logging.Log
-	LoggerAPI                  logging.Log
-	LoggerMgw                  logging.Log
+	LoggerAPKOperator             logging.Log
+	LoggerEnforcerXdsCallbacks    logging.Log
+	LoggerRouterXdsCallbacks      logging.Log
+	LoggerXds                     logging.Log
+	LoggerGRPCClient              logging.Log
+	LoggerOasparser               logging.Log
+	LoggerInterceptor             logging.Log
+	LoggerSvcDiscovery            logging.Log
+	LoggerNotifier                logging.Log
+	LoggerAPI                     logging.Log
+	LoggerMgw                     logging.Log
+	LoggerRateLimiterXdsCallbacks logging.Log
 )
 
 func init() {
@@ -74,6 +76,7 @@ func UpdateLoggers() {
 	LoggerOasparser = logging.InitPackageLogger(pkgOasParser)
 	LoggerInterceptor = logging.InitPackageLogger(pkgInterceptor)
 	LoggerSvcDiscovery = logging.InitPackageLogger(pkgSvcDiscovery)
+	LoggerRateLimiterXdsCallbacks = logging.InitPackageLogger(pkgRateLimiterXdsCallbacks)
 	LoggerNotifier = logging.InitPackageLogger(pkgNotifier)
 	LoggerAPI = logging.InitPackageLogger(pkgAPI)
 	LoggerMgw = logging.InitPackageLogger(pkgMgw)

@@ -76,7 +76,7 @@ func generateRouteMatch(routeRegex string) *routev3.RouteMatch {
 	return match
 }
 
-func generateRouteAction(apiType string, routeConfig *model.EndpointConfig) (action *routev3.Route_Route) {
+func generateRouteAction(apiType string, routeConfig *model.EndpointConfig, ratelimitCriteria *ratelimitCriteria) (action *routev3.Route_Route) {
 
 	config := config.ReadConfigs()
 
@@ -95,6 +95,10 @@ func generateRouteAction(apiType string, routeConfig *model.EndpointConfig) (act
 				ClusterHeader: clusterHeaderName,
 			},
 		},
+	}
+
+	if ratelimitCriteria != nil && ratelimitCriteria.level != "" {
+		action.Route.RateLimits = generateRateLimitPolicy(ratelimitCriteria)
 	}
 
 	if routeConfig != nil && routeConfig.RetryConfig != nil {
@@ -117,6 +121,60 @@ func generateRouteAction(apiType string, routeConfig *model.EndpointConfig) (act
 		action.Route.RetryPolicy = commonRetryPolicy
 	}
 	return action
+}
+
+func generateRateLimitPolicy(ratelimitCriteria *ratelimitCriteria) []*routev3.RateLimit {
+
+	rateLimit := routev3.RateLimit{
+		Actions: []*routev3.RateLimit_Action{
+			{
+				ActionSpecifier: &routev3.RateLimit_Action_GenericKey_{
+					GenericKey: &routev3.RateLimit_Action_GenericKey{
+						DescriptorKey:   DescriptorKeyForOrg,
+						DescriptorValue: ratelimitCriteria.organizationID,
+					},
+				},
+			},
+			{
+				ActionSpecifier: &routev3.RateLimit_Action_GenericKey_{
+					GenericKey: &routev3.RateLimit_Action_GenericKey{
+						DescriptorKey:   DescriptorKeyForVhost,
+						DescriptorValue: ratelimitCriteria.vHost,
+					},
+				},
+			},
+			{
+				ActionSpecifier: &routev3.RateLimit_Action_GenericKey_{
+					GenericKey: &routev3.RateLimit_Action_GenericKey{
+						DescriptorKey:   DescriptorKeyForPath,
+						DescriptorValue: ratelimitCriteria.basePathForRLService,
+					},
+				},
+			},
+		},
+	}
+
+	if ratelimitCriteria.level == RateLimitPolicyAPILevel {
+		rateLimit.Actions = append(rateLimit.Actions, &routev3.RateLimit_Action{
+			ActionSpecifier: &routev3.RateLimit_Action_GenericKey_{
+				GenericKey: &routev3.RateLimit_Action_GenericKey{
+					DescriptorKey:   DescriptorKeyForMethod,
+					DescriptorValue: DescriptorValueForAPIMethod,
+				},
+			},
+		})
+
+	} else {
+		rateLimit.Actions = append(rateLimit.Actions, &routev3.RateLimit_Action{
+			ActionSpecifier: &routev3.RateLimit_Action_RequestHeaders_{
+				RequestHeaders: &routev3.RateLimit_Action_RequestHeaders{
+					DescriptorKey: DescriptorKeyForMethod,
+					HeaderName:    DescriptorValueForOperationMethod,
+				},
+			},
+		})
+	}
+	return []*routev3.RateLimit{&rateLimit}
 }
 
 func generateHTTPMethodMatcher(methodRegex string, sandClusterName string) []*routev3.HeaderMatcher {
