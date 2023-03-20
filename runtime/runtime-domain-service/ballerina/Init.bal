@@ -24,13 +24,13 @@ import wso2/apk_common_lib as commons;
 configurable RuntimeConfiguratation & readonly runtimeConfiguration = {
     keyStores: {
         signing: {
-            path: "/home/wso2apk/runtime/security/wso2carbon.key"
+            keyFilePath: "/home/wso2apk/runtime/security/wso2carbon.key"
         },
         tls: {
-            path: "/home/wso2apk/runtime/security/wso2carbon.key"
+            keyFilePath: "/home/wso2apk/runtime/security/wso2carbon.key"
         }
     },
-    idpConfiguration: {publicKey: {path: "/home/wso2apk/runtime/security/mg.pem"}},
+    idpConfiguration: {publicKey: {certFilePath: "/home/wso2apk/runtime/security/mg.pem"}},
     controlPlane: {serviceBaseURl: ""}
 };
 K8sBaseOrgResolver k8sBaseOrgResolver = new;
@@ -44,9 +44,29 @@ function initializeServiceBaseResolver() returns ServiceBaseOrgResolver|error {
     return check new (runtimeConfiguration.controlPlane.serviceBaseURl, headers, runtimeConfiguration.controlPlane.certificate, runtimeConfiguration.controlPlane.enableAuthentication);
 }
 
-commons:JWTValidationInterceptor jwtValidationInterceptor = new (runtimeConfiguration.idpConfiguration, runtimeConfiguration.orgResolver == "k8s" ? k8sBaseOrgResolver : serviceBaseOrgResolver);
+function getOrgResolver() returns commons:OrganizationResolver {
+    return runtimeConfiguration.orgResolver == "k8s" ? k8sBaseOrgResolver : serviceBaseOrgResolver;
+}
+
+commons:JWTValidationInterceptor jwtValidationInterceptor = new (runtimeConfiguration.idpConfiguration, getOrgResolver());
 commons:RequestErrorInterceptor requestErrorInterceptor = new;
-listener http:Listener ep0 = new (9443, {interceptors: [jwtValidationInterceptor, requestErrorInterceptor]});
+listener http:Listener ep1 = new (9444, secureSocket = {
+    'key: {
+        certFile: <string>runtimeConfiguration.keyStores.tls.certFilePath,
+        keyFile: <string>runtimeConfiguration.keyStores.tls.keyFilePath
+    }
+},
+    interceptors = [requestErrorInterceptor]
+    );
+listener http:Listener ep0 = new (9443,
+secureSocket = {
+    'key: {
+        certFile: <string>runtimeConfiguration.keyStores.tls.certFilePath,
+        keyFile: <string>runtimeConfiguration.keyStores.tls.keyFilePath
+    }
+},
+    interceptors = [jwtValidationInterceptor, requestErrorInterceptor]
+    );
 string kid = uuid:createType1AsString();
 
 # Initializing method for runtime
@@ -89,6 +109,9 @@ function startAndAttachServices() returns error? {
     check ep0.attach(healthService, "/");
     check ep0.attach(runtimeService, "/api/am/runtime");
     check ep0.'start();
+    check ep1.attach(internalRuntimeService, "/api/am/internal/runtime");
+    check ep1.'start();
+    runtime:registerListener(ep1);
     runtime:registerListener(ep0);
     runtime:onGracefulStop(deRegisterep);
 }

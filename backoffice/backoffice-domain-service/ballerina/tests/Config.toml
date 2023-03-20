@@ -13,3 +13,6 @@ password = "wso2carbon"
 validationTimeout = 250
 testQuery = "SELECT 1"
 driver = "org.postgresql.Driver"
+[wso2.backoffice_service.keyStores.tls]
+keyFilePath = "./tests/resources/wso2carbon.key"
+certFilePath = "./tests/resources/wso2carbon.crt"

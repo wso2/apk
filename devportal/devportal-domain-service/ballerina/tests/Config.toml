@@ -17,9 +17,10 @@ driver = "org.postgresql.Driver"
 enabled = true
 
 [wso2.devportal_service.keyStores.tls]
-path = "/home/wso2apk/devportal/security/wso2carbon.key"
+keyFilePath = "./tests/resources/wso2carbon.key"
+certFilePath = "./tests/resources/wso2carbon.crt"
 [wso2.devportal_service.keyStores.signing]
-path = "/home/wso2apk/devportal/security/wso2carbon.key"
+keyFilePath = "./tests/resources/wso2carbon.key"
 
 [wso2.devportal_service.issuerConfig]
 issuer = "https://apim.wso2.com/oauth2/token"

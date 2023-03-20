@@ -18,10 +18,11 @@
 
 import ballerina/jwt;
 import ballerina/uuid;
+import wso2/apk_common_lib as commons;
 
 isolated function generateToken(JWTTokenInfo jwtInfo) returns string|error {
         TokenIssuerConfiguration & readonly issuerConfiguration = apkConfig.tokenIssuerConfiguration;
-        KeyStore & readonly signingCert = apkConfig.keyStores.signing;
+        commons:KeyStore & readonly signingCert = apkConfig.keyStores.signing;
         string jwtid = uuid:createType1AsString();
         jwt:IssuerConfig issuerConfig = {
             issuer: issuerConfiguration.issuer,
@@ -30,7 +31,7 @@ isolated function generateToken(JWTTokenInfo jwtInfo) returns string|error {
             jwtId: jwtid,
             keyId: issuerConfiguration.keyId,
             signatureConfig: {
-                config: {keyFile: signingCert.path}
+                config: {keyFile: <string>signingCert.keyFilePath}
             }
         };
         issuerConfig.username = jwtInfo.subscriber;

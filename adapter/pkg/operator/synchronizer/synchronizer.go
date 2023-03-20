@@ -192,7 +192,7 @@ func SendAPIToAPKMgtServer() {
 						Type:           api.APIDefinition.Spec.APIType,
 						OrganizationId: api.APIDefinition.Spec.Organization,
 						Resources:      getResourcesForAPI(api),
-						Definition:     runtime.GetAPIDefinition(string(api.APIDefinition.GetUID())),
+						Definition:     runtime.GetAPIDefinition(string(api.APIDefinition.GetUID()), api.APIDefinition.Spec.Organization),
 					})
 				} else if strings.Compare(apiEvent.EventType, constants.Update) == 0 {
 					return apiClient.UpdateAPI(context.Background(), &apiProtos.API{
@@ -203,7 +203,7 @@ func SendAPIToAPKMgtServer() {
 						Type:           api.APIDefinition.Spec.APIType,
 						OrganizationId: api.APIDefinition.Spec.Organization,
 						Resources:      getResourcesForAPI(api),
-						Definition:     runtime.GetAPIDefinition(string(api.APIDefinition.GetUID())),
+						Definition:     runtime.GetAPIDefinition(string(api.APIDefinition.GetUID()), api.APIDefinition.Spec.Organization),
 					})
 				} else if strings.Compare(apiEvent.EventType, constants.Delete) == 0 {
 					return apiClient.DeleteAPI(context.Background(), &apiProtos.API{

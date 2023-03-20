@@ -39,5 +39,9 @@ data:
     [wso2.admin_service.idpConfiguration]
     organizationClaim = "{{ .Values.wso2.apk.idp.organizationClaim }}"
     [wso2.admin_service.idpConfiguration.publicKey]
-    path = "/home/wso2apk/admin/security/mg.pem"
+    certFilePath = "/home/wso2apk/admin/security/mg.pem"
+    [wso2.admin_service.keyStores.tls]
+    keyFilePath = "/home/wso2apk/admin/security/admin.key"
+    certFilePath = "/home/wso2apk/admin/security/admin.pem"
+
 {{- end -}}

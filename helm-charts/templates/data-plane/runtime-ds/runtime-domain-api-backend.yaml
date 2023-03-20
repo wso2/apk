@@ -23,4 +23,16 @@ spec:
  services:
   - host:  {{ template "apk-helm.resource.prefix" . }}-runtime-ds-service.{{ .Release.Namespace }}
     port: 9443
+ protocol: "https"
+ tls:
+  allowedSANs:
+   - {{ template "apk-helm.resource.prefix" . }}-runtime-ds-service.{{ .Release.Namespace }}.svc
+  secretRef:
+  {{- if and .Values.wso2.apk.dp.runtime.configs .Values.wso2.apk.dp.runtime.configs.tls }}
+    name: {{.Values.wso2.apk.dp.runtime.configs.tls.certificatesSecret}}
+    key: {{.Values.wso2.apk.dp.runtime.configs.tls.certFilename}}
+  {{- else }}
+    name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-server-cert
+    key: tls.crt
+  {{- end }}
 {{- end -}}

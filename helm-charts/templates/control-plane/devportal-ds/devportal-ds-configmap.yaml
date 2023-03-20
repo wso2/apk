@@ -37,13 +37,14 @@ data:
     [wso2.devportal_service.idpConfiguration]
     organizationClaim = "{{ .Values.wso2.apk.idp.organizationClaim }}"
     [wso2.devportal_service.idpConfiguration.publicKey]
-    path = "/home/wso2apk/devportal/security/mg.pem"
+    certFilePath = "/home/wso2apk/devportal/security/mg.pem"
     [wso2.devportal_service.throttleConfig.blockCondition]
     enabled = true
     [wso2.devportal_service.keyStores.tls]
-    path = "/home/wso2apk/devportal/security/wso2carbon.key"
+    keyFilePath = "/home/wso2apk/devportal/security/devportal.key"
+    certFilePath = "/home/wso2apk/devportal/security/devportal.pem"
     [wso2.devportal_service.keyStores.signing]
-    path = "/home/wso2apk/devportal/security/wso2carbon.key"
+    keyFilePath = "/home/wso2apk/devportal/security/wso2carbon.key"
     [wso2.devportal_service.issuerConfig]
     issuer = "https://apim.wso2.com/oauth2/token"
     audience = "https://apim.wso2.com/oauth2/token"

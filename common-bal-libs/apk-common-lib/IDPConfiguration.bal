@@ -6,7 +6,3 @@ string authorizationHeader = "X-JWT-Assertion";
 KeyStore publicKey;
 |};
 
-public type KeyStore record {|
-    string path;
-    string keyPassword?;
-|};

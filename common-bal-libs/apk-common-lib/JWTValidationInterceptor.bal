@@ -88,7 +88,7 @@ public service class JWTValidationInterceptor {
 isolated function initializeJWTValidator(IDPConfiguration idpConfiguration) returns jwt:ValidatorConfig {
     jwt:ValidatorConfig validatorConfig = {issuer: idpConfiguration.issuer};
     string? jwksUrl = idpConfiguration.jwksUrl;
-    jwt:ValidatorSignatureConfig signatureConfig = {certFile: idpConfiguration.publicKey.path};
+    jwt:ValidatorSignatureConfig signatureConfig = {certFile: idpConfiguration.publicKey.certFilePath};
     if jwksUrl is string {
         signatureConfig = {jwksConfig: {url: jwksUrl}};
     }

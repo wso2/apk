@@ -49,9 +49,9 @@ public class ServiceBaseOrgResolver {
         // the expired entries.
         cleanupInterval: 60
     });
-    public isolated function init(string serviceBaseURL, map<string>? headers, KeyStore? certificate, boolean enableAuth) returns error? {
+    public isolated function init(string serviceBaseURL, map<string>? headers, commons:KeyStore? certificate, boolean enableAuth) returns error? {
         TokenIssuerConfiguration issuerConfiguration = runtimeConfiguration.tokenIssuerConfiguration;
-        KeyStore & readonly signingCert = runtimeConfiguration.keyStores.signing;
+        commons:KeyStore & readonly signingCert = runtimeConfiguration.keyStores.signing;
         self.headers = headers;
         boolean secured = serviceBaseURL.startsWith("https:");
         self.httpClient = check new (serviceBaseURL,
@@ -63,11 +63,11 @@ public class ServiceBaseOrgResolver {
                 expTime: issuerConfiguration.expTime,
                 signatureConfig: {
                     config: {
-                        keyFile: signingCert.path
+                        keyFile: <string>signingCert.keyFilePath
                     }
                 }
             } : {},
-        secureSocket = secured ? (certificate is KeyStore ? {cert: certificate.path, verifyHostName: runtimeConfiguration.controlPlane.enableHostNameVerification} : ()) : {});
+        secureSocket = secured ? (certificate is commons:KeyStore ? {cert: certificate.certFilePath, verifyHostName: runtimeConfiguration.controlPlane.enableHostNameVerification} : ()) : {});
     }
 
     public isolated function retrieveOrganizationByName(string organizationName) returns commons:Organization|commons:APKError|() {

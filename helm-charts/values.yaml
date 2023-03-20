@@ -71,8 +71,8 @@ wso2:
             failureThreshold: 5
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: Always
-          image: wso2/devportal-domain-service:0.0.1-m6
+          imagePullPolicy: IfNotPresent
+          image: devportal-domain-service:0.0.1-SNAPSHOT
       admin:
         appName: "admin-ds"
         deployment:
@@ -98,8 +98,8 @@ wso2:
             failureThreshold: 5
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: Always
-          image: wso2/admin-domain-service:latest
+          imagePullPolicy: IfNotPresent
+          image: admin-domain-service:0.0.1-SNAPSHOT
       backoffice:
         appName: "backoffice-ds"
         deployment:
@@ -125,8 +125,8 @@ wso2:
             failureThreshold: 5
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: Always
-          image: wso2/backoffice-domain-service:0.0.1-m6
+          imagePullPolicy: IfNotPresent
+          image: backoffice-domain-service:0.0.1-SNAPSHOT
       devportalUI:
         appName: "devportal-ui"
         deployment:
@@ -168,8 +168,8 @@ wso2:
               cpu: "1000m"
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: Always
-          image: wso2/management-server:latest
+          imagePullPolicy: IfNotPresent
+          image: management-server:0.0.1-SNAPSHOT
           readinessProbe:
             initialDelaySeconds: 20
             periodSeconds: 20
@@ -238,8 +238,13 @@ wso2:
             failureThreshold: 5
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: Always
-          image: wso2/runtime-domain-service:0.0.1-m6
+          imagePullPolicy: IfNotPresent
+          image: runtime-domain-service:0.0.1-SNAPSHOT
+        # configs:
+        #   tls:
+        #     certificatesSecret: "my-secret"
+        #     certKeyFilename: "tls.key"
+        #     certFilename: "certchain.crt"
       adapter:
         appName: "adapter"
         deployment:
@@ -261,8 +266,8 @@ wso2:
             failureThreshold: 5
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: Always
-          image: wso2/adapter:latest
+          imagePullPolicy: IfNotPresent
+          image: adapter:0.0.1-SNAPSHOT
           security:
             sslHostname: "adapter"
         # configs:

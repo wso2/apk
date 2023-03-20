@@ -59,3 +59,8 @@ const (
 	Production = "PRODUCTION"
 	Sandbox    = "SANDBOX"
 )
+
+// Header names in runtime
+const (
+	OrganizationHeader = "X-WSO2-Organization"
+)

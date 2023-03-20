@@ -116,6 +116,14 @@ spec:
             {{- else }}
               subPath: tls.crt
             {{- end }}
+            - name: runtime-ds-tls-volume
+              mountPath: /home/wso2/security/truststore/runtime.pem
+            {{- if and .Values.wso2.apk.dp.runtime.configs .Values.wso2.apk.dp.runtime.configs.tls }}
+              subPath: {{ .Values.wso2.apk.dp.runtime.configs.tls.certFilename | default "tls.crt" }}
+            {{- else }}
+              subPath: tls.crt
+            {{- end }}
+
           readinessProbe:
             exec:
               command: [ "sh", "check_health.sh" ]
@@ -174,4 +182,12 @@ spec:
         - name: management-server-truststore-secret-volume
           secret: 
             secretName: "apk-root-certificate"
+        - name: runtime-ds-tls-volume
+          secret:
+       {{ if and .Values.wso2.apk.dp.runtime.configs .Values.wso2.apk.dp.runtime.configs.tls }}
+            secretName: {{ .Values.wso2.apk.dp.runtime.configs.tls.certificatesSecret | default (printf "%s-runtime-ds-server-cert" (include "apk-helm.resource.prefix" .)) }}
+       {{ else }}
+            secretName: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-server-cert
+       {{ end }}
+
 {{- end -}}
