@@ -232,15 +232,17 @@ spec:
               subPath: ca.crt
             {{- end }}
         {{ end }}
-          # readinessProbe:
-          #   httpGet:
-          #     port: 9095
-          #     path: /ready
-          #     scheme: HTTPS
-          #     httpHeaders:
-          #       - name: Host
-          #         value: localhost
-          #   periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              port: 9095
+              path: /health
+              scheme: HTTPS
+              httpHeaders:
+                - name: Host
+                  value: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.host }}
+            initialDelaySeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.periodSeconds }}
+            failureThreshold: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.failureThreshold }}
       volumes:
       {{ if .Values.wso2.apk.dp.ratelimiter.enabled }}
         - name: ratelimiter-truststore-secret-volume

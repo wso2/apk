@@ -258,7 +258,7 @@ func getMgwWebSocketWASMFilter() *hcmv3.HttpFilter {
 	config := &wrappers.StringValue{
 		Value: `{
 			"node_id": "mgw_node_1",
-			"ratelimit_service": "ext-authz",
+			"rate_limit_service": "ext-authz",
 			"timeout": "20s",
 			"failure_mode_deny": "true"
 		}`,
