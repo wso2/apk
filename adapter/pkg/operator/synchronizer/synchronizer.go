@@ -189,7 +189,13 @@ func SendAPIToAPKMgtServer() {
 				loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2634, address, err))
 			}
 			_, err = client.ExecuteGRPCCall(func() (interface{}, error) {
+				var definition string;
+				var errDef error;
+				definition, errDef = runtime.GetAPIDefinition(string(api.APIDefinition.GetUID()), api.APIDefinition.Spec.Organization);
 				if strings.Compare(apiEvent.EventType, constants.Create) == 0 {
+					if errDef != nil {
+						return nil, err
+					}
 					return apiClient.CreateAPI(context.Background(), &apiProtos.API{
 						Uuid:           string(api.APIDefinition.GetUID()),
 						Version:        api.APIDefinition.Spec.APIVersion,
@@ -198,9 +204,12 @@ func SendAPIToAPKMgtServer() {
 						Type:           api.APIDefinition.Spec.APIType,
 						OrganizationId: api.APIDefinition.Spec.Organization,
 						Resources:      getResourcesForAPI(api),
-						Definition:     runtime.GetAPIDefinition(string(api.APIDefinition.GetUID()), api.APIDefinition.Spec.Organization),
+						Definition:     definition,
 					})
 				} else if strings.Compare(apiEvent.EventType, constants.Update) == 0 {
+					if errDef != nil {
+						return nil, err
+					}
 					return apiClient.UpdateAPI(context.Background(), &apiProtos.API{
 						Uuid:           string(api.APIDefinition.GetUID()),
 						Version:        api.APIDefinition.Spec.APIVersion,
@@ -209,7 +218,7 @@ func SendAPIToAPKMgtServer() {
 						Type:           api.APIDefinition.Spec.APIType,
 						OrganizationId: api.APIDefinition.Spec.Organization,
 						Resources:      getResourcesForAPI(api),
-						Definition:     runtime.GetAPIDefinition(string(api.APIDefinition.GetUID()), api.APIDefinition.Spec.Organization),
+						Definition:     definition,
 					})
 				} else if strings.Compare(apiEvent.EventType, constants.Delete) == 0 {
 					return apiClient.DeleteAPI(context.Background(), &apiProtos.API{

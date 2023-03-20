@@ -38,7 +38,7 @@ func getInternalRuntimeServiceURL() string {
 }
 
 // GetAPIDefinition gets the API defintion using API UUID and return it as a string
-func GetAPIDefinition(apiUUID string, organizationUUID string) string {
+func GetAPIDefinition(apiUUID string, organizationUUID string) (string, error) {
 	definitionString := "{}"
 	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/apis/%s/definition",
 		getInternalRuntimeServiceURL(), apiUUID), nil)
@@ -50,6 +50,7 @@ func GetAPIDefinition(apiUUID string, organizationUUID string) string {
 	response, err := runtimeClient.Do(req)
 	if err != nil {
 		loggers.LoggerAPKOperator.Errorf("Error retrieving api definition: %v", err)
+		return "", err;
 	}
 	defer response.Body.Close()
 	if response.StatusCode == http.StatusOK {
@@ -59,5 +60,5 @@ func GetAPIDefinition(apiUUID string, organizationUUID string) string {
 		}
 		definitionString = string(bodyBytes)
 	}
-	return definitionString
+	return definitionString, nil;
 }
