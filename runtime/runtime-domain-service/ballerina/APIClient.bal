@@ -512,6 +512,10 @@ public class APIClient {
                 'type: api.'type
             }
         };
+        APIRateLimit? apiRateLimitToUse = ();
+        if (api.apiRateLimit is APIRateLimit) {
+            apiRateLimitToUse = api.apiRateLimit;
+        }
         APIOperations[]? operations = api.operations;
         if operations is APIOperations[] {
             model:Operations[] runtimeAPIOperations = [];
@@ -558,6 +562,17 @@ public class APIClient {
                 record {|anydata...;|}? endpointConfig = api.endpointConfig;
                 if endpointConfig is record {} {
                     runtimeAPI.spec.endpointConfig = endpointConfig;
+                }
+
+                if (apiRateLimitToUse == ()) {
+                    apiRateLimitToUse = operation.operationRateLimit;
+                }
+                if (apiRateLimitToUse is APIRateLimit) {
+                    model:RateLimit rateLimit = {
+                        requestsPerUnit: apiRateLimitToUse.requestsPerUnit,
+                        unit: apiRateLimitToUse.unit
+                    };
+                    runtimeAPIOperation.operationRateLimit = rateLimit;
                 }
                 runtimeAPIOperations.push(runtimeAPIOperation);
             }
