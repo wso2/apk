@@ -33,10 +33,19 @@ type routeCreateParams struct {
 	resource                     *model.Resource
 	clusterName                  string
 	routeConfig                  *model.EndpointConfig
-	AuthHeader                   string
+	authHeader                   string
 	requestInterceptor           map[string]model.InterceptEndpoint
 	responseInterceptor          map[string]model.InterceptEndpoint
 	corsPolicy                   *model.CorsConfig
 	passRequestPayloadToEnforcer bool
 	isDefaultVersion             bool
+	apiLevelRateLimitPolicy      *model.RateLimitPolicy
+}
+
+// RatelimitCriteria criterias of rate limiting
+type ratelimitCriteria struct {
+	level                string
+	organizationID       string
+	vHost                string
+	basePathForRLService string
 }

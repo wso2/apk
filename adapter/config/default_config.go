@@ -173,6 +173,21 @@ var defaultConfig = &Config{
 				},
 			},
 		},
+		RateLimit: rateLimit{
+			Enabled: false,
+			Host:    "ratelimiter",
+			Port:    8091,
+			XRateLimitHeaders: xRateLimitHeaders{
+				Enabled:    true,
+				RFCVersion: "DRAFT_VERSION_03",
+			},
+			FailureModeDeny:        false,
+			RequestTimeoutInMillis: 80,
+			KeyFilePath:            "/home/wso2/security/keystore/router.key",
+			CertFilePath:           "/home/wso2/security/keystore/router.crt",
+			CaCertFilePath:         "/home/wso2/security/truststore/ratelimiter.crt",
+			SSLCertSANHostname:     "",
+		},
 	},
 	Enforcer: enforcer{
 		Management: management{

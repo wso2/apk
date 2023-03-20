@@ -35,19 +35,40 @@ spec:
           spec:
             description: RateLimitPolicySpec defines the desired state of RateLimitPolicy
             properties:
-              policies:
+              default:
                 items:
-                  description: Policy defines the desired state of Policy
+                  description: RateLimitAPIPolicy defines the desired state of Policy
                   properties:
                     api:
                       description: API policy
                       properties:
-                        requestPerUnit:
-                          description: RequestPerUnit is the number of requests allowed
-                            per minute
+                        count:
+                          description: Count is the number of requests allowed per
+                            unit time
                           type: integer
-                        unit:
-                          description: Unit is the unit of the requestPerUnit
+                        spanUnit:
+                          description: SpanUnit is the unit of the requestPerUnit
+                          type: string
+                      type: object
+                    type:
+                      description: Type of the policy can be either "api" or "application"
+                        or "subscription"
+                      type: string
+                  type: object
+                type: array
+              override:
+                items:
+                  description: RateLimitAPIPolicy defines the desired state of Policy
+                  properties:
+                    api:
+                      description: API policy
+                      properties:
+                        count:
+                          description: Count is the number of requests allowed per
+                            unit time
+                          type: integer
+                        spanUnit:
+                          description: SpanUnit is the unit of the requestPerUnit
                           type: string
                       type: object
                     type:

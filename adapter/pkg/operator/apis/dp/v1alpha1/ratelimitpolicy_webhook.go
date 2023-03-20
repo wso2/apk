@@ -75,14 +75,24 @@ func (r *RateLimitPolicy) ValidateDelete() error {
 // ValidatePolicies validates the policies in the RateLimitPolicy
 func (r *RateLimitPolicy) ValidatePolicies() error {
 	var allErrs field.ErrorList
-	for _, policy := range r.Spec.Policies {
+	for _, policy := range r.Spec.Override {
 		if err := validatePolicyType(policy.Type); err != nil {
-			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("policies").Child("type"),
+			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("override").Child("type"),
 				policy.Type, err.Error()))
 		}
-		if err := validateRatelimitPolicyUnit(policy.API.Unit); err != nil {
-			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("policies").Child("api").Child("unit"),
-				policy.API.Unit, err.Error()))
+		if err := validateRatelimitPolicyUnit(policy.API.SpanUnit); err != nil {
+			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("override").Child("api").Child("spanUnit"),
+				policy.API.SpanUnit, err.Error()))
+		}
+	}
+	for _, policy := range r.Spec.Default {
+		if err := validatePolicyType(policy.Type); err != nil {
+			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("default").Child("type"),
+				policy.Type, err.Error()))
+		}
+		if err := validateRatelimitPolicyUnit(policy.API.SpanUnit); err != nil {
+			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("default").Child("api").Child("spanUnit"),
+				policy.API.SpanUnit, err.Error()))
 		}
 	}
 	if len(allErrs) > 0 {

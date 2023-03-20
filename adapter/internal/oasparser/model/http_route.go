@@ -33,12 +33,14 @@ import (
 
 // HTTPRouteParams contains httproute related parameters
 type HTTPRouteParams struct {
-	AuthSchemes         map[string]dpv1alpha1.Authentication
-	ResourceAuthSchemes map[string]dpv1alpha1.Authentication
-	APIPolicies         map[string]dpv1alpha1.APIPolicy
-	ResourceAPIPolicies map[string]dpv1alpha1.APIPolicy
-	BackendMapping      dpv1alpha1.BackendMapping
-	ResourceScopes      map[string]dpv1alpha1.Scope
+	AuthSchemes               map[string]dpv1alpha1.Authentication
+	ResourceAuthSchemes       map[string]dpv1alpha1.Authentication
+	APIPolicies               map[string]dpv1alpha1.APIPolicy
+	ResourceAPIPolicies       map[string]dpv1alpha1.APIPolicy
+	BackendMapping            dpv1alpha1.BackendMapping
+	ResourceScopes            map[string]dpv1alpha1.Scope
+	RateLimitPolicies         map[string]dpv1alpha1.RateLimitPolicy
+	ResourceRateLimitPolicies map[string]dpv1alpha1.RateLimitPolicy
 }
 
 // SetInfoHTTPRouteCR populates resources and endpoints of mgwSwagger. httpRoute.Spec.Rules.Matches
@@ -49,6 +51,7 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, ht
 	//TODO(amali) add gateway level securities after gateway crd has implemented
 	outputAuthScheme := utils.TieBreaker(utils.GetPtrSlice(maps.Values(httpRouteParams.AuthSchemes)))
 	outputAPIPolicy := utils.TieBreaker(utils.GetPtrSlice(maps.Values(httpRouteParams.APIPolicies)))
+	outputRatelimitPolicy := utils.TieBreaker(utils.GetPtrSlice(maps.Values(httpRouteParams.RateLimitPolicies)))
 
 	var authScheme *dpv1alpha1.Authentication
 	if outputAuthScheme != nil {
@@ -58,11 +61,17 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, ht
 	if outputAPIPolicy != nil {
 		apiPolicy = *outputAPIPolicy
 	}
+	var ratelimitPolicy *dpv1alpha1.RateLimitPolicy
+	if outputRatelimitPolicy != nil {
+		ratelimitPolicy = concatRateLimitPolicies(*outputRatelimitPolicy, nil)
+	}
+
 	for _, rule := range httpRoute.Spec.Rules {
 		var endPoints []Endpoint
 		var policies = OperationPolicies{}
 		resourceAuthScheme := authScheme
 		resourceAPIPolicy := apiPolicy
+		var resourceRatelimitPolicy *dpv1alpha1.RateLimitPolicy
 		hasPolicies := false
 		var scopes []string
 		for _, filter := range rule.Filters {
@@ -113,9 +122,20 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, ht
 						Name:      string(filter.ExtensionRef.Name),
 						Namespace: httpRoute.Namespace,
 					}.String()]; found {
-						scopes = append(scopes, ref.Spec.Names...)
+						scopes = ref.Spec.Names
 					} else {
 						return fmt.Errorf("scope: %s has not been resolved in namespace %s", filter.ExtensionRef.Name, httpRoute.Namespace)
+					}
+				}
+				if filter.ExtensionRef.Kind == constants.KindRateLimitPolicy {
+					if ref, found := httpRouteParams.ResourceRateLimitPolicies[types.NamespacedName{
+						Name:      string(filter.ExtensionRef.Name),
+						Namespace: httpRoute.Namespace,
+					}.String()]; found {
+						resourceRatelimitPolicy = concatRateLimitPolicies(ratelimitPolicy, &ref)
+					} else {
+						return fmt.Errorf(`ratelimitpolicy: %s has not been resolved, spec.targetRef.kind should be 
+						'Resource' in resource level RateLimitPolicies`, filter.ExtensionRef.Name)
 					}
 				}
 			case gwapiv1b1.HTTPRouteFilterRequestHeaderModifier:
@@ -227,7 +247,8 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, ht
 		for _, match := range rule.Matches {
 			resourcePath := *match.Path.Value
 			resource := &Resource{path: resourcePath,
-				methods:       getAllowedOperations(match.Method, policies, resourceAuthScheme, securities, disabledSecurity),
+				methods: getAllowedOperations(match.Method, policies, resourceAuthScheme, securities, disabledSecurity,
+					parseRateLimitPolicyToInternal(resourceRatelimitPolicy)),
 				pathMatchType: *match.Path.Type,
 				hasPolicies:   hasPolicies,
 				iD:            uuid.New().String(),
@@ -239,9 +260,25 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, ht
 			resources = append(resources, resource)
 		}
 	}
+	swagger.RateLimitPolicy = parseRateLimitPolicyToInternal(ratelimitPolicy)
 	swagger.resources = resources
 	swagger.securityScheme = securitySchemes
 	return nil
+}
+
+func parseRateLimitPolicyToInternal(ratelimitPolicy *dpv1alpha1.RateLimitPolicy) *RateLimitPolicy {
+	var rateLimitPolicyInternal *RateLimitPolicy
+	if ratelimitPolicy != nil {
+		for _, policy := range ratelimitPolicy.Spec.Override {
+			if policy.API.Count > 0 {
+				rateLimitPolicyInternal = &RateLimitPolicy{
+					Count:    policy.API.Count,
+					SpanUnit: policy.API.SpanUnit,
+				}
+			}
+		}
+	}
+	return rateLimitPolicyInternal
 }
 
 // concatAuthSchemes concatinate override and default authentication rules to a one authentication override rule
@@ -306,6 +343,16 @@ func concatAuthSchemes(schemeUp *dpv1alpha1.Authentication, schemeDown *dpv1alph
 		}
 	}
 	return &finalAuth
+}
+
+func concatRateLimitPolicies(schemeUp *dpv1alpha1.RateLimitPolicy, schemeDown *dpv1alpha1.RateLimitPolicy) *dpv1alpha1.RateLimitPolicy {
+	finalRateLimit := dpv1alpha1.RateLimitPolicy{}
+	if schemeUp != nil && schemeDown != nil {
+		finalRateLimit.Spec.Override = *utils.SelectPolicy(schemeUp.Spec.Override, schemeUp.Spec.Default, schemeDown.Spec.Override, schemeDown.Spec.Default)
+	} else if schemeUp != nil {
+		finalRateLimit.Spec.Override = *utils.SelectPolicy(schemeUp.Spec.Override, schemeUp.Spec.Default, nil, nil)
+	}
+	return &finalRateLimit
 }
 
 // concatAuthScheme concat override and default auth policies of an authentication CR
@@ -430,25 +477,26 @@ func getSecurity(authScheme *dpv1alpha1.Authentication, scopes []string) ([]map[
 
 // getAllowedOperations retuns a list of allowed operatons, if httpMethod is not specified then all methods are allowed.
 func getAllowedOperations(httpMethod *gwapiv1b1.HTTPMethod, policies OperationPolicies,
-	authScheme *dpv1alpha1.Authentication, securities []map[string][]string, disableSecurity bool) []*Operation {
+	authScheme *dpv1alpha1.Authentication, securities []map[string][]string, disableSecurity bool,
+	ratelimitPolicy *RateLimitPolicy) []*Operation {
 	if httpMethod != nil {
 		return []*Operation{{iD: uuid.New().String(), method: string(*httpMethod), policies: policies,
-			disableSecurity: disableSecurity, security: securities}}
+			disableSecurity: disableSecurity, security: securities, RateLimitPolicy: ratelimitPolicy}}
 	}
 	return []*Operation{{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodGet), policies: policies,
-		disableSecurity: disableSecurity, security: securities},
+		disableSecurity: disableSecurity, security: securities, RateLimitPolicy: ratelimitPolicy},
 		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodPost), policies: policies,
-			disableSecurity: disableSecurity, security: securities},
+			disableSecurity: disableSecurity, security: securities, RateLimitPolicy: ratelimitPolicy},
 		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodDelete), policies: policies,
-			disableSecurity: disableSecurity, security: securities},
+			disableSecurity: disableSecurity, security: securities, RateLimitPolicy: ratelimitPolicy},
 		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodPatch), policies: policies,
-			disableSecurity: disableSecurity, security: securities},
+			disableSecurity: disableSecurity, security: securities, RateLimitPolicy: ratelimitPolicy},
 		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodPut), policies: policies,
-			disableSecurity: disableSecurity, security: securities},
+			disableSecurity: disableSecurity, security: securities, RateLimitPolicy: ratelimitPolicy},
 		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodHead), policies: policies,
-			disableSecurity: disableSecurity, security: securities},
+			disableSecurity: disableSecurity, security: securities, RateLimitPolicy: ratelimitPolicy},
 		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodOptions), policies: policies,
-			disableSecurity: disableSecurity, security: securities}}
+			disableSecurity: disableSecurity, security: securities, RateLimitPolicy: ratelimitPolicy}}
 }
 
 // SetInfoAPICR populates ID, ApiType, Version and XWso2BasePath of mgwSwagger.
