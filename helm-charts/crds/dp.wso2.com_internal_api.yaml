@@ -182,6 +182,13 @@ spec:
                                         type: string
                                       headerValue:
                                         type: string
+                      operationRateLimit:
+                        type: object
+                        properties:
+                          requestsPerUnit:
+                            type: int
+                          unit:
+                            type: string
                 serviceInfo:
                   type: object
                   properties:
