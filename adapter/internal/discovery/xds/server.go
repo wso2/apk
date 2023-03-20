@@ -38,7 +38,6 @@ import (
 
 	envoy_resource "github.com/envoyproxy/go-control-plane/pkg/resource/v3"
 	"github.com/wso2/apk/adapter/config"
-	apiModel "github.com/wso2/apk/adapter/internal/api/models"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
 	logging "github.com/wso2/apk/adapter/internal/logging"
 	oasParser "github.com/wso2/apk/adapter/internal/oasparser"
@@ -708,44 +707,6 @@ func UpdateXdsCacheWithLock(label string, endpoints []types.Resource, clusters [
 	mutexForXdsUpdate.Lock()
 	defer mutexForXdsUpdate.Unlock()
 	return updateXdsCache(label, endpoints, clusters, routes, listeners)
-}
-
-// ListApis returns a list of objects that holds info about each API
-func ListApis(apiType string, organizationID string, limit *int64) *apiModel.APIMeta {
-	var limitValue int
-	if limit == nil {
-		limitValue = len(orgIDAPIMgwSwaggerMap[organizationID])
-	} else {
-		limitValue = int(*limit)
-	}
-	var apisArray []*apiModel.APIMetaListItem
-	i := 0
-	for apiIdentifier, mgwSwagger := range orgIDAPIMgwSwaggerMap[organizationID] {
-		if i == limitValue {
-			break
-		}
-		if apiType == "" || mgwSwagger.GetAPIType() == apiType {
-			var apiMetaListItem apiModel.APIMetaListItem
-			apiMetaListItem.APIName = mgwSwagger.GetTitle()
-			apiMetaListItem.Version = mgwSwagger.GetVersion()
-			apiMetaListItem.APIType = mgwSwagger.GetAPIType()
-			apiMetaListItem.Context = mgwSwagger.GetXWso2Basepath()
-			apiMetaListItem.GatewayEnvs = orgIDOpenAPIEnvoyMap[organizationID][apiIdentifier]
-			vhost := "ERROR"
-			if vh, err := ExtractVhostFromAPIIdentifier(apiIdentifier); err == nil {
-				vhost = vh
-			}
-			apiMetaListItem.Vhosts = []string{vhost}
-			// orgIDAPIvHostsMap[organizationID][apiIdentifier]
-			apisArray = append(apisArray, &apiMetaListItem)
-			i++
-		}
-	}
-	var apiMetaObject apiModel.APIMeta
-	apiMetaObject.Total = int64(len(orgIDAPIMgwSwaggerMap[organizationID]))
-	apiMetaObject.Count = int64(len(apisArray))
-	apiMetaObject.List = apisArray
-	return &apiMetaObject
 }
 
 // GenerateIdentifierForAPI generates an identifier unique to the API
