@@ -37,7 +37,7 @@ service /api/am/backoffice/internal on ep1 {
     }
 
     isolated resource function delete apis/[string apiId](@http:Header string? 'if\-match) returns http:Ok|ForbiddenError|NotFoundError|ConflictError|PreconditionFailedError|http:InternalServerError {
-        string|error? response = deleteAPI(apiId);
+        string|NotFoundError|error? response = deleteAPI(apiId, "carbon.super");
         if response is error {
             http:InternalServerError internalError = {body: {code: 90912, message: "Internal Error while deleting API By Id"}};
             return internalError;
