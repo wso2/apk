@@ -36,47 +36,59 @@ spec:
             description: RateLimitPolicySpec defines the desired state of RateLimitPolicy
             properties:
               default:
-                items:
-                  description: RateLimitAPIPolicy defines the desired state of Policy
-                  properties:
-                    api:
-                      description: API policy
-                      properties:
-                        count:
-                          description: Count is the number of requests allowed per
-                            unit time
-                          type: integer
-                        spanUnit:
-                          description: SpanUnit is the unit of the requestPerUnit
-                          type: string
-                      type: object
-                    type:
-                      description: Type of the policy can be either "api" or "application"
-                        or "subscription"
-                      type: string
-                  type: object
-                type: array
+                description: RateLimitAPIPolicy defines the desired state of Policy
+                properties:
+                  api:
+                    description: API policy
+                    enum:
+                    - Api
+                    - Application
+                    - Subscription
+                    properties:
+                      count:
+                        description: Count is the number of requests allowed per unit
+                          time
+                        type: integer
+                      spanUnit:
+                        description: SpanUnit is the unit of the requestPerUnit
+                        enum:
+                        - Minute
+                        - Hour
+                        - Day
+                        type: string
+                    type: object
+                  type:
+                    description: Type of the policy can be either "api" or "application"
+                      or "subscription"
+                    type: string
+                type: object
               override:
-                items:
-                  description: RateLimitAPIPolicy defines the desired state of Policy
-                  properties:
-                    api:
-                      description: API policy
-                      properties:
-                        count:
-                          description: Count is the number of requests allowed per
-                            unit time
-                          type: integer
-                        spanUnit:
-                          description: SpanUnit is the unit of the requestPerUnit
-                          type: string
-                      type: object
-                    type:
-                      description: Type of the policy can be either "api" or "application"
-                        or "subscription"
-                      type: string
-                  type: object
-                type: array
+                description: RateLimitAPIPolicy defines the desired state of Policy
+                properties:
+                  api:
+                    description: API policy
+                    enum:
+                    - Api
+                    - Application
+                    - Subscription
+                    properties:
+                      count:
+                        description: Count is the number of requests allowed per unit
+                          time
+                        type: integer
+                      spanUnit:
+                        description: SpanUnit is the unit of the requestPerUnit
+                        enum:
+                        - Minute
+                        - Hour
+                        - Day
+                        type: string
+                    type: object
+                  type:
+                    description: Type of the policy can be either "api" or "application"
+                      or "subscription"
+                    type: string
+                type: object
               targetRef:
                 description: PolicyTargetReference identifies an API object to apply
                   policy to. This should be used as part of Policy resources that
