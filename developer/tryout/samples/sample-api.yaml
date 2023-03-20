@@ -43,11 +43,9 @@ spec:
       name: Default
   rules:
   - backendRefs:
-    - group: ""
-      kind: Service
-      name: backend
-      port: 80
-      weight: 1
+    - group: dp.wso2.com
+      kind: Backend
+      name: insecure-backend
     matches:
     - path:
         type: PathPrefix
@@ -59,11 +57,9 @@ spec:
             type: ReplacePrefixMatch
             replacePrefixMatch: /get
   - backendRefs:
-    - group: ""
-      kind: Service
+    - group: dp.wso2.com
+      kind: Backend
       name: secure-backend
-      port: 443
-      weight: 1
     matches:
     - path:
         type: PathPrefix
@@ -87,11 +83,9 @@ spec:
       name: Default
   rules:
     - backendRefs:
-        - group: ""
-          kind: Service
+        - group: dp.wso2.com
+          kind: Backend
           name: secure-backend
-          port: 443
-          weight: 1
       matches:
         - path:
             type: PathPrefix
@@ -122,11 +116,9 @@ spec:
       name: Default
   rules:
     - backendRefs:
-        - group: ""
-          kind: Service
-          name: backend
-          port: 80
-          weight: 1
+      - group: dp.wso2.com
+        kind: Backend
+        name: insecure-backend
       matches:
         - path:
             type: PathPrefix
