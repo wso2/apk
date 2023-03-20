@@ -38,6 +38,7 @@ const (
 	error1102 = 1102
 	error1103 = 1103
 	error1104 = 1104
+	error1105 = 1105
 )
 
 // Error Log Internal API(1200-1299) Constants
@@ -72,6 +73,9 @@ const (
 	error1711 = 1711
 	error1712 = 1712
 	error1713 = 1713
+	error1714 = 1714
+	error1715 = 1715
+	error1716 = 1716
 )
 
 // Error Log Internal intercepter(1800-1899) Config Constants
@@ -146,6 +150,11 @@ var Mapper = map[int]logging.ErrorDetails{
 		ErrorCode: error1104,
 		Message:   "Readiness probe is not set as local api artifacts processing has failed.",
 		Severity:  CRITICAL,
+	},
+	error1105: {
+		ErrorCode: error1105,
+		Message:   "Error serving Rate Limiter xDS gRPC server: %v",
+		Severity:  BLOCKER,
 	},
 	error1200: {
 		ErrorCode: error1200,
@@ -257,7 +266,21 @@ var Mapper = map[int]logging.ErrorDetails{
 		Message:   "Error extracting vhost from apiIdentifier: %q. Continue cleaning other maps: %v",
 		Severity:  MAJOR,
 	},
-
+	error1714: {
+		ErrorCode: error1714,
+		Message:   "Error while creating the rate limit snapshot: %v",
+		Severity:  MAJOR,
+	},
+	error1715: {
+		ErrorCode: error1715,
+		Message:   "Inconsistent rate limiter snapshot: %v",
+		Severity:  MAJOR,
+	},
+	error1716: {
+		ErrorCode: error1716,
+		Message:   "Error while updating the rate limit snapshot: %v",
+		Severity:  MAJOR,
+	},
 	error1800: {
 		ErrorCode: error1800,
 		Message:   "Error while parsing the interceptor template: %v",

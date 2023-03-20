@@ -18,6 +18,7 @@
 package logging
 
 // Error Log Pkg operator(2600-2699) Config Constants
+// - LoggerAPKOperator
 const (
 	error2600 = 2600
 	error2601 = 2601
@@ -58,6 +59,16 @@ const (
 	error2636 = 2636
 	error2637 = 2637
 	error2638 = 2638
+	error2639 = 2639
+	error2640 = 2640
+	error2641 = 2641
+	error2642 = 2642
+	error2643 = 2643
+	error2644 = 2644
+	error2645 = 2645
+	error2646 = 2646
+	error2647 = 2647
+	error2648 = 2648
 )
 
 // Error Log Pkg auth(3001-3099) Config Constants
@@ -264,6 +275,56 @@ var Mapper = map[int]ErrorDetails{
 		ErrorCode: error2638,
 		Message:   "Unable to create webhook for APIPolicy: %v",
 		Severity:  BLOCKER,
+	},
+	error2639: {
+		ErrorCode: error2639,
+		Message:   "Error watching ConfigMap resources: %v",
+		Severity:  BLOCKER,
+	},
+	error2640: {
+		ErrorCode: error2640,
+		Message:   "Error watching Secret resources: %v",
+		Severity:  BLOCKER,
+	},
+	error2641: {
+		ErrorCode: error2641,
+		Message:   "Error while reading certificate from secretRef: %s, %v",
+		Severity:  MINOR,
+	},
+	error2642: {
+		ErrorCode: error2642,
+		Message:   "Error while reading certificate from configMapRef: %s, %v",
+		Severity:  MINOR,
+	},
+	error2643: {
+		ErrorCode: error2643,
+		Message:   "Failed to parse certificate PEM",
+		Severity:  MINOR,
+	},
+	error2644: {
+		ErrorCode: error2644,
+		Message:   "Error while parsing certificate: %s",
+		Severity:  MINOR,
+	},
+	error2645: {
+		ErrorCode: error2645,
+		Message:   "Unexpected object type, bypassing reconciliation: %v",
+		Severity:  TRIVIAL,
+	},
+	error2646: {
+		ErrorCode: error2646,
+		Message:   "Unable to find associated BackendPolicies for ConfigMap: %s",
+		Severity:  CRITICAL,
+	},
+	error2647: {
+		ErrorCode: error2647,
+		Message:   "Unexpected object type, bypassing reconciliation: %v",
+		Severity:  TRIVIAL,
+	},
+	error2648: {
+		ErrorCode: error2648,
+		Message:   "Unable to find associated BackendPolicies for Secret: %s",
+		Severity:  MINOR,
 	},
 	error3001: {
 		ErrorCode: error3001,
