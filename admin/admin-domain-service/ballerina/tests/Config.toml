@@ -11,3 +11,6 @@ testQuery = "SELECT 1"
 driver = "org.postgresql.Driver"
 [wso2.admin_service.throttleConfig.blockCondition]
 enabled = true
+[wso2.admin_service.keyStores.tls]
+keyFilePath = "./tests/resources/wso2carbon.key"
+certFilePath = "./tests/resources/wso2carbon.crt"

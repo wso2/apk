@@ -19,13 +19,14 @@
 import ballerina/jwt;
 import ballerina/uuid;
 import runtime_domain_service.model;
+import wso2/apk_common_lib as commons;
 
 # This Class used to generate Runtime Token
 public class InternalTokenGenerator {
 
     public isolated function generateToken(model:API api, string username) returns string|jwt:Error {
         TokenIssuerConfiguration issuerConfiguration = runtimeConfiguration.tokenIssuerConfiguration;
-        KeyStore & readonly signingCert = runtimeConfiguration.keyStores.signing;
+        commons:KeyStore & readonly signingCert = runtimeConfiguration.keyStores.signing;
         string jwtid = uuid:createType1AsString();
         jwt:IssuerConfig issuerConfig = {
             issuer: issuerConfiguration.issuer,
@@ -34,7 +35,7 @@ public class InternalTokenGenerator {
             jwtId: jwtid,
             keyId: issuerConfiguration.keyId,
             signatureConfig: {
-                config: {keyFile: signingCert.path}
+                config: {keyFile: <string>signingCert.keyFilePath}
             }
         };
         issuerConfig.username = username;

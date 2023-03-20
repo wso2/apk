@@ -15,6 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 //
+import wso2/apk_common_lib as commons;
 
 type ThrottlingConfiguration record {
     BlockCondition blockCondition = {
@@ -63,19 +64,14 @@ public type TokenIssuerConfiguration record {|
     decimal expTime = 3600;
 |};
 
-public type KeyStores record {|
-    KeyStore signing;
-    KeyStore tls;
-|};
-
-public type KeyStore record {|
-    string path;
-    string keyPassword?;
-|};
 
 public type SDKConfiguration record {|
     string groupId = "org.wso2";
     string artifactId = "org.wso2.client.";
     string modelPackage = "org.wso2.client.model.";
     string apiPackage = "org.wso2.client.api.";
+|};
+public type KeyStores record{|
+        commons:KeyStore tls;
+        commons:KeyStore signing;
 |};

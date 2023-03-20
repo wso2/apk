@@ -119,9 +119,9 @@ data:
       enabled = false
 
     [runtime]
-      host = "{{ template "apk-helm.resource.prefix" . }}-runtime-ds-service"
-      port = 9443
-      serviceBasePath = "/api/am/runtime"
+      host = "{{ template "apk-helm.resource.prefix" . }}-runtime-ds-service.{{ .Release.Namespace }}.svc"
+      port = 9444
+      serviceBasePath = "/api/am/internal/runtime"
     
     [managementServer]
     {{ if .Values.wso2.apk.dp.managementServer }}

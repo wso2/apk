@@ -77,6 +77,13 @@ spec:
               subPath: {{$value.fileName}}
             {{ end }}
             {{ end }}
+            - name: backoffice-ds-tls-volume
+              mountPath: /home/wso2/security/truststore/backoffice.pem
+            {{- if and .Values.wso2.apk.cp.backoffice.configs .Values.wso2.apk.cp.backoffice.configs.tls }}
+              subPath: {{ .Values.wso2.apk.cp.backoffice.configs.tls.certFilename | default "tls.crt" }}
+            {{- else }}
+              subPath: tls.crt
+            {{- end }}
             - name: management-server-config-toml-volume
               mountPath: /home/wso2/conf/
           readinessProbe:
@@ -116,4 +123,12 @@ spec:
         - name: management-server-config-toml-volume
           configMap: 
             name: {{ template "apk-helm.resource.prefix" . }}-management-server-config-toml
+        - name: backoffice-ds-tls-volume
+          secret:
+           {{ if and .Values.wso2.apk.cp.backoffice.configs .Values.wso2.apk.cp.backoffice.configs.tls }}
+            secretName: {{ .Values.wso2.apk.cp.backoffice.configs.tls.certificatesSecret | default (printf "%s-backoffice-ds-server-cert" (include "apk-helm.resource.prefix" .)) }}
+           {{ else }}
+            secretName: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-server-cert
+          {{ end }}
+
 {{- end -}}

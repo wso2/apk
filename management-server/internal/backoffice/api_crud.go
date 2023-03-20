@@ -2,12 +2,14 @@ package backoffice
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
 
 	apiProtos "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/apkmgt"
+	"github.com/wso2/apk/adapter/pkg/utils/tlsutils"
 	"github.com/wso2/apk/management-server/internal/config"
 	"github.com/wso2/apk/management-server/internal/logger"
 )
@@ -32,17 +34,19 @@ type requestData struct {
 }
 
 func init() {
+	_, _, truststoreLocation := tlsutils.GetKeyLocations()
+	caCertPool := tlsutils.GetTrustedCertPool(truststoreLocation)
 	transport := &http.Transport{
 		MaxIdleConns:    2,
 		IdleConnTimeout: 30 * time.Second,
-		TLSClientConfig: nil,
+		TLSClientConfig: &tls.Config{RootCAs: caCertPool},
 	}
 	backOfficeClient = &http.Client{Transport: transport}
 }
 
 func getBackOfficeURL() string {
 	conf := config.ReadConfigs()
-	logger.LoggerMGTServer.Infof("backoffice service: http://%s:%d%s", conf.BackOffice.Host, conf.BackOffice.Port, conf.BackOffice.ServiceBasePath)
+	logger.LoggerMGTServer.Infof("backoffice service: https://%s:%d%s", conf.BackOffice.Host, conf.BackOffice.Port, conf.BackOffice.ServiceBasePath)
 	return fmt.Sprintf("http://%s:%d%s", conf.BackOffice.Host, conf.BackOffice.Port, conf.BackOffice.ServiceBasePath)
 }
 

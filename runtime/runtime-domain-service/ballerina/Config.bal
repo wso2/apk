@@ -19,7 +19,7 @@ import wso2/apk_common_lib as commons;
 
 public type ControlPlaneConfiguration record {
     string serviceBaseURl;
-    KeyStore certificate?;
+    commons:KeyStore certificate?;
     boolean enableAuthentication=true;
     boolean enableHostNameVerification=false;
     Header[] headers = [];
@@ -68,15 +68,6 @@ public type TokenIssuerConfiguration record {|
     decimal expTime = 3600;
 |};
 
-public type KeyStores record {|
-    KeyStore signing;
-    KeyStore tls;
-|};
-
-public type KeyStore record {|
-    string path;
-    string keyPassword?;
-|};
 
 public type K8sConfigurations record {|
     string host = "kubernetes.default";
@@ -91,3 +82,7 @@ isolated function getNameSpace(string namespace) returns string {
         return namespace;
     }
 }
+public type KeyStores record {|
+    commons:KeyStore signing;
+    commons:KeyStore tls;
+|};

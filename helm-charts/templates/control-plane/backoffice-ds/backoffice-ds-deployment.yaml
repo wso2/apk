@@ -45,8 +45,20 @@ spec:
               protocol: "TCP"
             - containerPort: 9444
               protocol: "TCP"
-{{ include "apk-helm.deployment.readinessProbe.http" .Values.wso2.apk.cp.backoffice.deployment | indent 10 }}
-{{ include "apk-helm.deployment.livenessProbe.http" .Values.wso2.apk.cp.backoffice.deployment | indent 10 }}
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 9443
+              scheme: HTTPS
+            initialDelaySeconds: {{ .Values.wso2.apk.cp.backoffice.deployment.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.wso2.apk.cp.backoffice.deployment.readinessProbe.periodSeconds }}    
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 9443
+              scheme: HTTPS
+            initialDelaySeconds: {{ .Values.wso2.apk.cp.backoffice.deployment.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.wso2.apk.cp.backoffice.deployment.livenessProbe.periodSeconds }}
 {{ include "apk-helm.deployment.resources" .Values.wso2.apk.cp.backoffice.deployment.resources | indent 10 }}
           volumeMounts:
                 - mountPath: /home/wso2apk/backoffice/conf/Config.toml
@@ -55,6 +67,21 @@ spec:
                 - mountPath: /home/wso2apk/backoffice/security/mg.pem
                   name: backoffice-ds-jwt-validation-key-volume
                   subPath: mg.pem
+                - name: backoffice-ds-tls-volume
+                  mountPath: /home/wso2apk/backoffice/security/backoffice.key
+                {{- if and .Values.wso2.apk.cp.backoffice.configs .Values.wso2.apk.cp.backoffice.configs.tls }}
+                  subPath: {{ .Values.wso2.apk.cp.backoffice.configs.tls.certKeyFilename | default "tls.key" }}
+                {{- else }}
+                  subPath: tls.key
+                {{- end }}
+                - name: backoffice-ds-tls-volume
+                  mountPath: /home/wso2apk/backoffice/security/backoffice.pem
+                {{- if and .Values.wso2.apk.cp.backoffice.configs .Values.wso2.apk.cp.backoffice.configs.tls }}
+                  subPath: {{ .Values.wso2.apk.cp.backoffice.configs.tls.certFilename | default "tls.crt" }}
+                {{- else }}
+                  subPath: tls.crt
+                {{- end }}
+
       volumes:
         - name: backoffice-ds-jwt-validation-key-volume
           secret: 
@@ -62,4 +89,11 @@ spec:
         - name: config-toml-volume
           configMap:
             name: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-configmap
+        - name: backoffice-ds-tls-volume
+          secret:
+           {{ if and .Values.wso2.apk.cp.backoffice.configs .Values.wso2.apk.cp.backoffice.configs.tls }}
+            secretName: {{ .Values.wso2.apk.cp.backoffice.configs.tls.certificatesSecret | default (printf "%s-backoffice-ds-server-cert" (include "apk-helm.resource.prefix" .)) }}
+           {{ else }}
+            secretName: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-server-cert
+          {{ end }}
 {{- end -}}
