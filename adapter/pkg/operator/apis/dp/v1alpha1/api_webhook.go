@@ -65,19 +65,16 @@ var _ webhook.Validator = &API{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *API) ValidateCreate() error {
-	loggers.LoggerAPKOperator.Infof("Validate API create: %s", r.Name)
 	return r.validateAPI()
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *API) ValidateUpdate(old runtime.Object) error {
-	loggers.LoggerAPKOperator.Infof("Validate API update: %s", r.Name)
 	return r.validateAPI()
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
 func (r *API) ValidateDelete() error {
-	loggers.LoggerAPKOperator.Infof("Validate API delete: %s", r.Name)
 
 	// TODO(user): fill in your validation logic upon object deletion.
 	return nil

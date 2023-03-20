@@ -125,12 +125,14 @@ func GenerateMGWSwagger(apiState APIState, httpRoute *HTTPRouteState, envType st
 	mgwSwagger.SetInfoAPICR(*apiState.APIDefinition)
 	mgwSwagger.EnvType = envType
 	httpRouteParams := model.HTTPRouteParams{
-		AuthSchemes:            httpRoute.Authentications,
-		ResourceAuthSchemes:    httpRoute.ResourceAuthentications,
-		BackendPropertyMapping: httpRoute.BackendPropertyMapping,
-		APIPolicies:            httpRoute.APIPolicies,
-		ResourceAPIPolicies:    httpRoute.ResourceAPIPolicies,
-		ResourceScopes:         httpRoute.Scopes,
+		AuthSchemes:               httpRoute.Authentications,
+		ResourceAuthSchemes:       httpRoute.ResourceAuthentications,
+		BackendPropertyMapping:    httpRoute.BackendPropertyMapping,
+		APIPolicies:               httpRoute.APIPolicies,
+		ResourceAPIPolicies:       httpRoute.ResourceAPIPolicies,
+		ResourceScopes:            httpRoute.Scopes,
+		RateLimitPolicies:         httpRoute.RateLimitPolicies,
+		ResourceRateLimitPolicies: httpRoute.ResourceRateLimitPolicies,
 	}
 	if err := mgwSwagger.SetInfoHTTPRouteCR(httpRoute.HTTPRoute, httpRouteParams); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2631, err))
@@ -143,6 +145,10 @@ func GenerateMGWSwagger(apiState APIState, httpRoute *HTTPRouteState, envType st
 	vHosts := getVhostsForAPI(httpRoute.HTTPRoute)
 	labels := getLabelsForAPI(httpRoute.HTTPRoute)
 
+	conf := config.ReadConfigs()
+	if conf.Envoy.RateLimit.Enabled {
+		xds.UpdateRateLimitXDSCache(vHosts, mgwSwagger)
+	}
 	err := xds.UpdateAPICache(vHosts, labels, mgwSwagger)
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2633, mgwSwagger.GetTitle(), mgwSwagger.GetVersion(), vHosts, err))

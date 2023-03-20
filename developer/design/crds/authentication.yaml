@@ -13,7 +13,6 @@ Spec:
         port: 1234
       disabled: true
       tokenValidation: true
-      scopeValidation: true
       subscriptionValidation: true
       authTypes:
           - type: jwt

@@ -20,6 +20,7 @@ package utils
 import (
 	"context"
 	"fmt"
+	"reflect"
 
 	constants "github.com/wso2/apk/adapter/pkg/operator/constants"
 	"github.com/wso2/apk/adapter/pkg/utils/envutils"
@@ -117,6 +118,23 @@ func TieBreaker[T metav1.Object](k8sObjects []T) *T {
 		}
 	}
 	return &selectedk8sObject
+}
+
+// SelectPolicy selects the policy based on the policy override and default values
+func SelectPolicy[T any](policyUpOverride, policyUpDefault, policyDownOverride, policyDownDefault T) *T {
+	if !reflect.ValueOf(policyDownOverride).IsZero() {
+		return &policyDownOverride
+	}
+	if !reflect.ValueOf(policyUpOverride).IsZero() {
+		return &policyUpOverride
+	}
+	if !reflect.ValueOf(policyUpDefault).IsZero() {
+		return &policyUpDefault
+	}
+	if !reflect.ValueOf(policyDownDefault).IsZero() {
+		return &policyDownDefault
+	}
+	return nil
 }
 
 // GetPtrSlice returns a slice which is also a slice containing pointers to the elements

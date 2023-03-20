@@ -127,10 +127,19 @@ data:
     {{ if .Values.wso2.apk.dp.managementServer }}
       enabled = {{.Values.wso2.apk.dp.managementServer.enabled}}
       host = "{{ .Values.wso2.apk.dp.managementServer.serviceUrl | default (printf "%s-management-server.%s.svc" (include "apk-helm.resource.prefix" .) .Release.Namespace) }}"
-      {{else}}
+    {{else}}
       enabled = true
       host = "{{ template "apk-helm.resource.prefix" . }}-management-server.{{ .Release.Namespace }}.svc"
-      {{end}}
+    {{end}}
+    
+    {{ if .Values.wso2.apk.dp.ratelimiter }}
+    [router.ratelimit]
+      host = "{{ template "apk-helm.resource.prefix" . }}-ratelimiter-service.{{ .Release.Namespace }}.svc"
+      enabled = {{.Values.wso2.apk.dp.ratelimiter.enabled}}
+      keyFilePath = "/home/wso2/security/keystore/router.key"
+      certFilePath = "/home/wso2/security/keystore/router.crt"
+      caCertFilePath = "/home/wso2/security/truststore/ratelimiter.crt"
+    {{end}}
 
 {{ if and .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.filters }}
 {{ range $index, $filter := .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.filters}}
@@ -727,7 +736,7 @@ data:
     ## Adapter root Level configurations
 
     logfile = "logs/adapter.log" # This file will be created inside adapter container.
-    logLevel = "INFO" # LogLevels can be "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC"
+    logLevel = "DEBG" # LogLevels can be "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC"
     LogFormat = "TEXT" # Values can be "JSON", "TEXT"
 
     [rotation]

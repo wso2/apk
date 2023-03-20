@@ -17,7 +17,9 @@
 
 package logging
 
-import logging "github.com/wso2/apk/adapter/pkg/logging"
+import (
+	logging "github.com/wso2/apk/adapter/pkg/logging"
+)
 
 // Log (Error) severity level constants
 const (
@@ -68,6 +70,8 @@ const (
 	error1709 = 1709
 	error1710 = 1710
 	error1711 = 1711
+	error1712 = 1712
+	error1713 = 1713
 )
 
 // Error Log Internal intercepter(1800-1899) Config Constants
@@ -96,6 +100,19 @@ const (
 	error2237 = 2237
 	error2238 = 2238
 	error2239 = 2239
+	error2240 = 2240
+	error2241 = 2241
+	error2242 = 2242
+	error2243 = 2243
+	error2244 = 2244
+	error2245 = 2245
+	error2246 = 2246
+	error2247 = 2247
+)
+
+// Error Log RateLimiter callbacks(2300-2399) Config Constants
+const (
+	error2300 = 2300
 )
 
 // Error Log Internal GRPC(2700-2799) Config Constants
@@ -230,14 +247,25 @@ var Mapper = map[int]logging.ErrorDetails{
 		Message:   "Error retrieving application: %v",
 		Severity:  CRITICAL,
 	},
+	error1712: {
+		ErrorCode: error1712,
+		Message:   "Unknown rate limit unit %q, defaulting to UNKNOWN",
+		Severity:  MAJOR,
+	},
+	error1713: {
+		ErrorCode: error1713,
+		Message:   "Error extracting vhost from apiIdentifier: %q. Continue cleaning other maps: %v",
+		Severity:  MAJOR,
+	},
+
 	error1800: {
 		ErrorCode: error1800,
-		Message:   "error while parsing the interceptor template: %v",
+		Message:   "Error while parsing the interceptor template: %v",
 		Severity:  CRITICAL,
 	},
 	error1801: {
 		ErrorCode: error1801,
-		Message:   "executing request interceptor template: %v",
+		Message:   "Executing request interceptor template: %v",
 		Severity:  CRITICAL,
 	},
 	error2200: {
@@ -327,12 +355,57 @@ var Mapper = map[int]logging.ErrorDetails{
 	},
 	error2239: {
 		ErrorCode: error2239,
-		Message: "Error while adding resource level endpoints for %s:%v-%v. %v",
-		Severity: MAJOR,
+		Message:   "Error while adding resource level endpoints for %s:%v-%v. %v",
+		Severity:  MAJOR,
+	},
+	error2240: {
+		ErrorCode: error2240,
+		Message:   "Invalid XRatelimitHeaders type, continue with default type %s",
+		Severity:  MAJOR,
+	},
+	error2241: {
+		ErrorCode: error2241,
+		Message:   "Error occurred while parsing ratelimit filter config. Error: %s",
+		Severity:  MAJOR,
+	},
+	error2242: {
+		ErrorCode: error2242,
+		Message:   "Error while adding api level request intercepter external cluster for %s. %v",
+		Severity:  MAJOR,
+	},
+	error2243: {
+		ErrorCode: error2243,
+		Message:   "Error while adding api level response intercepter external cluster for %s. %v",
+		Severity:  MAJOR,
+	},
+	error2244: {
+		ErrorCode: error2244,
+		Message:   "Error while adding resource level request intercept external cluster for %s. %v",
+		Severity:  MAJOR,
+	},
+	error2245: {
+		ErrorCode: error2245,
+		Message:   "Error while adding operational level request intercept external cluster for %v:%v-%v-%v. %v",
+		Severity:  MAJOR,
+	},
+	error2246: {
+		ErrorCode: error2246,
+		Message:   "Error while adding resource level response intercept external cluster for %s. %v",
+		Severity:  MAJOR,
+	},
+	error2247: {
+		ErrorCode: error2247,
+		Message:   "Error while adding operational level response intercept external cluster for %v:%v-%v-%v. %v",
+		Severity:  MAJOR,
 	},
 	error2700: {
 		ErrorCode: error2700,
 		Message:   "Error while processing the private-public key pair : %v",
 		Severity:  BLOCKER,
+	},
+	error2300: {
+		ErrorCode: error2300,
+		Message:   "Stream request for type %s on stream id: %d, from node: %s, Error: %s",
+		Severity:  MAJOR,
 	},
 }

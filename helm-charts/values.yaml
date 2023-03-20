@@ -285,36 +285,6 @@ wso2:
             limits:
               memory: "1028Mi"
               cpu: "1000m"
-          env:
-            HOST: 0.0.0.0
-            PORT: 8090
-            USE_STATSD: false
-            LOG_LEVEL: DEBUG
-            LIMIT_RESPONSE_HEADERS_ENABLED: false
-            REDIS_SOCKET_TYPE: tcp
-            REDIS_URL: redis-master:6379
-            REDIS_PIPELINE_WINDOW: 0.2ms
-            REDIS_PIPELINE_LIMIT: 0
-            REDIS_TLS: false
-            REDIS_TLS_CLIENT_CERT: ""
-            REDIS_TLS_CLIENT_KEY: ""
-            REDIS_TLS_CACERT: ""
-            # gRPC server
-            GRPC_HOST: 0.0.0.0
-            GRPC_PORT: 8091
-            GRPC_SERVER_USE_TLS: true
-            GRPC_SERVER_TLS_KEY: /home/wso2/security/keystore/ratelimiter.key
-            GRPC_SERVER_TLS_CERT: /home/wso2/security/keystore/ratelimiter.crt
-            GRPC_CLIENT_TLS_CACERT: /home/wso2/security/keystore/ca.crt
-            GRPC_CLIENT_TLS_SAN: localhost
-            # xDS config server
-            RATE_LIMITER_LABEL: Default
-            CONFIG_GRPC_XDS_SERVER_URL: localhost:18001
-            CONFIG_GRPC_XDS_SERVER_USE_TLS: true
-            CONFIG_GRPC_XDS_CLIENT_TLS_KEY: /home/wso2/security/keystore/ratelimiter.key
-            CONFIG_GRPC_XDS_CLIENT_TLS_CERT: /home/wso2/security/keystore/ratelimiter.crt
-            CONFIG_GRPC_XDS_SERVER_TLS_CACERT: /home/wso2/security/keystore/ca.crt
-            CONFIG_GRPC_XDS_SERVER_TLS_SAN: localhost
           readinessProbe:
             path: /healthcheck
             port: 8090

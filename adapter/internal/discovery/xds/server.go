@@ -176,6 +176,11 @@ func GetXdsCache() envoy_cachev3.SnapshotCache {
 	return cache
 }
 
+// GetRateLimiterCache returns xds server cache for rate limiter service.
+func GetRateLimiterCache() envoy_cachev3.SnapshotCache {
+	return rlsPolicyCache.xdsCache
+}
+
 // GetEnforcerCache returns xds server cache.
 func GetEnforcerCache() wso2_cache.SnapshotCache {
 	return enforcerCache
@@ -297,6 +302,13 @@ func cleanMapResources(apiIdentifier string, organizationID string, toBeDelEnvs 
 	delete(orgIDOpenAPIEndpointsMap[organizationID], apiIdentifier)
 	delete(orgIDOpenAPIEnforcerApisMap[organizationID], apiIdentifier)
 
+	vHost, err := ExtractVhostFromAPIIdentifier(apiIdentifier)
+	if err != nil {
+		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1713, apiIdentifier, err))
+	} else {
+		rlsPolicyCache.DeleteAPILevelRateLimitPolicies(organizationID, vHost, apiIdentifier)
+	}
+
 	//updateXdsCacheOnAPIAdd is called after cleaning maps of routes, clusters, endpoints, enforcerAPIs.
 	//Therefore resources that belongs to the deleting API do not exist. Caches updated only with
 	//resources that belongs to the remaining APIs
@@ -328,6 +340,7 @@ func updateXdsCacheOnAPIChange(oldLabels []string, newLabels []string) bool {
 	for _, newLabel := range newLabels {
 		listeners, clusters, routes, endpoints, apis := GenerateEnvoyResoucesForLabel(newLabel)
 		UpdateEnforcerApis(newLabel, apis, "")
+		UpdateRateLimiterPolicies(newLabel)
 		success := UpdateXdsCacheWithLock(newLabel, endpoints, clusters, routes, listeners)
 		logger.LoggerXds.Debugf("Xds Cache is updated for the newly added label : %v", newLabel)
 		if success {
@@ -341,6 +354,7 @@ func updateXdsCacheOnAPIChange(oldLabels []string, newLabels []string) bool {
 		if !stringutils.StringInSlice(oldLabel, newLabels) {
 			listeners, clusters, routes, endpoints, apis := GenerateEnvoyResoucesForLabel(oldLabel)
 			UpdateEnforcerApis(oldLabel, apis, "")
+			UpdateRateLimiterPolicies(oldLabel)
 			UpdateXdsCacheWithLock(oldLabel, endpoints, clusters, routes, listeners)
 			logger.LoggerXds.Debugf("Xds Cache is updated for the already existing label : %v", oldLabel)
 		}
@@ -458,6 +472,11 @@ func updateXdsCache(label string, endpoints []types.Resource, clusters []types.R
 	}
 	logger.LoggerXds.Infof("New Router cache updated for the label: " + label + " version: " + fmt.Sprint(version))
 	return true
+}
+
+// UpdateRateLimiterPolicies update the rate limiter xDS cache with latest rate limit policies
+func UpdateRateLimiterPolicies(label string) {
+	_ = rlsPolicyCache.updateXdsCache(label)
 }
 
 // UpdateEnforcerConfig Sets new update to the enforcer's configuration
@@ -809,6 +828,12 @@ func UpdateEnforcerThrottleData(throttleData *throttle.ThrottleData) {
 	}
 	enforcerThrottleData = t
 	logger.LoggerXds.Infof("New Throttle Data cache update for the label: " + label + " version: " + fmt.Sprint(version))
+}
+
+// UpdateRateLimitXDSCache updates the xDS cache of the RateLimiter.
+func UpdateRateLimitXDSCache(vHosts []string, mgwSwagger model.MgwSwagger) {
+	// Add Rate Limit inline policies in API to the cache
+	rlsPolicyCache.AddAPILevelRateLimitPolicies(vHosts, &mgwSwagger)
 }
 
 // UpdateAPICache updates the xDS cache related to the API Lifecycle event.

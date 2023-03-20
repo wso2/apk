@@ -47,7 +47,54 @@ spec:
               protocol: "TCP"
 {{ include "apk-helm.deployment.resources" .Values.wso2.apk.dp.ratelimiter.deployment.resources | indent 10 }}
 {{ include "apk-helm.deployment.env" .Values.wso2.apk.dp.ratelimiter.deployment.env | indent 10 }}
-
+            - name: HOST
+              value: "0.0.0.0"
+            - name: PORT
+              value: "8090"
+            - name: USE_STATSD
+              value: "false"
+            - name: LOG_LEVEL
+              value: "DEBUG"
+            - name: LIMIT_RESPONSE_HEADERS_ENABLED
+              value: "false"
+            - name: REDIS_SOCKET_TYPE
+              value: "tcp"
+            - name: REDIS_URL
+              value: "redis-master:6379"
+            - name: REDIS_PIPELINE_WINDOW
+              value: "0.2ms"
+            - name: REDIS_PIPELINE_LIMIT
+              value: "0"
+            - name: REDIS_TLS
+              value: "false"
+            - name: GRPC_HOST
+              value: "0.0.0.0"
+            - name: GRPC_PORT
+              value: "8091"
+            - name: GRPC_SERVER_USE_TLS
+              value: "true"
+            - name: GRPC_SERVER_TLS_KEY
+              value: "/home/wso2/security/keystore/ratelimiter.key"
+            - name: GRPC_SERVER_TLS_CERT
+              value: "/home/wso2/security/keystore/ratelimiter.crt"
+            - name: GRPC_CLIENT_TLS_CACERT
+              value: "/home/wso2/security/truststore/ratelimiter-ca.crt"
+            - name: GRPC_CLIENT_TLS_SAN
+              value: "{{ template "apk-helm.resource.prefix" . }}-router-service.{{ .Release.Namespace }}.svc"
+            - name: RATELIMITER_LABEL
+              value: "Default"
+            - name: CONFIG_GRPC_XDS_SERVER_URL
+              value: "{{ template "apk-helm.resource.prefix" . }}-adapter-service.{{ .Release.Namespace }}.svc:18001"
+            - name: CONFIG_GRPC_XDS_SERVER_USE_TLS
+              value: "true"
+            - name: CONFIG_GRPC_XDS_CLIENT_TLS_KEY
+              value: "/home/wso2/security/keystore/ratelimiter.key"
+            - name: CONFIG_GRPC_XDS_CLIENT_TLS_CERT
+              value: "/home/wso2/security/keystore/ratelimiter.crt"
+            - name: CONFIG_GRPC_XDS_SERVER_TLS_CACERT
+              value: "/home/wso2/security/truststore/ratelimiter-ca.crt"
+            - name: CONFIG_GRPC_XDS_SERVER_TLS_SAN
+              value: "{{ template "apk-helm.resource.prefix" . }}-adapter-service.{{ .Release.Namespace }}.svc"
           volumeMounts:
             - name: ratelimiter-keystore-secret-volume
               mountPath: /home/wso2/security/keystore/ratelimiter.key
@@ -64,7 +111,7 @@ spec:
               subPath: tls.crt
             {{- end }}
             - name: ratelimiter-keystore-secret-volume
-              mountPath: /home/wso2/security/keystore/ca.crt
+              mountPath: /home/wso2/security/truststore/ratelimiter-ca.crt
             {{- if and .Values.wso2.apk.dp.ratelimiter.configs .Values.wso2.apk.dp.ratelimiter.configs.tls }}
               subPath: {{ .Values.wso2.apk.dp.ratelimiter.configs.tls.certCAFilename | default "ca.crt" }}
             {{- else }}
@@ -76,7 +123,30 @@ spec:
               subPath: {{ .Values.wso2.apk.dp.adapter.configs.tls.certFilename | default "tls.crt" }}
             {{- else }}
               subPath: tls.crt
-  {{- end }}
+            {{- end }}
+            - name: router-truststore-secret-volume
+              mountPath: /home/wso2/security/truststore/router.pem
+            {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls }}
+              subPath: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls.certFilename | default "tls.crt" }}
+            {{- else }}
+              subPath: tls.crt
+            {{- end }}
+          livenessProbe:
+            httpGet:
+              port: 8090
+              path: /healthcheck
+              scheme: HTTP
+            initialDelaySeconds: {{ .Values.wso2.apk.dp.ratelimiter.deployment.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.wso2.apk.dp.ratelimiter.deployment.livenessProbe.periodSeconds }}
+            failureThreshold: {{ .Values.wso2.apk.dp.ratelimiter.deployment.livenessProbe.failureThreshold }}
+          readinessProbe:
+            httpGet:
+              port: 8090
+              path: /healthcheck
+              scheme: HTTP
+            initialDelaySeconds: {{ .Values.wso2.apk.dp.ratelimiter.deployment.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.wso2.apk.dp.ratelimiter.deployment.readinessProbe.periodSeconds }}
+            failureThreshold: {{ .Values.wso2.apk.dp.ratelimiter.deployment.readinessProbe.failureThreshold }}
       volumes:
         - name: ratelimiter-keystore-secret-volume
           secret:
@@ -92,6 +162,14 @@ spec:
             secretName: {{ .Values.wso2.apk.dp.adapter.configs.tls.certificatesSecret | default (printf "%s-adapter-server-cert" (include "apk-helm.resource.prefix" .)) }}
           {{- else }}
             secretName: {{ template "apk-helm.resource.prefix" . }}-adapter-server-cert
+          {{- end }}
+            defaultMode: 420
+        - name: router-truststore-secret-volume
+          secret:
+          {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls }}
+            secretName: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls.certificatesSecret | default (printf "%s-router-server-cert" (include "apk-helm.resource.prefix" .)) }}
+          {{- else }}
+            secretName: {{ template "apk-helm.resource.prefix" . }}-router-server-cert
           {{- end }}
             defaultMode: 420
 {{- end -}}

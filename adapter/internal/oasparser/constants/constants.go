@@ -133,7 +133,8 @@ const (
 
 // CRD Kinds
 const (
-	KindAuthentication = "Authentication"
-	KindAPIPolicy      = "APIPolicy"
-	KindScope          = "Scope"
+	KindAuthentication  = "Authentication"
+	KindAPIPolicy       = "APIPolicy"
+	KindScope           = "Scope"
+	KindRateLimitPolicy = "RateLimitPolicy"
 )
