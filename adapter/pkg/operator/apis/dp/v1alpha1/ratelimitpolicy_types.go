@@ -33,12 +33,12 @@ type RateLimitPolicySpec struct {
 type RateLimitAPIPolicy struct {
 	// Type of the policy can be either "api" or "application" or "subscription"
 	//
+	// +kubebuilder:validation:Enum=Api;Application;Subscription
 	Type string `json:"type,omitempty"`
 
 	// API policy
 	//
 	// +optional
-	// +kubebuilder:validation:Enum=Api;Application;Subscription
 	API APIRateLimit `json:"api,omitempty"`
 }
 

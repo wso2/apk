@@ -40,10 +40,6 @@ spec:
                 properties:
                   api:
                     description: API policy
-                    enum:
-                    - Api
-                    - Application
-                    - Subscription
                     properties:
                       count:
                         description: Count is the number of requests allowed per unit
@@ -60,6 +56,10 @@ spec:
                   type:
                     description: Type of the policy can be either "api" or "application"
                       or "subscription"
+                    enum:
+                    - Api
+                    - Application
+                    - Subscription
                     type: string
                 type: object
               override:
@@ -67,10 +67,6 @@ spec:
                 properties:
                   api:
                     description: API policy
-                    enum:
-                    - Api
-                    - Application
-                    - Subscription
                     properties:
                       count:
                         description: Count is the number of requests allowed per unit
@@ -87,6 +83,10 @@ spec:
                   type:
                     description: Type of the policy can be either "api" or "application"
                       or "subscription"
+                    enum:
+                    - Api
+                    - Application
+                    - Subscription
                     type: string
                 type: object
               targetRef:

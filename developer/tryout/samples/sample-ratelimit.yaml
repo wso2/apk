@@ -4,10 +4,10 @@ metadata:
   name: sand-http-bin-ratelimit
 spec:
   override:
-    - type: Api
-      api:
-        count: 5
-        spanUnit: Minute
+    type: Api
+    api:
+      count: 5
+      spanUnit: Minute
   targetRef:
     kind: HTTPRoute
     name: sand-http-route-http-bin-api
