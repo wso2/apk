@@ -1,4 +1,4 @@
---- # -----------------------------------------------------------------------
+# -----------------------------------------------------------------------
 
 # --------------------------------------------------------------------
 # Copyright (c) 2022, WSO2 LLC. (http://wso2.com) All Rights Reserved.
@@ -14,6 +14,33 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+---
+apiVersion: dp.wso2.com/v1alpha1
+kind: Backend
+metadata:
+  name: insecure-backend
+spec:
+  services:
+  - host: backend
+    port: 80
+  security:
+  - type: Basic
+    basic:
+      secretRef:
+        name: user-creds
+        usernameKey: usr
+        passwordKey: pwd
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: user-creds
+data:
+  pwd: YWRtaW4K
+  usr: YWRtaW4K
+type: Opaque
+---
 apiVersion: v1
 kind: Service
 metadata:
