@@ -154,6 +154,7 @@ public type APIOperations record {
     record {} endpointConfig?;
     string[] scopes?;
     APIOperationPolicies operationPolicies?;
+    APIRateLimit operationRateLimit?;
 };
 
 public type APIOperationPolicies record {
@@ -273,6 +274,13 @@ public type GraphQLSchema record {
     string schemaDefinition?;
 };
 
+public type APIRateLimit record {
+    # Number of requests allowed per specified unit of time
+    int requestsPerUnit;
+    # Unit of time
+    string unit;
+};
+
 public type APIDefinitionValidationResponse record {
     # This attribute declares whether this definition is valid or not.
     boolean isValid;
@@ -335,6 +343,7 @@ public type API record {
     APIOperations[] operations?;
     API_serviceInfo serviceInfo?;
     APIOperationPolicies apiPolicies?;
+    APIRateLimit apiRateLimit?;
     string createdTime?;
     string lastUpdatedTime?;
 };
