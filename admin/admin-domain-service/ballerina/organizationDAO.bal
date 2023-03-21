@@ -18,7 +18,6 @@
 
 import ballerinax/postgresql;
 import ballerina/sql;
-import ballerina/io;
 
 isolated function addOrganizationDAO(Internal_Organization payload) returns Internal_Organization|APKError {
     postgresql:Client | error dbClient  = getConnection();
@@ -60,14 +59,20 @@ isolated function addOrganizationClaimMappingDAO(postgresql:Client dbClient, Int
 }
 
 isolated function addVhostsDAO (postgresql:Client dbClient, Internal_Organization payload) returns boolean{
-    postgresql:JsonBinaryValue vhosts = new (payload.vhosts.toJson());
-    sql:ParameterizedQuery query = `INSERT INTO ORGANIZATION_VHOST(UUID, VHOST) VALUES (${payload.id},${vhosts})`;
+    string[]? vhosts = payload.vhosts;
+    if (vhosts !is ()) {
+        foreach string e in vhosts {
+        sql:ParameterizedQuery query = `INSERT INTO ORGANIZATION_VHOST(UUID, VHOST) VALUES (${payload.id},${e})`;
         sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
-        if result is sql:ExecutionResult && result.affectedRowCount == 1 {
-            return true;    
-        } else { 
-            return false;    
+            if result is sql:ExecutionResult && result.affectedRowCount == 1 {
+                continue;    
+            } else { 
+                return false;    
+            }
         }
+        return true;
+   }
+   return true;
 }
 
 isolated function validateOrganizationByNameDAO(string name) returns boolean|APKError {
@@ -150,23 +155,36 @@ public isolated function getAllOrganizationDAO() returns Internal_Organization[]
         return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
         do {
-            sql:ParameterizedQuery query = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName, string_to_array(ORGANIZATION_VHOST.VHOST::text,',')::text[] AS vhosts, claim_key as claimKey, claim_value as claimValue FROM ORGANIZATION, ORGANIZATION_CLAIM_MAPPING,ORGANIZATION_VHOST where ORGANIZATION.UUID = ORGANIZATION_CLAIM_MAPPING.UUID
-            AND ORGANIZATION.UUID = ORGANIZATION_VHOST.UUID`;
-            stream<Organizations, sql:Error?> orgStream = dbClient->query(query);
             map<Internal_Organization> organization = {};
-
+            sql:ParameterizedQuery query = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName, claim_key as claimKey, claim_value as claimValue FROM ORGANIZATION, ORGANIZATION_CLAIM_MAPPING where ORGANIZATION.UUID = ORGANIZATION_CLAIM_MAPPING.UUID`;
+            stream<Organizations, sql:Error?> orgStream = dbClient->query(query);
+            
             check from Organizations org in orgStream do {
                 if organization.hasKey(org.id) {
                     OrganizationClaim claim = {claimKey: org.claimKey, claimValue: org.claimValue};
                     organization.get(org.id).claimList.push(claim);
                 } else {
                     OrganizationClaim claim = {claimKey: org.claimKey, claimValue: org.claimValue};
-                    io:print(org.vhosts);
-                    Internal_Organization organizationData = {id: org.id, name: org.name, displayName: org.displayName, enabled: true, vhosts: org.vhosts,  claimList: [claim]};
+                    Internal_Organization organizationData = {id: org.id, name: org.name, displayName: org.displayName, enabled: true,  claimList: [claim]};
                     organization[org.id] = organizationData;
                 }
             };
+
+            sql:ParameterizedQuery query1 = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName, ORGANIZATION_VHOST.VHOST AS vhost FROM ORGANIZATION,ORGANIZATION_VHOST where
+             ORGANIZATION.UUID = ORGANIZATION_VHOST.UUID`;
+            stream<Organizations, sql:Error?> orgStream1 = dbClient->query(query1);
+            check from Organizations org1 in orgStream1 do {
+                if organization.hasKey(org1.id) {
+                    string[]? hostArray = organization.get(org1.id).vhosts;
+                    if hostArray !is () {
+                        hostArray.push(org1.vhost);
+                    } else {
+                        organization[org1.id].vhosts = [org1.vhost];
+                    }
+                }
+            };
             check orgStream.close();
+            check orgStream1.close();
             return organization.toArray();
         } on fail var e {
         	string message = "Internal Error occured while retrieving organization data from Database";
@@ -182,8 +200,8 @@ isolated function getOrganizationByIdDAO(string id) returns Internal_Organizatio
         return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
         do {
-            sql:ParameterizedQuery query = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName,string_to_array(VHOST::text,',')::text[] AS vhosts, claim_key as claimKey, 
-                    claim_value as claimValue FROM ORGANIZATION, ORGANIZATION_CLAIM_MAPPING, ORGANIZATION_VHOST where ORGANIZATION.UUID = ORGANIZATION_CLAIM_MAPPING.UUID and ORGANIZATION.UUID = ORGANIZATION_VHOST.UUID and ORGANIZATION.UUID =${id}`;
+            sql:ParameterizedQuery query = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName, claim_key as claimKey, 
+                    claim_value as claimValue FROM ORGANIZATION, ORGANIZATION_CLAIM_MAPPING where ORGANIZATION.UUID = ORGANIZATION_CLAIM_MAPPING.UUID and ORGANIZATION.UUID =${id}`;
             stream<Organizations, sql:Error?> orgStream = dbClient->query(query);
             Internal_Organization organization1 = {
                 id: "",
@@ -200,7 +218,6 @@ isolated function getOrganizationByIdDAO(string id) returns Internal_Organizatio
                         name:org.name,
                         displayName:org.displayName,
                         enabled: true,
-                        vhosts: org.vhosts,
                         claimList:[{
                             claimKey:org.claimKey,
                             claimValue: org.claimValue
@@ -213,6 +230,19 @@ isolated function getOrganizationByIdDAO(string id) returns Internal_Organizatio
                     });
                 }
             }; 
+
+            sql:ParameterizedQuery query1 = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName, ORGANIZATION_VHOST.VHOST AS vhost FROM ORGANIZATION,ORGANIZATION_VHOST where
+             ORGANIZATION.UUID = ORGANIZATION_VHOST.UUID and ORGANIZATION.UUID =${id}`;
+            stream<Organizations, sql:Error?> orgStream1 = dbClient->query(query1);
+            check from Organizations org1 in orgStream1 do {
+                string[]? hostArray = organization1.vhosts;
+                if hostArray !is () {
+                    hostArray.push(org1.vhost);
+                } else {
+                    organization1.vhosts = [org1.vhost];
+                }
+            };
+
             if (organization1.id == "") {
                 string message = "Organization not found";
                 return error(message, message = message, description = message, code = 909000, statusCode = "404");
@@ -271,8 +301,8 @@ isolated function getOrganizationByNameDAO(string name) returns Internal_Organiz
         return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
         do {
-            sql:ParameterizedQuery query = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName,string_to_array(VHOST::text,',')::text[] AS vhosts, claim_key as claimKey, 
-                    claim_value as claimValue FROM ORGANIZATION, ORGANIZATION_CLAIM_MAPPING, ORGANIZATION_VHOST where ORGANIZATION.UUID = ORGANIZATION_CLAIM_MAPPING.UUID and ORGANIZATION_VHOST.UUID = ORGANIZATION.UUID and ORGANIZATION.NAME =${name}`;
+            sql:ParameterizedQuery query = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName, claim_key as claimKey, 
+                    claim_value as claimValue FROM ORGANIZATION, ORGANIZATION_CLAIM_MAPPING where ORGANIZATION.UUID = ORGANIZATION_CLAIM_MAPPING.UUID and ORGANIZATION.NAME =${name}`;
             stream<Organizations, sql:Error?> orgStream = dbClient->query(query);
             Internal_Organization organization1 = {
                 id: "",
@@ -289,7 +319,6 @@ isolated function getOrganizationByNameDAO(string name) returns Internal_Organiz
                         name:org.name,
                         displayName:org.displayName,
                         enabled: true,
-                        vhosts: org.vhosts,
                         claimList:[{
                             claimKey:org.claimKey,
                             claimValue: org.claimValue
@@ -302,6 +331,19 @@ isolated function getOrganizationByNameDAO(string name) returns Internal_Organiz
                     });
                 }
             }; 
+
+            sql:ParameterizedQuery query1 = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName, ORGANIZATION_VHOST.VHOST AS vhost FROM ORGANIZATION,ORGANIZATION_VHOST where
+             ORGANIZATION.UUID = ORGANIZATION_VHOST.UUID and ORGANIZATION.NAME =${name}`;
+            stream<Organizations, sql:Error?> orgStream1 = dbClient->query(query1);
+            check from Organizations org1 in orgStream1 do {
+                string[]? hostArray = organization1.vhosts;
+                if hostArray !is () {
+                    hostArray.push(org1.vhost);
+                } else {
+                    organization1.vhosts = [org1.vhost];
+                }
+            };
+
             if (organization1.id == "") {
                 string message = "Organization not found";
                 return error(message, message = message, description = message, code = 909000, statusCode = "404");

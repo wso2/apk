@@ -23,7 +23,7 @@
 # + displayName - Org Display Name
 # + enabled -   Org Enabled
 # + claimKey -  Org Claim Key 
-# + vhosts -  Org Vhosts
+# + vhost -  Org Vhosts
 # + claimValue -    Org Claim Value
 public type Organizations record {
     string id;
@@ -31,7 +31,7 @@ public type Organizations record {
     string displayName;
     boolean enabled;
     string claimKey;
-    string[] vhosts;
+    string vhost;
     string claimValue;
 };
 
@@ -41,7 +41,7 @@ public type Internal_Organization record {
     string name;
     string displayName;
     boolean enabled;
-    string[]? vhosts;
+    string[] vhosts?;
     OrganizationClaim[] claimList;
 };
 
