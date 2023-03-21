@@ -401,5 +401,7 @@ GRANT ALL PRIVILEGES ON DATABASE "WSO2AM_DB" TO wso2carbon;
     
         -- Insert Demo APK data ---
         INSERT INTO public.subscriber(user_id, organization, email_address, date_subscribed ) VALUES ( 'apkuser', 'carbon.super', 'apk@wso2.com', now());
+        INSERT INTO organization(uuid, name, display_name, status) VALUES ( 'a3b58ccf-6ecc-4557-b5bb-0a35cce38256', 'default', 'default', true);
+        INSERT INTO organization_claim_mapping(uuid, claim_key, claim_value) VALUES ( 'a3b58ccf-6ecc-4557-b5bb-0a35cce38256', 'organizationClaimValue', 'default');
         -- End Insert Demo APK data        
         commit;
