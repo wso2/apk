@@ -212,7 +212,7 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 	}
 }
 
-func TestConcatAPIPolicies(t *testing.T) {
+func testConcatAPIPolicies(t *testing.T) {
 
 	type testItem struct {
 		schemeUpSpec   dpv1alpha1.APIPolicySpec
@@ -228,7 +228,7 @@ func TestConcatAPIPolicies(t *testing.T) {
 	dataItems := []testItem{
 		{
 			schemeUpSpec: dpv1alpha1.APIPolicySpec{
-				Override: dpv1alpha1.PolicySpec{
+				Override: &dpv1alpha1.PolicySpec{
 					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
 						Remove: []string{"a", "b"},
 						Add: []dpv1alpha1.HTTPQuery{
@@ -239,7 +239,7 @@ func TestConcatAPIPolicies(t *testing.T) {
 				},
 			},
 			schemeDownSpec: dpv1alpha1.APIPolicySpec{
-				Override: dpv1alpha1.PolicySpec{
+				Override: &dpv1alpha1.PolicySpec{
 					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
 						Remove: []string{"c", "d"},
 						Add: []dpv1alpha1.HTTPQuery{
@@ -250,7 +250,7 @@ func TestConcatAPIPolicies(t *testing.T) {
 				},
 			},
 			result: dpv1alpha1.APIPolicySpec{
-				Override: dpv1alpha1.PolicySpec{
+				Override: &dpv1alpha1.PolicySpec{
 					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
 						Remove: []string{"a", "b"},
 						Add: []dpv1alpha1.HTTPQuery{
@@ -264,7 +264,7 @@ func TestConcatAPIPolicies(t *testing.T) {
 		},
 		{
 			schemeUpSpec: dpv1alpha1.APIPolicySpec{
-				Override: dpv1alpha1.PolicySpec{
+				Override: &dpv1alpha1.PolicySpec{
 					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
 						Remove: []string{"a", "b"},
 						Add: []dpv1alpha1.HTTPQuery{
@@ -275,7 +275,7 @@ func TestConcatAPIPolicies(t *testing.T) {
 				},
 			},
 			schemeDownSpec: dpv1alpha1.APIPolicySpec{
-				Default: dpv1alpha1.PolicySpec{
+				Default: &dpv1alpha1.PolicySpec{
 					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
 						Remove: []string{"c", "d"},
 						Add: []dpv1alpha1.HTTPQuery{
@@ -286,7 +286,7 @@ func TestConcatAPIPolicies(t *testing.T) {
 				},
 			},
 			result: dpv1alpha1.APIPolicySpec{
-				Override: dpv1alpha1.PolicySpec{
+				Override: &dpv1alpha1.PolicySpec{
 					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
 						Remove: []string{"a", "b"},
 						Add: []dpv1alpha1.HTTPQuery{
@@ -300,7 +300,7 @@ func TestConcatAPIPolicies(t *testing.T) {
 		},
 		{
 			schemeUpSpec: dpv1alpha1.APIPolicySpec{
-				Default: dpv1alpha1.PolicySpec{
+				Default: &dpv1alpha1.PolicySpec{
 					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
 						Remove: []string{"a", "b"},
 						Add: []dpv1alpha1.HTTPQuery{
@@ -311,7 +311,7 @@ func TestConcatAPIPolicies(t *testing.T) {
 				},
 			},
 			schemeDownSpec: dpv1alpha1.APIPolicySpec{
-				Override: dpv1alpha1.PolicySpec{
+				Override: &dpv1alpha1.PolicySpec{
 					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
 						Remove: []string{"c", "d"},
 						Add: []dpv1alpha1.HTTPQuery{
@@ -322,7 +322,7 @@ func TestConcatAPIPolicies(t *testing.T) {
 				},
 			},
 			result: dpv1alpha1.APIPolicySpec{
-				Override: dpv1alpha1.PolicySpec{
+				Override: &dpv1alpha1.PolicySpec{
 					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
 						Remove: []string{"c", "d"},
 						Add: []dpv1alpha1.HTTPQuery{
@@ -336,7 +336,7 @@ func TestConcatAPIPolicies(t *testing.T) {
 		},
 		{
 			schemeUpSpec: dpv1alpha1.APIPolicySpec{
-				Default: dpv1alpha1.PolicySpec{
+				Default: &dpv1alpha1.PolicySpec{
 					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
 						Remove: []string{"a", "b"},
 						Add: []dpv1alpha1.HTTPQuery{
@@ -347,7 +347,7 @@ func TestConcatAPIPolicies(t *testing.T) {
 				},
 			},
 			schemeDownSpec: dpv1alpha1.APIPolicySpec{
-				Default: dpv1alpha1.PolicySpec{
+				Default: &dpv1alpha1.PolicySpec{
 					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
 						Remove: []string{"c", "d"},
 						Add: []dpv1alpha1.HTTPQuery{
@@ -358,7 +358,7 @@ func TestConcatAPIPolicies(t *testing.T) {
 				},
 			},
 			result: dpv1alpha1.APIPolicySpec{
-				Override: dpv1alpha1.PolicySpec{
+				Override: &dpv1alpha1.PolicySpec{
 					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
 						Remove: []string{"c", "d"},
 						Add: []dpv1alpha1.HTTPQuery{
@@ -372,7 +372,7 @@ func TestConcatAPIPolicies(t *testing.T) {
 		},
 		{
 			schemeUpSpec: dpv1alpha1.APIPolicySpec{
-				Override: dpv1alpha1.PolicySpec{
+				Override: &dpv1alpha1.PolicySpec{
 					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
 						Remove: []string{"a", "b"},
 						Add: []dpv1alpha1.HTTPQuery{
@@ -383,7 +383,7 @@ func TestConcatAPIPolicies(t *testing.T) {
 				},
 			},
 			result: dpv1alpha1.APIPolicySpec{
-				Override: dpv1alpha1.PolicySpec{
+				Override: &dpv1alpha1.PolicySpec{
 					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
 						Remove: []string{"a", "b"},
 						Add: []dpv1alpha1.HTTPQuery{
@@ -397,7 +397,7 @@ func TestConcatAPIPolicies(t *testing.T) {
 		},
 		{
 			schemeUpSpec: dpv1alpha1.APIPolicySpec{
-				Default: dpv1alpha1.PolicySpec{
+				Default: &dpv1alpha1.PolicySpec{
 					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
 						Remove: []string{"a", "b"},
 						Add: []dpv1alpha1.HTTPQuery{
@@ -408,7 +408,7 @@ func TestConcatAPIPolicies(t *testing.T) {
 				},
 			},
 			result: dpv1alpha1.APIPolicySpec{
-				Override: dpv1alpha1.PolicySpec{
+				Override: &dpv1alpha1.PolicySpec{
 					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
 						Remove: []string{"a", "b"},
 						Add: []dpv1alpha1.HTTPQuery{

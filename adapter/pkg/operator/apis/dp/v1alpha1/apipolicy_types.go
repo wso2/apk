@@ -31,14 +31,16 @@ type APIPolicySpec struct {
 	//
 	//
 	// +optional
-	Default   PolicySpec                      `json:"default,omitempty"`
-	Override  PolicySpec                      `json:"override,omitempty"`
+	Default   *PolicySpec                     `json:"default,omitempty"`
+	Override  *PolicySpec                     `json:"override,omitempty"`
 	TargetRef gwapiv1b1.PolicyTargetReference `json:"targetRef,omitempty"`
 }
 
 // PolicySpec contains API policies
 type PolicySpec struct {
 	RequestQueryModifier RequestQueryModifier `json:"requestQueryModifier,omitempty"`
+	RequestInterceptor   *InterceptorConfig   `json:"requestInterceptor,omitempty"`
+	ResponseInterceptor  *InterceptorConfig   `json:"responseInterceptor,omitempty"`
 }
 
 // RequestQueryModifier allows to modify request query params
@@ -46,6 +48,45 @@ type RequestQueryModifier struct {
 	Add       []HTTPQuery `json:"add,omitempty"`
 	Remove    []string    `json:"remove,omitempty"`
 	RemoveAll string      `json:"removeAll,omitempty"`
+}
+
+// InterceptorInclusion defines the type of data which can be included in the interceptor request/response path
+type InterceptorInclusion string
+
+const (
+	// RequestHeaders is the type to include request headers
+	RequestHeaders InterceptorInclusion = "request_headers"
+	// RequestBody is the type to include request body
+	RequestBody InterceptorInclusion = "request_body"
+	// RequestTrailers is the type to include request trailers
+	RequestTrailers InterceptorInclusion = "request_trailers"
+	// ResponseHeaders is the type to include response headers
+	ResponseHeaders InterceptorInclusion = "response_headers"
+	// ResponseBody is the type to include response body
+	ResponseBody InterceptorInclusion = "response_body"
+	// ResponseTrailers is the type to include response trailers
+	ResponseTrailers InterceptorInclusion = "response_trailers"
+	// InvocationContext is the type to include invocation context
+	InvocationContext InterceptorInclusion = "invocation_context"
+)
+
+// InterceptorConfig holds interceptor service information
+type InterceptorConfig struct {
+	BackendRef BackendReference `json:"backendRef"`
+
+	// +optional
+	// +kubebuilder:validation:MaxItems=4
+	Includes []InterceptorInclusion `json:"includes,omitempty"`
+}
+
+// BackendReference refers to a Backend resource as the interceptor service.
+type BackendReference struct {
+	// Name is the name of the Backend resource.
+	Name string `json:"name"`
+
+	// Namespace is the namespace of the Backend resource.
+	// +optional
+	Namespace string `json:"namespace,omitempty"`
 }
 
 // HTTPQuery represents an HTTP Header name and value as defined by RFC 7230.
