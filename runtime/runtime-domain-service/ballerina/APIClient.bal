@@ -778,11 +778,13 @@ public class APIClient {
                 check self.deleteAuthneticationCRs(api);
                 _ = check self.deleteScopeCrsForAPI(api);
                 check self.deleteBackends(api);
+                check self.deleteRateLimitPolicyCRs(api);
                 check self.deleteInternalAPI(api.metadata.name, api.metadata.namespace);
             }
             check self.deployScopeCrs(apiArtifact);
             check self.deployBackendServices(apiArtifact);
             check self.deployAuthneticationCRs(apiArtifact);
+            check self.deployRateLimitPolicyCRs(apiArtifact);
             check self.deployHttpRoutes(apiArtifact.productionRoute);
             check self.deployHttpRoutes(apiArtifact.sandboxRoute);
             check self.deployServiceMappings(apiArtifact);
@@ -973,9 +975,9 @@ public class APIClient {
         }
     }
 
-    private isolated function deployRateLimitPolicies(model:RateLimitPolicy[] rateLimitPolicies) returns error? {
-        foreach model:RateLimitPolicy rateLimitPolicy in rateLimitPolicies {
-            http:Response deployRateLimitPolicyResult = check deployRateLimitPolicy(rateLimitPolicy, getNameSpace(runtimeConfiguration.apiCreationNamespace));
+    private isolated function deployRateLimitPolicyCRs(model:APIArtifact apiArtifact) returns error? {
+        foreach model:RateLimitPolicy rateLimitPolicy in apiArtifact.rateLimitPolicies {
+            http:Response deployRateLimitPolicyResult = check deployRateLimitPolicyCR(rateLimitPolicy, getNameSpace(runtimeConfiguration.apiCreationNamespace));
             if deployRateLimitPolicyResult.statusCode == http:STATUS_CREATED {
                 log:printDebug("Deployed RateLimitPolicy Successfully" + rateLimitPolicy.toString());
             } else {
@@ -983,6 +985,30 @@ public class APIClient {
                 model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
                 check self.handleK8sTimeout(statusResponse);
             }
+        }
+    }
+
+    private isolated function deleteRateLimitPolicyCRs(model:API api) returns commons:APKError? {
+        do {
+            model:RateLimitPolicyList|http:ClientError rateLimitPolicyCrListResponse = check getRateLimitPolicyCRsForAPI(api.spec.apiDisplayName, api.spec.apiVersion, api.metadata.namespace);
+            if rateLimitPolicyCrListResponse is model:RateLimitPolicyList {
+                foreach model:RateLimitPolicy item in rateLimitPolicyCrListResponse.items {
+                    http:Response|http:ClientError rateLimitPolicyCRDeletionResponse = deleteRateLimitPolicyCR(item.metadata.name, item.metadata.namespace);
+                    if rateLimitPolicyCRDeletionResponse is http:Response {
+                        if rateLimitPolicyCRDeletionResponse.statusCode != http:STATUS_OK {
+                            json responsePayLoad = check rateLimitPolicyCRDeletionResponse.getJsonPayload();
+                            model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                            check self.handleK8sTimeout(statusResponse);
+                        }
+                    } else {
+                        log:printError("Error occured while deleting rate limit policy");
+                    }
+                }
+                return;
+            }
+        } on fail var e {
+            log:printError("Error occured deleting rate limit policy", e);
+            return error("Error occured deleting rate limit policy", message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = 500);
         }
     }
 
