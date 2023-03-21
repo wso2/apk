@@ -44,7 +44,7 @@ public type OperationPolicyParameters record {
 
 public type RateLimit record {
     int requestsPerUnit;
-    string unit?;
+    string unit;
 };
 
 public type MediationPolicy record {

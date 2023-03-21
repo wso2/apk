@@ -397,6 +397,7 @@ public class APIClient {
             if endpointConfig is record {} {
                 createdEndpoints = check self.createAndAddBackendServics(apiArtifact, api, endpointConfig, (), (), organization);
             }
+            self.generateAndSetRateLimitPolicy(apiArtifact, api.apiRateLimit, api.operations);
             _ = check self.setHttpRoute(apiArtifact, api, createdEndpoints.hasKey(PRODUCTION_TYPE) ? createdEndpoints.get(PRODUCTION_TYPE) : (), uniqueId, PRODUCTION_TYPE, organization);
             _ = check self.setHttpRoute(apiArtifact, api, createdEndpoints.hasKey(SANDBOX_TYPE) ? createdEndpoints.get(SANDBOX_TYPE) : (), uniqueId, SANDBOX_TYPE, organization);
             json generatedSwagger = check self.retrieveGeneratedSwaggerDefinition(api, definition);
@@ -971,6 +972,20 @@ public class APIClient {
             check self.handleK8sTimeout(statusResponse);
         }
     }
+
+    private isolated function deployRateLimitPolicies(model:RateLimitPolicy[] rateLimitPolicies) returns error? {
+        foreach model:RateLimitPolicy rateLimitPolicy in rateLimitPolicies {
+            http:Response deployRateLimitPolicyResult = check deployRateLimitPolicy(rateLimitPolicy, getNameSpace(runtimeConfiguration.apiCreationNamespace));
+            if deployRateLimitPolicyResult.statusCode == http:STATUS_CREATED {
+                log:printDebug("Deployed RateLimitPolicy Successfully" + rateLimitPolicy.toString());
+            } else {
+                json responsePayLoad = check deployRateLimitPolicyResult.getJsonPayload();
+                model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                check self.handleK8sTimeout(statusResponse);
+            }
+        }
+    }
+
     private isolated function retrieveGeneratedConfigmapForDefinition(model:APIArtifact apiArtifact, API api, json generatedSwaggerDefinition, string uniqueId) {
         map<string> configMapData = {};
         if api.'type == API_TYPE_REST {
@@ -1758,6 +1773,65 @@ public class APIClient {
             }
         };
         return backendService;
+    }
+
+    isolated function generateAndSetRateLimitPolicy(model:APIArtifact apiArtifact, APIRateLimit? apiRateLimit, APIOperations[]? operations) {
+        string nameSpace = getNameSpace(runtimeConfiguration.apiCreationNamespace);
+        model:RateLimitPolicy[] rateLimitPolicies = [];
+        if (apiRateLimit != ()) {
+            model:RateLimitPolicy rateLimitPolicy = {
+                metadata: {
+                    name: uuid:createType1AsString(),
+                    namespace: nameSpace
+                },
+                spec: {
+                    default: self.retrieveRateLimitData(apiRateLimit),
+                    targetRef: {
+                        group: "",
+                        kind: "HTTPRoute",
+                        name: uuid:createType1AsString(),
+                        namespace: nameSpace
+                    }
+                }
+            };
+            rateLimitPolicies.push(rateLimitPolicy);
+        } else {
+            if (operations is APIOperations[]) {
+                foreach APIOperations operation in operations {
+                    APIRateLimit? operationRateLimit = operation.operationRateLimit;
+                    if (operationRateLimit is APIRateLimit) {
+                        model:RateLimitPolicy rateLimitPolicy = {
+                            metadata: {
+                                name: uuid:createType1AsString(),
+                                namespace: nameSpace
+                            },
+                            spec: {
+                                default: self.retrieveRateLimitData(operationRateLimit),
+                                targetRef: {
+                                    group: "",
+                                    kind: "Resource",
+                                    name: uuid:createType1AsString(),
+                                    namespace: nameSpace
+                                }
+                            }
+                        };
+                        rateLimitPolicies.push(rateLimitPolicy);
+                    }
+                }
+            }
+        }
+        apiArtifact.rateLimitPolicies = rateLimitPolicies;
+    }
+
+    isolated function retrieveRateLimitData(APIRateLimit rateLimit) returns model:RateLimitData {
+        model:RateLimitData rateLimitData = {
+            api: {
+                count: rateLimit.requestsPerUnit,
+                spanUnit: rateLimit.unit
+            },
+            'type: "Api"
+        };
+        return rateLimitData;
     }
 
     public isolated function retrieveDefaultDefinition(model:API api) returns json {
