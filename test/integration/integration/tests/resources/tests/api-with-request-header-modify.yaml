@@ -74,7 +74,7 @@ spec:
           replacePrefixMatch: /orders
     - type: RequestHeaderModifier
       requestHeaderModifier:
-        add:
+        set:
           - name: "test-header"
             value: "test"
     backendRefs:

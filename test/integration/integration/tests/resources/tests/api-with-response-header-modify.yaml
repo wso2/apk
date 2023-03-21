@@ -64,7 +64,7 @@ spec:
     filters:
     - type: ResponseHeaderModifier
       responseHeaderModifier:
-        add:
+        set:
         - name: X-Header-Add
           value: add-appends-values
     backendRefs:

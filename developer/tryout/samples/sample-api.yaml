@@ -131,14 +131,14 @@ spec:
               replacePrefixMatch: /get
         - type: ResponseHeaderModifier
           responseHeaderModifier:
-            add:
+            set:
               - name: custom-response-header
                 value: myvalue
             remove:
               - access-control-allow-credentials
         - type: RequestHeaderModifier
           requestHeaderModifier:
-            add:
+            set:
               - name: custom-request-header
                 value: myvalue
             set:
