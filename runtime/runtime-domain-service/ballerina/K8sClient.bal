@@ -270,6 +270,21 @@ public isolated function getHttproutesForAPIS(string apiName, string apiVersion,
     return k8sApiServerEp->get(endpoint, targetType = model:HttprouteList);
 }
 
+isolated function deployRateLimitPolicyCR(model:RateLimitPolicy rateLimitPolicy, string namespace) returns http:Response|http:ClientError {
+    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/ratelimitpolicies";
+    return k8sApiServerEp->post(endpoint, rateLimitPolicy, targetType = http:Response);
+}
+
+isolated function deleteRateLimitPolicyCR(string name, string namespace) returns http:Response|http:ClientError {
+    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/ratelimitpolicies" + name;
+    return k8sApiServerEp->delete(endpoint, targetType = http:Response);
+}
+
+isolated function getRateLimitPolicyCRsForAPI(string apiName, string apiVersion, string namespace) returns model:RateLimitPolicyList|http:ClientError|error {
+    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/ratelimitpolicies?labelSelector=" + check generateUrlEncodedLabelSelector(apiName, apiVersion);
+    return k8sApiServerEp->get(endpoint, targetType = model:RateLimitPolicyList);
+}
+
 public function retrieveAllOrganizations(string? continueToken) returns model:OrganizationList|http:ClientError {
     string? continueTokenValue = continueToken;
     string endpoint = "/apis/cp.wso2.com/v1alpha1/namespaces/" + currentNameSpace + "/organizations";
