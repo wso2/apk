@@ -397,7 +397,6 @@ public class APIClient {
             if endpointConfig is record {} {
                 createdEndpoints = check self.createAndAddBackendServics(apiArtifact, api, endpointConfig, (), (), organization);
             }
-            self.generateAndSetRateLimitPolicy(apiArtifact, api.apiRateLimit, api.operations);
             _ = check self.setHttpRoute(apiArtifact, api, createdEndpoints.hasKey(PRODUCTION_TYPE) ? createdEndpoints.get(PRODUCTION_TYPE) : (), uniqueId, PRODUCTION_TYPE, organization);
             _ = check self.setHttpRoute(apiArtifact, api, createdEndpoints.hasKey(SANDBOX_TYPE) ? createdEndpoints.get(SANDBOX_TYPE) : (), uniqueId, SANDBOX_TYPE, organization);
             json generatedSwagger = check self.retrieveGeneratedSwaggerDefinition(api, definition);
@@ -1195,12 +1194,25 @@ public class APIClient {
                             (<model:HTTPRouteFilter[]>filters).push(scopeFilter);
                         }
                     }
+                    if self.rateLimitPolicyExists(api.apiRateLimit, operation.operationRateLimit) {
+                        model:RateLimitPolicy? rateLimitPolicyCR = self.generateRateLimitPolicyCR(apiArtifact, api.apiRateLimit, operation.operationRateLimit);
+                        if rateLimitPolicyCR != () {
+                            apiArtifact.rateLimitPolicies[rateLimitPolicyCR.metadata.name] = rateLimitPolicyCR;
+                            model:HTTPRouteFilter rateLimitPolicyFilter = {'type: "ExtensionRef", extensionRef: {group: "dp.wso2.com", kind: "RateLimitPolicy", name: rateLimitPolicyCR.metadata.name}};
+                            (<model:HTTPRouteFilter[]>filters).push(rateLimitPolicyFilter);
+                        }
+                    }
                     httpRouteRules.push(httpRouteRule);
                 }
             }
         }
         return httpRouteRules;
     }
+
+    private isolated function rateLimitPolicyExists(APIRateLimit? apiRateLimit, APIRateLimit? operationRateLimit) returns boolean {
+        return apiRateLimit != () || operationRateLimit != ();
+    }
+
     private isolated function generateScopeCR(model:APIArtifact apiArtifact, API api, commons:Organization organization, string scope) returns model:Scope {
         string scopeName = uuid:createType1AsString();
         model:Scope scopeCr = {
@@ -1801,11 +1813,11 @@ public class APIClient {
         return backendService;
     }
 
-    isolated function generateAndSetRateLimitPolicy(model:APIArtifact apiArtifact, APIRateLimit? apiRateLimit, APIOperations[]? operations) {
+    isolated function generateRateLimitPolicyCR(model:APIArtifact apiArtifact, APIRateLimit? apiRateLimit, APIRateLimit? operationRateLimit) returns model:RateLimitPolicy? {
         string nameSpace = getNameSpace(runtimeConfiguration.apiCreationNamespace);
-        model:RateLimitPolicy[] rateLimitPolicies = [];
+        model:RateLimitPolicy? rateLimitPolicyCR = ();
         if (apiRateLimit != ()) {
-            model:RateLimitPolicy rateLimitPolicy = {
+            rateLimitPolicyCR = {
                 metadata: {
                     name: uuid:createType1AsString(),
                     namespace: nameSpace
@@ -1820,33 +1832,26 @@ public class APIClient {
                     }
                 }
             };
-            rateLimitPolicies.push(rateLimitPolicy);
         } else {
-            if (operations is APIOperations[]) {
-                foreach APIOperations operation in operations {
-                    APIRateLimit? operationRateLimit = operation.operationRateLimit;
-                    if (operationRateLimit is APIRateLimit) {
-                        model:RateLimitPolicy rateLimitPolicy = {
-                            metadata: {
-                                name: uuid:createType1AsString(),
-                                namespace: nameSpace
-                            },
-                            spec: {
-                                default: self.retrieveRateLimitData(operationRateLimit),
-                                targetRef: {
-                                    group: "",
-                                    kind: "Resource",
-                                    name: uuid:createType1AsString(),
-                                    namespace: nameSpace
-                                }
-                            }
-                        };
-                        rateLimitPolicies.push(rateLimitPolicy);
+            if (operationRateLimit != ()) {
+                rateLimitPolicyCR = {
+                    metadata: {
+                        name: uuid:createType1AsString(),
+                        namespace: nameSpace
+                    },
+                    spec: {
+                        default: self.retrieveRateLimitData(operationRateLimit),
+                        targetRef: {
+                            group: "",
+                            kind: "Resource",
+                            name: uuid:createType1AsString(),
+                            namespace: nameSpace
+                        }
                     }
-                }
+                };
             }
         }
-        apiArtifact.rateLimitPolicies = rateLimitPolicies;
+        return rateLimitPolicyCR;
     }
 
     isolated function retrieveRateLimitData(APIRateLimit rateLimit) returns model:RateLimitData {
