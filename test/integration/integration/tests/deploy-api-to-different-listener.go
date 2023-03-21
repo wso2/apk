@@ -36,7 +36,8 @@ var APIDifferentListener = suite.IntegrationTest{
 	Manifests:   []string{"tests/api-different-listener.yaml"},
 	Test: func(t *testing.T, suite *suite.IntegrationTestSuite) {
 		ns := "gateway-integration-test-infra"
-		gwAddr := kubernetes.WaitForAPIListenerAddress(t, suite.Client, suite.TimeoutConfig)
+		apiAddr := kubernetes.WaitForAPIListenerAddress(t, suite.Client, suite.TimeoutConfig)
+		gwAddr := kubernetes.WaitForGatewayAddress(t, suite.Client, suite.TimeoutConfig)
 		token := http.GetTestToken(t, gwAddr)
 
 		testCases := []http.ExpectedResponse{
@@ -61,8 +62,28 @@ var APIDifferentListener = suite.IntegrationTest{
 				Response: http.Response{StatusCode: 404},
 			},
 		}
+
+		negativeTestCases := []http.ExpectedResponse{
+			{
+				Request: http.Request{
+					Host: "diff-listner-api.test.api.am.wso2.com",
+					Path: "/test-api-with-different-listener/v1.0.0/user/user123/playlist/watch-later",
+				},
+				Response:  http.Response{StatusCode: 404},
+				Backend:   "infra-backend-v1",
+				Namespace: ns,
+			},
+		}
 		for i := range testCases {
 			tc := testCases[i]
+			tc.Request.Headers = http.AddBearerTokenToHeader(token, tc.Request.Headers)
+			t.Run(tc.GetTestCaseName(i), func(t *testing.T) {
+				t.Parallel()
+				http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, apiAddr, tc)
+			})
+		}
+		for i := range negativeTestCases {
+			tc := negativeTestCases[i]
 			tc.Request.Headers = http.AddBearerTokenToHeader(token, tc.Request.Headers)
 			t.Run(tc.GetTestCaseName(i), func(t *testing.T) {
 				t.Parallel()

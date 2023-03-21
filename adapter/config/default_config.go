@@ -33,12 +33,6 @@ var defaultConfig = &Config{
 			TokenTTL:            "1h",
 			TokenPrivateKeyPath: "/home/wso2/security/keystore/mg.key",
 		},
-		VhostMapping: []vhostMapping{
-			{
-				Environment: "default",
-				Vhost:       "localhost",
-			},
-		},
 		Consul: consul{
 			Enabled:            false,
 			URL:                "https://169.254.1.1:8501",

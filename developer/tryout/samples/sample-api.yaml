@@ -83,7 +83,6 @@ spec:
       kind: Gateway
       name: default
       sectionName: gatewaylistener
-      port: 9095
   rules:
     - backendRefs:
         - group: dp.wso2.com
@@ -117,8 +116,7 @@ spec:
     - group: gateway.networking.k8s.io
       kind: Gateway
       name: default
-      sectionName: httpslistener
-      port: 9095
+      sectionName: gatewaylistener
   rules:
     - backendRefs:
       - group: dp.wso2.com
