@@ -32,7 +32,7 @@ When you add a new logger instance add the related package name as a constant
 
 // package name constants
 const (
-	pkgAPKOperator             = "github.com/wso2/apk/adapter/pkg/operator"
+	pkgAPKOperator             = "github.com/wso2/apk/adapter/internal/operator"
 	pkgEnforcerXdsCallbacks    = "github.com/wso2/apk/adapter/internal/discovery/xds/enforcercallbacks"
 	pkgRouterXdsCallbacks      = "github.com/wso2/apk/adapter/internal/discovery/xds/routercallbacks"
 	pkgGrpcClient              = "github.com/wso2/apk/adapter/internal/grpc-client"

@@ -9,7 +9,7 @@ import (
 
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/loggers"
-	"github.com/wso2/apk/adapter/pkg/operator/constants"
+	"github.com/wso2/apk/adapter/internal/operator/constants"
 	"github.com/wso2/apk/adapter/pkg/utils/tlsutils"
 )
 

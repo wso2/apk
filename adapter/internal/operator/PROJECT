@@ -3,7 +3,7 @@ layout:
 - go.kubebuilder.io/v4-alpha
 multigroup: true
 projectName: operator
-repo: github.com/wso2/apk/adapter/pkg/operator
+repo: github.com/wso2/apk/adapter/internal/operator
 resources:
 - api:
     crdVersion: v1
@@ -12,7 +12,7 @@ resources:
   domain: wso2.com
   group: dp
   kind: API
-  path: github.com/wso2/apk/adapter/pkg/operator/apis/dp/v1alpha1
+  path: github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1
   version: v1alpha1
   webhooks:
     defaulting: true
@@ -25,7 +25,7 @@ resources:
   domain: wso2.com
   group: cp
   kind: Application
-  path: github.com/wso2/apk/adapter/pkg/operator/apis/cp/v1alpha1
+  path: github.com/wso2/apk/adapter/internal/operator/apis/cp/v1alpha1
   version: v1alpha1
 - api:
     crdVersion: v1
@@ -34,7 +34,7 @@ resources:
   domain: wso2.com
   group: dp
   kind: Authentication
-  path: github.com/wso2/apk/adapter/pkg/operator/apis/dp/v1alpha1
+  path: github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1
   version: v1alpha1
 - api:
     crdVersion: v1
@@ -43,7 +43,7 @@ resources:
   domain: wso2.com
   group: dp
   kind: APIPolicy
-  path: github.com/wso2/apk/adapter/pkg/operator/apis/dp/v1alpha1
+  path: github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1
   version: v1alpha1
   webhooks:
     defaulting: true
@@ -56,7 +56,7 @@ resources:
   domain: wso2.com
   group: cp
   kind: Subscription
-  path: github.com/wso2/apk/adapter/pkg/operator/apis/cp/v1alpha1
+  path: github.com/wso2/apk/adapter/internal/operator/apis/cp/v1alpha1
   version: v1alpha1
 - api:
     crdVersion: v1
@@ -65,7 +65,7 @@ resources:
   domain: wso2.com
   group: dp
   kind: Scope
-  path: github.com/wso2/apk/adapter/pkg/operator/apis/dp/v1alpha1
+  path: github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1
   version: v1alpha1
 - api:
     crdVersion: v1
@@ -73,7 +73,7 @@ resources:
   domain: wso2.com
   group: dp
   kind: Backend
-  path: github.com/wso2/apk/adapter/pkg/operator/apis/dp/v1alpha1
+  path: github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1
   version: v1alpha1
 - api:
     crdVersion: v1
@@ -82,7 +82,7 @@ resources:
   domain: wso2.com
   group: dp
   kind: RateLimitPolicy
-  path: github.com/wso2/apk/adapter/pkg/operator/apis/dp/v1alpha1
+  path: github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1
   version: v1alpha1
   webhooks:
     defaulting: true

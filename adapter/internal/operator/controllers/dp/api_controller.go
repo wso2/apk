@@ -23,11 +23,11 @@ import (
 
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/loggers"
+	"github.com/wso2/apk/adapter/internal/operator/constants"
+	"github.com/wso2/apk/adapter/internal/operator/status"
+	"github.com/wso2/apk/adapter/internal/operator/synchronizer"
+	"github.com/wso2/apk/adapter/internal/operator/utils"
 	"github.com/wso2/apk/adapter/pkg/logging"
-	"github.com/wso2/apk/adapter/pkg/operator/constants"
-	"github.com/wso2/apk/adapter/pkg/operator/status"
-	"github.com/wso2/apk/adapter/pkg/operator/synchronizer"
-	"github.com/wso2/apk/adapter/pkg/operator/utils"
 	"golang.org/x/exp/maps"
 	k8error "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/fields"
@@ -43,7 +43,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	k8client "sigs.k8s.io/controller-runtime/pkg/client"
 
-	dpv1alpha1 "github.com/wso2/apk/adapter/pkg/operator/apis/dp/v1alpha1"
+	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )

@@ -32,10 +32,10 @@ import (
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/loggers"
 	model "github.com/wso2/apk/adapter/internal/oasparser/model"
+	"github.com/wso2/apk/adapter/internal/operator/constants"
+	"github.com/wso2/apk/adapter/internal/operator/services/runtime"
 	apiProtos "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/apkmgt"
 	"github.com/wso2/apk/adapter/pkg/logging"
-	"github.com/wso2/apk/adapter/pkg/operator/constants"
-	"github.com/wso2/apk/adapter/pkg/operator/services/runtime"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 

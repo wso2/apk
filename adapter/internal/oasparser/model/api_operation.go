@@ -32,8 +32,8 @@ import (
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/interceptor"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
+	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/api"
-	dpv1alpha1 "github.com/wso2/apk/adapter/pkg/operator/apis/dp/v1alpha1"
 )
 
 // Operation type object holds data about each http method in the REST API.
