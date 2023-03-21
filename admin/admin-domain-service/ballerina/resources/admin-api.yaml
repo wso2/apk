@@ -3873,6 +3873,10 @@ components:
           type: array
           items:
             type: string
+        vhosts:
+          type: array
+          items:
+            type: string
     OrganizationList:
       title: Organization List
       type: object
