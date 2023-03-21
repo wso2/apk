@@ -428,7 +428,7 @@ func TestGenerateSubstitutionString(t *testing.T) {
 }
 
 func TestCreateUpstreamTLSContext(t *testing.T) {
-	certFilePath := config.GetMgwHome() + "/test-resources/envoycodegen/certs/testcrt.crt"
+	certFilePath := config.GetMgwHome() + "/test-resources/testcrt.crt"
 	certByteArr, err := ioutil.ReadFile(certFilePath)
 	assert.Nil(t, err, "Error while reading the certificate : "+certFilePath)
 	defaultMgwKeyPath := "/home/wso2/security/keystore/mg.key"
