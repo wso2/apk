@@ -186,7 +186,7 @@ spec:
                         type: object
                         properties:
                           requestsPerUnit:
-                            type: int
+                            type: integer
                           unit:
                             type: string
                 serviceInfo:
