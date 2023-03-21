@@ -47,7 +47,7 @@ func init() {
 func getBackOfficeURL() string {
 	conf := config.ReadConfigs()
 	logger.LoggerMGTServer.Infof("backoffice service: https://%s:%d%s", conf.BackOffice.Host, conf.BackOffice.Port, conf.BackOffice.ServiceBasePath)
-	return fmt.Sprintf("http://%s:%d%s", conf.BackOffice.Host, conf.BackOffice.Port, conf.BackOffice.ServiceBasePath)
+	return fmt.Sprintf("https://%s:%d%s", conf.BackOffice.Host, conf.BackOffice.Port, conf.BackOffice.ServiceBasePath)
 }
 
 func composeRequestBody(api *apiProtos.API) requestData {

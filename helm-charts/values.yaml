@@ -71,8 +71,8 @@ wso2:
             failureThreshold: 5
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: IfNotPresent
-          image: devportal-domain-service:0.0.1-SNAPSHOT
+          imagePullPolicy: Always
+          image: wso2/devportal-domain-service:latest
       admin:
         appName: "admin-ds"
         deployment:
@@ -98,8 +98,8 @@ wso2:
             failureThreshold: 5
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: IfNotPresent
-          image: admin-domain-service:0.0.1-SNAPSHOT
+          imagePullPolicy: Always
+          image: wso2/admin-domain-service:latest
       backoffice:
         appName: "backoffice-ds"
         deployment:
@@ -125,8 +125,8 @@ wso2:
             failureThreshold: 5
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: IfNotPresent
-          image: backoffice-domain-service:0.0.1-SNAPSHOT
+          imagePullPolicy: Always
+          image: wso2/backoffice-domain-service:latest
       devportalUI:
         appName: "devportal-ui"
         deployment:
@@ -168,8 +168,8 @@ wso2:
               cpu: "1000m"
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: IfNotPresent
-          image: management-server:0.0.1-SNAPSHOT
+          imagePullPolicy: Always
+          image: wso2/management-server:latest
           readinessProbe:
             initialDelaySeconds: 20
             periodSeconds: 20
@@ -238,8 +238,8 @@ wso2:
             failureThreshold: 5
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: IfNotPresent
-          image: runtime-domain-service:0.0.1-SNAPSHOT
+          imagePullPolicy: Always
+          image: wso2/runtime-domain-service:latest
         # configs:
         #   tls:
         #     certificatesSecret: "my-secret"
@@ -266,8 +266,8 @@ wso2:
             failureThreshold: 5
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: IfNotPresent
-          image: adapter:0.0.1-SNAPSHOT
+          imagePullPolicy: Always
+          image: wso2/adapter:latest
           security:
             sslHostname: "adapter"
         # configs:

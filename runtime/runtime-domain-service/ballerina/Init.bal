@@ -103,15 +103,16 @@ function init() returns error? {
 
 public function deRegisterep() returns error? {
     _ = check ep0.gracefulStop();
+    _ = check ep1.gracefulStop();
 }
 
 function startAndAttachServices() returns error? {
     check ep0.attach(healthService, "/");
     check ep0.attach(runtimeService, "/api/am/runtime");
     check ep0.'start();
+    runtime:registerListener(ep0);
     check ep1.attach(internalRuntimeService, "/api/am/internal/runtime");
     check ep1.'start();
     runtime:registerListener(ep1);
-    runtime:registerListener(ep0);
     runtime:onGracefulStop(deRegisterep);
 }
