@@ -32,8 +32,8 @@ package model
 // 	}
 // }
 
-// // SetInfoGraphQLAPI populates the MgwSwagger object with information in api.yaml.
-// func (swagger *MgwSwagger) SetInfoGraphQLAPI(apiYaml APIYaml) error {
+// // SetInfoGraphQLAPI populates the AdapterInternalAPI object with information in api.yaml.
+// func (swagger *AdapterInternalAPI) SetInfoGraphQLAPI(apiYaml APIYaml) error {
 
 // 	var securitySchemes []SecurityScheme
 // 	var isAPIKeyEnabled bool

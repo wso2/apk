@@ -27,12 +27,12 @@ package model
 // 	"github.com/wso2/apk/adapter/internal/oasparser/utils"
 // )
 
-// // TestSetInfoAsyncAPI for mgwSwagger.SetInfoAsyncAPI(asyncapi)
+// // TestSetInfoAsyncAPI for adapterInternalAPI.SetInfoAsyncAPI(asyncapi)
 // func TestSetInfoAsyncAPI(t *testing.T) {
 
 // 	type setInfoAsyncAPITestItem struct {
-// 		actual   MgwSwagger
-// 		expected MgwSwagger
+// 		actual   AdapterInternalAPI
+// 		expected AdapterInternalAPI
 // 	}
 
 // 	asyncapiFilePath := config.GetMgwHome() + "/test-resources/envoycodegen/asyncapi_websocket.yaml"
@@ -44,13 +44,13 @@ package model
 // 	var asyncapi AsyncAPI
 // 	err = json.Unmarshal(apiJsn, &asyncapi)
 // 	assert.Nil(t, err, "Error occurred while parsing api.yaml")
-// 	var mgwSwagger MgwSwagger
-// 	err = mgwSwagger.SetInfoAsyncAPI(asyncapi)
-// 	assert.Nil(t, err, "Error while populating the MgwSwagger object for websocket APIs")
+// 	var adapterInternalAPI AdapterInternalAPI
+// 	err = adapterInternalAPI.SetInfoAsyncAPI(asyncapi)
+// 	assert.Nil(t, err, "Error while populating the AdapterInternalAPI object for websocket APIs")
 
 // 	dataItem := setInfoAsyncAPITestItem{
-// 		actual: mgwSwagger,
-// 		expected: MgwSwagger{
+// 		actual: adapterInternalAPI,
+// 		expected: AdapterInternalAPI{
 // 			title:   "WebSocket",
 // 			version: "1",
 // 			productionEndpoints: &EndpointCluster{
@@ -92,25 +92,25 @@ package model
 // 		},
 // 	}
 
-// 	assert.Nil(t, err, "Error while populating the mgwSwagger object for asyncAPIs")
+// 	assert.Nil(t, err, "Error while populating the adapterInternalAPI object for asyncAPIs")
 
 // 	assert.Equal(t, dataItem.expected.productionEndpoints.Endpoints[0],
-// 		dataItem.actual.productionEndpoints.Endpoints[0], "AsyncAPI MgwSwagger productionEndpoints mismatch")
-// 	assert.Nil(t, dataItem.actual.sandboxEndpoints, "AsyncAPI MgwSwagger sandboxEndpoints not nil")
+// 		dataItem.actual.productionEndpoints.Endpoints[0], "AsyncAPI AdapterInternalAPI productionEndpoints mismatch")
+// 	assert.Nil(t, dataItem.actual.sandboxEndpoints, "AsyncAPI AdapterInternalAPI sandboxEndpoints not nil")
 
 // 	assert.Equal(t, dataItem.expected.resources[0].path,
-// 		dataItem.actual.resources[0].path, "AsyncAPI MgwSwagger /notifications path mismatch")
+// 		dataItem.actual.resources[0].path, "AsyncAPI AdapterInternalAPI /notifications path mismatch")
 // 	assert.Equal(t, dataItem.expected.resources[1].path,
-// 		dataItem.actual.resources[1].path, "AsyncAPI MgwSwagger /rooms/{roomID} path mismatch")
+// 		dataItem.actual.resources[1].path, "AsyncAPI AdapterInternalAPI /rooms/{roomID} path mismatch")
 
 // 	assert.Equal(t, dataItem.expected.resources[0].methods[0].method,
 // 		dataItem.actual.resources[0].methods[0].method,
-// 		"AsyncAPI MgwSwagger resource method mismatch")
+// 		"AsyncAPI AdapterInternalAPI resource method mismatch")
 
 // 	assert.Equal(t, dataItem.expected.resources[0].methods[0].security[0]["oauth2"],
 // 		dataItem.actual.resources[0].methods[0].security[0]["oauth2"],
-// 		"AsyncAPI MgwSwagger publish security scope mismatch")
+// 		"AsyncAPI AdapterInternalAPI publish security scope mismatch")
 
 // 	assert.Equal(t, len(dataItem.expected.resources[0].methods), 1,
-// 		"AsyncAPI MgwSwagger resource has more that one method")
+// 		"AsyncAPI AdapterInternalAPI resource has more that one method")
 // }

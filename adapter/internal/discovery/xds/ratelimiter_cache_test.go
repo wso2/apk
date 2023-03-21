@@ -22,7 +22,7 @@ import (
 
 	rls_config "github.com/envoyproxy/go-control-plane/ratelimit/config/ratelimit/v3"
 	"github.com/stretchr/testify/assert"
-	mgw "github.com/wso2/apk/adapter/internal/oasparser/model"
+	"github.com/wso2/apk/adapter/internal/oasparser/model"
 )
 
 func TestAddDeleteAPILevelRateLimitPolicies(t *testing.T) {
@@ -33,13 +33,13 @@ func TestAddDeleteAPILevelRateLimitPolicies(t *testing.T) {
 //todo(amali) add api with both api and operation level rate limiting
 
 func testAddAPILevelRateLimitPolicies(t *testing.T) {
-	p5000PerMin := &mgw.RateLimitPolicy{Count: 5000, SpanUnit: "MINUTE"}
-	p2000PerMin := &mgw.RateLimitPolicy{Count: 2000, SpanUnit: "MINUTE"}
-	p100000PerHOUR := &mgw.RateLimitPolicy{Count: 100000, SpanUnit: "HOUR"}
+	p5000PerMin := &model.RateLimitPolicy{Count: 5000, SpanUnit: "MINUTE"}
+	p2000PerMin := &model.RateLimitPolicy{Count: 2000, SpanUnit: "MINUTE"}
+	p100000PerHOUR := &model.RateLimitPolicy{Count: 100000, SpanUnit: "HOUR"}
 
 	tests := []struct {
 		desc                      string
-		mgwSwagger                *mgw.MgwSwagger
+		mgwSwagger                *model.AdapterInternalAPI
 		apiLevelRateLimitPolicies map[string]map[string]map[string][]*rls_config.RateLimitDescriptor
 	}{
 		{
@@ -451,21 +451,22 @@ func TestGenerateRateLimitConfig(t *testing.T) {
 	}
 }
 
-func getDummyAPISwagger(apiID string, apiPolicy, res1GetPolicy, res1PostPolicy, res2GetPolicy, res2PostPolicy *mgw.RateLimitPolicy) *mgw.MgwSwagger {
+func getDummyAPISwagger(apiID string, apiPolicy, res1GetPolicy, res1PostPolicy, res2GetPolicy,
+	res2PostPolicy *model.RateLimitPolicy) *model.AdapterInternalAPI {
 
-	res1GetOp := mgw.NewOperation("GET", nil, nil)
+	res1GetOp := model.NewOperation("GET", nil, nil)
 	res1GetOp.RateLimitPolicy = res1GetPolicy
-	res1PostOp := mgw.NewOperation("POST", nil, nil)
+	res1PostOp := model.NewOperation("POST", nil, nil)
 	res1PostOp.RateLimitPolicy = res1PostPolicy
-	res2GetOp := mgw.NewOperation("GET", nil, nil)
+	res2GetOp := model.NewOperation("GET", nil, nil)
 	res2GetOp.RateLimitPolicy = res2GetPolicy
-	res2PostOp := mgw.NewOperation("POST", nil, nil)
+	res2PostOp := model.NewOperation("POST", nil, nil)
 	res2PostOp.RateLimitPolicy = res2PostPolicy
 
-	res1 := mgw.CreateMinimalDummyResourceForTests("/res1", []*mgw.Operation{res1GetOp, res1PostOp}, "id1", nil, false)
-	res2 := mgw.CreateMinimalDummyResourceForTests("/res2", []*mgw.Operation{res2GetOp, res2PostOp}, "id2", nil, false)
+	res1 := model.CreateMinimalDummyResourceForTests("/res1", []*model.Operation{res1GetOp, res1PostOp}, "id1", nil, false)
+	res2 := model.CreateMinimalDummyResourceForTests("/res2", []*model.Operation{res2GetOp, res2PostOp}, "id2", nil, false)
 
-	mgwSwagger := mgw.CreateDummyMgwSwaggerForTests(fmt.Sprintf("API-%s", apiID), "v1.0.0", fmt.Sprintf("/base-path-%s", apiID), []*mgw.Resource{
+	mgwSwagger := model.CreateDummyMgwSwaggerForTests(fmt.Sprintf("API-%s", apiID), "v1.0.0", fmt.Sprintf("/base-path-%s", apiID), []*model.Resource{
 		&res1, &res2,
 	})
 	mgwSwagger.UUID = apiID

@@ -91,7 +91,7 @@ type PolicyDefinition struct {
 
 // GetFormattedOperationalPolicies returns formatted, policy from a user templated policy
 // here, the struct swagger is only used for logging purpose, in case if we introduce logger context to get org ID, API ID, we can remove it from here
-func (p PolicyContainerMap) GetFormattedOperationalPolicies(policies OperationPolicies, swagger *MgwSwagger) (OperationPolicies, error) {
+func (p PolicyContainerMap) GetFormattedOperationalPolicies(policies OperationPolicies, swagger *AdapterInternalAPI) (OperationPolicies, error) {
 	fmtPolicies := OperationPolicies{}
 
 	for _, policy := range policies.Request {
@@ -128,7 +128,7 @@ func (p PolicyContainerMap) GetFormattedOperationalPolicies(policies OperationPo
 }
 
 // getFormattedPolicyFromTemplated returns formatted, policy from a user templated policy
-func (p PolicyContainerMap) getFormattedPolicyFromTemplated(policy Policy, flow PolicyFlow, swagger *MgwSwagger) (Policy, error) {
+func (p PolicyContainerMap) getFormattedPolicyFromTemplated(policy Policy, flow PolicyFlow, swagger *AdapterInternalAPI) (Policy, error) {
 	policyFullName := policy.GetFullName()
 	spec := p[policyFullName].Specification
 	if err := spec.validatePolicy(policy, flow); err != nil {

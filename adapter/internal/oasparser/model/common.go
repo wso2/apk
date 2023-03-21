@@ -18,7 +18,7 @@
 package model
 
 // This file contains util methods either common for operation/resource/base levels
-// Or common to swagger/OpenAPI/AsyncAPI when populating the mgwSwagger object
+// Or common to swagger/OpenAPI/AsyncAPI when populating the adapterInternalAPI object
 
 import (
 	"errors"

@@ -230,12 +230,12 @@ var Mapper = map[int]ErrorDetails{
 	},
 	error2631: {
 		ErrorCode: error2631,
-		Message:   "Error setting HttpRoute CR info to mgwSwagger. %v",
+		Message:   "Error setting HttpRoute CR info to adapterInternalAPI. %v",
 		Severity:  MAJOR,
 	},
 	error2632: {
 		ErrorCode: error2632,
-		Message:   "Error validating mgwSwagger intermediate representation. %v",
+		Message:   "Error validating adapterInternalAPI intermediate representation. %v",
 		Severity:  MAJOR,
 	},
 	error2633: {

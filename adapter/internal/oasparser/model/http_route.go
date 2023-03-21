@@ -43,9 +43,9 @@ type HTTPRouteParams struct {
 	ResourceRateLimitPolicies map[string]dpv1alpha1.RateLimitPolicy
 }
 
-// SetInfoHTTPRouteCR populates resources and endpoints of mgwSwagger. httpRoute.Spec.Rules.Matches
+// SetInfoHTTPRouteCR populates resources and endpoints of adapterInternalAPI. httpRoute.Spec.Rules.Matches
 // are used to create resources and httpRoute.Spec.Rules.BackendRefs are used to create EndpointClusters.
-func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, httpRouteParams HTTPRouteParams) error {
+func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, httpRouteParams HTTPRouteParams) error {
 	var resources []*Resource
 	var securitySchemes []SecurityScheme
 	//TODO(amali) add gateway level securities after gateway crd has implemented
@@ -507,8 +507,8 @@ func getAllowedOperations(httpMethod *gwapiv1b1.HTTPMethod, policies OperationPo
 			disableSecurity: disableSecurity, security: securities, RateLimitPolicy: ratelimitPolicy}}
 }
 
-// SetInfoAPICR populates ID, ApiType, Version and XWso2BasePath of mgwSwagger.
-func (swagger *MgwSwagger) SetInfoAPICR(api dpv1alpha1.API) {
+// SetInfoAPICR populates ID, ApiType, Version and XWso2BasePath of adapterInternalAPI.
+func (swagger *AdapterInternalAPI) SetInfoAPICR(api dpv1alpha1.API) {
 	swagger.UUID = string(api.ObjectMeta.UID)
 	swagger.title = api.Spec.APIDisplayName
 	swagger.apiType = api.Spec.APIType
