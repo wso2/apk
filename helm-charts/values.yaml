@@ -201,7 +201,7 @@ wso2:
         name: default
         listener:
           name: gatewaylistener
-          hostname: "*.gw.wso2.com"
+          hostname: "gw.wso2.com"
           port: 9095
           protocol: HTTPS
       # controlPlane:
