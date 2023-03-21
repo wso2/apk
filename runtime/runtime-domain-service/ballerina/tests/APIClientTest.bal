@@ -2372,7 +2372,7 @@ function getMockHttpRoute(API api, string apiUUID, commons:Organization organizt
                     ]
                 }
             ],
-            "parentRefs": [{"group": "gateway.networking.k8s.io", "kind": "Gateway", "name": "Default"}]
+            "parentRefs": [{"group": "gateway.networking.k8s.io", "kind": "Gateway", "name": "default","sectionName":"gatewaylistener"}]
         }
     };
 }
@@ -2563,7 +2563,8 @@ function getMockHttpRouteWithOperationPolicies1(API api, string apiUUID, commons
                 {
                     "group": "gateway.networking.k8s.io",
                     "kind": "Gateway",
-                    "name": "Default"
+                    "name": "default",
+                    "sectionName":"gatewaylistener"
                 }
             ]
         }
@@ -2836,7 +2837,8 @@ function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid
                 {
                     "group": "gateway.networking.k8s.io",
                     "kind": "Gateway",
-                    "name": "Default"
+                    "name": "default",
+                    "sectionName":"gatewaylistener"
                 }
             ]
         }
@@ -3026,7 +3028,8 @@ function getMockHttpRouteWithOperationPolicies(API api, string apiUUID, string b
                 {
                     "group": "gateway.networking.k8s.io",
                     "kind": "Gateway",
-                    "name": "Default"
+                    "name": "default",
+                    "sectionName":"gatewaylistener"
                 }
             ]
         }
@@ -3284,7 +3287,8 @@ function getMockHttpRouteWithAPIPolicies(API api, string apiUUID, string backend
                 {
                     "group": "gateway.networking.k8s.io",
                     "kind": "Gateway",
-                    "name": "Default"
+                    "name": "default",
+                    "sectionName": "gatewaylistener"
                 }
             ]
         }

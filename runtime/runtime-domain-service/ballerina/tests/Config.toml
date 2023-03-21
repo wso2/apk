@@ -10,6 +10,9 @@ keyFilePath = "./tests/resources/wso2carbon.key"
 certFilePath = "./tests/resources/wso2carbon.crt"
 [wso2.runtime_domain_service.runtimeConfiguration.idpConfiguration.publicKey]
 certFilePath = "./tests/resources/wso2carbon.crt"
+[wso2.runtime_domain_service.runtimeConfiguration.gatewayConfiguration]
+name = "default"
+listenerName = "gatewaylistener"
 
 [ballerina.http]
 traceLogConsole = true

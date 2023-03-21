@@ -383,7 +383,12 @@ func GetTestToken(t *testing.T, gwAddr string, scopes ...string) string {
 	}
 	resp, err := client.Do(req)
 	if err != nil {
-		t.Fatalf("failed to get token: %v", err)
+		t.Logf("failed to get token: %v retrying after 100s ...", err)
+		time.Sleep(100 * time.Second)
+		resp, err = client.Do(req)
+		if err != nil {
+			t.Fatalf("failed to get token: %v", err)
+		}
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {

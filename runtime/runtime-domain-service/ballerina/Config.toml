@@ -12,6 +12,9 @@ certFilePath = "/media/tharindud/dev/satoken/mg.pem"
 serviceBaseURl = "https://api.am.wso2.com:9095/api/am/internal/v1"
 [wso2.runtime_domain_service.runtimeConfiguration.controlPlane.certificate]
 certFilePath = "/media/tharindud/dev/satoken/router.pem"
+[wso2.runtime_domain_service.runtimeConfiguration.gatewayConfiguration]
+name = "default"
+listenerName = "gatewaylistener"
 
 [ballerina.http]
 traceLogConsole = true

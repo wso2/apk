@@ -35,6 +35,9 @@ data:
     certFilePath = "/home/wso2apk/runtime/security/runtime.pem"
     [wso2.runtime_domain_service.runtimeConfiguration.keyStores.signing]
     keyFilePath = "/home/wso2apk/runtime/security/wso2carbon.key"
+    [wso2.runtime_domain_service.runtimeConfiguration.gatewayConfiguration]
+    name = "{{ .Values.wso2.apk.dp.gateway.name }}"
+    listenerName = "{{ .Values.wso2.apk.dp.gateway.listener.name}}"
     {{  if .Values.wso2.apk.dp.controlPlane }}
     [wso2.runtime_domain_service.runtimeConfiguration.controlPlane]
     serviceBaseURl = "{{ .Values.wso2.apk.dp.controlPlane.serviceUrl | default (printf "http://%s-admin-ds-service:9444" (include "apk-helm.resource.prefix" .)) }}"
