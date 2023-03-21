@@ -54,7 +54,7 @@ ADD runtime ${USER_HOME}/runtime
 COPY docker-entrypoint.sh ${USER_HOME}
 RUN chown -R ${USER} ${USER_HOME}/runtime
 RUN chown ${USER} /home/${USER}/docker-entrypoint.sh
-EXPOSE 9443
+EXPOSE 9443 9444
 USER wso2apk
 WORKDIR ${USER_HOME}
 ENTRYPOINT ["sh", "/home/wso2apk/docker-entrypoint.sh"]
