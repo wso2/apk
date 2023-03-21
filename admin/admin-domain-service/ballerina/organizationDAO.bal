@@ -120,8 +120,14 @@ isolated function updateOrganizationDAO(string id, Internal_Organization payload
          DISPLAY_NAME = ${payload.displayName}, STATUS=${payload.enabled} WHERE UUID = ${id}`;
         sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
         if result is sql:ExecutionResult && result.affectedRowCount == 1 {
-                return updateOrganizationClaimMappingDAO(dbClient, id, payload);
-        } else { 
+            boolean isVhostAdded = updateVhostsDAO(dbClient, payload.id, payload);
+                if(isVhostAdded) {
+                    return updateOrganizationClaimMappingDAO(dbClient, id, payload);
+                } else {
+                    string message = "Error while updating vhosts data into Database";
+                    return error(message, message = message, description = message, code = 909000, statusCode = "500");
+                }
+            } else { 
             string message = "Error while updating organization data into Database";
             return error(message, message = message, description = message, code = 909000, statusCode = "500"); 
         }
@@ -146,6 +152,28 @@ isolated function updateOrganizationClaimMappingDAO(postgresql:Client dbClient, 
         }
     }
     return payload;
+}
+
+isolated function updateVhostsDAO (postgresql:Client dbClient, string id, Internal_Organization payload) returns boolean{
+    sql:ParameterizedQuery query = `DELETE FROM ORGANIZATION_VHOST WHERE UUID = ${id}`;
+    sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
+    if result is sql:ExecutionResult {
+        string[]? vhosts = payload.vhosts;
+        if (vhosts !is ()) {
+            foreach string e in vhosts {
+            sql:ParameterizedQuery query1 = `INSERT INTO ORGANIZATION_VHOST(UUID, VHOST) VALUES (${id},${e})`;
+            sql:ExecutionResult | sql:Error result1 =  dbClient->execute(query1);
+                if result1 is sql:ExecutionResult && result1.affectedRowCount == 1 {
+                    continue;    
+                } else { 
+                    return false;    
+                }
+            }
+            return true;
+        }
+        return true;
+    }
+    return false;
 }
 
 public isolated function getAllOrganizationDAO() returns Internal_Organization[]|APKError {
