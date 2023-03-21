@@ -27,12 +27,6 @@ const (
 )
 
 const (
-	extAuthzFilterName         string = "envoy.filters.http.ext_authz"
-	rateLimitFilterName        string = "envoy.filters.http.ratelimit"
-	luaFilterName              string = "envoy.filters.http.lua"
-	transportSocketName        string = "envoy.transport_sockets.tls"
-	fileAccessLogName          string = "envoy.access_loggers.file"
-	grpcAccessLogName          string = "envoy.http_grpc_access_log"
 	httpConManagerStartPrefix  string = "ingress_http"
 	extAuthzPerRouteName       string = "type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute"
 	luaPerRouteName            string = "type.googleapis.com/envoy.extensions.filters.http.lua.v3.LuaPerRoute"

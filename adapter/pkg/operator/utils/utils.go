@@ -29,7 +29,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/gateway-api/apis/v1beta1"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
@@ -54,7 +53,7 @@ func FilterByNamespaces(namespaces []string) func(object client.Object) bool {
 }
 
 // GetNamespace reads namespace with a default value
-func GetNamespace(namespace *v1beta1.Namespace, defaultNamespace string) string {
+func GetNamespace(namespace *gwapiv1b1.Namespace, defaultNamespace string) string {
 	if namespace != nil && *namespace != "" {
 		return string(*namespace)
 	}
@@ -68,19 +67,19 @@ func GetOperatorPodNamespace() string {
 }
 
 // GroupPtr returns pointer to created v1beta1.Group object
-func GroupPtr(name string) *v1beta1.Group {
-	group := v1beta1.Group(name)
+func GroupPtr(name string) *gwapiv1b1.Group {
+	group := gwapiv1b1.Group(name)
 	return &group
 }
 
 // KindPtr returns a pointer to created v1beta1.Kind object
-func KindPtr(name string) *v1beta1.Kind {
-	kind := v1beta1.Kind(name)
+func KindPtr(name string) *gwapiv1b1.Kind {
+	kind := gwapiv1b1.Kind(name)
 	return &kind
 }
 
 // PathMatchTypePtr returns a pointer to created v1beta1.PathMatchType object
-func PathMatchTypePtr(pType v1beta1.PathMatchType) *v1beta1.PathMatchType {
+func PathMatchTypePtr(pType gwapiv1b1.PathMatchType) *gwapiv1b1.PathMatchType {
 	return &pType
 }
 
@@ -122,17 +121,17 @@ func TieBreaker[T metav1.Object](k8sObjects []T) *T {
 
 // SelectPolicy selects the policy based on the policy override and default values
 func SelectPolicy[T any](policyUpOverride, policyUpDefault, policyDownOverride, policyDownDefault *T) *T {
-	if !reflect.ValueOf(*policyDownOverride).IsZero() {
-		return policyDownOverride
-	}
 	if !reflect.ValueOf(*policyUpOverride).IsZero() {
 		return policyUpOverride
 	}
-	if !reflect.ValueOf(*policyUpDefault).IsZero() {
-		return policyUpDefault
+	if !reflect.ValueOf(*policyDownOverride).IsZero() {
+		return policyDownOverride
 	}
 	if !reflect.ValueOf(*policyDownDefault).IsZero() {
 		return policyDownDefault
+	}
+	if !reflect.ValueOf(*policyUpDefault).IsZero() {
+		return policyUpDefault
 	}
 	return nil
 }

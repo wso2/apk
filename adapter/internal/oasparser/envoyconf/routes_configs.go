@@ -328,7 +328,7 @@ func generateMetadataMatcherForInternalRoutes(metadataValue string) (dynamicMeta
 		},
 	}
 	metadataMatcher := &envoy_type_matcherv3.MetadataMatcher{
-		Filter: extAuthzFilterName,
+		Filter: wellknown.HTTPExternalAuthorization,
 		Path:   []*envoy_type_matcherv3.MetadataMatcher_PathSegment{path},
 		Value: &envoy_type_matcherv3.ValueMatcher{
 			MatchPattern: &envoy_type_matcherv3.ValueMatcher_StringMatch{
@@ -352,7 +352,7 @@ func generateMetadataMatcherForExternalRoutes() (dynamicMetadata []*envoy_type_m
 		},
 	}
 	metadataMatcher := &envoy_type_matcherv3.MetadataMatcher{
-		Filter: extAuthzFilterName,
+		Filter: wellknown.HTTPExternalAuthorization,
 		Path:   []*envoy_type_matcherv3.MetadataMatcher_PathSegment{path},
 		Value: &envoy_type_matcherv3.ValueMatcher{
 			MatchPattern: &envoy_type_matcherv3.ValueMatcher_PresentMatch{

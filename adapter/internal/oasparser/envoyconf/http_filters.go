@@ -179,7 +179,7 @@ func getRateLimitFilter() *hcmv3.HttpFilter {
 		logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2241, err2.Error()))
 	}
 	rlFilter := hcmv3.HttpFilter{
-		Name: rateLimitFilterName,
+		Name: wellknown.HTTPRateLimit,
 		ConfigType: &hcmv3.HttpFilter_TypedConfig{
 			TypedConfig: ext,
 		},
@@ -221,7 +221,7 @@ func getExtAuthzHTTPFilter() *hcmv3.HttpFilter {
 		logger.LoggerOasparser.Error(err2)
 	}
 	extAuthzFilter := hcmv3.HttpFilter{
-		Name: extAuthzFilterName,
+		Name: wellknown.HTTPExternalAuthorization,
 		ConfigType: &hcmv3.HttpFilter_TypedConfig{
 			TypedConfig: ext,
 		},
@@ -246,7 +246,7 @@ func getLuaFilter() *hcmv3.HttpFilter {
 		logger.LoggerOasparser.Error(err2)
 	}
 	luaFilter := hcmv3.HttpFilter{
-		Name: luaFilterName,
+		Name: wellknown.Lua,
 		ConfigType: &hcmv3.HttpFilter_TypedConfig{
 			TypedConfig: ext,
 		},

@@ -41,12 +41,12 @@ spec:
                   api:
                     description: API policy
                     properties:
-                      count:
-                        description: Count is the number of requests allowed per unit
-                          time
+                      requestPerUnit:
+                        description: RequestPerUnit is the number of requests allowed
+                          per unit time
                         type: integer
-                      spanUnit:
-                        description: SpanUnit is the unit of the requestPerUnit
+                      unit:
+                        description: Unit is the unit of the requestPerUnit
                         enum:
                         - Minute
                         - Hour
@@ -68,12 +68,12 @@ spec:
                   api:
                     description: API policy
                     properties:
-                      count:
-                        description: Count is the number of requests allowed per unit
-                          time
+                      requestPerUnit:
+                        description: RequestPerUnit is the number of requests allowed
+                          per unit time
                         type: integer
-                      spanUnit:
-                        description: SpanUnit is the unit of the requestPerUnit
+                      unit:
+                        description: Unit is the unit of the requestPerUnit
                         enum:
                         - Minute
                         - Hour

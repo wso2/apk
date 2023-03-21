@@ -263,7 +263,7 @@ func CreateRateLimitCluster() (*clusterv3.Cluster, []*corev3.Address, error) {
 			},
 		},
 		TransportSocket: &corev3.TransportSocket{
-			Name: transportSocketName,
+			Name: wellknown.TransportSocketTLS,
 			ConfigType: &corev3.TransportSocket_TypedConfig{
 				TypedConfig: marshalledTLSContext,
 			},
@@ -361,7 +361,7 @@ func processEndpoints(clusterName string, clusterDetails *model.EndpointCluster,
 					},
 				},
 				TransportSocket: &corev3.TransportSocket{
-					Name: transportSocketName,
+					Name: wellknown.TransportSocketTLS,
 					ConfigType: &corev3.TransportSocket_TypedConfig{
 						TypedConfig: marshalledTLSContext,
 					},

@@ -269,10 +269,10 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, ht
 func parseRateLimitPolicyToInternal(ratelimitPolicy *dpv1alpha1.RateLimitPolicy) *RateLimitPolicy {
 	var rateLimitPolicyInternal *RateLimitPolicy
 	if ratelimitPolicy != nil {
-		if ratelimitPolicy.Spec.Override.API.Count > 0 {
+		if ratelimitPolicy.Spec.Override.API.RequestPerUnit > 0 {
 			rateLimitPolicyInternal = &RateLimitPolicy{
-				Count:    ratelimitPolicy.Spec.Override.API.Count,
-				SpanUnit: ratelimitPolicy.Spec.Override.API.SpanUnit,
+				Count:    ratelimitPolicy.Spec.Override.API.RequestPerUnit,
+				SpanUnit: ratelimitPolicy.Spec.Override.API.Unit,
 			}
 		}
 	}
@@ -349,6 +349,8 @@ func concatRateLimitPolicies(schemeUp *dpv1alpha1.RateLimitPolicy, schemeDown *d
 		finalRateLimit.Spec.Override = *utils.SelectPolicy(&schemeUp.Spec.Override, &schemeUp.Spec.Default, &schemeDown.Spec.Override, &schemeDown.Spec.Default)
 	} else if schemeUp != nil {
 		finalRateLimit.Spec.Override = *utils.SelectPolicy(&schemeUp.Spec.Override, &schemeUp.Spec.Default, nil, nil)
+	} else if schemeDown != nil {
+		finalRateLimit.Spec.Override = *utils.SelectPolicy(nil, nil, &schemeDown.Spec.Override, &schemeDown.Spec.Default)
 	}
 	return &finalRateLimit
 }

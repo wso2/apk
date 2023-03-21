@@ -74,12 +74,12 @@ func (r *RateLimitPolicy) ValidateDelete() error {
 func (r *RateLimitPolicy) ValidatePolicies() error {
 	var allErrs field.ErrorList
 
-	if r.Spec.Override.Type == "Api" && (r.Spec.Override.API.Count == 0 || r.Spec.Override.API.SpanUnit == "") {
+	if r.Spec.Override.Type == "Api" && (r.Spec.Override.API.RequestPerUnit == 0 || r.Spec.Override.API.Unit == "") {
 		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("override").Child("api"),
 			r.Spec.Override.Type, "Count and SpanUnit are required for Api type"))
 	}
 
-	if r.Spec.Default.Type == "Api" && (r.Spec.Default.API.Count == 0 || r.Spec.Default.API.SpanUnit == "") {
+	if r.Spec.Default.Type == "Api" && (r.Spec.Default.API.RequestPerUnit == 0 || r.Spec.Default.API.Unit == "") {
 		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("default").Child("api"),
 			r.Spec.Default.Type, "Count and SpanUnit are required for Api type"))
 	}

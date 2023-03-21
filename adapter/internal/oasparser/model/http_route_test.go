@@ -42,8 +42,8 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 				Override: dpv1alpha1.RateLimitAPIPolicy{
 					Type: "Api",
 					API: dpv1alpha1.APIRateLimit{
-						Count:    10,
-						SpanUnit: "Minute",
+						RequestPerUnit: 10,
+						Unit:           "Minute",
 					},
 				},
 			},
@@ -51,8 +51,8 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 				Override: dpv1alpha1.RateLimitAPIPolicy{
 					Type: "Api",
 					API: dpv1alpha1.APIRateLimit{
-						Count:    20,
-						SpanUnit: "Day",
+						RequestPerUnit: 20,
+						Unit:           "Day",
 					},
 				},
 			},
@@ -60,8 +60,8 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 				Override: dpv1alpha1.RateLimitAPIPolicy{
 					Type: "Api",
 					API: dpv1alpha1.APIRateLimit{
-						Count:    20,
-						SpanUnit: "Day",
+						RequestPerUnit: 10,
+						Unit:           "Minute",
 					},
 				},
 			},
@@ -72,8 +72,8 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 				Override: dpv1alpha1.RateLimitAPIPolicy{
 					Type: "Api",
 					API: dpv1alpha1.APIRateLimit{
-						Count:    10,
-						SpanUnit: "Minute",
+						RequestPerUnit: 10,
+						Unit:           "Minute",
 					},
 				},
 			},
@@ -81,8 +81,8 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 				Default: dpv1alpha1.RateLimitAPIPolicy{
 					Type: "Api",
 					API: dpv1alpha1.APIRateLimit{
-						Count:    20,
-						SpanUnit: "Day",
+						RequestPerUnit: 20,
+						Unit:           "Day",
 					},
 				},
 			},
@@ -90,8 +90,8 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 				Override: dpv1alpha1.RateLimitAPIPolicy{
 					Type: "Api",
 					API: dpv1alpha1.APIRateLimit{
-						Count:    10,
-						SpanUnit: "Minute",
+						RequestPerUnit: 10,
+						Unit:           "Minute",
 					},
 				},
 			},
@@ -102,8 +102,8 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 				Default: dpv1alpha1.RateLimitAPIPolicy{
 					Type: "Api",
 					API: dpv1alpha1.APIRateLimit{
-						Count:    10,
-						SpanUnit: "Minute",
+						RequestPerUnit: 10,
+						Unit:           "Minute",
 					},
 				},
 			},
@@ -111,8 +111,8 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 				Override: dpv1alpha1.RateLimitAPIPolicy{
 					Type: "Api",
 					API: dpv1alpha1.APIRateLimit{
-						Count:    20,
-						SpanUnit: "Day",
+						RequestPerUnit: 20,
+						Unit:           "Day",
 					},
 				},
 			},
@@ -120,8 +120,8 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 				Override: dpv1alpha1.RateLimitAPIPolicy{
 					Type: "Api",
 					API: dpv1alpha1.APIRateLimit{
-						Count:    20,
-						SpanUnit: "Day",
+						RequestPerUnit: 20,
+						Unit:           "Day",
 					},
 				},
 			},
@@ -132,8 +132,8 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 				Default: dpv1alpha1.RateLimitAPIPolicy{
 					Type: "Api",
 					API: dpv1alpha1.APIRateLimit{
-						Count:    10,
-						SpanUnit: "Minute",
+						RequestPerUnit: 10,
+						Unit:           "Minute",
 					},
 				},
 			},
@@ -141,8 +141,8 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 				Default: dpv1alpha1.RateLimitAPIPolicy{
 					Type: "Api",
 					API: dpv1alpha1.APIRateLimit{
-						Count:    20,
-						SpanUnit: "Day",
+						RequestPerUnit: 20,
+						Unit:           "Day",
 					},
 				},
 			},
@@ -150,8 +150,8 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 				Override: dpv1alpha1.RateLimitAPIPolicy{
 					Type: "Api",
 					API: dpv1alpha1.APIRateLimit{
-						Count:    10,
-						SpanUnit: "Minute",
+						RequestPerUnit: 20,
+						Unit:           "Day",
 					},
 				},
 			},
@@ -162,15 +162,15 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 				Default: dpv1alpha1.RateLimitAPIPolicy{
 					Type: "Api",
 					API: dpv1alpha1.APIRateLimit{
-						Count:    10,
-						SpanUnit: "Minute",
+						RequestPerUnit: 10,
+						Unit:           "Minute",
 					},
 				},
 				Override: dpv1alpha1.RateLimitAPIPolicy{
 					Type: "Application",
 					API: dpv1alpha1.APIRateLimit{
-						Count:    20,
-						SpanUnit: "Second",
+						RequestPerUnit: 20,
+						Unit:           "Second",
 					},
 				},
 			},
@@ -178,24 +178,24 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 				Default: dpv1alpha1.RateLimitAPIPolicy{
 					Type: "Api",
 					API: dpv1alpha1.APIRateLimit{
-						Count:    30,
-						SpanUnit: "Day",
+						RequestPerUnit: 30,
+						Unit:           "Day",
 					},
 				},
 				Override: dpv1alpha1.RateLimitAPIPolicy{
 					Type: "Subscription",
 					API: dpv1alpha1.APIRateLimit{
-						Count:    40,
-						SpanUnit: "Hour",
+						RequestPerUnit: 40,
+						Unit:           "Hour",
 					},
 				},
 			},
 			result: dpv1alpha1.RateLimitPolicySpec{
 				Override: dpv1alpha1.RateLimitAPIPolicy{
-					Type: "Subscription",
+					Type: "Application",
 					API: dpv1alpha1.APIRateLimit{
-						Count:    40,
-						SpanUnit: "Hour",
+						RequestPerUnit: 20,
+						Unit:           "Second",
 					},
 				},
 			},
