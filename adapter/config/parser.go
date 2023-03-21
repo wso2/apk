@@ -52,8 +52,8 @@ const (
 // ReadConfigs implements adapter configuration read operation. The read operation will happen only once, hence
 // the consistancy is ensured.
 //
-// If the "MGW_HOME" variable is set, the configuration file location would be picked relative to the
-// variable's value ("/conf/config.toml"). otherwise, the "MGW_HOME" variable would be set to the directory
+// If the "APK_HOME" variable is set, the configuration file location would be picked relative to the
+// variable's value ("/conf/config.toml"). otherwise, the "APK_HOME" variable would be set to the directory
 // from where the executable is called from.
 //
 // Returns the configuration object that is initialized with default values. Changes to the default
@@ -110,8 +110,8 @@ func SetDefaultConfig() {
 // ReadLogConfigs implements adapter/proxy log-configuration read operation.The read operation will happen only once, hence
 // the consistancy is ensured.
 //
-// If the "MGW_HOME" variable is set, the log configuration file location would be picked relative to the
-// variable's value ("/conf/log_config.toml"). otherwise, the "MGW_HOME" variable would be set to the directory
+// If the "APK_HOME" variable is set, the log configuration file location would be picked relative to the
+// variable's value ("/conf/log_config.toml"). otherwise, the "APK_HOME" variable would be set to the directory
 // from where the executable is called from.
 //
 // Returns the log configuration object mapped from the configuration file during the startup.
@@ -130,7 +130,7 @@ func GetLogConfigPath() (string, error) {
 	return pkgconf.GetLogConfigPath()
 }
 
-// GetMgwHome reads the MGW_HOME environmental variable and returns the value.
+// GetMgwHome reads the APK_HOME environmental variable and returns the value.
 // This represent the directory where the distribution is located.
 // If the env variable is not present, the directory from which the executable is triggered will be assigned.
 func GetMgwHome() string {

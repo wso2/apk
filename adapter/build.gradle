@@ -39,7 +39,7 @@ allprojects {
 tasks.register('go_test', Exec) {
     group 'go'
     description 'Automates testing the packages named by the import paths.'
-    environment "MGW_HOME", "$rootDir/../adapter/resources"
+    environment "APK_HOME", "$rootDir/../adapter/resources"
     environment "APK_ADAPTER_SERVER_PORT", "9401"
     environment "APK_Enforcer_JwtGenerator_Enabled", "true"
     environment "APK_Analytics_Adapter_bufferSizeBytes", "32768"

@@ -33,8 +33,7 @@ import (
 )
 
 // MgwSwagger represents the object structure holding the information related to the
-// openAPI object. The values are populated from the extensions/properties mentioned at
-// the root level of the openAPI definition. The pathItem level information is represented
+// adapter internal representation. The values are populated from the operator. The pathItem level information is represented
 // by the resources array which contains the MgwResource entries.
 type MgwSwagger struct {
 	id                       string

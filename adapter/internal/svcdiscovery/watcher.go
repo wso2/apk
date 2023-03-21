@@ -81,7 +81,7 @@ func init() {
 	conf = config.ReadConfigs()
 	IsServiceDiscoveryEnabled = conf.Adapter.Consul.Enabled
 	aclToken = strings.TrimSpace(conf.Adapter.Consul.ACLToken)
-	mgwServiceName = conf.Adapter.Consul.MgwServiceName
+	mgwServiceName = conf.Adapter.Consul.ApkServiceName
 	MeshEnabled = conf.Adapter.Consul.ServiceMeshEnabled
 	MeshUpdateSignal = make(chan bool)
 }

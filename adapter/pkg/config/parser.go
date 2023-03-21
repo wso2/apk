@@ -45,7 +45,7 @@ var (
 
 const (
 	// The environtmental variable which represents the path of the distribution in host machine.
-	mgwHomeEnvVariable = "MGW_HOME"
+	mgwHomeEnvVariable = "APK_HOME"
 	// The environtmental variable which represents the path of the log_config.toml in host machine.
 	logConfigPathEnvVariable = "LOG_CONFIG_PATH"
 	// RelativeLogConfigPath is the relative file path where the log configuration file is.
@@ -63,7 +63,7 @@ func init() {
 	extractEnvironmentVars()
 }
 
-// GetMgwHome reads the MGW_HOME environmental variable and returns the value.
+// GetMgwHome reads the APK_HOME environmental variable and returns the value.
 // This represent the directory where the distribution is located.
 // If the env variable is not present, the directory from which the executable is triggered will be assigned.
 func GetMgwHome() string {
@@ -77,7 +77,7 @@ func GetMgwHome() string {
 }
 
 // GetLogConfigPath reads the LOG_CONFIG_PATH environmental variable and returns the value.
-// If the env variable is not available, returned value would be the combination of MGW_HOME
+// If the env variable is not available, returned value would be the combination of APK_HOME
 // env variable value + relative log config path
 // Error would be returned if the logConfig file is not available
 func GetLogConfigPath() (string, error) {
@@ -96,8 +96,8 @@ func GetLogConfigPath() (string, error) {
 // ReadLogConfigs implements adapter/proxy log-configuration read operation.The read operation will happen only once, hence
 // the consistancy is ensured.
 //
-// If the "MGW_HOME" variable is set, the log configuration file location would be picked relative to the
-// variable's value ("/conf/log_config.toml"). otherwise, the "MGW_HOME" variable would be set to the directory
+// If the "APK_HOME" variable is set, the log configuration file location would be picked relative to the
+// variable's value ("/conf/log_config.toml"). otherwise, the "APK_HOME" variable would be set to the directory
 // from where the executable is called from.
 //
 // Returns the log configuration object mapped from the configuration file during the startup.

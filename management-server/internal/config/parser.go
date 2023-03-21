@@ -45,8 +45,8 @@ const (
 // ReadConfigs implements adapter configuration read operation. The read operation will happen only once, hence
 // the consistancy is ensured.
 //
-// If the "MGW_HOME" variable is set, the configuration file location would be picked relative to the
-// variable's value ("/conf/config.toml"). otherwise, the "MGW_HOME" variable would be set to the directory
+// If the "APK_HOME" variable is set, the configuration file location would be picked relative to the
+// variable's value ("/conf/config.toml"). otherwise, the "APK_HOME" variable would be set to the directory
 // from where the executable is called from.
 //
 // Returns the configuration object mapped from the configuration file during the startup.

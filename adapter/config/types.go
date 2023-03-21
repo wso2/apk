@@ -165,8 +165,8 @@ type consul struct {
 	PollInterval int
 	// ACLToken Access Control Token required to invoke HTTP API
 	ACLToken string
-	// MgwServiceName service name that Microgateway registered in Consul Service Mesh
-	MgwServiceName string
+	// ApkServiceName service name that Microgateway registered in Consul Service Mesh
+	ApkServiceName string
 	// ServiceMeshEnabled whether Consul service mesh is enabled
 	ServiceMeshEnabled bool
 	// CaCertFile path to the CA cert file(PEM encoded) required for tls connection between adapter and a consul client

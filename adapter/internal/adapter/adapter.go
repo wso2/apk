@@ -104,7 +104,7 @@ func runManagementServer(conf *config.Config, server xdsv3.Server, rlsServer xds
 			}),
 		))
 	} else {
-		logger.LoggerMgw.Warn("failed to initiate the ssl context: ", err)
+		logger.LoggerAPK.Warn("failed to initiate the ssl context: ", err)
 		panic(err)
 	}
 
@@ -118,7 +118,7 @@ func runManagementServer(conf *config.Config, server xdsv3.Server, rlsServer xds
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
-		logger.LoggerMgw.ErrorC(logging.GetErrorByCode(1100, port, err.Error()))
+		logger.LoggerAPK.ErrorC(logging.GetErrorByCode(1100, port, err.Error()))
 	}
 
 	// register services
@@ -137,11 +137,11 @@ func runManagementServer(conf *config.Config, server xdsv3.Server, rlsServer xds
 	// register health service
 	healthservice.RegisterHealthServer(grpcServer, &health.Server{})
 
-	logger.LoggerMgw.Info("port: ", port, " management server listening")
+	logger.LoggerAPK.Info("port: ", port, " management server listening")
 	go func() {
-		logger.LoggerMgw.Info("Starting XDS GRPC server.")
+		logger.LoggerAPK.Info("Starting XDS GRPC server.")
 		if err = grpcServer.Serve(lis); err != nil {
-			logger.LoggerMgw.ErrorC(logging.GetErrorByCode(1101, err.Error()))
+			logger.LoggerAPK.ErrorC(logging.GetErrorByCode(1101, err.Error()))
 		}
 	}()
 
@@ -150,18 +150,18 @@ func runManagementServer(conf *config.Config, server xdsv3.Server, rlsServer xds
 		// ADS used in both envoy xDS and rate limiter xDS.
 		// According to https://github.com/envoyproxy/ratelimit/pull/368#discussion_r995831078 a separate RPC service is not
 		// defined specifically to the rate limit xDS, instead using the ADS.
-		logger.LoggerMgw.Info("port: ", rlsPort, " ratelimiter management server listening")
+		logger.LoggerAPK.Info("port: ", rlsPort, " ratelimiter management server listening")
 		rlsGrpcServer := grpc.NewServer(grpcOptions...)
 		rlsLis, err := net.Listen("tcp", fmt.Sprintf(":%d", rlsPort))
 		if err != nil {
-			logger.LoggerMgw.ErrorC(logging.GetErrorByCode(1106, port, err.Error()))
+			logger.LoggerAPK.ErrorC(logging.GetErrorByCode(1106, port, err.Error()))
 		}
 
 		discoveryv3.RegisterAggregatedDiscoveryServiceServer(rlsGrpcServer, rlsServer)
 		go func() {
-			logger.LoggerMgw.Info("Starting Rate Limiter xDS gRPC server.")
+			logger.LoggerAPK.Info("Starting Rate Limiter xDS gRPC server.")
 			if err = rlsGrpcServer.Serve(rlsLis); err != nil {
-				logger.LoggerMgw.ErrorC(logging.GetErrorByCode(1105, port, err.Error()))
+				logger.LoggerAPK.ErrorC(logging.GetErrorByCode(1105, port, err.Error()))
 			}
 		}()
 	}
@@ -186,10 +186,10 @@ func Run(conf *config.Config) {
 	}
 
 	if errC != nil {
-		logger.LoggerMgw.ErrorC(logging.GetErrorByCode(1102, errC.Error()))
+		logger.LoggerAPK.ErrorC(logging.GetErrorByCode(1102, errC.Error()))
 	}
 
-	logger.LoggerMgw.Info("Starting adapter ....")
+	logger.LoggerAPK.Info("Starting adapter ....")
 	cache := xds.GetXdsCache()
 	rateLimiterCache := xds.GetRateLimiterCache()
 	enforcerCache := xds.GetEnforcerCache()
@@ -231,17 +231,17 @@ OUTER:
 		case l := <-watcherLogConf.Events:
 			switch l.Op.String() {
 			case "WRITE":
-				logger.LoggerMgw.Info("Loading updated log config file...")
+				logger.LoggerAPK.Info("Loading updated log config file...")
 				config.ClearLogConfigInstance()
 				logger.UpdateLoggers()
 			}
 		case s := <-sig:
 			switch s {
 			case os.Interrupt:
-				logger.LoggerMgw.Info("Shutting down...")
+				logger.LoggerAPK.Info("Shutting down...")
 				break OUTER
 			}
 		}
 	}
-	logger.LoggerMgw.Info("Bye!")
+	logger.LoggerAPK.Info("Bye!")
 }

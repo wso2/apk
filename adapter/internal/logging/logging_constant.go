@@ -32,7 +32,7 @@ const (
 )
 
 // Error Log Internal Adapter(1100-1199) Constants
-// - LoggerMgw
+// - LoggerAPK
 const (
 	error1100 = 1100
 	error1101 = 1101
