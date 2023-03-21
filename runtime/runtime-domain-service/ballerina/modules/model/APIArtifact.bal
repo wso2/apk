@@ -5,6 +5,7 @@ Httproute[] sandboxRoute = [];
 ConfigMap definition?;
 K8sServiceMapping[] serviceMapping = [];
 RuntimeAPI runtimeAPI?;
+RateLimitPolicy[] rateLimitPolicies = [];
 map<Backend> backendServices = {};
 map<Authentication> authenticationMap = {};
 map<Scope> scopes = {};
