@@ -40,6 +40,7 @@ public type Header record {|
 # + idpConfiguration - IDP configuration for JWT generated from Enforcer.  
 # + controlPlane - Field Description  
 # + orgResolver - Field Description 
+# + gatewayConfiguration - Gateway Configuration with name and listener name  
 public type RuntimeConfiguratation record {|
     
     (string[] & readonly) serviceListingNamespaces = [ALL_NAMESPACES];
@@ -50,6 +51,7 @@ public type RuntimeConfiguratation record {|
     (Vhost[] & readonly) vhost = [{name:"Default",hosts:["gw.wso2.com"],'type:PRODUCTION_TYPE},{name:"Default",hosts:["sandbox.gw.wso2.com"],'type:SANDBOX_TYPE}];
     commons:IDPConfiguration idpConfiguration;
     ControlPlaneConfiguration controlPlane;
+    (GatewayConfigurations & readonly) gatewayConfiguration = {};
 
     string orgResolver = "controlPlane"; // controlPlane, k8s
 |};
@@ -85,4 +87,9 @@ isolated function getNameSpace(string namespace) returns string {
 public type KeyStores record {|
     commons:KeyStore signing;
     commons:KeyStore tls;
+|};
+
+public type GatewayConfigurations record {|
+    string name = "default";
+    string listenerName = "gatewaylistener";
 |};

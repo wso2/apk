@@ -1077,8 +1077,10 @@ public class APIClient {
     }
 
     private isolated function generateAndRetrieveParentRefs(API api, string uniqueId) returns model:ParentReference[] {
+        string gatewayName = runtimeConfiguration.gatewayConfiguration.name;
+        string listenerName = runtimeConfiguration.gatewayConfiguration.listenerName;
         model:ParentReference[] parentRefs = [];
-        model:ParentReference parentRef = {group: "gateway.networking.k8s.io", kind: "Gateway", name: "Default"};
+        model:ParentReference parentRef = {group: "gateway.networking.k8s.io", kind: "Gateway", name: gatewayName, sectionName:listenerName};
         parentRefs.push(parentRef);
         return parentRefs;
     }
