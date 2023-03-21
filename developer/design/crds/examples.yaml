@@ -153,12 +153,12 @@ spec:
               replacePrefixMatch: /get
         - type: RequestHeaderModifier
           requestHeaderModifier:
-            add:
+            set:
               - name: "Host"
                 value: "backend"
         - type: ExtensionRef
           requestHeaderModifier:
-            add:
+            set:
               - name: "Host"
                 value: "backend"
 ---
