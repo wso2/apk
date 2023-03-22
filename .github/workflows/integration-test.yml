@@ -167,9 +167,9 @@ jobs:
         --set wso2.apk.dp.runtime.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/runtime-domain-service:latest \
         --set wso2.apk.dp.adapter.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/adapter:latest \
         --set wso2.apk.dp.gatewayRuntime.deployment.router.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/router:latest \
-        --set wso2.apk.dp.gatewayRuntime.deployment.router.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/enforcer:latest \
-        --set idp.idpds.deployment.router.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/idp-domain-service:latest \
-        --set idp.idpui.deployment.router.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/idp-ui:latest        
+        --set wso2.apk.dp.gatewayRuntime.deployment.enforcer.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/enforcer:latest \
+        --set idp.idpds.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/idp-domain-service:latest \
+        --set idp.idpui.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/idp-ui:latest        
         kubectl get pods -n apk-release
         kubectl get svc -n apk-release
     - name: Apply test resources
