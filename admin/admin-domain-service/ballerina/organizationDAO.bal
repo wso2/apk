@@ -25,9 +25,10 @@ isolated function addOrganizationDAO(Internal_Organization payload) returns Inte
         string message = "Error while retrieving connection";
         return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
+        postgresql:JsonBinaryValue namespace = new (payload.serviceNamespaces.toJson());
         sql:ParameterizedQuery query = `INSERT INTO ORGANIZATION(UUID, NAME, 
-        DISPLAY_NAME,STATUS) VALUES (${payload.id},${payload.name},
-        ${payload.displayName},${payload.enabled})`;
+        DISPLAY_NAME,STATUS,NAMESPACE) VALUES (${payload.id},${payload.name},
+        ${payload.displayName},${payload.enabled},${namespace})`;
         sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
         if result is sql:ExecutionResult && result.affectedRowCount == 1 {
             boolean isVhostAdded = addVhostsDAO(dbClient, payload);
@@ -59,10 +60,11 @@ isolated function addOrganizationClaimMappingDAO(postgresql:Client dbClient, Int
 }
 
 isolated function addVhostsDAO (postgresql:Client dbClient, Internal_Organization payload) returns boolean{
-    string[]? vhosts = payload.vhosts;
-    if (vhosts !is ()) {
-        foreach string e in vhosts {
-        sql:ParameterizedQuery query = `INSERT INTO ORGANIZATION_VHOST(UUID, VHOST) VALUES (${payload.id},${e})`;
+    string[]? production = payload.production;
+    string[]? sandbox = payload.sandbox;
+    if (production !is ()) {
+        foreach string e in production {
+        sql:ParameterizedQuery query = `INSERT INTO ORGANIZATION_VHOST(UUID, VHOST, TYPE) VALUES (${payload.id},${e}, 'PRODUCTION')`;
         sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
             if result is sql:ExecutionResult && result.affectedRowCount == 1 {
                 continue;    
@@ -70,7 +72,17 @@ isolated function addVhostsDAO (postgresql:Client dbClient, Internal_Organizatio
                 return false;    
             }
         }
-        return true;
+   }
+   if (sandbox !is ()) {
+        foreach string e in sandbox {
+        sql:ParameterizedQuery query = `INSERT INTO ORGANIZATION_VHOST(UUID, VHOST, TYPE) VALUES (${payload.id},${e}, 'SANDBOX')`;
+        sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
+            if result is sql:ExecutionResult && result.affectedRowCount == 1 {
+                continue;    
+            } else { 
+                return false;    
+            }
+        }
    }
    return true;
 }
@@ -116,8 +128,9 @@ isolated function updateOrganizationDAO(string id, Internal_Organization payload
         string message = "Error while retrieving connection";
         return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
+        postgresql:JsonBinaryValue namespace = new (payload.serviceNamespaces.toJson());
         sql:ParameterizedQuery query = `UPDATE ORGANIZATION SET NAME =${payload.name},
-         DISPLAY_NAME = ${payload.displayName}, STATUS=${payload.enabled} WHERE UUID = ${id}`;
+         DISPLAY_NAME = ${payload.displayName}, STATUS=${payload.enabled}, NAMESPACE=${namespace} WHERE UUID = ${id}`;
         sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
         if result is sql:ExecutionResult && result.affectedRowCount == 1 {
             boolean isVhostAdded = updateVhostsDAO(dbClient, payload.id, payload);
@@ -158,10 +171,11 @@ isolated function updateVhostsDAO (postgresql:Client dbClient, string id, Intern
     sql:ParameterizedQuery query = `DELETE FROM ORGANIZATION_VHOST WHERE UUID = ${id}`;
     sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
     if result is sql:ExecutionResult {
-        string[]? vhosts = payload.vhosts;
-        if (vhosts !is ()) {
-            foreach string e in vhosts {
-            sql:ParameterizedQuery query1 = `INSERT INTO ORGANIZATION_VHOST(UUID, VHOST) VALUES (${id},${e})`;
+        string[]? production = payload.production;
+        string[]? sandbox = payload.sandbox;
+        if (production !is ()) {
+            foreach string e in production {
+            sql:ParameterizedQuery query1 = `INSERT INTO ORGANIZATION_VHOST(UUID, VHOST, TYPE) VALUES (${id},${e}, 'PRODUCTION')`;
             sql:ExecutionResult | sql:Error result1 =  dbClient->execute(query1);
                 if result1 is sql:ExecutionResult && result1.affectedRowCount == 1 {
                     continue;    
@@ -169,7 +183,17 @@ isolated function updateVhostsDAO (postgresql:Client dbClient, string id, Intern
                     return false;    
                 }
             }
-            return true;
+        }
+        if (sandbox !is ()) {
+            foreach string e in sandbox {
+            sql:ParameterizedQuery query1 = `INSERT INTO ORGANIZATION_VHOST(UUID, VHOST, TYPE) VALUES (${id},${e}, 'SANDBOX')`;
+            sql:ExecutionResult | sql:Error result1 =  dbClient->execute(query1);
+                if result1 is sql:ExecutionResult && result1.affectedRowCount == 1 {
+                    continue;    
+                } else { 
+                    return false;    
+                }
+            }
         }
         return true;
     }
@@ -184,7 +208,7 @@ public isolated function getAllOrganizationDAO() returns Internal_Organization[]
     } else {
         do {
             map<Internal_Organization> organization = {};
-            sql:ParameterizedQuery query = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName, claim_key as claimKey, claim_value as claimValue FROM ORGANIZATION, ORGANIZATION_CLAIM_MAPPING where ORGANIZATION.UUID = ORGANIZATION_CLAIM_MAPPING.UUID`;
+            sql:ParameterizedQuery query = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName, claim_key as claimKey, claim_value as claimValue, string_to_array(NAMESPACE::text,',')::text[] AS serviceNamespaces FROM ORGANIZATION, ORGANIZATION_CLAIM_MAPPING where ORGANIZATION.UUID = ORGANIZATION_CLAIM_MAPPING.UUID`;
             stream<Organizations, sql:Error?> orgStream = dbClient->query(query);
             
             check from Organizations org in orgStream do {
@@ -193,26 +217,40 @@ public isolated function getAllOrganizationDAO() returns Internal_Organization[]
                     organization.get(org.id).claimList.push(claim);
                 } else {
                     OrganizationClaim claim = {claimKey: org.claimKey, claimValue: org.claimValue};
-                    Internal_Organization organizationData = {id: org.id, name: org.name, displayName: org.displayName, enabled: true,  claimList: [claim]};
+                    Internal_Organization organizationData = {id: org.id, name: org.name, displayName: org.displayName, enabled: true, serviceNamespaces: org.serviceNamespaces,  claimList: [claim]};
                     organization[org.id] = organizationData;
                 }
             };
 
-            sql:ParameterizedQuery query1 = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName, ORGANIZATION_VHOST.VHOST AS vhost FROM ORGANIZATION,ORGANIZATION_VHOST where
-             ORGANIZATION.UUID = ORGANIZATION_VHOST.UUID`;
+            sql:ParameterizedQuery query1 = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName, ORGANIZATION_VHOST.VHOST AS production FROM ORGANIZATION,ORGANIZATION_VHOST where
+             ORGANIZATION.UUID = ORGANIZATION_VHOST.UUID and ORGANIZATION_VHOST.TYPE = 'PRODUCTION'`;
             stream<Organizations, sql:Error?> orgStream1 = dbClient->query(query1);
             check from Organizations org1 in orgStream1 do {
                 if organization.hasKey(org1.id) {
-                    string[]? hostArray = organization.get(org1.id).vhosts;
+                    string[]? hostArray = organization.get(org1.id).production;
                     if hostArray !is () {
-                        hostArray.push(org1.vhost);
+                        hostArray.push(org1.production);
                     } else {
-                        organization[org1.id].vhosts = [org1.vhost];
+                        organization[org1.id].production = [org1.production];
+                    }
+                }
+            };
+            sql:ParameterizedQuery query2 = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName, ORGANIZATION_VHOST.VHOST AS sandbox FROM ORGANIZATION,ORGANIZATION_VHOST where
+             ORGANIZATION.UUID = ORGANIZATION_VHOST.UUID and ORGANIZATION_VHOST.TYPE = 'SANDBOX'`;
+            stream<Organizations, sql:Error?> orgStream2 = dbClient->query(query2);
+            check from Organizations org2 in orgStream2 do {
+                if organization.hasKey(org2.id) {
+                    string[]? hostArray = organization.get(org2.id).sandbox;
+                    if hostArray !is () {
+                        hostArray.push(org2.sandbox);
+                    } else {
+                        organization[org2.id].sandbox = [org2.sandbox];
                     }
                 }
             };
             check orgStream.close();
             check orgStream1.close();
+            check orgStream2.close();
             return organization.toArray();
         } on fail var e {
         	string message = "Internal Error occured while retrieving organization data from Database";
@@ -229,14 +267,17 @@ isolated function getOrganizationByIdDAO(string id) returns Internal_Organizatio
     } else {
         do {
             sql:ParameterizedQuery query = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName, claim_key as claimKey, 
-                    claim_value as claimValue FROM ORGANIZATION, ORGANIZATION_CLAIM_MAPPING where ORGANIZATION.UUID = ORGANIZATION_CLAIM_MAPPING.UUID and ORGANIZATION.UUID =${id}`;
+                    claim_value as claimValue, string_to_array(NAMESPACE::text,',')::text[] AS serviceNamespaces
+                    FROM ORGANIZATION, ORGANIZATION_CLAIM_MAPPING where ORGANIZATION.UUID = ORGANIZATION_CLAIM_MAPPING.UUID and ORGANIZATION.UUID =${id}`;
             stream<Organizations, sql:Error?> orgStream = dbClient->query(query);
             Internal_Organization organization1 = {
                 id: "",
                 name: "",
                 displayName: "",
                 enabled: true,
-                vhosts: [],
+                serviceNamespaces: ["*"],
+                production: [],
+                sandbox: [],
                 claimList: []
             };
             check from Organizations org in orgStream do {
@@ -246,6 +287,7 @@ isolated function getOrganizationByIdDAO(string id) returns Internal_Organizatio
                         name:org.name,
                         displayName:org.displayName,
                         enabled: true,
+                        serviceNamespaces: org.serviceNamespaces,
                         claimList:[{
                             claimKey:org.claimKey,
                             claimValue: org.claimValue
@@ -259,15 +301,26 @@ isolated function getOrganizationByIdDAO(string id) returns Internal_Organizatio
                 }
             }; 
 
-            sql:ParameterizedQuery query1 = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName, ORGANIZATION_VHOST.VHOST AS vhost FROM ORGANIZATION,ORGANIZATION_VHOST where
-             ORGANIZATION.UUID = ORGANIZATION_VHOST.UUID and ORGANIZATION.UUID =${id}`;
+            sql:ParameterizedQuery query1 = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName, ORGANIZATION_VHOST.VHOST AS production FROM ORGANIZATION,ORGANIZATION_VHOST where
+             ORGANIZATION.UUID = ORGANIZATION_VHOST.UUID and ORGANIZATION.UUID =${id} and ORGANIZATION_VHOST.TYPE = 'PRODUCTION'`;
             stream<Organizations, sql:Error?> orgStream1 = dbClient->query(query1);
             check from Organizations org1 in orgStream1 do {
-                string[]? hostArray = organization1.vhosts;
+                string[]? hostArray = organization1.production;
                 if hostArray !is () {
-                    hostArray.push(org1.vhost);
+                    hostArray.push(org1.production);
                 } else {
-                    organization1.vhosts = [org1.vhost];
+                    organization1.production = [org1.production];
+                }
+            };
+            sql:ParameterizedQuery query2 = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName, ORGANIZATION_VHOST.VHOST AS sandbox FROM ORGANIZATION,ORGANIZATION_VHOST where
+             ORGANIZATION.UUID = ORGANIZATION_VHOST.UUID and ORGANIZATION.UUID =${id} and ORGANIZATION_VHOST.TYPE = 'SANDBOX'`;
+            stream<Organizations, sql:Error?> orgStream2 = dbClient->query(query2);
+            check from Organizations org2 in orgStream2 do {
+                string[]? hostArray = organization1.sandbox;
+                if hostArray !is () {
+                    hostArray.push(org2.sandbox);
+                } else {
+                    organization1.sandbox = [org2.sandbox];
                 }
             };
 
@@ -330,14 +383,17 @@ isolated function getOrganizationByNameDAO(string name) returns Internal_Organiz
     } else {
         do {
             sql:ParameterizedQuery query = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName, claim_key as claimKey, 
-                    claim_value as claimValue FROM ORGANIZATION, ORGANIZATION_CLAIM_MAPPING where ORGANIZATION.UUID = ORGANIZATION_CLAIM_MAPPING.UUID and ORGANIZATION.NAME =${name}`;
+                    claim_value as claimValue, string_to_array(NAMESPACE::text,',')::text[] AS serviceNamespaces
+                    FROM ORGANIZATION, ORGANIZATION_CLAIM_MAPPING where ORGANIZATION.UUID = ORGANIZATION_CLAIM_MAPPING.UUID and ORGANIZATION.NAME =${name}`;
             stream<Organizations, sql:Error?> orgStream = dbClient->query(query);
             Internal_Organization organization1 = {
                 id: "",
                 name: "",
                 displayName: "",
                 enabled: true,
-                vhosts: [],
+                serviceNamespaces: ["*"],
+                production: [],
+                sandbox: [],
                 claimList: []
             };
             check from Organizations org in orgStream do {
@@ -347,6 +403,7 @@ isolated function getOrganizationByNameDAO(string name) returns Internal_Organiz
                         name:org.name,
                         displayName:org.displayName,
                         enabled: true,
+                        serviceNamespaces: org.serviceNamespaces,
                         claimList:[{
                             claimKey:org.claimKey,
                             claimValue: org.claimValue
@@ -360,15 +417,26 @@ isolated function getOrganizationByNameDAO(string name) returns Internal_Organiz
                 }
             }; 
 
-            sql:ParameterizedQuery query1 = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName, ORGANIZATION_VHOST.VHOST AS vhost FROM ORGANIZATION,ORGANIZATION_VHOST where
-             ORGANIZATION.UUID = ORGANIZATION_VHOST.UUID and ORGANIZATION.NAME =${name}`;
+            sql:ParameterizedQuery query1 = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName, ORGANIZATION_VHOST.VHOST AS production FROM ORGANIZATION,ORGANIZATION_VHOST where
+             ORGANIZATION.UUID = ORGANIZATION_VHOST.UUID and ORGANIZATION.NAME =${name} and ORGANIZATION_VHOST.TYPE = 'PRODUCTION'`;
             stream<Organizations, sql:Error?> orgStream1 = dbClient->query(query1);
             check from Organizations org1 in orgStream1 do {
-                string[]? hostArray = organization1.vhosts;
+                string[]? hostArray = organization1.production;
                 if hostArray !is () {
-                    hostArray.push(org1.vhost);
+                    hostArray.push(org1.production);
                 } else {
-                    organization1.vhosts = [org1.vhost];
+                    organization1.production = [org1.production];
+                }
+            };
+            sql:ParameterizedQuery query2 = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName, ORGANIZATION_VHOST.VHOST AS sandbox FROM ORGANIZATION,ORGANIZATION_VHOST where
+             ORGANIZATION.UUID = ORGANIZATION_VHOST.UUID and ORGANIZATION.NAME =${name} and ORGANIZATION_VHOST.TYPE = 'SANDBOX'`;
+            stream<Organizations, sql:Error?> orgStream2 = dbClient->query(query2);
+            check from Organizations org2 in orgStream2 do {
+                string[]? hostArray = organization1.sandbox;
+                if hostArray !is () {
+                    hostArray.push(org2.sandbox);
+                } else {
+                    organization1.sandbox = [org2.sandbox];
                 }
             };
 
