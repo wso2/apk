@@ -63,13 +63,6 @@ spec:
               scheme: HTTPS
             initialDelaySeconds: {{ .Values.idp.idpui.deployment.livenessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.idp.idpui.deployment.livenessProbe.periodSeconds }}
-      {{- if and .Values.wso2.subscription .Values.wso2.subscription.imagePullSecrets}}
-      imagePullSecrets:
-        - name: {{ .Values.wso2.subscription.imagePullSecrets }}
-      {{- else if and .Values.wso2.subscription (not (eq .Values.wso2.subscription.username "")) (not (eq .Values.wso2.subscription.password "")) }}
-      imagePullSecrets:
-        - name: {{ template "apk-helm.resource.prefix" . }}-apk-wso2-private-registry-creds
-      {{ end }}      
 {{ include "apk-helm.deployment.resources" .Values.idp.idpui.deployment.resources | indent 10 }}
           volumeMounts:
             - name: idp-ui-tls-volume
@@ -86,6 +79,13 @@ spec:
             {{- else }}
               subPath: tls.crt
             {{- end }}
+      {{- if and .Values.wso2.subscription .Values.wso2.subscription.imagePullSecrets}}
+      imagePullSecrets:
+        - name: {{ .Values.wso2.subscription.imagePullSecrets }}
+      {{- else if and .Values.wso2.subscription (not (eq .Values.wso2.subscription.username "")) (not (eq .Values.wso2.subscription.password "")) }}
+      imagePullSecrets:
+        - name: {{ template "apk-helm.resource.prefix" . }}-apk-wso2-private-registry-creds
+      {{ end }}      
 
       volumes:
         - name: idp-ui-tls-volume
