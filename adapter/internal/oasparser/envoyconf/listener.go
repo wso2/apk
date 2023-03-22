@@ -207,7 +207,7 @@ func CreateListenerByGateway(gateway *gwapiv1b1.Gateway) []*listenerv3.Listener 
 			}
 
 			transportSocket := &corev3.TransportSocket{
-				Name: transportSocketName,
+				Name: wellknown.TransportSocketTLS,
 				ConfigType: &corev3.TransportSocket_TypedConfig{
 					TypedConfig: marshalledTLSFilter,
 				},
