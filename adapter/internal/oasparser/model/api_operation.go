@@ -33,6 +33,7 @@ import (
 	"github.com/wso2/apk/adapter/internal/interceptor"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/api"
+	dpv1alpha1 "github.com/wso2/apk/adapter/pkg/operator/apis/dp/v1alpha1"
 )
 
 // Operation type object holds data about each http method in the REST API.
@@ -237,34 +238,28 @@ func (operation *Operation) GetCallInterceptorService(isIn bool) InterceptEndpoi
 		for _, policy := range policies {
 			if strings.EqualFold(constants.ActionInterceptorService, policy.Action) {
 				if paramMap, isMap := policy.Parameters.(map[string]interface{}); isMap {
-					urlValue, urlFound := paramMap[constants.InterceptorServiceURL]
+					endpoints, endpointsFound := paramMap[constants.InterceptorEndpoints]
 					includesValue, includesFound := paramMap[constants.InterceptorServiceIncludes]
-					if urlFound {
-						url, isString := urlValue.(string)
-						if isString && url != "" {
-							endpoint, err := getHTTPEndpoint(url)
-							if err == nil {
-								conf := config.ReadConfigs()
-								clusterTimeoutV := conf.Envoy.ClusterTimeoutInSeconds
-								requestTimeoutV := conf.Envoy.ClusterTimeoutInSeconds
-								includesV := &interceptor.RequestInclusions{}
-								if includesFound {
-									includesStr, isStr := includesValue.(string)
-									if isStr {
-										includes := strings.Split(includesStr, ",")
-										includesV = GenerateInterceptorIncludes(includes)
-									}
+					if endpointsFound {
+						endpoints, isEndpoints := endpoints.([]Endpoint)
+						if isEndpoints {
+							conf := config.ReadConfigs()
+							clusterTimeoutV := conf.Envoy.ClusterTimeoutInSeconds
+							requestTimeoutV := conf.Envoy.ClusterTimeoutInSeconds
+							includesV := &interceptor.RequestInclusions{}
+							if includesFound {
+								includes, ok := includesValue.([]dpv1alpha1.InterceptorInclusion)
+								if ok {
+									includesV = GenerateInterceptorIncludes(includes)
 								}
-								if err == nil {
-									return InterceptEndpoint{
-										Enable:          true,
-										EndpointCluster: EndpointCluster{Endpoints: []Endpoint{*endpoint}},
-										ClusterTimeout:  clusterTimeoutV,
-										RequestTimeout:  requestTimeoutV,
-										Includes:        includesV,
-										Level:           constants.OperationLevelInterceptor,
-									}
-								}
+							}
+							return InterceptEndpoint{
+								Enable:          true,
+								EndpointCluster: EndpointCluster{Endpoints: endpoints},
+								ClusterTimeout:  clusterTimeoutV,
+								RequestTimeout:  requestTimeoutV,
+								Includes:        includesV,
+								Level:           constants.OperationLevelInterceptor,
 							}
 						}
 					}

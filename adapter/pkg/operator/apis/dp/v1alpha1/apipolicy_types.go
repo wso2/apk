@@ -54,20 +54,20 @@ type RequestQueryModifier struct {
 type InterceptorInclusion string
 
 const (
-	// RequestHeaders is the type to include request headers
-	RequestHeaders InterceptorInclusion = "request_headers"
-	// RequestBody is the type to include request body
-	RequestBody InterceptorInclusion = "request_body"
-	// RequestTrailers is the type to include request trailers
-	RequestTrailers InterceptorInclusion = "request_trailers"
-	// ResponseHeaders is the type to include response headers
-	ResponseHeaders InterceptorInclusion = "response_headers"
-	// ResponseBody is the type to include response body
-	ResponseBody InterceptorInclusion = "response_body"
-	// ResponseTrailers is the type to include response trailers
-	ResponseTrailers InterceptorInclusion = "response_trailers"
-	// InvocationContext is the type to include invocation context
-	InvocationContext InterceptorInclusion = "invocation_context"
+	// InterceptorInclusionRequestHeaders is the type to include request headers
+	InterceptorInclusionRequestHeaders InterceptorInclusion = "request_headers"
+	// InterceptorInclusionRequestBody is the type to include request body
+	InterceptorInclusionRequestBody InterceptorInclusion = "request_body"
+	// InterceptorInclusionRequestTrailers is the type to include request trailers
+	InterceptorInclusionRequestTrailers InterceptorInclusion = "request_trailers"
+	// InterceptorInclusionResponseHeaders is the type to include response headers
+	InterceptorInclusionResponseHeaders InterceptorInclusion = "response_headers"
+	// InterceptorInclusionResponseBody is the type to include response body
+	InterceptorInclusionResponseBody InterceptorInclusion = "response_body"
+	// InterceptorInclusionResponseTrailers is the type to include response trailers
+	InterceptorInclusionResponseTrailers InterceptorInclusion = "response_trailers"
+	// InterceptorInclusionInvocationContext is the type to include invocation context
+	InterceptorInclusionInvocationContext InterceptorInclusion = "invocation_context"
 )
 
 // InterceptorConfig holds interceptor service information
