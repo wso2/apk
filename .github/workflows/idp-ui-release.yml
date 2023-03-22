@@ -70,7 +70,7 @@ jobs:
           git merge origin/main
 
       - name: Run Gradle build
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.release_version != '' && github.event.inputs.next_version != ''   
         shell: sh
         run: |
           cd apk-repo/idp/idp-ui
