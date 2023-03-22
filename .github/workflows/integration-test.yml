@@ -132,7 +132,6 @@ jobs:
         azcliversion: 2.44.1
         inlineScript: |
           az aks create --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" --name "${{ secrets.AKS_CLUSTER_NAME }}" --enable-cluster-autoscaler --min-count 1 --max-count 3 --location "southeastasia" --generate-ssh-keys --verbose 
-          az aks update -g "${{ secrets.AZURE_RESOURCE_GROUP }}" -n "${{ secrets.AKS_CLUSTER_NAME }}" --attach-acr ${{ secrets.AZURE_ACR_NAME }}
     - uses: azure/aks-set-context@v3
       with:
          resource-group: '${{ secrets.AZURE_RESOURCE_GROUP }}'
@@ -142,6 +141,10 @@ jobs:
       run: |
         kubectl create namespace apk-release
         kubectl get ns 
+    - name: Create Image pull secret.
+      shell: sh
+      run: |
+        kubectl create secret docker-registry azure-registry --docker-server=${{ secrets.AZURE_ACR_NAME }}.azurecr.io --docker-username=${{ secrets.AZURE_ACR_USER }} --docker-password=${{ secrets.AZURE_ACR_PASSWORD }} --docker-email=${{ secrets.WSO2_BOT_EMAIL }} -n apk-release
     - name: Checkout apk-repo.
       uses: actions/checkout@v3
       with:
@@ -156,6 +159,7 @@ jobs:
         helm repo add jetstack https://charts.jetstack.io
         helm dependency build
         helm install release-1 -n apk-release . --debug --wait --timeout 10m0s \
+        --set wso2.subscription.imagePullSecrets=azure-registry \
         --set wso2.apk.cp.devportal.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/devportal-domain-service:latest \
         --set wso2.apk.cp.admin.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/admin-domain-service:latest \
         --set wso2.apk.cp.backoffice.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/backoffice-domain-service:latest \
