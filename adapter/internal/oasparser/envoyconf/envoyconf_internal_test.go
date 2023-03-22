@@ -73,7 +73,7 @@ func TestCreateRoute(t *testing.T) {
 
 	resourceWithGet := model.CreateMinimalDummyResourceForTests("/xWso2BasePath/resourcePath",
 		[]*model.Operation{model.NewOperationWithPolicies("GET", policies)},
-		"resource_operation_id", []model.Endpoint{}, []model.Endpoint{}, true)
+		"resource_operation_id", []model.Endpoint{}, true)
 	clusterName := "resource_operation_id"
 	hostRewriteSpecifier := &routev3.RouteAction_AutoHostRewrite{
 		AutoHostRewrite: &wrapperspb.BoolValue{
@@ -135,7 +135,7 @@ func TestCreateRouteClusterSpecifier(t *testing.T) {
 	apiType := "HTTP"
 
 	resourceWithGet := model.CreateMinimalDummyResourceForTests("/resourcePath", []*model.Operation{model.NewOperation("GET", nil, nil)},
-		"resource_operation_id", []model.Endpoint{}, []model.Endpoint{}, false)
+		"resource_operation_id", []model.Endpoint{}, false)
 
 	route, err := createRoutes(generateRouteCreateParamsForUnitTests(title, apiType, vHost, xWso2BasePath, version, endpointBasePath,
 		&resourceWithGet, clusterName, nil, false))
@@ -160,7 +160,7 @@ func TestCreateRouteExtAuthzContext(t *testing.T) {
 	apiType := "HTTP"
 
 	resourceWithGet := model.CreateMinimalDummyResourceForTests("/resourcePath", []*model.Operation{model.NewOperation("GET", nil, nil)},
-		"resource_operation_id", []model.Endpoint{}, []model.Endpoint{}, false)
+		"resource_operation_id", []model.Endpoint{}, false)
 
 	route, err := createRoutes(generateRouteCreateParamsForUnitTests(title, apiType, vHost, xWso2BasePath, version,
 		endpointBasePath, &resourceWithGet, clusterName, nil, false))
@@ -551,7 +551,7 @@ func TestGetCorsPolicy(t *testing.T) {
 	assert.Empty(t, corsPolicy3.GetAllowCredentials(), "Allow Credential property should not be assigned.")
 
 	resourceWithGet := model.CreateMinimalDummyResourceForTests("/resourcePath", []*model.Operation{model.NewOperation("GET", nil, nil)},
-		"resource_operation_id", []model.Endpoint{}, []model.Endpoint{}, false)
+		"resource_operation_id", []model.Endpoint{}, false)
 
 	// Route without CORS configuration
 	routeWithoutCors, err := createRoutes(generateRouteCreateParamsForUnitTests("test", "HTTP", "localhost", "/test", "1.0.0", "/test",

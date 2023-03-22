@@ -122,6 +122,7 @@ type envoy struct {
 	PayloadPassingToEnforcer         payloadPassingToEnforcer
 	UseRemoteAddress                 bool
 	Filters                          filters
+	RateLimit                        rateLimit
 }
 
 type connectionTimeouts struct {
@@ -133,6 +134,24 @@ type connectionTimeouts struct {
 
 type connection struct {
 	Timeouts connectionTimeouts
+}
+
+type rateLimit struct {
+	Enabled                bool
+	Host                   string
+	Port                   uint32
+	XRateLimitHeaders      xRateLimitHeaders
+	FailureModeDeny        bool
+	RequestTimeoutInMillis int64
+	KeyFilePath            string
+	CertFilePath           string
+	CaCertFilePath         string
+	SSLCertSANHostname     string
+}
+
+type xRateLimitHeaders struct {
+	Enabled    bool
+	RFCVersion string
 }
 
 type enforcer struct {

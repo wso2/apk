@@ -46,6 +46,8 @@ type Operation struct {
 	vendorExtensions map[string]interface{}
 	policies         OperationPolicies
 	mockedAPIConfig  *api.MockedApiConfig
+	//todo(amali) refactor all vars to private/public vars
+	RateLimitPolicy *RateLimitPolicy
 }
 
 // SetMockedAPIConfigOAS3 generate mock impl endpoint configurations
@@ -278,7 +280,7 @@ func NewOperation(method string, security []map[string][]string, extensions map[
 	tier := ResolveThrottlingTier(extensions)
 	disableSecurity := ResolveDisableSecurity(extensions)
 	id := uuid.New().String()
-	return &Operation{id, method, security, tier, disableSecurity, extensions, OperationPolicies{}, &api.MockedApiConfig{}}
+	return &Operation{id, method, security, tier, disableSecurity, extensions, OperationPolicies{}, &api.MockedApiConfig{}, nil}
 }
 
 // NewOperationWithPolicies Creates and returns operation with given method and policies

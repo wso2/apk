@@ -22,7 +22,7 @@ import (
 
 	routev3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 	cors_filter_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/cors/v3"
-    "github.com/envoyproxy/go-control-plane/pkg/wellknown"
+	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
 	"github.com/stretchr/testify/assert"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
 )
@@ -112,13 +112,13 @@ func testCreateRoutesForUnitTests(t *testing.T) []*routev3.Route {
 	operationPost := model.NewOperation("POST", nil, nil)
 	operationPut := model.NewOperation("PUT", nil, nil)
 	resourceWithGet := model.CreateMinimalDummyResourceForTests("/resourcePath", []*model.Operation{operationGet},
-		"resource_operation_id", []model.Endpoint{}, []model.Endpoint{}, false)
+		"resource_operation_id", []model.Endpoint{}, false)
 	resourceWithPost := model.CreateMinimalDummyResourceForTests("/resourcePath", []*model.Operation{operationPost},
-		"resource_operation_id", []model.Endpoint{}, []model.Endpoint{}, false)
+		"resource_operation_id", []model.Endpoint{}, false)
 	resourceWithPut := model.CreateMinimalDummyResourceForTests("/resourcePath", []*model.Operation{operationPut},
-		"resource_operation_id", []model.Endpoint{}, []model.Endpoint{}, false)
+		"resource_operation_id", []model.Endpoint{}, false)
 	resourceWithMultipleOperations := model.CreateMinimalDummyResourceForTests("/resourcePath", []*model.Operation{operationGet, operationPut},
-		"resource_operation_id", []model.Endpoint{}, []model.Endpoint{}, false)
+		"resource_operation_id", []model.Endpoint{}, false)
 
 	route1, err := createRoutes(generateRouteCreateParamsForUnitTests("test", "HTTP", "localhost", "/test", "1.0.0", "/test",
 		&resourceWithGet, "test-cluster", corsConfigModel3, false))
@@ -138,10 +138,10 @@ func testCreateRoutesForUnitTests(t *testing.T) []*routev3.Route {
 	// check cors after creating routes
 	for _, r := range routes {
 		corsConfig := &cors_filter_v3.CorsPolicy{}
- 		err := r.GetTypedPerFilterConfig()[wellknown.CORS].UnmarshalTo(corsConfig)
- 		assert.Nilf(t, err, "Error while parsing Cors Configuration %v", corsConfig)
- 		assert.NotEmpty(t, corsConfig.GetAllowMethods(), "Cors AllowMethods should not be empty.")
- 		assert.NotEmpty(t, corsConfig.GetAllowOriginStringMatch(), "Cors AllowOriginStringMatch should not be empty.")
+		err := r.GetTypedPerFilterConfig()[wellknown.CORS].UnmarshalTo(corsConfig)
+		assert.Nilf(t, err, "Error while parsing Cors Configuration %v", corsConfig)
+		assert.NotEmpty(t, corsConfig.GetAllowMethods(), "Cors AllowMethods should not be empty.")
+		assert.NotEmpty(t, corsConfig.GetAllowOriginStringMatch(), "Cors AllowOriginStringMatch should not be empty.")
 	}
 
 	return routes

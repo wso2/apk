@@ -267,6 +267,34 @@ soapErrorInXMLEnabled = false
     compressionStrategy = "defaultStrategy"
     # zlib's next output buffer
     chunkSize = 4096
+    
+# Configs relevant to the ratelimit
+[router.ratelimit]
+  # Enable/disable envoy ratelimit service
+  enabled = false
+  # Hostname relevant to the ratelimiter service
+  host = "ratelimiter"
+  # Port used for the listening
+  port = 8091
+  # Request timeouts period in milliseconds
+  requestTimeoutInMillis= 80
+  # Allow to fail requests in case the rate limiting service does not respond back
+  failureModeDeny = false
+  # Key file path used for the ratelimiter service mTLS
+  keyFilePath = "/home/wso2/security/keystore/router.key"
+  # Cert file path used for the ratelimiter service mTLS
+  certFilePath = "/home/wso2/security/keystore/router.crt"
+  # Truststore file path used for the ratelimiter service mTLS
+  caCertFilePath = "/home/wso2/security/truststore/ratelimiter.crt"
+  # SAN hostname represented in the public cert
+  sSLCertSANHostname = ""
+
+# X-RateLimit headers to be sent to the client
+[router.ratelimit.xRateLimitHeaders]
+  # Enable/disable sending X-RateLimit headers to the client
+  enabled = true
+  # The standard version to use for X-RateLimit headers. Available values: DRAFT_VERSION_03
+  rFCVersion = "DRAFT_VERSION_03"
 
 [enforcer] # --------------------------------------------------------
 

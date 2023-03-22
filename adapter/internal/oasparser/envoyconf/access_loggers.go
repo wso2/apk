@@ -22,6 +22,7 @@ import (
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	file_accesslogv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/access_loggers/file/v3"
 	grpc_accesslogv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/access_loggers/grpc/v3"
+	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/wso2/apk/adapter/config"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
@@ -75,7 +76,7 @@ func getFileAccessLogConfigs() *config_access_logv3.AccessLog {
 	}
 
 	accessLog := config_access_logv3.AccessLog{
-		Name:   fileAccessLogName,
+		Name:   wellknown.FileAccessLog,
 		Filter: nil,
 		ConfigType: &config_access_logv3.AccessLog_TypedConfig{
 			TypedConfig: accessLogTypedConf,
@@ -114,7 +115,7 @@ func getGRPCAccessLogConfigs(conf *config.Config) *config_access_logv3.AccessLog
 	}
 
 	accessLog := config_access_logv3.AccessLog{
-		Name:   grpcAccessLogName,
+		Name:   wellknown.HTTPGRPCAccessLog,
 		Filter: nil,
 		ConfigType: &config_access_logv3.AccessLog_TypedConfig{
 			TypedConfig: accessLogTypedConf,

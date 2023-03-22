@@ -25,6 +25,7 @@ import (
 	envoy_config_route_v3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 	hcmv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/http_connection_manager/v3"
 	envoy_type_matcher_v3 "github.com/envoyproxy/go-control-plane/envoy/type/matcher/v3"
+	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/err"
 	"github.com/wso2/apk/adapter/pkg/utils/soaputils"
@@ -233,7 +234,7 @@ func genMetadataFilterForExtAuthz() *access_logv3.AccessLogFilter_MetadataFilter
 	return &access_logv3.AccessLogFilter_MetadataFilter{
 		MetadataFilter: &access_logv3.MetadataFilter{
 			Matcher: &envoy_type_matcher_v3.MetadataMatcher{
-				Filter: extAuthzFilterName,
+				Filter: wellknown.HTTPExternalAuthorization,
 				Value: &envoy_type_matcher_v3.ValueMatcher{
 					MatchPattern: &envoy_type_matcher_v3.ValueMatcher_StringMatch{
 						StringMatch: &envoy_type_matcher_v3.StringMatcher{

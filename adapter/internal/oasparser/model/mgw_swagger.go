@@ -65,7 +65,14 @@ type MgwSwagger struct {
 	EnvType                  string
 	// GraphQLSchema              string
 	// GraphQLComplexities        GraphQLComplexityYaml
-	IsSystemAPI bool
+	IsSystemAPI     bool
+	RateLimitPolicy *RateLimitPolicy
+}
+
+// RateLimitPolicy information related to the rate limiting policy
+type RateLimitPolicy struct {
+	Count    int
+	SpanUnit string
 }
 
 // EndpointCluster represent an upstream cluster
@@ -571,4 +578,14 @@ func GenerateInterceptorIncludes(includes []string) *interceptor.RequestInclusio
 		}
 	}
 	return includesV
+}
+
+// CreateDummyMgwSwaggerForTests creates a dummy MgwSwagger struct to be used for unit tests
+func CreateDummyMgwSwaggerForTests(title, version, basePath string, resources []*Resource) *MgwSwagger {
+	return &MgwSwagger{
+		title:         title,
+		version:       version,
+		xWso2Basepath: basePath,
+		resources:     resources,
+	}
 }

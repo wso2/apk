@@ -24,14 +24,16 @@ import (
 
 // RateLimitPolicySpec defines the desired state of RateLimitPolicy
 type RateLimitPolicySpec struct {
-	Policies  []Policy                        `json:"policies,omitempty"`
+	Default   RateLimitAPIPolicy              `json:"default,omitempty"`
+	Override  RateLimitAPIPolicy              `json:"override,omitempty"`
 	TargetRef gwapiv1b1.PolicyTargetReference `json:"targetRef,omitempty"`
 }
 
-// Policy defines the desired state of Policy
-type Policy struct {
+// RateLimitAPIPolicy defines the desired state of Policy
+type RateLimitAPIPolicy struct {
 	// Type of the policy can be either "api" or "application" or "subscription"
 	//
+	// +kubebuilder:validation:Enum=Api;Application;Subscription
 	Type string `json:"type,omitempty"`
 
 	// API policy
@@ -43,14 +45,13 @@ type Policy struct {
 // APIRateLimit defines the desired state of APIPolicy
 type APIRateLimit struct {
 
-	// RequestPerUnit is the number of requests allowed per minute
+	// RequestPerUnit is the number of requests allowed per unit time
 	//
-	// +optional
 	RequestPerUnit int `json:"requestPerUnit,omitempty"`
 
 	// Unit is the unit of the requestPerUnit
 	//
-	// +optional
+	// +kubebuilder:validation:Enum=Minute;Hour;Day
 	Unit string `json:"unit,omitempty"`
 }
 

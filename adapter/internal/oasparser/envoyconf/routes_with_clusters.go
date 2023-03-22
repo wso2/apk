@@ -40,6 +40,7 @@ import (
 	extAuthService "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ext_authz/v3"
 	lua "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/lua/v3"
 	tlsv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/transport_sockets/tls/v3"
+	upstreams "github.com/envoyproxy/go-control-plane/envoy/extensions/upstreams/http/v3"
 	upstreams_http_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/upstreams/http/v3"
 	envoy_type_matcherv3 "github.com/envoyproxy/go-control-plane/envoy/type/matcher/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
@@ -53,6 +54,7 @@ import (
 	"github.com/wso2/apk/adapter/internal/svcdiscovery"
 
 	"github.com/golang/protobuf/proto"
+	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/any"
 	"github.com/golang/protobuf/ptypes/wrappers"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
@@ -68,6 +70,16 @@ type CombinedTemplateValues struct {
 	WireLogValues
 	interceptor.Interceptor
 }
+
+// Constants relevant to the route related ratelimit configurations
+const (
+	DescriptorKeyForOrg               = "org"
+	DescriptorKeyForVhost             = "vhost"
+	DescriptorKeyForPath              = "path"
+	DescriptorKeyForMethod            = "method"
+	DescriptorValueForAPIMethod       = "ALL"
+	DescriptorValueForOperationMethod = ":method"
+)
 
 // CreateRoutesWithClusters creates envoy routes along with clusters and endpoint instances.
 // This creates routes for all the swagger resources and link to clusters.
@@ -105,7 +117,7 @@ func CreateRoutesWithClusters(mgwSwagger model.MgwSwagger, interceptorCerts map[
 		endpoint := resource.GetEndpoints()
 		basePath := strings.TrimSuffix(endpoint.Endpoints[0].Basepath, "/")
 		existingClusterName := getExistingClusterName(*endpoint, processedEndpoints)
-		
+
 		if existingClusterName == "" {
 			clusterName = getClusterName(endpoint.EndpointPrefix, organizationID, vHost, mgwSwagger.GetTitle(), apiVersion, resource.GetID())
 			cluster, address, err := processEndpoints(clusterName, endpoint, timeout, basePath)
@@ -158,6 +170,106 @@ func getExistingClusterName(endpoint model.EndpointCluster, clusterEndpointMappi
 func CreateLuaCluster(interceptorCerts map[string][]byte, endpoint model.InterceptEndpoint) (*clusterv3.Cluster, []*corev3.Address, error) {
 	logger.LoggerOasparser.Debug("creating a lua cluster ", endpoint.ClusterName)
 	return processEndpoints(endpoint.ClusterName, &endpoint.EndpointCluster, endpoint.ClusterTimeout, endpoint.EndpointCluster.Endpoints[0].Basepath)
+}
+
+// CreateRateLimitCluster creates cluster relevant to the rate limit service
+func CreateRateLimitCluster() (*clusterv3.Cluster, []*corev3.Address, error) {
+	conf := config.ReadConfigs()
+	var sslCertSanHostName string
+	if conf.Envoy.RateLimit.SSLCertSANHostname == "" {
+		sslCertSanHostName = conf.Envoy.RateLimit.Host
+	} else {
+		sslCertSanHostName = conf.Envoy.RateLimit.SSLCertSANHostname
+	}
+	rlCluster := &model.EndpointCluster{
+		Endpoints: []model.Endpoint{
+			{
+				Host:    conf.Envoy.RateLimit.Host,
+				URLType: httpsURLType,
+				Port:    conf.Envoy.RateLimit.Port,
+			},
+		},
+	}
+	cluster, address, rlErr := processEndpoints(rateLimitClusterName, rlCluster, 20, "")
+	if rlErr != nil {
+		return nil, nil, rlErr
+	}
+	config := &upstreams.HttpProtocolOptions{
+		UpstreamHttpProtocolOptions: &corev3.UpstreamHttpProtocolOptions{
+			AutoSni: true,
+		},
+		UpstreamProtocolOptions: &upstreams.HttpProtocolOptions_ExplicitHttpConfig_{
+			ExplicitHttpConfig: &upstreams.HttpProtocolOptions_ExplicitHttpConfig{
+				ProtocolConfig: &upstreams.HttpProtocolOptions_ExplicitHttpConfig_Http2ProtocolOptions{
+					Http2ProtocolOptions: &corev3.Http2ProtocolOptions{},
+				},
+			},
+		},
+	}
+	MarshalledHTTPProtocolOptions, err := proto.Marshal(config)
+	if err != nil {
+		return nil, nil, err
+	}
+	cluster.TypedExtensionProtocolOptions = map[string]*anypb.Any{
+		"envoy.extensions.upstreams.http.v3.HttpProtocolOptions": {
+			TypeUrl: httpProtocolOptionsName,
+			Value:   MarshalledHTTPProtocolOptions,
+		},
+	}
+	tlsCert := generateTLSCert(conf.Envoy.RateLimit.KeyFilePath, conf.Envoy.RateLimit.CertFilePath)
+
+	ciphersArray := strings.Split(conf.Envoy.Upstream.TLS.Ciphers, ",")
+	for i := range ciphersArray {
+		ciphersArray[i] = strings.TrimSpace(ciphersArray[i])
+	}
+	upstreamTLSContext := &tlsv3.UpstreamTlsContext{
+		CommonTlsContext: &tlsv3.CommonTlsContext{
+			TlsParams: &tlsv3.TlsParameters{
+				TlsMinimumProtocolVersion: createTLSProtocolVersion(conf.Envoy.Upstream.TLS.MinimumProtocolVersion),
+				TlsMaximumProtocolVersion: createTLSProtocolVersion(conf.Envoy.Upstream.TLS.MaximumProtocolVersion),
+				CipherSuites:              ciphersArray,
+			},
+			TlsCertificates: []*tlsv3.TlsCertificate{tlsCert},
+		},
+	}
+	trustedCASrc := &corev3.DataSource{
+		Specifier: &corev3.DataSource_Filename{
+			Filename: conf.Envoy.RateLimit.CaCertFilePath,
+		},
+	}
+	upstreamTLSContext.Sni = sslCertSanHostName
+	upstreamTLSContext.CommonTlsContext.ValidationContextType = &tlsv3.CommonTlsContext_ValidationContext{
+		ValidationContext: &tlsv3.CertificateValidationContext{
+			TrustedCa: trustedCASrc,
+			MatchSubjectAltNames: []*envoy_type_matcherv3.StringMatcher{
+				{
+					MatchPattern: &envoy_type_matcherv3.StringMatcher_Exact{
+						Exact: sslCertSanHostName,
+					},
+				},
+			},
+		},
+	}
+	marshalledTLSContext, err := ptypes.MarshalAny(upstreamTLSContext)
+	if err != nil {
+		return nil, nil, errors.New("internal Error while marshalling the upstream TLS Context")
+	}
+
+	cluster.TransportSocketMatches[0] = &clusterv3.Cluster_TransportSocketMatch{
+		Name: "ts" + strconv.Itoa(0),
+		Match: &structpb.Struct{
+			Fields: map[string]*structpb.Value{
+				"lb_id": structpb.NewStringValue(strconv.Itoa(0)),
+			},
+		},
+		TransportSocket: &corev3.TransportSocket{
+			Name: wellknown.TransportSocketTLS,
+			ConfigType: &corev3.TransportSocket_TypedConfig{
+				TypedConfig: marshalledTLSContext,
+			},
+		},
+	}
+	return cluster, address, nil
 }
 
 // CreateTracingCluster creates a cluster definition for router's tracing server.
@@ -249,7 +361,7 @@ func processEndpoints(clusterName string, clusterDetails *model.EndpointCluster,
 					},
 				},
 				TransportSocket: &corev3.TransportSocket{
-					Name: transportSocketName,
+					Name: wellknown.TransportSocketTLS,
 					ConfigType: &corev3.TransportSocket_TypedConfig{
 						TypedConfig: marshalledTLSContext,
 					},
@@ -649,6 +761,30 @@ end`
 
 	logger.LoggerOasparser.Debugf("adding route : %s for API : %s", resourcePath, title)
 
+	rateLimitPolicyLevel := ""
+	basePathForRLService := basePath
+	if params.apiLevelRateLimitPolicy != nil {
+		rateLimitPolicyLevel = RateLimitPolicyAPILevel
+	} else {
+		for _, operation := range resource.GetMethod() {
+			if operation.RateLimitPolicy != nil {
+				rateLimitPolicyLevel = RateLimitPolicyOperationLevel
+				basePathForRLService += resourcePath
+				break
+			}
+		}
+	}
+
+	var rateLimitPolicyCriteria *ratelimitCriteria
+	if rateLimitPolicyLevel != "" {
+		rateLimitPolicyCriteria = &ratelimitCriteria{
+			level:                rateLimitPolicyLevel,
+			organizationID:       params.organizationID,
+			vHost:                vHost,
+			basePathForRLService: basePathForRLService,
+		}
+	}
+
 	if resource != nil && resource.HasPolicies() {
 		logger.LoggerOasparser.Debug("Start creating routes for resource with policies")
 
@@ -762,8 +898,8 @@ end`
 				metadataValue := operation.GetMethod() + "_to_" + newMethod
 				match2.DynamicMetadata = generateMetadataMatcherForInternalRoutes(metadataValue)
 
-				action1 := generateRouteAction(apiType, routeConfig)
-				action2 := generateRouteAction(apiType, routeConfig)
+				action1 := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria)
+				action2 := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria)
 
 				// Create route1 for current method.
 				// Do not add policies to route config. Send via enforcer
@@ -786,7 +922,7 @@ end`
 			} else {
 				logger.LoggerOasparser.Debug("Creating routes for resource with policies", resourcePath, operation.GetMethod())
 				// create route for current method. Add policies to route config. Send via enforcer
-				action := generateRouteAction(apiType, routeConfig)
+				action := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria)
 				match := generateRouteMatch(routePath)
 				match.Headers = generateHTTPMethodMatcher(operation.GetMethod(), clusterName)
 				match.DynamicMetadata = generateMetadataMatcherForExternalRoutes()
@@ -810,7 +946,7 @@ end`
 		}
 		match := generateRouteMatch(routePath)
 		match.Headers = generateHTTPMethodMatcher(methodRegex, clusterName)
-		action := generateRouteAction(apiType, routeConfig)
+		action := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria)
 		rewritePath := generateRoutePathForReWrite(basePath, resourcePath, pathMatchType)
 		action.Route.RegexRewrite = generateRegexMatchAndSubstitute(rewritePath, endpointBasepath, resourcePath, pathMatchType)
 
@@ -1206,6 +1342,7 @@ func getCorsPolicy(corsConfig *model.CorsConfig) *cors_filter_v3.CorsPolicy {
 func genRouteCreateParams(swagger *model.MgwSwagger, resource *model.Resource, vHost, endpointBasePath string,
 	clusterName string, requestInterceptor map[string]model.InterceptEndpoint,
 	responseInterceptor map[string]model.InterceptEndpoint, organizationID string, isSandbox bool) *routeCreateParams {
+
 	params := &routeCreateParams{
 		organizationID:               organizationID,
 		title:                        swagger.GetTitle(),
@@ -1213,7 +1350,7 @@ func genRouteCreateParams(swagger *model.MgwSwagger, resource *model.Resource, v
 		version:                      swagger.GetVersion(),
 		vHost:                        vHost,
 		xWSO2BasePath:                swagger.GetXWso2Basepath(),
-		AuthHeader:                   swagger.GetXWSO2AuthHeader(),
+		authHeader:                   swagger.GetXWSO2AuthHeader(),
 		clusterName:                  clusterName,
 		endpointBasePath:             endpointBasePath,
 		corsPolicy:                   swagger.GetCorsConfig(),
@@ -1222,6 +1359,7 @@ func genRouteCreateParams(swagger *model.MgwSwagger, resource *model.Resource, v
 		responseInterceptor:          responseInterceptor,
 		passRequestPayloadToEnforcer: swagger.GetXWso2RequestBodyPass(),
 		isDefaultVersion:             swagger.IsDefaultVersion,
+		apiLevelRateLimitPolicy:      swagger.RateLimitPolicy,
 	}
 	return params
 }
@@ -1283,8 +1421,7 @@ func createInterceptorAPIClusters(mgwSwagger model.MgwSwagger, interceptorCerts 
 		cluster, addresses, err := CreateLuaCluster(interceptorCerts, apiRequestInterceptor)
 		if err != nil {
 			apiRequestInterceptor = model.InterceptEndpoint{}
-			logger.LoggerOasparser.Errorf("Error while adding api level request intercepter external cluster for %s. %v",
-				apiTitle, err.Error())
+			logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2242, apiTitle, err.Error()))
 		} else {
 			clusters = append(clusters, cluster)
 			endpoints = append(endpoints, addresses...)
@@ -1299,7 +1436,7 @@ func createInterceptorAPIClusters(mgwSwagger model.MgwSwagger, interceptorCerts 
 		cluster, addresses, err := CreateLuaCluster(interceptorCerts, apiResponseInterceptor)
 		if err != nil {
 			apiResponseInterceptor = model.InterceptEndpoint{}
-			logger.LoggerOasparser.Errorf("Error while adding api level response intercepter external cluster for %s. %v", apiTitle, err.Error())
+			logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2243, apiTitle, err.Error()))
 		} else {
 			clusters = append(clusters, cluster)
 			endpoints = append(endpoints, addresses...)
@@ -1326,8 +1463,7 @@ func createInterceptorResourceClusters(mgwSwagger model.MgwSwagger, interceptorC
 			apiTitle, apiVersion, resource.GetID())
 		cluster, addresses, err := CreateLuaCluster(interceptorCerts, reqInterceptorVal)
 		if err != nil {
-			logger.LoggerOasparser.Errorf("Error while adding resource level request intercept external cluster for %s. %v",
-				apiTitle, err.Error())
+			logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2244, apiTitle, err.Error()))
 		} else {
 			resourceRequestInterceptor = &reqInterceptorVal
 			clusters = append(clusters, cluster)
@@ -1346,8 +1482,7 @@ func createInterceptorResourceClusters(mgwSwagger model.MgwSwagger, interceptorC
 			operationalReqInterceptors[method] = opI // since cluster name is updated
 			cluster, addresses, err := CreateLuaCluster(interceptorCerts, opI)
 			if err != nil {
-				logger.LoggerOasparser.Errorf("Error while adding operational level request intercept external cluster for %v:%v-%v-%v. %v",
-					apiTitle, apiVersion, resource.GetPath(), opID, err.Error())
+				logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2245, apiTitle, apiVersion, resource.GetPath(), opID, err.Error()))
 				// setting resource level interceptor to failed operation level interceptor.
 				operationalReqInterceptors[method] = *resourceRequestInterceptor
 			} else {
@@ -1365,8 +1500,7 @@ func createInterceptorResourceClusters(mgwSwagger model.MgwSwagger, interceptorC
 			vHost, apiTitle, apiVersion, resource.GetID())
 		cluster, addresses, err := CreateLuaCluster(interceptorCerts, respInterceptorVal)
 		if err != nil {
-			logger.LoggerOasparser.Errorf("Error while adding resource level response intercept external cluster for %s. %v",
-				apiTitle, err.Error())
+			logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2246, apiTitle, err.Error()))
 		} else {
 			resourceResponseInterceptor = &respInterceptorVal
 			clusters = append(clusters, cluster)
@@ -1386,8 +1520,7 @@ func createInterceptorResourceClusters(mgwSwagger model.MgwSwagger, interceptorC
 			operationalRespInterceptorVal[method] = opI // since cluster name is updated
 			cluster, addresses, err := CreateLuaCluster(interceptorCerts, opI)
 			if err != nil {
-				logger.LoggerOasparser.Errorf("Error while adding operational level response intercept external cluster for %v:%v-%v-%v. %v",
-					apiTitle, apiVersion, resource.GetPath(), opID, err.Error())
+				logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2247, apiTitle, apiVersion, resource.GetPath(), opID, err.Error()))
 				// setting resource level interceptor to failed operation level interceptor.
 				operationalRespInterceptorVal[method] = *resourceResponseInterceptor
 			} else {

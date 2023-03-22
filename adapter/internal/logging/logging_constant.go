@@ -17,7 +17,9 @@
 
 package logging
 
-import logging "github.com/wso2/apk/adapter/pkg/logging"
+import (
+	logging "github.com/wso2/apk/adapter/pkg/logging"
+)
 
 // Log (Error) severity level constants
 const (
@@ -30,20 +32,19 @@ const (
 )
 
 // Error Log Internal Adapter(1100-1199) Constants
+// - LoggerMgw
 const (
 	error1100 = 1100
 	error1101 = 1101
 	error1102 = 1102
 	error1103 = 1103
 	error1104 = 1104
-)
-
-// Error Log Internal API(1200-1299) Constants
-const (
-	error1200 = 1200
+	error1105 = 1105
+	error1106 = 1106
 )
 
 // Error Log Internal discovery(1400-1499) Config Constants
+// - LoggerXds
 const (
 	error1400 = 1400
 	error1401 = 1401
@@ -56,6 +57,7 @@ const (
 )
 
 // Error Log Internal XDS(1700-1799) Config Constants
+// - LoggerXds
 const (
 	error1700 = 1700
 	error1701 = 1701
@@ -68,15 +70,22 @@ const (
 	error1709 = 1709
 	error1710 = 1710
 	error1711 = 1711
+	error1712 = 1712
+	error1713 = 1713
+	error1714 = 1714
+	error1715 = 1715
+	error1716 = 1716
 )
 
 // Error Log Internal intercepter(1800-1899) Config Constants
+// - LoggerInterceptor
 const (
 	error1800 = 1800
 	error1801 = 1801
 )
 
 // Error Log Internal OASParser(2200-2299) Config Constants
+// - LoggerOasparser
 const (
 	error2200 = 2200
 	error2201 = 2201
@@ -96,6 +105,22 @@ const (
 	error2237 = 2237
 	error2238 = 2238
 	error2239 = 2239
+	error2240 = 2240
+	error2241 = 2241
+	error2242 = 2242
+	error2243 = 2243
+	error2244 = 2244
+	error2245 = 2245
+	error2246 = 2246
+	error2247 = 2247
+	error2248 = 2248
+	error2249 = 2249
+)
+
+// Error Log RateLimiter callbacks(2300-2399) Config Constants
+// - LoggerEnforcerXdsCallbacks
+const (
+	error2300 = 2300
 )
 
 // Error Log Internal GRPC(2700-2799) Config Constants
@@ -130,9 +155,14 @@ var Mapper = map[int]logging.ErrorDetails{
 		Message:   "Readiness probe is not set as local api artifacts processing has failed.",
 		Severity:  CRITICAL,
 	},
-	error1200: {
-		ErrorCode: error1200,
-		Message:   "The provided port value for the REST Api Server :%v is not an integer. %v",
+	error1105: {
+		ErrorCode: error1105,
+		Message:   "Error serving Rate Limiter xDS gRPC server: %v",
+		Severity:  BLOCKER,
+	},
+	error1106: {
+		ErrorCode: error1106,
+		Message:   "Failed to listen %v: %v",
 		Severity:  BLOCKER,
 	},
 	error1400: {
@@ -230,14 +260,39 @@ var Mapper = map[int]logging.ErrorDetails{
 		Message:   "Error retrieving application: %v",
 		Severity:  CRITICAL,
 	},
+	error1712: {
+		ErrorCode: error1712,
+		Message:   "Unknown rate limit unit %q, defaulting to UNKNOWN",
+		Severity:  MAJOR,
+	},
+	error1713: {
+		ErrorCode: error1713,
+		Message:   "Error extracting vhost from apiIdentifier: %q. Continue cleaning other maps: %v",
+		Severity:  MAJOR,
+	},
+	error1714: {
+		ErrorCode: error1714,
+		Message:   "Error while creating the rate limit snapshot: %v",
+		Severity:  MAJOR,
+	},
+	error1715: {
+		ErrorCode: error1715,
+		Message:   "Inconsistent rate limiter snapshot: %v",
+		Severity:  MAJOR,
+	},
+	error1716: {
+		ErrorCode: error1716,
+		Message:   "Error while updating the rate limit snapshot: %v",
+		Severity:  MAJOR,
+	},
 	error1800: {
 		ErrorCode: error1800,
-		Message:   "error while parsing the interceptor template: %v",
+		Message:   "Error while parsing the interceptor template: %v",
 		Severity:  CRITICAL,
 	},
 	error1801: {
 		ErrorCode: error1801,
-		Message:   "executing request interceptor template: %v",
+		Message:   "Executing request interceptor template: %v",
 		Severity:  CRITICAL,
 	},
 	error2200: {
@@ -327,12 +382,67 @@ var Mapper = map[int]logging.ErrorDetails{
 	},
 	error2239: {
 		ErrorCode: error2239,
-		Message: "Error while adding resource level endpoints for %s:%v-%v. %v",
-		Severity: MAJOR,
+		Message:   "Error while adding resource level endpoints for %s:%v-%v. %v",
+		Severity:  MAJOR,
+	},
+	error2240: {
+		ErrorCode: error2240,
+		Message:   "Invalid XRatelimitHeaders type, continue with default type %s",
+		Severity:  MAJOR,
+	},
+	error2241: {
+		ErrorCode: error2241,
+		Message:   "Error occurred while parsing ratelimit filter config. Error: %s",
+		Severity:  MAJOR,
+	},
+	error2242: {
+		ErrorCode: error2242,
+		Message:   "Error while adding api level request intercepter external cluster for %s. %v",
+		Severity:  MAJOR,
+	},
+	error2243: {
+		ErrorCode: error2243,
+		Message:   "Error while adding api level response intercepter external cluster for %s. %v",
+		Severity:  MAJOR,
+	},
+	error2244: {
+		ErrorCode: error2244,
+		Message:   "Error while adding resource level request intercept external cluster for %s. %v",
+		Severity:  MAJOR,
+	},
+	error2245: {
+		ErrorCode: error2245,
+		Message:   "Error while adding operational level request intercept external cluster for %v:%v-%v-%v. %v",
+		Severity:  MAJOR,
+	},
+	error2246: {
+		ErrorCode: error2246,
+		Message:   "Error while adding resource level response intercept external cluster for %s. %v",
+		Severity:  MAJOR,
+	},
+	error2247: {
+		ErrorCode: error2247,
+		Message:   "Error while adding operational level response intercept external cluster for %v:%v-%v-%v. %v",
+		Severity:  MAJOR,
+	},
+	error2248: {
+		ErrorCode: error2248,
+		Message:   "Failed to initialize ratelimit cluster. Hence terminating the adapter. Error: %s",
+		Severity:  BLOCKER,
+	},
+	error2249: {
+		ErrorCode: error2249,
+		Message:   "Failed to initialize tracer's cluster. Router tracing will be disabled. %v",
+		Severity:  CRITICAL,
 	},
 	error2700: {
 		ErrorCode: error2700,
 		Message:   "Error while processing the private-public key pair : %v",
 		Severity:  BLOCKER,
+	},
+	error2300: {
+		ErrorCode: error2300,
+		Message:   "Stream request for type %s on stream id: %d, from node: %s, Error: %s",
+		Severity:  MAJOR,
 	},
 }

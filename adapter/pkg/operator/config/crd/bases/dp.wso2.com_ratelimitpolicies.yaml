@@ -35,27 +35,60 @@ spec:
           spec:
             description: RateLimitPolicySpec defines the desired state of RateLimitPolicy
             properties:
-              policies:
-                items:
-                  description: Policy defines the desired state of Policy
-                  properties:
-                    api:
-                      description: API policy
-                      properties:
-                        requestPerUnit:
-                          description: RequestPerUnit is the number of requests allowed
-                            per minute
-                          type: integer
-                        unit:
-                          description: Unit is the unit of the requestPerUnit
-                          type: string
-                      type: object
-                    type:
-                      description: Type of the policy can be either "api" or "application"
-                        or "subscription"
-                      type: string
-                  type: object
-                type: array
+              default:
+                description: RateLimitAPIPolicy defines the desired state of Policy
+                properties:
+                  api:
+                    description: API policy
+                    properties:
+                      requestPerUnit:
+                        description: RequestPerUnit is the number of requests allowed
+                          per unit time
+                        type: integer
+                      unit:
+                        description: Unit is the unit of the requestPerUnit
+                        enum:
+                        - Minute
+                        - Hour
+                        - Day
+                        type: string
+                    type: object
+                  type:
+                    description: Type of the policy can be either "api" or "application"
+                      or "subscription"
+                    enum:
+                    - Api
+                    - Application
+                    - Subscription
+                    type: string
+                type: object
+              override:
+                description: RateLimitAPIPolicy defines the desired state of Policy
+                properties:
+                  api:
+                    description: API policy
+                    properties:
+                      requestPerUnit:
+                        description: RequestPerUnit is the number of requests allowed
+                          per unit time
+                        type: integer
+                      unit:
+                        description: Unit is the unit of the requestPerUnit
+                        enum:
+                        - Minute
+                        - Hour
+                        - Day
+                        type: string
+                    type: object
+                  type:
+                    description: Type of the policy can be either "api" or "application"
+                      or "subscription"
+                    enum:
+                    - Api
+                    - Application
+                    - Subscription
+                    type: string
+                type: object
               targetRef:
                 description: PolicyTargetReference identifies an API object to apply
                   policy to. This should be used as part of Policy resources that

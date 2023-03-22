@@ -3,11 +3,11 @@ kind: RateLimitPolicy
 metadata:
   name: sand-http-bin-ratelimit
 spec:
-  policies:
-    - type: Api
-      api:
-        requestPerUnit: 5
-        unit: Minute
+  override:
+    type: Api
+    api:
+      count: 5
+      spanUnit: Minute
   targetRef:
     kind: HTTPRoute
     name: sand-http-route-http-bin-api
