@@ -208,7 +208,7 @@ public isolated function getAllOrganizationDAO() returns Internal_Organization[]
     } else {
         do {
             map<Internal_Organization> organization = {};
-            sql:ParameterizedQuery query = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName, claim_key as claimKey, claim_value as claimValue, string_to_array(NAMESPACE::text,',')::text[] AS serviceNamespaces FROM ORGANIZATION, ORGANIZATION_CLAIM_MAPPING where ORGANIZATION.UUID = ORGANIZATION_CLAIM_MAPPING.UUID`;
+            sql:ParameterizedQuery query = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName, claim_key as claimKey, claim_value as claimValue FROM ORGANIZATION, ORGANIZATION_CLAIM_MAPPING where ORGANIZATION.UUID = ORGANIZATION_CLAIM_MAPPING.UUID`;
             stream<Organizations, sql:Error?> orgStream = dbClient->query(query);
             
             check from Organizations org in orgStream do {
@@ -217,7 +217,7 @@ public isolated function getAllOrganizationDAO() returns Internal_Organization[]
                     organization.get(org.id).claimList.push(claim);
                 } else {
                     OrganizationClaim claim = {claimKey: org.claimKey, claimValue: org.claimValue};
-                    Internal_Organization organizationData = {id: org.id, name: org.name, displayName: org.displayName, enabled: true, serviceNamespaces: org.serviceNamespaces,  claimList: [claim]};
+                    Internal_Organization organizationData = {id: org.id, name: org.name, displayName: org.displayName, enabled: true, serviceNamespaces: ["*"],  claimList: [claim]};
                     organization[org.id] = organizationData;
                 }
             };
@@ -253,7 +253,7 @@ public isolated function getAllOrganizationDAO() returns Internal_Organization[]
             check orgStream2.close();
             return organization.toArray();
         } on fail var e {
-        	string message = "Internal Error occured while retrieving organization data from Database";
+        	string message = e.message();
             return error(message, e, message = message, description = message, code = 909001, statusCode = "500");
         }
     }
