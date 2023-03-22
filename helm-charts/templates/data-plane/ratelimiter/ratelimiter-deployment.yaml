@@ -147,6 +147,14 @@ spec:
             initialDelaySeconds: {{ .Values.wso2.apk.dp.ratelimiter.deployment.readinessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.wso2.apk.dp.ratelimiter.deployment.readinessProbe.periodSeconds }}
             failureThreshold: {{ .Values.wso2.apk.dp.ratelimiter.deployment.readinessProbe.failureThreshold }}
+      {{- if and .Values.wso2.subscription .Values.wso2.subscription.imagePullSecrets}}
+      imagePullSecrets:
+        - name: {{ .Values.wso2.subscription.imagePullSecrets }}
+      {{- else if and .Values.wso2.subscription (not (eq .Values.wso2.subscription.username "")) (not (eq .Values.wso2.subscription.password "")) }}
+      imagePullSecrets:
+        - name: {{ template "apk-helm.resource.prefix" . }}-apk-wso2-private-registry-creds
+      {{ end }}      
+
       volumes:
         - name: ratelimiter-keystore-secret-volume
           secret:

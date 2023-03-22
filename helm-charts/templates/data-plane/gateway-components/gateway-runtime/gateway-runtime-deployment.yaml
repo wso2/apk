@@ -252,6 +252,13 @@ spec:
             initialDelaySeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.periodSeconds }}
             failureThreshold: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.failureThreshold }}
+      {{- if and .Values.wso2.subscription .Values.wso2.subscription.imagePullSecrets}}
+      imagePullSecrets:
+        - name: {{ .Values.wso2.subscription.imagePullSecrets }}
+      {{- else if and .Values.wso2.subscription (not (eq .Values.wso2.subscription.username "")) (not (eq .Values.wso2.subscription.password "")) }}
+      imagePullSecrets:
+        - name: {{ template "apk-helm.resource.prefix" . }}-apk-wso2-private-registry-creds
+      {{ end }}
       volumes:
       {{ if .Values.wso2.apk.dp.ratelimiter.enabled }}
         - name: ratelimiter-truststore-secret-volume
