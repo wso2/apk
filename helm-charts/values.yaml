@@ -453,7 +453,7 @@ idp:
       strategy: Recreate
       replicas: 1
       imagePullPolicy: Always
-      image: wso2/idp-domain-service:0.0.1-m6
+      image: wso2/idp-domain-service:latest
   idpui:
     appName: "idp-ui"
     deployment:
@@ -480,7 +480,7 @@ idp:
       strategy: Recreate
       replicas: 1
       imagePullPolicy: Always
-      image: wso2/idp-ui:0.0.1-m6
+      image: wso2/idp-ui:latest
     configs:
       idpLoginUrl: "https://idp.am.wso2.com:9095/commonauth/login"
       idpAuthCallBackUrl: "https://idp.am.wso2.com:9095/oauth2/auth-callback"

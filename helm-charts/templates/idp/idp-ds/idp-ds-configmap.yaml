@@ -73,5 +73,8 @@ data:
     password = "superAdmin"
     organizations = [""]
     superAdmin = true
+    [wso2.idp_domain_service.idpConfiguration.keyStores.tls]
+    keyFile = "/home/wso2apk/idp/security/idp.key"
+    certFile = "/home/wso2apk/idp/security/idp.crt"
 
 {{- end -}}
