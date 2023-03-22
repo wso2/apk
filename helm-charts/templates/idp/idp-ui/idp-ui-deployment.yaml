@@ -45,7 +45,47 @@ spec:
             value: {{ .Values.idp.idpui.configs.idpLoginUrl }}
           - name: IDP_AUTH_CALLBACK_URL
             value: {{ .Values.idp.idpui.configs.idpAuthCallBackUrl }}
-{{ include "apk-helm.deployment.readinessProbe.http" .Values.idp.idpui.deployment | indent 10 }}
-{{ include "apk-helm.deployment.livenessProbe.http" .Values.idp.idpui.deployment | indent 10 }}
+          - name: SSL_CERT_PATH
+            value: /home/wso2apk/security/idp.crt
+          - name: SSL_KEY_PATH
+            value: /home/wso2apk/security/idp.key
+          readinessProbe:
+            httpGet:
+              path: /authenticationEndpoint/health
+              port: 9443
+              scheme: HTTPS
+            initialDelaySeconds: {{ .Values.idp.idpui.deployment.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.idp.idpui.deployment.readinessProbe.periodSeconds }}    
+          livenessProbe:
+            httpGet:
+              path: /authenticationEndpoint/health
+              port: 9443
+              scheme: HTTPS
+            initialDelaySeconds: {{ .Values.idp.idpui.deployment.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.idp.idpui.deployment.livenessProbe.periodSeconds }}
 {{ include "apk-helm.deployment.resources" .Values.idp.idpui.deployment.resources | indent 10 }}
+          volumeMounts:
+            - name: idp-ui-tls-volume
+              mountPath: /home/wso2apk/security/idp.key
+            {{- if and .Values.idp.idpui.configs .Values.idp.idpui.configs.tls }}
+              subPath: {{ .Values.idp.idpui.configs.tls.certKeyFilename | default "tls.key" }}
+            {{- else }}
+              subPath: tls.key
+            {{- end }}
+            - name: idp-ui-tls-volume
+              mountPath: /home/wso2apk/security/idp.crt
+            {{- if and .Values.idp.idpui.configs .Values.idp.idpui.configs.tls }}
+              subPath: {{ .Values.idp.idpui.configs.tls.certFilename | default "tls.crt" }}
+            {{- else }}
+              subPath: tls.crt
+            {{- end }}
+
+      volumes:
+        - name: idp-ui-tls-volume
+          secret:
+       {{ if and .Values.idp.idpui.configs .Values.idp.idpui.configs.tls }}
+            secretName: {{ .Values.idp.idpui.configs.tls.certificatesSecret | default (printf "%s-idp-ui-server-cert" (include "apk-helm.resource.prefix" .)) }}
+       {{ else }}
+            secretName: {{ template "apk-helm.resource.prefix" . }}-idp-ui-server-cert
+       {{ end }}            
 {{- end -}}

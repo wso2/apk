@@ -39,7 +39,7 @@ public type IDPConfiguration record {|
 
 public type KeyStores record {|
     CertKey signing = {keyFile: "/home/wso2apk/idp/security/wso2carbon.key", certFile: "/home/wso2apk/idp/security/wso2carbon.pem"};
-    CertKey tls = {keyFile: "/home/wso2apk/idp/security/tls.key",certFile: "/home/wso2apk/idp/security/tls.crt"};
+    CertKey tls = {keyFile: "/home/wso2apk/idp/security/idp.key",certFile: "/home/wso2apk/idp/security/idp.crt"};
 |};
 
 # Description

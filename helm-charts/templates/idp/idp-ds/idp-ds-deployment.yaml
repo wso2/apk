@@ -44,8 +44,21 @@ spec:
           ports:
             - containerPort: 9443
               protocol: "TCP"
-{{ include "apk-helm.deployment.readinessProbe.http" .Values.idp.idpds.deployment | indent 10 }}
-{{ include "apk-helm.deployment.livenessProbe.http" .Values.idp.idpds.deployment | indent 10 }}
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 9443
+              scheme: HTTPS
+            initialDelaySeconds: {{ .Values.idp.idpds.deployment.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.idp.idpds.deployment.readinessProbe.periodSeconds }}    
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 9443
+              scheme: HTTPS
+            initialDelaySeconds: {{ .Values.idp.idpds.deployment.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.idp.idpds.deployment.livenessProbe.periodSeconds }}
+
 {{ include "apk-helm.deployment.resources" .Values.idp.idpds.deployment.resources | indent 10 }}
           volumeMounts:
             - mountPath: /home/wso2apk/idp/conf/Config.toml
@@ -57,6 +70,21 @@ spec:
             - mountPath: /home/wso2apk/idp/security/wso2carbon.pem
               name: idp-signing-keystore-volume
               subPath: wso2carbon.pem
+            - name: idp-ds-tls-volume
+              mountPath: /home/wso2apk/idp/security/idp.key
+            {{- if and .Values.idp.idpds.configs .Values.idp.idpds.configs.tls }}
+              subPath: {{ .Values.idp.idpds.configs.tls.certKeyFilename | default "tls.key" }}
+            {{- else }}
+              subPath: tls.key
+            {{- end }}
+            - name: idp-ds-tls-volume
+              mountPath: /home/wso2apk/idp/security/idp.crt
+            {{- if and .Values.idp.idpds.configs .Values.idp.idpds.configs.tls }}
+              subPath: {{ .Values.idp.idpds.configs.tls.certFilename | default "tls.crt" }}
+            {{- else }}
+              subPath: tls.crt
+            {{- end }}
+
       volumes:
         - name: config-toml-volume
           configMap:
@@ -64,4 +92,12 @@ spec:
         - name: idp-signing-keystore-volume
           secret: 
             secretName: {{ template "apk-helm.resource.prefix" . }}-idp-signing-keystore-secret
+        - name: idp-ds-tls-volume
+          secret:
+       {{ if and .Values.idp.idpds.configs .Values.idp.idpds.configs.tls }}
+            secretName: {{ .Values.idp.idpds.configs.tls.certificatesSecret | default (printf "%s-idpds-ds-server-cert" (include "apk-helm.resource.prefix" .)) }}
+       {{ else }}
+            secretName: {{ template "apk-helm.resource.prefix" . }}-idp-ds-server-cert
+       {{ end }}
+
 {{- end -}}
