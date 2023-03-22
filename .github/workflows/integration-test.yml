@@ -132,6 +132,7 @@ jobs:
         azcliversion: 2.44.1
         inlineScript: |
           az aks create --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" --name "${{ secrets.AKS_CLUSTER_NAME }}" --enable-cluster-autoscaler --min-count 1 --max-count 3 --location "southeastasia" --generate-ssh-keys --verbose 
+          az aks update -g "${{ secrets.AZURE_RESOURCE_GROUP }}" -n "${{ secrets.AKS_CLUSTER_NAME }}" --attach-acr ${{ secrets.AZURE_ACR_NAME }}
     - uses: azure/aks-set-context@v3
       with:
          resource-group: '${{ secrets.AZURE_RESOURCE_GROUP }}'
