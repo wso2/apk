@@ -34,7 +34,7 @@ import (
 
 // AdapterInternalAPI represents the object structure holding the information related to the
 // adapter internal representation. The values are populated from the operator. The pathItem level information is represented
-// by the resources array which contains the MgwResource entries.
+// by the resources array which contains the Resource entries.
 type AdapterInternalAPI struct {
 	id                       string
 	UUID                     string
@@ -128,13 +128,13 @@ type EndpointConfig struct {
 	CircuitBreakers *CircuitBreakers `mapstructure:"circuitBreakers"`
 }
 
-// RetryConfig holds the parameters for retries done by cc to the EndpointCluster
+// RetryConfig holds the parameters for retries done by apk to the EndpointCluster
 type RetryConfig struct {
 	Count       int32    `mapstructure:"count"`
 	StatusCodes []uint32 `mapstructure:"statusCodes"`
 }
 
-// CircuitBreakers holds the parameters for retries done by cc to the EndpointCluster
+// CircuitBreakers holds the parameters for retries done by apk to the EndpointCluster
 type CircuitBreakers struct {
 	MaxConnections     int32 `mapstructure:"maxConnections"`
 	MaxRequests        int32 `mapstructure:"maxRequests"`

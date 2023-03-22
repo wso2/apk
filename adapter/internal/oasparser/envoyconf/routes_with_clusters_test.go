@@ -487,7 +487,7 @@ func createDefaultBackendRef(backendName string) gwapiv1b1.HTTPBackendRef {
 // 	var adapterInternalAPI model.AdapterInternalAPI
 // 	err = adapterInternalAPI.PopulateFromAPIYaml(apiYaml)
 
-// 	asyncapiFilePath := config.GetMgwHome() + "/../adapter/test-resources/envoycodegen/asyncapi_websocket.yaml"
+// 	asyncapiFilePath := config.GetApkHome() + "/../adapter/test-resources/envoycodegen/asyncapi_websocket.yaml"
 // 	asyncapiByteArr, err := ioutil.ReadFile(asyncapiFilePath)
 // 	assert.Nil(t, err, "Error while reading file : %v"+asyncapiFilePath)
 // 	apiJsn, conversionErr := utils.ToJSON(asyncapiByteArr)
@@ -629,7 +629,7 @@ func TestCreateHealthEndpoint(t *testing.T) {
 
 // todo(amali) add a test similar to the below using crs
 // func testCreateRoutesWithClustersAPIClusters(t *testing.T) {
-// 	openapiFilePath := config.GetMgwHome() + "/../adapter/test-resources/envoycodegen/openapi_prod_sand_clusters.yaml"
+// 	openapiFilePath := config.GetApkHome() + "/../adapter/test-resources/envoycodegen/openapi_prod_sand_clusters.yaml"
 // 	openapiByteArr, err := ioutil.ReadFile(openapiFilePath)
 // 	assert.Nil(t, err, "Error while reading the openapi file : "+openapiFilePath)
 // 	adapterInternalAPIForOpenapi := model.AdapterInternalAPI{}

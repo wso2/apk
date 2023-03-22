@@ -35,17 +35,17 @@ import (
 )
 
 var (
-	onceGetMgwHome    sync.Once
+	onceGetApkHome    sync.Once
 	onceLogConfigRead sync.Once
 	adapterLogConfig  *LogConfig
-	mgwHome           string
+	apkHome           string
 	logConfigPath     string
 	envVariableMap    map[string]string
 )
 
 const (
 	// The environtmental variable which represents the path of the distribution in host machine.
-	mgwHomeEnvVariable = "APK_HOME"
+	apkHomeEnvVariable = "APK_HOME"
 	// The environtmental variable which represents the path of the log_config.toml in host machine.
 	logConfigPathEnvVariable = "LOG_CONFIG_PATH"
 	// RelativeLogConfigPath is the relative file path where the log configuration file is.
@@ -63,17 +63,17 @@ func init() {
 	extractEnvironmentVars()
 }
 
-// GetMgwHome reads the APK_HOME environmental variable and returns the value.
+// GetApkHome reads the APK_HOME environmental variable and returns the value.
 // This represent the directory where the distribution is located.
 // If the env variable is not present, the directory from which the executable is triggered will be assigned.
-func GetMgwHome() string {
-	onceGetMgwHome.Do(func() {
-		mgwHome = os.Getenv(mgwHomeEnvVariable)
-		if len(strings.TrimSpace(mgwHome)) == 0 {
-			mgwHome, _ = os.Getwd()
+func GetApkHome() string {
+	onceGetApkHome.Do(func() {
+		apkHome = os.Getenv(apkHomeEnvVariable)
+		if len(strings.TrimSpace(apkHome)) == 0 {
+			apkHome, _ = os.Getwd()
 		}
 	})
-	return mgwHome
+	return apkHome
 }
 
 // GetLogConfigPath reads the LOG_CONFIG_PATH environmental variable and returns the value.
@@ -84,7 +84,7 @@ func GetLogConfigPath() (string, error) {
 	logConfigPath = os.Getenv(logConfigPathEnvVariable)
 	if len(strings.TrimSpace(logConfigPath)) == 0 {
 		//for backward compatibility
-		logConfigPath = GetMgwHome() + relativeLogConfigPath
+		logConfigPath = GetApkHome() + relativeLogConfigPath
 	}
 	_, err := os.Stat(logConfigPath)
 	if err != nil {

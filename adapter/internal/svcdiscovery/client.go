@@ -67,13 +67,13 @@ type service struct {
 	Proxy           Proxy
 }
 
-//result is used to unmarshal the required components from the consul server's response
+// result is used to unmarshal the required components from the consul server's response
 type result struct {
 	Node    node
 	Service service
 }
 
-//Upstream Data for a service instance
+// Upstream Data for a service instance
 type Upstream struct {
 	Address     string
 	ServicePort int
@@ -81,14 +81,14 @@ type Upstream struct {
 	InMesh      bool
 }
 
-//Proxy side car proxy information
+// Proxy side car proxy information
 type Proxy struct {
 	DestinationServiceID string
 	LocalServiceAddress  string
 	LocalServicePort     int
 }
 
-//Query query structure for a consul string syntax
+// Query query structure for a consul string syntax
 type Query struct {
 	Datacenters []string
 	ServiceName string
@@ -96,25 +96,25 @@ type Query struct {
 	Tags        []string
 }
 
-//Root contains root certificates
+// Root contains root certificates
 type Root struct {
 	RootCert          string
 	IntermediateCerts []string
 	Active            bool
 }
 
-//RootCertResp structure of a response to a request to get the root certificates
+// RootCertResp structure of a response to a request to get the root certificates
 type RootCertResp struct {
 	Roots []Root
 }
 
-//ServiceCertResp structure of a response to get a service's certificate and private key
+// ServiceCertResp structure of a response to get a service's certificate and private key
 type ServiceCertResp struct {
 	CertPEM       string
 	PrivateKeyPEM string
 }
 
-//newHTTPClient is a golang http client with request timeout
+// newHTTPClient is a golang http client with request timeout
 func newHTTPClient(transport *http.Transport, timeout time.Duration) http.Client {
 	client := http.Client{
 		Transport: transport,
@@ -140,7 +140,7 @@ func newHTTPTransport() http.Transport {
 	return http.Transport{}
 }
 
-//ConsulClient wraps the HTTP API
+// ConsulClient wraps the HTTP API
 type ConsulClient struct {
 	client         http.Client //for upstreams
 	longPollClient http.Client //for certs
@@ -150,7 +150,7 @@ type ConsulClient struct {
 	pollInterval   time.Duration
 }
 
-//NewConsulClient constructor for ConsulClient
+// NewConsulClient constructor for ConsulClient
 func NewConsulClient(api http.Client, longPollClient http.Client, scheme string, host string, aclToken string) ConsulClient {
 	return ConsulClient{
 		client:         api,
@@ -162,7 +162,7 @@ func NewConsulClient(api http.Client, longPollClient http.Client, scheme string,
 	}
 }
 
-//whether source list contains one of elements list
+// whether source list contains one of elements list
 func contains(source []string, elements []string) bool {
 	for _, a := range source {
 		for _, b := range elements {
@@ -187,8 +187,8 @@ func constructURL(scheme, host, apiV string, otherPaths ...string) string {
 	return url
 }
 
-//sends a get request to a consul-client
-//parses the response into []Upstream
+// sends a get request to a consul-client
+// parses the response into []Upstream
 func (c ConsulClient) get(path string, dc string, nc string, tags []string) ([]Upstream, error) {
 	url := constructURL(c.scheme, c.host, apiVersion, apiCatalogPath, path)
 	req, _ := http.NewRequest(get, url, nil)
@@ -239,9 +239,9 @@ func (c ConsulClient) get(path string, dc string, nc string, tags []string) ([]U
 	return out, errUnmarshal
 }
 
-//sends a get request to a consul-client
-//parses the response into []Upstream
-//gets upstreams that only belongs to service mesh
+// sends a get request to a consul-client
+// parses the response into []Upstream
+// gets upstreams that only belongs to service mesh
 func (c ConsulClient) getMeshUpstreams(path string) ([]Upstream, error) {
 	url := constructURL(c.scheme, c.host, apiVersion, apiMeshPath, path)
 	req, _ := http.NewRequest(get, url, nil)
@@ -279,9 +279,9 @@ func (c ConsulClient) getMeshUpstreams(path string) ([]Upstream, error) {
 	return out, errUnmarshal
 }
 
-//gets the upstreams for single query(ex: [dc1,dc2].namespace.serviceA.[tag1,tag2])
-//there can be many upstreams per query
-//sends the respective upstreams through resultChan
+// gets the upstreams for single query(ex: [dc1,dc2].namespace.serviceA.[tag1,tag2])
+// there can be many upstreams per query
+// sends the respective upstreams through resultChan
 func (c ConsulClient) getUpstreams(query Query, resultChan chan []Upstream) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -322,9 +322,9 @@ func (c ConsulClient) getUpstreams(query Query, resultChan chan []Upstream) {
 	}
 }
 
-//Poll periodically poll consul for updates using getUpstreams() func.
-//doneChan is there to release resources
-//closing the doneChan will stop polling
+// Poll periodically poll consul for updates using getUpstreams() func.
+// doneChan is there to release resources
+// closing the doneChan will stop polling
 func (c ConsulClient) Poll(query Query, doneChan <-chan bool) <-chan []Upstream {
 	resultChan := make(chan []Upstream)
 
@@ -441,7 +441,7 @@ func (c ConsulClient) getRootCert(signal chan bool) {
 }
 
 func (c ConsulClient) getServiceCertAndKey(signal chan bool) {
-	url := constructURL(c.scheme, c.host, apiVersion, apiLeafCertPath, mgwServiceName)
+	url := constructURL(c.scheme, c.host, apiVersion, apiLeafCertPath, apkServiceName)
 	result := ServiceCertResp{}
 	response, errReq := c.getCertRequest(url, leafReqLastIndex)
 	if errReq != nil {
@@ -472,7 +472,7 @@ func (c ConsulClient) getServiceCertAndKey(signal chan bool) {
 	}
 }
 
-//LongPollRootCert starts long polling root certificate
+// LongPollRootCert starts long polling root certificate
 func (c ConsulClient) LongPollRootCert(signal chan bool) {
 	go func(signal chan bool) {
 		c.getRootCert(signal)
@@ -488,7 +488,7 @@ func (c ConsulClient) LongPollRootCert(signal chan bool) {
 	}(signal)
 }
 
-//LongPollServiceCertAndKey starts long polling for service cert and key
+// LongPollServiceCertAndKey starts long polling for service cert and key
 func (c ConsulClient) LongPollServiceCertAndKey(signal chan bool) {
 	go func(signal chan bool) {
 		c.getServiceCertAndKey(signal)

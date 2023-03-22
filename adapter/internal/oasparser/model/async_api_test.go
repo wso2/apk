@@ -35,7 +35,7 @@ package model
 // 		expected AdapterInternalAPI
 // 	}
 
-// 	asyncapiFilePath := config.GetMgwHome() + "/test-resources/envoycodegen/asyncapi_websocket.yaml"
+// 	asyncapiFilePath := config.GetApkHome() + "/test-resources/envoycodegen/asyncapi_websocket.yaml"
 // 	asyncapiByteArr, err := ioutil.ReadFile(asyncapiFilePath)
 // 	assert.Nil(t, err, "Error while reading file : %v"+asyncapiFilePath)
 // 	apiJsn, conversionErr := utils.ToJSON(asyncapiByteArr)

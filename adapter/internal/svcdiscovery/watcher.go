@@ -43,7 +43,7 @@ var (
 	errConfLoad               error
 	//MeshEnabled whether Consul service mesh is enabled or not
 	MeshEnabled    bool
-	mgwServiceName string
+	apkServiceName string
 	//MeshCACert a CA cert of Consul Mesh
 	MeshCACert string
 	//MeshServiceCert public cert of Router
@@ -81,7 +81,7 @@ func init() {
 	conf = config.ReadConfigs()
 	IsServiceDiscoveryEnabled = conf.Adapter.Consul.Enabled
 	aclToken = strings.TrimSpace(conf.Adapter.Consul.ACLToken)
-	mgwServiceName = conf.Adapter.Consul.ApkServiceName
+	apkServiceName = conf.Adapter.Consul.ApkServiceName
 	MeshEnabled = conf.Adapter.Consul.ServiceMeshEnabled
 	MeshUpdateSignal = make(chan bool)
 }

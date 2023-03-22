@@ -61,7 +61,7 @@ const (
 func ReadConfigs() *Config {
 	onceConfigRead.Do(func() {
 		adapterConfig = defaultConfig
-		_, err := os.Stat(pkgconf.GetMgwHome() + relativeConfigPath)
+		_, err := os.Stat(pkgconf.GetApkHome() + relativeConfigPath)
 		if err != nil {
 			loggerConfig.ErrorC(logging.ErrorDetails{
 				Message:   fmt.Sprintf("Configuration file not found : %s", err.Error()),
@@ -69,7 +69,7 @@ func ReadConfigs() *Config {
 				ErrorCode: 1000,
 			})
 		}
-		content, readErr := ioutil.ReadFile(pkgconf.GetMgwHome() + relativeConfigPath)
+		content, readErr := ioutil.ReadFile(pkgconf.GetApkHome() + relativeConfigPath)
 		if readErr != nil {
 			loggerConfig.ErrorC(logging.ErrorDetails{
 				Message:   fmt.Sprintf("Error reading configurations : %s", readErr.Error()),
@@ -130,11 +130,11 @@ func GetLogConfigPath() (string, error) {
 	return pkgconf.GetLogConfigPath()
 }
 
-// GetMgwHome reads the APK_HOME environmental variable and returns the value.
+// GetApkHome reads the APK_HOME environmental variable and returns the value.
 // This represent the directory where the distribution is located.
 // If the env variable is not present, the directory from which the executable is triggered will be assigned.
-func GetMgwHome() string {
-	return pkgconf.GetMgwHome()
+func GetApkHome() string {
+	return pkgconf.GetApkHome()
 }
 
 func (config *Config) resolveDeprecatedProperties() {

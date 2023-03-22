@@ -35,8 +35,8 @@ type PolicyList []Policy
 type Policy struct {
 	PolicyName       string      `json:"policyName,omitempty"`
 	PolicyVersion    string      `json:"policyVersion,omitempty"`
-	Action           string      `json:"-"` // This is a meta value used in CC, not included in API YAML
-	IsPassToEnforcer bool        `json:"-"` // This is a meta value used in CC, not included in API YAML
+	Action           string      `json:"-"` // This is a meta value used in APK, not included in API YAML
+	IsPassToEnforcer bool        `json:"-"` // This is a meta value used in APK, not included in API YAML
 	Parameters       interface{} `json:"parameters,omitempty"`
 }
 

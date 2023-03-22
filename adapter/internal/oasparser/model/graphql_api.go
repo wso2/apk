@@ -38,7 +38,7 @@ package model
 // 	var securitySchemes []SecurityScheme
 // 	var isAPIKeyEnabled bool
 
-// 	// assigns mgw security schemes
+// 	// assigns security schemes
 // 	for _, securitySchemeValue := range apiYaml.Data.SecurityScheme {
 // 		if securitySchemeValue == constants.Oauth2TypeInOAS {
 // 			securitySchemes = append(securitySchemes, SecurityScheme{DefinitionName: "default", Type: securitySchemeValue})
