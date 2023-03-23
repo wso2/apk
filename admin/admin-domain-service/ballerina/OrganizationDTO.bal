@@ -31,7 +31,7 @@ public type Organizations record {
     string id;
     string name;
     string displayName;
-    boolean enabled;
+    string enabled;
     string[] serviceNamespaces;
     string claimKey;
     string production;
