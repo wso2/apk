@@ -70,7 +70,7 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, ht
 		var endPoints []Endpoint
 		var policies = OperationPolicies{}
 		resourceAuthScheme := authScheme
-		resourceAPIPolicy := apiPolicy
+		resourceAPIPolicy := concatAPIPolicies2(apiPolicy, nil)
 		var resourceRatelimitPolicy *dpv1alpha1.RateLimitPolicy
 		hasPolicies := false
 		var scopes []string
@@ -111,7 +111,7 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, ht
 						Name:      string(filter.ExtensionRef.Name),
 						Namespace: httpRoute.Namespace,
 					}.String()]; found {
-						resourceAPIPolicy = concatAPIPolicies(resourceAPIPolicy, &ref)
+						resourceAPIPolicy = concatAPIPolicies2(apiPolicy, &ref)
 					} else {
 						return fmt.Errorf(`apipolicy: %s has not been resolved, spec.targetRef.kind should be 
 						'Resource' in resource level APIPolicies`, filter.ExtensionRef.Name)
@@ -207,7 +207,7 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, ht
 			}
 		}
 
-		addOperationLevelInterceptors(&policies, apiPolicy, httpRouteParams.BackendMapping)
+		addOperationLevelInterceptors(&policies, resourceAPIPolicy, httpRouteParams.BackendMapping)
 
 		loggers.LoggerOasparser.Debug("Calculating auths for API ...")
 		securities, securityDefinitions, disabledSecurity := getSecurity(concatAuthScheme(resourceAuthScheme), scopes)
@@ -289,24 +289,30 @@ func addOperationLevelInterceptors(policies *OperationPolicies, apiPolicy *dpv1a
 			if apiPolicy.Spec.Override.RequestInterceptor != nil {
 				requestInterceptor := apiPolicy.Spec.Override.RequestInterceptor
 				policyParameters := make(map[string]interface{})
-				policyParameters[constants.InterceptorEndpoints] = getInterceptorEndpoints(requestInterceptor.BackendRef, apiPolicy.Namespace, backendMapping)
-				policyParameters[constants.InterceptorServiceIncludes] = requestInterceptor.Includes
-				policies.Request = append(policies.Request, Policy{
-					PolicyName: constants.PolicyRequestInterceptor,
-					Action:     constants.ActionInterceptorService,
-					Parameters: policyParameters,
-				})
+				endpoints := getInterceptorEndpoints(requestInterceptor.BackendRef, apiPolicy.Namespace, backendMapping)
+				if len(endpoints) > 0 {
+					policyParameters[constants.InterceptorEndpoints] = endpoints
+					policyParameters[constants.InterceptorServiceIncludes] = requestInterceptor.Includes
+					policies.Request = append(policies.Request, Policy{
+						PolicyName: constants.PolicyRequestInterceptor,
+						Action:     constants.ActionInterceptorService,
+						Parameters: policyParameters,
+					})
+				}
 			}
 			if apiPolicy.Spec.Override.ResponseInterceptor != nil {
 				responseInterceptor := apiPolicy.Spec.Override.ResponseInterceptor
 				policyParameters := make(map[string]interface{})
-				policyParameters[constants.InterceptorEndpoints] = getInterceptorEndpoints(responseInterceptor.BackendRef, apiPolicy.Namespace, backendMapping)
-				policyParameters[constants.InterceptorServiceIncludes] = responseInterceptor.Includes
-				policies.Response = append(policies.Response, Policy{
-					PolicyName: constants.PolicyResponseInterceptor,
-					Action:     constants.ActionInterceptorService,
-					Parameters: policyParameters,
-				})
+				endpoints := getInterceptorEndpoints(responseInterceptor.BackendRef, apiPolicy.Namespace, backendMapping)
+				if len(endpoints) > 0 {
+					policyParameters[constants.InterceptorEndpoints] = endpoints
+					policyParameters[constants.InterceptorServiceIncludes] = responseInterceptor.Includes
+					policies.Response = append(policies.Response, Policy{
+						PolicyName: constants.PolicyResponseInterceptor,
+						Action:     constants.ActionInterceptorService,
+						Parameters: policyParameters,
+					})
+				}
 			}
 		}
 	}
@@ -319,18 +325,22 @@ func getInterceptorEndpoints(backendRef dpv1alpha1.BackendReference, apiPolicyNa
 		Name:      backendRef.Name,
 		Namespace: utils.GetNamespace((*gwapiv1b1.Namespace)(&backendRef.Namespace), apiPolicyNamespace),
 	}
-	if backend, ok := backendMapping[backendRefName]; ok && backend != nil {
+	endpoints := []Endpoint{}
+	backend, ok := backendMapping[backendRefName]
+	if ok && backend != nil {
 		if len(backend.Services) > 0 {
-			return []Endpoint{{
-				Host:        backend.Services[0].Host,
-				Port:        backend.Services[0].Port,
-				URLType:     string(backend.Protocol),
-				Certificate: []byte(backend.TLS.ResolvedCertificate),
-				AllowedSANs: backend.TLS.AllowedSANs,
-			}}
+			for _, service := range backend.Services {
+				endpoints = append(endpoints, Endpoint{
+					Host:        service.Host,
+					Port:        service.Port,
+					URLType:     string(backend.Protocol),
+					Certificate: []byte(backend.TLS.ResolvedCertificate),
+					AllowedSANs: backend.TLS.AllowedSANs,
+				})
+			}
 		}
 	}
-	return []Endpoint{}
+	return endpoints
 }
 
 // concatAuthSchemes concatinate override and default authentication rules to a one authentication override rule
@@ -407,6 +417,18 @@ func concatRateLimitPolicies(schemeUp *dpv1alpha1.RateLimitPolicy, schemeDown *d
 		finalRateLimit.Spec.Override = *utils.SelectPolicy(nil, nil, &schemeDown.Spec.Override, &schemeDown.Spec.Default)
 	}
 	return &finalRateLimit
+}
+
+func concatAPIPolicies2(schemeUp *dpv1alpha1.APIPolicy, schemeDown *dpv1alpha1.APIPolicy) *dpv1alpha1.APIPolicy {
+	apiPolicy := dpv1alpha1.APIPolicy{}
+	if schemeUp != nil && schemeDown != nil {
+		apiPolicy.Spec.Override = *utils.SelectPolicy(&schemeUp.Spec.Override, &schemeUp.Spec.Default, &schemeDown.Spec.Override, &schemeDown.Spec.Default)
+	} else if schemeUp != nil {
+		apiPolicy.Spec.Override = *utils.SelectPolicy(&schemeUp.Spec.Override, &schemeUp.Spec.Default, nil, nil)
+	} else if schemeDown != nil {
+		apiPolicy.Spec.Override = *utils.SelectPolicy(nil, nil, &schemeDown.Spec.Override, &schemeDown.Spec.Default)
+	}
+	return &apiPolicy
 }
 
 // concatAuthScheme concat override and default auth policies of an authentication CR
