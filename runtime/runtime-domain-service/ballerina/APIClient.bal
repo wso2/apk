@@ -1115,10 +1115,11 @@ public class APIClient {
         }
     }
     private isolated function putHttpRouteForPartition(model:APIArtifact apiArtifact, API api, model:Endpoint? endpoint, string uniqueId, string endpointType, commons:Organization organization) returns commons:APKError? {
+        string httpRouteRefName = retrieveHttpRouteRefName(api, endpointType, organization);
         model:Httproute httpRoute = {
             metadata:
                 {
-                name: retrieveHttpRouteRefName(api, endpointType, organization),
+                name: httpRouteRefName,
                 namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace),
                 uid: (),
                 creationTimestamp: (),
@@ -1126,7 +1127,7 @@ public class APIClient {
             },
             spec: {
                 parentRefs: self.generateAndRetrieveParentRefs(api, uniqueId),
-                rules: check self.generateHttpRouteRules(apiArtifact, api, endpoint, endpointType, organization),
+                rules: check self.generateHttpRouteRules(apiArtifact, api, endpoint, endpointType, organization, httpRouteRefName),
                 hostnames: self.getHostNames(api, uniqueId, endpointType, organization)
             }
         };
@@ -1159,7 +1160,7 @@ public class APIClient {
         return parentRefs;
     }
 
-    private isolated function generateHttpRouteRules(model:APIArtifact apiArtifact, API api, model:Endpoint? endpoint, string endpointType, commons:Organization organization) returns model:HTTPRouteRule[]|commons:APKError {
+    private isolated function generateHttpRouteRules(model:APIArtifact apiArtifact, API api, model:Endpoint? endpoint, string endpointType, commons:Organization organization, string httpRouteRefName) returns model:HTTPRouteRule[]|commons:APKError {
         model:HTTPRouteRule[] httpRouteRules = [];
         APIOperations[]? operations = api.operations;
         if operations is APIOperations[] {
@@ -1194,7 +1195,7 @@ public class APIClient {
                         }
                     }
                     if self.rateLimitPolicyExists(api.apiRateLimit, operation.operationRateLimit) {
-                        model:RateLimitPolicy? rateLimitPolicyCR = self.generateRateLimitPolicyCR(apiArtifact, api, operation.operationRateLimit, endpointType, organization);
+                        model:RateLimitPolicy? rateLimitPolicyCR = self.generateRateLimitPolicyCR(api.apiRateLimit, operation.operationRateLimit, httpRouteRefName);
                         if rateLimitPolicyCR != () {
                             apiArtifact.rateLimitPolicies[rateLimitPolicyCR.metadata.name] = rateLimitPolicyCR;
                             if rateLimitPolicyCR.spec.targetRef.kind == "Resource" {
@@ -1814,10 +1815,9 @@ public class APIClient {
         return backendService;
     }
 
-    isolated function generateRateLimitPolicyCR(model:APIArtifact apiArtifact, API api, APIRateLimit? operationRateLimit, string endpointType, commons:Organization organization) returns model:RateLimitPolicy? {
+    isolated function generateRateLimitPolicyCR(APIRateLimit? apiRateLimit, APIRateLimit? operationRateLimit, string httpRouteRefName) returns model:RateLimitPolicy? {
         string nameSpace = getNameSpace(runtimeConfiguration.apiCreationNamespace);
         model:RateLimitPolicy? rateLimitPolicyCR = ();
-        APIRateLimit? apiRateLimit = api.apiRateLimit;
         if (apiRateLimit != ()) {
             rateLimitPolicyCR = {
                 metadata: {
@@ -1829,7 +1829,7 @@ public class APIClient {
                     targetRef: {
                         group: "gateway.networking.k8s.io",
                         kind: "HTTPRoute",
-                        name: retrieveHttpRouteRefName(api, endpointType, organization),
+                        name: httpRouteRefName,
                         namespace: nameSpace
                     }
                 }
@@ -1846,7 +1846,7 @@ public class APIClient {
                         targetRef: {
                             group: "dp.wso2.com",
                             kind: "Resource",
-                            name: retrieveHttpRouteRefName(api, endpointType, organization),
+                            name: httpRouteRefName,
                             namespace: nameSpace
                         }
                     }
