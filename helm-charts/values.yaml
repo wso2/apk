@@ -266,8 +266,8 @@ wso2:
             failureThreshold: 5
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: Always
-          image: wso2/adapter:latest
+#          imagePullPolicy: Always
+          image: adapter:0.0.1-SNAPSHOT
           security:
             sslHostname: "adapter"
         # configs:

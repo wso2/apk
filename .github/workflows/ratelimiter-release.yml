@@ -1,4 +1,4 @@
-name: Release Adapter.
+name: Release Ratelimiter.
 on:
   workflow_call:
     inputs:
