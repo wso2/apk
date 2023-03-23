@@ -6,118 +6,118 @@ on:
 concurrency: 
   group: ${{ github.event.number || github.run_id }}
 jobs:
-#   build_adapter:
-#     uses: ./.github/workflows/adapter-release.yml
-#     with:
-#       aks_deployment: true
-#     secrets:
-#       WSO2_BOT_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
-#       WSO2_BOT_USER: ${{ secrets.WSO2_BOT_USER }}
-#       WSO2_BOT_EMAIL: ${{ secrets.WSO2_BOT_EMAIL }}
-#       DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
-#       AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
-#       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
-#   build_admin:
-#     uses: ./.github/workflows/admin-domain-service-release.yml
-#     with:
-#       aks_deployment: true
-#     secrets:
-#       WSO2_BOT_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
-#       WSO2_BOT_USER: ${{ secrets.WSO2_BOT_USER }}
-#       WSO2_BOT_EMAIL: ${{ secrets.WSO2_BOT_EMAIL }}
-#       DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
-#       AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
-#       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
-#   build_backoffice:
-#     uses: ./.github/workflows/backoffice-release.yml
-#     with:
-#       aks_deployment: true
-#     secrets:
-#       WSO2_BOT_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
-#       WSO2_BOT_USER: ${{ secrets.WSO2_BOT_USER }}
-#       WSO2_BOT_EMAIL: ${{ secrets.WSO2_BOT_EMAIL }}
-#       DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
-#       AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
-#       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
-#   build_devportal:
-#     uses: ./.github/workflows/devportal-domain-service-release.yml
-#     with:
-#       aks_deployment: true
-#     secrets:
-#       WSO2_BOT_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
-#       WSO2_BOT_USER: ${{ secrets.WSO2_BOT_USER }}
-#       WSO2_BOT_EMAIL: ${{ secrets.WSO2_BOT_EMAIL }}
-#       DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
-#       AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
-#       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
-#   build_enforcer:
-#     uses: ./.github/workflows/enforcer-release.yml
-#     with:
-#       aks_deployment: true
-#     secrets:
-#       WSO2_BOT_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
-#       WSO2_BOT_USER: ${{ secrets.WSO2_BOT_USER }}
-#       WSO2_BOT_EMAIL: ${{ secrets.WSO2_BOT_EMAIL }}
-#       DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
-#       AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
-#       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+  build_adapter:
+    uses: ./.github/workflows/adapter-release.yml
+    with:
+      aks_deployment: true
+    secrets:
+      WSO2_BOT_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
+      WSO2_BOT_USER: ${{ secrets.WSO2_BOT_USER }}
+      WSO2_BOT_EMAIL: ${{ secrets.WSO2_BOT_EMAIL }}
+      DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
+      AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+  build_admin:
+    uses: ./.github/workflows/admin-domain-service-release.yml
+    with:
+      aks_deployment: true
+    secrets:
+      WSO2_BOT_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
+      WSO2_BOT_USER: ${{ secrets.WSO2_BOT_USER }}
+      WSO2_BOT_EMAIL: ${{ secrets.WSO2_BOT_EMAIL }}
+      DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
+      AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+  build_backoffice:
+    uses: ./.github/workflows/backoffice-release.yml
+    with:
+      aks_deployment: true
+    secrets:
+      WSO2_BOT_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
+      WSO2_BOT_USER: ${{ secrets.WSO2_BOT_USER }}
+      WSO2_BOT_EMAIL: ${{ secrets.WSO2_BOT_EMAIL }}
+      DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
+      AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+  build_devportal:
+    uses: ./.github/workflows/devportal-domain-service-release.yml
+    with:
+      aks_deployment: true
+    secrets:
+      WSO2_BOT_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
+      WSO2_BOT_USER: ${{ secrets.WSO2_BOT_USER }}
+      WSO2_BOT_EMAIL: ${{ secrets.WSO2_BOT_EMAIL }}
+      DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
+      AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+  build_enforcer:
+    uses: ./.github/workflows/enforcer-release.yml
+    with:
+      aks_deployment: true
+    secrets:
+      WSO2_BOT_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
+      WSO2_BOT_USER: ${{ secrets.WSO2_BOT_USER }}
+      WSO2_BOT_EMAIL: ${{ secrets.WSO2_BOT_EMAIL }}
+      DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
+      AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
     
-#   build_management_server:
-#     uses: ./.github/workflows/management-server-release.yml
-#     with:
-#       aks_deployment: true
-#     secrets:
-#       WSO2_BOT_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
-#       WSO2_BOT_USER: ${{ secrets.WSO2_BOT_USER }}
-#       WSO2_BOT_EMAIL: ${{ secrets.WSO2_BOT_EMAIL }}
-#       DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
-#       AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
-#       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+  build_management_server:
+    uses: ./.github/workflows/management-server-release.yml
+    with:
+      aks_deployment: true
+    secrets:
+      WSO2_BOT_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
+      WSO2_BOT_USER: ${{ secrets.WSO2_BOT_USER }}
+      WSO2_BOT_EMAIL: ${{ secrets.WSO2_BOT_EMAIL }}
+      DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
+      AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
     
-#   build_router:
-#     uses: ./.github/workflows/router-release.yml
-#     with:
-#       aks_deployment: true
-#     secrets:
-#       WSO2_BOT_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
-#       WSO2_BOT_USER: ${{ secrets.WSO2_BOT_USER }}
-#       WSO2_BOT_EMAIL: ${{ secrets.WSO2_BOT_EMAIL }}
-#       DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
-#       AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
-#       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
-#   build_runtime:
-#     uses: ./.github/workflows/runtime-release.yml
-#     with:
-#       aks_deployment: true
-#     secrets:
-#       WSO2_BOT_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
-#       WSO2_BOT_USER: ${{ secrets.WSO2_BOT_USER }}
-#       WSO2_BOT_EMAIL: ${{ secrets.WSO2_BOT_EMAIL }}
-#       DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
-#       AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
-#       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
-#   build_idpds:
-#     uses: ./.github/workflows/idp-domain-service-release.yml
-#     with:
-#       aks_deployment: true
-#     secrets:
-#       WSO2_BOT_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
-#       WSO2_BOT_USER: ${{ secrets.WSO2_BOT_USER }}
-#       WSO2_BOT_EMAIL: ${{ secrets.WSO2_BOT_EMAIL }}
-#       DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
-#       AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
-#       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
-#   build_idpui:
-#     uses: ./.github/workflows/idp-ui-release.yml
-#     with:
-#       aks_deployment: true
-#     secrets:
-#       WSO2_BOT_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
-#       WSO2_BOT_USER: ${{ secrets.WSO2_BOT_USER }}
-#       WSO2_BOT_EMAIL: ${{ secrets.WSO2_BOT_EMAIL }}
-#       DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
-#       AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
-#       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+  # build_router:
+  #   uses: ./.github/workflows/router-release.yml
+  #   with:
+  #     aks_deployment: true
+  #   secrets:
+  #     WSO2_BOT_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
+  #     WSO2_BOT_USER: ${{ secrets.WSO2_BOT_USER }}
+  #     WSO2_BOT_EMAIL: ${{ secrets.WSO2_BOT_EMAIL }}
+  #     DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
+  #     AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
+  #     AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+  build_runtime:
+    uses: ./.github/workflows/runtime-release.yml
+    with:
+      aks_deployment: true
+    secrets:
+      WSO2_BOT_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
+      WSO2_BOT_USER: ${{ secrets.WSO2_BOT_USER }}
+      WSO2_BOT_EMAIL: ${{ secrets.WSO2_BOT_EMAIL }}
+      DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
+      AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+  build_idpds:
+    uses: ./.github/workflows/idp-domain-service-release.yml
+    with:
+      aks_deployment: true
+    secrets:
+      WSO2_BOT_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
+      WSO2_BOT_USER: ${{ secrets.WSO2_BOT_USER }}
+      WSO2_BOT_EMAIL: ${{ secrets.WSO2_BOT_EMAIL }}
+      DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
+      AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+  build_idpui:
+    uses: ./.github/workflows/idp-ui-release.yml
+    with:
+      aks_deployment: true
+    secrets:
+      WSO2_BOT_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
+      WSO2_BOT_USER: ${{ secrets.WSO2_BOT_USER }}
+      WSO2_BOT_EMAIL: ${{ secrets.WSO2_BOT_EMAIL }}
+      DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
+      AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
 
   runs_integration:
 #     needs: [build_adapter, build_enforcer, build_router, build_runtime,build_management_server,build_admin,build_backoffice,build_devportal, build_idpds, build_idpui]
@@ -152,6 +152,7 @@ jobs:
         path: apk-repo
         token: ${{ secrets.WSO2_BOT_TOKEN }}
     - name: Helm release deploy
+      if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize'
       shell: sh
       run: |
         cd apk-repo/helm-charts
@@ -160,16 +161,26 @@ jobs:
         helm dependency build
         helm install release-1 -n apk-release . --debug --wait --timeout 10m0s \
         --set wso2.subscription.imagePullSecrets=azure-registry \
-        --set wso2.apk.cp.devportal.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/devportal-domain-service:latest \
-        --set wso2.apk.cp.admin.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/admin-domain-service:latest \
-        --set wso2.apk.cp.backoffice.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/backoffice-domain-service:latest \
-        --set wso2.apk.cp.managementServer.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/management-server:latest \
-        --set wso2.apk.dp.runtime.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/runtime-domain-service:latest \
-        --set wso2.apk.dp.adapter.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/adapter:latest \
-        --set wso2.apk.dp.gatewayRuntime.deployment.router.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/router:latest \
-        --set wso2.apk.dp.gatewayRuntime.deployment.enforcer.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/enforcer:latest \
-        --set idp.idpds.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/idp-domain-service:latest \
-        --set idp.idpui.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/idp-ui:latest        
+        --set wso2.apk.cp.devportal.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/devportal-domain-service:${{ github.sha }} \
+        --set wso2.apk.cp.admin.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/admin-domain-service:${{ github.sha }} \
+        --set wso2.apk.cp.backoffice.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/backoffice-domain-service:${{ github.sha }} \
+        --set wso2.apk.cp.managementServer.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/management-server:${{ github.sha }} \
+        --set wso2.apk.dp.runtime.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/runtime-domain-service:${{ github.sha }} \
+        --set wso2.apk.dp.adapter.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/adapter:${{ github.sha }} \
+        --set wso2.apk.dp.gatewayRuntime.deployment.enforcer.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/enforcer:${{ github.sha }} \
+        --set idp.idpds.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/idp-domain-service:${{ github.sha }} \
+        --set idp.idpui.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/idp-ui:${{ github.sha }}        
+        kubectl get pods -n apk-release
+        kubectl get svc -n apk-release
+    - name: Helm release deploy
+      if: github.event_name == 'workflow_dispatch'
+      shell: sh
+      run: |
+        cd apk-repo/helm-charts
+        helm repo add bitnami https://charts.bitnami.com/bitnami
+        helm repo add jetstack https://charts.jetstack.io
+        helm dependency build
+        helm install release-1 -n apk-release . --debug --wait --timeout 10m0s
         kubectl get pods -n apk-release
         kubectl get svc -n apk-release
     - name: Apply test resources
