@@ -53,7 +53,8 @@ isolated function convertK8sAPItoAPI(model:API api, boolean lightWeight) returns
                         authTypeEnabled: operation.authTypeEnabled,
                         scopes: operation.scopes,
                         endpointConfig: operation.endpointConfig,
-                        operationPolicies: convertOperationPolicies(operation.operationPolicies)
+                        operationPolicies: convertOperationPolicies(operation.operationPolicies),
+                        operationRateLimit: operation.operationRateLimit
                     });
                 }
             }
