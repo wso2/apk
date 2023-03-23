@@ -120,7 +120,7 @@ jobs:
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
 
   runs_integration:
-#     needs: [build_adapter, build_enforcer, build_router, build_runtime,build_management_server,build_admin,build_backoffice,build_devportal, build_idpds, build_idpui]
+    needs: [build_adapter, build_enforcer, build_runtime,build_management_server,build_admin,build_backoffice,build_devportal, build_idpds, build_idpui]
     runs-on: ubuntu-latest
     steps:
     - uses: azure/login@v1
