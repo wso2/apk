@@ -23,7 +23,8 @@ Organization  organization = {
         name: "Finance",
         displayName: "Finance",
         organizationClaimValue: "01234567-0123-0123-0123",
-        vhosts: [],
+        production: [],
+        sandbox: [],
         serviceNamespaces: [
         "string"
         ]

@@ -3873,7 +3873,13 @@ components:
           type: array
           items:
             type: string
-        vhosts:
+          default:
+            - "*"
+        production:
+          type: array
+          items:
+            type: string
+        sandbox:
           type: array
           items:
             type: string
