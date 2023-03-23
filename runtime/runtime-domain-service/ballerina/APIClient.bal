@@ -534,10 +534,6 @@ public class APIClient {
                 'type: api.'type
             }
         };
-        APIRateLimit? apiRateLimitToUse = ();
-        if (api.apiRateLimit is APIRateLimit) {
-            apiRateLimitToUse = api.apiRateLimit;
-        }
         APIOperations[]? operations = api.operations;
         if operations is APIOperations[] {
             model:Operations[] runtimeAPIOperations = [];
@@ -586,7 +582,10 @@ public class APIClient {
                     runtimeAPI.spec.endpointConfig = endpointConfig;
                 }
 
-                if (apiRateLimitToUse == ()) {
+                APIRateLimit? apiRateLimitToUse = ();
+                if (api.apiRateLimit is APIRateLimit) {
+                    apiRateLimitToUse = api.apiRateLimit;
+                } else {
                     apiRateLimitToUse = operation.operationRateLimit;
                 }
                 if (apiRateLimitToUse is APIRateLimit) {
@@ -1195,11 +1194,13 @@ public class APIClient {
                         }
                     }
                     if self.rateLimitPolicyExists(api.apiRateLimit, operation.operationRateLimit) {
-                        model:RateLimitPolicy? rateLimitPolicyCR = self.generateRateLimitPolicyCR(apiArtifact, api.apiRateLimit, operation.operationRateLimit);
+                        model:RateLimitPolicy? rateLimitPolicyCR = self.generateRateLimitPolicyCR(apiArtifact, api, operation.operationRateLimit, endpointType, organization);
                         if rateLimitPolicyCR != () {
                             apiArtifact.rateLimitPolicies[rateLimitPolicyCR.metadata.name] = rateLimitPolicyCR;
-                            model:HTTPRouteFilter rateLimitPolicyFilter = {'type: "ExtensionRef", extensionRef: {group: "dp.wso2.com", kind: "RateLimitPolicy", name: rateLimitPolicyCR.metadata.name}};
-                            (<model:HTTPRouteFilter[]>filters).push(rateLimitPolicyFilter);
+                            if rateLimitPolicyCR.spec.targetRef.kind == "Resource" {
+                                model:HTTPRouteFilter rateLimitPolicyFilter = {'type: "ExtensionRef", extensionRef: {group: "dp.wso2.com", kind: "RateLimitPolicy", name: rateLimitPolicyCR.metadata.name}};
+                                (<model:HTTPRouteFilter[]>filters).push(rateLimitPolicyFilter);
+                            }
                         }
                     }
                     httpRouteRules.push(httpRouteRule);
@@ -1813,9 +1814,10 @@ public class APIClient {
         return backendService;
     }
 
-    isolated function generateRateLimitPolicyCR(model:APIArtifact apiArtifact, APIRateLimit? apiRateLimit, APIRateLimit? operationRateLimit) returns model:RateLimitPolicy? {
+    isolated function generateRateLimitPolicyCR(model:APIArtifact apiArtifact, API api, APIRateLimit? operationRateLimit, string endpointType, commons:Organization organization) returns model:RateLimitPolicy? {
         string nameSpace = getNameSpace(runtimeConfiguration.apiCreationNamespace);
         model:RateLimitPolicy? rateLimitPolicyCR = ();
+        APIRateLimit? apiRateLimit = api.apiRateLimit;
         if (apiRateLimit != ()) {
             rateLimitPolicyCR = {
                 metadata: {
@@ -1825,9 +1827,9 @@ public class APIClient {
                 spec: {
                     default: self.retrieveRateLimitData(apiRateLimit),
                     targetRef: {
-                        group: "",
+                        group: "gateway.networking.k8s.io",
                         kind: "HTTPRoute",
-                        name: uuid:createType1AsString(),
+                        name: retrieveHttpRouteRefName(api, endpointType, organization),
                         namespace: nameSpace
                     }
                 }
@@ -1842,9 +1844,9 @@ public class APIClient {
                     spec: {
                         default: self.retrieveRateLimitData(operationRateLimit),
                         targetRef: {
-                            group: "",
+                            group: "dp.wso2.com",
                             kind: "Resource",
-                            name: uuid:createType1AsString(),
+                            name: retrieveHttpRouteRefName(api, endpointType, organization),
                             namespace: nameSpace
                         }
                     }
@@ -1857,8 +1859,8 @@ public class APIClient {
     isolated function retrieveRateLimitData(APIRateLimit rateLimit) returns model:RateLimitData {
         model:RateLimitData rateLimitData = {
             api: {
-                count: rateLimit.requestsPerUnit,
-                spanUnit: rateLimit.unit
+                requestPerUnit: rateLimit.requestsPerUnit,
+                unit: rateLimit.unit
             },
             'type: "Api"
         };
