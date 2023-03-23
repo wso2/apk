@@ -9,6 +9,18 @@
 			"enabled": true
 		},
 		{
+			"key": "internalAPIBaseURl",
+			"value": "https://10.104.175.38:9090",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "idpAPIBaseURl",
+			"value": "https://10.104.175.38:9091",
+			"type": "default",
+			"enabled": true
+		},
+		{
 			"key": "client_id",
 			"value": "45f1c5c8-a92e-11ed-afa1-0242ac120002",
 			"enabled": true
