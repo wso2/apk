@@ -241,13 +241,8 @@ jobs:
       uses: malinthaprasan/action-surefire-report@v1
       with:
        report_paths: 'apk-repo/test/postman-tests/build/*.xml'
-    - name: Archive testng report
-      if: always()
-      uses: actions/upload-artifact@v2
-      with:
-       path: |
-        report_paths: 'apk-repo/test/postman-tests/build/*.xml'
-       if-no-files-found: warn   
+       fail_on_test_failures: true
+       
   runs_integration_on_workflow_dispatch:
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
@@ -332,10 +327,4 @@ jobs:
       uses: malinthaprasan/action-surefire-report@v1
       with:
         report_paths: 'apk-repo/test/postman-tests/build/*.xml'
-    - name: Archive testng report
-      if: always()
-      uses: actions/upload-artifact@v2
-      with:
-        path: |
-        report_paths: 'apk-repo/test/postman-tests/build/*.xml'
-        if-no-files-found: warn   
+        fail_on_test_failures: true
