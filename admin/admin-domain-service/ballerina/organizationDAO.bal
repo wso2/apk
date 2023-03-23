@@ -208,7 +208,7 @@ public isolated function getAllOrganizationDAO() returns Internal_Organization[]
     } else {
         do {
             map<Internal_Organization> organization = {};
-            sql:ParameterizedQuery query = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName, claim_key as claimKey, claim_value as claimValue FROM ORGANIZATION, ORGANIZATION_CLAIM_MAPPING where ORGANIZATION.UUID = ORGANIZATION_CLAIM_MAPPING.UUID`;
+            sql:ParameterizedQuery query = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName, STATUS as enabled, claim_key as claimKey, claim_value as claimValue FROM ORGANIZATION, ORGANIZATION_CLAIM_MAPPING where ORGANIZATION.UUID = ORGANIZATION_CLAIM_MAPPING.UUID`;
             stream<Organizations, sql:Error?> orgStream = dbClient->query(query);
             
             check from Organizations org in orgStream do {
@@ -217,7 +217,7 @@ public isolated function getAllOrganizationDAO() returns Internal_Organization[]
                     organization.get(org.id).claimList.push(claim);
                 } else {
                     OrganizationClaim claim = {claimKey: org.claimKey, claimValue: org.claimValue};
-                    Internal_Organization organizationData = {id: org.id, name: org.name, displayName: org.displayName, enabled: true, serviceNamespaces: ["*"],  claimList: [claim]};
+                    Internal_Organization organizationData = {id: org.id, name: org.name, displayName: org.displayName, enabled: org.enabled, serviceNamespaces: ["*"],  claimList: [claim]};
                     organization[org.id] = organizationData;
                 }
             };
@@ -266,7 +266,7 @@ isolated function getOrganizationByIdDAO(string id) returns Internal_Organizatio
         return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
         do {
-            sql:ParameterizedQuery query = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName, claim_key as claimKey, 
+            sql:ParameterizedQuery query = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName, STATUS as enabled, claim_key as claimKey, 
                     claim_value as claimValue, string_to_array(NAMESPACE::text,',')::text[] AS serviceNamespaces
                     FROM ORGANIZATION, ORGANIZATION_CLAIM_MAPPING where ORGANIZATION.UUID = ORGANIZATION_CLAIM_MAPPING.UUID and ORGANIZATION.UUID =${id}`;
             stream<Organizations, sql:Error?> orgStream = dbClient->query(query);
@@ -286,7 +286,7 @@ isolated function getOrganizationByIdDAO(string id) returns Internal_Organizatio
                         id:id,
                         name:org.name,
                         displayName:org.displayName,
-                        enabled: true,
+                        enabled: org.enabled,
                         serviceNamespaces: org.serviceNamespaces,
                         claimList:[{
                             claimKey:org.claimKey,
@@ -382,7 +382,7 @@ isolated function getOrganizationByNameDAO(string name) returns Internal_Organiz
         return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
         do {
-            sql:ParameterizedQuery query = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName, claim_key as claimKey, 
+            sql:ParameterizedQuery query = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName,STATUS as enabled, claim_key as claimKey, 
                     claim_value as claimValue, string_to_array(NAMESPACE::text,',')::text[] AS serviceNamespaces
                     FROM ORGANIZATION, ORGANIZATION_CLAIM_MAPPING where ORGANIZATION.UUID = ORGANIZATION_CLAIM_MAPPING.UUID and ORGANIZATION.NAME =${name}`;
             stream<Organizations, sql:Error?> orgStream = dbClient->query(query);
@@ -402,7 +402,7 @@ isolated function getOrganizationByNameDAO(string name) returns Internal_Organiz
                         id:org.id,
                         name:org.name,
                         displayName:org.displayName,
-                        enabled: true,
+                        enabled: org.enabled,
                         serviceNamespaces: org.serviceNamespaces,
                         claimList:[{
                             claimKey:org.claimKey,
