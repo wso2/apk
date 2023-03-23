@@ -17,67 +17,43 @@
 apiVersion: dp.wso2.com/v1alpha1
 kind: API
 metadata:
-  name: test-api-with-request-header-modify
+  name: test-api-with-different-listener
   namespace: gateway-integration-test-infra
 spec:
-  apiDisplayName: API with Request Header Modify
+  apiDisplayName: API with Different Listener
   apiType: REST
   apiVersion: 1.0.0
-  context: /request-header-modify/1.0.0
-  definitionFileRef: swagger-definition-webhook
+  context: /test-api-with-different-listener/v1.0.0
+  definitionFileRef: definition-file
   prodHTTPRouteRefs:
-  - test-api-with-request-header-modify-httproute
+  - test-api-with-different-listener-httproute
   organization: wso2-org
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: HTTPRoute
 metadata:
-  name: test-api-with-request-header-modify-httproute
+  name: test-api-with-different-listener-httproute
   namespace: gateway-integration-test-infra
 spec:
   parentRefs:
   - group: gateway.networking.k8s.io
     kind: Gateway
     name: default
-    sectionName: gatewaylistener
+    sectionName: apilistener
   hostnames:
-  - backend-base-path.test.gw.wso2.com
+  - diff-listner-api.test.api.am.wso2.com
   rules:
   - matches:
     - path:
-        type: PathPrefix
-        value: /test-api-with-request-header-remove/1.0.0
+        type: RegularExpression
+        value: /test-api-with-different-listener/v1.0.0/user/([^/]+)/playlist/([^/]+)
       method: GET
     filters:
     - type: URLRewrite
       urlRewrite:
         path:
-          type: ReplacePrefixMatch
-          replacePrefixMatch: /users
-    - type: RequestHeaderModifier
-      requestHeaderModifier:
-        remove:
-          - X-Header-Remove
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: infra-backend-v1
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /test-api-with-request-header-add/1.0.0
-      method: GET
-    filters:
-    - type: URLRewrite
-      urlRewrite:
-        path:
-          type: ReplacePrefixMatch
-          replacePrefixMatch: /orders
-    - type: RequestHeaderModifier
-      requestHeaderModifier:
-        set:
-          - name: "test-header"
-            value: "test"
+          type: ReplaceFullPath
+          replaceFullPath: /user/\1/playlist/\2
     backendRefs:
     - group: dp.wso2.com
       kind: Backend

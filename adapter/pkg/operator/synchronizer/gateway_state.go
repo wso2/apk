@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2023, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2023, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -15,12 +15,15 @@
  *
  */
 
-package constants
+package synchronizer
 
-// gateway service properties
-const (
-	GatewayServiceName      string = "apk-test-setup-wso2-apk-router-service"
-	GatewayServiceNamespace string = "apk-integration-test"
-	GatewayServicePort      int16  = 9095
-	APIListenerServicePort  int16  = 9090
+import (
+	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
+
+// GatewayState holds the state of the deployed Gateways. This state is compared with
+// the state of the Kubernetes controller cache to detect updates.
+// +k8s:deepcopy-gen=true
+type GatewayState struct {
+	GatewayDefinition *gwapiv1b1.Gateway
+}

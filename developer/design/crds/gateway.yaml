@@ -1,0 +1,72 @@
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: Gateway
+metadata:
+  name: example
+  annotations:
+    cert-manager.io/issuer: my-issuer
+spec:
+  gatewayClassName: foo
+  listeners:
+    # Listener 1.
+    - hostname: example.com
+      port: 443
+      protocol: HTTPS
+      routes:
+        kind: HTTPRoute
+        parentRefs:
+          - name: example
+            kind: Gateway
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: example-com-tls
+            kind: Secret
+            group: core
+
+    # Listener 2: Same Secret name as Listener 1, with a different hostname.
+    - hostname: *.example.com
+      port: 443
+      protocol: HTTPS
+      routes:
+        kind: HTTPRoute
+        parentRefs:
+          - name: example
+            kind: Gateway
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: example-com-tls
+            kind: Secret
+            group: core
+
+    # Listener 3: also same Secret name, except the hostname is also the same.
+    - hostname: *.example.com
+      port: 8443
+      protocol: HTTPS
+      routes:
+        kind: HTTPRoute
+        parentRefs:
+          - name: example
+            kind: Gateway
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: example-com-tls
+            kind: Secret
+            group: core
+
+    # Listener 4: different Secret name.
+    - hostname: site.org
+      port: 443
+      protocol: HTTPS
+      routes:
+        kind: HTTPRoute
+        parentRefs:
+          - name: example
+            kind: Gateway
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: site-org-tls
+            kind: Secret
+            group: core

@@ -20,12 +20,6 @@ data:
         namespaces = [{{ include "commaJoinedQuotedList" .Values.wso2.apk.dp.adapter.configs.apiNamespaces}}]
       {{ end}}    
 
-    # 
-    # default vhosts mapping for standalone mode
-    [[adapter.vhostMapping]]
-      environment = "Default"
-      vhost = "gw.wso2.com"
-
     [adapter.keystore]
       certPath = "/home/wso2/security/keystore/adapter.crt"
       keyPath = "/home/wso2/security/keystore/adapter.key"
@@ -34,9 +28,8 @@ data:
       location = "/home/wso2/security/truststore"
 
     [router]
-      listenerPort = 9090
-      securedListenerPort = 9095
-      systemHost = "gw.wso2.com"
+      securedListenerPort = {{ .Values.wso2.apk.dp.gateway.listener.port }}
+      systemHost = "{{ .Values.wso2.apk.dp.gateway.listener.hostname }}"
       useRemoteAddress = false
 
     [router.keystore]
@@ -177,13 +170,6 @@ data:
         username = "admin"
         password = "$env{adapter_admin_pwd}"
 
-    # Default virtual host mapping for standalone mode
-    [[adapter.vhostMapping]]
-    # The Adapter environment
-    environment = "Default"
-    # Virtual host to map to the environment
-    vhost = "localhost"
-
     # Configurations of key store used in Choreo Connect Adapter
     [adapter.keystore]
     # Path of the certificate
@@ -262,13 +248,13 @@ data:
     # Host for secured listener of Router
     securedListenerHost = "0.0.0.0"
     # Port for secured listener of Router
-    securedListenerPort = 9095
+    securedListenerPort = {{ .Values.wso2.apk.dp.gateway.listener.port }}
     # The timeout for new network connections to hosts in the cluster in seconds
     clusterTimeoutInSeconds = 20
     # The timeout for response coming from enforcer to route per API request
     enforcerResponseTimeoutInSeconds = 20
     # System hostname for system API resources (eg: /testkey and /health)
-    systemHost = "localhost"
+    systemHost = "{{ .Values.wso2.apk.dp.gateway.listener.hostname }}"
 
     # Configurations of key store used in Choreo Connect Router
     [router.keystore]
@@ -614,7 +600,7 @@ data:
     # Password of the API Manager user
     password = "$env{cp_admin_pwd}"
     # Environment labels list
-    environmentLabels = ["Default"]
+    environmentLabels = ["default"]
     # Connection retry interval
     retryInterval = 5
     # Skip SSL verification

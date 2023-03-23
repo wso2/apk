@@ -41,13 +41,6 @@ var (
 	defaultVhost        map[string]string
 )
 
-// DefaultGatewayName represents the name of the default gateway
-const DefaultGatewayName = "Default"
-
-// DefaultGatewayVHost represents the default vhost of default gateway environment if it is not configured
-// for /testtoken and /health check, if user not configured default env, we have no vhost
-const DefaultGatewayVHost = "localhost"
-
 const (
 	// The environtmental variable which represents the path of the distribution in host machine.
 	mgwHomeEnvVariable = "MGW_HOME"
@@ -118,25 +111,6 @@ func SetConfig(conf *Config) {
 // SetDefaultConfig sets the default configuration to the adapter configuration
 func SetDefaultConfig() {
 	adapterConfig = defaultConfig
-}
-
-// GetDefaultVhost returns the default vhost of given environment read from Adapter
-// configurations. Store the configuration in a map, so do not want to loop through
-// the config value Config.Adapter.VhostMapping
-func GetDefaultVhost(environment string) (string, bool, error) {
-	var err error
-	onceGetDefaultVhost.Do(func() {
-		defaultVhost = make(map[string]string)
-		configs := ReadConfigs()
-		for _, gateway := range configs.Adapter.VhostMapping {
-			defaultVhost[gateway.Environment] = gateway.Vhost
-		}
-	})
-	vhost, ok := defaultVhost[environment]
-	if !ok && environment == DefaultGatewayName {
-		return DefaultGatewayVHost, true, nil
-	}
-	return vhost, ok, err
 }
 
 // ReadLogConfigs implements adapter/proxy log-configuration read operation.The read operation will happen only once, hence

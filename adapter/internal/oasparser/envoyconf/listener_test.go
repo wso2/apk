@@ -25,11 +25,28 @@ import (
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
 	"github.com/stretchr/testify/assert"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
+	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
 func TestCreateListenerWithRds(t *testing.T) {
 	// TODO: (Vajira) Add more test scenarios
-	listeners := CreateListenersWithRds()
+	gateway := new(gwapiv1b1.Gateway)
+	gateway.Name = "default"
+	listenerObj := new(gwapiv1b1.Listener)
+	listenerObj.Name = "httpslistener"
+	var hostname gwapiv1b1.Hostname
+	hostname = "0.0.0.0"
+	listenerObj.Hostname = &hostname
+	listenerObj.Port = 9095
+	listenerObj.Protocol = "HTTPS"
+	gateway.Spec.Listeners = append(gateway.Spec.Listeners, *listenerObj)
+	listenerObj2 := new(gwapiv1b1.Listener)
+	listenerObj2.Name = "httplistener"
+	listenerObj2.Hostname = &hostname
+	listenerObj2.Port = 9090
+	listenerObj2.Protocol = "HTTP"
+	gateway.Spec.Listeners = append(gateway.Spec.Listeners, *listenerObj2)
+	listeners := CreateListenerByGateway(gateway)
 	assert.NotEmpty(t, listeners, "Listeners creation has been failed")
 	assert.Equal(t, 2, len(listeners), "Two listeners are not created.")
 
@@ -90,8 +107,9 @@ func TestCreateRoutesConfigForRds(t *testing.T) {
 		"*":           testCreateRoutesForUnitTests(t),
 		"mg.wso2.com": testCreateRoutesForUnitTests(t),
 	}
+	httpListeners := "httpslistener"
 	vHosts := CreateVirtualHosts(vhostToRouteArrayMap)
-	rConfig := CreateRoutesConfigForRds(vHosts)
+	rConfig := CreateRoutesConfigForRds(vHosts, httpListeners)
 
 	assert.NotNil(t, rConfig, "CreateRoutesConfigForRds is failed")
 	if rConfig.Validate() != nil {

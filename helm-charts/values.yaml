@@ -24,9 +24,9 @@ wso2:
       roleName: wso2apk-role
     idp:
       issuer: "https://idp.am.wso2.com/token"
-      authorizeEndpoint: "https://idp.am.wso2.com:9095/oauth2/authorize"
-      tokenEndpoint: "https://idp.am.wso2.com:9095/oauth2/token"
-      revokeEndpoint: "https://idp.am.wso2.com:9095/oauth2/revoke"
+      authorizeEndpoint: "https://idp.am.wso2.com:9091/oauth2/authorize"
+      tokenEndpoint: "https://idp.am.wso2.com:9091/oauth2/token"
+      revokeEndpoint: "https://idp.am.wso2.com:9091/oauth2/revoke"
       #jwksEndpoint: ""      
       usernameClaim: "sub"
       groupClaim: "groups"
@@ -197,6 +197,13 @@ wso2:
       enabled: true
       gatewayAPI:
         enabled: true
+      gateway:
+        name: default
+        listener:
+          name: gatewaylistener
+          hostname: "gw.wso2.com"
+          port: 9095
+          protocol: HTTPS
       # controlPlane:
       #   serviceUrl: "http://control-plane-wso2-apk-admin-ds-service.control-plane.svc.cluster.local:9444/api/am/internal/v1"    
       #   enableHostNameVerification: true
@@ -425,9 +432,9 @@ idp:
       issuer: "https://idp.am.wso2.com/token"
       keyId: "gateway_certificate_alias"
       hostname: "idp.am.wso2.com"
-      loginPageURl: "https://idp.am.wso2.com:9095/authenticationEndpoint/login"
-      loginErrorPageUrl: "https://idp.am.wso2.com:9095/authenticationEndpoint/error"
-      loginCallBackURl: "https://idp.am.wso2.com:9095/authenticationEndpoint/login-callback"
+      loginPageURl: "https://idp.am.wso2.com:9091/authenticationEndpoint/login"
+      loginErrorPageUrl: "https://idp.am.wso2.com:9091/authenticationEndpoint/error"
+      loginCallBackURl: "https://idp.am.wso2.com:9091/authenticationEndpoint/login-callback"
     appName: "idp-ds"
     deployment:
       npi: idp-ds-npi
@@ -482,8 +489,8 @@ idp:
       imagePullPolicy: Always
       image: wso2/idp-ui:0.0.1-m6
     configs:
-      idpLoginUrl: "https://idp.am.wso2.com:9095/commonauth/login"
-      idpAuthCallBackUrl: "https://idp.am.wso2.com:9095/oauth2/auth-callback"
+      idpLoginUrl: "https://idp.am.wso2.com:9091/commonauth/login"
+      idpAuthCallBackUrl: "https://idp.am.wso2.com:9091/oauth2/auth-callback"
 redis:
   enabled: false
   architecture: standalone

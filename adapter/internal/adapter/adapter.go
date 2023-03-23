@@ -232,21 +232,6 @@ func Run(conf *config.Config) {
 	// Set enforcer startup configs
 	xds.UpdateEnforcerConfig(conf)
 
-	envs := conf.ControlPlane.EnvironmentLabels
-
-	// If no environments are configured, default gateway label value is assigned.
-	if len(envs) == 0 {
-		envs = append(envs, config.DefaultGatewayName)
-	}
-
-	for _, env := range envs {
-		xds.GenerateGlobalClusters(env)
-		listeners, clusters, routes, endpoints, apis := xds.GenerateEnvoyResoucesForLabel(env)
-		xds.UpdateXdsCacheWithLock(env, endpoints, clusters, routes, listeners)
-		xds.UpdateEnforcerApis(env, apis, "")
-		xds.UpdateRateLimiterPolicies(env)
-	}
-
 	go operator.InitOperator()
 
 OUTER:

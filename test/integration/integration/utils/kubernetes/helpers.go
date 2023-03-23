@@ -65,11 +65,25 @@ func NamespacesMustBeAccepted(t *testing.T, c client.Client, timeoutConfig confi
 // WaitForGatewayAddress waits until at least one IP Address has been set in the
 // Gateway infra exposed service.
 func WaitForGatewayAddress(t *testing.T, c client.Client, timeoutConfig config.TimeoutConfig) string {
+	// Use http port for now, ideally we should get the port from the Gateway or from a config.
+	port := strconv.FormatInt(int64(constants.GatewayServicePort), 10)
+	return WaitForIPAddress(t, c, timeoutConfig, port)
+}
+
+// WaitForAPIListenerAddress waits until at least one IP Address has been set in the
+// Gateway infra exposed service.
+func WaitForAPIListenerAddress(t *testing.T, c client.Client, timeoutConfig config.TimeoutConfig) string {
+	// Use http port for now, ideally we should get the port from the APIListener or from a config.
+	port := strconv.FormatInt(int64(constants.APIListenerServicePort), 10)
+	return WaitForIPAddress(t, c, timeoutConfig, port)
+}
+
+// WaitForIPAddress waits until at least one IP Address has been set in the
+// Gateway infra exposed service.
+func WaitForIPAddress(t *testing.T, c client.Client, timeoutConfig config.TimeoutConfig, port string) string {
 	t.Helper()
 
 	var ipAddr string
-	// Use http port for now, ideally we should get the port from the Gateway or from a config.
-	port := strconv.FormatInt(int64(constants.GatewayServicePort), 10)
 	name := constants.GatewayServiceName
 	namespace := constants.GatewayServiceNamespace
 
@@ -91,6 +105,7 @@ func WaitForGatewayAddress(t *testing.T, c client.Client, timeoutConfig config.T
 
 		return true, nil
 	})
+
 	require.NoErrorf(t, waitErr, "error waiting for Gateway service to have an IP address")
 	return net.JoinHostPort(ipAddr, port)
 }

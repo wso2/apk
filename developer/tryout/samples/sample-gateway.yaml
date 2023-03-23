@@ -1,0 +1,33 @@
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: Gateway
+metadata:
+  name: default
+  annotations:
+    cert-manager.io/issuer: selfsigned-issuer
+spec:
+  gatewayClassName: default
+  listeners:
+    - name: httplistenernew
+      hostname: 0.0.0.0
+      port: 9090
+      protocol: HTTP
+    - name: httpslistenernew
+      hostname: 0.0.0.0
+      port: 9095
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            group: ""
+            name: default-example-com-cert
+    - name: httpslistenernew1
+      hostname: 0.0.0.0
+      port: 9097
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            group: ""
+            name: default-example-com-cert

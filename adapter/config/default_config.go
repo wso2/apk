@@ -33,12 +33,6 @@ var defaultConfig = &Config{
 			TokenTTL:            "1h",
 			TokenPrivateKeyPath: "/home/wso2/security/keystore/mg.key",
 		},
-		VhostMapping: []vhostMapping{
-			{
-				Environment: "Default",
-				Vhost:       "localhost",
-			},
-		},
 		Consul: consul{
 			Enabled:            false,
 			URL:                "https://169.254.1.1:8501",
@@ -359,7 +353,7 @@ var defaultConfig = &Config{
 		ServiceURLDeprecated: UnassignedAsDeprecated,
 		Username:             "admin",
 		Password:             "$env{cp_admin_pwd}",
-		EnvironmentLabels:    []string{"Default"},
+		EnvironmentLabels:    []string{"default"},
 		RetryInterval:        5,
 		SkipSSLVerification:  false,
 		BrokerConnectionParameters: brokerConnectionParameters{

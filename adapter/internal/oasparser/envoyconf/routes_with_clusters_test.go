@@ -438,9 +438,10 @@ func createDefaultCommonRouteSpec() gwapiv1b1.CommonRouteSpec {
 	return gwapiv1b1.CommonRouteSpec{
 		ParentRefs: []gwapiv1b1.ParentReference{
 			{
-				Group: operatorutils.GroupPtr("gateway.networking.k8s.io"),
-				Kind:  operatorutils.KindPtr("Gateway"),
-				Name:  gwapiv1b1.ObjectName("default-gateway"),
+				Group:       operatorutils.GroupPtr("gateway.networking.k8s.io"),
+				Kind:        operatorutils.KindPtr("Gateway"),
+				Name:        gwapiv1b1.ObjectName("default-gateway"),
+				SectionName: (*gwapiv1b1.SectionName)(operatorutils.StringPtr("httpslistener")),
 			},
 		},
 	}

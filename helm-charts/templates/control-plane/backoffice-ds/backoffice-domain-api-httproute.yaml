@@ -494,5 +494,6 @@ spec:
   parentRefs:
   - group: "gateway.networking.k8s.io"
     kind: "Gateway"
-    name: "Default"
+    name: "default"
+    sectionName: "apilistener"
 {{- end -}}

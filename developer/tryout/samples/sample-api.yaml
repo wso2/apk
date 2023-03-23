@@ -28,7 +28,7 @@ spec:
   - prod-http-route-http-bin-api-p2
   sandHTTPRouteRefs:
   - sand-http-route-http-bin-api
-  organization: 01edb285-6304-1b20-a090-4d02067ed56ev
+  organization: a3b58ccf-6ecc-4557-b5bb-0a35cce38256
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: HTTPRoute
@@ -40,7 +40,8 @@ spec:
   parentRefs:
     - group: gateway.networking.k8s.io
       kind: Gateway
-      name: Default
+      name: default
+      sectionName: gatewaylistener
   rules:
   - backendRefs:
     - group: dp.wso2.com
@@ -80,7 +81,8 @@ spec:
   parentRefs:
     - group: gateway.networking.k8s.io
       kind: Gateway
-      name: Default
+      name: default
+      sectionName: gatewaylistener
   rules:
     - backendRefs:
         - group: dp.wso2.com
@@ -113,7 +115,8 @@ spec:
   parentRefs:
     - group: gateway.networking.k8s.io
       kind: Gateway
-      name: Default
+      name: default
+      sectionName: gatewaylistener
   rules:
     - backendRefs:
       - group: dp.wso2.com

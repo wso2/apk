@@ -28,11 +28,14 @@ spec:
   ports:
     - name: endpoint1
       protocol: TCP
-      port: 9095
+      port: {{ .Values.wso2.apk.dp.gateway.listener.port }}
     - name: endpoint2
       protocol: TCP
       port: 9090
     - name: endpoint3
       protocol: TCP
       port: 9000
+    - name: endpoint4
+      protocol: TCP
+      port: 9091
 {{- end -}}

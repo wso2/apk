@@ -59,7 +59,7 @@ spec:
             - name: ADAPTER_XDS_PORT
               value : "18000"
             - name: ENFORCER_LABEL
-              value : Default
+              value : default
             - name: ENFORCER_REGION
               value: UNKNOWN
             - name: XDS_MAX_MSG_SIZE
@@ -145,9 +145,11 @@ spec:
           image: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.image }}
           imagePullPolicy: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.imagePullPolicy }}
           ports:
-            - containerPort: 9095
+            - containerPort: {{ .Values.wso2.apk.dp.gateway.listener.port }}
               protocol: "TCP"
             - containerPort: 9090
+              protocol: "TCP"
+            - containerPort: 9091
               protocol: "TCP"
             - containerPort: 9000
               protocol: "TCP"
@@ -168,7 +170,7 @@ spec:
             - name: ROUTER_CLUSTER
               value: "default_cluster"
             - name: ROUTER_LABEL
-              value: "Default"
+              value: {{ .Values.wso2.apk.dp.gateway.name }}
             - name: ROUTER_PRIVATE_KEY_PATH
               value: "/home/wso2/security/keystore/router.key"
             - name: ROUTER_PUBLIC_CERT_PATH
@@ -234,7 +236,7 @@ spec:
         {{ end }}
           livenessProbe:
             httpGet:
-              port: 9095
+              port: {{ .Values.wso2.apk.dp.gateway.listener.port }}
               path: /health
               scheme: HTTPS
               httpHeaders:
