@@ -5,6 +5,8 @@ on:
     types: [opened, synchronize, reopened]
 concurrency: 
   group: ${{ github.event.number || github.run_id }}
+env:
+  GH_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}  
 jobs:
   build_adapter:
     if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize'
