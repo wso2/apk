@@ -45,11 +45,11 @@ type RateLimitAPIPolicy struct {
 // APIRateLimit defines the desired state of APIPolicy
 type APIRateLimit struct {
 
-	// RequestPerUnit is the number of requests allowed per unit time
+	// RequestsPerUnit is the number of requests allowed per unit time
 	//
-	RequestPerUnit int `json:"requestPerUnit,omitempty"`
+	RequestsPerUnit int `json:"requestsPerUnit,omitempty"`
 
-	// Unit is the unit of the requestPerUnit
+	// Unit is the unit of the requestsPerUnit
 	//
 	// +kubebuilder:validation:Enum=Minute;Hour;Day
 	Unit string `json:"unit,omitempty"`

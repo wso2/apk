@@ -121,16 +121,16 @@ func TieBreaker[T metav1.Object](k8sObjects []T) *T {
 
 // SelectPolicy selects the policy based on the policy override and default values
 func SelectPolicy[T any](policyUpOverride, policyUpDefault, policyDownOverride, policyDownDefault *T) *T {
-	if !reflect.ValueOf(*policyUpOverride).IsZero() {
+	if policyUpOverride != nil && !reflect.ValueOf(*policyUpOverride).IsZero() {
 		return policyUpOverride
 	}
-	if !reflect.ValueOf(*policyDownOverride).IsZero() {
+	if policyDownOverride != nil && !reflect.ValueOf(*policyDownOverride).IsZero() {
 		return policyDownOverride
 	}
-	if !reflect.ValueOf(*policyDownDefault).IsZero() {
+	if policyDownDefault != nil && !reflect.ValueOf(*policyDownDefault).IsZero() {
 		return policyDownDefault
 	}
-	if !reflect.ValueOf(*policyUpDefault).IsZero() {
+	if policyUpDefault != nil && !reflect.ValueOf(*policyUpDefault).IsZero() {
 		return policyUpDefault
 	}
 	return nil
