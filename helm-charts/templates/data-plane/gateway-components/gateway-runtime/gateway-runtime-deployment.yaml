@@ -33,6 +33,15 @@ spec:
         networkPolicyId: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.npi }}
 {{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.wso2.apk.dp.gatewayRuntime.appName ) | indent 8}}
     spec:
+      initContainers:
+        - name: check-adapter
+          image: busybox:1.32
+          env:
+            - name: ADAPTER_HOST
+              value: {{ template "apk-helm.resource.prefix" . }}-adapter-service.{{ .Release.Namespace }}.svc
+            - name: ADAPTER_XDS_PORT
+              value : "18000"  
+          command: ['sh', '-c', 'echo -e "Checking for the availability of Adapter deployment"; while ! nc -z $ADAPTER_HOST $ADAPTER_XDS_PORT; do sleep 1; printf "-"; done; echo -e "  >> Adapter has started";']
       containers:
         - name: enforcer
           image: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.image }}
