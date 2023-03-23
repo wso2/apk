@@ -54,9 +54,9 @@
 					]
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/oauth2/token",
+					"raw": "{{idpAPIBaseURl}}/oauth2/token",
 					"host": [
-						"{{gatewayBaseURl}}"
+						"{{idpAPIBaseURl}}"
 					],
 					"path": [
 						"oauth2",
@@ -116,9 +116,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/services",
+					"raw": "{{internalAPIBaseURl}}/api/am/runtime/services",
 					"host": [
-						"{{gatewayBaseURl}}"
+						"{{internalAPIBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -219,9 +219,9 @@
 					"raw": "{\n    \"context\": \"{{testAPIContext}}\",\n    \"name\": \"{{testAPIName}}\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/*\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"operationPolicies\": {\n                \"request\": [\n                    {\n                        \"policyName\": \"addHeader\",\n                        \"parameters\": [{\n                            \"headerName\": \"sampleadd\",\n                            \"headerValue\": \"samplevalue\"\n                        }]\n                    }\n                ],\n                \"response\": [\n                    {\n                        \"policyName\": \"removeHeader\",\n                        \"parameters\": [{\n                            \"headerName\": \"access-control-allow-credentials\"\n                        }]\n                    }\n                ]\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"POST\",\n            \"authTypeEnabled\": true\n        }\n    ]\n}"
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/import-service?serviceKey={{serviceUUID}}",
+					"raw": "{{internalAPIBaseURl}}/api/am/runtime/apis/import-service?serviceKey={{serviceUUID}}",
 					"host": [
-						"{{gatewayBaseURl}}"
+						"{{internalAPIBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -300,9 +300,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis",
+					"raw": "{{internalAPIBaseURl}}/api/am/runtime/apis",
 					"host": [
-						"{{gatewayBaseURl}}"
+						"{{internalAPIBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -347,9 +347,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}",
+					"raw": "{{internalAPIBaseURl}}/api/am/runtime/apis/{{APIUUID}}",
 					"host": [
-						"{{gatewayBaseURl}}"
+						"{{internalAPIBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -429,9 +429,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}",
+					"raw": "{{internalAPIBaseURl}}/api/am/runtime/apis/{{APIUUID}}",
 					"host": [
-						"{{gatewayBaseURl}}"
+						"{{internalAPIBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -495,9 +495,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}/definition",
+					"raw": "{{internalAPIBaseURl}}/api/am/runtime/apis/{{APIUUID}}/definition",
 					"host": [
-						"{{gatewayBaseURl}}"
+						"{{internalAPIBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -557,9 +557,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}",
+					"raw": "{{internalAPIBaseURl}}/api/am/runtime/apis/{{APIUUID}}",
 					"host": [
-						"{{gatewayBaseURl}}"
+						"{{internalAPIBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -619,9 +619,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}",
+					"raw": "{{internalAPIBaseURl}}/api/am/runtime/apis/{{APIUUID}}",
 					"host": [
-						"{{gatewayBaseURl}}"
+						"{{internalAPIBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -702,9 +702,9 @@
 					"raw": "{\n    \"context\": \"{{testAPIV2Context}}\" ,\n    \"name\": \"{{testAPIV2Name}}\" ,\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\"\n}"
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/import-service?serviceKey={{serviceUUID}}",
+					"raw": "{{internalAPIBaseURl}}/api/am/runtime/apis/import-service?serviceKey={{serviceUUID}}",
 					"host": [
-						"{{gatewayBaseURl}}"
+						"{{internalAPIBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -783,9 +783,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis",
+					"raw": "{{internalAPIBaseURl}}/api/am/runtime/apis",
 					"host": [
-						"{{gatewayBaseURl}}"
+						"{{internalAPIBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -862,9 +862,9 @@
 					"raw": "{\n    \"context\": \"/{{testAPIV2Context}}\" ,\n    \"name\": \"{{testAPIV2Name}}\" ,\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\"\n}\n"
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIV2UUID}}/generate-key",
+					"raw": "{{internalAPIBaseURl}}/api/am/runtime/apis/{{APIV2UUID}}/generate-key",
 					"host": [
-						"{{gatewayBaseURl}}"
+						"{{internalAPIBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -987,9 +987,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIV2UUID}}",
+					"raw": "{{internalAPIBaseURl}}/api/am/runtime/apis/{{APIV2UUID}}",
 					"host": [
-						"{{gatewayBaseURl}}"
+						"{{internalAPIBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -1143,9 +1143,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/copy-api?apiId={{APIV2UUID}}&newVersion=2.0.0",
+					"raw": "{{internalAPIBaseURl}}/api/am/runtime/apis/copy-api?apiId={{APIV2UUID}}&newVersion=2.0.0",
 					"host": [
-						"{{gatewayBaseURl}}"
+						"{{internalAPIBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -1229,9 +1229,9 @@
 					"raw": "{\n    \"context\": \"/{{testAPIV2Context}}\" ,\n    \"name\": \"{{testAPIV2Name}}\" ,\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\"\n}\n"
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIV3UUID}}/definition",
+					"raw": "{{internalAPIBaseURl}}/api/am/runtime/apis/{{APIV3UUID}}/definition",
 					"host": [
-						"{{gatewayBaseURl}}"
+						"{{internalAPIBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -1306,9 +1306,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIV3UUID}}/generate-key",
+					"raw": "{{internalAPIBaseURl}}/api/am/runtime/apis/{{APIV3UUID}}/generate-key",
 					"host": [
-						"{{gatewayBaseURl}}"
+						"{{internalAPIBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -1415,9 +1415,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIV2UUID}}",
+					"raw": "{{internalAPIBaseURl}}/api/am/runtime/apis/{{APIV2UUID}}",
 					"host": [
-						"{{gatewayBaseURl}}"
+						"{{internalAPIBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -1567,9 +1567,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIV3UUID}}",
+					"raw": "{{internalAPIBaseURl}}/api/am/runtime/apis/{{APIV3UUID}}",
 					"host": [
-						"{{gatewayBaseURl}}"
+						"{{internalAPIBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -1678,9 +1678,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/policies",
+					"raw": "{{internalAPIBaseURl}}/api/am/runtime/policies",
 					"host": [
-						"{{gatewayBaseURl}}"
+						"{{internalAPIBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -1725,9 +1725,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/policies/{{POLICYID}}",
+					"raw": "{{internalAPIBaseURl}}/api/am/runtime/policies/{{POLICYID}}",
 					"host": [
-						"{{gatewayBaseURl}}"
+						"{{internalAPIBaseURl}}"
 					],
 					"path": [
 						"api",
