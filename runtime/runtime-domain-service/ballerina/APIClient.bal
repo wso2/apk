@@ -1336,8 +1336,8 @@ public class APIClient {
         foreach OperationPolicy policy in operationPolicy {
             string policyName = policy.policyName;
 
-            record {}? policyParameters = policy.parameters;
-            if (policyParameters is record {}) {
+            record{}? policyParameters = policy.parameters;
+            if (policyParameters is record{}) {
                 if (policyName == "addHeader") {
 
                     model:HTTPHeader httpHeader = {

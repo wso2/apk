@@ -1975,7 +1975,7 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
             context: "/pizzaAPI/1.0.0",
             'version: "1.0.0"
         };
-        API apiWithOperationPolicies = {
+        json apiWithOperationPolicies = {
             "name": "PizzaAPI",
             "context": "/pizzaAPI/1.0.0",
             "version": "1.0.0",
@@ -2149,15 +2149,13 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
                 "unit": "Minute"
             }
         };
-        BadRequestError bothRateLimitsPresentError = {body: {code: 90918, message: "Presence of both resource level and API level rate limits is not allowed"}};
-        string apiUUID = getUniqueIdForAPI(api.name, api.'version, organiztion1);
+        BadRequestError bothRateLimitsPresentError = {body: {code: 90918, message: "Presence of both resource level and API level rate limits is not allowed"}};string apiUUID = getUniqueIdForAPI(api.name, api.'version, organiztion1);
         model:ConfigMap configmap = getMockConfigMap1(apiUUID, api);
         http:Response mockConfigMapResponse = getMockConfigMapResponse(configmap.clone());
         model:Httproute httpRoute = getMockHttpRoute(api, apiUUID, organiztion1);
         http:Response httpRouteResponse = getMockHttpRouteResponse(httpRoute.clone());
         model:Httproute httpRouteWithPolicies = getMockHttpRouteWithOperationPolicies1(api, apiUUID, organiztion1);
-        http:Response httpRouteWithPoliciesResponse = getMockHttpRouteResponse(httpRouteWithPolicies.clone());
-        model:Httproute httpRouteWithOperationRateLimits = getMockHttpRouteWithOperationRateLimits1(api, apiUUID, organiztion1);
+        http:Response httpRouteWithPoliciesResponse = getMockHttpRouteResponse(httpRouteWithPolicies.clone());model:Httproute httpRouteWithOperationRateLimits = getMockHttpRouteWithOperationRateLimits1(api, apiUUID, organiztion1);
         http:Response httpRouteWithOperationRateLimitsResponse = getMockHttpRouteResponse(httpRouteWithOperationRateLimits.clone());
         model:K8sServiceMapping mockServiceMappingRequest = getMockServiceMappingRequest(api, apiUUID);
         model:API mockAPI = getMockAPI(api, apiUUID, organiztion1.uuid);
@@ -2187,13 +2185,12 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
 
         model:RuntimeAPI mockRuntimeAPI = getMockRuntimeAPI(api, apiUUID, organiztion1, serviceRecord);
         http:Response mockRuntimeResponse = getMockRuntimeAPIResponse(mockRuntimeAPI.clone());
-        model:RuntimeAPI mockRuntimeAPIWithPolicies = getMockRuntimeAPI(apiWithOperationPolicies, apiUUID, organiztion1, serviceRecord);
+        model:RuntimeAPI mockRuntimeAPIWithPolicies = getMockRuntimeAPI(check apiWithOperationPolicies.cloneWithType(API), apiUUID, organiztion1, serviceRecord);
         http:Response mockRuntimeResponseWithPolicies = getMockRuntimeAPIResponse(mockRuntimeAPIWithPolicies.clone());
         model:RuntimeAPI mockRuntimeAOperationRateLimits = getMockRuntimeAPI(apiWithOperationRateLimits, apiUUID, organiztion1, serviceRecord);
         http:Response mockRuntimeResponseWithOperationRateLimits = getMockRuntimeAPIResponse(mockRuntimeAOperationRateLimits.clone());
         model:RuntimeAPI mockRuntimeAPIWithAPIRateLimits = getMockRuntimeAPI(apiWithAPIRateLimits, apiUUID, organiztion1, serviceRecord);
-        http:Response mockRuntimeResponseWithAPIRateLimits = getMockRuntimeAPIResponse(mockRuntimeAPIWithAPIRateLimits.clone());
-        http:Response serviceMappingResponse = getMockServiceMappingResponse(mockServiceMappingRequest.clone());
+        http:Response mockRuntimeResponseWithAPIRateLimits = getMockRuntimeAPIResponse(mockRuntimeAPIWithAPIRateLimits.clone());http:Response serviceMappingResponse = getMockServiceMappingResponse(mockServiceMappingRequest.clone());
         BadRequestError nameAlreadyExistError = {body: {code: 90911, message: "API Name - " + alreadyNameExist.name + " already exist.", description: "API Name - " + alreadyNameExist.name + " already exist."}};
         API contextAlreadyExist = {
             name: "PizzaAPI",
@@ -4012,35 +4009,35 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
         "endpointConfig": {"production_endpoints": {"url": "https://localhost"}},
         "operations": [
             {
-                "target": "/*",
-                "verb": "GET",
-                "authTypeEnabled": true
+                target: "/*",
+                verb: "GET",
+                authTypeEnabled: true
             },
             {
-                "target": "/*",
-                "verb": "PUT",
-                "authTypeEnabled": true
+                target: "/*",
+                verb: "PUT",
+                authTypeEnabled: true
             },
             {
-                "target": "/*",
-                "verb": "POST",
-                "authTypeEnabled": true
+                target: "/*",
+                verb: "POST",
+                authTypeEnabled: true
             },
             {
-                "target": "/*",
-                "verb": "DELETE",
-                "authTypeEnabled": true
+                target: "/*",
+                verb: "DELETE",
+                authTypeEnabled: true
             },
             {
-                "target": "/*",
-                "verb": "PATCH",
-                "authTypeEnabled": true
+                target: "/*",
+                verb: "PATCH",
+                authTypeEnabled: true
             }
         ],
         "apiPolicies": {
-            "request": [
+            request: [
                 {
-                    "policyName": "addHeader",
+                    policyName: "addHeader",
                     "parameters":
                         {
                         "headerName": "customadd",
@@ -4051,7 +4048,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             ],
             "response": [
                 {
-                    "policyName": "removeHeader",
+                    policyName: "removeHeader",
                     "parameters":
                         {
                         "headerName": "content-length"
@@ -4310,8 +4307,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
                 (),
-                (),
-                k8sapiUUID,
+                (),k8sapiUUID,
                 createdAPI.toBalString()
             ]
         ,
@@ -4331,8 +4327,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
                 (),
-                (),
-                k8sapiUUID,
+                (),k8sapiUUID,
                 nameAlreadyExistError.toBalString()
             ],
             "3": [
@@ -4349,8 +4344,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockAPI(api, apiUUID, organiztion1.uuid),
                 getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
                 getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
-                getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
-                (),
+                getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),(),
                 (),
                 k8sapiUUID,
                 contextAlreadyExistError.toBalString()
@@ -4369,8 +4363,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockAPI1(api, apiUUID, organiztion1.uuid),
                 getMockAPIResponse(getMockAPI1(api, apiUUID, organiztion1.uuid), k8sapiUUID),
                 getMockRuntimeAPI(sandboxOnlyAPI, apiUUID, organiztion1, ()),
-                getMockRuntimeAPIResponse(getMockRuntimeAPI(sandboxOnlyAPI, apiUUID, organiztion1, ())),
-                (),
+                getMockRuntimeAPIResponse(getMockRuntimeAPI(sandboxOnlyAPI, apiUUID, organiztion1, ())),(),
                 (),
                 k8sapiUUID,
                 createdAPI.toBalString()
@@ -4392,8 +4385,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
                 (),
-                (),
-                k8sapiUUID,
+                (),k8sapiUUID,
                 productionEndpointNotSpecifiedError.toBalString()
             ],
             "6": [
@@ -4410,8 +4402,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockAPI(api, apiUUID, organiztion1.uuid),
                 getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
                 getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
-                getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
-                (),
+                getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),(),
                 (),
                 k8sapiUUID,
                 sandboxEndpointNotSpecifiedError.toBalString()
@@ -4433,8 +4424,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
                 (),
-                (),
-                k8sapiUUID,
+                (),k8sapiUUID,
                 k8sLevelError1.toBalString()
             ]
         ,
@@ -4454,8 +4444,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
                 (),
-                (),
-                k8sapiUUID,
+                (),k8sapiUUID,
                 k8sLevelError1.toBalString()
             ]
         ,
@@ -4475,8 +4464,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
                 (),
-                (),
-                k8sapiUUID,
+                (),k8sapiUUID,
                 k8sLevelError1.toBalString()
             ]
         ,
@@ -4496,8 +4484,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
                 (),
-                (),
-                k8sapiUUID,
+                (),k8sapiUUID,
                 k8sLevelError.toBalString()
             ]
         ,
@@ -4517,8 +4504,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
                 (),
-                (),
-                k8sapiUUID,
+                (),k8sapiUUID,
                 k8sLevelError.toBalString()
             ]
         ,
@@ -4538,8 +4524,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
                 (),
-                (),
-                k8sapiUUID,
+                (),k8sapiUUID,
                 invalidAPINameError.toBalString()
             ]
         ,
