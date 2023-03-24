@@ -54,9 +54,9 @@
 					]
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/oauth2/token",
+					"raw": "{{idpAPIBaseURl}}/oauth2/token",
 					"host": [
-						"{{gatewayBaseURl}}"
+						"{{idpAPIBaseURl}}"
 					],
 					"path": [
 						"oauth2",
@@ -128,9 +128,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/admin/application-rate-plans",
+					"raw": "{{internalAPIBaseURl}}/api/am/admin/application-rate-plans",
 					"host": [
-						"{{gatewayBaseURl}}"
+						"{{internalAPIBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -191,9 +191,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/admin/application-rate-plans/{{applicationRatePlanID}}",
+					"raw": "{{internalAPIBaseURl}}/api/am/admin/application-rate-plans/{{applicationRatePlanID}}",
 					"host": [
-						"{{gatewayBaseURl}}"
+						"{{internalAPIBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -266,9 +266,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/admin/application-rate-plans/{{applicationRatePlanID}}",
+					"raw": "{{internalAPIBaseURl}}/api/am/admin/application-rate-plans/{{applicationRatePlanID}}",
 					"host": [
-						"{{gatewayBaseURl}}"
+						"{{internalAPIBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -303,9 +303,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/admin/application-rate-plans",
+					"raw": "{{internalAPIBaseURl}}/api/am/admin/application-rate-plans",
 					"host": [
-						"{{gatewayBaseURl}}"
+						"{{internalAPIBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -362,9 +362,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/admin/application-rate-plans/{{applicationRatePlanID}}",
+					"raw": "{{internalAPIBaseURl}}/api/am/admin/application-rate-plans/{{applicationRatePlanID}}",
 					"host": [
-						"{{gatewayBaseURl}}"
+						"{{internalAPIBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -429,9 +429,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/admin/deny-policies",
+					"raw": "{{internalAPIBaseURl}}/api/am/admin/deny-policies",
 					"host": [
-						"{{gatewayBaseURl}}"
+						"{{internalAPIBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -485,9 +485,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/admin/deny-policies/{{applicationDenyPolicyID}}",
+					"raw": "{{internalAPIBaseURl}}/api/am/admin/deny-policies/{{applicationDenyPolicyID}}",
 					"host": [
-						"{{gatewayBaseURl}}"
+						"{{internalAPIBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -541,9 +541,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/admin/deny-policies",
+					"raw": "{{internalAPIBaseURl}}/api/am/admin/deny-policies",
 					"host": [
-						"{{gatewayBaseURl}}"
+						"{{internalAPIBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -603,9 +603,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/admin/deny-policies/{{applicationDenyPolicyID}}",
+					"raw": "{{internalAPIBaseURl}}/api/am/admin/deny-policies/{{applicationDenyPolicyID}}",
 					"host": [
-						"{{gatewayBaseURl}}"
+						"{{internalAPIBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -663,9 +663,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/admin/deny-policies/{{applicationDenyPolicyID}}",
+					"raw": "{{internalAPIBaseURl}}/api/am/admin/deny-policies/{{applicationDenyPolicyID}}",
 					"host": [
-						"{{gatewayBaseURl}}"
+						"{{internalAPIBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -730,9 +730,9 @@
 					"raw": "{\n    \"name\": \"{{organizationName}}\",\n    \"displayName\": \"{{organizationDisplayName}}\",\n    \"organizationClaimValue\": \"{{organizationClaimValue}}\",\n    \"serviceNamespaces\": [\n    \"{{serviceNamespace}}\"\n    ]\n}"
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/admin/organizations",
+					"raw": "{{internalAPIBaseURl}}/api/am/admin/organizations",
 					"host": [
-						"{{gatewayBaseURl}}"
+						"{{internalAPIBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -775,9 +775,9 @@
 					"raw": "{\n      \"name\": \"{{organizationName}}\",\n      \"displayName\": \"{{organizationDisplayNameUpdate}}\",\n      \"organizationClaimValue\": \"{{organizationClaimValue}}\",\n      \"serviceNamespaces\": [\n        \"{{serviceNamespace}}\"\n      ]\n    }"
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/admin/organizations/{{organizationId}}",
+					"raw": "{{internalAPIBaseURl}}/api/am/admin/organizations/{{organizationId}}",
 					"host": [
-						"{{gatewayBaseURl}}"
+						"{{internalAPIBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -812,9 +812,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/admin/organizations",
+					"raw": "{{internalAPIBaseURl}}/api/am/admin/organizations",
 					"host": [
-						"{{gatewayBaseURl}}"
+						"{{internalAPIBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -848,9 +848,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/admin/organizations/{{organizationId}}",
+					"raw": "{{internalAPIBaseURl}}/api/am/admin/organizations/{{organizationId}}",
 					"host": [
-						"{{gatewayBaseURl}}"
+						"{{internalAPIBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -885,9 +885,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/admin/organizations/{{organizationId}}",
+					"raw": "{{internalAPIBaseURl}}/api/am/admin/organizations/{{organizationId}}",
 					"host": [
-						"{{gatewayBaseURl}}"
+						"{{internalAPIBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -922,9 +922,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/admin/organization-info",
+					"raw": "{{internalAPIBaseURl}}/api/am/admin/organization-info",
 					"host": [
-						"{{gatewayBaseURl}}"
+						"{{internalAPIBaseURl}}"
 					],
 					"path": [
 						"api",
