@@ -157,15 +157,11 @@ spec:
                               properties:
                                 policyName:
                                   type: string
+                                policyVersion:
+                                  type: string
+                                  default: v1
                                 parameters:
-                                  type: array
-                                  items:
-                                    type: object
-                                    properties:
-                                      headerName:
-                                        type: string
-                                      headerValue:
-                                        type: string
+                                  type: object
                           response:
                             type: array
                             items:
@@ -173,8 +169,11 @@ spec:
                               properties:
                                 policyName:
                                   type: string
+                                policyVersion:
+                                  type: string
+                                  default: v1
                                 parameters:
-                                  type: array
+                                  type: object
                                   items:
                                     type: object
                                     properties:
