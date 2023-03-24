@@ -1374,7 +1374,8 @@ components:
               {
                 "endpoint_type": "http",
                 "sandbox_endpoints":       {
-                   "url": "https://pizzashack-service:8080/am/sample/pizzashack/v3/api/"
+                   "url": "https://pizzashack-service:8080/am/sample/pizzashack/v3/api/",
+                   "certificate"
                 },
                 "production_endpoints":       {
                    "url": "https://pizzashack-service:8080/am/sample/pizzashack/v3/api/"
