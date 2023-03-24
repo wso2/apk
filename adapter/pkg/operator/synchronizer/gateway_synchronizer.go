@@ -88,6 +88,7 @@ func AddOrUpdateGateway(gateway *gwapiv1b1.Gateway, state string) (string, error
 	loggers.LoggerAPKOperator.Debugf("apis: %v", apis)
 	xds.UpdateXdsCacheWithLock(gateway.Name, endpoints, clusters, routes, listeners)
 	xds.UpdateEnforcerApis(gateway.Name, apis, "")
+	xds.UpdateRateLimiterPolicies(gateway.Name)
 	return "", nil
 }
 
