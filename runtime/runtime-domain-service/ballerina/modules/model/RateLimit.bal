@@ -34,7 +34,7 @@ public type RateLimitData record {|
 |};
 
 public type RateLimitDetails record {|
-    int requestPerUnit;
+    int requestsPerUnit;
     string unit;
 |};
 

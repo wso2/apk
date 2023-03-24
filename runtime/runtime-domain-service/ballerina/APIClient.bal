@@ -1859,7 +1859,7 @@ public class APIClient {
     isolated function retrieveRateLimitData(APIRateLimit rateLimit) returns model:RateLimitData {
         model:RateLimitData rateLimitData = {
             api: {
-                requestPerUnit: rateLimit.requestsPerUnit,
+                requestsPerUnit: rateLimit.requestsPerUnit,
                 unit: rateLimit.unit
             },
             'type: "Api"
