@@ -70,7 +70,7 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, ht
 		var endPoints []Endpoint
 		var policies = OperationPolicies{}
 		resourceAuthScheme := authScheme
-		resourceAPIPolicy := concatAPIPolicies2(apiPolicy, nil)
+		resourceAPIPolicy := concatAPIPolicies(apiPolicy, nil)
 		var resourceRatelimitPolicy *dpv1alpha1.RateLimitPolicy
 		hasPolicies := false
 		var scopes []string
@@ -111,7 +111,7 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, ht
 						Name:      string(filter.ExtensionRef.Name),
 						Namespace: httpRoute.Namespace,
 					}.String()]; found {
-						resourceAPIPolicy = concatAPIPolicies2(apiPolicy, &ref)
+						resourceAPIPolicy = concatAPIPolicies(apiPolicy, &ref)
 					} else {
 						return fmt.Errorf(`apipolicy: %s has not been resolved, spec.targetRef.kind should be 
 						'Resource' in resource level APIPolicies`, filter.ExtensionRef.Name)
@@ -410,23 +410,23 @@ func concatAuthSchemes(schemeUp *dpv1alpha1.Authentication, schemeDown *dpv1alph
 func concatRateLimitPolicies(schemeUp *dpv1alpha1.RateLimitPolicy, schemeDown *dpv1alpha1.RateLimitPolicy) *dpv1alpha1.RateLimitPolicy {
 	finalRateLimit := dpv1alpha1.RateLimitPolicy{}
 	if schemeUp != nil && schemeDown != nil {
-		finalRateLimit.Spec.Override = *utils.SelectPolicy(&schemeUp.Spec.Override, &schemeUp.Spec.Default, &schemeDown.Spec.Override, &schemeDown.Spec.Default)
+		finalRateLimit.Spec.Override = utils.SelectPolicy(&schemeUp.Spec.Override, &schemeUp.Spec.Default, &schemeDown.Spec.Override, &schemeDown.Spec.Default)
 	} else if schemeUp != nil {
-		finalRateLimit.Spec.Override = *utils.SelectPolicy(&schemeUp.Spec.Override, &schemeUp.Spec.Default, nil, nil)
+		finalRateLimit.Spec.Override = utils.SelectPolicy(&schemeUp.Spec.Override, &schemeUp.Spec.Default, nil, nil)
 	} else if schemeDown != nil {
-		finalRateLimit.Spec.Override = *utils.SelectPolicy(nil, nil, &schemeDown.Spec.Override, &schemeDown.Spec.Default)
+		finalRateLimit.Spec.Override = utils.SelectPolicy(nil, nil, &schemeDown.Spec.Override, &schemeDown.Spec.Default)
 	}
 	return &finalRateLimit
 }
 
-func concatAPIPolicies2(schemeUp *dpv1alpha1.APIPolicy, schemeDown *dpv1alpha1.APIPolicy) *dpv1alpha1.APIPolicy {
+func concatAPIPolicies(schemeUp *dpv1alpha1.APIPolicy, schemeDown *dpv1alpha1.APIPolicy) *dpv1alpha1.APIPolicy {
 	apiPolicy := dpv1alpha1.APIPolicy{}
 	if schemeUp != nil && schemeDown != nil {
-		apiPolicy.Spec.Override = utils.SelectPolicy2(&schemeUp.Spec.Override, &schemeUp.Spec.Default, &schemeDown.Spec.Override, &schemeDown.Spec.Default)
+		apiPolicy.Spec.Override = utils.SelectPolicy(&schemeUp.Spec.Override, &schemeUp.Spec.Default, &schemeDown.Spec.Override, &schemeDown.Spec.Default)
 	} else if schemeUp != nil {
-		apiPolicy.Spec.Override = utils.SelectPolicy2(&schemeUp.Spec.Override, &schemeUp.Spec.Default, nil, nil)
+		apiPolicy.Spec.Override = utils.SelectPolicy(&schemeUp.Spec.Override, &schemeUp.Spec.Default, nil, nil)
 	} else if schemeDown != nil {
-		apiPolicy.Spec.Override = utils.SelectPolicy2(nil, nil, &schemeDown.Spec.Override, &schemeDown.Spec.Default)
+		apiPolicy.Spec.Override = utils.SelectPolicy(nil, nil, &schemeDown.Spec.Override, &schemeDown.Spec.Default)
 	}
 	return &apiPolicy
 }
@@ -460,65 +460,6 @@ func concatAuthScheme(scheme *dpv1alpha1.Authentication) *dpv1alpha1.Authenticat
 		}
 	}
 	return &finalAuth
-}
-
-// concatAPIPolicies concatinate override and default authentication rules to a one authentication override rule
-// folowing the hierarchy described in the https://gateway-api.sigs.k8s.io/references/policy-attachment/#hierarchy
-// Following code would follow below logic.
-// | API override policies | Resource override policies | Resource default policies | API default policies |
-// |            1          |              1             |              0            |           0          | API override policies
-// |            1          |              0             |              1            |           0          | API override policies
-// |            0          |              1             |              0            |           1          | Resource override policies
-// |            0          |              0             |              1            |           1          | Resource default policies
-func concatAPIPolicies(schemeUp *dpv1alpha1.APIPolicy, schemeDown *dpv1alpha1.APIPolicy) *dpv1alpha1.APIPolicy {
-	if schemeUp == nil && schemeDown == nil {
-		return nil
-	} else if schemeUp == nil {
-		return schemeDown
-	} else if schemeDown == nil {
-		return schemeUp
-	}
-
-	finalAPIPolicy := dpv1alpha1.APIPolicy{}
-
-	// api level override policies - must apply
-	finalAPIPolicy.Spec.Override.RequestQueryModifier = schemeUp.Spec.Override.RequestQueryModifier
-
-	// resource level override policies - must apply
-	// api level override RequestQueryModifier.Add/remove + resource level override RequestQueryModifier.Add/remove
-	if len(finalAPIPolicy.Spec.Override.RequestQueryModifier.Add) < 1 {
-		finalAPIPolicy.Spec.Override.RequestQueryModifier.Add = schemeDown.Spec.Override.RequestQueryModifier.Add
-	}
-	if len(finalAPIPolicy.Spec.Override.RequestQueryModifier.Remove) < 1 {
-		finalAPIPolicy.Spec.Override.RequestQueryModifier.Remove = schemeDown.Spec.Override.RequestQueryModifier.Remove
-	}
-	if finalAPIPolicy.Spec.Override.RequestQueryModifier.RemoveAll == "" {
-		finalAPIPolicy.Spec.Override.RequestQueryModifier.RemoveAll = schemeDown.Spec.Override.RequestQueryModifier.RemoveAll
-	}
-
-	// resource level default policies if above are empty
-	if len(finalAPIPolicy.Spec.Override.RequestQueryModifier.Add) < 1 {
-		finalAPIPolicy.Spec.Override.RequestQueryModifier.Add = schemeDown.Spec.Default.RequestQueryModifier.Add
-	}
-	if len(finalAPIPolicy.Spec.Override.RequestQueryModifier.Remove) < 1 {
-		finalAPIPolicy.Spec.Override.RequestQueryModifier.Remove = schemeDown.Spec.Default.RequestQueryModifier.Remove
-	}
-	if finalAPIPolicy.Spec.Override.RequestQueryModifier.RemoveAll == "" {
-		finalAPIPolicy.Spec.Override.RequestQueryModifier.RemoveAll = schemeDown.Spec.Default.RequestQueryModifier.RemoveAll
-	}
-
-	// API level default policies if above are empty
-	if len(finalAPIPolicy.Spec.Override.RequestQueryModifier.Add) < 1 {
-		finalAPIPolicy.Spec.Override.RequestQueryModifier.Add = schemeUp.Spec.Default.RequestQueryModifier.Add
-	}
-	if len(finalAPIPolicy.Spec.Override.RequestQueryModifier.Remove) < 1 {
-		finalAPIPolicy.Spec.Override.RequestQueryModifier.Remove = schemeUp.Spec.Default.RequestQueryModifier.Remove
-	}
-	if finalAPIPolicy.Spec.Override.RequestQueryModifier.RemoveAll == "" {
-		finalAPIPolicy.Spec.Override.RequestQueryModifier.RemoveAll = schemeUp.Spec.Default.RequestQueryModifier.RemoveAll
-	}
-
-	return &finalAPIPolicy
 }
 
 // getSecurity returns security schemes and it's definitions with flag to indicate if security is disabled
