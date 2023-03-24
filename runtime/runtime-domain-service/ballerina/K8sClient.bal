@@ -276,7 +276,7 @@ isolated function deployRateLimitPolicyCR(model:RateLimitPolicy rateLimitPolicy,
 }
 
 isolated function deleteRateLimitPolicyCR(string name, string namespace) returns http:Response|http:ClientError {
-    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/ratelimitpolicies" + name;
+    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/ratelimitpolicies/" + name;
     return k8sApiServerEp->delete(endpoint, targetType = http:Response);
 }
 
