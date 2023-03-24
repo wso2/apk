@@ -422,11 +422,11 @@ func concatRateLimitPolicies(schemeUp *dpv1alpha1.RateLimitPolicy, schemeDown *d
 func concatAPIPolicies2(schemeUp *dpv1alpha1.APIPolicy, schemeDown *dpv1alpha1.APIPolicy) *dpv1alpha1.APIPolicy {
 	apiPolicy := dpv1alpha1.APIPolicy{}
 	if schemeUp != nil && schemeDown != nil {
-		apiPolicy.Spec.Override = *utils.SelectPolicy(&schemeUp.Spec.Override, &schemeUp.Spec.Default, &schemeDown.Spec.Override, &schemeDown.Spec.Default)
+		apiPolicy.Spec.Override = utils.SelectPolicy2(&schemeUp.Spec.Override, &schemeUp.Spec.Default, &schemeDown.Spec.Override, &schemeDown.Spec.Default)
 	} else if schemeUp != nil {
-		apiPolicy.Spec.Override = *utils.SelectPolicy(&schemeUp.Spec.Override, &schemeUp.Spec.Default, nil, nil)
+		apiPolicy.Spec.Override = utils.SelectPolicy2(&schemeUp.Spec.Override, &schemeUp.Spec.Default, nil, nil)
 	} else if schemeDown != nil {
-		apiPolicy.Spec.Override = *utils.SelectPolicy(nil, nil, &schemeDown.Spec.Override, &schemeDown.Spec.Default)
+		apiPolicy.Spec.Override = utils.SelectPolicy2(nil, nil, &schemeDown.Spec.Override, &schemeDown.Spec.Default)
 	}
 	return &apiPolicy
 }
