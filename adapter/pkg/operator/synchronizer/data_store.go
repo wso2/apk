@@ -332,6 +332,12 @@ func (ods *OperatorDataStore) GetCachedGateway(gatewayName types.NamespacedName)
 	return GatewayState{}, false
 }
 
+// IsGatewayAvailable get cached gatewaystate
+func (ods *OperatorDataStore) IsGatewayAvailable(gatewayName types.NamespacedName) bool {
+	_, found := ods.gatewayStore[gatewayName]
+	return found
+}
+
 // DeleteCachedGateway delete from gatewaystate cache
 func (ods *OperatorDataStore) DeleteCachedGateway(gatewayName types.NamespacedName) {
 	ods.mu.Lock()

@@ -58,6 +58,7 @@ const (
 	// Index for resource level authentications
 	httpRouteAuthenticationResourceIndex = "httpRouteAuthenticationResourceIndex"
 	httpRouteRateLimitIndex              = "httpRouteRateLimitIndex"
+	gatewayHTTPRouteIndex                = "gatewayHTTPRouteIndex"
 	httpRouteRateLimitResourceIndex      = "httpRouteRateLimitResourceIndex"
 	// Index for API level apipolicies
 	httpRouteAPIPolicyIndex = "httpRouteAPIPolicyIndex"
@@ -113,6 +114,12 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 	if err := c.Watch(&source.Kind{Type: &gwapiv1b1.HTTPRoute{}}, handler.EnqueueRequestsFromMapFunc(r.getAPIForHTTPRoute),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2613, err))
+		return err
+	}
+
+	if err := c.Watch(&source.Kind{Type: &gwapiv1b1.Gateway{}}, handler.EnqueueRequestsFromMapFunc(r.getAPIsForGateway),
+		predicates...); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2611, err))
 		return err
 	}
 
@@ -236,12 +243,27 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, prodHTTP
 			return nil, nil, fmt.Errorf("error while resolving production httpRouteref %s in namespace :%s has not found. %s",
 				prodHTTPRouteRef, namespace, err.Error())
 		}
+		if !apiReconciler.ods.IsGatewayAvailable(types.NamespacedName{
+			Name:      string(prodHTTPRoute.HTTPRoute.Spec.ParentRefs[0].Name),
+			Namespace: utils.GetNamespace(prodHTTPRoute.HTTPRoute.Spec.ParentRefs[0].Namespace, prodHTTPRoute.HTTPRoute.Namespace),
+		}) {
+			return nil, nil, fmt.Errorf("no gateway available for httpRouteref %s in namespace :%s has not found",
+				prodHTTPRouteRef, namespace)
+		}
+
 	}
 
 	if len(sandHTTPRouteRef) > 0 {
 		if sandHTTPRoute, err = apiReconciler.resolveHTTPRouteRefs(ctx, sandHTTPRouteRef, namespace, api); err != nil {
 			return nil, nil, fmt.Errorf("error while resolving sandbox httpRouteref %s in namespace :%s has not found. %s",
 				sandHTTPRouteRef, namespace, err.Error())
+		}
+		if !apiReconciler.ods.IsGatewayAvailable(types.NamespacedName{
+			Name:      string(sandHTTPRoute.HTTPRoute.Spec.ParentRefs[0].Name),
+			Namespace: utils.GetNamespace(sandHTTPRoute.HTTPRoute.Spec.ParentRefs[0].Namespace, sandHTTPRoute.HTTPRoute.Namespace),
+		}) {
+			return nil, nil, fmt.Errorf("no gateway available for httpRouteref %s in namespace :%s has not found",
+				sandHTTPRouteRef, namespace)
 		}
 	}
 	return prodHTTPRoute, sandHTTPRoute, nil
@@ -833,6 +855,36 @@ func (apiReconciler *APIReconciler) getAPIsForBackend(obj k8client.Object) []rec
 	return requests
 }
 
+// getAPIsForGateway triggers the API controller reconcile method based on the changes detected
+// in gateway resources.
+func (apiReconciler *APIReconciler) getAPIsForGateway(obj k8client.Object) []reconcile.Request {
+	ctx := context.Background()
+	gateway, ok := obj.(*gwapiv1b1.Gateway)
+	if !ok {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2624, gateway))
+		return []reconcile.Request{}
+	}
+
+	httpRouteList := &gwapiv1b1.HTTPRouteList{}
+	if err := apiReconciler.client.List(ctx, httpRouteList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(gatewayHTTPRouteIndex, utils.NamespacedName(gateway).String()),
+	}); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2625, utils.NamespacedName(gateway).String()))
+		return []reconcile.Request{}
+	}
+
+	if len(httpRouteList.Items) == 0 {
+		loggers.LoggerAPKOperator.Debugf("HTTPRoutes for Gateway not found: %s", utils.NamespacedName(gateway).String())
+		return []reconcile.Request{}
+	}
+
+	requests := []reconcile.Request{}
+	for _, httpRoute := range httpRouteList.Items {
+		requests = append(requests, apiReconciler.getAPIForHTTPRoute(&httpRoute)...)
+	}
+	return requests
+}
+
 // addIndexes adds indexing on API, for
 //   - prodution and sandbox HTTPRoutes
 //     referenced in API objects via `.spec.prodHTTPRouteRef` and `.spec.sandHTTPRouteRef`
@@ -888,6 +940,23 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 				}
 			}
 			return backends
+		}); err != nil {
+		return err
+	}
+
+	// Gateway to HTTPRoute indexer
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &gwapiv1b1.HTTPRoute{}, gatewayHTTPRouteIndex,
+		func(rawObj k8client.Object) []string {
+			httpRoute := rawObj.(*gwapiv1b1.HTTPRoute)
+			var gateways []string
+			for _, parentRef := range httpRoute.Spec.ParentRefs {
+				gateways = append(gateways, types.NamespacedName{
+					Namespace: utils.GetNamespace(parentRef.Namespace,
+						httpRoute.Namespace),
+					Name: string(parentRef.Name),
+				}.String())
+			}
+			return gateways
 		}); err != nil {
 		return err
 	}
