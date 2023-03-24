@@ -29,8 +29,8 @@ public type RateLimitSpec record {|
 |};
 
 public type RateLimitData record {|
-    RateLimitDetails api;
-    string 'type;
+    RateLimitDetails api?;
+    string 'type?;
 |};
 
 public type RateLimitDetails record {|
