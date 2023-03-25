@@ -20,7 +20,9 @@ package synchronizer
 import (
 	"github.com/wso2/apk/adapter/internal/discovery/xds"
 	"github.com/wso2/apk/adapter/internal/loggers"
+	"github.com/wso2/apk/adapter/internal/oasparser/model"
 	"github.com/wso2/apk/adapter/pkg/logging"
+	dpv1alpha1 "github.com/wso2/apk/adapter/pkg/operator/apis/dp/v1alpha1"
 	"github.com/wso2/apk/adapter/pkg/operator/constants"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
@@ -60,7 +62,7 @@ func HandleGatewayLifeCycleEvents(ch *chan GatewayEvent) {
 func deployGateway(gatewayState GatewayState, state string) error {
 	var err error
 	if gatewayState.GatewayDefinition != nil {
-		_, err = AddOrUpdateGateway(gatewayState.GatewayDefinition, state)
+		_, err = AddOrUpdateGateway(gatewayState, state)
 	}
 	return err
 }
@@ -75,7 +77,9 @@ func undeployGateway(gatewayState GatewayState) error {
 }
 
 // AddOrUpdateGateway adds/update a Gateway to the XDS server.
-func AddOrUpdateGateway(gateway *gwapiv1b1.Gateway, state string) (string, error) {
+func AddOrUpdateGateway(gatewayState GatewayState,state string) (string, error) {
+	gateway := gatewayState.GatewayDefinition
+	customRateLimitPolicies := getCustomRateLimitPolicies(gatewayState.CustomRateLimitPolicies)
 	if state == constants.Create {
 		xds.GenerateGlobalClusters(gateway.Name)
 	}
@@ -97,4 +101,13 @@ func DeleteGateway(gateway *gwapiv1b1.Gateway) (string, error) {
 	xds.UpdateXdsCacheWithLock(gateway.Name, nil, nil, nil, nil)
 	xds.UpdateEnforcerApis(gateway.Name, nil, "")
 	return "", nil
+}
+
+func getCustomRateLimitPolicies(customRateLimitPoliciesDef []*dpv1alpha1.RateLimitPolicy) []*model.CustomRateLimitPolicy {
+	var customRateLimitPolicies []*model.CustomRateLimitPolicy
+	for _, customRateLimitPolicy := range customRateLimitPoliciesDef {
+		customRLPolicy := model.ParseCustomRateLimitPolicy(*customRateLimitPolicy)
+		customRateLimitPolicies = append(customRateLimitPolicies, customRLPolicy)
+	}
+	return customRateLimitPolicies
 }

@@ -285,30 +285,33 @@ func (ods *OperatorDataStore) DeleteCachedAPI(apiName types.NamespacedName) {
 }
 
 // AddGatewayState stores a new Gateway in the OperatorDataStore.
-func (ods *OperatorDataStore) AddGatewayState(gateway gwapiv1b1.Gateway) GatewayState {
+func (ods *OperatorDataStore) AddGatewayState(gateway gwapiv1b1.Gateway, customRateLimitPolicies []*dpv1alpha1.RateLimitPolicy) GatewayState {
 	ods.mu.Lock()
 	defer ods.mu.Unlock()
 
 	gatewayNamespacedName := utils.NamespacedName(&gateway)
 	ods.gatewayStore[gatewayNamespacedName] = &GatewayState{
 		GatewayDefinition: &gateway,
+		CustomRateLimitPolicies: customRateLimitPolicies,
 	}
 	return *ods.gatewayStore[gatewayNamespacedName]
 }
 
 // UpdateGatewayState update/create the GatewayState on ref updates
-func (ods *OperatorDataStore) UpdateGatewayState(gatewayDef *gwapiv1b1.Gateway) (GatewayState, []string, bool) {
+func (ods *OperatorDataStore) UpdateGatewayState(gatewayDef *gwapiv1b1.Gateway, 
+	customRateLimitPolicies []*dpv1alpha1.RateLimitPolicy) (GatewayState, []string, bool) {
 	_, found := ods.gatewayStore[utils.NamespacedName(gatewayDef)]
 	if !found {
 		loggers.LoggerAPKOperator.Infof("Adding new gatewaystate as Gateway : %s has not found in memory datastore.", gatewayDef.Name)
-		gatewayState := ods.AddGatewayState(*gatewayDef)
+		gatewayState := ods.AddGatewayState(*gatewayDef, customRateLimitPolicies)
 		return gatewayState, []string{"GATEWAY"}, true
 	}
-	return ods.processGatewayState(gatewayDef)
+	return ods.processGatewayState(gatewayDef, customRateLimitPolicies)
 }
 
 // processGatewayState process and update the GatewayState on ref updates
-func (ods *OperatorDataStore) processGatewayState(gatewayDef *gwapiv1b1.Gateway) (GatewayState, []string, bool) {
+func (ods *OperatorDataStore) processGatewayState(gatewayDef *gwapiv1b1.Gateway, 
+	customRateLimitPolicies []*dpv1alpha1.RateLimitPolicy) (GatewayState, []string, bool) {
 	ods.mu.Lock()
 	defer ods.mu.Unlock()
 	var updated bool
@@ -319,6 +322,12 @@ func (ods *OperatorDataStore) processGatewayState(gatewayDef *gwapiv1b1.Gateway)
 		cachedGateway.GatewayDefinition = gatewayDef
 		updated = true
 		events = append(events, "Gateway Definition")
+	}
+
+	if !reflect.DeepEqual(cachedGateway.CustomRateLimitPolicies, customRateLimitPolicies) {
+		cachedGateway.CustomRateLimitPolicies = customRateLimitPolicies
+		updated = true
+		events = append(events, "Gateway Custom RateLimit Policies")
 	}
 
 	return *cachedGateway, events, updated

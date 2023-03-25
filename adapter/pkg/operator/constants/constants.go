@@ -53,6 +53,7 @@ const (
 	KindResource = "Resource"
 	KindScope    = "Scope"
 	KindBackend  = "Backend"
+	KindGateway = "Gateway"
 )
 
 // Env types

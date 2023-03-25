@@ -41,18 +41,50 @@ spec:
                   api:
                     description: API policy
                     properties:
-                      requestsPerUnit:
-                        description: RequestsPerUnit is the number of requests allowed
-                          per unit time
-                        type: integer
-                      unit:
-                        description: Unit is the unit of the requestsPerUnit
-                        enum:
-                        - Minute
-                        - Hour
-                        - Day
+                      rateLimit:
+                        description: RateLimit is the rate limit for the API
+                        properties:
+                          requestsPerUnit:
+                            description: RequestPerUnit is the number of requests
+                              allowed per unit time
+                            type: integer
+                          unit:
+                            description: Unit is the unit of the requestPerUnit
+                            enum:
+                            - Minute
+                            - Hour
+                            - Day
+                            type: string
+                        type: object
+                    type: object
+                  custom:
+                    description: Custom policy
+                    properties:
+                      key:
+                        description: Key is the key of the custom policy
+                        type: string
+                      rateLimit:
+                        description: RateLimit is the rate limit for the API
+                        properties:
+                          requestsPerUnit:
+                            description: RequestPerUnit is the number of requests
+                              allowed per unit time
+                            type: integer
+                          unit:
+                            description: Unit is the unit of the requestPerUnit
+                            enum:
+                            - Minute
+                            - Hour
+                            - Day
+                            type: string
+                        type: object
+                      value:
+                        description: Value is the value of the custom policy
                         type: string
                     type: object
+                  organization:
+                    description: Organization is the organization of the policy
+                    type: string
                   type:
                     description: Type of the policy can be either "api" or "application"
                       or "subscription"
@@ -60,6 +92,7 @@ spec:
                     - Api
                     - Application
                     - Subscription
+                    - Custom
                     type: string
                 type: object
               override:
@@ -68,18 +101,50 @@ spec:
                   api:
                     description: API policy
                     properties:
-                      requestsPerUnit:
-                        description: RequestsPerUnit is the number of requests allowed
-                          per unit time
-                        type: integer
-                      unit:
-                        description: Unit is the unit of the requestsPerUnit
-                        enum:
-                        - Minute
-                        - Hour
-                        - Day
+                      rateLimit:
+                        description: RateLimit is the rate limit for the API
+                        properties:
+                          requestsPerUnit:
+                            description: RequestPerUnit is the number of requests
+                              allowed per unit time
+                            type: integer
+                          unit:
+                            description: Unit is the unit of the requestPerUnit
+                            enum:
+                            - Minute
+                            - Hour
+                            - Day
+                            type: string
+                        type: object
+                    type: object
+                  custom:
+                    description: Custom policy
+                    properties:
+                      key:
+                        description: Key is the key of the custom policy
+                        type: string
+                      rateLimit:
+                        description: RateLimit is the rate limit for the API
+                        properties:
+                          requestsPerUnit:
+                            description: RequestPerUnit is the number of requests
+                              allowed per unit time
+                            type: integer
+                          unit:
+                            description: Unit is the unit of the requestPerUnit
+                            enum:
+                            - Minute
+                            - Hour
+                            - Day
+                            type: string
+                        type: object
+                      value:
+                        description: Value is the value of the custom policy
                         type: string
                     type: object
+                  organization:
+                    description: Organization is the organization of the policy
+                    type: string
                   type:
                     description: Type of the policy can be either "api" or "application"
                       or "subscription"
@@ -87,6 +152,7 @@ spec:
                     - Api
                     - Application
                     - Subscription
+                    - Custom
                     type: string
                 type: object
               targetRef:

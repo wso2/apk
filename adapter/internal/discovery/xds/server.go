@@ -85,10 +85,11 @@ var (
 	orgIDvHostBasepathMap       map[string]map[string]string               // organizationID -> Vhost:basepath -> Vhost:API_UUID
 
 	// Envoy Label as map key
-	envoyListenerConfigMap map[string]*listenerv3.Listener        // GW-Label -> Listener Configuration map
-	envoyRouteConfigMap    map[string]*routev3.RouteConfiguration // GW-Label -> Routes Configuration map
-	envoyClusterConfigMap  map[string][]*clusterv3.Cluster        // GW-Label -> Global Cluster Configuration map
-	envoyEndpointConfigMap map[string][]*corev3.Address           // GW-Label -> Global Endpoint Configuration map
+	envoyListenerConfigMap     map[string][]*listenerv3.Listener        // GW-Label -> Listener Configuration map
+	envoyRouteConfigMap        map[string][]*routev3.RouteConfiguration // GW-Label -> Routes Configuration map
+	envoyClusterConfigMap      map[string][]*clusterv3.Cluster          // GW-Label -> Global Cluster Configuration map
+	envoyEndpointConfigMap     map[string][]*corev3.Address             // GW-Label -> Global Endpoint Configuration map
+	customRateLimitPoliciesMap map[string][]*model.CustomRateLimitPolicy // GW-Label -> Custom Rate Limit Policies map
 
 	// Listener as map key
 	listenerToRouteArrayMap map[string][]*routev3.Route // Listener -> Routes map
@@ -152,6 +153,7 @@ func init() {
 	envoyClusterConfigMap = make(map[string][]*clusterv3.Cluster)
 	envoyEndpointConfigMap = make(map[string][]*corev3.Address)
 	listenerToRouteArrayMap = make(map[string][]*routev3.Route)
+	customRateLimitPoliciesMap = make(map[string][]*model.CustomRateLimitPolicy)
 
 	orgIDAPIMgwSwaggerMap = make(map[string]map[string]model.MgwSwagger)       // organizationID -> Vhost:API_UUID -> MgwSwagger struct map
 	orgIDAPIvHostsMap = make(map[string]map[string][]string)                   // organizationID -> UUID-prod/sand -> Envoy Vhost Array map
@@ -375,6 +377,9 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 	var endpointArray []*corev3.Address
 	var apis []types.Resource
 
+	// TODO: (lahirude@wso2.com) Finalize namespaced names.
+	customRateLimitPoliciesMap[gateway.Name] = customRateLimitPolicies
+
 	for organizationID, entityMap := range orgIDOpenAPIEnvoyMap {
 		for apiKey, labels := range entityMap {
 			if stringutils.StringInSlice(gatewayName, labels) {
@@ -476,6 +481,10 @@ func checkRoutes(routes []*routev3.Route, routesFromListener []*routev3.Route) b
 		}
 	}
 	return true
+}
+
+func applyCustomRateLimitingPolicies(){
+	
 }
 
 // GenerateGlobalClusters generates the globally available clusters and endpoints.

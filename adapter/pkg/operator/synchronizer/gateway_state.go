@@ -18,6 +18,7 @@
 package synchronizer
 
 import (
+	dpv1alpha1 "github.com/wso2/apk/adapter/pkg/operator/apis/dp/v1alpha1"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
@@ -26,4 +27,6 @@ import (
 // +k8s:deepcopy-gen=true
 type GatewayState struct {
 	GatewayDefinition *gwapiv1b1.Gateway
+	CustomRateLimitPolicies []*dpv1alpha1.RateLimitPolicy
 }
+
