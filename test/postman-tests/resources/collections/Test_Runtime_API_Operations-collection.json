@@ -1169,6 +1169,180 @@
 			"response": []
 		},
 		{
+			"name": "Modify resource NEW Version API",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"// initialize a variable to keep track of whether the target exists",
+							"let targetExists = false;",
+							"",
+							"// loop through the operations array and check if the target exists",
+							"for (let i = 0; i < pm.response.json().operations.length; i++) {",
+							"    if (pm.response.json().operations[i].target === \"/response-headers\") {",
+							"        targetExists = true;",
+							"        break;",
+							"    }",
+							"}",
+							"",
+							"if (targetExists) {",
+							"    pm.test(\"Target exists\", function() {",
+							"        pm.expect(targetExists).to.be.true;",
+							"    });",
+							"} else {",
+							"    pm.test(\"Target does not exist\", function() {",
+							"        pm.expect(targetExists).to.be.true;",
+							"    });",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": \"e5bd2c03-3d80-48eb-acd7-c6ccad20793f\",\n    \"name\": \"testAPIV2\",\n    \"context\": \"/testAPIV2/2.0.0\",\n    \"version\": \"2.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/response-headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"PUT\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"POST\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"DELETE\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"PATCH\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        }\n    ],\n        \"serviceInfo\": {\n            \"name\": \"backend\",\n            \"namespace\": \"default\"\n    }\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIV3UUID}}",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIV3UUID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "RuntimeAPI GET API by ID Default Version",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							" //parse the response JSON and test three properties",
+							"const responseJson = pm.response.json();",
+							"",
+							"// initialize a variable to keep track of whether the target exists",
+							"let targetNewVersionModifiedAffected = false;",
+							"",
+							"// loop through the operations array and check if the target exists",
+							"for (let i = 0; i < responseJson.operations.length; i++) {",
+							"    if (responseJson.operations[i].target === \"/response-headers\") {",
+							"        targetExists = true;",
+							"        break;",
+							"    }",
+							"",
+							"}",
+							"",
+							"pm.test(\"Verify default API body after New Version API Modification\", () => {",
+							"    pm.expect(responseJson.name).equals(pm.collectionVariables.get('testAPIV2Name'));",
+							"    pm.expect(responseJson.version).equals(\"1.0.0\");",
+							"});",
+							"",
+							"if (!targetNewVersionModifiedAffected) {",
+							"    pm.test(\"New version API Change is not affected \", function() {",
+							"        pm.expect(targetNewVersionModifiedAffected).to.be.false;",
+							"    });",
+							"} else {",
+							"    pm.test(\"New version API Change is affected to the default veresion\", function() {",
+							"        pm.expect(targetNewVersionModifiedAffected).to.be.false;",
+							"    });",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIV2UUID}}",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIV2UUID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "RuntimeAPI retrieve definition of copy api",
 			"event": [
 				{
@@ -1355,14 +1529,14 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/testAPIV2/2.0.0/headers",
+					"raw": "{{gatewayBaseURl}}/testAPIV2/2.0.0/response-headers",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"testAPIV2",
 						"2.0.0",
-						"headers"
+						"response-headers"
 					]
 				}
 			},
@@ -1507,14 +1681,14 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/testAPIV2/2.0.0/headers",
+					"raw": "{{gatewayBaseURl}}/testAPIV2/2.0.0/response-headers",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"testAPIV2",
 						"2.0.0",
-						"headers"
+						"response-headers"
 					]
 				}
 			},
@@ -1615,14 +1789,14 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/testAPIV2/2.0.0/headers",
+					"raw": "{{gatewayBaseURl}}/testAPIV2/2.0.0/response-headers",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"testAPIV2",
 						"2.0.0",
-						"headers"
+						"response-headers"
 					]
 				}
 			},
