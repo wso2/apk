@@ -1200,25 +1200,25 @@ public class APIClient {
                             (<model:HTTPRouteFilter[]>filters).push(scopeFilter);
                         }
                     }
-                    if self.rateLimitPolicyExists(api.apiRateLimit, operation.operationRateLimit) {
-                        model:RateLimitPolicy? rateLimitPolicyCR = self.generateRateLimitPolicyCR(api, operation.operationRateLimit, httpRouteRefName);
+                    if operation.operationRateLimit != () {
+                        model:RateLimitPolicy? rateLimitPolicyCR = self.generateRateLimitPolicyCR(api, operation.operationRateLimit, httpRouteRefName, "Resource", "dp.wso2.com");
                         if rateLimitPolicyCR != () {
                             apiArtifact.rateLimitPolicies[rateLimitPolicyCR.metadata.name] = rateLimitPolicyCR;
-                            if rateLimitPolicyCR.spec.targetRef.kind == "Resource" {
-                                model:HTTPRouteFilter rateLimitPolicyFilter = {'type: "ExtensionRef", extensionRef: {group: "dp.wso2.com", kind: "RateLimitPolicy", name: rateLimitPolicyCR.metadata.name}};
-                                (<model:HTTPRouteFilter[]>filters).push(rateLimitPolicyFilter);
-                            }
+                            model:HTTPRouteFilter rateLimitPolicyFilter = {'type: "ExtensionRef", extensionRef: {group: "dp.wso2.com", kind: "RateLimitPolicy", name: rateLimitPolicyCR.metadata.name}};
+                            (<model:HTTPRouteFilter[]>filters).push(rateLimitPolicyFilter);
                         }
                     }
                     httpRouteRules.push(httpRouteRule);
                 }
             }
         }
+        if api.apiRateLimit != () {
+            model:RateLimitPolicy? rateLimitPolicyCR = self.generateRateLimitPolicyCR(api, api.apiRateLimit, httpRouteRefName, "HTTPRoute", "gateway.networking.k8s.io");
+            if rateLimitPolicyCR != () {
+                apiArtifact.rateLimitPolicies[rateLimitPolicyCR.metadata.name] = rateLimitPolicyCR;
+            }
+        }
         return httpRouteRules;
-    }
-
-    private isolated function rateLimitPolicyExists(APIRateLimit? apiRateLimit, APIRateLimit? operationRateLimit) returns boolean {
-        return apiRateLimit != () || operationRateLimit != ();
     }
 
     private isolated function generateScopeCR(model:APIArtifact apiArtifact, API api, commons:Organization organization, string scope) returns model:Scope {
@@ -1821,11 +1821,10 @@ public class APIClient {
         return backendService;
     }
 
-    isolated function generateRateLimitPolicyCR(API api, APIRateLimit? operationRateLimit, string httpRouteRefName) returns model:RateLimitPolicy? {
-        string nameSpace = getNameSpace(runtimeConfiguration.apiCreationNamespace);
+    isolated function generateRateLimitPolicyCR(API api, APIRateLimit? rateLimit, string httpRouteRefName, string kind, string group) returns model:RateLimitPolicy? {
         model:RateLimitPolicy? rateLimitPolicyCR = ();
-        APIRateLimit? apiRateLimit = api.apiRateLimit;
-        if (apiRateLimit != ()) {
+        if rateLimit != () {
+            string nameSpace = getNameSpace(runtimeConfiguration.apiCreationNamespace);
             rateLimitPolicyCR = {
                 metadata: {
                     name: uuid:createType1AsString(),
@@ -1833,34 +1832,15 @@ public class APIClient {
                     labels: self.getLabels(api)
                 },
                 spec: {
-                    default: self.retrieveRateLimitData(apiRateLimit),
+                    default: self.retrieveRateLimitData(rateLimit),
                     targetRef: {
-                        group: "gateway.networking.k8s.io",
-                        kind: "HTTPRoute",
+                        group: group,
+                        kind: kind,
                         name: httpRouteRefName,
                         namespace: nameSpace
                     }
                 }
             };
-        } else {
-            if (operationRateLimit != ()) {
-                rateLimitPolicyCR = {
-                    metadata: {
-                        name: uuid:createType1AsString(),
-                        namespace: nameSpace,
-                        labels: self.getLabels(api)
-                    },
-                    spec: {
-                        default: self.retrieveRateLimitData(operationRateLimit),
-                        targetRef: {
-                            group: "dp.wso2.com",
-                            kind: "Resource",
-                            name: httpRouteRefName,
-                            namespace: nameSpace
-                        }
-                    }
-                };
-            }
         }
         return rateLimitPolicyCR;
     }
@@ -2277,6 +2257,7 @@ public class APIClient {
         map<string> serviceMapping = {};
         map<string> extenstionRefMappings = {};
         foreach model:Httproute httproute in httproutes {
+            string oldHttpRouteName = httproute.metadata.name;
             httproute.metadata.name = retrieveHttpRouteRefName(newAPI, endpointType, organization);
             httproute.metadata.labels = self.getLabels(newAPI);
             model:HTTPRouteRule[] routeRules = httproute.spec.rules;
@@ -2348,7 +2329,7 @@ public class APIClient {
             map<model:RateLimitPolicy> rateLimitPolicies = apiArtifact.rateLimitPolicies;
             foreach string extensionRefName in rateLimitPolicies.keys() {
                 model:RateLimitPolicy rateLimitPolicyCR = apiArtifact.rateLimitPolicies.get(extensionRefName).clone();
-                if rateLimitPolicyCR.spec.targetRef.kind == "HTTPRoute" {
+                if rateLimitPolicyCR.spec.targetRef.kind == "HTTPRoute" && rateLimitPolicyCR.spec.targetRef.name == oldHttpRouteName {
                     model:RateLimitPolicy newRateLimitPolicyCR = self.prepareRateLimitPolicyCR(newAPI, rateLimitPolicyCR, httproute.metadata.name);
                     _ = apiArtifact.rateLimitPolicies.remove(extensionRefName);
                     apiArtifact.rateLimitPolicies[newRateLimitPolicyCR.metadata.name] = newRateLimitPolicyCR;
