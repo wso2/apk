@@ -36,6 +36,7 @@ import (
 
 	"github.com/wso2/apk/adapter/config"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
+	"github.com/wso2/apk/adapter/internal/oasparser/model"
 	"google.golang.org/protobuf/types/known/anypb"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
@@ -288,13 +289,38 @@ func CreateListenerByGateway(gateway *gwapiv1b1.Gateway) *listenerv3.Listener {
 // CreateVirtualHosts creates VirtualHost configurations for envoy which serves
 // request from the vHost domain. The routes array will be included as the routes
 // for the created virtual host.
-func CreateVirtualHosts(vhostToRouteArrayMap map[string][]*routev3.Route) []*routev3.VirtualHost {
+func CreateVirtualHosts(vhostToRouteArrayMap map[string][]*routev3.Route, customRateLimitPolicies []*model.CustomRateLimitPolicy) []*routev3.VirtualHost {
 	virtualHosts := make([]*routev3.VirtualHost, 0, len(vhostToRouteArrayMap))
+	var rateLimits []*routev3.RateLimit
+	for _, customRateLimitPolicy := range customRateLimitPolicies {
+		var actions []*routev3.RateLimit_Action
+		actions = append(actions, &routev3.RateLimit_Action{
+			ActionSpecifier: &routev3.RateLimit_Action_GenericKey_{
+				GenericKey: &routev3.RateLimit_Action_GenericKey{
+					DescriptorKey: "org",
+					DescriptorValue: customRateLimitPolicy.Organization,
+				},
+			},
+		})
+		actions = append(actions, &routev3.RateLimit_Action{
+			ActionSpecifier: &routev3.RateLimit_Action_GenericKey_{
+				GenericKey: &routev3.RateLimit_Action_GenericKey{
+					DescriptorKey: customRateLimitPolicy.Key,
+					DescriptorValue: customRateLimitPolicy.Value,
+				},
+			},
+		})
+		rateLimits = append(rateLimits, &routev3.RateLimit{
+			Actions: actions,
+		})
+	}
+	
 	for vhost, routes := range vhostToRouteArrayMap {
 		virtualHost := &routev3.VirtualHost{
 			Name:    vhost,
 			Domains: []string{vhost, fmt.Sprint(vhost, ":*")},
 			Routes:  routes,
+			RateLimits: rateLimits,
 		}
 		virtualHosts = append(virtualHosts, virtualHost)
 	}

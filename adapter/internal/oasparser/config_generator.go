@@ -97,8 +97,9 @@ func GetProductionListener(gateway *gwapiv1b1.Gateway) *listenerv3.Listener {
 // The provided set of envoy routes will be assigned under the virtual host
 //
 // The RouteConfiguration is named as "default"
-func GetRouteConfigs(vhostToRouteArrayMap map[string][]*routev3.Route, httpListener string) *routev3.RouteConfiguration {
-	vHosts := envoy.CreateVirtualHosts(vhostToRouteArrayMap)
+func GetRouteConfigs(vhostToRouteArrayMap map[string][]*routev3.Route, httpListener string, 
+	customRateLimitPolicies []*model.CustomRateLimitPolicy) *routev3.RouteConfiguration {
+	vHosts := envoy.CreateVirtualHosts(vhostToRouteArrayMap, customRateLimitPolicies)
 	routeConfig := envoy.CreateRoutesConfigForRds(vHosts, httpListener)
 	return routeConfig
 }
@@ -128,7 +129,7 @@ func GetCacheResources(endpoints []*corev3.Address, clusters []*clusterv3.Cluste
 // UpdateRoutesConfig updates the existing routes configuration with the provided map of vhost to array of routes.
 // All the already existing routes (within the routeConfiguration) will be removed.
 func UpdateRoutesConfig(routeConfig *routev3.RouteConfiguration, vhostToRouteArrayMap map[string][]*routev3.Route) {
-	routeConfig.VirtualHosts = envoy.CreateVirtualHosts(vhostToRouteArrayMap)
+	routeConfig.VirtualHosts = envoy.CreateVirtualHosts(vhostToRouteArrayMap, nil)
 }
 
 // GetEnforcerAPI retrieves the ApiDS object model for a given swagger definition

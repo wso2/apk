@@ -93,6 +93,7 @@ func AddOrUpdateGateway(gatewayState GatewayState,state string) (string, error) 
 	xds.UpdateXdsCacheWithLock(gateway.Name, endpoints, clusters, routes, listeners)
 	xds.UpdateEnforcerApis(gateway.Name, apis, "")
 	xds.UpdateRateLimiterPolicies(gateway.Name)
+	xds.UpdateRateLimitXDSCacheForCustomPolicies(gateway.Name,customRateLimitPolicies)
 	return "", nil
 }
 

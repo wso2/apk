@@ -53,6 +53,7 @@ type RateLimitAPIPolicy struct {
 
 }
 
+// RateLimit is the rate limit value for the applied policy
 type RateLimit struct {
 	// RequestPerUnit is the number of requests allowed per unit time
 	//
@@ -72,6 +73,7 @@ type APIRateLimitPolicy struct {
 	RateLimit RateLimit `json:"rateLimit,omitempty"`
 }
 
+// CustomRateLimitPolicy defines the desired state of CustomPolicy
 type CustomRateLimitPolicy struct {
 	// RateLimit is the rate limit for the API
 	//

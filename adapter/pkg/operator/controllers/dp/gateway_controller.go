@@ -228,7 +228,7 @@ func (gatewayReconciler *GatewayReconciler) getCustomRateLimitPoliciesForGateway
 
 
 func addGatewayIndexes(ctx context.Context, mgr manager.Manager) error { 
-	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.RateLimitPolicy{}, gatewayIndex,
+	return mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.RateLimitPolicy{}, gatewayIndex,
 		func(rawObj k8client.Object) []string {
 			ratelimitPolicy := rawObj.(*dpv1alpha1.RateLimitPolicy)
 			var gateways []string
@@ -242,8 +242,5 @@ func addGatewayIndexes(ctx context.Context, mgr manager.Manager) error {
 					}.String())
 			}
 			return gateways
-		}); err != nil {
-		return err
-	}
-	return nil
+		})
 }

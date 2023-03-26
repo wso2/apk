@@ -30,6 +30,7 @@ import (
 	"github.com/wso2/apk/adapter/internal/loggers"
 	logging "github.com/wso2/apk/adapter/internal/logging"
 	"github.com/wso2/apk/adapter/internal/oasparser/envoyconf"
+	"github.com/wso2/apk/adapter/internal/oasparser/model"
 	mgw "github.com/wso2/apk/adapter/internal/oasparser/model"
 	"github.com/wso2/apk/adapter/pkg/utils/stringutils"
 )
@@ -60,6 +61,9 @@ type rateLimitPolicyCache struct {
 	// So app level rate limits are in a new struct and refer in this struct.
 	// org -> vhost -> API-Identifier (i.e. Vhost:API-UUID) -> Rate Limit Configs
 	apiLevelRateLimitPolicies map[string]map[string]map[string][]*rls_config.RateLimitDescriptor
+
+	// org -> Custom Rate Limit Configs
+	customRateLimitPolicies map[string][]*rls_config.RateLimitDescriptor
 	// mutex for API level
 	apiLevelMu sync.RWMutex
 }
@@ -194,7 +198,8 @@ func (r *rateLimitPolicyCache) generateRateLimitConfig(label string) *rls_config
 		}
 		orgDescriptors = append(orgDescriptors, orgDescriptor)
 	}
-
+	customRateLimitDescriptors := r.generateCustomPolicyRateLimitConfig()
+	orgDescriptors = append(orgDescriptors, customRateLimitDescriptors...)
 	return &rls_config.RateLimitConfig{
 		Name:        envoyconf.RateLimiterDomain,
 		Domain:      envoyconf.RateLimiterDomain,
@@ -229,9 +234,48 @@ func (r *rateLimitPolicyCache) updateXdsCache(label string) bool {
 	return true
 }
 
+func (r *rateLimitPolicyCache) AddCustomRateLimitPolicies(customRateLimitPolicies []*model.CustomRateLimitPolicy) {
+	for _, customRateLimitPolicy := range customRateLimitPolicies {
+		if r.customRateLimitPolicies[customRateLimitPolicy.Organization] == nil {
+			r.customRateLimitPolicies[customRateLimitPolicy.Organization] = []*rls_config.RateLimitDescriptor{
+				{
+					Key:  customRateLimitPolicy.Key,
+					Value: customRateLimitPolicy.Value,
+					RateLimit: &rls_config.RateLimitPolicy{
+						Unit:            getRateLimitUnit(customRateLimitPolicy.RateLimit.Unit),
+						RequestsPerUnit: uint32(customRateLimitPolicy.RateLimit.RequestsPerUnit),
+					},
+				},
+			}
+		} else {
+			r.customRateLimitPolicies[customRateLimitPolicy.Organization] = append(r.customRateLimitPolicies[customRateLimitPolicy.Organization], &rls_config.RateLimitDescriptor{
+				Key:  customRateLimitPolicy.Key,
+				Value: customRateLimitPolicy.Value,
+				RateLimit: &rls_config.RateLimitPolicy{
+					Unit:            getRateLimitUnit(customRateLimitPolicy.RateLimit.Unit),
+					RequestsPerUnit: uint32(customRateLimitPolicy.RateLimit.RequestsPerUnit),
+				},
+			})
+		}
+	}
+}
+
+func (r *rateLimitPolicyCache) generateCustomPolicyRateLimitConfig() []*rls_config.RateLimitDescriptor{
+	var orgDescriptors []*rls_config.RateLimitDescriptor
+	for org, customRateLimitPolicies := range r.customRateLimitPolicies {
+		orgDescriptors = append(orgDescriptors, &rls_config.RateLimitDescriptor{
+			Key:         envoyconf.DescriptorKeyForOrg,
+			Value:       org,
+			Descriptors: customRateLimitPolicies,
+		})
+	}
+	return orgDescriptors
+}
+
 func init() {
 	rlsPolicyCache = &rateLimitPolicyCache{
 		xdsCache:                  gcp_cache.NewSnapshotCache(false, IDHash{}, nil),
 		apiLevelRateLimitPolicies: make(map[string]map[string]map[string][]*rls_config.RateLimitDescriptor),
+		customRateLimitPolicies: make(map[string][]*rls_config.RateLimitDescriptor),
 	}
 }

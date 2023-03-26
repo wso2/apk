@@ -377,9 +377,6 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 	var endpointArray []*corev3.Address
 	var apis []types.Resource
 
-	// TODO: (lahirude@wso2.com) Finalize namespaced names.
-	customRateLimitPoliciesMap[gateway.Name] = customRateLimitPolicies
-
 	for organizationID, entityMap := range orgIDOpenAPIEnvoyMap {
 		for apiKey, labels := range entityMap {
 			if stringutils.StringInSlice(gatewayName, labels) {
@@ -833,6 +830,12 @@ func UpdateEnforcerRevokedTokens(revokedTokens []types.Resource) {
 func UpdateRateLimitXDSCache(vHosts []string, mgwSwagger model.MgwSwagger) {
 	// Add Rate Limit inline policies in API to the cache
 	rlsPolicyCache.AddAPILevelRateLimitPolicies(vHosts, &mgwSwagger)
+}
+
+// UpdateRateLimitXDSCacheForCustomPolicies updates the xDS cache of the RateLimiter for custom policies.
+func UpdateRateLimitXDSCacheForCustomPolicies(gwLabel string,customRateLimitPolicies []*model.CustomRateLimitPolicy) {
+	rlsPolicyCache.AddCustomRateLimitPolicies(customRateLimitPolicies)
+	UpdateRateLimiterPolicies(gwLabel)
 }
 
 // UpdateAPICache updates the xDS cache related to the API Lifecycle event.
