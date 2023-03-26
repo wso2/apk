@@ -1922,9 +1922,12 @@ function testCreateAPIFromService(string serviceUUId, string apiUUID, [model:Con
     model:AuthenticationList authenticationList = {metadata: {}, items: []};
     model:BackendList backendList = {metadata: {}, items: []};
     model:ScopeList scopeList = {metadata: {}, items: []};
+    model:RateLimitPolicyList rateLimitPolicyList = {metadata: {}, items: []};
+
     foreach [model:Backend, any] backend in backendServices {
         test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/backends", backend[0]).thenReturn(backend[1]);
     }
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/ratelimitpolicies?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(rateLimitPolicyList);
     test:prepare(k8sApiServerEp).when("post").withArguments("/api/v1/namespaces/apk-platform/configmaps", configmapResponse[0]).thenReturn(configmapResponse[1]);
     test:prepare(k8sApiServerEp).when("post").withArguments("/apis/gateway.networking.k8s.io/v1beta1/namespaces/apk-platform/httproutes", httproute[0]).thenReturn(httproute[1]);
     test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/servicemappings", servicemapping[0]).thenReturn(servicemapping[1]);
@@ -2634,6 +2637,8 @@ function testCreateAPI(string apiUUID, string backenduuid, API api, model:Config
     model:AuthenticationList authenticationList = {metadata: {}, items: []};
     model:BackendList serviceList = {metadata: {}, items: []};
     model:ScopeList scopeList = {metadata: {}, items: []};
+    model:RateLimitPolicyList rateLimitPolicyList = {metadata: {}, items: []};
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/ratelimitpolicies?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(rateLimitPolicyList);
     test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/scopes?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(scopeList);
     test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis", k8sApi).thenReturn(k8sapiResponse);
     test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis", runtimeAPI).thenReturn(runtimeAPIResponse);
