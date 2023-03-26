@@ -24,35 +24,35 @@ import wso2/apk_common_lib as commons;
 
 isolated map<Service> services = {};
 string servicesResourceVersion = "";
-websocket:Client|error|() watchServices = ();
 
 class ServiceTask {
+    websocket:Client|error|() watchServices = ();
     function init(string resourceVersion) {
-        watchServices = getServiceClient(servicesResourceVersion);
+        self.watchServices = getServiceClient(servicesResourceVersion);
     }
     public function startListening() returns error? {
         worker WatchServiceThread {
             while true {
                 do {
-                    websocket:Client|error|() serviceClientResult = watchServices;
+                    websocket:Client|error|() serviceClientResult = self.watchServices;
                     if serviceClientResult is websocket:Client {
                         boolean connectionOpen = serviceClientResult.isOpen();
 
                         if !connectionOpen {
                             log:printDebug("ServiceWebsocket Client connection closed conectionId: " + serviceClientResult.getConnectionId());
-                            watchServices = getServiceClient(servicesResourceVersion);
-                            websocket:Client|error|() retryClient = watchServices;
+                            self.watchServices = getServiceClient(servicesResourceVersion);
+                            websocket:Client|error|() retryClient = self.watchServices;
                             if retryClient is websocket:Client {
                                 log:printDebug("Reinitializing client..");
                                 connectionOpen = retryClient.isOpen();
                                 log:printDebug("Intializd new Client Connection conectionId: " + retryClient.getConnectionId() + " state: " + connectionOpen.toString());
-                                _ = check readServiceEvents(retryClient);
+                                _ = check self.readServiceEvents(retryClient);
                             } else if retryClient is error {
                                 log:printError("error while reading message", retryClient);
                             }
                         } else {
                             log:printDebug("Intializd new Client Connection conectionId: " + serviceClientResult.getConnectionId() + " state: " + connectionOpen.toString());
-                            _ = check readServiceEvents(serviceClientResult);
+                            _ = check self.readServiceEvents(serviceClientResult);
                         }
 
                     } else if serviceClientResult is error {
@@ -64,7 +64,84 @@ class ServiceTask {
             }
         }
     }
+    function handleWatchServicesGone(model:Status statusEvent) returns error? {
+        if statusEvent.code == 410 {
+            log:printDebug("Re-initializing watch service for Services due to cache clear.");
+            map<Service> servicesMap = {};
+            ServiceClient serviceClient = new ();
+            _ = check serviceClient.retrieveAllServicesAtStartup(servicesMap, ());
+            lock {
+                services = servicesMap.clone();
+            }
+            self.watchServices = getServiceClient(servicesResourceVersion);
+        }
+    }
+    function readServiceEvents(websocket:Client serviceWebSocketClient) returns error? {
+        boolean connectionOpen = serviceWebSocketClient.isOpen();
+
+        log:printDebug("Using Client Connection conectionId: " + serviceWebSocketClient.getConnectionId() + " state: " + connectionOpen.toString());
+        if !connectionOpen {
+            error err = error("connection closed");
+            return err;
+        }
+        string|error message = check serviceWebSocketClient->readMessage();
+        if message is string {
+            log:printDebug(message);
+            json value = check value:fromJsonString(message);
+            string eventType = <string>check value.'type;
+            json eventValue = <json>check value.'object;
+            json metadata = <json>check eventValue.metadata;
+            if eventType == "ERROR" {
+                model:Status|error statusEvent = eventValue.cloneWithType(model:Status);
+                if (statusEvent is model:Status) {
+                    _ = check self.handleWatchServicesGone(statusEvent);
+                }
+            } else {
+                string latestResourceVersion = <string>check metadata.resourceVersion;
+                setServicesResourceVersion(latestResourceVersion);
+                model:Service|error mappedService = eventValue.cloneWithType(model:Service);
+                if mappedService is model:Service {
+                    if mappedService.spec.'type != "ExternalName" {
+                        Service|error serviceModel = createServiceModel(mappedService);
+                        if serviceModel is Service {
+                            if eventType == "ADDED" {
+                                lock {
+                                    services[serviceModel.id] = serviceModel.clone();
+                                }
+                            } else if (eventType == "MODIFIED") {
+                                lock {
+                                    _ = services.remove(serviceModel.id);
+                                    services[serviceModel.id] = serviceModel.clone();
+                                }
+                            } else if (eventType == "DELETED") {
+                                lock {
+                                    _ = services.remove(serviceModel.id);
+                                }
+                            }
+                        } else {
+                            log:printError("Unable to read service messages" + serviceModel.message());
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
+    public function getServiceClient(string resourceVersion) returns websocket:Client|error|() {
+        log:printDebug("Initializing Watch Service for Services with resource Version " + resourceVersion);
+        string requestURl = "wss://" + runtimeConfiguration.k8sConfiguration.host + "/api/v1/watch/services?fieldSelector=" + check getEncodedStringForNamespaces();
+        if resourceVersion.length() > 0 {
+            requestURl = requestURl + "&resourceVersion=" + resourceVersion.toString();
+        }
+        return new (requestURl,
+        auth = {
+            token: token
+        },
+            secureSocket = {
+                cert: caCertPath
+            }
+    );
+    }
 
 function containsNamespace(string namespace) returns boolean {
     foreach string name in runtimeConfiguration.serviceListingNamespaces {
@@ -116,7 +193,7 @@ isolated function getServicesList(commons:Organization organization) returns Ser
         lock {
             Service[] servicesList = [];
             foreach Service 'service in services.clone().toArray() {
-                if serviceListingNamespaces.indexOf('service.namespace) !=() {
+                if serviceListingNamespaces.indexOf('service.namespace) != () {
                     servicesList.push('service);
                 }
             }
@@ -167,22 +244,6 @@ function setServicesResourceVersion(string resourceVersionValue) {
     servicesResourceVersion = resourceVersionValue;
 }
 
-public function getServiceClient(string resourceVersion) returns websocket:Client|error|() {
-    log:printDebug("Initializing Watch Service for Services with resource Version " + resourceVersion);
-    string requestURl = "wss://" + runtimeConfiguration.k8sConfiguration.host + "/api/v1/watch/services?fieldSelector=" + check getEncodedStringForNamespaces();
-    if resourceVersion.length() > 0 {
-        requestURl = requestURl + "&resourceVersion=" + resourceVersion.toString();
-    }
-    return new (requestURl,
-    auth = {
-        token: token
-    },
-        secureSocket = {
-        cert: caCertPath
-    }
-    );
-}
-
 function getEncodedStringForNamespaces() returns string|error {
     string[] & readonly serviceListingNamespaces = runtimeConfiguration.serviceListingNamespaces;
     string fieldSelectorQuery = "metadata.namespace!=kube-system,metadata.namespace!=kubernetes-dashboard,metadata.namespace!=gateway-system,metadata.namespace!=ingress-nginx,metadata.namespace!=" + currentNameSpace;
@@ -194,66 +255,3 @@ function getEncodedStringForNamespaces() returns string|error {
     return check url:encode(fieldSelectorQuery, "UTF-8");
 }
 
-function readServiceEvents(websocket:Client serviceWebSocketClient) returns error? {
-    boolean connectionOpen = serviceWebSocketClient.isOpen();
-
-    log:printDebug("Using Client Connection conectionId: " + serviceWebSocketClient.getConnectionId() + " state: " + connectionOpen.toString());
-    if !connectionOpen {
-        error err = error("connection closed");
-        return err;
-    }
-    string|error message = check serviceWebSocketClient->readMessage();
-    if message is string {
-        log:printDebug(message);
-        json value = check value:fromJsonString(message);
-        string eventType = <string>check value.'type;
-        json eventValue = <json>check value.'object;
-        json metadata = <json>check eventValue.metadata;
-        if eventType == "ERROR" {
-            model:Status|error statusEvent = eventValue.cloneWithType(model:Status);
-            if (statusEvent is model:Status) {
-                _ = check handleWatchServicesGone(statusEvent);
-            }
-        } else {
-            string latestResourceVersion = <string>check metadata.resourceVersion;
-            setServicesResourceVersion(latestResourceVersion);
-            model:Service|error mappedService = eventValue.cloneWithType(model:Service);
-            if mappedService is model:Service {
-                if mappedService.spec.'type != "ExternalName" {
-                    Service|error serviceModel = createServiceModel(mappedService);
-                    if serviceModel is Service {
-                        if eventType == "ADDED" {
-                            lock {
-                                services[serviceModel.id] = serviceModel.clone();
-                            }
-                        } else if (eventType == "MODIFIED") {
-                            lock {
-                                _ = services.remove(serviceModel.id);
-                                services[serviceModel.id] = serviceModel.clone();
-                            }
-                        } else if (eventType == "DELETED") {
-                            lock {
-                                _ = services.remove(serviceModel.id);
-                            }
-                        }
-                    } else {
-                        log:printError("Unable to read service messages" + serviceModel.message());
-                    }
-                }
-            }
-        }
-    }
-}
-
-function handleWatchServicesGone(model:Status statusEvent) returns error? {
-    if statusEvent.code == 410 {
-        log:printDebug("Re-initializing watch service for Services due to cache clear.");
-        map<Service> servicesMap = {};
-        ServiceClient serviceClient = new ();
-        _ = check serviceClient.retrieveAllServicesAtStartup(servicesMap, ());
-        lock {
-            services = servicesMap.clone();
-        }
-        watchServices = getServiceClient(servicesResourceVersion);
-    }
-}
