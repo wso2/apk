@@ -247,7 +247,7 @@ func CreateListenerByGateway(gateway *gwapiv1b1.Gateway) []*listenerv3.Listener 
 				},
 			}
 			listeners = append(listeners, &listener)
-			logger.LoggerOasparser.Infof("Non-secured Listener is added. %s : %d", listenerHostAddress, conf.Envoy.ListenerPort)
+			logger.LoggerOasparser.Infof("Non-secured Listener is added. %s : %d", listenerHostAddress, listenerObj.Port)
 		} else {
 			logger.LoggerOasparser.Info("No Non-securedListenerPort is included.")
 		}

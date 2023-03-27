@@ -35,15 +35,11 @@ import (
 )
 
 var (
-	onceConfigRead      sync.Once
-	onceGetDefaultVhost sync.Once
-	adapterConfig       *Config
-	defaultVhost        map[string]string
+	onceConfigRead sync.Once
+	adapterConfig  *Config
 )
 
 const (
-	// The environtmental variable which represents the path of the distribution in host machine.
-	mgwHomeEnvVariable = "MGW_HOME"
 	// RelativeConfigPath is the relative file path where the configuration file is.
 	relativeConfigPath = "/conf/config.toml"
 )

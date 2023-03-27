@@ -65,10 +65,6 @@ var defaultConfig = &Config{
 		},
 	},
 	Envoy: envoy{
-		ListenerHost:                     "0.0.0.0",
-		ListenerPort:                     9090,
-		SecuredListenerHost:              "0.0.0.0",
-		SecuredListenerPort:              9095,
 		ListenerCodecType:                "AUTO",
 		ClusterTimeoutInSeconds:          20,
 		EnforcerResponseTimeoutInSeconds: 20,
