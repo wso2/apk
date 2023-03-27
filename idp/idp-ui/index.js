@@ -10,6 +10,8 @@ var path = require('path');
 var session = require('express-session');
 var cookieParser = require('cookie-parser');
 var app = module.exports = express();
+var https = require('https');
+var fs = require('fs');
 const router = express.Router();
 
 // config
@@ -74,7 +76,14 @@ router.get('/health', function (req, res, next) {
 
 /* Listen Port */
 if (!module.parent) {
+
+  var privateKey = fs.readFileSync(process.env.SSL_KEY_PATH);
+  var certificate = fs.readFileSync( process.env.SSL_CERT_PATH );
+
   app.use("/authenticationEndpoint",router);
-  app.listen(9443);
+  https.createServer({
+    key: privateKey,
+    cert: certificate
+}, app).listen(9443);
   console.log('Express started on port 9443');
 }

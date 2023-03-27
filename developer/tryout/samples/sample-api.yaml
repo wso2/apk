@@ -144,9 +144,6 @@ spec:
             set:
               - name: custom-request-header
                 value: myvalue
-            set:
-              - name: custom-override-header
-                value: myvalue
         - type: ExtensionRef
           extensionRef:
             group: dp.wso2.com

@@ -1,4 +1,4 @@
-name: Release Backoffice-domain-service.
+name: Release Ratelimiter.
 on:
   workflow_call:
     inputs:
@@ -35,36 +35,26 @@ on:
       - opened
       - synchronize
     paths:
-      - '**/backoffice/backoffice-domain-service/**'
+      - '**/ratelimiter/**'
     branches:
       - 'main'
-concurrency:
-  group: backoffice-${{ github.event.number }}
-  cancel-in-progress: true
 env:
   GH_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
+concurrency:
+  group: ratelimiter-${{ github.event.number }}
+  cancel-in-progress: true
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Cache Ballerina.
-        uses: actions/cache@v3
-        id: cache
+      - name: Install Go
+        uses: actions/setup-go@v3
         with:
-          path: "ballerina-dist/*.deb"
-          key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
-      - name: Download Ballerina distribution.
+          go-version: "1.19"
+      - name: Install Revive
         shell: sh
         run: |
-          mkdir -p ballerina-dist
-          wget 'https://dist.ballerina.io/downloads/2201.4.0/ballerina-2201.4.0-swan-lake-linux-x64.deb' -P ballerina-dist
-        if: steps.cache.outputs.cache-hit != 'true'
-      - name: Install Ballerina distribution.
-        shell: sh
-        run: "sudo dpkg -i ballerina-dist/ballerina-2201.4.0-swan-lake-linux-x64.deb"
-      - name: Verify Ballerina Version
-        shell: sh
-        run: "bal -v"
+          go install github.com/mgechev/revive@latest
       - name: Checkout apk-repo
         uses: actions/checkout@v3
         with:
@@ -84,27 +74,22 @@ jobs:
           gh pr checkout ${{ github.event.number }} -b pr-${{ github.event.number }}
           git checkout pr-${{ github.event.number }}
           git merge origin/main
-      - name: build common bal libs
-        run: |
-          cd apk-repo/common-bal-libs/apk-common-lib
-          ./gradlew build
-      - name: Run Gradle build
+      - name: Run Release Gradle build
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.release_version != '' && github.event.inputs.next_version != ''   
         run: |
-          cd apk-repo/backoffice/backoffice-domain-service
+          cd apk-repo/ratelimiter
           ./gradlew release -Prelease.useAutomaticVersion=true -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Prelease.releaseVersion=${{ github.event.inputs.release_version }} -Prelease.newVersion=${{ github.event.inputs.next_version }} -PmultiArch=true
-          ./gradlew :ballerina:commit_toml_files
-          git push
       - name: Run Gradle Build
         run: |
-          cd apk-repo/backoffice/backoffice-domain-service
+          cd apk-repo/ratelimiter
           ./gradlew build
       - name: Run Gradle Build
         if: github.event_name == 'pull_request_target' && github.event.action == 'closed' && github.event.pull_request.merged == true
         run: |
-          cd apk-repo/backoffice/backoffice-domain-service
-          ./gradlew docker:docker_push -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Pimage_version=latest -PmultiArch=true
-          ./gradlew docker:docker_push -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Pimage_version=${{ github.sha }} -PmultiArch=true
+          cd apk-repo/ratelimiter
+          ./gradlew docker_push -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Pimage_version=latest -PmultiArch=true
+          ./gradlew docker_push -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Pimage_version=${{ github.sha }} -PmultiArch=true
+
       - name: Login to azure.
         if: ${{inputs.aks_deployment}}
         uses: azure/login@v1
@@ -114,12 +99,11 @@ jobs:
         if: ${{inputs.aks_deployment}}
         run: |
           az acr login -n ${{ secrets.AZURE_ACR_NAME }}
-          cd apk-repo/backoffice/backoffice-domain-service
-          ./gradlew docker:docker_push -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pimage_version=${{ github.sha }} -PmultiArch=true
+          cd apk-repo/ratelimiter
+          ./gradlew docker_push -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pimage_version=${{ github.sha }} -PmultiArch=true
       - name: run codecov
         uses: codecov/codecov-action@v3
         with:
           verbose: true # optional (default = false)
-          directory: apk-repo/backoffice/backoffice-domain-service
-          flags: backoffice-domain-service
-                                        
+          directory: apk-repo/ratelimiter
+          flags: ratelimiter
