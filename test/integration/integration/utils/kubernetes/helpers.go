@@ -67,20 +67,6 @@ func NamespacesMustBeAccepted(t *testing.T, c client.Client, timeoutConfig confi
 func WaitForGatewayAddress(t *testing.T, c client.Client, timeoutConfig config.TimeoutConfig) string {
 	// Use http port for now, ideally we should get the port from the Gateway or from a config.
 	port := strconv.FormatInt(int64(constants.GatewayServicePort), 10)
-	return WaitForIPAddress(t, c, timeoutConfig, port)
-}
-
-// WaitForAPIListenerAddress waits until at least one IP Address has been set in the
-// Gateway infra exposed service.
-func WaitForAPIListenerAddress(t *testing.T, c client.Client, timeoutConfig config.TimeoutConfig) string {
-	// Use http port for now, ideally we should get the port from the APIListener or from a config.
-	port := strconv.FormatInt(int64(constants.APIListenerServicePort), 10)
-	return WaitForIPAddress(t, c, timeoutConfig, port)
-}
-
-// WaitForIPAddress waits until at least one IP Address has been set in the
-// Gateway infra exposed service.
-func WaitForIPAddress(t *testing.T, c client.Client, timeoutConfig config.TimeoutConfig, port string) string {
 	t.Helper()
 
 	var ipAddr string

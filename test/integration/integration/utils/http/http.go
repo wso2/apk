@@ -379,7 +379,7 @@ func GetTestToken(t *testing.T, gwAddr string, scopes ...string) string {
 
 	req.Header.Set("Authorization", "Basic YWRtaW46YWRtaW4=")
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.Host = "gw.wso2.com"
+	req.Host = "prod.gw.wso2.com"
 	if err != nil {
 		t.Fatalf("failed to create request: %v", err)
 	}

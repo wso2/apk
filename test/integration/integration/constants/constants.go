@@ -22,5 +22,4 @@ const (
 	GatewayServiceName      string = "apk-test-setup-wso2-apk-router-service"
 	GatewayServiceNamespace string = "apk-integration-test"
 	GatewayServicePort      int16  = 9095
-	APIListenerServicePort  int16  = 9090
 )

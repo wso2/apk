@@ -38,7 +38,7 @@ var APIWithResoponseHeaderModify = suite.IntegrationTest{
 		testCases := []http.ExpectedResponse{
 			{
 				Request: http.Request{
-					Host: "infra-backend-v1.gateway-integration-test-infra",
+					Host: "gateway-integration-test-infra.test.gw.wso2.com",
 					Path: "/set",
 				},
 				BackendSetResponseHeaders: map[string]string{
@@ -55,7 +55,7 @@ var APIWithResoponseHeaderModify = suite.IntegrationTest{
 			},
 			{
 				Request: http.Request{
-					Host: "infra-backend-v1.gateway-integration-test-infra",
+					Host: "gateway-integration-test-infra.test.gw.wso2.com",
 					Path: "/set",
 				},
 				BackendSetResponseHeaders: map[string]string{
@@ -73,7 +73,7 @@ var APIWithResoponseHeaderModify = suite.IntegrationTest{
 			},
 			{
 				Request: http.Request{
-					Host: "infra-backend-v1.gateway-integration-test-infra",
+					Host: "gateway-integration-test-infra.test.gw.wso2.com",
 					Path: "/add",
 				},
 				BackendSetResponseHeaders: map[string]string{
@@ -90,7 +90,7 @@ var APIWithResoponseHeaderModify = suite.IntegrationTest{
 			},
 			{
 				Request: http.Request{
-					Host: "infra-backend-v1.gateway-integration-test-infra",
+					Host: "gateway-integration-test-infra.test.gw.wso2.com",
 					Path: "/add",
 				},
 				BackendSetResponseHeaders: map[string]string{
@@ -107,7 +107,7 @@ var APIWithResoponseHeaderModify = suite.IntegrationTest{
 				Namespace: ns,
 			}, {
 				Request: http.Request{
-					Host: "infra-backend-v1.gateway-integration-test-infra",
+					Host: "gateway-integration-test-infra.test.gw.wso2.com",
 					Path: "/remove",
 				},
 				BackendSetResponseHeaders: map[string]string{
