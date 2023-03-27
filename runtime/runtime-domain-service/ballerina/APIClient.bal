@@ -2233,7 +2233,8 @@ public class APIClient {
             name: oldAPI.name,
             context: regex:replace(oldAPI.context, oldAPI.'version, newVersion),
             'version: newVersion,
-            operations: oldAPI.operations
+            operations: oldAPI.operations,
+            apiRateLimit: oldAPI.apiRateLimit
         };
         check self.prepareConfigMap(apiArtifact, oldAPI, newAPI);
         check self.prepareHttpRoute(apiArtifact, serviceEntry, oldAPI, newAPI, PRODUCTION_TYPE, organization);
