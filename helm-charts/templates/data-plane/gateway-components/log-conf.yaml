@@ -45,7 +45,7 @@ data:
     [enforcer]
     [enforcer.jwtIssuer]
       enabled = true
-      issuer = "https://gw.wso2.com/testkey"
+      issuer = "https://prod.gw.wso2.com/testkey"
 
     [enforcer.security.authHeader]
     # Send the authorization header to the backend
@@ -73,7 +73,7 @@ data:
 
     [[enforcer.security.tokenService]]
       name = "MGW"
-      issuer = "https://gw.wso2.com/testkey"
+      issuer = "https://prod.gw.wso2.com/testkey"
       certificateAlias = "mgw"
       jwksURL = ""
       validateSubscription = false

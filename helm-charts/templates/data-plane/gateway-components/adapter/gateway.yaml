@@ -7,7 +7,37 @@ metadata:
 spec:
   gatewayClassName: {{ .Values.wso2.apk.dp.gateway.name }}
   listeners:
-    - name: {{ .Values.wso2.apk.dp.gateway.listener.name}}
+    - name: examplelistener
+      hostname: "*.example.com"
+      port: {{ .Values.wso2.apk.dp.gateway.listener.port }}
+      protocol: {{ .Values.wso2.apk.dp.gateway.listener.protocol }}
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            group: ""
+            name: example-com-cert
+    - name: apilistener
+      hostname: "*.api.am.wso2.com"
+      port: {{ .Values.wso2.apk.dp.gateway.listener.port }}
+      protocol: {{ .Values.wso2.apk.dp.gateway.listener.protocol }}
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            group: ""
+            name: api-example-com-cert
+    - name: idplistener
+      hostname: "*.idp.am.wso2.com"
+      port: {{ .Values.wso2.apk.dp.gateway.listener.port }}
+      protocol: {{ .Values.wso2.apk.dp.gateway.listener.protocol }}
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            group: ""
+            name: idp-example-com-cert
+    - name: gatewaylistener
       hostname: "{{ .Values.wso2.apk.dp.gateway.listener.hostname }}"
       port: {{ .Values.wso2.apk.dp.gateway.listener.port }}
       protocol: {{ .Values.wso2.apk.dp.gateway.listener.protocol }}
@@ -16,24 +46,4 @@ spec:
         certificateRefs:
           - kind: Secret
             group: ""
-            name: default-example-com-cert
-    - name: apilistener
-      hostname: "*.api.am.wso2.com"
-      port: 9090
-      protocol: HTTPS
-      tls:
-        mode: Terminate
-        certificateRefs:
-          - kind: Secret
-            group: ""
-            name: default-example-com-cert
-    - name: idplistener
-      hostname: "*.idp.am.wso2.com"
-      port: 9091
-      protocol: HTTPS
-      tls:
-        mode: Terminate
-        certificateRefs:
-          - kind: Secret
-            group: ""
-            name: default-example-com-cert
+            name: gateway-com-cert

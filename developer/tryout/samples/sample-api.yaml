@@ -41,7 +41,7 @@ spec:
     - group: gateway.networking.k8s.io
       kind: Gateway
       name: default
-      sectionName: gatewaylistener
+      sectionName: httpslistener
   rules:
   - backendRefs:
     - group: dp.wso2.com
@@ -82,7 +82,7 @@ spec:
     - group: gateway.networking.k8s.io
       kind: Gateway
       name: default
-      sectionName: gatewaylistener
+      sectionName: httpslistener
   rules:
     - backendRefs:
         - group: dp.wso2.com
