@@ -39,8 +39,6 @@ public class AdminConstants {
         public static final String APIS = "/apis";
         public static final String APPLICATIONS = "/applications";
         public static final String SUBSCRIPTIONS = "/subscriptions";
-        public static final String SUBSCRIPTION_THROTTLING_POLICIES = "/throttling_policies/subscription";
-        public static final String APPLICATION_THROTTLING_POLICIES = "/throttling_policies/application";
         public static final String REVOKED_TOKENS = "/revoked_tokens";
     }
 

@@ -134,16 +134,6 @@ public class AdminServerHandler extends ChannelInboundHandlerAdapter {
                     requestHandler = new SubscriptionRequestHandler();
                     responsePayload = requestHandler.handleRequest(params, AdminConstants.SUBSCRIPTION_TYPE);
                     break;
-                case AdminConstants.AdminResources.APPLICATION_THROTTLING_POLICIES:
-                    requestHandler = new ThrottlingPolicyRequestHandler();
-                    responsePayload = requestHandler.handleRequest(params,
-                            AdminConstants.APPLICATION_THROTTLING_POLICY_TYPE);
-                    break;
-                case AdminConstants.AdminResources.SUBSCRIPTION_THROTTLING_POLICIES:
-                    requestHandler = new ThrottlingPolicyRequestHandler();
-                    responsePayload = requestHandler.handleRequest(params,
-                            AdminConstants.SUBSCRIPTION_THROTTLING_POLICY_TYPE);
-                    break;
                 case AdminConstants.AdminResources.REVOKED_TOKENS:
                     requestHandler = new RevokedTokensRequestHandler();
                     responsePayload = requestHandler.handleRequest(params, AdminConstants.REVOKED_TOKEN_TYPE);

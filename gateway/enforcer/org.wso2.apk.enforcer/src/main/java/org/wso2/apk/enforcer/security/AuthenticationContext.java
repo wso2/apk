@@ -60,7 +60,7 @@ public class AuthenticationContext {
         this.apiTier = "";
         this.applicationId = Constants.UNKNOWN_VALUE;
         this.applicationName = Constants.UNKNOWN_VALUE;
-        this.applicationTier = ThrottleConstants.UNLIMITED_TIER;
+        this.applicationTier = "Unlimited";
         this.consumerKey = Constants.UNKNOWN_VALUE;
         this.spikeArrestUnit = "";
         this.subscriber = Constants.UNKNOWN_VALUE;

@@ -126,12 +126,6 @@ public class AuthServer {
 
             //Initialise cache objects
             CacheProvider.init();
-            ThrottleConfigDto throttleConf = enforcerConfig.getThrottleConfig();
-            if (throttleConf.isGlobalPublishingEnabled()) {
-                ThrottleAgent.startThrottlePublisherPool();
-                JMSTransportHandler jmsHandler = new JMSTransportHandler(throttleConf.buildListenerProperties());
-                jmsHandler.subscribeForJmsEvents(ThrottleConstants.TOPIC_THROTTLE_DATA, new ThrottleEventListener());
-            }
 
             // Start the server
             server.start();
@@ -144,7 +138,6 @@ public class AuthServer {
             SubscriptionDataHolder.getInstance().getTenantSubscriptionStore().initializeStore();
             KeyManagerHolder.getInstance().init();
             RevokedJWTDataHolder.getInstance().init();
-            ThrottleDataHolder.getInstance().init();
 
             // Create a new server to listen on port 8082
             RestServer restServer = new RestServer();

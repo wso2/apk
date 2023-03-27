@@ -266,16 +266,11 @@ public class RestAPI implements API {
         authFilter.init(apiConfig, null);
         this.filters.add(authFilter);
 
-        // enable throttle filter
         if (!apiConfig.isSystemAPI()){
-            ThrottleFilter throttleFilter = new ThrottleFilter();
-            throttleFilter.init(apiConfig, null);
-            this.filters.add(throttleFilter);
             loadCustomFilters(apiConfig);
             MediationPolicyFilter mediationPolicyFilter = new MediationPolicyFilter();
             this.filters.add(mediationPolicyFilter);
         }
-
 
         // CORS filter is added as the first filter, and it is not customizable.
         CorsFilter corsFilter = new CorsFilter();
@@ -343,7 +338,7 @@ public class RestAPI implements API {
         if (!mtlsInfo.isEnableOutboundCertificateHeader()) {
             requestContext.getRemoveHeaders().add(certificateHeaderName);
         }
-        // mTLS Certificate Header should not be included in the throttle publishing event.
+        // mTLS Certificate Header should not be included in the upstream request.
         requestContext.getProtectedHeaders().add(certificateHeaderName);
     }
 }

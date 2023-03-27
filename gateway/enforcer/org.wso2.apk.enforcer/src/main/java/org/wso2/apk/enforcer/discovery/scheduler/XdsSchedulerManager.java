@@ -164,20 +164,6 @@ public class XdsSchedulerManager {
         }
     }
 
-    public synchronized void startThrottleDataDiscoveryScheduling() {
-        if (throttleDataDiscoveryScheduledFuture == null || throttleDataDiscoveryScheduledFuture.isDone()) {
-            throttleDataDiscoveryScheduledFuture = discoveryClientScheduler
-                    .scheduleWithFixedDelay(ThrottleDataDiscoveryClient.getInstance(), 1, retryPeriod,
-                            TimeUnit.SECONDS);
-        }
-    }
-
-    public synchronized void stopThrottleDataDiscoveryScheduling() {
-        if (throttleDataDiscoveryScheduledFuture != null && !throttleDataDiscoveryScheduledFuture.isDone()) {
-            throttleDataDiscoveryScheduledFuture.cancel(false);
-        }
-    }
-
     public synchronized void startConfigDiscoveryScheduling() {
         if (configDiscoveryScheduledFuture == null || configDiscoveryScheduledFuture.isDone()) {
             configDiscoveryScheduledFuture = discoveryClientScheduler

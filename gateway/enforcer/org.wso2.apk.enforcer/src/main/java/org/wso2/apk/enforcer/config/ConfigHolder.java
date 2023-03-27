@@ -27,7 +27,6 @@ import org.wso2.carbon.apimgt.common.gateway.dto.JWKSConfigurationDTO;
 import org.wso2.carbon.apimgt.common.gateway.dto.JWTConfigurationDto;
 import org.wso2.choreo.connect.discovery.config.enforcer.Analytics;
 import org.wso2.choreo.connect.discovery.config.enforcer.AuthHeader;
-import org.wso2.choreo.connect.discovery.config.enforcer.BinaryPublisher;
 import org.wso2.choreo.connect.discovery.config.enforcer.Cache;
 import org.wso2.choreo.connect.discovery.config.enforcer.ClaimMapping;
 import org.wso2.choreo.connect.discovery.config.enforcer.Config;
@@ -38,13 +37,10 @@ import org.wso2.choreo.connect.discovery.config.enforcer.JWTIssuer;
 import org.wso2.choreo.connect.discovery.config.enforcer.Management;
 import org.wso2.choreo.connect.discovery.config.enforcer.Metrics;
 import org.wso2.choreo.connect.discovery.config.enforcer.MutualSSL;
-import org.wso2.choreo.connect.discovery.config.enforcer.PublisherPool;
 import org.wso2.choreo.connect.discovery.config.enforcer.RestServer;
 import org.wso2.choreo.connect.discovery.config.enforcer.Service;
 import org.wso2.choreo.connect.discovery.config.enforcer.Soap;
 import org.wso2.choreo.connect.discovery.config.enforcer.TMURLGroup;
-import org.wso2.choreo.connect.discovery.config.enforcer.ThrottleAgent;
-import org.wso2.choreo.connect.discovery.config.enforcer.Throttling;
 import org.wso2.choreo.connect.discovery.config.enforcer.Tracing;
 import org.wso2.apk.enforcer.commons.exception.EnforcerException;
 import org.wso2.apk.enforcer.config.dto.AdminRestServerDto;
@@ -152,9 +148,6 @@ public class ConfigHolder {
         populateJWTIssuerConfiguration(config.getSecurity().getTokenServiceList());
 
         controlPlaneEnabled = config.getControlPlaneEnabled();
-
-        // Read throttle publisher configurations
-        populateThrottlingConfig(config.getThrottling());
 
         // Read backend jwt generation configurations
         populateJWTGeneratorConfigurations(config.getJwtGenerator());
@@ -312,18 +305,6 @@ public class ConfigHolder {
         }
     }
 
-    private void populateThrottlingConfig(Throttling throttling) {
-        ThrottleConfigDto throttleConfig = new ThrottleConfigDto();
-        throttleConfig.setGlobalPublishingEnabled(throttling.getEnableGlobalEventPublishing());
-        throttleConfig.setHeaderConditionsEnabled(throttling.getEnableHeaderConditions());
-        throttleConfig.setQueryConditionsEnabled(throttling.getEnableQueryParamConditions());
-        throttleConfig.setJwtClaimConditionsEnabled(throttling.getEnableJwtClaimConditions());
-        throttleConfig.setJmsConnectionInitialContextFactory(throttling.getJmsConnectionInitialContextFactory());
-        throttleConfig.setJmsConnectionProviderUrl(throttling.getJmsConnectionProviderUrl());
-        config.setThrottleConfig(throttleConfig);
-        populateTMBinaryConfig(throttling.getPublisher());
-    }
-
     private void populateTracingConfig(Tracing tracing) {
         TracingDTO tracingConfig = new TracingDTO();
         tracingConfig.setTracingEnabled(tracing.getEnabled());
@@ -337,48 +318,6 @@ public class ConfigHolder {
         metricsConfig.setMetricsEnabled(metrics.getEnabled());
         metricsConfig.setMetricsType(metrics.getType());
         config.setMetricsConfig(metricsConfig);
-    }
-
-    private void populateTMBinaryConfig(BinaryPublisher binary) {
-        ThrottleAgent binaryAgent = binary.getAgent();
-        AgentConfiguration agentConf = AgentConfiguration.getInstance();
-        agentConf.setBatchSize(binaryAgent.getBatchSize());
-        agentConf.setCiphers(binaryAgent.getCiphers());
-        agentConf.setCorePoolSize(binaryAgent.getCorePoolSize());
-        agentConf.setEvictionTimePeriod(binaryAgent.getEvictionTimePeriod());
-        agentConf.setKeepAliveTimeInPool(binaryAgent.getKeepAliveTimeInPool());
-        agentConf.setMaxIdleConnections(binaryAgent.getMaxIdleConnections());
-        agentConf.setMaxPoolSize(binaryAgent.getMaxPoolSize());
-        agentConf.setMaxTransportPoolSize(binaryAgent.getMaxTransportPoolSize());
-        agentConf.setMinIdleTimeInPool(binaryAgent.getMinIdleTimeInPool());
-        agentConf.setQueueSize(binaryAgent.getQueueSize());
-        agentConf.setReconnectionInterval(binaryAgent.getReconnectionInterval());
-        agentConf.setSecureEvictionTimePeriod(binaryAgent.getSecureEvictionTimePeriod());
-        agentConf.setSecureMaxIdleConnections(binaryAgent.getSecureMaxIdleConnections());
-        agentConf.setSecureMaxTransportPoolSize(binaryAgent.getSecureMaxTransportPoolSize());
-        agentConf.setSecureMinIdleTimeInPool(binaryAgent.getSecureMinIdleTimeInPool());
-        agentConf.setSslEnabledProtocols(binaryAgent.getSslEnabledProtocols());
-        agentConf.setSocketTimeoutMS(binaryAgent.getSocketTimeoutMS());
-        agentConf.setTrustStore(trustStore);
-
-        PublisherPool pool = binary.getPool();
-        ThrottlePublisherConfigDto pubConf = new ThrottlePublisherConfigDto();
-        pubConf.setUserName(binary.getUsername());
-        pubConf.setPassword(binary.getPassword());
-        pubConf.setInitIdleObjectDataPublishingAgents(pool.getInitIdleObjectDataPublishingAgents());
-        pubConf.setMaxIdleDataPublishingAgents(pool.getMaxIdleDataPublishingAgents());
-        pubConf.setPublisherThreadPoolCoreSize(pool.getPublisherThreadPoolCoreSize());
-        pubConf.setPublisherThreadPoolKeepAliveTime(pool.getPublisherThreadPoolKeepAliveTime());
-        pubConf.setPublisherThreadPoolMaximumSize(pool.getPublisherThreadPoolMaximumSize());
-
-        processTMPublisherURLGroup(binary.getUrlGroupList(), pubConf);
-
-        ThrottleAgentConfigDto throttleAgent = new ThrottleAgentConfigDto();
-        throttleAgent.setAgent(agentConf);
-        throttleAgent.setUsername(binary.getUsername());
-        throttleAgent.setPassword(binary.getPassword());
-        throttleAgent.setPublisher(pubConf);
-        config.getThrottleConfig().setThrottleAgent(throttleAgent);
     }
 
     private void loadTrustStore() {
@@ -439,43 +378,6 @@ public class ConfigHolder {
         String certPath = getEnvVarConfig().getOpaClientPublicKeyPath();
         String keyPath = getEnvVarConfig().getOpaClientPrivateKeyPath();
         opaKeyStore = FilterUtils.createClientKeyStore(certPath, keyPath);
-    }
-
-    /**
-     * The receiverURLGroup and the authURLGroup is preprocessed
-     * such that to make them compatible with the binary agent.
-     */
-    private void processTMPublisherURLGroup(List<TMURLGroup> urlGroups,
-                                            ThrottlePublisherConfigDto pubConfiguration) {
-        StringBuilder restructuredReceiverURL = new StringBuilder();
-        StringBuilder restructuredAuthURL = new StringBuilder();
-
-        for (TMURLGroup urlGroup : urlGroups) {
-            List<String> receiverUrls = urlGroup.getReceiverURLsList();
-            List<String> authUrls = urlGroup.getAuthURLsList();
-            if (receiverUrls.size() == 1 && authUrls.size() == 1) {
-                restructuredReceiverURL.append("{").append(receiverUrls.get(0)).append("},");
-                restructuredAuthURL.append("{").append(authUrls.get(0)).append("},");
-                continue;
-            }
-            String urlType = urlGroup.getType();
-            if (urlType.isBlank() || !(Constants.LOADBALANCE.equalsIgnoreCase(urlType)
-                    || Constants.FAILOVER.equalsIgnoreCase(urlType))) {
-                logger.warn("Type is not "
-                        + Constants.LOADBALANCE + " or " + Constants.FAILOVER + ". Hence proceeding as a "
-                        + Constants.FAILOVER + " configuration.");
-                urlType = Constants.FAILOVER;
-            }
-            restructuredReceiverURL.append(processSingleURLGroup(receiverUrls, urlType)).append(",");
-            restructuredAuthURL.append(processSingleURLGroup(authUrls, urlType)).append(",");
-        }
-
-        //to remove the final ',' in the URLs and set to publisher config
-        if (!restructuredReceiverURL.toString().isBlank() && !restructuredAuthURL.toString().isBlank()) {
-            pubConfiguration.setReceiverUrlGroup(restructuredReceiverURL.substring(0,
-                    restructuredReceiverURL.length() - 1));
-            pubConfiguration.setAuthUrlGroup(restructuredAuthURL.substring(0, restructuredAuthURL.length() - 1));
-        }
     }
 
     private String processSingleURLGroup(List<String> urlArray, String urlType) {

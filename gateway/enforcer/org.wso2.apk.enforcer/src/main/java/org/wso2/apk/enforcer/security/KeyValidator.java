@@ -60,7 +60,7 @@ public class KeyValidator {
      * @param validationContext the token validation context
      * @return true is the scopes are valid
      * @throws EnforcerException throws if token validation fails.
-     * this will indicate the message body for the error response
+     *                           this will indicate the message body for the error response
      */
     public static boolean validateScopes(TokenValidationContext validationContext) throws APISecurityException {
 
@@ -139,15 +139,15 @@ public class KeyValidator {
     /**
      * Validate subscriptions for access tokens.
      *
-     * @param uuid uuid of the API
-     * @param apiContext API context, used for logging purposes and to extract the tenant domain
-     * @param apiVersion API version, used for logging purposes
+     * @param uuid        uuid of the API
+     * @param apiContext  API context, used for logging purposes and to extract the tenant domain
+     * @param apiVersion  API version, used for logging purposes
      * @param consumerKey consumer key related to the token
-     * @param keyManager key manager related to the token
+     * @param keyManager  key manager related to the token
      * @return validation information about the request
      */
     public static APIKeyValidationInfoDTO validateSubscription(String uuid, String apiContext, String apiVersion,
-                                                         String consumerKey, String envType, String keyManager) {
+                                                               String consumerKey, String envType, String keyManager) {
         log.debug("Before validating subscriptions");
         log.debug("Validation Info : { uuid : {}, context : {}, version : {}, consumerKey : {} }",
                 uuid, apiContext, apiVersion, consumerKey);
@@ -209,9 +209,9 @@ public class KeyValidator {
     /**
      * Validate subscriptions for API keys.
      *
-     * @param apiUuid uuid of the API
+     * @param apiUuid    uuid of the API
      * @param apiContext API context, used for logging purposes and to extract the tenant domain
-     * @param payload JWT claims set extracted from the API key
+     * @param payload    JWT claims set extracted from the API key
      * @return validation information about the request
      */
     public static APIKeyValidationInfoDTO validateSubscription(String apiUuid, String apiContext,
@@ -273,7 +273,7 @@ public class KeyValidator {
     }
 
     private static void validate(APIKeyValidationInfoDTO infoDTO, SubscriptionDataStore datastore,
-                                             API api, String keyType, Application app, Subscription sub) {
+                                 API api, String keyType, Application app, Subscription sub) {
         String subscriptionStatus = sub.getSubscriptionState();
         if (APIConstants.SubscriptionStatus.BLOCKED.equals(subscriptionStatus)) {
             infoDTO.setValidationStatus(APIConstants.KeyValidationStatus.API_BLOCKED);
@@ -309,17 +309,12 @@ public class KeyValidator {
         infoDTO.setApiUUID(api.getApiUUID());
         infoDTO.setType(keyType);
         infoDTO.setSubscriberTenantDomain(app.getTenantDomain());
-        // Advanced Level Throttling Related Properties
-        String apiTier = api.getApiTier();
 
         ApplicationPolicy appPolicy = datastore.getApplicationPolicyByName(app.getPolicy());
         SubscriptionPolicy subPolicy = datastore.getSubscriptionPolicyByName(sub.getPolicyId());
         ApiPolicy apiPolicy = datastore.getApiPolicyByName(api.getApiTier());
-        boolean isContentAware = false;
-        if (appPolicy.isContentAware() || subPolicy.isContentAware() || (apiPolicy != null && apiPolicy
-                .isContentAware())) {
-            isContentAware = true;
-        }
+        boolean isContentAware = appPolicy.isContentAware() || subPolicy.isContentAware() ||
+                (apiPolicy != null && apiPolicy.isContentAware());
         infoDTO.setContentAware(isContentAware);
 
         // TODO this must implement as a part of throttling implementation.
@@ -336,15 +331,9 @@ public class KeyValidator {
             spikeArrestUnit = subPolicy.getRateLimitTimeUnit();
         }
         boolean stopOnQuotaReach = subPolicy.isStopOnQuotaReach();
-        int graphQLMaxDepth = 0;
-        if (subPolicy.getGraphQLMaxDepth() > 0) {
-            graphQLMaxDepth = subPolicy.getGraphQLMaxDepth();
-        }
-        int graphQLMaxComplexity = 0;
-        if (subPolicy.getGraphQLMaxComplexity() > 0) {
-            graphQLMaxComplexity = subPolicy.getGraphQLMaxComplexity();
-        }
-        List<String> list = new ArrayList<String>();
+        int graphQLMaxDepth = Math.max(subPolicy.getGraphQLMaxDepth(), 0);
+        int graphQLMaxComplexity = Math.max(subPolicy.getGraphQLMaxComplexity(), 0);
+        List<String> list = new ArrayList<>();
         list.add(apiLevelThrottlingKey);
         infoDTO.setSpikeArrestLimit(spikeArrest);
         infoDTO.setSpikeArrestUnit(spikeArrestUnit);
@@ -356,24 +345,5 @@ public class KeyValidator {
         // condition id list for all throttling tiers associated with this API.
         infoDTO.setThrottlingDataList(list);
         infoDTO.setAuthorized(true);
-    }
-
-    private boolean isResourcePathMatching(String resourceString, URLMapping urlMapping) {
-
-        String resource = resourceString.trim();
-        String urlPattern = urlMapping.getUrlPattern().trim();
-
-        if (resource.equalsIgnoreCase(urlPattern)) {
-            return true;
-        }
-
-        // If the urlPattern is only one character longer than the resource and the urlPattern ends with a '/'
-        if (resource.length() + 1 == urlPattern.length() && urlPattern.endsWith("/")) {
-            // Check if resource is equal to urlPattern if the trailing '/' of the urlPattern is ignored
-            String urlPatternWithoutSlash = urlPattern.substring(0, urlPattern.length() - 1);
-            return resource.equalsIgnoreCase(urlPatternWithoutSlash);
-        }
-
-        return false;
     }
 }

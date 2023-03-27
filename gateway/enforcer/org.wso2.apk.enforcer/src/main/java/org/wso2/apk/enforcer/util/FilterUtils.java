@@ -520,27 +520,6 @@ public class FilterUtils {
     }
 
     /**
-     * Set the throttle error related details to the {@code RequestContext}.
-     *
-     * @param context   request context object to set the details.
-     * @param errorCode internal wso2 throttle error code.
-     * @param msg       wso2 throttle error message.
-     * @param desc      description of throttle decision.
-     */
-    public static void setThrottleErrorToContext(RequestContext context, int errorCode, String msg, String desc) {
-        context.getProperties().put(APIConstants.MessageFormat.ERROR_CODE, errorCode);
-        if (ThrottleConstants.BLOCKED_ERROR_CODE == errorCode) {
-            context.getProperties().put(APIConstants.MessageFormat.STATUS_CODE,
-                    APIConstants.StatusCodes.UNAUTHORIZED.getCode());
-        } else {
-            context.getProperties().put(APIConstants.MessageFormat.STATUS_CODE,
-                    APIConstants.StatusCodes.THROTTLED.getCode());
-        }
-        context.getProperties().put(APIConstants.MessageFormat.ERROR_MESSAGE, msg);
-        context.getProperties().put(APIConstants.MessageFormat.ERROR_DESCRIPTION, desc);
-    }
-
-    /**
      * Generates a map out of the {@code list} provided. Key will be the {@code toString}
      * value of the list item. Value will be the list item.
      *
