@@ -138,7 +138,7 @@ func (gatewayReconciler *GatewayReconciler) Reconcile(ctx context.Context, req c
 	var gwCondition []metav1.Condition = gatewayDef.Status.Conditions
 	customRateLimitPolicies, _ := gatewayReconciler.getCustomRateLimitPoliciesForGateway(utils.NamespacedName(&gatewayDef))
 
-	if gwCondition[0].Type != "Accepted" && gwCondition[0].Status != "True" {
+	if gwCondition[0].Type != "Accepted" {
 		gatewayState := gatewayReconciler.ods.AddGatewayState(gatewayDef, customRateLimitPolicies)
 		*gatewayReconciler.ch <- synchronizer.GatewayEvent{EventType: constants.Create, Event: gatewayState}
 		gatewayReconciler.handleGatewayStatus(req.NamespacedName, constants.DeployedState, []string{})
@@ -221,7 +221,8 @@ func (gatewayReconciler *GatewayReconciler) getCustomRateLimitPoliciesForGateway
 		return nil, err
 	}
 	for _, item := range ratelimitPolicyList.Items {
-		rateLimitPolicies = append(rateLimitPolicies, &item)
+		rateLimitPolicy := item
+		rateLimitPolicies = append(rateLimitPolicies, &rateLimitPolicy)
 	}
 	return rateLimitPolicies, nil
 }

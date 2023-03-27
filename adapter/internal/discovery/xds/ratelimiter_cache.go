@@ -63,7 +63,7 @@ type rateLimitPolicyCache struct {
 	apiLevelRateLimitPolicies map[string]map[string]map[string][]*rls_config.RateLimitDescriptor
 
 	// org -> Custom Rate Limit Configs
-	customRateLimitPolicies map[string][]*rls_config.RateLimitDescriptor
+	customRateLimitPolicies map[string]map[string]*rls_config.RateLimitDescriptor
 	// mutex for API level
 	apiLevelMu sync.RWMutex
 }
@@ -237,25 +237,24 @@ func (r *rateLimitPolicyCache) updateXdsCache(label string) bool {
 func (r *rateLimitPolicyCache) AddCustomRateLimitPolicies(customRateLimitPolicies []*model.CustomRateLimitPolicy) {
 	for _, customRateLimitPolicy := range customRateLimitPolicies {
 		if r.customRateLimitPolicies[customRateLimitPolicy.Organization] == nil {
-			r.customRateLimitPolicies[customRateLimitPolicy.Organization] = []*rls_config.RateLimitDescriptor{
-				{
-					Key:  customRateLimitPolicy.Key,
-					Value: customRateLimitPolicy.Value,
-					RateLimit: &rls_config.RateLimitPolicy{
-						Unit:            getRateLimitUnit(customRateLimitPolicy.RateLimit.Unit),
-						RequestsPerUnit: uint32(customRateLimitPolicy.RateLimit.RequestsPerUnit),
-					},
-				},
-			}
-		} else {
-			r.customRateLimitPolicies[customRateLimitPolicy.Organization] = append(r.customRateLimitPolicies[customRateLimitPolicy.Organization], &rls_config.RateLimitDescriptor{
+			r.customRateLimitPolicies[customRateLimitPolicy.Organization] = make(map[string]*rls_config.RateLimitDescriptor)
+			r.customRateLimitPolicies[customRateLimitPolicy.Organization][customRateLimitPolicy.Key+"_"+customRateLimitPolicy.Value] = &rls_config.RateLimitDescriptor{
 				Key:  customRateLimitPolicy.Key,
 				Value: customRateLimitPolicy.Value,
 				RateLimit: &rls_config.RateLimitPolicy{
 					Unit:            getRateLimitUnit(customRateLimitPolicy.RateLimit.Unit),
 					RequestsPerUnit: uint32(customRateLimitPolicy.RateLimit.RequestsPerUnit),
 				},
-			})
+			}
+		} else {
+			r.customRateLimitPolicies[customRateLimitPolicy.Organization][customRateLimitPolicy.Key+"_"+customRateLimitPolicy.Value] = &rls_config.RateLimitDescriptor{
+				Key:  customRateLimitPolicy.Key,
+				Value: customRateLimitPolicy.Value,
+				RateLimit: &rls_config.RateLimitPolicy{
+					Unit:            getRateLimitUnit(customRateLimitPolicy.RateLimit.Unit),
+					RequestsPerUnit: uint32(customRateLimitPolicy.RateLimit.RequestsPerUnit),
+				},
+			}
 		}
 	}
 }
@@ -263,10 +262,14 @@ func (r *rateLimitPolicyCache) AddCustomRateLimitPolicies(customRateLimitPolicie
 func (r *rateLimitPolicyCache) generateCustomPolicyRateLimitConfig() []*rls_config.RateLimitDescriptor{
 	var orgDescriptors []*rls_config.RateLimitDescriptor
 	for org, customRateLimitPolicies := range r.customRateLimitPolicies {
+		descriptors := []*rls_config.RateLimitDescriptor{}
+		for _, customRateLimitPolicy := range customRateLimitPolicies {
+			descriptors = append(descriptors, customRateLimitPolicy)
+		}
 		orgDescriptors = append(orgDescriptors, &rls_config.RateLimitDescriptor{
 			Key:         envoyconf.DescriptorKeyForOrg,
 			Value:       org,
-			Descriptors: customRateLimitPolicies,
+			Descriptors: descriptors,
 		})
 	}
 	return orgDescriptors
@@ -276,6 +279,6 @@ func init() {
 	rlsPolicyCache = &rateLimitPolicyCache{
 		xdsCache:                  gcp_cache.NewSnapshotCache(false, IDHash{}, nil),
 		apiLevelRateLimitPolicies: make(map[string]map[string]map[string][]*rls_config.RateLimitDescriptor),
-		customRateLimitPolicies: make(map[string][]*rls_config.RateLimitDescriptor),
+		customRateLimitPolicies: make(map[string]map[string]*rls_config.RateLimitDescriptor),
 	}
 }
