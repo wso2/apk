@@ -1,8 +1,139 @@
 name: start and run postman collection
 on:
   workflow_dispatch:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+concurrency: 
+  group: ${{ github.event.number || github.run_id }}
+env:
+  GH_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}  
 jobs:
-  build:
+  build_adapter:
+    if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize'
+    uses: ./.github/workflows/adapter-release.yml
+    with:
+      aks_deployment: true
+    secrets:
+      WSO2_BOT_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
+      WSO2_BOT_USER: ${{ secrets.WSO2_BOT_USER }}
+      WSO2_BOT_EMAIL: ${{ secrets.WSO2_BOT_EMAIL }}
+      DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
+      AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+  build_admin:
+    if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize'
+    uses: ./.github/workflows/admin-domain-service-release.yml
+    with:
+      aks_deployment: true
+    secrets:
+      WSO2_BOT_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
+      WSO2_BOT_USER: ${{ secrets.WSO2_BOT_USER }}
+      WSO2_BOT_EMAIL: ${{ secrets.WSO2_BOT_EMAIL }}
+      DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
+      AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+  build_backoffice:
+    if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize'
+    uses: ./.github/workflows/backoffice-release.yml
+    with:
+      aks_deployment: true
+    secrets:
+      WSO2_BOT_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
+      WSO2_BOT_USER: ${{ secrets.WSO2_BOT_USER }}
+      WSO2_BOT_EMAIL: ${{ secrets.WSO2_BOT_EMAIL }}
+      DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
+      AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+  build_devportal:
+    if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize'
+    uses: ./.github/workflows/devportal-domain-service-release.yml
+    with:
+      aks_deployment: true
+    secrets:
+      WSO2_BOT_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
+      WSO2_BOT_USER: ${{ secrets.WSO2_BOT_USER }}
+      WSO2_BOT_EMAIL: ${{ secrets.WSO2_BOT_EMAIL }}
+      DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
+      AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+  build_enforcer:
+    if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize'
+    uses: ./.github/workflows/enforcer-release.yml
+    with:
+      aks_deployment: true
+    secrets:
+      WSO2_BOT_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
+      WSO2_BOT_USER: ${{ secrets.WSO2_BOT_USER }}
+      WSO2_BOT_EMAIL: ${{ secrets.WSO2_BOT_EMAIL }}
+      DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
+      AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+    
+  build_management_server:
+    if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize'
+    uses: ./.github/workflows/management-server-release.yml
+    with:
+      aks_deployment: true
+    secrets:
+      WSO2_BOT_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
+      WSO2_BOT_USER: ${{ secrets.WSO2_BOT_USER }}
+      WSO2_BOT_EMAIL: ${{ secrets.WSO2_BOT_EMAIL }}
+      DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
+      AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+    
+  # build_router:
+    # if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize'
+    # uses: ./.github/workflows/router-release.yml
+  #   with:
+  #     aks_deployment: true
+  #   secrets:
+  #     WSO2_BOT_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
+  #     WSO2_BOT_USER: ${{ secrets.WSO2_BOT_USER }}
+  #     WSO2_BOT_EMAIL: ${{ secrets.WSO2_BOT_EMAIL }}
+  #     DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
+  #     AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
+  #     AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+  build_runtime:
+    if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize'
+    uses: ./.github/workflows/runtime-release.yml
+    with:
+      aks_deployment: true
+    secrets:
+      WSO2_BOT_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
+      WSO2_BOT_USER: ${{ secrets.WSO2_BOT_USER }}
+      WSO2_BOT_EMAIL: ${{ secrets.WSO2_BOT_EMAIL }}
+      DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
+      AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+  build_idpds:
+    if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize'
+    uses: ./.github/workflows/idp-domain-service-release.yml
+    with:
+      aks_deployment: true
+    secrets:
+      WSO2_BOT_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
+      WSO2_BOT_USER: ${{ secrets.WSO2_BOT_USER }}
+      WSO2_BOT_EMAIL: ${{ secrets.WSO2_BOT_EMAIL }}
+      DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
+      AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+  build_idpui:
+    if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize'
+    uses: ./.github/workflows/idp-ui-release.yml
+    with:
+      aks_deployment: true
+    secrets:
+      WSO2_BOT_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
+      WSO2_BOT_USER: ${{ secrets.WSO2_BOT_USER }}
+      WSO2_BOT_EMAIL: ${{ secrets.WSO2_BOT_EMAIL }}
+      DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
+      AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+
+  runs_integration_tests_on_pull_request_target:
+    if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize' || github.event.action == 'reopened'
+    needs: [build_adapter, build_enforcer, build_runtime,build_management_server,build_admin,build_backoffice,build_devportal, build_idpds, build_idpui]
     runs-on: ubuntu-latest
     steps:
     - uses: azure/login@v1
@@ -23,6 +154,121 @@ jobs:
       run: |
         kubectl create namespace apk-release
         kubectl get ns 
+    - name: Create Image pull secret.
+      shell: sh
+      run: |
+        kubectl create secret docker-registry azure-registry --docker-server=${{ secrets.AZURE_ACR_NAME }}.azurecr.io --docker-username=${{ secrets.AZURE_ACR_USER }} --docker-password=${{ secrets.AZURE_ACR_PASSWORD }} --docker-email=${{ secrets.WSO2_BOT_EMAIL }} -n apk-release
+    - name: Checkout apk-repo.
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: "0"
+        path: apk-repo
+        token: ${{ secrets.WSO2_BOT_TOKEN }}
+    - name: Set release username and email
+      shell: sh
+      run: |
+        git config --global user.name ${{ secrets.WSO2_BOT_USER }}
+        git config --global user.email ${{ secrets.WSO2_BOT_EMAIL }}
+
+    - name: checkout pull request and merge.
+      shell: sh
+      if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize' || github.event.action == 'reopened'
+      run: |
+        cd apk-repo
+        gh pr checkout ${{ github.event.number }} -b pr-${{ github.event.number }}
+        git checkout pr-${{ github.event.number }}
+        git merge origin/main
+
+    - name: Helm release deploy
+      if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize' || github.event.action == 'reopened'
+      shell: sh
+      run: |
+        cd apk-repo/helm-charts
+        helm repo add bitnami https://charts.bitnami.com/bitnami
+        helm repo add jetstack https://charts.jetstack.io
+        helm dependency build
+        helm install release-1 -n apk-release . --debug --wait --timeout 10m0s \
+        --set wso2.subscription.imagePullSecrets=azure-registry \
+        --set wso2.apk.cp.devportal.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/devportal-domain-service:${{ github.sha }} \
+        --set wso2.apk.cp.admin.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/admin-domain-service:${{ github.sha }} \
+        --set wso2.apk.cp.backoffice.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/backoffice-domain-service:${{ github.sha }} \
+        --set wso2.apk.cp.managementServer.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/management-server:${{ github.sha }} \
+        --set wso2.apk.dp.runtime.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/runtime-domain-service:${{ github.sha }} \
+        --set wso2.apk.dp.adapter.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/adapter:${{ github.sha }} \
+        --set wso2.apk.dp.gatewayRuntime.deployment.enforcer.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/enforcer:${{ github.sha }} \
+        --set idp.idpds.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/idp-domain-service:${{ github.sha }} \
+        --set idp.idpui.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/idp-ui:${{ github.sha }}        
+        kubectl get pods -n apk-release
+        kubectl get svc -n apk-release
+    - name: Apply test resources
+      shell: sh
+      run: |
+        cd apk-repo/test/k8s-resources
+        kubectl apply -f .
+    - name: Retrieve Router IP
+      id: retrieveIp
+      run: |
+        echo "router_ip=`kubectl get svc release-1-wso2-apk-router-service -n apk-release --output jsonpath='{.status.loadBalancer.ingress[0].ip}'`">> $GITHUB_OUTPUT
+    - name: Run test cases
+      shell: sh
+      run: |
+          cd apk-repo/test/postman-tests
+          ./gradlew test -PgwHost=${{ steps.retrieveIp.outputs.router_ip }}
+    - name: Helm release undeploy
+      if: always()
+      shell: sh
+      run: |
+        cd apk-repo/helm-charts
+        helm uninstall release-1 -n apk-release
+        kubectl get pods -n apk-release
+        kubectl get svc -n apk-release
+    - name: Delete AKS cluster
+      if: always()
+      uses: azure/CLI@v1
+      with:
+        azcliversion: 2.44.1
+        inlineScript: |
+          az aks delete --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --name ${{ secrets.AKS_CLUSTER_NAME }} --yes
+    - name: Logout from azure
+      if: always()
+      uses: azure/CLI@v1
+      with:
+        azcliversion: 2.44.1
+        inlineScript: |
+          az logout
+    - name: Publish Test Report
+      if: always()
+      uses: malinthaprasan/action-surefire-report@v1
+      with:
+       report_paths: 'apk-repo/test/postman-tests/build/*.xml'
+       fail_on_test_failures: true
+       
+  runs_integration_on_workflow_dispatch:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+    - name: Create AKS Cluster and set context
+      uses: azure/CLI@v1
+      with:
+        azcliversion: 2.44.1
+        inlineScript: |
+          az aks create --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" --name "${{ secrets.AKS_CLUSTER_NAME }}" --enable-cluster-autoscaler --min-count 1 --max-count 3 --location "southeastasia" --generate-ssh-keys --verbose 
+    - uses: azure/aks-set-context@v3
+      with:
+          resource-group: '${{ secrets.AZURE_RESOURCE_GROUP }}'
+          cluster-name: '${{ secrets.AKS_CLUSTER_NAME }}'
+    - name: Create Namespace apk-release
+      shell: sh
+      run: |
+        kubectl create namespace apk-release
+        kubectl get ns 
+    - name: Create Image pull secret.
+      shell: sh
+      run: |
+        kubectl create secret docker-registry azure-registry --docker-server=${{ secrets.AZURE_ACR_NAME }}.azurecr.io --docker-username=${{ secrets.AZURE_ACR_USER }} --docker-password=${{ secrets.AZURE_ACR_PASSWORD }} --docker-email=${{ secrets.WSO2_BOT_EMAIL }} -n apk-release
     - name: Checkout apk-repo.
       uses: actions/checkout@v3
       with:
@@ -30,6 +276,7 @@ jobs:
         path: apk-repo
         token: ${{ secrets.WSO2_BOT_TOKEN }}
     - name: Helm release deploy
+      if: github.event_name == 'workflow_dispatch'
       shell: sh
       run: |
         cd apk-repo/helm-charts
@@ -79,11 +326,5 @@ jobs:
       if: always()
       uses: malinthaprasan/action-surefire-report@v1
       with:
-       report_paths: 'apk-repo/test/postman-tests/build/*.xml'
-    - name: Archive testng report
-      if: always()
-      uses: actions/upload-artifact@v2
-      with:
-       path: |
         report_paths: 'apk-repo/test/postman-tests/build/*.xml'
-       if-no-files-found: warn   
+        fail_on_test_failures: true

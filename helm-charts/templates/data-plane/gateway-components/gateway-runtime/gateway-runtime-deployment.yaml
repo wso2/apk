@@ -33,6 +33,15 @@ spec:
         networkPolicyId: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.npi }}
 {{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.wso2.apk.dp.gatewayRuntime.appName ) | indent 8}}
     spec:
+      initContainers:
+        - name: check-adapter
+          image: busybox:1.32
+          env:
+            - name: ADAPTER_HOST
+              value: {{ template "apk-helm.resource.prefix" . }}-adapter-service.{{ .Release.Namespace }}.svc
+            - name: ADAPTER_XDS_PORT
+              value : "18000"  
+          command: ['sh', '-c', 'echo -e "Checking for the availability of Adapter deployment"; while ! nc -z $ADAPTER_HOST $ADAPTER_XDS_PORT; do sleep 1; printf "-"; done; echo -e "  >> Adapter has started";']
       containers:
         - name: enforcer
           image: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.image }}
@@ -245,6 +254,13 @@ spec:
             initialDelaySeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.periodSeconds }}
             failureThreshold: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.failureThreshold }}
+      {{- if and .Values.wso2.subscription .Values.wso2.subscription.imagePullSecrets}}
+      imagePullSecrets:
+        - name: {{ .Values.wso2.subscription.imagePullSecrets }}
+      {{- else if and .Values.wso2.subscription (not (eq .Values.wso2.subscription.username "")) (not (eq .Values.wso2.subscription.password "")) }}
+      imagePullSecrets:
+        - name: {{ template "apk-helm.resource.prefix" . }}-apk-wso2-private-registry-creds
+      {{ end }}
       volumes:
       {{ if .Values.wso2.apk.dp.ratelimiter.enabled }}
         - name: ratelimiter-truststore-secret-volume

@@ -61,9 +61,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/OrganizationList'
-      security:
-        - OAuth2Security:
-            - apim:admin
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
@@ -149,7 +146,13 @@ components:
           type: array
           items:
             type: string
-        vhosts:
+          default:
+            - "*"
+        production:
+          type: array
+          items:
+            type: string
+        sandbox:
           type: array
           items:
             type: string
@@ -345,3 +348,4 @@ components:
       required: true
       schema:
         type: string
+        

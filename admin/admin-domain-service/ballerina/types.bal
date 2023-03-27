@@ -439,8 +439,9 @@ public type Organization record {|
     @constraint:String {maxLength: 255, minLength: 1}
     string organizationClaimValue?;
     boolean enabled = true;
-    string[] serviceNamespaces?;
-    string[] vhosts?;
+    string[] serviceNamespaces = ["*"];
+    string[] production?;
+    string[] sandbox?;
 |};
 
 public type MonetizationUsagePublishInfo record {|
