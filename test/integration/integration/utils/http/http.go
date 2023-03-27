@@ -67,6 +67,7 @@ type Request struct {
 	Method           string
 	Path             string
 	Headers          map[string]string
+	Body             string
 	UnfollowRedirect bool
 }
 
@@ -118,6 +119,7 @@ func MakeRequest(t *testing.T, expected *ExpectedResponse, gwAddr, protocol, sch
 	req := roundtripper.Request{
 		Method:           expected.Request.Method,
 		Host:             expected.Request.Host,
+		Body:             expected.Request.Body,
 		URL:              url.URL{Scheme: scheme, Host: gwAddr, Path: path, RawQuery: query},
 		Protocol:         protocol,
 		Headers:          map[string][]string{},
