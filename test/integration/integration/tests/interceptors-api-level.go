@@ -26,14 +26,15 @@ import (
 )
 
 func init() {
-	IntegrationTests = append(IntegrationTests, ResourceLevelInterceptors)
+	// TODO (Amila): Uncomment once AKS test runner is enabled
+	// IntegrationTests = append(IntegrationTests, APILevelInterceptors)
 }
 
-// ResourceLevelInterceptors test
-var ResourceLevelInterceptors = suite.IntegrationTest{
-	ShortName:   "InterceptorService",
+// APILevelInterceptors test
+var APILevelInterceptors = suite.IntegrationTest{
+	ShortName:   "APILevelInterceptors",
 	Description: "Tests API with with request and response interceptors",
-	Manifests:   []string{"tests/resource-level-interceptors.yaml"},
+	Manifests:   []string{"tests/interceptors-api-level.yaml"},
 	Test: func(t *testing.T, suite *suite.IntegrationTestSuite) {
 		gwAddr := kubernetes.WaitForGatewayAddress(t, suite.Client, suite.TimeoutConfig)
 		token := http.GetTestToken(t, gwAddr)
@@ -41,8 +42,8 @@ var ResourceLevelInterceptors = suite.IntegrationTest{
 		testCases := []http.ExpectedResponse{
 			{
 				Request: http.Request{
-					Host: "interceptor.test.gw.wso2.com",
-					Path: "/interceptor/1.0.0/books/with-interceptors",
+					Host: "interceptor-api.test.gw.wso2.com",
+					Path: "/interceptor/2.0.0/books",
 					Headers: map[string]string{
 						"content-type": "application/json",
 					},
@@ -50,18 +51,6 @@ var ResourceLevelInterceptors = suite.IntegrationTest{
 					Body:   `{"name":"The Prisoner"}`,
 				},
 				Response: http.Response{StatusCode: 201},
-			},
-			{
-				Request: http.Request{
-					Host: "interceptor.test.gw.wso2.com",
-					Path: "/interceptor/1.0.0/books/without-interceptors",
-					Headers: map[string]string{
-						"content-type": "application/json",
-					},
-					Method: "POST",
-					Body:   `{"name":"The Prisoner"}`,
-				},
-				Response: http.Response{StatusCode: 401},
 			},
 		}
 		for i := range testCases {

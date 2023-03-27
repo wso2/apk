@@ -36,7 +36,7 @@ metadata:
   namespace: gateway-integration-test-infra
 spec:
   hostnames:
-  - interceptor.test.gw.wso2.com
+  - interceptor-resource.test.gw.wso2.com
   parentRefs:
   - group: gateway.networking.k8s.io
     kind: Gateway
@@ -97,4 +97,4 @@ spec:
   targetRef:
     group: gateway.networking.k8s.io
     kind: Resource
-    name: interceptor-route
+    name: resource-interceptor-route

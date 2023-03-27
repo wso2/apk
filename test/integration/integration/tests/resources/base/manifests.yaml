@@ -110,124 +110,125 @@ spec:
         resources:
           requests:
             cpu: "10m"
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: legacy-xml-backend-v1
-  namespace: gateway-integration-test-infra
-spec:
-  selector:
-    app: legacy-xml-backend-v1
-  ports:
-    - protocol: TCP
-      port: 9082
-      targetPort: 9082
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: legacy-xml-backend-v1
-  namespace: gateway-integration-test-infra
-  labels:
-    app: legacy-xml-backend-v1
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: legacy-xml-backend-v1
-  template:
-    metadata:
-      labels:
-        app: legacy-xml-backend-v1
-    spec:
-      containers:
-      - name: legacy-xml-backend-v1
-        image: wso2am/cc-sample-legacy-xml-backend:v1.0.0
-        ports:
-        - containerPort: 9082
-        resources:
-          requests:
-            memory: "800Mi"
-            cpu: "500m"
-          limits:
-            memory: "800Mi"
-            cpu: "500m"
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: interceptor-backend-v1
-  namespace: gateway-integration-test-infra
-spec:
-  selector:
-    app: interceptor-backend-v1
-  ports:
-    - protocol: TCP
-      port: 9081
-      targetPort: 9081
----
-apiVersion: cert-manager.io/v1
-kind: Certificate
-metadata:
-  name: interceptor-cert-secret
-  namespace: gateway-integration-test-infra
-spec:
-  commonName: interceptor-backend-v1.gateway-integration-test-infra
-  privateKey:
-    algorithm: RSA
-    encoding: PKCS8
-    size: 2048
-  dnsNames:
-  - "interceptor-backend-v1.gateway-integration-test-infra"
-  issuerRef:
-    kind: ClusterIssuer
-    name: selfsigned-issuer
-  secretName: interceptor-cert-secret
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: interceptor-backend-v1
-  namespace: gateway-integration-test-infra
-  labels:
-    app: interceptor-backend-v1
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: interceptor-backend-v1
-  template:
-    metadata:
-      labels:
-        app: interceptor-backend-v1
-    spec:
-      containers:
-      - name: interceptor-backend-v1
-        image: wso2am/cc-sample-xml-interceptor-nodejs:v1.0.0
-        ports:
-        - containerPort: 9081
-        resources:
-          requests:
-            memory: "800Mi"
-            cpu: "500m"
-          limits:
-            memory: "800Mi"
-            cpu: "500m"
-        volumeMounts:
-          - name: interceptor-certs-vol
-            mountPath: /usr/src/app/certs/mg.pem
-            subPath: ca.crt
-          - name: interceptor-certs-vol
-            mountPath: /usr/src/app/certs/interceptor.key
-            subPath: tls.key
-          - name: interceptor-certs-vol
-            mountPath: /usr/src/app/certs/interceptor.pem
-            subPath: tls.crt
-      volumes:
-        - name: interceptor-certs-vol
-          secret:
-            secretName: interceptor-cert-secret
+# TODO (Amila): Uncomment once AKS test runner is enabled
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: legacy-xml-backend-v1
+#   namespace: gateway-integration-test-infra
+# spec:
+#   selector:
+#     app: legacy-xml-backend-v1
+#   ports:
+#     - protocol: TCP
+#       port: 9082
+#       targetPort: 9082
+# ---
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: legacy-xml-backend-v1
+#   namespace: gateway-integration-test-infra
+#   labels:
+#     app: legacy-xml-backend-v1
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app: legacy-xml-backend-v1
+#   template:
+#     metadata:
+#       labels:
+#         app: legacy-xml-backend-v1
+#     spec:
+#       containers:
+#       - name: legacy-xml-backend-v1
+#         image: wso2am/cc-sample-legacy-xml-backend:v1.0.0
+#         ports:
+#         - containerPort: 9082
+#         resources:
+#           requests:
+#             memory: "800Mi"
+#             cpu: "500m"
+#           limits:
+#             memory: "800Mi"
+#             cpu: "500m"
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: interceptor-backend-v1
+#   namespace: gateway-integration-test-infra
+# spec:
+#   selector:
+#     app: interceptor-backend-v1
+#   ports:
+#     - protocol: TCP
+#       port: 9081
+#       targetPort: 9081
+# ---
+# apiVersion: cert-manager.io/v1
+# kind: Certificate
+# metadata:
+#   name: interceptor-cert-secret
+#   namespace: gateway-integration-test-infra
+# spec:
+#   commonName: interceptor-backend-v1.gateway-integration-test-infra
+#   privateKey:
+#     algorithm: RSA
+#     encoding: PKCS8
+#     size: 2048
+#   dnsNames:
+#   - "interceptor-backend-v1.gateway-integration-test-infra"
+#   issuerRef:
+#     kind: ClusterIssuer
+#     name: selfsigned-issuer
+#   secretName: interceptor-cert-secret
+# ---
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: interceptor-backend-v1
+#   namespace: gateway-integration-test-infra
+#   labels:
+#     app: interceptor-backend-v1
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app: interceptor-backend-v1
+#   template:
+#     metadata:
+#       labels:
+#         app: interceptor-backend-v1
+#     spec:
+#       containers:
+#       - name: interceptor-backend-v1
+#         image: wso2am/cc-sample-xml-interceptor-nodejs:v1.0.0
+#         ports:
+#         - containerPort: 9081
+#         resources:
+#           requests:
+#             memory: "800Mi"
+#             cpu: "500m"
+#           limits:
+#             memory: "800Mi"
+#             cpu: "500m"
+#         volumeMounts:
+#           - name: interceptor-certs-vol
+#             mountPath: /usr/src/app/certs/mg.pem
+#             subPath: ca.crt
+#           - name: interceptor-certs-vol
+#             mountPath: /usr/src/app/certs/interceptor.key
+#             subPath: tls.key
+#           - name: interceptor-certs-vol
+#             mountPath: /usr/src/app/certs/interceptor.pem
+#             subPath: tls.crt
+#       volumes:
+#         - name: interceptor-certs-vol
+#           secret:
+#             secretName: interceptor-cert-secret
 ---
 apiVersion: dp.wso2.com/v1alpha1
 kind: Backend
@@ -249,27 +250,28 @@ spec:
   - host: infra-backend-v2.gateway-integration-test-infra
     port: 8080
 ---
-apiVersion: dp.wso2.com/v1alpha1
-kind: Backend
-metadata:
-  name: legacy-xml-backend-v1
-  namespace: gateway-integration-test-infra
-spec:
-  services:
-  - host: legacy-xml-backend-v1.gateway-integration-test-infra
-    port: 9082
----
-apiVersion: dp.wso2.com/v1alpha1
-kind: Backend
-metadata:
-  namespace: gateway-integration-test-infra
-  name: interceptor-backend-v1
-spec:
-  protocol: https
-  services:
-  - host: interceptor-backend-v1.gateway-integration-test-infra
-    port: 9081
-  tls:
-    secretRef:
-      name: interceptor-cert-secret
-      key: ca.crt
+# TODO (Amila): Uncomment once AKS test runner is enabled
+# apiVersion: dp.wso2.com/v1alpha1
+# kind: Backend
+# metadata:
+#   name: legacy-xml-backend-v1
+#   namespace: gateway-integration-test-infra
+# spec:
+#   services:
+#   - host: legacy-xml-backend-v1.gateway-integration-test-infra
+#     port: 9082
+# ---
+# apiVersion: dp.wso2.com/v1alpha1
+# kind: Backend
+# metadata:
+#   namespace: gateway-integration-test-infra
+#   name: interceptor-backend-v1
+# spec:
+#   protocol: https
+#   services:
+#   - host: interceptor-backend-v1.gateway-integration-test-infra
+#     port: 9081
+#   tls:
+#     secretRef:
+#       name: interceptor-cert-secret
+#       key: ca.crt
