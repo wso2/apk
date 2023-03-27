@@ -1824,13 +1824,13 @@ public class APIClient {
         return backendService;
     }
 
-    isolated function generateRateLimitPolicyCR(API api, APIRateLimit? rateLimit, string httpRouteRefName, string kind, string group) returns model:RateLimitPolicy? {
+    public isolated function generateRateLimitPolicyCR(API api, APIRateLimit? rateLimit, string httpRouteRefName, string kind, string group) returns model:RateLimitPolicy? {
         model:RateLimitPolicy? rateLimitPolicyCR = ();
         if rateLimit != () {
             string nameSpace = getNameSpace(runtimeConfiguration.apiCreationNamespace);
             rateLimitPolicyCR = {
                 metadata: {
-                    name: uuid:createType1AsString(),
+                    name: retrieveRateLimitPolicyRefName(kind),
                     namespace: nameSpace,
                     labels: self.getLabels(api)
                 },
@@ -3031,4 +3031,9 @@ public isolated function getUniqueIdForAPI(string name, string 'version, commons
 
 public isolated function retrieveHttpRouteRefName(API api, string 'type, commons:Organization organization) returns string {
     return uuid:createType1AsString();
+}
+
+public isolated function retrieveRateLimitPolicyRefName(string kind) returns string {
+    string prefix = "rate-limit-" + kind.toLowerAscii() + "-";
+    return prefix + uuid:createType1AsString();
 }
