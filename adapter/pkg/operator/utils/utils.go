@@ -120,24 +120,7 @@ func TieBreaker[T metav1.Object](k8sObjects []T) *T {
 }
 
 // SelectPolicy selects the policy based on the policy override and default values
-func SelectPolicy[T any](policyUpOverride, policyUpDefault, policyDownOverride, policyDownDefault *T) *T {
-	if policyUpOverride != nil && !reflect.ValueOf(*policyUpOverride).IsZero() && !reflect.ValueOf(*policyUpOverride).IsZero() {
-		return policyUpOverride
-	}
-	if policyDownOverride != nil && !reflect.ValueOf(*policyDownOverride).IsZero() && !reflect.ValueOf(*policyDownOverride).IsZero() {
-		return policyDownOverride
-	}
-	if policyDownDefault != nil && !reflect.ValueOf(*policyDownDefault).IsZero() && !reflect.ValueOf(*policyDownDefault).IsZero() {
-		return policyDownDefault
-	}
-	if policyUpDefault != nil && !reflect.ValueOf(*policyUpDefault).IsZero() && !reflect.ValueOf(*policyUpDefault).IsZero() {
-		return policyUpDefault
-	}
-	return nil
-}
-
-// SelectPolicy2 selects the policy based on the policy override and default values
-func SelectPolicy2[T any](policyUpOverride, policyUpDefault, policyDownOverride, policyDownDefault **T) *T {
+func SelectPolicy[T any](policyUpOverride, policyUpDefault, policyDownOverride, policyDownDefault **T) *T {
 	if policyUpOverride != nil && !reflect.ValueOf(*policyUpOverride).IsZero() &&
 		policyDownOverride != nil && !reflect.ValueOf(*policyDownOverride).IsZero() &&
 		policyDownDefault != nil && !reflect.ValueOf(*policyDownDefault).IsZero() &&
@@ -233,13 +216,15 @@ func combineUpAndDownValues[T any](up, down T) T {
 			combinedFieldValue = reflect.ValueOf(nestedCombinedFieldValue)
 		} else if field.Type.Kind() == reflect.Ptr && field.Type.Elem().Kind() == reflect.Struct {
 			if upFieldValue.IsNil() && !downFieldValue.IsZero() {
-				nestedCombinedFieldValue := combineUpAndDownValues(reflect.New(field.Type.Elem()).Elem().Interface(), downFieldValue.Elem().Interface())
+				nestedCombinedFieldValue := combineUpAndDownValues(reflect.New(field.Type.Elem()).Elem().Interface(),
+					downFieldValue.Elem().Interface())
 				combinedFieldValue = reflect.New(field.Type.Elem())
 				combinedFieldValue.Elem().Set(reflect.ValueOf(nestedCombinedFieldValue))
 			} else if downFieldValue.IsNil() {
 				combinedFieldValue = upFieldValue
 			} else {
-				nestedCombinedFieldValue := combineUpAndDownValues(upFieldValue.Elem().Interface(), downFieldValue.Elem().Interface())
+				nestedCombinedFieldValue := combineUpAndDownValues(upFieldValue.Elem().Interface(),
+					downFieldValue.Elem().Interface())
 				combinedFieldValue = reflect.New(field.Type.Elem())
 				combinedFieldValue.Elem().Set(reflect.ValueOf(nestedCombinedFieldValue))
 			}
