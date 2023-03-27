@@ -86,8 +86,6 @@ type Config struct {
 type adapter struct {
 	// Server represents the configuration related to REST API (to which the apictl requests)
 	Server server
-	// VhostMapping represents default vhost of gateway environments
-	VhostMapping []vhostMapping
 	// Consul represents the configuration required to connect to consul service discovery
 	Consul consul
 	// Keystore contains the keyFile and Cert File of the adapter
@@ -106,10 +104,6 @@ type adapter struct {
 
 // Envoy Listener Component related configurations.
 type envoy struct {
-	ListenerHost                     string
-	ListenerPort                     uint32
-	SecuredListenerHost              string
-	SecuredListenerPort              uint32
 	ListenerCodecType                string
 	ClusterTimeoutInSeconds          time.Duration
 	EnforcerResponseTimeoutInSeconds time.Duration `default:"20"`
@@ -180,13 +174,6 @@ type server struct {
 	TokenTTL string
 	// Private key to sign the token
 	TokenPrivateKeyPath string
-}
-
-type vhostMapping struct {
-	// Environment name of the gateway
-	Environment string
-	// Vhost to be default of the environment
-	Vhost string
 }
 
 type consul struct {
