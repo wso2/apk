@@ -583,16 +583,11 @@ public class APIClient {
                     runtimeAPI.spec.endpointConfig = endpointConfig;
                 }
 
-                APIRateLimit? apiRateLimitToUse = ();
-                if (api.apiRateLimit is APIRateLimit) {
-                    apiRateLimitToUse = api.apiRateLimit;
-                } else {
-                    apiRateLimitToUse = operation.operationRateLimit;
-                }
-                if (apiRateLimitToUse is APIRateLimit) {
+                APIRateLimit? rateLimitPolicy = operation.operationRateLimit;
+                if (rateLimitPolicy is APIRateLimit) {
                     model:RateLimit rateLimit = {
-                        requestsPerUnit: apiRateLimitToUse.requestsPerUnit,
-                        unit: apiRateLimitToUse.unit
+                        requestsPerUnit: rateLimitPolicy.requestsPerUnit,
+                        unit: rateLimitPolicy.unit
                     };
                     runtimeAPIOperation.operationRateLimit = rateLimit;
                 }
@@ -603,6 +598,14 @@ public class APIClient {
         record {|anydata...;|}? endpointConfig = api.endpointConfig;
         if endpointConfig is record {} {
             runtimeAPI.spec.endpointConfig = endpointConfig;
+        }
+        APIRateLimit? rateLimitPolicy = api.apiRateLimit;
+        if (rateLimitPolicy is APIRateLimit) {
+            model:RateLimit rateLimit = {
+                requestsPerUnit: rateLimitPolicy.requestsPerUnit,
+                unit: rateLimitPolicy.unit
+            };
+            runtimeAPI.spec.apiRateLimit = rateLimit;
         }
         if serviceEntry is Service {
             runtimeAPI.spec.serviceInfo = {

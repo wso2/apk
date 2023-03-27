@@ -189,6 +189,13 @@ spec:
                             type: integer
                           unit:
                             type: string
+                apiRateLimit:
+                  type: object
+                  properties:
+                    requestsPerUnit:
+                      type: integer
+                    unit:
+                      type: string
                 serviceInfo:
                   type: object
                   properties:
