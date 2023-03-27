@@ -280,62 +280,6 @@ var defaultConfig = &Config{
 			Enabled: false,
 			Type:    "azure",
 		},
-		Throttling: throttlingConfig{
-			EnableGlobalEventPublishing:        false,
-			EnableHeaderConditions:             false,
-			EnableQueryParamConditions:         false,
-			EnableJwtClaimConditions:           false,
-			JmsConnectionInitialContextFactory: "org.wso2.andes.jndi.PropertiesFileInitialContextFactory",
-			JmsConnectionProviderURL:           "amqp://admin:$env{tm_admin_pwd}@carbon/carbon?brokerlist='tcp://apim:5672'",
-			JmsConnectionProviderURLDeprecated: UnassignedAsDeprecated,
-			Publisher: binaryPublisher{
-				Username: "admin",
-				Password: "$env{tm_admin_pwd}",
-				URLGroup: []urlGroup{
-					{
-						ReceiverURLs: []string{"tcp://apim:9611"},
-						AuthURLs:     []string{"ssl://apim:9711"},
-					},
-				},
-				URLGroupDeprecated: []urlGroup{},
-				Pool: publisherPool{
-					MaxIdleDataPublishingAgents:        1000,
-					InitIdleObjectDataPublishingAgents: 200,
-					PublisherThreadPoolCoreSize:        200,
-					PublisherThreadPoolMaximumSize:     1000,
-					PublisherThreadPoolKeepAliveTime:   200,
-				},
-				Agent: binaryAgent{
-					SslEnabledProtocols: "TLSv1.2",
-					Ciphers: "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256," +
-						"TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256," +
-						"TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256,TLS_DHE_RSA_WITH_AES_128_CBC_SHA256,TLS_DHE_DSS_WITH_AES_128_CBC_SHA256," +
-						"TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_128_CBC_SHA," +
-						"TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_128_CBC_SHA," +
-						"TLS_DHE_DSS_WITH_AES_128_CBC_SHA,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256," +
-						"TLS_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256," +
-						"TLS_DHE_RSA_WITH_AES_128_GCM_SHA256,TLS_DHE_RSA_WITH_AES_128_GCM_SHA256,TLS_DHE_DSS_WITH_AES_128_GCM_SHA256," +
-						"TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA,TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA,SSL_RSA_WITH_3DES_EDE_CBC_SHA," +
-						"TLS_ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA,TLS_ECDH_RSA_WITH_3DES_EDE_CBC_SHA,SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA," +
-						"SSL_DHE_DSS_WITH_3DES_EDE_CBC_SHA,TLS_EMPTY_RENEGOTIATION_INFO_SCSV",
-					QueueSize:                  32768,
-					BatchSize:                  200,
-					CorePoolSize:               1,
-					SocketTimeoutMS:            30000,
-					MaxPoolSize:                1,
-					KeepAliveTimeInPool:        20,
-					ReconnectionInterval:       30,
-					MaxTransportPoolSize:       250,
-					MaxIdleConnections:         250,
-					EvictionTimePeriod:         5500,
-					MinIdleTimeInPool:          5000,
-					SecureMaxTransportPoolSize: 250,
-					SecureMaxIdleConnections:   250,
-					SecureEvictionTimePeriod:   5500,
-					SecureMinIdleTimeInPool:    5000,
-				},
-			},
-		},
 		JwtIssuer: jwtIssuer{
 			Enabled:               true,
 			Issuer:                "https://localhost:9095/testkey",

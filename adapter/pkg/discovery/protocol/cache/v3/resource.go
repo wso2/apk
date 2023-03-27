@@ -23,7 +23,6 @@ import (
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/config/enforcer"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/keymgt"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/subscription"
-	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/throttle"
 	"github.com/wso2/apk/adapter/pkg/discovery/protocol/cache/types"
 	"github.com/wso2/apk/adapter/pkg/discovery/protocol/resource/v3"
 )
@@ -83,8 +82,6 @@ func GetResourceName(res envoy_types.Resource) string {
 		return "SubscriptionPolicyList"
 	case *keymgt.KeyManagerConfig:
 		return fmt.Sprint(v.Name)
-	case *throttle.ThrottleData:
-		return "ThrottleData"
 	case *apkmgt.Application:
 		return fmt.Sprint(v.Uuid)
 	case *keymgt.RevokedToken:
