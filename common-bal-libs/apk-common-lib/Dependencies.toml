@@ -278,7 +278,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "task"
-version = "2.3.0"
+version = "2.3.1"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "time"}
@@ -287,7 +287,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "time"
-version = "2.2.3"
+version = "2.2.4"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]

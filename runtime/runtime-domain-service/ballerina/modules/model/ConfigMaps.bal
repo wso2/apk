@@ -5,3 +5,10 @@ public type ConfigMap record {|
     map<string> data?;
     map<string> binaryData?;
 |};
+
+public type ConfigMapList record {|
+    string kind = "ConfigMapList";
+    string apiVersion = "v1";
+    ListMeta metadata;
+    ConfigMap[] items;
+|};

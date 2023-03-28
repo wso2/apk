@@ -313,7 +313,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "task"
-version = "2.3.0"
+version = "2.3.1"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "time"}
@@ -337,6 +337,9 @@ name = "time"
 version = "2.2.4"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
+]
+modules = [
+	{org = "ballerina", packageName = "time", moduleName = "time"}
 ]
 
 [[package]]
@@ -437,6 +440,7 @@ dependencies = [
 	{org = "ballerina", name = "mime"},
 	{org = "ballerina", name = "regex"},
 	{org = "ballerina", name = "test"},
+	{org = "ballerina", name = "time"},
 	{org = "ballerina", name = "url"},
 	{org = "ballerina", name = "uuid"},
 	{org = "ballerina", name = "websocket"},

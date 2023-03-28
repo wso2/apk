@@ -157,10 +157,18 @@ isolated function getAPIs(commons:Organization organization) returns model:API[]
     }
 }
 
-isolated function getAPI(string id, commons:Organization organization) returns model:API|error {
+isolated function getAPI(string id, commons:Organization organization) returns model:API? {
     lock {
-        map<model:API> & readonly apiMap = check trap apilist.get(organization.uuid).cloneReadOnly();
-        return check trap apiMap.get(id);
+        if apilist.hasKey(organization.uuid) {
+            map<model:API> & readonly readOnlyAPImap = apilist.get(organization.uuid).cloneReadOnly();
+            if readOnlyAPImap.hasKey(id) {
+                return readOnlyAPImap.get(id);
+            } else {
+                return ();
+            }
+        } else {
+            return ();
+        }
     }
 }
 

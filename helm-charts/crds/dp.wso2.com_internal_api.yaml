@@ -75,6 +75,7 @@ spec:
                     - ASYNC
                 endpointConfig:
                   type: object
+                  x-kubernetes-preserve-unknown-fields: true
                   properties: {}
                   description: |
                     Endpoint configuration of the API. This can be used to provide different types of endpoints including Simple REST Endpoints, Loadbalanced and Failover.
@@ -122,7 +123,7 @@ spec:
                         description: Authentication mode for resource (true/false)
                       endpointConfig:
                         type: object
-                        properties: {}
+                        x-kubernetes-preserve-unknown-fields: true
                         description: |
                           Endpoint configuration of the API. This can be used to provide different types of endpoints including Simple REST Endpoints, Loadbalanced and Failover.
 

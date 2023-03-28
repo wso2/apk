@@ -97,6 +97,9 @@ function init() returns error? {
     _ = check serviceMappingTask.startListening();
     OrganizationListingTask organizationListingTask = new (organizationResourceVersion);
     _ = check organizationListingTask.startListening();
+    _ = check retrieveAllConfigMapsAtStartup((), ());
+    ConfigMapListingTask configMapTask = new (configMapResourceVersion);
+    _ = check configMapTask.startListening();
     _ = check startAndAttachServices();
     log:printInfo("Initializing Runtime Domain Service..");
 }

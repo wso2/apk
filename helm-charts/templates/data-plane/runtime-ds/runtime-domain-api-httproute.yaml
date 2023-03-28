@@ -166,9 +166,75 @@ spec:
       name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
   - matches:
     - path:
-        type: "Exact"
-        value: "/api/am/runtime/apis/export"
+        type: "RegularExpression"
+        value: "/api/am/runtime/apis/(.*)/endpoint-certificates"
       method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/am/runtime/apis/\\1/endpoint-certificates"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/api/am/runtime/apis/(.*)/endpoint-certificates"
+      method: "POST"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/am/runtime/apis/\\1/endpoint-certificates"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/api/am/runtime/apis/(.*)/endpoint-certificates/(.*)"
+      method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/am/runtime/apis/\\1/endpoint-certificates/\\2"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/api/am/runtime/apis/(.*)/endpoint-certificates/(.*)"
+      method: "PUT"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/am/runtime/apis/\\1/endpoint-certificates/\\2"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/api/am/runtime/apis/(.*)/endpoint-certificates/(.*)"
+      method: "DELETE"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/am/runtime/apis/\\1/endpoint-certificates/\\2"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
@@ -176,8 +242,8 @@ spec:
   - matches:
     - path:
         type: "Exact"
-        value: "/api/am/runtime/apis/import"
-      method: "POST"
+        value: "/api/am/runtime/apis/export"
+      method: "GET"
     backendRefs:
     - group: dp.wso2.com
       kind: Backend
