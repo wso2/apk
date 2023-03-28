@@ -736,7 +736,7 @@ data:
     ## Adapter root Level configurations
 
     logfile = "logs/adapter.log" # This file will be created inside adapter container.
-    logLevel = "DEBG" # LogLevels can be "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC"
+    logLevel = "INFO" # LogLevels can be "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC"
     LogFormat = "TEXT" # Values can be "JSON", "TEXT"
 
     [rotation]

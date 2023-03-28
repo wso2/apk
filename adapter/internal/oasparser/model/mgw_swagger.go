@@ -29,6 +29,7 @@ import (
 	"github.com/wso2/apk/adapter/internal/interceptor"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
+	dpv1alpha1 "github.com/wso2/apk/adapter/pkg/operator/apis/dp/v1alpha1"
 )
 
 // MgwSwagger represents the object structure holding the information related to the
@@ -533,12 +534,9 @@ func (swagger *MgwSwagger) GetInterceptor(vendorExtensions map[string]interface{
 			if v, found := val[constants.Includes]; found {
 				includes := v.([]interface{})
 				if len(includes) > 0 {
-					// convert type of includes from "[]interface{}" to "[]string"
-					includesStr := make([]string, len(includes))
-					for i, v := range includes {
-						includesStr[i] = v.(string)
-					}
-					includesV = GenerateInterceptorIncludes(includesStr)
+					// convert type of includes from "[]interface{}" to "[]dpv1alpha1.InterceptorInclusion"
+					includes := make([]dpv1alpha1.InterceptorInclusion, len(includes))
+					includesV = GenerateInterceptorIncludes(includes)
 				}
 			}
 
@@ -557,23 +555,23 @@ func (swagger *MgwSwagger) GetInterceptor(vendorExtensions map[string]interface{
 }
 
 // GenerateInterceptorIncludes generate includes
-func GenerateInterceptorIncludes(includes []string) *interceptor.RequestInclusions {
+func GenerateInterceptorIncludes(includes []dpv1alpha1.InterceptorInclusion) *interceptor.RequestInclusions {
 	includesV := &interceptor.RequestInclusions{}
 	for _, include := range includes {
-		switch strings.TrimSpace(include) {
-		case "request_headers":
+		switch include {
+		case dpv1alpha1.InterceptorInclusionRequestHeaders:
 			includesV.RequestHeaders = true
-		case "request_body":
+		case dpv1alpha1.InterceptorInclusionRequestBody:
 			includesV.RequestBody = true
-		case "request_trailers":
+		case dpv1alpha1.InterceptorInclusionRequestTrailers:
 			includesV.RequestTrailer = true
-		case "response_headers":
+		case dpv1alpha1.InterceptorInclusionResponseHeaders:
 			includesV.ResponseHeaders = true
-		case "response_body":
+		case dpv1alpha1.InterceptorInclusionResponseBody:
 			includesV.ResponseBody = true
-		case "response_trailers":
+		case dpv1alpha1.InterceptorInclusionResponseTrailers:
 			includesV.ResponseTrailers = true
-		case "invocation_context":
+		case dpv1alpha1.InterceptorInclusionInvocationContext:
 			includesV.InvocationContext = true
 		}
 	}

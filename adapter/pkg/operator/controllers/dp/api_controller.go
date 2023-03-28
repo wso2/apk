@@ -30,6 +30,7 @@ import (
 	"github.com/wso2/apk/adapter/pkg/operator/status"
 	"github.com/wso2/apk/adapter/pkg/operator/synchronizer"
 	"github.com/wso2/apk/adapter/pkg/operator/utils"
+	"golang.org/x/exp/maps"
 	k8error "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/types"
@@ -67,6 +68,7 @@ const (
 	configMapBackend                = "configMapBackend"
 	secretBackend                   = "secretBackend"
 	backendHTTPRouteIndex           = "backendHTTPRouteIndex"
+	backendAPIPolicyIndex           = "backendAPIPolicyIndex"
 )
 
 // APIReconciler reconciles a API object
@@ -280,9 +282,8 @@ func (apiReconciler *APIReconciler) resolveHTTPRouteRefs(ctx context.Context, ht
 		return nil, fmt.Errorf("error while getting httproute resource apipolicy %s in namespace :%s, %s", httpRouteRef,
 			namespace, err.Error())
 	}
-	httpRouteState.BackendMapping = apiReconciler.getResolvedBackendsMapping(ctx, httpRouteState.HTTPRoute)
+	httpRouteState.BackendMapping = apiReconciler.getResolvedBackendsMapping(ctx, httpRouteState)
 	httpRouteState.Scopes, err = apiReconciler.getScopesForHTTPRoute(ctx, httpRouteState.HTTPRoute, api)
-
 	return httpRouteState, err
 }
 
@@ -414,9 +415,29 @@ func (apiReconciler *APIReconciler) getAPIPoliciesForResources(ctx context.Conte
 	return apiPolicies, nil
 }
 
-func (apiReconciler *APIReconciler) getResolvedBackendsMapping(ctx context.Context,
-	httpRoute *gwapiv1b1.HTTPRoute) dpv1alpha1.BackendMapping {
+func (apiReconciler *APIReconciler) getBackendsForAPIPolicies(ctx context.Context, apiPolicies []dpv1alpha1.APIPolicy) dpv1alpha1.BackendMapping {
 	backendMapping := make(dpv1alpha1.BackendMapping)
+	for _, apiPolicy := range apiPolicies {
+		if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.RequestInterceptor != nil {
+			namespace := gwapiv1b1.Namespace(apiPolicy.Spec.Default.RequestInterceptor.BackendRef.Namespace)
+			namespacedBackendName := types.NamespacedName{
+				Name:      apiPolicy.Spec.Default.RequestInterceptor.BackendRef.Name,
+				Namespace: utils.GetNamespace(&namespace, apiPolicy.Namespace),
+			}
+			// Get resolved backend
+			backend := apiReconciler.getResolvedBackend(ctx, namespacedBackendName)
+			backendMapping[namespacedBackendName] = backend
+		}
+	}
+	return backendMapping
+}
+
+func (apiReconciler *APIReconciler) getResolvedBackendsMapping(ctx context.Context,
+	httpRouteState *synchronizer.HTTPRouteState) dpv1alpha1.BackendMapping {
+	backendMapping := make(dpv1alpha1.BackendMapping)
+
+	// Resolve backends in HTTPRoute
+	httpRoute := httpRouteState.HTTPRoute
 	for _, rule := range httpRoute.Spec.Rules {
 		for _, backend := range rule.BackendRefs {
 			backendNamespacedName := types.NamespacedName{
@@ -429,26 +450,43 @@ func (apiReconciler *APIReconciler) getResolvedBackendsMapping(ctx context.Conte
 			}
 		}
 	}
+
+	// Resolve backends in APIPolicies and ResourceAPIPolicies
+	allAPIPolicies := append(maps.Values(httpRouteState.APIPolicies),
+		maps.Values(httpRouteState.ResourceAPIPolicies)...)
+	for _, apiPolicy := range allAPIPolicies {
+		if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.RequestInterceptor != nil {
+			apiReconciler.resolveAndAddBackendToMapping(ctx, backendMapping,
+				apiPolicy.Spec.Default.RequestInterceptor.BackendRef, apiPolicy.Namespace)
+		}
+		if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.RequestInterceptor != nil {
+			apiReconciler.resolveAndAddBackendToMapping(ctx, backendMapping,
+				apiPolicy.Spec.Override.RequestInterceptor.BackendRef, apiPolicy.Namespace)
+		}
+		if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.ResponseInterceptor != nil {
+			apiReconciler.resolveAndAddBackendToMapping(ctx, backendMapping,
+				apiPolicy.Spec.Default.ResponseInterceptor.BackendRef, apiPolicy.Namespace)
+		}
+		if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.ResponseInterceptor != nil {
+			apiReconciler.resolveAndAddBackendToMapping(ctx, backendMapping,
+				apiPolicy.Spec.Override.ResponseInterceptor.BackendRef, apiPolicy.Namespace)
+		}
+	}
+
 	loggers.LoggerAPKOperator.Debugf("Generated backendMapping: %v", backendMapping)
 	return backendMapping
 }
 
-// getHostNameForService resolves the backed hostname for services.
-// When service type is ExternalName then ExternalName property is used as the hostname.
-// Otherwise defaulted to service name as <namespace>.<service>
-func (apiReconciler *APIReconciler) getHostNameForBackend(ctx context.Context, backend gwapiv1b1.HTTPBackendRef,
-	defaultNamespace string) string {
-	var service = new(corev1.Service)
-	err := apiReconciler.client.Get(context.Background(), types.NamespacedName{
-		Name:      string(backend.Name),
-		Namespace: utils.GetNamespace(backend.Namespace, defaultNamespace)}, service)
-	if err == nil {
-		switch service.Spec.Type {
-		case corev1.ServiceTypeExternalName:
-			return service.Spec.ExternalName
-		}
+// resolveAndAddBackendToMapping resolves backend from reference and adds it to the backendMapping.
+func (apiReconciler *APIReconciler) resolveAndAddBackendToMapping(ctx context.Context, backendMapping dpv1alpha1.BackendMapping,
+	backendRef dpv1alpha1.BackendReference, apiPolicyNamespace string) {
+	namespace := gwapiv1b1.Namespace(backendRef.Namespace)
+	backendName := types.NamespacedName{
+		Name:      backendRef.Name,
+		Namespace: utils.GetNamespace(&namespace, apiPolicyNamespace),
 	}
-	return utils.GetDefaultHostNameForBackend(backend, defaultNamespace)
+	backend := apiReconciler.getResolvedBackend(ctx, backendName)
+	backendMapping[backendName] = backend
 }
 
 // getTLSConfigForBackend resolves backend TLS configurations.
@@ -688,12 +726,10 @@ func (apiReconciler *APIReconciler) getAPIsForAuthentication(obj k8client.Object
 // a new reconcile event will be created and added to the reconcile event queue.
 func (apiReconciler *APIReconciler) getAPIsForAPIPolicy(obj k8client.Object) []reconcile.Request {
 	apiPolicy, ok := obj.(*dpv1alpha1.APIPolicy)
-	ctx := context.Background()
 	if !ok {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2624, apiPolicy))
 		return []reconcile.Request{}
 	}
-
 	requests := []reconcile.Request{}
 
 	// todo(amali) move this validation to validation hook
@@ -702,38 +738,14 @@ func (apiReconciler *APIReconciler) getAPIsForAPIPolicy(obj k8client.Object) []r
 			apiPolicy.Spec.TargetRef.Kind, apiPolicy.Name)
 		return requests
 	}
-	loggers.LoggerAPKOperator.Debugf("Finding reconcile API requests for httpRoute: %s in namespace : %s",
-		apiPolicy.Spec.TargetRef.Name, apiPolicy.Namespace)
 
-	apiList := &dpv1alpha1.APIList{}
+	httpRoute := gwapiv1b1.HTTPRoute{}
+	httpRoute.SetName(string(apiPolicy.Spec.TargetRef.Name))
+	httpRoute.SetNamespace(utils.GetNamespace(
+		(*gwapiv1b1.Namespace)(apiPolicy.Spec.TargetRef.Namespace),
+		apiPolicy.Namespace))
 
-	namespacedName := types.NamespacedName{
-		Name: string(apiPolicy.Spec.TargetRef.Name),
-		Namespace: utils.GetNamespace(
-			(*gwapiv1b1.Namespace)(apiPolicy.Spec.TargetRef.Namespace),
-			apiPolicy.Namespace)}.String()
-
-	if err := apiReconciler.client.List(ctx, apiList, &k8client.ListOptions{
-		FieldSelector: fields.OneTermEqualSelector(httpRouteAPIIndex, namespacedName)}); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2623, namespacedName))
-		return []reconcile.Request{}
-	}
-
-	if len(apiList.Items) == 0 {
-		loggers.LoggerAPKOperator.Debugf("APIs for HTTPRoute not found: %s", namespacedName)
-		return []reconcile.Request{}
-	}
-
-	for _, api := range apiList.Items {
-		req := reconcile.Request{
-			NamespacedName: types.NamespacedName{
-				Name:      api.Name,
-				Namespace: api.Namespace},
-		}
-		requests = append(requests, req)
-		loggers.LoggerAPKOperator.Infof("Adding reconcile request for API: %s/%s", api.Namespace, api.Name)
-	}
-	return requests
+	return apiReconciler.getAPIForHTTPRoute(&httpRoute)
 }
 
 // getAPIsForScope triggers the API controller reconcile method based on the changes detected
@@ -794,13 +806,30 @@ func (apiReconciler *APIReconciler) getAPIsForBackend(obj k8client.Object) []rec
 
 	if len(httpRouteList.Items) == 0 {
 		loggers.LoggerAPKOperator.Debugf("HTTPRoutes for Backend not found: %s", utils.NamespacedName(backend).String())
-		return []reconcile.Request{}
 	}
 
 	requests := []reconcile.Request{}
 	for _, httpRoute := range httpRouteList.Items {
 		requests = append(requests, apiReconciler.getAPIForHTTPRoute(&httpRoute)...)
 	}
+
+	// Create API reconcile events when Backend reffered from APIPolicy
+	apiPolicyList := &dpv1alpha1.APIPolicyList{}
+	if err := apiReconciler.client.List(ctx, apiPolicyList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(backendAPIPolicyIndex, utils.NamespacedName(backend).String()),
+	}); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2649, utils.NamespacedName(backend).String()))
+		return []reconcile.Request{}
+	}
+
+	if len(apiPolicyList.Items) == 0 {
+		loggers.LoggerAPKOperator.Debugf("APIPolicies for Backend not found: %s", utils.NamespacedName(backend).String())
+	}
+
+	for _, apiPolicy := range apiPolicyList.Items {
+		requests = append(requests, apiReconciler.getAPIsForAPIPolicy(&apiPolicy)...)
+	}
+
 	return requests
 }
 
@@ -990,7 +1019,49 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 		return err
 	}
 
-	// APIPolicy to HTTPRoute indexer
+	// backend to APIPolicy indexer
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.APIPolicy{}, backendAPIPolicyIndex,
+		func(rawObj k8client.Object) []string {
+			apiPolicy := rawObj.(*dpv1alpha1.APIPolicy)
+			var backends []string
+			if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.RequestInterceptor != nil {
+				backends = append(backends,
+					types.NamespacedName{
+						Namespace: utils.GetNamespace(
+							(*gwapiv1b1.Namespace)(&apiPolicy.Spec.Default.RequestInterceptor.BackendRef.Namespace), apiPolicy.Namespace),
+						Name: string(apiPolicy.Spec.Default.RequestInterceptor.BackendRef.Name),
+					}.String())
+			}
+			if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.RequestInterceptor != nil {
+				backends = append(backends,
+					types.NamespacedName{
+						Namespace: utils.GetNamespace(
+							(*gwapiv1b1.Namespace)(&apiPolicy.Spec.Override.RequestInterceptor.BackendRef.Namespace), apiPolicy.Namespace),
+						Name: string(apiPolicy.Spec.Override.RequestInterceptor.BackendRef.Name),
+					}.String())
+			}
+			if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.ResponseInterceptor != nil {
+				backends = append(backends,
+					types.NamespacedName{
+						Namespace: utils.GetNamespace(
+							(*gwapiv1b1.Namespace)(&apiPolicy.Spec.Default.ResponseInterceptor.BackendRef.Namespace), apiPolicy.Namespace),
+						Name: string(apiPolicy.Spec.Default.ResponseInterceptor.BackendRef.Name),
+					}.String())
+			}
+			if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.ResponseInterceptor != nil {
+				backends = append(backends,
+					types.NamespacedName{
+						Namespace: utils.GetNamespace(
+							(*gwapiv1b1.Namespace)(&apiPolicy.Spec.Override.ResponseInterceptor.BackendRef.Namespace), apiPolicy.Namespace),
+						Name: string(apiPolicy.Spec.Override.ResponseInterceptor.BackendRef.Name),
+					}.String())
+			}
+			return backends
+		}); err != nil {
+		return err
+	}
+
+	// httpRoute to APIPolicy indexer
 	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.APIPolicy{}, httpRouteAPIPolicyIndex,
 		func(rawObj k8client.Object) []string {
 			apiPolicy := rawObj.(*dpv1alpha1.APIPolicy)
@@ -1008,6 +1079,7 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 		return err
 	}
 
+	// httpRoute to APIPolicy in resource level indexer
 	// Till the below is httproute rule name and targetref sectionname is supported,
 	// https://gateway-api.sigs.k8s.io/geps/gep-713/?h=multiple+targetrefs#apply-policies-to-sections-of-a-resource-future-extension
 	// we will use a temporary kindName called Resource for policy attachments
