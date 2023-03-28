@@ -235,6 +235,7 @@ func (r *rateLimitPolicyCache) updateXdsCache(label string) bool {
 }
 
 func (r *rateLimitPolicyCache) AddCustomRateLimitPolicies(customRateLimitPolicies []*model.CustomRateLimitPolicy) {
+	r.customRateLimitPolicies = make(map[string]map[string]*rls_config.RateLimitDescriptor) 
 	for _, customRateLimitPolicy := range customRateLimitPolicies {
 		if r.customRateLimitPolicies[customRateLimitPolicy.Organization] == nil {
 			r.customRateLimitPolicies[customRateLimitPolicy.Organization] = make(map[string]*rls_config.RateLimitDescriptor)

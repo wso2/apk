@@ -136,8 +136,11 @@ func (gatewayReconciler *GatewayReconciler) Reconcile(ctx context.Context, req c
 		return ctrl.Result{}, nil
 	}
 	var gwCondition []metav1.Condition = gatewayDef.Status.Conditions
-	customRateLimitPolicies, _ := gatewayReconciler.getCustomRateLimitPoliciesForGateway(utils.NamespacedName(&gatewayDef))
-
+	customRateLimitPolicies, err := gatewayReconciler.getCustomRateLimitPoliciesForGateway(utils.NamespacedName(&gatewayDef))
+	if err != nil {
+		loggers.LoggerAPKOperator.Infof("XXXXXX Error: %v", err)
+	}
+	loggers.LoggerAPKOperator.Infof("XXXXXX customRateLimitPolicies: %v", len(customRateLimitPolicies))
 	if gwCondition[0].Type != "Accepted" {
 		gatewayState := gatewayReconciler.ods.AddGatewayState(gatewayDef, customRateLimitPolicies)
 		*gatewayReconciler.ch <- synchronizer.GatewayEvent{EventType: constants.Create, Event: gatewayState}
@@ -220,6 +223,7 @@ func (gatewayReconciler *GatewayReconciler) getCustomRateLimitPoliciesForGateway
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2623, err))
 		return nil, err
 	}
+	loggers.LoggerAPKOperator.Infof("XXXXXX ratelimitPolicyList: %v", len(ratelimitPolicyList.Items))
 	for _, item := range ratelimitPolicyList.Items {
 		rateLimitPolicy := item
 		rateLimitPolicies = append(rateLimitPolicies, &rateLimitPolicy)

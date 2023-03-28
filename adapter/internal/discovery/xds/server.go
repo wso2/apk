@@ -50,6 +50,7 @@ import (
 	wso2_resource "github.com/wso2/apk/adapter/pkg/discovery/protocol/resource/v3"
 	eventhubTypes "github.com/wso2/apk/adapter/pkg/eventhub/types"
 	operatorconsts "github.com/wso2/apk/adapter/pkg/operator/constants"
+	"github.com/wso2/apk/adapter/pkg/operator/utils"
 	"github.com/wso2/apk/adapter/pkg/utils/stringutils"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
