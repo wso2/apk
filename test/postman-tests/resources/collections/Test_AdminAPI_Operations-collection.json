@@ -39,7 +39,7 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "idp.am.wso2.com",
+						"value": "prod.idp.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -54,9 +54,9 @@
 					]
 				},
 				"url": {
-					"raw": "{{idpAPIBaseURl}}/oauth2/token",
+					"raw": "{{gatewayBaseURl}}/oauth2/token",
 					"host": [
-						"{{idpAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"oauth2",
@@ -114,7 +114,7 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -128,9 +128,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{internalAPIBaseURl}}/api/am/admin/application-rate-plans",
+					"raw": "{{gatewayBaseURl}}/api/am/admin/application-rate-plans",
 					"host": [
-						"{{internalAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -186,14 +186,14 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
 				"url": {
-					"raw": "{{internalAPIBaseURl}}/api/am/admin/application-rate-plans/{{applicationRatePlanID}}",
+					"raw": "{{gatewayBaseURl}}/api/am/admin/application-rate-plans/{{applicationRatePlanID}}",
 					"host": [
-						"{{internalAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -252,7 +252,7 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -266,9 +266,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{internalAPIBaseURl}}/api/am/admin/application-rate-plans/{{applicationRatePlanID}}",
+					"raw": "{{gatewayBaseURl}}/api/am/admin/application-rate-plans/{{applicationRatePlanID}}",
 					"host": [
-						"{{internalAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -298,14 +298,14 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
 				"url": {
-					"raw": "{{internalAPIBaseURl}}/api/am/admin/application-rate-plans",
+					"raw": "{{gatewayBaseURl}}/api/am/admin/application-rate-plans",
 					"host": [
-						"{{internalAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -348,7 +348,7 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -362,9 +362,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{internalAPIBaseURl}}/api/am/admin/application-rate-plans/{{applicationRatePlanID}}",
+					"raw": "{{gatewayBaseURl}}/api/am/admin/application-rate-plans/{{applicationRatePlanID}}",
 					"host": [
-						"{{internalAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -415,7 +415,7 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -429,9 +429,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{internalAPIBaseURl}}/api/am/admin/deny-policies",
+					"raw": "{{gatewayBaseURl}}/api/am/admin/deny-policies",
 					"host": [
-						"{{internalAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -480,14 +480,14 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
 				"url": {
-					"raw": "{{internalAPIBaseURl}}/api/am/admin/deny-policies/{{applicationDenyPolicyID}}",
+					"raw": "{{gatewayBaseURl}}/api/am/admin/deny-policies/{{applicationDenyPolicyID}}",
 					"host": [
-						"{{internalAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -536,14 +536,14 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
 				"url": {
-					"raw": "{{internalAPIBaseURl}}/api/am/admin/deny-policies",
+					"raw": "{{gatewayBaseURl}}/api/am/admin/deny-policies",
 					"host": [
-						"{{internalAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -589,7 +589,7 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -603,9 +603,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{internalAPIBaseURl}}/api/am/admin/deny-policies/{{applicationDenyPolicyID}}",
+					"raw": "{{gatewayBaseURl}}/api/am/admin/deny-policies/{{applicationDenyPolicyID}}",
 					"host": [
-						"{{internalAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -649,7 +649,7 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -663,9 +663,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{internalAPIBaseURl}}/api/am/admin/deny-policies/{{applicationDenyPolicyID}}",
+					"raw": "{{gatewayBaseURl}}/api/am/admin/deny-policies/{{applicationDenyPolicyID}}",
 					"host": [
-						"{{internalAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -721,7 +721,7 @@
 					},
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -730,9 +730,9 @@
 					"raw": "{\n    \"name\": \"{{organizationName}}\",\n    \"displayName\": \"{{organizationDisplayName}}\",\n    \"organizationClaimValue\": \"{{organizationClaimValue}}\",\n    \"serviceNamespaces\": [\n    \"{{serviceNamespace}}\"\n    ]\n}"
 				},
 				"url": {
-					"raw": "{{internalAPIBaseURl}}/api/am/admin/organizations",
+					"raw": "{{gatewayBaseURl}}/api/am/admin/organizations",
 					"host": [
-						"{{internalAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -766,7 +766,7 @@
 					},
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -775,9 +775,9 @@
 					"raw": "{\n      \"name\": \"{{organizationName}}\",\n      \"displayName\": \"{{organizationDisplayNameUpdate}}\",\n      \"organizationClaimValue\": \"{{organizationClaimValue}}\",\n      \"serviceNamespaces\": [\n        \"{{serviceNamespace}}\"\n      ]\n    }"
 				},
 				"url": {
-					"raw": "{{internalAPIBaseURl}}/api/am/admin/organizations/{{organizationId}}",
+					"raw": "{{gatewayBaseURl}}/api/am/admin/organizations/{{organizationId}}",
 					"host": [
-						"{{internalAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -807,14 +807,14 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
 				"url": {
-					"raw": "{{internalAPIBaseURl}}/api/am/admin/organizations",
+					"raw": "{{gatewayBaseURl}}/api/am/admin/organizations",
 					"host": [
-						"{{internalAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -843,14 +843,14 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
 				"url": {
-					"raw": "{{internalAPIBaseURl}}/api/am/admin/organizations/{{organizationId}}",
+					"raw": "{{gatewayBaseURl}}/api/am/admin/organizations/{{organizationId}}",
 					"host": [
-						"{{internalAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -880,14 +880,14 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
 				"url": {
-					"raw": "{{internalAPIBaseURl}}/api/am/admin/organizations/{{organizationId}}",
+					"raw": "{{gatewayBaseURl}}/api/am/admin/organizations/{{organizationId}}",
 					"host": [
-						"{{internalAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -917,14 +917,14 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
 				"url": {
-					"raw": "{{internalAPIBaseURl}}/api/am/admin/organization-info",
+					"raw": "{{gatewayBaseURl}}/api/am/admin/organization-info",
 					"host": [
-						"{{internalAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",

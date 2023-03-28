@@ -39,7 +39,7 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "idp.am.wso2.com",
+						"value": "prod.idp.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -54,9 +54,9 @@
 					]
 				},
 				"url": {
-					"raw": "{{idpAPIBaseURl}}/oauth2/token",
+					"raw": "{{gatewayBaseURl}}/oauth2/token",
 					"host": [
-						"{{idpAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"oauth2",
@@ -125,7 +125,7 @@
 					},
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -134,9 +134,9 @@
 					"raw": "{\n    \"context\": \"{{contextTest1}}\",\n    \"name\": \"{{APINameTest1}}\",\n    \"version\": \"{{versionTest1}}\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/get\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"endpointConfig\": {\n                \"endpoint_type\": \"http\",\n                \"production_endpoints\": {\n                    \"url\": \"http://httpbin.org\"\n                }\n            }\n        },\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"endpointConfig\": {\n                \"endpoint_type\": \"http\",\n                \"production_endpoints\": {\n                    \"url\": \"http://httpbin.org\"\n                }\n            }\n        }\n    ]\n}"
 				},
 				"url": {
-					"raw": "{{internalAPIBaseURl}}/api/am/runtime/apis",
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis",
 					"host": [
-						"{{internalAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -187,14 +187,14 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
 				"url": {
-					"raw": "{{internalAPIBaseURl}}/api/am/backoffice/apis",
+					"raw": "{{gatewayBaseURl}}/api/am/backoffice/apis",
 					"host": [
-						"{{internalAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -242,14 +242,14 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
 				"url": {
-					"raw": "{{internalAPIBaseURl}}/api/am/backoffice/apis/change-lifecycle?apiId={{backOfficeApiUUID}}&targetState={{lifeCycleStatusTest2}}",
+					"raw": "{{gatewayBaseURl}}/api/am/backoffice/apis/change-lifecycle?apiId={{backOfficeApiUUID}}&targetState={{lifeCycleStatusTest2}}",
 					"host": [
-						"{{internalAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -308,14 +308,14 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
 				"url": {
-					"raw": "{{internalAPIBaseURl}}/api/am/backoffice/apis/{{backOfficeApiUUID}}/lifecycle-state",
+					"raw": "{{gatewayBaseURl}}/api/am/backoffice/apis/{{backOfficeApiUUID}}/lifecycle-state",
 					"host": [
-						"{{internalAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -370,14 +370,14 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
 				"url": {
-					"raw": "{{internalAPIBaseURl}}/api/am/backoffice/apis/{{backOfficeApiUUID}}/lifecycle-history",
+					"raw": "{{gatewayBaseURl}}/api/am/backoffice/apis/{{backOfficeApiUUID}}/lifecycle-history",
 					"host": [
-						"{{internalAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -433,14 +433,14 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
 				"url": {
-					"raw": "{{internalAPIBaseURl}}/api/am/runtime/apis/{{runtimeAPIUUID}}",
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{runtimeAPIUUID}}",
 					"host": [
-						"{{internalAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
