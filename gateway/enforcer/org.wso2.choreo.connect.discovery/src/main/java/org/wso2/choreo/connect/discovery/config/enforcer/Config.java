@@ -232,11 +232,6 @@ private static final long serialVersionUID = 0L;
 
             break;
           }
-          case 128: {
-
-            controlPlaneEnabled_ = input.readBool();
-            break;
-          }
           default: {
             if (!parseUnknownField(
                 input, unknownFields, extensionRegistry, tag)) {
@@ -650,17 +645,6 @@ private static final long serialVersionUID = 0L;
     return getSoap();
   }
 
-  public static final int CONTROLPLANEENABLED_FIELD_NUMBER = 16;
-  private boolean controlPlaneEnabled_;
-  /**
-   * <code>bool controlPlaneEnabled = 16;</code>
-   * @return The controlPlaneEnabled.
-   */
-  @java.lang.Override
-  public boolean getControlPlaneEnabled() {
-    return controlPlaneEnabled_;
-  }
-
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -716,9 +700,6 @@ private static final long serialVersionUID = 0L;
     }
     if (soap_ != null) {
       output.writeMessage(15, getSoap());
-    }
-    if (controlPlaneEnabled_ != false) {
-      output.writeBool(16, controlPlaneEnabled_);
     }
     unknownFields.writeTo(output);
   }
@@ -784,10 +765,6 @@ private static final long serialVersionUID = 0L;
     if (soap_ != null) {
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(15, getSoap());
-    }
-    if (controlPlaneEnabled_ != false) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeBoolSize(16, controlPlaneEnabled_);
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -871,8 +848,6 @@ private static final long serialVersionUID = 0L;
       if (!getSoap()
           .equals(other.getSoap())) return false;
     }
-    if (getControlPlaneEnabled()
-        != other.getControlPlaneEnabled()) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -940,9 +915,6 @@ private static final long serialVersionUID = 0L;
       hash = (37 * hash) + SOAP_FIELD_NUMBER;
       hash = (53 * hash) + getSoap().hashCode();
     }
-    hash = (37 * hash) + CONTROLPLANEENABLED_FIELD_NUMBER;
-    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
-        getControlPlaneEnabled());
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -1165,8 +1137,6 @@ private static final long serialVersionUID = 0L;
         soap_ = null;
         soapBuilder_ = null;
       }
-      controlPlaneEnabled_ = false;
-
       return this;
     }
 
@@ -1268,7 +1238,6 @@ private static final long serialVersionUID = 0L;
       } else {
         result.soap_ = soapBuilder_.build();
       }
-      result.controlPlaneEnabled_ = controlPlaneEnabled_;
       onBuilt();
       return result;
     }
@@ -1381,9 +1350,6 @@ private static final long serialVersionUID = 0L;
       }
       if (other.hasSoap()) {
         mergeSoap(other.getSoap());
-      }
-      if (other.getControlPlaneEnabled() != false) {
-        setControlPlaneEnabled(other.getControlPlaneEnabled());
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -3200,37 +3166,6 @@ private static final long serialVersionUID = 0L;
         soap_ = null;
       }
       return soapBuilder_;
-    }
-
-    private boolean controlPlaneEnabled_ ;
-    /**
-     * <code>bool controlPlaneEnabled = 16;</code>
-     * @return The controlPlaneEnabled.
-     */
-    @java.lang.Override
-    public boolean getControlPlaneEnabled() {
-      return controlPlaneEnabled_;
-    }
-    /**
-     * <code>bool controlPlaneEnabled = 16;</code>
-     * @param value The controlPlaneEnabled to set.
-     * @return This builder for chaining.
-     */
-    public Builder setControlPlaneEnabled(boolean value) {
-      
-      controlPlaneEnabled_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>bool controlPlaneEnabled = 16;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearControlPlaneEnabled() {
-      
-      controlPlaneEnabled_ = false;
-      onChanged();
-      return this;
     }
     @java.lang.Override
     public final Builder setUnknownFields(

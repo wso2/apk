@@ -206,15 +206,15 @@ func MarshalConfig(config *config.Config) *enforcer.Config {
 				EnableOutboundCertificateHeader: config.Enforcer.Security.MutualSSL.EnableOutboundCertificateHeader,
 			},
 		},
-		Cache:               cache,
-		Tracing:             tracing,
-		Metrics:             metrics,
-		Analytics:           analytics,
-		Management:          management,
-		RestServer:          restServer,
-		Filters:             filters,
-		Soap:                soap,
-		ControlPlaneEnabled: config.ControlPlane.Enabled,
+		Cache:      cache,
+		Tracing:    tracing,
+		Metrics:    metrics,
+		Analytics:  analytics,
+		Management: management,
+		RestServer: restServer,
+		Filters:    filters,
+		Soap:       soap,
+		//todo(amali) cleanup enforcer xds
 	}
 }
 
@@ -539,9 +539,6 @@ func marshalSubscription(subscriptionInternal *types.Subscription) *subscription
 		ApiUUID:           subscriptionInternal.APIUUID,
 		AppUUID:           subscriptionInternal.ApplicationUUID,
 	}
-	if sub.TenantDomain == "" {
-		sub.TenantDomain = config.GetControlPlaneConnectedTenantDomain()
-	}
 	return sub
 }
 
@@ -558,9 +555,6 @@ func marshalApplication(appInternal *types.Application) *subscription.Applicatio
 		TenantId:     appInternal.TenantID,
 		TenantDomain: appInternal.TenantDomain,
 		Timestamp:    appInternal.TimeStamp,
-	}
-	if app.TenantDomain == "" {
-		app.TenantDomain = config.GetControlPlaneConnectedTenantDomain()
 	}
 	return app
 }

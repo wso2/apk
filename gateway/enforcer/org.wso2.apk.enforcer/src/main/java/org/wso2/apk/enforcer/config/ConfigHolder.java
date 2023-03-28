@@ -101,8 +101,6 @@ public class ConfigHolder {
     private KeyStore opaKeyStore = null;
     private TrustManagerFactory trustManagerFactory = null;
     private ArrayList<ExtendedTokenIssuerDto> configIssuerList;
-    private boolean controlPlaneEnabled;
-
     private static final String dtoPackageName = EnforcerConfig.class.getPackageName();
     private static final String apimDTOPackageName = "org.wso2.carbon.apimgt";
 
@@ -141,8 +139,6 @@ public class ConfigHolder {
 
         // Read jwt token configuration
         populateJWTIssuerConfiguration(config.getSecurity().getTokenServiceList());
-
-        controlPlaneEnabled = config.getControlPlaneEnabled();
 
         // Read backend jwt generation configurations
         populateJWTGeneratorConfigurations(config.getJwtGenerator());
@@ -608,9 +604,5 @@ public class ConfigHolder {
 
     public void setConfigIssuerList(ArrayList<ExtendedTokenIssuerDto> configIssuerList) {
         this.configIssuerList = configIssuerList;
-    }
-
-    public boolean isControlPlaneEnabled() {
-        return controlPlaneEnabled;
     }
 }

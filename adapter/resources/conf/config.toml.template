@@ -588,22 +588,9 @@ enabled = true
   [controlPlane.httpClient] 
     requestTimeOut = 30
 
-# Global Adapter related configurations
-[globalAdapter]
-  # Enable Choreo Connect Global adapter client
-  enabled = false
-  # Global adapter Service URL (<Hostname>:<Port>)
-  serviceURL = "global-adapter:18000"
-  # Subject Alternative Name considered for TLS communication with global adapter
-  overrideHostName = ""
-  # Local Adapter Label
-  localLabel = "$env{local_label}"
-  # Retry Interval
-  retryInterval = 5
-
-# Analytics configurations for Choreo Connect
+# Analytics configurations for APK
 [analytics]
-  # Enable/Disable Analytics in Choreo Connect
+  # Enable/Disable Analytics in APK
   enabled = false
   type = "Default"
   
@@ -650,9 +637,9 @@ enabled = true
         # Queue size of the worker threads
         queueSize = 1000
 
-# Tracing configurations for Choreo Connect
+# Tracing configurations for APK Router
 [tracing]
-  # Enable/Disable tracing in Choreo Connect
+  # Enable/Disable tracing in APK
   enabled = false
   # Type of tracer exporter (e.g: azure, zipkin). Use zipkin type for Jaeger as well.
   type = "zipkin"

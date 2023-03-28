@@ -25,7 +25,6 @@ import (
 	"io/ioutil"
 	"os"
 	"reflect"
-	"strings"
 	"sync"
 
 	toml "github.com/pelletier/go-toml"
@@ -102,7 +101,6 @@ func ReadConfigs() *Config {
 
 		adapterConfig.resolveDeprecatedProperties()
 		pkgconf.ResolveConfigEnvValues(reflect.ValueOf(&(adapterConfig.Adapter)).Elem(), "Adapter", true)
-		pkgconf.ResolveConfigEnvValues(reflect.ValueOf(&(adapterConfig.ControlPlane)).Elem(), "ControlPlane", true)
 		pkgconf.ResolveConfigEnvValues(reflect.ValueOf(&(adapterConfig.Envoy)).Elem(), "Router", true)
 		pkgconf.ResolveConfigEnvValues(reflect.ValueOf(&(adapterConfig.Enforcer)).Elem(), "Enforcer", false)
 		pkgconf.ResolveConfigEnvValues(reflect.ValueOf(&(adapterConfig.Analytics)).Elem(), "Analytics", false)
@@ -169,26 +167,7 @@ func GetMgwHome() string {
 	return pkgconf.GetMgwHome()
 }
 
-// GetControlPlaneConnectedTenantDomain returns the tenant domain of the user used to authenticate with event hub.
-func GetControlPlaneConnectedTenantDomain() string {
-	// Read configurations to get the control plane authenticated user
-	conf := ReadConfigs()
-
-	// Populate data from the config
-	cpTenantAdminUser := conf.ControlPlane.Username
-	tenantDomain := strings.Split(cpTenantAdminUser, tenantDomainSeparator)
-	if len(tenantDomain) > 1 {
-		return tenantDomain[len(tenantDomain)-1]
-	}
-	return superTenantDomain
-}
-
 func (config *Config) resolveDeprecatedProperties() {
-	if config.ControlPlane.ServiceURLDeprecated != UnassignedAsDeprecated {
-		printDeprecatedWarningLog("controlPlane.serviceUrl", "controlPlane.serviceURL")
-		config.ControlPlane.ServiceURL = config.ControlPlane.ServiceURLDeprecated
-	}
-
 	// For boolean values, adapter check if the condition is changed by checking against the default value it is originally
 	// assigned.
 	if !config.Enforcer.RestServer.Enable {
