@@ -114,7 +114,7 @@ func (d *DefaultRoundTripper) CaptureRoundTrip(request Request) (*CapturedReques
 	if request.Method != "" {
 		method = request.Method
 	}
-	var reqBody io.Reader = nil
+	var reqBody io.Reader
 	if request.Body != "" {
 		reqBody = bytes.NewBuffer([]byte(request.Body))
 	}
