@@ -161,7 +161,7 @@ func TestPolicySpecificationValidatePolicy(t *testing.T) {
 // 	}
 // 	actualFormattedP, err := proj.Policies.GetFormattedOperationalPolicies(apiYaml.Data.Operations[0].OperationPolicies, &MgwSwagger{})
 // 	assert.Nil(t, err)
-// 	assert.Equal(t, expFormattedP, actualFormattedP, "Converting operational policies to Choreo Connect format failed")
+// 	assert.Equal(t, expFormattedP, actualFormattedP, "Converting operational policies to format failed")
 // }
 
 func getSampleTestPolicySpec() PolicySpecification {
@@ -169,7 +169,7 @@ func getSampleTestPolicySpec() PolicySpecification {
 	spec.Data.Name = "fooAddRequestHeader"
 	spec.Data.Version = "v1"
 	spec.Data.ApplicableFlows = []string{"request"}
-	spec.Data.SupportedGateways = []string{"ChoreoConnect"}
+	spec.Data.SupportedGateways = []string{"APK"}
 	spec.Data.PolicyAttributes = []struct { // redefine struct here, since it is not named, update here if the src changed
 		Name            string `yaml:"name"`
 		ValidationRegex string `yaml:"validationRegex,omitempty"`

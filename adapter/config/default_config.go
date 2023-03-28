@@ -323,7 +323,7 @@ var defaultConfig = &Config{
 		Enabled: false,
 		Type:    "zipkin",
 		ConfigProperties: map[string]string{
-			"libraryName":            "CHOREO-CONNECT",
+			"libraryName":            "APK",
 			"maximumTracesPerSecond": "2",
 			"maxPathLength":          "256",
 			"host":                   "jaeger",

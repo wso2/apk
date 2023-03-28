@@ -21,7 +21,7 @@ const (
 	extAuthzClusterName     string = "ext-authz"
 	accessLoggerClusterName string = "access-logger"
 	grpcAccessLogLogName    string = "mgw_access_logs"
-	tracingClusterName      string = "wso2_cc_trace"
+	tracingClusterName      string = "wso2_apk_trace"
 	extAuthzHTTPCluster     string = "ext_authz_http_cluster"
 	rateLimitClusterName    string = "ratelimit"
 )
@@ -136,8 +136,8 @@ const (
 
 // Enforcer
 const (
-	choreoConnectEnforcerReply = "choreo-connect-enforcer-reply"
-	uaexCode                   = "UAEX"
+	apkEnforcerReply = "apk-enforcer-reply"
+	uaexCode         = "UAEX"
 )
 
 // Constants relevant to the ratelimit service

@@ -70,10 +70,6 @@ var (
 	enforcerRevokedTokensCache         wso2_cache.SnapshotCache
 	enforcerThrottleDataCache          wso2_cache.SnapshotCache
 
-	// Vhosts entry maps, these maps updated with delta changes (when an API added, only added its entry only)
-	// These maps are managed separately for API-CTL and APIM, since when deploying an project from API-CTL there is no API uuid
-	apiUUIDToGatewayToVhosts map[string]map[string]string // API_UUID -> gateway-env -> vhost (for un-deploying APIs from APIM or Choreo)
-
 	orgIDAPIMgwSwaggerMap       map[string]map[string]model.MgwSwagger     // organizationID -> Vhost:API_UUID -> MgwSwagger struct map
 	orgIDAPIvHostsMap           map[string]map[string][]string             // organizationID -> UUID -> prod/sand -> Envoy Vhost Array map
 	orgIDOpenAPIEnvoyMap        map[string]map[string][]string             // organizationID -> Vhost:API_UUID -> Envoy Label Array map
@@ -140,7 +136,6 @@ func init() {
 	enforcerRevokedTokensCache = wso2_cache.NewSnapshotCache(false, IDHash{}, nil)
 	enforcerThrottleDataCache = wso2_cache.NewSnapshotCache(false, IDHash{}, nil)
 
-	apiUUIDToGatewayToVhosts = make(map[string]map[string]string)
 	envoyListenerConfigMap = make(map[string][]*listenerv3.Listener)
 	envoyRouteConfigMap = make(map[string]*routev3.RouteConfiguration)
 	envoyClusterConfigMap = make(map[string][]*clusterv3.Cluster)
@@ -250,10 +245,6 @@ func DeleteAPICREvent(labels []string, apiUUID string, organizationID string) er
 		// error only happens when API not found in deleteAPI func
 		logger.LoggerXds.Infof("Successfully undeployed the API %v under Organization %s and environment %s ",
 			apiIdentifier, organizationID, labels)
-		for _, environment := range labels {
-			// delete environment if exists
-			delete(apiUUIDToGatewayToVhosts[apiUUID], environment)
-		}
 	}
 	return nil
 }
