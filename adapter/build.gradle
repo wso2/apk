@@ -65,7 +65,6 @@ tasks.register('go_test', Exec) {
 }
 
 tasks.named('go_revive_run').configure { 
-    dependsOn proto_gen
     finalizedBy go_tidy
     finalizedBy go_test
 }
@@ -74,12 +73,6 @@ tasks.named('go_build').configure {
     dependsOn go_revive_run
     dependsOn go_vet
     finalizedBy docker_build
-}
-
-tasks.register('proto_gen', Exec) {
-    group 'adapter'
-    description 'Generate proto files'
-    commandLine 'sh', "$rootDir/../adapter/api/protogen.sh"
 }
 
 task build{
