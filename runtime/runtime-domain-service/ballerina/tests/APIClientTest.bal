@@ -2173,8 +2173,8 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
     http:Response httpRouteResponse = getMockHttpRouteResponse(httpRoute.clone());
     model:Httproute httpRouteWithPolicies = getMockHttpRouteWithOperationPolicies1(api, apiUUID, organiztion1);
     http:Response httpRouteWithPoliciesResponse = getMockHttpRouteResponse(httpRouteWithPolicies.clone());
-    //model:Httproute httpRouteWithOperationRateLimits = getMockHttpRouteWithOperationRateLimits1(api, apiUUID, organiztion1);
-    //http:Response httpRouteWithOperationRateLimitsResponse = getMockHttpRouteResponse(httpRouteWithOperationRateLimits.clone());
+    model:Httproute httpRouteWithOperationRateLimits = getMockHttpRouteWithOperationRateLimits1(api, apiUUID, organiztion1);
+    http:Response httpRouteWithOperationRateLimitsResponse = getMockHttpRouteResponse(httpRouteWithOperationRateLimits.clone());
     model:K8sServiceMapping mockServiceMappingRequest = getMockServiceMappingRequest(api, apiUUID);
     model:API mockAPI = getMockAPI(api, apiUUID, organiztion1.uuid);
     http:Response mockAPIResponse = getMockAPIResponse(mockAPI.clone(), k8sAPIUUID1);
@@ -2316,83 +2316,80 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
         }
     };
     map<[string, string, [model:ConfigMap, any], [model:Httproute, any], [model:K8sServiceMapping, any], [model:API, any], [model:RuntimeAPI, any], API, string, [model:Backend, any][], [model:RateLimitPolicy|(), any], anydata]> data = {
-        "1": ["275b00d1-722c-4df2-b65a-9b14677abe4b", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], api, k8sAPIUUID1, services, [(), ()], createdAPI.toBalString()]
-        // "2": ["275b00d1-722c-4df2-b65a-9b14677abe4b", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], alreadyNameExist, k8sAPIUUID1, services, [(), ()], nameAlreadyExistError.toBalString()],
-        // "3": ["275b00d1-722c-4df2-b65a-9b14677abe4b", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], contextAlreadyExist, k8sAPIUUID1, services, [(), ()], contextAlreadyExistError.toBalString()],
-        // "4": ["275b00d1-722c-4df2-b65a-9b14677abe4a", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], api, k8sAPIUUID1, services, [(), ()], serviceNotExist.toBalString()]
-        // "5": [
-        //     "275b00d1-722c-4df2-b65a-9b14677abe4b",
-        //     apiUUID,
-        //     [configmap, mockConfigMapResponse],
-        //     [httpRouteWithPolicies, httpRouteWithPoliciesResponse],
-        //     [mockServiceMappingRequest, serviceMappingResponse],
-        //     [mockAPI, mockAPIResponse],
-        //     [mockRuntimeAPIWithPolicies, mockRuntimeResponseWithPolicies],
-        //     apiWithOperationPolicies,
-        //     k8sAPIUUID1,
-        //     services,
-        //     [(), ()],
-        //     createdAPIWithPolicies.toBalString()
-        // ],
-        // "6": [
-        //     "275b00d1-722c-4df2-b65a-9b14677abe4b",
-        //     apiUUID,
-        //     [configmap, mockConfigMapResponse],
-        //     [httpRouteWithPolicies, httpRouteWithPoliciesResponse],
-        //     [mockServiceMappingRequest, serviceMappingResponse],
-        //     [mockAPI, mockAPIResponse],
-        //     [mockRuntimeAPIWithPolicies, mockRuntimeResponseWithPolicies],
-        //     apiWithInvalidPolicyName,
-        //     k8sAPIUUID1,
-        //     services,
-        //     [(), ()],
-        //     invalidPolicyNameError.toBalString()
-        // ]
-        // "7": [
-        //     "275b00d1-722c-4df2-b65a-9b14677abe4b",
-        //     apiUUID,
-        //     [configmap, mockConfigMapResponse],
-        //     [httpRouteWithOperationRateLimits, httpRouteWithOperationRateLimitsResponse],
-        //     [mockServiceMappingRequest, serviceMappingResponse],
-        //     [mockAPI, mockAPIResponse],
-        //     [mockRuntimeAOperationRateLimits, mockRuntimeResponseWithOperationRateLimits],
-        //     apiWithOperationRateLimits,
-        //     k8sAPIUUID1,
-        //     services,
-        //     getMockResourceRateLimitPolicy(apiWithOperationRateLimits),
-        //     getMockRateLimitResponse(getMockResourceRateLimitPolicy(apiWithOperationRateLimits).clone()),
-        //     createdAPIWithOperationRateLimits.toBalString()
-        // ],
-        // "8": [
-        //     "275b00d1-722c-4df2-b65a-9b14677abe4b",
-        //     apiUUID,
-        //     [configmap, mockConfigMapResponse],
-        //     [httpRoute, httpRouteResponse],
-        //     [mockServiceMappingRequest, serviceMappingResponse],
-        //     [mockAPI, mockAPIResponse],
-        //     [mockRuntimeAPIWithAPIRateLimits, mockRuntimeResponseWithAPIRateLimits],
-        //     apiWithAPIRateLimits,
-        //     k8sAPIUUID1,
-        //     services,
-        //     getMockAPIRateLimitPolicy(apiWithAPIRateLimits),
-        //     getMockRateLimitResponse(getMockAPIRateLimitPolicy(apiWithAPIRateLimits).clone()),
-        //     createdAPIWithAPIRateLimits.toBalString()
-        // ],
-        // "9": [
-        //     "275b00d1-722c-4df2-b65a-9b14677abe4b",
-        //     apiUUID,
-        //     [configmap, mockConfigMapResponse],
-        //     [httpRouteWithPolicies, httpRouteWithPoliciesResponse],
-        //     [mockServiceMappingRequest, serviceMappingResponse],
-        //     [mockAPI, mockAPIResponse],
-        //     [mockRuntimeAPIWithPolicies, mockRuntimeResponseWithPolicies],
-        //     apiWithBothRateLimits,
-        //     k8sAPIUUID1,
-        //     services,
-        //     getMockAPIRateLimitPolicy(apiWithAPIRateLimits),
-        //     getMockRateLimitResponse(getMockAPIRateLimitPolicy(apiWithAPIRateLimits).clone()),
-        //     bothRateLimitsPresentError.toBalString()
-        // ]
+        "1": ["275b00d1-722c-4df2-b65a-9b14677abe4b", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], api, k8sAPIUUID1, services, [(), ()], createdAPI.toBalString()],
+        "2": ["275b00d1-722c-4df2-b65a-9b14677abe4b", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], alreadyNameExist, k8sAPIUUID1, services, [(), ()], nameAlreadyExistError.toBalString()],
+        "3": ["275b00d1-722c-4df2-b65a-9b14677abe4b", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], contextAlreadyExist, k8sAPIUUID1, services, [(), ()], contextAlreadyExistError.toBalString()],
+        "4": ["275b00d1-722c-4df2-b65a-9b14677abe4a", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], api, k8sAPIUUID1, services, [(), ()], serviceNotExist.toBalString()],
+        "5": [
+            "275b00d1-722c-4df2-b65a-9b14677abe4b",
+            apiUUID,
+            [configmap, mockConfigMapResponse],
+            [httpRouteWithPolicies, httpRouteWithPoliciesResponse],
+            [mockServiceMappingRequest, serviceMappingResponse],
+            [mockAPI, mockAPIResponse],
+            [mockRuntimeAPIWithPolicies, mockRuntimeResponseWithPolicies],
+            apiWithOperationPolicies,
+            k8sAPIUUID1,
+            services,
+            [(), ()],
+            createdAPIWithPolicies.toBalString()
+        ],
+        "6": [
+            "275b00d1-722c-4df2-b65a-9b14677abe4b",
+            apiUUID,
+            [configmap, mockConfigMapResponse],
+            [httpRouteWithPolicies, httpRouteWithPoliciesResponse],
+            [mockServiceMappingRequest, serviceMappingResponse],
+            [mockAPI, mockAPIResponse],
+            [mockRuntimeAPIWithPolicies, mockRuntimeResponseWithPolicies],
+            apiWithInvalidPolicyName,
+            k8sAPIUUID1,
+            services,
+            [(), ()],
+            invalidPolicyNameError.toBalString()
+        ],
+        "7": [
+            "275b00d1-722c-4df2-b65a-9b14677abe4b",
+            apiUUID,
+            [configmap, mockConfigMapResponse],
+            [httpRouteWithOperationRateLimits, httpRouteWithOperationRateLimitsResponse],
+            [mockServiceMappingRequest, serviceMappingResponse],
+            [mockAPI, mockAPIResponse],
+            [mockRuntimeAOperationRateLimits, mockRuntimeResponseWithOperationRateLimits],
+            apiWithOperationRateLimits,
+            k8sAPIUUID1,
+            services,
+            [getMockResourceRateLimitPolicy(apiWithOperationRateLimits), getMockRateLimitResponse(getMockResourceRateLimitPolicy(apiWithOperationRateLimits).clone())],
+            createdAPIWithOperationRateLimits.toBalString()
+        ],
+        "8": [
+            "275b00d1-722c-4df2-b65a-9b14677abe4b",
+            apiUUID,
+            [configmap, mockConfigMapResponse],
+            [httpRoute, httpRouteResponse],
+            [mockServiceMappingRequest, serviceMappingResponse],
+            [mockAPI, mockAPIResponse],
+            [mockRuntimeAPIWithAPIRateLimits, mockRuntimeResponseWithAPIRateLimits],
+            apiWithAPIRateLimits,
+            k8sAPIUUID1,
+            services,
+            [getMockAPIRateLimitPolicy(apiWithAPIRateLimits), getMockRateLimitResponse(getMockAPIRateLimitPolicy(apiWithAPIRateLimits).clone())],
+            createdAPIWithAPIRateLimits.toBalString()
+        ],
+        "9": [
+            "275b00d1-722c-4df2-b65a-9b14677abe4b",
+            apiUUID,
+            [configmap, mockConfigMapResponse],
+            [httpRouteWithPolicies, httpRouteWithPoliciesResponse],
+            [mockServiceMappingRequest, serviceMappingResponse],
+            [mockAPI, mockAPIResponse],
+            [mockRuntimeAPIWithPolicies, mockRuntimeResponseWithPolicies],
+            apiWithBothRateLimits,
+            k8sAPIUUID1,
+            services,
+            [getMockAPIRateLimitPolicy(apiWithAPIRateLimits),getMockRateLimitResponse(getMockAPIRateLimitPolicy(apiWithAPIRateLimits).clone())],
+            bothRateLimitsPresentError.toBalString()
+        ]
     };
     return data;
 }
