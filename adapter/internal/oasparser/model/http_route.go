@@ -217,23 +217,13 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, ht
 		}
 		var securityConfig []EndpointSecurity
 		for _, backend := range rule.BackendRefs {
-			resolvedBackend, ok := httpRouteParams.BackendMapping[types.NamespacedName{
+			backendName := types.NamespacedName{
 				Name:      string(backend.Name),
 				Namespace: utils.GetNamespace(backend.Namespace, httpRoute.Namespace),
-			}]
+			}
+			resolvedBackend, ok := httpRouteParams.BackendMapping[backendName]
 			if ok {
-				for _, service := range resolvedBackend.Services {
-					endpoint := Endpoint{
-						Host:        service.Host,
-						Port:        service.Port,
-						URLType:     string(resolvedBackend.Protocol),
-						AllowedSANs: resolvedBackend.TLS.AllowedSANs,
-					}
-					if len(resolvedBackend.TLS.ResolvedCertificate) > 0 {
-						endpoint.Certificate = []byte(resolvedBackend.TLS.ResolvedCertificate)
-					}
-					endPoints = append(endPoints, endpoint)
-				}
+				endPoints = append(endPoints, getEndpoints(backendName, httpRouteParams.BackendMapping)...)
 				for _, security := range resolvedBackend.Security {
 					switch security.Type {
 					case "Basic":
@@ -284,49 +274,50 @@ func parseRateLimitPolicyToInternal(ratelimitPolicy *dpv1alpha1.RateLimitPolicy)
 
 // addOperationLevelInterceptors add the operation level interceptor policy to the policies
 func addOperationLevelInterceptors(policies *OperationPolicies, apiPolicy *dpv1alpha1.APIPolicy, backendMapping dpv1alpha1.BackendMapping) {
-	if apiPolicy != nil {
-		if apiPolicy.Spec.Override != nil {
-			if apiPolicy.Spec.Override.RequestInterceptor != nil {
-				requestInterceptor := apiPolicy.Spec.Override.RequestInterceptor
-				policyParameters := make(map[string]interface{})
-				endpoints := getInterceptorEndpoints(requestInterceptor.BackendRef, apiPolicy.Namespace, backendMapping)
-				if len(endpoints) > 0 {
-					policyParameters[constants.InterceptorEndpoints] = endpoints
-					policyParameters[constants.InterceptorServiceIncludes] = requestInterceptor.Includes
-					policies.Request = append(policies.Request, Policy{
-						PolicyName: constants.PolicyRequestInterceptor,
-						Action:     constants.ActionInterceptorService,
-						Parameters: policyParameters,
-					})
-				}
+	if apiPolicy != nil && apiPolicy.Spec.Override != nil {
+		if apiPolicy.Spec.Override.RequestInterceptor != nil {
+			requestInterceptor := apiPolicy.Spec.Override.RequestInterceptor
+			policyParameters := make(map[string]interface{})
+			backendName := types.NamespacedName{
+				Name:      requestInterceptor.BackendRef.Name,
+				Namespace: utils.GetNamespace((*gwapiv1b1.Namespace)(&requestInterceptor.BackendRef.Namespace), apiPolicy.Namespace),
 			}
-			if apiPolicy.Spec.Override.ResponseInterceptor != nil {
-				responseInterceptor := apiPolicy.Spec.Override.ResponseInterceptor
-				policyParameters := make(map[string]interface{})
-				endpoints := getInterceptorEndpoints(responseInterceptor.BackendRef, apiPolicy.Namespace, backendMapping)
-				if len(endpoints) > 0 {
-					policyParameters[constants.InterceptorEndpoints] = endpoints
-					policyParameters[constants.InterceptorServiceIncludes] = responseInterceptor.Includes
-					policies.Response = append(policies.Response, Policy{
-						PolicyName: constants.PolicyResponseInterceptor,
-						Action:     constants.ActionInterceptorService,
-						Parameters: policyParameters,
-					})
-				}
+			endpoints := getEndpoints(backendName, backendMapping)
+			if len(endpoints) > 0 {
+				policyParameters[constants.InterceptorEndpoints] = endpoints
+				policyParameters[constants.InterceptorServiceIncludes] = requestInterceptor.Includes
+				policies.Request = append(policies.Request, Policy{
+					PolicyName: constants.PolicyRequestInterceptor,
+					Action:     constants.ActionInterceptorService,
+					Parameters: policyParameters,
+				})
+			}
+		}
+		if apiPolicy.Spec.Override.ResponseInterceptor != nil {
+			responseInterceptor := apiPolicy.Spec.Override.ResponseInterceptor
+			policyParameters := make(map[string]interface{})
+			backendName := types.NamespacedName{
+				Name:      responseInterceptor.BackendRef.Name,
+				Namespace: utils.GetNamespace((*gwapiv1b1.Namespace)(&responseInterceptor.BackendRef.Namespace), apiPolicy.Namespace),
+			}
+			endpoints := getEndpoints(backendName, backendMapping)
+			if len(endpoints) > 0 {
+				policyParameters[constants.InterceptorEndpoints] = endpoints
+				policyParameters[constants.InterceptorServiceIncludes] = responseInterceptor.Includes
+				policies.Response = append(policies.Response, Policy{
+					PolicyName: constants.PolicyResponseInterceptor,
+					Action:     constants.ActionInterceptorService,
+					Parameters: policyParameters,
+				})
 			}
 		}
 	}
 }
 
-// getInterceptorEndpoints create the interceptor endpoints from the backend mapping
-func getInterceptorEndpoints(backendRef dpv1alpha1.BackendReference, apiPolicyNamespace string,
-	backendMapping dpv1alpha1.BackendMapping) []Endpoint {
-	backendRefName := types.NamespacedName{
-		Name:      backendRef.Name,
-		Namespace: utils.GetNamespace((*gwapiv1b1.Namespace)(&backendRef.Namespace), apiPolicyNamespace),
-	}
+// getEndpoints creates endpoints using resolved backends in backendMapping
+func getEndpoints(backendName types.NamespacedName, backendMapping dpv1alpha1.BackendMapping) []Endpoint {
 	endpoints := []Endpoint{}
-	backend, ok := backendMapping[backendRefName]
+	backend, ok := backendMapping[backendName]
 	if ok && backend != nil {
 		if len(backend.Services) > 0 {
 			for _, service := range backend.Services {
