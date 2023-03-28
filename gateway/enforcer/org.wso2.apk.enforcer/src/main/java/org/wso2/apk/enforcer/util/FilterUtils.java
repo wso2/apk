@@ -52,7 +52,6 @@ import org.wso2.apk.enforcer.constants.APIConstants;
 import org.wso2.apk.enforcer.constants.APISecurityConstants;
 import org.wso2.apk.enforcer.constants.JwtConstants;
 import org.wso2.apk.enforcer.dto.APIKeyValidationInfoDTO;
-import org.wso2.apk.enforcer.throttle.ThrottleConstants;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -517,27 +516,6 @@ public class FilterUtils {
                 .getAuthenticationFailureMessage(APISecurityConstants.API_AUTH_INVALID_CREDENTIALS));
         requestContext.getProperties().put(APIConstants.MessageFormat.ERROR_DESCRIPTION,
                 APISecurityConstants.API_AUTH_INVALID_CREDENTIALS_DESCRIPTION);
-    }
-
-    /**
-     * Set the throttle error related details to the {@code RequestContext}.
-     *
-     * @param context   request context object to set the details.
-     * @param errorCode internal wso2 throttle error code.
-     * @param msg       wso2 throttle error message.
-     * @param desc      description of throttle decision.
-     */
-    public static void setThrottleErrorToContext(RequestContext context, int errorCode, String msg, String desc) {
-        context.getProperties().put(APIConstants.MessageFormat.ERROR_CODE, errorCode);
-        if (ThrottleConstants.BLOCKED_ERROR_CODE == errorCode) {
-            context.getProperties().put(APIConstants.MessageFormat.STATUS_CODE,
-                    APIConstants.StatusCodes.UNAUTHORIZED.getCode());
-        } else {
-            context.getProperties().put(APIConstants.MessageFormat.STATUS_CODE,
-                    APIConstants.StatusCodes.THROTTLED.getCode());
-        }
-        context.getProperties().put(APIConstants.MessageFormat.ERROR_MESSAGE, msg);
-        context.getProperties().put(APIConstants.MessageFormat.ERROR_DESCRIPTION, desc);
     }
 
     /**

@@ -36,7 +36,6 @@ import org.wso2.apk.enforcer.config.ConfigHolder;
 import org.wso2.apk.enforcer.config.EnforcerConfig;
 import org.wso2.apk.enforcer.config.dto.AuthServiceConfigurationDto;
 import org.wso2.apk.enforcer.config.dto.ThreadPoolConfig;
-import org.wso2.apk.enforcer.config.dto.ThrottleConfigDto;
 import org.wso2.apk.enforcer.discovery.ConfigDiscoveryClient;
 import org.wso2.apk.enforcer.grpc.ExtAuthService;
 import org.wso2.apk.enforcer.grpc.HealthService;
@@ -47,10 +46,6 @@ import org.wso2.apk.enforcer.keymgt.KeyManagerHolder;
 import org.wso2.apk.enforcer.metrics.MetricsManager;
 import org.wso2.apk.enforcer.security.jwt.validator.RevokedJWTDataHolder;
 import org.wso2.apk.enforcer.subscription.SubscriptionDataHolder;
-import org.wso2.apk.enforcer.throttle.ThrottleAgent;
-import org.wso2.apk.enforcer.throttle.ThrottleConstants;
-import org.wso2.apk.enforcer.throttle.ThrottleDataHolder;
-import org.wso2.apk.enforcer.throttle.ThrottleEventListener;
 import org.wso2.apk.enforcer.tracing.TracerFactory;
 import org.wso2.apk.enforcer.tracing.TracingException;
 import org.wso2.apk.enforcer.tracing.Utils;
@@ -126,12 +121,6 @@ public class AuthServer {
 
             //Initialise cache objects
             CacheProvider.init();
-            ThrottleConfigDto throttleConf = enforcerConfig.getThrottleConfig();
-            if (throttleConf.isGlobalPublishingEnabled()) {
-                ThrottleAgent.startThrottlePublisherPool();
-                JMSTransportHandler jmsHandler = new JMSTransportHandler(throttleConf.buildListenerProperties());
-                jmsHandler.subscribeForJmsEvents(ThrottleConstants.TOPIC_THROTTLE_DATA, new ThrottleEventListener());
-            }
 
             // Start the server
             server.start();
@@ -144,7 +133,6 @@ public class AuthServer {
             SubscriptionDataHolder.getInstance().getTenantSubscriptionStore().initializeStore();
             KeyManagerHolder.getInstance().init();
             RevokedJWTDataHolder.getInstance().init();
-            ThrottleDataHolder.getInstance().init();
 
             // Create a new server to listen on port 8082
             RestServer restServer = new RestServer();

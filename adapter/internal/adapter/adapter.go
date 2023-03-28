@@ -31,7 +31,6 @@ import (
 	configservice "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/config"
 	keymanagerservice "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/keymgt"
 	subscriptionservice "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/subscription"
-	throttleservice "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/throttle"
 	wso2_server "github.com/wso2/apk/adapter/pkg/discovery/protocol/server/v3"
 	"github.com/wso2/apk/adapter/pkg/health"
 	healthservice "github.com/wso2/apk/adapter/pkg/health/api/wso2/health/service"
@@ -136,7 +135,6 @@ func runManagementServer(conf *config.Config, server xdsv3.Server, rlsServer xds
 	subscriptionservice.RegisterApplicationKeyMappingDiscoveryServiceServer(grpcServer, enforcerAppKeyMappingDsSrv)
 	keymanagerservice.RegisterKMDiscoveryServiceServer(grpcServer, enforcerKeyManagerDsSrv)
 	keymanagerservice.RegisterRevokedTokenDiscoveryServiceServer(grpcServer, enforcerRevokedTokenDsSrv)
-	throttleservice.RegisterThrottleDataDiscoveryServiceServer(grpcServer, enforcerThrottleDataDsSrv)
 
 	// register health service
 	healthservice.RegisterHealthServer(grpcServer, &health.Server{})

@@ -159,7 +159,6 @@ type enforcer struct {
 	AuthService  authService
 	JwtGenerator jwtGenerator
 	Cache        cache
-	Throttling   throttlingConfig
 	JwtIssuer    jwtIssuer
 	Management   management
 	RestServer   restServer
@@ -344,18 +343,6 @@ type tokenService struct {
 	ConsumerKeyClaim     string
 	CertificateFilePath  string
 	ClaimMapping         []claimMapping
-}
-
-type throttlingConfig struct {
-	EnableGlobalEventPublishing        bool
-	EnableHeaderConditions             bool
-	EnableQueryParamConditions         bool
-	EnableJwtClaimConditions           bool
-	JmsConnectionInitialContextFactory string
-	JmsConnectionProviderURL           string
-	// Deprecated: Use JmsConnectionProviderURL instead
-	JmsConnectionProviderURLDeprecated string `toml:"jmsConnectionProviderUrl"`
-	Publisher                          binaryPublisher
 }
 
 type binaryPublisher struct {

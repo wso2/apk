@@ -33,7 +33,6 @@ import org.wso2.apk.enforcer.admin.handlers.ApplicationRequestHandler;
 import org.wso2.apk.enforcer.admin.handlers.RequestHandler;
 import org.wso2.apk.enforcer.admin.handlers.RevokedTokensRequestHandler;
 import org.wso2.apk.enforcer.admin.handlers.SubscriptionRequestHandler;
-import org.wso2.apk.enforcer.admin.handlers.ThrottlingPolicyRequestHandler;
 import org.wso2.apk.enforcer.config.ConfigHolder;
 import org.wso2.apk.enforcer.config.dto.ManagementCredentialsDto;
 import org.wso2.apk.enforcer.constants.AdminConstants;
@@ -133,16 +132,6 @@ public class AdminServerHandler extends ChannelInboundHandlerAdapter {
                 case AdminConstants.AdminResources.SUBSCRIPTIONS:
                     requestHandler = new SubscriptionRequestHandler();
                     responsePayload = requestHandler.handleRequest(params, AdminConstants.SUBSCRIPTION_TYPE);
-                    break;
-                case AdminConstants.AdminResources.APPLICATION_THROTTLING_POLICIES:
-                    requestHandler = new ThrottlingPolicyRequestHandler();
-                    responsePayload = requestHandler.handleRequest(params,
-                            AdminConstants.APPLICATION_THROTTLING_POLICY_TYPE);
-                    break;
-                case AdminConstants.AdminResources.SUBSCRIPTION_THROTTLING_POLICIES:
-                    requestHandler = new ThrottlingPolicyRequestHandler();
-                    responsePayload = requestHandler.handleRequest(params,
-                            AdminConstants.SUBSCRIPTION_THROTTLING_POLICY_TYPE);
                     break;
                 case AdminConstants.AdminResources.REVOKED_TOKENS:
                     requestHandler = new RevokedTokensRequestHandler();

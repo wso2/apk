@@ -142,7 +142,6 @@ public class Utils {
     /**
      * Set common authentication headers as headers to be removed and protected headers,
      * so that they will be removed by the router before being sent to the backend.
-     * Also prevents being published in the throttle event.
      *
      * @param requestContext requestContext
      */

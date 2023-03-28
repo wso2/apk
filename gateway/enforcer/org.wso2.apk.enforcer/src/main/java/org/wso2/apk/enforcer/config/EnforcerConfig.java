@@ -34,7 +34,6 @@ import org.wso2.apk.enforcer.config.dto.ManagementCredentialsDto;
 import org.wso2.apk.enforcer.config.dto.MetricsDTO;
 import org.wso2.apk.enforcer.config.dto.MutualSSLDto;
 import org.wso2.apk.enforcer.config.dto.SoapErrorResponseConfigDto;
-import org.wso2.apk.enforcer.config.dto.ThrottleConfigDto;
 import org.wso2.apk.enforcer.config.dto.TracingDTO;
 
 import java.util.HashMap;
@@ -47,7 +46,6 @@ public class EnforcerConfig {
 
     private AuthServiceConfigurationDto authService;
     private Map<String, ExtendedTokenIssuerDto> issuersMap = new HashMap<>();
-    private ThrottleConfigDto throttleConfig;
     private TracingDTO tracingConfig;
     private MetricsDTO metricsConfig;
     private JWTConfigurationDto jwtConfigurationDto;
@@ -80,14 +78,6 @@ public class EnforcerConfig {
 
     public void setIssuersMap(Map<String, ExtendedTokenIssuerDto> issuersMap) {
         this.issuersMap = issuersMap;
-    }
-
-    public ThrottleConfigDto getThrottleConfig() {
-        return throttleConfig;
-    }
-
-    public void setThrottleConfig(ThrottleConfigDto throttleConfig) {
-        this.throttleConfig = throttleConfig;
     }
 
     public void setTracingConfig(TracingDTO tracingConfig) {

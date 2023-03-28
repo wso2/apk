@@ -29,7 +29,6 @@ import org.wso2.apk.enforcer.discovery.KeyManagerDiscoveryClient;
 import org.wso2.apk.enforcer.discovery.RevokedTokenDiscoveryClient;
 import org.wso2.apk.enforcer.discovery.SubscriptionDiscoveryClient;
 import org.wso2.apk.enforcer.discovery.SubscriptionPolicyDiscoveryClient;
-import org.wso2.apk.enforcer.discovery.ThrottleDataDiscoveryClient;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -161,20 +160,6 @@ public class XdsSchedulerManager {
     public synchronized void stopSubscriptionDiscoveryScheduling() {
         if (subscriptionDiscoveryScheduledFuture != null && !subscriptionDiscoveryScheduledFuture.isDone()) {
             subscriptionDiscoveryScheduledFuture.cancel(false);
-        }
-    }
-
-    public synchronized void startThrottleDataDiscoveryScheduling() {
-        if (throttleDataDiscoveryScheduledFuture == null || throttleDataDiscoveryScheduledFuture.isDone()) {
-            throttleDataDiscoveryScheduledFuture = discoveryClientScheduler
-                    .scheduleWithFixedDelay(ThrottleDataDiscoveryClient.getInstance(), 1, retryPeriod,
-                            TimeUnit.SECONDS);
-        }
-    }
-
-    public synchronized void stopThrottleDataDiscoveryScheduling() {
-        if (throttleDataDiscoveryScheduledFuture != null && !throttleDataDiscoveryScheduledFuture.isDone()) {
-            throttleDataDiscoveryScheduledFuture.cancel(false);
         }
     }
 
