@@ -19,7 +19,6 @@
 package org.wso2.apk.enforcer.security;
 
 import org.wso2.apk.enforcer.constants.Constants;
-import org.wso2.apk.enforcer.throttle.ThrottleConstants;
 
 import java.util.List;
 

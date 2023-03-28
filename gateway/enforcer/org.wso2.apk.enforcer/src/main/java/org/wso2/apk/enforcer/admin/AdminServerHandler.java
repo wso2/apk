@@ -33,7 +33,6 @@ import org.wso2.apk.enforcer.admin.handlers.ApplicationRequestHandler;
 import org.wso2.apk.enforcer.admin.handlers.RequestHandler;
 import org.wso2.apk.enforcer.admin.handlers.RevokedTokensRequestHandler;
 import org.wso2.apk.enforcer.admin.handlers.SubscriptionRequestHandler;
-import org.wso2.apk.enforcer.admin.handlers.ThrottlingPolicyRequestHandler;
 import org.wso2.apk.enforcer.config.ConfigHolder;
 import org.wso2.apk.enforcer.config.dto.ManagementCredentialsDto;
 import org.wso2.apk.enforcer.constants.AdminConstants;

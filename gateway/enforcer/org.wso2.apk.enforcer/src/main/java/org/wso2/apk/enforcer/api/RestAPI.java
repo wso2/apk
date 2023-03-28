@@ -46,7 +46,6 @@ import org.wso2.apk.enforcer.cors.CorsFilter;
 import org.wso2.apk.enforcer.interceptor.MediationPolicyFilter;
 import org.wso2.apk.enforcer.security.AuthFilter;
 import org.wso2.apk.enforcer.security.mtls.MtlsUtils;
-import org.wso2.apk.enforcer.throttle.ThrottleFilter;
 import org.wso2.apk.enforcer.util.FilterUtils;
 import org.wso2.apk.enforcer.util.MockImplUtils;
 

@@ -29,7 +29,6 @@ import org.wso2.apk.enforcer.discovery.KeyManagerDiscoveryClient;
 import org.wso2.apk.enforcer.discovery.RevokedTokenDiscoveryClient;
 import org.wso2.apk.enforcer.discovery.SubscriptionDiscoveryClient;
 import org.wso2.apk.enforcer.discovery.SubscriptionPolicyDiscoveryClient;
-import org.wso2.apk.enforcer.discovery.ThrottleDataDiscoveryClient;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;

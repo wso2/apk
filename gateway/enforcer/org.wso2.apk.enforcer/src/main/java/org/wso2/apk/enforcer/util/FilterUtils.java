@@ -52,7 +52,6 @@ import org.wso2.apk.enforcer.constants.APIConstants;
 import org.wso2.apk.enforcer.constants.APISecurityConstants;
 import org.wso2.apk.enforcer.constants.JwtConstants;
 import org.wso2.apk.enforcer.dto.APIKeyValidationInfoDTO;
-import org.wso2.apk.enforcer.throttle.ThrottleConstants;
 
 import java.io.IOException;
 import java.math.BigInteger;
