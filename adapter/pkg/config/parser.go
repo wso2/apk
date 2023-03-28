@@ -35,14 +35,12 @@ import (
 )
 
 var (
-	onceGetMgwHome       sync.Once
-	onceGetLogConfigPath sync.Once
-	onceLogConfigRead    sync.Once
-	adapterLogConfig     *LogConfig
-	mgwHome              string
-	logConfigPath        string
-	e                    error
-	envVariableMap       map[string]string
+	onceGetMgwHome    sync.Once
+	onceLogConfigRead sync.Once
+	adapterLogConfig  *LogConfig
+	mgwHome           string
+	logConfigPath     string
+	envVariableMap    map[string]string
 )
 
 const (
@@ -54,8 +52,8 @@ const (
 	relativeLogConfigPath = "/conf/log_config.toml"
 	// EnvConfigPrefix is used when configs should be read from environment variables.
 	EnvConfigPrefix = "$env"
-	// envVariableForCCPrefix is the prefix used for ChoreoConnect specific environmental variables.
-	envVariablePrefix = "CC_"
+	// envVariableForCCPrefix is the prefix used for APK specific environmental variables.
+	envVariablePrefix = "APK_"
 	// envVariableEntrySeparator is used as the separator used to denote nested structured properties.
 	envVariableEntrySeparator = "_"
 )

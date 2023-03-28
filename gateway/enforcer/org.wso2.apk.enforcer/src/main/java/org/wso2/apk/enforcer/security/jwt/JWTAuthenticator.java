@@ -340,7 +340,7 @@ public class JWTAuthenticator implements Authenticator {
 
     @Override
     public String getChallengeString() {
-        return "Bearer realm=\"Choreo Connect\"";
+        return "Bearer realm=\"APK\"";
     }
 
     @Override
