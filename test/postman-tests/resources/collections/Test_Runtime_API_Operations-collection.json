@@ -158,9 +158,9 @@
 							"    pm.expect(responseJson.context).equals( pm.collectionVariables.get('testAPIContext'));",
 							"    pm.expect(responseJson.version).equals(\"1.0.0\");",
 							"    pm.expect(responseJson.type).equals(\"REST\");",
-							"    //verifying operation policy content",
 							"    _.each(responseJson.operations, (operations) => {",
 							"        if(operations.verb === \"GET\") {",
+							"            //verifying operation policy content",
 							"            _.each(operations.operationPolicies, (operationPolicies) => {",
 							"                _.each(operationPolicies.request, (requestPolicies) => {",
 							"                    pm.expect(requestPolicies.policyName).equals(\"addHeader\");",
@@ -176,6 +176,9 @@
 							"                    })",
 							"                })",
 							"            })",
+							"            //verifying rate limit content",
+							"            pm.expect(operations.operationRateLimit.requestsPerUnit).equals(5);",
+							"            pm.expect(operations.operationRateLimit.unit).equals(\"Minute\");",
 							"        }",
 							"    })",
 							"    pm.collectionVariables.set(\"APIUUID\",responseJson.id)",
@@ -216,7 +219,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"context\": \"{{testAPIContext}}\",\n    \"name\": \"{{testAPIName}}\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/*\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"operationPolicies\": {\n                \"request\": [\n                    {\n                        \"policyName\": \"addHeader\",\n                        \"parameters\": [{\n                            \"headerName\": \"sampleadd\",\n                            \"headerValue\": \"samplevalue\"\n                        }]\n                    }\n                ],\n                \"response\": [\n                    {\n                        \"policyName\": \"removeHeader\",\n                        \"parameters\": [{\n                            \"headerName\": \"access-control-allow-credentials\"\n                        }]\n                    }\n                ]\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"POST\",\n            \"authTypeEnabled\": true\n        }\n    ]\n}"
+					"raw": "{\n    \"context\": \"{{testAPIContext}}\",\n    \"name\": \"{{testAPIName}}\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/*\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"operationPolicies\": {\n                \"request\": [\n                    {\n                        \"policyName\": \"addHeader\",\n                        \"parameters\": [{\n                            \"headerName\": \"sampleadd\",\n                            \"headerValue\": \"samplevalue\"\n                        }]\n                    }\n                ],\n                \"response\": [\n                    {\n                        \"policyName\": \"removeHeader\",\n                        \"parameters\": [{\n                            \"headerName\": \"access-control-allow-credentials\"\n                        }]\n                    }\n                ]\n            },\n            \"operationRateLimit\": {\n                \"requestsPerUnit\": 5,\n                \"unit\": \"Minute\"\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"POST\",\n            \"authTypeEnabled\": true\n        }\n    ]\n}"
 				},
 				"url": {
 					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/import-service?serviceKey={{serviceUUID}}",
