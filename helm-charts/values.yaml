@@ -304,8 +304,8 @@ wso2:
             failureThreshold: 5
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: IfNotPresent
-          image: ratelimiter:0.0.1-SNAPSHOT
+          imagePullPolicy: Always
+          image: wso2/ratelimiter:latest
           security:
             sslHostname: "ratelimiter"
         # configs:
