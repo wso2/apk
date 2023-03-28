@@ -56,7 +56,7 @@ function testRetrieveHttpRouteRefName(API api, string 'type, commons:Organizatio
 }
 
 @test:Mock {functionName: "retrieveRateLimitPolicyRefName"}
-function testRetrieveRateLimitPolicyRefName(string kind) returns string {
+function testRetrieveRateLimitPolicyRefName(APIOperations? operaion) returns string {
     return "rate-limit-policy-ref-name";
 }
 
@@ -131,6 +131,46 @@ function getMockOrganiationClient(string resourceVersion) returns websocket:Clie
             test:prepare(mock).when("isOpen").thenReturn(true);
             test:prepare(mock).when("getConnectionId").thenReturn(initialConectionId);
             test:prepare(mock).when("readMessage").thenReturnSequence(getOrganizationWatchDeleteEvent(), ());
+            return mock;
+        }
+    } else {
+        websocket:Client mock = test:mock(websocket:Client);
+        test:prepare(mock).when("isOpen").thenReturn(true);
+        test:prepare(mock).when("getConnectionId").thenReturn(initialConectionId);
+        test:prepare(mock).when("readMessage").thenReturnSequence(());
+        return mock;
+    }
+}
+
+int configMapWatchIndex = 0;
+
+@test:Mock {functionName: "getConfigMapWatchClient"}
+function getTestConfigMapWatchClient(string resourceVersion) returns websocket:Client|error {
+    string initialConectionId = uuid:createType1AsString();
+    if resourceVersion == "28702" {
+        websocket:Client mock = test:mock(websocket:Client);
+        test:prepare(mock).when("isOpen").thenReturnSequence(true, true, false);
+        test:prepare(mock).when("getConnectionId").thenReturn(initialConectionId);
+        test:prepare(mock).when("readMessage").thenReturn(getConfigMapEvent());
+        return mock;
+    } else if resourceVersion == "28705" {
+        string connectionId = uuid:createType1AsString();
+        websocket:Client mock = test:mock(websocket:Client);
+        test:prepare(mock).when("isOpen").thenReturnSequence(true, true, false);
+        test:prepare(mock).when("getConnectionId").thenReturn(connectionId);
+        test:prepare(mock).when("readMessage").thenReturnSequence(getConfigMapUpdateEvent(), ());
+        return mock;
+    } else if resourceVersion == "28714" {
+        if orgWatchIndex == 0 {
+            websocket:Error websocketError = error("Error", message = "Error");
+            orgWatchIndex += 1;
+            return websocketError;
+        } else {
+            initialConectionId = uuid:createType1AsString();
+            websocket:Client mock = test:mock(websocket:Client);
+            test:prepare(mock).when("isOpen").thenReturn(true);
+            test:prepare(mock).when("getConnectionId").thenReturn(initialConectionId);
+            test:prepare(mock).when("readMessage").thenReturnSequence(getConfigMapDeleteEvent(), ());
             return mock;
         }
     } else {
@@ -223,13 +263,15 @@ function getMockClient(string resourceVersion) returns websocket:Client|error {
 @test:Mock {
     functionName: "initializeK8sClient"
 }
-function getMockK8sClient() returns http:Client {
+function getMockK8sClient() returns http:Client|error {
     http:Client mockK8sClient = test:mock(http:Client);
     test:prepare(mockK8sClient).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis")
         .thenReturn(getMockAPIList());
     string fieldSlector = "metadata.namespace%21%3Dkube-system%2Cmetadata.namespace%21%3Dkubernetes-dashboard%2Cmetadata.namespace%21%3Dgateway-system%2Cmetadata.namespace%21%3Dingress-nginx%2Cmetadata.namespace%21%3Dapk-platform";
     test:prepare(mockK8sClient).when("get").withArguments("/api/v1/services?fieldSelector=" + fieldSlector)
         .thenReturn(getMockServiceList());
+    test:prepare(mockK8sClient).when("get").withArguments("/api/v1/namespaces/apk-platform/configmaps?labelSelector=" + check getEncodedStringForLabelSelector())
+        .thenReturn(getMockLabelList());
     test:prepare(mockK8sClient).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/servicemappings")
         .thenReturn(getMockServiceMappings());
     test:prepare(mockK8sClient).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis/01ed7b08-f2b1-1166-82d5-649ae706d29e").thenReturn(mock404Response());
@@ -373,7 +415,7 @@ function apiNameDataProvider() returns map<[string, string, model:API & readonly
 
 @test:Config {dataProvider: apiIDDataprovider}
 public function testGetAPIById(string id, commons:Organization organization, anydata expected) returns error? {
-    model:API|error aPI = getAPI(id, organization);
+    model:API? aPI = getAPI(id, organization);
     if aPI is model:API {
         test:assertEquals(aPI, expected);
     } else {
@@ -1937,18 +1979,18 @@ function testCreateAPIFromService(string serviceUUId, string apiUUID, [model:Con
     if rateLimitPolicy[0] is model:RateLimitPolicy {
         test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/ratelimitpolicies", rateLimitPolicy[0]).thenReturn(rateLimitPolicy[1]);
     }
-    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/ratelimitpolicies?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(rateLimitPolicyList);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/ratelimitpolicies?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version, organiztion1)).thenReturn(rateLimitPolicyList);
     test:prepare(k8sApiServerEp).when("post").withArguments("/api/v1/namespaces/apk-platform/configmaps", configmapResponse[0]).thenReturn(configmapResponse[1]);
     test:prepare(k8sApiServerEp).when("post").withArguments("/apis/gateway.networking.k8s.io/v1beta1/namespaces/apk-platform/httproutes", httproute[0]).thenReturn(httproute[1]);
     test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/servicemappings", servicemapping[0]).thenReturn(servicemapping[1]);
     test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis", k8sAPI[0]).thenReturn(k8sAPI[1]);
     test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis", runtimeAPI[0]).thenReturn(runtimeAPI[1]);
     test:prepare(k8sApiServerEp).when("get").withArguments("/api/v1/namespaces/apk-platform/configmaps/" + apiClient.retrieveDefinitionName(apiUUID)).thenReturn(configmapResponse404);
-    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/gateway.networking.k8s.io/v1beta1/namespaces/apk-platform/httproutes/?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(httpRouteList);
-    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/servicemappings?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(serviceMappingList);
-    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/authentications?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(authenticationList);
-    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/backends?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(backendList);
-    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/scopes?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(scopeList);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/gateway.networking.k8s.io/v1beta1/namespaces/apk-platform/httproutes/?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version, organiztion1)).thenReturn(httpRouteList);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/servicemappings?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version, organiztion1)).thenReturn(serviceMappingList);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/authentications?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version, organiztion1)).thenReturn(authenticationList);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/backends?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version, organiztion1)).thenReturn(backendList);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/scopes?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version, organiztion1)).thenReturn(scopeList);
     test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis/" + k8sAPI[0].metadata.name).thenReturn(internalApiResponse);
     test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis/" + k8sAPI[0].metadata.name).thenReturn(runtimeAPI[0]);
     test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis/" + k8sAPI[0].metadata.name).thenReturn(configmapResponse404);
@@ -2149,13 +2191,15 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
                 "unit": "Minute"
             }
         };
-        BadRequestError bothRateLimitsPresentError = {body: {code: 90918, message: "Presence of both resource level and API level rate limits is not allowed"}};string apiUUID = getUniqueIdForAPI(api.name, api.'version, organiztion1);
+        BadRequestError bothRateLimitsPresentError = {body: {code: 90918, message: "Presence of both resource level and API level rate limits is not allowed"}};
+        string apiUUID = getUniqueIdForAPI(api.name, api.'version, organiztion1);
         model:ConfigMap configmap = getMockConfigMap1(apiUUID, api);
         http:Response mockConfigMapResponse = getMockConfigMapResponse(configmap.clone());
         model:Httproute httpRoute = getMockHttpRoute(api, apiUUID, organiztion1);
         http:Response httpRouteResponse = getMockHttpRouteResponse(httpRoute.clone());
         model:Httproute httpRouteWithPolicies = getMockHttpRouteWithOperationPolicies1(api, apiUUID, organiztion1);
-        http:Response httpRouteWithPoliciesResponse = getMockHttpRouteResponse(httpRouteWithPolicies.clone());model:Httproute httpRouteWithOperationRateLimits = getMockHttpRouteWithOperationRateLimits1(api, apiUUID, organiztion1);
+        http:Response httpRouteWithPoliciesResponse = getMockHttpRouteResponse(httpRouteWithPolicies.clone());
+        model:Httproute httpRouteWithOperationRateLimits = getMockHttpRouteWithOperationRateLimits1(api, apiUUID, organiztion1);
         http:Response httpRouteWithOperationRateLimitsResponse = getMockHttpRouteResponse(httpRouteWithOperationRateLimits.clone());
         model:K8sServiceMapping mockServiceMappingRequest = getMockServiceMappingRequest(api, apiUUID);
         model:API mockAPI = getMockAPI(api, apiUUID, organiztion1.uuid);
@@ -2176,7 +2220,7 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
         };
         string backenduuid = getBackendServiceUid(api, (), PRODUCTION_TYPE, organiztion1);
         model:Backend backendService = {
-            metadata: {name: backenduuid, namespace: "apk-platform", labels: {"api-name": api.name, "api-version": api.'version}},
+            metadata: {name: backenduuid, namespace: "apk-platform", labels: getLabels(api, organiztion1)},
             spec: {services: [{host: string:'join(".", 'serviceRecord.name, 'serviceRecord.namespace, "svc.cluster.local"), port: 80}], protocol: "http"}
         };
         http:Response backendServiceResponse = getOKBackendServiceResponse(backendService);
@@ -2190,7 +2234,8 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
         model:RuntimeAPI mockRuntimeAOperationRateLimits = getMockRuntimeAPI(apiWithOperationRateLimits, apiUUID, organiztion1, serviceRecord);
         http:Response mockRuntimeResponseWithOperationRateLimits = getMockRuntimeAPIResponse(mockRuntimeAOperationRateLimits.clone());
         model:RuntimeAPI mockRuntimeAPIWithAPIRateLimits = getMockRuntimeAPI(apiWithAPIRateLimits, apiUUID, organiztion1, serviceRecord);
-        http:Response mockRuntimeResponseWithAPIRateLimits = getMockRuntimeAPIResponse(mockRuntimeAPIWithAPIRateLimits.clone());http:Response serviceMappingResponse = getMockServiceMappingResponse(mockServiceMappingRequest.clone());
+        http:Response mockRuntimeResponseWithAPIRateLimits = getMockRuntimeAPIResponse(mockRuntimeAPIWithAPIRateLimits.clone());
+        http:Response serviceMappingResponse = getMockServiceMappingResponse(mockServiceMappingRequest.clone());
         BadRequestError nameAlreadyExistError = {body: {code: 90911, message: "API Name - " + alreadyNameExist.name + " already exist.", description: "API Name - " + alreadyNameExist.name + " already exist."}};
         API contextAlreadyExist = {
             name: "PizzaAPI",
@@ -2308,7 +2353,7 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
                 [mockServiceMappingRequest, serviceMappingResponse],
                 [mockAPI, mockAPIResponse],
                 [mockRuntimeAPIWithPolicies, mockRuntimeResponseWithPolicies],
-                apiWithOperationPolicies,
+                check apiWithOperationPolicies.cloneWithType(API),
                 k8sAPIUUID1,
                 services,
                 [(), ()],
@@ -2339,7 +2384,7 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
                 apiWithOperationRateLimits,
                 k8sAPIUUID1,
                 services,
-                [getMockResourceRateLimitPolicy(apiWithOperationRateLimits), getMockRateLimitResponse(getMockResourceRateLimitPolicy(apiWithOperationRateLimits).clone())],
+                [getMockResourceRateLimitPolicy(apiWithOperationRateLimits, organiztion1), getMockRateLimitResponse(getMockResourceRateLimitPolicy(apiWithOperationRateLimits, organiztion1).clone())],
                 createdAPIWithOperationRateLimits.toBalString()
             ],
             "8": [
@@ -2353,7 +2398,7 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
                 apiWithAPIRateLimits,
                 k8sAPIUUID1,
                 services,
-                [getMockAPIRateLimitPolicy(apiWithAPIRateLimits), getMockRateLimitResponse(getMockAPIRateLimitPolicy(apiWithAPIRateLimits).clone())],
+                [getMockAPIRateLimitPolicy(apiWithAPIRateLimits, organiztion1), getMockRateLimitResponse(getMockAPIRateLimitPolicy(apiWithAPIRateLimits, organiztion1).clone())],
                 createdAPIWithAPIRateLimits.toBalString()
             ],
             "9": [
@@ -2367,12 +2412,12 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
                 apiWithBothRateLimits,
                 k8sAPIUUID1,
                 services,
-                [getMockAPIRateLimitPolicy(apiWithAPIRateLimits), getMockRateLimitResponse(getMockAPIRateLimitPolicy(apiWithAPIRateLimits).clone())],
+                [getMockAPIRateLimitPolicy(apiWithAPIRateLimits, organiztion1), getMockRateLimitResponse(getMockAPIRateLimitPolicy(apiWithAPIRateLimits, organiztion1).clone())],
                 bothRateLimitsPresentError.toBalString()
             ]
         };
         return data;
-    }on fail var e {
+    } on fail var e {
         test:assertFail(msg = e.message());
     }
 }
@@ -2399,7 +2444,7 @@ function getMockAPI(API api, string apiUUID, string organization) returns model:
     model:API k8sapi = {
         "kind": "API",
         "apiVersion": "dp.wso2.com/v1alpha1",
-        "metadata": {"name": apiUUID, "namespace": "apk-platform", "labels": {"api-name": api.name, "api-version": api.'version}},
+        "metadata": {"name": apiUUID, "namespace": "apk-platform", "labels": getLabels(api, organiztion1)},
         "spec": {
             "apiDisplayName": api.name,
             "apiType": "REST",
@@ -2468,7 +2513,7 @@ function getMockAPI1(API api, string apiUUID, string organization) returns model
     model:API k8sapi = {
         "kind": "API",
         "apiVersion": "dp.wso2.com/v1alpha1",
-        "metadata": {"name": apiUUID, "namespace": "apk-platform", "labels": {"api-name": api.name, "api-version": api.'version}},
+        "metadata": {"name": apiUUID, "namespace": "apk-platform", "labels": getLabels(api, organiztion1)},
         "spec": {
             "apiDisplayName": api.name,
             "apiType": "REST",
@@ -2484,7 +2529,7 @@ function getMockAPI1(API api, string apiUUID, string organization) returns model
 }
 
 function getMockServiceMappingRequest(API api, string apiUUID) returns model:K8sServiceMapping {
-    model:K8sServiceMapping serviceMapping = {"kind": "ServiceMapping", "apiVersion": "dp.wso2.com/v1alpha1", "metadata": {"name": apiUUID + "-servicemapping", "namespace": "apk-platform", "labels": {"api-name": api.name, "api-version": api.'version}}, "spec": {"serviceRef": {"name": "backend", "namespace": "apk"}, "apiRef": {"name": apiUUID, "namespace": "apk-platform"}}};
+    model:K8sServiceMapping serviceMapping = {"kind": "ServiceMapping", "apiVersion": "dp.wso2.com/v1alpha1", "metadata": {"name": apiUUID + "-servicemapping", "namespace": "apk-platform", "labels": getLabels(api, organiztion1)}, "spec": {"serviceRef": {"name": "backend", "namespace": "apk"}, "apiRef": {"name": apiUUID, "namespace": "apk-platform"}}};
     return serviceMapping;
 }
 
@@ -2500,7 +2545,7 @@ function getMockHttpRoute(API api, string apiUUID, commons:Organization organizt
     return {
         "apiVersion": "gateway.networking.k8s.io/v1beta1",
         "kind": "HTTPRoute",
-        "metadata": {"name": "http-route-ref-name", "namespace": "apk-platform", "labels": {"api-name": api.name, "api-version": api.'version}},
+        "metadata": {"name": "http-route-ref-name", "namespace": "apk-platform", "labels": getLabels(api, organiztion1)},
         "spec": {
             "hostnames": [string:concat(organiztion.uuid, ".", "gw.wso2.com")],
             "rules": [
@@ -2574,7 +2619,7 @@ function getMockHttpRouteWithOperationPolicies1(API api, string apiUUID, commons
     return {
         "apiVersion": "gateway.networking.k8s.io/v1beta1",
         "kind": "HTTPRoute",
-        "metadata": {"name": "http-route-ref-name", "namespace": "apk-platform", "labels": {"api-name": api.name, "api-version": api.'version}},
+        "metadata": {"name": "http-route-ref-name", "namespace": "apk-platform", "labels": getLabels(api, organiztion)},
         "spec": {
             "hostnames": [
                 string:concat(organiztion.uuid, ".", "gw.wso2.com")
@@ -2767,7 +2812,7 @@ function getMockHttpRouteWithOperationRateLimits1(API api, string apiUUID, commo
     return {
         "apiVersion": "gateway.networking.k8s.io/v1beta1",
         "kind": "HTTPRoute",
-        "metadata": {"name": "http-route-ref-name", "namespace": "apk-platform", "labels": {"api-name": api.name, "api-version": api.'version}},
+        "metadata": {"name": "http-route-ref-name", "namespace": "apk-platform", "labels": getLabels(api, organiztion)},
         "spec": {
             "hostnames": [
                 string:concat(organiztion.uuid, ".", "gw.wso2.com")
@@ -2955,10 +3000,7 @@ function getMockConfigMap1(string apiUniqueId, API api) returns model:ConfigMap 
         },
         "kind": "ConfigMap",
         "metadata": {
-            "labels": {
-                "api-name": api.name,
-                "api-version": api.'version
-            },
+            "labels": getLabels(api, organiztion1),
             "name": apiUniqueId + "-definition",
             "namespace": "apk-platform"
         }
@@ -3016,15 +3058,15 @@ function testCreateAPI(string apiUUID, string backenduuid, API api, model:Config
     model:BackendList serviceList = {metadata: {}, items: []};
     model:ScopeList scopeList = {metadata: {}, items: []};
     model:RateLimitPolicyList rateLimitPolicyList = {metadata: {}, items: []};
-    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/ratelimitpolicies?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(rateLimitPolicyList);
-    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/scopes?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(scopeList);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/ratelimitpolicies?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version, organiztion1)).thenReturn(rateLimitPolicyList);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/scopes?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version, organiztion1)).thenReturn(scopeList);
     test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis", k8sApi).thenReturn(k8sapiResponse);
     test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis", runtimeAPI).thenReturn(runtimeAPIResponse);
     test:prepare(k8sApiServerEp).when("get").withArguments("/api/v1/namespaces/apk-platform/configmaps/" + apiClient.retrieveDefinitionName(apiUUID)).thenReturn(configmapResponse);
-    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/gateway.networking.k8s.io/v1beta1/namespaces/apk-platform/httproutes/?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(httpRouteList);
-    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/servicemappings?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(serviceMappingList);
-    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/authentications?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(authenticationList);
-    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/backends?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version)).thenReturn(serviceList);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/gateway.networking.k8s.io/v1beta1/namespaces/apk-platform/httproutes/?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version, organiztion1)).thenReturn(httpRouteList);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/servicemappings?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version, organiztion1)).thenReturn(serviceMappingList);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/authentications?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version, organiztion1)).thenReturn(authenticationList);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/backends?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version, organiztion1)).thenReturn(serviceList);
     test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis/" + k8sApi.metadata.name).thenReturn(internalApiResponse);
     test:prepare(k8sApiServerEp).when("delete").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis/" + k8sApi.metadata.name).thenReturn(internalAPIDeletionResponse);
     test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis/" + k8sApi.metadata.name).thenReturn(runtimeAPI);
@@ -3058,7 +3100,7 @@ function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid
     return {
         "apiVersion": "gateway.networking.k8s.io/v1beta1",
         "kind": "HTTPRoute",
-        "metadata": {"name": "http-route-ref-name", "namespace": "apk-platform", "labels": {"api-name": api.name, "api-version": api.'version}},
+        "metadata": {"name": "http-route-ref-name", "namespace": "apk-platform", "labels": getLabels(api, organization)},
         "spec": {
             "hostnames": [
                 hostnames
@@ -3231,7 +3273,7 @@ function getMockHttpRouteWithOperationPolicies(API api, string apiUUID, string b
     return {
         "apiVersion": "gateway.networking.k8s.io/v1beta1",
         "kind": "HTTPRoute",
-        "metadata": {"name": "http-route-ref-name", "namespace": "apk-platform", "labels": {"api-name": api.name, "api-version": api.'version}},
+        "metadata": {"name": "http-route-ref-name", "namespace": "apk-platform", "labels": getLabels(api, organization)},
         "spec": {
             "hostnames": [
                 hostnames
@@ -3421,7 +3463,7 @@ function getMockHttpRouteWithAPIPolicies(API api, string apiUUID, string backend
     return {
         "apiVersion": "gateway.networking.k8s.io/v1beta1",
         "kind": "HTTPRoute",
-        "metadata": {"name": "http-route-ref-name", "namespace": "apk-platform", "labels": {"api-name": api.name, "api-version": api.'version}},
+        "metadata": {"name": "http-route-ref-name", "namespace": "apk-platform", "labels": getLabels(api, organization)},
         "spec": {
             "hostnames": [
                 hostnames
@@ -3679,7 +3721,7 @@ function getMockHttpRouteWithOperationRateLimits(API api, string apiUUID, string
     return {
         "apiVersion": "gateway.networking.k8s.io/v1beta1",
         "kind": "HTTPRoute",
-        "metadata": {"name": "http-route-ref-name", "namespace": "apk-platform", "labels": {"api-name": api.name, "api-version": api.'version}},
+        "metadata": {"name": "http-route-ref-name", "namespace": "apk-platform", "labels": getLabels(api, organization)},
         "spec": {
             "hostnames": [
                 hostnames
@@ -3855,11 +3897,11 @@ function getMockHttpRouteWithOperationRateLimits(API api, string apiUUID, string
     };
 }
 
-function getMockResourceRateLimitPolicy(API api) returns model:RateLimitPolicy {
+function getMockResourceRateLimitPolicy(API api, commons:Organization organiztion) returns model:RateLimitPolicy {
     return {
         "apiVersion": "dp.wso2.com/v1alpha1",
         "kind": "RateLimitPolicy",
-        "metadata": {"name": "rate-limit-policy-ref-name", "namespace": "apk-platform", "labels": {"api-name": api.name, "api-version": api.'version}},
+        "metadata": {"name": "rate-limit-policy-ref-name", "namespace": "apk-platform", "labels": getLabels(api, organiztion)},
         "spec": {
             "default": {
                 "api": {
@@ -3878,11 +3920,11 @@ function getMockResourceRateLimitPolicy(API api) returns model:RateLimitPolicy {
     };
 }
 
-function getMockAPIRateLimitPolicy(API api) returns model:RateLimitPolicy {
+function getMockAPIRateLimitPolicy(API api, commons:Organization organiztion) returns model:RateLimitPolicy {
     return {
         "apiVersion": "dp.wso2.com/v1alpha1",
         "kind": "RateLimitPolicy",
-        "metadata": {"name": "rate-limit-policy-ref-name", "namespace": "apk-platform", "labels": {"api-name": api.name, "api-version": api.'version}},
+        "metadata": {"name": "rate-limit-policy-ref-name", "namespace": "apk-platform", "labels": getLabels(api, organiztion)},
         "spec": {
             "default": {
                 "api": {
@@ -4252,11 +4294,11 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
     string backenduuid1 = getBackendServiceUid(api, (), SANDBOX_TYPE, organiztion1);
     string k8sapiUUID = uuid:createType1AsString();
     model:Backend backendService = {
-        metadata: {name: backenduuid, namespace: "apk-platform", labels: {"api-name": api.name, "api-version": api.'version}},
+        metadata: {name: backenduuid, namespace: "apk-platform", labels: getLabels(api, organiztion1)},
         spec: {services: [{host: "localhost", port: 443}], protocol: "https"}
     };
     model:Backend backendService1 = {
-        metadata: {name: backenduuid1, namespace: "apk-platform", labels: {"api-name": api.name, "api-version": api.'version}},
+        metadata: {name: backenduuid1, namespace: "apk-platform", labels: getLabels(api, organiztion1)},
         spec: {services: [{host: "localhost", port: 443}], protocol: "https"}
     }
         ;
@@ -4307,7 +4349,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
                 (),
-                (),k8sapiUUID,
+                (),
+                k8sapiUUID,
                 createdAPI.toBalString()
             ]
         ,
@@ -4327,7 +4370,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
                 (),
-                (),k8sapiUUID,
+                (),
+                k8sapiUUID,
                 nameAlreadyExistError.toBalString()
             ],
             "3": [
@@ -4344,7 +4388,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockAPI(api, apiUUID, organiztion1.uuid),
                 getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
                 getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
-                getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),(),
+                getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
+                (),
                 (),
                 k8sapiUUID,
                 contextAlreadyExistError.toBalString()
@@ -4363,7 +4408,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockAPI1(api, apiUUID, organiztion1.uuid),
                 getMockAPIResponse(getMockAPI1(api, apiUUID, organiztion1.uuid), k8sapiUUID),
                 getMockRuntimeAPI(sandboxOnlyAPI, apiUUID, organiztion1, ()),
-                getMockRuntimeAPIResponse(getMockRuntimeAPI(sandboxOnlyAPI, apiUUID, organiztion1, ())),(),
+                getMockRuntimeAPIResponse(getMockRuntimeAPI(sandboxOnlyAPI, apiUUID, organiztion1, ())),
+                (),
                 (),
                 k8sapiUUID,
                 createdAPI.toBalString()
@@ -4385,7 +4431,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
                 (),
-                (),k8sapiUUID,
+                (),
+                k8sapiUUID,
                 productionEndpointNotSpecifiedError.toBalString()
             ],
             "6": [
@@ -4402,7 +4449,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockAPI(api, apiUUID, organiztion1.uuid),
                 getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
                 getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
-                getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),(),
+                getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
+                (),
                 (),
                 k8sapiUUID,
                 sandboxEndpointNotSpecifiedError.toBalString()
@@ -4424,7 +4472,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
                 (),
-                (),k8sapiUUID,
+                (),
+                k8sapiUUID,
                 k8sLevelError1.toBalString()
             ]
         ,
@@ -4444,7 +4493,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
                 (),
-                (),k8sapiUUID,
+                (),
+                k8sapiUUID,
                 k8sLevelError1.toBalString()
             ]
         ,
@@ -4464,7 +4514,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
                 (),
-                (),k8sapiUUID,
+                (),
+                k8sapiUUID,
                 k8sLevelError1.toBalString()
             ]
         ,
@@ -4484,7 +4535,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
                 (),
-                (),k8sapiUUID,
+                (),
+                k8sapiUUID,
                 k8sLevelError.toBalString()
             ]
         ,
@@ -4504,7 +4556,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
                 (),
-                (),k8sapiUUID,
+                (),
+                k8sapiUUID,
                 k8sLevelError.toBalString()
             ]
         ,
@@ -4524,7 +4577,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
                 (),
-                (),k8sapiUUID,
+                (),
+                k8sapiUUID,
                 invalidAPINameError.toBalString()
             ]
         ,
@@ -4669,8 +4723,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
                 getMockRuntimeAPI(apiWithOperationRateLimits, apiUUID, organiztion1, ()),
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(apiWithOperationRateLimits, apiUUID, organiztion1, ())),
-                getMockResourceRateLimitPolicy(apiWithOperationRateLimits),
-                getMockRateLimitResponse(getMockResourceRateLimitPolicy(apiWithOperationRateLimits).clone()),
+                getMockResourceRateLimitPolicy(apiWithOperationRateLimits, organiztion1),
+                getMockRateLimitResponse(getMockResourceRateLimitPolicy(apiWithOperationRateLimits, organiztion1).clone()),
                 k8sapiUUID,
                 createdAPI.toBalString()
             ]
@@ -4690,8 +4744,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
                 getMockRuntimeAPI(apiWithAPIRateLimits, apiUUID, organiztion1, ()),
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(apiWithAPIRateLimits, apiUUID, organiztion1, ())),
-                getMockAPIRateLimitPolicy(apiWithAPIRateLimits),
-                getMockRateLimitResponse(getMockAPIRateLimitPolicy(apiWithAPIRateLimits).clone()),
+                getMockAPIRateLimitPolicy(apiWithAPIRateLimits, organiztion1),
+                getMockRateLimitResponse(getMockAPIRateLimitPolicy(apiWithAPIRateLimits, organiztion1).clone()),
                 k8sapiUUID,
                 createdAPI.toBalString()
             ]

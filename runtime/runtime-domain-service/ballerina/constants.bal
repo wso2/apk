@@ -45,3 +45,19 @@ const string MEDIATION_POLICY_TYPE_URL_REWRITE = "URLRewrite";
 const string MEDIATION_POLICY_FLOW_REQUEST  = "request";
 const string MEDIATION_POLICY_FLOW_RESPONSE  = "response";
 
+const string API_NAME_HASH_LABEL = "api-name";
+const string API_VERSION_HASH_LABEL = "api-version";
+const string ORGANIZATION_HASH_LABEL = "organization";
+const string CONFIG_TYPE_LABEL = "config-type";
+const string MANAGED_BY_HASH_LABEL = "managed-by";
+const string MANAGED_BY_HASH_LABEL_VALUE = "apk";
+
+const string CERTIFICATE_VERSION_NUMBER = "wso2apk/certificate-version";
+const string CERTIFICATE_SERIAL_NUMBER = "wso2apk/certificate-serial-number";
+const string CERTIFICATE_ISSUER = "wso2apk/certificate-issuer";
+const string CERTIFICATE_SUBJECT = "wso2apk/certificate-subject";
+const string CERTIFICATE_NOT_BEFORE = "wso2apk/certificate-not-before";
+const string CERTIFICATE_NOT_AFTER = "wso2apk/certificate-not-after";
+const string CERTIFICATE_HOSTS = "wso2apk/certificate-host";
+const string CERTIFICATE_KEY_CONFIG_MAP = "endoint.crt";
+const string CONFIG_TYPE_LABEL_VALUE = "certificate";

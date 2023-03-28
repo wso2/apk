@@ -27,6 +27,7 @@ public type Metadata record {
     int generation?;
     string generateName?;
     map<string> labels?;
+    map<string> annotations?;
 };
 
 public type OwnerReference record {

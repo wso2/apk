@@ -102,6 +102,10 @@ public type Apis_importdefinition_body record {|
 |};
 
 # Representation of a list of certificates
+#
+# + count - Field Description  
+# + certificates - Field Description  
+# + pagination - Field Description
 public type Certificates record {|
     int count?;
     CertMetadata[] certificates?;
@@ -258,6 +262,9 @@ public type APIDefinitionValidationResponse_info record {|
 |};
 
 # Representation of the details of a certificate
+#
+# + certificateId - Field Description  
+# + endpoint - Field Description
 public type CertMetadata record {|
     string certificateId?;
     string endpoint?;

@@ -33,12 +33,13 @@ import ballerina/uuid;
 import ballerina/file;
 import ballerina/io;
 import ballerina/crypto;
+import ballerina/time;
 import wso2/apk_common_lib as commons;
 
 public class APIClient {
 
     public isolated function getAPIDefinitionByID(string id, commons:Organization organization) returns http:Response|NotFoundError|PreconditionFailedError|InternalServerErrorError {
-        model:API|error api = getAPI(id, organization);
+        model:API? api = getAPI(id, organization);
         if api is model:API {
             json|error definition = self.getDefinition(api);
             if definition is json {
@@ -120,7 +121,7 @@ public class APIClient {
         boolean APIIDAvailable = id.length() > 0 ? true : false;
         if (APIIDAvailable && string:length(id.toString()) > 0)
         {
-            model:API|error api = getAPI(id, organization);
+            model:API? api = getAPI(id, organization);
             if api is model:API {
                 http:Response|http:ClientError apiCRDeletionResponse = deleteAPICR(api.metadata.name, api.metadata.namespace);
                 if apiCRDeletionResponse is http:ClientError {
@@ -133,12 +134,12 @@ public class APIClient {
                         log:printError("Error while undeploying API definition ", apiDefinitionDeletionResponse);
                     }
                 }
-                _ = check self.deleteHttpRoutes(api);
-                _ = check self.deleteServiceMappings(api);
-                _ = check self.deleteAuthneticationCRs(api);
-                _ = check self.deleteScopeCrsForAPI(api);
-                _ = check self.deleteRateLimitPolicyCRs(api);
-                _ = check self.deleteBackends(api);
+                _ = check self.deleteHttpRoutes(api, organization);
+                _ = check self.deleteServiceMappings(api, organization);
+                _ = check self.deleteAuthneticationCRs(api, organization);
+                _ = check self.deleteScopeCrsForAPI(api, organization);
+                _ = check self.deleteRateLimitPolicyCRs(api, organization);
+                _ = check self.deleteBackends(api, organization);
                 _ = check self.deleteInternalAPI(api.metadata.name, api.metadata.namespace);
             } else {
                 NotFoundError apiNotfound = {body: {code: 900910, description: "API with " + id + " not found", message: "API not found"}};
@@ -147,9 +148,9 @@ public class APIClient {
         }
         return http:OK;
     }
-    private isolated function deleteHttpRoutes(model:API api) returns commons:APKError? {
+    private isolated function deleteHttpRoutes(model:API api, commons:Organization organization) returns commons:APKError? {
         do {
-            model:HttprouteList|http:ClientError httpRouteListResponse = check getHttproutesForAPIS(api.spec.apiDisplayName, api.spec.apiVersion, api.metadata.namespace);
+            model:HttprouteList|http:ClientError httpRouteListResponse = check getHttproutesForAPIS(api.spec.apiDisplayName, api.spec.apiVersion, api.metadata.namespace, organization);
             if httpRouteListResponse is model:HttprouteList {
                 foreach model:Httproute item in httpRouteListResponse.items {
                     http:Response|http:ClientError httprouteDeletionResponse = deleteHttpRoute(item.metadata.name, item.metadata.namespace);
@@ -186,9 +187,9 @@ public class APIClient {
             return error("Error occured deleting servicemapping", message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = 500);
         }
     }
-    private isolated function deleteBackends(model:API api) returns commons:APKError? {
+    private isolated function deleteBackends(model:API api, commons:Organization organization) returns commons:APKError? {
         do {
-            model:BackendList|http:ClientError backendPolicyListResponse = check getBackendPolicyCRsForAPI(api.spec.apiDisplayName, api.spec.apiVersion, api.metadata.namespace);
+            model:BackendList|http:ClientError backendPolicyListResponse = check getBackendPolicyCRsForAPI(api.spec.apiDisplayName, api.spec.apiVersion, api.metadata.namespace, organization);
             if backendPolicyListResponse is model:BackendList {
                 foreach model:Backend item in backendPolicyListResponse.items {
                     http:Response|http:ClientError serviceDeletionResponse = deleteBackendPolicyCR(item.metadata.name, item.metadata.namespace);
@@ -210,9 +211,9 @@ public class APIClient {
         }
     }
 
-    private isolated function deleteAuthneticationCRs(model:API api) returns commons:APKError? {
+    private isolated function deleteAuthneticationCRs(model:API api, commons:Organization organization) returns commons:APKError? {
         do {
-            model:AuthenticationList|http:ClientError authenticationCrListResponse = check getAuthenticationCrsForAPI(api.spec.apiDisplayName, api.spec.apiVersion, api.metadata.namespace);
+            model:AuthenticationList|http:ClientError authenticationCrListResponse = check getAuthenticationCrsForAPI(api.spec.apiDisplayName, api.spec.apiVersion, api.metadata.namespace, organization);
             if authenticationCrListResponse is model:AuthenticationList {
                 foreach model:Authentication item in authenticationCrListResponse.items {
                     http:Response|http:ClientError k8ServiceMappingDeletionResponse = deleteAuthenticationCR(item.metadata.name, item.metadata.namespace);
@@ -233,9 +234,9 @@ public class APIClient {
             return error("Error occured deleting servicemapping", message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = 500);
         }
     }
-    private isolated function deleteScopeCrsForAPI(model:API api) returns commons:APKError? {
+    private isolated function deleteScopeCrsForAPI(model:API api, commons:Organization organization) returns commons:APKError? {
         do {
-            model:ScopeList|http:ClientError scopeCrListResponse = check getScopeCrsForAPI(api.spec.apiDisplayName, api.spec.apiVersion, api.metadata.namespace);
+            model:ScopeList|http:ClientError scopeCrListResponse = check getScopeCrsForAPI(api.spec.apiDisplayName, api.spec.apiVersion, api.metadata.namespace, organization);
             if scopeCrListResponse is model:ScopeList {
                 foreach model:Scope item in scopeCrListResponse.items {
                     http:Response|http:ClientError scopeCrDeletionResponse = deleteScopeCr(item.metadata.name, item.metadata.namespace);
@@ -401,10 +402,10 @@ public class APIClient {
             _ = check self.setHttpRoute(apiArtifact, api, createdEndpoints.hasKey(PRODUCTION_TYPE) ? createdEndpoints.get(PRODUCTION_TYPE) : (), uniqueId, PRODUCTION_TYPE, organization);
             _ = check self.setHttpRoute(apiArtifact, api, createdEndpoints.hasKey(SANDBOX_TYPE) ? createdEndpoints.get(SANDBOX_TYPE) : (), uniqueId, SANDBOX_TYPE, organization);
             json generatedSwagger = check self.retrieveGeneratedSwaggerDefinition(api, definition);
-            self.retrieveGeneratedConfigmapForDefinition(apiArtifact, api, generatedSwagger, uniqueId);
+            self.retrieveGeneratedConfigmapForDefinition(apiArtifact, api, generatedSwagger, uniqueId, organization);
             self.generateAndSetAPICRArtifact(apiArtifact, api, organization);
             self.generateAndSetRuntimeAPIArtifact(apiArtifact, api, (), organization);
-            model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact);
+            model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact, organization);
             CreatedAPI createdAPI = {body: check convertK8sAPItoAPI(deployAPIToK8sResult, true)};
             return createdAPI;
         } on fail var e {
@@ -529,7 +530,7 @@ public class APIClient {
             metadata: {
                 name: getUniqueIdForAPI(api.name, api.'version, organization),
                 namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace),
-                labels: self.getLabels(api)
+                labels: self.getLabels(api, organization)
             },
             spec: {
                 name: api.name,
@@ -682,8 +683,16 @@ public class APIClient {
         }
         return endpointIdMap;
     }
-    isolated function getLabels(API api) returns map<string> {
-        map<string> labels = {"api-name": api.name, "api-version": api.'version};
+    isolated function getLabels(API api, commons:Organization organization) returns map<string> {
+        string apiNameHash = crypto:hashSha1(api.name.toBytes()).toBase16();
+        string apiVersionHash = crypto:hashSha1(api.'version.toBytes()).toBase16();
+        string organizationHash = crypto:hashSha1(organization.uuid.toBytes()).toBase16();
+        map<string> labels = {
+            [API_NAME_HASH_LABEL] : apiNameHash,
+            [API_VERSION_HASH_LABEL] : apiVersionHash,
+            [ORGANIZATION_HASH_LABEL] : organizationHash,
+            [MANAGED_BY_HASH_LABEL] : MANAGED_BY_HASH_LABEL_VALUE
+        };
         return labels;
     }
     isolated function validateContextAndVersion(string context, string 'version, commons:Organization organization) returns boolean {
@@ -768,11 +777,11 @@ public class APIClient {
                 };
                 check self.setHttpRoute(apiArtifact, api, endpoint, uniqueId, PRODUCTION_TYPE, organization);
                 json generatedSwaggerDefinition = check self.retrieveGeneratedSwaggerDefinition(api, ());
-                self.retrieveGeneratedConfigmapForDefinition(apiArtifact, api, generatedSwaggerDefinition, uniqueId);
+                self.retrieveGeneratedConfigmapForDefinition(apiArtifact, api, generatedSwaggerDefinition, uniqueId, organization);
                 self.generateAndSetAPICRArtifact(apiArtifact, api, organization);
-                self.generateAndSetK8sServiceMapping(apiArtifact, api, serviceRetrieved, getNameSpace(runtimeConfiguration.apiCreationNamespace));
+                self.generateAndSetK8sServiceMapping(apiArtifact, api, serviceRetrieved, getNameSpace(runtimeConfiguration.apiCreationNamespace), organization);
                 self.generateAndSetRuntimeAPIArtifact(apiArtifact, api, serviceRetrieved, organization);
-                model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact);
+                model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact, organization);
                 CreatedAPI createdAPI = {body: check convertK8sAPItoAPI(deployAPIToK8sResult, false)};
                 return createdAPI;
             } else {
@@ -788,7 +797,7 @@ public class APIClient {
         PortMapping portMapping = self.retrievePort('service);
         return <string>portMapping.protocol + "://" + string:'join(".", 'service.name, 'service.namespace, "svc.cluster.local") + ":" + portMapping.port.toString();
     }
-    private isolated function deployAPIToK8s(model:APIArtifact apiArtifact) returns commons:APKError|model:API {
+    private isolated function deployAPIToK8s(model:APIArtifact apiArtifact, commons:Organization organization) returns commons:APKError|model:API {
         do {
             model:ConfigMap? definition = apiArtifact.definition;
             if definition is model:ConfigMap {
@@ -796,15 +805,17 @@ public class APIClient {
             }
             model:API? api = apiArtifact.api;
             if api is model:API {
-                check self.deleteHttpRoutes(api);
-                check self.deleteServiceMappings(api);
-                check self.deleteAuthneticationCRs(api);
-                _ = check self.deleteScopeCrsForAPI(api);
-                check self.deleteBackends(api);
-                check self.deleteRateLimitPolicyCRs(api);
+                check self.deleteHttpRoutes(api, organization);
+                check self.deleteServiceMappings(api, organization);
+                check self.deleteAuthneticationCRs(api, organization);
+                _ = check self.deleteScopeCrsForAPI(api, organization);
+                check self.deleteBackends(api, organization);
+                check self.deleteRateLimitPolicyCRs(api, organization);
                 check self.deleteInternalAPI(api.metadata.name, api.metadata.namespace);
+                check self.deleteEndpointCertificates(api, organization);
             }
             check self.deployScopeCrs(apiArtifact);
+            check self.deployEndpointCertificates(apiArtifact);
             check self.deployBackendServices(apiArtifact);
             check self.deployAuthneticationCRs(apiArtifact);
             check self.deployRateLimitPolicyCRs(apiArtifact);
@@ -820,6 +831,25 @@ public class APIClient {
             log:printError("Internal Error occured while deploying API", e);
             commons:APKError internalError = error("Internal Error occured while deploying API", code = 909000, statusCode = 500, description = "Internal Error occured while deploying API", message = "Internal Error occured while deploying API");
             return internalError;
+        }
+    }
+    private isolated function deployEndpointCertificates(model:APIArtifact apiArtifact) returns error? {
+        map<model:ConfigMap> endpointCertificates = apiArtifact.endpointCertificates;
+        foreach model:ConfigMap endpointCertificate in endpointCertificates {
+            _ = check self.deployConfigMap(endpointCertificate);
+        }
+    }
+    private isolated function deleteEndpointCertificates(model:API api, commons:Organization organization) returns error? {
+        model:ConfigMap[] endpointCertificates = check getConfigMapsForAPICertificate(api.spec.apiDisplayName, api.spec.apiVersion, organization);
+        foreach model:ConfigMap endpointCertificate in endpointCertificates {
+            http:Response deleteEndpointCertificateResult = check deleteConfigMap(endpointCertificate.metadata.name, endpointCertificate.metadata.namespace);
+            if deleteEndpointCertificateResult.statusCode == http:STATUS_OK {
+                log:printDebug("Deleted Endpoint Certificate Successfully" + endpointCertificate.toString());
+            } else {
+                json responsePayLoad = check deleteEndpointCertificateResult.getJsonPayload();
+                model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                check self.handleK8sTimeout(statusResponse);
+            }
         }
     }
     private isolated function deployScopeCrs(model:APIArtifact apiArtifact) returns error? {
@@ -971,30 +1001,72 @@ public class APIClient {
             }
         }
     }
-    private isolated function deployConfigMap(model:ConfigMap definition) returns commons:APKError|error? {
+    private isolated function deployConfigMap(model:ConfigMap definition) returns model:ConfigMap|commons:APKError|error {
         http:Response configMapRetrieved = check getConfigMapValueFromNameAndNamespace(definition.metadata.name, definition.metadata.namespace);
         if configMapRetrieved.statusCode == 404 {
             http:Response deployConfigMapResult = check deployConfigMap(definition, getNameSpace(runtimeConfiguration.apiCreationNamespace));
             if deployConfigMapResult.statusCode == http:STATUS_CREATED {
                 log:printDebug("Deployed Configmap Successfully" + definition.toString());
+                json responsePayLoad = check deployConfigMapResult.getJsonPayload();
+                return check responsePayLoad.cloneWithType(model:ConfigMap);
             } else {
                 json responsePayLoad = check deployConfigMapResult.getJsonPayload();
                 model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
-                check self.handleK8sTimeout(statusResponse);
+                return self.handleK8sTimeout(statusResponse);
             }
         } else if configMapRetrieved.statusCode == 200 {
             http:Response deployConfigMapResult = check updateConfigMap(definition, getNameSpace(runtimeConfiguration.apiCreationNamespace));
             if deployConfigMapResult.statusCode == http:STATUS_OK {
                 log:printDebug("updated Configmap Successfully" + definition.toString());
+                json responsePayLoad = check deployConfigMapResult.getJsonPayload();
+                return check responsePayLoad.cloneWithType(model:ConfigMap);
             } else {
                 json responsePayLoad = check deployConfigMapResult.getJsonPayload();
                 model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
-                check self.handleK8sTimeout(statusResponse);
+                return self.handleK8sTimeout(statusResponse);
             }
         } else {
             json responsePayLoad = check configMapRetrieved.getJsonPayload();
             model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
-            check self.handleK8sTimeout(statusResponse);
+            return self.handleK8sTimeout(statusResponse);
+        }
+    }
+
+    private isolated function updateConfigMap(model:ConfigMap configMap) returns model:ConfigMap|commons:APKError|error {
+        http:Response configMapRetrieved = check getConfigMapValueFromNameAndNamespace(configMap.metadata.name, configMap.metadata.namespace);
+        if configMapRetrieved.statusCode == 200 {
+            http:Response deployConfigMapResult = check updateConfigMap(configMap, getNameSpace(runtimeConfiguration.apiCreationNamespace));
+            if deployConfigMapResult.statusCode == http:STATUS_OK {
+                log:printDebug("updated Configmap Successfully" + configMap.toString());
+                json responsePayLoad = check deployConfigMapResult.getJsonPayload();
+                return check responsePayLoad.cloneWithType(model:ConfigMap);
+            } else {
+                json responsePayLoad = check deployConfigMapResult.getJsonPayload();
+                model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                return self.handleK8sTimeout(statusResponse);
+            }
+        } else {
+            json responsePayLoad = check configMapRetrieved.getJsonPayload();
+            model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+            return self.handleK8sTimeout(statusResponse);
+        }
+    }
+    private isolated function deleteConfigMap(model:ConfigMap configMap) returns boolean|commons:APKError|error {
+        http:Response configMapRetrieved = check getConfigMapValueFromNameAndNamespace(configMap.metadata.name, configMap.metadata.namespace);
+        if configMapRetrieved.statusCode == 200 {
+            http:Response deployConfigMapResult = check deleteConfigMap(configMap.metadata.name, getNameSpace(runtimeConfiguration.apiCreationNamespace));
+            if deployConfigMapResult.statusCode == http:STATUS_OK {
+                log:printDebug("Configmap deleted Successfully" + configMap.toString());
+                return true;
+            } else {
+                json responsePayLoad = check deployConfigMapResult.getJsonPayload();
+                model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                return self.handleK8sTimeout(statusResponse);
+            }
+        } else {
+            json responsePayLoad = check configMapRetrieved.getJsonPayload();
+            model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+            return self.handleK8sTimeout(statusResponse);
         }
     }
 
@@ -1011,9 +1083,9 @@ public class APIClient {
         }
     }
 
-    private isolated function deleteRateLimitPolicyCRs(model:API api) returns commons:APKError? {
+    private isolated function deleteRateLimitPolicyCRs(model:API api, commons:Organization organization) returns commons:APKError? {
         do {
-            model:RateLimitPolicyList|http:ClientError rateLimitPolicyCrListResponse = check getRateLimitPolicyCRsForAPI(api.spec.apiDisplayName, api.spec.apiVersion, api.metadata.namespace);
+            model:RateLimitPolicyList|http:ClientError rateLimitPolicyCrListResponse = check getRateLimitPolicyCRsForAPI(api.spec.apiDisplayName, api.spec.apiVersion, api.metadata.namespace, organization);
             if rateLimitPolicyCrListResponse is model:RateLimitPolicyList {
                 foreach model:RateLimitPolicy item in rateLimitPolicyCrListResponse.items {
                     http:Response|http:ClientError rateLimitPolicyCRDeletionResponse = deleteRateLimitPolicyCR(item.metadata.name, item.metadata.namespace);
@@ -1035,7 +1107,7 @@ public class APIClient {
         }
     }
 
-    private isolated function retrieveGeneratedConfigmapForDefinition(model:APIArtifact apiArtifact, API api, json generatedSwaggerDefinition, string uniqueId) {
+    private isolated function retrieveGeneratedConfigmapForDefinition(model:APIArtifact apiArtifact, API api, json generatedSwaggerDefinition, string uniqueId, commons:Organization organization) {
         map<string> configMapData = {};
         if api.'type == API_TYPE_REST {
             configMapData["openapi.json"] = generatedSwaggerDefinition.toJsonString();
@@ -1046,7 +1118,7 @@ public class APIClient {
                 namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace),
                 uid: (),
                 creationTimestamp: (),
-                labels: self.getLabels(api)
+                labels: self.getLabels(api, organization)
 
             },
             data: configMapData
@@ -1077,7 +1149,7 @@ public class APIClient {
             metadata: {
                 name: apiArtifact.uniqueId,
                 namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace),
-                labels: self.getLabels(api)
+                labels: self.getLabels(api, organization)
             },
             spec: {
                 apiDisplayName: api.name,
@@ -1148,7 +1220,7 @@ public class APIClient {
                 namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace),
                 uid: (),
                 creationTimestamp: (),
-                labels: self.getLabels(api)
+                labels: self.getLabels(api, organization)
             },
             spec: {
                 parentRefs: self.generateAndRetrieveParentRefs(api, uniqueId),
@@ -1220,7 +1292,7 @@ public class APIClient {
                         }
                     }
                     if operation.operationRateLimit != () {
-                        model:RateLimitPolicy? rateLimitPolicyCR = self.generateRateLimitPolicyCR(api, operation.operationRateLimit, httpRouteRefName, "Resource", "dp.wso2.com");
+                        model:RateLimitPolicy? rateLimitPolicyCR = self.generateRateLimitPolicyCR(api, operation.operationRateLimit, httpRouteRefName, operation, organization);
                         if rateLimitPolicyCR != () {
                             apiArtifact.rateLimitPolicies[rateLimitPolicyCR.metadata.name] = rateLimitPolicyCR;
                             model:HTTPRouteFilter rateLimitPolicyFilter = {'type: "ExtensionRef", extensionRef: {group: "dp.wso2.com", kind: "RateLimitPolicy", name: rateLimitPolicyCR.metadata.name}};
@@ -1232,7 +1304,7 @@ public class APIClient {
             }
         }
         if api.apiRateLimit != () {
-            model:RateLimitPolicy? rateLimitPolicyCR = self.generateRateLimitPolicyCR(api, api.apiRateLimit, httpRouteRefName, "HTTPRoute", "gateway.networking.k8s.io");
+            model:RateLimitPolicy? rateLimitPolicyCR = self.generateRateLimitPolicyCR(api, api.apiRateLimit, httpRouteRefName, (), organization);
             if rateLimitPolicyCR != () {
                 apiArtifact.rateLimitPolicies[rateLimitPolicyCR.metadata.name] = rateLimitPolicyCR;
             }
@@ -1243,7 +1315,7 @@ public class APIClient {
     private isolated function generateScopeCR(model:APIArtifact apiArtifact, API api, commons:Organization organization, string scope) returns model:Scope {
         string scopeName = uuid:createType1AsString();
         model:Scope scopeCr = {
-            metadata: {name: scopeName, namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace), labels: self.getLabels(api)},
+            metadata: {name: scopeName, namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace), labels: self.getLabels(api, organization)},
             spec: {
                 names: [scope]
             }
@@ -1255,7 +1327,7 @@ public class APIClient {
         string retrieveDisableAuthenticationRefName = self.retrieveDisableAuthenticationRefName(api, endpointType, organization);
         string nameSpace = getNameSpace(runtimeConfiguration.apiCreationNamespace);
         model:Authentication authentication = {
-            metadata: {name: retrieveDisableAuthenticationRefName, namespace: nameSpace, labels: self.getLabels(api)},
+            metadata: {name: retrieveDisableAuthenticationRefName, namespace: nameSpace, labels: self.getLabels(api, organization)},
             spec: {
                 targetRef: {
                     group: "",
@@ -1336,8 +1408,8 @@ public class APIClient {
         foreach OperationPolicy policy in operationPolicy {
             string policyName = policy.policyName;
 
-            record{}? policyParameters = policy.parameters;
-            if (policyParameters is record{}) {
+            record {}? policyParameters = policy.parameters;
+            if (policyParameters is record {}) {
                 if (policyName == "addHeader") {
 
                     model:HTTPHeader httpHeader = {
@@ -1512,7 +1584,7 @@ public class APIClient {
     }
 
     public isolated function generateAPIKey(string apiId, commons:Organization organization) returns APIKey|BadRequestError|NotFoundError|InternalServerErrorError {
-        model:API|error api = getAPI(apiId, organization);
+        model:API? api = getAPI(apiId, organization);
         if api is model:API {
             InternalTokenGenerator tokenGenerator = new ();
             string|jwt:Error generatedToken = tokenGenerator.generateToken(api, APK_USER);
@@ -1563,7 +1635,7 @@ public class APIClient {
         }
     }
 
-    isolated function generateAndSetK8sServiceMapping(model:APIArtifact apiArtifact, API api, Service serviceEntry, string namespace) {
+    isolated function generateAndSetK8sServiceMapping(model:APIArtifact apiArtifact, API api, Service serviceEntry, string namespace, commons:Organization organization) {
         model:API? k8sAPI = apiArtifact.api;
         if k8sAPI is model:API {
             model:K8sServiceMapping k8sServiceMapping = {
@@ -1572,7 +1644,7 @@ public class APIClient {
                     namespace: namespace,
                     uid: (),
                     creationTimestamp: (),
-                    labels: self.getLabels(api)
+                    labels: self.getLabels(api, organization)
                 },
                 spec: {
                     serviceRef: {
@@ -1593,10 +1665,10 @@ public class APIClient {
         return uniqueId + "-servicemapping";
     }
 
-    isolated function deleteServiceMappings(model:API api) returns commons:APKError? {
+    isolated function deleteServiceMappings(model:API api, commons:Organization organization) returns commons:APKError? {
         do {
             map<model:K8sServiceMapping> retrieveServiceMappingsForAPIResult = retrieveServiceMappingsForAPI(api).clone();
-            model:ServiceMappingList|http:ClientError k8sServiceMapingsDeletionResponse = check getK8sServiceMapingsForAPI(api.spec.apiDisplayName, api.spec.apiVersion, api.metadata.namespace);
+            model:ServiceMappingList|http:ClientError k8sServiceMapingsDeletionResponse = check getK8sServiceMapingsForAPI(api.spec.apiDisplayName, api.spec.apiVersion, api.metadata.namespace, organization);
             if k8sServiceMapingsDeletionResponse is model:ServiceMappingList {
                 foreach model:K8sServiceMapping item in k8sServiceMapingsDeletionResponse.items {
                     retrieveServiceMappingsForAPIResult[<string>item.metadata.uid] = item;
@@ -1823,11 +1895,13 @@ public class APIClient {
 
     isolated function createBackendService(API api, APIOperations? apiOperation, string endpointType, commons:Organization organization, string url) returns model:Backend|error {
         string nameSpace = getNameSpace(runtimeConfiguration.apiCreationNamespace);
+        string host = self.gethost(url);
+        string|() configMapName = check getConfigMapNameByHostname(api, organization, host);
         model:Backend backendService = {
             metadata: {
                 name: getBackendServiceUid(api, apiOperation, endpointType, organization),
                 namespace: nameSpace,
-                labels: self.getLabels(api)
+                labels: self.getLabels(api, organization)
             },
             spec: {
                 services: [
@@ -1839,26 +1913,34 @@ public class APIClient {
                 protocol: url.startsWith("https:") ? "https" : "http"
             }
         };
+        if configMapName is string && backendService.spec.protocol == "https" {
+            backendService.spec.tls = {
+                configMapRef: {
+                    key: CERTIFICATE_KEY_CONFIG_MAP,
+                    name: configMapName
+                }
+            };
+        }
         return backendService;
+
     }
 
-    public isolated function generateRateLimitPolicyCR(API api, APIRateLimit? rateLimit, string httpRouteRefName, string kind, string group) returns model:RateLimitPolicy? {
+    public isolated function generateRateLimitPolicyCR(API api, APIRateLimit? rateLimit, string httpRouteRefName, APIOperations? operation, commons:Organization organization) returns model:RateLimitPolicy? {
         model:RateLimitPolicy? rateLimitPolicyCR = ();
         if rateLimit != () {
-            string nameSpace = getNameSpace(runtimeConfiguration.apiCreationNamespace);
             rateLimitPolicyCR = {
                 metadata: {
-                    name: retrieveRateLimitPolicyRefName(kind),
-                    namespace: nameSpace,
-                    labels: self.getLabels(api)
+                    name: retrieveRateLimitPolicyRefName(operation),
+                    namespace: currentNameSpace,
+                    labels: self.getLabels(api, organization)
                 },
                 spec: {
                     default: self.retrieveRateLimitData(rateLimit),
                     targetRef: {
-                        group: group,
-                        kind: kind,
+                        group: operation != () ? "dp.wso2.com" : "gateway.networking.k8s.io",
+                        kind: operation != () ? "Resource" : "HTTPRoute",
                         name: httpRouteRefName,
-                        namespace: nameSpace
+                        namespace: currentNameSpace
                     }
                 }
             };
@@ -2108,6 +2190,7 @@ public class APIClient {
             return internalError;
         }
     }
+
     private isolated function validateAndRetrieveDefinition(string 'type, string? url, string? inlineAPIDefinition, byte[]? content, string? fileName) returns runtimeapi:APIDefinitionValidationResponse|runtimeapi:APIManagementException|error|BadRequestError {
         runtimeapi:APIDefinitionValidationResponse|runtimeapi:APIManagementException|error validationResponse;
         boolean inlineApiDefinitionAvailable = inlineAPIDefinition is string;
@@ -2150,6 +2233,7 @@ public class APIClient {
         }
         return validationResponse;
     }
+
     private isolated function mapImportDefinitionRequest(http:Request message) returns ImportDefintionRequest|error|BadRequestError {
         string|() url = ();
         string|() fileName = ();
@@ -2222,7 +2306,7 @@ public class APIClient {
                         Service|error serviceById = getServiceById(serviceId);
                         if serviceById is Service {
                             check self.prepareApiArtifactforNewVersion(apiArtifact, serviceById, api, newVersion, organization);
-                            model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact);
+                            model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact, organization);
                             CreatedAPI createdAPI = {body: {name: deployAPIToK8sResult.spec.apiDisplayName, context: self.returnFullContext(deployAPIToK8sResult.spec.context, deployAPIToK8sResult.spec.apiVersion), 'version: deployAPIToK8sResult.spec.apiVersion, id: deployAPIToK8sResult.metadata.uid}};
                             return createdAPI;
                         } else {
@@ -2232,7 +2316,7 @@ public class APIClient {
                     }
                 }
                 check self.prepareApiArtifactforNewVersion(apiArtifact, (), api, newVersion, organization);
-                model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact);
+                model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact, organization);
                 CreatedAPI createdAPI = {body: {name: deployAPIToK8sResult.spec.apiDisplayName, context: self.returnFullContext(deployAPIToK8sResult.spec.context, deployAPIToK8sResult.spec.apiVersion), 'version: deployAPIToK8sResult.spec.apiVersion, id: deployAPIToK8sResult.metadata.uid}};
                 return createdAPI;
             } else {
@@ -2246,6 +2330,7 @@ public class APIClient {
             return error("Internal Error occured", code = 909000, message = "Internal Error occured", description = "Internal Error occured", statusCode = 500);
         }
     }
+
     private isolated function prepareApiArtifactforNewVersion(model:APIArtifact apiArtifact, Service? serviceEntry, API oldAPI, string newVersion, commons:Organization organization) returns error? {
         API newAPI = {
             name: oldAPI.name,
@@ -2254,22 +2339,45 @@ public class APIClient {
             operations: oldAPI.operations,
             apiRateLimit: oldAPI.apiRateLimit
         };
-        check self.prepareConfigMap(apiArtifact, oldAPI, newAPI);
+        check self.prepareConfigMap(apiArtifact, oldAPI, newAPI, organization);
         check self.prepareHttpRoute(apiArtifact, serviceEntry, oldAPI, newAPI, PRODUCTION_TYPE, organization);
         check self.prepareHttpRoute(apiArtifact, serviceEntry, oldAPI, newAPI, SANDBOX_TYPE, organization);
         self.prepareK8sServiceMapping(apiArtifact, serviceEntry, oldAPI, newAPI, organization);
         self.prepareAPICr(apiArtifact, oldAPI, newAPI, organization);
+        self.prepareBackendCertificateCR(apiArtifact, oldAPI, newAPI, organization);
         apiArtifact.runtimeAPI = self.generateRuntimeAPIArtifact(newAPI, serviceEntry, organization);
 
+    }
+
+    private isolated function prepareBackendCertificateCR(model:APIArtifact apiArtifact, API oldAPI, API newAPI, commons:Organization organization) {
+        map<string> backendCertificateMapping = {};
+        foreach model:ConfigMap backendCertificate in apiArtifact.endpointCertificates {
+            string oldBackendCertificateName = backendCertificate.metadata.name.clone();
+            backendCertificate.metadata.labels = getLabelsForCertificates(newAPI, organization);
+            backendCertificate.metadata.name = uuid:createType1AsString();
+            backendCertificateMapping[oldBackendCertificateName] = backendCertificate.metadata.name;
+        }
+        foreach model:Backend backend in apiArtifact.backendServices {
+            model:TLSConfig? tlsConfig = backend.spec.tls;
+            if tlsConfig is model:TLSConfig {
+                model:RefConfig? configMapRef = tlsConfig.configMapRef;
+                if configMapRef is model:RefConfig {
+                    if backendCertificateMapping.hasKey(configMapRef.name) {
+                        configMapRef.name = backendCertificateMapping.get(configMapRef.name);
+                    }
+                }
+            }
+        }
     }
     private isolated function prepareK8sServiceMapping(model:APIArtifact apiArtifact, Service? serviceEntry, API oldAPI, API newAPI, commons:Organization organization) {
         model:K8sServiceMapping[] serviceMappings = apiArtifact.serviceMapping;
         foreach model:K8sServiceMapping serviceMapping in serviceMappings {
             serviceMapping.metadata.name = self.getServiceMappingEntryName(apiArtifact.uniqueId);
-            serviceMapping.metadata.labels = self.getLabels(newAPI);
+            serviceMapping.metadata.labels = self.getLabels(newAPI, organization);
             serviceMapping.spec.apiRef.name = apiArtifact.uniqueId;
         }
     }
+
     private isolated function prepareHttpRoute(model:APIArtifact apiArtifact, Service? serviceEntry, API oldAPI, API newAPI, string endpointType, commons:Organization organization) returns error? {
         model:Httproute[] httproutes;
         if endpointType == PRODUCTION_TYPE {
@@ -2282,7 +2390,7 @@ public class APIClient {
         foreach model:Httproute httproute in httproutes {
             string oldHttpRouteName = httproute.metadata.name;
             httproute.metadata.name = retrieveHttpRouteRefName(newAPI, endpointType, organization);
-            httproute.metadata.labels = self.getLabels(newAPI);
+            httproute.metadata.labels = self.getLabels(newAPI, organization);
             model:HTTPRouteRule[] routeRules = httproute.spec.rules;
             foreach model:HTTPRouteRule routeRule in routeRules {
                 model:HTTPBackendRef[]? backendRefs = routeRule.backendRefs;
@@ -2337,7 +2445,7 @@ public class APIClient {
                             } else if extensionRef.kind == "RateLimitPolicy" {
                                 if apiArtifact.rateLimitPolicies.hasKey(extensionRef.name) {
                                     model:RateLimitPolicy rateLimitPolicyCR = apiArtifact.rateLimitPolicies.get(extensionRef.name).clone();
-                                    model:RateLimitPolicy newRateLimitPolicyCR = self.prepareRateLimitPolicyCR(newAPI, rateLimitPolicyCR, httproute.metadata.name);
+                                    model:RateLimitPolicy newRateLimitPolicyCR = self.prepareRateLimitPolicyCR(newAPI, rateLimitPolicyCR, httproute.metadata.name, organization);
                                     _ = apiArtifact.rateLimitPolicies.remove(extensionRef.name);
                                     apiArtifact.rateLimitPolicies[newRateLimitPolicyCR.metadata.name] = newRateLimitPolicyCR;
                                     extenstionRefMappings[extensionRef.name] = newRateLimitPolicyCR.metadata.name;
@@ -2353,29 +2461,30 @@ public class APIClient {
             foreach string extensionRefName in rateLimitPolicies.keys() {
                 model:RateLimitPolicy rateLimitPolicyCR = apiArtifact.rateLimitPolicies.get(extensionRefName).clone();
                 if rateLimitPolicyCR.spec.targetRef.kind == "HTTPRoute" && rateLimitPolicyCR.spec.targetRef.name == oldHttpRouteName {
-                    model:RateLimitPolicy newRateLimitPolicyCR = self.prepareRateLimitPolicyCR(newAPI, rateLimitPolicyCR, httproute.metadata.name);
+                    model:RateLimitPolicy newRateLimitPolicyCR = self.prepareRateLimitPolicyCR(newAPI, rateLimitPolicyCR, httproute.metadata.name, organization);
                     _ = apiArtifact.rateLimitPolicies.remove(extensionRefName);
                     apiArtifact.rateLimitPolicies[newRateLimitPolicyCR.metadata.name] = newRateLimitPolicyCR;
                 }
             }
         }
     }
+
     private isolated function prepareScopeCR(model:APIArtifact apiArtifact, API api, model:Scope scope, commons:Organization organization) returns model:Scope {
         scope.metadata.name = uuid:createType1AsString();
-        scope.metadata.labels = self.getLabels(api);
+        scope.metadata.labels = self.getLabels(api, organization);
         return scope;
     }
 
     private isolated function prepareAuthenticationCR(model:APIArtifact apiArtifact, API api, model:Authentication authentication, string endpointType, commons:Organization organization) returns model:Authentication {
         authentication.metadata.name = self.retrieveDisableAuthenticationRefName(api, endpointType, organization);
-        authentication.metadata.labels = self.getLabels(api);
+        authentication.metadata.labels = self.getLabels(api, organization);
         authentication.spec.targetRef.name = retrieveHttpRouteRefName(api, endpointType, organization);
         return authentication;
     }
 
-    private isolated function prepareRateLimitPolicyCR(API api, model:RateLimitPolicy rateLimitPolicy, string httpRouteRefName) returns model:RateLimitPolicy {
+    private isolated function prepareRateLimitPolicyCR(API api, model:RateLimitPolicy rateLimitPolicy, string httpRouteRefName, commons:Organization organization) returns model:RateLimitPolicy {
         rateLimitPolicy.metadata.name = uuid:createType1AsString();
-        rateLimitPolicy.metadata.labels = self.getLabels(api);
+        rateLimitPolicy.metadata.labels = self.getLabels(api, organization);
         rateLimitPolicy.spec.targetRef.name = httpRouteRefName;
         return rateLimitPolicy;
     }
@@ -2390,7 +2499,7 @@ public class APIClient {
                 apiArtifact.backendServices[backendService.metadata.name] = backendService;
                 string oldBackenServiceUUID = getBackendServiceUid(oldAPI, (), PRODUCTION_TYPE, organization);
                 _ = apiArtifact.backendServices.remove(oldBackenServiceUUID);
-                self.generateAndSetK8sServiceMapping(apiArtifact, newAPI, serviceEntry, getNameSpace(runtimeConfiguration.apiCreationNamespace));
+                self.generateAndSetK8sServiceMapping(apiArtifact, newAPI, serviceEntry, getNameSpace(runtimeConfiguration.apiCreationNamespace), organization);
                 return [oldBackenServiceUUID, backendService.metadata.name];
             }
         } else {
@@ -2403,7 +2512,7 @@ public class APIClient {
                 } else {
                     'service.metadata.name = getBackendServiceUid(newAPI, {}, endpointType, organization);
                 }
-                'service.metadata.labels = self.getLabels(newAPI);
+                'service.metadata.labels = self.getLabels(newAPI, organization);
                 _ = backendServices.remove(oldBackendRefName);
                 backendServices['service.metadata.name] = 'service;
                 backendRef.name = 'service.metadata.name;
@@ -2412,6 +2521,7 @@ public class APIClient {
         }
         return;
     }
+
     private isolated function prepareAPICr(model:APIArtifact apiArtifact, API oldAPI, API newAPI, commons:Organization organization) {
         string uuid = getUniqueIdForAPI(oldAPI.name, newAPI.'version, organization);
         apiArtifact.uniqueId = uuid;
@@ -2420,7 +2530,7 @@ public class APIClient {
             string oldName = api.metadata.name;
             api.spec.apiVersion = newAPI.'version;
             api.metadata.name = uuid;
-            api.metadata.labels = self.getLabels(newAPI);
+            api.metadata.labels = self.getLabels(newAPI, organization);
             api.spec.context = newAPI.context;
             string[] prodHTTPRouteRefs = [];
             foreach model:Httproute httpRoute in apiArtifact.productionRoute {
@@ -2442,7 +2552,8 @@ public class APIClient {
             }
         }
     }
-    private isolated function prepareConfigMap(model:APIArtifact apiArtifact, API oldAPI, API newAPI) returns error? {
+
+    private isolated function prepareConfigMap(model:APIArtifact apiArtifact, API oldAPI, API newAPI, commons:Organization organization) returns error? {
         model:ConfigMap? definition = apiArtifact.definition;
         if definition is model:ConfigMap {
             json definitionJson = check self.getDefinitionFromConfigMap(definition);
@@ -2451,68 +2562,78 @@ public class APIClient {
             infoElement["version"] = newAPI.'version;
             map<json> definitionMap = <map<json>>definitionJson;
             definitionMap["info"] = infoElement;
-            self.retrieveGeneratedConfigmapForDefinition(apiArtifact, newAPI, definitionMap, apiArtifact.uniqueId);
+            self.retrieveGeneratedConfigmapForDefinition(apiArtifact, newAPI, definitionMap, apiArtifact.uniqueId, organization);
         }
     }
 
     private isolated function getApiArtifact(API api, commons:Organization organization) returns model:APIArtifact|error {
-        model:API k8sapi = check getAPI(<string>api.id, organization);
-        model:APIArtifact apiArtifact = {uniqueId: k8sapi.metadata.name};
-        // retrieveConfigmap
-        string? definitionFileRef = k8sapi.spec.definitionFileRef;
-        if definitionFileRef is string {
-            model:ConfigMap|error? definitionConfigmap = check self.getDefinitionConfigmap(definitionFileRef, k8sapi.metadata.namespace);
-            if definitionConfigmap is model:ConfigMap {
-                apiArtifact.definition = self.sanitizeConfigMapData(definitionConfigmap);
+        model:API? k8sapi = getAPI(<string>api.id, organization);
+        if k8sapi is model:API {
+            model:APIArtifact apiArtifact = {uniqueId: k8sapi.metadata.name};
+            // retrieveConfigmap
+            string? definitionFileRef = k8sapi.spec.definitionFileRef;
+            if definitionFileRef is string {
+                model:ConfigMap|error? definitionConfigmap = check self.getDefinitionConfigmap(definitionFileRef, k8sapi.metadata.namespace);
+                if definitionConfigmap is model:ConfigMap {
+                    apiArtifact.definition = self.sanitizeConfigMapData(definitionConfigmap);
+                }
             }
-        }
-        json[]? prodHTTPRouteRefs = k8sapi.spec.prodHTTPRouteRefs;
-        if prodHTTPRouteRefs is json[] && prodHTTPRouteRefs.length() > 0 {
-            foreach json prodHTTPRouteRef in prodHTTPRouteRefs {
-                model:Httproute httpRoute = check getHttpRoute(prodHTTPRouteRef.toString(), k8sapi.metadata.namespace);
-                apiArtifact.productionRoute.push(self.sanitizeHttpRoute(httpRoute));
+            json[]? prodHTTPRouteRefs = k8sapi.spec.prodHTTPRouteRefs;
+            if prodHTTPRouteRefs is json[] && prodHTTPRouteRefs.length() > 0 {
+                foreach json prodHTTPRouteRef in prodHTTPRouteRefs {
+                    model:Httproute httpRoute = check getHttpRoute(prodHTTPRouteRef.toString(), k8sapi.metadata.namespace);
+                    apiArtifact.productionRoute.push(self.sanitizeHttpRoute(httpRoute));
+                }
             }
-        }
-        json[]? sandHTTPRouteRefs = k8sapi.spec.sandHTTPRouteRefs;
-        if sandHTTPRouteRefs is json[] && sandHTTPRouteRefs.length() > 0 {
-            foreach json sandHTTPRouteRef in sandHTTPRouteRefs {
-                model:Httproute httpRoute = check getHttpRoute(sandHTTPRouteRef.toString(), k8sapi.metadata.namespace);
-                apiArtifact.sandboxRoute.push(self.sanitizeHttpRoute(httpRoute));
+            json[]? sandHTTPRouteRefs = k8sapi.spec.sandHTTPRouteRefs;
+            if sandHTTPRouteRefs is json[] && sandHTTPRouteRefs.length() > 0 {
+                foreach json sandHTTPRouteRef in sandHTTPRouteRefs {
+                    model:Httproute httpRoute = check getHttpRoute(sandHTTPRouteRef.toString(), k8sapi.metadata.namespace);
+                    apiArtifact.sandboxRoute.push(self.sanitizeHttpRoute(httpRoute));
+                }
             }
-        }
-        model:ServiceMappingList k8sServiceMapingsForAPI = check getK8sServiceMapingsForAPI(api.name, api.'version, k8sapi.metadata.namespace);
-        foreach model:K8sServiceMapping serviceMapping in k8sServiceMapingsForAPI.items {
-            apiArtifact.serviceMapping.push(self.sanitizeServiceMapping(serviceMapping));
-        }
-        model:AuthenticationList authenticationCrsForAPI = check getAuthenticationCrsForAPI(api.name, api.'version, k8sapi.metadata.namespace);
-        foreach model:Authentication authentication in authenticationCrsForAPI.items {
-            apiArtifact.authenticationMap[authentication.metadata.name] = self.sanitizeAuthenticationCrs(authentication);
-        }
-        model:BackendList backendList = check getBackendPolicyCRsForAPI(api.name, api.'version, k8sapi.metadata.namespace);
-        foreach model:Backend backend in backendList.items {
-            apiArtifact.backendServices[backend.metadata.name] = self.sanitizeBackendPolicyCrs(backend);
-        }
-        model:RuntimeAPI|http:ClientError internalAPI = getInternalAPI(k8sapi.metadata.name, k8sapi.metadata.namespace);
-        if internalAPI is model:RuntimeAPI {
-            apiArtifact.runtimeAPI = self.sanitizeRuntimeAPI(internalAPI);
-        } else if (internalAPI is http:ApplicationResponseError) {
-            if internalAPI.detail().statusCode != 404 {
+            model:ServiceMappingList k8sServiceMapingsForAPI = check getK8sServiceMapingsForAPI(api.name, api.'version, k8sapi.metadata.namespace, organization);
+            foreach model:K8sServiceMapping serviceMapping in k8sServiceMapingsForAPI.items {
+                apiArtifact.serviceMapping.push(self.sanitizeServiceMapping(serviceMapping));
+            }
+            model:AuthenticationList authenticationCrsForAPI = check getAuthenticationCrsForAPI(api.name, api.'version, k8sapi.metadata.namespace, organization);
+            foreach model:Authentication authentication in authenticationCrsForAPI.items {
+                apiArtifact.authenticationMap[authentication.metadata.name] = self.sanitizeAuthenticationCrs(authentication);
+            }
+            model:BackendList backendList = check getBackendPolicyCRsForAPI(api.name, api.'version, k8sapi.metadata.namespace, organization);
+            foreach model:Backend backend in backendList.items {
+                apiArtifact.backendServices[backend.metadata.name] = self.sanitizeBackendPolicyCrs(backend);
+            }
+            model:RuntimeAPI|http:ClientError internalAPI = getInternalAPI(k8sapi.metadata.name, k8sapi.metadata.namespace);
+            if internalAPI is model:RuntimeAPI {
+                apiArtifact.runtimeAPI = self.sanitizeRuntimeAPI(internalAPI);
+            } else if (internalAPI is http:ApplicationResponseError) {
+                if internalAPI.detail().statusCode != 404 {
+                    return internalAPI;
+                }
+            } else {
                 return internalAPI;
             }
+            model:ScopeList scopeList = check getScopeCrsForAPI(k8sapi.spec.apiDisplayName, k8sapi.spec.apiVersion, k8sapi.metadata.namespace, organization);
+            foreach model:Scope scope in scopeList.items {
+                apiArtifact.scopes[scope.metadata.name] = self.sanitizeScopeCR(scope);
+            }
+            model:RateLimitPolicyList rateLimitPolicyList = check getRateLimitPolicyCRsForAPI(k8sapi.spec.apiDisplayName, k8sapi.spec.apiVersion, k8sapi.metadata.namespace, organization);
+            foreach model:RateLimitPolicy rateLimitPolicy in rateLimitPolicyList.items {
+                apiArtifact.rateLimitPolicies[rateLimitPolicy.metadata.name] = self.sanitizeRateLimitPolicyCR(rateLimitPolicy);
+            }
+            apiArtifact.api = self.sanitizeAPICR(k8sapi);
+            model:ConfigMap[] endpointCertificateList = check getConfigMapsForAPICertificate(k8sapi.spec.apiDisplayName, k8sapi.spec.apiVersion, organization);
+            foreach model:ConfigMap endpointCertificate in endpointCertificateList {
+                apiArtifact.endpointCertificates[endpointCertificate.metadata.name] = self.sanitizeConfigMapData(endpointCertificate);
+            }
+            return apiArtifact;
         } else {
-            return internalAPI;
+            commons:APKError apkError = error(string:'join("API with ", <string>api.id, " not found"), message = "API not found", code = 900910, description = string:'join("API with ", <string>api.id, " not found"), statusCode = 404);
+            return apkError;
         }
-        model:ScopeList scopeList = check getScopeCrsForAPI(k8sapi.spec.apiDisplayName, k8sapi.spec.apiVersion, k8sapi.metadata.namespace);
-        foreach model:Scope scope in scopeList.items {
-            apiArtifact.scopes[scope.metadata.name] = self.sanitizeScopeCR(scope);
-        }
-        model:RateLimitPolicyList rateLimitPolicyList = check getRateLimitPolicyCRsForAPI(k8sapi.spec.apiDisplayName, k8sapi.spec.apiVersion, k8sapi.metadata.namespace);
-        foreach model:RateLimitPolicy rateLimitPolicy in rateLimitPolicyList.items {
-            apiArtifact.rateLimitPolicies[rateLimitPolicy.metadata.name] = self.sanitizeRateLimitPolicyCR(rateLimitPolicy);
-        }
-        apiArtifact.api = self.sanitizeAPICR(k8sapi);
-        return apiArtifact;
     }
+
     private isolated function sanitizeScopeCR(model:Scope scope) returns model:Scope {
         model:Scope sanitizedScope = {
             metadata: {name: scope.metadata.name, namespace: scope.metadata.namespace, labels: scope.metadata.labels},
@@ -2536,6 +2657,7 @@ public class APIClient {
         };
         return sanitizedAPI;
     }
+
     private isolated function sanitizeAPICR(model:API api) returns model:API {
         model:API modifiedAPI = {
             metadata: {name: api.metadata.name, namespace: api.metadata.namespace},
@@ -2560,7 +2682,8 @@ public class APIClient {
             metadata: {
                 name: configmap.metadata.name,
                 namespace: configmap.metadata.namespace,
-                labels: configmap.metadata.labels
+                labels: configmap.metadata.labels,
+                annotations: configmap.metadata.annotations
             },
             data: configmap.data,
             binaryData: configmap.binaryData
@@ -2610,6 +2733,7 @@ public class APIClient {
             spec: authentication.spec
         };
     }
+
     private isolated function sanitizeBackendPolicyCrs(model:Backend backend) returns model:Backend {
         return {
             metadata: {
@@ -2620,6 +2744,7 @@ public class APIClient {
             spec: backend.spec
         };
     }
+
     public isolated function exportAPI(string? apiId, commons:Organization organization) returns commons:APKError|NotFoundError|http:Response|BadRequestError {
         if apiId is string {
             do {
@@ -2655,6 +2780,9 @@ public class APIClient {
                     foreach model:Scope scope in apiArtifact.scopes {
                         _ = check self.convertAndStoreYamlFile(scope.toJsonString(), scope.metadata.name, zipDir, "scopes");
                     }
+                    foreach model:ConfigMap endpointCertificate in apiArtifact.endpointCertificates {
+                        _ = check self.convertAndStoreYamlFile(endpointCertificate.toJsonString(), endpointCertificate.metadata.name, zipDir, "endpoint-certificates");
+                    }
                     model:RuntimeAPI? runtimeAPI = apiArtifact.runtimeAPI;
                     if runtimeAPI is model:RuntimeAPI {
                         _ = check self.convertAndStoreYamlFile(runtimeAPI.toJsonString(), runtimeAPI.metadata.name, zipDir, "runtimeapi");
@@ -2676,6 +2804,7 @@ public class APIClient {
             return badRequest;
         }
     }
+
     private isolated function convertAndStoreYamlFile(string jsonString, string fileName, string directroy, string? subDirectory) returns error? {
         runtimeUtil:YamlUtil yamlUtil = runtimeUtil:newYamlUtil1();
         string|() convertedYaml = check yamlUtil.fromJsonStringToYaml(jsonString);
@@ -2689,12 +2818,14 @@ public class APIClient {
             _ = check io:fileWriteString(fullPath, convertedYaml);
         }
     }
+
     private isolated function zipDirectory(string apiId, string directoryPath) returns [string, string]|error {
         string zipName = apiId + ZIP_FILE_EXTENSTION;
         string zipPath = directoryPath + ZIP_FILE_EXTENSTION;
         _ = check runtimeUtil:ZIPUtils_zipDir(directoryPath, zipPath);
         return [zipName, zipPath];
     }
+
     public isolated function updateAPI(string apiId, API payload, string? definition, commons:Organization organization) returns API|BadRequestError|ForbiddenError|NotFoundError|PreconditionFailedError|InternalServerErrorError|commons:APKError {
         do {
             API|NotFoundError api = check self.getAPIById(apiId, organization);
@@ -2766,15 +2897,18 @@ public class APIClient {
                     _ = check self.setHttpRoute(apiArtifact, payload, createdEndpoints.hasKey(SANDBOX_TYPE) ? createdEndpoints.get(SANDBOX_TYPE) : (), uniqueId, SANDBOX_TYPE, organization);
                 }
                 if definition is string {
-                    self.retrieveGeneratedConfigmapForDefinition(apiArtifact, payload, definition, uniqueId);
+                    self.retrieveGeneratedConfigmapForDefinition(apiArtifact, payload, definition, uniqueId, organization);
                 } else {
-                    json internalDefinition = check self.getDefinition(check getAPI(apiId, organization));
-                    json generatedSwagger = check self.retrieveGeneratedSwaggerDefinition(payload, internalDefinition.toJsonString());
-                    self.retrieveGeneratedConfigmapForDefinition(apiArtifact, payload, generatedSwagger, uniqueId);
+                    model:API? aPI = getAPI(apiId, organization);
+                    if aPI is model:API {
+                        json internalDefinition = check self.getDefinition(aPI);
+                        json generatedSwagger = check self.retrieveGeneratedSwaggerDefinition(payload, internalDefinition.toJsonString());
+                        self.retrieveGeneratedConfigmapForDefinition(apiArtifact, payload, generatedSwagger, uniqueId, organization);
+                    }
                 }
                 self.generateAndSetAPICRArtifact(apiArtifact, payload, organization);
                 self.generateAndSetRuntimeAPIArtifact(apiArtifact, payload, (), organization);
-                model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact);
+                model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact, organization);
                 return check convertK8sAPItoAPI(deployAPIToK8sResult, false);
             } else {
                 return api;
@@ -2787,6 +2921,7 @@ public class APIClient {
             return error("Internal Error occured", code = 909000, message = "Internal Error occured", description = "Internal Error occured", statusCode = 500);
         }
     }
+
     # Description
     #
     # + apiId - Parameter Description  
@@ -3004,7 +3139,235 @@ public class APIClient {
         }
     }
 
+    public isolated function getCertificates(string apiId, string? endpoint, int 'limit, int offset, commons:Organization organization) returns Certificates|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
+        model:API? api = getAPI(apiId, organization);
+        if api is model:API {
+            model:Certificate[] certificates = check getCertificatesForAPIId(api.clone(), organization.clone());
+            [model:Certificate[], int] filtredCerts = self.filterCertificatesBasedOnQuery(certificates.clone(), endpoint, 'limit, offset);
+            return {certificates: self.transformCertificateToCertMetadata(filtredCerts[0].cloneReadOnly()), count: filtredCerts[0].length(), pagination: {total: filtredCerts[1], 'limit: 'limit, offset: offset}};
+        } else {
+            NotFoundError notfound = {body: {code: 909100, message: apiId + " not found."}};
+            return notfound.clone();
+        }
+    }
+
+    private isolated function transformCertificateToCertMetadata(model:Certificate[] certificates) returns CertMetadata[] {
+        CertMetadata[] certMetadataList = [];
+        foreach model:Certificate certificate in certificates {
+            CertMetadata certMetadata = {certificateId: certificate.certificateId, endpoint: certificate.hostname};
+            certMetadataList.push(certMetadata);
+        }
+        return certMetadataList;
+
+    }
+
+    private isolated function filterCertificatesBasedOnQuery(model:Certificate[] certList, string? endpoint, int 'limit, int offset) returns [model:Certificate[], int] {
+        model:Certificate[] filteredList = [];
+        if endpoint is string && endpoint.length() > 0 {
+            foreach model:Certificate certificate in certList {
+                if (regex:matches(certificate.hostname, endpoint)) {
+                    filteredList.push(certificate);
+                }
+            }
+        } else {
+            filteredList = certList;
+        }
+        model:Certificate[] limitSet = [];
+        if filteredList.length() > offset {
+            foreach int i in offset ... (filteredList.length() - 1) {
+                if limitSet.length() < 'limit {
+                    limitSet.push(filteredList[i]);
+                }
+            }
+        }
+        return [limitSet, filteredList.length()];
+    }
+
+    public isolated function addCertificate(string apiId, http:Request request, commons:Organization organization) returns OkCertMetadata|BadRequestError|InternalServerErrorError|NotFoundError|commons:APKError {
+        do {
+            model:API? api = getAPI(apiId, organization);
+            if api is model:API {
+                EndpointCertificateRequest endpointCertificate = check self.retrieveEndpointCertificateRequest(request);
+                [crypto:Certificate?, boolean] validateCertificateExpiryResult = check validateCertificateExpiry(endpointCertificate);
+                if (validateCertificateExpiryResult[1]) {
+                    model:ConfigMap certificateConfigMapEntry = check createCertificateConfigMapEntry(check convertK8sAPItoAPI(api, true), endpointCertificate, <crypto:Certificate>validateCertificateExpiryResult[0], organization);
+                    model:ConfigMap deployedConfigMap = check self.deployConfigMap(certificateConfigMapEntry);
+                    OkCertMetadata okCertMetaData = {body: {certificateId: deployedConfigMap.metadata.uid, endpoint: endpointCertificate.host}};
+                    return okCertMetaData;
+                } else {
+                    BadRequestError badRequest = {body: {code: 909100, message: "Certificate is expired."}};
+                    return badRequest;
+                }
+            } else {
+                NotFoundError notfound = {body: {code: 909100, message: apiId + " not found."}};
+                return notfound;
+            }
+        } on fail var e {
+            if e is commons:APKError {
+                return e;
+            } else {
+                return error("Error while adding certificate", e, message = "Error while adding certificate", description = "Error while adding certificate", code = 909000, statusCode = 500);
+            }
+        }
+    }
+
+    private isolated function retrieveEndpointCertificateRequest(http:Request request) returns EndpointCertificateRequest|commons:APKError {
+        string|() host = ();
+        string|() certificateFileName = ();
+        byte[]|() certificateFileContent = ();
+        do {
+            mime:Entity[]|http:ClientError payLoadParts = request.getBodyParts();
+            if payLoadParts is mime:Entity[] {
+                foreach mime:Entity payLoadPart in payLoadParts {
+                    mime:ContentDisposition contentDisposition = payLoadPart.getContentDisposition();
+                    string fieldName = contentDisposition.name;
+                    if fieldName == "host" {
+                        host = check payLoadPart.getText();
+                    }
+                    else if fieldName == "certificate" {
+                        certificateFileName = contentDisposition.fileName;
+                        certificateFileContent = check payLoadPart.getByteArray();
+                    }
+                }
+            }
+            if (host is () || certificateFileName is () || certificateFileContent is ()) {
+
+                return error("host/certificte is empty in payload.", message = "host/certificte is empty in payload.", description = "host/certificte is empty in payload.", code = 909000, statusCode = 500);
+            } else {
+                return {host: host, fileName: certificateFileName, certificateFileContent: certificateFileContent};
+            }
+        } on fail var e {
+            return error("Error while retrieving endpoint certificate request", e, message = "Error while retrieving endpoint certificate request", description = "Error while retrieving endpoint certificate request", code = 909000, statusCode = 500);
+        }
+    }
+
+    public isolated function getEndpointCertificateByID(string apiId, string certificateId, commons:Organization organization) returns CertificateInfo|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
+        do {
+            model:API? api = getAPI(apiId, organization);
+            if api is model:API {
+                model:Certificate certificate = check getCertificateById(certificateId, api, organization.clone());
+                time:Utc notBeforeTime = [check int:fromString(certificate.notBefore), 0];
+                time:Utc notAfterTime = [check int:fromString(certificate.notAfter), 0];
+                CertificateInfo certificateInfo = {
+                    'version: certificate.'version,
+                    subject: certificate.subject,
+                    status: certificate.active ? "Active" : "Expired",
+                    validity: {
+                        'from: check time:civilToString(time:utcToCivil(notBeforeTime)),
+                        to: check time:civilToString(time:utcToCivil(notAfterTime))
+                    }
+                };
+                return certificateInfo;
+            } else {
+                NotFoundError notfound = {body: {code: 909100, message: apiId + " not found."}};
+                return notfound;
+            }
+        } on fail var e {
+            if e is commons:APKError {
+                return e;
+            } else {
+                return error("Error while getting endpoint certificate by id", e, message = "Error while getting endpoint certificate by id", description = "Error while getting endpoint certificate by id", code = 909000, statusCode = 500);
+            }
+        }
+    }
+
+    public isolated function updateEndpointCertificate(string apiId, string certificateId, http:Request request, commons:Organization organization) returns CertMetadata|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
+        do {
+            model:API? api = getAPI(apiId, organization);
+            if api is model:API {
+                model:ConfigMap|commons:APKError configMapById = getConfigMapById(certificateId, api, organization);
+                if configMapById is model:ConfigMap {
+                    EndpointCertificateRequest endpointCertificate = check self.retrieveEndpointCertificateRequest(request);
+                    [crypto:Certificate?, boolean] validateCertificateExpiryResult = check validateCertificateExpiry(endpointCertificate);
+                    if (validateCertificateExpiryResult[1]) {
+                        model:ConfigMap certificateConfigMapEntry = check createCertificateConfigMapEntry(check convertK8sAPItoAPI(api, true), endpointCertificate, <crypto:Certificate>validateCertificateExpiryResult[0], organization);
+                        certificateConfigMapEntry.metadata.name = configMapById.metadata.name;
+                        model:ConfigMap deployedConfigMap = check self.updateConfigMap(certificateConfigMapEntry);
+                        CertMetadata okCertMetaData = {certificateId: deployedConfigMap.metadata.uid, endpoint: endpointCertificate.host};
+                        return okCertMetaData;
+                    } else {
+                        BadRequestError badRequest = {body: {code: 909100, message: "Certificate is expired."}};
+                        return badRequest;
+                    }
+                } else {
+                    NotFoundError notfound = {body: {code: 909100, message: "Certificate " + certificateId + " not found."}};
+                    return notfound;
+                }
+            } else {
+                NotFoundError notfound = {body: {code: 909100, message: apiId + " not found."}};
+                return notfound;
+            }
+        }
+        on fail var e {
+            if e is commons:APKError {
+                return e;
+            } else {
+                return error("Error while updating endpoint certificate", e, message = "Error while updating endpoint certificate", description = "Error while updating endpoint certificate", code = 909000, statusCode = 500);
+            }
+        }
+    }
+
+    public isolated function deleteEndpointCertificate(string apiId, string certificateId, commons:Organization organization) returns http:Ok|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
+        do {
+            model:API? api = getAPI(apiId, organization);
+            if api is model:API {
+                model:ConfigMap|commons:APKError configMapById = getConfigMapById(certificateId, api, organization);
+                if configMapById is model:ConfigMap {
+                    boolean _ = check self.deleteConfigMap(configMapById);
+                    http:Ok okResponse = {body: "Certificate deleted successfully"};
+                    return okResponse;
+                } else {
+                    NotFoundError notfound = {body: {code: 909100, message: "Certificate " + certificateId + " not found."}};
+                    return notfound;
+                }
+            } else {
+                NotFoundError notfound = {body: {code: 909100, message: apiId + " not found."}};
+                return notfound;
+            }
+        }
+        on fail var e {
+            if e is commons:APKError {
+                return e;
+            } else {
+                return error("Error while deleting endpoint certificate", e, message = "Error while deleting endpoint certificate", description = "Error while deleting endpoint certificate", code = 909000, statusCode = 500);
+            }
+        }
+    }
+
+    public isolated function getEndpointCertificateContent(string apiId, string certificateId, commons:Organization organization) returns http:Response|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
+        do {
+            model:API? api = getAPI(apiId, organization);
+            if api is model:API {
+                model:Certificate certificateById = check getCertificateById(certificateId, api, organization);
+                string tempDirectory = check file:createTempDir();
+                string certificateFileName = tempDirectory + file:pathSeparator + certificateId + ".crt";
+                _ = check io:fileWriteString(certificateFileName, certificateById.certificateContent);
+                http:Response response = new;
+                response.setFileAsPayload(certificateFileName);
+                response.addHeader("Content-Disposition", "attachment; filename=" + certificateFileName);
+                response.statusCode = 200;
+                return response;
+            } else {
+                NotFoundError notfound = {body: {code: 909100, message: apiId + " not found."}};
+                return notfound;
+            }
+        }
+        on fail var e {
+            if e is commons:APKError {
+                return e;
+            } else {
+                return error("Error while getting endpoint certificate content", e, message = "Error while getting endpoint certificate content", description = "Error while getting endpoint certificate content", code = 909000, statusCode = 500);
+            }
+        }
+    }
+
 }
+
+public type EndpointCertificateRequest record {
+    string host;
+    string fileName;
+    byte[] certificateFileContent;
+};
 
 type ImportDefintionRequest record {
     string? url;
@@ -3051,7 +3414,10 @@ public isolated function retrieveHttpRouteRefName(API api, string 'type, commons
     return uuid:createType1AsString();
 }
 
-public isolated function retrieveRateLimitPolicyRefName(string kind) returns string {
-    string prefix = "rate-limit-" + kind.toLowerAscii() + "-";
-    return prefix + uuid:createType1AsString();
+public isolated function retrieveRateLimitPolicyRefName(APIOperations? operation) returns string {
+    if operation is APIOperations {
+        return uuid:createType1AsString();
+    } else {
+        return "api-" + uuid:createType1AsString();
+    }
 }
