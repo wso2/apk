@@ -30,6 +30,7 @@ import (
 	tlsInspectorv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/listener/tls_inspector/v3"
 	hcmv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/http_connection_manager/v3"
 	tlsv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/transport_sockets/tls/v3"
+	metadatav3 "github.com/envoyproxy/go-control-plane/envoy/type/metadata/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/wrappers"
@@ -290,6 +291,7 @@ func CreateListenerByGateway(gateway *gwapiv1b1.Gateway) *listenerv3.Listener {
 // request from the vHost domain. The routes array will be included as the routes
 // for the created virtual host.
 func CreateVirtualHosts(vhostToRouteArrayMap map[string][]*routev3.Route, customRateLimitPolicies []*model.CustomRateLimitPolicy) []*routev3.VirtualHost {
+	logger.LoggerOasparser.Infof("XXXXXXXXX Creating Virtual Hosts: %v", len(customRateLimitPolicies))
 	virtualHosts := make([]*routev3.VirtualHost, 0, len(vhostToRouteArrayMap))
 	var rateLimits []*routev3.RateLimit
 	for _, customRateLimitPolicy := range customRateLimitPolicies {
@@ -297,16 +299,34 @@ func CreateVirtualHosts(vhostToRouteArrayMap map[string][]*routev3.Route, custom
 		actions = append(actions, &routev3.RateLimit_Action{
 			ActionSpecifier: &routev3.RateLimit_Action_GenericKey_{
 				GenericKey: &routev3.RateLimit_Action_GenericKey{
-					DescriptorKey: "org",
+					DescriptorKey:   "org",
 					DescriptorValue: customRateLimitPolicy.Organization,
 				},
 			},
 		})
+		// actions = append(actions, &routev3.RateLimit_Action{
+		// 	ActionSpecifier: &routev3.RateLimit_Action_GenericKey_{
+		// 		GenericKey: &routev3.RateLimit_Action_GenericKey{
+		// 			DescriptorKey: customRateLimitPolicy.Key,
+		// 			DescriptorValue: customRateLimitPolicy.Value,
+		// 		},
+		// 	},
+		// })
 		actions = append(actions, &routev3.RateLimit_Action{
-			ActionSpecifier: &routev3.RateLimit_Action_GenericKey_{
-				GenericKey: &routev3.RateLimit_Action_GenericKey{
+			ActionSpecifier: &routev3.RateLimit_Action_Metadata{
+				Metadata: &routev3.RateLimit_Action_MetaData{
 					DescriptorKey: customRateLimitPolicy.Key,
-					DescriptorValue: customRateLimitPolicy.Value,
+					MetadataKey: &metadatav3.MetadataKey{
+						Key: "envoy.filters.http.lua",
+						Path: []*metadatav3.MetadataKey_PathSegment{
+							{
+								Segment: &metadatav3.MetadataKey_PathSegment_Key{
+									Key: customRateLimitPolicy.Key,
+								},
+							},
+						},
+					},
+					Source: routev3.RateLimit_Action_MetaData_DYNAMIC,
 				},
 			},
 		})
@@ -314,12 +334,12 @@ func CreateVirtualHosts(vhostToRouteArrayMap map[string][]*routev3.Route, custom
 			Actions: actions,
 		})
 	}
-	
+
 	for vhost, routes := range vhostToRouteArrayMap {
 		virtualHost := &routev3.VirtualHost{
-			Name:    vhost,
-			Domains: []string{vhost, fmt.Sprint(vhost, ":*")},
-			Routes:  routes,
+			Name:       vhost,
+			Domains:    []string{vhost, fmt.Sprint(vhost, ":*")},
+			Routes:     routes,
 			RateLimits: rateLimits,
 		}
 		virtualHosts = append(virtualHosts, virtualHost)

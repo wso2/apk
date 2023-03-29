@@ -55,12 +55,14 @@ func getHTTPFilters() []*hcmv3.HttpFilter {
 	extAuth := getExtAuthzHTTPFilter()
 	router := getRouterHTTPFilter()
 	lua := getLuaFilter()
+	customRateLimit := getCustomRateLimitLuaFilter()
 	cors := getCorsHTTPFilter()
 
 	httpFilters := []*hcmv3.HttpFilter{
 		cors,
 		extAuth,
 		lua,
+		customRateLimit,
 	}
 	conf := config.ReadConfigs()
 	if conf.Envoy.RateLimit.Enabled {
@@ -238,6 +240,47 @@ func getLuaFilter() *hcmv3.HttpFilter {
 					"\nend" +
 					"\nfunction envoy_on_response(response_handle)" +
 					"\nend",
+			},
+		},
+	}
+	ext, err2 := anypb.New(luaConfig)
+	if err2 != nil {
+		logger.LoggerOasparser.Error(err2)
+	}
+	luaFilter := hcmv3.HttpFilter{
+		Name: wellknown.Lua,
+		ConfigType: &hcmv3.HttpFilter_TypedConfig{
+			TypedConfig: ext,
+		},
+	}
+	return &luaFilter
+}
+
+func getCustomRateLimitLuaFilter() *hcmv3.HttpFilter {
+	inlineString := `
+		function envoy_on_request(request_handle)
+			local path = request_handle:headers():get(":path")
+			request_handle:logInfo("XXXXXX Path: "..request_handle:headers():get(":path"))
+			request_handle:logInfo("Authority: "..request_handle:headers():get(":authority"))
+  			request_handle:logInfo("Method: "..request_handle:headers():get(":method"))
+			if path == "/http-bin-api-basic/1.0.8/get" then
+				request_handle:streamInfo():dynamicMetadata():set("envoy.filters.http.lua", "custom-key-1", "custom-value-1")
+			end
+			if path == "/foo" then
+				request_handle:streamInfo():dynamicMetadata():set("envoy.filters.http.lua", "custom-key-2", "custom-value-2")
+			end
+		end
+		
+		function envoy_on_response(response_handle)
+			local meta = response_handle:streamInfo():dynamicMetadata():get("envoy.filters.http.lua")["custom-key-1"]
+			response_handle:logInfo("YYYYYYY Auth: "..meta)
+		end
+
+		`
+	luaConfig := &luav3.Lua{
+		DefaultSourceCode: &corev3.DataSource{
+			Specifier: &corev3.DataSource_InlineString{
+				InlineString: inlineString,
 			},
 		},
 	}

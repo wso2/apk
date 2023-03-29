@@ -746,16 +746,16 @@ end`
 	luaMarshelled.SetDeterministic(true)
 	_ = luaMarshelled.Marshal(&luaPerFilterConfig)
 
-	luaFilter := &any.Any{
-		TypeUrl: luaPerRouteName,
-		Value:   luaMarshelled.Bytes(),
-	}
+	// luaFilter := &any.Any{
+	// 	TypeUrl: luaPerRouteName,
+	// 	Value:   luaMarshelled.Bytes(),
+	// }
 
 	corsFilter, _ := anypb.New(corsPolicy)
 
 	perRouteFilterConfigs := map[string]*any.Any{
 		wellknown.HTTPExternalAuthorization: extAuthzFilter,
-		wellknown.Lua:                       luaFilter,
+		// wellknown.Lua:                       luaFilter,
 		wellknown.CORS:                      corsFilter,
 	}
 
