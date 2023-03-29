@@ -29,7 +29,7 @@ data:
 
     [router]
       securedListenerPort = {{ .Values.wso2.apk.dp.gateway.listener.port }}
-      systemHost = "{{ .Values.wso2.apk.dp.gateway.listener.hostname }}"
+      systemHost = "localhost"
       useRemoteAddress = false
 
     [router.keystore]
@@ -254,7 +254,7 @@ data:
     # The timeout for response coming from enforcer to route per API request
     enforcerResponseTimeoutInSeconds = 20
     # System hostname for system API resources (eg: /testkey and /health)
-    systemHost = "{{ .Values.wso2.apk.dp.gateway.listener.hostname }}"
+    systemHost = "localhost"
 
     # Configurations of key store used in Choreo Connect Router
     [router.keystore]

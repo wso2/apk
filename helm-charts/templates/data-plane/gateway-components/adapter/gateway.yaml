@@ -47,3 +47,13 @@ spec:
           - kind: Secret
             group: ""
             name: gateway-com-cert
+    - name: systemlistener
+      hostname: "localhost"
+      port: {{ .Values.wso2.apk.dp.gateway.listener.port }}
+      protocol: {{ .Values.wso2.apk.dp.gateway.listener.protocol }}
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            group: ""
+            name: gateway-com-cert

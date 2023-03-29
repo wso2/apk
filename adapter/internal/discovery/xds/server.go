@@ -413,7 +413,7 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 	// If the token endpoint is enabled, the token endpoint also needs to be added.
 	conf := config.ReadConfigs()
 	enableJwtIssuer := conf.Enforcer.JwtIssuer.Enabled
-	systemHost := strings.Replace(conf.Envoy.SystemHost, "*", "prod", 1)
+	systemHost := conf.Envoy.SystemHost
 
 	logger.LoggerXds.Debugf("System Host : %v", systemHost)
 	if enableJwtIssuer {

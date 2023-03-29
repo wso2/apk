@@ -86,12 +86,13 @@ func CreateListenerByGateway(gateway *gwapiv1b1.Gateway) *listenerv3.Listener {
 		listenerName = defaultHTTPSListenerName
 
 		filterChainMatch := &listenerv3.FilterChainMatch{
-			ServerNames:     []string{string(*listenerObj.Hostname)},
-			DestinationPort: &wrappers.UInt32Value{Value: listenerPort},
+			ServerNames: []string{string(*listenerObj.Hostname)},
 		}
 
+		keyPath, certPath := retrieveCertsPaths(string(listenerObj.Name))
+
 		var tlsFilter *tlsv3.DownstreamTlsContext
-		tlsCert := generateTLSCert(conf.Envoy.KeyStore.KeyPath, conf.Envoy.KeyStore.CertPath)
+		tlsCert := generateTLSCert(keyPath, certPath)
 		//TODO: Make this configurable using config map from listener object
 		if conf.Envoy.Downstream.TLS.MTLSAPIsEnabled {
 			tlsFilter = &tlsv3.DownstreamTlsContext{
@@ -119,6 +120,7 @@ func CreateListenerByGateway(gateway *gwapiv1b1.Gateway) *listenerv3.Listener {
 				CommonTlsContext: &tlsv3.CommonTlsContext{
 					//TlsCertificateSdsSecretConfigs
 					TlsCertificates: []*tlsv3.TlsCertificate{tlsCert},
+					AlpnProtocols:   []string{"h2", "http/1.1"},
 				},
 			}
 		}
@@ -297,6 +299,32 @@ func CreateVirtualHosts(vhostToRouteArrayMap map[string][]*routev3.Route) []*rou
 		virtualHosts = append(virtualHosts, virtualHost)
 	}
 	return virtualHosts
+}
+
+// retrieveCertsPaths retrieves the key and cert paths from the config file
+func retrieveCertsPaths(listenerName string) (string, string) {
+	var keyPath string
+	var certPath string
+	if listenerName == "gatewaylistener" {
+		keyPath = "/home/wso2/security/listeners/gw.key"
+		certPath = "/home/wso2/security/listeners/gw.crt"
+	} else if listenerName == "apilistener" {
+		keyPath = "/home/wso2/security/listeners/api.key"
+		certPath = "/home/wso2/security/listeners/api.crt"
+	} else if listenerName == "idplistener" {
+		keyPath = "/home/wso2/security/listeners/idp.key"
+		certPath = "/home/wso2/security/listeners/idp.crt"
+	} else if listenerName == "examplelistener" {
+		keyPath = "/home/wso2/security/listeners/example.key"
+		certPath = "/home/wso2/security/listeners/example.crt"
+	} else if listenerName == "systemlistener" {
+		keyPath = "/home/wso2/security/listeners/localhost.key"
+		certPath = "/home/wso2/security/listeners/localhost.crt"
+	} else {
+		keyPath = "/home/wso2/security/listeners/gw.key"
+		certPath = "/home/wso2/security/listeners/gw.crt"
+	}
+	return keyPath, certPath
 }
 
 // TODO: (VirajSalaka) Still the following method is not utilized as Sds is not implement. Keeping the Implementation for future reference
