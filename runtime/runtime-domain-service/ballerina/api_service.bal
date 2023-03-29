@@ -47,7 +47,7 @@ http:Service runtimeService = service object {
         final APIClient apiService = new ();
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
-        return apiService.updateAPI(apiId, payload,(), organization);
+        return apiService.updateAPI(apiId, payload, (), organization);
     }
     isolated resource function delete apis/[string apiId](http:RequestContext requestContext) returns http:Ok|ForbiddenError|NotFoundError|InternalServerErrorError|BadRequestError|commons:APKError {
         final APIClient apiService = new ();
@@ -90,10 +90,10 @@ http:Service runtimeService = service object {
         return apiService.getAPIDefinitionByID(apiId, organization);
     }
     isolated resource function put apis/[string apiId]/definition(http:RequestContext requestContext, http:Request message) returns http:Response|BadRequestError|ForbiddenError|NotFoundError|PreconditionFailedError|InternalServerErrorError|commons:APKError {
-         final APIClient apiService = new ();
+        final APIClient apiService = new ();
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
-        return apiService.updateAPIDefinition(apiId,message,organization);
+        return apiService.updateAPIDefinition(apiId, message, organization);
     }
     isolated resource function get apis/export(http:RequestContext requestContext, string? apiId, string? name, string? 'version, string? format) returns http:Response|NotFoundError|InternalServerErrorError|BadRequestError|commons:APKError {
         final APIClient apiService = new ();
@@ -141,4 +141,16 @@ http:Service runtimeService = service object {
         commons:Organization organization = authenticatedUserContext.organization;
         return apiService.getMediationPolicyById(policyId, organization);
     }
+    // resource function get apis/[string apiId]/'endpoint\-certificates(string? endpoint, int 'limit = 25, int offset = 0) returns Certificates|BadRequestError|NotFoundError|InternalServerErrorError {
+    // }
+    // resource function post apis/[string apiId]/'endpoint\-certificates(http:Request request) returns OkCertMetadata|BadRequestError|InternalServerErrorError {
+    // }
+    // resource function get apis/[string apiId]/'endpoint\-certificates/[string certificateId]() returns CertificateInfo|BadRequestError|NotFoundError|InternalServerErrorError {
+    // }
+    // resource function put apis/[string apiId]/'endpoint\-certificates/[string certificateId](http:Request request) returns CertMetadata|BadRequestError|NotFoundError|InternalServerErrorError {
+    // }
+    // resource function delete apis/[string apiId]/'endpoint\-certificates/[string certificateId]() returns http:Ok|BadRequestError|NotFoundError|InternalServerErrorError {
+    // }
+    // resource function get apis/[string apiId]/'endpoint\-certificates/[string certificateId]/content() returns http:Ok|BadRequestError|NotFoundError|InternalServerErrorError {
+    // }
 };

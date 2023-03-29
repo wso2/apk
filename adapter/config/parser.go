@@ -159,11 +159,6 @@ func (config *Config) resolveDeprecatedProperties() {
 		config.ControlPlane.ServiceURL = config.ControlPlane.ServiceURLDeprecated
 	}
 
-	if len(config.Enforcer.Throttling.Publisher.URLGroupDeprecated) > 0 {
-		printDeprecatedWarningLog("enforcer.throttling.publisher.urlGroup", "enforcer.throttling.publisher.URLGroup")
-		config.Enforcer.Throttling.Publisher.URLGroup = config.Enforcer.Throttling.Publisher.URLGroupDeprecated
-	}
-
 	// For boolean values, adapter check if the condition is changed by checking against the default value it is originally
 	// assigned.
 	if !config.Enforcer.RestServer.Enable {

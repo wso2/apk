@@ -196,6 +196,49 @@ func updateHTTPRoute(httpRoute *HTTPRouteState, cachedHTTPRoute *HTTPRouteState,
 		}
 	}
 
+	if len(httpRoute.RateLimitPolicies) != len(cachedHTTPRoute.RateLimitPolicies) {
+		cachedHTTPRoute.RateLimitPolicies = httpRoute.RateLimitPolicies
+		updated = true
+		events = append(events, endpointType+" Endpoint RateLimitPolicies")
+	} else {
+		for key, rateLimitPolicy := range httpRoute.RateLimitPolicies {
+			if existingRateLimitPolicy, found := cachedHTTPRoute.RateLimitPolicies[key]; found {
+				if rateLimitPolicy.UID != existingRateLimitPolicy.UID || rateLimitPolicy.Generation > existingRateLimitPolicy.Generation {
+					cachedHTTPRoute.RateLimitPolicies = httpRoute.RateLimitPolicies
+					updated = true
+					events = append(events, endpointType+" Endpoint RateLimitPolicies")
+					break
+				}
+			} else {
+				cachedHTTPRoute.RateLimitPolicies = httpRoute.RateLimitPolicies
+				updated = true
+				events = append(events, endpointType+" Endpoint RateLimitPolicies")
+				break
+			}
+		}
+	}
+	if len(httpRoute.ResourceRateLimitPolicies) != len(cachedHTTPRoute.ResourceRateLimitPolicies) {
+		cachedHTTPRoute.ResourceRateLimitPolicies = httpRoute.ResourceRateLimitPolicies
+		updated = true
+		events = append(events, endpointType+" Endpoint Resource RateLimitPolicies")
+	} else {
+		for key, rateLimitPolicy := range httpRoute.ResourceRateLimitPolicies {
+			if existingRateLimitPolicy, found := cachedHTTPRoute.ResourceRateLimitPolicies[key]; found {
+				if rateLimitPolicy.UID != existingRateLimitPolicy.UID || rateLimitPolicy.Generation > existingRateLimitPolicy.Generation {
+					cachedHTTPRoute.ResourceRateLimitPolicies = httpRoute.ResourceRateLimitPolicies
+					updated = true
+					events = append(events, endpointType+" Endpoint Resource RateLimitPolicies")
+					break
+				}
+			} else {
+				cachedHTTPRoute.ResourceRateLimitPolicies = httpRoute.ResourceRateLimitPolicies
+				updated = true
+				events = append(events, endpointType+" Endpoint Resource RateLimitPolicies")
+				break
+			}
+		}
+	}
+
 	if len(httpRoute.Scopes) != len(cachedHTTPRoute.Scopes) {
 		cachedHTTPRoute.Scopes = httpRoute.Scopes
 		updated = true

@@ -582,6 +582,284 @@ paths:
 
         "500":
           $ref: "#/components/responses/InternalServerError"
+
+######################################################
+  # The "Certificate Management" resource APIs
+  ######################################################
+  /apis/{apiId}/endpoint-certificates:
+    get:
+      tags:
+        - Endpoint Certificates
+      summary: Retrieve/Search Uploaded Certificates
+      description: |
+        This operation can be used to retrieve and search the uploaded certificates.
+      parameters:
+      - name: apiId
+        in: path
+        explode: true
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/limit'
+      - $ref: '#/components/parameters/offset'
+      - name: endpoint
+        in: query
+        description: Endpoint of which the certificate is uploaded
+        schema:
+          type: string
+      responses:
+        200:
+          description: |
+            OK. Successful response with the list of matching certificate information in the body.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Certificates'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+
+      operationId: getEndpointCertificates
+
+    post:
+      tags:
+        - Endpoint Certificates
+      summary: Upload a new Certificate.
+      description: |
+        This operation can be used to upload a new certificate for an endpoint.
+      parameters:
+      - name: apiId
+        in: path
+        explode: true
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+                - certificate
+                - host
+              properties:
+                certificate:
+                  type: string
+                  description: The certificate that needs to be uploaded.
+                  format: binary
+                endpoint:
+                  type: string
+                  description: Endpoint to which the certificate should be applied.
+        required: true
+      responses:
+        200:
+          description: |
+            OK.
+            The Certificate added successfully.
+          headers:
+            Location:
+              description: |
+                The URL of the newly created resource.
+              schema:
+                type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CertMetadata'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+
+      operationId: addEndpointCertificate
+
+  /apis/{apiId}/endpoint-certificates/{certificateId}:
+    get:
+      tags:
+        - Endpoint Certificates
+      summary: Get the Certificate Information
+      description: |
+        This operation can be used to get the information about a certificate.
+      parameters:
+      - name: apiId
+        in: path
+        explode: true
+        required: true
+        schema:
+          type: string
+      - name: certificateId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: |
+            OK.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CertificateInfo'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      operationId: getEndpointCertificateByAlias
+
+    put:
+      tags:
+        - Endpoint Certificates
+      summary: Update a certificate.
+      description: |
+        This operation can be used to update an uploaded certificate.
+      parameters:
+      - name: apiId
+        in: path
+        explode: true
+        required: true
+        schema:
+          type: string
+      - name: certificateId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+                - certificate
+              properties:
+                certificate:
+                  type: string
+                  description: The certificate that needs to be uploaded.
+                  format: binary
+        required: true
+      responses:
+        200:
+          description: |
+            OK.
+            The Certificate updated successfully.
+          headers:
+            Location:
+              description: |
+                The URL of the newly created resource.
+              schema:
+                type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CertMetadata'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      operationId: updateEndpointCertificateByAlias
+
+    delete:
+      tags:
+        - Endpoint Certificates
+      summary: Delete a certificate.
+      description: |
+        This operation can be used to delete an uploaded certificate.
+      parameters:
+        - name: apiId
+          in: path
+          explode: true
+          required: true
+          schema:
+            type: string
+        - name: certificateId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: |
+            OK.
+            The Certificate deleted successfully.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content: {}
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      operationId: deleteEndpointCertificateByAlias
+
+  /apis/{apiId}/endpoint-certificates/{certificateId}/content:
+    get:
+      tags:
+        - Endpoint Certificates
+      summary: Download a Certificate
+      description: |
+        This operation can be used to download a certificate which matches the given alias.
+      parameters:
+        - name: apiId
+          in: path
+          explode: true
+          required: true
+          schema:
+            type: string
+        - name: certificateId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: |
+            OK.
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              schema:
+                type: string
+          content: {}
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      operationId: getEndpointCertificateContentByAlias
   /apis/export:
     get:
       tags:
@@ -730,10 +1008,6 @@ paths:
           $ref: '#/components/responses/BadRequest'
         404:
           $ref: '#/components/responses/NotFound'
-      security:
-        - OAuth2Security:
-            - apk:api_create
-            - apk:api_manage
       operationId: createNewAPIVersion
   /services:
     get:
@@ -1130,6 +1404,8 @@ components:
         apiPolicies:
           $ref: "#/components/schemas/APIOperationPolicies"
           optional: true
+        apiRateLimit:
+          $ref: "#/components/schemas/APIRateLimit"
         createdTime:
           type: string
           readOnly: true
@@ -1180,6 +1456,8 @@ components:
             type: string
         operationPolicies:
           $ref: "#/components/schemas/APIOperationPolicies"
+        operationRateLimit:
+          $ref: "#/components/schemas/APIRateLimit"
     APIOperationPolicies:
       title: API Operation Level Policies
       properties:
@@ -1209,17 +1487,27 @@ components:
         policyId:
           type: string
         parameters:
-          type: array
-          items:
-            $ref: "#/components/schemas/OperationPolicyParameters"
-    OperationPolicyParameters:
-      title: API Operation Policy Parameters
+          type: object
+          example: {"headerName":"header1"}
+    APIRateLimit:
+      title: API Rate Limit Details
       type: object
+      required:
+        - requestsPerUnit
+        - unit
       properties:
-        headerName:
+        requestsPerUnit:
+          type: integer
+          description: Number of requests allowed per specified unit of time
+          example: 30
+        unit:
           type: string
-        headerValue:
-          type: string
+          description: Unit of time
+          enum:
+          - Minute
+          - Hour
+          - Day
+          example: Minute
     GraphQLSchema:
       title: GraphQL Schema
       required:
@@ -1636,6 +1924,57 @@ components:
           type: integer
           format: int32
           example: 3600
+    Certificates:
+      title: Certificates
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 1
+        certificates:
+          type: array
+          items:
+            $ref: '#/components/schemas/CertMetadata'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      description: Representation of a list of certificates
+    CertMetadata:
+      title: Certificate
+      type: object
+      properties:
+        certificateId:
+          type: string
+          example: 3e3a9a8e-7f8d-4a8e-8a8a-8d8d8d8d8d8d
+        endpoint:
+          type: string
+          example: www.abc.com
+      description: Representation of the details of a certificate
+    CertificateInfo:
+        title: Certificate information
+        type: object
+        properties:
+          status:
+            type: string
+            example: Active
+          validity:
+            $ref: '#/components/schemas/CertificateValidity'
+          version:
+            type: string
+            example: V3
+          subject:
+            type: string
+            example: CN=wso2.com, OU=wso2, O=wso2, L=Colombo, ST=Western, C=LK
+    CertificateValidity:
+      title: Certificate Valid period
+      type: object
+      properties:
+        from:
+          type: string
+          example: 12-12-2017
+        to:
+          type: string
+          example: 01-01-2019
+
   responses:
     BadRequest:
       description: Bad Request. Invalid request or validation error.

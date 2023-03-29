@@ -157,15 +157,13 @@ spec:
                               properties:
                                 policyName:
                                   type: string
+                                policyVersion:
+                                  type: string
+                                  default: v1
                                 parameters:
-                                  type: array
-                                  items:
-                                    type: object
-                                    properties:
-                                      headerName:
-                                        type: string
-                                      headerValue:
-                                        type: string
+                                  type: object
+                                  additionalProperties:
+                                    type: string
                           response:
                             type: array
                             items:
@@ -173,15 +171,27 @@ spec:
                               properties:
                                 policyName:
                                   type: string
+                                policyVersion:
+                                  type: string
+                                  default: v1
                                 parameters:
-                                  type: array
-                                  items:
-                                    type: object
-                                    properties:
-                                      headerName:
-                                        type: string
-                                      headerValue:
-                                        type: string
+                                  type: object
+                                  additionalProperties:
+                                    type: string
+                      operationRateLimit:
+                        type: object
+                        properties:
+                          requestsPerUnit:
+                            type: integer
+                          unit:
+                            type: string
+                apiRateLimit:
+                  type: object
+                  properties:
+                    requestsPerUnit:
+                      type: integer
+                    unit:
+                      type: string
                 serviceInfo:
                   type: object
                   properties:
@@ -191,6 +201,37 @@ spec:
                     namespace:
                       type: string
                       example: apk-platform
+                apiPolicies:
+                  type: object
+                  properties:
+                    request:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          policyName:
+                            type: string
+                          policyVersion:
+                            type: string
+                            default: v1
+                          parameters:
+                            type: object
+                            additionalProperties:
+                              type: string
+                    response:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          policyName:
+                            type: string
+                          policyVersion:
+                            type: string
+                            default: v1
+                          parameters:
+                            type: object
+                            additionalProperties:
+                              type: string
           type: object
       served: true
       storage: true

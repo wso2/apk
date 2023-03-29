@@ -722,7 +722,7 @@ data:
     ## Adapter root Level configurations
 
     logfile = "logs/adapter.log" # This file will be created inside adapter container.
-    logLevel = "DEBG" # LogLevels can be "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC"
+    logLevel = "INFO" # LogLevels can be "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC"
     LogFormat = "TEXT" # Values can be "JSON", "TEXT"
 
     [rotation]
@@ -797,14 +797,14 @@ data:
     loggers = enforcer, io-swagger-v3, enforcer-interceptors, carbon-apimgt
 
     # Log to access log file
-    logger.enforcer-interceptors.name = org.wso2.choreo.connect.enforcer.grpc.interceptors
+    logger.enforcer-interceptors.name = org.wso2.apk.enforcer.grpc.interceptors
     # Change the log level into DEBUG to view the access logs.
     logger.enforcer-interceptors.level = INFO
     logger.enforcer-interceptors.additivity = false
     logger.enforcer-interceptors.appenderRef.rolling.ref = ENFORCER_ACCESS_LOG
 
     # Log to console and rolling file
-    logger.enforcer.name = org.wso2.choreo.connect.enforcer
+    logger.enforcer.name = org.wso2.apk.enforcer
     logger.enforcer.level = INFO
     logger.enforcer.additivity = false
     logger.enforcer.appenderRef.rolling.ref = ENFORCER_LOGFILE

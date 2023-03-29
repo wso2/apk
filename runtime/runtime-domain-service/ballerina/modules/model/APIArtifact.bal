@@ -8,6 +8,7 @@ RuntimeAPI runtimeAPI?;
 map<Backend> backendServices = {};
 map<Authentication> authenticationMap = {};
 map<Scope> scopes = {};
+map<RateLimitPolicy> rateLimitPolicies = {};
 boolean sandboxEndpointAvailable = false;
 string productionUrl?;
 string sandboxUrl?;
