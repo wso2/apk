@@ -120,20 +120,118 @@ func TieBreaker[T metav1.Object](k8sObjects []T) *T {
 }
 
 // SelectPolicy selects the policy based on the policy override and default values
-func SelectPolicy[T any](policyUpOverride, policyUpDefault, policyDownOverride, policyDownDefault *T) *T {
-	if policyUpOverride != nil && !reflect.ValueOf(*policyUpOverride).IsZero() {
-		return policyUpOverride
-	}
-	if policyDownOverride != nil && !reflect.ValueOf(*policyDownOverride).IsZero() {
-		return policyDownOverride
-	}
-	if policyDownDefault != nil && !reflect.ValueOf(*policyDownDefault).IsZero() {
-		return policyDownDefault
-	}
-	if policyUpDefault != nil && !reflect.ValueOf(*policyUpDefault).IsZero() {
-		return policyUpDefault
+func SelectPolicy[T any](policyUpOverride, policyUpDefault, policyDownOverride, policyDownDefault **T) *T {
+	if policyUpOverride != nil && !reflect.ValueOf(*policyUpOverride).IsZero() &&
+		policyDownOverride != nil && !reflect.ValueOf(*policyDownOverride).IsZero() &&
+		policyDownDefault != nil && !reflect.ValueOf(*policyDownDefault).IsZero() &&
+		policyUpDefault != nil && !reflect.ValueOf(*policyUpDefault).IsZero() {
+		output := combineUpAndDownValues(**policyUpOverride,
+			combineUpAndDownValues(**policyDownOverride,
+				combineUpAndDownValues(**policyDownDefault, **policyUpDefault)))
+		return &output
+	} else if policyUpOverride != nil && !reflect.ValueOf(*policyUpOverride).IsZero() &&
+		policyDownOverride != nil && !reflect.ValueOf(*policyDownOverride).IsZero() &&
+		policyDownDefault != nil && !reflect.ValueOf(*policyDownDefault).IsZero() {
+		output := combineUpAndDownValues(**policyUpOverride,
+			combineUpAndDownValues(**policyDownOverride, **policyDownDefault))
+		return &output
+	} else if policyUpOverride != nil && !reflect.ValueOf(*policyUpOverride).IsZero() &&
+		policyDownOverride != nil && !reflect.ValueOf(*policyDownOverride).IsZero() &&
+		policyUpDefault != nil && !reflect.ValueOf(*policyUpDefault).IsZero() {
+		output := combineUpAndDownValues(**policyUpOverride,
+			combineUpAndDownValues(**policyDownOverride, **policyUpDefault))
+		return &output
+	} else if policyUpOverride != nil && !reflect.ValueOf(*policyUpOverride).IsZero() &&
+		policyDownDefault != nil && !reflect.ValueOf(*policyDownDefault).IsZero() &&
+		policyUpDefault != nil && !reflect.ValueOf(*policyUpDefault).IsZero() {
+		output := combineUpAndDownValues(**policyUpOverride,
+			combineUpAndDownValues(**policyDownDefault, **policyUpDefault))
+		return &output
+	} else if policyDownOverride != nil && !reflect.ValueOf(*policyDownOverride).IsZero() &&
+		policyDownDefault != nil && !reflect.ValueOf(*policyDownDefault).IsZero() &&
+		policyUpDefault != nil && !reflect.ValueOf(*policyUpDefault).IsZero() {
+		output := combineUpAndDownValues(**policyDownOverride,
+			combineUpAndDownValues(**policyDownDefault, **policyUpDefault))
+		return &output
+	} else if policyUpOverride != nil && !reflect.ValueOf(*policyUpOverride).IsZero() &&
+		policyDownOverride != nil && !reflect.ValueOf(*policyDownOverride).IsZero() {
+		output := combineUpAndDownValues(**policyUpOverride, **policyDownOverride)
+		return &output
+	} else if policyUpOverride != nil && !reflect.ValueOf(*policyUpOverride).IsZero() &&
+		policyDownDefault != nil && !reflect.ValueOf(*policyDownDefault).IsZero() {
+		output := combineUpAndDownValues(**policyUpOverride, **policyDownDefault)
+		return &output
+	} else if policyUpOverride != nil && !reflect.ValueOf(*policyUpOverride).IsZero() &&
+		policyUpDefault != nil && !reflect.ValueOf(*policyUpDefault).IsZero() {
+		output := combineUpAndDownValues(**policyUpOverride, **policyUpDefault)
+		return &output
+	} else if policyDownOverride != nil && !reflect.ValueOf(*policyDownOverride).IsZero() &&
+		policyDownDefault != nil && !reflect.ValueOf(*policyDownDefault).IsZero() {
+		output := combineUpAndDownValues(**policyDownOverride, **policyDownDefault)
+		return &output
+	} else if policyDownOverride != nil && !reflect.ValueOf(*policyDownOverride).IsZero() &&
+		policyUpDefault != nil && !reflect.ValueOf(*policyUpDefault).IsZero() {
+		output := combineUpAndDownValues(**policyDownOverride, **policyUpDefault)
+		return &output
+	} else if policyDownDefault != nil && !reflect.ValueOf(*policyDownDefault).IsZero() &&
+		policyUpDefault != nil && !reflect.ValueOf(*policyUpDefault).IsZero() {
+		output := combineUpAndDownValues(**policyDownDefault, **policyUpDefault)
+		return &output
+	} else if policyUpOverride != nil && !reflect.ValueOf(*policyUpOverride).IsZero() {
+		return *policyUpOverride
+	} else if policyDownOverride != nil && !reflect.ValueOf(*policyDownOverride).IsZero() {
+		return *policyDownOverride
+	} else if policyDownDefault != nil && !reflect.ValueOf(*policyDownDefault).IsZero() {
+		return *policyDownDefault
+	} else if policyUpDefault != nil && !reflect.ValueOf(*policyUpDefault).IsZero() {
+		return *policyUpDefault
 	}
 	return nil
+}
+
+// combineUpAndDownValues combines the up and down values recursively if the value is a struct
+func combineUpAndDownValues[T any](up, down T) T {
+	upValue := reflect.ValueOf(up)
+	downValue := reflect.ValueOf(down)
+	if upValue.Type() != downValue.Type() {
+		panic("Inputs must be of the same type")
+	}
+	if upValue.Kind() != reflect.Struct {
+		return up
+	}
+	combinedStructValue := reflect.New(upValue.Type()).Elem()
+	for i := 0; i < upValue.NumField(); i++ {
+		field := upValue.Type().Field(i)
+		fieldName := field.Name
+		upFieldValue := upValue.FieldByName(fieldName)
+		downFieldValue := downValue.FieldByName(fieldName)
+		var combinedFieldValue reflect.Value
+		if !upFieldValue.IsZero() {
+			combinedFieldValue = upFieldValue
+		} else {
+			combinedFieldValue = downFieldValue
+		}
+		if field.Type.Kind() == reflect.Struct {
+			nestedCombinedFieldValue := combineUpAndDownValues(upFieldValue.Interface(), downFieldValue.Interface())
+			combinedFieldValue = reflect.ValueOf(nestedCombinedFieldValue)
+		} else if field.Type.Kind() == reflect.Ptr && field.Type.Elem().Kind() == reflect.Struct {
+			if upFieldValue.IsNil() && !downFieldValue.IsZero() {
+				nestedCombinedFieldValue := combineUpAndDownValues(reflect.New(field.Type.Elem()).Elem().Interface(),
+					downFieldValue.Elem().Interface())
+				combinedFieldValue = reflect.New(field.Type.Elem())
+				combinedFieldValue.Elem().Set(reflect.ValueOf(nestedCombinedFieldValue))
+			} else if downFieldValue.IsNil() {
+				combinedFieldValue = upFieldValue
+			} else {
+				nestedCombinedFieldValue := combineUpAndDownValues(upFieldValue.Elem().Interface(),
+					downFieldValue.Elem().Interface())
+				combinedFieldValue = reflect.New(field.Type.Elem())
+				combinedFieldValue.Elem().Set(reflect.ValueOf(nestedCombinedFieldValue))
+			}
+		}
+		combinedStructValue.FieldByName(fieldName).Set(combinedFieldValue)
+	}
+	return combinedStructValue.Interface().(T)
 }
 
 // GetPtrSlice returns a slice which is also a slice containing pointers to the elements

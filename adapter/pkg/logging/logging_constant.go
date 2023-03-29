@@ -67,6 +67,7 @@ const (
 	error2646 = 2646
 	error2647 = 2647
 	error2648 = 2648
+	error2649 = 2649
 )
 
 // Error Log Pkg auth(3001-3099) Config Constants
@@ -312,6 +313,11 @@ var Mapper = map[int]ErrorDetails{
 	error2648: {
 		ErrorCode: error2648,
 		Message:   "Error while reading key from secretRef: %s",
+		Severity:  CRITICAL,
+	},
+	error2649: {
+		ErrorCode: error2649,
+		Message:   "Unable to find associated APIPolicies: %s",
 		Severity:  CRITICAL,
 	},
 	error3001: {

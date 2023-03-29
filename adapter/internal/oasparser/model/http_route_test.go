@@ -39,7 +39,7 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 	dataItems := []testItem{
 		{
 			schemeUpSpec: dpv1alpha1.RateLimitPolicySpec{
-				Override: dpv1alpha1.RateLimitAPIPolicy{
+				Override: &dpv1alpha1.RateLimitAPIPolicy{
 					Type: "Api",
 					API: dpv1alpha1.APIRateLimit{
 						RequestsPerUnit: 10,
@@ -48,7 +48,7 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 				},
 			},
 			schemeDownSpec: dpv1alpha1.RateLimitPolicySpec{
-				Override: dpv1alpha1.RateLimitAPIPolicy{
+				Override: &dpv1alpha1.RateLimitAPIPolicy{
 					Type: "Api",
 					API: dpv1alpha1.APIRateLimit{
 						RequestsPerUnit: 20,
@@ -57,7 +57,7 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 				},
 			},
 			result: dpv1alpha1.RateLimitPolicySpec{
-				Override: dpv1alpha1.RateLimitAPIPolicy{
+				Override: &dpv1alpha1.RateLimitAPIPolicy{
 					Type: "Api",
 					API: dpv1alpha1.APIRateLimit{
 						RequestsPerUnit: 10,
@@ -69,7 +69,7 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 		},
 		{
 			schemeUpSpec: dpv1alpha1.RateLimitPolicySpec{
-				Override: dpv1alpha1.RateLimitAPIPolicy{
+				Override: &dpv1alpha1.RateLimitAPIPolicy{
 					Type: "Api",
 					API: dpv1alpha1.APIRateLimit{
 						RequestsPerUnit: 10,
@@ -78,7 +78,7 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 				},
 			},
 			schemeDownSpec: dpv1alpha1.RateLimitPolicySpec{
-				Default: dpv1alpha1.RateLimitAPIPolicy{
+				Default: &dpv1alpha1.RateLimitAPIPolicy{
 					Type: "Api",
 					API: dpv1alpha1.APIRateLimit{
 						RequestsPerUnit: 20,
@@ -87,7 +87,7 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 				},
 			},
 			result: dpv1alpha1.RateLimitPolicySpec{
-				Override: dpv1alpha1.RateLimitAPIPolicy{
+				Override: &dpv1alpha1.RateLimitAPIPolicy{
 					Type: "Api",
 					API: dpv1alpha1.APIRateLimit{
 						RequestsPerUnit: 10,
@@ -99,7 +99,7 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 		},
 		{
 			schemeUpSpec: dpv1alpha1.RateLimitPolicySpec{
-				Default: dpv1alpha1.RateLimitAPIPolicy{
+				Default: &dpv1alpha1.RateLimitAPIPolicy{
 					Type: "Api",
 					API: dpv1alpha1.APIRateLimit{
 						RequestsPerUnit: 10,
@@ -108,7 +108,7 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 				},
 			},
 			schemeDownSpec: dpv1alpha1.RateLimitPolicySpec{
-				Override: dpv1alpha1.RateLimitAPIPolicy{
+				Override: &dpv1alpha1.RateLimitAPIPolicy{
 					Type: "Api",
 					API: dpv1alpha1.APIRateLimit{
 						RequestsPerUnit: 20,
@@ -117,7 +117,7 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 				},
 			},
 			result: dpv1alpha1.RateLimitPolicySpec{
-				Override: dpv1alpha1.RateLimitAPIPolicy{
+				Override: &dpv1alpha1.RateLimitAPIPolicy{
 					Type: "Api",
 					API: dpv1alpha1.APIRateLimit{
 						RequestsPerUnit: 20,
@@ -129,7 +129,7 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 		},
 		{
 			schemeUpSpec: dpv1alpha1.RateLimitPolicySpec{
-				Default: dpv1alpha1.RateLimitAPIPolicy{
+				Default: &dpv1alpha1.RateLimitAPIPolicy{
 					Type: "Api",
 					API: dpv1alpha1.APIRateLimit{
 						RequestsPerUnit: 10,
@@ -138,7 +138,7 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 				},
 			},
 			schemeDownSpec: dpv1alpha1.RateLimitPolicySpec{
-				Default: dpv1alpha1.RateLimitAPIPolicy{
+				Default: &dpv1alpha1.RateLimitAPIPolicy{
 					Type: "Api",
 					API: dpv1alpha1.APIRateLimit{
 						RequestsPerUnit: 20,
@@ -147,7 +147,7 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 				},
 			},
 			result: dpv1alpha1.RateLimitPolicySpec{
-				Override: dpv1alpha1.RateLimitAPIPolicy{
+				Override: &dpv1alpha1.RateLimitAPIPolicy{
 					Type: "Api",
 					API: dpv1alpha1.APIRateLimit{
 						RequestsPerUnit: 20,
@@ -159,14 +159,14 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 		},
 		{
 			schemeUpSpec: dpv1alpha1.RateLimitPolicySpec{
-				Default: dpv1alpha1.RateLimitAPIPolicy{
+				Default: &dpv1alpha1.RateLimitAPIPolicy{
 					Type: "Api",
 					API: dpv1alpha1.APIRateLimit{
 						RequestsPerUnit: 10,
 						Unit:            "Minute",
 					},
 				},
-				Override: dpv1alpha1.RateLimitAPIPolicy{
+				Override: &dpv1alpha1.RateLimitAPIPolicy{
 					Type: "Application",
 					API: dpv1alpha1.APIRateLimit{
 						RequestsPerUnit: 20,
@@ -175,14 +175,14 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 				},
 			},
 			schemeDownSpec: dpv1alpha1.RateLimitPolicySpec{
-				Default: dpv1alpha1.RateLimitAPIPolicy{
+				Default: &dpv1alpha1.RateLimitAPIPolicy{
 					Type: "Api",
 					API: dpv1alpha1.APIRateLimit{
 						RequestsPerUnit: 30,
 						Unit:            "Day",
 					},
 				},
-				Override: dpv1alpha1.RateLimitAPIPolicy{
+				Override: &dpv1alpha1.RateLimitAPIPolicy{
 					Type: "Subscription",
 					API: dpv1alpha1.APIRateLimit{
 						RequestsPerUnit: 40,
@@ -191,7 +191,7 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 				},
 			},
 			result: dpv1alpha1.RateLimitPolicySpec{
-				Override: dpv1alpha1.RateLimitAPIPolicy{
+				Override: &dpv1alpha1.RateLimitAPIPolicy{
 					Type: "Application",
 					API: dpv1alpha1.APIRateLimit{
 						RequestsPerUnit: 20,
@@ -228,7 +228,7 @@ func TestConcatAPIPolicies(t *testing.T) {
 	dataItems := []testItem{
 		{
 			schemeUpSpec: dpv1alpha1.APIPolicySpec{
-				Override: dpv1alpha1.PolicySpec{
+				Override: &dpv1alpha1.PolicySpec{
 					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
 						Remove: []string{"a", "b"},
 						Add: []dpv1alpha1.HTTPQuery{
@@ -239,7 +239,7 @@ func TestConcatAPIPolicies(t *testing.T) {
 				},
 			},
 			schemeDownSpec: dpv1alpha1.APIPolicySpec{
-				Override: dpv1alpha1.PolicySpec{
+				Override: &dpv1alpha1.PolicySpec{
 					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
 						Remove: []string{"c", "d"},
 						Add: []dpv1alpha1.HTTPQuery{
@@ -250,7 +250,7 @@ func TestConcatAPIPolicies(t *testing.T) {
 				},
 			},
 			result: dpv1alpha1.APIPolicySpec{
-				Override: dpv1alpha1.PolicySpec{
+				Override: &dpv1alpha1.PolicySpec{
 					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
 						Remove: []string{"a", "b"},
 						Add: []dpv1alpha1.HTTPQuery{
@@ -264,7 +264,7 @@ func TestConcatAPIPolicies(t *testing.T) {
 		},
 		{
 			schemeUpSpec: dpv1alpha1.APIPolicySpec{
-				Override: dpv1alpha1.PolicySpec{
+				Override: &dpv1alpha1.PolicySpec{
 					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
 						Remove: []string{"a", "b"},
 						Add: []dpv1alpha1.HTTPQuery{
@@ -275,7 +275,7 @@ func TestConcatAPIPolicies(t *testing.T) {
 				},
 			},
 			schemeDownSpec: dpv1alpha1.APIPolicySpec{
-				Default: dpv1alpha1.PolicySpec{
+				Default: &dpv1alpha1.PolicySpec{
 					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
 						Remove: []string{"c", "d"},
 						Add: []dpv1alpha1.HTTPQuery{
@@ -286,7 +286,7 @@ func TestConcatAPIPolicies(t *testing.T) {
 				},
 			},
 			result: dpv1alpha1.APIPolicySpec{
-				Override: dpv1alpha1.PolicySpec{
+				Override: &dpv1alpha1.PolicySpec{
 					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
 						Remove: []string{"a", "b"},
 						Add: []dpv1alpha1.HTTPQuery{
@@ -300,7 +300,7 @@ func TestConcatAPIPolicies(t *testing.T) {
 		},
 		{
 			schemeUpSpec: dpv1alpha1.APIPolicySpec{
-				Default: dpv1alpha1.PolicySpec{
+				Default: &dpv1alpha1.PolicySpec{
 					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
 						Remove: []string{"a", "b"},
 						Add: []dpv1alpha1.HTTPQuery{
@@ -311,7 +311,7 @@ func TestConcatAPIPolicies(t *testing.T) {
 				},
 			},
 			schemeDownSpec: dpv1alpha1.APIPolicySpec{
-				Override: dpv1alpha1.PolicySpec{
+				Override: &dpv1alpha1.PolicySpec{
 					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
 						Remove: []string{"c", "d"},
 						Add: []dpv1alpha1.HTTPQuery{
@@ -322,7 +322,7 @@ func TestConcatAPIPolicies(t *testing.T) {
 				},
 			},
 			result: dpv1alpha1.APIPolicySpec{
-				Override: dpv1alpha1.PolicySpec{
+				Override: &dpv1alpha1.PolicySpec{
 					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
 						Remove: []string{"c", "d"},
 						Add: []dpv1alpha1.HTTPQuery{
@@ -336,7 +336,7 @@ func TestConcatAPIPolicies(t *testing.T) {
 		},
 		{
 			schemeUpSpec: dpv1alpha1.APIPolicySpec{
-				Default: dpv1alpha1.PolicySpec{
+				Default: &dpv1alpha1.PolicySpec{
 					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
 						Remove: []string{"a", "b"},
 						Add: []dpv1alpha1.HTTPQuery{
@@ -347,7 +347,7 @@ func TestConcatAPIPolicies(t *testing.T) {
 				},
 			},
 			schemeDownSpec: dpv1alpha1.APIPolicySpec{
-				Default: dpv1alpha1.PolicySpec{
+				Default: &dpv1alpha1.PolicySpec{
 					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
 						Remove: []string{"c", "d"},
 						Add: []dpv1alpha1.HTTPQuery{
@@ -358,7 +358,7 @@ func TestConcatAPIPolicies(t *testing.T) {
 				},
 			},
 			result: dpv1alpha1.APIPolicySpec{
-				Override: dpv1alpha1.PolicySpec{
+				Override: &dpv1alpha1.PolicySpec{
 					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
 						Remove: []string{"c", "d"},
 						Add: []dpv1alpha1.HTTPQuery{
@@ -372,7 +372,7 @@ func TestConcatAPIPolicies(t *testing.T) {
 		},
 		{
 			schemeUpSpec: dpv1alpha1.APIPolicySpec{
-				Override: dpv1alpha1.PolicySpec{
+				Override: &dpv1alpha1.PolicySpec{
 					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
 						Remove: []string{"a", "b"},
 						Add: []dpv1alpha1.HTTPQuery{
@@ -383,7 +383,7 @@ func TestConcatAPIPolicies(t *testing.T) {
 				},
 			},
 			result: dpv1alpha1.APIPolicySpec{
-				Override: dpv1alpha1.PolicySpec{
+				Override: &dpv1alpha1.PolicySpec{
 					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
 						Remove: []string{"a", "b"},
 						Add: []dpv1alpha1.HTTPQuery{
@@ -397,7 +397,7 @@ func TestConcatAPIPolicies(t *testing.T) {
 		},
 		{
 			schemeUpSpec: dpv1alpha1.APIPolicySpec{
-				Default: dpv1alpha1.PolicySpec{
+				Default: &dpv1alpha1.PolicySpec{
 					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
 						Remove: []string{"a", "b"},
 						Add: []dpv1alpha1.HTTPQuery{
@@ -408,7 +408,7 @@ func TestConcatAPIPolicies(t *testing.T) {
 				},
 			},
 			result: dpv1alpha1.APIPolicySpec{
-				Override: dpv1alpha1.PolicySpec{
+				Override: &dpv1alpha1.PolicySpec{
 					RequestQueryModifier: dpv1alpha1.RequestQueryModifier{
 						Remove: []string{"a", "b"},
 						Add: []dpv1alpha1.HTTPQuery{
@@ -419,6 +419,67 @@ func TestConcatAPIPolicies(t *testing.T) {
 				},
 			},
 			message: "only schemeUp default policies is provided",
+		},
+		{
+			schemeUpSpec: dpv1alpha1.APIPolicySpec{
+				Override: &dpv1alpha1.PolicySpec{
+					RequestInterceptor: &dpv1alpha1.InterceptorConfig{
+						BackendRef: dpv1alpha1.BackendReference{
+							Name: "up-request-interceptor",
+						},
+					},
+				},
+				Default: &dpv1alpha1.PolicySpec{
+					ResponseInterceptor: &dpv1alpha1.InterceptorConfig{
+						BackendRef: dpv1alpha1.BackendReference{
+							Name: "up-response-interceptor",
+						},
+						Includes: []dpv1alpha1.InterceptorInclusion{
+							dpv1alpha1.InterceptorInclusionResponseBody,
+							dpv1alpha1.InterceptorInclusionRequestTrailers,
+						},
+					},
+				},
+			},
+			schemeDownSpec: dpv1alpha1.APIPolicySpec{
+				Override: &dpv1alpha1.PolicySpec{
+					RequestInterceptor: &dpv1alpha1.InterceptorConfig{
+						BackendRef: dpv1alpha1.BackendReference{
+							Name:      "down-request-interceptor",
+							Namespace: "down-request-interceptor-ns",
+						},
+						Includes: []dpv1alpha1.InterceptorInclusion{
+							dpv1alpha1.InterceptorInclusionRequestBody,
+						},
+					},
+				},
+			},
+			result: dpv1alpha1.APIPolicySpec{
+				Override: &dpv1alpha1.PolicySpec{
+					RequestInterceptor: &dpv1alpha1.InterceptorConfig{
+						BackendRef: dpv1alpha1.BackendReference{
+							Name:      "up-request-interceptor",
+							Namespace: "down-request-interceptor-ns",
+						},
+						Includes: []dpv1alpha1.InterceptorInclusion{
+							dpv1alpha1.InterceptorInclusionRequestBody,
+						},
+					},
+					ResponseInterceptor: &dpv1alpha1.InterceptorConfig{
+						BackendRef: dpv1alpha1.BackendReference{
+							Name: "up-response-interceptor",
+						},
+						Includes: []dpv1alpha1.InterceptorInclusion{
+							dpv1alpha1.InterceptorInclusionResponseBody,
+							dpv1alpha1.InterceptorInclusionRequestTrailers,
+						},
+					},
+				},
+			},
+			message: `up scheme backend name should override down scheme backend name, 
+			down scheme namespace should be used since up scheme namespace is not specified, 
+			includes in down scheme should be used since up scheme has unspecified includes
+			up scheme response interceptor should be used`,
 		},
 	}
 	for _, item := range dataItems {

@@ -22,3 +22,4 @@ curl http://localhost:6070/rlconfig -i
 
 1.  If changes are applicable to the upstream, please create a pull request on https://github.com/envoyproxy/ratelimit/.
 2.  After merging above created pull request create another pull request on https://github.com/wso2/product-microgateway considering the latest envoyproxy/ratelimit:<hashValue> docker image.
+

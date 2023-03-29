@@ -17,6 +17,7 @@ limitations under the License.
 package roundtripper
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"encoding/json"
@@ -44,6 +45,7 @@ type Request struct {
 	Protocol         string
 	Method           string
 	Headers          map[string][]string
+	Body             string
 	UnfollowRedirect bool
 	CertPem          []byte
 	KeyPem           []byte
@@ -112,9 +114,14 @@ func (d *DefaultRoundTripper) CaptureRoundTrip(request Request) (*CapturedReques
 	if request.Method != "" {
 		method = request.Method
 	}
+	var reqBody io.Reader
+	if request.Body != "" {
+		reqBody = bytes.NewBuffer([]byte(request.Body))
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), d.TimeoutConfig.RequestTimeout)
 	defer cancel()
-	req, err := http.NewRequestWithContext(ctx, method, request.URL.String(), nil)
+
+	req, err := http.NewRequestWithContext(ctx, method, request.URL.String(), reqBody)
 	if err != nil {
 		return nil, nil, err
 	}

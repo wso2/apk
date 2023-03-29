@@ -119,19 +119,6 @@ private static final long serialVersionUID = 0L;
 
             break;
           }
-          case 50: {
-            org.wso2.choreo.connect.discovery.config.enforcer.Throttling.Builder subBuilder = null;
-            if (throttling_ != null) {
-              subBuilder = throttling_.toBuilder();
-            }
-            throttling_ = input.readMessage(org.wso2.choreo.connect.discovery.config.enforcer.Throttling.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(throttling_);
-              throttling_ = subBuilder.buildPartial();
-            }
-
-            break;
-          }
           case 58: {
             org.wso2.choreo.connect.discovery.config.enforcer.Cache.Builder subBuilder = null;
             if (cache_ != null) {
@@ -413,32 +400,6 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   public org.wso2.choreo.connect.discovery.config.enforcer.JWTGeneratorOrBuilder getJwtGeneratorOrBuilder() {
     return getJwtGenerator();
-  }
-
-  public static final int THROTTLING_FIELD_NUMBER = 6;
-  private org.wso2.choreo.connect.discovery.config.enforcer.Throttling throttling_;
-  /**
-   * <code>.wso2.discovery.config.enforcer.Throttling throttling = 6;</code>
-   * @return Whether the throttling field is set.
-   */
-  @java.lang.Override
-  public boolean hasThrottling() {
-    return throttling_ != null;
-  }
-  /**
-   * <code>.wso2.discovery.config.enforcer.Throttling throttling = 6;</code>
-   * @return The throttling.
-   */
-  @java.lang.Override
-  public org.wso2.choreo.connect.discovery.config.enforcer.Throttling getThrottling() {
-    return throttling_ == null ? org.wso2.choreo.connect.discovery.config.enforcer.Throttling.getDefaultInstance() : throttling_;
-  }
-  /**
-   * <code>.wso2.discovery.config.enforcer.Throttling throttling = 6;</code>
-   */
-  @java.lang.Override
-  public org.wso2.choreo.connect.discovery.config.enforcer.ThrottlingOrBuilder getThrottlingOrBuilder() {
-    return getThrottling();
   }
 
   public static final int CACHE_FIELD_NUMBER = 7;
@@ -729,9 +690,6 @@ private static final long serialVersionUID = 0L;
     if (jwtGenerator_ != null) {
       output.writeMessage(5, getJwtGenerator());
     }
-    if (throttling_ != null) {
-      output.writeMessage(6, getThrottling());
-    }
     if (cache_ != null) {
       output.writeMessage(7, getCache());
     }
@@ -790,10 +748,6 @@ private static final long serialVersionUID = 0L;
     if (jwtGenerator_ != null) {
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(5, getJwtGenerator());
-    }
-    if (throttling_ != null) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(6, getThrottling());
     }
     if (cache_ != null) {
       size += com.google.protobuf.CodedOutputStream
@@ -875,11 +829,6 @@ private static final long serialVersionUID = 0L;
       if (!getJwtGenerator()
           .equals(other.getJwtGenerator())) return false;
     }
-    if (hasThrottling() != other.hasThrottling()) return false;
-    if (hasThrottling()) {
-      if (!getThrottling()
-          .equals(other.getThrottling())) return false;
-    }
     if (hasCache() != other.hasCache()) return false;
     if (hasCache()) {
       if (!getCache()
@@ -954,10 +903,6 @@ private static final long serialVersionUID = 0L;
     if (hasJwtGenerator()) {
       hash = (37 * hash) + JWTGENERATOR_FIELD_NUMBER;
       hash = (53 * hash) + getJwtGenerator().hashCode();
-    }
-    if (hasThrottling()) {
-      hash = (37 * hash) + THROTTLING_FIELD_NUMBER;
-      hash = (53 * hash) + getThrottling().hashCode();
     }
     if (hasCache()) {
       hash = (37 * hash) + CACHE_FIELD_NUMBER;
@@ -1166,12 +1111,6 @@ private static final long serialVersionUID = 0L;
         jwtGenerator_ = null;
         jwtGeneratorBuilder_ = null;
       }
-      if (throttlingBuilder_ == null) {
-        throttling_ = null;
-      } else {
-        throttling_ = null;
-        throttlingBuilder_ = null;
-      }
       if (cacheBuilder_ == null) {
         cache_ = null;
       } else {
@@ -1279,11 +1218,6 @@ private static final long serialVersionUID = 0L;
         result.jwtGenerator_ = jwtGenerator_;
       } else {
         result.jwtGenerator_ = jwtGeneratorBuilder_.build();
-      }
-      if (throttlingBuilder_ == null) {
-        result.throttling_ = throttling_;
-      } else {
-        result.throttling_ = throttlingBuilder_.build();
       }
       if (cacheBuilder_ == null) {
         result.cache_ = cache_;
@@ -1397,9 +1331,6 @@ private static final long serialVersionUID = 0L;
       }
       if (other.hasJwtGenerator()) {
         mergeJwtGenerator(other.getJwtGenerator());
-      }
-      if (other.hasThrottling()) {
-        mergeThrottling(other.getThrottling());
       }
       if (other.hasCache()) {
         mergeCache(other.getCache());
@@ -2077,125 +2008,6 @@ private static final long serialVersionUID = 0L;
         jwtGenerator_ = null;
       }
       return jwtGeneratorBuilder_;
-    }
-
-    private org.wso2.choreo.connect.discovery.config.enforcer.Throttling throttling_;
-    private com.google.protobuf.SingleFieldBuilderV3<
-        org.wso2.choreo.connect.discovery.config.enforcer.Throttling, org.wso2.choreo.connect.discovery.config.enforcer.Throttling.Builder, org.wso2.choreo.connect.discovery.config.enforcer.ThrottlingOrBuilder> throttlingBuilder_;
-    /**
-     * <code>.wso2.discovery.config.enforcer.Throttling throttling = 6;</code>
-     * @return Whether the throttling field is set.
-     */
-    public boolean hasThrottling() {
-      return throttlingBuilder_ != null || throttling_ != null;
-    }
-    /**
-     * <code>.wso2.discovery.config.enforcer.Throttling throttling = 6;</code>
-     * @return The throttling.
-     */
-    public org.wso2.choreo.connect.discovery.config.enforcer.Throttling getThrottling() {
-      if (throttlingBuilder_ == null) {
-        return throttling_ == null ? org.wso2.choreo.connect.discovery.config.enforcer.Throttling.getDefaultInstance() : throttling_;
-      } else {
-        return throttlingBuilder_.getMessage();
-      }
-    }
-    /**
-     * <code>.wso2.discovery.config.enforcer.Throttling throttling = 6;</code>
-     */
-    public Builder setThrottling(org.wso2.choreo.connect.discovery.config.enforcer.Throttling value) {
-      if (throttlingBuilder_ == null) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        throttling_ = value;
-        onChanged();
-      } else {
-        throttlingBuilder_.setMessage(value);
-      }
-
-      return this;
-    }
-    /**
-     * <code>.wso2.discovery.config.enforcer.Throttling throttling = 6;</code>
-     */
-    public Builder setThrottling(
-        org.wso2.choreo.connect.discovery.config.enforcer.Throttling.Builder builderForValue) {
-      if (throttlingBuilder_ == null) {
-        throttling_ = builderForValue.build();
-        onChanged();
-      } else {
-        throttlingBuilder_.setMessage(builderForValue.build());
-      }
-
-      return this;
-    }
-    /**
-     * <code>.wso2.discovery.config.enforcer.Throttling throttling = 6;</code>
-     */
-    public Builder mergeThrottling(org.wso2.choreo.connect.discovery.config.enforcer.Throttling value) {
-      if (throttlingBuilder_ == null) {
-        if (throttling_ != null) {
-          throttling_ =
-            org.wso2.choreo.connect.discovery.config.enforcer.Throttling.newBuilder(throttling_).mergeFrom(value).buildPartial();
-        } else {
-          throttling_ = value;
-        }
-        onChanged();
-      } else {
-        throttlingBuilder_.mergeFrom(value);
-      }
-
-      return this;
-    }
-    /**
-     * <code>.wso2.discovery.config.enforcer.Throttling throttling = 6;</code>
-     */
-    public Builder clearThrottling() {
-      if (throttlingBuilder_ == null) {
-        throttling_ = null;
-        onChanged();
-      } else {
-        throttling_ = null;
-        throttlingBuilder_ = null;
-      }
-
-      return this;
-    }
-    /**
-     * <code>.wso2.discovery.config.enforcer.Throttling throttling = 6;</code>
-     */
-    public org.wso2.choreo.connect.discovery.config.enforcer.Throttling.Builder getThrottlingBuilder() {
-      
-      onChanged();
-      return getThrottlingFieldBuilder().getBuilder();
-    }
-    /**
-     * <code>.wso2.discovery.config.enforcer.Throttling throttling = 6;</code>
-     */
-    public org.wso2.choreo.connect.discovery.config.enforcer.ThrottlingOrBuilder getThrottlingOrBuilder() {
-      if (throttlingBuilder_ != null) {
-        return throttlingBuilder_.getMessageOrBuilder();
-      } else {
-        return throttling_ == null ?
-            org.wso2.choreo.connect.discovery.config.enforcer.Throttling.getDefaultInstance() : throttling_;
-      }
-    }
-    /**
-     * <code>.wso2.discovery.config.enforcer.Throttling throttling = 6;</code>
-     */
-    private com.google.protobuf.SingleFieldBuilderV3<
-        org.wso2.choreo.connect.discovery.config.enforcer.Throttling, org.wso2.choreo.connect.discovery.config.enforcer.Throttling.Builder, org.wso2.choreo.connect.discovery.config.enforcer.ThrottlingOrBuilder> 
-        getThrottlingFieldBuilder() {
-      if (throttlingBuilder_ == null) {
-        throttlingBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-            org.wso2.choreo.connect.discovery.config.enforcer.Throttling, org.wso2.choreo.connect.discovery.config.enforcer.Throttling.Builder, org.wso2.choreo.connect.discovery.config.enforcer.ThrottlingOrBuilder>(
-                getThrottling(),
-                getParentForChildren(),
-                isClean());
-        throttling_ = null;
-      }
-      return throttlingBuilder_;
     }
 
     private org.wso2.choreo.connect.discovery.config.enforcer.Cache cache_;

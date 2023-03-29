@@ -83,21 +83,6 @@ public interface ConfigOrBuilder extends
   org.wso2.choreo.connect.discovery.config.enforcer.JWTGeneratorOrBuilder getJwtGeneratorOrBuilder();
 
   /**
-   * <code>.wso2.discovery.config.enforcer.Throttling throttling = 6;</code>
-   * @return Whether the throttling field is set.
-   */
-  boolean hasThrottling();
-  /**
-   * <code>.wso2.discovery.config.enforcer.Throttling throttling = 6;</code>
-   * @return The throttling.
-   */
-  org.wso2.choreo.connect.discovery.config.enforcer.Throttling getThrottling();
-  /**
-   * <code>.wso2.discovery.config.enforcer.Throttling throttling = 6;</code>
-   */
-  org.wso2.choreo.connect.discovery.config.enforcer.ThrottlingOrBuilder getThrottlingOrBuilder();
-
-  /**
    * <code>.wso2.discovery.config.enforcer.Cache cache = 7;</code>
    * @return Whether the cache field is set.
    */

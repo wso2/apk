@@ -88,9 +88,13 @@ const (
 	ActionInterceptorService string = "CALL_INTERCEPTOR_SERVICE"
 	ActionRewritePath        string = "REWRITE_RESOURCE_PATH"
 
+	PolicyRequestInterceptor  string = "PolicyRequestInterceptor"
+	PolicyResponseInterceptor string = "PolicyResponseInterceptor"
+
 	RewritePathResourcePath    string = "resourcePath"
 	RewritePathType            string = "rewritePathType"
 	InterceptorServiceURL      string = "interceptorServiceURL"
+	InterceptorEndpoints       string = "interceptorEndpoints"
 	InterceptorServiceIncludes string = "includes"
 	IncludeQueryParams         string = "includeQueryParams"
 	HeaderName                 string = "headerName"
