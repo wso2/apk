@@ -507,8 +507,12 @@ public class APIClient {
                 APIRateLimit? operationRateLimit = operation.operationRateLimit;
                 if (operationRateLimit != ()) {
                     // Presence of both resource level and API level rate limits.
-                    BadRequestError badRequestError = {body: {code: 90918,
-                        message: "Presence of both resource level and API level rate limits is not allowed"}};
+                    BadRequestError badRequestError = {
+                        body: {
+                            code: 90918,
+                            message: "Presence of both resource level and API level rate limits is not allowed"
+                        }
+                    };
                     return badRequestError;
                 }
             }
@@ -531,9 +535,33 @@ public class APIClient {
                 name: api.name,
                 context: api.context,
                 'version: api.'version,
-                'type: api.'type
+                'type: api.'type,
+                endpointConfig: api.endpointConfig
             }
         };
+        APIOperationPolicies? apiPolicies = api.apiPolicies;
+        if apiPolicies is APIOperationPolicies {
+            model:OperationPolicy[] runtimeAPIRequestPolicies = [];
+            model:OperationPolicy[] runtimeAPIResponsePolicies = [];
+            OperationPolicy[]? request = apiPolicies.request;
+            if request is OperationPolicy[] {
+                foreach OperationPolicy policy in request {
+                    model:OperationPolicy runtimeAPIRequestPolicy = {...policy};
+                    runtimeAPIRequestPolicies.push(runtimeAPIRequestPolicy);
+                }
+            }
+            OperationPolicy[]? response = apiPolicies.response;
+            if response is OperationPolicy[] {
+                foreach OperationPolicy policy in response {
+                    model:OperationPolicy runtimeAPIResponsePolicy = {...policy};
+                    runtimeAPIResponsePolicies.push(runtimeAPIResponsePolicy);
+                }
+            }
+            runtimeAPI.spec.apiPolicies = {
+                request: runtimeAPIRequestPolicies,
+                response: runtimeAPIResponsePolicies
+            };
+        }
         APIOperations[]? operations = api.operations;
         if operations is APIOperations[] {
             model:Operations[] runtimeAPIOperations = [];
@@ -542,12 +570,11 @@ public class APIClient {
                     target: <string>operation.target,
                     verb: <string>operation.verb,
                     authTypeEnabled: operation.authTypeEnabled ?: true,
-                    scopes: operation.scopes ?: []
+                    scopes: operation.scopes ?: [],
+                    endpointConfig: operation.endpointConfig
                 };
                 APIOperationPolicies? operationPoliciesToUse = ();
-                if (api.apiPolicies is APIOperationPolicies) {
-                    operationPoliciesToUse = api.apiPolicies;
-                } else {
+                if (operation.operationPolicies is APIOperationPolicies) {
                     operationPoliciesToUse = operation.operationPolicies;
                 }
                 model:OperationPolicy[] runtimeAPIRequestPolicies = [];
@@ -557,19 +584,15 @@ public class APIClient {
                     OperationPolicy[]? request = operationPoliciesToUse.request;
                     if request is OperationPolicy[] {
                         foreach OperationPolicy policy in request {
-                            model:OperationPolicy|error runtimeAPIRequestPolicy = policy.cloneWithType(model:OperationPolicy);
-                            if (runtimeAPIRequestPolicy is model:OperationPolicy) {
-                                runtimeAPIRequestPolicies.push(runtimeAPIRequestPolicy);
-                            }
+                            model:OperationPolicy runtimeAPIRequestPolicy = {...policy};
+                            runtimeAPIRequestPolicies.push(runtimeAPIRequestPolicy);
                         }
                     }
                     OperationPolicy[]? response = operationPoliciesToUse.response;
                     if response is OperationPolicy[] {
                         foreach OperationPolicy policy in response {
-                            model:OperationPolicy|error runtimeAPIResponsePolicy = policy.cloneWithType(model:OperationPolicy);
-                            if (runtimeAPIResponsePolicy is model:OperationPolicy) {
-                                runtimeAPIResponsePolicies.push(runtimeAPIResponsePolicy);
-                            }
+                            model:OperationPolicy runtimeAPIResponsePolicy = {...policy};
+                            runtimeAPIResponsePolicies.push(runtimeAPIResponsePolicy);
                         }
                     }
                 }
@@ -594,16 +617,10 @@ public class APIClient {
             }
             runtimeAPI.spec.operations = runtimeAPIOperations;
         }
-        record {|anydata...;|}? endpointConfig = api.endpointConfig;
-        if endpointConfig is record {} {
-            runtimeAPI.spec.endpointConfig = endpointConfig;
-        }
+
         APIRateLimit? rateLimitPolicy = api.apiRateLimit;
         if (rateLimitPolicy is APIRateLimit) {
-            model:RateLimit rateLimit = {
-                requestsPerUnit: rateLimitPolicy.requestsPerUnit,
-                unit: rateLimitPolicy.unit
-            };
+            model:RateLimit rateLimit = {...rateLimitPolicy};
             runtimeAPI.spec.apiRateLimit = rateLimit;
         }
         if serviceEntry is Service {
@@ -1319,8 +1336,8 @@ public class APIClient {
         foreach OperationPolicy policy in operationPolicy {
             string policyName = policy.policyName;
 
-            record{}? policyParameters = policy.parameters;
-            if (policyParameters is record{}) {
+            record {}? policyParameters = policy.parameters;
+            if (policyParameters is record {}) {
                 if (policyName == "addHeader") {
 
                     model:HTTPHeader httpHeader = {
