@@ -24,7 +24,7 @@ rm -rf target
 mkdir -p target/deps
 
 ADAPTER_GEN_DIR=$cur_dir/../pkg/discovery/api/wso2/
-ENFORCER_GEN_DIR=$cur_dir/../../gateway/enforcer/org.wso2.choreo.connect.discovery/src/main/java/
+ENFORCER_GEN_DIR=$cur_dir/../../gateway/enforcer/org.wso2.apk.discovery/src/main/java/
 GREEN='\033[0;32m'
 BOLD="\033[1m"
 NC='\033[0m' # No Color
@@ -79,9 +79,9 @@ printf "protoc go services - ${GREEN}${BOLD}done${NC}\n"
 rm -rf $ADAPTER_GEN_DIR
 cp -r target/gen/go/* $ADAPTER_GEN_DIR
 # Java generated implementations are not required for apkmgt related protobufs
-rm -rf target/gen/java/org/wso2/choreo/connect/discovery/apkmgt
-rm -rf target/gen/java/org/wso2/choreo/connect/discovery/service/apkmgt
-rm -rf $ENFORCER_GEN_DIR/org/wso2/choreo/connect/discovery
+rm -rf target/gen/java/org/wso2/apk/discovery/apkmgt
+rm -rf target/gen/java/org/wso2/apk/discovery/service/apkmgt
+rm -rf $ENFORCER_GEN_DIR/org/wso2/apk/discovery
 cp -r target/gen/java/* $ENFORCER_GEN_DIR
 rm -rf target
 

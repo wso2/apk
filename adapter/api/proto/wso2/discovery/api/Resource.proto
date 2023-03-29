@@ -24,7 +24,7 @@ import "wso2/discovery/api/security_info.proto";
 // import "wso2/discovery/api/mocked_api_config.proto";
 
 option go_package = "github.com/envoyproxy/go-control-plane/wso2/discovery/api;api";
-option java_package = "org.wso2.choreo.connect.discovery.api";
+option java_package = "org.wso2.apk.discovery.api";
 option java_outer_classname = "ResourceProto";
 option java_multiple_files = true;
 
