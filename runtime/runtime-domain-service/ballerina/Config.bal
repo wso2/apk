@@ -91,5 +91,5 @@ public type KeyStores record {|
 
 public type GatewayConfigurations record {|
     string name = "default";
-    string listenerName = "gatewaylistener";
+    string listenerName = "httpslistener";
 |};

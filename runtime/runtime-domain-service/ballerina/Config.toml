@@ -14,7 +14,7 @@ serviceBaseURl = "https://api.am.wso2.com:9095/api/am/internal/v1"
 certFilePath = "/media/tharindud/dev/satoken/router.pem"
 [wso2.runtime_domain_service.runtimeConfiguration.gatewayConfiguration]
 name = "default"
-listenerName = "gatewaylistener"
+listenerName = "httpslistener"
 
 [ballerina.http]
 traceLogConsole = true
