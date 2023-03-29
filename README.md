@@ -74,16 +74,17 @@ Please refer [Postman Tests](https://github.com/wso2/apk/tree/main/test/postman-
 
 WSO2 API Kubernetes Platform has released following docker images in the WSO2 public docker hub.
 
-* Adapter: [wso2/adapter:0.0.1-m6](https://hub.docker.com/r/wso2/adapter)
-* Gateway Enforcer: [wso2/enforcer:0.0.1-m6](https://hub.docker.com/r/wso2/enforcer/tags)
-* Gatewary Router: [wso2/router:0.0.1-m6](https://hub.docker.com/r/wso2/router)
-* Management Server: [wso2/management-server:0.0.1-m6](https://hub.docker.com/r/wso2/management-server)
-* Runtime DS: [wso2/runtime-domain-service:0.0.1-m6](https://hub.docker.com/r/wso2/admin-domain-service)
-* Admin DS: [wso2/admin-domain-service:0.0.1-m6](https://hub.docker.com/r/wso2/admin-domain-service)
-* BackOffice DS: [wso2/backoffice-domain-service:0.0.1-m6](https://hub.docker.com/r/wso2/backoffice-domain-service)
-* Devportal DS: [wso2/devportal-domain-service:0.0.1-m6](https://hub.docker.com/r/wso2/devportal-domain-service)
-* IDP DS: [wso2/idp-domain-service:0.0.1-m6](https://hub.docker.com/r/wso2/devportal-domain-service)
-* IDP UI: [wso2/idp-ui:0.0.1-m6](https://hub.docker.com/r/wso2/devportal-domain-service)
+* Adapter: [wso2/adapter:0.0.1-m7](https://hub.docker.com/r/wso2/adapter)
+* Gateway Enforcer: [wso2/enforcer:0.0.1-m7](https://hub.docker.com/r/wso2/enforcer/tags)
+* Gatewary Router: [wso2/router:0.0.1-m7](https://hub.docker.com/r/wso2/router)
+* Management Server: [wso2/management-server:0.0.1-m7](https://hub.docker.com/r/wso2/management-server)
+* Runtime DS: [wso2/runtime-domain-service:0.0.1-m7](https://hub.docker.com/r/wso2/admin-domain-service)
+* Admin DS: [wso2/admin-domain-service:0.0.1-m7](https://hub.docker.com/r/wso2/admin-domain-service)
+* BackOffice DS: [wso2/backoffice-domain-service:0.0.1-m7](https://hub.docker.com/r/wso2/backoffice-domain-service)
+* Devportal DS: [wso2/devportal-domain-service:0.0.1-m7](https://hub.docker.com/r/wso2/devportal-domain-service)
+* IDP DS: [wso2/idp-domain-service:0.0.1-m7](https://hub.docker.com/r/wso2/devportal-domain-service)
+* IDP UI: [wso2/idp-ui:0.0.1-m7](https://hub.docker.com/r/wso2/devportal-domain-service)
+* Ratelimiter: [wso2/ratelimiter:0.0.1-m7](https://hub.docker.com/r/wso2/ratelimiter)
 
 ### Before you begin...
 
