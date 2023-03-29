@@ -225,14 +225,13 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "oauth2"
-version = "2.6.1"
+version = "2.6.0"
 dependencies = [
 	{org = "ballerina", name = "cache"},
 	{org = "ballerina", name = "crypto"},
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "log"},
-	{org = "ballerina", name = "time"},
-	{org = "ballerina", name = "url"}
+	{org = "ballerina", name = "time"}
 ]
 
 [[package]]
@@ -267,7 +266,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "sql"
-version = "1.7.1"
+version = "1.7.0"
 dependencies = [
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"},
@@ -366,7 +365,7 @@ modules = [
 [[package]]
 org = "wso2"
 name = "idp_domain_service"
-version = "0.0.1-SNAPSHOT"
+version = "0.0.1-m7"
 dependencies = [
 	{org = "ballerina", name = "http"},
 	{org = "ballerina", name = "jwt"},
