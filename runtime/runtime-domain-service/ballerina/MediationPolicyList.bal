@@ -109,7 +109,7 @@ isolated final model:MediationPolicy[] avilableMediationPolicyList = [
 
 isolated function getAvailableMediaionPolicies(commons:Organization organization) returns MediationPolicy[] {
     lock {
-        MediationPolicy[]|error & readonly readOnlyMediationPolicyList = trap avilableMediationPolicyList.cloneReadOnly();
+        model:MediationPolicy[] & readonly readOnlyMediationPolicyList = avilableMediationPolicyList.cloneReadOnly();
         if readOnlyMediationPolicyList is MediationPolicy[] & readonly {
             return readOnlyMediationPolicyList;
         } else {

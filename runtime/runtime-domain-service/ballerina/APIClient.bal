@@ -350,7 +350,7 @@ public class APIClient {
                 }
             }
         }
-        return {list: limitSet, count: limitSet.length(), pagination: {total: apiList.length(), 'limit: 'limit, offset: offset}};
+        return {list: convertAPIListToAPIInfoList(limitSet), count: limitSet.length(), pagination: {total: apiList.length(), 'limit: 'limit, offset: offset}};
 
     }
     public isolated function createAPI(API api, string? definition, commons:Organization organization) returns commons:APKError|CreatedAPI|BadRequestError {
@@ -462,8 +462,8 @@ public class APIClient {
         if (policyData is OperationPolicy[]) {
             foreach OperationPolicy policy in policyData {
                 string policyName = policy.policyName;
-                OperationPolicyParameters[]? policyParameters = policy.parameters;
-                if (policyParameters is OperationPolicyParameters[]) {
+                record {}? policyParameters = policy.parameters;
+                if (policyParameters is record {}) {
                     string[] allowedPolicyAttributes = [];
                     string[] receivedPolicyParameters = [];
                     any|error mediationPolicyList = self.getMediationPolicyList(SEARCH_CRITERIA_NAME + ":" + policyName, 1, 0,
@@ -477,12 +477,11 @@ public class APIClient {
                                     allowedPolicyAttributes.push(<string>params.name);
                                 }
                             }
-                            foreach OperationPolicyParameters policyParam in policyParameters {
-                                string[] keys = policyParam.keys();
-                                foreach string key in keys {
-                                    receivedPolicyParameters.push(key);
-                                }
+                            string[] keys = policyParameters.keys();
+                            foreach string key in keys {
+                                receivedPolicyParameters.push(key);
                             }
+
                             if (allowedPolicyAttributes != receivedPolicyParameters) {
                                 // Allowed policy attributes does not match with the parameters provided
                                 BadRequestError badRequestError = {body: {code: 90916, message: "Invalid parameters provided for policy " + policyName}};
@@ -1319,17 +1318,19 @@ public class APIClient {
         string[] removePolicies = [];
         foreach OperationPolicy policy in operationPolicy {
             string policyName = policy.policyName;
-            OperationPolicyParameters[]? policyParameters = policy.parameters;
-            if (policyParameters is OperationPolicyParameters[]) {
+
+            record{}? policyParameters = policy.parameters;
+            if (policyParameters is record{}) {
                 if (policyName == "addHeader") {
+
                     model:HTTPHeader httpHeader = {
-                        name: <string>policyParameters[0].headerName,
-                        value: <string>policyParameters[0].headerValue
+                        name: <string>policyParameters.get("headerName"),
+                        value: <string>policyParameters.get("headerValue")
                     };
                     setPolicies.push(httpHeader);
                 }
                 if (policyName == "removeHeader") {
-                    string httpHeader = <string>policyParameters[0].headerName;
+                    string httpHeader = <string>policyParameters.get("headerName");
                     removePolicies.push(httpHeader);
                 }
             }

@@ -110,3 +110,18 @@ isolated function convertPolicyModeltoPolicy(model:MediationPolicy mediationPoli
     };
     return mediationPolicyData;
 }
+public isolated function convertAPIListToAPIInfoList(API[] apiList) returns APIInfo[]{
+    APIInfo[] apiInfoList = [];
+    foreach API api in apiList {
+        APIInfo apiInfo = {
+            id: api.id,
+            name: api.name,
+            context: api.context,
+            'version: api.'version,
+            'type: api.'type,
+            createdTime: api.createdTime
+        };
+        apiInfoList.push(apiInfo);
+    }
+    return apiInfoList;
+}

@@ -19,6 +19,11 @@
 import ballerina/http;
 import ballerina/constraint;
 
+public type OkCertMetadata record {|
+    *http:Ok;
+    CertMetadata body;
+|};
+
 public type InternalServerErrorError record {|
     *http:InternalServerError;
     Error body;
@@ -54,15 +59,25 @@ public type BadRequestError record {|
     Error body;
 |};
 
-public type ErrorListItem record {
+public type OkAPIKey record {|
+    *http:Ok;
+    APIKey body;
+|};
+
+public type OkAPIDefinitionValidationResponse record {|
+    *http:Ok;
+    APIDefinitionValidationResponse body;
+|};
+
+public type ErrorListItem record {|
     string code;
     # Description about individual errors occurred
     string message;
     # A detail description about the error message.
     string description?;
-};
+|};
 
-public type MediationPolicy record {
+public type MediationPolicy record {|
     string id;
     string 'type;
     string name;
@@ -71,9 +86,9 @@ public type MediationPolicy record {
     string[] applicableFlows?;
     string[] supportedApiTypes?;
     MediationPolicySpecAttribute[] policyAttributes?;
-};
+|};
 
-public type Apis_importdefinition_body record {
+public type Apis_importdefinition_body record {|
     # Type of Definition.
     string 'type?;
     # Definition to upload as a file
@@ -84,9 +99,21 @@ public type Apis_importdefinition_body record {
     string additionalProperties?;
     # Inline content of the API definition
     string inlineAPIDefinition?;
-};
+|};
 
-public type Apis_validatedefinition_body record {
+# Representation of a list of certificates
+public type Certificates record {|
+    int count?;
+    CertMetadata[] certificates?;
+    Pagination pagination?;
+|};
+
+public type CertificateValidity record {|
+    string 'from?;
+    string to?;
+|};
+
+public type Apis_validatedefinition_body record {|
     # API definition definition url
     string url?;
     # API definition as a file
@@ -95,9 +122,9 @@ public type Apis_validatedefinition_body record {
     string 'type?;
     # Inline content of the API definition
     string inlineAPIDefinition?;
-};
+|};
 
-public type Pagination record {
+public type Pagination record {|
     int offset?;
     int 'limit?;
     int total?;
@@ -107,23 +134,30 @@ public type Pagination record {
     # Link to the previous subset of resources qualified.
     # Empty if current subset is the first subset returned.
     string previous?;
-};
+|};
 
-public type GatewayList record {
+public type GatewayList record {|
     Gateway[] list?;
     Pagination pagination?;
-};
+|};
 
-public type ApiId_definition_body record {
+public type ApiId_definition_body record {|
     # API definition of the API
     string apiDefinition?;
     # API definition URL of the API
     string url?;
-    # API definitio as a file
+    # API definition as a file
     string file?;
-};
+|};
 
-public type Gateway record {
+public type ApiId_endpointcertificates_body record {|
+    # The certificate that needs to be uploaded.
+    string certificate;
+    # Endpoint to which the certificate should be applied.
+    string endpoint?;
+|};
+
+public type Gateway record {|
     # Name of the Gateway
     @constraint:String {maxLength: 255, minLength: 1}
     string name;
@@ -132,9 +166,9 @@ public type Gateway record {
     string protocol;
     # Port of the Listener
     decimal port;
-};
+|};
 
-public type APIOperations record {
+public type APIOperations record {|
     string target?;
     string verb?;
     # Authentication mode for resource (true/false)
@@ -155,53 +189,60 @@ public type APIOperations record {
     string[] scopes?;
     APIOperationPolicies operationPolicies?;
     APIRateLimit operationRateLimit?;
-};
+|};
 
-public type APIOperationPolicies record {
+public type APIOperationPolicies record {|
     OperationPolicy[] request?;
     OperationPolicy[] response?;
     OperationPolicy[] fault?;
-};
+|};
 
-public type MediationPolicySpecAttribute record {
-    # Name of the attibute
+public type MediationPolicySpecAttribute record {|
+    # Name of the attribute
     string name?;
-    # Description of the attibute
+    # Description of the attribute
     string description?;
-    # Is this option mandetory for the policy
+    # Is this option mandatory for the policy
     boolean required?;
-    # UI validation regex for the attibute
+    # UI validation regex for the attribute
     string validationRegex?;
-    # Type of the attibute
+    # Type of the attribute
     string 'type?;
     # Default value for the attribute
     string defaultValue?;
-};
+|};
 
-public type APIList record {
+public type APIList record {|
     # Number of APIs returned.
     int count?;
     APIInfo[] list?;
     Pagination pagination?;
-};
+|};
 
-public type MediationPolicyList record {
+public type MediationPolicyList record {|
     # Number of mediation policies returned.
     int count?;
     MediationPolicy[] list?;
     Pagination pagination?;
-};
+|};
 
-public type PortMapping record {
+public type CertificateInfo record {|
+    string status?;
+    CertificateValidity validity?;
+    string 'version?;
+    string subject?;
+|};
+
+public type PortMapping record {|
     @constraint:String {maxLength: 255, minLength: 1}
     string name;
     string protocol?;
     int targetport;
     int port;
-};
+|};
 
 # API definition information
-public type APIDefinitionValidationResponse_info record {
+public type APIDefinitionValidationResponse_info record {|
     # Name of the API
     string name?;
     # Version of the API
@@ -214,19 +255,25 @@ public type APIDefinitionValidationResponse_info record {
     string openAPIVersion?;
     # contains host/servers specified in the API definition file/URL
     string[] endpoints?;
-};
+|};
 
-public type ServiceList record {
+# Representation of the details of a certificate
+public type CertMetadata record {|
+    string certificateId?;
+    string endpoint?;
+|};
+
+public type ServiceList record {|
     Service[] list?;
     Pagination pagination?;
-};
+|};
 
-public type API_serviceInfo record {
+public type API_serviceInfo record {|
     string name?;
     string namespace?;
-};
+|};
 
-public type APIInfo record {
+public type APIInfo record {|
     # UUID of the API
     string id?;
     string name?;
@@ -235,9 +282,9 @@ public type APIInfo record {
     string 'type?;
     string createdTime?;
     string updatedTime?;
-};
+|};
 
-public type Error record {
+public type Error record {|
     int code;
     # Error message.
     string message;
@@ -248,9 +295,9 @@ public type Error record {
     # If there are more than one error list them out.
     # For example, list out validation errors by each field.
     ErrorListItem[] 'error?;
-};
+|};
 
-public type Service record {
+public type Service record {|
     @constraint:String {maxLength: 255, minLength: 1}
     string id;
     @constraint:String {maxLength: 255, minLength: 1}
@@ -260,19 +307,19 @@ public type Service record {
     string 'type;
     PortMapping[] portmapping?;
     string createdTime?;
-};
+|};
 
-public type SearchResult record {
+public type SearchResult record {|
     string id?;
     string name;
     # Accepted values are HTTP, WS, GRAPHQL
     string transportType?;
-};
+|};
 
-public type GraphQLSchema record {
+public type GraphQLSchema record {|
     string name;
     string schemaDefinition?;
-};
+|};
 
 public type APIRateLimit record {
     # Number of requests allowed per specified unit of time
@@ -281,7 +328,7 @@ public type APIRateLimit record {
     string unit;
 };
 
-public type APIDefinitionValidationResponse record {
+public type APIDefinitionValidationResponse record {|
     # This attribute declares whether this definition is valid or not.
     boolean isValid;
     # OpenAPI definition content.
@@ -291,32 +338,32 @@ public type APIDefinitionValidationResponse record {
     # If there are more than one error list them out.
     # For example, list out validation errors by each field.
     ErrorListItem[] errors?;
-};
+|};
 
-public type APIKey record {
+public type Endpointcertificates_certificateId_body record {|
+    # The certificate that needs to be uploaded.
+    string certificate;
+|};
+
+public type APIKey record {|
     # API Key
     string apikey?;
     int validityTime?;
-};
+|};
 
-public type OperationPolicy record {
+public type OperationPolicy record {|
     string policyName;
     string policyVersion = "v1";
     string policyId?;
-    OperationPolicyParameters[] parameters?;
-};
+    record {} parameters?;
+|};
 
-public type OperationPolicyParameters record {
-    string headerName?;
-    string headerValue?;
-};
-
-public type Apis_import_body record {
+public type Apis_import_body record {|
     # Zip archive consisting on exported API configuration
     string file;
-};
+|};
 
-public type API record {
+public type API record {|
     # UUID of the API
     string id?;
     @constraint:String {maxLength: 60, minLength: 1}
@@ -346,4 +393,4 @@ public type API record {
     APIRateLimit apiRateLimit?;
     string createdTime?;
     string lastUpdatedTime?;
-};
+|};
