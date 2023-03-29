@@ -21,7 +21,6 @@ import (
 	"testing"
 
 	"github.com/wso2/apk/test/integration/integration/utils/http"
-	"github.com/wso2/apk/test/integration/integration/utils/kubernetes"
 	"github.com/wso2/apk/test/integration/integration/utils/suite"
 )
 
@@ -36,10 +35,11 @@ var ProdAndSandAPIs = suite.IntegrationTest{
 	Manifests:   []string{"tests/prod-and-sand-apis.yaml"},
 	Test: func(t *testing.T, suite *suite.IntegrationTestSuite) {
 		ns := "gateway-integration-test-infra"
-		gwAddr := kubernetes.WaitForGatewayAddress(t, suite.Client, suite.TimeoutConfig)
-		token := http.GetTestToken(t, gwAddr)
+		gwAddr1 := "prod-api.test.gw.wso2.com:9095"
+		gwAddr2 := "sand-api.test.gw.wso2.com:9095"
+		token := http.GetTestToken(t)
 
-		testCases := []http.ExpectedResponse{
+		testCases1 := []http.ExpectedResponse{
 			// invoke prod api using prod domain name, invokes prod backend
 			{
 				Request: http.Request{
@@ -54,6 +54,8 @@ var ProdAndSandAPIs = suite.IntegrationTest{
 				Backend:   "infra-backend-v1",
 				Namespace: ns,
 			},
+		}
+		testCases2 := []http.ExpectedResponse{
 			// invoke sand api using sand domain name, invokes sand backend
 			{
 				Request: http.Request{
@@ -69,12 +71,21 @@ var ProdAndSandAPIs = suite.IntegrationTest{
 				Namespace: ns,
 			},
 		}
-		for i := range testCases {
-			tc := testCases[i]
+
+		for i := range testCases1 {
+			tc := testCases1[i]
 			tc.Request.Headers = http.AddBearerTokenToHeader(token, tc.Request.Headers)
 			t.Run(tc.GetTestCaseName(i), func(t *testing.T) {
 				t.Parallel()
-				http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, gwAddr, tc)
+				http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, gwAddr1, tc)
+			})
+		}
+		for i := range testCases2 {
+			tc := testCases2[i]
+			tc.Request.Headers = http.AddBearerTokenToHeader(token, tc.Request.Headers)
+			t.Run(tc.GetTestCaseName(i), func(t *testing.T) {
+				t.Parallel()
+				http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, gwAddr2, tc)
 			})
 		}
 	},

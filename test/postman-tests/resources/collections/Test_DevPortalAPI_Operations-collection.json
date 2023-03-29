@@ -39,7 +39,7 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "idp.am.wso2.com",
+						"value": "prod.idp.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -54,9 +54,9 @@
 					]
 				},
 				"url": {
-					"raw": "{{idpAPIBaseURl}}/oauth2/token",
+					"raw": "{{gatewayBaseURl}}/oauth2/token",
 					"host": [
-						"{{idpAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"oauth2",
@@ -126,7 +126,7 @@
 					},
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -135,9 +135,9 @@
 					"raw": "{\n    \"context\": \"{{testAPIContext}}\",\n    \"name\": \"{{testAPIName}}\",\n    \"version\": \"{{testAPIVersion}}\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/get\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"endpointConfig\": {\n                \"endpoint_type\": \"http\",\n                \"production_endpoints\": {\n                    \"url\": \"http://httpbin.org\"\n                }\n            }\n        },\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"endpointConfig\": {\n                \"endpoint_type\": \"http\",\n                \"production_endpoints\": {\n                    \"url\": \"http://httpbin.org\"\n                }\n            }\n        }\n    ]\n}"
 				},
 				"url": {
-					"raw": "{{internalAPIBaseURl}}/api/am/runtime/apis",
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis",
 					"host": [
-						"{{internalAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -188,14 +188,14 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
 				"url": {
-					"raw": "{{internalAPIBaseURl}}/api/am/backoffice/apis",
+					"raw": "{{gatewayBaseURl}}/api/am/backoffice/apis",
 					"host": [
-						"{{internalAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -243,14 +243,14 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
 				"url": {
-					"raw": "{{internalAPIBaseURl}}/api/am/devportal/apis",
+					"raw": "{{gatewayBaseURl}}/api/am/devportal/apis",
 					"host": [
-						"{{internalAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -298,14 +298,14 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
 				"url": {
-					"raw": "{{internalAPIBaseURl}}/api/am/backoffice/apis/change-lifecycle?apiId={{backOfficeApiUUID}}&targetState={{lifeCycleStatusTest2}}",
+					"raw": "{{gatewayBaseURl}}/api/am/backoffice/apis/change-lifecycle?apiId={{backOfficeApiUUID}}&targetState={{lifeCycleStatusTest2}}",
 					"host": [
-						"{{internalAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -373,14 +373,14 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
 				"url": {
-					"raw": "{{internalAPIBaseURl}}/api/am/devportal/apis",
+					"raw": "{{gatewayBaseURl}}/api/am/devportal/apis",
 					"host": [
-						"{{internalAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -428,14 +428,14 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
 				"url": {
-					"raw": "{{internalAPIBaseURl}}/api/am/devportal/apis",
+					"raw": "{{gatewayBaseURl}}/api/am/devportal/apis",
 					"host": [
-						"{{internalAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -485,14 +485,14 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
 				"url": {
-					"raw": "{{internalAPIBaseURl}}/api/am/devportal/apis/{{backOfficeApiUUID}}",
+					"raw": "{{gatewayBaseURl}}/api/am/devportal/apis/{{backOfficeApiUUID}}",
 					"host": [
-						"{{internalAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -536,14 +536,14 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
 				"url": {
-					"raw": "{{internalAPIBaseURl}}/api/am/devportal/apis/{{backOfficeApiUUID}}/definition",
+					"raw": "{{gatewayBaseURl}}/api/am/devportal/apis/{{backOfficeApiUUID}}/definition",
 					"host": [
-						"{{internalAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -587,14 +587,14 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
 				"url": {
-					"raw": "{{internalAPIBaseURl}}/api/am/devportal/sdk-gen/languages",
+					"raw": "{{gatewayBaseURl}}/api/am/devportal/sdk-gen/languages",
 					"host": [
-						"{{internalAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -637,14 +637,14 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
 				"url": {
-					"raw": "{{internalAPIBaseURl}}/api/am/devportal/apis/{{backOfficeApiUUID}}/sdks/java",
+					"raw": "{{gatewayBaseURl}}/api/am/devportal/apis/{{backOfficeApiUUID}}/sdks/java",
 					"host": [
-						"{{internalAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -707,7 +707,7 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -721,9 +721,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{internalAPIBaseURl}}/api/am/admin/application-rate-plans",
+					"raw": "{{gatewayBaseURl}}/api/am/admin/application-rate-plans",
 					"host": [
-						"{{internalAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -776,7 +776,7 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -790,9 +790,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{internalAPIBaseURl}}/api/am/devportal/applications",
+					"raw": "{{gatewayBaseURl}}/api/am/devportal/applications",
 					"host": [
-						"{{internalAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -821,14 +821,14 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
 				"url": {
-					"raw": "{{internalAPIBaseURl}}/api/am/devportal/applications/{{testApplicationID}}",
+					"raw": "{{gatewayBaseURl}}/api/am/devportal/applications/{{testApplicationID}}",
 					"host": [
-						"{{internalAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -882,7 +882,7 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -896,9 +896,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{internalAPIBaseURl}}/api/am/devportal/applications/{{testApplicationID}}",
+					"raw": "{{gatewayBaseURl}}/api/am/devportal/applications/{{testApplicationID}}",
 					"host": [
-						"{{internalAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -928,14 +928,14 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
 				"url": {
-					"raw": "{{internalAPIBaseURl}}/api/am/devportal/applications",
+					"raw": "{{gatewayBaseURl}}/api/am/devportal/applications",
 					"host": [
-						"{{internalAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -964,14 +964,14 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
 				"url": {
-					"raw": "{{internalAPIBaseURl}}/api/am/devportal/applications/{{testApplicationID}}",
+					"raw": "{{gatewayBaseURl}}/api/am/devportal/applications/{{testApplicationID}}",
 					"host": [
-						"{{internalAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -1014,14 +1014,14 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
 				"url": {
-					"raw": "{{internalAPIBaseURl}}/api/am/devportal/applications/{{testApplicationID}}",
+					"raw": "{{gatewayBaseURl}}/api/am/devportal/applications/{{testApplicationID}}",
 					"host": [
-						"{{internalAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -1065,7 +1065,7 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -1079,9 +1079,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{internalAPIBaseURl}}/api/am/admin/application-rate-plans/{{applicationRatePlanID}}",
+					"raw": "{{gatewayBaseURl}}/api/am/admin/application-rate-plans/{{applicationRatePlanID}}",
 					"host": [
-						"{{internalAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -1128,7 +1128,7 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -1142,9 +1142,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{internalAPIBaseURl}}/api/am/admin/application-rate-plans/{{applicationRatePlanID}}",
+					"raw": "{{gatewayBaseURl}}/api/am/admin/application-rate-plans/{{applicationRatePlanID}}",
 					"host": [
-						"{{internalAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",
@@ -1199,14 +1199,14 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
 				"url": {
-					"raw": "{{internalAPIBaseURl}}/api/am/runtime/apis/{{runtimeAPIUUID}}",
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{runtimeAPIUUID}}",
 					"host": [
-						"{{internalAPIBaseURl}}"
+						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"api",

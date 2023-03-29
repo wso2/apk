@@ -24,7 +24,7 @@ metadata:
     api-version: "1.0.0"
 spec:
   hostnames:
-  - "idp.am.wso2.com"
+  - "prod.idp.am.wso2.com"
   rules:
   - matches:
     - path:
@@ -62,5 +62,5 @@ spec:
   - group: "gateway.networking.k8s.io"
     kind: "Gateway"
     name: "default"
-    sectionName: "idplistener"
+    sectionName: "httpslistener"
 {{- end -}}

@@ -21,7 +21,6 @@ import (
 	"testing"
 
 	"github.com/wso2/apk/test/integration/integration/utils/http"
-	"github.com/wso2/apk/test/integration/integration/utils/kubernetes"
 	"github.com/wso2/apk/test/integration/integration/utils/suite"
 )
 
@@ -36,9 +35,8 @@ var APIDifferentListener = suite.IntegrationTest{
 	Manifests:   []string{"tests/api-different-listener.yaml"},
 	Test: func(t *testing.T, suite *suite.IntegrationTestSuite) {
 		ns := "gateway-integration-test-infra"
-		apiAddr := kubernetes.WaitForAPIListenerAddress(t, suite.Client, suite.TimeoutConfig)
-		gwAddr := kubernetes.WaitForGatewayAddress(t, suite.Client, suite.TimeoutConfig)
-		token := http.GetTestToken(t, gwAddr)
+		gwAddr := "diff-listner-api.test.api.am.wso2.com:9095"
+		token := http.GetTestToken(t)
 
 		testCases := []http.ExpectedResponse{
 			{
@@ -66,7 +64,7 @@ var APIDifferentListener = suite.IntegrationTest{
 		negativeTestCases := []http.ExpectedResponse{
 			{
 				Request: http.Request{
-					Host: "diff-listner-api.test.api.am.wso2.com",
+					Host: "gateway-integration-test-infra.test.gw.wso2.com",
 					Path: "/test-api-with-different-listener/v1.0.0/user/user123/playlist/watch-later",
 				},
 				Response:  http.Response{StatusCode: 404},
@@ -79,7 +77,7 @@ var APIDifferentListener = suite.IntegrationTest{
 			tc.Request.Headers = http.AddBearerTokenToHeader(token, tc.Request.Headers)
 			t.Run(tc.GetTestCaseName(i), func(t *testing.T) {
 				t.Parallel()
-				http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, apiAddr, tc)
+				http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, gwAddr, tc)
 			})
 		}
 		for i := range negativeTestCases {
