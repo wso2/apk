@@ -279,7 +279,7 @@ wso2:
           #   certKeyFilename: ""
           #   certFilename: ""
       ratelimiter:
-        enabled: false
+        enabled: true
         appName: "ratelimiter"
         deployment:
           npi: ratelimiter-npi
@@ -304,8 +304,8 @@ wso2:
             failureThreshold: 5
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: IfNotPresent
-          image: ratelimiter:0.0.1-SNAPSHOT
+          imagePullPolicy: Always
+          image: wso2/ratelimiter:latest
           security:
             sslHostname: "ratelimiter"
         # configs:
@@ -485,7 +485,7 @@ idp:
       idpLoginUrl: "https://idp.am.wso2.com:9095/commonauth/login"
       idpAuthCallBackUrl: "https://idp.am.wso2.com:9095/oauth2/auth-callback"
 redis:
-  enabled: false
+  enabled: true
   architecture: standalone
   fullnameOverride: redis
   primary:

@@ -137,6 +137,7 @@ public class APIClient {
                 _ = check self.deleteServiceMappings(api);
                 _ = check self.deleteAuthneticationCRs(api);
                 _ = check self.deleteScopeCrsForAPI(api);
+                _ = check self.deleteRateLimitPolicyCRs(api);
                 _ = check self.deleteBackends(api);
                 _ = check self.deleteInternalAPI(api.metadata.name, api.metadata.namespace);
             } else {
@@ -383,6 +384,11 @@ public class APIClient {
                 if (badRequestError is BadRequestError) {
                     return badRequestError;
                 }
+                // Validating rate limit.
+                BadRequestError|() invalidRateLimitError = self.validateRateLimit(api.apiRateLimit, operations);
+                if (invalidRateLimitError is BadRequestError) {
+                    return invalidRateLimitError;
+                }
             } else {
                 BadRequestError badRequestError = {body: {code: 90912, message: "Atleast one operation need to specified"}};
                 return badRequestError;
@@ -494,6 +500,23 @@ public class APIClient {
         return ();
     }
 
+    isolated function validateRateLimit(APIRateLimit? apiRateLimit, APIOperations[] operations) returns BadRequestError|() {
+        if (apiRateLimit == ()) {
+            return ();
+        } else {
+            foreach APIOperations operation in operations {
+                APIRateLimit? operationRateLimit = operation.operationRateLimit;
+                if (operationRateLimit != ()) {
+                    // Presence of both resource level and API level rate limits.
+                    BadRequestError badRequestError = {body: {code: 90918,
+                        message: "Presence of both resource level and API level rate limits is not allowed"}};
+                    return badRequestError;
+                }
+            }
+        }
+        return ();
+    }
+
     private isolated function generateAndSetRuntimeAPIArtifact(model:APIArtifact apiArtifact, API api, Service? serviceEntry, commons:Organization organization) {
 
         apiArtifact.runtimeAPI = self.generateRuntimeAPIArtifact(api, serviceEntry, organization);
@@ -559,6 +582,15 @@ public class APIClient {
                 if endpointConfig is record {} {
                     runtimeAPI.spec.endpointConfig = endpointConfig;
                 }
+
+                APIRateLimit? rateLimitPolicy = operation.operationRateLimit;
+                if (rateLimitPolicy is APIRateLimit) {
+                    model:RateLimit rateLimit = {
+                        requestsPerUnit: rateLimitPolicy.requestsPerUnit,
+                        unit: rateLimitPolicy.unit
+                    };
+                    runtimeAPIOperation.operationRateLimit = rateLimit;
+                }
                 runtimeAPIOperations.push(runtimeAPIOperation);
             }
             runtimeAPI.spec.operations = runtimeAPIOperations;
@@ -566,6 +598,14 @@ public class APIClient {
         record {|anydata...;|}? endpointConfig = api.endpointConfig;
         if endpointConfig is record {} {
             runtimeAPI.spec.endpointConfig = endpointConfig;
+        }
+        APIRateLimit? rateLimitPolicy = api.apiRateLimit;
+        if (rateLimitPolicy is APIRateLimit) {
+            model:RateLimit rateLimit = {
+                requestsPerUnit: rateLimitPolicy.requestsPerUnit,
+                unit: rateLimitPolicy.unit
+            };
+            runtimeAPI.spec.apiRateLimit = rateLimit;
         }
         if serviceEntry is Service {
             runtimeAPI.spec.serviceInfo = {
@@ -692,6 +732,11 @@ public class APIClient {
                 if (badRequestError is BadRequestError) {
                     return badRequestError;
                 }
+                // Validating rate limit.
+                BadRequestError|() invalidRateLimitError = self.validateRateLimit(api.apiRateLimit, operations);
+                if (invalidRateLimitError is BadRequestError) {
+                    return invalidRateLimitError;
+                }
             }
             api.context = self.returnFullContext(api.context, api.'version);
             Service|error serviceRetrieved = getServiceById(serviceKey);
@@ -740,11 +785,13 @@ public class APIClient {
                 check self.deleteAuthneticationCRs(api);
                 _ = check self.deleteScopeCrsForAPI(api);
                 check self.deleteBackends(api);
+                check self.deleteRateLimitPolicyCRs(api);
                 check self.deleteInternalAPI(api.metadata.name, api.metadata.namespace);
             }
             check self.deployScopeCrs(apiArtifact);
             check self.deployBackendServices(apiArtifact);
             check self.deployAuthneticationCRs(apiArtifact);
+            check self.deployRateLimitPolicyCRs(apiArtifact);
             check self.deployHttpRoutes(apiArtifact.productionRoute);
             check self.deployHttpRoutes(apiArtifact.sandboxRoute);
             check self.deployServiceMappings(apiArtifact);
@@ -934,6 +981,44 @@ public class APIClient {
             check self.handleK8sTimeout(statusResponse);
         }
     }
+
+    private isolated function deployRateLimitPolicyCRs(model:APIArtifact apiArtifact) returns error? {
+        foreach model:RateLimitPolicy rateLimitPolicy in apiArtifact.rateLimitPolicies {
+            http:Response deployRateLimitPolicyResult = check deployRateLimitPolicyCR(rateLimitPolicy, getNameSpace(runtimeConfiguration.apiCreationNamespace));
+            if deployRateLimitPolicyResult.statusCode == http:STATUS_CREATED {
+                log:printDebug("Deployed RateLimitPolicy Successfully" + rateLimitPolicy.toString());
+            } else {
+                json responsePayLoad = check deployRateLimitPolicyResult.getJsonPayload();
+                model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                check self.handleK8sTimeout(statusResponse);
+            }
+        }
+    }
+
+    private isolated function deleteRateLimitPolicyCRs(model:API api) returns commons:APKError? {
+        do {
+            model:RateLimitPolicyList|http:ClientError rateLimitPolicyCrListResponse = check getRateLimitPolicyCRsForAPI(api.spec.apiDisplayName, api.spec.apiVersion, api.metadata.namespace);
+            if rateLimitPolicyCrListResponse is model:RateLimitPolicyList {
+                foreach model:RateLimitPolicy item in rateLimitPolicyCrListResponse.items {
+                    http:Response|http:ClientError rateLimitPolicyCRDeletionResponse = deleteRateLimitPolicyCR(item.metadata.name, item.metadata.namespace);
+                    if rateLimitPolicyCRDeletionResponse is http:Response {
+                        if rateLimitPolicyCRDeletionResponse.statusCode != http:STATUS_OK {
+                            json responsePayLoad = check rateLimitPolicyCRDeletionResponse.getJsonPayload();
+                            model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                            check self.handleK8sTimeout(statusResponse);
+                        }
+                    } else {
+                        log:printError("Error occured while deleting rate limit policy");
+                    }
+                }
+                return;
+            }
+        } on fail var e {
+            log:printError("Error occured deleting rate limit policy", e);
+            return error("Error occured deleting rate limit policy", message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = 500);
+        }
+    }
+
     private isolated function retrieveGeneratedConfigmapForDefinition(model:APIArtifact apiArtifact, API api, json generatedSwaggerDefinition, string uniqueId) {
         map<string> configMapData = {};
         if api.'type == API_TYPE_REST {
@@ -1039,10 +1124,11 @@ public class APIClient {
         }
     }
     private isolated function putHttpRouteForPartition(model:APIArtifact apiArtifact, API api, model:Endpoint? endpoint, string uniqueId, string endpointType, commons:Organization organization) returns commons:APKError? {
+        string httpRouteRefName = retrieveHttpRouteRefName(api, endpointType, organization);
         model:Httproute httpRoute = {
             metadata:
                 {
-                name: retrieveHttpRouteRefName(api, endpointType, organization),
+                name: httpRouteRefName,
                 namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace),
                 uid: (),
                 creationTimestamp: (),
@@ -1050,7 +1136,7 @@ public class APIClient {
             },
             spec: {
                 parentRefs: self.generateAndRetrieveParentRefs(api, uniqueId),
-                rules: check self.generateHttpRouteRules(apiArtifact, api, endpoint, endpointType, organization),
+                rules: check self.generateHttpRouteRules(apiArtifact, api, endpoint, endpointType, organization, httpRouteRefName),
                 hostnames: self.getHostNames(api, uniqueId, endpointType, organization)
             }
         };
@@ -1083,7 +1169,7 @@ public class APIClient {
         return parentRefs;
     }
 
-    private isolated function generateHttpRouteRules(model:APIArtifact apiArtifact, API api, model:Endpoint? endpoint, string endpointType, commons:Organization organization) returns model:HTTPRouteRule[]|commons:APKError {
+    private isolated function generateHttpRouteRules(model:APIArtifact apiArtifact, API api, model:Endpoint? endpoint, string endpointType, commons:Organization organization, string httpRouteRefName) returns model:HTTPRouteRule[]|commons:APKError {
         model:HTTPRouteRule[] httpRouteRules = [];
         APIOperations[]? operations = api.operations;
         if operations is APIOperations[] {
@@ -1117,12 +1203,27 @@ public class APIClient {
                             (<model:HTTPRouteFilter[]>filters).push(scopeFilter);
                         }
                     }
+                    if operation.operationRateLimit != () {
+                        model:RateLimitPolicy? rateLimitPolicyCR = self.generateRateLimitPolicyCR(api, operation.operationRateLimit, httpRouteRefName, "Resource", "dp.wso2.com");
+                        if rateLimitPolicyCR != () {
+                            apiArtifact.rateLimitPolicies[rateLimitPolicyCR.metadata.name] = rateLimitPolicyCR;
+                            model:HTTPRouteFilter rateLimitPolicyFilter = {'type: "ExtensionRef", extensionRef: {group: "dp.wso2.com", kind: "RateLimitPolicy", name: rateLimitPolicyCR.metadata.name}};
+                            (<model:HTTPRouteFilter[]>filters).push(rateLimitPolicyFilter);
+                        }
+                    }
                     httpRouteRules.push(httpRouteRule);
                 }
             }
         }
+        if api.apiRateLimit != () {
+            model:RateLimitPolicy? rateLimitPolicyCR = self.generateRateLimitPolicyCR(api, api.apiRateLimit, httpRouteRefName, "HTTPRoute", "gateway.networking.k8s.io");
+            if rateLimitPolicyCR != () {
+                apiArtifact.rateLimitPolicies[rateLimitPolicyCR.metadata.name] = rateLimitPolicyCR;
+            }
+        }
         return httpRouteRules;
     }
+
     private isolated function generateScopeCR(model:APIArtifact apiArtifact, API api, commons:Organization organization, string scope) returns model:Scope {
         string scopeName = uuid:createType1AsString();
         model:Scope scopeCr = {
@@ -1723,6 +1824,41 @@ public class APIClient {
         return backendService;
     }
 
+    public isolated function generateRateLimitPolicyCR(API api, APIRateLimit? rateLimit, string httpRouteRefName, string kind, string group) returns model:RateLimitPolicy? {
+        model:RateLimitPolicy? rateLimitPolicyCR = ();
+        if rateLimit != () {
+            string nameSpace = getNameSpace(runtimeConfiguration.apiCreationNamespace);
+            rateLimitPolicyCR = {
+                metadata: {
+                    name: retrieveRateLimitPolicyRefName(kind),
+                    namespace: nameSpace,
+                    labels: self.getLabels(api)
+                },
+                spec: {
+                    default: self.retrieveRateLimitData(rateLimit),
+                    targetRef: {
+                        group: group,
+                        kind: kind,
+                        name: httpRouteRefName,
+                        namespace: nameSpace
+                    }
+                }
+            };
+        }
+        return rateLimitPolicyCR;
+    }
+
+    isolated function retrieveRateLimitData(APIRateLimit rateLimit) returns model:RateLimitData {
+        model:RateLimitData rateLimitData = {
+            api: {
+                requestsPerUnit: rateLimit.requestsPerUnit,
+                unit: rateLimit.unit
+            },
+            'type: "Api"
+        };
+        return rateLimitData;
+    }
+
     public isolated function retrieveDefaultDefinition(model:API api) returns json {
         json defaultOpenApiDefinition = {
             "openapi": "3.0.1",
@@ -2097,7 +2233,8 @@ public class APIClient {
             name: oldAPI.name,
             context: regex:replace(oldAPI.context, oldAPI.'version, newVersion),
             'version: newVersion,
-            operations: oldAPI.operations
+            operations: oldAPI.operations,
+            apiRateLimit: oldAPI.apiRateLimit
         };
         check self.prepareConfigMap(apiArtifact, oldAPI, newAPI);
         check self.prepareHttpRoute(apiArtifact, serviceEntry, oldAPI, newAPI, PRODUCTION_TYPE, organization);
@@ -2125,6 +2262,7 @@ public class APIClient {
         map<string> serviceMapping = {};
         map<string> extenstionRefMappings = {};
         foreach model:Httproute httproute in httproutes {
+            string oldHttpRouteName = httproute.metadata.name;
             httproute.metadata.name = retrieveHttpRouteRefName(newAPI, endpointType, organization);
             httproute.metadata.labels = self.getLabels(newAPI);
             model:HTTPRouteRule[] routeRules = httproute.spec.rules;
@@ -2178,9 +2316,28 @@ public class APIClient {
                                     extenstionRefMappings[extensionRef.name] = newScopeCR.metadata.name;
                                     extensionRef.name = newScopeCR.metadata.name;
                                 }
+                            } else if extensionRef.kind == "RateLimitPolicy" {
+                                if apiArtifact.rateLimitPolicies.hasKey(extensionRef.name) {
+                                    model:RateLimitPolicy rateLimitPolicyCR = apiArtifact.rateLimitPolicies.get(extensionRef.name).clone();
+                                    model:RateLimitPolicy newRateLimitPolicyCR = self.prepareRateLimitPolicyCR(newAPI, rateLimitPolicyCR, httproute.metadata.name);
+                                    _ = apiArtifact.rateLimitPolicies.remove(extensionRef.name);
+                                    apiArtifact.rateLimitPolicies[newRateLimitPolicyCR.metadata.name] = newRateLimitPolicyCR;
+                                    extenstionRefMappings[extensionRef.name] = newRateLimitPolicyCR.metadata.name;
+                                    extensionRef.name = newRateLimitPolicyCR.metadata.name;
+                                }
                             }
                         }
                     }
+                }
+            }
+
+            map<model:RateLimitPolicy> rateLimitPolicies = apiArtifact.rateLimitPolicies;
+            foreach string extensionRefName in rateLimitPolicies.keys() {
+                model:RateLimitPolicy rateLimitPolicyCR = apiArtifact.rateLimitPolicies.get(extensionRefName).clone();
+                if rateLimitPolicyCR.spec.targetRef.kind == "HTTPRoute" && rateLimitPolicyCR.spec.targetRef.name == oldHttpRouteName {
+                    model:RateLimitPolicy newRateLimitPolicyCR = self.prepareRateLimitPolicyCR(newAPI, rateLimitPolicyCR, httproute.metadata.name);
+                    _ = apiArtifact.rateLimitPolicies.remove(extensionRefName);
+                    apiArtifact.rateLimitPolicies[newRateLimitPolicyCR.metadata.name] = newRateLimitPolicyCR;
                 }
             }
         }
@@ -2197,6 +2354,14 @@ public class APIClient {
         authentication.spec.targetRef.name = retrieveHttpRouteRefName(api, endpointType, organization);
         return authentication;
     }
+
+    private isolated function prepareRateLimitPolicyCR(API api, model:RateLimitPolicy rateLimitPolicy, string httpRouteRefName) returns model:RateLimitPolicy {
+        rateLimitPolicy.metadata.name = uuid:createType1AsString();
+        rateLimitPolicy.metadata.labels = self.getLabels(api);
+        rateLimitPolicy.spec.targetRef.name = httpRouteRefName;
+        return rateLimitPolicy;
+    }
+
     private isolated function prepareBackendRef(model:HTTPBackendRef backendRef, model:APIArtifact apiArtifact, Service? serviceEntry, API oldAPI, API newAPI, string endpointType, commons:Organization organization) returns [string, string]?|error {
         if apiArtifact.serviceMapping.length() >= 1 {
             if serviceEntry is Service {
@@ -2323,6 +2488,10 @@ public class APIClient {
         foreach model:Scope scope in scopeList.items {
             apiArtifact.scopes[scope.metadata.name] = self.sanitizeScopeCR(scope);
         }
+        model:RateLimitPolicyList rateLimitPolicyList = check getRateLimitPolicyCRsForAPI(k8sapi.spec.apiDisplayName, k8sapi.spec.apiVersion, k8sapi.metadata.namespace);
+        foreach model:RateLimitPolicy rateLimitPolicy in rateLimitPolicyList.items {
+            apiArtifact.rateLimitPolicies[rateLimitPolicy.metadata.name] = self.sanitizeRateLimitPolicyCR(rateLimitPolicy);
+        }
         apiArtifact.api = self.sanitizeAPICR(k8sapi);
         return apiArtifact;
     }
@@ -2333,6 +2502,15 @@ public class APIClient {
         };
         return sanitizedScope;
     }
+
+    private isolated function sanitizeRateLimitPolicyCR(model:RateLimitPolicy rateLimitPolicy) returns model:RateLimitPolicy {
+        model:RateLimitPolicy sanitizedRateLimitPolicy = {
+            metadata: {name: rateLimitPolicy.metadata.name, namespace: rateLimitPolicy.metadata.namespace, labels: rateLimitPolicy.metadata.labels},
+            spec: rateLimitPolicy.spec
+        };
+        return sanitizedRateLimitPolicy;
+    }
+
     private isolated function sanitizeRuntimeAPI(model:RuntimeAPI runtimeAPI) returns model:RuntimeAPI {
         model:RuntimeAPI sanitizedAPI = {
             metadata: {name: runtimeAPI.metadata.name, namespace: runtimeAPI.metadata.namespace, labels: runtimeAPI.metadata.labels},
@@ -2548,6 +2726,11 @@ public class APIClient {
                     BadRequestError|() badRequestError = self.validateOperationPolicies(api.apiPolicies, operations, organization);
                     if (badRequestError is BadRequestError) {
                         return badRequestError;
+                    }
+                    // Validating rate limit.
+                    BadRequestError|() invalidRateLimitError = self.validateRateLimit(api.apiRateLimit, operations);
+                    if (invalidRateLimitError is BadRequestError) {
+                        return invalidRateLimitError;
                     }
                 } else {
                     BadRequestError badRequestError = {body: {code: 90912, message: "Atleast one operation need to specified"}};
@@ -2848,4 +3031,9 @@ public isolated function getUniqueIdForAPI(string name, string 'version, commons
 
 public isolated function retrieveHttpRouteRefName(API api, string 'type, commons:Organization organization) returns string {
     return uuid:createType1AsString();
+}
+
+public isolated function retrieveRateLimitPolicyRefName(string kind) returns string {
+    string prefix = "rate-limit-" + kind.toLowerAscii() + "-";
+    return prefix + uuid:createType1AsString();
 }

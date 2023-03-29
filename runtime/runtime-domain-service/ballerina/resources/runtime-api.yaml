@@ -1130,6 +1130,8 @@ components:
         apiPolicies:
           $ref: "#/components/schemas/APIOperationPolicies"
           optional: true
+        apiRateLimit:
+          $ref: "#/components/schemas/APIRateLimit"
         createdTime:
           type: string
           readOnly: true
@@ -1180,6 +1182,8 @@ components:
             type: string
         operationPolicies:
           $ref: "#/components/schemas/APIOperationPolicies"
+        operationRateLimit:
+          $ref: "#/components/schemas/APIRateLimit"
     APIOperationPolicies:
       title: API Operation Level Policies
       properties:
@@ -1220,6 +1224,25 @@ components:
           type: string
         headerValue:
           type: string
+    APIRateLimit:
+      title: API Rate Limit Details
+      type: object
+      required:
+        - requestsPerUnit
+        - unit
+      properties:
+        requestsPerUnit:
+          type: integer
+          description: Number of requests allowed per specified unit of time
+          example: 30
+        unit:
+          type: string
+          description: Unit of time
+          enum:
+          - Minute
+          - Hour
+          - Day
+          example: Minute
     GraphQLSchema:
       title: GraphQL Schema
       required:

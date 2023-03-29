@@ -18,6 +18,7 @@ public type RuntimeAPISpec record {|
     record {} endpointConfig?;
     Operations[] operations?;
     OperationPolicies apiPolicies?;
+    RateLimit apiRateLimit?;
     ServiceInfo serviceInfo?;
 |};
 
@@ -28,6 +29,7 @@ public type Operations record {|
     string target;
     string verb;
     OperationPolicies operationPolicies?;
+    RateLimit operationRateLimit?;
 |};
 
 public type OperationPolicy record {
@@ -38,6 +40,11 @@ public type OperationPolicy record {
 public type OperationPolicyParameters record {
     string headerName?;
     string headerValue?;
+};
+
+public type RateLimit record {
+    int requestsPerUnit;
+    string unit;
 };
 
 public type MediationPolicy record {

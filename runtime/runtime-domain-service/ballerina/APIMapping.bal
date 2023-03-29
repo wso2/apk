@@ -53,11 +53,16 @@ isolated function convertK8sAPItoAPI(model:API api, boolean lightWeight) returns
                         authTypeEnabled: operation.authTypeEnabled,
                         scopes: operation.scopes,
                         endpointConfig: operation.endpointConfig,
-                        operationPolicies: convertOperationPolicies(operation.operationPolicies)
+                        operationPolicies: convertOperationPolicies(operation.operationPolicies),
+                        operationRateLimit: operation.operationRateLimit
                     });
                 }
             }
             convertedModel.operations = apiOperations;
+            model:RateLimit? apiRateLimit = internalAPI.spec.apiRateLimit;
+            if apiRateLimit is model:RateLimit {
+                convertedModel.apiRateLimit = {requestsPerUnit: apiRateLimit.requestsPerUnit, unit: apiRateLimit.unit};
+            }
             model:ServiceInfo? serviceInfo = internalAPI.spec.serviceInfo;
             if serviceInfo is model:ServiceInfo {
                 convertedModel.serviceInfo = {name: serviceInfo.name, namespace: serviceInfo.namespace};
