@@ -21,7 +21,6 @@ import (
 	"testing"
 
 	"github.com/wso2/apk/test/integration/integration/utils/http"
-	"github.com/wso2/apk/test/integration/integration/utils/kubernetes"
 	"github.com/wso2/apk/test/integration/integration/utils/suite"
 )
 
@@ -36,8 +35,8 @@ var APIWithPathParams = suite.IntegrationTest{
 	Manifests:   []string{"tests/api-with-path-params.yaml"},
 	Test: func(t *testing.T, suite *suite.IntegrationTestSuite) {
 		ns := "gateway-integration-test-infra"
-		gwAddr := kubernetes.WaitForGatewayAddress(t, suite.Client, suite.TimeoutConfig)
-		token := http.GetTestToken(t, gwAddr)
+		gwAddr := "path-param-api.test.gw.wso2.com:9095"
+		token := http.GetTestToken(t)
 
 		testCases := []http.ExpectedResponse{
 			{

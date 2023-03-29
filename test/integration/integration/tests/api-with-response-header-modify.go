@@ -17,7 +17,6 @@ import (
 	"testing"
 
 	"github.com/wso2/apk/test/integration/integration/utils/http"
-	"github.com/wso2/apk/test/integration/integration/utils/kubernetes"
 	"github.com/wso2/apk/test/integration/integration/utils/suite"
 )
 
@@ -32,8 +31,8 @@ var APIWithResoponseHeaderModify = suite.IntegrationTest{
 	Manifests:   []string{"tests/api-with-response-header-modify.yaml"},
 	Test: func(t *testing.T, suite *suite.IntegrationTestSuite) {
 		ns := "gateway-integration-test-infra"
-		gwAddr := kubernetes.WaitForGatewayAddress(t, suite.Client, suite.TimeoutConfig)
-		token := http.GetTestToken(t, gwAddr)
+		gwAddr := "gateway-integration-test-infra.test.gw.wso2.com:9095"
+		token := http.GetTestToken(t)
 
 		testCases := []http.ExpectedResponse{
 			{
@@ -43,6 +42,11 @@ var APIWithResoponseHeaderModify = suite.IntegrationTest{
 				},
 				BackendSetResponseHeaders: map[string]string{
 					"Some-Other-Header": "val",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path: "/set",
+					},
 				},
 				Response: http.Response{
 					Headers: map[string]string{
@@ -62,6 +66,11 @@ var APIWithResoponseHeaderModify = suite.IntegrationTest{
 					"Some-Other-Header": "val",
 					"X-Header-Set":      "some-other-value",
 				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path: "/set",
+					},
+				},
 				Response: http.Response{
 					Headers: map[string]string{
 						"Some-Other-Header": "val",
@@ -78,6 +87,11 @@ var APIWithResoponseHeaderModify = suite.IntegrationTest{
 				},
 				BackendSetResponseHeaders: map[string]string{
 					"Some-Other-Header": "val",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path: "/add",
+					},
 				},
 				Response: http.Response{
 					Headers: map[string]string{
@@ -97,6 +111,11 @@ var APIWithResoponseHeaderModify = suite.IntegrationTest{
 					"Some-Other-Header": "val",
 					"X-Header-Add":      "some-other-value",
 				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path: "/add",
+					},
+				},
 				Response: http.Response{
 					Headers: map[string]string{
 						"Some-Other-Header": "val",
@@ -109,6 +128,11 @@ var APIWithResoponseHeaderModify = suite.IntegrationTest{
 				Request: http.Request{
 					Host: "gateway-integration-test-infra.test.gw.wso2.com",
 					Path: "/remove",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path: "/remove",
+					},
 				},
 				BackendSetResponseHeaders: map[string]string{
 					"X-Header-Remove": "val",

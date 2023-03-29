@@ -19,16 +19,12 @@ package kubernetes
 
 import (
 	"context"
-	"net"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/require"
-	"github.com/wso2/apk/test/integration/integration/constants"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/gateway-api/conformance/utils/config"
@@ -60,40 +56,6 @@ func NamespacesMustBeAccepted(t *testing.T, c client.Client, timeoutConfig confi
 		return true, nil
 	})
 	require.NoErrorf(t, waitErr, "error waiting for %s namespaces to be ready", strings.Join(namespaces, ", "))
-}
-
-// WaitForGatewayAddress waits until at least one IP Address has been set in the
-// Gateway infra exposed service.
-func WaitForGatewayAddress(t *testing.T, c client.Client, timeoutConfig config.TimeoutConfig) string {
-	// Use http port for now, ideally we should get the port from the Gateway or from a config.
-	port := strconv.FormatInt(int64(constants.GatewayServicePort), 10)
-	t.Helper()
-
-	var ipAddr string
-	name := constants.GatewayServiceName
-	namespace := constants.GatewayServiceNamespace
-
-	waitErr := wait.PollImmediate(1*time.Second, timeoutConfig.GatewayMustHaveAddress, func() (bool, error) {
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-
-		svc := &v1.Service{}
-		if err := c.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, svc); err != nil {
-			t.Fatalf("failed to get service %s/%s: %v", namespace, name, err)
-			return false, nil
-		}
-
-		if len(svc.Status.LoadBalancer.Ingress) == 0 {
-			t.Fatalf("service %s/%s has no external IP address", namespace, name)
-		}
-
-		ipAddr = svc.Status.LoadBalancer.Ingress[0].IP
-
-		return true, nil
-	})
-
-	require.NoErrorf(t, waitErr, "error waiting for Gateway service to have an IP address")
-	return net.JoinHostPort(ipAddr, port)
 }
 
 func findPodConditionInList(t *testing.T, conditions []v1.PodCondition, condName, condValue string) bool {
