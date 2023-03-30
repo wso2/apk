@@ -1,0 +1,2429 @@
+{
+	"info": {
+		"_postman_id": "fd28a261-61cc-43a4-b45a-2651fbe0c967",
+		"name": "Test API Rate Limiting",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "12641717"
+	},
+	"item": [
+		{
+			"name": "Generate Token",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var accessTokenResponse = pm.response.json();",
+							"pm.collectionVariables.set(\"access_token\", accessTokenResponse.access_token);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "45f1c5c8-a92e-11ed-afa1-0242ac120002",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "4fbd62ec-a92e-11ed-afa1-0242ac120002",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Host",
+						"value": "idp.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "grant_type",
+							"value": "client_credentials",
+							"type": "default"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/oauth2/token",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"oauth2",
+						"token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "RuntimeAPI List Services",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Services available in k8s cluster\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.list.length).to.be.above(1);",
+							"});",
+							"console.log('Getting all services in namespace and find sample service required for test');",
+							"_.each(pm.response.json().list, (serviceEntry) => {",
+							"    if(serviceEntry.name === pm.collectionVariables.get('testServiceName') && serviceEntry.namespace === pm.collectionVariables.get('testServiceNamespace')) {",
+							"        pm.collectionVariables.set('serviceUUID', serviceEntry.id)",
+							"        console.log(\"HTTP bin service found, serviceUUID is\", serviceEntry.id);",
+							"    }",
+							"})",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/services",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"services"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "OperationRateLimit Create API from Service",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.variables.set(\"serviceUUID\", pm.collectionVariables.get('serviceUUID'))",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"  pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Assert API creation response\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.name).equals(pm.collectionVariables.get('rateLimitAPIName'));",
+							"    pm.expect(responseJson.context).equals( pm.collectionVariables.get('rateLimitAPIContext'));",
+							"    pm.expect(responseJson.version).equals(\"1.0.0\");",
+							"    pm.expect(responseJson.type).equals(\"REST\");",
+							"    _.each(responseJson.operations, (operations) => {",
+							"        if(operations.target === \"/get\") {",
+							"            //verifying rate limit content",
+							"            pm.expect(operations.operationRateLimit.requestsPerUnit).equals(5);",
+							"            pm.expect(operations.operationRateLimit.unit).equals(\"Minute\");",
+							"        }",
+							"    })",
+							"    pm.collectionVariables.set(\"APIUUID\",responseJson.id)",
+							"    pm.environment.set('requestsPerUnit', 5)",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"context\": \"{{rateLimitAPIContext}}\",\n    \"name\": \"{{rateLimitAPIName}}\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/get\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"operationRateLimit\": {\n                \"requestsPerUnit\": 5,\n                \"unit\": \"Minute\"\n            }\n        },\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"operationRateLimit\": {\n                \"requestsPerUnit\": 5,\n                \"unit\": \"Minute\"\n            }\n        },\n        {\n            \"target\": \"/response-headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true\n        }\n    ]\n}"
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/import-service?serviceKey={{serviceUUID}}",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"import-service"
+					],
+					"query": [
+						{
+							"key": "serviceKey",
+							"value": "{{serviceUUID}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "OperationRateLimit List APIs",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Services available in k8s cluster\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.list.length).to.be.above(0);",
+							"});",
+							"",
+							"console.log('Getting all APIs in namespace and find sample service required for test');",
+							"_.each(pm.response.json().list, (APIEntry) => {",
+							"    if(APIEntry.name === pm.collectionVariables.get('rateLimitAPIName')) {",
+							"    pm.expect(APIEntry.context).equals( pm.collectionVariables.get('rateLimitAPIContext'));",
+							"    pm.expect(APIEntry.version).equals(\"1.0.0\");",
+							"    pm.expect(APIEntry.type).equals(\"REST\");",
+							"    console.log(\"API entry found and verified details\");",
+							"    }",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "OperationRateLimit GET API by ID",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIUUID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "OperationRateLimit Create Access Key for RateLimitAPI",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"  pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Assert token generation response\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(parseInt(responseJson.validityTime)).greaterThan(100);",
+							"    pm.collectionVariables.set('APITestKey', responseJson.apikey);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"context\": \"{{rateLimitAPIContext}}\",\n    \"name\": \"{{rateLimitAPIName}}\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\"\n}\n"
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}/generate-key",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIUUID}}",
+						"generate-key"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "OperationRateLimit Call Rate Limit Applied Resource Using APIKey",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var currentCount = pm.environment.get('requestsPerUnit')",
+							"if (currentCount > 0) {",
+							"    pm.test(\"Check API response and status code is 200\", function () {",
+							"        pm.response.to.have.status(200);",
+							"    });",
+							"    currentCount = currentCount - 1;",
+							"    pm.environment.set(\"requestsPerUnit\", currentCount);",
+							"    postman.setNextRequest(\"OperationRateLimit Call Rate Limit Applied Resource Using APIKey\");",
+							"} else {",
+							"    pm.test(\"Check API response and status code is 429\", function () {",
+							"        pm.response.to.have.status(429);",
+							"    });",
+							"    pm.environment.set('requestsPerUnit', 5)",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "HOST",
+						"value": "a3b58ccf-6ecc-4557-b5bb-0a35cce38256.gw.wso2.com",
+						"type": "text"
+					},
+					{
+						"key": "Internal-Key",
+						"value": "{{APITestKey}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURl}}{{rateLimitAPIContext}}/get",
+					"host": [
+						"{{gatewayBaseURl}}{{rateLimitAPIContext}}"
+					],
+					"path": [
+						"get"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "OperationRateLimit Call Rate Limit Not Applied Resource using APIKey",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var currentCount = pm.environment.get('requestsPerUnit')",
+							"if (currentCount > 0) {",
+							"    pm.test(\"Check API response and status code is 200\", function () {",
+							"        pm.response.to.have.status(200);",
+							"    });",
+							"    currentCount = currentCount - 1;",
+							"    pm.environment.set(\"requestsPerUnit\", currentCount);",
+							"    postman.setNextRequest(\"OperationRateLimit Call Rate Limit Not Applied Resource using APIKey\");",
+							"} else {",
+							"    pm.test(\"Check API response and status code is 200\", function () {",
+							"        pm.response.to.have.status(200);",
+							"    });",
+							"    pm.environment.set('requestsPerUnit', 5)",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "HOST",
+						"value": "a3b58ccf-6ecc-4557-b5bb-0a35cce38256.gw.wso2.com",
+						"type": "text"
+					},
+					{
+						"key": "Internal-Key",
+						"value": "{{APITestKey}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURl}}{{rateLimitAPIContext}}/response-headers",
+					"host": [
+						"{{gatewayBaseURl}}{{rateLimitAPIContext}}"
+					],
+					"path": [
+						"response-headers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "OperationRateLimit Update Rate Limit",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.variables.set(\"APIUUID\",pm.collectionVariables.get('APIUUID'))",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"_.each(pm.response.json().operations, (operations) => {",
+							"    //verifying rate limit content",
+							"    if(operations.target === \"/get\") {",
+							"        pm.expect(operations.operationRateLimit.requestsPerUnit).equals(5);",
+							"        pm.expect(operations.operationRateLimit.unit).equals(\"Minute\");",
+							"    }",
+							"    if(operations.target === \"/headers\") {",
+							"        pm.expect(operations.operationRateLimit.requestsPerUnit).equals(10);",
+							"        pm.expect(operations.operationRateLimit.unit).equals(\"Minute\");",
+							"    }",
+							"})",
+							"setTimeout(function(){}, 1000);",
+							"pm.environment.set(\"requestsPerUnit\", 10);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": \"{{APIUUID}}\",\n    \"name\": \"{{rateLimitAPIName}}\",\n    \"context\": \"{{rateLimitAPIContext}}\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/get\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"operationRateLimit\": {\n                \"requestsPerUnit\": 5,\n                \"unit\": \"Minute\"\n            }\n        },\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"operationRateLimit\": {\n                \"requestsPerUnit\": 10,\n                \"unit\": \"Minute\"\n            }\n        }\n    ],\n    \"serviceInfo\": {\n        \"name\": \"{{testServiceName}}\",\n        \"namespace\": \"{{testServiceNamespace}}\"\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIUUID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "OperationRateLimit Call Updated Rate Limit Applied Resource Using APIKey",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var currentCount = pm.environment.get('requestsPerUnit')",
+							"if (currentCount > 0) {",
+							"    pm.test(\"Check API response and status code is 200\", function () {",
+							"        pm.response.to.have.status(200);",
+							"    });",
+							"    currentCount = currentCount - 1;",
+							"    pm.environment.set(\"requestsPerUnit\", currentCount);",
+							"    postman.setNextRequest(\"OperationRateLimit Call Updated Rate Limit Applied Resource Using APIKey\");",
+							"} else {",
+							"    pm.test(\"Check API response and status code is 429\", function () {",
+							"        pm.response.to.have.status(429);",
+							"    });",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "HOST",
+						"value": "a3b58ccf-6ecc-4557-b5bb-0a35cce38256.gw.wso2.com",
+						"type": "text"
+					},
+					{
+						"key": "Internal-Key",
+						"value": "{{APITestKey}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURl}}{{rateLimitAPIContext}}/headers",
+					"host": [
+						"{{gatewayBaseURl}}{{rateLimitAPIContext}}"
+					],
+					"path": [
+						"headers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "OperationRateLimit Copy API",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"  pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Assert API creation response\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.name).equals(pm.collectionVariables.get('rateLimitAPIName'));",
+							"    pm.expect(responseJson.version).equals(\"2.0.0\");",
+							"    pm.expect(responseJson.type).equals(\"REST\");",
+							"    _.each(responseJson.operations, (operations) => {",
+							"        if(operations.target === \"/get\") {",
+							"            //verifying rate limit content",
+							"            pm.expect(operations.operationRateLimit.requestsPerUnit).equals(10);",
+							"            pm.expect(operations.operationRateLimit.unit).equals(\"Minute\");",
+							"        }",
+							"    })",
+							"    pm.collectionVariables.set(\"APIV2UUID\",responseJson.id)",
+							"",
+							"    pm.environment.set('requestsPerUnit', 5)",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/copy-api?apiId={{APIUUID}}&newVersion=2.0.0",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"copy-api"
+					],
+					"query": [
+						{
+							"key": "apiId",
+							"value": "{{APIUUID}}"
+						},
+						{
+							"key": "newVersion",
+							"value": "2.0.0"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "OperationRateLimit Delete Rate Limit",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.variables.set(\"APIUUID\",pm.collectionVariables.get('APIUUID'))",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"setTimeout(function(){}, 1000);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": \"{{APIUUID}}\",\n    \"name\": \"{{rateLimitAPIName}}\",\n    \"context\": \"{{rateLimitAPIContext}}\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/get\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true\n        },\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true\n        }\n    ],\n    \"serviceInfo\": {\n        \"name\": \"{{testServiceName}}\",\n        \"namespace\": \"{{testServiceNamespace}}\"\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIUUID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "OperationRateLimit Call Deleted Rate Limit Resource Using APIKey",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var currentCount = pm.environment.get('requestsPerUnit')",
+							"if (currentCount > 0) {",
+							"    pm.test(\"Check API response and status code is 200\", function () {",
+							"        pm.response.to.have.status(200);",
+							"    });",
+							"    currentCount = currentCount - 1;",
+							"    pm.environment.set(\"requestsPerUnit\", currentCount);",
+							"    postman.setNextRequest(\"OperationRateLimit Call Deleted Rate Limit Resource Using APIKey\");",
+							"} else {",
+							"    pm.test(\"Check API response and status code is 200\", function () {",
+							"        pm.response.to.have.status(200);",
+							"    });",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "HOST",
+						"value": "a3b58ccf-6ecc-4557-b5bb-0a35cce38256.gw.wso2.com",
+						"type": "text"
+					},
+					{
+						"key": "Internal-Key",
+						"value": "{{APITestKey}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURl}}{{rateLimitAPIContext}}/get",
+					"host": [
+						"{{gatewayBaseURl}}{{rateLimitAPIContext}}"
+					],
+					"path": [
+						"get"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "OperationRateLimit Create Access Key for RateLimitAPI V2",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"  pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Assert token generation response\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(parseInt(responseJson.validityTime)).greaterThan(100);",
+							"    pm.collectionVariables.set('APITestKey', responseJson.apikey);",
+							"});",
+							"pm.environment.set('requestsPerUnit', 5)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"context\": \"/rateLimitAPI/2.0.0\" ,\n    \"name\": \"{{rateLimitAPIName}}\" ,\n    \"version\": \"2.0.0\",\n    \"type\": \"REST\"\n}\n"
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIV2UUID}}/generate-key",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIV2UUID}}",
+						"generate-key"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "OperationRateLimit Call Rate Limit Applied Resource V2 Using APIKey",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var currentCount = pm.environment.get('requestsPerUnit')",
+							"if (currentCount > 0) {",
+							"    pm.test(\"Check API response and status code is 200\", function () {",
+							"        pm.response.to.have.status(200);",
+							"    });",
+							"    currentCount = currentCount - 1;",
+							"    pm.environment.set(\"requestsPerUnit\", currentCount);",
+							"    postman.setNextRequest(\"OperationRateLimit Call Rate Limit Applied Resource V2 Using APIKey\");",
+							"} else {",
+							"    pm.test(\"Check API response and status code is 429\", function () {",
+							"        pm.response.to.have.status(429);",
+							"    });",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "HOST",
+						"value": "a3b58ccf-6ecc-4557-b5bb-0a35cce38256.gw.wso2.com",
+						"type": "text"
+					},
+					{
+						"key": "Internal-Key",
+						"value": "{{APITestKey}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURl}}/rateLimitAPI/2.0.0/get",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"rateLimitAPI",
+						"2.0.0",
+						"get"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "OperationRateLimit Delete API",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIUUID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "OperationRateLimit Delete API V2",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIV2UUID}}",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIV2UUID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "APIRateLimit Create API With API Rate Limit from Service",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.variables.set(\"serviceUUID\", pm.collectionVariables.get('serviceUUID'))",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"  pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Assert API creation response\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.name).equals(pm.collectionVariables.get('rateLimitAPIName'));",
+							"    pm.expect(responseJson.context).equals( pm.collectionVariables.get('rateLimitAPIContext'));",
+							"    pm.expect(responseJson.version).equals(\"1.0.0\");",
+							"    pm.expect(responseJson.type).equals(\"REST\");",
+							"    //verifying rate limit content",
+							"    pm.expect(responseJson.apiRateLimit.requestsPerUnit).equals(10);",
+							"    pm.expect(responseJson.apiRateLimit.unit).equals(\"Minute\");",
+							"    pm.collectionVariables.set(\"APIUUID2\",responseJson.id);",
+							"    pm.environment.set('requestsPerUnit', 10);",
+							"    setTimeout(function(){}, 1000);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"context\": \"{{rateLimitAPIContext}}\",\n    \"name\": \"{{rateLimitAPIName}}\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/get\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true\n        },\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true\n        }\n    ],\n    \"apiRateLimit\": {\n        \"requestsPerUnit\": 10,\n        \"unit\": \"Minute\"\n    }\n}"
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/import-service?serviceKey={{serviceUUID}}",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"import-service"
+					],
+					"query": [
+						{
+							"key": "serviceKey",
+							"value": "{{serviceUUID}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "APIRateLimit Create Access Key for RateLimitAPI",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"  pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Assert token generation response\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(parseInt(responseJson.validityTime)).greaterThan(100);",
+							"    pm.collectionVariables.set('APITestKey', responseJson.apikey);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"context\": \"{{rateLimitAPIContext}}\",\n    \"name\": \"{{rateLimitAPIName}}\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\"\n}\n"
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID2}}/generate-key",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIUUID2}}",
+						"generate-key"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "APIRateLimit Call API Rate Limit Applied Resource Using APIKey",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var currentCount = pm.environment.get('requestsPerUnit')",
+							"if (currentCount > 0) {",
+							"    pm.test(\"Check API response and status code is 200\", function () {",
+							"        pm.response.to.have.status(200);",
+							"    });",
+							"    currentCount = currentCount - 1;",
+							"    pm.environment.set(\"requestsPerUnit\", currentCount);",
+							"    if (currentCount > 5) {",
+							"        postman.setNextRequest(\"APIRateLimit Call API Rate Limit Applied Resource Using APIKey\");",
+							"    } else {",
+							"        postman.setNextRequest(\"APIRateLimit Call API Rate Limit Applied Resource 2 using APIKey\");",
+							"    }",
+							"} else {",
+							"    pm.test(\"Check API response and status code is 429\", function () {",
+							"        pm.response.to.have.status(429);",
+							"    });",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "HOST",
+						"value": "a3b58ccf-6ecc-4557-b5bb-0a35cce38256.gw.wso2.com",
+						"type": "text"
+					},
+					{
+						"key": "Internal-Key",
+						"value": "{{APITestKey}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURl}}{{rateLimitAPIContext}}/get",
+					"host": [
+						"{{gatewayBaseURl}}{{rateLimitAPIContext}}"
+					],
+					"path": [
+						"get"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "APIRateLimit Call API Rate Limit Applied Resource 2 using APIKey",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var currentCount = pm.environment.get('requestsPerUnit')",
+							"if (currentCount > 0) {",
+							"    pm.test(\"Check API response and status code is 200\", function () {",
+							"        pm.response.to.have.status(200);",
+							"    });",
+							"    currentCount = currentCount - 1;",
+							"    pm.environment.set(\"requestsPerUnit\", currentCount);",
+							"    postman.setNextRequest(\"APIRateLimit Call API Rate Limit Applied Resource 2 using APIKey\");",
+							"} else {",
+							"    pm.test(\"Check API response and status code is 429\", function () {",
+							"        pm.response.to.have.status(429);",
+							"    });",
+							"    postman.setNextRequest(\"APIRateLimit Delete Rate Limit\");",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "HOST",
+						"value": "a3b58ccf-6ecc-4557-b5bb-0a35cce38256.gw.wso2.com",
+						"type": "text"
+					},
+					{
+						"key": "Internal-Key",
+						"value": "{{APITestKey}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURl}}{{rateLimitAPIContext}}/headers",
+					"host": [
+						"{{gatewayBaseURl}}{{rateLimitAPIContext}}"
+					],
+					"path": [
+						"headers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "APIRateLimit Copy API",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"  pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Assert API creation response\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.name).equals(pm.collectionVariables.get('rateLimitAPIName'));",
+							"    pm.expect(responseJson.version).equals(\"2.0.0\");",
+							"    pm.expect(responseJson.type).equals(\"REST\");",
+							"    pm.collectionVariables.set(\"APIV2UUID2\",responseJson.id);",
+							"    pm.environment.set(\"requestsPerUnit\", 10);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/copy-api?apiId={{APIUUID2}}&newVersion=2.0.0",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"copy-api"
+					],
+					"query": [
+						{
+							"key": "apiId",
+							"value": "{{APIUUID2}}"
+						},
+						{
+							"key": "newVersion",
+							"value": "2.0.0"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "APIRateLimit Create Access Key for RateLimitAPI V2",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"  pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Assert token generation response\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(parseInt(responseJson.validityTime)).greaterThan(100);",
+							"    pm.collectionVariables.set('APITestKey', responseJson.apikey);",
+							"});",
+							"pm.environment.set('requestsPerUnit', 10)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"context\": \"/rateLimitAPI/2.0.0\" ,\n    \"name\": \"{{rateLimitAPIName}}\" ,\n    \"version\": \"2.0.0\",\n    \"type\": \"REST\"\n}\n"
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIV2UUID2}}/generate-key",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIV2UUID2}}",
+						"generate-key"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "APIRateLimit Call API Rate Limit Applied Resource V2 Using APIKey",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var currentCount = pm.environment.get('requestsPerUnit')",
+							"if (currentCount > 0) {",
+							"    pm.test(\"Check API response and status code is 200\", function () {",
+							"        pm.response.to.have.status(200);",
+							"    });",
+							"    currentCount = currentCount - 1;",
+							"    pm.environment.set(\"requestsPerUnit\", currentCount);",
+							"    postman.setNextRequest(\"APIRateLimit Call API Rate Limit Applied Resource V2 Using APIKey\");",
+							"} else {",
+							"    pm.test(\"Check API response and status code is 429\", function () {",
+							"        pm.response.to.have.status(429);",
+							"    });",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "HOST",
+						"value": "a3b58ccf-6ecc-4557-b5bb-0a35cce38256.gw.wso2.com",
+						"type": "text"
+					},
+					{
+						"key": "Internal-Key",
+						"value": "{{APITestKey}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURl}}/rateLimitAPI/2.0.0/get",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"rateLimitAPI",
+						"2.0.0",
+						"get"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "APIRateLimit Delete API V2",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIV2UUID2}}",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIV2UUID2}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "APIRateLimit Delete Rate Limit",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.variables.set(\"APIUUID\",pm.collectionVariables.get('APIUUID'))",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"setTimeout(function(){}, 1000);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": \"{{APIUUID2}}\",\n    \"name\": \"{{rateLimitAPIName}}\",\n    \"context\": \"{{rateLimitAPIContext}}\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/get\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true\n        },\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true\n        }\n    ],\n    \"serviceInfo\": {\n        \"name\": \"{{testServiceName}}\",\n        \"namespace\": \"{{testServiceNamespace}}\"\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID2}}",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIUUID2}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "APIRateLimit Call Deleted Rate Limit Resource Using APIKey",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var currentCount = pm.environment.get('requestsPerUnit')",
+							"if (currentCount > 0) {",
+							"    pm.test(\"Check API response and status code is 200\", function () {",
+							"        pm.response.to.have.status(200);",
+							"    });",
+							"    currentCount = currentCount - 1;",
+							"    pm.environment.set(\"requestsPerUnit\", currentCount);",
+							"    postman.setNextRequest(\"APIRateLimit Call Deleted Rate Limit Resource Using APIKey\");",
+							"} else {",
+							"    pm.test(\"Check API response and status code is 200\", function () {",
+							"        pm.response.to.have.status(200);",
+							"    });",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "HOST",
+						"value": "a3b58ccf-6ecc-4557-b5bb-0a35cce38256.gw.wso2.com",
+						"type": "text"
+					},
+					{
+						"key": "Internal-Key",
+						"value": "{{APITestKey}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURl}}{{rateLimitAPIContext}}/get",
+					"host": [
+						"{{gatewayBaseURl}}{{rateLimitAPIContext}}"
+					],
+					"path": [
+						"get"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "APIRateLimit Delete API",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID2}}",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIUUID2}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "APIRateLimit Create API V3 With API Rate Limit from Service",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.variables.set(\"serviceUUID\", pm.collectionVariables.get('serviceUUID'))",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"  pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Assert API creation response\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.name).equals(pm.collectionVariables.get('rateLimitAPINamev3'));",
+							"    pm.expect(responseJson.context).equals( pm.collectionVariables.get('rateLimitAPIContextv3'));",
+							"    pm.expect(responseJson.version).equals(\"1.0.0\");",
+							"    pm.expect(responseJson.type).equals(\"REST\");",
+							"    //verifying rate limit content",
+							"    pm.expect(responseJson.apiRateLimit.requestsPerUnit).equals(5);",
+							"    pm.expect(responseJson.apiRateLimit.unit).equals(\"Minute\");",
+							"    pm.collectionVariables.set(\"APIUUID3\",responseJson.id);",
+							"    pm.environment.set('requestsPerUnit', 5);",
+							"    setTimeout(function(){}, 1000);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"context\": \"{{rateLimitAPIContextv3}}\",\n    \"name\": \"{{rateLimitAPINamev3}}\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/get\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true\n        },\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true\n        }\n    ],\n    \"apiRateLimit\": {\n        \"requestsPerUnit\": 5,\n        \"unit\": \"Minute\"\n    }\n}"
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/import-service?serviceKey={{serviceUUID}}",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"import-service"
+					],
+					"query": [
+						{
+							"key": "serviceKey",
+							"value": "{{serviceUUID}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "APIRateLimit Update Rate Limit",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.variables.set(\"APIUUID\",pm.collectionVariables.get('APIUUID'))",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"//verifying rate limit content",
+							"const responseJson = pm.response.json();",
+							"pm.expect(responseJson.apiRateLimit.requestsPerUnit).equals(10);",
+							"pm.expect(responseJson.apiRateLimit.unit).equals(\"Minute\");",
+							"pm.environment.set(\"requestsPerUnit\", 10);",
+							"setTimeout(function(){}, 2000);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": \"{{APIUUID3}}\",\n    \"name\": \"{{rateLimitAPINamev3}}\",\n    \"context\": \"{{rateLimitAPIContextv3}}\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/get\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true\n        },\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true\n        }\n    ],\n    \"apiRateLimit\": {\n        \"requestsPerUnit\": 10,\n        \"unit\": \"Minute\"\n    },\n    \"serviceInfo\": {\n        \"name\": \"{{testServiceName}}\",\n        \"namespace\": \"{{testServiceNamespace}}\"\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID3}}",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIUUID3}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "APIRateLimit Create Access Key for RateLimitAPI Copy",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"  pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Assert token generation response\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(parseInt(responseJson.validityTime)).greaterThan(100);",
+							"    pm.collectionVariables.set('APITestKey', responseJson.apikey);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"context\": \"{{rateLimitAPIContextv3}}\",\n    \"name\": \"{{rateLimitAPINamev3}}\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\"\n}\n"
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID3}}/generate-key",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIUUID3}}",
+						"generate-key"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "APIRateLimit Call Updated Rate Limit Applied Resource Using APIKey",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var currentCount = pm.environment.get('requestsPerUnit')",
+							"if (currentCount > 0) {",
+							"    pm.test(\"Check API response and status code is 200\", function () {",
+							"        pm.response.to.have.status(200);",
+							"    });",
+							"    currentCount = currentCount - 1;",
+							"    pm.environment.set(\"requestsPerUnit\", currentCount);",
+							"    postman.setNextRequest(\"APIRateLimit Call Updated Rate Limit Applied Resource Using APIKey\");",
+							"} else {",
+							"    pm.test(\"Check API response and status code is 429\", function () {",
+							"        pm.response.to.have.status(429);",
+							"    });",
+							"    pm.environment.set('requestsPerUnit', 10)",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "HOST",
+						"value": "a3b58ccf-6ecc-4557-b5bb-0a35cce38256.gw.wso2.com",
+						"type": "text"
+					},
+					{
+						"key": "Internal-Key",
+						"value": "{{APITestKey}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURl}}{{rateLimitAPIContextv3}}/get",
+					"host": [
+						"{{gatewayBaseURl}}{{rateLimitAPIContextv3}}"
+					],
+					"path": [
+						"get"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "APIRateLimit Delete API V3",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID3}}",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIUUID3}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "testServiceName",
+			"value": "backend",
+			"type": "string"
+		},
+		{
+			"key": "testServiceNamespace",
+			"value": "test-apk",
+			"type": "string"
+		},
+		{
+			"key": "serviceUUID",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "rateLimitAPIContext",
+			"value": "/rateLimitAPI/1.0.0",
+			"type": "string"
+		},
+		{
+			"key": "rateLimitAPIName",
+			"value": "RateLimitAPI",
+			"type": "string"
+		},
+		{
+			"key": "APIUUID",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "access_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "APITestKey",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "APIV2UUID",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "APIUUID2",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "APIV2UUID2",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "APIUUID3",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "rateLimitAPIContextv3",
+			"value": "/rateLimitAPIv3/1.0.0",
+			"type": "string"
+		},
+		{
+			"key": "rateLimitAPINamev3",
+			"value": "RateLimitAPIv3",
+			"type": "string"
+		}
+	]
+}

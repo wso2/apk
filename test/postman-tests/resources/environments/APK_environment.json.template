@@ -23,6 +23,12 @@
 			"value": "",
 			"type": "any",
 			"enabled": true
+		},
+		{
+			"key": "requestsPerUnit",
+			"value": "5",
+			"type": "any",
+			"enabled": true
 		}
 	],
 	"_postman_variable_scope": "environment",
