@@ -74,7 +74,8 @@ RESPONSE = {
     TRAILERS_TO_REPLACE = "trailersToReplace",
     TRAILERS_TO_REMOVE = "trailersToRemove",
     INTCPT_CONTEXT = "interceptorContext",
-    DYNAMIC_ENDPOINT = "dynamicEndpoint"
+    DYNAMIC_ENDPOINT = "dynamicEndpoint",
+    DYNAMIC_METADATA = "properties",
 }
 
 DYNAMIC_ENDPOINT = {
@@ -96,3 +97,4 @@ STATUS = ":status"
 LUA_FILTER_NAME = "envoy.filters.http.lua"
 EXT_AUTHZ_FILTER = "envoy.filters.http.ext_authz"
 SHARED_INFO_META_KEY = "shared.info"
+CUSTOM_METADATA_KEY = "apk.custom.metadata"
