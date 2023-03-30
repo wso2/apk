@@ -339,13 +339,11 @@ public function mock404Response() returns http:Response {
     return response;
 }
 
-public function mockConfigMaps() returns http:Response {
+public function mockConfigMaps() returns http:Response|error {
+    json definition = {"openapi":"3.0.1", "info":{"title":"pizza1234567", "version":"1.0.0"}, "security":[{"default":[]}], "paths":{"/menu":{"get":{"responses":{"200":{"description":"OK"}}, "security":[{"default":[]}], "x-throttling-tier":"Unlimited"}}, "/order/{orderId}":{"post":{"parameters":[{"name":"orderId", "in":"path", "required":true, "schema":{"type":"string"}}], "responses":{"200":{"description":"OK"}}, "security":[{"default":[]}], "x-throttling-tier":"Unlimited"}}}, "components":{"securitySchemes":{"default":{"type":"oauth2", "flows":{"implicit":{"authorizationUrl":"https://test.com", "scopes":{}}}}}}};
     http:Response response = new;
     json configmap = {
         "apiVersion": "v1",
-        "data": {
-            "openapi.json": "{\"openapi\":\"3.0.1\", \"info\":{\"title\":\"pizza1234567\", \"version\":\"1.0.0\"}, \"security\":[{\"default\":[]}], \"paths\":{\"/menu\":{\"get\":{\"responses\":{\"200\":{\"description\":\"OK\"}}, \"security\":[{\"default\":[]}], \"x-throttling-tier\":\"Unlimited\"}}, \"/order/{orderId}\":{\"post\":{\"parameters\":[{\"name\":\"orderId\", \"in\":\"path\", \"required\":true, \"schema\":{\"type\":\"string\"}}], \"responses\":{\"200\":{\"description\":\"OK\"}}, \"security\":[{\"default\":[]}], \"x-throttling-tier\":\"Unlimited\"}}}, \"components\":{\"securitySchemes\":{\"default\":{\"type\":\"oauth2\", \"flows\":{\"implicit\":{\"authorizationUrl\":\"https://test.com\", \"scopes\":{}}}}}}}"
-        },
         "kind": "ConfigMap",
         "metadata": {
             "creationTimestamp": "2023-01-05T05:34:44Z",
@@ -353,6 +351,9 @@ public function mockConfigMaps() returns http:Response {
             "namespace": "apk-platform",
             "resourceVersion": "113573",
             "uid": "ce2915d6-cdeb-4c70-8cdd-e03c158105ba"
+        },
+        binaryData: {
+            [CONFIGMAP_DEFINITION_KEY]: check getBase64EncodedGzipContent(definition.toJsonString().toBytes())
         }
     };
     response.setJsonPayload(configmap);

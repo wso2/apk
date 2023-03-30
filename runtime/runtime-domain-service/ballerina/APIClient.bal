@@ -34,6 +34,7 @@ import ballerina/file;
 import ballerina/io;
 import ballerina/crypto;
 import ballerina/time;
+import runtime_domain_service.java.io as javaio;
 import wso2/apk_common_lib as commons;
 
 public class APIClient {
@@ -75,11 +76,26 @@ public class APIClient {
 
     }
     private isolated function getDefinitionFromConfigMap(model:ConfigMap configmap) returns json|error? {
-        map<string>? data = configmap.data;
-        if data is map<string> {
-            string[] keys = data.keys();
-            if keys.length() == 1 {
-                return check value:fromJsonString(data.get(keys[0]).toString());
+        map<string>? binaryData = configmap.binaryData;
+        string? content = ();
+        if binaryData is map<string> {
+            if binaryData.hasKey(CONFIGMAP_DEFINITION_KEY) {
+                content = binaryData.get(CONFIGMAP_DEFINITION_KEY);
+            } else {
+                string[] keys = binaryData.keys();
+                if keys.length() >= 1 {
+                    content = binaryData.get(keys[0]);
+                }
+            }
+            if content is string {
+                byte[] base64DecodedGzipContent = check runtimeUtil:EncoderUtil_decodeBase64(content.toBytes());
+                byte[]|javaio:IOException gzipUnCompressedContent = check runtimeUtil:GzipUtil_decompressGzipFile(base64DecodedGzipContent);
+                if gzipUnCompressedContent is byte[] {
+                    string definition = check string:fromBytes(gzipUnCompressedContent);
+                    return value:fromJsonString(definition);
+                } else {
+                    return gzipUnCompressedContent.cause();
+                }
             }
         }
         return;
@@ -402,7 +418,7 @@ public class APIClient {
             _ = check self.setHttpRoute(apiArtifact, api, createdEndpoints.hasKey(PRODUCTION_TYPE) ? createdEndpoints.get(PRODUCTION_TYPE) : (), uniqueId, PRODUCTION_TYPE, organization);
             _ = check self.setHttpRoute(apiArtifact, api, createdEndpoints.hasKey(SANDBOX_TYPE) ? createdEndpoints.get(SANDBOX_TYPE) : (), uniqueId, SANDBOX_TYPE, organization);
             json generatedSwagger = check self.retrieveGeneratedSwaggerDefinition(api, definition);
-            self.retrieveGeneratedConfigmapForDefinition(apiArtifact, api, generatedSwagger, uniqueId, organization);
+            check self.retrieveGeneratedConfigmapForDefinition(apiArtifact, api, generatedSwagger, uniqueId, organization);
             self.generateAndSetAPICRArtifact(apiArtifact, api, organization);
             self.generateAndSetRuntimeAPIArtifact(apiArtifact, api, (), organization);
             model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact, organization);
@@ -777,7 +793,7 @@ public class APIClient {
                 };
                 check self.setHttpRoute(apiArtifact, api, endpoint, uniqueId, PRODUCTION_TYPE, organization);
                 json generatedSwaggerDefinition = check self.retrieveGeneratedSwaggerDefinition(api, ());
-                self.retrieveGeneratedConfigmapForDefinition(apiArtifact, api, generatedSwaggerDefinition, uniqueId, organization);
+                check self.retrieveGeneratedConfigmapForDefinition(apiArtifact, api, generatedSwaggerDefinition, uniqueId, organization);
                 self.generateAndSetAPICRArtifact(apiArtifact, api, organization);
                 self.generateAndSetK8sServiceMapping(apiArtifact, api, serviceRetrieved, getNameSpace(runtimeConfiguration.apiCreationNamespace), organization);
                 self.generateAndSetRuntimeAPIArtifact(apiArtifact, api, serviceRetrieved, organization);
@@ -1107,23 +1123,24 @@ public class APIClient {
         }
     }
 
-    private isolated function retrieveGeneratedConfigmapForDefinition(model:APIArtifact apiArtifact, API api, json generatedSwaggerDefinition, string uniqueId, commons:Organization organization) {
-        map<string> configMapData = {};
-        if api.'type == API_TYPE_REST {
-            configMapData["openapi.json"] = generatedSwaggerDefinition.toJsonString();
+    private isolated function retrieveGeneratedConfigmapForDefinition(model:APIArtifact apiArtifact, API api, json generatedSwaggerDefinition, string uniqueId, commons:Organization organization) returns error? {
+        byte[]|javaio:IOException compressedContent = check runtimeUtil:GzipUtil_compressGzipFile(generatedSwaggerDefinition.toJsonString().toBytes());
+        if compressedContent is byte[] {
+            byte[] base64EncodedContent = check runtimeUtil:EncoderUtil_encodeBase64(compressedContent);
+            model:ConfigMap configMap = {
+                metadata: {
+                    name: self.retrieveDefinitionName(uniqueId),
+                    namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace),
+                    uid: (),
+                    creationTimestamp: (),
+                    labels: self.getLabels(api, organization)
+                }
+            };
+            configMap.binaryData = {[CONFIGMAP_DEFINITION_KEY]: check string:fromBytes(base64EncodedContent)};
+            apiArtifact.definition = configMap;
+        } else {
+            return compressedContent.cause();
         }
-        model:ConfigMap configMap = {
-            metadata: {
-                name: self.retrieveDefinitionName(uniqueId),
-                namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace),
-                uid: (),
-                creationTimestamp: (),
-                labels: self.getLabels(api, organization)
-
-            },
-            data: configMapData
-        };
-        apiArtifact.definition = configMap;
     }
 
     isolated function setDefaultOperationsIfNotExist(API api) {
@@ -2564,7 +2581,7 @@ public class APIClient {
             infoElement["version"] = newAPI.'version;
             map<json> definitionMap = <map<json>>definitionJson;
             definitionMap["info"] = infoElement;
-            self.retrieveGeneratedConfigmapForDefinition(apiArtifact, newAPI, definitionMap, apiArtifact.uniqueId, organization);
+            check self.retrieveGeneratedConfigmapForDefinition(apiArtifact, newAPI, definitionMap, apiArtifact.uniqueId, organization);
         }
     }
 
@@ -2899,13 +2916,13 @@ public class APIClient {
                     _ = check self.setHttpRoute(apiArtifact, payload, createdEndpoints.hasKey(SANDBOX_TYPE) ? createdEndpoints.get(SANDBOX_TYPE) : (), uniqueId, SANDBOX_TYPE, organization);
                 }
                 if definition is string {
-                    self.retrieveGeneratedConfigmapForDefinition(apiArtifact, payload, definition, uniqueId, organization);
+                    check self.retrieveGeneratedConfigmapForDefinition(apiArtifact, payload, definition, uniqueId, organization);
                 } else {
                     model:API? aPI = getAPI(apiId, organization);
                     if aPI is model:API {
                         json internalDefinition = check self.getDefinition(aPI);
                         json generatedSwagger = check self.retrieveGeneratedSwaggerDefinition(payload, internalDefinition.toJsonString());
-                        self.retrieveGeneratedConfigmapForDefinition(apiArtifact, payload, generatedSwagger, uniqueId, organization);
+                        check self.retrieveGeneratedConfigmapForDefinition(apiArtifact, payload, generatedSwagger, uniqueId, organization);
                     }
                 }
                 self.generateAndSetAPICRArtifact(apiArtifact, payload, organization);
