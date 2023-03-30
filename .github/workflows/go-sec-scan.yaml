@@ -15,4 +15,4 @@ jobs:
         uses: securego/gosec@master
         with:
           # we let the report trigger content trigger a failure using the GitHub Security features.
-          args: '-no-fail -fmt=json -out=results.json *.go'
+          args: ./...
