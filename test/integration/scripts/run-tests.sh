@@ -40,6 +40,7 @@ kubectl wait --timeout=5m -n gateway-system job/gateway-api-admission --for=cond
 kubectl wait --timeout=5m -n apk-integration-test deployment/apk-test-setup-wso2-apk-adapter-deployment --for=condition=Available
 kubectl wait --timeout=5m -n apk-integration-test deployment/apk-test-setup-wso2-apk-gateway-runtime-deployment --for=condition=Available
 kubectl describe deployment apk-test-setup-wso2-apk-adapter-deployment -n apk-integration-test
+kubectl port-forward svc/apk-test-wso2-apk-router-service  9095:9095 -n apk-integration-test &
 POD=$(kubectl get pod -l networkPolicyId=adapter-npi -n apk-integration-test -o jsonpath="{.items[0].metadata.name}")
 kubectl describe pod $POD -n apk-integration-test
 kubectl logs $POD -n apk-integration-test
