@@ -49,7 +49,23 @@ jobs:
           gh pr checkout ${{ github.event.number }} -b pr-${{ github.event.number }}
           git checkout pr-${{ github.event.number }}
           git merge origin/main
-
+      - name: Add hosts to /etc/hosts
+        run: |
+          sudo echo "127.0.0.1 localhost" | sudo tee -a /etc/hosts
+          sudo echo "127.0.0.1 all-http-methods-for-wildcard.test.gw.wso2.com" | sudo tee -a /etc/hosts
+          sudo echo "127.0.0.1 backend-base-path.test.gw.wso2.com" | sudo tee -a /etc/hosts
+          sudo echo "127.0.0.1 path-param-api.test.gw.wso2.com" | sudo tee -a /etc/hosts
+          sudo echo "127.0.0.1 gateway-integration-test-infra.test.gw.wso2.com" | sudo tee -a /etc/hosts
+          sudo echo "127.0.0.1 no-base-path.test.gw.wso2.com" | sudo tee -a /etc/hosts
+          sudo echo "127.0.0.1 diff-listner-api.test.api.am.wso2.com" | sudo tee -a /etc/hosts
+          sudo echo "127.0.0.1 disable-api-security.test.gw.wso2.com" | sudo tee -a /etc/hosts
+          sudo echo "127.0.0.1 disable-resource-security.test.gw.wso2.com" | sudo tee -a /etc/hosts
+          sudo echo "127.0.0.1 prod-api.test.gw.wso2.com" | sudo tee -a /etc/hosts
+          sudo echo "127.0.0.1 sand-api.test.gw.wso2.com" | sudo tee -a /etc/hosts
+          sudo echo "127.0.0.1 resource-scopes.test.gw.wso2.com" | sudo tee -a /etc/hosts
+          sudo echo "127.0.0.1 trailing-slash.test.gw.wso2.com" | sudo tee -a /etc/hosts
+          sudo echo "127.0.0.1 interceptor-api.test.gw.wso2.com" | sudo tee -a /etc/hosts
+          sudo echo "127.0.0.1 interceptor-resource.test.gw.wso2.com" | sudo tee -a /etc/hosts
       - name: Run Integration Tests
         run: |
           cd apk-repo/test/integration
