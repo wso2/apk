@@ -82,7 +82,7 @@ spec:
             - name: GRPC_CLIENT_TLS_SAN
               value: "{{ template "apk-helm.resource.prefix" . }}-router-service.{{ .Release.Namespace }}.svc"
             - name: RATELIMITER_LABEL
-              value: "Default"
+              value: "default"
             - name: CONFIG_GRPC_XDS_SERVER_URL
               value: "{{ template "apk-helm.resource.prefix" . }}-adapter-service.{{ .Release.Namespace }}.svc:18001"
             - name: CONFIG_GRPC_XDS_SERVER_USE_TLS
