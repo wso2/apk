@@ -55,14 +55,13 @@ func getHTTPFilters() []*hcmv3.HttpFilter {
 	extAuth := getExtAuthzHTTPFilter()
 	router := getRouterHTTPFilter()
 	lua := getLuaFilter()
-	customRateLimit := getCustomRateLimitLuaFilter()
+	// customRateLimit := getCustomRateLimitLuaFilter()
 	cors := getCorsHTTPFilter()
 
 	httpFilters := []*hcmv3.HttpFilter{
 		cors,
 		extAuth,
 		lua,
-		customRateLimit,
 	}
 	conf := config.ReadConfigs()
 	if conf.Envoy.RateLimit.Enabled {

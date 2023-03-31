@@ -85,8 +85,8 @@ var (
 	orgIDvHostBasepathMap       map[string]map[string]string               // organizationID -> Vhost:basepath -> Vhost:API_UUID
 
 	// Envoy Label as map key
-	envoyListenerConfigMap     map[string][]*listenerv3.Listener        // GW-Label -> Listener Configuration map
-	envoyRouteConfigMap        map[string][]*routev3.RouteConfiguration // GW-Label -> Routes Configuration map
+	envoyListenerConfigMap     map[string]*listenerv3.Listener        // GW-Label -> Listener Configuration map
+	envoyRouteConfigMap        map[string]*routev3.RouteConfiguration // GW-Label -> Routes Configuration map
 	envoyClusterConfigMap      map[string][]*clusterv3.Cluster          // GW-Label -> Global Cluster Configuration map
 	envoyEndpointConfigMap     map[string][]*corev3.Address             // GW-Label -> Global Endpoint Configuration map
 	customRateLimitPoliciesMap map[string][]*model.CustomRateLimitPolicy // GW-Label -> Custom Rate Limit Policies map
@@ -449,7 +449,7 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 				vhostToRouteArrayFilteredMap[vhost] = routes
 			}
 		}
-		routesConfig = oasParser.GetRouteConfigs(vhostToRouteArrayFilteredMap, listener.Name)
+		routesConfig = oasParser.GetRouteConfigs(vhostToRouteArrayFilteredMap, listener.Name, customRateLimitPoliciesMap[gatewayName])
 		envoyRouteConfigMap[gatewayName] = routesConfig
 		logger.LoggerXds.Debugf("Listener : %v and routes %v", listener, routesConfig)
 	} else {
@@ -940,8 +940,9 @@ func UpdateAPICache(vHosts []string, newLabels []string, newlistenersForRoutes [
 }
 
 // UpdateGatewayCache updates the xDS cache related to the Gateway Lifecycle event.
-func UpdateGatewayCache(gateway *gwapiv1b1.Gateway) error {
+func UpdateGatewayCache(gateway *gwapiv1b1.Gateway, customRateLimitPolicies []*model.CustomRateLimitPolicy) error {
 	listener := oasParser.GetProductionListener(gateway)
 	envoyListenerConfigMap[gateway.Name] = listener
+	customRateLimitPoliciesMap[gateway.Name] = customRateLimitPolicies
 	return nil
 }
