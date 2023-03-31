@@ -185,7 +185,7 @@ func updateXDSClusterCache(apiKey string, organizationID string) {
 	for key, envoyLabelList := range orgIDOpenAPIEnvoyMap[organizationID] {
 		if key == apiKey {
 			for _, label := range envoyLabelList {
-				listeners, clusters, routes, endpoints, _ := GenerateEnvoyResoucesForLabel(label)
+				listeners, clusters, routes, endpoints, _ := GenerateEnvoyResoucesForGateway(label)
 				UpdateXdsCacheWithLock(label, endpoints, clusters, routes, listeners)
 				logger.LoggerXds.Info("Updated XDS cache by consul service discovery for API: ", apiKey)
 			}

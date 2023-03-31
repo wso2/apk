@@ -23,10 +23,10 @@ wso2:
       serviceAccountName: wso2apk-platform
       roleName: wso2apk-role
     idp:
-      issuer: "https://idp.am.wso2.com/token"
-      authorizeEndpoint: "https://idp.am.wso2.com:9095/oauth2/authorize"
-      tokenEndpoint: "https://idp.am.wso2.com:9095/oauth2/token"
-      revokeEndpoint: "https://idp.am.wso2.com:9095/oauth2/revoke"
+      issuer: "https://prod.idp.am.wso2.com/token"
+      authorizeEndpoint: "https://prod.idp.am.wso2.com:9095/oauth2/authorize"
+      tokenEndpoint: "https://prod.idp.am.wso2.com:9095/oauth2/token"
+      revokeEndpoint: "https://prod.idp.am.wso2.com:9095/oauth2/revoke"
       #jwksEndpoint: ""      
       usernameClaim: "sub"
       groupClaim: "groups"
@@ -197,6 +197,13 @@ wso2:
       enabled: true
       gatewayAPI:
         enabled: true
+      gateway:
+        name: default
+        listener:
+          name: httpslistener
+          hostname: "*.gw.wso2.com"
+          port: 9095
+          protocol: HTTPS
       # controlPlane:
       #   serviceUrl: "http://control-plane-wso2-apk-admin-ds-service.control-plane.svc.cluster.local:9444/api/am/internal/v1"    
       #   enableHostNameVerification: true
@@ -328,12 +335,12 @@ wso2:
                 memory: "1028Mi"
                 cpu: "1000m"
             readinessProbe:
-              host: "gw.wso2.com"
+              host: "prod.gw.wso2.com"
               initialDelaySeconds: 20
               periodSeconds: 20
               failureThreshold: 5
             livenessProbe:
-              host: "gw.wso2.com"
+              host: "prod.gw.wso2.com"
               initialDelaySeconds: 20
               periodSeconds: 20
               failureThreshold: 5
@@ -422,12 +429,12 @@ idp:
     validationTimeout: 250
   idpds:
     config:
-      issuer: "https://idp.am.wso2.com/token"
+      issuer: "https://prod.idp.am.wso2.com/token"
       keyId: "gateway_certificate_alias"
-      hostname: "idp.am.wso2.com"
-      loginPageURl: "https://idp.am.wso2.com:9095/authenticationEndpoint/login"
-      loginErrorPageUrl: "https://idp.am.wso2.com:9095/authenticationEndpoint/error"
-      loginCallBackURl: "https://idp.am.wso2.com:9095/authenticationEndpoint/login-callback"
+      hostname: "prod.idp.am.wso2.com"
+      loginPageURl: "https://prod.idp.am.wso2.com:9095/authenticationEndpoint/login"
+      loginErrorPageUrl: "https://prod.idp.am.wso2.com:9095/authenticationEndpoint/error"
+      loginCallBackURl: "https://prod.idp.am.wso2.com:9095/authenticationEndpoint/login-callback"
     appName: "idp-ds"
     deployment:
       npi: idp-ds-npi
@@ -482,8 +489,8 @@ idp:
       imagePullPolicy: Always
       image: wso2/idp-ui:0.0.1-m7
     configs:
-      idpLoginUrl: "https://idp.am.wso2.com:9095/commonauth/login"
-      idpAuthCallBackUrl: "https://idp.am.wso2.com:9095/oauth2/auth-callback"
+      idpLoginUrl: "https://prod.idp.am.wso2.com:9095/commonauth/login"
+      idpAuthCallBackUrl: "https://prod.idp.am.wso2.com:9095/oauth2/auth-callback"
 redis:
   enabled: true
   architecture: standalone

@@ -24,7 +24,7 @@ metadata:
     api-version: "1.0.0"
 spec:
   hostnames:
-  - "api.am.wso2.com"
+  - "prod.api.am.wso2.com"
   rules:
   - matches:
     - path:
@@ -1019,5 +1019,6 @@ spec:
   parentRefs:
   - group: "gateway.networking.k8s.io"
     kind: "Gateway"
-    name: "Default"
+    name: "default"
+    sectionName: "httpslistener"
 {{- end -}}

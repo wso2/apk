@@ -21,7 +21,6 @@ import (
 	"testing"
 
 	"github.com/wso2/apk/test/integration/integration/utils/http"
-	"github.com/wso2/apk/test/integration/integration/utils/kubernetes"
 	"github.com/wso2/apk/test/integration/integration/utils/suite"
 )
 
@@ -36,11 +35,11 @@ var ResourceScopes = suite.IntegrationTest{
 	Manifests:   []string{"tests/resource-scopes.yaml"},
 	Test: func(t *testing.T, suite *suite.IntegrationTestSuite) {
 		ns := "gateway-integration-test-infra"
-		gwAddr := kubernetes.WaitForGatewayAddress(t, suite.Client, suite.TimeoutConfig)
+		gwAddr := "resource-scopes.test.gw.wso2.com:9095"
 
-		tokenWithoutScopes := http.GetTestToken(t, gwAddr)
-		tokenWithMatchingScopes := http.GetTestToken(t, gwAddr, "read:pets", "write:pets")
-		tokenWithNotMatchingScopes := http.GetTestToken(t, gwAddr, "no:pets")
+		tokenWithoutScopes := http.GetTestToken(t)
+		tokenWithMatchingScopes := http.GetTestToken(t, "read:pets", "write:pets")
+		tokenWithNotMatchingScopes := http.GetTestToken(t, "no:pets")
 		testTokens := []string{
 			tokenWithoutScopes,
 			tokenWithMatchingScopes,

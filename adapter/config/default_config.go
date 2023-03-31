@@ -33,12 +33,6 @@ var defaultConfig = &Config{
 			TokenTTL:            "1h",
 			TokenPrivateKeyPath: "/home/wso2/security/keystore/mg.key",
 		},
-		VhostMapping: []vhostMapping{
-			{
-				Environment: "Default",
-				Vhost:       "localhost",
-			},
-		},
 		Consul: consul{
 			Enabled:            false,
 			URL:                "https://169.254.1.1:8501",
@@ -71,10 +65,6 @@ var defaultConfig = &Config{
 		},
 	},
 	Envoy: envoy{
-		ListenerHost:                     "0.0.0.0",
-		ListenerPort:                     9090,
-		SecuredListenerHost:              "0.0.0.0",
-		SecuredListenerPort:              9095,
 		ListenerCodecType:                "AUTO",
 		ClusterTimeoutInSeconds:          20,
 		EnforcerResponseTimeoutInSeconds: 20,
@@ -303,7 +293,7 @@ var defaultConfig = &Config{
 		ServiceURLDeprecated: UnassignedAsDeprecated,
 		Username:             "admin",
 		Password:             "$env{cp_admin_pwd}",
-		EnvironmentLabels:    []string{"Default"},
+		EnvironmentLabels:    []string{"default"},
 		RetryInterval:        5,
 		SkipSSLVerification:  false,
 		BrokerConnectionParameters: brokerConnectionParameters{

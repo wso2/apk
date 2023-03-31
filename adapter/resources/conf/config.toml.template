@@ -93,15 +93,6 @@ soapErrorInXMLEnabled = false
 
 # Configurations required for router to route the traffic from different clients to services
 [router] # --------------------------------------------------------
-  # Host for listener of Router
-  listenerHost = "0.0.0.0"
-  # Port for listener of Router
-  listenerPort = 9090
-  # Host for secured listener of Router
-  securedListenerHost = "0.0.0.0"
-  # Port for secured listener of Router
-  securedListenerPort = 9095
-  
   # Set the listener side http protocol version. Default to AUTO where both http1 and http2 connections are handled
   # It can be specifically set to either HTTP1 or HTTP2
   listenerCodecType = "AUTO"

@@ -39,7 +39,7 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "idp.am.wso2.com",
+						"value": "prod.idp.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -111,7 +111,7 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -213,7 +213,7 @@
 					},
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					},
 					{
@@ -303,7 +303,7 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -350,7 +350,7 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -418,7 +418,7 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					},
 					{
@@ -498,7 +498,7 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -560,7 +560,7 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -622,7 +622,7 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -701,7 +701,7 @@
 					},
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -786,7 +786,7 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -861,7 +861,7 @@
 					},
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -981,7 +981,7 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -1146,7 +1146,7 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -1236,7 +1236,7 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -1330,7 +1330,7 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -1402,7 +1402,7 @@
 					},
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -1483,7 +1483,7 @@
 					},
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -1592,7 +1592,7 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -1744,7 +1744,7 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -1855,7 +1855,7 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -1902,7 +1902,7 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],

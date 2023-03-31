@@ -25,27 +25,28 @@ import (
 )
 
 func init() {
-	IntegrationTests = append(IntegrationTests, DisableAPISecurity)
+	IntegrationTests = append(IntegrationTests, APIDifferentListener)
 }
 
-// DisableAPISecurity test
-var DisableAPISecurity = suite.IntegrationTest{
-	ShortName:   "DisableAPISecurity",
-	Description: "Tests API with disabled security",
-	Manifests:   []string{"tests/disable-api-level-security.yaml"},
+// APIDifferentListener test
+var APIDifferentListener = suite.IntegrationTest{
+	ShortName:   "APIDifferentListener",
+	Description: "An API is deployed to a different listener other than default gateway listener",
+	Manifests:   []string{"tests/api-different-listener.yaml"},
 	Test: func(t *testing.T, suite *suite.IntegrationTestSuite) {
 		ns := "gateway-integration-test-infra"
-		gwAddr := "disable-api-security.test.gw.wso2.com:9095"
+		gwAddr := "diff-listner-api.test.api.am.wso2.com:9095"
+		token := http.GetTestToken(t)
 
 		testCases := []http.ExpectedResponse{
 			{
 				Request: http.Request{
-					Host: "disable-api-security.test.gw.wso2.com",
-					Path: "/disable-api-security/v1/users",
+					Host: "diff-listner-api.test.api.am.wso2.com",
+					Path: "/test-api-with-different-listener/v1.0.0/user/user123/playlist/watch-later",
 				},
 				ExpectedRequest: &http.ExpectedRequest{
 					Request: http.Request{
-						Path: "/users",
+						Path: "/user/user123/playlist/watch-later",
 					},
 				},
 				Backend:   "infra-backend-v1",
@@ -53,21 +54,35 @@ var DisableAPISecurity = suite.IntegrationTest{
 			},
 			{
 				Request: http.Request{
-					Host: "disable-api-security.test.gw.wso2.com",
-					Path: "/disable-api-security/v1/orders",
+					Host: "diff-listner-api.test.api.am.wso2.com",
+					Path: "/test-api-with-different-listener/v1.0.0/user/user123/other-path",
 				},
-				ExpectedRequest: &http.ExpectedRequest{
-					Request: http.Request{
-						Path: "/orders",
-					},
+				Response: http.Response{StatusCode: 404},
+			},
+		}
+
+		negativeTestCases := []http.ExpectedResponse{
+			{
+				Request: http.Request{
+					Host: "gateway-integration-test-infra.test.gw.wso2.com",
+					Path: "/test-api-with-different-listener/v1.0.0/user/user123/playlist/watch-later",
 				},
+				Response:  http.Response{StatusCode: 404},
 				Backend:   "infra-backend-v1",
 				Namespace: ns,
 			},
 		}
 		for i := range testCases {
 			tc := testCases[i]
-			// No test token added to the request header
+			tc.Request.Headers = http.AddBearerTokenToHeader(token, tc.Request.Headers)
+			t.Run(tc.GetTestCaseName(i), func(t *testing.T) {
+				t.Parallel()
+				http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, gwAddr, tc)
+			})
+		}
+		for i := range negativeTestCases {
+			tc := negativeTestCases[i]
+			tc.Request.Headers = http.AddBearerTokenToHeader(token, tc.Request.Headers)
 			t.Run(tc.GetTestCaseName(i), func(t *testing.T) {
 				t.Parallel()
 				http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, gwAddr, tc)

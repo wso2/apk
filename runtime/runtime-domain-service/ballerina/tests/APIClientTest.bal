@@ -2610,7 +2610,14 @@ function getMockHttpRoute(API api, string apiUUID, commons:Organization organizt
                     ]
                 }
             ],
-            "parentRefs": [{"group": "gateway.networking.k8s.io", "kind": "Gateway", "name": "Default"}]
+            "parentRefs": [
+                {
+                    "group": "gateway.networking.k8s.io",
+                    "kind": "Gateway",
+                    "name": "default",
+                    "sectionName": "httpslistener"
+                }
+            ]
         }
     };
 }
@@ -2801,7 +2808,8 @@ function getMockHttpRouteWithOperationPolicies1(API api, string apiUUID, commons
                 {
                     "group": "gateway.networking.k8s.io",
                     "kind": "Gateway",
-                    "name": "Default"
+                    "name": "default",
+                    "sectionName": "httpslistener"
                 }
             ]
         }
@@ -2985,7 +2993,8 @@ function getMockHttpRouteWithOperationRateLimits1(API api, string apiUUID, commo
                 {
                     "group": "gateway.networking.k8s.io",
                     "kind": "Gateway",
-                    "name": "Default"
+                    "name": "default",
+                    "sectionName": "httpslistener"
                 }
             ]
         }
@@ -3261,7 +3270,8 @@ function getMockHttpRouteWithBackend(API api, string apiUUID, string backenduuid
                 {
                     "group": "gateway.networking.k8s.io",
                     "kind": "Gateway",
-                    "name": "Default"
+                    "name": "default",
+                    "sectionName": "httpslistener"
                 }
             ]
         }
@@ -3451,7 +3461,8 @@ function getMockHttpRouteWithOperationPolicies(API api, string apiUUID, string b
                 {
                     "group": "gateway.networking.k8s.io",
                     "kind": "Gateway",
-                    "name": "Default"
+                    "name": "default",
+                    "sectionName": "httpslistener"
                 }
             ]
         }
@@ -3709,7 +3720,8 @@ function getMockHttpRouteWithAPIPolicies(API api, string apiUUID, string backend
                 {
                     "group": "gateway.networking.k8s.io",
                     "kind": "Gateway",
-                    "name": "Default"
+                    "name": "default",
+                    "sectionName": "httpslistener"
                 }
             ]
         }
@@ -3890,7 +3902,8 @@ function getMockHttpRouteWithOperationRateLimits(API api, string apiUUID, string
                 {
                     "group": "gateway.networking.k8s.io",
                     "kind": "Gateway",
-                    "name": "Default"
+                    "name": "default",
+                    "sectionName": "httpslistener"
                 }
             ]
         }

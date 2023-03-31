@@ -51,6 +51,7 @@ import (
 	eventhubTypes "github.com/wso2/apk/adapter/pkg/eventhub/types"
 	operatorconsts "github.com/wso2/apk/adapter/pkg/operator/constants"
 	"github.com/wso2/apk/adapter/pkg/utils/stringutils"
+	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
 var (
@@ -84,10 +85,13 @@ var (
 	orgIDvHostBasepathMap       map[string]map[string]string               // organizationID -> Vhost:basepath -> Vhost:API_UUID
 
 	// Envoy Label as map key
-	envoyListenerConfigMap map[string][]*listenerv3.Listener      // GW-Label -> Listener Configuration map
+	envoyListenerConfigMap map[string]*listenerv3.Listener        // GW-Label -> Listener Configuration map
 	envoyRouteConfigMap    map[string]*routev3.RouteConfiguration // GW-Label -> Routes Configuration map
 	envoyClusterConfigMap  map[string][]*clusterv3.Cluster        // GW-Label -> Global Cluster Configuration map
 	envoyEndpointConfigMap map[string][]*corev3.Address           // GW-Label -> Global Endpoint Configuration map
+
+	// Listener as map key
+	listenerToRouteArrayMap map[string][]*routev3.Route // Listener -> Routes map
 
 	// Common Enforcer Label as map key
 	enforcerConfigMap                map[string][]types.Resource
@@ -112,6 +116,8 @@ const (
 	maxRandomInt         int    = 999999999
 	prototypedAPI        string = "PROTOTYPED"
 	apiKeyFieldSeparator string = ":"
+	gatewayController    string = "GatewayController"
+	apiController        string = "APIController"
 )
 
 // IDHash uses ID field as the node hash.
@@ -141,10 +147,11 @@ func init() {
 	enforcerThrottleDataCache = wso2_cache.NewSnapshotCache(false, IDHash{}, nil)
 
 	apiUUIDToGatewayToVhosts = make(map[string]map[string]string)
-	envoyListenerConfigMap = make(map[string][]*listenerv3.Listener)
+	envoyListenerConfigMap = make(map[string]*listenerv3.Listener)
 	envoyRouteConfigMap = make(map[string]*routev3.RouteConfiguration)
 	envoyClusterConfigMap = make(map[string][]*clusterv3.Cluster)
 	envoyEndpointConfigMap = make(map[string][]*corev3.Address)
+	listenerToRouteArrayMap = make(map[string][]*routev3.Route)
 
 	orgIDAPIMgwSwaggerMap = make(map[string]map[string]model.MgwSwagger)       // organizationID -> Vhost:API_UUID -> MgwSwagger struct map
 	orgIDAPIvHostsMap = make(map[string]map[string][]string)                   // organizationID -> UUID-prod/sand -> Envoy Vhost Array map
@@ -335,7 +342,7 @@ func updateXdsCacheOnAPIChange(oldLabels []string, newLabels []string) bool {
 	revisionStatus := false
 	// TODO: (VirajSalaka) check possible optimizations, Since the number of labels are low by design it should not be an issue
 	for _, newLabel := range newLabels {
-		listeners, clusters, routes, endpoints, apis := GenerateEnvoyResoucesForLabel(newLabel)
+		listeners, clusters, routes, endpoints, apis := GenerateEnvoyResoucesForGateway(newLabel)
 		UpdateEnforcerApis(newLabel, apis, "")
 		UpdateRateLimiterPolicies(newLabel)
 		success := UpdateXdsCacheWithLock(newLabel, endpoints, clusters, routes, listeners)
@@ -349,7 +356,7 @@ func updateXdsCacheOnAPIChange(oldLabels []string, newLabels []string) bool {
 	}
 	for _, oldLabel := range oldLabels {
 		if !stringutils.StringInSlice(oldLabel, newLabels) {
-			listeners, clusters, routes, endpoints, apis := GenerateEnvoyResoucesForLabel(oldLabel)
+			listeners, clusters, routes, endpoints, apis := GenerateEnvoyResoucesForGateway(oldLabel)
 			UpdateEnforcerApis(oldLabel, apis, "")
 			UpdateRateLimiterPolicies(oldLabel)
 			UpdateXdsCacheWithLock(oldLabel, endpoints, clusters, routes, listeners)
@@ -359,10 +366,10 @@ func updateXdsCacheOnAPIChange(oldLabels []string, newLabels []string) bool {
 	return revisionStatus
 }
 
-// GenerateEnvoyResoucesForLabel generates envoy resources for a given label
+// GenerateEnvoyResoucesForGateway generates envoy resources for a given gateway
 // This method will list out all APIs mapped to the label. and generate envoy resources for all of these APIs.
-func GenerateEnvoyResoucesForLabel(label string) ([]types.Resource, []types.Resource, []types.Resource,
-	[]types.Resource, []types.Resource) {
+func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
+	[]types.Resource, []types.Resource, []types.Resource, []types.Resource) {
 	var clusterArray []*clusterv3.Cluster
 	var vhostToRouteArrayMap = make(map[string][]*routev3.Route)
 	var endpointArray []*corev3.Address
@@ -370,7 +377,7 @@ func GenerateEnvoyResoucesForLabel(label string) ([]types.Resource, []types.Reso
 
 	for organizationID, entityMap := range orgIDOpenAPIEnvoyMap {
 		for apiKey, labels := range entityMap {
-			if stringutils.StringInSlice(label, labels) {
+			if stringutils.StringInSlice(gatewayName, labels) {
 				vhost, err := ExtractVhostFromAPIIdentifier(apiKey)
 				if err != nil {
 					logger.LoggerXds.ErrorC(logging.GetErrorByCode(1411, err.Error(), organizationID))
@@ -407,6 +414,8 @@ func GenerateEnvoyResoucesForLabel(label string) ([]types.Resource, []types.Reso
 	conf := config.ReadConfigs()
 	enableJwtIssuer := conf.Enforcer.JwtIssuer.Enabled
 	systemHost := conf.Envoy.SystemHost
+
+	logger.LoggerXds.Debugf("System Host : %v", systemHost)
 	if enableJwtIssuer {
 		routeToken := envoyconf.CreateTokenRoute()
 		vhostToRouteArrayMap[systemHost] = append(vhostToRouteArrayMap[systemHost], routeToken)
@@ -422,20 +431,51 @@ func GenerateEnvoyResoucesForLabel(label string) ([]types.Resource, []types.Reso
 		vhostToRouteArrayMap[systemHost] = append(vhostToRouteArrayMap[systemHost], readynessEndpoint)
 	}
 
-	listenerArray, listenerFound := envoyListenerConfigMap[label]
-	routesConfig, routesConfigFound := envoyRouteConfigMap[label]
-	if !listenerFound && !routesConfigFound {
-		listenerArray, routesConfig = oasParser.GetProductionListenerAndRouteConfig(vhostToRouteArrayMap)
-		envoyListenerConfigMap[label] = listenerArray
-		envoyRouteConfigMap[label] = routesConfig
+	var listener *listenerv3.Listener
+	var routesConfig *routev3.RouteConfiguration
+
+	listener, listenerFound := envoyListenerConfigMap[gatewayName]
+	if listenerFound {
+		logger.LoggerXds.Debugf("Listener : %v", listener)
+		routesFromListener := listenerToRouteArrayMap[listener.Name]
+		logger.LoggerXds.Debugf("Routes from listener : %v", routesFromListener)
+		var vhostToRouteArrayFilteredMap = make(map[string][]*routev3.Route)
+		for vhost, routes := range vhostToRouteArrayMap {
+			logger.LoggerXds.Debugf("Routes from Vhost Map : %v", routes)
+			if vhost == systemHost || checkRoutes(routes, routesFromListener) {
+				logger.LoggerXds.Debugf("Equal routes : %v", routes)
+				vhostToRouteArrayFilteredMap[vhost] = routes
+			}
+		}
+		routesConfig = oasParser.GetRouteConfigs(vhostToRouteArrayFilteredMap, listener.Name)
+		envoyRouteConfigMap[gatewayName] = routesConfig
+		logger.LoggerXds.Debugf("Listener : %v and routes %v", listener, routesConfig)
 	} else {
-		// If the routesConfig exists, the listener exists too
-		oasParser.UpdateRoutesConfig(routesConfig, vhostToRouteArrayMap)
+		return nil, nil, nil, nil, nil
 	}
-	clusterArray = append(clusterArray, envoyClusterConfigMap[label]...)
-	endpointArray = append(endpointArray, envoyEndpointConfigMap[label]...)
-	endpoints, clusters, listeners, routeConfigs := oasParser.GetCacheResources(endpointArray, clusterArray, listenerArray, routesConfig)
+
+	logger.LoggerXds.Debugf("Routes Config : %v", routesConfig)
+	clusterArray = append(clusterArray, envoyClusterConfigMap[gatewayName]...)
+	endpointArray = append(endpointArray, envoyEndpointConfigMap[gatewayName]...)
+	endpoints, clusters, listeners, routeConfigs := oasParser.GetCacheResources(endpointArray, clusterArray, listener, routesConfig)
+	logger.LoggerXds.Debugf("Routes Config After Get cache : %v", routeConfigs)
 	return endpoints, clusters, listeners, routeConfigs, apis
+}
+
+// function to check routes []*routev3.Route equlas routes []*routev3.Route
+func checkRoutes(routes []*routev3.Route, routesFromListener []*routev3.Route) bool {
+	for i := range routes {
+		flag := false
+		for j := range routesFromListener {
+			if routes[i].Name == routesFromListener[j].Name {
+				flag = true
+			}
+		}
+		if !flag {
+			return false
+		}
+	}
+	return true
 }
 
 // GenerateGlobalClusters generates the globally available clusters and endpoints.
@@ -787,7 +827,7 @@ func UpdateRateLimitXDSCache(vHosts []string, mgwSwagger model.MgwSwagger) {
 }
 
 // UpdateAPICache updates the xDS cache related to the API Lifecycle event.
-func UpdateAPICache(vHosts []string, newLabels []string, mgwSwagger model.MgwSwagger) error {
+func UpdateAPICache(vHosts []string, newLabels []string, newlistenersForRoutes []string, mgwSwagger model.MgwSwagger) error {
 	mutexForInternalMapUpdate.Lock()
 	defer mutexForInternalMapUpdate.Unlock()
 
@@ -851,6 +891,12 @@ func UpdateAPICache(vHosts []string, newLabels []string, mgwSwagger model.MgwSwa
 			orgIDOpenAPIRoutesMap[mgwSwagger.GetOrganizationID()] = routesMap
 		}
 
+		if _, ok := listenerToRouteArrayMap[newlistenersForRoutes[0]]; ok {
+			listenerToRouteArrayMap[newlistenersForRoutes[0]] = append(listenerToRouteArrayMap[newlistenersForRoutes[0]], routes...)
+		} else {
+			listenerToRouteArrayMap[newlistenersForRoutes[0]] = routes
+		}
+
 		if _, ok := orgIDOpenAPIClustersMap[mgwSwagger.GetOrganizationID()]; ok {
 			orgIDOpenAPIClustersMap[mgwSwagger.GetOrganizationID()][apiIdentifier] = clusters
 		} else {
@@ -878,5 +924,12 @@ func UpdateAPICache(vHosts []string, newLabels []string, mgwSwagger model.MgwSwa
 		revisionStatus := updateXdsCacheOnAPIChange(oldLabels, newLabels)
 		logger.LoggerXds.Infof("Deployed Revision: %v:%v", apiIdentifier, revisionStatus)
 	}
+	return nil
+}
+
+// UpdateGatewayCache updates the xDS cache related to the Gateway Lifecycle event.
+func UpdateGatewayCache(gateway *gwapiv1b1.Gateway) error {
+	listener := oasParser.GetProductionListener(gateway)
+	envoyListenerConfigMap[gateway.Name] = listener
 	return nil
 }

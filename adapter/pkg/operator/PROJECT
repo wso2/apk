@@ -88,4 +88,9 @@ resources:
     defaulting: true
     validation: true
     webhookVersion: v1
+- controller: true
+  domain: wso2.com
+  group: dp
+  kind: Gateway
+  version: v1alpha1
 version: "3"

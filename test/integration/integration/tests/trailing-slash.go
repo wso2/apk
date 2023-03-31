@@ -21,7 +21,6 @@ import (
 	"testing"
 
 	"github.com/wso2/apk/test/integration/integration/utils/http"
-	"github.com/wso2/apk/test/integration/integration/utils/kubernetes"
 	"github.com/wso2/apk/test/integration/integration/utils/suite"
 )
 
@@ -36,7 +35,7 @@ var TrailingSlash = suite.IntegrationTest{
 	Manifests:   []string{"tests/trailing-slash.yaml"},
 	Test: func(t *testing.T, suite *suite.IntegrationTestSuite) {
 		ns := "gateway-integration-test-infra"
-		gwAddr := kubernetes.WaitForGatewayAddress(t, suite.Client, suite.TimeoutConfig)
+		gwAddr := "trailing-slash.test.gw.wso2.com:9095"
 		token := http.GetTestToken(t, gwAddr)
 
 		testCases := []http.ExpectedResponse{

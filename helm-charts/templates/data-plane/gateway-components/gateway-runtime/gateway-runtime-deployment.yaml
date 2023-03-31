@@ -68,7 +68,7 @@ spec:
             - name: ADAPTER_XDS_PORT
               value : "18000"
             - name: ENFORCER_LABEL
-              value : Default
+              value : default
             - name: ENFORCER_REGION
               value: UNKNOWN
             - name: XDS_MAX_MSG_SIZE
@@ -154,9 +154,11 @@ spec:
           image: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.image }}
           imagePullPolicy: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.imagePullPolicy }}
           ports:
-            - containerPort: 9095
+            - containerPort: {{ .Values.wso2.apk.dp.gateway.listener.port }}
               protocol: "TCP"
             - containerPort: 9090
+              protocol: "TCP"
+            - containerPort: 9091
               protocol: "TCP"
             - containerPort: 9000
               protocol: "TCP"
@@ -177,7 +179,7 @@ spec:
             - name: ROUTER_CLUSTER
               value: "default_cluster"
             - name: ROUTER_LABEL
-              value: "Default"
+              value: {{ .Values.wso2.apk.dp.gateway.name }}
             - name: ROUTER_PRIVATE_KEY_PATH
               value: "/home/wso2/security/keystore/router.key"
             - name: ROUTER_PUBLIC_CERT_PATH
@@ -211,6 +213,36 @@ spec:
             {{- else }}
               subPath: tls.crt
             {{- end }}
+            - name: router-listener-secret-volume
+              mountPath: /home/wso2/security/listeners/gw.key
+              subPath: gw.key
+            - name: router-listener-secret-volume
+              mountPath: /home/wso2/security/listeners/gw.crt
+              subPath: gw.crt
+            - name: router-listener-secret-volume
+              mountPath: /home/wso2/security/listeners/api.key
+              subPath: api.key
+            - name: router-listener-secret-volume
+              mountPath: /home/wso2/security/listeners/api.crt
+              subPath: api.crt
+            - name: router-listener-secret-volume
+              mountPath: /home/wso2/security/listeners/idp.key
+              subPath: idp.key
+            - name: router-listener-secret-volume
+              mountPath: /home/wso2/security/listeners/idp.crt
+              subPath: idp.crt
+            - name: router-listener-secret-volume
+              mountPath: /home/wso2/security/listeners/example.key
+              subPath: example.key
+            - name: router-listener-secret-volume
+              mountPath: /home/wso2/security/listeners/example.crt
+              subPath: example.crt
+            - name: router-listener-secret-volume
+              mountPath: /home/wso2/security/listeners/localhost.key
+              subPath: localhost.key
+            - name: router-listener-secret-volume
+              mountPath: /home/wso2/security/listeners/localhost.crt
+              subPath: localhost.crt
             - name: adapter-truststore-secret-volume
               mountPath: /home/wso2/security/truststore/adapter.crt
             {{- if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.dp.adapter.configs.tls }}
@@ -245,12 +277,10 @@ spec:
         {{ end }}
           livenessProbe:
             httpGet:
-              port: 9095
+              host: localhost
+              port: {{ .Values.wso2.apk.dp.gateway.listener.port }}
               path: /health
               scheme: HTTPS
-              httpHeaders:
-                - name: Host
-                  value: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.host }}
             initialDelaySeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.periodSeconds }}
             failureThreshold: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.failureThreshold }}
@@ -288,6 +318,9 @@ spec:
           {{- else }}
             secretName: {{ template "apk-helm.resource.prefix" . }}-router-server-cert
           {{- end }}
+        - name: router-listener-secret-volume
+          secret:
+            secretName: {{ template "apk-helm.resource.prefix" . }}-listener-crt-secret
         - name: adapter-truststore-secret-volume
           secret: 
           {{- if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.dp.adapter.configs.tls }}

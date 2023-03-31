@@ -1,0 +1,59 @@
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: Gateway
+metadata:
+  name: {{ .Values.wso2.apk.dp.gateway.name }}
+  annotations:
+    cert-manager.io/issuer: selfsigned-issuer
+spec:
+  gatewayClassName: {{ .Values.wso2.apk.dp.gateway.name }}
+  listeners:
+    - name: examplelistener
+      hostname: "*.example.com"
+      port: {{ .Values.wso2.apk.dp.gateway.listener.port }}
+      protocol: {{ .Values.wso2.apk.dp.gateway.listener.protocol }}
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            group: ""
+            name: example-com-cert
+    - name: apilistener
+      hostname: "*.api.am.wso2.com"
+      port: {{ .Values.wso2.apk.dp.gateway.listener.port }}
+      protocol: {{ .Values.wso2.apk.dp.gateway.listener.protocol }}
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            group: ""
+            name: api-example-com-cert
+    - name: idplistener
+      hostname: "*.idp.am.wso2.com"
+      port: {{ .Values.wso2.apk.dp.gateway.listener.port }}
+      protocol: {{ .Values.wso2.apk.dp.gateway.listener.protocol }}
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            group: ""
+            name: idp-example-com-cert
+    - name: gatewaylistener
+      hostname: "{{ .Values.wso2.apk.dp.gateway.listener.hostname }}"
+      port: {{ .Values.wso2.apk.dp.gateway.listener.port }}
+      protocol: {{ .Values.wso2.apk.dp.gateway.listener.protocol }}
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            group: ""
+            name: gateway-com-cert
+    - name: systemlistener
+      hostname: "localhost"
+      port: {{ .Values.wso2.apk.dp.gateway.listener.port }}
+      protocol: {{ .Values.wso2.apk.dp.gateway.listener.protocol }}
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            group: ""
+            name: gateway-com-cert

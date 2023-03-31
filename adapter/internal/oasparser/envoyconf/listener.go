@@ -27,6 +27,7 @@ import (
 	listenerv3 "github.com/envoyproxy/go-control-plane/envoy/config/listener/v3"
 	routev3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 	envoy_config_trace_v3 "github.com/envoyproxy/go-control-plane/envoy/config/trace/v3"
+	tlsInspectorv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/listener/tls_inspector/v3"
 	hcmv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/http_connection_manager/v3"
 	tlsv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/transport_sockets/tls/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
@@ -36,13 +37,14 @@ import (
 	"github.com/wso2/apk/adapter/config"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
 	"google.golang.org/protobuf/types/known/anypb"
+	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
 // CreateRoutesConfigForRds generates the default RouteConfiguration.
 // Only the provided virtual hosts will be assigned inside the configuration.
 // This is used to provide the configuration for RDS.
-func CreateRoutesConfigForRds(vHosts []*routev3.VirtualHost) *routev3.RouteConfiguration {
-	rdsConfigName := defaultRdsConfigName
+func CreateRoutesConfigForRds(vHosts []*routev3.VirtualHost, httpListeners string) *routev3.RouteConfiguration {
+	rdsConfigName := httpListeners
 	routeConfiguration := routev3.RouteConfiguration{
 		Name:                   rdsConfigName,
 		VirtualHosts:           vHosts,
@@ -51,7 +53,7 @@ func CreateRoutesConfigForRds(vHosts []*routev3.VirtualHost) *routev3.RouteConfi
 	return &routeConfiguration
 }
 
-// CreateListenersWithRds create two listeners or one listener with the Route Configuration
+// CreateListenerByGateway create listeners by provided gateway object with the Route Configuration
 // stated as RDS. (routes are not assigned directly to the listener.) RouteConfiguration name
 // is assigned using its default value. Route Configuration would be resolved via ADS.
 //
@@ -67,112 +69,31 @@ func CreateRoutesConfigForRds(vHosts []*routev3.VirtualHost) *routev3.RouteConfi
 // The relevant private keys and certificates (for securedListener) are fetched from the filepath
 // mentioned in the adapter configuration. These certificate, key values are added
 // as inline records (base64 encoded).
-func CreateListenersWithRds() []*listenerv3.Listener {
+func CreateListenerByGateway(gateway *gwapiv1b1.Gateway) *listenerv3.Listener {
 	conf := config.ReadConfigs()
-	return createListeners(conf)
-}
-
-func createListeners(conf *config.Config) []*listenerv3.Listener {
 	httpFilters := getHTTPFilters()
 	upgradeFilters := getUpgradeFilters()
 	accessLogs := getAccessLogs()
-	var filters []*listenerv3.Filter
-	var listeners []*listenerv3.Listener
+	var listeners *listenerv3.Listener
+	var listenerName string
+	var listenerPort uint32
+	var listenerProtocol string
+	var filterChains []*listenerv3.FilterChain
 
-	manager := &hcmv3.HttpConnectionManager{
-		CodecType:  getListenerCodecType(conf.Envoy.ListenerCodecType),
-		StatPrefix: httpConManagerStartPrefix,
-		// WebSocket upgrades enabled from the HCM
-		UpgradeConfigs: []*hcmv3.HttpConnectionManager_UpgradeConfig{{
-			UpgradeType: "websocket",
-			Enabled:     &wrappers.BoolValue{Value: true},
-			Filters:     upgradeFilters,
-		}},
-		RouteSpecifier: &hcmv3.HttpConnectionManager_Rds{
-			Rds: &hcmv3.Rds{
-				RouteConfigName: defaultRdsConfigName,
-				ConfigSource: &corev3.ConfigSource{
-					ConfigSourceSpecifier: &corev3.ConfigSource_Ads{
-						Ads: &corev3.AggregatedConfigSource{},
-					},
-					ResourceApiVersion: corev3.ApiVersion_V3,
-				},
-			},
-		},
-		HttpFilters: httpFilters,
-		LocalReplyConfig: &hcmv3.LocalReplyConfig{
-			Mappers: getErrorResponseMappers(),
-		},
-		RequestTimeout:        ptypes.DurationProto(conf.Envoy.Connection.Timeouts.RequestTimeoutInSeconds * time.Second),        // default disabled
-		RequestHeadersTimeout: ptypes.DurationProto(conf.Envoy.Connection.Timeouts.RequestHeadersTimeoutInSeconds * time.Second), // default disabled
-		StreamIdleTimeout:     ptypes.DurationProto(conf.Envoy.Connection.Timeouts.StreamIdleTimeoutInSeconds * time.Second),     // Default 5 mins
-		CommonHttpProtocolOptions: &corev3.HttpProtocolOptions{
-			IdleTimeout: ptypes.DurationProto(conf.Envoy.Connection.Timeouts.IdleTimeoutInSeconds * time.Second), // Default 1 hr
-		},
-		HttpProtocolOptions: &corev3.Http1ProtocolOptions{
-			EnableTrailers: config.GetWireLogConfig().LogTrailersEnabled,
-		},
-		UseRemoteAddress: &wrappers.BoolValue{Value: conf.Envoy.UseRemoteAddress},
-	}
+	for _, listenerObj := range gateway.Spec.Listeners {
+		listenerPort = uint32(listenerObj.Port)
+		listenerProtocol = string(listenerObj.Protocol)
+		listenerName = defaultHTTPSListenerName
 
-	if len(accessLogs) > 0 {
-		manager.AccessLog = accessLogs
-	}
-
-	if conf.Tracing.Enabled && conf.Tracing.Type != TracerTypeAzure {
-		if tracing, err := getTracing(conf); err == nil {
-			manager.Tracing = tracing
-			manager.GenerateRequestId = &wrappers.BoolValue{Value: conf.Tracing.Enabled}
-		} else {
-			logger.LoggerOasparser.Error("Failed to initialize tracing. Router tracing will be disabled. ", err)
-			conf.Tracing.Enabled = false
+		filterChainMatch := &listenerv3.FilterChainMatch{
+			ServerNames: []string{string(*listenerObj.Hostname)},
 		}
-	}
 
-	pbst, err := anypb.New(manager)
-	if err != nil {
-		logger.LoggerOasparser.Fatal(err)
-	}
-	connectionManagerFilterP := listenerv3.Filter{
-		Name: wellknown.HTTPConnectionManager,
-		ConfigType: &listenerv3.Filter_TypedConfig{
-			TypedConfig: pbst,
-		},
-	}
+		keyPath, certPath := retrieveCertsPaths(string(listenerObj.Name))
 
-	// add filters
-	filters = append(filters, &connectionManagerFilterP)
-
-	if conf.Envoy.SecuredListenerPort > 0 {
 		var tlsFilter *tlsv3.DownstreamTlsContext
-
-		listenerHostAddress := defaultListenerHostAddress
-		if len(conf.Envoy.SecuredListenerHost) > 0 {
-			listenerHostAddress = conf.Envoy.SecuredListenerHost
-		}
-		securedListenerAddress := &corev3.Address_SocketAddress{
-			SocketAddress: &corev3.SocketAddress{
-				Protocol: corev3.SocketAddress_TCP,
-				Address:  listenerHostAddress,
-				PortSpecifier: &corev3.SocketAddress_PortValue{
-					PortValue: conf.Envoy.SecuredListenerPort,
-				},
-			},
-		}
-
-		securedListener := listenerv3.Listener{
-			Name: defaultHTTPSListenerName,
-			Address: &corev3.Address{
-				Address: securedListenerAddress,
-			},
-			FilterChains: []*listenerv3.FilterChain{{
-				Filters: filters,
-			},
-			},
-		}
-
-		tlsCert := generateTLSCert(conf.Envoy.KeyStore.KeyPath, conf.Envoy.KeyStore.CertPath)
-		//TODO: (VirajSalaka) Make it configurable via SDS
+		tlsCert := generateTLSCert(keyPath, certPath)
+		//TODO: Make this configurable using config map from listener object
 		if conf.Envoy.Downstream.TLS.MTLSAPIsEnabled {
 			tlsFilter = &tlsv3.DownstreamTlsContext{
 				// This is false since the authentication will be done at the enforcer
@@ -199,6 +120,7 @@ func createListeners(conf *config.Config) []*listenerv3.Listener {
 				CommonTlsContext: &tlsv3.CommonTlsContext{
 					//TlsCertificateSdsSecretConfigs
 					TlsCertificates: []*tlsv3.TlsCertificate{tlsCert},
+					AlpnProtocols:   []string{"h2", "http/1.1"},
 				},
 			}
 		}
@@ -215,46 +137,148 @@ func createListeners(conf *config.Config) []*listenerv3.Listener {
 			},
 		}
 
-		// At the moment, the listener as only one filter chain
-		securedListener.FilterChains[0].TransportSocket = transportSocket
-		listeners = append(listeners, &securedListener)
-		logger.LoggerOasparser.Infof("Secured Listener is added. %s : %d", listenerHostAddress, conf.Envoy.SecuredListenerPort)
+		var filters []*listenerv3.Filter
+		manager := &hcmv3.HttpConnectionManager{
+			CodecType:  getListenerCodecType(conf.Envoy.ListenerCodecType),
+			StatPrefix: httpConManagerStartPrefix,
+			// WebSocket upgrades enabled from the HCM
+			UpgradeConfigs: []*hcmv3.HttpConnectionManager_UpgradeConfig{{
+				UpgradeType: "websocket",
+				Enabled:     &wrappers.BoolValue{Value: true},
+				Filters:     upgradeFilters,
+			}},
+			RouteSpecifier: &hcmv3.HttpConnectionManager_Rds{
+				Rds: &hcmv3.Rds{
+					RouteConfigName: defaultHTTPSListenerName,
+					ConfigSource: &corev3.ConfigSource{
+						ConfigSourceSpecifier: &corev3.ConfigSource_Ads{
+							Ads: &corev3.AggregatedConfigSource{},
+						},
+						ResourceApiVersion: corev3.ApiVersion_V3,
+					},
+				},
+			},
+			HttpFilters: httpFilters,
+			LocalReplyConfig: &hcmv3.LocalReplyConfig{
+				Mappers: getErrorResponseMappers(),
+			},
+			RequestTimeout:        ptypes.DurationProto(conf.Envoy.Connection.Timeouts.RequestTimeoutInSeconds * time.Second),        // default disabled
+			RequestHeadersTimeout: ptypes.DurationProto(conf.Envoy.Connection.Timeouts.RequestHeadersTimeoutInSeconds * time.Second), // default disabled
+			StreamIdleTimeout:     ptypes.DurationProto(conf.Envoy.Connection.Timeouts.StreamIdleTimeoutInSeconds * time.Second),     // Default 5 mins
+			CommonHttpProtocolOptions: &corev3.HttpProtocolOptions{
+				IdleTimeout: ptypes.DurationProto(conf.Envoy.Connection.Timeouts.IdleTimeoutInSeconds * time.Second), // Default 1 hr
+			},
+			HttpProtocolOptions: &corev3.Http1ProtocolOptions{
+				EnableTrailers: config.GetWireLogConfig().LogTrailersEnabled,
+			},
+			UseRemoteAddress: &wrappers.BoolValue{Value: conf.Envoy.UseRemoteAddress},
+		}
+
+		if len(accessLogs) > 0 {
+			manager.AccessLog = accessLogs
+		}
+
+		if conf.Tracing.Enabled && conf.Tracing.Type != TracerTypeAzure {
+			if tracing, err := getTracing(conf); err == nil {
+				manager.Tracing = tracing
+				manager.GenerateRequestId = &wrappers.BoolValue{Value: conf.Tracing.Enabled}
+			} else {
+				logger.LoggerOasparser.Error("Failed to initialize tracing. Router tracing will be disabled. ", err)
+				conf.Tracing.Enabled = false
+			}
+		}
+
+		pbst, err := anypb.New(manager)
+		if err != nil {
+			logger.LoggerOasparser.Fatal(err)
+		}
+		connectionManagerFilterP := listenerv3.Filter{
+			Name: wellknown.HTTPConnectionManager,
+			ConfigType: &listenerv3.Filter_TypedConfig{
+				TypedConfig: pbst,
+			},
+		}
+
+		// add filters
+		filters = append(filters, &connectionManagerFilterP)
+		filterChains = append(filterChains, &listenerv3.FilterChain{
+			FilterChainMatch: filterChainMatch,
+			Filters:          filters,
+			TransportSocket:  transportSocket,
+		})
+
+	}
+
+	if gwapiv1b1.ProtocolType(listenerProtocol) == gwapiv1b1.HTTPSProtocolType {
+		listenerHostAddress := defaultListenerHostAddress
+		securedListenerAddress := &corev3.Address_SocketAddress{
+			SocketAddress: &corev3.SocketAddress{
+				Protocol: corev3.SocketAddress_TCP,
+				Address:  listenerHostAddress,
+				PortSpecifier: &corev3.SocketAddress_PortValue{
+					PortValue: uint32(listenerPort),
+				},
+			},
+		}
+
+		//var tlsInspector *tlsInspectorv3.TlsInspector
+
+		tlsInspector := &tlsInspectorv3.TlsInspector{}
+		marshalledListenerFilter, err := anypb.New(tlsInspector)
+		if err != nil {
+			logger.LoggerOasparser.Fatal("Error while Marshalling the TlsInspector for the configuration.")
+		}
+
+		listenerFilters := []*listenerv3.ListenerFilter{
+			{ // TLS Inspector
+				Name: wellknown.TlsInspector,
+				ConfigType: &listenerv3.ListenerFilter_TypedConfig{
+					TypedConfig: marshalledListenerFilter,
+				},
+			},
+		}
+
+		securedListener := listenerv3.Listener{
+			Name: string(listenerName),
+			Address: &corev3.Address{
+				Address: securedListenerAddress,
+			},
+			ListenerFilters: listenerFilters,
+			FilterChains:    filterChains,
+		}
+
+		listeners = &securedListener
+		logger.LoggerOasparser.Infof("Secured Listener is added. %s : %d", listenerHostAddress, uint32(listenerPort))
 	} else {
 		logger.LoggerOasparser.Info("No SecuredListenerPort is included.")
 	}
 
-	if conf.Envoy.ListenerPort > 0 {
+	if gwapiv1b1.ProtocolType(listenerProtocol) == gwapiv1b1.HTTPProtocolType {
 		listenerHostAddress := defaultListenerHostAddress
-		if len(conf.Envoy.ListenerHost) > 0 {
-			listenerHostAddress = conf.Envoy.ListenerHost
-		}
 		listenerAddress := &corev3.Address_SocketAddress{
 			SocketAddress: &corev3.SocketAddress{
 				Protocol: corev3.SocketAddress_TCP,
 				Address:  listenerHostAddress,
 				PortSpecifier: &corev3.SocketAddress_PortValue{
-					PortValue: conf.Envoy.ListenerPort,
+					PortValue: uint32(listenerPort),
 				},
 			},
 		}
 
 		listener := listenerv3.Listener{
-			Name: defaultHTTPListenerName,
+			Name: string(listenerName),
 			Address: &corev3.Address{
 				Address: listenerAddress,
 			},
-			FilterChains: []*listenerv3.FilterChain{{
-				Filters: filters,
-			},
-			},
+			FilterChains: filterChains,
 		}
-		listeners = append(listeners, &listener)
-		logger.LoggerOasparser.Infof("Non-secured Listener is added. %s : %d", listenerHostAddress, conf.Envoy.ListenerPort)
+		listeners = &listener
+		logger.LoggerOasparser.Infof("Non-secured Listener is added. %s : %d", listenerHostAddress, uint32(listenerPort))
 	} else {
 		logger.LoggerOasparser.Info("No Non-securedListenerPort is included.")
 	}
 
-	if len(listeners) == 0 {
+	if listeners == nil {
 		err := errors.New("No Listeners are configured as no port value is mentioned under securedListenerPort or ListenerPort")
 		logger.LoggerOasparser.Fatal(err)
 	}
@@ -277,18 +301,44 @@ func CreateVirtualHosts(vhostToRouteArrayMap map[string][]*routev3.Route) []*rou
 	return virtualHosts
 }
 
-// TODO: (VirajSalaka) Still the following method is not utilized as Sds is not implement. Keeping the Implementation for future reference
-func generateDefaultSdsSecretFromConfigfile(privateKeyPath string, pulicKeyPath string) (*tlsv3.Secret, error) {
-	var secret tlsv3.Secret
-	tlsCert := generateTLSCert(privateKeyPath, pulicKeyPath)
-	secret = tlsv3.Secret{
-		Name: defaultListenerSecretConfigName,
-		Type: &tlsv3.Secret_TlsCertificate{
-			TlsCertificate: tlsCert,
-		},
+// retrieveCertsPaths retrieves the key and cert paths from the config file
+func retrieveCertsPaths(listenerName string) (string, string) {
+	var keyPath string
+	var certPath string
+	if listenerName == "gatewaylistener" {
+		keyPath = "/home/wso2/security/listeners/gw.key"
+		certPath = "/home/wso2/security/listeners/gw.crt"
+	} else if listenerName == "apilistener" {
+		keyPath = "/home/wso2/security/listeners/api.key"
+		certPath = "/home/wso2/security/listeners/api.crt"
+	} else if listenerName == "idplistener" {
+		keyPath = "/home/wso2/security/listeners/idp.key"
+		certPath = "/home/wso2/security/listeners/idp.crt"
+	} else if listenerName == "examplelistener" {
+		keyPath = "/home/wso2/security/listeners/example.key"
+		certPath = "/home/wso2/security/listeners/example.crt"
+	} else if listenerName == "systemlistener" {
+		keyPath = "/home/wso2/security/listeners/localhost.key"
+		certPath = "/home/wso2/security/listeners/localhost.crt"
+	} else {
+		keyPath = "/home/wso2/security/listeners/gw.key"
+		certPath = "/home/wso2/security/listeners/gw.crt"
 	}
-	return &secret, nil
+	return keyPath, certPath
 }
+
+// TODO: (VirajSalaka) Still the following method is not utilized as Sds is not implement. Keeping the Implementation for future reference
+// func generateDefaultSdsSecretFromConfigfile(privateKeyPath string, pulicKeyPath string) (*tlsv3.Secret, error) {
+// 	var secret tlsv3.Secret
+// 	tlsCert := generateTLSCert(privateKeyPath, pulicKeyPath)
+// 	secret = tlsv3.Secret{
+// 		Name: defaultListenerSecretConfigName,
+// 		Type: &tlsv3.Secret_TlsCertificate{
+// 			TlsCertificate: tlsCert,
+// 		},
+// 	}
+// 	return &secret, nil
+// }
 
 // generateTLSCert generates the TLS Certiificate with given private key filepath and the corresponding public Key filepath.
 // The files should be mounted to the router container unless the default cert is used.

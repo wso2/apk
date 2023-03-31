@@ -43,11 +43,8 @@ const (
 )
 
 const (
-	defaultRdsConfigName            string = "default"
-	defaultHTTPListenerName         string = "HTTPListener"
-	defaultHTTPSListenerName        string = "HTTPSListener"
-	defaultAccessLogPath            string = "/tmp/envoy.access.log"
-	defaultListenerSecretConfigName string = "DefaultListenerSecret"
+	defaultHTTPSListenerName string = "httpslistener"
+	defaultAccessLogPath     string = "/tmp/envoy.access.log"
 )
 
 // cluster prefixes
