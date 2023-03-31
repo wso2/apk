@@ -196,8 +196,6 @@ spec:
               value: "/home/wso2/security/truststore/enforcer.crt"
             - name: CONCURRENCY
               value: "2"
-            - name: TRAILING_ARGS
-              value: "--component-log-level http:debug,http2:debug,conn_handler:debug,ext_authz:trace"
           volumeMounts:
             - name: router-keystore-secret-volume
               mountPath: /home/wso2/security/keystore/router.key
