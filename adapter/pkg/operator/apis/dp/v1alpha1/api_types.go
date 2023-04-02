@@ -47,23 +47,23 @@ type APISpec struct {
 	// +optional
 	DefinitionFileRef string `json:"definitionFileRef"`
 
-	// ProdHTTPRouteRefs contains a list of references to HttpRoutes
+	// Production contains a list of references to HttpRoutes
 	// of type HttpRoute.
 	// xref: https://github.com/kubernetes-sigs/gateway-api/blob/main/apis/v1beta1/httproute_types.go
 	//
 	//
 	// +optional
 	// +nullable
-	ProdHTTPRouteRefs []string `json:"prodHTTPRouteRefs"`
+	Production []EnvConfig `json:"production"`
 
-	// SandHTTPRouteRef contains a list of references to HttpRoutes
+	// Sandbox contains a list of references to HttpRoutes
 	// of type HttpRoute.
 	// xref: https://github.com/kubernetes-sigs/gateway-api/blob/main/apis/v1beta1/httproute_types.go
 	//
 	//
 	// +optional
 	// +nullable
-	SandHTTPRouteRefs []string `json:"sandHTTPRouteRefs"`
+	Sandbox []EnvConfig `json:"sandbox"`
 
 	// APIType denotes the type of the API.
 	// Possible values could be REST, GraphQL, Async
@@ -85,6 +85,12 @@ type APISpec struct {
 	//
 	// +optional
 	SystemAPI bool `json:"systemAPI"`
+}
+
+// EnvConfig contains the environment specific configuration
+type EnvConfig struct {
+	// Env denotes the environment of the API.
+	HTTPRouteRefs []string `json:"httpRouteRefs"`
 }
 
 // APIStatus defines the observed state of API

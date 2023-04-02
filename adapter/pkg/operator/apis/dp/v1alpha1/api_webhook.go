@@ -110,18 +110,30 @@ func (r *API) validateAPI() error {
 		r.Spec.APIType = "REST"
 	}
 
-	if !(r.Spec.ProdHTTPRouteRefs != nil && len(r.Spec.ProdHTTPRouteRefs) > 0) && !(r.Spec.SandHTTPRouteRefs != nil && len(r.Spec.SandHTTPRouteRefs) > 0) {
+	if !(r.Spec.Production != nil && r.Spec.Production[0].HTTPRouteRefs != nil && len(r.Spec.Production[0].HTTPRouteRefs) > 0) && !(r.Spec.Sandbox != nil && r.Spec.Sandbox[0].HTTPRouteRefs != nil && len(r.Spec.Sandbox[0].HTTPRouteRefs) > 0) {
 		allErrs = append(allErrs, field.Required(field.NewPath("spec"),
 			"both API production and sandbox endpoint references cannot be empty"))
 	}
 
-	if isEmptyStringsInArray(r.Spec.ProdHTTPRouteRefs) {
-		allErrs = append(allErrs, field.Required(field.NewPath("spec").Child("prodHTTPRouteRef"),
+	var prodHTTPRoute1, sandHTTPRoute1 []string
+	if r.Spec.Production != nil {
+		prodHTTPRoute1 = r.Spec.Production[0].HTTPRouteRefs
+	} else {
+		prodHTTPRoute1 = []string{}
+	}
+	if r.Spec.Sandbox != nil {
+		sandHTTPRoute1 = r.Spec.Sandbox[0].HTTPRouteRefs
+	} else {
+		sandHTTPRoute1 = []string{}
+	}
+
+	if isEmptyStringsInArray(prodHTTPRoute1) {
+		allErrs = append(allErrs, field.Required(field.NewPath("spec").Child("production").Child("httpRouteRefs"),
 			"API production endpoint reference cannot be empty"))
 	}
 
-	if isEmptyStringsInArray(r.Spec.SandHTTPRouteRefs) {
-		allErrs = append(allErrs, field.Required(field.NewPath("spec").Child("sandHTTPRouteRef"),
+	if isEmptyStringsInArray(sandHTTPRoute1) {
+		allErrs = append(allErrs, field.Required(field.NewPath("spec").Child("sandbox").Child("httpRouteRefs"),
 			"API sandbox endpoint reference cannot be empty"))
 	}
 

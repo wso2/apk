@@ -205,9 +205,21 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		return ctrl.Result{}, nil
 	}
 
+	var prodHTTPRoute1, sandHTTPRoute1 []string
+	if apiDef.Spec.Production != nil {
+		prodHTTPRoute1 = apiDef.Spec.Production[0].HTTPRouteRefs
+	} else {
+		prodHTTPRoute1 = []string{}
+	}
+	if apiDef.Spec.Sandbox != nil {
+		sandHTTPRoute1 = apiDef.Spec.Sandbox[0].HTTPRouteRefs
+	} else {
+		sandHTTPRoute1 = []string{}
+	}
+
 	// Retrieve HTTPRoutes
-	prodHTTPRoute, sandHTTPRoute, err := apiReconciler.resolveAPIRefs(ctx, apiDef.Spec.ProdHTTPRouteRefs,
-		apiDef.Spec.SandHTTPRouteRefs, req.NamespacedName.String(), req.Namespace)
+	prodHTTPRoute, sandHTTPRoute, err := apiReconciler.resolveAPIRefs(ctx, prodHTTPRoute1,
+		sandHTTPRoute1, req.NamespacedName.String(), req.Namespace)
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2620, req.NamespacedName.String(), err))
 		return ctrl.Result{}, err
@@ -900,22 +912,26 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 		func(rawObj k8client.Object) []string {
 			api := rawObj.(*dpv1alpha1.API)
 			var httpRoutes []string
-			for _, ref := range api.Spec.ProdHTTPRouteRefs {
-				if ref != "" {
-					httpRoutes = append(httpRoutes,
-						types.NamespacedName{
-							Namespace: api.Namespace,
-							Name:      ref,
-						}.String())
+			if api.Spec.Production != nil {
+				for _, ref := range api.Spec.Production[0].HTTPRouteRefs {
+					if ref != "" {
+						httpRoutes = append(httpRoutes,
+							types.NamespacedName{
+								Namespace: api.Namespace,
+								Name:      ref,
+							}.String())
+					}
 				}
 			}
-			for _, ref := range api.Spec.SandHTTPRouteRefs {
-				if ref != "" {
-					httpRoutes = append(httpRoutes,
-						types.NamespacedName{
-							Namespace: api.Namespace,
-							Name:      ref,
-						}.String())
+			if api.Spec.Sandbox != nil {
+				for _, ref := range api.Spec.Sandbox[0].HTTPRouteRefs {
+					if ref != "" {
+						httpRoutes = append(httpRoutes,
+							types.NamespacedName{
+								Namespace: api.Namespace,
+								Name:      ref,
+							}.String())
+					}
 				}
 			}
 			return httpRoutes
