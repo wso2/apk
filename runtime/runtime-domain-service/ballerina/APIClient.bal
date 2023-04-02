@@ -2609,7 +2609,7 @@ public class APIClient {
                     apiArtifact.productionRoute.push(self.sanitizeHttpRoute(httpRoute));
                 }
             }
-            model:EnvConfig[]? sandHTTPRouteRefs = k8sapi.spec.production;
+            model:EnvConfig[]? sandHTTPRouteRefs = k8sapi.spec.sandbox;
             json[]? httpSandRouteRefs = ();
             if(sandHTTPRouteRefs is model:EnvConfig[]) {
                 httpSandRouteRefs = sandHTTPRouteRefs[0].httpRouteRefs;
