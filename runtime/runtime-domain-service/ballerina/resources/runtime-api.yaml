@@ -1878,6 +1878,9 @@ components:
         namespace:
           type: string
           example: apk-platform
+        endpoint_security:
+          type: object
+          properties: {}
     APIDefinitionValidationResponse_info:
       type: object
       description: |
