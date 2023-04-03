@@ -23,9 +23,11 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
@@ -63,19 +65,16 @@ var _ webhook.Validator = &API{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *API) ValidateCreate() error {
-	loggers.LoggerAPKOperator.Infof("Validate API create: %s", r.Name)
 	return r.validateAPI()
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *API) ValidateUpdate(old runtime.Object) error {
-	loggers.LoggerAPKOperator.Infof("Validate API update: %s", r.Name)
 	return r.validateAPI()
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
 func (r *API) ValidateDelete() error {
-	loggers.LoggerAPKOperator.Infof("Validate API delete: %s", r.Name)
 
 	// TODO(user): fill in your validation logic upon object deletion.
 	return nil
@@ -145,13 +144,11 @@ func isEmptyStringsInArray(strings []string) bool {
 
 func (r *API) validateAPIContextExists() *field.Error {
 	ctx := context.Background()
+	conf := config.ReadConfigs()
 	apiList := &APIList{}
-	if err := c.List(ctx, apiList); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-			Message:   "unable to list APIs for API context validation",
-			Severity:  logging.CRITICAL,
-			ErrorCode: 2900,
-		})
+	listOptions := RetrieveNamespaceListOptions(conf.Adapter.Operator.Namespaces)
+	if err := c.List(ctx, apiList, &listOptions); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2605, err.Error()))
 		return field.InternalError(field.NewPath("spec").Child("context"),
 			errors.New("unable to list APIs for API context validation"))
 	}
@@ -168,6 +165,16 @@ func (r *API) validateAPIContextExists() *field.Error {
 	return nil
 }
 
+// RetrieveNamespaceListOptions retrieve namespace list options for the given namespaces
+func RetrieveNamespaceListOptions(namespaces []string) client.ListOptions {
+	var listOptions client.ListOptions
+	if namespaces == nil {
+		listOptions = client.ListOptions{}
+	} else {
+		listOptions = client.ListOptions{FieldSelector: fields.SelectorFromSet(fields.Set{"metadata.namespace": strings.Join(namespaces, ",")})}
+	}
+	return listOptions
+}
 func validateAPIContextFormat(context string, apiVersion string) string {
 	if len(context) > 232 {
 		return "API context character length should not exceed 232."

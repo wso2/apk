@@ -28,9 +28,11 @@ import (
 	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
 	"github.com/wso2/apk/adapter/config"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
+	"github.com/wso2/apk/adapter/internal/logging"
 	envoy "github.com/wso2/apk/adapter/internal/oasparser/envoyconf"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/api"
+	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
 // GetRoutesClustersEndpoints generates the routes, clusters and endpoints (envoy)
@@ -54,13 +56,23 @@ func GetGlobalClusters() ([]*clusterv3.Cluster, []*corev3.Address) {
 	)
 	conf := config.ReadConfigs()
 
+	if conf.Envoy.RateLimit.Enabled {
+		rlCluster, rlEP, errRL := envoy.CreateRateLimitCluster()
+		if errRL == nil {
+			clusters = append(clusters, rlCluster)
+			endpoints = append(endpoints, rlEP...)
+		} else {
+			logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2248, errRL))
+		}
+	}
+
 	if conf.Tracing.Enabled && conf.Tracing.Type != envoy.TracerTypeAzure {
 		logger.LoggerOasparser.Debugln("Creating global cluster - Tracing")
 		if c, e, err := envoy.CreateTracingCluster(conf); err == nil {
 			clusters = append(clusters, c)
 			endpoints = append(endpoints, e...)
 		} else {
-			logger.LoggerOasparser.Error("Failed to initialize tracer's cluster. Router tracing will be disabled. ", err)
+			logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2249, err.Error()))
 			conf.Tracing.Enabled = false
 		}
 	}
@@ -68,18 +80,27 @@ func GetGlobalClusters() ([]*clusterv3.Cluster, []*corev3.Address) {
 	return clusters, endpoints
 }
 
-// GetProductionListenerAndRouteConfig generates the listener and routesconfiguration configurations.
+// GetProductionListener generates the listener configurations.
 //
 // The VirtualHost is named as "default".
 // The provided set of envoy routes will be assigned under the virtual host
 //
 // The RouteConfiguration is named as "default"
-func GetProductionListenerAndRouteConfig(vhostToRouteArrayMap map[string][]*routev3.Route) ([]*listenerv3.Listener, *routev3.RouteConfiguration) {
-	listeners := envoy.CreateListenersWithRds()
-	vHosts := envoy.CreateVirtualHosts(vhostToRouteArrayMap)
-	routeConfig := envoy.CreateRoutesConfigForRds(vHosts)
+func GetProductionListener(gateway *gwapiv1b1.Gateway) *listenerv3.Listener {
+	listeners := envoy.CreateListenerByGateway(gateway)
+	return listeners
+}
 
-	return listeners, routeConfig
+// GetRouteConfigs generates routesconfiguration configurations.
+//
+// The VirtualHost is named as "default".
+// The provided set of envoy routes will be assigned under the virtual host
+//
+// The RouteConfiguration is named as "default"
+func GetRouteConfigs(vhostToRouteArrayMap map[string][]*routev3.Route, httpListener string) *routev3.RouteConfiguration {
+	vHosts := envoy.CreateVirtualHosts(vhostToRouteArrayMap)
+	routeConfig := envoy.CreateRoutesConfigForRds(vHosts, httpListener)
+	return routeConfig
 }
 
 // GetCacheResources converts the envoy endpoints, clusters, routes, and listener to
@@ -87,13 +108,11 @@ func GetProductionListenerAndRouteConfig(vhostToRouteArrayMap map[string][]*rout
 //
 // The returned resources are listeners, clusters, routeConfigurations, endpoints
 func GetCacheResources(endpoints []*corev3.Address, clusters []*clusterv3.Cluster,
-	listeners []*listenerv3.Listener, routeConfig *routev3.RouteConfiguration) (
+	listeners *listenerv3.Listener, routeConfig *routev3.RouteConfiguration) (
 	listenerRes []types.Resource, clusterRes []types.Resource, routeConfigRes []types.Resource,
 	endpointRes []types.Resource) {
 
-	listenerRes = []types.Resource{}
 	clusterRes = []types.Resource{}
-	routeConfigRes = []types.Resource{routeConfig}
 	endpointRes = []types.Resource{}
 	for _, cluster := range clusters {
 		clusterRes = append(clusterRes, cluster)
@@ -101,9 +120,8 @@ func GetCacheResources(endpoints []*corev3.Address, clusters []*clusterv3.Cluste
 	for _, endpoint := range endpoints {
 		endpointRes = append(endpointRes, endpoint)
 	}
-	for _, listener := range listeners {
-		listenerRes = append(listenerRes, listener)
-	}
+	listenerRes = []types.Resource{listeners}
+	routeConfigRes = []types.Resource{routeConfig}
 	return listenerRes, clusterRes, routeConfigRes, endpointRes
 }
 
@@ -161,10 +179,11 @@ func GetEnforcerAPI(mgwSwagger model.MgwSwagger, vhost string) *api.Api {
 		if res.GetEndpoints() != nil {
 			resource.Endpoints = generateRPCEndpointCluster(res.GetEndpoints())
 		}
+		if res.GetEndpointSecurity() != nil {
+			resource.EndpointSecurity = generateRPCEndpointSecurity(res.GetEndpointSecurity())
+		}
 		resources = append(resources, resource)
 	}
-
-	endpointSecurityDetails := &api.EndpointSecurity{}
 
 	for _, cert := range mgwSwagger.GetClientCerts() {
 		certificate := &api.Certificate{
@@ -186,7 +205,6 @@ func GetEnforcerAPI(mgwSwagger model.MgwSwagger, vhost string) *api.Api {
 		Tier:                mgwSwagger.GetXWso2ThrottlingTier(),
 		SecurityScheme:      securitySchemes,
 		Security:            securityList,
-		EndpointSecurity:    endpointSecurityDetails,
 		AuthorizationHeader: mgwSwagger.GetXWSO2AuthHeader(),
 		DisableSecurity:     mgwSwagger.GetDisableSecurity(),
 		OrganizationId:      mgwSwagger.OrganizationID,
@@ -310,4 +328,21 @@ func generateRPCEndpointCluster(inputEndpointCluster *model.EndpointCluster) *ap
 		}
 	}
 	return endpoints
+}
+
+func generateRPCEndpointSecurity(inputEndpointSecurity []*model.EndpointSecurity) []*api.SecurityInfo {
+	if inputEndpointSecurity == nil {
+		return nil
+	}
+	var securityConfig []*api.SecurityInfo
+	for _, security := range inputEndpointSecurity {
+		securityConfig = append(securityConfig, &api.SecurityInfo{
+			SecurityType:     security.Type,
+			Username:         security.Username,
+			Password:         security.Password,
+			Enabled:          security.Enabled,
+			CustomParameters: security.CustomParameters,
+		})
+	}
+	return securityConfig
 }

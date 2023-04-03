@@ -25,16 +25,27 @@ import wso2/apk_common_lib as commons;
 configurable DatasourceConfiguration datasourceConfiguration = ?;
 final postgresql:Client|sql:Error dbClient;
 configurable ThrottlingConfiguration throttleConfig = ?;
-
-configurable int ADMIN_PORT = 9443;
-
+configurable KeyStores keyStores = {
+    tls: {certFilePath: "/home/wso2apk/admin/security/admin.pem", keyFilePath: "/home/wso2apk/admin/security/admin.key"}
+};
 configurable commons:IDPConfiguration idpConfiguration = {
-        publicKey:{path: "/home/wso2apk/admin/security/mg.pem"}
-    };
-commons:DBBasedOrgResolver organizationResolver = new(datasourceConfiguration);
+    publicKey: {certFilePath: "/home/wso2apk/admin/security/mg.pem"}
+};
+commons:DBBasedOrgResolver organizationResolver = new (datasourceConfiguration);
 commons:JWTValidationInterceptor jwtValidationInterceptor = new (idpConfiguration, organizationResolver);
 commons:RequestErrorInterceptor requestErrorInterceptor = new;
-listener http:Listener ep0 = new (ADMIN_PORT, {interceptors: [jwtValidationInterceptor,requestErrorInterceptor]});
+listener http:Listener ep0 = new (9443, secureSocket = {
+    'key: {
+        certFile: <string>keyStores.tls.certFilePath,
+        keyFile: <string>keyStores.tls.keyFilePath
+    }
+}, interceptors = [jwtValidationInterceptor, requestErrorInterceptor]);
+listener http:Listener internalAdminEp = new (9444, secureSocket = {
+    'key: {
+        certFile: <string>keyStores.tls.certFilePath,
+        keyFile: <string>keyStores.tls.keyFilePath
+    }
+}, interceptors = [requestErrorInterceptor]);
 
 function init() {
     log:printInfo("Starting APK Admin Domain Service...");
@@ -42,21 +53,20 @@ function init() {
         throttlingConfiguration: throttleConfig,
         datasourceConfiguration: datasourceConfiguration
     };
-    dbClient = 
+    dbClient =
         new (host = datasourceConfiguration.host,
-            username = datasourceConfiguration.username, 
-            password = datasourceConfiguration.password, 
-            database = datasourceConfiguration.databaseName, 
-            port = datasourceConfiguration.port,
-            connectionPool = {maxOpenConnections: datasourceConfiguration.maxPoolSize}
+    username = datasourceConfiguration.username,
+    password = datasourceConfiguration.password,
+    database = datasourceConfiguration.databaseName,
+    port = datasourceConfiguration.port,
+        connectionPool = {maxOpenConnections: datasourceConfiguration.maxPoolSize}
             );
     if dbClient is error {
         return log:printError("Error while connecting to database");
     }
 }
 
-public isolated function getConnection() returns postgresql:Client | error {
-    return dbClient;  
- }
-
+public isolated function getConnection() returns postgresql:Client|error {
+    return dbClient;
+}
 

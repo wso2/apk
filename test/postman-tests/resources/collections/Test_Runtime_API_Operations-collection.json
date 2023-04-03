@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "f7d64fd3-9903-4b97-aeb5-350299bfbf35",
+		"_postman_id": "fffe8f9e-a3f9-499e-a9bb-2613928effb8",
 		"name": "Test Runtime API Operations",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -39,7 +39,7 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "idp.am.wso2.com",
+						"value": "prod.idp.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -111,7 +111,7 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -158,6 +158,29 @@
 							"    pm.expect(responseJson.context).equals( pm.collectionVariables.get('testAPIContext'));",
 							"    pm.expect(responseJson.version).equals(\"1.0.0\");",
 							"    pm.expect(responseJson.type).equals(\"REST\");",
+							"    _.each(responseJson.operations, (operations) => {",
+							"        if(operations.verb === \"GET\") {",
+							"            //verifying operation policy content",
+							"            _.each(operations.operationPolicies, (operationPolicies) => {",
+							"                _.each(operationPolicies.request, (requestPolicies) => {",
+							"                    pm.expect(requestPolicies.policyName).equals(\"addHeader\");",
+							"                    _.each(requestPolicies.parameters, (parameters) => {",
+							"                        pm.expect(parameters.headerName).equals(\"sampleadd\");",
+							"                        pm.expect(parameters.headerValue).equals(\"samplevalue\");",
+							"                    })",
+							"                })",
+							"                _.each(operationPolicies.response, (responsePolicies) => {",
+							"                    pm.expect(responsePolicies.policyName).equals(\"removeHeader\");",
+							"                    _.each(requestPolicies.parameters, (parameters) => {",
+							"                        pm.expect(parameters.headerName).equals(\"access-control-allow-credentials\");",
+							"                    })",
+							"                })",
+							"            })",
+							"            //verifying rate limit content",
+							"            pm.expect(operations.operationRateLimit.requestsPerUnit).equals(5);",
+							"            pm.expect(operations.operationRateLimit.unit).equals(\"Minute\");",
+							"        }",
+							"    })",
 							"    pm.collectionVariables.set(\"APIUUID\",responseJson.id)",
 							"});"
 						],
@@ -190,13 +213,18 @@
 					},
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
+						"type": "default"
+					},
+					{
+						"key": "x-jwt-assertion",
+						"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IlpUYzJOV1UyTXprM01XRXhNRE0zWVRjeE1HSTFNVGcxWlRCaVl6YzJNakpoWm1Sak1XWTFaQT09In0.eyJzdWIiOiI0NWYxYzVjOC1hOTJlLTExZWQtYWZhMS0wMjQyYWMxMjAwMDIiLCJjbGllbnRJZCI6IjQ1ZjFjNWM4LWE5MmUtMTFlZC1hZmExLTAyNDJhYzEyMDAwMiIsImh0dHA6XC9cL3dzbzIub3JnXC9jbGFpbXNcL2FwcGxpY2F0aW9udGllciI6IlVubGltaXRlZCIsImh0dHA6XC9cL3dzbzIub3JnXC9jbGFpbXNcL3ZlcnNpb24iOiIxLjAuMCIsImh0dHA6XC9cL3dzbzIub3JnXC9jbGFpbXNcL2tleXR5cGUiOiJQUk9EVUNUSU9OIiwiaXNzIjoid3NvMi5vcmdcL3Byb2R1Y3RzXC9hbSIsImh0dHA6XC9cL3dzbzIub3JnXC9jbGFpbXNcL2FwcGxpY2F0aW9ubmFtZSI6ImFub246IiwiaHR0cDpcL1wvd3NvMi5vcmdcL2NsYWltc1wvZW5kdXNlclRlbmFudElkIjoiMCIsImh0dHA6XC9cL3dzbzIub3JnXC9jbGFpbXNcL2FwcGxpY2F0aW9uVVVJZCI6IjZiMGIxOWZmLWEyODQtMzViYS1iNzYzLWRkMzMwY2VjYWRmZiIsInNjb3BlIjoiZGVmYXVsdCIsImV4cCI6MTY4MDA3Nzk2MSwiaHR0cDpcL1wvd3NvMi5vcmdcL2NsYWltc1wvYXBwbGljYXRpb25pZCI6IjZiMGIxOWZmLWEyODQtMzViYS1iNzYzLWRkMzMwY2VjYWRmZiIsImh0dHA6XC9cL3dzbzIub3JnXC9jbGFpbXNcL3VzZXJ0eXBlIjoiQXBwbGljYXRpb25fVXNlciIsImlhdCI6MTY4MDA3NDM2MSwianRpIjoiZWI5YzRiYmQtM2JiZi00ZmI5LWIzYWYtMzcxNzE1YjM0MTcwIiwiaHR0cDpcL1wvd3NvMi5vcmdcL2NsYWltc1wvYXBpY29udGV4dCI6IlwvYXBpXC9hbVwvcnVudGltZVwvMS4wLjAifQ.o-C4cAZLCiYAI0qTqVmYE-DzRPujo3R3-HSgHRqww4a3MGH8XsbI247z5y2SRlFeLHhRVLiMcYpHdKyAeIW89sJJNlCIAwy3sT86QLUFw1ZiimPJwXnEgbneyvGN2hVBlR9btTy-3he978SkjmuSPWItI1UJKcGBvMs_vo4Rmr5XMxB5mVlVrfo0iNTixWUWI3tLxH0bWVFB_WD3zH3ETnu1QpCtciqKIFNWnW0zOrCKbO3gUJAmM-cIJMGJ_aNlxVGBvfD_u20ldEkZWox-k0mispy5SXw4FPlBuQKGvnh-ccyunI4rL-O_FT_7I5J-A9nax-9VJnimQijZrpvaXQ",
 						"type": "default"
 					}
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"context\": \"{{testAPIContext}}\" ,\n    \"name\": \"{{testAPIName}}\" ,\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\"\n}"
+					"raw": "{\n    \"context\": \"{{testAPIContext}}\",\n    \"name\": \"{{testAPIName}}\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/*\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"operationPolicies\": {\n                \"request\": [\n                    {\n                        \"policyName\": \"addHeader\",\n                        \"parameters\": {\n                            \"headerName\": \"sampleadd\",\n                            \"headerValue\": \"samplevalue\"\n                        }\n                    }\n                ],\n                \"response\": [\n                    {\n                        \"policyName\": \"removeHeader\",\n                        \"parameters\": {\n                            \"headerName\": \"access-control-allow-credentials\"\n                        }\n                    }\n                ]\n            },\n            \"operationRateLimit\": {\n                \"requestsPerUnit\": 5,\n                \"unit\": \"Minute\"\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"POST\",\n            \"authTypeEnabled\": true\n        }\n    ]\n}"
 				},
 				"url": {
 					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/import-service?serviceKey={{serviceUUID}}",
@@ -275,7 +303,7 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -322,7 +350,7 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -390,7 +418,7 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					},
 					{
@@ -401,7 +429,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"id\": \"{{APIUUID}}\",\n    \"name\": \"{{testAPIName}}\",\n    \"context\": \"/testAPI/1.0.0\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"PUT\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"POST\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"DELETE\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"PATCH\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        }\n    ],\n    \"serviceInfo\": {\n        \"name\": \"backend\",\n        \"namespace\": \"default\"\n    }\n}",
+					"raw": "{\n    \"id\": \"{{APIUUID}}\",\n    \"name\": \"{{testAPIName}}\",\n    \"context\": \"/testAPIV1/1.0.0\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"PUT\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"POST\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"DELETE\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"PATCH\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        }\n    ],\n    \"serviceInfo\": {\n        \"name\": \"backend\",\n        \"namespace\": \"default\"\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -470,7 +498,7 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -532,7 +560,7 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -594,7 +622,7 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -673,7 +701,7 @@
 					},
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -758,7 +786,7 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -833,7 +861,7 @@
 					},
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -953,7 +981,7 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -1118,7 +1146,7 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -1143,6 +1171,180 @@
 							"key": "newVersion",
 							"value": "2.0.0"
 						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Modify resource NEW Version API",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"// initialize a variable to keep track of whether the target exists",
+							"let targetExists = false;",
+							"",
+							"// loop through the operations array and check if the target exists",
+							"for (let i = 0; i < pm.response.json().operations.length; i++) {",
+							"    if (pm.response.json().operations[i].target === \"/response-headers\") {",
+							"        targetExists = true;",
+							"        break;",
+							"    }",
+							"}",
+							"",
+							"if (targetExists) {",
+							"    pm.test(\"Target exists\", function() {",
+							"        pm.expect(targetExists).to.be.true;",
+							"    });",
+							"} else {",
+							"    pm.test(\"Target does not exist\", function() {",
+							"        pm.expect(targetExists).to.be.true;",
+							"    });",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Host",
+						"value": "prod.api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": \"e5bd2c03-3d80-48eb-acd7-c6ccad20793f\",\n    \"name\": \"testAPIV2\",\n    \"context\": \"/testAPIV2/2.0.0\",\n    \"version\": \"2.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/response-headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"PUT\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"POST\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"DELETE\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        },\n        {\n            \"target\": \"/*\",\n            \"verb\": \"PATCH\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        }\n    ],\n        \"serviceInfo\": {\n            \"name\": \"backend\",\n            \"namespace\": \"test-apk\"\n    }\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIV3UUID}}",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIV3UUID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "RuntimeAPI GET API by ID Default Version",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							" //parse the response JSON and test three properties",
+							"const responseJson = pm.response.json();",
+							"",
+							"// initialize a variable to keep track of whether the target exists",
+							"let targetNewVersionModifiedAffected = false;",
+							"",
+							"// loop through the operations array and check if the target exists",
+							"for (let i = 0; i < responseJson.operations.length; i++) {",
+							"    if (responseJson.operations[i].target === \"/response-headers\") {",
+							"        targetExists = true;",
+							"        break;",
+							"    }",
+							"",
+							"}",
+							"",
+							"pm.test(\"Verify default API body after New Version API Modification\", () => {",
+							"    pm.expect(responseJson.name).equals(pm.collectionVariables.get('testAPIV2Name'));",
+							"    pm.expect(responseJson.version).equals(\"1.0.0\");",
+							"});",
+							"",
+							"if (!targetNewVersionModifiedAffected) {",
+							"    pm.test(\"New version API Change is not affected \", function() {",
+							"        pm.expect(targetNewVersionModifiedAffected).to.be.false;",
+							"    });",
+							"} else {",
+							"    pm.test(\"New version API Change is affected to the default veresion\", function() {",
+							"        pm.expect(targetNewVersionModifiedAffected).to.be.false;",
+							"    });",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Host",
+						"value": "prod.api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIV2UUID}}",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIV2UUID}}"
 					]
 				}
 			},
@@ -1200,7 +1402,7 @@
 					},
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -1281,7 +1483,7 @@
 					},
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -1335,14 +1537,14 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/testAPIV2/2.0.0/headers",
+					"raw": "{{gatewayBaseURl}}/testAPIV2/2.0.0/response-headers",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"testAPIV2",
 						"2.0.0",
-						"headers"
+						"response-headers"
 					]
 				}
 			},
@@ -1390,7 +1592,7 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -1487,14 +1689,14 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/testAPIV2/2.0.0/headers",
+					"raw": "{{gatewayBaseURl}}/testAPIV2/2.0.0/response-headers",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"testAPIV2",
 						"2.0.0",
-						"headers"
+						"response-headers"
 					]
 				}
 			},
@@ -1542,7 +1744,7 @@
 				"header": [
 					{
 						"key": "Host",
-						"value": "api.am.wso2.com",
+						"value": "prod.api.am.wso2.com",
 						"type": "default"
 					}
 				],
@@ -1595,14 +1797,126 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/testAPIV2/2.0.0/headers",
+					"raw": "{{gatewayBaseURl}}/testAPIV2/2.0.0/response-headers",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
 						"testAPIV2",
 						"2.0.0",
-						"headers"
+						"response-headers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "RuntimeAPI List Mediation Policies",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Mediation Policies available in Runtime\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.list.length).to.be.above(1);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Host",
+						"value": "prod.api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/policies",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"policies"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "RuntimeAPI GET Mediation Policy by ID",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Host",
+						"value": "prod.api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/policies/{{POLICYID}}",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"policies",
+						"{{POLICYID}}"
 					]
 				}
 			},
@@ -1640,12 +1954,12 @@
 		},
 		{
 			"key": "testAPIName",
-			"value": "testAPI",
+			"value": "testAPIV1",
 			"type": "string"
 		},
 		{
 			"key": "testAPIContext",
-			"value": "/testAPI/1.0.0",
+			"value": "/testAPIV1/1.0.0",
 			"type": "string"
 		},
 		{
@@ -1687,6 +2001,10 @@
 			"key": "testServiceNamespace",
 			"value": "test-apk",
 			"type": "default"
+		},
+		{
+			"key": "POLICYID",
+			"value": "1"
 		}
 	]
 }

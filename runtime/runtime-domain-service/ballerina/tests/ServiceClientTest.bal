@@ -27,7 +27,7 @@ public function getServicesDataProvider() returns map<[string|(), string, string
                         "portmapping": [
                             {
                                 "name": "http",
-                                "protocol": "TCP",
+                                "protocol": "http",
                                 "targetport": 80,
                                 "port": 80
                             }
@@ -42,7 +42,7 @@ public function getServicesDataProvider() returns map<[string|(), string, string
                         "portmapping": [
                             {
                                 "name": "http",
-                                "protocol": "TCP",
+                                "protocol": "http",
                                 "targetport": 80,
                                 "port": 80
                             }
@@ -57,7 +57,7 @@ public function getServicesDataProvider() returns map<[string|(), string, string
                         "portmapping": [
                             {
                                 "name": "http",
-                                "protocol": "TCP",
+                                "protocol": "http",
                                 "targetport": 80,
                                 "port": 80
                             }
@@ -72,7 +72,7 @@ public function getServicesDataProvider() returns map<[string|(), string, string
                         "portmapping": [
                             {
                                 "name": "http",
-                                "protocol": "TCP",
+                                "protocol": "http",
                                 "targetport": 80,
                                 "port": 80
                             }
@@ -87,7 +87,7 @@ public function getServicesDataProvider() returns map<[string|(), string, string
                         "portmapping": [
                             {
                                 "name": "http",
-                                "protocol": "TCP",
+                                "protocol": "http",
                                 "targetport": 80,
                                 "port": 80
                             }
@@ -102,7 +102,7 @@ public function getServicesDataProvider() returns map<[string|(), string, string
                         "portmapping": [
                             {
                                 "name": "http",
-                                "protocol": "TCP",
+                                "protocol": "http",
                                 "targetport": 80,
                                 "port": 80
                             }
@@ -133,7 +133,7 @@ public function getServicesDataProvider() returns map<[string|(), string, string
                         "portmapping": [
                             {
                                 "name": "http",
-                                "protocol": "TCP",
+                                "protocol": "http",
                                 "targetport": 80,
                                 "port": 80
                             }
@@ -148,7 +148,7 @@ public function getServicesDataProvider() returns map<[string|(), string, string
                         "portmapping": [
                             {
                                 "name": "http",
-                                "protocol": "TCP",
+                                "protocol": "http",
                                 "targetport": 80,
                                 "port": 80
                             }
@@ -163,7 +163,7 @@ public function getServicesDataProvider() returns map<[string|(), string, string
                         "portmapping": [
                             {
                                 "name": "http",
-                                "protocol": "TCP",
+                                "protocol": "http",
                                 "targetport": 80,
                                 "port": 80
                             }
@@ -178,7 +178,7 @@ public function getServicesDataProvider() returns map<[string|(), string, string
                         "portmapping": [
                             {
                                 "name": "http",
-                                "protocol": "TCP",
+                                "protocol": "http",
                                 "targetport": 80,
                                 "port": 80
                             }
@@ -193,7 +193,7 @@ public function getServicesDataProvider() returns map<[string|(), string, string
                         "portmapping": [
                             {
                                 "name": "http",
-                                "protocol": "TCP",
+                                "protocol": "http",
                                 "targetport": 80,
                                 "port": 80
                             }
@@ -208,7 +208,7 @@ public function getServicesDataProvider() returns map<[string|(), string, string
                         "portmapping": [
                             {
                                 "name": "http",
-                                "protocol": "TCP",
+                                "protocol": "http",
                                 "targetport": 80,
                                 "port": 80
                             }
@@ -239,7 +239,7 @@ public function getServicesDataProvider() returns map<[string|(), string, string
                         "portmapping": [
                             {
                                 "name": "http",
-                                "protocol": "TCP",
+                                "protocol": "http",
                                 "targetport": 80,
                                 "port": 80
                             }
@@ -254,7 +254,7 @@ public function getServicesDataProvider() returns map<[string|(), string, string
                         "portmapping": [
                             {
                                 "name": "http",
-                                "protocol": "TCP",
+                                "protocol": "http",
                                 "targetport": 80,
                                 "port": 80
                             }
@@ -269,7 +269,7 @@ public function getServicesDataProvider() returns map<[string|(), string, string
                         "portmapping": [
                             {
                                 "name": "http",
-                                "protocol": "TCP",
+                                "protocol": "http",
                                 "targetport": 80,
                                 "port": 80
                             }
@@ -284,7 +284,7 @@ public function getServicesDataProvider() returns map<[string|(), string, string
                         "portmapping": [
                             {
                                 "name": "http",
-                                "protocol": "TCP",
+                                "protocol": "http",
                                 "targetport": 80,
                                 "port": 80
                             }
@@ -299,7 +299,7 @@ public function getServicesDataProvider() returns map<[string|(), string, string
                         "portmapping": [
                             {
                                 "name": "http",
-                                "protocol": "TCP",
+                                "protocol": "http",
                                 "targetport": 80,
                                 "port": 80
                             }
@@ -314,7 +314,7 @@ public function getServicesDataProvider() returns map<[string|(), string, string
                         "portmapping": [
                             {
                                 "name": "http",
-                                "protocol": "TCP",
+                                "protocol": "http",
                                 "targetport": 80,
                                 "port": 80
                             }
@@ -345,7 +345,7 @@ public function getServicesDataProvider() returns map<[string|(), string, string
                         "portmapping": [
                             {
                                 "name": "http",
-                                "protocol": "TCP",
+                                "protocol": "http",
                                 "targetport": 80,
                                 "port": 80
                             }
@@ -360,7 +360,7 @@ public function getServicesDataProvider() returns map<[string|(), string, string
                         "portmapping": [
                             {
                                 "name": "http",
-                                "protocol": "TCP",
+                                "protocol": "http",
                                 "targetport": 80,
                                 "port": 80
                             }
@@ -375,7 +375,7 @@ public function getServicesDataProvider() returns map<[string|(), string, string
                         "portmapping": [
                             {
                                 "name": "http",
-                                "protocol": "TCP",
+                                "protocol": "http",
                                 "targetport": 80,
                                 "port": 80
                             }
@@ -390,7 +390,7 @@ public function getServicesDataProvider() returns map<[string|(), string, string
                         "portmapping": [
                             {
                                 "name": "http",
-                                "protocol": "TCP",
+                                "protocol": "http",
                                 "targetport": 80,
                                 "port": 80
                             }
@@ -405,7 +405,7 @@ public function getServicesDataProvider() returns map<[string|(), string, string
                         "portmapping": [
                             {
                                 "name": "http",
-                                "protocol": "TCP",
+                                "protocol": "http",
                                 "targetport": 80,
                                 "port": 80
                             }
@@ -420,7 +420,7 @@ public function getServicesDataProvider() returns map<[string|(), string, string
                         "portmapping": [
                             {
                                 "name": "http",
-                                "protocol": "TCP",
+                                "protocol": "http",
                                 "targetport": 80,
                                 "port": 80
                             }
@@ -451,7 +451,7 @@ public function getServicesDataProvider() returns map<[string|(), string, string
                         "portmapping": [
                             {
                                 "name": "http",
-                                "protocol": "TCP",
+                                "protocol": "http",
                                 "targetport": 80,
                                 "port": 80
                             }
@@ -466,7 +466,7 @@ public function getServicesDataProvider() returns map<[string|(), string, string
                         "portmapping": [
                             {
                                 "name": "http",
-                                "protocol": "TCP",
+                                "protocol": "http",
                                 "targetport": 80,
                                 "port": 80
                             }
@@ -481,7 +481,7 @@ public function getServicesDataProvider() returns map<[string|(), string, string
                         "portmapping": [
                             {
                                 "name": "http",
-                                "protocol": "TCP",
+                                "protocol": "http",
                                 "targetport": 80,
                                 "port": 80
                             }
@@ -529,7 +529,7 @@ public function getServicesDataProvider() returns map<[string|(), string, string
                         "portmapping": [
                             {
                                 "name": "http",
-                                "protocol": "TCP",
+                                "protocol": "http",
                                 "targetport": 80,
                                 "port": 80
                             }
@@ -560,7 +560,7 @@ public function getServicesDataProvider() returns map<[string|(), string, string
                         "portmapping": [
                             {
                                 "name": "http",
-                                "protocol": "TCP",
+                                "protocol": "http",
                                 "targetport": 80,
                                 "port": 80
                             }
@@ -575,7 +575,7 @@ public function getServicesDataProvider() returns map<[string|(), string, string
                         "portmapping": [
                             {
                                 "name": "http",
-                                "protocol": "TCP",
+                                "protocol": "http",
                                 "targetport": 80,
                                 "port": 80
                             }
@@ -606,7 +606,7 @@ public function getServicesDataProvider() returns map<[string|(), string, string
                         "portmapping": [
                             {
                                 "name": "http",
-                                "protocol": "TCP",
+                                "protocol": "http",
                                 "targetport": 80,
                                 "port": 80
                             }
@@ -645,7 +645,7 @@ public function serviceByIdDataProvider() returns map<[string, anydata]> {
                 "portmapping": [
                     {
                         "name": "http",
-                        "protocol": "TCP",
+                        "protocol": "http",
                         "targetport": 80,
                         "port": 80
                     }

@@ -29,61 +29,55 @@ import (
 func TestTieBreaker(t *testing.T) {
 
 	type testItem struct {
-		objectList     []*dpv1alpha1.BackendPolicy
-		expectedObject *dpv1alpha1.BackendPolicy
+		objectList     []*dpv1alpha1.Backend
+		expectedObject *dpv1alpha1.Backend
 		message        string
 	}
 
 	newTime := time.Now()
 	newTimePlusOneMinute := newTime.Add(time.Minute * time.Duration(1))
 
-	policy1 := dpv1alpha1.BackendPolicy{
+	policy1 := dpv1alpha1.Backend{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace:         "default",
 			Name:              "policy-1",
 			CreationTimestamp: metav1.NewTime(newTime),
 		},
-		Spec: dpv1alpha1.BackendPolicySpec{
-			Default: &dpv1alpha1.BackendConfigs{
-				Protocol: dpv1alpha1.HTTPProtocol,
-			},
+		Spec: dpv1alpha1.BackendSpec{
+			Protocol: dpv1alpha1.HTTPProtocol,
 		},
 	}
 
-	policy2 := dpv1alpha1.BackendPolicy{
+	policy2 := dpv1alpha1.Backend{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace:         "default",
 			Name:              "policy-2",
 			CreationTimestamp: metav1.NewTime(newTimePlusOneMinute),
 		},
-		Spec: dpv1alpha1.BackendPolicySpec{
-			Default: &dpv1alpha1.BackendConfigs{
-				Protocol: dpv1alpha1.HTTPProtocol,
-			},
+		Spec: dpv1alpha1.BackendSpec{
+			Protocol: dpv1alpha1.HTTPProtocol,
 		},
 	}
 
-	policy3 := dpv1alpha1.BackendPolicy{
+	policy3 := dpv1alpha1.Backend{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace:         "default",
 			Name:              "policy-0",
 			CreationTimestamp: metav1.NewTime(newTime),
 		},
-		Spec: dpv1alpha1.BackendPolicySpec{
-			Default: &dpv1alpha1.BackendConfigs{
-				Protocol: dpv1alpha1.HTTPProtocol,
-			},
+		Spec: dpv1alpha1.BackendSpec{
+			Protocol: dpv1alpha1.HTTPProtocol,
 		},
 	}
 
 	tests := []testItem{
 		{
-			objectList:     []*dpv1alpha1.BackendPolicy{&policy1, &policy2},
+			objectList:     []*dpv1alpha1.Backend{&policy1, &policy2},
 			expectedObject: &policy1,
 			message:        "Tie breaking using creation timestamps are different is not working",
 		},
 		{
-			objectList:     []*dpv1alpha1.BackendPolicy{&policy1, &policy3},
+			objectList:     []*dpv1alpha1.Backend{&policy1, &policy3},
 			expectedObject: &policy3,
 			message:        "Tie breaking using creation timestamps are equal is not working",
 		},

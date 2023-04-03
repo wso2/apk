@@ -2,12 +2,14 @@ package backoffice
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
 
 	apiProtos "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/apkmgt"
+	"github.com/wso2/apk/adapter/pkg/utils/tlsutils"
 	"github.com/wso2/apk/management-server/internal/config"
 	"github.com/wso2/apk/management-server/internal/logger"
 )
@@ -32,18 +34,20 @@ type requestData struct {
 }
 
 func init() {
+	_, _, truststoreLocation := tlsutils.GetKeyLocations()
+	caCertPool := tlsutils.GetTrustedCertPool(truststoreLocation)
 	transport := &http.Transport{
 		MaxIdleConns:    2,
 		IdleConnTimeout: 30 * time.Second,
-		TLSClientConfig: nil,
+		TLSClientConfig: &tls.Config{RootCAs: caCertPool},
 	}
 	backOfficeClient = &http.Client{Transport: transport}
 }
 
 func getBackOfficeURL() string {
 	conf := config.ReadConfigs()
-	logger.LoggerMGTServer.Infof("backoffice service: http://%s:%d%s", conf.BackOffice.Host, conf.BackOffice.Port, conf.BackOffice.ServiceBasePath)
-	return fmt.Sprintf("http://%s:%d%s", conf.BackOffice.Host, conf.BackOffice.Port, conf.BackOffice.ServiceBasePath)
+	logger.LoggerMGTServer.Infof("backoffice service: https://%s:%d%s", conf.BackOffice.Host, conf.BackOffice.Port, conf.BackOffice.ServiceBasePath)
+	return fmt.Sprintf("https://%s:%d%s", conf.BackOffice.Host, conf.BackOffice.Port, conf.BackOffice.ServiceBasePath)
 }
 
 func composeRequestBody(api *apiProtos.API) requestData {
@@ -70,14 +74,26 @@ func CreateAPI(api *apiProtos.API) error {
 
 // UpdateAPI updates an API by invoking backoffice service
 func UpdateAPI(api *apiProtos.API) error {
-	putBody, _ := json.Marshal(composeRequestBody(api))
-	requestBody := bytes.NewBuffer(putBody)
-	putRequest, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/%s", getBackOfficeURL(), api.Uuid), requestBody)
-	_, err = backOfficeClient.Do(putRequest)
-	if err != nil {
-		return err
-	}
-	return nil
+    putBody, _ := json.Marshal(composeRequestBody(api))
+    requestBody := bytes.NewBuffer(putBody)
+    putRequest, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/%s", getBackOfficeURL(), api.Uuid), requestBody)
+    if err != nil {
+        return err
+    }
+    
+    // Perform the HTTP request and check the response status code
+    response, err := backOfficeClient.Do(putRequest)
+    if err != nil {
+        return err
+    }
+    defer response.Body.Close()
+    
+    if response.StatusCode == http.StatusNotFound {
+        // If the status code indicates an 404, call the create API to create the API in database.
+		// This is done to handle the case where the API is not in the database due to managemnt server failure.
+		CreateAPI(api);
+    }
+    return nil
 }
 
 // DeleteAPI deletes an API by invoking backoffice service

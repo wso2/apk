@@ -41,8 +41,14 @@ type Resource struct {
 	methods          []*Operation
 	iD               string
 	endpoints        *EndpointCluster
+	endpointSecurity []*EndpointSecurity
 	vendorExtensions map[string]interface{}
 	hasPolicies      bool
+}
+
+// GetEndpointSecurity returns the endpoint security object of a given resource.
+func (resource *Resource) GetEndpointSecurity() []*EndpointSecurity {
+	return resource.endpointSecurity
 }
 
 // GetEndpoints returns the endpoints object of a given resource.
@@ -105,8 +111,7 @@ func (resource *Resource) HasPolicies() bool {
 
 // CreateMinimalDummyResourceForTests create a resource object with minimal required set of values
 // which could be used for unit tests.
-func CreateMinimalDummyResourceForTests(path string, methods []*Operation, id string, urls,
-	sandboxUrls []Endpoint, hasPolicies bool) Resource {
+func CreateMinimalDummyResourceForTests(path string, methods []*Operation, id string, urls []Endpoint, hasPolicies bool) Resource {
 
 	endpints := generateEndpointCluster(urls, constants.LoadBalance)
 

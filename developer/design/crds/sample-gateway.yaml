@@ -1,0 +1,49 @@
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: Gateway
+metadata:
+  name: default
+  annotations:
+    cert-manager.io/issuer: selfsigned-issuer
+spec:
+  gatewayClassName: default
+  listeners:
+    - name: examplelistener
+      hostname: "*.example.com"
+      port: 9095
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            group: ""
+            name: example-com-cert
+    - name: apilistener
+      hostname: "*.api.am.wso2.com"
+      port: 9095
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            group: ""
+            name: api-example-com-cert
+    - name: idplistener
+      hostname: "*.idp.am.wso2.com"
+      port: 9095
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            group: ""
+            name: idp-example-com-cert
+    - name: gatewaylistener
+      hostname: "*.gw.wso2.com"
+      port: 9095
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            group: ""
+            name: gateway-com-cert

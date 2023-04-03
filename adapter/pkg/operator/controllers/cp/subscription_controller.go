@@ -53,21 +53,13 @@ func NewSubscriptionController(mgr manager.Manager) error {
 	}
 	c, err := controller.New(constants.SubscriptionController, mgr, controller.Options{Reconciler: r})
 	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("Error creating Subscription controller: %v", err.Error()),
-			Severity:  logging.BLOCKER,
-			ErrorCode: 2801,
-		})
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2608, err.Error()))
 		return err
 	}
 
 	if err := c.Watch(&source.Kind{Type: &cpv1alpha1.Subscription{}}, &handler.EnqueueRequestForObject{},
 		predicate.NewPredicateFuncs(utils.FilterByNamespaces([]string{utils.GetOperatorPodNamespace()}))); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("Error watching Subscription resources: %v", err.Error()),
-			Severity:  logging.BLOCKER,
-			ErrorCode: 2802,
-		})
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2609, err.Error()))
 		return err
 	}
 

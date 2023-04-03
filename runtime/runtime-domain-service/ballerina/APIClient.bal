@@ -33,12 +33,14 @@ import ballerina/uuid;
 import ballerina/file;
 import ballerina/io;
 import ballerina/crypto;
+import ballerina/time;
+import runtime_domain_service.java.io as javaio;
 import wso2/apk_common_lib as commons;
 
 public class APIClient {
 
     public isolated function getAPIDefinitionByID(string id, commons:Organization organization) returns http:Response|NotFoundError|PreconditionFailedError|InternalServerErrorError {
-        model:API|error api = getAPI(id, organization);
+        model:API? api = getAPI(id, organization);
         if api is model:API {
             json|error definition = self.getDefinition(api);
             if definition is json {
@@ -74,11 +76,26 @@ public class APIClient {
 
     }
     private isolated function getDefinitionFromConfigMap(model:ConfigMap configmap) returns json|error? {
-        map<string>? data = configmap.data;
-        if data is map<string> {
-            string[] keys = data.keys();
-            if keys.length() == 1 {
-                return check value:fromJsonString(data.get(keys[0]).toString());
+        map<string>? binaryData = configmap.binaryData;
+        string? content = ();
+        if binaryData is map<string> {
+            if binaryData.hasKey(CONFIGMAP_DEFINITION_KEY) {
+                content = binaryData.get(CONFIGMAP_DEFINITION_KEY);
+            } else {
+                string[] keys = binaryData.keys();
+                if keys.length() >= 1 {
+                    content = binaryData.get(keys[0]);
+                }
+            }
+            if content is string {
+                byte[] base64DecodedGzipContent = check runtimeUtil:EncoderUtil_decodeBase64(content.toBytes());
+                byte[]|javaio:IOException gzipUnCompressedContent = check runtimeUtil:GzipUtil_decompressGzipFile(base64DecodedGzipContent);
+                if gzipUnCompressedContent is byte[] {
+                    string definition = check string:fromBytes(gzipUnCompressedContent);
+                    return value:fromJsonString(definition);
+                } else {
+                    return gzipUnCompressedContent.cause();
+                }
             }
         }
         return;
@@ -120,7 +137,7 @@ public class APIClient {
         boolean APIIDAvailable = id.length() > 0 ? true : false;
         if (APIIDAvailable && string:length(id.toString()) > 0)
         {
-            model:API|error api = getAPI(id, organization);
+            model:API? api = getAPI(id, organization);
             if api is model:API {
                 http:Response|http:ClientError apiCRDeletionResponse = deleteAPICR(api.metadata.name, api.metadata.namespace);
                 if apiCRDeletionResponse is http:ClientError {
@@ -133,12 +150,12 @@ public class APIClient {
                         log:printError("Error while undeploying API definition ", apiDefinitionDeletionResponse);
                     }
                 }
-                _ = check self.deleteHttpRoutes(api);
-                _ = check self.deleteServiceMappings(api);
-                _ = check self.deleteAuthneticationCRs(api);
-                _ = check self.deleteScopeCrsForAPI(api);
-                _ = check self.deleteBackendPolicies(api);
-                _ = check self.deleteBackendServices(api);
+                _ = check self.deleteHttpRoutes(api, organization);
+                _ = check self.deleteServiceMappings(api, organization);
+                _ = check self.deleteAuthneticationCRs(api, organization);
+                _ = check self.deleteScopeCrsForAPI(api, organization);
+                _ = check self.deleteRateLimitPolicyCRs(api, organization);
+                _ = check self.deleteBackends(api, organization);
                 _ = check self.deleteInternalAPI(api.metadata.name, api.metadata.namespace);
             } else {
                 NotFoundError apiNotfound = {body: {code: 900910, description: "API with " + id + " not found", message: "API not found"}};
@@ -147,9 +164,9 @@ public class APIClient {
         }
         return http:OK;
     }
-    private isolated function deleteHttpRoutes(model:API api) returns commons:APKError? {
+    private isolated function deleteHttpRoutes(model:API api, commons:Organization organization) returns commons:APKError? {
         do {
-            model:HttprouteList|http:ClientError httpRouteListResponse = check getHttproutesForAPIS(api.spec.apiDisplayName, api.spec.apiVersion, api.metadata.namespace);
+            model:HttprouteList|http:ClientError httpRouteListResponse = check getHttproutesForAPIS(api.spec.apiDisplayName, api.spec.apiVersion, api.metadata.namespace, organization);
             if httpRouteListResponse is model:HttprouteList {
                 foreach model:Httproute item in httpRouteListResponse.items {
                     http:Response|http:ClientError httprouteDeletionResponse = deleteHttpRoute(item.metadata.name, item.metadata.namespace);
@@ -186,11 +203,11 @@ public class APIClient {
             return error("Error occured deleting servicemapping", message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = 500);
         }
     }
-    private isolated function deleteBackendPolicies(model:API api) returns commons:APKError? {
+    private isolated function deleteBackends(model:API api, commons:Organization organization) returns commons:APKError? {
         do {
-            model:BackendPolicyList|http:ClientError backendPolicyListResponse = check getBackendPolicyCRsForAPI(api.spec.apiDisplayName, api.spec.apiVersion, api.metadata.namespace);
-            if backendPolicyListResponse is model:BackendPolicyList {
-                foreach model:BackendPolicy item in backendPolicyListResponse.items {
+            model:BackendList|http:ClientError backendPolicyListResponse = check getBackendPolicyCRsForAPI(api.spec.apiDisplayName, api.spec.apiVersion, api.metadata.namespace, organization);
+            if backendPolicyListResponse is model:BackendList {
+                foreach model:Backend item in backendPolicyListResponse.items {
                     http:Response|http:ClientError serviceDeletionResponse = deleteBackendPolicyCR(item.metadata.name, item.metadata.namespace);
                     if serviceDeletionResponse is http:Response {
                         if serviceDeletionResponse.statusCode != http:STATUS_OK {
@@ -209,32 +226,10 @@ public class APIClient {
             return error("Error occured deleting servicemapping", message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = 500);
         }
     }
-    private isolated function deleteBackendServices(model:API api) returns commons:APKError? {
+
+    private isolated function deleteAuthneticationCRs(model:API api, commons:Organization organization) returns commons:APKError? {
         do {
-            model:ServiceList|http:ClientError serviceListResponse = check getBackendServicesForAPI(api.spec.apiDisplayName, api.spec.apiVersion, api.metadata.namespace);
-            if serviceListResponse is model:ServiceList {
-                foreach model:Service item in serviceListResponse.items {
-                    http:Response|http:ClientError serviceDeletionResponse = deleteService(item.metadata.name, item.metadata.namespace);
-                    if serviceDeletionResponse is http:Response {
-                        if serviceDeletionResponse.statusCode != http:STATUS_OK {
-                            json responsePayLoad = check serviceDeletionResponse.getJsonPayload();
-                            model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
-                            check self.handleK8sTimeout(statusResponse);
-                        }
-                    } else {
-                        log:printError("Error occured while deleting service mapping");
-                    }
-                }
-                return;
-            }
-        } on fail var e {
-            log:printError("Error occured deleting servicemapping", e);
-            return error("Error occured deleting servicemapping", message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = 500);
-        }
-    }
-    private isolated function deleteAuthneticationCRs(model:API api) returns commons:APKError? {
-        do {
-            model:AuthenticationList|http:ClientError authenticationCrListResponse = check getAuthenticationCrsForAPI(api.spec.apiDisplayName, api.spec.apiVersion, api.metadata.namespace);
+            model:AuthenticationList|http:ClientError authenticationCrListResponse = check getAuthenticationCrsForAPI(api.spec.apiDisplayName, api.spec.apiVersion, api.metadata.namespace, organization);
             if authenticationCrListResponse is model:AuthenticationList {
                 foreach model:Authentication item in authenticationCrListResponse.items {
                     http:Response|http:ClientError k8ServiceMappingDeletionResponse = deleteAuthenticationCR(item.metadata.name, item.metadata.namespace);
@@ -255,9 +250,9 @@ public class APIClient {
             return error("Error occured deleting servicemapping", message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = 500);
         }
     }
-    private isolated function deleteScopeCrsForAPI(model:API api) returns commons:APKError? {
+    private isolated function deleteScopeCrsForAPI(model:API api, commons:Organization organization) returns commons:APKError? {
         do {
-            model:ScopeList|http:ClientError scopeCrListResponse = check getScopeCrsForAPI(api.spec.apiDisplayName, api.spec.apiVersion, api.metadata.namespace);
+            model:ScopeList|http:ClientError scopeCrListResponse = check getScopeCrsForAPI(api.spec.apiDisplayName, api.spec.apiVersion, api.metadata.namespace, organization);
             if scopeCrListResponse is model:ScopeList {
                 foreach model:Scope item in scopeCrListResponse.items {
                     http:Response|http:ClientError scopeCrDeletionResponse = deleteScopeCr(item.metadata.name, item.metadata.namespace);
@@ -372,7 +367,7 @@ public class APIClient {
                 }
             }
         }
-        return {list: limitSet, count: limitSet.length(), pagination: {total: apiList.length(), 'limit: 'limit, offset: offset}};
+        return {list: convertAPIListToAPIInfoList(limitSet), count: limitSet.length(), pagination: {total: apiList.length(), 'limit: 'limit, offset: offset}};
 
     }
     public isolated function createAPI(API api, string? definition, commons:Organization organization) returns commons:APKError|CreatedAPI|BadRequestError {
@@ -401,6 +396,16 @@ public class APIClient {
                     BadRequestError badRequestError = {body: {code: 90912, message: "Atleast one operation need to specified"}};
                     return badRequestError;
                 }
+                // Validating operation policies.
+                BadRequestError|() badRequestError = self.validateOperationPolicies(api.apiPolicies, operations, organization);
+                if (badRequestError is BadRequestError) {
+                    return badRequestError;
+                }
+                // Validating rate limit.
+                BadRequestError|() invalidRateLimitError = self.validateRateLimit(api.apiRateLimit, operations);
+                if (invalidRateLimitError is BadRequestError) {
+                    return invalidRateLimitError;
+                }
             } else {
                 BadRequestError badRequestError = {body: {code: 90912, message: "Atleast one operation need to specified"}};
                 return badRequestError;
@@ -413,10 +418,10 @@ public class APIClient {
             _ = check self.setHttpRoute(apiArtifact, api, createdEndpoints.hasKey(PRODUCTION_TYPE) ? createdEndpoints.get(PRODUCTION_TYPE) : (), uniqueId, PRODUCTION_TYPE, organization);
             _ = check self.setHttpRoute(apiArtifact, api, createdEndpoints.hasKey(SANDBOX_TYPE) ? createdEndpoints.get(SANDBOX_TYPE) : (), uniqueId, SANDBOX_TYPE, organization);
             json generatedSwagger = check self.retrieveGeneratedSwaggerDefinition(api, definition);
-            self.retrieveGeneratedConfigmapForDefinition(apiArtifact, api, generatedSwagger, uniqueId);
+            check self.retrieveGeneratedConfigmapForDefinition(apiArtifact, api, generatedSwagger, uniqueId, organization);
             self.generateAndSetAPICRArtifact(apiArtifact, api, organization);
             self.generateAndSetRuntimeAPIArtifact(apiArtifact, api, (), organization);
-            model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact);
+            model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact, organization);
             CreatedAPI createdAPI = {body: check convertK8sAPItoAPI(deployAPIToK8sResult, true)};
             return createdAPI;
         } on fail var e {
@@ -427,6 +432,111 @@ public class APIClient {
             return error("Internal Error occured", code = 909000, message = "Internal Error occured", description = "Internal Error occured", statusCode = 500);
         }
     }
+
+    isolated function validateOperationPolicies(APIOperationPolicies? apiPolicies, APIOperations[] operations, commons:Organization organization) returns BadRequestError|() {
+        foreach APIOperations operation in operations {
+            APIOperationPolicies? operationPolicies = operation.operationPolicies;
+            if (!self.isPolicyEmpty(operationPolicies)) {
+                if (self.isPolicyEmpty(apiPolicies)) {
+                    // Validating resource level operation policy data
+                    BadRequestError|() badRequestError = self.validateOperationPolicyData(operationPolicies, organization);
+                    if (badRequestError is BadRequestError) {
+                        return badRequestError;
+                    }
+                } else {
+                    // Presence of both resource level and API level operation policies.
+                    BadRequestError badRequestError = {body: {code: 90917, message: "Presence of both resource level and API level operation policies is not allowed"}};
+                    return badRequestError;
+                }
+            }
+        }
+        if (!self.isPolicyEmpty(apiPolicies)) {
+            // Validating API level operation policy data
+            return self.validateOperationPolicyData(apiPolicies, organization);
+        }
+        return ();
+    }
+
+    isolated function isPolicyEmpty(APIOperationPolicies? policies) returns boolean {
+        return policies == () || policies.length() == 0;
+    }
+
+    isolated function validateOperationPolicyData(APIOperationPolicies? operationPolicies, commons:Organization organization) returns BadRequestError|() {
+        if operationPolicies is APIOperationPolicies {
+            // Validating request operation policy data.
+            BadRequestError|() badRequestError = self.validatePolicyDetails(operationPolicies.request, organization);
+            if (badRequestError == ()) {
+                // Validating response operation policy data.
+                return self.validatePolicyDetails(operationPolicies.response, organization);
+            } else {
+                return badRequestError;
+            }
+        }
+        return ();
+    }
+
+    isolated function validatePolicyDetails(OperationPolicy[]? policyData, commons:Organization organization) returns BadRequestError|() {
+        if (policyData is OperationPolicy[]) {
+            foreach OperationPolicy policy in policyData {
+                string policyName = policy.policyName;
+                record {}? policyParameters = policy.parameters;
+                if (policyParameters is record {}) {
+                    string[] allowedPolicyAttributes = [];
+                    string[] receivedPolicyParameters = [];
+                    any|error mediationPolicyList = self.getMediationPolicyList(SEARCH_CRITERIA_NAME + ":" + policyName, 1, 0,
+                        SORT_BY_POLICY_NAME, SORT_ORDER_ASC, organization);
+                    if (mediationPolicyList is MediationPolicyList && mediationPolicyList.count > 0) {
+                        MediationPolicy[]? listing = mediationPolicyList.list;
+                        if (listing is MediationPolicy[]) {
+                            MediationPolicySpecAttribute[]? parameters = listing[0].policyAttributes;
+                            if (parameters is MediationPolicySpecAttribute[]) {
+                                foreach MediationPolicySpecAttribute params in parameters {
+                                    allowedPolicyAttributes.push(<string>params.name);
+                                }
+                            }
+                            string[] keys = policyParameters.keys();
+                            foreach string key in keys {
+                                receivedPolicyParameters.push(key);
+                            }
+
+                            if (allowedPolicyAttributes != receivedPolicyParameters) {
+                                // Allowed policy attributes does not match with the parameters provided
+                                BadRequestError badRequestError = {body: {code: 90916, message: "Invalid parameters provided for policy " + policyName}};
+                                return badRequestError;
+                            }
+                        }
+                    } else {
+                        // Invalid operation policy name.
+                        BadRequestError badRequestError = {body: {code: 90915, message: "Invalid operation policy name"}};
+                        return badRequestError;
+                    }
+                }
+            }
+        }
+        return ();
+    }
+
+    isolated function validateRateLimit(APIRateLimit? apiRateLimit, APIOperations[] operations) returns BadRequestError|() {
+        if (apiRateLimit == ()) {
+            return ();
+        } else {
+            foreach APIOperations operation in operations {
+                APIRateLimit? operationRateLimit = operation.operationRateLimit;
+                if (operationRateLimit != ()) {
+                    // Presence of both resource level and API level rate limits.
+                    BadRequestError badRequestError = {
+                        body: {
+                            code: 90918,
+                            message: "Presence of both resource level and API level rate limits is not allowed"
+                        }
+                    };
+                    return badRequestError;
+                }
+            }
+        }
+        return ();
+    }
+
     private isolated function generateAndSetRuntimeAPIArtifact(model:APIArtifact apiArtifact, API api, Service? serviceEntry, commons:Organization organization) {
 
         apiArtifact.runtimeAPI = self.generateRuntimeAPIArtifact(api, serviceEntry, organization);
@@ -436,15 +546,39 @@ public class APIClient {
             metadata: {
                 name: getUniqueIdForAPI(api.name, api.'version, organization),
                 namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace),
-                labels: self.getLabels(api)
+                labels: self.getLabels(api, organization)
             },
             spec: {
                 name: api.name,
                 context: api.context,
                 'version: api.'version,
-                'type: api.'type
+                'type: api.'type,
+                endpointConfig: api.endpointConfig
             }
         };
+        APIOperationPolicies? apiPolicies = api.apiPolicies;
+        if apiPolicies is APIOperationPolicies {
+            model:OperationPolicy[] runtimeAPIRequestPolicies = [];
+            model:OperationPolicy[] runtimeAPIResponsePolicies = [];
+            OperationPolicy[]? request = apiPolicies.request;
+            if request is OperationPolicy[] {
+                foreach OperationPolicy policy in request {
+                    model:OperationPolicy runtimeAPIRequestPolicy = {...policy};
+                    runtimeAPIRequestPolicies.push(runtimeAPIRequestPolicy);
+                }
+            }
+            OperationPolicy[]? response = apiPolicies.response;
+            if response is OperationPolicy[] {
+                foreach OperationPolicy policy in response {
+                    model:OperationPolicy runtimeAPIResponsePolicy = {...policy};
+                    runtimeAPIResponsePolicies.push(runtimeAPIResponsePolicy);
+                }
+            }
+            runtimeAPI.spec.apiPolicies = {
+                request: runtimeAPIRequestPolicies,
+                response: runtimeAPIResponsePolicies
+            };
+        }
         APIOperations[]? operations = api.operations;
         if operations is APIOperations[] {
             model:Operations[] runtimeAPIOperations = [];
@@ -453,30 +587,28 @@ public class APIClient {
                     target: <string>operation.target,
                     verb: <string>operation.verb,
                     authTypeEnabled: operation.authTypeEnabled ?: true,
-                    scopes: operation.scopes ?: []
+                    scopes: operation.scopes ?: [],
+                    endpointConfig: operation.endpointConfig
                 };
-                APIOperationPolicies? operationPolicies = operation.operationPolicies;
+                APIOperationPolicies? operationPoliciesToUse = ();
+                if (operation.operationPolicies is APIOperationPolicies) {
+                    operationPoliciesToUse = operation.operationPolicies;
+                }
                 model:OperationPolicy[] runtimeAPIRequestPolicies = [];
                 model:OperationPolicy[] runtimeAPIResponsePolicies = [];
 
-                if operationPolicies is APIOperationPolicies {
-                    OperationPolicy[]? request = operationPolicies.request;
+                if operationPoliciesToUse is APIOperationPolicies {
+                    OperationPolicy[]? request = operationPoliciesToUse.request;
                     if request is OperationPolicy[] {
                         foreach OperationPolicy policy in request {
-                            model:OperationPolicy runtimeAPIRequestPolicy = {
-                                policyName: <string>policy.policyName,
-                                parameters: <map<string>>policy.parameters
-                            };
+                            model:OperationPolicy runtimeAPIRequestPolicy = {...policy};
                             runtimeAPIRequestPolicies.push(runtimeAPIRequestPolicy);
                         }
                     }
-                    OperationPolicy[]? response = operationPolicies.response;
+                    OperationPolicy[]? response = operationPoliciesToUse.response;
                     if response is OperationPolicy[] {
                         foreach OperationPolicy policy in response {
-                            model:OperationPolicy runtimeAPIResponsePolicy = {
-                                policyName: <string>policy.policyName,
-                                parameters: <map<string>>policy.parameters
-                            };
+                            model:OperationPolicy runtimeAPIResponsePolicy = {...policy};
                             runtimeAPIResponsePolicies.push(runtimeAPIResponsePolicy);
                         }
                     }
@@ -489,13 +621,24 @@ public class APIClient {
                 if endpointConfig is record {} {
                     runtimeAPI.spec.endpointConfig = endpointConfig;
                 }
+
+                APIRateLimit? rateLimitPolicy = operation.operationRateLimit;
+                if (rateLimitPolicy is APIRateLimit) {
+                    model:RateLimit rateLimit = {
+                        requestsPerUnit: rateLimitPolicy.requestsPerUnit,
+                        unit: rateLimitPolicy.unit
+                    };
+                    runtimeAPIOperation.operationRateLimit = rateLimit;
+                }
                 runtimeAPIOperations.push(runtimeAPIOperation);
             }
             runtimeAPI.spec.operations = runtimeAPIOperations;
         }
-        record {|anydata...;|}? endpointConfig = api.endpointConfig;
-        if endpointConfig is record {} {
-            runtimeAPI.spec.endpointConfig = endpointConfig;
+
+        APIRateLimit? rateLimitPolicy = api.apiRateLimit;
+        if (rateLimitPolicy is APIRateLimit) {
+            model:RateLimit rateLimit = {...rateLimitPolicy};
+            runtimeAPI.spec.apiRateLimit = rateLimit;
         }
         if serviceEntry is Service {
             runtimeAPI.spec.serviceInfo = {
@@ -505,26 +648,7 @@ public class APIClient {
         }
         return runtimeAPI;
     }
-    private isolated function createBackendPolicy(API api, APIOperations? apiOperation, string endpointType, commons:Organization organization, map<anydata>? endpointConfig, string url, model:Service backendService) returns model:BackendPolicy {
-        string nameSpace = getNameSpace(runtimeConfiguration.apiCreationNamespace);
-        model:BackendPolicy backendPolicy = {
-            metadata: {
-                name: getBackendPolicyUid(api, endpointType, organization),
-                namespace: nameSpace,
-                labels: self.getLabels(api)
-            },
-            spec: {
-                default: {protocol: url.startsWith(PROTOCOL_HTTPS) ? PROTOCOL_HTTPS : PROTOCOL_HTTP},
-                targetRef: {
-                    group: "",
-                    kind: "Service",
-                    name: backendService.metadata.name,
-                    namespace: backendService.metadata.namespace
-                }
-            }
-        };
-        return backendPolicy;
-    }
+
     private isolated function createAndAddBackendServics(model:APIArtifact apiArtifact, API api, record {} endpointConfig, APIOperations? apiOperation, string? endpointType, commons:Organization organization) returns map<model:Endpoint>|commons:APKError|error {
         map<model:Endpoint> endpointIdMap = {};
         anydata|error sandboxEndpointConfig = trap endpointConfig.get("sandbox_endpoints");
@@ -533,16 +657,13 @@ public class APIClient {
             if sandboxEndpointConfig is map<anydata> {
                 if sandboxEndpointConfig.hasKey("url") {
                     anydata url = sandboxEndpointConfig.get("url");
-                    model:Service backendService = self.createBackendService(api, apiOperation, SANDBOX_TYPE, organization, <string>url);
-                    model:BackendPolicy backendPolicy = self.createBackendPolicy(api, apiOperation, SANDBOX_TYPE, organization, sandboxEndpointConfig, <string>url, backendService);
+                    model:Backend backendService = check self.createBackendService(api, apiOperation, SANDBOX_TYPE, organization, <string>url);
                     if apiOperation == () {
                         apiArtifact.sandboxEndpointAvailable = true;
                         apiArtifact.sandboxUrl = <string?>url;
                     }
                     apiArtifact.backendServices[backendService.metadata.name] = (backendService);
-                    apiArtifact.backendPolicies[backendPolicy.metadata.name] = (backendPolicy);
                     endpointIdMap[SANDBOX_TYPE] = {
-                        port: check self.getPort(<string>url),
                         namespace: backendService.metadata.namespace,
                         name: backendService.metadata.name,
                         serviceEntry: false,
@@ -558,16 +679,13 @@ public class APIClient {
             if productionEndpointConfig is map<anydata> {
                 if productionEndpointConfig.hasKey("url") {
                     anydata url = productionEndpointConfig.get("url");
-                    model:Service backendService = self.createBackendService(api, apiOperation, PRODUCTION_TYPE, organization, <string>url);
-                    model:BackendPolicy backendPolicy = self.createBackendPolicy(api, apiOperation, SANDBOX_TYPE, organization, productionEndpointConfig, <string>url, backendService);
+                    model:Backend backendService = check self.createBackendService(api, apiOperation, PRODUCTION_TYPE, organization, <string>url);
                     if apiOperation == () {
                         apiArtifact.productionEndpointAvailable = true;
                         apiArtifact.productionUrl = <string?>url;
                     }
                     apiArtifact.backendServices[backendService.metadata.name] = backendService;
-                    apiArtifact.backendPolicies[backendPolicy.metadata.name] = (backendPolicy);
                     endpointIdMap[PRODUCTION_TYPE] = {
-                        port: check self.getPort(<string>url),
                         namespace: backendService.metadata.namespace,
                         name: backendService.metadata.name,
                         serviceEntry: false,
@@ -581,8 +699,16 @@ public class APIClient {
         }
         return endpointIdMap;
     }
-    isolated function getLabels(API api) returns map<string> {
-        map<string> labels = {"api-name": api.name, "api-version": api.'version};
+    isolated function getLabels(API api, commons:Organization organization) returns map<string> {
+        string apiNameHash = crypto:hashSha1(api.name.toBytes()).toBase16();
+        string apiVersionHash = crypto:hashSha1(api.'version.toBytes()).toBase16();
+        string organizationHash = crypto:hashSha1(organization.uuid.toBytes()).toBase16();
+        map<string> labels = {
+            [API_NAME_HASH_LABEL] : apiNameHash,
+            [API_VERSION_HASH_LABEL] : apiVersionHash,
+            [ORGANIZATION_HASH_LABEL] : organizationHash,
+            [MANAGED_BY_HASH_LABEL] : MANAGED_BY_HASH_LABEL_VALUE
+        };
         return labels;
     }
     isolated function validateContextAndVersion(string context, string 'version, commons:Organization organization) returns boolean {
@@ -624,47 +750,70 @@ public class APIClient {
     }
 
     isolated function createAPIFromService(string serviceKey, API api, commons:Organization organization) returns CreatedAPI|BadRequestError|InternalServerErrorError|commons:APKError {
-        if (self.validateName(api.name, organization)) {
-            BadRequestError badRequest = {body: {code: 90911, message: "API Name - " + api.name + " already exist.", description: "API Name - " + api.name + " already exist."}};
-            return badRequest;
-        }
-        lock {
-            if (ALLOWED_API_TYPES.indexOf(api.'type) is ()) {
-                BadRequestError badRequest = {body: {code: 900912, message: "unsupported API Type."}};
-                return badRequest.clone();
+        do {
+            if (self.validateName(api.name, organization)) {
+                BadRequestError badRequest = {body: {code: 90911, message: "API Name - " + api.name + " already exist.", description: "API Name - " + api.name + " already exist."}};
+                return badRequest;
             }
-        }
-        if self.validateContextAndVersion(api.context, api.'version, organization) {
-            BadRequestError badRequest = {body: {code: 90911, message: "API Context - " + api.context + " already exist.", description: "API Context " + api.context + " already exist."}};
-            return badRequest;
-        }
-        self.setDefaultOperationsIfNotExist(api);
-        api.context = self.returnFullContext(api.context, api.'version);
-        Service|error serviceRetrieved = getServiceById(serviceKey);
-        string uniqueId = getUniqueIdForAPI(api.name, api.'version, organization);
-        if serviceRetrieved is Service {
-            model:APIArtifact apiArtifact = {uniqueId: uniqueId};
-            model:Endpoint endpoint = {
-                port: self.retrievePort(serviceRetrieved),
-                namespace: serviceRetrieved.namespace,
-                name: serviceRetrieved.name,
-                serviceEntry: true
-            };
-            check self.setHttpRoute(apiArtifact, api, endpoint, uniqueId, PRODUCTION_TYPE, organization);
-            json generatedSwaggerDefinition = check self.retrieveGeneratedSwaggerDefinition(api, ());
-            self.retrieveGeneratedConfigmapForDefinition(apiArtifact, api, generatedSwaggerDefinition, uniqueId);
-            self.generateAndSetAPICRArtifact(apiArtifact, api, organization);
-            self.generateAndSetK8sServiceMapping(apiArtifact, api, serviceRetrieved, getNameSpace(runtimeConfiguration.apiCreationNamespace));
-            self.generateAndSetRuntimeAPIArtifact(apiArtifact, api, serviceRetrieved, organization);
-            model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact);
-            CreatedAPI createdAPI = {body: check convertK8sAPItoAPI(deployAPIToK8sResult, false)};
-            return createdAPI;
-        } else {
-            BadRequestError badRequest = {body: {code: 90913, message: "Service from " + serviceKey + " not found."}};
-            return badRequest;
+            lock {
+                if (ALLOWED_API_TYPES.indexOf(api.'type) is ()) {
+                    BadRequestError badRequest = {body: {code: 900912, message: "unsupported API Type."}};
+                    return badRequest.clone();
+                }
+            }
+            if self.validateContextAndVersion(api.context, api.'version, organization) {
+                BadRequestError badRequest = {body: {code: 90911, message: "API Context - " + api.context + " already exist.", description: "API Context " + api.context + " already exist."}};
+                return badRequest;
+            }
+            self.setDefaultOperationsIfNotExist(api);
+            APIOperations[]? operations = api.operations;
+            if operations is APIOperations[] {
+                // Validating operation policies.
+                BadRequestError|() badRequestError = self.validateOperationPolicies(api.apiPolicies, operations, organization);
+                if (badRequestError is BadRequestError) {
+                    return badRequestError;
+                }
+                // Validating rate limit.
+                BadRequestError|() invalidRateLimitError = self.validateRateLimit(api.apiRateLimit, operations);
+                if (invalidRateLimitError is BadRequestError) {
+                    return invalidRateLimitError;
+                }
+            }
+            api.context = self.returnFullContext(api.context, api.'version);
+            Service|error serviceRetrieved = getServiceById(serviceKey);
+            string uniqueId = getUniqueIdForAPI(api.name, api.'version, organization);
+            if serviceRetrieved is Service {
+                model:APIArtifact apiArtifact = {uniqueId: uniqueId};
+                model:Backend backendService = check self.createBackendService(api, (), PRODUCTION_TYPE, organization, self.constructServiceURL(serviceRetrieved));
+                apiArtifact.backendServices[backendService.metadata.name] = backendService;
+                model:Endpoint endpoint = {
+                    namespace: backendService.metadata.namespace,
+                    name: backendService.metadata.name,
+                    serviceEntry: true
+                };
+                check self.setHttpRoute(apiArtifact, api, endpoint, uniqueId, PRODUCTION_TYPE, organization);
+                json generatedSwaggerDefinition = check self.retrieveGeneratedSwaggerDefinition(api, ());
+                check self.retrieveGeneratedConfigmapForDefinition(apiArtifact, api, generatedSwaggerDefinition, uniqueId, organization);
+                self.generateAndSetAPICRArtifact(apiArtifact, api, organization);
+                self.generateAndSetK8sServiceMapping(apiArtifact, api, serviceRetrieved, getNameSpace(runtimeConfiguration.apiCreationNamespace), organization);
+                self.generateAndSetRuntimeAPIArtifact(apiArtifact, api, serviceRetrieved, organization);
+                model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact, organization);
+                CreatedAPI createdAPI = {body: check convertK8sAPItoAPI(deployAPIToK8sResult, false)};
+                return createdAPI;
+            } else {
+                BadRequestError badRequest = {body: {code: 90913, message: "Service from " + serviceKey + " not found."}};
+                return badRequest;
+            }
+        } on fail var e {
+            commons:APKError apkError = error("Internal Server Error", e, message = "Internal Server Error", description = "Internal Server Error", code = 90912, statusCode = 500);
+            return apkError;
         }
     }
-    private isolated function deployAPIToK8s(model:APIArtifact apiArtifact) returns commons:APKError|model:API {
+    private isolated function constructServiceURL(Service 'service) returns string {
+        PortMapping portMapping = self.retrievePort('service);
+        return <string>portMapping.protocol + "://" + string:'join(".", 'service.name, 'service.namespace, "svc.cluster.local") + ":" + portMapping.port.toString();
+    }
+    private isolated function deployAPIToK8s(model:APIArtifact apiArtifact, commons:Organization organization) returns commons:APKError|model:API {
         do {
             model:ConfigMap? definition = apiArtifact.definition;
             if definition is model:ConfigMap {
@@ -672,18 +821,20 @@ public class APIClient {
             }
             model:API? api = apiArtifact.api;
             if api is model:API {
-                check self.deleteHttpRoutes(api);
-                check self.deleteServiceMappings(api);
-                check self.deleteAuthneticationCRs(api);
-                _ = check self.deleteScopeCrsForAPI(api);
-                check self.deleteBackendPolicies(api);
-                check self.deleteBackendServices(api);
+                check self.deleteHttpRoutes(api, organization);
+                check self.deleteServiceMappings(api, organization);
+                check self.deleteAuthneticationCRs(api, organization);
+                _ = check self.deleteScopeCrsForAPI(api, organization);
+                check self.deleteBackends(api, organization);
+                check self.deleteRateLimitPolicyCRs(api, organization);
                 check self.deleteInternalAPI(api.metadata.name, api.metadata.namespace);
+                check self.deleteEndpointCertificates(api, organization);
             }
             check self.deployScopeCrs(apiArtifact);
+            check self.deployEndpointCertificates(apiArtifact);
             check self.deployBackendServices(apiArtifact);
-            check self.deployBackendPolicies(apiArtifact);
             check self.deployAuthneticationCRs(apiArtifact);
+            check self.deployRateLimitPolicyCRs(apiArtifact);
             check self.deployHttpRoutes(apiArtifact.productionRoute);
             check self.deployHttpRoutes(apiArtifact.sandboxRoute);
             check self.deployServiceMappings(apiArtifact);
@@ -696,6 +847,25 @@ public class APIClient {
             log:printError("Internal Error occured while deploying API", e);
             commons:APKError internalError = error("Internal Error occured while deploying API", code = 909000, statusCode = 500, description = "Internal Error occured while deploying API", message = "Internal Error occured while deploying API");
             return internalError;
+        }
+    }
+    private isolated function deployEndpointCertificates(model:APIArtifact apiArtifact) returns error? {
+        map<model:ConfigMap> endpointCertificates = apiArtifact.endpointCertificates;
+        foreach model:ConfigMap endpointCertificate in endpointCertificates {
+            _ = check self.deployConfigMap(endpointCertificate);
+        }
+    }
+    private isolated function deleteEndpointCertificates(model:API api, commons:Organization organization) returns error? {
+        model:ConfigMap[] endpointCertificates = check getConfigMapsForAPICertificate(api.spec.apiDisplayName, api.spec.apiVersion, organization);
+        foreach model:ConfigMap endpointCertificate in endpointCertificates {
+            http:Response deleteEndpointCertificateResult = check deleteConfigMap(endpointCertificate.metadata.name, endpointCertificate.metadata.namespace);
+            if deleteEndpointCertificateResult.statusCode == http:STATUS_OK {
+                log:printDebug("Deleted Endpoint Certificate Successfully" + endpointCertificate.toString());
+            } else {
+                json responsePayLoad = check deleteEndpointCertificateResult.getJsonPayload();
+                model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                check self.handleK8sTimeout(statusResponse);
+            }
         }
     }
     private isolated function deployScopeCrs(model:APIArtifact apiArtifact) returns error? {
@@ -834,24 +1004,12 @@ public class APIClient {
             }
         }
     }
-    private isolated function deployBackendPolicies(model:APIArtifact apiArtifact) returns error? {
-        foreach model:BackendPolicy backendPolicy in apiArtifact.backendPolicies {
-            http:Response deployBackendPolicyResult = check deployBackendPolicyCR(backendPolicy, getNameSpace(runtimeConfiguration.apiCreationNamespace));
-            if deployBackendPolicyResult.statusCode == http:STATUS_CREATED {
-                log:printDebug("Deployed BackendPolicy Successfully" + backendPolicy.toString());
-            } else {
-                json responsePayLoad = check deployBackendPolicyResult.getJsonPayload();
-                model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
-                check self.handleK8sTimeout(statusResponse);
-            }
-        }
-    }
 
     private isolated function deployBackendServices(model:APIArtifact apiArtifact) returns error? {
-        foreach model:Service backendService in apiArtifact.backendServices {
-            http:Response deployServiceResult = check deployService(backendService, getNameSpace(runtimeConfiguration.apiCreationNamespace));
+        foreach model:Backend backendService in apiArtifact.backendServices {
+            http:Response deployServiceResult = check deployBackendCR(backendService, getNameSpace(runtimeConfiguration.apiCreationNamespace));
             if deployServiceResult.statusCode == http:STATUS_CREATED {
-                log:printDebug("Deployed HttpRoute Successfully" + backendService.toString());
+                log:printDebug("Deployed Backend Successfully" + backendService.toString());
             } else {
                 json responsePayLoad = check deployServiceResult.getJsonPayload();
                 model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
@@ -859,49 +1017,130 @@ public class APIClient {
             }
         }
     }
-    private isolated function deployConfigMap(model:ConfigMap definition) returns commons:APKError|error? {
+    private isolated function deployConfigMap(model:ConfigMap definition) returns model:ConfigMap|commons:APKError|error {
         http:Response configMapRetrieved = check getConfigMapValueFromNameAndNamespace(definition.metadata.name, definition.metadata.namespace);
         if configMapRetrieved.statusCode == 404 {
             http:Response deployConfigMapResult = check deployConfigMap(definition, getNameSpace(runtimeConfiguration.apiCreationNamespace));
             if deployConfigMapResult.statusCode == http:STATUS_CREATED {
                 log:printDebug("Deployed Configmap Successfully" + definition.toString());
+                json responsePayLoad = check deployConfigMapResult.getJsonPayload();
+                return check responsePayLoad.cloneWithType(model:ConfigMap);
             } else {
                 json responsePayLoad = check deployConfigMapResult.getJsonPayload();
                 model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
-                check self.handleK8sTimeout(statusResponse);
+                return self.handleK8sTimeout(statusResponse);
             }
         } else if configMapRetrieved.statusCode == 200 {
             http:Response deployConfigMapResult = check updateConfigMap(definition, getNameSpace(runtimeConfiguration.apiCreationNamespace));
             if deployConfigMapResult.statusCode == http:STATUS_OK {
                 log:printDebug("updated Configmap Successfully" + definition.toString());
+                json responsePayLoad = check deployConfigMapResult.getJsonPayload();
+                return check responsePayLoad.cloneWithType(model:ConfigMap);
             } else {
                 json responsePayLoad = check deployConfigMapResult.getJsonPayload();
                 model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
-                check self.handleK8sTimeout(statusResponse);
+                return self.handleK8sTimeout(statusResponse);
             }
         } else {
             json responsePayLoad = check configMapRetrieved.getJsonPayload();
             model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
-            check self.handleK8sTimeout(statusResponse);
+            return self.handleK8sTimeout(statusResponse);
         }
     }
-    private isolated function retrieveGeneratedConfigmapForDefinition(model:APIArtifact apiArtifact, API api, json generatedSwaggerDefinition, string uniqueId) {
-        map<string> configMapData = {};
-        if api.'type == API_TYPE_REST {
-            configMapData["openapi.json"] = generatedSwaggerDefinition.toJsonString();
-        }
-        model:ConfigMap configMap = {
-            metadata: {
-                name: self.retrieveDefinitionName(uniqueId),
-                namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace),
-                uid: (),
-                creationTimestamp: (),
-                labels: self.getLabels(api)
 
-            },
-            data: configMapData
-        };
-        apiArtifact.definition = configMap;
+    private isolated function updateConfigMap(model:ConfigMap configMap) returns model:ConfigMap|commons:APKError|error {
+        http:Response configMapRetrieved = check getConfigMapValueFromNameAndNamespace(configMap.metadata.name, configMap.metadata.namespace);
+        if configMapRetrieved.statusCode == 200 {
+            http:Response deployConfigMapResult = check updateConfigMap(configMap, getNameSpace(runtimeConfiguration.apiCreationNamespace));
+            if deployConfigMapResult.statusCode == http:STATUS_OK {
+                log:printDebug("updated Configmap Successfully" + configMap.toString());
+                json responsePayLoad = check deployConfigMapResult.getJsonPayload();
+                return check responsePayLoad.cloneWithType(model:ConfigMap);
+            } else {
+                json responsePayLoad = check deployConfigMapResult.getJsonPayload();
+                model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                return self.handleK8sTimeout(statusResponse);
+            }
+        } else {
+            json responsePayLoad = check configMapRetrieved.getJsonPayload();
+            model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+            return self.handleK8sTimeout(statusResponse);
+        }
+    }
+    private isolated function deleteConfigMap(model:ConfigMap configMap) returns boolean|commons:APKError|error {
+        http:Response configMapRetrieved = check getConfigMapValueFromNameAndNamespace(configMap.metadata.name, configMap.metadata.namespace);
+        if configMapRetrieved.statusCode == 200 {
+            http:Response deployConfigMapResult = check deleteConfigMap(configMap.metadata.name, getNameSpace(runtimeConfiguration.apiCreationNamespace));
+            if deployConfigMapResult.statusCode == http:STATUS_OK {
+                log:printDebug("Configmap deleted Successfully" + configMap.toString());
+                return true;
+            } else {
+                json responsePayLoad = check deployConfigMapResult.getJsonPayload();
+                model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                return self.handleK8sTimeout(statusResponse);
+            }
+        } else {
+            json responsePayLoad = check configMapRetrieved.getJsonPayload();
+            model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+            return self.handleK8sTimeout(statusResponse);
+        }
+    }
+
+    private isolated function deployRateLimitPolicyCRs(model:APIArtifact apiArtifact) returns error? {
+        foreach model:RateLimitPolicy rateLimitPolicy in apiArtifact.rateLimitPolicies {
+            http:Response deployRateLimitPolicyResult = check deployRateLimitPolicyCR(rateLimitPolicy, getNameSpace(runtimeConfiguration.apiCreationNamespace));
+            if deployRateLimitPolicyResult.statusCode == http:STATUS_CREATED {
+                log:printDebug("Deployed RateLimitPolicy Successfully" + rateLimitPolicy.toString());
+            } else {
+                json responsePayLoad = check deployRateLimitPolicyResult.getJsonPayload();
+                model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                check self.handleK8sTimeout(statusResponse);
+            }
+        }
+    }
+
+    private isolated function deleteRateLimitPolicyCRs(model:API api, commons:Organization organization) returns commons:APKError? {
+        do {
+            model:RateLimitPolicyList|http:ClientError rateLimitPolicyCrListResponse = check getRateLimitPolicyCRsForAPI(api.spec.apiDisplayName, api.spec.apiVersion, api.metadata.namespace, organization);
+            if rateLimitPolicyCrListResponse is model:RateLimitPolicyList {
+                foreach model:RateLimitPolicy item in rateLimitPolicyCrListResponse.items {
+                    http:Response|http:ClientError rateLimitPolicyCRDeletionResponse = deleteRateLimitPolicyCR(item.metadata.name, item.metadata.namespace);
+                    if rateLimitPolicyCRDeletionResponse is http:Response {
+                        if rateLimitPolicyCRDeletionResponse.statusCode != http:STATUS_OK {
+                            json responsePayLoad = check rateLimitPolicyCRDeletionResponse.getJsonPayload();
+                            model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                            check self.handleK8sTimeout(statusResponse);
+                        }
+                    } else {
+                        log:printError("Error occured while deleting rate limit policy");
+                    }
+                }
+                return;
+            }
+        } on fail var e {
+            log:printError("Error occured deleting rate limit policy", e);
+            return error("Error occured deleting rate limit policy", message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = 500);
+        }
+    }
+
+    private isolated function retrieveGeneratedConfigmapForDefinition(model:APIArtifact apiArtifact, API api, json generatedSwaggerDefinition, string uniqueId, commons:Organization organization) returns error? {
+        byte[]|javaio:IOException compressedContent = check runtimeUtil:GzipUtil_compressGzipFile(generatedSwaggerDefinition.toJsonString().toBytes());
+        if compressedContent is byte[] {
+            byte[] base64EncodedContent = check runtimeUtil:EncoderUtil_encodeBase64(compressedContent);
+            model:ConfigMap configMap = {
+                metadata: {
+                    name: self.retrieveDefinitionName(uniqueId),
+                    namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace),
+                    uid: (),
+                    creationTimestamp: (),
+                    labels: self.getLabels(api, organization)
+                }
+            };
+            configMap.binaryData = {[CONFIGMAP_DEFINITION_KEY]: check string:fromBytes(base64EncodedContent)};
+            apiArtifact.definition = configMap;
+        } else {
+            return compressedContent.cause();
+        }
     }
 
     isolated function setDefaultOperationsIfNotExist(API api) {
@@ -927,7 +1166,7 @@ public class APIClient {
             metadata: {
                 name: apiArtifact.uniqueId,
                 namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace),
-                labels: self.getLabels(api)
+                labels: self.getLabels(api, organization)
             },
             spec: {
                 apiDisplayName: api.name,
@@ -990,18 +1229,19 @@ public class APIClient {
         }
     }
     private isolated function putHttpRouteForPartition(model:APIArtifact apiArtifact, API api, model:Endpoint? endpoint, string uniqueId, string endpointType, commons:Organization organization) returns commons:APKError? {
+        string httpRouteRefName = retrieveHttpRouteRefName(api, endpointType, organization);
         model:Httproute httpRoute = {
             metadata:
                 {
-                name: retrieveHttpRouteRefName(api, endpointType, organization),
+                name: httpRouteRefName,
                 namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace),
                 uid: (),
                 creationTimestamp: (),
-                labels: self.getLabels(api)
+                labels: self.getLabels(api, organization)
             },
             spec: {
                 parentRefs: self.generateAndRetrieveParentRefs(api, uniqueId),
-                rules: check self.generateHttpRouteRules(apiArtifact, api, endpoint, endpointType, organization),
+                rules: check self.generateHttpRouteRules(apiArtifact, api, endpoint, endpointType, organization, httpRouteRefName),
                 hostnames: self.getHostNames(api, uniqueId, endpointType, organization)
             }
         };
@@ -1028,13 +1268,15 @@ public class APIClient {
     }
 
     private isolated function generateAndRetrieveParentRefs(API api, string uniqueId) returns model:ParentReference[] {
+        string gatewayName = runtimeConfiguration.gatewayConfiguration.name;
+        string listenerName = runtimeConfiguration.gatewayConfiguration.listenerName;
         model:ParentReference[] parentRefs = [];
-        model:ParentReference parentRef = {group: "gateway.networking.k8s.io", kind: "Gateway", name: "Default"};
+        model:ParentReference parentRef = {group: "gateway.networking.k8s.io", kind: "Gateway", name: gatewayName, sectionName:listenerName};
         parentRefs.push(parentRef);
         return parentRefs;
     }
 
-    private isolated function generateHttpRouteRules(model:APIArtifact apiArtifact, API api, model:Endpoint? endpoint, string endpointType, commons:Organization organization) returns model:HTTPRouteRule[]|commons:APKError {
+    private isolated function generateHttpRouteRules(model:APIArtifact apiArtifact, API api, model:Endpoint? endpoint, string endpointType, commons:Organization organization, string httpRouteRefName) returns model:HTTPRouteRule[]|commons:APKError {
         model:HTTPRouteRule[] httpRouteRules = [];
         APIOperations[]? operations = api.operations;
         if operations is APIOperations[] {
@@ -1068,16 +1310,31 @@ public class APIClient {
                             (<model:HTTPRouteFilter[]>filters).push(scopeFilter);
                         }
                     }
+                    if operation.operationRateLimit != () {
+                        model:RateLimitPolicy? rateLimitPolicyCR = self.generateRateLimitPolicyCR(api, operation.operationRateLimit, httpRouteRefName, operation, organization);
+                        if rateLimitPolicyCR != () {
+                            apiArtifact.rateLimitPolicies[rateLimitPolicyCR.metadata.name] = rateLimitPolicyCR;
+                            model:HTTPRouteFilter rateLimitPolicyFilter = {'type: "ExtensionRef", extensionRef: {group: "dp.wso2.com", kind: "RateLimitPolicy", name: rateLimitPolicyCR.metadata.name}};
+                            (<model:HTTPRouteFilter[]>filters).push(rateLimitPolicyFilter);
+                        }
+                    }
                     httpRouteRules.push(httpRouteRule);
                 }
             }
         }
+        if api.apiRateLimit != () {
+            model:RateLimitPolicy? rateLimitPolicyCR = self.generateRateLimitPolicyCR(api, api.apiRateLimit, httpRouteRefName, (), organization);
+            if rateLimitPolicyCR != () {
+                apiArtifact.rateLimitPolicies[rateLimitPolicyCR.metadata.name] = rateLimitPolicyCR;
+            }
+        }
         return httpRouteRules;
     }
+
     private isolated function generateScopeCR(model:APIArtifact apiArtifact, API api, commons:Organization organization, string scope) returns model:Scope {
         string scopeName = uuid:createType1AsString();
         model:Scope scopeCr = {
-            metadata: {name: scopeName, namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace), labels: self.getLabels(api)},
+            metadata: {name: scopeName, namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace), labels: self.getLabels(api, organization)},
             spec: {
                 names: [scope]
             }
@@ -1089,7 +1346,7 @@ public class APIClient {
         string retrieveDisableAuthenticationRefName = self.retrieveDisableAuthenticationRefName(api, endpointType, organization);
         string nameSpace = getNameSpace(runtimeConfiguration.apiCreationNamespace);
         model:Authentication authentication = {
-            metadata: {name: retrieveDisableAuthenticationRefName, namespace: nameSpace, labels: self.getLabels(api)},
+            metadata: {name: retrieveDisableAuthenticationRefName, namespace: nameSpace, labels: self.getLabels(api, organization)},
             spec: {
                 targetRef: {
                     group: "",
@@ -1122,7 +1379,7 @@ public class APIClient {
                 }
             }
             if endpointToUse != () {
-                model:HTTPRouteRule httpRouteRule = {matches: self.retrieveMatches(api, operation, organization), backendRefs: self.retrieveGeneratedBackend(api, endpointToUse, endpointType), filters: self.generateFilters(apiArtifact, api, endpointToUse, operation, endpointType)};
+                model:HTTPRouteRule httpRouteRule = {matches: self.retrieveMatches(api, operation, organization), backendRefs: self.retrieveGeneratedBackend(api, endpointToUse, endpointType), filters: self.generateFilters(apiArtifact, api, endpointToUse, operation, endpointType, organization)};
                 return httpRouteRule;
             } else {
                 return ();
@@ -1133,11 +1390,67 @@ public class APIClient {
         }
     }
 
-    private isolated function generateFilters(model:APIArtifact apiArtifact, API api, model:Endpoint endpoint, APIOperations operation, string endpointType) returns model:HTTPRouteFilter[] {
+    private isolated function generateFilters(model:APIArtifact apiArtifact, API api, model:Endpoint endpoint, APIOperations operation, string endpointType, commons:Organization organization) returns model:HTTPRouteFilter[] {
         model:HTTPRouteFilter[] routeFilters = [];
         model:HTTPRouteFilter replacePathFilter = {'type: "URLRewrite", urlRewrite: {path: {'type: "ReplaceFullPath", replaceFullPath: self.generatePrefixMatch(api, endpoint, operation, endpointType)}}};
         routeFilters.push(replacePathFilter);
+        APIOperationPolicies? operationPoliciesToUse = ();
+        if (api.apiPolicies is APIOperationPolicies) {
+            operationPoliciesToUse = api.apiPolicies;
+        } else {
+            operationPoliciesToUse = operation.operationPolicies;
+        }
+        if operationPoliciesToUse is APIOperationPolicies {
+            OperationPolicy[]? request = operationPoliciesToUse.request;
+            if request is OperationPolicy[] {
+                model:HTTPRouteFilter requestHeaderFilter = {
+                    'type: "RequestHeaderModifier",
+                    requestHeaderModifier: self.extractHttpHeaderFilterData(request, organization)
+                };
+                routeFilters.push(requestHeaderFilter);
+            }
+            OperationPolicy[]? response = operationPoliciesToUse.response;
+            if response is OperationPolicy[] {
+                model:HTTPRouteFilter responseHeaderFilter = {
+                    'type: "ResponseHeaderModifier",
+                    responseHeaderModifier: self.extractHttpHeaderFilterData(response, organization)
+                };
+                routeFilters.push(responseHeaderFilter);
+            }
+        }
         return routeFilters;
+    }
+
+    isolated function extractHttpHeaderFilterData(OperationPolicy[] operationPolicy, commons:Organization organization) returns model:HTTPHeaderFilter {
+        model:HTTPHeader[] setPolicies = [];
+        string[] removePolicies = [];
+        foreach OperationPolicy policy in operationPolicy {
+            string policyName = policy.policyName;
+
+            record {}? policyParameters = policy.parameters;
+            if (policyParameters is record {}) {
+                if (policyName == "addHeader") {
+
+                    model:HTTPHeader httpHeader = {
+                        name: <string>policyParameters.get("headerName"),
+                        value: <string>policyParameters.get("headerValue")
+                    };
+                    setPolicies.push(httpHeader);
+                }
+                if (policyName == "removeHeader") {
+                    string httpHeader = <string>policyParameters.get("headerName");
+                    removePolicies.push(httpHeader);
+                }
+            }
+        }
+        model:HTTPHeaderFilter headerModifier = {};
+        if (setPolicies != []) {
+            headerModifier.set = setPolicies;
+        }
+        if (removePolicies != []) {
+            headerModifier.remove = removePolicies;
+        }
+        return headerModifier;
     }
 
     isolated function generatePrefixMatch(API api, model:Endpoint endpoint, APIOperations operation, string endpointType) returns string {
@@ -1205,24 +1518,22 @@ public class APIClient {
     private isolated function retrieveGeneratedBackend(API api, model:Endpoint endpoint, string endpointType) returns model:HTTPBackendRef[] {
         model:HTTPBackendRef httpBackend = {
             namespace: <string>endpoint.namespace,
-            kind: "Service",
-            weight: 1,
-            port: <int>endpoint.port,
+            kind: "Backend",
             name: <string>endpoint.name,
-            group: ""
+            group: "dp.wso2.com"
         };
         return [httpBackend];
     }
 
-    private isolated function retrievePort(Service serviceEntry) returns int {
+    private isolated function retrievePort(Service serviceEntry) returns PortMapping {
         PortMapping[]? portmappings = serviceEntry.portmapping;
         if portmappings is PortMapping[] {
             if portmappings.length() > 0 {
-                return portmappings[0].targetport;
+                return portmappings[0];
             }
         }
 
-        return 80;
+        return {port: 80, protocol: "http", name: "", targetport: 0};
     }
 
     private isolated function retrieveMatches(API api, APIOperations apiOperation, commons:Organization organization) returns model:HTTPRouteMatch[] {
@@ -1292,7 +1603,7 @@ public class APIClient {
     }
 
     public isolated function generateAPIKey(string apiId, commons:Organization organization) returns APIKey|BadRequestError|NotFoundError|InternalServerErrorError {
-        model:API|error api = getAPI(apiId, organization);
+        model:API? api = getAPI(apiId, organization);
         if api is model:API {
             InternalTokenGenerator tokenGenerator = new ();
             string|jwt:Error generatedToken = tokenGenerator.generateToken(api, APK_USER);
@@ -1343,7 +1654,7 @@ public class APIClient {
         }
     }
 
-    isolated function generateAndSetK8sServiceMapping(model:APIArtifact apiArtifact, API api, Service serviceEntry, string namespace) {
+    isolated function generateAndSetK8sServiceMapping(model:APIArtifact apiArtifact, API api, Service serviceEntry, string namespace, commons:Organization organization) {
         model:API? k8sAPI = apiArtifact.api;
         if k8sAPI is model:API {
             model:K8sServiceMapping k8sServiceMapping = {
@@ -1352,7 +1663,7 @@ public class APIClient {
                     namespace: namespace,
                     uid: (),
                     creationTimestamp: (),
-                    labels: self.getLabels(api)
+                    labels: self.getLabels(api, organization)
                 },
                 spec: {
                     serviceRef: {
@@ -1373,10 +1684,10 @@ public class APIClient {
         return uniqueId + "-servicemapping";
     }
 
-    isolated function deleteServiceMappings(model:API api) returns commons:APKError? {
+    isolated function deleteServiceMappings(model:API api, commons:Organization organization) returns commons:APKError? {
         do {
             map<model:K8sServiceMapping> retrieveServiceMappingsForAPIResult = retrieveServiceMappingsForAPI(api).clone();
-            model:ServiceMappingList|http:ClientError k8sServiceMapingsDeletionResponse = check getK8sServiceMapingsForAPI(api.spec.apiDisplayName, api.spec.apiVersion, api.metadata.namespace);
+            model:ServiceMappingList|http:ClientError k8sServiceMapingsDeletionResponse = check getK8sServiceMapingsForAPI(api.spec.apiDisplayName, api.spec.apiVersion, api.metadata.namespace, organization);
             if k8sServiceMapingsDeletionResponse is model:ServiceMappingList {
                 foreach model:K8sServiceMapping item in k8sServiceMapingsDeletionResponse.items {
                     retrieveServiceMappingsForAPIResult[<string>item.metadata.uid] = item;
@@ -1601,22 +1912,70 @@ public class APIClient {
         return apkError;
     }
 
-    isolated function createBackendService(API api, APIOperations? apiOperation, string endpointType, commons:Organization organization, string url) returns model:Service {
+    isolated function createBackendService(API api, APIOperations? apiOperation, string endpointType, commons:Organization organization, string url) returns model:Backend|error {
         string nameSpace = getNameSpace(runtimeConfiguration.apiCreationNamespace);
-        model:Service backendService = {
+        string host = self.gethost(url);
+        string|() configMapName = check getConfigMapNameByHostname(api, organization, host);
+        model:Backend backendService = {
             metadata: {
                 name: getBackendServiceUid(api, apiOperation, endpointType, organization),
                 namespace: nameSpace,
-                uid: (),
-                creationTimestamp: (),
-                labels: self.getLabels(api)
+                labels: self.getLabels(api, organization)
             },
             spec: {
-                externalName: self.gethost(url),
-                'type: "ExternalName"
+                services: [
+                    {
+                        host: self.gethost(url),
+                        port: check self.getPort(url)
+                    }
+                ],
+                protocol: url.startsWith("https:") ? "https" : "http"
             }
         };
+        if configMapName is string && backendService.spec.protocol == "https" {
+            backendService.spec.tls = {
+                configMapRef: {
+                    key: CERTIFICATE_KEY_CONFIG_MAP,
+                    name: configMapName
+                }
+            };
+        }
         return backendService;
+
+    }
+
+    public isolated function generateRateLimitPolicyCR(API api, APIRateLimit? rateLimit, string httpRouteRefName, APIOperations? operation, commons:Organization organization) returns model:RateLimitPolicy? {
+        model:RateLimitPolicy? rateLimitPolicyCR = ();
+        if rateLimit != () {
+            rateLimitPolicyCR = {
+                metadata: {
+                    name: retrieveRateLimitPolicyRefName(operation),
+                    namespace: currentNameSpace,
+                    labels: self.getLabels(api, organization)
+                },
+                spec: {
+                    default: self.retrieveRateLimitData(rateLimit),
+                    targetRef: {
+                        group: operation != () ? "dp.wso2.com" : "gateway.networking.k8s.io",
+                        kind: operation != () ? "Resource" : "HTTPRoute",
+                        name: httpRouteRefName,
+                        namespace: currentNameSpace
+                    }
+                }
+            };
+        }
+        return rateLimitPolicyCR;
+    }
+
+    isolated function retrieveRateLimitData(APIRateLimit rateLimit) returns model:RateLimitData {
+        model:RateLimitData rateLimitData = {
+            api: {
+                requestsPerUnit: rateLimit.requestsPerUnit,
+                unit: rateLimit.unit
+            },
+            'type: "Api"
+        };
+        return rateLimitData;
     }
 
     public isolated function retrieveDefaultDefinition(model:API api) returns json {
@@ -1850,6 +2209,7 @@ public class APIClient {
             return internalError;
         }
     }
+
     private isolated function validateAndRetrieveDefinition(string 'type, string? url, string? inlineAPIDefinition, byte[]? content, string? fileName) returns runtimeapi:APIDefinitionValidationResponse|runtimeapi:APIManagementException|error|BadRequestError {
         runtimeapi:APIDefinitionValidationResponse|runtimeapi:APIManagementException|error validationResponse;
         boolean inlineApiDefinitionAvailable = inlineAPIDefinition is string;
@@ -1892,12 +2252,13 @@ public class APIClient {
         }
         return validationResponse;
     }
+
     private isolated function mapImportDefinitionRequest(http:Request message) returns ImportDefintionRequest|error|BadRequestError {
         string|() url = ();
         string|() fileName = ();
         byte[]|() fileContent = ();
         string|() inlineAPIDefinition = ();
-        string|() additinalProperties = ();
+        string|() additionalProperties = ();
         string|() 'type = ();
         mime:Entity[]|http:ClientError payLoadParts = message.getBodyParts();
         if payLoadParts is mime:Entity[] {
@@ -1912,8 +2273,8 @@ public class APIClient {
                     fileContent = check payLoadPart.getByteArray();
                 } else if fieldName == "inlineAPIDefinition" {
                     inlineAPIDefinition = check payLoadPart.getText();
-                } else if fieldName == "additinalProperties" {
-                    additinalProperties = check payLoadPart.getText();
+                } else if fieldName == "additionalProperties" {
+                    additionalProperties = check payLoadPart.getText();
                 } else if fieldName == "type" {
                     'type = check payLoadPart.getText();
                 }
@@ -1927,11 +2288,11 @@ public class APIClient {
             BadRequestError badRequest = {body: {code: 90914, message: "atleast one of the field required (file,inlineApiDefinition,url)."}};
             return badRequest;
         }
-        if additinalProperties is () || additinalProperties.length() == 0 {
+        if additionalProperties is () || additionalProperties.length() == 0 {
             BadRequestError badRequest = {body: {code: 90914, message: "additionalProperties not provided."}};
             return badRequest;
         }
-        json apiObject = check value:fromJsonString(additinalProperties);
+        json apiObject = check value:fromJsonString(additionalProperties);
         API api = check apiObject.cloneWithType(API);
         ImportDefintionRequest importDefintionRequest = {
             fileName: fileName,
@@ -1964,7 +2325,7 @@ public class APIClient {
                         Service|error serviceById = getServiceById(serviceId);
                         if serviceById is Service {
                             check self.prepareApiArtifactforNewVersion(apiArtifact, serviceById, api, newVersion, organization);
-                            model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact);
+                            model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact, organization);
                             CreatedAPI createdAPI = {body: {name: deployAPIToK8sResult.spec.apiDisplayName, context: self.returnFullContext(deployAPIToK8sResult.spec.context, deployAPIToK8sResult.spec.apiVersion), 'version: deployAPIToK8sResult.spec.apiVersion, id: deployAPIToK8sResult.metadata.uid}};
                             return createdAPI;
                         } else {
@@ -1974,7 +2335,7 @@ public class APIClient {
                     }
                 }
                 check self.prepareApiArtifactforNewVersion(apiArtifact, (), api, newVersion, organization);
-                model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact);
+                model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact, organization);
                 CreatedAPI createdAPI = {body: {name: deployAPIToK8sResult.spec.apiDisplayName, context: self.returnFullContext(deployAPIToK8sResult.spec.context, deployAPIToK8sResult.spec.apiVersion), 'version: deployAPIToK8sResult.spec.apiVersion, id: deployAPIToK8sResult.metadata.uid}};
                 return createdAPI;
             } else {
@@ -1988,29 +2349,55 @@ public class APIClient {
             return error("Internal Error occured", code = 909000, message = "Internal Error occured", description = "Internal Error occured", statusCode = 500);
         }
     }
+
     private isolated function prepareApiArtifactforNewVersion(model:APIArtifact apiArtifact, Service? serviceEntry, API oldAPI, string newVersion, commons:Organization organization) returns error? {
         API newAPI = {
             name: oldAPI.name,
             context: regex:replace(oldAPI.context, oldAPI.'version, newVersion),
-            'version: newVersion
+            'version: newVersion,
+            operations: oldAPI.operations,
+            apiRateLimit: oldAPI.apiRateLimit
         };
-        check self.prepareConfigMap(apiArtifact, oldAPI, newAPI);
-        self.prepareHttpRoute(apiArtifact, serviceEntry, oldAPI, newAPI, PRODUCTION_TYPE, organization);
-        self.prepareHttpRoute(apiArtifact, serviceEntry, oldAPI, newAPI, SANDBOX_TYPE, organization);
+        check self.prepareConfigMap(apiArtifact, oldAPI, newAPI, organization);
+        check self.prepareHttpRoute(apiArtifact, serviceEntry, oldAPI, newAPI, PRODUCTION_TYPE, organization);
+        check self.prepareHttpRoute(apiArtifact, serviceEntry, oldAPI, newAPI, SANDBOX_TYPE, organization);
         self.prepareK8sServiceMapping(apiArtifact, serviceEntry, oldAPI, newAPI, organization);
         self.prepareAPICr(apiArtifact, oldAPI, newAPI, organization);
+        self.prepareBackendCertificateCR(apiArtifact, oldAPI, newAPI, organization);
         apiArtifact.runtimeAPI = self.generateRuntimeAPIArtifact(newAPI, serviceEntry, organization);
 
+    }
+
+    private isolated function prepareBackendCertificateCR(model:APIArtifact apiArtifact, API oldAPI, API newAPI, commons:Organization organization) {
+        map<string> backendCertificateMapping = {};
+        foreach model:ConfigMap backendCertificate in apiArtifact.endpointCertificates {
+            string oldBackendCertificateName = backendCertificate.metadata.name.clone();
+            backendCertificate.metadata.labels = getLabelsForCertificates(newAPI, organization);
+            backendCertificate.metadata.name = uuid:createType1AsString();
+            backendCertificateMapping[oldBackendCertificateName] = backendCertificate.metadata.name;
+        }
+        foreach model:Backend backend in apiArtifact.backendServices {
+            model:TLSConfig? tlsConfig = backend.spec.tls;
+            if tlsConfig is model:TLSConfig {
+                model:RefConfig? configMapRef = tlsConfig.configMapRef;
+                if configMapRef is model:RefConfig {
+                    if backendCertificateMapping.hasKey(configMapRef.name) {
+                        configMapRef.name = backendCertificateMapping.get(configMapRef.name);
+                    }
+                }
+            }
+        }
     }
     private isolated function prepareK8sServiceMapping(model:APIArtifact apiArtifact, Service? serviceEntry, API oldAPI, API newAPI, commons:Organization organization) {
         model:K8sServiceMapping[] serviceMappings = apiArtifact.serviceMapping;
         foreach model:K8sServiceMapping serviceMapping in serviceMappings {
             serviceMapping.metadata.name = self.getServiceMappingEntryName(apiArtifact.uniqueId);
-            serviceMapping.metadata.labels = self.getLabels(newAPI);
+            serviceMapping.metadata.labels = self.getLabels(newAPI, organization);
             serviceMapping.spec.apiRef.name = apiArtifact.uniqueId;
         }
     }
-    private isolated function prepareHttpRoute(model:APIArtifact apiArtifact, Service? serviceEntry, API oldAPI, API newAPI, string endpointType, commons:Organization organization) {
+
+    private isolated function prepareHttpRoute(model:APIArtifact apiArtifact, Service? serviceEntry, API oldAPI, API newAPI, string endpointType, commons:Organization organization) returns error? {
         model:Httproute[] httproutes;
         if endpointType == PRODUCTION_TYPE {
             httproutes = apiArtifact.productionRoute;
@@ -2020,8 +2407,9 @@ public class APIClient {
         map<string> serviceMapping = {};
         map<string> extenstionRefMappings = {};
         foreach model:Httproute httproute in httproutes {
+            string oldHttpRouteName = httproute.metadata.name;
             httproute.metadata.name = retrieveHttpRouteRefName(newAPI, endpointType, organization);
-            httproute.metadata.labels = self.getLabels(newAPI);
+            httproute.metadata.labels = self.getLabels(newAPI, organization);
             model:HTTPRouteRule[] routeRules = httproute.spec.rules;
             foreach model:HTTPRouteRule routeRule in routeRules {
                 model:HTTPBackendRef[]? backendRefs = routeRule.backendRefs;
@@ -2031,7 +2419,7 @@ public class APIClient {
                             string newServiceName = serviceMapping.get(backendRef.name);
                             backendRef.name = newServiceName;
                         } else {
-                            [string, string]? prepareBackendRefResult = self.prepareBackendRef(backendRef, apiArtifact, serviceEntry, oldAPI, newAPI, endpointType, organization);
+                            [string, string]? prepareBackendRefResult = check self.prepareBackendRef(backendRef, apiArtifact, serviceEntry, oldAPI, newAPI, endpointType, organization);
                             if prepareBackendRefResult is [string, string] {
                                 serviceMapping[prepareBackendRefResult[0]] = prepareBackendRefResult[1];
                             }
@@ -2073,53 +2461,77 @@ public class APIClient {
                                     extenstionRefMappings[extensionRef.name] = newScopeCR.metadata.name;
                                     extensionRef.name = newScopeCR.metadata.name;
                                 }
+                            } else if extensionRef.kind == "RateLimitPolicy" {
+                                if apiArtifact.rateLimitPolicies.hasKey(extensionRef.name) {
+                                    model:RateLimitPolicy rateLimitPolicyCR = apiArtifact.rateLimitPolicies.get(extensionRef.name).clone();
+                                    model:RateLimitPolicy newRateLimitPolicyCR = self.prepareRateLimitPolicyCR(newAPI, rateLimitPolicyCR, httproute.metadata.name, organization);
+                                    _ = apiArtifact.rateLimitPolicies.remove(extensionRef.name);
+                                    apiArtifact.rateLimitPolicies[newRateLimitPolicyCR.metadata.name] = newRateLimitPolicyCR;
+                                    extenstionRefMappings[extensionRef.name] = newRateLimitPolicyCR.metadata.name;
+                                    extensionRef.name = newRateLimitPolicyCR.metadata.name;
+                                }
                             }
                         }
                     }
                 }
             }
-            self.prepareBackendPolicyCR(apiArtifact, newAPI, endpointType, serviceMapping, organization);
-        }
-    }
-    private isolated function prepareScopeCR(model:APIArtifact apiArtifact, API api, model:Scope scope, commons:Organization organization) returns model:Scope {
-        scope.metadata.name = uuid:createType1AsString();
-        scope.metadata.labels = self.getLabels(api);
-        return scope;
-    }
-    private isolated function prepareBackendPolicyCR(model:APIArtifact apiArtifact, API api, string endpointType, map<string> backendServiceMapping, commons:Organization organization) {
-        foreach model:BackendPolicy backendPolicy in apiArtifact.backendPolicies {
-            backendPolicy.metadata.name = getBackendPolicyUid(api, endpointType, organization);
-            string oldServiceName = backendPolicy.spec.targetRef.name;
-            if backendServiceMapping.hasKey(oldServiceName) {
-                backendPolicy.spec.targetRef.name = backendServiceMapping.get(oldServiceName);
+
+            map<model:RateLimitPolicy> rateLimitPolicies = apiArtifact.rateLimitPolicies;
+            foreach string extensionRefName in rateLimitPolicies.keys() {
+                model:RateLimitPolicy rateLimitPolicyCR = apiArtifact.rateLimitPolicies.get(extensionRefName).clone();
+                if rateLimitPolicyCR.spec.targetRef.kind == "HTTPRoute" && rateLimitPolicyCR.spec.targetRef.name == oldHttpRouteName {
+                    model:RateLimitPolicy newRateLimitPolicyCR = self.prepareRateLimitPolicyCR(newAPI, rateLimitPolicyCR, httproute.metadata.name, organization);
+                    _ = apiArtifact.rateLimitPolicies.remove(extensionRefName);
+                    apiArtifact.rateLimitPolicies[newRateLimitPolicyCR.metadata.name] = newRateLimitPolicyCR;
+                }
             }
         }
     }
+
+    private isolated function prepareScopeCR(model:APIArtifact apiArtifact, API api, model:Scope scope, commons:Organization organization) returns model:Scope {
+        scope.metadata.name = uuid:createType1AsString();
+        scope.metadata.labels = self.getLabels(api, organization);
+        return scope;
+    }
+
     private isolated function prepareAuthenticationCR(model:APIArtifact apiArtifact, API api, model:Authentication authentication, string endpointType, commons:Organization organization) returns model:Authentication {
         authentication.metadata.name = self.retrieveDisableAuthenticationRefName(api, endpointType, organization);
-        authentication.metadata.labels = self.getLabels(api);
+        authentication.metadata.labels = self.getLabels(api, organization);
         authentication.spec.targetRef.name = retrieveHttpRouteRefName(api, endpointType, organization);
         return authentication;
     }
-    private isolated function prepareBackendRef(model:HTTPBackendRef backendRef, model:APIArtifact apiArtifact, Service? serviceEntry, API oldAPI, API newAPI, string endpointType, commons:Organization organization) returns [string, string]? {
+
+    private isolated function prepareRateLimitPolicyCR(API api, model:RateLimitPolicy rateLimitPolicy, string httpRouteRefName, commons:Organization organization) returns model:RateLimitPolicy {
+        rateLimitPolicy.metadata.name = uuid:createType1AsString();
+        rateLimitPolicy.metadata.labels = self.getLabels(api, organization);
+        rateLimitPolicy.spec.targetRef.name = httpRouteRefName;
+        return rateLimitPolicy;
+    }
+
+    private isolated function prepareBackendRef(model:HTTPBackendRef backendRef, model:APIArtifact apiArtifact, Service? serviceEntry, API oldAPI, API newAPI, string endpointType, commons:Organization organization) returns [string, string]?|error {
         if apiArtifact.serviceMapping.length() >= 1 {
             if serviceEntry is Service {
-                backendRef.name = serviceEntry.name;
-                backendRef.namespace = serviceEntry.namespace;
+                model:Backend backendService = check self.createBackendService(newAPI, (), PRODUCTION_TYPE, organization, self.constructServiceURL(serviceEntry));
+                backendRef.name = backendService.metadata.name;
+                backendRef.namespace = backendService.metadata.namespace;
                 apiArtifact.serviceMapping.removeAll();
-                self.generateAndSetK8sServiceMapping(apiArtifact, newAPI, serviceEntry, getNameSpace(runtimeConfiguration.apiCreationNamespace));
+                apiArtifact.backendServices[backendService.metadata.name] = backendService;
+                string oldBackenServiceUUID = getBackendServiceUid(oldAPI, (), PRODUCTION_TYPE, organization);
+                _ = apiArtifact.backendServices.remove(oldBackenServiceUUID);
+                self.generateAndSetK8sServiceMapping(apiArtifact, newAPI, serviceEntry, getNameSpace(runtimeConfiguration.apiCreationNamespace), organization);
+                return [oldBackenServiceUUID, backendService.metadata.name];
             }
         } else {
-            map<model:Service> backendServices = apiArtifact.backendServices;
+            map<model:Backend> backendServices = apiArtifact.backendServices;
             string oldBackendRefName = backendRef.name;
             if backendServices.hasKey(oldBackendRefName) {
-                model:Service 'service = backendServices.get(oldBackendRefName).clone();
+                model:Backend 'service = backendServices.get(oldBackendRefName).clone();
                 if 'service.metadata.name.includes("-api-") {
                     'service.metadata.name = getBackendServiceUid(newAPI, (), endpointType, organization);
                 } else {
                     'service.metadata.name = getBackendServiceUid(newAPI, {}, endpointType, organization);
                 }
-                'service.metadata.labels = self.getLabels(newAPI);
+                'service.metadata.labels = self.getLabels(newAPI, organization);
                 _ = backendServices.remove(oldBackendRefName);
                 backendServices['service.metadata.name] = 'service;
                 backendRef.name = 'service.metadata.name;
@@ -2128,6 +2540,7 @@ public class APIClient {
         }
         return;
     }
+
     private isolated function prepareAPICr(model:APIArtifact apiArtifact, API oldAPI, API newAPI, commons:Organization organization) {
         string uuid = getUniqueIdForAPI(oldAPI.name, newAPI.'version, organization);
         apiArtifact.uniqueId = uuid;
@@ -2136,7 +2549,7 @@ public class APIClient {
             string oldName = api.metadata.name;
             api.spec.apiVersion = newAPI.'version;
             api.metadata.name = uuid;
-            api.metadata.labels = self.getLabels(newAPI);
+            api.metadata.labels = self.getLabels(newAPI, organization);
             api.spec.context = newAPI.context;
             string[] prodHTTPRouteRefs = [];
             foreach model:Httproute httpRoute in apiArtifact.productionRoute {
@@ -2158,7 +2571,8 @@ public class APIClient {
             }
         }
     }
-    private isolated function prepareConfigMap(model:APIArtifact apiArtifact, API oldAPI, API newAPI) returns error? {
+
+    private isolated function prepareConfigMap(model:APIArtifact apiArtifact, API oldAPI, API newAPI, commons:Organization organization) returns error? {
         model:ConfigMap? definition = apiArtifact.definition;
         if definition is model:ConfigMap {
             json definitionJson = check self.getDefinitionFromConfigMap(definition);
@@ -2167,68 +2581,78 @@ public class APIClient {
             infoElement["version"] = newAPI.'version;
             map<json> definitionMap = <map<json>>definitionJson;
             definitionMap["info"] = infoElement;
-            self.retrieveGeneratedConfigmapForDefinition(apiArtifact, newAPI, definitionMap, apiArtifact.uniqueId);
+            check self.retrieveGeneratedConfigmapForDefinition(apiArtifact, newAPI, definitionMap, apiArtifact.uniqueId, organization);
         }
     }
 
     private isolated function getApiArtifact(API api, commons:Organization organization) returns model:APIArtifact|error {
-        model:API k8sapi = check getAPI(<string>api.id, organization);
-        model:APIArtifact apiArtifact = {uniqueId: k8sapi.metadata.name};
-        // retrieveConfigmap
-        string? definitionFileRef = k8sapi.spec.definitionFileRef;
-        if definitionFileRef is string {
-            model:ConfigMap|error? definitionConfigmap = check self.getDefinitionConfigmap(definitionFileRef, k8sapi.metadata.namespace);
-            if definitionConfigmap is model:ConfigMap {
-                apiArtifact.definition = self.sanitizeConfigMapData(definitionConfigmap);
+        model:API? k8sapi = getAPI(<string>api.id, organization);
+        if k8sapi is model:API {
+            model:APIArtifact apiArtifact = {uniqueId: k8sapi.metadata.name};
+            // retrieveConfigmap
+            string? definitionFileRef = k8sapi.spec.definitionFileRef;
+            if definitionFileRef is string {
+                model:ConfigMap|error? definitionConfigmap = check self.getDefinitionConfigmap(definitionFileRef, k8sapi.metadata.namespace);
+                if definitionConfigmap is model:ConfigMap {
+                    apiArtifact.definition = self.sanitizeConfigMapData(definitionConfigmap);
+                }
             }
-        }
-        json[]? prodHTTPRouteRefs = k8sapi.spec.prodHTTPRouteRefs;
-        if prodHTTPRouteRefs is json[] && prodHTTPRouteRefs.length() > 0 {
-            foreach json prodHTTPRouteRef in prodHTTPRouteRefs {
-                model:Httproute httpRoute = check getHttpRoute(prodHTTPRouteRef.toString(), k8sapi.metadata.namespace);
-                apiArtifact.productionRoute.push(self.sanitizeHttpRoute(httpRoute));
+            json[]? prodHTTPRouteRefs = k8sapi.spec.prodHTTPRouteRefs;
+            if prodHTTPRouteRefs is json[] && prodHTTPRouteRefs.length() > 0 {
+                foreach json prodHTTPRouteRef in prodHTTPRouteRefs {
+                    model:Httproute httpRoute = check getHttpRoute(prodHTTPRouteRef.toString(), k8sapi.metadata.namespace);
+                    apiArtifact.productionRoute.push(self.sanitizeHttpRoute(httpRoute));
+                }
             }
-        }
-        json[]? sandHTTPRouteRefs = k8sapi.spec.sandHTTPRouteRefs;
-        if sandHTTPRouteRefs is json[] && sandHTTPRouteRefs.length() > 0 {
-            foreach json sandHTTPRouteRef in sandHTTPRouteRefs {
-                model:Httproute httpRoute = check getHttpRoute(sandHTTPRouteRef.toString(), k8sapi.metadata.namespace);
-                apiArtifact.sandboxRoute.push(self.sanitizeHttpRoute(httpRoute));
+            json[]? sandHTTPRouteRefs = k8sapi.spec.sandHTTPRouteRefs;
+            if sandHTTPRouteRefs is json[] && sandHTTPRouteRefs.length() > 0 {
+                foreach json sandHTTPRouteRef in sandHTTPRouteRefs {
+                    model:Httproute httpRoute = check getHttpRoute(sandHTTPRouteRef.toString(), k8sapi.metadata.namespace);
+                    apiArtifact.sandboxRoute.push(self.sanitizeHttpRoute(httpRoute));
+                }
             }
-        }
-        model:ServiceMappingList k8sServiceMapingsForAPI = check getK8sServiceMapingsForAPI(api.name, api.'version, k8sapi.metadata.namespace);
-        foreach model:K8sServiceMapping serviceMapping in k8sServiceMapingsForAPI.items {
-            apiArtifact.serviceMapping.push(self.sanitizeServiceMapping(serviceMapping));
-        }
-        model:ServiceList backendServicesForAPI = check getBackendServicesForAPI(api.name, api.'version, k8sapi.metadata.namespace);
-        foreach model:Service serviceEntry in backendServicesForAPI.items {
-            apiArtifact.backendServices[serviceEntry.metadata.name] = self.sanitizeBackendService(serviceEntry);
-        }
-        model:AuthenticationList authenticationCrsForAPI = check getAuthenticationCrsForAPI(api.name, api.'version, k8sapi.metadata.namespace);
-        foreach model:Authentication authentication in authenticationCrsForAPI.items {
-            apiArtifact.authenticationMap[authentication.metadata.name] = self.sanitizeAuthenticationCrs(authentication);
-        }
-        model:BackendPolicyList backendPolicyList = check getBackendPolicyCRsForAPI(api.name, api.'version, k8sapi.metadata.namespace);
-        foreach model:BackendPolicy backendPolicy in backendPolicyList.items {
-            apiArtifact.backendPolicies[backendPolicy.metadata.name] = self.sanitizeBackendPolicyCrs(backendPolicy);
-        }
-        model:RuntimeAPI|http:ClientError internalAPI = getInternalAPI(k8sapi.metadata.name, k8sapi.metadata.namespace);
-        if internalAPI is model:RuntimeAPI {
-            apiArtifact.runtimeAPI = self.sanitizeRuntimeAPI(internalAPI);
-        } else if (internalAPI is http:ApplicationResponseError) {
-            if internalAPI.detail().statusCode != 404 {
+            model:ServiceMappingList k8sServiceMapingsForAPI = check getK8sServiceMapingsForAPI(api.name, api.'version, k8sapi.metadata.namespace, organization);
+            foreach model:K8sServiceMapping serviceMapping in k8sServiceMapingsForAPI.items {
+                apiArtifact.serviceMapping.push(self.sanitizeServiceMapping(serviceMapping));
+            }
+            model:AuthenticationList authenticationCrsForAPI = check getAuthenticationCrsForAPI(api.name, api.'version, k8sapi.metadata.namespace, organization);
+            foreach model:Authentication authentication in authenticationCrsForAPI.items {
+                apiArtifact.authenticationMap[authentication.metadata.name] = self.sanitizeAuthenticationCrs(authentication);
+            }
+            model:BackendList backendList = check getBackendPolicyCRsForAPI(api.name, api.'version, k8sapi.metadata.namespace, organization);
+            foreach model:Backend backend in backendList.items {
+                apiArtifact.backendServices[backend.metadata.name] = self.sanitizeBackendPolicyCrs(backend);
+            }
+            model:RuntimeAPI|http:ClientError internalAPI = getInternalAPI(k8sapi.metadata.name, k8sapi.metadata.namespace);
+            if internalAPI is model:RuntimeAPI {
+                apiArtifact.runtimeAPI = self.sanitizeRuntimeAPI(internalAPI);
+            } else if (internalAPI is http:ApplicationResponseError) {
+                if internalAPI.detail().statusCode != 404 {
+                    return internalAPI;
+                }
+            } else {
                 return internalAPI;
             }
+            model:ScopeList scopeList = check getScopeCrsForAPI(k8sapi.spec.apiDisplayName, k8sapi.spec.apiVersion, k8sapi.metadata.namespace, organization);
+            foreach model:Scope scope in scopeList.items {
+                apiArtifact.scopes[scope.metadata.name] = self.sanitizeScopeCR(scope);
+            }
+            model:RateLimitPolicyList rateLimitPolicyList = check getRateLimitPolicyCRsForAPI(k8sapi.spec.apiDisplayName, k8sapi.spec.apiVersion, k8sapi.metadata.namespace, organization);
+            foreach model:RateLimitPolicy rateLimitPolicy in rateLimitPolicyList.items {
+                apiArtifact.rateLimitPolicies[rateLimitPolicy.metadata.name] = self.sanitizeRateLimitPolicyCR(rateLimitPolicy);
+            }
+            apiArtifact.api = self.sanitizeAPICR(k8sapi);
+            model:ConfigMap[] endpointCertificateList = check getConfigMapsForAPICertificate(k8sapi.spec.apiDisplayName, k8sapi.spec.apiVersion, organization);
+            foreach model:ConfigMap endpointCertificate in endpointCertificateList {
+                apiArtifact.endpointCertificates[endpointCertificate.metadata.name] = self.sanitizeConfigMapData(endpointCertificate);
+            }
+            return apiArtifact;
         } else {
-            return internalAPI;
+            commons:APKError apkError = error(string:'join("API with ", <string>api.id, " not found"), message = "API not found", code = 900910, description = string:'join("API with ", <string>api.id, " not found"), statusCode = 404);
+            return apkError;
         }
-        model:ScopeList scopeList = check getScopeCrsForAPI(k8sapi.spec.apiDisplayName, k8sapi.spec.apiVersion, k8sapi.metadata.namespace);
-        foreach model:Scope scope in scopeList.items {
-            apiArtifact.scopes[scope.metadata.name] = self.sanitizeScopeCR(scope);
-        }
-        apiArtifact.api = self.sanitizeAPICR(k8sapi);
-        return apiArtifact;
     }
+
     private isolated function sanitizeScopeCR(model:Scope scope) returns model:Scope {
         model:Scope sanitizedScope = {
             metadata: {name: scope.metadata.name, namespace: scope.metadata.namespace, labels: scope.metadata.labels},
@@ -2236,6 +2660,15 @@ public class APIClient {
         };
         return sanitizedScope;
     }
+
+    private isolated function sanitizeRateLimitPolicyCR(model:RateLimitPolicy rateLimitPolicy) returns model:RateLimitPolicy {
+        model:RateLimitPolicy sanitizedRateLimitPolicy = {
+            metadata: {name: rateLimitPolicy.metadata.name, namespace: rateLimitPolicy.metadata.namespace, labels: rateLimitPolicy.metadata.labels},
+            spec: rateLimitPolicy.spec
+        };
+        return sanitizedRateLimitPolicy;
+    }
+
     private isolated function sanitizeRuntimeAPI(model:RuntimeAPI runtimeAPI) returns model:RuntimeAPI {
         model:RuntimeAPI sanitizedAPI = {
             metadata: {name: runtimeAPI.metadata.name, namespace: runtimeAPI.metadata.namespace, labels: runtimeAPI.metadata.labels},
@@ -2243,6 +2676,7 @@ public class APIClient {
         };
         return sanitizedAPI;
     }
+
     private isolated function sanitizeAPICR(model:API api) returns model:API {
         model:API modifiedAPI = {
             metadata: {name: api.metadata.name, namespace: api.metadata.namespace},
@@ -2267,7 +2701,8 @@ public class APIClient {
             metadata: {
                 name: configmap.metadata.name,
                 namespace: configmap.metadata.namespace,
-                labels: configmap.metadata.labels
+                labels: configmap.metadata.labels,
+                annotations: configmap.metadata.annotations
             },
             data: configmap.data,
             binaryData: configmap.binaryData
@@ -2317,16 +2752,18 @@ public class APIClient {
             spec: authentication.spec
         };
     }
-    private isolated function sanitizeBackendPolicyCrs(model:BackendPolicy backendPolicy) returns model:BackendPolicy {
+
+    private isolated function sanitizeBackendPolicyCrs(model:Backend backend) returns model:Backend {
         return {
             metadata: {
-                name: backendPolicy.metadata.name,
-                namespace: backendPolicy.metadata.namespace,
-                labels: backendPolicy.metadata.labels
+                name: backend.metadata.name,
+                namespace: backend.metadata.namespace,
+                labels: backend.metadata.labels
             },
-            spec: backendPolicy.spec
+            spec: backend.spec
         };
     }
+
     public isolated function exportAPI(string? apiId, commons:Organization organization) returns commons:APKError|NotFoundError|http:Response|BadRequestError {
         if apiId is string {
             do {
@@ -2345,9 +2782,6 @@ public class APIClient {
                     foreach model:Authentication authenticationCr in apiArtifact.authenticationMap {
                         _ = check self.convertAndStoreYamlFile(authenticationCr.toJsonString(), authenticationCr.metadata.name, zipDir, "policies/authentications");
                     }
-                    foreach model:Service backendService in apiArtifact.backendServices {
-                        _ = check self.convertAndStoreYamlFile(backendService.toJsonString(), backendService.metadata.name, zipDir, "backends");
-                    }
                     foreach model:Httproute httpRoute in apiArtifact.productionRoute {
                         _ = check self.convertAndStoreYamlFile(httpRoute.toJsonString(), httpRoute.metadata.name, zipDir, "httproutes");
                     }
@@ -2358,12 +2792,15 @@ public class APIClient {
                     foreach model:K8sServiceMapping servicemapping in apiArtifact.serviceMapping {
                         _ = check self.convertAndStoreYamlFile(servicemapping.toJsonString(), servicemapping.metadata.name, zipDir, "servicemappings");
                     }
-                    foreach model:BackendPolicy backendPolicy in apiArtifact.backendPolicies {
-                        _ = check self.convertAndStoreYamlFile(backendPolicy.toJsonString(), backendPolicy.metadata.name, zipDir, "policies/backendPolicies");
+                    foreach model:Backend backend in apiArtifact.backendServices {
+                        _ = check self.convertAndStoreYamlFile(backend.toJsonString(), backend.metadata.name, zipDir, "backends");
 
                     }
                     foreach model:Scope scope in apiArtifact.scopes {
                         _ = check self.convertAndStoreYamlFile(scope.toJsonString(), scope.metadata.name, zipDir, "scopes");
+                    }
+                    foreach model:ConfigMap endpointCertificate in apiArtifact.endpointCertificates {
+                        _ = check self.convertAndStoreYamlFile(endpointCertificate.toJsonString(), endpointCertificate.metadata.name, zipDir, "endpoint-certificates");
                     }
                     model:RuntimeAPI? runtimeAPI = apiArtifact.runtimeAPI;
                     if runtimeAPI is model:RuntimeAPI {
@@ -2386,6 +2823,7 @@ public class APIClient {
             return badRequest;
         }
     }
+
     private isolated function convertAndStoreYamlFile(string jsonString, string fileName, string directroy, string? subDirectory) returns error? {
         runtimeUtil:YamlUtil yamlUtil = runtimeUtil:newYamlUtil1();
         string|() convertedYaml = check yamlUtil.fromJsonStringToYaml(jsonString);
@@ -2399,55 +2837,68 @@ public class APIClient {
             _ = check io:fileWriteString(fullPath, convertedYaml);
         }
     }
+
     private isolated function zipDirectory(string apiId, string directoryPath) returns [string, string]|error {
         string zipName = apiId + ZIP_FILE_EXTENSTION;
         string zipPath = directoryPath + ZIP_FILE_EXTENSTION;
         _ = check runtimeUtil:ZIPUtils_zipDir(directoryPath, zipPath);
         return [zipName, zipPath];
     }
+
     public isolated function updateAPI(string apiId, API payload, string? definition, commons:Organization organization) returns API|BadRequestError|ForbiddenError|NotFoundError|PreconditionFailedError|InternalServerErrorError|commons:APKError {
-        API|NotFoundError api = check self.getAPIById(apiId, organization);
-        if api is API {
-            if payload.'type != api.'type {
-                BadRequestError badRequest = {body: {code: 900930, message: "API Type change not supported from update."}};
-                return badRequest;
-            }
-            if payload.context != api.context {
-                BadRequestError badRequest = {body: {code: 900930, message: "Context change not supported from update."}};
-                return badRequest;
-            }
-            if payload.'version != api.'version {
-                BadRequestError badRequest = {body: {code: 900930, message: "Version change not supported from update."}};
-                return badRequest;
-            }
-            API_serviceInfo? serviceInfo = payload.serviceInfo;
-            model:Endpoint? endpoint = ();
-            if serviceInfo is API_serviceInfo {
-                if payload.serviceInfo is API_serviceInfo {
-                    ServiceClient serviceClient = new;
-                    Service|error serviceEntry = serviceClient.getServiceByNameandNamespace(<string>serviceInfo.name, <string>serviceInfo.namespace);
-                    if serviceEntry is Service {
-                        endpoint = {
-                            port: self.retrievePort(serviceEntry),
-                            namespace: serviceEntry.namespace,
-                            name: serviceEntry.name,
-                            serviceEntry: true
-                        };
-                    } else {
-                        BadRequestError badRequest = {body: {code: 900930, message: "Service not found."}};
-                        return badRequest;
-                    }
+        do {
+            API|NotFoundError api = check self.getAPIById(apiId, organization);
+            if api is API {
+                if payload.'type != api.'type {
+                    BadRequestError badRequest = {body: {code: 900930, message: "API Type change not supported from update."}};
+                    return badRequest;
                 }
-            }
-            do {
+                if payload.context != api.context {
+                    BadRequestError badRequest = {body: {code: 900930, message: "Context change not supported from update."}};
+                    return badRequest;
+                }
+                if payload.'version != api.'version {
+                    BadRequestError badRequest = {body: {code: 900930, message: "Version change not supported from update."}};
+                    return badRequest;
+                }
                 self.setDefaultOperationsIfNotExist(payload);
                 string uniqueId = getUniqueIdForAPI(payload.name, payload.'version, organization);
                 model:APIArtifact apiArtifact = {uniqueId: uniqueId};
+                API_serviceInfo? serviceInfo = payload.serviceInfo;
+                model:Endpoint? endpoint = ();
+                if serviceInfo is API_serviceInfo {
+                    if payload.serviceInfo is API_serviceInfo {
+                        ServiceClient serviceClient = new;
+                        Service|error serviceEntry = serviceClient.getServiceByNameandNamespace(<string>serviceInfo.name, <string>serviceInfo.namespace);
+                        if serviceEntry is Service {
+                            model:Backend backend = check self.createBackendService(api, (), PRODUCTION_TYPE, organization, self.constructServiceURL(serviceEntry));
+                            apiArtifact.backendServices[backend.metadata.name] = backend;
+                            endpoint = {
+                                namespace: backend.metadata.namespace,
+                                name: backend.metadata.name,
+                                serviceEntry: true
+                            };
+                        } else {
+                            BadRequestError badRequest = {body: {code: 900930, message: "Service not found."}};
+                            return badRequest;
+                        }
+                    }
+                }
                 APIOperations[]? operations = payload.operations;
                 if operations is APIOperations[] {
                     if operations.length() == 0 {
                         BadRequestError badRequestError = {body: {code: 90912, message: "Atleast one operation need to specified"}};
                         return badRequestError;
+                    }
+                    // Validating operation policies.
+                    BadRequestError|() badRequestError = self.validateOperationPolicies(api.apiPolicies, operations, organization);
+                    if (badRequestError is BadRequestError) {
+                        return badRequestError;
+                    }
+                    // Validating rate limit.
+                    BadRequestError|() invalidRateLimitError = self.validateRateLimit(api.apiRateLimit, operations);
+                    if (invalidRateLimitError is BadRequestError) {
+                        return invalidRateLimitError;
                     }
                 } else {
                     BadRequestError badRequestError = {body: {code: 90912, message: "Atleast one operation need to specified"}};
@@ -2465,27 +2916,31 @@ public class APIClient {
                     _ = check self.setHttpRoute(apiArtifact, payload, createdEndpoints.hasKey(SANDBOX_TYPE) ? createdEndpoints.get(SANDBOX_TYPE) : (), uniqueId, SANDBOX_TYPE, organization);
                 }
                 if definition is string {
-                    self.retrieveGeneratedConfigmapForDefinition(apiArtifact, payload, definition, uniqueId);
+                    check self.retrieveGeneratedConfigmapForDefinition(apiArtifact, payload, definition, uniqueId, organization);
                 } else {
-                    json internalDefinition = check self.getDefinition(check getAPI(apiId, organization));
-                    json generatedSwagger = check self.retrieveGeneratedSwaggerDefinition(payload, internalDefinition.toJsonString());
-                    self.retrieveGeneratedConfigmapForDefinition(apiArtifact, payload, generatedSwagger, uniqueId);
+                    model:API? aPI = getAPI(apiId, organization);
+                    if aPI is model:API {
+                        json internalDefinition = check self.getDefinition(aPI);
+                        json generatedSwagger = check self.retrieveGeneratedSwaggerDefinition(payload, internalDefinition.toJsonString());
+                        check self.retrieveGeneratedConfigmapForDefinition(apiArtifact, payload, generatedSwagger, uniqueId, organization);
+                    }
                 }
                 self.generateAndSetAPICRArtifact(apiArtifact, payload, organization);
                 self.generateAndSetRuntimeAPIArtifact(apiArtifact, payload, (), organization);
-                model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact);
+                model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact, organization);
                 return check convertK8sAPItoAPI(deployAPIToK8sResult, false);
-            } on fail var e {
-                if e is commons:APKError {
-                    return e;
-                }
-                log:printError("Internal Error occured", e);
-                return error("Internal Error occured", code = 909000, message = "Internal Error occured", description = "Internal Error occured", statusCode = 500);
+            } else {
+                return api;
             }
-        } else {
-            return api;
+        } on fail var e {
+            if e is commons:APKError {
+                return e;
+            }
+            log:printError("Internal Error occured", e);
+            return error("Internal Error occured", code = 909000, message = "Internal Error occured", description = "Internal Error occured", statusCode = 500);
         }
     }
+
     # Description
     #
     # + apiId - Parameter Description  
@@ -2579,7 +3034,359 @@ public class APIClient {
             return internalError;
         }
     }
+
+    private isolated function filterMediationPoliciesBasedOnQuery(MediationPolicy[] mediationPolicyList, string query, int 'limit, int offset, string sortBy, string sortOrder) returns MediationPolicyList|BadRequestError {
+        MediationPolicy[] filteredList = [];
+        if query.length() > 0 {
+            int? semiCollonIndex = string:indexOf(query, ":", 0);
+            if semiCollonIndex is int && semiCollonIndex > 0 {
+                string keyWord = query.substring(0, semiCollonIndex);
+                string keyWordValue = query.substring(keyWord.length() + 1, query.length());
+                keyWordValue = keyWordValue + "|\\w+" + keyWordValue + "\\w+" + "|" + keyWordValue + "\\w+" + "|\\w+" + keyWordValue;
+                if keyWord.trim() == SEARCH_CRITERIA_NAME {
+                    foreach MediationPolicy mediationPolicy in mediationPolicyList {
+                        if (regex:matches(mediationPolicy.name, keyWordValue)) {
+                            filteredList.push(mediationPolicy);
+                        }
+                    }
+                } else if keyWord.trim() == SEARCH_CRITERIA_TYPE {
+                    foreach MediationPolicy mediationPolicy in mediationPolicyList {
+                        if (regex:matches(mediationPolicy.'type, keyWordValue)) {
+                            filteredList.push(mediationPolicy);
+                        }
+                    }
+                } else {
+                    BadRequestError badRequest = {body: {code: 90912, message: "Invalid KeyWord " + keyWord}};
+                    return badRequest;
+                }
+            } else {
+                string keyWordValue = query + "|\\w+" + query + "\\w+" + "|" + query + "\\w+" + "|\\w+" + query;
+
+                foreach MediationPolicy mediationPolicy in mediationPolicyList {
+
+                    if (regex:matches(mediationPolicy.name, keyWordValue)) {
+                        filteredList.push(mediationPolicy);
+                    }
+                }
+            }
+        } else {
+            filteredList = mediationPolicyList;
+        }
+        return self.filterMediationPolicies(filteredList, 'limit, offset, sortBy, sortOrder);
+    }
+
+    private isolated function filterMediationPolicies(MediationPolicy[] mediationPolicyList, int 'limit, int offset, string sortBy, string sortOrder) returns MediationPolicyList|BadRequestError {
+        MediationPolicy[] clonedMediationPolicyList = mediationPolicyList.clone();
+        MediationPolicy[] sortedMediationPolicies = [];
+        if sortBy == SORT_BY_POLICY_NAME && sortOrder == SORT_ORDER_ASC {
+            sortedMediationPolicies = from var mediationPolicy in clonedMediationPolicyList
+                order by mediationPolicy.name ascending
+                select mediationPolicy;
+        } else if sortBy == SORT_BY_POLICY_NAME && sortOrder == SORT_ORDER_DESC {
+            sortedMediationPolicies = from var mediationPolicy in clonedMediationPolicyList
+                order by mediationPolicy.name descending
+                select mediationPolicy;
+        } else if sortBy == SORT_BY_ID && sortOrder == SORT_ORDER_ASC {
+            sortedMediationPolicies = from var mediationPolicy in clonedMediationPolicyList
+                order by mediationPolicy.id ascending
+                select mediationPolicy;
+        } else if sortBy == SORT_BY_ID && sortOrder == SORT_ORDER_DESC {
+            sortedMediationPolicies = from var mediationPolicy in clonedMediationPolicyList
+                order by mediationPolicy.id descending
+                select mediationPolicy;
+        } else {
+            BadRequestError badRequest = {body: {code: 90912, message: "Invalid Sort By/Sort Order Value "}};
+            return badRequest;
+        }
+        MediationPolicy[] limitSet = [];
+        if sortedMediationPolicies.length() > offset {
+            foreach int i in offset ... (sortedMediationPolicies.length() - 1) {
+                if limitSet.length() < 'limit {
+                    limitSet.push(sortedMediationPolicies[i]);
+                }
+            }
+        }
+        return {list: limitSet, count: limitSet.length(), pagination: {total: mediationPolicyList.length(), 'limit: 'limit, offset: offset}};
+
+    }
+
+    # This return a Mediation policy by id.
+    #
+    # + id - Policy Id
+    # + organization - Organization
+    # + return - Return a Mediation Policy.
+    public isolated function getMediationPolicyById(string id, commons:Organization organization) returns MediationPolicy|NotFoundError|commons:APKError {
+        boolean mediationPolicyIDAvailable = id.length() > 0 ? true : false;
+        if (mediationPolicyIDAvailable && string:length(id.toString()) > 0)
+        {
+            lock {
+                foreach model:MediationPolicy mediationPolicy in getAvailableMediaionPolicies(organization) {
+                    if mediationPolicy.id == id {
+                        MediationPolicy matchedPolicy = convertPolicyModeltoPolicy(mediationPolicy);
+                        return matchedPolicy.cloneReadOnly();
+                    }
+                }
+            } on fail var e {
+                return error("Error while retrieving Mediation policy", e, message = "Error while retrieving Mediation policy", description = "Error while retrieving Mediation policy", code = 909000, statusCode = 500);
+            }
+        }
+        NotFoundError notfound = {body: {code: 909100, message: id + " not found."}};
+        return notfound;
+    }
+
+    # This returns list of Mediation Policies.
+    #
+    # + query - Search Query
+    # + 'limit - Limit 
+    # + offset - Offset 
+    # + sortBy - SortBy Parameter
+    # + sortOrder - SortOrder  Parameter
+    # + organization - Organization
+    # + return - Return list of Mediation Policies.
+    public isolated function getMediationPolicyList(string? query, int 'limit, int offset, string sortBy, string sortOrder, commons:Organization organization) returns MediationPolicyList|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
+        MediationPolicy[] mediationPolicyList = [];
+        foreach model:MediationPolicy mediationPolicy in getAvailableMediaionPolicies(organization) {
+            MediationPolicy policyItem = convertPolicyModeltoPolicy(mediationPolicy);
+            mediationPolicyList.push(policyItem);
+        } on fail var e {
+            return error("Error occured while getting Mediation policy list", e, message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = 500);
+        }
+        if query is string && query.toString().trim().length() > 0 {
+            return self.filterMediationPoliciesBasedOnQuery(mediationPolicyList, query, 'limit, offset, sortBy, sortOrder);
+        } else {
+            return self.filterMediationPolicies(mediationPolicyList, 'limit, offset, sortBy, sortOrder);
+        }
+    }
+
+    public isolated function getCertificates(string apiId, string? endpoint, int 'limit, int offset, commons:Organization organization) returns Certificates|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
+        model:API? api = getAPI(apiId, organization);
+        if api is model:API {
+            model:Certificate[] certificates = check getCertificatesForAPIId(api.clone(), organization.clone());
+            [model:Certificate[], int] filtredCerts = self.filterCertificatesBasedOnQuery(certificates.clone(), endpoint, 'limit, offset);
+            return {certificates: self.transformCertificateToCertMetadata(filtredCerts[0].cloneReadOnly()), count: filtredCerts[0].length(), pagination: {total: filtredCerts[1], 'limit: 'limit, offset: offset}};
+        } else {
+            NotFoundError notfound = {body: {code: 909100, message: apiId + " not found."}};
+            return notfound.clone();
+        }
+    }
+
+    private isolated function transformCertificateToCertMetadata(model:Certificate[] certificates) returns CertMetadata[] {
+        CertMetadata[] certMetadataList = [];
+        foreach model:Certificate certificate in certificates {
+            CertMetadata certMetadata = {certificateId: certificate.certificateId, endpoint: certificate.hostname};
+            certMetadataList.push(certMetadata);
+        }
+        return certMetadataList;
+
+    }
+
+    private isolated function filterCertificatesBasedOnQuery(model:Certificate[] certList, string? endpoint, int 'limit, int offset) returns [model:Certificate[], int] {
+        model:Certificate[] filteredList = [];
+        if endpoint is string && endpoint.length() > 0 {
+            foreach model:Certificate certificate in certList {
+                if (regex:matches(certificate.hostname, endpoint)) {
+                    filteredList.push(certificate);
+                }
+            }
+        } else {
+            filteredList = certList;
+        }
+        model:Certificate[] limitSet = [];
+        if filteredList.length() > offset {
+            foreach int i in offset ... (filteredList.length() - 1) {
+                if limitSet.length() < 'limit {
+                    limitSet.push(filteredList[i]);
+                }
+            }
+        }
+        return [limitSet, filteredList.length()];
+    }
+
+    public isolated function addCertificate(string apiId, http:Request request, commons:Organization organization) returns OkCertMetadata|BadRequestError|InternalServerErrorError|NotFoundError|commons:APKError {
+        do {
+            model:API? api = getAPI(apiId, organization);
+            if api is model:API {
+                EndpointCertificateRequest endpointCertificate = check self.retrieveEndpointCertificateRequest(request);
+                [crypto:Certificate?, boolean] validateCertificateExpiryResult = check validateCertificateExpiry(endpointCertificate);
+                if (validateCertificateExpiryResult[1]) {
+                    model:ConfigMap certificateConfigMapEntry = check createCertificateConfigMapEntry(check convertK8sAPItoAPI(api, true), endpointCertificate, <crypto:Certificate>validateCertificateExpiryResult[0], organization);
+                    model:ConfigMap deployedConfigMap = check self.deployConfigMap(certificateConfigMapEntry);
+                    OkCertMetadata okCertMetaData = {body: {certificateId: deployedConfigMap.metadata.uid, endpoint: endpointCertificate.host}};
+                    return okCertMetaData;
+                } else {
+                    BadRequestError badRequest = {body: {code: 909100, message: "Certificate is expired."}};
+                    return badRequest;
+                }
+            } else {
+                NotFoundError notfound = {body: {code: 909100, message: apiId + " not found."}};
+                return notfound;
+            }
+        } on fail var e {
+            if e is commons:APKError {
+                return e;
+            } else {
+                return error("Error while adding certificate", e, message = "Error while adding certificate", description = "Error while adding certificate", code = 909000, statusCode = 500);
+            }
+        }
+    }
+
+    private isolated function retrieveEndpointCertificateRequest(http:Request request) returns EndpointCertificateRequest|commons:APKError {
+        string|() host = ();
+        string|() certificateFileName = ();
+        byte[]|() certificateFileContent = ();
+        do {
+            mime:Entity[]|http:ClientError payLoadParts = request.getBodyParts();
+            if payLoadParts is mime:Entity[] {
+                foreach mime:Entity payLoadPart in payLoadParts {
+                    mime:ContentDisposition contentDisposition = payLoadPart.getContentDisposition();
+                    string fieldName = contentDisposition.name;
+                    if fieldName == "host" {
+                        host = check payLoadPart.getText();
+                    }
+                    else if fieldName == "certificate" {
+                        certificateFileName = contentDisposition.fileName;
+                        certificateFileContent = check payLoadPart.getByteArray();
+                    }
+                }
+            }
+            if (host is () || certificateFileName is () || certificateFileContent is ()) {
+
+                return error("host/certificte is empty in payload.", message = "host/certificte is empty in payload.", description = "host/certificte is empty in payload.", code = 909000, statusCode = 500);
+            } else {
+                return {host: host, fileName: certificateFileName, certificateFileContent: certificateFileContent};
+            }
+        } on fail var e {
+            return error("Error while retrieving endpoint certificate request", e, message = "Error while retrieving endpoint certificate request", description = "Error while retrieving endpoint certificate request", code = 909000, statusCode = 500);
+        }
+    }
+
+    public isolated function getEndpointCertificateByID(string apiId, string certificateId, commons:Organization organization) returns CertificateInfo|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
+        do {
+            model:API? api = getAPI(apiId, organization);
+            if api is model:API {
+                model:Certificate certificate = check getCertificateById(certificateId, api, organization.clone());
+                time:Utc notBeforeTime = [check int:fromString(certificate.notBefore), 0];
+                time:Utc notAfterTime = [check int:fromString(certificate.notAfter), 0];
+                CertificateInfo certificateInfo = {
+                    'version: certificate.'version,
+                    subject: certificate.subject,
+                    status: certificate.active ? "Active" : "Expired",
+                    validity: {
+                        'from: check time:civilToString(time:utcToCivil(notBeforeTime)),
+                        to: check time:civilToString(time:utcToCivil(notAfterTime))
+                    }
+                };
+                return certificateInfo;
+            } else {
+                NotFoundError notfound = {body: {code: 909100, message: apiId + " not found."}};
+                return notfound;
+            }
+        } on fail var e {
+            if e is commons:APKError {
+                return e;
+            } else {
+                return error("Error while getting endpoint certificate by id", e, message = "Error while getting endpoint certificate by id", description = "Error while getting endpoint certificate by id", code = 909000, statusCode = 500);
+            }
+        }
+    }
+
+    public isolated function updateEndpointCertificate(string apiId, string certificateId, http:Request request, commons:Organization organization) returns CertMetadata|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
+        do {
+            model:API? api = getAPI(apiId, organization);
+            if api is model:API {
+                model:ConfigMap|commons:APKError configMapById = getConfigMapById(certificateId, api, organization);
+                if configMapById is model:ConfigMap {
+                    EndpointCertificateRequest endpointCertificate = check self.retrieveEndpointCertificateRequest(request);
+                    [crypto:Certificate?, boolean] validateCertificateExpiryResult = check validateCertificateExpiry(endpointCertificate);
+                    if (validateCertificateExpiryResult[1]) {
+                        model:ConfigMap certificateConfigMapEntry = check createCertificateConfigMapEntry(check convertK8sAPItoAPI(api, true), endpointCertificate, <crypto:Certificate>validateCertificateExpiryResult[0], organization);
+                        certificateConfigMapEntry.metadata.name = configMapById.metadata.name;
+                        model:ConfigMap deployedConfigMap = check self.updateConfigMap(certificateConfigMapEntry);
+                        CertMetadata okCertMetaData = {certificateId: deployedConfigMap.metadata.uid, endpoint: endpointCertificate.host};
+                        return okCertMetaData;
+                    } else {
+                        BadRequestError badRequest = {body: {code: 909100, message: "Certificate is expired."}};
+                        return badRequest;
+                    }
+                } else {
+                    NotFoundError notfound = {body: {code: 909100, message: "Certificate " + certificateId + " not found."}};
+                    return notfound;
+                }
+            } else {
+                NotFoundError notfound = {body: {code: 909100, message: apiId + " not found."}};
+                return notfound;
+            }
+        }
+        on fail var e {
+            if e is commons:APKError {
+                return e;
+            } else {
+                return error("Error while updating endpoint certificate", e, message = "Error while updating endpoint certificate", description = "Error while updating endpoint certificate", code = 909000, statusCode = 500);
+            }
+        }
+    }
+
+    public isolated function deleteEndpointCertificate(string apiId, string certificateId, commons:Organization organization) returns http:Ok|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
+        do {
+            model:API? api = getAPI(apiId, organization);
+            if api is model:API {
+                model:ConfigMap|commons:APKError configMapById = getConfigMapById(certificateId, api, organization);
+                if configMapById is model:ConfigMap {
+                    boolean _ = check self.deleteConfigMap(configMapById);
+                    http:Ok okResponse = {body: "Certificate deleted successfully"};
+                    return okResponse;
+                } else {
+                    NotFoundError notfound = {body: {code: 909100, message: "Certificate " + certificateId + " not found."}};
+                    return notfound;
+                }
+            } else {
+                NotFoundError notfound = {body: {code: 909100, message: apiId + " not found."}};
+                return notfound;
+            }
+        }
+        on fail var e {
+            if e is commons:APKError {
+                return e;
+            } else {
+                return error("Error while deleting endpoint certificate", e, message = "Error while deleting endpoint certificate", description = "Error while deleting endpoint certificate", code = 909000, statusCode = 500);
+            }
+        }
+    }
+
+    public isolated function getEndpointCertificateContent(string apiId, string certificateId, commons:Organization organization) returns http:Response|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
+        do {
+            model:API? api = getAPI(apiId, organization);
+            if api is model:API {
+                model:Certificate certificateById = check getCertificateById(certificateId, api, organization);
+                string tempDirectory = check file:createTempDir();
+                string certificateFileName = tempDirectory + file:pathSeparator + certificateId + ".crt";
+                _ = check io:fileWriteString(certificateFileName, certificateById.certificateContent);
+                http:Response response = new;
+                response.setFileAsPayload(certificateFileName);
+                response.addHeader("Content-Disposition", "attachment; filename=" + certificateFileName);
+                response.statusCode = 200;
+                return response;
+            } else {
+                NotFoundError notfound = {body: {code: 909100, message: apiId + " not found."}};
+                return notfound;
+            }
+        }
+        on fail var e {
+            if e is commons:APKError {
+                return e;
+            } else {
+                return error("Error while getting endpoint certificate content", e, message = "Error while getting endpoint certificate content", description = "Error while getting endpoint certificate content", code = 909000, statusCode = 500);
+            }
+        }
+    }
+
 }
+
+public type EndpointCertificateRequest record {
+    string host;
+    string fileName;
+    byte[] certificateFileContent;
+};
 
 type ImportDefintionRequest record {
     string? url;
@@ -2624,4 +3431,12 @@ public isolated function getUniqueIdForAPI(string name, string 'version, commons
 
 public isolated function retrieveHttpRouteRefName(API api, string 'type, commons:Organization organization) returns string {
     return uuid:createType1AsString();
+}
+
+public isolated function retrieveRateLimitPolicyRefName(APIOperations? operation) returns string {
+    if operation is APIOperations {
+        return uuid:createType1AsString();
+    } else {
+        return "api-" + uuid:createType1AsString();
+    }
 }

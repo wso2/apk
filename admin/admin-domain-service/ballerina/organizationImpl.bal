@@ -23,11 +23,15 @@ isolated function createInternalFromOrganization(Organization payload) returns I
         claimKey: "organizationClaimKey",
         claimValue: payload.organizationClaimValue
     };
+
     Internal_Organization internalOrganization = {
         id: payload.id.toString(),
         name: payload.name,
         displayName: payload.displayName,
         enabled: payload.enabled,
+        serviceNamespaces: payload.serviceNamespaces,
+        production: payload.production,
+        sandbox: payload.sandbox,
         claimList: [ orgClaim ]
     };
     return internalOrganization;
@@ -39,12 +43,15 @@ isolated function createOrganizationFromInternal(Internal_Organization payload) 
         name: payload.name,
         displayName: payload.displayName,
         enabled: payload.enabled,
+        serviceNamespaces: payload.serviceNamespaces,
+        production: payload.production,
+        sandbox: payload.sandbox,
         organizationClaimValue: payload.claimList[0].claimValue
     };
     return organization;
 }
 
-isolated function addOrganization(Organization payload) returns CreatedOrganization|APKError {
+isolated function addOrganization(Organization payload) returns Organization|APKError {
     boolean validateOrganization = check validateOrganizationByNameDAO(payload.name);
     if validateOrganization is true {
         string message = "Organization already exists by name:" + payload.name;
@@ -53,7 +60,7 @@ isolated function addOrganization(Organization payload) returns CreatedOrganizat
     payload.id = uuid:createType1AsString();
     Internal_Organization|APKError organization = addOrganizationDAO(createInternalFromOrganization(payload));
     if organization is Internal_Organization {
-        CreatedOrganization createdOrganization = {body: createOrganizationFromInternal(organization)};
+        Organization createdOrganization = createOrganizationFromInternal(organization);
         return createdOrganization;
     } else {
         return organization;

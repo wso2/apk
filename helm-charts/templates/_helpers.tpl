@@ -75,11 +75,19 @@ Common prefix prepended to Kubernetes resources of this chart
 
 
 {{- define "apk-helm.deployment.env" -}}
-{{- if . -}}
 env:
+{{- if . -}}
 {{- range $key, $val := . }}
   - name: {{ $key }}
     value: {{ quote  $val }}
 {{- end }}
 {{- end -}}
 {{- end -}}
+
+{{- define "commaJoinedQuotedList" -}}
+{{- $list := list }}
+{{- range .}}
+{{- $list = append $list (printf "\"%s\"" .) }}
+{{- end }}
+{{- join ", " $list }}
+{{- end }}

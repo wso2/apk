@@ -24,18 +24,49 @@ import wso2/apk_common_lib as commons;
 configurable RuntimeConfiguratation & readonly runtimeConfiguration = {
     keyStores: {
         signing: {
-            path: "/home/wso2apk/runtime/security/wso2carbon.key"
+            keyFilePath: "/home/wso2apk/runtime/security/wso2carbon.key"
         },
         tls: {
-            path: "/home/wso2apk/runtime/security/wso2carbon.key"
+            keyFilePath: "/home/wso2apk/runtime/security/wso2carbon.key"
         }
     },
-    idpConfiguration: {publicKey: {path: "/home/wso2apk/runtime/security/mg.pem"}}
+    idpConfiguration: {publicKey: {certFilePath: "/home/wso2apk/runtime/security/mg.pem"}},
+    controlPlane: {serviceBaseURl: ""}
 };
-K8sBaseOrgResolver organizationResolver = new;
-commons:JWTValidationInterceptor jwtValidationInterceptor = new (runtimeConfiguration.idpConfiguration, organizationResolver);
+K8sBaseOrgResolver k8sBaseOrgResolver = new;
+ServiceBaseOrgResolver serviceBaseOrgResolver = check initializeServiceBaseResolver();
+
+function initializeServiceBaseResolver() returns ServiceBaseOrgResolver|error {
+    map<string> headers = {};
+    foreach Header & readonly header in runtimeConfiguration.controlPlane.headers {
+        headers[header.name] = header.value;
+    }
+    return check new (runtimeConfiguration.controlPlane.serviceBaseURl, headers, runtimeConfiguration.controlPlane.certificate, runtimeConfiguration.controlPlane.enableAuthentication);
+}
+
+function getOrgResolver() returns commons:OrganizationResolver {
+    return runtimeConfiguration.orgResolver == "k8s" ? k8sBaseOrgResolver : serviceBaseOrgResolver;
+}
+
+commons:JWTValidationInterceptor jwtValidationInterceptor = new (runtimeConfiguration.idpConfiguration, getOrgResolver());
 commons:RequestErrorInterceptor requestErrorInterceptor = new;
-listener http:Listener ep0 = new (9443, {interceptors: [jwtValidationInterceptor,requestErrorInterceptor]});
+listener http:Listener ep1 = new (9444, secureSocket = {
+    'key: {
+        certFile: <string>runtimeConfiguration.keyStores.tls.certFilePath,
+        keyFile: <string>runtimeConfiguration.keyStores.tls.keyFilePath
+    }
+},
+    interceptors = [requestErrorInterceptor]
+    );
+listener http:Listener ep0 = new (9443,
+secureSocket = {
+    'key: {
+        certFile: <string>runtimeConfiguration.keyStores.tls.certFilePath,
+        keyFile: <string>runtimeConfiguration.keyStores.tls.keyFilePath
+    }
+},
+    interceptors = [jwtValidationInterceptor, requestErrorInterceptor]
+    );
 string kid = uuid:createType1AsString();
 
 # Initializing method for runtime
@@ -66,12 +97,16 @@ function init() returns error? {
     _ = check serviceMappingTask.startListening();
     OrganizationListingTask organizationListingTask = new (organizationResourceVersion);
     _ = check organizationListingTask.startListening();
+    _ = check retrieveAllConfigMapsAtStartup((), ());
+    ConfigMapListingTask configMapTask = new (configMapResourceVersion);
+    _ = check configMapTask.startListening();
     _ = check startAndAttachServices();
     log:printInfo("Initializing Runtime Domain Service..");
 }
 
 public function deRegisterep() returns error? {
     _ = check ep0.gracefulStop();
+    _ = check ep1.gracefulStop();
 }
 
 function startAndAttachServices() returns error? {
@@ -79,5 +114,8 @@ function startAndAttachServices() returns error? {
     check ep0.attach(runtimeService, "/api/am/runtime");
     check ep0.'start();
     runtime:registerListener(ep0);
+    check ep1.attach(internalRuntimeService, "/api/am/internal/runtime");
+    check ep1.'start();
+    runtime:registerListener(ep1);
     runtime:onGracefulStop(deRegisterep);
 }

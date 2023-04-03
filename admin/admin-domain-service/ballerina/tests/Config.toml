@@ -1,5 +1,3 @@
-[wso2.admin_service]
-ADMIN_PORT = 9444
 [wso2.admin_service.datasourceConfiguration]
 description = "Database for admin"
 url = "jdbc:postgresql://localhost:10320/WSO2AM_DB"
@@ -13,3 +11,6 @@ testQuery = "SELECT 1"
 driver = "org.postgresql.Driver"
 [wso2.admin_service.throttleConfig.blockCondition]
 enabled = true
+[wso2.admin_service.keyStores.tls]
+keyFilePath = "./tests/resources/wso2carbon.key"
+certFilePath = "./tests/resources/wso2carbon.crt"

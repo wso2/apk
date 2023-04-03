@@ -23,16 +23,7 @@ import ballerina/sql;
 import ballerinax/postgresql;
 
 
-@test:Mock{functionName: "getListener"}
-function getTestListener() returns http:Listener|error {
-http:Listener testListener = check new (9443, secureSocket = {
-    key: {
-        certFile: idpConfiguration.keyStores.tls.certFile,
-        keyFile: idpConfiguration.keyStores.tls.keyFile
-    }
-});    
-return testListener;
-}
+
 @test:Mock {functionName: "getConnection"}
 test:MockFunction testgetConnection = new ();
 ConnectionConfig connectionConfig = {secureSocket: {enable: true, cert: "tests/resources/wso2carbon.crt"}};

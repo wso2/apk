@@ -1,5 +1,25 @@
 name: Release Adapter.
 on:
+  workflow_call:
+    inputs:
+      aks_deployment:
+        required: true
+        type: boolean
+        description: "Deploy to AKS"
+    secrets:
+      WSO2_BOT_TOKEN:
+        required: true
+      WSO2_BOT_USER:
+        required: true
+      WSO2_BOT_EMAIL:
+        required: true
+      DOCKER_ORGANIZATION:
+        required: true
+      AZURE_ACR_NAME:
+        required: true
+      AZURE_CREDENTIALS:
+        required: true
+
   workflow_dispatch:
     inputs:
       release_version:
@@ -18,6 +38,8 @@ on:
       - '**/adapter/**'
     branches:
       - 'main'
+env:
+  GH_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
 concurrency:
   group: adapter-${{ github.event.number }}
   cancel-in-progress: true
@@ -44,8 +66,16 @@ jobs:
         run: |
           git config --global user.name ${{ secrets.WSO2_BOT_USER }}
           git config --global user.email ${{ secrets.WSO2_BOT_EMAIL }}
+      - name: checkout pull request and merge.
+        shell: sh
+        if: github.event_name == 'pull_request_target' && github.event.action == 'opened' || github.event.action == 'synchronize'
+        run: |
+          cd apk-repo
+          gh pr checkout ${{ github.event.number }} -b pr-${{ github.event.number }}
+          git checkout pr-${{ github.event.number }}
+          git merge origin/main
       - name: Run Release Gradle build
-        if: github.event_name == 'workflow_dispatch'      
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.release_version != '' && github.event.inputs.next_version != ''   
         run: |
           cd apk-repo/adapter
           ./gradlew release -Prelease.useAutomaticVersion=true -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Prelease.releaseVersion=${{ github.event.inputs.release_version }} -Prelease.newVersion=${{ github.event.inputs.next_version }} -PmultiArch=true
@@ -59,6 +89,18 @@ jobs:
           cd apk-repo/adapter
           ./gradlew docker_push -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Pimage_version=latest -PmultiArch=true
           ./gradlew docker_push -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Pimage_version=${{ github.sha }} -PmultiArch=true
+
+      - name: Login to azure.
+        if: ${{inputs.aks_deployment}}
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Push Docker images to aks.
+        if: ${{inputs.aks_deployment}}
+        run: |
+          az acr login -n ${{ secrets.AZURE_ACR_NAME }}
+          cd apk-repo/adapter
+          ./gradlew docker_push -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pimage_version=${{ github.sha }} -PmultiArch=true
       - name: run codecov
         uses: codecov/codecov-action@v3
         with:

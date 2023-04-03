@@ -21,11 +21,11 @@
 # + body - API parameter
 # + organization - organization
 # + return - Return Value API | error
-isolated function createAPI(APIBody body, string organization) returns API | error{
+isolated function createAPI(APIBody body, string organization) returns API|error {
     transaction {
-        API | error apiCr = db_createAPI(body, organization);
+        API|error apiCr = db_createAPI(body, organization);
         if apiCr is API {
-            API | error defCr = db_AddDefinition(body, organization);
+            API|error defCr = db_AddDefinition(body, organization);
             if defCr is API {
                 string|error lcEveCr = db_AddLCEvent_internal(body.apiProperties.id, "carbon.super");
                 if lcEveCr is string {
@@ -43,7 +43,20 @@ isolated function createAPI(APIBody body, string organization) returns API | err
             return error("Error while adding API data", apiCr);
         }
         return apiCr;
-    }    
+    }
+}
+
+# This function used to connect API get service from database
+#
+# + apiId - API Id parameter
+# + organization - organization
+# + return - Return Value API | error
+isolated function getAPI_internal(string apiId, string organization) returns API|NotFoundError|error {
+    API|NotFoundError|error response = db_getAPI_internal(apiId, organization);
+    if response is error {
+        return error("Error while retrieving API data");
+    }
+    return response;
 }
 
 # This function used to connect API update service to database
@@ -52,32 +65,44 @@ isolated function createAPI(APIBody body, string organization) returns API | err
 # + apiId - API Id parameter
 # + organization - organization
 # + return - Return Value API | error
-isolated function updateAPI_internal(string apiId, APIBody body, string organization) returns API | error {
-    API | error apiUp = db_updateAPI_internal(apiId, body, organization);
-    if apiUp is error {
-        return error("Error while updating API data");
+isolated function updateAPI_internal(string apiId, APIBody body, string organization) returns API|NotFoundError|error {
+    API|NotFoundError api = check getAPI_internal(apiId, organization);
+    if api is API {
+        API|error apiUp = db_updateAPI_internal(apiId, body, organization);
+        if apiUp is error {
+            return error("Error while updating API data");
+        }
+        API|error defUp = db_updateDefinition(apiId, body);
+        if defUp is error {
+            return error("Error while updating API definition");
+        }
+        return apiUp;
+    } else {
+        return api;
     }
-    API | error defUp = db_updateDefinition(apiId, body);
-    if defUp is error {
-        return error("Error while updating API definition");
-    }
-    return apiUp;
 }
 
 # This function used to connect API update service to database
 #
 # + apiId - API Id parameter
+# + organization - organization
 # + return - Return Value string | error
-isolated function deleteAPI(string apiId) returns string|error? {
-    error?|string apiDel = db_deleteAPI(apiId);
-    if apiDel is error {
-        return error("Error while deleting API data");
+isolated function deleteAPI(string apiId, string organization) returns string|NotFoundError|error? {
+    API|NotFoundError api = check getAPI_internal(apiId, organization);
+    if api is API {
+        error?|string apiDel = db_deleteAPI(apiId);
+        if apiDel is error {
+            return error("Error while deleting API data");
+        }
+        error?|string defDel = db_deleteDefinition(apiId);
+        if defDel is error {
+            return error("Error while deleting API definition data");
+        }
+        return apiDel;
+    } else {
+        NotFoundError apiNotfound = {body: {code: 900910, description: "API with " + apiId + " not found", message: "API not found"}};
+        return apiNotfound;
     }
-    error?|string defDel = db_deleteDefinition(apiId);
-    if defDel is error {
-        return error("Error while deleting API definition data");
-    }
-    return apiDel;
 }
 
 # This function used to connect API update service to database
@@ -86,7 +111,7 @@ isolated function deleteAPI(string apiId) returns string|error? {
 # + apiBody - ApiidDefinitionBody 
 # + return - Return Value string | error
 isolated function updateDefinition(APIDefinition1 apiBody, string apiId) returns APIDefinition1|error? {
-    APIDefinition1 | error apiUp = db_updateDefinitionbyId(apiId, apiBody);
+    APIDefinition1|error apiUp = db_updateDefinitionbyId(apiId, apiBody);
     if apiUp is error {
         return error("Error while updating API definition data");
     }
@@ -100,13 +125,13 @@ isolated function updateDefinition(APIDefinition1 apiBody, string apiId) returns
 # + return - Return Value json
 isolated function createArtifact(string? apiID, API api) returns json {
     Artifact artifact = {
-                    id: apiID,
-                    apiName : api.name,
-                    context : api.context,
-                    'version : api.'version,
-                    status: api.lifeCycleStatus,
-                    providerName: api.provider
-                    };
+        id: apiID,
+        apiName: api.name,
+        context: api.context,
+        'version: api.'version,
+        status: api.lifeCycleStatus,
+        providerName: api.provider
+    };
     json artifactJson = artifact;
     return artifactJson;
 }

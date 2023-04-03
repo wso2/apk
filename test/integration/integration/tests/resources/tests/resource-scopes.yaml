@@ -38,7 +38,9 @@ spec:
   parentRefs:
   - group: gateway.networking.k8s.io
     kind: Gateway
-    name: Default
+    name: default
+    namespace: apk-integration-test
+    sectionName: httpslistener
   hostnames:
   - resource-scopes.test.gw.wso2.com
   rules:
@@ -59,8 +61,9 @@ spec:
         kind: Scope
         name: pet-scopes
     backendRefs:
-    - name: infra-backend-v1
-      port: 8080
+    - group: dp.wso2.com
+      kind: Backend
+      name: infra-backend-v1
   - matches:
     - path:
         type: RegularExpression
@@ -73,8 +76,9 @@ spec:
           type: ReplaceFullPath
           replaceFullPath: /pet/\1
     backendRefs:
-    - name: infra-backend-v1
-      port: 8080
+    - group: dp.wso2.com
+      kind: Backend
+      name: infra-backend-v1
 ---
 apiVersion: dp.wso2.com/v1alpha1
 kind: Scope

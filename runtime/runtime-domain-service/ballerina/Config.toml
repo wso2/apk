@@ -1,12 +1,20 @@
 [wso2.runtime_domain_service.runtimeConfiguration.k8sConfiguration]
 host = "192.168.49.2:8443"
 serviceAccountPath = "/media/tharindud/dev/satoken"
-[wso2.runtime_domain_service.runtimeConfiguration.keyStores.tls]
-path = "/media/tharindud/dev/satoken/wso2carbon.key"
 [wso2.runtime_domain_service.runtimeConfiguration.keyStores.signing]
-path = "/media/tharindud/dev/satoken/wso2carbon.key"
+keyFilePath = "/media/tharindud/dev/satoken/wso2carbon.key"
+[wso2.runtime_domain_service.runtimeConfiguration.keyStores.tls]
+keyFilePath = "/media/tharindud/dev/satoken/runtime.key"
+certFilePath = "/media/tharindud/dev/satoken/runtime.pem"
 [wso2.runtime_domain_service.runtimeConfiguration.idpConfiguration.publicKey]
-path = "/media/tharindud/dev/satoken/mg.pem"
+certFilePath = "/media/tharindud/dev/satoken/mg.pem"
+[wso2.runtime_domain_service.runtimeConfiguration.controlPlane]
+serviceBaseURl = "https://api.am.wso2.com:9095/api/am/internal/v1"
+[wso2.runtime_domain_service.runtimeConfiguration.controlPlane.certificate]
+certFilePath = "/media/tharindud/dev/satoken/router.pem"
+[wso2.runtime_domain_service.runtimeConfiguration.gatewayConfiguration]
+name = "default"
+listenerName = "httpslistener"
 
 [ballerina.http]
 traceLogConsole = true

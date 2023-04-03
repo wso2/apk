@@ -1,4 +1,4 @@
-{{- if .Values.wso2.apk.dp.enabled }}
+{{- if or .Values.wso2.apk.dp.enabled .Values.wso2.apk.cp.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -10,32 +10,31 @@ data:
     [adapter.server]
       enabled = true
       port = "9843"
-      tokenPrivateKeyPath = "/home/wso2/security/keystore/tls.key"
+      tokenPrivateKeyPath = "/home/wso2/security/keystore/adapter.key"
       [[adapter.server.users]]
         username = "admin"
         password = "$env{adapter_admin_pwd}"
 
-    # default vhosts mapping for standalone mode
-    [[adapter.vhostMapping]]
-      environment = "Default"
-      vhost = "gw.wso2.com"
+      {{ if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.dp.adapter.configs.apiNamespaces }}
+      [adapter.operator]
+        namespaces = [{{ include "commaJoinedQuotedList" .Values.wso2.apk.dp.adapter.configs.apiNamespaces}}]
+      {{ end}}    
 
     [adapter.keystore]
-      certPath = "/home/wso2/security/keystore/tls.crt"
-      keyPath = "/home/wso2/security/keystore/tls.key"
+      certPath = "/home/wso2/security/keystore/adapter.crt"
+      keyPath = "/home/wso2/security/keystore/adapter.key"
 
     [adapter.truststore]
       location = "/home/wso2/security/truststore"
 
     [router]
-      listenerPort = 9090
-      securedListenerPort = 9095
-      systemHost = "gw.wso2.com"
+      securedListenerPort = {{ .Values.wso2.apk.dp.gateway.listener.port }}
+      systemHost = "localhost"
       useRemoteAddress = false
 
     [router.keystore]
-      certPath = "/home/wso2/security/keystore/tls.crt"
-      keyPath = "/home/wso2/security/keystore/tls.key"
+      certPath = "/home/wso2/security/keystore/router.crt"
+      keyPath = "/home/wso2/security/keystore/router.key"
 
     [router.upstream]
     [router.upstream.tls]
@@ -46,7 +45,7 @@ data:
     [enforcer]
     [enforcer.jwtIssuer]
       enabled = true
-      issuer = "https://gw.wso2.com/testkey"
+      issuer = "https://prod.gw.wso2.com/testkey"
 
     [enforcer.security.authHeader]
     # Send the authorization header to the backend
@@ -63,8 +62,18 @@ data:
       certificateFilePath = "/home/wso2/security/truststore/wso2carbon.pem"
 
     [[enforcer.security.tokenService]]
+      name = ""
+      issuer = "{{ .Values.wso2.apk.idp.issuer }}"
+      certificateAlias = "wso2carbon"
+      jwksURL = "{{ .Values.wso2.apk.idp.jwksEndpoint }}"
+      validateSubscription = true
+      consumerKeyClaim = "clientId"
+      certificateFilePath = "/home/wso2/security/truststore/wso2carbon.pem"
+
+
+    [[enforcer.security.tokenService]]
       name = "MGW"
-      issuer = "https://gw.wso2.com/testkey"
+      issuer = "https://prod.gw.wso2.com/testkey"
       certificateAlias = "mgw"
       jwksURL = ""
       validateSubscription = false
@@ -103,13 +112,41 @@ data:
       enabled = false
 
     [runtime]
-      host = "{{ template "apk-helm.resource.prefix" . }}-runtime-ds-service"
-      port = 9443
-      serviceBasePath = "/api/am/runtime"
+      host = "{{ template "apk-helm.resource.prefix" . }}-runtime-ds-service.{{ .Release.Namespace }}.svc"
+      port = 9444
+      serviceBasePath = "/api/am/internal/runtime"
     
     [managementServer]
+    {{ if .Values.wso2.apk.dp.managementServer }}
+      enabled = {{.Values.wso2.apk.dp.managementServer.enabled}}
+      host = "{{ .Values.wso2.apk.dp.managementServer.serviceUrl | default (printf "%s-management-server.%s.svc" (include "apk-helm.resource.prefix" .) .Release.Namespace) }}"
+      {{else}}
       enabled = {{ .Values.wso2.apk.cp.enabled }}
       host = "{{ template "apk-helm.resource.prefix" . }}-management-server.{{ .Release.Namespace }}.svc"
+    {{end}}
+    
+    {{ if .Values.wso2.apk.dp.ratelimiter }}
+    [router.ratelimit]
+      host = "{{ template "apk-helm.resource.prefix" . }}-ratelimiter-service.{{ .Release.Namespace }}.svc"
+      enabled = {{.Values.wso2.apk.dp.ratelimiter.enabled}}
+      keyFilePath = "/home/wso2/security/keystore/router.key"
+      certFilePath = "/home/wso2/security/keystore/router.crt"
+      caCertFilePath = "/home/wso2/security/truststore/ratelimiter.crt"
+    {{end}}
+
+{{ if and .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.filters }}
+{{ range $index, $filter := .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.filters}}
+    [[enforcer.filters]]
+        className = "{{$filter.className}}"
+        position = {{$filter.position}}
+        {{ if $filter.properties }}
+        [enforcer.filters.configProperties]
+        {{range $key, $value := $filter.properties}}
+        {{$value.name}} = "{{$value.value}}"
+        {{end}}
+        {{end}}
+{{end}}
+{{end}}
 
   config.toml.template: |
     # The configuration file for mgw
@@ -132,13 +169,6 @@ data:
     [[adapter.server.users]]
         username = "admin"
         password = "$env{adapter_admin_pwd}"
-
-    # Default virtual host mapping for standalone mode
-    [[adapter.vhostMapping]]
-    # The Adapter environment
-    environment = "Default"
-    # Virtual host to map to the environment
-    vhost = "localhost"
 
     # Configurations of key store used in Choreo Connect Adapter
     [adapter.keystore]
@@ -218,7 +248,7 @@ data:
     # Host for secured listener of Router
     securedListenerHost = "0.0.0.0"
     # Port for secured listener of Router
-    securedListenerPort = 9095
+    securedListenerPort = {{ .Values.wso2.apk.dp.gateway.listener.port }}
     # The timeout for new network connections to hosts in the cluster in seconds
     clusterTimeoutInSeconds = 20
     # The timeout for response coming from enforcer to route per API request
@@ -570,7 +600,7 @@ data:
     # Password of the API Manager user
     password = "$env{cp_admin_pwd}"
     # Environment labels list
-    environmentLabels = ["Default"]
+    environmentLabels = ["default"]
     # Connection retry interval
     retryInterval = 5
     # Skip SSL verification
@@ -767,14 +797,14 @@ data:
     loggers = enforcer, io-swagger-v3, enforcer-interceptors, carbon-apimgt
 
     # Log to access log file
-    logger.enforcer-interceptors.name = org.wso2.choreo.connect.enforcer.grpc.interceptors
+    logger.enforcer-interceptors.name = org.wso2.apk.enforcer.grpc.interceptors
     # Change the log level into DEBUG to view the access logs.
     logger.enforcer-interceptors.level = INFO
     logger.enforcer-interceptors.additivity = false
     logger.enforcer-interceptors.appenderRef.rolling.ref = ENFORCER_ACCESS_LOG
 
     # Log to console and rolling file
-    logger.enforcer.name = org.wso2.choreo.connect.enforcer
+    logger.enforcer.name = org.wso2.apk.enforcer
     logger.enforcer.level = INFO
     logger.enforcer.additivity = false
     logger.enforcer.appenderRef.rolling.ref = ENFORCER_LOGFILE

@@ -1,6 +1,7 @@
 package runtime
 
 import (
+	"crypto/tls"
 	"fmt"
 	"io"
 	"net/http"
@@ -8,23 +9,27 @@ import (
 
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/loggers"
+	"github.com/wso2/apk/adapter/pkg/operator/constants"
+	"github.com/wso2/apk/adapter/pkg/utils/tlsutils"
 )
 
 // Runtime client connetion
 var runtimeClient *http.Client
 
 func init() {
+	_, _, truststoreLocation := tlsutils.GetKeyLocations()
+	caCertPool := tlsutils.GetTrustedCertPool(truststoreLocation)
 	transport := &http.Transport{
 		MaxIdleConns:    2,
 		IdleConnTimeout: 30 * time.Second,
-		TLSClientConfig: nil,
+		TLSClientConfig: &tls.Config{RootCAs: caCertPool},
 	}
 	runtimeClient = &http.Client{Transport: transport}
 }
 
-func getRuntimeServiceURL() string {
+func getInternalRuntimeServiceURL() string {
 	conf := config.ReadConfigs()
-	serviceURL := fmt.Sprintf("http://%s:%d%s",
+	serviceURL := fmt.Sprintf("https://%s:%d%s",
 		conf.Runtime.Host,
 		conf.Runtime.Port,
 		conf.Runtime.ServiceBasePath)
@@ -33,12 +38,19 @@ func getRuntimeServiceURL() string {
 }
 
 // GetAPIDefinition gets the API defintion using API UUID and return it as a string
-func GetAPIDefinition(apiUUID string) string {
+func GetAPIDefinition(apiUUID string, organizationUUID string) (string, error) {
 	definitionString := "{}"
-	response, err := runtimeClient.Get(fmt.Sprintf("%s/apis/%s/definition",
-		getRuntimeServiceURL(), apiUUID))
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/apis/%s/definition",
+		getInternalRuntimeServiceURL(), apiUUID), nil)
+	if err != nil {
+		loggers.LoggerAPKOperator.Errorf("Error creating api definition request: %v", err)
+	}
+	req.Header.Set(constants.OrganizationHeader, organizationUUID)
+
+	response, err := runtimeClient.Do(req)
 	if err != nil {
 		loggers.LoggerAPKOperator.Errorf("Error retrieving api definition: %v", err)
+		return "", err;
 	}
 	defer response.Body.Close()
 	if response.StatusCode == http.StatusOK {
@@ -48,5 +60,5 @@ func GetAPIDefinition(apiUUID string) string {
 		}
 		definitionString = string(bodyBytes)
 	}
-	return definitionString
+	return definitionString, nil;
 }

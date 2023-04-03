@@ -24,7 +24,7 @@ metadata:
     api-version: "1.0.0"
 spec:
   hostnames:
-  - "api.am.wso2.com"
+  - "prod.api.am.wso2.com"
   rules:
   - matches:
     - path:
@@ -38,12 +38,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/apis"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -56,12 +53,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/apis/\\1"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -74,12 +68,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/apis/\\1/definition"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -92,12 +83,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/apis/\\1/sdks/\\2"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -110,12 +98,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/apis/\\1/documents"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -128,12 +113,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/apis/\\1/documents/\\2"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -146,12 +128,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/apis/\\1/documents/\\2/content"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -164,12 +143,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/apis/\\1/thumbnail"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -182,12 +158,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/apis/\\1/ratings"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -200,12 +173,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/apis/\\1/user-rating"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -218,12 +188,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/apis/\\1/user-rating"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -236,12 +203,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/apis/\\1/user-rating"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -254,12 +218,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/apis/\\1/comments"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -272,12 +233,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/apis/\\1/comments"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -290,12 +248,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/apis/\\1/comments/\\2"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -308,12 +263,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/apis/\\1/comments/\\2"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -326,12 +278,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/apis/\\1/comments/\\2"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -344,12 +293,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/apis/\\1/comments/\\2/replies"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -362,12 +308,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/apis/\\1/topics"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -380,12 +323,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/apis/\\1/subscription-policies"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -398,12 +338,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/applications"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -416,12 +353,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/applications"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -434,12 +368,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/applications/\\1"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -452,12 +383,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/applications/\\1"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -470,12 +398,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/applications/\\1"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -488,12 +413,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/applications/\\1/generate-keys"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -506,12 +428,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/applications/\\1/map-keys"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -524,12 +443,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/applications/\\1/keys"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -542,12 +458,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/applications/\\1/keys/\\2"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -560,12 +473,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/applications/\\1/keys/\\2"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -578,12 +488,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/applications/\\1/keys/\\2/regenerate-secret"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -596,12 +503,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/applications/\\1/keys/\\2/clean-up"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -614,12 +518,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/applications/\\1/keys/\\2/generate-token"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -632,12 +533,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/applications/\\1/oauth-keys"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -650,12 +548,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/applications/\\1/oauth-keys/\\2"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -668,12 +563,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/applications/\\1/oauth-keys/\\2"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -686,12 +578,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/applications/\\1/oauth-keys/\\2/regenerate-secret"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -704,12 +593,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/applications/\\1/oauth-keys/\\2/clean-up"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -722,12 +608,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/applications/\\1/oauth-keys/\\2/generate-token"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -740,12 +623,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/applications/\\1/api-keys/\\2/generate"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -758,12 +638,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/applications/\\1/api-keys/\\2/revoke"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -776,12 +653,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/applications/export"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -794,12 +668,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/applications/import"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -812,12 +683,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/subscriptions"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -830,12 +698,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/subscriptions"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -848,12 +713,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/subscriptions/multiple"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -866,12 +728,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/subscriptions/\\1/additionalInfo"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -884,12 +743,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/subscriptions/\\1"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -902,12 +758,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/subscriptions/\\1"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -920,12 +773,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/subscriptions/\\1"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -938,12 +788,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/subscriptions/\\1/usage"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -956,12 +803,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/throttling-policies/\\1"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -974,12 +818,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/throttling-policies/\\1/\\2"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -992,12 +833,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/tags"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -1010,12 +848,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/search"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -1028,12 +863,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/sdk-gen/languages"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -1046,12 +878,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/webhooks/subscriptions"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -1064,12 +893,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/settings"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -1082,12 +908,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/settings/application-attributes"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -1100,12 +923,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/tenants"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -1118,12 +938,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/recommendations"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -1136,12 +953,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/api-categories"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -1154,12 +968,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/key-managers"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -1172,12 +983,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/apis/\\1/graphql-policies/complexity"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -1190,12 +998,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/apis/\\1/graphql-policies/complexity/types"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -1208,14 +1013,12 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/devportal/me/change-password"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-backend
   parentRefs:
   - group: "gateway.networking.k8s.io"
     kind: "Gateway"
-    name: "Default"
+    name: "default"
+    sectionName: "httpslistener"
 {{- end -}}

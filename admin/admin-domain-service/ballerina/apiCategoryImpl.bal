@@ -18,7 +18,7 @@
 
 import ballerina/uuid;
 
-isolated function addAPICategory(APICategory payload) returns CreatedAPICategory|APKError {
+isolated function addAPICategory(APICategory payload) returns APICategory|APKError {
     string org = "carbon.super";
     boolean|APKError existingCategory = checkAPICategoryExistsByNameDAO(payload.name, org);
     if existingCategory is APKError {
@@ -32,7 +32,7 @@ isolated function addAPICategory(APICategory payload) returns CreatedAPICategory
     APICategory|APKError category = addAPICategoryDAO(payload, org);
     if category is APICategory {
         category.numberOfAPIs = 0;
-        CreatedAPICategory createdCategory = {body: category};
+        APICategory createdCategory = category;
         return createdCategory;
     } else {
         return category;

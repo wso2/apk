@@ -15,6 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 //
+import wso2/apk_common_lib as commons;
 
 type ThrottlingConfiguration record {
     BlockCondition blockCondition = {
@@ -53,3 +54,7 @@ type APKConfiguration record {
     ThrottlingConfiguration throttlingConfiguration;
     DatasourceConfiguration datasourceConfiguration;
 };
+
+public type KeyStores record {|
+    commons:KeyStore tls;
+|};

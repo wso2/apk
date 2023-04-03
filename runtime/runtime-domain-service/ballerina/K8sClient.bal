@@ -22,6 +22,7 @@ import ballerina/url;
 import ballerina/log;
 import ballerina/http;
 import wso2/apk_common_lib as commons;
+import ballerina/crypto;
 
 const string K8S_API_ENDPOINT = "/api/v1";
 final string token = check io:fileReadString(runtimeConfiguration.k8sConfiguration.serviceAccountPath + "/token");
@@ -38,9 +39,9 @@ public function initializeK8sClient() returns http:Client|error {
         token: token
     },
         secureSocket = {
-        cert: caCertPath
+            cert: caCertPath
 
-    }
+        }
     );
     return k8sApiClient;
 }
@@ -123,7 +124,7 @@ isolated function deployHttpRoute(model:Httproute httproute, string namespace) r
 
 isolated function retrieveAllAPIS(string? continueToken) returns model:APIList|http:ClientError {
     string? continueTokenValue = continueToken;
-    string endpoint = "/apis/dp.wso2.com/v1alpha1/apis";
+    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + currentNameSpace + "/apis";
     if continueTokenValue is string {
         if continueTokenValue.length() > 0 {
             int? questionMarkIndex = endpoint.lastIndexOf("?");
@@ -215,65 +216,95 @@ isolated function deleteK8ServiceMapping(string name, string namespace) returns 
     return k8sApiServerEp->delete(endpoint, targetType = http:Response);
 }
 
-isolated function getK8sServiceMapingsForAPI(string apiName, string apiVersion, string namespace) returns model:ServiceMappingList|http:ClientError|error {
-    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/servicemappings?labelSelector=" + check generateUrlEncodedLabelSelector(apiName, apiVersion);
+isolated function getK8sServiceMapingsForAPI(string apiName, string apiVersion, string namespace, commons:Organization organization) returns model:ServiceMappingList|http:ClientError|error {
+    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/servicemappings?labelSelector=" + check generateUrlEncodedLabelSelector(apiName, apiVersion, organization);
     return k8sApiServerEp->get(endpoint, targetType = model:ServiceMappingList);
 }
 
-isolated function getAuthenticationCrsForAPI(string apiName, string apiVersion, string namespace) returns model:AuthenticationList|http:ClientError|error {
-    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/authentications?labelSelector=" + check generateUrlEncodedLabelSelector(apiName, apiVersion);
+isolated function getAuthenticationCrsForAPI(string apiName, string apiVersion, string namespace, commons:Organization organization) returns model:AuthenticationList|http:ClientError|error {
+    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/authentications?labelSelector=" + check generateUrlEncodedLabelSelector(apiName, apiVersion, organization);
     return k8sApiServerEp->get(endpoint, targetType = model:AuthenticationList);
 }
 
-isolated function getScopeCrsForAPI(string apiName, string apiVersion, string namespace) returns model:ScopeList|http:ClientError|error {
-    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/scopes?labelSelector=" + check generateUrlEncodedLabelSelector(apiName, apiVersion);
+isolated function getScopeCrsForAPI(string apiName, string apiVersion, string namespace, commons:Organization organization) returns model:ScopeList|http:ClientError|error {
+    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/scopes?labelSelector=" + check generateUrlEncodedLabelSelector(apiName, apiVersion, organization);
     return k8sApiServerEp->get(endpoint, targetType = model:ScopeList);
 }
+
 isolated function deleteScopeCr(string name, string namespace) returns http:Response|http:ClientError {
     string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/scopes/" + name;
     return k8sApiServerEp->delete(endpoint, targetType = http:Response);
 }
+
 isolated function deleteBackendPolicyCR(string name, string namespace) returns http:Response|http:ClientError {
-    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/backendpolicies/" + name;
+    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/backends/" + name;
     return k8sApiServerEp->delete(endpoint, targetType = http:Response);
 }
 
-isolated function deployBackendPolicyCR(model:BackendPolicy backendPolciy, string namespace) returns http:Response|http:ClientError {
-    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/backendpolicies";
-    return k8sApiServerEp->post(endpoint, backendPolciy, targetType = http:Response);
+isolated function deployBackendCR(model:Backend backend, string namespace) returns http:Response|http:ClientError {
+    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/backends";
+    return k8sApiServerEp->post(endpoint, backend, targetType = http:Response);
 }
+
 isolated function deployScopeCR(model:Scope scope, string namespace) returns http:Response|http:ClientError {
     string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/scopes";
     return k8sApiServerEp->post(endpoint, scope, targetType = http:Response);
 }
 
-isolated function getBackendPolicyCRsForAPI(string apiName, string apiVersion, string namespace) returns model:BackendPolicyList|http:ClientError|error {
-    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/backendpolicies?labelSelector=" + check generateUrlEncodedLabelSelector(apiName, apiVersion);
-    return k8sApiServerEp->get(endpoint, targetType = model:BackendPolicyList);
+isolated function getBackendPolicyCRsForAPI(string apiName, string apiVersion, string namespace, commons:Organization organization) returns model:BackendList|http:ClientError|error {
+    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/backends?labelSelector=" + check generateUrlEncodedLabelSelector(apiName, apiVersion, organization);
+    return k8sApiServerEp->get(endpoint, targetType = model:BackendList);
 }
 
-isolated function generateUrlEncodedLabelSelector(string apiName, string apiVersion) returns string|error {
-    string labelSelector = string:'join("", "api-name=", apiName, ",api-version=", apiVersion);
+isolated function generateUrlEncodedLabelSelector(string apiName, string apiVersion, commons:Organization organization) returns string|error {
+    string apiNameHash = crypto:hashSha1(apiName.toBytes()).toBase16();
+    string apiVersionHash = crypto:hashSha1(apiVersion.toBytes()).toBase16();
+    string organizationHash = crypto:hashSha1(organization.uuid.toBytes()).toBase16();
+    string labelSelector = string:'join("", API_NAME_HASH_LABEL, "=", apiNameHash, ",", API_VERSION_HASH_LABEL, "=", apiVersionHash, ",", ORGANIZATION_HASH_LABEL, "=", organizationHash);
     return url:encode(labelSelector, "UTF-8");
 }
 
-isolated function getBackendServicesForAPI(string apiName, string apiVersion, string namespace) returns model:ServiceList|http:ClientError|error {
-    string endpoint = "/api/v1/namespaces/" + namespace + "/services?labelSelector=" + check generateUrlEncodedLabelSelector(apiName, apiVersion);
+isolated function getBackendServicesForAPI(string apiName, string apiVersion, string namespace, commons:Organization organization) returns model:ServiceList|http:ClientError|error {
+    string endpoint = "/api/v1/namespaces/" + namespace + "/services?labelSelector=" + check generateUrlEncodedLabelSelector(apiName, apiVersion, organization);
     return k8sApiServerEp->get(endpoint, targetType = model:ServiceList);
 }
 
-public isolated function getHttproutesForAPIS(string apiName, string apiVersion, string namespace) returns model:HttprouteList|http:ClientError|error {
-    string endpoint = "/apis/gateway.networking.k8s.io/v1beta1/namespaces/" + namespace + "/httproutes/?labelSelector=" + check generateUrlEncodedLabelSelector(apiName, apiVersion);
+public isolated function getHttproutesForAPIS(string apiName, string apiVersion, string namespace, commons:Organization organization) returns model:HttprouteList|http:ClientError|error {
+    string endpoint = "/apis/gateway.networking.k8s.io/v1beta1/namespaces/" + namespace + "/httproutes/?labelSelector=" + check generateUrlEncodedLabelSelector(apiName, apiVersion, organization);
     return k8sApiServerEp->get(endpoint, targetType = model:HttprouteList);
+}
+
+isolated function deployRateLimitPolicyCR(model:RateLimitPolicy rateLimitPolicy, string namespace) returns http:Response|http:ClientError {
+    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/ratelimitpolicies";
+    return k8sApiServerEp->post(endpoint, rateLimitPolicy, targetType = http:Response);
+}
+
+isolated function deleteRateLimitPolicyCR(string name, string namespace) returns http:Response|http:ClientError {
+    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/ratelimitpolicies/" + name;
+    return k8sApiServerEp->delete(endpoint, targetType = http:Response);
+}
+
+isolated function getRateLimitPolicyCRsForAPI(string apiName, string apiVersion, string namespace, commons:Organization organization) returns model:RateLimitPolicyList|http:ClientError|error {
+    string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/ratelimitpolicies?labelSelector=" + check generateUrlEncodedLabelSelector(apiName, apiVersion, organization);
+    return k8sApiServerEp->get(endpoint, targetType = model:RateLimitPolicyList);
 }
 
 public function retrieveAllOrganizations(string? continueToken) returns model:OrganizationList|http:ClientError {
     string? continueTokenValue = continueToken;
-    string endpoint = "/apis/cp.wso2.com/v1alpha1/organizations";
+    string endpoint = "/apis/cp.wso2.com/v1alpha1/namespaces/" + currentNameSpace + "/organizations";
     if continueTokenValue is string && continueTokenValue.length() > 0 {
         endpoint = endpoint + "?continue=" + continueTokenValue;
     }
     return k8sApiServerEp->get(endpoint, targetType = model:OrganizationList);
+}
+
+public isolated function retrieveAllconfigMaps(string? continueToken) returns model:ConfigMapList|http:ClientError|error {
+    string? continueTokenValue = continueToken;
+    string endpoint = "/api/v1/namespaces/" + currentNameSpace + "/configmaps?labelSelector=" + check getEncodedStringForLabelSelector();
+    if continueTokenValue is string && continueTokenValue.length() > 0 {
+        endpoint = endpoint + "&continue=" + continueTokenValue;
+    }
+    return k8sApiServerEp->get(endpoint, targetType = model:ConfigMapList);
 }
 
 public isolated function createInternalAPI(model:RuntimeAPI runtimeAPI, string namespace) returns http:Response|http:ClientError {

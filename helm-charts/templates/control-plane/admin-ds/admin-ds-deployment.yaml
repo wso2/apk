@@ -44,8 +44,22 @@ spec:
           ports:
             - containerPort: 9443
               protocol: "TCP"
-{{ include "apk-helm.deployment.readinessProbe.http" .Values.wso2.apk.cp.admin.deployment | indent 10 }}
-{{ include "apk-helm.deployment.livenessProbe.http" .Values.wso2.apk.cp.admin.deployment | indent 10 }}
+            - containerPort: 9444
+              protocol: "TCP"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 9443
+              scheme: HTTPS
+            initialDelaySeconds: {{ .Values.wso2.apk.cp.admin.deployment.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.wso2.apk.cp.admin.deployment.readinessProbe.periodSeconds }}    
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 9443
+              scheme: HTTPS
+            initialDelaySeconds: {{ .Values.wso2.apk.cp.admin.deployment.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.wso2.apk.cp.admin.deployment.livenessProbe.periodSeconds }}
 {{ include "apk-helm.deployment.resources" .Values.wso2.apk.cp.admin.deployment.resources | indent 10 }}
           volumeMounts:
             - mountPath: /home/wso2apk/admin/conf/Config.toml
@@ -54,6 +68,28 @@ spec:
             - mountPath: /home/wso2apk/admin/security/mg.pem
               name: admin-ds-jwt-validation-key-volume
               subPath: mg.pem
+            - name: admin-ds-tls-volume
+              mountPath: /home/wso2apk/admin/security/admin.key
+            {{- if and .Values.wso2.apk.cp.admin.configs .Values.wso2.apk.cp.admin.configs.tls }}
+              subPath: {{ .Values.wso2.apk.cp.admin.configs.tls.certKeyFilename | default "tls.key" }}
+            {{- else }}
+              subPath: tls.key
+            {{- end }}
+            - name: admin-ds-tls-volume
+              mountPath: /home/wso2apk/admin/security/admin.pem
+            {{- if and .Values.wso2.apk.cp.admin.configs .Values.wso2.apk.cp.admin.configs.tls }}
+              subPath: {{ .Values.wso2.apk.cp.admin.configs.tls.certFilename | default "tls.crt" }}
+            {{- else }}
+              subPath: tls.crt
+            {{- end }}
+      {{- if and .Values.wso2.subscription .Values.wso2.subscription.imagePullSecrets}}
+      imagePullSecrets:
+        - name: {{ .Values.wso2.subscription.imagePullSecrets }}
+      {{- else if and .Values.wso2.subscription (not (eq .Values.wso2.subscription.username "")) (not (eq .Values.wso2.subscription.password "")) }}
+      imagePullSecrets:
+        - name: {{ template "apk-helm.resource.prefix" . }}-apk-wso2-private-registry-creds
+      {{ end }}      
+
       volumes:
         - name: admin-ds-jwt-validation-key-volume
           secret: 
@@ -61,5 +97,11 @@ spec:
         - name: config-toml-volume
           configMap:
             name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-configmap
-
+        - name: admin-ds-tls-volume
+          secret:
+       {{ if and .Values.wso2.apk.cp.admin.configs .Values.wso2.apk.cp.admin.configs.tls }}
+            secretName: {{ .Values.wso2.apk.cp.admin.configs.tls.certificatesSecret | default (printf "%s-admin-ds-server-cert" (include "apk-helm.resource.prefix" .)) }}
+       {{ else }}
+            secretName: {{ template "apk-helm.resource.prefix" . }}-admin-ds-server-cert
+       {{ end }}
 {{- end -}}

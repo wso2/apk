@@ -21,19 +21,18 @@ const (
 	extAuthzClusterName     string = "ext-authz"
 	accessLoggerClusterName string = "access-logger"
 	grpcAccessLogLogName    string = "mgw_access_logs"
-	tracingClusterName      string = "wso2_cc_trace"
+	tracingClusterName      string = "wso2_apk_trace"
+	extAuthzHTTPCluster     string = "ext_authz_http_cluster"
+	rateLimitClusterName    string = "ratelimit"
 )
 
 const (
-	extAuthzFilterName         string = "envoy.filters.http.ext_authz"
-	luaFilterName              string = "envoy.filters.http.lua"
-	transportSocketName        string = "envoy.transport_sockets.tls"
-	fileAccessLogName          string = "envoy.access_loggers.file"
-	grpcAccessLogName          string = "envoy.http_grpc_access_log"
 	httpConManagerStartPrefix  string = "ingress_http"
 	extAuthzPerRouteName       string = "type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute"
 	luaPerRouteName            string = "type.googleapis.com/envoy.extensions.filters.http.lua.v3.LuaPerRoute"
 	corsFilterName             string = "type.googleapis.com/envoy.extensions.filters.http.cors.v3.Cors"
+	localRateLimitPerRouteName string = "type.googleapis.com/envoy.extensions.filters.http.local_ratelimit.v3.LocalRateLimit"
+	httpProtocolOptionsName    string = "type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions"
 	mgwWebSocketFilterName     string = "envoy.filters.http.mgw_websocket"
 	mgwWebSocketWASMFilterName string = "envoy.filters.http.mgw_WASM_websocket"
 	mgwWASMVmID                string = "mgw_WASM_vm"
@@ -44,11 +43,8 @@ const (
 )
 
 const (
-	defaultRdsConfigName            string = "default"
-	defaultHTTPListenerName         string = "HTTPListener"
-	defaultHTTPSListenerName        string = "HTTPSListener"
-	defaultAccessLogPath            string = "/tmp/envoy.access.log"
-	defaultListenerSecretConfigName string = "DefaultListenerSecret"
+	defaultHTTPSListenerName string = "httpslistener"
+	defaultAccessLogPath     string = "/tmp/envoy.access.log"
 )
 
 // cluster prefixes
@@ -137,6 +133,13 @@ const (
 
 // Enforcer
 const (
-	choreoConnectEnforcerReply = "choreo-connect-enforcer-reply"
-	uaexCode                   = "UAEX"
+	apkEnforcerReply = "apk-enforcer-reply"
+	uaexCode         = "UAEX"
+)
+
+// Constants relevant to the ratelimit service
+const (
+	RateLimiterDomain                    = "Default"
+	RateLimitPolicyOperationLevel string = "OPERATION"
+	RateLimitPolicyAPILevel       string = "API"
 )

@@ -29,6 +29,7 @@ import (
 	"github.com/wso2/apk/adapter/internal/interceptor"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
+	dpv1alpha1 "github.com/wso2/apk/adapter/pkg/operator/apis/dp/v1alpha1"
 )
 
 // MgwSwagger represents the object structure holding the information related to the
@@ -65,7 +66,14 @@ type MgwSwagger struct {
 	EnvType                  string
 	// GraphQLSchema              string
 	// GraphQLComplexities        GraphQLComplexityYaml
-	IsSystemAPI bool
+	IsSystemAPI     bool
+	RateLimitPolicy *RateLimitPolicy
+}
+
+// RateLimitPolicy information related to the rate limiting policy
+type RateLimitPolicy struct {
+	Count    int
+	SpanUnit string
 }
 
 // EndpointCluster represent an upstream cluster
@@ -73,9 +81,8 @@ type EndpointCluster struct {
 	EndpointPrefix string
 	Endpoints      []Endpoint
 	// EndpointType enum {failover, loadbalance}. if any other value provided, consider as the default value; which is loadbalance
-	EndpointType   string
-	Config         *EndpointConfig
-	SecurityConfig EndpointSecurity
+	EndpointType string
+	Config       *EndpointConfig
 	// Is http2 protocol enabled
 	HTTP2BackendEnabled bool
 }
@@ -102,6 +109,8 @@ type Endpoint struct {
 	RawURL                 string
 	// Trusted CA Cerificate for the endpoint
 	Certificate []byte
+	// Subject Alternative Names to verify in the public certificate
+	AllowedSANs []string
 }
 
 // EndpointSecurity contains parameters of endpoint security at api.json
@@ -525,12 +534,9 @@ func (swagger *MgwSwagger) GetInterceptor(vendorExtensions map[string]interface{
 			if v, found := val[constants.Includes]; found {
 				includes := v.([]interface{})
 				if len(includes) > 0 {
-					// convert type of includes from "[]interface{}" to "[]string"
-					includesStr := make([]string, len(includes))
-					for i, v := range includes {
-						includesStr[i] = v.(string)
-					}
-					includesV = GenerateInterceptorIncludes(includesStr)
+					// convert type of includes from "[]interface{}" to "[]dpv1alpha1.InterceptorInclusion"
+					includes := make([]dpv1alpha1.InterceptorInclusion, len(includes))
+					includesV = GenerateInterceptorIncludes(includes)
 				}
 			}
 
@@ -549,25 +555,35 @@ func (swagger *MgwSwagger) GetInterceptor(vendorExtensions map[string]interface{
 }
 
 // GenerateInterceptorIncludes generate includes
-func GenerateInterceptorIncludes(includes []string) *interceptor.RequestInclusions {
+func GenerateInterceptorIncludes(includes []dpv1alpha1.InterceptorInclusion) *interceptor.RequestInclusions {
 	includesV := &interceptor.RequestInclusions{}
 	for _, include := range includes {
-		switch strings.TrimSpace(include) {
-		case "request_headers":
+		switch include {
+		case dpv1alpha1.InterceptorInclusionRequestHeaders:
 			includesV.RequestHeaders = true
-		case "request_body":
+		case dpv1alpha1.InterceptorInclusionRequestBody:
 			includesV.RequestBody = true
-		case "request_trailers":
+		case dpv1alpha1.InterceptorInclusionRequestTrailers:
 			includesV.RequestTrailer = true
-		case "response_headers":
+		case dpv1alpha1.InterceptorInclusionResponseHeaders:
 			includesV.ResponseHeaders = true
-		case "response_body":
+		case dpv1alpha1.InterceptorInclusionResponseBody:
 			includesV.ResponseBody = true
-		case "response_trailers":
+		case dpv1alpha1.InterceptorInclusionResponseTrailers:
 			includesV.ResponseTrailers = true
-		case "invocation_context":
+		case dpv1alpha1.InterceptorInclusionInvocationContext:
 			includesV.InvocationContext = true
 		}
 	}
 	return includesV
+}
+
+// CreateDummyMgwSwaggerForTests creates a dummy MgwSwagger struct to be used for unit tests
+func CreateDummyMgwSwaggerForTests(title, version, basePath string, resources []*Resource) *MgwSwagger {
+	return &MgwSwagger{
+		title:         title,
+		version:       version,
+		xWso2Basepath: basePath,
+		resources:     resources,
+	}
 }

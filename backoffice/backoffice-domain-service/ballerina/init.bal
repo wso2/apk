@@ -25,24 +25,29 @@ configurable DatasourceConfiguration datasourceConfiguration = ?;
 final postgresql:Client|sql:Error dbClient;
 
 configurable commons:IDPConfiguration idpConfiguration = {
-        publicKey:{path: "/home/wso2apk/backoffice/security/mg.pem"}
-    };
-commons:DBBasedOrgResolver organizationResolver = new(datasourceConfiguration);
+    publicKey: {certFilePath: "/home/wso2apk/backoffice/security/mg.pem"}
+};
+configurable KeyStores keyStores = {
+    tls: {certFilePath: "/home/wso2apk/admin/security/backoffice.pem", keyFilePath: "/home/wso2apk/admin/security/backoffice.key"}
+};
+
+commons:DBBasedOrgResolver organizationResolver = new (datasourceConfiguration);
 commons:JWTValidationInterceptor jwtValidationInterceptor = new (idpConfiguration, organizationResolver);
 commons:RequestErrorInterceptor requestErrorInterceptor = new;
 
 function init() {
     log:printInfo("Starting APK Backoffice Domain Service...");
 
-    dbClient = 
+    dbClient =
         new (host = datasourceConfiguration.host,
-            username = datasourceConfiguration.username, 
-            password = datasourceConfiguration.password, 
-            database = datasourceConfiguration.databaseName, 
-            port = datasourceConfiguration.port,
-            connectionPool = {maxOpenConnections: datasourceConfiguration.maxPoolSize}
+    username = datasourceConfiguration.username,
+    password = datasourceConfiguration.password,
+    database = datasourceConfiguration.databaseName,
+    port = datasourceConfiguration.port,
+        connectionPool = {maxOpenConnections: datasourceConfiguration.maxPoolSize}
             );
 }
-public isolated function getConnection() returns postgresql:Client | error {
-    return dbClient;  
+
+public isolated function getConnection() returns postgresql:Client|error {
+    return dbClient;
 }

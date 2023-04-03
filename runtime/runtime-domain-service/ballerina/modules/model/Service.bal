@@ -17,6 +17,7 @@ int nodePort?;
 int port;
 string protocol?;
 int targetPort?;
+string appProtocol?;
 };
 
 public type ServiceList record {

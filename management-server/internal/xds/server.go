@@ -37,10 +37,11 @@ import (
 	wso2_resource "github.com/wso2/apk/adapter/pkg/discovery/protocol/resource/v3"
 	wso2_server "github.com/wso2/apk/adapter/pkg/discovery/protocol/server/v3"
 	"github.com/wso2/apk/adapter/pkg/logging"
-	"github.com/wso2/apk/adapter/pkg/tlsutils"
+	"github.com/wso2/apk/adapter/pkg/utils/tlsutils"
 	"github.com/wso2/apk/management-server/internal/config"
 	"github.com/wso2/apk/management-server/internal/logger"
 	internal_types "github.com/wso2/apk/management-server/internal/types"
+	"github.com/wso2/apk/management-server/internal/utils"
 	"github.com/wso2/apk/management-server/internal/xds/callbacks"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -258,7 +259,7 @@ func InitAPKMgtServer() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	apkMgtAPIDsSrv := wso2_server.NewServer(ctx, applicationCache, &callbacks.Callbacks{})
-	publicKeyLocation, privateKeyLocation, truststoreLocation := tlsutils.GetKeyLocations()
+	publicKeyLocation, privateKeyLocation, truststoreLocation := utils.GetKeyLocations()
 	cert, err := tlsutils.GetServerCertificate(publicKeyLocation, privateKeyLocation)
 	if err != nil {
 		logger.LoggerMGTServer.ErrorC(logging.ErrorDetails{

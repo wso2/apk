@@ -15,8 +15,6 @@
   location = "/home/wso2/security/truststore"
 
 [router]
-  listenerPort = 9090
-  securedListenerPort = 9095
   systemHost = "localhost"
   useRemoteAddress = false
 

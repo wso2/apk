@@ -43,4 +43,60 @@ webhooks:
     resources:
     - apis
   sideEffects: None
+  {{ if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.dp.adapter.configs.apiNamespaces }}
+  namespaceSelector:
+    matchExpressions:
+    - key: metadata.namespace
+      operator: In
+      values: [{{ include "commaJoinedQuotedList" .Values.wso2.apk.dp.adapter.configs.apiNamespaces}}]
+  {{ end}}    
+- admissionReviewVersions:
+    - v1
+  clientConfig:
+    service:
+      name: {{ template "apk-helm.resource.prefix" . }}-adapter-service
+      namespace: {{ .Release.Namespace }}
+      path: /validate-dp-wso2-com-v1alpha1-apipolicy
+  failurePolicy: Fail
+  name: vapipolicy.kb.io
+  rules:
+    - apiGroups:
+        - dp.wso2.com
+      apiVersions:
+        - v1alpha1
+      operations:
+        - CREATE
+        - UPDATE
+      resources:
+        - apipolicies
+  sideEffects: None
+{{ if .Values.wso2.apk.dp.ratelimiter.enabled }}
+- admissionReviewVersions:
+    - v1
+  clientConfig:
+    service:
+      name: {{ template "apk-helm.resource.prefix" . }}-adapter-service
+      namespace: {{ .Release.Namespace }}
+      path: /validate-dp-wso2-com-v1alpha1-ratelimitpolicy
+  failurePolicy: Fail
+  name: vratelimitpolicy.kb.io
+  rules:
+    - apiGroups:
+        - dp.wso2.com
+      apiVersions:
+        - v1alpha1
+      operations:
+        - CREATE
+        - UPDATE
+      resources:
+        - ratelimitpolicies
+  sideEffects: None
+  {{ if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.dp.adapter.configs.apiNamespaces }}
+  namespaceSelector:
+    matchExpressions:
+    - key: metadata.namespace
+      operator: In
+      values: [{{ include "commaJoinedQuotedList" .Values.wso2.apk.dp.adapter.configs.apiNamespaces }}]
+  {{ end }}
+{{ end }}
 {{- end -}}

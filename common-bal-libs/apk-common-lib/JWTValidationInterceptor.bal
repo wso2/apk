@@ -35,14 +35,14 @@ public service class JWTValidationInterceptor {
         if validatedJWT is jwt:Payload {
             if (validatedJWT.hasKey(self.idpConfiguration.organizationClaim)) {
                 string organizationClaim = <string>validatedJWT.get(self.idpConfiguration.organizationClaim);
-                Organization? retrievedorg = self.organizationResolver.retrieveOrganizationFromIDPClaimValue(organizationClaim);
+                Organization? retrievedorg = check self.organizationResolver.retrieveOrganizationFromIDPClaimValue(organizationClaim);
                 if retrievedorg is Organization {
                     if retrievedorg.enabled {
                         UserContext userContext = {username: <string>validatedJWT.sub, organization: retrievedorg};
                         userContext.claims = self.extractCustomClaims(validatedJWT);
                         return userContext;
                     } else {
-                        APKError apkError = error("inactive organization", code = 900951, description = "organization is enactive", statusCode = 401, message = "organization is enactive");
+                        APKError apkError = error("Inactive Organization", code = 900951, description = "Organization is inactive", statusCode = 401, message = "Organization is inactive");
                         return apkError;
                     }
                 } else {
@@ -51,7 +51,7 @@ public service class JWTValidationInterceptor {
                 }
             } else {
                 // find default organization
-                Organization? retrievedorg = self.organizationResolver.retrieveOrganizationByName(DEFAULT_ORGANIZATION_NAME);
+                Organization? retrievedorg = check self.organizationResolver.retrieveOrganizationByName(DEFAULT_ORGANIZATION_NAME);
                 if retrievedorg is Organization {
                     UserContext userContext = {username: <string>validatedJWT.sub, organization: retrievedorg};
                     userContext.claims = self.extractCustomClaims(validatedJWT);
@@ -88,7 +88,7 @@ public service class JWTValidationInterceptor {
 isolated function initializeJWTValidator(IDPConfiguration idpConfiguration) returns jwt:ValidatorConfig {
     jwt:ValidatorConfig validatorConfig = {issuer: idpConfiguration.issuer};
     string? jwksUrl = idpConfiguration.jwksUrl;
-    jwt:ValidatorSignatureConfig signatureConfig = {certFile: idpConfiguration.publicKey.path};
+    jwt:ValidatorSignatureConfig signatureConfig = {certFile: idpConfiguration.publicKey.certFilePath};
     if jwksUrl is string {
         signatureConfig = {jwksConfig: {url: jwksUrl}};
     }

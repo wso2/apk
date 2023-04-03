@@ -14,7 +14,7 @@
 # limitations under the License.
 # -----------------------------------------------------------------------
 
-FROM alpine:3.15.4
+FROM alpine:3.17.2
 LABEL maintainer="WSO2 Docker Maintainers <wso2.com>"
 
 RUN apk update && apk upgrade --no-cache
@@ -24,6 +24,8 @@ ENV LANG=C.UTF-8
 
 ARG APK_USER=wso2
 ARG APK_USER_ID=802
+ARG CHECKSUM_AMD64="c72704c9cd49fb18f8df28de26e29c2563b6515e38efee65a6c3a29ec7368a91"
+ARG CHECKSUM_ARM64="a7b42093b702ea83f4dcbd1dd74e4085c118fe93b9cfd3f205e48506a9ac94a0"
 ARG APK_USER_GROUP=wso2
 ARG APK_USER_GROUP_ID=802
 ARG APK_USER_HOME=/home/${APK_USER}
@@ -46,11 +48,22 @@ RUN \
     && chown -R ${APK_USER}:${APK_USER_GROUP} ${APK_USER_HOME} \
     && echo '[ ! -z "${TERM}" -a -r /etc/motd ] && cat /etc/motd' >> /etc/bash.bashrc; echo "${MOTD}" > /etc/motd
 
+RUN \
+    wget -q https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/v0.4.16/grpc_health_probe-linux-${TARGETARCH} \
+    && mv grpc_health_probe-linux-${TARGETARCH} ${GRPC_HEALTH_PROBE_PATH} \
+    && if [ "${TARGETARCH}" = "amd64" ]; then echo "${CHECKSUM_AMD64}  ${GRPC_HEALTH_PROBE_PATH}" | sha256sum -c -; fi
+    
+RUN \
+    chmod +x ${GRPC_HEALTH_PROBE_PATH} \
+    && chown ${APK_USER}:${APK_USER_GROUP} ${GRPC_HEALTH_PROBE_PATH}
+
+
 WORKDIR ${APK_USER_HOME}
 USER ${APK_USER}
 
 COPY resources/security security
 COPY resources/conf/config.toml conf/
+COPY resources/check_health.sh .
 COPY resources/conf/log_config.toml conf/
 COPY ./${TARGETARCH}/main adapter
 

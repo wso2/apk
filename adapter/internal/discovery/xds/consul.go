@@ -18,15 +18,14 @@
 package xds
 
 import (
-	"fmt"
 	"reflect"
 	"sync"
 
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	endpointv3 "github.com/envoyproxy/go-control-plane/envoy/config/endpoint/v3"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
+	logging "github.com/wso2/apk/adapter/internal/logging"
 	"github.com/wso2/apk/adapter/internal/svcdiscovery"
-	"github.com/wso2/apk/adapter/pkg/logging"
 	"google.golang.org/protobuf/types/known/anypb"
 )
 
@@ -50,11 +49,7 @@ func startConsulServiceDiscovery(organizationID string) {
 				})
 				query, errConSyn := svcdiscovery.ParseQueryString(consulSyntax)
 				if errConSyn != nil {
-					logger.LoggerXds.ErrorC(logging.ErrorDetails{
-						Message:   fmt.Sprintf("Consul syntax parse error %v", errConSyn.Error()),
-						Severity:  logging.CRITICAL,
-						ErrorCode: 1402,
-					})
+					logger.LoggerXds.ErrorC(logging.GetErrorByCode(1402, errConSyn.Error()))
 					return
 				}
 				logger.LoggerXds.Debugln("consul query values: ", query)
@@ -88,11 +83,7 @@ func updateCertsForServiceMesh(organizationID string) {
 
 			marshalledTLSContext, err := anypb.New(upstreamTLSContext)
 			if err != nil {
-				logger.LoggerXds.ErrorC(logging.ErrorDetails{
-					Message:   fmt.Sprintf("Internal Error while marshalling the upstream TLS Context. %v", err.Error()),
-					Severity:  logging.CRITICAL,
-					ErrorCode: 1403,
-				})
+				logger.LoggerXds.ErrorC(logging.GetErrorByCode(1403, err.Error()))
 			} else {
 				//envoy config
 				upstreamTransportSocket := &corev3.TransportSocket{
@@ -194,7 +185,7 @@ func updateXDSClusterCache(apiKey string, organizationID string) {
 	for key, envoyLabelList := range orgIDOpenAPIEnvoyMap[organizationID] {
 		if key == apiKey {
 			for _, label := range envoyLabelList {
-				listeners, clusters, routes, endpoints, _ := GenerateEnvoyResoucesForLabel(label)
+				listeners, clusters, routes, endpoints, _ := GenerateEnvoyResoucesForGateway(label)
 				UpdateXdsCacheWithLock(label, endpoints, clusters, routes, listeners)
 				logger.LoggerXds.Info("Updated XDS cache by consul service discovery for API: ", apiKey)
 			}

@@ -20,6 +20,7 @@ import ballerina/lang.value;
 import runtime_domain_service.model as model;
 import wso2/apk_common_lib as commons;
 import ballerina/log;
+import ballerina/url;
 
 isolated map<map<model:API>> apilist = {};
 string apiResourceVersion = "";
@@ -122,16 +123,26 @@ class APIListingTask {
 public function getAPIClient(string resourceVersion) returns websocket:Client|error {
     log:printDebug("Initializing Watch Service for APIS with resource Version " + resourceVersion);
     string requestURl = "wss://" + runtimeConfiguration.k8sConfiguration.host + "/apis/dp.wso2.com/v1alpha1/watch/apis";
+    boolean questionMark = false;
     if resourceVersion.length() > 0 {
         requestURl = requestURl + "?resourceVersion=" + resourceVersion.toString();
+        questionMark = true;
     }
+    string fieldSelectorQuery = "metadata.namespace=" + currentNameSpace;
+
+    if questionMark {
+        requestURl = requestURl + "&fieldSelector=" + check url:encode(fieldSelectorQuery, "UTF-8");
+    } else {
+        requestURl = requestURl + "?fieldSelector=" + check url:encode(fieldSelectorQuery, "UTF-8");
+    }
+
     return new (requestURl,
     auth = {
         token: token
     },
         secureSocket = {
-        cert: caCertPath
-    }
+            cert: caCertPath
+        }
     );
 }
 
@@ -146,10 +157,18 @@ isolated function getAPIs(commons:Organization organization) returns model:API[]
     }
 }
 
-isolated function getAPI(string id, commons:Organization organization) returns model:API|error {
+isolated function getAPI(string id, commons:Organization organization) returns model:API? {
     lock {
-        map<model:API> & readonly apiMap = check trap apilist.get(organization.uuid).cloneReadOnly();
-        return check trap apiMap.get(id);
+        if apilist.hasKey(organization.uuid) {
+            map<model:API> & readonly readOnlyAPImap = apilist.get(organization.uuid).cloneReadOnly();
+            if readOnlyAPImap.hasKey(id) {
+                return readOnlyAPImap.get(id);
+            } else {
+                return ();
+            }
+        } else {
+            return ();
+        }
     }
 }
 

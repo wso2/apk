@@ -20,13 +20,16 @@
 package envoyconf
 
 import (
-	"fmt"
 	"time"
 
+	"strings"
+
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
+	envoy_config_ratelimit_v3 "github.com/envoyproxy/go-control-plane/envoy/config/ratelimit/v3"
 	cors_filter_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/cors/v3"
 	ext_authv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ext_authz/v3"
 	luav3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/lua/v3"
+	ratelimit "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ratelimit/v3"
 	routerv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/router/v3"
 	wasm_filter_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/wasm/v3"
 	hcmv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/http_connection_manager/v3"
@@ -34,13 +37,14 @@ import (
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"google.golang.org/protobuf/types/known/anypb"
+	"google.golang.org/protobuf/types/known/durationpb"
 
 	//rls "github.com/envoyproxy/go-control-plane/envoy/config/ratelimit/v3"
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/wso2/apk/adapter/config"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
-	"github.com/wso2/apk/adapter/pkg/logging"
+	logging "github.com/wso2/apk/adapter/internal/logging"
 
 	//mgw_websocket "github.com/wso2/micro-gw/internal/oasparser/envoyconf/api"
 	"github.com/golang/protobuf/ptypes/any"
@@ -48,32 +52,30 @@ import (
 
 // getHTTPFilters generates httpFilter configuration
 func getHTTPFilters() []*hcmv3.HttpFilter {
-	extAauth := getExtAuthzHTTPFilter()
+	extAuth := getExtAuthzHTTPFilter()
 	router := getRouterHTTPFilter()
 	lua := getLuaFilter()
 	cors := getCorsHTTPFilter()
 
 	httpFilters := []*hcmv3.HttpFilter{
 		cors,
-		extAauth,
+		extAuth,
 		lua,
-		router,
 	}
 	conf := config.ReadConfigs()
+	if conf.Envoy.RateLimit.Enabled {
+		rateLimit := getRateLimitFilter()
+		httpFilters = append(httpFilters, rateLimit)
+	}
 	if conf.Envoy.Filters.Compression.Enabled {
 		compressionFilter, err := getCompressorFilter()
 		if err != nil {
-			logger.LoggerXds.ErrorC(logging.ErrorDetails{
-				Message:   fmt.Sprintf("Error occurred while creating the compression filter: %v", err.Error()),
-				Severity:  logging.MINOR,
-				ErrorCode: 2234,
-			})
+			logger.LoggerXds.ErrorC(logging.GetErrorByCode(2234, err.Error()))
 			return httpFilters
 		}
-		httpFilters = httpFilters[:len(httpFilters)-1]
 		httpFilters = append(httpFilters, compressionFilter)
-		httpFilters = append(httpFilters, router)
 	}
+	httpFilters = append(httpFilters, router)
 	return httpFilters
 }
 
@@ -134,7 +136,58 @@ func getUpgradeFilters() []*hcmv3.HttpFilter {
 	return upgradeFilters
 }
 
-// getExtAuthzHTTPFilter gets ExtAuthz http filter.
+// getRateLimitFilter configures the ratelimit filter
+func getRateLimitFilter() *hcmv3.HttpFilter {
+	conf := config.ReadConfigs()
+
+	// X-RateLimit Headers
+	var enableXRatelimitHeaders ratelimit.RateLimit_XRateLimitHeadersRFCVersion
+	if conf.Envoy.RateLimit.XRateLimitHeaders.Enabled {
+		switch strings.ToUpper(conf.Envoy.RateLimit.XRateLimitHeaders.RFCVersion) {
+		case ratelimit.RateLimit_DRAFT_VERSION_03.String():
+			enableXRatelimitHeaders = ratelimit.RateLimit_DRAFT_VERSION_03
+		default:
+			defaultType := ratelimit.RateLimit_DRAFT_VERSION_03
+			logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2240, defaultType))
+			enableXRatelimitHeaders = defaultType
+		}
+	} else {
+		enableXRatelimitHeaders = ratelimit.RateLimit_OFF
+	}
+
+	rateLimit := &ratelimit.RateLimit{
+		Domain:                  RateLimiterDomain,
+		FailureModeDeny:         conf.Envoy.RateLimit.FailureModeDeny,
+		EnableXRatelimitHeaders: enableXRatelimitHeaders,
+		RateLimitService: &envoy_config_ratelimit_v3.RateLimitServiceConfig{
+			TransportApiVersion: corev3.ApiVersion_V3,
+			GrpcService: &corev3.GrpcService{
+				TargetSpecifier: &corev3.GrpcService_EnvoyGrpc_{
+					EnvoyGrpc: &corev3.GrpcService_EnvoyGrpc{
+						ClusterName: rateLimitClusterName,
+					},
+				},
+				Timeout: &durationpb.Duration{
+					Nanos:   (int32(conf.Envoy.RateLimit.RequestTimeoutInMillis) % 1000) * 1000000,
+					Seconds: conf.Envoy.RateLimit.RequestTimeoutInMillis / 1000,
+				},
+			},
+		},
+	}
+	ext, err2 := ptypes.MarshalAny(rateLimit)
+	if err2 != nil {
+		logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2241, err2.Error()))
+	}
+	rlFilter := hcmv3.HttpFilter{
+		Name: wellknown.HTTPRateLimit,
+		ConfigType: &hcmv3.HttpFilter_TypedConfig{
+			TypedConfig: ext,
+		},
+	}
+	return &rlFilter
+}
+
+// getExtAuthzHTTPFilter gets ExtAauthz http filter.
 func getExtAuthzHTTPFilter() *hcmv3.HttpFilter {
 	conf := config.ReadConfigs()
 	extAuthzConfig := &ext_authv3.ExtAuthz{
@@ -168,7 +221,7 @@ func getExtAuthzHTTPFilter() *hcmv3.HttpFilter {
 		logger.LoggerOasparser.Error(err2)
 	}
 	extAuthzFilter := hcmv3.HttpFilter{
-		Name: extAuthzFilterName,
+		Name: wellknown.HTTPExternalAuthorization,
 		ConfigType: &hcmv3.HttpFilter_TypedConfig{
 			TypedConfig: ext,
 		},
@@ -180,20 +233,20 @@ func getExtAuthzHTTPFilter() *hcmv3.HttpFilter {
 func getLuaFilter() *hcmv3.HttpFilter {
 	luaConfig := &luav3.Lua{
 		DefaultSourceCode: &corev3.DataSource{
- 			Specifier: &corev3.DataSource_InlineString{
- 				InlineString: "function envoy_on_request(request_handle)" +
- 					"\nend" +
- 					"\nfunction envoy_on_response(response_handle)" +
- 					"\nend",
- 			},
- 		},
+			Specifier: &corev3.DataSource_InlineString{
+				InlineString: "function envoy_on_request(request_handle)" +
+					"\nend" +
+					"\nfunction envoy_on_response(response_handle)" +
+					"\nend",
+			},
+		},
 	}
 	ext, err2 := anypb.New(luaConfig)
 	if err2 != nil {
 		logger.LoggerOasparser.Error(err2)
 	}
 	luaFilter := hcmv3.HttpFilter{
-		Name: luaFilterName,
+		Name: wellknown.Lua,
 		ConfigType: &hcmv3.HttpFilter_TypedConfig{
 			TypedConfig: ext,
 		},

@@ -59,13 +59,13 @@ var supportedPoliciesMap = map[string]policyLayout{
 	},
 }
 
-// PolicyLayout holds the layout of policy that support by Choreo Connect
+// PolicyLayout holds the layout of policy that support by APK
 type policyLayout struct {
 	RequiredParams   []string
 	IsPassToEnforcer bool
 }
 
-// validatePolicyAction validates policy against the policy definition that supported by Choreo Connect
+// validatePolicyAction validates policy against the policy definition that supported by APK
 func validatePolicyAction(policy *Policy) error {
 	if layout, ok := supportedPoliciesMap[policy.Action]; ok {
 		for _, requiredParam := range layout.RequiredParams {
@@ -79,7 +79,7 @@ func validatePolicyAction(policy *Policy) error {
 		}
 		policy.IsPassToEnforcer = layout.IsPassToEnforcer
 	} else {
-		return fmt.Errorf("policy action %q not supported by Choreo Connect gateway", policy.Action)
+		return fmt.Errorf("policy action %q not supported by APK gateway", policy.Action)
 	}
 	return nil
 }

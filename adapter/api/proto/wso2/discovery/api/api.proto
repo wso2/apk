@@ -19,7 +19,6 @@ syntax = "proto3";
 package wso2.discovery.api;
 
 import "wso2/discovery/api/Resource.proto";
-import "wso2/discovery/api/endpoint_security.proto";
 import "wso2/discovery/api/security_scheme.proto";
 import "wso2/discovery/api/Certificate.proto";
 // import "wso2/discovery/api/graphql.proto";
@@ -45,16 +44,15 @@ message Api {
 	string apiLifeCycleState = 11;
 	repeated SecurityScheme securityScheme = 12;
 	repeated SecurityList security = 13;
-	EndpointSecurity endpointSecurity = 14;
-	string authorizationHeader = 15;
-	bool disableSecurity = 16;
-	string vhost = 17;
-	string organizationId = 18;
-	// bool isMockedApi = 19;
-	repeated Certificate clientCertificates = 20;
-	string mutualSSL = 21;
-	bool applicationSecurity = 22;
-	/// string graphQLSchema = 23;
-	// repeated GraphqlComplexity graphqlComplexityInfo = 24;
-	bool systemAPI = 25;
+	string authorizationHeader = 14;
+	bool disableSecurity = 15;
+	string vhost = 16;
+	string organizationId = 17;
+	// bool isMockedApi = 18;
+	repeated Certificate clientCertificates = 19;
+	string mutualSSL = 20;
+	bool applicationSecurity = 21;
+	/// string graphQLSchema = 22;
+	// repeated GraphqlComplexity graphqlComplexityInfo = 23;
+	bool systemAPI = 24;
 }

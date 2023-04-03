@@ -33,12 +33,14 @@ import (
 
 // HTTPRouteParams contains httproute related parameters
 type HTTPRouteParams struct {
-	AuthSchemes            map[string]dpv1alpha1.Authentication
-	ResourceAuthSchemes    map[string]dpv1alpha1.Authentication
-	APIPolicies            map[string]dpv1alpha1.APIPolicy
-	ResourceAPIPolicies    map[string]dpv1alpha1.APIPolicy
-	BackendPropertyMapping dpv1alpha1.BackendPropertyMapping
-	ResourceScopes         map[string]dpv1alpha1.Scope
+	AuthSchemes               map[string]dpv1alpha1.Authentication
+	ResourceAuthSchemes       map[string]dpv1alpha1.Authentication
+	APIPolicies               map[string]dpv1alpha1.APIPolicy
+	ResourceAPIPolicies       map[string]dpv1alpha1.APIPolicy
+	BackendMapping            dpv1alpha1.BackendMapping
+	ResourceScopes            map[string]dpv1alpha1.Scope
+	RateLimitPolicies         map[string]dpv1alpha1.RateLimitPolicy
+	ResourceRateLimitPolicies map[string]dpv1alpha1.RateLimitPolicy
 }
 
 // SetInfoHTTPRouteCR populates resources and endpoints of mgwSwagger. httpRoute.Spec.Rules.Matches
@@ -49,6 +51,7 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, ht
 	//TODO(amali) add gateway level securities after gateway crd has implemented
 	outputAuthScheme := utils.TieBreaker(utils.GetPtrSlice(maps.Values(httpRouteParams.AuthSchemes)))
 	outputAPIPolicy := utils.TieBreaker(utils.GetPtrSlice(maps.Values(httpRouteParams.APIPolicies)))
+	outputRatelimitPolicy := utils.TieBreaker(utils.GetPtrSlice(maps.Values(httpRouteParams.RateLimitPolicies)))
 
 	var authScheme *dpv1alpha1.Authentication
 	if outputAuthScheme != nil {
@@ -58,11 +61,17 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, ht
 	if outputAPIPolicy != nil {
 		apiPolicy = *outputAPIPolicy
 	}
+	var ratelimitPolicy *dpv1alpha1.RateLimitPolicy
+	if outputRatelimitPolicy != nil {
+		ratelimitPolicy = concatRateLimitPolicies(*outputRatelimitPolicy, nil)
+	}
+
 	for _, rule := range httpRoute.Spec.Rules {
 		var endPoints []Endpoint
 		var policies = OperationPolicies{}
 		resourceAuthScheme := authScheme
-		resourceAPIPolicy := apiPolicy
+		resourceAPIPolicy := concatAPIPolicies(apiPolicy, nil)
+		var resourceRatelimitPolicy *dpv1alpha1.RateLimitPolicy
 		hasPolicies := false
 		var scopes []string
 		for _, filter := range rule.Filters {
@@ -102,7 +111,7 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, ht
 						Name:      string(filter.ExtensionRef.Name),
 						Namespace: httpRoute.Namespace,
 					}.String()]; found {
-						resourceAPIPolicy = concatAPIPolicies(resourceAPIPolicy, &ref)
+						resourceAPIPolicy = concatAPIPolicies(apiPolicy, &ref)
 					} else {
 						return fmt.Errorf(`apipolicy: %s has not been resolved, spec.targetRef.kind should be 
 						'Resource' in resource level APIPolicies`, filter.ExtensionRef.Name)
@@ -113,9 +122,20 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, ht
 						Name:      string(filter.ExtensionRef.Name),
 						Namespace: httpRoute.Namespace,
 					}.String()]; found {
-						scopes = append(scopes, ref.Spec.Names...)
+						scopes = ref.Spec.Names
 					} else {
 						return fmt.Errorf("scope: %s has not been resolved in namespace %s", filter.ExtensionRef.Name, httpRoute.Namespace)
+					}
+				}
+				if filter.ExtensionRef.Kind == constants.KindRateLimitPolicy {
+					if ref, found := httpRouteParams.ResourceRateLimitPolicies[types.NamespacedName{
+						Name:      string(filter.ExtensionRef.Name),
+						Namespace: httpRoute.Namespace,
+					}.String()]; found {
+						resourceRatelimitPolicy = concatRateLimitPolicies(ratelimitPolicy, &ref)
+					} else {
+						return fmt.Errorf(`ratelimitpolicy: %s has not been resolved, spec.targetRef.kind should be 
+						'Resource' in resource level RateLimitPolicies`, filter.ExtensionRef.Name)
 					}
 				}
 			case gwapiv1b1.HTTPRouteFilterRequestHeaderModifier:
@@ -186,29 +206,42 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, ht
 				}
 			}
 		}
+
+		addOperationLevelInterceptors(&policies, resourceAPIPolicy, httpRouteParams.BackendMapping)
+
 		loggers.LoggerOasparser.Debug("Calculating auths for API ...")
 		securities, securityDefinitions, disabledSecurity := getSecurity(concatAuthScheme(resourceAuthScheme), scopes)
 		securitySchemes = append(securitySchemes, securityDefinitions...)
 		if len(rule.BackendRefs) < 1 {
 			return fmt.Errorf("no backendref were provided")
 		}
+		var securityConfig []EndpointSecurity
 		for _, backend := range rule.BackendRefs {
-			backendProperties := httpRouteParams.BackendPropertyMapping[types.NamespacedName{
+			backendName := types.NamespacedName{
 				Name:      string(backend.Name),
 				Namespace: utils.GetNamespace(backend.Namespace, httpRoute.Namespace),
-			}]
-			endPoints = append(endPoints,
-				Endpoint{Host: backendProperties.ResolvedHostname,
-					URLType:     string(backendProperties.Protocol),
-					Port:        uint32(*backend.Port),
-					Certificate: []byte(backendProperties.TLS.CertificateInline),
-				})
+			}
+			resolvedBackend, ok := httpRouteParams.BackendMapping[backendName]
+			if ok {
+				endPoints = append(endPoints, getEndpoints(backendName, httpRouteParams.BackendMapping)...)
+				for _, security := range resolvedBackend.Security {
+					switch security.Type {
+					case "Basic":
+						securityConfig = append(securityConfig, EndpointSecurity{
+							Password: string(security.Basic.Password),
+							Username: string(security.Basic.Username),
+							Type:     string(security.Type),
+							Enabled:  true,
+						})
+					}
+				}
+			}
 		}
-
 		for _, match := range rule.Matches {
 			resourcePath := *match.Path.Value
 			resource := &Resource{path: resourcePath,
-				methods:       getAllowedOperations(match.Method, policies, resourceAuthScheme, securities, disabledSecurity),
+				methods: getAllowedOperations(match.Method, policies, resourceAuthScheme, securities, disabledSecurity,
+					parseRateLimitPolicyToInternal(resourceRatelimitPolicy)),
 				pathMatchType: *match.Path.Type,
 				hasPolicies:   hasPolicies,
 				iD:            uuid.New().String(),
@@ -216,12 +249,89 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, ht
 			resource.endpoints = &EndpointCluster{
 				Endpoints: endPoints,
 			}
+			resource.endpointSecurity = utils.GetPtrSlice(securityConfig)
 			resources = append(resources, resource)
 		}
 	}
+	swagger.RateLimitPolicy = parseRateLimitPolicyToInternal(ratelimitPolicy)
 	swagger.resources = resources
 	swagger.securityScheme = securitySchemes
 	return nil
+}
+
+func parseRateLimitPolicyToInternal(ratelimitPolicy *dpv1alpha1.RateLimitPolicy) *RateLimitPolicy {
+	var rateLimitPolicyInternal *RateLimitPolicy
+	if ratelimitPolicy != nil {
+		if ratelimitPolicy.Spec.Override.API.RequestsPerUnit > 0 {
+			rateLimitPolicyInternal = &RateLimitPolicy{
+				Count:    ratelimitPolicy.Spec.Override.API.RequestsPerUnit,
+				SpanUnit: ratelimitPolicy.Spec.Override.API.Unit,
+			}
+		}
+	}
+	return rateLimitPolicyInternal
+}
+
+// addOperationLevelInterceptors add the operation level interceptor policy to the policies
+func addOperationLevelInterceptors(policies *OperationPolicies, apiPolicy *dpv1alpha1.APIPolicy, backendMapping dpv1alpha1.BackendMapping) {
+	if apiPolicy != nil && apiPolicy.Spec.Override != nil {
+		if apiPolicy.Spec.Override.RequestInterceptor != nil {
+			requestInterceptor := apiPolicy.Spec.Override.RequestInterceptor
+			policyParameters := make(map[string]interface{})
+			backendName := types.NamespacedName{
+				Name:      requestInterceptor.BackendRef.Name,
+				Namespace: utils.GetNamespace((*gwapiv1b1.Namespace)(&requestInterceptor.BackendRef.Namespace), apiPolicy.Namespace),
+			}
+			endpoints := getEndpoints(backendName, backendMapping)
+			if len(endpoints) > 0 {
+				policyParameters[constants.InterceptorEndpoints] = endpoints
+				policyParameters[constants.InterceptorServiceIncludes] = requestInterceptor.Includes
+				policies.Request = append(policies.Request, Policy{
+					PolicyName: constants.PolicyRequestInterceptor,
+					Action:     constants.ActionInterceptorService,
+					Parameters: policyParameters,
+				})
+			}
+		}
+		if apiPolicy.Spec.Override.ResponseInterceptor != nil {
+			responseInterceptor := apiPolicy.Spec.Override.ResponseInterceptor
+			policyParameters := make(map[string]interface{})
+			backendName := types.NamespacedName{
+				Name:      responseInterceptor.BackendRef.Name,
+				Namespace: utils.GetNamespace((*gwapiv1b1.Namespace)(&responseInterceptor.BackendRef.Namespace), apiPolicy.Namespace),
+			}
+			endpoints := getEndpoints(backendName, backendMapping)
+			if len(endpoints) > 0 {
+				policyParameters[constants.InterceptorEndpoints] = endpoints
+				policyParameters[constants.InterceptorServiceIncludes] = responseInterceptor.Includes
+				policies.Response = append(policies.Response, Policy{
+					PolicyName: constants.PolicyResponseInterceptor,
+					Action:     constants.ActionInterceptorService,
+					Parameters: policyParameters,
+				})
+			}
+		}
+	}
+}
+
+// getEndpoints creates endpoints using resolved backends in backendMapping
+func getEndpoints(backendName types.NamespacedName, backendMapping dpv1alpha1.BackendMapping) []Endpoint {
+	endpoints := []Endpoint{}
+	backend, ok := backendMapping[backendName]
+	if ok && backend != nil {
+		if len(backend.Services) > 0 {
+			for _, service := range backend.Services {
+				endpoints = append(endpoints, Endpoint{
+					Host:        service.Host,
+					Port:        service.Port,
+					URLType:     string(backend.Protocol),
+					Certificate: []byte(backend.TLS.ResolvedCertificate),
+					AllowedSANs: backend.TLS.AllowedSANs,
+				})
+			}
+		}
+	}
+	return endpoints
 }
 
 // concatAuthSchemes concatinate override and default authentication rules to a one authentication override rule
@@ -288,6 +398,30 @@ func concatAuthSchemes(schemeUp *dpv1alpha1.Authentication, schemeDown *dpv1alph
 	return &finalAuth
 }
 
+func concatRateLimitPolicies(schemeUp *dpv1alpha1.RateLimitPolicy, schemeDown *dpv1alpha1.RateLimitPolicy) *dpv1alpha1.RateLimitPolicy {
+	finalRateLimit := dpv1alpha1.RateLimitPolicy{}
+	if schemeUp != nil && schemeDown != nil {
+		finalRateLimit.Spec.Override = utils.SelectPolicy(&schemeUp.Spec.Override, &schemeUp.Spec.Default, &schemeDown.Spec.Override, &schemeDown.Spec.Default)
+	} else if schemeUp != nil {
+		finalRateLimit.Spec.Override = utils.SelectPolicy(&schemeUp.Spec.Override, &schemeUp.Spec.Default, nil, nil)
+	} else if schemeDown != nil {
+		finalRateLimit.Spec.Override = utils.SelectPolicy(nil, nil, &schemeDown.Spec.Override, &schemeDown.Spec.Default)
+	}
+	return &finalRateLimit
+}
+
+func concatAPIPolicies(schemeUp *dpv1alpha1.APIPolicy, schemeDown *dpv1alpha1.APIPolicy) *dpv1alpha1.APIPolicy {
+	apiPolicy := dpv1alpha1.APIPolicy{}
+	if schemeUp != nil && schemeDown != nil {
+		apiPolicy.Spec.Override = utils.SelectPolicy(&schemeUp.Spec.Override, &schemeUp.Spec.Default, &schemeDown.Spec.Override, &schemeDown.Spec.Default)
+	} else if schemeUp != nil {
+		apiPolicy.Spec.Override = utils.SelectPolicy(&schemeUp.Spec.Override, &schemeUp.Spec.Default, nil, nil)
+	} else if schemeDown != nil {
+		apiPolicy.Spec.Override = utils.SelectPolicy(nil, nil, &schemeDown.Spec.Override, &schemeDown.Spec.Default)
+	}
+	return &apiPolicy
+}
+
 // concatAuthScheme concat override and default auth policies of an authentication CR
 // folowing the hierarchy described in the https://gateway-api.sigs.k8s.io/references/policy-attachment/#hierarchy
 func concatAuthScheme(scheme *dpv1alpha1.Authentication) *dpv1alpha1.Authentication {
@@ -317,65 +451,6 @@ func concatAuthScheme(scheme *dpv1alpha1.Authentication) *dpv1alpha1.Authenticat
 		}
 	}
 	return &finalAuth
-}
-
-// concatAPIPolicies concatinate override and default authentication rules to a one authentication override rule
-// folowing the hierarchy described in the https://gateway-api.sigs.k8s.io/references/policy-attachment/#hierarchy
-// Following code would follow below logic.
-// | API override policies | Resource override policies | Resource default policies | API default policies |
-// |            1          |              1             |              0            |           0          | API override policies
-// |            1          |              0             |              1            |           0          | API override policies
-// |            0          |              1             |              0            |           1          | Resource override policies
-// |            0          |              0             |              1            |           1          | Resource default policies
-func concatAPIPolicies(schemeUp *dpv1alpha1.APIPolicy, schemeDown *dpv1alpha1.APIPolicy) *dpv1alpha1.APIPolicy {
-	if schemeUp == nil && schemeDown == nil {
-		return nil
-	} else if schemeUp == nil {
-		return schemeDown
-	} else if schemeDown == nil {
-		return schemeUp
-	}
-
-	finalAPIPolicy := dpv1alpha1.APIPolicy{}
-
-	// api level override policies - must apply
-	finalAPIPolicy.Spec.Override.RequestQueryModifier = schemeUp.Spec.Override.RequestQueryModifier
-
-	// resource level override policies - must apply
-	// api level override RequestQueryModifier.Add/remove + resource level override RequestQueryModifier.Add/remove
-	if len(finalAPIPolicy.Spec.Override.RequestQueryModifier.Add) < 1 {
-		finalAPIPolicy.Spec.Override.RequestQueryModifier.Add = schemeDown.Spec.Override.RequestQueryModifier.Add
-	}
-	if len(finalAPIPolicy.Spec.Override.RequestQueryModifier.Remove) < 1 {
-		finalAPIPolicy.Spec.Override.RequestQueryModifier.Remove = schemeDown.Spec.Override.RequestQueryModifier.Remove
-	}
-	if finalAPIPolicy.Spec.Override.RequestQueryModifier.RemoveAll == "" {
-		finalAPIPolicy.Spec.Override.RequestQueryModifier.RemoveAll = schemeDown.Spec.Override.RequestQueryModifier.RemoveAll
-	}
-
-	// resource level default policies if above are empty
-	if len(finalAPIPolicy.Spec.Override.RequestQueryModifier.Add) < 1 {
-		finalAPIPolicy.Spec.Override.RequestQueryModifier.Add = schemeDown.Spec.Default.RequestQueryModifier.Add
-	}
-	if len(finalAPIPolicy.Spec.Override.RequestQueryModifier.Remove) < 1 {
-		finalAPIPolicy.Spec.Override.RequestQueryModifier.Remove = schemeDown.Spec.Default.RequestQueryModifier.Remove
-	}
-	if finalAPIPolicy.Spec.Override.RequestQueryModifier.RemoveAll == "" {
-		finalAPIPolicy.Spec.Override.RequestQueryModifier.RemoveAll = schemeDown.Spec.Default.RequestQueryModifier.RemoveAll
-	}
-
-	// API level default policies if above are empty
-	if len(finalAPIPolicy.Spec.Override.RequestQueryModifier.Add) < 1 {
-		finalAPIPolicy.Spec.Override.RequestQueryModifier.Add = schemeUp.Spec.Default.RequestQueryModifier.Add
-	}
-	if len(finalAPIPolicy.Spec.Override.RequestQueryModifier.Remove) < 1 {
-		finalAPIPolicy.Spec.Override.RequestQueryModifier.Remove = schemeUp.Spec.Default.RequestQueryModifier.Remove
-	}
-	if finalAPIPolicy.Spec.Override.RequestQueryModifier.RemoveAll == "" {
-		finalAPIPolicy.Spec.Override.RequestQueryModifier.RemoveAll = schemeUp.Spec.Default.RequestQueryModifier.RemoveAll
-	}
-
-	return &finalAPIPolicy
 }
 
 // getSecurity returns security schemes and it's definitions with flag to indicate if security is disabled
@@ -410,25 +485,26 @@ func getSecurity(authScheme *dpv1alpha1.Authentication, scopes []string) ([]map[
 
 // getAllowedOperations retuns a list of allowed operatons, if httpMethod is not specified then all methods are allowed.
 func getAllowedOperations(httpMethod *gwapiv1b1.HTTPMethod, policies OperationPolicies,
-	authScheme *dpv1alpha1.Authentication, securities []map[string][]string, disableSecurity bool) []*Operation {
+	authScheme *dpv1alpha1.Authentication, securities []map[string][]string, disableSecurity bool,
+	ratelimitPolicy *RateLimitPolicy) []*Operation {
 	if httpMethod != nil {
 		return []*Operation{{iD: uuid.New().String(), method: string(*httpMethod), policies: policies,
-			disableSecurity: disableSecurity, security: securities}}
+			disableSecurity: disableSecurity, security: securities, RateLimitPolicy: ratelimitPolicy}}
 	}
 	return []*Operation{{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodGet), policies: policies,
-		disableSecurity: disableSecurity, security: securities},
+		disableSecurity: disableSecurity, security: securities, RateLimitPolicy: ratelimitPolicy},
 		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodPost), policies: policies,
-			disableSecurity: disableSecurity, security: securities},
+			disableSecurity: disableSecurity, security: securities, RateLimitPolicy: ratelimitPolicy},
 		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodDelete), policies: policies,
-			disableSecurity: disableSecurity, security: securities},
+			disableSecurity: disableSecurity, security: securities, RateLimitPolicy: ratelimitPolicy},
 		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodPatch), policies: policies,
-			disableSecurity: disableSecurity, security: securities},
+			disableSecurity: disableSecurity, security: securities, RateLimitPolicy: ratelimitPolicy},
 		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodPut), policies: policies,
-			disableSecurity: disableSecurity, security: securities},
+			disableSecurity: disableSecurity, security: securities, RateLimitPolicy: ratelimitPolicy},
 		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodHead), policies: policies,
-			disableSecurity: disableSecurity, security: securities},
+			disableSecurity: disableSecurity, security: securities, RateLimitPolicy: ratelimitPolicy},
 		{iD: uuid.New().String(), method: string(gwapiv1b1.HTTPMethodOptions), policies: policies,
-			disableSecurity: disableSecurity, security: securities}}
+			disableSecurity: disableSecurity, security: securities, RateLimitPolicy: ratelimitPolicy}}
 }
 
 // SetInfoAPICR populates ID, ApiType, Version and XWso2BasePath of mgwSwagger.

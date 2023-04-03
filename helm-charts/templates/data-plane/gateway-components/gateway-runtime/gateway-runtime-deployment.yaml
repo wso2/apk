@@ -14,7 +14,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-{{- if .Values.wso2.apk.dp.enabled }}
+{{ if or .Values.wso2.apk.dp.enabled .Values.wso2.apk.cp.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -33,6 +33,15 @@ spec:
         networkPolicyId: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.npi }}
 {{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.wso2.apk.dp.gatewayRuntime.appName ) | indent 8}}
     spec:
+      initContainers:
+        - name: check-adapter
+          image: busybox:1.32
+          env:
+            - name: ADAPTER_HOST
+              value: {{ template "apk-helm.resource.prefix" . }}-adapter-service.{{ .Release.Namespace }}.svc
+            - name: ADAPTER_XDS_PORT
+              value : "18000"  
+          command: ['sh', '-c', 'echo -e "Checking for the availability of Adapter deployment"; while ! nc -z $ADAPTER_HOST $ADAPTER_XDS_PORT; do sleep 1; printf "-"; done; echo -e "  >> Adapter has started";']
       containers:
         - name: enforcer
           image: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.image }}
@@ -48,24 +57,75 @@ spec:
               value: {{ template "apk-helm.resource.prefix" . }}-adapter-service.{{ .Release.Namespace }}.svc
             - name: ADAPTER_HOST
               value: {{ template "apk-helm.resource.prefix" . }}-adapter-service.{{ .Release.Namespace }}.svc
+            - name: ENFORCER_PRIVATE_KEY_PATH
+              value: /home/wso2/security/keystore/enforcer.key  
+            - name: ENFORCER_PUBLIC_CERT_PATH
+              value: /home/wso2/security/keystore/enforcer.crt
+            - name: ENFORCER_SERVER_NAME
+              value: {{ template "apk-helm.resource.prefix" . }}-enforcer-service.{{ .Release.Namespace }}.svc
+            - name: TRUSTED_CA_CERTS_PATH
+              value: "/home/wso2/security/truststore"
+            - name: ADAPTER_XDS_PORT
+              value : "18000"
+            - name: ENFORCER_LABEL
+              value : default
+            - name: ENFORCER_REGION
+              value: UNKNOWN
+            - name: XDS_MAX_MSG_SIZE
+              value: "4194304"
+            - name: XDS_MAX_RETRIES 
+              value: "3"
+            - name: enforcer_admin_pwd
+              value: admin
+            - name: analytics_authURL
+              value: "https://localhost:8080"
+            - name: JAVA_OPTS
+              value: -Dhttpclient.hostnameVerifier=AllowAll -Xms512m -Xmx512m -XX:MaxRAMFraction=2
           volumeMounts:
             - name: enforcer-keystore-secret-volume
-              mountPath: /home/wso2/security/keystore/tls.key
+              mountPath: /home/wso2/security/keystore/enforcer.key
+            {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls }}
+              subPath: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls.certKeyFilename | default "tls.key" }}
+            {{- else }}
               subPath: tls.key
+            {{- end }}
             - name: enforcer-keystore-secret-volume
-              mountPath: /home/wso2/security/keystore/tls.crt
+              mountPath: /home/wso2/security/keystore/enforcer.crt
+            {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls }}
+              subPath: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls.certFilename | default "tls.crt" }}
+            {{- else }}
               subPath: tls.crt
+            {{- end }}
+            - name: enforcer-keystore-secret-volume
+              mountPath: /home/wso2/security/truststore/apk.crt
+            {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls }}
+              subPath: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls.caCertFileName | default "ca.crt" }}
+            {{- else }}
+              subPath: ca.crt
+            {{- end }}
+            - name: enforcer-keystore-secret-volume
+              mountPath: /home/wso2/security/truststore/enforcer.crt
+            {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls }}
+              subPath: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls.certFilename | default "tls.crt" }}
+            {{- else }}
+              subPath: tls.crt
+            {{- end }}
             - name: adapter-truststore-secret-volume
               mountPath: /home/wso2/security/truststore/adapter.crt
+            {{- if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.dp.adapter.configs.tls }}
+              subPath: {{ .Values.wso2.apk.dp.adapter.configs.tls.certFilename | default "tls.crt" }}
+            {{- else }}
               subPath: tls.crt
-            - name: router-truststore-secret-volume
+            {{- end }}
+            - name: router-keystore-secret-volume
               mountPath: /home/wso2/security/truststore/router.crt
-              subPath: tls.crt              
+            {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls }}
+              subPath: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls.certFilename | default "tls.crt" }}
+            {{- else }}
+              subPath: tls.crt
+            {{- end }}
             - name: log-conf-volume
               mountPath: /home/wso2/conf/
-            - mountPath: /home/wso2/check_health.sh
-              name: enforcer-grpc-probe-script-conf-volume
-              subPath: "check_health.sh"
             - name: enforcer-jwt-secret-volume
               mountPath: /home/wso2/security/keystore/mg.pem
               subPath: mg.pem
@@ -78,18 +138,27 @@ spec:
             - name: enforcer-trusted-certs
               mountPath: /home/wso2/security/truststore/wso2carbon.pem
               subPath: wso2carbon.pem
-          # readinessProbe:
-          #   exec:
-          #     command: [ "sh", "check_health.sh" ]
-          #   initialDelaySeconds: 5
-          #   periodSeconds: 5
+          readinessProbe:
+            exec:
+              command: [ "sh", "check_health.sh" ]
+            initialDelaySeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.readinessProbe.periodSeconds }}
+            failureThreshold: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.readinessProbe.failureThreshold }}
+          livenessProbe:
+            exec:
+              command: [ "sh", "check_health.sh" ]
+            initialDelaySeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.livenessProbe.periodSeconds }}
+            failureThreshold: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.livenessProbe.failureThreshold }}
         - name: router
           image: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.image }}
           imagePullPolicy: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.imagePullPolicy }}
           ports:
-            - containerPort: 9095
+            - containerPort: {{ .Values.wso2.apk.dp.gateway.listener.port }}
               protocol: "TCP"
             - containerPort: 9090
+              protocol: "TCP"
+            - containerPort: 9091
               protocol: "TCP"
             - containerPort: 9000
               protocol: "TCP"
@@ -103,49 +172,160 @@ spec:
               value: {{ template "apk-helm.resource.prefix" . }}-enforcer-service.{{ .Release.Namespace }}.svc
             - name: ENFORCER_HOST
               value: "127.0.0.1"
+            - name: ROUTER_ADMIN_HOST
+              value: "0.0.0.0"
+            - name: ROUTER_ADMIN_PORT
+              value: "9000"
+            - name: ROUTER_CLUSTER
+              value: "default_cluster"
+            - name: ROUTER_LABEL
+              value: {{ .Values.wso2.apk.dp.gateway.name }}
+            - name: ROUTER_PRIVATE_KEY_PATH
+              value: "/home/wso2/security/keystore/router.key"
+            - name: ROUTER_PUBLIC_CERT_PATH
+              value: "/home/wso2/security/keystore/router.crt"
+            - name: ADAPTER_PORT
+              value: "18000"
+            - name: ADAPTER_CA_CERT_PATH
+              value: "/home/wso2/security/truststore/adapter.crt"
+            - name: ENFORCER_PORT
+              value: "8081"
+            - name: ENFORCER_ANALYTICS_RECEIVER_PORT
+              value: "18090"
+            - name: ENFORCER_CA_CERT_PATH
+              value: "/home/wso2/security/truststore/enforcer.crt"
+            - name: CONCURRENCY
+              value: "2"
           volumeMounts:
             - name: router-keystore-secret-volume
-              mountPath: /home/wso2/security/keystore
+              mountPath: /home/wso2/security/keystore/router.key
+            {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls }}
+              subPath: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls.certKeyFilename | default "tls.key" }}
+            {{- else }}
+              subPath: tls.key
+            {{- end }}
+            - name: router-keystore-secret-volume
+              mountPath: /home/wso2/security/keystore/router.crt
+            {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls }}
+              subPath: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls.certFilename | default "tls.crt" }}
+            {{- else }}
+              subPath: tls.crt
+            {{- end }}
+            - name: router-listener-secret-volume
+              mountPath: /home/wso2/security/listeners/gw.key
+              subPath: gw.key
+            - name: router-listener-secret-volume
+              mountPath: /home/wso2/security/listeners/gw.crt
+              subPath: gw.crt
+            - name: router-listener-secret-volume
+              mountPath: /home/wso2/security/listeners/api.key
+              subPath: api.key
+            - name: router-listener-secret-volume
+              mountPath: /home/wso2/security/listeners/api.crt
+              subPath: api.crt
+            - name: router-listener-secret-volume
+              mountPath: /home/wso2/security/listeners/idp.key
+              subPath: idp.key
+            - name: router-listener-secret-volume
+              mountPath: /home/wso2/security/listeners/idp.crt
+              subPath: idp.crt
+            - name: router-listener-secret-volume
+              mountPath: /home/wso2/security/listeners/example.key
+              subPath: example.key
+            - name: router-listener-secret-volume
+              mountPath: /home/wso2/security/listeners/example.crt
+              subPath: example.crt
+            - name: router-listener-secret-volume
+              mountPath: /home/wso2/security/listeners/localhost.key
+              subPath: localhost.key
+            - name: router-listener-secret-volume
+              mountPath: /home/wso2/security/listeners/localhost.crt
+              subPath: localhost.crt
             - name: adapter-truststore-secret-volume
               mountPath: /home/wso2/security/truststore/adapter.crt
+            {{- if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.dp.adapter.configs.tls }}
+              subPath: {{ .Values.wso2.apk.dp.adapter.configs.tls.certFilename | default "tls.crt" }}
+            {{- else }}
               subPath: tls.crt
-            - name: enforcer-truststore-secret-volume
+            {{- end }}
+            - name: enforcer-keystore-secret-volume
               mountPath: /home/wso2/security/truststore/enforcer.crt
+            {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls }}
+              subPath: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.publicKey | default "tls.crt" }}
+            {{- else }}
               subPath: tls.crt
+            {{- end }}
             - name: log-conf-volume
               mountPath: /home/wso2/conf/
-          # readinessProbe:
-          #   httpGet:
-          #     port: 9095
-          #     path: /ready
-          #     scheme: HTTPS
-          #     httpHeaders:
-          #       - name: Host
-          #         value: localhost
-          #   periodSeconds: 5
-      volumes: 
+        {{ if .Values.wso2.apk.dp.ratelimiter.enabled }}
+            - name: ratelimiter-truststore-secret-volume
+              mountPath: /home/wso2/security/truststore/ratelimiter.crt
+            {{- if and .Values.wso2.apk.dp.ratelimiter.configs .Values.wso2.apk.dp.ratelimiter.configs.tls }}
+              subPath: {{ .Values.wso2.apk.dp.ratelimiter.configs.tls.certFilename | default "tls.crt" }}
+            {{- else }}
+              subPath: tls.crt
+            {{- end }}
+            - name: ratelimiter-truststore-secret-volume
+              mountPath: /home/wso2/security/truststore/ratelimiter-ca.crt
+            {{- if and .Values.wso2.apk.dp.ratelimiter.configs .Values.wso2.apk.dp.ratelimiter.configs.tls }}
+              subPath: {{ .Values.wso2.apk.dp.ratelimiter.configs.tls.certCAFilename | default "ca.crt" }}
+            {{- else }}
+              subPath: ca.crt
+            {{- end }}
+        {{ end }}
+          livenessProbe:
+            httpGet:
+              host: localhost
+              port: {{ .Values.wso2.apk.dp.gateway.listener.port }}
+              path: /health
+              scheme: HTTPS
+            initialDelaySeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.periodSeconds }}
+            failureThreshold: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.failureThreshold }}
+      {{- if and .Values.wso2.subscription .Values.wso2.subscription.imagePullSecrets}}
+      imagePullSecrets:
+        - name: {{ .Values.wso2.subscription.imagePullSecrets }}
+      {{- else if and .Values.wso2.subscription (not (eq .Values.wso2.subscription.username "")) (not (eq .Values.wso2.subscription.password "")) }}
+      imagePullSecrets:
+        - name: {{ template "apk-helm.resource.prefix" . }}-apk-wso2-private-registry-creds
+      {{ end }}
+      volumes:
+      {{ if .Values.wso2.apk.dp.ratelimiter.enabled }}
+        - name: ratelimiter-truststore-secret-volume
+          secret:
+            {{- if and .Values.wso2.apk.dp.ratelimiter.configs .Values.wso2.apk.dp.ratelimiter.configs.tls }}
+            secretName: {{ .Values.wso2.apk.dp.ratelimiter.configs.secretName | default (printf "%s-ratelimiter-server-cert" (include "apk-helm.resource.prefix" .)) }}
+          {{- else }}
+            secretName: {{ template "apk-helm.resource.prefix" . }}-ratelimiter-server-cert
+          {{- end }}
+      {{ end }}
         - name: enforcer-keystore-secret-volume
           secret: 
+            {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls }}
+            secretName: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.secretName | default (printf "%s-enforcer-server-cert" (include "apk-helm.resource.prefix" .)) }}
+          {{- else }}
             secretName: {{ template "apk-helm.resource.prefix" . }}-enforcer-server-cert
-        - name: enforcer-truststore-secret-volume
-          secret: 
-            secretName: {{ template "apk-helm.resource.prefix" . }}-enforcer-server-cert
+          {{- end }}
         - name: log-conf-volume
           configMap: 
             name: {{ template "apk-helm.resource.prefix" . }}-log-conf
-        - name: enforcer-grpc-probe-script-conf-volume
-          configMap:
-            name: {{ template "apk-helm.resource.prefix" . }}-enforcer-grpc-probe-script-conf
-            defaultMode: 0777
         - name: router-keystore-secret-volume
           secret: 
+            {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls }}
+            secretName: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.secretName | default (printf "%s-router-server-cert" (include "apk-helm.resource.prefix" .)) }}
+          {{- else }}
             secretName: {{ template "apk-helm.resource.prefix" . }}-router-server-cert
-        - name: router-truststore-secret-volume
-          secret: 
-            secretName: {{ template "apk-helm.resource.prefix" . }}-router-server-cert
+          {{- end }}
+        - name: router-listener-secret-volume
+          secret:
+            secretName: {{ template "apk-helm.resource.prefix" . }}-listener-crt-secret
         - name: adapter-truststore-secret-volume
           secret: 
+          {{- if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.dp.adapter.configs.tls }}
+            secretName: {{ .Values.wso2.apk.dp.adapter.configs.tls.certificatesSecret | default (printf "%s-adapter-server-cert" (include "apk-helm.resource.prefix" .)) }}
+          {{- else }}
             secretName: {{ template "apk-helm.resource.prefix" . }}-adapter-server-cert
+          {{- end }}
         - name: enforcer-jwt-secret-volume
           secret: 
             secretName: {{ template "apk-helm.resource.prefix" . }}-enforcer-keystore-secret

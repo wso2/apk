@@ -124,11 +124,7 @@ func GenerateSoapFaultMessage(protocolVersion string, errorMessage string, error
 
 	msg, err := xml.Marshal(envelope)
 	if err != nil {
-		logger.LoggerSoapUtils.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("Error while generating the soap fault message. %s", err.Error()),
-			Severity:  logging.MINOR,
-			ErrorCode: 4000,
-		})
+		logger.LoggerSoapUtils.ErrorC(logging.GetErrorByCode(2635, err.Error()))
 		return xmlHeader + string(msg), err
 	}
 	return xmlHeader + string(msg), nil

@@ -83,6 +83,41 @@ function createAPITest() {
 
 }
 
+@test:Config {dataProvider: getApiDataProvider}
+public function testGetApi(string apiId, string organization, anydata expectedData) {
+    API|NotFoundError|error getAPI = getAPI_internal(apiId, organization);
+    if getAPI is API|NotFoundError {
+        test:assertEquals(getAPI.toBalString(), expectedData);
+    } else {
+        test:assertFail("Error while retrieving API data");
+    }
+}
+
+public function getApiDataProvider() returns map<[string, string, anydata]> {
+
+    NotFoundError notfound = {body: {code: 90916, message: "API not found in the database"}};
+    map<[string, string, anydata]> dataset = {
+        "1": [
+            "01ed75e2-b30b-18c8-wwf2-25da7edd2231",
+            "carbon.super",
+            {
+                "id": "01ed75e2-b30b-18c8-wwf2-25da7edd2231",
+                "name": "PizzaShask",
+                "context": "pizzssa",
+                "version": "1.0.0",
+                "type": "HTTP",
+                "state": "CREATED",
+                "provider": "admin",
+                "organization": "carbon.super",
+                "apiid": 1,
+                "status": "CREATED"
+            }.toBalString()
+        ],
+        "2": ["11111", "carbon.super", notfound.toBalString()]
+    };
+    return dataset;
+}
+
 @test:Config {}
 function updateInternalAPITest() {
     APIBody updateBody = {
@@ -136,13 +171,13 @@ function updateInternalAPITest() {
             }
             }
         };
-        API|error updateAPI = updateAPI_internal("01ed75e2-b30b-18c8-wwf2-25da7edd2231", updateBody, "carbon.super");
+        API|NotFoundError|error updateAPI = updateAPI_internal("01ed75e2-b30b-18c8-wwf2-25da7edd2231", updateBody, "carbon.super");
             if updateAPI is API {
                 test:assertTrue(true, "Successfully updtaing API");
             } else if updateAPI is  error {
                 log:printError(updateAPI.toString());
                 test:assertFail("Error occured while updtaing API");
-        }
+            }
 }
 
 @test:Config {}

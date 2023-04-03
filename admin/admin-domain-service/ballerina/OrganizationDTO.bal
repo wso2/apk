@@ -23,13 +23,19 @@
 # + displayName - Org Display Name
 # + enabled -   Org Enabled
 # + claimKey -  Org Claim Key 
+# + production -  Org Production
+# + sandbox -  Org Sandbox
+# + serviceNamespaces -  Org Service Namespaces
 # + claimValue -    Org Claim Value
 public type Organizations record {
     string id;
     string name;
     string displayName;
-    boolean enabled;
+    string enabled;
+    string[] serviceNamespaces;
     string claimKey;
+    string production;
+    string sandbox;
     string claimValue;
 };
 
@@ -39,6 +45,9 @@ public type Internal_Organization record {
     string name;
     string displayName;
     boolean enabled;
+    string[] serviceNamespaces;
+    string[] production?;
+    string[] sandbox?;
     OrganizationClaim[] claimList;
 };
 

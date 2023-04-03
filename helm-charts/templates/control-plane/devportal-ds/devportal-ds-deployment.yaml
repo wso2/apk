@@ -43,8 +43,21 @@ spec:
           ports:
             - containerPort: 9443
               protocol: "TCP"
-{{ include "apk-helm.deployment.readinessProbe.http" .Values.wso2.apk.cp.devportal.deployment | indent 10 }}
-{{ include "apk-helm.deployment.livenessProbe.http" .Values.wso2.apk.cp.devportal.deployment | indent 10 }}
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 9443
+              scheme: HTTPS
+            initialDelaySeconds: {{ .Values.wso2.apk.cp.devportal.deployment.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.wso2.apk.cp.devportal.deployment.readinessProbe.periodSeconds }}    
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 9443
+              scheme: HTTPS
+            initialDelaySeconds: {{ .Values.wso2.apk.cp.devportal.deployment.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.wso2.apk.cp.devportal.deployment.livenessProbe.periodSeconds }}
+
 {{ include "apk-helm.deployment.resources" .Values.wso2.apk.cp.devportal.deployment.resources | indent 10 }}
           volumeMounts:
             - mountPath: /home/wso2apk/devportal/security/wso2carbon.key
@@ -56,15 +69,43 @@ spec:
             - mountPath: /home/wso2apk/devportal/security/mg.pem
               name: devportal-ds-jwt-validation-key-volume
               subPath: mg.pem
+            - name: devportal-ds-tls-volume
+              mountPath: /home/wso2apk/devportal/security/devportal.key
+            {{- if and .Values.wso2.apk.cp.devportal.configs .Values.wso2.apk.cp.devportal.configs.tls }}
+              subPath: {{ .Values.wso2.apk.cp.devportal.configs.tls.certKeyFilename | default "tls.key" }}
+            {{- else }}
+              subPath: tls.key
+            {{- end }}
+            - name: devportal-ds-tls-volume
+              mountPath: /home/wso2apk/devportal/security/devportal.pem
+            {{- if and .Values.wso2.apk.cp.devportal.configs .Values.wso2.apk.cp.devportal.configs.tls }}
+              subPath: {{ .Values.wso2.apk.cp.devportal.configs.tls.certFilename | default "tls.crt" }}
+            {{- else }}
+              subPath: tls.crt
+            {{- end }}
+      {{- if and .Values.wso2.subscription .Values.wso2.subscription.imagePullSecrets}}
+      imagePullSecrets:
+        - name: {{ .Values.wso2.subscription.imagePullSecrets }}
+      {{- else if and .Values.wso2.subscription (not (eq .Values.wso2.subscription.username "")) (not (eq .Values.wso2.subscription.password "")) }}
+      imagePullSecrets:
+        - name: {{ template "apk-helm.resource.prefix" . }}-apk-wso2-private-registry-creds
+      {{ end }}      
+
       volumes:
-        - name: devportal-signing-keystore-volume
-          secret:
-            secretName: {{ template "apk-helm.resource.prefix" . }}-signing-keystore-secret
         - name: devportal-ds-jwt-validation-key-volume
           secret: 
             secretName: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-jwt-validaion-secret
         - name: config-toml-volume
           configMap:
             name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-configmap
-
+        - name: devportal-ds-tls-volume
+          secret:
+       {{ if and .Values.wso2.apk.cp.devportal.configs .Values.wso2.apk.cp.devportal.configs.tls }}
+            secretName: {{ .Values.wso2.apk.cp.devportal.configs.tls.certificatesSecret | default (printf "%s-devportal-ds-server-cert" (include "apk-helm.resource.prefix" .)) }}
+       {{ else }}
+            secretName: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-server-cert
+       {{ end }}
+        - name: devportal-signing-keystore-volume
+          secret:
+            secretName: {{ template "apk-helm.resource.prefix" . }}-apikey-signing-keystore-secret
 {{- end -}}

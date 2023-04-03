@@ -23,10 +23,10 @@ APICategory  apiCategory = {name: "MyCat1", description: "My Desc 1", id: "01ed9
 @test:Config {}
 function addAPICategoryTest() {
     APICategory payload = {name: "MyCat1", description: "My Desc 1"};
-    CreatedAPICategory|APKError createdApiCategory = addAPICategory(payload);
-    if createdApiCategory is CreatedAPICategory {
+    APICategory|APKError createdApiCategory = addAPICategory(payload);
+    if createdApiCategory is APICategory {
         test:assertTrue(true,"API Category added successfully");
-        apiCategory.id = createdApiCategory.body.id;
+        apiCategory.id = createdApiCategory.id;
     } else if createdApiCategory is APKError {
         test:assertFail("Error occured while adding API Category");
     }
@@ -36,8 +36,8 @@ function addAPICategoryTest() {
 function addAPICategoryTestNegative1() {
     APICategory payload = {name: "MyCat1", description: "My Desc 1"};
     //API Category Name alrady exisitng
-    CreatedAPICategory|APKError createdApiCategory = addAPICategory(payload);
-    if createdApiCategory is CreatedAPICategory {
+    APICategory|APKError createdApiCategory = addAPICategory(payload);
+    if createdApiCategory is APICategory {
         test:assertFail("API Category added successfully");
     } else if createdApiCategory is APKError {
         test:assertTrue(true, "Error occured while adding API Category");
@@ -95,7 +95,7 @@ function updateAPICategoryTestNegative1() {
 function updateAPICategoryTestNegative2() {
     // Another API Category by same name exists
     APICategory payloadOther = {name: "MyCat2", description: "My Desc 1"};
-    CreatedAPICategory|APKError anotherApiCategory = addAPICategory(payloadOther);
+    APICategory|APKError anotherApiCategory = addAPICategory(payloadOther);
 
     // New Name
     APICategory payload = {name: "MyCat2", description: "My Desc 1 new"};

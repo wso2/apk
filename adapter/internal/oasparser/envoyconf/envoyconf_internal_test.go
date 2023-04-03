@@ -73,7 +73,7 @@ func TestCreateRoute(t *testing.T) {
 
 	resourceWithGet := model.CreateMinimalDummyResourceForTests("/xWso2BasePath/resourcePath",
 		[]*model.Operation{model.NewOperationWithPolicies("GET", policies)},
-		"resource_operation_id", []model.Endpoint{}, []model.Endpoint{}, true)
+		"resource_operation_id", []model.Endpoint{}, true)
 	clusterName := "resource_operation_id"
 	hostRewriteSpecifier := &routev3.RouteAction_AutoHostRewrite{
 		AutoHostRewrite: &wrapperspb.BoolValue{
@@ -135,7 +135,7 @@ func TestCreateRouteClusterSpecifier(t *testing.T) {
 	apiType := "HTTP"
 
 	resourceWithGet := model.CreateMinimalDummyResourceForTests("/resourcePath", []*model.Operation{model.NewOperation("GET", nil, nil)},
-		"resource_operation_id", []model.Endpoint{}, []model.Endpoint{}, false)
+		"resource_operation_id", []model.Endpoint{}, false)
 
 	route, err := createRoutes(generateRouteCreateParamsForUnitTests(title, apiType, vHost, xWso2BasePath, version, endpointBasePath,
 		&resourceWithGet, clusterName, nil, false))
@@ -160,7 +160,7 @@ func TestCreateRouteExtAuthzContext(t *testing.T) {
 	apiType := "HTTP"
 
 	resourceWithGet := model.CreateMinimalDummyResourceForTests("/resourcePath", []*model.Operation{model.NewOperation("GET", nil, nil)},
-		"resource_operation_id", []model.Endpoint{}, []model.Endpoint{}, false)
+		"resource_operation_id", []model.Endpoint{}, false)
 
 	route, err := createRoutes(generateRouteCreateParamsForUnitTests(title, apiType, vHost, xWso2BasePath, version,
 		endpointBasePath, &resourceWithGet, clusterName, nil, false))
@@ -458,9 +458,9 @@ func TestCreateUpstreamTLSContext(t *testing.T) {
 	}}
 
 	tlsCert := generateTLSCert(defaultMgwKeyPath, defaultMgwCertPath)
-	upstreamTLSContextWithCerts := createUpstreamTLSContext(certByteArr, hostNameAddress, false)
-	upstreamTLSContextWithoutCerts := createUpstreamTLSContext(nil, hostNameAddress, false)
-	upstreamTLSContextWithIP := createUpstreamTLSContext(certByteArr, hostNameAddressWithIP, false)
+	upstreamTLSContextWithCerts := createUpstreamTLSContext(certByteArr, nil, hostNameAddress, false)
+	upstreamTLSContextWithoutCerts := createUpstreamTLSContext(nil, nil, hostNameAddress, false)
+	upstreamTLSContextWithIP := createUpstreamTLSContext(certByteArr, nil, hostNameAddressWithIP, false)
 
 	assert.NotEmpty(t, upstreamTLSContextWithCerts, "Upstream TLS Context should not be null when certs provided")
 	assert.NotEmpty(t, upstreamTLSContextWithCerts.CommonTlsContext, "CommonTLSContext should not be "+
@@ -551,7 +551,7 @@ func TestGetCorsPolicy(t *testing.T) {
 	assert.Empty(t, corsPolicy3.GetAllowCredentials(), "Allow Credential property should not be assigned.")
 
 	resourceWithGet := model.CreateMinimalDummyResourceForTests("/resourcePath", []*model.Operation{model.NewOperation("GET", nil, nil)},
-		"resource_operation_id", []model.Endpoint{}, []model.Endpoint{}, false)
+		"resource_operation_id", []model.Endpoint{}, false)
 
 	// Route without CORS configuration
 	routeWithoutCors, err := createRoutes(generateRouteCreateParamsForUnitTests("test", "HTTP", "localhost", "/test", "1.0.0", "/test",
@@ -559,14 +559,14 @@ func TestGetCorsPolicy(t *testing.T) {
 	assert.Nil(t, err, "Error while creating routeWithoutCors")
 
 	corsConfig1 := &cors_filter_v3.CorsPolicy{}
- 	err = routeWithoutCors[0].GetTypedPerFilterConfig()[wellknown.CORS].UnmarshalTo(corsConfig1)
+	err = routeWithoutCors[0].GetTypedPerFilterConfig()[wellknown.CORS].UnmarshalTo(corsConfig1)
 
- 	assert.Nilf(t, err, "Error while parsing Cors Configuration %v", corsConfig1)
- 	assert.Empty(t, corsConfig1.GetAllowHeaders(), "Cors AllowHeaders should be empty.")
- 	assert.Empty(t, corsConfig1.GetAllowCredentials(), "Cors AllowCredentials should be empty.")
- 	assert.Empty(t, corsConfig1.GetAllowMethods(), "Cors AllowMethods should be empty.")
- 	assert.Empty(t, corsConfig1.GetAllowOriginStringMatch(), "Cors AllowOriginStringMatch should be empty.")
- 	assert.Empty(t, corsConfig1.GetExposeHeaders(), "Cors ExposeHeaders should be empty.")
+	assert.Nilf(t, err, "Error while parsing Cors Configuration %v", corsConfig1)
+	assert.Empty(t, corsConfig1.GetAllowHeaders(), "Cors AllowHeaders should be empty.")
+	assert.Empty(t, corsConfig1.GetAllowCredentials(), "Cors AllowCredentials should be empty.")
+	assert.Empty(t, corsConfig1.GetAllowMethods(), "Cors AllowMethods should be empty.")
+	assert.Empty(t, corsConfig1.GetAllowOriginStringMatch(), "Cors AllowOriginStringMatch should be empty.")
+	assert.Empty(t, corsConfig1.GetExposeHeaders(), "Cors ExposeHeaders should be empty.")
 
 	// Route with CORS configuration
 	routeWithCors, err := createRoutes(generateRouteCreateParamsForUnitTests("test", "HTTP", "localhost", "/test", "1.0.0", "/test",
@@ -574,14 +574,14 @@ func TestGetCorsPolicy(t *testing.T) {
 	assert.Nil(t, err, "Error while creating routeWithCors")
 
 	corsConfig2 := &cors_filter_v3.CorsPolicy{}
- 	err = routeWithCors[0].GetTypedPerFilterConfig()[wellknown.CORS].UnmarshalTo(corsConfig2)
+	err = routeWithCors[0].GetTypedPerFilterConfig()[wellknown.CORS].UnmarshalTo(corsConfig2)
 
- 	assert.Nilf(t, err, "Error while parsing Cors Configuration %v", corsConfig2)
- 	assert.NotEmpty(t, corsConfig2.GetAllowOriginStringMatch(), "Cors AllowOriginStringMatch should not be empty.")
- 	assert.NotEmpty(t, corsConfig2.GetAllowMethods(), "Cors AllowMethods should not be empty.")
- 	assert.Empty(t, corsConfig2.GetAllowHeaders(), "Cors AllowHeaders should be empty.")
- 	assert.Empty(t, corsConfig2.GetExposeHeaders(), "Cors ExposeHeaders should be empty.")
- 	assert.Empty(t, corsConfig2.GetAllowCredentials(), "Cors AllowCredentials should be empty.")
+	assert.Nilf(t, err, "Error while parsing Cors Configuration %v", corsConfig2)
+	assert.NotEmpty(t, corsConfig2.GetAllowOriginStringMatch(), "Cors AllowOriginStringMatch should not be empty.")
+	assert.NotEmpty(t, corsConfig2.GetAllowMethods(), "Cors AllowMethods should not be empty.")
+	assert.Empty(t, corsConfig2.GetAllowHeaders(), "Cors AllowHeaders should be empty.")
+	assert.Empty(t, corsConfig2.GetExposeHeaders(), "Cors ExposeHeaders should be empty.")
+	assert.Empty(t, corsConfig2.GetAllowCredentials(), "Cors AllowCredentials should be empty.")
 }
 
 func generateRouteCreateParamsForUnitTests(title string, apiType string, vhost string, xWso2Basepath string, version string, endpointBasepath string,

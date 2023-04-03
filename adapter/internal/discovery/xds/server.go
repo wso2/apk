@@ -40,18 +40,18 @@ import (
 	"github.com/wso2/apk/adapter/config"
 	apiModel "github.com/wso2/apk/adapter/internal/api/models"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
+	logging "github.com/wso2/apk/adapter/internal/logging"
 	oasParser "github.com/wso2/apk/adapter/internal/oasparser"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
 	"github.com/wso2/apk/adapter/internal/oasparser/envoyconf"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/subscription"
-	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/throttle"
 	wso2_cache "github.com/wso2/apk/adapter/pkg/discovery/protocol/cache/v3"
 	wso2_resource "github.com/wso2/apk/adapter/pkg/discovery/protocol/resource/v3"
 	eventhubTypes "github.com/wso2/apk/adapter/pkg/eventhub/types"
-	"github.com/wso2/apk/adapter/pkg/logging"
 	operatorconsts "github.com/wso2/apk/adapter/pkg/operator/constants"
 	"github.com/wso2/apk/adapter/pkg/utils/stringutils"
+	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
 var (
@@ -71,10 +71,6 @@ var (
 	enforcerRevokedTokensCache         wso2_cache.SnapshotCache
 	enforcerThrottleDataCache          wso2_cache.SnapshotCache
 
-	// Vhosts entry maps, these maps updated with delta changes (when an API added, only added its entry only)
-	// These maps are managed separately for API-CTL and APIM, since when deploying an project from API-CTL there is no API uuid
-	apiUUIDToGatewayToVhosts map[string]map[string]string // API_UUID -> gateway-env -> vhost (for un-deploying APIs from APIM or Choreo)
-
 	orgIDAPIMgwSwaggerMap       map[string]map[string]model.MgwSwagger     // organizationID -> Vhost:API_UUID -> MgwSwagger struct map
 	orgIDAPIvHostsMap           map[string]map[string][]string             // organizationID -> UUID -> prod/sand -> Envoy Vhost Array map
 	orgIDOpenAPIEnvoyMap        map[string]map[string][]string             // organizationID -> Vhost:API_UUID -> Envoy Label Array map
@@ -85,10 +81,13 @@ var (
 	orgIDvHostBasepathMap       map[string]map[string]string               // organizationID -> Vhost:basepath -> Vhost:API_UUID
 
 	// Envoy Label as map key
-	envoyListenerConfigMap map[string][]*listenerv3.Listener      // GW-Label -> Listener Configuration map
+	envoyListenerConfigMap map[string]*listenerv3.Listener        // GW-Label -> Listener Configuration map
 	envoyRouteConfigMap    map[string]*routev3.RouteConfiguration // GW-Label -> Routes Configuration map
 	envoyClusterConfigMap  map[string][]*clusterv3.Cluster        // GW-Label -> Global Cluster Configuration map
 	envoyEndpointConfigMap map[string][]*corev3.Address           // GW-Label -> Global Endpoint Configuration map
+
+	// Listener as map key
+	listenerToRouteArrayMap map[string][]*routev3.Route // Listener -> Routes map
 
 	// Common Enforcer Label as map key
 	enforcerConfigMap                map[string][]types.Resource
@@ -100,7 +99,6 @@ var (
 	enforcerSubscriptionPolicyMap    map[string][]types.Resource
 	enforcerApplicationKeyMappingMap map[string][]types.Resource
 	enforcerRevokedTokensMap         map[string][]types.Resource
-	enforcerThrottleData             *throttle.ThrottleData
 
 	// KeyManagerList to store data
 	KeyManagerList = make([]eventhubTypes.KeyManager, 0)
@@ -114,6 +112,8 @@ const (
 	maxRandomInt         int    = 999999999
 	prototypedAPI        string = "PROTOTYPED"
 	apiKeyFieldSeparator string = ":"
+	gatewayController    string = "GatewayController"
+	apiController        string = "APIController"
 )
 
 // IDHash uses ID field as the node hash.
@@ -142,11 +142,11 @@ func init() {
 	enforcerRevokedTokensCache = wso2_cache.NewSnapshotCache(false, IDHash{}, nil)
 	enforcerThrottleDataCache = wso2_cache.NewSnapshotCache(false, IDHash{}, nil)
 
-	apiUUIDToGatewayToVhosts = make(map[string]map[string]string)
-	envoyListenerConfigMap = make(map[string][]*listenerv3.Listener)
+	envoyListenerConfigMap = make(map[string]*listenerv3.Listener)
 	envoyRouteConfigMap = make(map[string]*routev3.RouteConfiguration)
 	envoyClusterConfigMap = make(map[string][]*clusterv3.Cluster)
 	envoyEndpointConfigMap = make(map[string][]*corev3.Address)
+	listenerToRouteArrayMap = make(map[string][]*routev3.Route)
 
 	orgIDAPIMgwSwaggerMap = make(map[string]map[string]model.MgwSwagger)       // organizationID -> Vhost:API_UUID -> MgwSwagger struct map
 	orgIDAPIvHostsMap = make(map[string]map[string][]string)                   // organizationID -> UUID-prod/sand -> Envoy Vhost Array map
@@ -166,7 +166,6 @@ func init() {
 	enforcerSubscriptionPolicyMap = make(map[string][]types.Resource)
 	enforcerApplicationKeyMappingMap = make(map[string][]types.Resource)
 	enforcerRevokedTokensMap = make(map[string][]types.Resource)
-	enforcerThrottleData = &throttle.ThrottleData{}
 	rand.Seed(time.Now().UnixNano())
 	// go watchEnforcerResponse()
 }
@@ -174,6 +173,11 @@ func init() {
 // GetXdsCache returns xds server cache.
 func GetXdsCache() envoy_cachev3.SnapshotCache {
 	return cache
+}
+
+// GetRateLimiterCache returns xds server cache for rate limiter service.
+func GetRateLimiterCache() envoy_cachev3.SnapshotCache {
+	return rlsPolicyCache.xdsCache
 }
 
 // GetEnforcerCache returns xds server cache.
@@ -241,22 +245,13 @@ func DeleteAPICREvent(labels []string, apiUUID string, organizationID string) er
 	for _, vhost := range vHosts {
 		apiIdentifier := GenerateIdentifierForAPIWithUUID(vhost, apiUUID)
 		if err := deleteAPI(apiIdentifier, labels, organizationID); err != nil {
-			logger.LoggerXds.ErrorC(logging.ErrorDetails{
-				Message: fmt.Sprintf("Error undeploying API %v of Organization %v from environments %v",
-					apiIdentifier, organizationID, labels),
-				Severity:  logging.MAJOR,
-				ErrorCode: 1410,
-			})
+			logger.LoggerXds.ErrorC(logging.GetErrorByCode(1410, apiIdentifier, organizationID, labels))
 			return err
 		}
 		// if no error, update internal vhost maps
 		// error only happens when API not found in deleteAPI func
 		logger.LoggerXds.Infof("Successfully undeployed the API %v under Organization %s and environment %s ",
 			apiIdentifier, organizationID, labels)
-		for _, environment := range labels {
-			// delete environment if exists
-			delete(apiUUIDToGatewayToVhosts[apiUUID], environment)
-		}
 	}
 	return nil
 }
@@ -302,6 +297,13 @@ func cleanMapResources(apiIdentifier string, organizationID string, toBeDelEnvs 
 	delete(orgIDOpenAPIEndpointsMap[organizationID], apiIdentifier)
 	delete(orgIDOpenAPIEnforcerApisMap[organizationID], apiIdentifier)
 
+	vHost, err := ExtractVhostFromAPIIdentifier(apiIdentifier)
+	if err != nil {
+		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1713, apiIdentifier, err))
+	} else {
+		rlsPolicyCache.DeleteAPILevelRateLimitPolicies(organizationID, vHost, apiIdentifier)
+	}
+
 	//updateXdsCacheOnAPIAdd is called after cleaning maps of routes, clusters, endpoints, enforcerAPIs.
 	//Therefore resources that belongs to the deleting API do not exist. Caches updated only with
 	//resources that belongs to the remaining APIs
@@ -331,8 +333,9 @@ func updateXdsCacheOnAPIChange(oldLabels []string, newLabels []string) bool {
 	revisionStatus := false
 	// TODO: (VirajSalaka) check possible optimizations, Since the number of labels are low by design it should not be an issue
 	for _, newLabel := range newLabels {
-		listeners, clusters, routes, endpoints, apis := GenerateEnvoyResoucesForLabel(newLabel)
+		listeners, clusters, routes, endpoints, apis := GenerateEnvoyResoucesForGateway(newLabel)
 		UpdateEnforcerApis(newLabel, apis, "")
+		UpdateRateLimiterPolicies(newLabel)
 		success := UpdateXdsCacheWithLock(newLabel, endpoints, clusters, routes, listeners)
 		logger.LoggerXds.Debugf("Xds Cache is updated for the newly added label : %v", newLabel)
 		if success {
@@ -344,8 +347,9 @@ func updateXdsCacheOnAPIChange(oldLabels []string, newLabels []string) bool {
 	}
 	for _, oldLabel := range oldLabels {
 		if !stringutils.StringInSlice(oldLabel, newLabels) {
-			listeners, clusters, routes, endpoints, apis := GenerateEnvoyResoucesForLabel(oldLabel)
+			listeners, clusters, routes, endpoints, apis := GenerateEnvoyResoucesForGateway(oldLabel)
 			UpdateEnforcerApis(oldLabel, apis, "")
+			UpdateRateLimiterPolicies(oldLabel)
 			UpdateXdsCacheWithLock(oldLabel, endpoints, clusters, routes, listeners)
 			logger.LoggerXds.Debugf("Xds Cache is updated for the already existing label : %v", oldLabel)
 		}
@@ -353,10 +357,10 @@ func updateXdsCacheOnAPIChange(oldLabels []string, newLabels []string) bool {
 	return revisionStatus
 }
 
-// GenerateEnvoyResoucesForLabel generates envoy resources for a given label
+// GenerateEnvoyResoucesForGateway generates envoy resources for a given gateway
 // This method will list out all APIs mapped to the label. and generate envoy resources for all of these APIs.
-func GenerateEnvoyResoucesForLabel(label string) ([]types.Resource, []types.Resource, []types.Resource,
-	[]types.Resource, []types.Resource) {
+func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
+	[]types.Resource, []types.Resource, []types.Resource, []types.Resource) {
 	var clusterArray []*clusterv3.Cluster
 	var vhostToRouteArrayMap = make(map[string][]*routev3.Route)
 	var endpointArray []*corev3.Address
@@ -364,14 +368,10 @@ func GenerateEnvoyResoucesForLabel(label string) ([]types.Resource, []types.Reso
 
 	for organizationID, entityMap := range orgIDOpenAPIEnvoyMap {
 		for apiKey, labels := range entityMap {
-			if stringutils.StringInSlice(label, labels) {
+			if stringutils.StringInSlice(gatewayName, labels) {
 				vhost, err := ExtractVhostFromAPIIdentifier(apiKey)
 				if err != nil {
-					logger.LoggerXds.ErrorC(logging.ErrorDetails{
-						Message:   fmt.Sprintf("Error extracting vhost from API identifier: %v for Organization %v. Ignore deploying the API", err.Error(), organizationID),
-						Severity:  logging.MAJOR,
-						ErrorCode: 1411,
-					})
+					logger.LoggerXds.ErrorC(logging.GetErrorByCode(1411, err.Error(), organizationID))
 					continue
 				}
 				isDefaultVersion := false
@@ -405,6 +405,8 @@ func GenerateEnvoyResoucesForLabel(label string) ([]types.Resource, []types.Reso
 	conf := config.ReadConfigs()
 	enableJwtIssuer := conf.Enforcer.JwtIssuer.Enabled
 	systemHost := conf.Envoy.SystemHost
+
+	logger.LoggerXds.Debugf("System Host : %v", systemHost)
 	if enableJwtIssuer {
 		routeToken := envoyconf.CreateTokenRoute()
 		vhostToRouteArrayMap[systemHost] = append(vhostToRouteArrayMap[systemHost], routeToken)
@@ -420,20 +422,51 @@ func GenerateEnvoyResoucesForLabel(label string) ([]types.Resource, []types.Reso
 		vhostToRouteArrayMap[systemHost] = append(vhostToRouteArrayMap[systemHost], readynessEndpoint)
 	}
 
-	listenerArray, listenerFound := envoyListenerConfigMap[label]
-	routesConfig, routesConfigFound := envoyRouteConfigMap[label]
-	if !listenerFound && !routesConfigFound {
-		listenerArray, routesConfig = oasParser.GetProductionListenerAndRouteConfig(vhostToRouteArrayMap)
-		envoyListenerConfigMap[label] = listenerArray
-		envoyRouteConfigMap[label] = routesConfig
+	var listener *listenerv3.Listener
+	var routesConfig *routev3.RouteConfiguration
+
+	listener, listenerFound := envoyListenerConfigMap[gatewayName]
+	if listenerFound {
+		logger.LoggerXds.Debugf("Listener : %v", listener)
+		routesFromListener := listenerToRouteArrayMap[listener.Name]
+		logger.LoggerXds.Debugf("Routes from listener : %v", routesFromListener)
+		var vhostToRouteArrayFilteredMap = make(map[string][]*routev3.Route)
+		for vhost, routes := range vhostToRouteArrayMap {
+			logger.LoggerXds.Debugf("Routes from Vhost Map : %v", routes)
+			if vhost == systemHost || checkRoutes(routes, routesFromListener) {
+				logger.LoggerXds.Debugf("Equal routes : %v", routes)
+				vhostToRouteArrayFilteredMap[vhost] = routes
+			}
+		}
+		routesConfig = oasParser.GetRouteConfigs(vhostToRouteArrayFilteredMap, listener.Name)
+		envoyRouteConfigMap[gatewayName] = routesConfig
+		logger.LoggerXds.Debugf("Listener : %v and routes %v", listener, routesConfig)
 	} else {
-		// If the routesConfig exists, the listener exists too
-		oasParser.UpdateRoutesConfig(routesConfig, vhostToRouteArrayMap)
+		return nil, nil, nil, nil, nil
 	}
-	clusterArray = append(clusterArray, envoyClusterConfigMap[label]...)
-	endpointArray = append(endpointArray, envoyEndpointConfigMap[label]...)
-	endpoints, clusters, listeners, routeConfigs := oasParser.GetCacheResources(endpointArray, clusterArray, listenerArray, routesConfig)
+
+	logger.LoggerXds.Debugf("Routes Config : %v", routesConfig)
+	clusterArray = append(clusterArray, envoyClusterConfigMap[gatewayName]...)
+	endpointArray = append(endpointArray, envoyEndpointConfigMap[gatewayName]...)
+	endpoints, clusters, listeners, routeConfigs := oasParser.GetCacheResources(endpointArray, clusterArray, listener, routesConfig)
+	logger.LoggerXds.Debugf("Routes Config After Get cache : %v", routeConfigs)
 	return endpoints, clusters, listeners, routeConfigs, apis
+}
+
+// function to check routes []*routev3.Route equlas routes []*routev3.Route
+func checkRoutes(routes []*routev3.Route, routesFromListener []*routev3.Route) bool {
+	for i := range routes {
+		flag := false
+		for j := range routesFromListener {
+			if routes[i].Name == routesFromListener[j].Name {
+				flag = true
+			}
+		}
+		if !flag {
+			return false
+		}
+	}
+	return true
 }
 
 // GenerateGlobalClusters generates the globally available clusters and endpoints.
@@ -455,26 +488,23 @@ func updateXdsCache(label string, endpoints []types.Resource, clusters []types.R
 		envoy_resource.RouteType:    routes,
 	})
 	if errNewSnap != nil {
-		logger.LoggerXds.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("Error creating new snapshot : %v", errNewSnap.Error()),
-			Severity:  logging.MAJOR,
-			ErrorCode: 1413,
-		})
+		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1413, errNewSnap.Error()))
 		return false
 	}
 	snap.Consistent()
 	//TODO: (VirajSalaka) check
 	errSetSnap := cache.SetSnapshot(context.Background(), label, snap)
 	if errSetSnap != nil {
-		logger.LoggerXds.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("Error while setting the snapshot : %v", errSetSnap.Error()),
-			Severity:  logging.MAJOR,
-			ErrorCode: 1414,
-		})
+		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
 		return false
 	}
 	logger.LoggerXds.Infof("New Router cache updated for the label: " + label + " version: " + fmt.Sprint(version))
 	return true
+}
+
+// UpdateRateLimiterPolicies update the rate limiter xDS cache with latest rate limit policies
+func UpdateRateLimiterPolicies(label string) {
+	_ = rlsPolicyCache.updateXdsCache(label)
 }
 
 // UpdateEnforcerConfig Sets new update to the enforcer's configuration
@@ -487,21 +517,13 @@ func UpdateEnforcerConfig(configFile *config.Config) {
 		wso2_resource.ConfigType: configs,
 	})
 	if errNewSnap != nil {
-		logger.LoggerXds.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("Error creating new snapshot : %v", errNewSnap.Error()),
-			Severity:  logging.MAJOR,
-			ErrorCode: 1413,
-		})
+		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1413, errNewSnap.Error()))
 	}
 	snap.Consistent()
 
 	errSetSnap := enforcerCache.SetSnapshot(context.Background(), label, snap)
 	if errSetSnap != nil {
-		logger.LoggerXds.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("Error while setting the snapshot : %v", errSetSnap.Error()),
-			Severity:  logging.MAJOR,
-			ErrorCode: 1414,
-		})
+		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
 	}
 
 	enforcerConfigMap[label] = configs
@@ -522,11 +544,7 @@ func UpdateEnforcerApis(label string, apis []types.Resource, version string) {
 
 	errSetSnap := enforcerCache.SetSnapshot(context.Background(), label, snap)
 	if errSetSnap != nil {
-		logger.LoggerXds.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("Error while setting the snapshot : %v", errSetSnap.Error()),
-			Severity:  logging.MAJOR,
-			ErrorCode: 1414,
-		})
+		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
 	}
 	logger.LoggerXds.Infof("New API cache update for the label: " + label + " version: " + fmt.Sprint(version))
 }
@@ -548,11 +566,7 @@ func UpdateEnforcerSubscriptions(subscriptions *subscription.SubscriptionList) {
 
 	errSetSnap := enforcerSubscriptionCache.SetSnapshot(context.Background(), label, snap)
 	if errSetSnap != nil {
-		logger.LoggerXds.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("Error while setting the snapshot : %v", errSetSnap.Error()),
-			Severity:  logging.MAJOR,
-			ErrorCode: 1414,
-		})
+		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
 	}
 	enforcerSubscriptionMap[label] = subscriptionList
 	logger.LoggerXds.Infof("New Subscription cache update for the label: " + label + " version: " + fmt.Sprint(version))
@@ -573,11 +587,7 @@ func UpdateEnforcerApplications(applications *subscription.ApplicationList) {
 
 	errSetSnap := enforcerApplicationCache.SetSnapshot(context.Background(), label, snap)
 	if errSetSnap != nil {
-		logger.LoggerXds.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("Error while setting the snapshot : %v", errSetSnap.Error()),
-			Severity:  logging.MAJOR,
-			ErrorCode: 1414,
-		})
+		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
 	}
 	enforcerApplicationMap[label] = applicationList
 	logger.LoggerXds.Infof("New Application cache update for the label: " + label + " version: " + fmt.Sprint(version))
@@ -597,11 +607,7 @@ func UpdateEnforcerAPIList(label string, apis *subscription.APIList) {
 
 	errSetSnap := enforcerAPICache.SetSnapshot(context.Background(), label, snap)
 	if errSetSnap != nil {
-		logger.LoggerXds.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("Error while setting the snapshot : %v", errSetSnap.Error()),
-			Severity:  logging.MAJOR,
-			ErrorCode: 1414,
-		})
+		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
 	}
 	enforcerAPIListMap[label] = apiList
 	logger.LoggerXds.Infof("New API List cache update for the label: " + label + " version: " + fmt.Sprint(version))
@@ -622,11 +628,7 @@ func UpdateEnforcerApplicationPolicies(applicationPolicies *subscription.Applica
 
 	errSetSnap := enforcerApplicationPolicyCache.SetSnapshot(context.Background(), label, snap)
 	if errSetSnap != nil {
-		logger.LoggerXds.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("Error while setting the snapshot : %v", errSetSnap.Error()),
-			Severity:  logging.MAJOR,
-			ErrorCode: 1414,
-		})
+		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
 	}
 	enforcerApplicationPolicyMap[label] = applicationPolicyList
 	logger.LoggerXds.Infof("New Application Policy cache update for the label: " + label + " version: " + fmt.Sprint(version))
@@ -647,11 +649,7 @@ func UpdateEnforcerSubscriptionPolicies(subscriptionPolicies *subscription.Subsc
 
 	errSetSnap := enforcerSubscriptionPolicyCache.SetSnapshot(context.Background(), label, snap)
 	if errSetSnap != nil {
-		logger.LoggerXds.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("Error while setting the snapshot : %v", errSetSnap.Error()),
-			Severity:  logging.MAJOR,
-			ErrorCode: 1414,
-		})
+		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
 	}
 	enforcerSubscriptionPolicyMap[label] = subscriptionPolicyList
 	logger.LoggerXds.Infof("New Subscription Policy cache update for the label: " + label + " version: " + fmt.Sprint(version))
@@ -672,11 +670,7 @@ func UpdateEnforcerApplicationKeyMappings(applicationKeyMappings *subscription.A
 
 	errSetSnap := enforcerApplicationKeyMappingCache.SetSnapshot(context.Background(), label, snap)
 	if errSetSnap != nil {
-		logger.LoggerXds.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("Error while setting the snapshot : %v", errSetSnap.Error()),
-			Severity:  logging.MAJOR,
-			ErrorCode: 1414,
-		})
+		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
 	}
 	enforcerApplicationKeyMappingMap[label] = applicationKeyMappingList
 	logger.LoggerXds.Infof("New Application Key Mapping cache update for the label: " + label + " version: " + fmt.Sprint(version))
@@ -789,11 +783,7 @@ func UpdateEnforcerKeyManagers(keyManagerConfigList []types.Resource) {
 
 	errSetSnap := enforcerKeyManagerCache.SetSnapshot(context.Background(), label, snap)
 	if errSetSnap != nil {
-		logger.LoggerXds.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("Error while setting the snapshot : %v", errSetSnap.Error()),
-			Severity:  logging.MAJOR,
-			ErrorCode: 1414,
-		})
+		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
 	}
 	enforcerKeyManagerMap[label] = keyManagerConfigList
 	logger.LoggerXds.Infof("New key manager cache update for the label: " + label + " version: " + fmt.Sprint(version))
@@ -815,65 +805,20 @@ func UpdateEnforcerRevokedTokens(revokedTokens []types.Resource) {
 
 	errSetSnap := enforcerRevokedTokensCache.SetSnapshot(context.Background(), label, snap)
 	if errSetSnap != nil {
-		logger.LoggerXds.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("Error while setting the snapshot : %v", errSetSnap.Error()),
-			Severity:  logging.MAJOR,
-			ErrorCode: 1414,
-		})
+		logger.LoggerXds.ErrorC(logging.GetErrorByCode(1414, errSetSnap.Error()))
 	}
 	enforcerRevokedTokensMap[label] = tokens
 	logger.LoggerXds.Infof("New Revoked token cache update for the label: " + label + " version: " + fmt.Sprint(version))
 }
 
-// UpdateEnforcerThrottleData update the key template and blocking conditions
-// data in the enforcer
-func UpdateEnforcerThrottleData(throttleData *throttle.ThrottleData) {
-	logger.LoggerXds.Debug("Updating enforcer cache for throttle data")
-	label := commonEnforcerLabel
-	var data []types.Resource
-
-	// Set new throttle data content based on the already available content in the cache DTO
-	// and the new data being requested to add.
-	// ex: keytemplates being pressent in the `throttleData` means this method was called
-	// after downloading key templates. That means we should populate keytemplates property
-	// in the cache DTO, keeping the other properties as it is. This is done this way to avoid
-	// the need of two xds services to push keytemplates and blocking conditions.
-	templates := throttleData.KeyTemplates
-	conditions := throttleData.BlockingConditions
-	ipConditions := throttleData.IpBlockingConditions
-	if templates == nil {
-		templates = enforcerThrottleData.KeyTemplates
-	}
-	if conditions == nil {
-		conditions = enforcerThrottleData.BlockingConditions
-	}
-	if ipConditions == nil {
-		ipConditions = enforcerThrottleData.IpBlockingConditions
-	}
-
-	t := &throttle.ThrottleData{
-		KeyTemplates:         templates,
-		BlockingConditions:   conditions,
-		IpBlockingConditions: ipConditions,
-	}
-	data = append(data, t)
-
-	version := rand.Intn(maxRandomInt)
-	snap, _ := wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
-		wso2_resource.ThrottleDataType: data,
-	})
-	snap.Consistent()
-
-	err := enforcerThrottleDataCache.SetSnapshot(context.Background(), label, snap)
-	if err != nil {
-		logger.LoggerXds.Error(err)
-	}
-	enforcerThrottleData = t
-	logger.LoggerXds.Infof("New Throttle Data cache update for the label: " + label + " version: " + fmt.Sprint(version))
+// UpdateRateLimitXDSCache updates the xDS cache of the RateLimiter.
+func UpdateRateLimitXDSCache(vHosts []string, mgwSwagger model.MgwSwagger) {
+	// Add Rate Limit inline policies in API to the cache
+	rlsPolicyCache.AddAPILevelRateLimitPolicies(vHosts, &mgwSwagger)
 }
 
 // UpdateAPICache updates the xDS cache related to the API Lifecycle event.
-func UpdateAPICache(vHosts []string, newLabels []string, mgwSwagger model.MgwSwagger) error {
+func UpdateAPICache(vHosts []string, newLabels []string, newlistenersForRoutes []string, mgwSwagger model.MgwSwagger) error {
 	mutexForInternalMapUpdate.Lock()
 	defer mutexForInternalMapUpdate.Unlock()
 
@@ -937,6 +882,12 @@ func UpdateAPICache(vHosts []string, newLabels []string, mgwSwagger model.MgwSwa
 			orgIDOpenAPIRoutesMap[mgwSwagger.GetOrganizationID()] = routesMap
 		}
 
+		if _, ok := listenerToRouteArrayMap[newlistenersForRoutes[0]]; ok {
+			listenerToRouteArrayMap[newlistenersForRoutes[0]] = append(listenerToRouteArrayMap[newlistenersForRoutes[0]], routes...)
+		} else {
+			listenerToRouteArrayMap[newlistenersForRoutes[0]] = routes
+		}
+
 		if _, ok := orgIDOpenAPIClustersMap[mgwSwagger.GetOrganizationID()]; ok {
 			orgIDOpenAPIClustersMap[mgwSwagger.GetOrganizationID()][apiIdentifier] = clusters
 		} else {
@@ -964,5 +915,12 @@ func UpdateAPICache(vHosts []string, newLabels []string, mgwSwagger model.MgwSwa
 		revisionStatus := updateXdsCacheOnAPIChange(oldLabels, newLabels)
 		logger.LoggerXds.Infof("Deployed Revision: %v:%v", apiIdentifier, revisionStatus)
 	}
+	return nil
+}
+
+// UpdateGatewayCache updates the xDS cache related to the Gateway Lifecycle event.
+func UpdateGatewayCache(gateway *gwapiv1b1.Gateway) error {
+	listener := oasParser.GetProductionListener(gateway)
+	envoyListenerConfigMap[gateway.Name] = listener
 	return nil
 }

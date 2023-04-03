@@ -75,6 +75,7 @@ spec:
                     - ASYNC
                 endpointConfig:
                   type: object
+                  x-kubernetes-preserve-unknown-fields: true
                   properties: {}
                   description: |
                     Endpoint configuration of the API. This can be used to provide different types of endpoints including Simple REST Endpoints, Loadbalanced and Failover.
@@ -122,7 +123,7 @@ spec:
                         description: Authentication mode for resource (true/false)
                       endpointConfig:
                         type: object
-                        properties: {}
+                        x-kubernetes-preserve-unknown-fields: true
                         description: |
                           Endpoint configuration of the API. This can be used to provide different types of endpoints including Simple REST Endpoints, Loadbalanced and Failover.
 
@@ -157,10 +158,13 @@ spec:
                               properties:
                                 policyName:
                                   type: string
+                                policyVersion:
+                                  type: string
+                                  default: v1
                                 parameters:
                                   type: object
                                   additionalProperties:
-                                    type: object
+                                    type: string
                           response:
                             type: array
                             items:
@@ -168,10 +172,27 @@ spec:
                               properties:
                                 policyName:
                                   type: string
+                                policyVersion:
+                                  type: string
+                                  default: v1
                                 parameters:
                                   type: object
                                   additionalProperties:
-                                    type: object
+                                    type: string
+                      operationRateLimit:
+                        type: object
+                        properties:
+                          requestsPerUnit:
+                            type: integer
+                          unit:
+                            type: string
+                apiRateLimit:
+                  type: object
+                  properties:
+                    requestsPerUnit:
+                      type: integer
+                    unit:
+                      type: string
                 serviceInfo:
                   type: object
                   properties:
@@ -181,6 +202,37 @@ spec:
                     namespace:
                       type: string
                       example: apk-platform
+                apiPolicies:
+                  type: object
+                  properties:
+                    request:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          policyName:
+                            type: string
+                          policyVersion:
+                            type: string
+                            default: v1
+                          parameters:
+                            type: object
+                            additionalProperties:
+                              type: string
+                    response:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          policyName:
+                            type: string
+                          policyVersion:
+                            type: string
+                            default: v1
+                          parameters:
+                            type: object
+                            additionalProperties:
+                              type: string
           type: object
       served: true
       storage: true

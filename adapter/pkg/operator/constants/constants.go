@@ -20,6 +20,7 @@ package constants
 // Controller related constants
 const (
 	APIController          string = "APIController"
+	GatewayController      string = "GatewayController"
 	ApplicationController  string = "ApplicationController"
 	SubscriptionController string = "SubscriptionController"
 )
@@ -51,10 +52,16 @@ const (
 	//TODO(amali) remove this after fixing the issue in https://github.com/wso2/apk/issues/383
 	KindResource = "Resource"
 	KindScope    = "Scope"
+	KindBackend  = "Backend"
 )
 
 // Env types
 const (
 	Production = "PRODUCTION"
 	Sandbox    = "SANDBOX"
+)
+
+// Header names in runtime
+const (
+	OrganizationHeader = "X-WSO2-Organization"
 )

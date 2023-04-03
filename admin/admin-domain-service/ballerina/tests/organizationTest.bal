@@ -23,6 +23,8 @@ Organization  organization = {
         name: "Finance",
         displayName: "Finance",
         organizationClaimValue: "01234567-0123-0123-0123",
+        production: [],
+        sandbox: [],
         serviceNamespaces: [
         "string"
         ]
@@ -31,13 +33,13 @@ string orgId = "";
 
 @test:Config {}
 function addOrganizationTest() {
-    CreatedOrganization|APKError response = addOrganization(organization);
-    if response is CreatedOrganization {
+    Organization|APKError response = addOrganization(organization);
+    if response is Organization {
         
-        orgId = response.body.id.toString();
-        test:assertTrue(true,"API Category added successfully");
+        orgId = response.id.toString();
+        test:assertTrue(true,"Organization added successfully");
     } else if response is APKError {
-        test:assertFail("Error occured while adding API Category");
+        test:assertFail("Error occured while adding Organization");
     }
     
 }

@@ -26,9 +26,9 @@ spec:
   prodHTTPRouteRefs:
   - prod-http-route-http-bin-api-p1
   - prod-http-route-http-bin-api-p2
-  sandHTTPRouteRef:
+  sandHTTPRouteRefs:
   - sand-http-route-http-bin-api
-  organization: 01edb285-6304-1b20-a090-4d02067ed56ev
+  organization: a3b58ccf-6ecc-4557-b5bb-0a35cce38256
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: HTTPRoute
@@ -40,14 +40,13 @@ spec:
   parentRefs:
     - group: gateway.networking.k8s.io
       kind: Gateway
-      name: Default
+      name: default
+      sectionName: httpslistener
   rules:
   - backendRefs:
-    - group: ""
-      kind: Service
-      name: backend
-      port: 80
-      weight: 1
+    - group: dp.wso2.com
+      kind: Backend
+      name: insecure-backend
     matches:
     - path:
         type: PathPrefix
@@ -59,11 +58,9 @@ spec:
             type: ReplacePrefixMatch
             replacePrefixMatch: /get
   - backendRefs:
-    - group: ""
-      kind: Service
+    - group: dp.wso2.com
+      kind: Backend
       name: secure-backend
-      port: 443
-      weight: 1
     matches:
     - path:
         type: PathPrefix
@@ -84,14 +81,13 @@ spec:
   parentRefs:
     - group: gateway.networking.k8s.io
       kind: Gateway
-      name: Default
+      name: default
+      sectionName: httpslistener
   rules:
     - backendRefs:
-        - group: ""
-          kind: Service
+        - group: dp.wso2.com
+          kind: Backend
           name: secure-backend
-          port: 443
-          weight: 1
       matches:
         - path:
             type: PathPrefix
@@ -119,14 +115,13 @@ spec:
   parentRefs:
     - group: gateway.networking.k8s.io
       kind: Gateway
-      name: Default
+      name: default
+      sectionName: httpslistener
   rules:
     - backendRefs:
-        - group: ""
-          kind: Service
-          name: backend
-          port: 80
-          weight: 1
+      - group: dp.wso2.com
+        kind: Backend
+        name: insecure-backend
       matches:
         - path:
             type: PathPrefix
@@ -139,18 +134,15 @@ spec:
               replacePrefixMatch: /get
         - type: ResponseHeaderModifier
           responseHeaderModifier:
-            add:
+            set:
               - name: custom-response-header
                 value: myvalue
             remove:
               - access-control-allow-credentials
         - type: RequestHeaderModifier
           requestHeaderModifier:
-            add:
-              - name: custom-request-header
-                value: myvalue
             set:
-              - name: custom-override-header
+              - name: custom-request-header
                 value: myvalue
         - type: ExtensionRef
           extensionRef:

@@ -21,7 +21,6 @@ import (
 	"testing"
 
 	"github.com/wso2/apk/test/integration/integration/utils/http"
-	"github.com/wso2/apk/test/integration/integration/utils/kubernetes"
 	"github.com/wso2/apk/test/integration/integration/utils/suite"
 )
 
@@ -36,7 +35,7 @@ var DisableAPISecurity = suite.IntegrationTest{
 	Manifests:   []string{"tests/disable-api-level-security.yaml"},
 	Test: func(t *testing.T, suite *suite.IntegrationTestSuite) {
 		ns := "gateway-integration-test-infra"
-		gwAddr := kubernetes.WaitForGatewayAddress(t, suite.Client, suite.TimeoutConfig)
+		gwAddr := "disable-api-security.test.gw.wso2.com:9095"
 
 		testCases := []http.ExpectedResponse{
 			{

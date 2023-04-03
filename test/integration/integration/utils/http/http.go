@@ -67,6 +67,7 @@ type Request struct {
 	Method           string
 	Path             string
 	Headers          map[string]string
+	Body             string
 	UnfollowRedirect bool
 }
 
@@ -118,6 +119,7 @@ func MakeRequest(t *testing.T, expected *ExpectedResponse, gwAddr, protocol, sch
 	req := roundtripper.Request{
 		Method:           expected.Request.Method,
 		Host:             expected.Request.Host,
+		Body:             expected.Request.Body,
 		URL:              url.URL{Scheme: scheme, Host: gwAddr, Path: path, RawQuery: query},
 		Protocol:         protocol,
 		Headers:          map[string][]string{},
@@ -364,7 +366,7 @@ func setRedirectRequestDefaults(req *roundtripper.Request, cRes *roundtripper.Ca
 }
 
 // GetTestToken get test token from test token endpoint call
-func GetTestToken(t *testing.T, gwAddr string, scopes ...string) string {
+func GetTestToken(t *testing.T, scopes ...string) string {
 	t.Helper()
 	transport := &http.Transport{
 		TLSClientConfig: &tls.Config{
@@ -372,22 +374,32 @@ func GetTestToken(t *testing.T, gwAddr string, scopes ...string) string {
 		},
 	}
 	client := &http.Client{Transport: transport}
-	req, err := http.NewRequest("POST", fmt.Sprintf("https://%s/testkey", gwAddr),
+	req, err := http.NewRequest("POST", "https://localhost:9095/testkey",
 		strings.NewReader(fmt.Sprintf("scope=%s", strings.Join(scopes, " "))))
 
 	req.Header.Set("Authorization", "Basic YWRtaW46YWRtaW4=")
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.Host = "gw.wso2.com"
+	req.Host = "localhost"
 	if err != nil {
 		t.Fatalf("failed to create request: %v", err)
 	}
 	resp, err := client.Do(req)
 	if err != nil {
-		t.Fatalf("failed to get token: %v", err)
+		t.Logf("failed to get token: %v retrying after 100s ...", err)
+		time.Sleep(100 * time.Second)
+		resp, err = client.Do(req)
+		if err != nil {
+			t.Fatalf("failed to get token: %v", err)
+		}
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		t.Fatalf("failed to get token: %v", err)
+		t.Logf("Status is: %v, failed to get token: %v retrying after 100s ...", resp.StatusCode, err)
+		time.Sleep(100 * time.Second)
+		resp, err = client.Do(req)
+		if resp.StatusCode != http.StatusOK {
+			t.Fatalf("Status is: %v, failed to get token: %v", resp.StatusCode, err)
+		}
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {

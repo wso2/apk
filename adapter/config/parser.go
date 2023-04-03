@@ -25,7 +25,6 @@ import (
 	"io/ioutil"
 	"os"
 	"reflect"
-	"strings"
 	"sync"
 
 	toml "github.com/pelletier/go-toml"
@@ -35,22 +34,11 @@ import (
 )
 
 var (
-	onceConfigRead      sync.Once
-	onceGetDefaultVhost sync.Once
-	adapterConfig       *Config
-	defaultVhost        map[string]string
+	onceConfigRead sync.Once
+	adapterConfig  *Config
 )
 
-// DefaultGatewayName represents the name of the default gateway
-const DefaultGatewayName = "Default"
-
-// DefaultGatewayVHost represents the default vhost of default gateway environment if it is not configured
-// for /testtoken and /health check, if user not configured default env, we have no vhost
-const DefaultGatewayVHost = "localhost"
-
 const (
-	// The environtmental variable which represents the path of the distribution in host machine.
-	mgwHomeEnvVariable = "MGW_HOME"
 	// RelativeConfigPath is the relative file path where the configuration file is.
 	relativeConfigPath = "/conf/config.toml"
 )
@@ -102,7 +90,6 @@ func ReadConfigs() *Config {
 
 		adapterConfig.resolveDeprecatedProperties()
 		pkgconf.ResolveConfigEnvValues(reflect.ValueOf(&(adapterConfig.Adapter)).Elem(), "Adapter", true)
-		pkgconf.ResolveConfigEnvValues(reflect.ValueOf(&(adapterConfig.ControlPlane)).Elem(), "ControlPlane", true)
 		pkgconf.ResolveConfigEnvValues(reflect.ValueOf(&(adapterConfig.Envoy)).Elem(), "Router", true)
 		pkgconf.ResolveConfigEnvValues(reflect.ValueOf(&(adapterConfig.Enforcer)).Elem(), "Enforcer", false)
 		pkgconf.ResolveConfigEnvValues(reflect.ValueOf(&(adapterConfig.Analytics)).Elem(), "Analytics", false)
@@ -118,25 +105,6 @@ func SetConfig(conf *Config) {
 // SetDefaultConfig sets the default configuration to the adapter configuration
 func SetDefaultConfig() {
 	adapterConfig = defaultConfig
-}
-
-// GetDefaultVhost returns the default vhost of given environment read from Adapter
-// configurations. Store the configuration in a map, so do not want to loop through
-// the config value Config.Adapter.VhostMapping
-func GetDefaultVhost(environment string) (string, bool, error) {
-	var err error
-	onceGetDefaultVhost.Do(func() {
-		defaultVhost = make(map[string]string)
-		configs := ReadConfigs()
-		for _, gateway := range configs.Adapter.VhostMapping {
-			defaultVhost[gateway.Environment] = gateway.Vhost
-		}
-	})
-	vhost, ok := defaultVhost[environment]
-	if !ok && environment == DefaultGatewayName {
-		return DefaultGatewayVHost, true, nil
-	}
-	return vhost, ok, err
 }
 
 // ReadLogConfigs implements adapter/proxy log-configuration read operation.The read operation will happen only once, hence
@@ -169,31 +137,7 @@ func GetMgwHome() string {
 	return pkgconf.GetMgwHome()
 }
 
-// GetControlPlaneConnectedTenantDomain returns the tenant domain of the user used to authenticate with event hub.
-func GetControlPlaneConnectedTenantDomain() string {
-	// Read configurations to get the control plane authenticated user
-	conf := ReadConfigs()
-
-	// Populate data from the config
-	cpTenantAdminUser := conf.ControlPlane.Username
-	tenantDomain := strings.Split(cpTenantAdminUser, tenantDomainSeparator)
-	if len(tenantDomain) > 1 {
-		return tenantDomain[len(tenantDomain)-1]
-	}
-	return superTenantDomain
-}
-
 func (config *Config) resolveDeprecatedProperties() {
-	if config.ControlPlane.ServiceURLDeprecated != UnassignedAsDeprecated {
-		printDeprecatedWarningLog("controlPlane.serviceUrl", "controlPlane.serviceURL")
-		config.ControlPlane.ServiceURL = config.ControlPlane.ServiceURLDeprecated
-	}
-
-	if len(config.Enforcer.Throttling.Publisher.URLGroupDeprecated) > 0 {
-		printDeprecatedWarningLog("enforcer.throttling.publisher.urlGroup", "enforcer.throttling.publisher.URLGroup")
-		config.Enforcer.Throttling.Publisher.URLGroup = config.Enforcer.Throttling.Publisher.URLGroupDeprecated
-	}
-
 	// For boolean values, adapter check if the condition is changed by checking against the default value it is originally
 	// assigned.
 	if !config.Enforcer.RestServer.Enable {

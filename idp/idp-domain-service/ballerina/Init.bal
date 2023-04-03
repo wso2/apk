@@ -27,17 +27,23 @@ listener http:Listener ep0 = getListener();
 final jwt:ValidatorConfig & readonly validatorConfig;
 configurable DatasourceConfiguration datasourceConfiguration = ?;
 
-function getListener() returns http:Listener|error{
-    return check new(9443);
+function getListener() returns http:Listener|error {
+    return check new (9443, secureSocket = {
+        key: {
+            certFile: idpConfiguration.keyStores.tls.certFile,
+            keyFile: idpConfiguration.keyStores.tls.keyFile
+        }
+    });
 }
+
 function init() {
     dbClient =
         new (host = datasourceConfiguration.host,
-            username = datasourceConfiguration.username,
-            password = datasourceConfiguration.password,
-            database = datasourceConfiguration.databaseName,
-            port = datasourceConfiguration.port,
-            connectionPool = {maxOpenConnections: datasourceConfiguration.maxPoolSize}
+    username = datasourceConfiguration.username,
+    password = datasourceConfiguration.password,
+    database = datasourceConfiguration.databaseName,
+    port = datasourceConfiguration.port,
+        connectionPool = {maxOpenConnections: datasourceConfiguration.maxPoolSize}
             );
     validatorConfig = {
         issuer: idpConfiguration.tokenIssuerConfiguration.issuer,

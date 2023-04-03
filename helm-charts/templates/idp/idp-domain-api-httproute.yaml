@@ -24,54 +24,43 @@ metadata:
     api-version: "1.0.0"
 spec:
   hostnames:
-  - "idp.am.wso2.com"
+  - "prod.idp.am.wso2.com"
   rules:
   - matches:
     - path:
         type: "PathPrefix"
         value: "/dcr"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-idp-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-idp-ds-backend
   - matches:
     - path:
         type: "PathPrefix"
         value: "/oauth2"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-idp-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-idp-ds-backend
   - matches:
     - path:
         type: "PathPrefix"
         value: "/commonauth"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-idp-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-idp-ds-backend
   - matches:
     - path:
         type: "PathPrefix"
         value: "/authenticationEndpoint" 
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-idp-ui-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-idp-ui-backend
   parentRefs:
   - group: "gateway.networking.k8s.io"
     kind: "Gateway"
-    name: "Default"
+    name: "default"
+    sectionName: "httpslistener"
 {{- end -}}

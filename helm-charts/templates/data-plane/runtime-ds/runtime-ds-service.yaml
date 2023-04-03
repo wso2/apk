@@ -28,4 +28,7 @@ spec:
     - name: servlet-https
       protocol: TCP
       port: 9443
+    - name: servlet-internal-https
+      protocol: TCP
+      port: 9444
 {{- end -}}

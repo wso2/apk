@@ -47,7 +47,7 @@ http:Service runtimeService = service object {
         final APIClient apiService = new ();
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
-        return apiService.updateAPI(apiId, payload,(), organization);
+        return apiService.updateAPI(apiId, payload, (), organization);
     }
     isolated resource function delete apis/[string apiId](http:RequestContext requestContext) returns http:Ok|ForbiddenError|NotFoundError|InternalServerErrorError|BadRequestError|commons:APKError {
         final APIClient apiService = new ();
@@ -90,10 +90,10 @@ http:Service runtimeService = service object {
         return apiService.getAPIDefinitionByID(apiId, organization);
     }
     isolated resource function put apis/[string apiId]/definition(http:RequestContext requestContext, http:Request message) returns http:Response|BadRequestError|ForbiddenError|NotFoundError|PreconditionFailedError|InternalServerErrorError|commons:APKError {
-         final APIClient apiService = new ();
+        final APIClient apiService = new ();
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
-        return apiService.updateAPIDefinition(apiId,message,organization);
+        return apiService.updateAPIDefinition(apiId, message, organization);
     }
     isolated resource function get apis/export(http:RequestContext requestContext, string? apiId, string? name, string? 'version, string? format) returns http:Response|NotFoundError|InternalServerErrorError|BadRequestError|commons:APKError {
         final APIClient apiService = new ();
@@ -129,12 +129,54 @@ http:Service runtimeService = service object {
         commons:Organization organization = authenticatedUserContext.organization;
         return serviceClient.getServiceUsageByServiceId(serviceId, organization);
     }
-    isolated resource function get policies(string? query, int 'limit = 25, int offset = 0, string sortBy = "createdTime", string sortOrder = "desc", @http:Header string? accept = "application/json") returns MediationPolicyList|InternalServerErrorError {
-        InternalServerErrorError internalError = {body: {code: 900910, message: "Not implemented"}};
-        return internalError;
+    isolated resource function get policies(http:RequestContext requestContext, string? query, int 'limit = 25, int offset = 0, string sortBy = "id", string sortOrder = "asc", @http:Header string? accept = "application/json") returns MediationPolicyList|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
+        final APIClient apiService = new ();
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        return apiService.getMediationPolicyList(query, 'limit, offset, sortBy, sortOrder, organization);
     }
-    isolated resource function get policies/[string policyId]() returns MediationPolicy|NotFoundError|InternalServerErrorError {
-        InternalServerErrorError internalError = {body: {code: 900910, message: "Not implemented"}};
-        return internalError;
+    isolated resource function get policies/[string policyId](http:RequestContext requestContext) returns MediationPolicy|NotFoundError|InternalServerErrorError|commons:APKError {
+        final APIClient apiService = new ();
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        return apiService.getMediationPolicyById(policyId, organization);
+    }
+    isolated resource function get apis/[string apiId]/'endpoint\-certificates(http:RequestContext requestContext, string? endpoint, int? 'limit, int? offset) returns Certificates|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
+        int finalLimit = 'limit is () ? 25 : 'limit;
+        int finalOffset = offset is () ? 0 : offset;
+        final APIClient apiService = new ();
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        return apiService.getCertificates(apiId, endpoint, finalLimit, finalOffset, organization);
+    }
+    isolated resource function post apis/[string apiId]/'endpoint\-certificates(http:RequestContext requestContext, http:Request request) returns OkCertMetadata|BadRequestError|InternalServerErrorError|NotFoundError|commons:APKError {
+        final APIClient apiService = new ();
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        return apiService.addCertificate(apiId, request, organization);
+    }
+    isolated resource function get apis/[string apiId]/'endpoint\-certificates/[string certificateId](http:RequestContext requestContext) returns CertificateInfo|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
+        final APIClient apiService = new ();
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        return apiService.getEndpointCertificateByID(apiId,certificateId, organization);
+    }
+    resource function put apis/[string apiId]/'endpoint\-certificates/[string certificateId](http:RequestContext requestContext,http:Request request) returns CertMetadata|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
+        final APIClient apiService = new ();
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        return apiService.updateEndpointCertificate(apiId,certificateId, request, organization);
+    }
+    resource function delete apis/[string apiId]/'endpoint\-certificates/[string certificateId](http:RequestContext requestContext) returns http:Ok|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
+        final APIClient apiService = new ();
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        return apiService.deleteEndpointCertificate(apiId,certificateId, organization);
+    }
+    resource function get apis/[string apiId]/'endpoint\-certificates/[string certificateId]/content(http:RequestContext requestContext) returns http:Response|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
+        final APIClient apiService = new ();
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        return apiService.getEndpointCertificateContent(apiId,certificateId, organization);
     }
 };

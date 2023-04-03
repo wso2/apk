@@ -19,7 +19,6 @@ package operator
 
 import (
 	"flag"
-	"fmt"
 
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/loggers"
@@ -104,19 +103,21 @@ func InitOperator() {
 		// LeaderElectionReleaseOnCancel: true,
 	})
 	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("unable to start manager: %v", err),
-			Severity:  logging.BLOCKER,
-			ErrorCode: 2600,
-		})
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2600, err))
 	}
 
 	// TODO: Decide on a buffer size and add to config.
 	ch := make(chan synchronizer.APIEvent, 10)
 
+	gatewaych := make(chan synchronizer.GatewayEvent, 10)
+
 	updateHandler := status.NewUpdateHandler(mgr.GetClient())
 	if err := mgr.Add(updateHandler); err != nil {
 		loggers.LoggerAPKOperator.Errorf("Failed to add status update handler %v", err)
+	}
+
+	if err := dpcontrollers.NewGatewayController(mgr, operatorDataStore, updateHandler, &gatewaych); err != nil {
+		loggers.LoggerAPKOperator.Errorf("Error creating Gateway controller: %v", err)
 	}
 
 	if err := dpcontrollers.NewAPIController(mgr, operatorDataStore, updateHandler, &ch); err != nil {
@@ -124,11 +125,15 @@ func InitOperator() {
 	}
 
 	if err = (&dpv1alpha1.API{}).SetupWebhookWithManager(mgr); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("Unable to create webhook API: %v", err),
-			Severity:  logging.BLOCKER,
-			ErrorCode: 2600,
-		})
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2601, err))
+	}
+
+	if err = (&dpv1alpha1.RateLimitPolicy{}).SetupWebhookWithManager(mgr); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2637, err))
+	}
+
+	if err = (&dpv1alpha1.APIPolicy{}).SetupWebhookWithManager(mgr); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2638, err))
 	}
 
 	if err := cpcontrollers.NewApplicationController(mgr); err != nil {
@@ -140,21 +145,14 @@ func InitOperator() {
 	}
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("unable to set up health check: %v", err),
-			Severity:  logging.BLOCKER,
-			ErrorCode: 2600,
-		})
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2602, err))
 	}
 	if err := mgr.AddReadyzCheck("readyz", healthz.Ping); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("unable to set up ready check: %v", err),
-			Severity:  logging.BLOCKER,
-			ErrorCode: 2600,
-		})
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2603, err))
 	}
 
 	go synchronizer.HandleAPILifeCycleEvents(&ch)
+	go synchronizer.HandleGatewayLifeCycleEvents(&gatewaych)
 	if config.ReadConfigs().ManagementServer.Enabled {
 		go xds.InitApkMgtXDSClient()
 		go xds.HandleApplicationEventsFromMgtServer(mgr.GetClient(), mgr.GetAPIReader())
@@ -162,10 +160,6 @@ func InitOperator() {
 	}
 
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf("problem running manager: %v", err),
-			Severity:  logging.BLOCKER,
-			ErrorCode: 2600,
-		})
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2604, err))
 	}
 }

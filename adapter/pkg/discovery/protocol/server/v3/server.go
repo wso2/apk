@@ -29,7 +29,6 @@ import (
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/config"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/keymgt"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/subscription"
-	throttle "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/throttle"
 	"github.com/wso2/apk/adapter/pkg/discovery/protocol/resource/v3"
 	"github.com/wso2/apk/adapter/pkg/discovery/protocol/server/sotw/v3"
 	"google.golang.org/grpc/codes"
@@ -48,7 +47,6 @@ type Server interface {
 	subscription.ApplicationKeyMappingDiscoveryServiceServer
 	keymgt.KMDiscoveryServiceServer
 	keymgt.RevokedTokenDiscoveryServiceServer
-	throttle.ThrottleDataDiscoveryServiceServer
 	apkmgt.APKMgtDiscoveryServiceServer
 
 	rest.Server
@@ -78,7 +76,6 @@ type server struct {
 	subscription.UnimplementedApplicationKeyMappingDiscoveryServiceServer
 	keymgt.UnimplementedKMDiscoveryServiceServer
 	keymgt.UnimplementedRevokedTokenDiscoveryServiceServer
-	throttle.UnimplementedThrottleDataDiscoveryServiceServer
 	apkmgt.UnimplementedAPKMgtDiscoveryServiceServer
 	rest  rest.Server
 	sotw  envoy_sotw.Server
@@ -127,10 +124,6 @@ func (s *server) StreamKeyManagers(stream keymgt.KMDiscoveryService_StreamKeyMan
 
 func (s *server) StreamTokens(stream keymgt.RevokedTokenDiscoveryService_StreamTokensServer) error {
 	return s.StreamHandler(stream, resource.RevokedTokensType)
-}
-
-func (s *server) StreamThrottleData(stream throttle.ThrottleDataDiscoveryService_StreamThrottleDataServer) error {
-	return s.StreamHandler(stream, resource.ThrottleDataType)
 }
 
 func (s *server) StreamAPKMgtApplications(stream apkmgt.APKMgtDiscoveryService_StreamAPKMgtApplicationsServer) error {

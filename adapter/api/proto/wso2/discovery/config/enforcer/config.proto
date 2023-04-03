@@ -6,7 +6,6 @@ import "wso2/discovery/config/enforcer/cert.proto";
 import "wso2/discovery/config/enforcer/service.proto";
 import "wso2/discovery/config/enforcer/jwt_generator.proto";
 import "wso2/discovery/config/enforcer/jwt_issuer.proto";
-import "wso2/discovery/config/enforcer/throttling.proto";
 import "wso2/discovery/config/enforcer/cache.proto";
 import "wso2/discovery/config/enforcer/analytics.proto";
 import "wso2/discovery/config/enforcer/security.proto";
@@ -36,8 +35,6 @@ message Config {
 
     JWTGenerator jwtGenerator = 5;
 
-    Throttling throttling = 6;
-
     Cache cache = 7;
 
     JWTIssuer jwtIssuer = 8;
@@ -55,6 +52,4 @@ message Config {
     repeated Filter filters = 14;
 
     Soap soap = 15;
-
-    bool controlPlaneEnabled = 16;
 }

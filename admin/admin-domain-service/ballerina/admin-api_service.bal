@@ -31,12 +31,11 @@ service /api/am/admin on ep0 {
             return handleAPKError(appPolicyList);
         }
     }
-    isolated resource function post 'application\-rate\-plans(@http:Payload ApplicationRatePlan payload, @http:Header string 'content\-type = "application/json") returns CreatedApplicationRatePlan|BadRequestError|UnsupportedMediaTypeError|InternalServerErrorError|error {
+    isolated resource function post 'application\-rate\-plans(@http:Payload ApplicationRatePlan payload, @http:Header string 'content\-type = "application/json") returns ApplicationRatePlan|BadRequestError|UnsupportedMediaTypeError|InternalServerErrorError|error {
         ApplicationRatePlan|APKError createdAppPol = addApplicationUsagePlan(payload);
         if createdAppPol is ApplicationRatePlan {
             log:printDebug(createdAppPol.toString());
-            CreatedApplicationRatePlan crPol = {body: check createdAppPol.cloneWithType(ApplicationRatePlan)};
-            return crPol;
+            return createdAppPol;
         } else {
             return handleAPKError(createdAppPol);
         }
@@ -76,12 +75,11 @@ service /api/am/admin on ep0 {
             return handleAPKError(subPolicyList);
         }
     }
-    isolated resource function post 'business\-plans(@http:Payload BusinessPlan payload, @http:Header string 'content\-type = "application/json") returns CreatedBusinessPlan|BadRequestError|UnsupportedMediaTypeError|InternalServerErrorError|error {
+    isolated resource function post 'business\-plans(@http:Payload BusinessPlan payload, @http:Header string 'content\-type = "application/json") returns BusinessPlan|BadRequestError|UnsupportedMediaTypeError|InternalServerErrorError|error {
         BusinessPlan|APKError createdSubPol = addBusinessPlan(payload);
         if createdSubPol is BusinessPlan {
             log:printDebug(createdSubPol.toString());
-            CreatedBusinessPlan crPol = {body: check createdSubPol.cloneWithType(BusinessPlan)};
-            return crPol;
+            return createdSubPol;
         } else {
             return handleAPKError(createdSubPol);
         }
@@ -133,12 +131,11 @@ service /api/am/admin on ep0 {
             return handleAPKError(conditionList);
         }
     }
-    isolated resource function post 'deny\-policies(@http:Payload BlockingCondition payload, @http:Header string 'content\-type = "application/json") returns CreatedBlockingCondition|BadRequestError|UnsupportedMediaTypeError|InternalServerErrorError|error {
+    isolated resource function post 'deny\-policies(@http:Payload BlockingCondition payload, @http:Header string 'content\-type = "application/json") returns BlockingCondition|BadRequestError|UnsupportedMediaTypeError|InternalServerErrorError|error {
         BlockingCondition|APKError createdDenyPol = addDenyPolicy(payload);
         if createdDenyPol is BlockingCondition {
             log:printDebug(createdDenyPol.toString());
-            CreatedBlockingCondition condition = {body: check createdDenyPol.cloneWithType(BlockingCondition)};
-            return condition;
+            return createdDenyPol;
         } else {
             return handleAPKError(createdDenyPol);
         }
@@ -209,9 +206,9 @@ service /api/am/admin on ep0 {
             return handleAPKError(apiCategoryList);
         }
     }
-    isolated resource function post 'api\-categories(@http:Payload APICategory payload) returns CreatedAPICategory|BadRequestError|InternalServerErrorError {
-        CreatedAPICategory|APKError createdApiCategory = addAPICategory(payload);
-        if createdApiCategory is CreatedAPICategory {
+    isolated resource function post 'api\-categories(@http:Payload APICategory payload) returns APICategory|BadRequestError|InternalServerErrorError {
+        APICategory|APKError createdApiCategory = addAPICategory(payload);
+        if createdApiCategory is APICategory {
             return createdApiCategory;
         } else {
             return handleAPKError(createdApiCategory);
@@ -279,9 +276,9 @@ service /api/am/admin on ep0 {
     }
 
 
-    isolated resource function post organizations(@http:Payload Organization payload) returns CreatedOrganization|BadRequestError|InternalServerErrorError {
-        CreatedOrganization|APKError createdOrganization = addOrganization(payload);
-        if createdOrganization is CreatedOrganization {
+    isolated resource function post organizations(@http:Payload Organization payload) returns Organization|BadRequestError|InternalServerErrorError {
+        Organization|APKError createdOrganization = addOrganization(payload);
+        if createdOrganization is Organization {
             return createdOrganization;
         } else {
             return handleAPKError(createdOrganization);

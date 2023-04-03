@@ -24,7 +24,7 @@ metadata:
     api-version: "1.0.0"
 spec:
   hostnames:
-  - "api.am.wso2.com"
+  - "prod.api.am.wso2.com"
   rules:
   - matches:
     - path:
@@ -32,36 +32,27 @@ spec:
         value: "/api/am/runtime/apis"
       method: "GET"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
   - matches:
     - path:
         type: "Exact"
         value: "/api/am/runtime/apis"
       method: "POST"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
   - matches:
     - path:
         type: "PathPrefix"
         value: "/api/am/runtime/apis"
       method: "GET"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -74,12 +65,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/runtime/apis/\\1"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -92,12 +80,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/runtime/apis/\\1"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -110,60 +95,45 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/runtime/apis/\\1/generate-key"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
   - matches:
     - path:
         type: "Exact"
         value: "/api/am/runtime/apis/import-service"
       method: "POST"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
   - matches:
     - path:
         type: "Exact"
         value: "/api/am/runtime/apis/import-definition"
       method: "POST"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
   - matches:
     - path:
         type: "Exact"
         value: "/api/am/runtime/apis/validate-definition"
       method: "POST"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
   - matches:
     - path:
         type: "Exact"
         value: "/api/am/runtime/apis/validate"
       method: "POST"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -176,12 +146,9 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/runtime/apis/\\1/definition"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -194,72 +161,120 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/runtime/apis/\\1/definition"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/api/am/runtime/apis/(.*)/endpoint-certificates"
+      method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/am/runtime/apis/\\1/endpoint-certificates"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/api/am/runtime/apis/(.*)/endpoint-certificates"
+      method: "POST"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/am/runtime/apis/\\1/endpoint-certificates"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/api/am/runtime/apis/(.*)/endpoint-certificates/(.*)"
+      method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/am/runtime/apis/\\1/endpoint-certificates/\\2"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/api/am/runtime/apis/(.*)/endpoint-certificates/(.*)"
+      method: "PUT"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/am/runtime/apis/\\1/endpoint-certificates/\\2"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/api/am/runtime/apis/(.*)/endpoint-certificates/(.*)"
+      method: "DELETE"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/api/am/runtime/apis/\\1/endpoint-certificates/\\2"
+    backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
   - matches:
     - path:
         type: "Exact"
         value: "/api/am/runtime/apis/export"
       method: "GET"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
-  - matches:
-    - path:
-        type: "Exact"
-        value: "/api/am/runtime/apis/import"
-      method: "POST"
-    backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
   - matches:
     - path:
         type: "Exact"
         value: "/api/am/runtime/apis/copy-api"
       method: "POST"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
   - matches:
     - path:
         type: "Exact"
         value: "/api/am/runtime/services"
       method: "GET"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
   - matches:
     - path:
         type: "PathPrefix"
         value: "/api/am/runtime/services"
       method: "GET"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -272,24 +287,18 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/runtime/services/\\1/usage"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
   - matches:
     - path:
         type: "Exact"
         value: "/api/am/runtime/policies"
       method: "GET"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
   - matches:
     - path:
         type: "RegularExpression"
@@ -302,14 +311,12 @@ spec:
           type: "ReplaceFullPath"
           replaceFullPath: "/api/am/runtime/policies/\\1"
     backendRefs:
-    - weight: 1
-      group: ""
-      kind: "Service"
-      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-service
-      namespace: {{ .Release.Namespace }}
-      port: 9443
+    - group: dp.wso2.com
+      kind: Backend
+      name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-backend
   parentRefs:
   - group: "gateway.networking.k8s.io"
     kind: "Gateway"
-    name: "Default"
+    name: "default"
+    sectionName: "httpslistener"
 {{- end -}}

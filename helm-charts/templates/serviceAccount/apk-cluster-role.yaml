@@ -14,18 +14,21 @@
 # specific language governing permissions and limitations
 # under the License.
 
-{{- if .Values.wso2.apk.auth.enabled }}
+{{- if and .Values.wso2.apk.auth.enabled .Values.wso2.apk.auth.enableClusterRoleCreation }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: {{ .Values.wso2.apk.auth.roleName }}
 rules:
   - apiGroups: [""]
-    resources: ["services","configmaps"]
+    resources: ["services","configmaps","secrets"]
     verbs: ["get","list","watch","update","delete","create"]
   - apiGroups: ["gateway.networking.k8s.io"]
-    resources: ["httproutes"]
+    resources: ["httproutes","gateways"]
     verbs: ["get","list","watch","update","delete","create"]
+  - apiGroups: [ "gateway.networking.k8s.io" ]
+    resources: [ "gateways/status" ]
+    verbs: [ "get","patch","update" ]
   - apiGroups: ["dp.wso2.com"]
     resources: ["apis","servicemappings","runtimeapis","scopes"]
     verbs: ["get","list","watch","update","delete","create"]
@@ -63,13 +66,13 @@ rules:
     resources: ["authentications/status"]
     verbs: ["get","patch","update"]
   - apiGroups: ["dp.wso2.com"]
-    resources: ["backendpolicies"]
+    resources: ["backends"]
     verbs: ["get","list","watch","update","delete","create"]
   - apiGroups: ["dp.wso2.com"]
-    resources: ["backendpolicies/finalizers"]
+    resources: ["backends/finalizers"]
     verbs: ["update"]
   - apiGroups: ["dp.wso2.com"]
-    resources: ["backendpolicies/status"]
+    resources: ["backends/status"]
     verbs: ["get","patch","update"]
   - apiGroups: ["dp.wso2.com"]
     resources: ["apipolicies"]
@@ -79,7 +82,9 @@ rules:
     verbs: ["update"]
   - apiGroups: ["dp.wso2.com"]
     resources: ["apipolicies/status"]
-    resources: ["scopes"]
+    verbs: ["get","patch","update"]
+  - apiGroups: [ "dp.wso2.com" ]
+    resources: [ "scopes" ]
     verbs: ["get","list","watch","update","delete","create"]
   - apiGroups: ["dp.wso2.com"]
     resources: ["scopes/finalizers"]
@@ -87,4 +92,13 @@ rules:
   - apiGroups: ["dp.wso2.com"]
     resources: ["scopes/status"]
     verbs: ["get","patch","update"]
+  - apiGroups: [ "dp.wso2.com" ]
+    resources: [ "ratelimitpolicies" ]
+    verbs: [ "get","list","watch","update","delete","create" ]
+  - apiGroups: [ "dp.wso2.com" ]
+    resources: [ "ratelimitpolicies/finalizers" ]
+    verbs: [ "update" ]
+  - apiGroups: [ "dp.wso2.com" ]
+    resources: [ "ratelimitpolicies/status" ]
+    verbs: [ "get","patch","update" ]
 {{- end -}}

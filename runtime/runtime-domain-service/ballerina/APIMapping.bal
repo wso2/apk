@@ -53,11 +53,16 @@ isolated function convertK8sAPItoAPI(model:API api, boolean lightWeight) returns
                         authTypeEnabled: operation.authTypeEnabled,
                         scopes: operation.scopes,
                         endpointConfig: operation.endpointConfig,
-                        operationPolicies: convertOperationPolicies(operation.operationPolicies)
+                        operationPolicies: convertOperationPolicies(operation.operationPolicies),
+                        operationRateLimit: operation.operationRateLimit
                     });
                 }
             }
             convertedModel.operations = apiOperations;
+            model:RateLimit? apiRateLimit = internalAPI.spec.apiRateLimit;
+            if apiRateLimit is model:RateLimit {
+                convertedModel.apiRateLimit = {requestsPerUnit: apiRateLimit.requestsPerUnit, unit: apiRateLimit.unit};
+            }
             model:ServiceInfo? serviceInfo = internalAPI.spec.serviceInfo;
             if serviceInfo is model:ServiceInfo {
                 convertedModel.serviceInfo = {name: serviceInfo.name, namespace: serviceInfo.namespace};
@@ -89,4 +94,34 @@ isolated function convertOperationPolicies(model:OperationPolicies? operation) r
     } else {
         return ();
     }
+}
+
+isolated function convertPolicyModeltoPolicy(model:MediationPolicy mediationPolicy) returns MediationPolicy {
+    MediationPolicy mediationPolicyData = {
+        id: mediationPolicy.id,
+        'type: mediationPolicy.'type,
+        name: mediationPolicy.name,
+        displayName: mediationPolicy.displayName,
+        description: mediationPolicy.description,
+        applicableFlows: mediationPolicy.applicableFlows,
+        supportedApiTypes: mediationPolicy.supportedApiTypes,
+        policyAttributes: mediationPolicy.policyAttributes
+
+    };
+    return mediationPolicyData;
+}
+public isolated function convertAPIListToAPIInfoList(API[] apiList) returns APIInfo[]{
+    APIInfo[] apiInfoList = [];
+    foreach API api in apiList {
+        APIInfo apiInfo = {
+            id: api.id,
+            name: api.name,
+            context: api.context,
+            'version: api.'version,
+            'type: api.'type,
+            createdTime: api.createdTime
+        };
+        apiInfoList.push(apiInfo);
+    }
+    return apiInfoList;
 }
