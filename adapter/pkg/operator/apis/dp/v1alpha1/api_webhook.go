@@ -119,7 +119,7 @@ func (r *API) validateAPI() error {
 	if len(r.Spec.Production) > 0 {
 		prodHTTPRoute1 = r.Spec.Production[0].HTTPRouteRefs
 	}
-	if len(r.Spec.Production) > 0 {
+	if len(r.Spec.Sandbox) > 0 {
 		sandHTTPRoute1 = r.Spec.Sandbox[0].HTTPRouteRefs
 	}
 
