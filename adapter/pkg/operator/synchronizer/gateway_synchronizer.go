@@ -59,8 +59,8 @@ func HandleGatewayLifeCycleEvents(ch *chan GatewayEvent) {
 // deployGateway deploys the related Gateway in CREATE and UPDATE events.
 func deployGateway(gatewayState GatewayState, state string) error {
 	var err error
-	if gatewayState.GatewayDefinition != nil {
-		_, err = AddOrUpdateGateway(gatewayState.GatewayDefinition, state)
+	if gatewayState.GatewayDefinition != nil || gatewayState.ResolvedListenerCerts != nil {
+		_, err = AddOrUpdateGateway(gatewayState.GatewayDefinition, gatewayState.ResolvedListenerCerts, state)
 	}
 	return err
 }
@@ -75,11 +75,11 @@ func undeployGateway(gatewayState GatewayState) error {
 }
 
 // AddOrUpdateGateway adds/update a Gateway to the XDS server.
-func AddOrUpdateGateway(gateway *gwapiv1b1.Gateway, state string) (string, error) {
+func AddOrUpdateGateway(gateway *gwapiv1b1.Gateway, resolvedListenerCerts map[string]map[string][]byte, state string) (string, error) {
 	if state == constants.Create {
 		xds.GenerateGlobalClusters(gateway.Name)
 	}
-	xds.UpdateGatewayCache(gateway)
+	xds.UpdateGatewayCache(gateway, resolvedListenerCerts)
 	listeners, clusters, routes, endpoints, apis := xds.GenerateEnvoyResoucesForGateway(gateway.Name)
 	loggers.LoggerAPKOperator.Debugf("listeners: %v", listeners)
 	loggers.LoggerAPKOperator.Debugf("clusters: %v", clusters)

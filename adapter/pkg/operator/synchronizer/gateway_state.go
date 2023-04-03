@@ -25,5 +25,6 @@ import (
 // the state of the Kubernetes controller cache to detect updates.
 // +k8s:deepcopy-gen=true
 type GatewayState struct {
-	GatewayDefinition *gwapiv1b1.Gateway
+	GatewayDefinition     *gwapiv1b1.Gateway
+	ResolvedListenerCerts map[string]map[string][]byte
 }
