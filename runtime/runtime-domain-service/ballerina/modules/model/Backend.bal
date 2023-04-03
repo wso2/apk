@@ -35,13 +35,18 @@ public type BackendService record {
 };
 
 public type BasicSecurityConfig record {
-   string username;
-   string password; 
+   SecretRefConfig secretRef;
 };
 
 public type SecurityConfig record {
     string 'type;
     BasicSecurityConfig basic;
+};
+
+public type SecretRefConfig record {
+   string name;
+   string usernameKey = "username";
+   string passwordKey = "password"; 
 };
 
 
