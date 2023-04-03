@@ -15,9 +15,9 @@ const useApplicationRatePlans = () => {
     const [loading, setLoading] = useState<JSONValue | null>(true);
     const [error, setError] = useState<string>("");
 
-    const fetchUrl = getFormattedUrl('application-rate-plans');
+    //const fetchUrl = getFormattedUrl('application-rate-plans');
     useEffect(() => {
-        axios(fetchUrl, {
+        axios('/api', {
             method: 'GET',
             withCredentials: true,
         })

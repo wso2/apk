@@ -13,8 +13,8 @@ const Settings = {
     //     pkce: true,
     // },
     idp: {
-        client_id: '01edb99d-d4d3-1ae8-b8b9-f09c5a557009',
-        client_secret: '01edb99d-d4d3-1ae8-97f9-55a7256d84e4',
+        client_id: '01edbce5-931c-16e0-89f4-4431e3ab0c14',
+        client_secret: '01edbce5-931c-16e0-91b3-8467dad9e724',
         host: 'idp.am.wso2.com:9095',
         server_origin: 'https://idp.am.wso2.com:9095/',
         redirect_uri: 'https://localhost:4000',

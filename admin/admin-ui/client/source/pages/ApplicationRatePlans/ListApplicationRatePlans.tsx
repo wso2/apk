@@ -38,6 +38,9 @@ export default function ListApplicationRatePlans({ }: Props) {
   if (loading) {
     return <Loader />;
   }
+  if (data && data.length === 0) {
+    return <div>No data</div>;
+  }
   return (
     <PaginatedClientSide data={data.list} columns={columns} />
   )

@@ -73,6 +73,7 @@
     "install": "^0.13.0",
     "jsonwebtoken": "^9.0.0",
     "livereload": "^0.9.3",
+    "node-fetch": "^3.3.0",
     "nodemon": "^2.0.20",
     "npm": "^9.5.1",
     "react-intl": "^6.2.1",

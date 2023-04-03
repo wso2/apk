@@ -13,6 +13,7 @@ const connectLivereload = require("connect-livereload");
 // Routes
 var tokenRoutes = require('./routes/tokenRoutes');
 var serviceRouters = require('./routes/serviceRouters');
+var apiRoutes = require('./routes/apiRoutes');
 
 // Initialize express
 var app = express();
@@ -36,6 +37,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Server side route definitions
 app.use('/token', tokenRoutes);
 app.use('/services', serviceRouters);
+app.use('/api', apiRoutes);
 
 // app.use('/specs', specs);
 
