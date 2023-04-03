@@ -391,6 +391,7 @@ public type API record {|
     API_serviceInfo serviceInfo?;
     APIOperationPolicies apiPolicies?;
     APIRateLimit apiRateLimit?;
+    string provider?;
     string createdTime?;
     string lastUpdatedTime?;
 |};

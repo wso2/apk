@@ -1401,6 +1401,9 @@ components:
             $ref: "#/components/schemas/APIOperations"
         serviceInfo:
           $ref: "#/components/schemas/API_serviceInfo"
+        provider:
+          type: string
+          example: user1
         apiPolicies:
           $ref: "#/components/schemas/APIOperationPolicies"
           optional: true
