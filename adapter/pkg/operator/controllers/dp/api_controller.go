@@ -908,22 +908,26 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 		func(rawObj k8client.Object) []string {
 			api := rawObj.(*dpv1alpha1.API)
 			var httpRoutes []string
-			for _, ref := range api.Spec.Production[0].HTTPRouteRefs {
-				if ref != "" {
-					httpRoutes = append(httpRoutes,
-						types.NamespacedName{
-							Namespace: api.Namespace,
-							Name:      ref,
-						}.String())
+			if len(api.Spec.Production) > 0 {
+				for _, ref := range api.Spec.Production[0].HTTPRouteRefs {
+					if ref != "" {
+						httpRoutes = append(httpRoutes,
+							types.NamespacedName{
+								Namespace: api.Namespace,
+								Name:      ref,
+							}.String())
+					}
 				}
 			}
-			for _, ref := range api.Spec.Sandbox[0].HTTPRouteRefs {
-				if ref != "" {
-					httpRoutes = append(httpRoutes,
-						types.NamespacedName{
-							Namespace: api.Namespace,
-							Name:      ref,
-						}.String())
+			if len(api.Spec.Sandbox) > 0 {
+				for _, ref := range api.Spec.Sandbox[0].HTTPRouteRefs {
+					if ref != "" {
+						httpRoutes = append(httpRoutes,
+							types.NamespacedName{
+								Namespace: api.Namespace,
+								Name:      ref,
+							}.String())
+					}
 				}
 			}
 			return httpRoutes
