@@ -125,7 +125,7 @@ Following are some tasks with the steps that a developer might do in operator de
 		func(rawObj k8client.Object) []string {
 			apiPolicy := rawObj.(*dpv1alpha1.APIPolicy)
 			var httpRoutes []string
-			if apiPolicy.Spec.TargetRef.Kind == constants.KindHTTPRoute {
+			if apiPolicy.Spec.TargetRef.Kind == constants.KindAPI {
 				httpRoutes = append(httpRoutes,
 					types.NamespacedName{
 						Namespace: apiPolicy.Namespace,

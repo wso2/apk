@@ -9,6 +9,6 @@ spec:
       requestsPerUnit: 5
       unit: Minute
   targetRef:
-    kind: HTTPRoute
+    kind: API
     name: sand-http-route-http-bin-api
     group: gateway.networking.k8s.io
