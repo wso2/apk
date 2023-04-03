@@ -730,6 +730,70 @@ public class APIClient {
         }
         return endpointIdMap;
     }
+
+    private isolated function getBackendSecurity(record {}? endpointConfig, API_serviceInfo? serviceInfo, string endpointType) returns model:EndpointSecurity {
+        model:EndpointSecurity endpointSecurity = {};
+        anydata|error endpointSecurityConfig = {};
+
+        if (endpointConfig is map<anydata>) {
+            endpointSecurityConfig = trap endpointConfig.get("endpoint_security");
+
+        } else if serviceInfo is API_serviceInfo {
+            endpointSecurityConfig = trap serviceInfo.endpoint_security;
+        }
+        if endpointSecurityConfig is map<anydata> {
+            anydata|error endpointSecurityEntry = trap endpointSecurityConfig.get(endpointType);
+            if endpointSecurityEntry is map<anydata> {
+                anydata|error endpointSecurityType = trap endpointSecurityEntry.get("type");
+                if endpointSecurityType is string {
+                    if endpointSecurityType == ENDPOINT_SECURITY_TYPE_BASIC {
+                        if endpointSecurityEntry.hasKey("secretRefName") {
+                            endpointSecurity = {
+                                'type: ENDPOINT_SECURITY_TYPE_BASIC,
+                                enabled: true,
+                                secretRefName: <string>endpointSecurityEntry.get("secretRefName")
+                            };
+                        } else {
+                            endpointSecurity = {
+                                'type: ENDPOINT_SECURITY_TYPE_BASIC,
+                                enabled: true,
+                                username: <string>endpointSecurityEntry.get("username"),
+                                password: <string>endpointSecurityEntry.get("password")
+                            };
+                        }
+                    }
+                }
+            }
+
+        }
+        return endpointSecurity;
+    }
+
+    private isolated function setBackendSecurity(string secretRefName, API_serviceInfo? serviceInfo, record {}? endpointConfig, string endpointType) {
+        anydata|error endpointSecurityConfig = {};
+
+        if (endpointConfig is map<anydata>) {
+            endpointSecurityConfig = trap endpointConfig.get("endpoint_security");
+        } else if serviceInfo is API_serviceInfo {
+            endpointSecurityConfig = trap serviceInfo.endpoint_security;
+        }
+
+        if endpointSecurityConfig is map<anydata> {
+            anydata|error endpointSecurityEntry = trap endpointSecurityConfig.get(endpointType);
+            if endpointSecurityEntry is map<anydata> {
+                anydata|error endpointSecurityType = trap endpointSecurityEntry.get("type");
+                if endpointSecurityType is string {
+                    if endpointSecurityType == ENDPOINT_SECURITY_TYPE_BASIC {
+                        endpointSecurityEntry["secretRefName"] = secretRefName;
+                    }
+                }
+            }
+
+        }
+
+    }
+
+
     isolated function getLabels(API api, commons:Organization organization) returns map<string> {
         string apiNameHash = crypto:hashSha1(api.name.toBytes()).toBase16();
         string apiVersionHash = crypto:hashSha1(api.'version.toBytes()).toBase16();
