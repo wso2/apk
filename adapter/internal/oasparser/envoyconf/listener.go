@@ -305,25 +305,8 @@ func CreateVirtualHosts(vhostToRouteArrayMap map[string][]*routev3.Route) []*rou
 func retrieveCertsPaths(listenerName string) (string, string) {
 	var keyPath string
 	var certPath string
-	if listenerName == "gatewaylistener" {
-		keyPath = "/home/wso2/security/listeners/gw.key"
-		certPath = "/home/wso2/security/listeners/gw.crt"
-	} else if listenerName == "apilistener" {
-		keyPath = "/home/wso2/security/listeners/api.key"
-		certPath = "/home/wso2/security/listeners/api.crt"
-	} else if listenerName == "idplistener" {
-		keyPath = "/home/wso2/security/listeners/idp.key"
-		certPath = "/home/wso2/security/listeners/idp.crt"
-	} else if listenerName == "examplelistener" {
-		keyPath = "/home/wso2/security/listeners/example.key"
-		certPath = "/home/wso2/security/listeners/example.crt"
-	} else if listenerName == "systemlistener" {
-		keyPath = "/home/wso2/security/listeners/localhost.key"
-		certPath = "/home/wso2/security/listeners/localhost.crt"
-	} else {
-		keyPath = "/home/wso2/security/listeners/gw.key"
-		certPath = "/home/wso2/security/listeners/gw.crt"
-	}
+	keyPath = "/home/wso2/security/listeners/" + listenerName + ".key"
+	certPath = "/home/wso2/security/listeners/" + listenerName + ".crt"
 	return keyPath, certPath
 }
 
