@@ -131,22 +131,22 @@ spec:
             {{- else }}
               subPath: tls.crt
             {{- end }}
-          livenessProbe:
-            httpGet:
-              port: 8090
-              path: /healthcheck
-              scheme: HTTP
-            initialDelaySeconds: {{ .Values.wso2.apk.dp.ratelimiter.deployment.livenessProbe.initialDelaySeconds }}
-            periodSeconds: {{ .Values.wso2.apk.dp.ratelimiter.deployment.livenessProbe.periodSeconds }}
-            failureThreshold: {{ .Values.wso2.apk.dp.ratelimiter.deployment.livenessProbe.failureThreshold }}
-          readinessProbe:
-            httpGet:
-              port: 8090
-              path: /healthcheck
-              scheme: HTTP
-            initialDelaySeconds: {{ .Values.wso2.apk.dp.ratelimiter.deployment.readinessProbe.initialDelaySeconds }}
-            periodSeconds: {{ .Values.wso2.apk.dp.ratelimiter.deployment.readinessProbe.periodSeconds }}
-            failureThreshold: {{ .Values.wso2.apk.dp.ratelimiter.deployment.readinessProbe.failureThreshold }}
+          # livenessProbe:
+          #   httpGet:
+          #     port: 8090
+          #     path: /healthcheck
+          #     scheme: HTTP
+          #   initialDelaySeconds: {{ .Values.wso2.apk.dp.ratelimiter.deployment.livenessProbe.initialDelaySeconds }}
+          #   periodSeconds: {{ .Values.wso2.apk.dp.ratelimiter.deployment.livenessProbe.periodSeconds }}
+          #   failureThreshold: {{ .Values.wso2.apk.dp.ratelimiter.deployment.livenessProbe.failureThreshold }}
+          # readinessProbe:
+          #   httpGet:
+          #     port: 8090
+          #     path: /healthcheck
+          #     scheme: HTTP
+          #   initialDelaySeconds: {{ .Values.wso2.apk.dp.ratelimiter.deployment.readinessProbe.initialDelaySeconds }}
+          #   periodSeconds: {{ .Values.wso2.apk.dp.ratelimiter.deployment.readinessProbe.periodSeconds }}
+          #   failureThreshold: {{ .Values.wso2.apk.dp.ratelimiter.deployment.readinessProbe.failureThreshold }}
       {{- if and .Values.wso2.subscription .Values.wso2.subscription.imagePullSecrets}}
       imagePullSecrets:
         - name: {{ .Values.wso2.subscription.imagePullSecrets }}

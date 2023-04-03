@@ -138,18 +138,18 @@ spec:
             - name: enforcer-trusted-certs
               mountPath: /home/wso2/security/truststore/wso2carbon.pem
               subPath: wso2carbon.pem
-          readinessProbe:
-            exec:
-              command: [ "sh", "check_health.sh" ]
-            initialDelaySeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.readinessProbe.initialDelaySeconds }}
-            periodSeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.readinessProbe.periodSeconds }}
-            failureThreshold: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.readinessProbe.failureThreshold }}
-          livenessProbe:
-            exec:
-              command: [ "sh", "check_health.sh" ]
-            initialDelaySeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.livenessProbe.initialDelaySeconds }}
-            periodSeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.livenessProbe.periodSeconds }}
-            failureThreshold: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.livenessProbe.failureThreshold }}
+          # readinessProbe:
+          #   exec:
+          #     command: [ "sh", "check_health.sh" ]
+          #   initialDelaySeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.readinessProbe.initialDelaySeconds }}
+          #   periodSeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.readinessProbe.periodSeconds }}
+          #   failureThreshold: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.readinessProbe.failureThreshold }}
+          # livenessProbe:
+          #   exec:
+          #     command: [ "sh", "check_health.sh" ]
+          #   initialDelaySeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.livenessProbe.initialDelaySeconds }}
+          #   periodSeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.livenessProbe.periodSeconds }}
+          #   failureThreshold: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.livenessProbe.failureThreshold }}
         - name: router
           image: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.image }}
           imagePullPolicy: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.imagePullPolicy }}
@@ -197,7 +197,7 @@ spec:
             - name: CONCURRENCY
               value: "2"
             - name: TRAILING_ARGS
-              value: "--component-log-level http:debug,http2:debug,conn_handler:debug,ext_authz:trace"
+              value: "--component-log-level http:debug,http2:debug,conn_handler:debug,ext_authz:trace,lua:trace"
           volumeMounts:
             - name: router-keystore-secret-volume
               mountPath: /home/wso2/security/keystore/router.key
@@ -275,15 +275,15 @@ spec:
               subPath: ca.crt
             {{- end }}
         {{ end }}
-          livenessProbe:
-            httpGet:
-              host: localhost
-              port: {{ .Values.wso2.apk.dp.gateway.listener.port }}
-              path: /health
-              scheme: HTTPS
-            initialDelaySeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.initialDelaySeconds }}
-            periodSeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.periodSeconds }}
-            failureThreshold: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.failureThreshold }}
+          # livenessProbe:
+          #   httpGet:
+          #     host: localhost
+          #     port: {{ .Values.wso2.apk.dp.gateway.listener.port }}
+          #     path: /health
+          #     scheme: HTTPS
+          #   initialDelaySeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.initialDelaySeconds }}
+          #   periodSeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.periodSeconds }}
+          #   failureThreshold: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.failureThreshold }}
       {{- if and .Values.wso2.subscription .Values.wso2.subscription.imagePullSecrets}}
       imagePullSecrets:
         - name: {{ .Values.wso2.subscription.imagePullSecrets }}

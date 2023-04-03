@@ -317,7 +317,7 @@ func CreateVirtualHosts(vhostToRouteArrayMap map[string][]*routev3.Route, custom
 				Metadata: &routev3.RateLimit_Action_MetaData{
 					DescriptorKey: customRateLimitPolicy.Key,
 					MetadataKey: &metadatav3.MetadataKey{
-						Key: "envoy.filters.http.lua",
+						Key: "apk.custom.metadata",
 						Path: []*metadatav3.MetadataKey_PathSegment{
 							{
 								Segment: &metadatav3.MetadataKey_PathSegment_Key{

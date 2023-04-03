@@ -27,7 +27,7 @@ wso2:
       authorizeEndpoint: "https://prod.idp.am.wso2.com:9095/oauth2/authorize"
       tokenEndpoint: "https://prod.idp.am.wso2.com:9095/oauth2/token"
       revokeEndpoint: "https://prod.idp.am.wso2.com:9095/oauth2/revoke"
-      #jwksEndpoint: ""      
+      #jwksEndpoint: ""
       usernameClaim: "sub"
       groupClaim: "groups"
       organizationClaim: "organization"
@@ -71,8 +71,8 @@ wso2:
             failureThreshold: 5
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: Always
-          image: wso2/devportal-domain-service:0.0.1-m7
+          imagePullPolicy: IfNotPresent
+          image: wso2/devportal-domain-service:latest
       admin:
         appName: "admin-ds"
         deployment:
@@ -98,8 +98,8 @@ wso2:
             failureThreshold: 5
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: Always
-          image: wso2/admin-domain-service:0.0.1-m7
+          imagePullPolicy: IfNotPresent
+          image: wso2/admin-domain-service:latest
       backoffice:
         appName: "backoffice-ds"
         deployment:
@@ -125,8 +125,8 @@ wso2:
             failureThreshold: 5
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: Always
-          image: wso2/backoffice-domain-service:0.0.1-m7
+          imagePullPolicy: IfNotPresent
+          image: wso2/backoffice-domain-service:latest
       devportalUI:
         appName: "devportal-ui"
         deployment:
@@ -168,8 +168,8 @@ wso2:
               cpu: "1000m"
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: Always
-          image: wso2/management-server:0.0.1-m7
+          imagePullPolicy: IfNotPresent
+          image: wso2/management-server:latest
           readinessProbe:
             initialDelaySeconds: 20
             periodSeconds: 20
@@ -181,12 +181,12 @@ wso2:
 
         # configs:
         #   tls:
-            # certificatesSecret: "management-server-cert"
-            # fileName: "certificate.crt"
-          # adapters:
-          #   - name: adapter-1
-          #     certificatesSecret: "adapter-1-cert"
-          #     fileName: "certificate.crt"
+        # certificatesSecret: "management-server-cert"
+        # fileName: "certificate.crt"
+        # adapters:
+        #   - name: adapter-1
+        #     certificatesSecret: "adapter-1-cert"
+        #     fileName: "certificate.crt"
       cnpg:
         npi: cnpg-npi
         instances: 1
@@ -205,21 +205,21 @@ wso2:
           port: 9095
           protocol: HTTPS
       # controlPlane:
-      #   serviceUrl: "http://control-plane-wso2-apk-admin-ds-service.control-plane.svc.cluster.local:9444/api/am/internal/v1"    
+      #   serviceUrl: "http://control-plane-wso2-apk-admin-ds-service.control-plane.svc.cluster.local:9444/api/am/internal/v1"
       #   enableHostNameVerification: true
-        # tls:
-        #   enabled: false
-        #   certificatesSecret: "organization-managetment-server-cert"
-        #   fileName: "certificate.crt"
-        # headers:
-        #   - name: "apiKey"
-        #     value: "123-456-789"
+      # tls:
+      #   enabled: false
+      #   certificatesSecret: "organization-managetment-server-cert"
+      #   fileName: "certificate.crt"
+      # headers:
+      #   - name: "apiKey"
+      #     value: "123-456-789"
       # managementServer:
       #   enabled: false
       #   serviceUrl: "https://control-plane-wso2-apk-management-server.control-plane.svc.cluster.local"
-        # tls:
-        #   certificatesSecret: "organization-managetment-server-cert"
-        #   fileName: "certificate.crt"
+      # tls:
+      #   certificatesSecret: "organization-managetment-server-cert"
+      #   fileName: "certificate.crt"
       runtime:
         appName: "runtime-ds"
         deployment:
@@ -245,8 +245,8 @@ wso2:
             failureThreshold: 5
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: Always
-          image: wso2/runtime-domain-service:0.0.1-m7
+          imagePullPolicy: IfNotPresent
+          image: wso2/runtime-domain-service:latest
         # configs:
         #   tls:
         #     certificatesSecret: "my-secret"
@@ -273,18 +273,18 @@ wso2:
             failureThreshold: 5
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: Always
-          image: wso2/adapter:0.0.1-m7
+          imagePullPolicy: IfNotPresent
+          image: adapter:0.0.1-SNAPSHOT
           security:
             sslHostname: "adapter"
         # configs:
-          # apiNamespaces:
-          #   - "dataplane-1"
-          #   - "dataplane-2"
-          # tls:
-          #   certificatesSecret: "adapter-cert"
-          #   certKeyFilename: ""
-          #   certFilename: ""
+        # apiNamespaces:
+        #   - "dataplane-1"
+        #   - "dataplane-2"
+        # tls:
+        #   certificatesSecret: "adapter-cert"
+        #   certKeyFilename: ""
+        #   certFilename: ""
       ratelimiter:
         enabled: true
         appName: "ratelimiter"
@@ -311,8 +311,8 @@ wso2:
             failureThreshold: 5
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: Always
-          image: wso2/ratelimiter:0.0.1-m7
+          imagePullPolicy: IfNotPresent
+          image: wso2/ratelimiter:latest
           security:
             sslHostname: "ratelimiter"
         # configs:
@@ -345,8 +345,8 @@ wso2:
               periodSeconds: 20
               failureThreshold: 5
             strategy: Recreate
-            imagePullPolicy: Always
-            image: wso2/router:0.0.1-m7
+            imagePullPolicy: IfNotPresent
+            image: router:0.0.1-SNAPSHOT
             # configs:
             #   tls:
             #     certificatesSecret: "router-cert"
@@ -370,8 +370,8 @@ wso2:
               periodSeconds: 20
               failureThreshold: 5
             strategy: Recreate
-            imagePullPolicy: Always
-            image: wso2/enforcer:0.0.1-m7
+            imagePullPolicy: IfNotPresent
+            image: wso2/enforcer:latest
             security:
               sslHostname: "enforcer"
             # configs:
@@ -386,9 +386,9 @@ wso2:
             #         - name: filterConfig1
             #           value: filterConfig1
     migration:
-    # This flag should be enabled only in a migration scenario.
-    # It is not recommended to run a production deployment with this flag enabled.
-      enabled: false        
+      # This flag should be enabled only in a migration scenario.
+      # It is not recommended to run a production deployment with this flag enabled.
+      enabled: false
 certmanager:
   enabled: true
   enableClusterIssuer: true
@@ -459,8 +459,8 @@ idp:
         failureThreshold: 5
       strategy: Recreate
       replicas: 1
-      imagePullPolicy: Always
-      image: wso2/idp-domain-service:0.0.1-m7
+      imagePullPolicy: IfNotPresent
+      image: wso2/idp-domain-service:latest
   idpui:
     appName: "idp-ui"
     deployment:
@@ -486,8 +486,8 @@ idp:
         failureThreshold: 5
       strategy: Recreate
       replicas: 1
-      imagePullPolicy: Always
-      image: wso2/idp-ui:0.0.1-m7
+      imagePullPolicy: IfNotPresent
+      image: wso2/idp-ui:latest
     configs:
       idpLoginUrl: "https://prod.idp.am.wso2.com:9095/commonauth/login"
       idpAuthCallBackUrl: "https://prod.idp.am.wso2.com:9095/oauth2/auth-callback"

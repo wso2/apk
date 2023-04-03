@@ -85,9 +85,13 @@ end
 local function set_dynamic_metadata(handle, interceptor_response_body)
     if interceptor_response_body[RESPONSE.DYNAMIC_METADATA] then
         handle:logDebug("Response body has dynamic metadata. Setting dynamic metadata...")
-        for metadata_key, metadata_velue in pairs(interceptor_response_body[RESPONSE.DYNAMIC_METADATA]) do
-            handle:streamInfo():dynamicMetadata():set(CUSTOM_METADATA_KEY, metadata_key, metadata_velue)
-            handle:logDebug("set metadata <key: "..metadata_key..", value: "..metadata_velue..">")
+        for _, metadata in ipairs(interceptor_response_body[RESPONSE.DYNAMIC_METADATA]) do
+            for metadata_key, metadata_value in pairs(metadata) do
+                handle:logDebug("metadata key: " .. metadata_key)
+                handle:logDebug("metadata value: " .. metadata_value)
+                handle:streamInfo():dynamicMetadata():set(CUSTOM_METADATA_KEY, metadata_key, metadata_value)
+                handle:logDebug("set metadata <key: "..metadata_key..", value: "..metadata_value..">") 
+            end
         end
     end
 end

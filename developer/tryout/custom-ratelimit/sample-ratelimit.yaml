@@ -1,0 +1,37 @@
+apiVersion: dp.wso2.com/v1alpha1
+kind: RateLimitPolicy
+metadata:
+  name: http-bin-ratelimit-usergroup
+spec:
+  override:
+    type: Custom
+    custom:
+      key: usergroup
+      value: admin
+      rateLimit:
+        requestsPerUnit: 8
+        unit: Minute
+    organization: default
+  targetRef:
+    kind: Gateway
+    name: default
+    group: gateway.networking.k8s.io
+---
+apiVersion: dp.wso2.com/v1alpha1
+kind: RateLimitPolicy
+metadata:
+  name: http-bin-ratelimit-user
+spec:
+  override:
+    type: Custom
+    custom:
+      key: user
+      value: bob
+      rateLimit:
+        requestsPerUnit: 4
+        unit: Minute
+    organization: default
+  targetRef:
+    kind: Gateway
+    name: default
+    group: gateway.networking.k8s.io
