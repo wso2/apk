@@ -1161,6 +1161,32 @@ public class APIClient {
         }
     }
 
+    private isolated function createK8sSecret(model:K8sSecret secret) returns error? {
+        http:Response createK8sResult = check createK8sSecret(secret, getNameSpace(runtimeConfiguration.apiCreationNamespace));
+        if createK8sResult.statusCode == http:STATUS_CREATED {
+            log:printDebug("Created K8s Secret Successfully" + secret.toString());
+        } else {
+            json responsePayLoad = check createK8sResult.getJsonPayload();
+            model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+            check self.handleK8sTimeout(statusResponse);
+        }
+    }
+
+    private isolated function updateK8sSecret(model:K8sSecret secret) returns error? {
+        string nameSpace = getNameSpace(runtimeConfiguration.apiCreationNamespace);
+        model:K8sSecret data = check getK8sSecret(secret.metadata.name, nameSpace);
+        if data is model:K8sSecret {
+            http:Response updateK8sResult = check updateK8sSecret(secret.metadata.name, secret, nameSpace);
+            if updateK8sResult.statusCode == http:STATUS_OK {
+                log:printDebug("Updated K8s Secret Successfully" + secret.toString());
+            } else {
+                json responsePayLoad = check updateK8sResult.getJsonPayload();
+                model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                check self.handleK8sTimeout(statusResponse);
+            }
+        }
+    }
+
     private isolated function retrieveGeneratedConfigmapForDefinition(model:APIArtifact apiArtifact, API api, json generatedSwaggerDefinition, string uniqueId, commons:Organization organization) returns error? {
         byte[]|javaio:IOException compressedContent = check runtimeUtil:GzipUtil_compressGzipFile(generatedSwaggerDefinition.toJsonString().toBytes());
         if compressedContent is byte[] {

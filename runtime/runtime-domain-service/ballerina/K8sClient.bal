@@ -321,3 +321,27 @@ public isolated function deleteInternalAPI(string name, string namespace) return
     string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/runtimeapis/" + name;
     return k8sApiServerEp->delete(endpoint, targetType = http:Response);
 }
+
+isolated function createK8sSecret(model:K8sSecret secret, string namespace) returns http:Response|http:ClientError {
+
+    string endpoint = "/api/v1/namespaces/" + namespace + "/secrets";
+    return k8sApiServerEp->post(endpoint, secret, targetType = http:Response);
+}
+
+isolated function updateK8sSecret(string secretName, model:K8sSecret secret, string namespace) returns http:Response|http:ClientError {
+
+    string endpoint = "/api/v1/namespaces/" + namespace + "/secrets/" + secretName;
+    return k8sApiServerEp->put(endpoint, secret, targetType = http:Response);
+}
+
+isolated function getK8sSecret(string secretName, string namespace) returns model:K8sSecret|http:ClientError {
+
+    string endpoint = "/api/v1/namespaces/" + namespace + "/secrets/" + secretName;
+    return k8sApiServerEp->get(endpoint, targetType = model:K8sSecret);
+}
+
+isolated function deleteK8sSecret(string secretName, string namespace) returns http:Response|http:ClientError {
+
+    string endpoint = "/api/v1/namespaces/" + namespace + "/secrets/" + secretName;
+    return k8sApiServerEp->delete(endpoint, targetType = http:Response);
+}
