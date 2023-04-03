@@ -164,7 +164,7 @@ public class MTLSAuthenticator implements Authenticator {
 
     @Override
     public String getChallengeString() {
-        return "Mutual SSL realm=\"Choreo Connect\"";
+        return "Mutual SSL realm=\"APK\"";
     }
 
     @Override

@@ -58,8 +58,6 @@ var (
 	debug       bool
 	onlyLogging bool
 
-	localhost = "0.0.0.0"
-
 	port        uint
 	gatewayPort uint
 	rlsPort     uint
@@ -141,11 +139,6 @@ func runManagementServer(conf *config.Config, server xdsv3.Server, rlsServer xds
 
 	logger.LoggerMgw.Info("port: ", port, " management server listening")
 	go func() {
-		// if control plane enabled wait until it starts
-		if conf.ControlPlane.Enabled {
-			// wait current goroutine forever for until control plane starts
-			health.WaitForControlPlane()
-		}
 		logger.LoggerMgw.Info("Starting XDS GRPC server.")
 		if err = grpcServer.Serve(lis); err != nil {
 			logger.LoggerMgw.ErrorC(logging.GetErrorByCode(1101, err.Error()))

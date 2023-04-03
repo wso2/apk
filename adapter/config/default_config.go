@@ -20,19 +20,6 @@ package config
 // Configuration object which is populated with default values.
 var defaultConfig = &Config{
 	Adapter: adapter{
-		Server: server{
-			Enabled: true,
-			Host:    "0.0.0.0",
-			Port:    "9843",
-			Users: []APICtlUser{
-				{
-					Username: "admin",
-					Password: "$env{adapter_admin_pwd}",
-				},
-			},
-			TokenTTL:            "1h",
-			TokenPrivateKeyPath: "/home/wso2/security/keystore/mg.key",
-		},
 		Consul: consul{
 			Enabled:            false,
 			URL:                "https://169.254.1.1:8501",
@@ -51,15 +38,7 @@ var defaultConfig = &Config{
 		Truststore: truststore{
 			Location: "/home/wso2/security/truststore",
 		},
-		ArtifactsDirectory:    "/home/wso2/artifacts",
 		SoapErrorInXMLEnabled: false,
-		SourceControl: sourceControl{
-			Enabled:            false,
-			PollInterval:       30,
-			RetryInterval:      5,
-			MaxRetryCount:      20,
-			ArtifactsDirectory: "/home/wso2/git-artifacts",
-		},
 		Operator: operator{
 			Namespaces: nil,
 		},
@@ -287,30 +266,6 @@ var defaultConfig = &Config{
 			},
 		},
 	},
-	ControlPlane: controlPlane{
-		Enabled:              false,
-		ServiceURL:           "https://apim:9443/",
-		ServiceURLDeprecated: UnassignedAsDeprecated,
-		Username:             "admin",
-		Password:             "$env{cp_admin_pwd}",
-		EnvironmentLabels:    []string{"default"},
-		RetryInterval:        5,
-		SkipSSLVerification:  false,
-		BrokerConnectionParameters: brokerConnectionParameters{
-			EventListeningEndpoints: []string{"amqp://admin:$env{cp_admin_pwd}@apim:5672?retries='10'&connectdelay='30'"},
-			ReconnectInterval:       5000, //in milli seconds
-			ReconnectRetryCount:     60,
-		},
-		SendRevisionUpdate: false,
-		HTTPClient: httpClient{
-			RequestTimeOut: 30,
-		},
-		RequestWorkerPool: requestWorkerPool{
-			PoolSize:              4,
-			QueueSizePerPool:      1000,
-			PauseTimeAfterFailure: 5,
-		},
-	},
 	ManagementServer: managementServer{
 		Enabled:   true,
 		Host:      "management-server",
@@ -358,7 +313,7 @@ var defaultConfig = &Config{
 		Enabled: false,
 		Type:    "zipkin",
 		ConfigProperties: map[string]string{
-			"libraryName":            "CHOREO-CONNECT",
+			"libraryName":            "APK",
 			"maximumTracesPerSecond": "2",
 			"maxPathLength":          "256",
 			"host":                   "jaeger",

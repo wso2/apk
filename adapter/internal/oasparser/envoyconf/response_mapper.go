@@ -242,7 +242,7 @@ func genMetadataFilterForExtAuthz() *access_logv3.AccessLogFilter_MetadataFilter
 						},
 					},
 				},
-				Path: []*envoy_type_matcher_v3.MetadataMatcher_PathSegment{{Segment: &envoy_type_matcher_v3.MetadataMatcher_PathSegment_Key{Key: choreoConnectEnforcerReply}}},
+				Path: []*envoy_type_matcher_v3.MetadataMatcher_PathSegment{{Segment: &envoy_type_matcher_v3.MetadataMatcher_PathSegment_Key{Key: apkEnforcerReply}}},
 			},
 			MatchIfKeyNotFound: &wrapperspb.BoolValue{
 				Value: true,
