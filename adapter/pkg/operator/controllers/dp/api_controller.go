@@ -206,15 +206,11 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	}
 
 	var prodHTTPRoute1, sandHTTPRoute1 []string
-	if apiDef.Spec.Production != nil {
+	if len(apiDef.Spec.Production) > 0 {
 		prodHTTPRoute1 = apiDef.Spec.Production[0].HTTPRouteRefs
-	} else {
-		prodHTTPRoute1 = []string{}
 	}
-	if apiDef.Spec.Sandbox != nil {
+	if len(apiDef.Spec.Sandbox) > 0 {
 		sandHTTPRoute1 = apiDef.Spec.Sandbox[0].HTTPRouteRefs
-	} else {
-		sandHTTPRoute1 = []string{}
 	}
 
 	// Retrieve HTTPRoutes
@@ -912,26 +908,22 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 		func(rawObj k8client.Object) []string {
 			api := rawObj.(*dpv1alpha1.API)
 			var httpRoutes []string
-			if api.Spec.Production != nil {
-				for _, ref := range api.Spec.Production[0].HTTPRouteRefs {
-					if ref != "" {
-						httpRoutes = append(httpRoutes,
-							types.NamespacedName{
-								Namespace: api.Namespace,
-								Name:      ref,
-							}.String())
-					}
+			for _, ref := range api.Spec.Production[0].HTTPRouteRefs {
+				if ref != "" {
+					httpRoutes = append(httpRoutes,
+						types.NamespacedName{
+							Namespace: api.Namespace,
+							Name:      ref,
+						}.String())
 				}
 			}
-			if api.Spec.Sandbox != nil {
-				for _, ref := range api.Spec.Sandbox[0].HTTPRouteRefs {
-					if ref != "" {
-						httpRoutes = append(httpRoutes,
-							types.NamespacedName{
-								Namespace: api.Namespace,
-								Name:      ref,
-							}.String())
-					}
+			for _, ref := range api.Spec.Sandbox[0].HTTPRouteRefs {
+				if ref != "" {
+					httpRoutes = append(httpRoutes,
+						types.NamespacedName{
+							Namespace: api.Namespace,
+							Name:      ref,
+						}.String())
 				}
 			}
 			return httpRoutes

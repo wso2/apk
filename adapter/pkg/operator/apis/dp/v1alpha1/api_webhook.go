@@ -116,15 +116,11 @@ func (r *API) validateAPI() error {
 	}
 
 	var prodHTTPRoute1, sandHTTPRoute1 []string
-	if r.Spec.Production != nil {
+	if len(r.Spec.Production) > 0 {
 		prodHTTPRoute1 = r.Spec.Production[0].HTTPRouteRefs
-	} else {
-		prodHTTPRoute1 = []string{}
 	}
-	if r.Spec.Sandbox != nil {
+	if len(r.Spec.Production) > 0 {
 		sandHTTPRoute1 = r.Spec.Sandbox[0].HTTPRouteRefs
-	} else {
-		sandHTTPRoute1 = []string{}
 	}
 
 	if isEmptyStringsInArray(prodHTTPRoute1) {
