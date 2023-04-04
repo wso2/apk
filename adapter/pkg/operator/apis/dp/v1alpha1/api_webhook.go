@@ -110,7 +110,7 @@ func (r *API) validateAPI() error {
 		r.Spec.APIType = "REST"
 	}
 
-	if !(r.Spec.Production != nil && r.Spec.Production[0].HTTPRouteRefs != nil && len(r.Spec.Production[0].HTTPRouteRefs) > 0) && !(r.Spec.Sandbox != nil && r.Spec.Sandbox[0].HTTPRouteRefs != nil && len(r.Spec.Sandbox[0].HTTPRouteRefs) > 0) {
+	if !(len(r.Spec.Production) > 0 && r.Spec.Production[0].HTTPRouteRefs != nil && len(r.Spec.Production[0].HTTPRouteRefs) > 0) && !(len(r.Spec.Sandbox) > 0 && r.Spec.Sandbox[0].HTTPRouteRefs != nil && len(r.Spec.Sandbox[0].HTTPRouteRefs) > 0) {
 		allErrs = append(allErrs, field.Required(field.NewPath("spec"),
 			"both API production and sandbox endpoint references cannot be empty"))
 	}

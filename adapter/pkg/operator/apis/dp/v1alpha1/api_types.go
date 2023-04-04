@@ -89,7 +89,7 @@ type APISpec struct {
 
 // EnvConfig contains the environment specific configuration
 type EnvConfig struct {
-	// Env denotes the environment of the API.
+	// HTTPRouteRefs denotes the environment of the API.
 	HTTPRouteRefs []string `json:"httpRouteRefs"`
 }
 
