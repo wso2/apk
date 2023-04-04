@@ -73,7 +73,7 @@ http:Service runtimeService = service object {
         commons:Organization organization = authenticatedUserContext.organization;
         return apiService.importDefinition(message, organization);
     }
-    isolated resource function post apis/'validate\-definition(http:RequestContext requestContext, http:Request message, boolean returnContent = false) returns APIDefinitionValidationResponse|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
+    isolated resource function post apis/'validate\-definition(http:RequestContext requestContext, http:Request message, boolean returnContent = false) returns http:Ok|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
         final APIClient apiService = new ();
         return apiService.validateDefinition(message, returnContent);
     }

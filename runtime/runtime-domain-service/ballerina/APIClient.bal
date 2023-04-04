@@ -1717,7 +1717,7 @@ public class APIClient {
 
     }
 
-    public isolated function validateDefinition(http:Request message, boolean returnContent) returns InternalServerErrorError|BadRequestError|APIDefinitionValidationResponse|commons:APKError {
+    public isolated function validateDefinition(http:Request message, boolean returnContent) returns InternalServerErrorError|BadRequestError|http:Ok|commons:APKError {
         do {
             DefinitionValidationRequest|BadRequestError definitionValidationRequest = check self.mapApiDefinitionPayload(message);
             if definitionValidationRequest is DefinitionValidationRequest {
@@ -1725,6 +1725,7 @@ public class APIClient {
                 if validationResponse is runtimeapi:APIDefinitionValidationResponse {
                     string[] endpoints = [];
                     ErrorListItem[] errorItems = [];
+                    string? definitionContent = "";
                     if validationResponse.isValid() {
                         runtimeapi:Info info = validationResponse.getInfo();
                         utilapis:List endpointList = info.getEndpoints();
@@ -1739,8 +1740,12 @@ public class APIClient {
                             openAPIVersion: info.getOpenAPIVersion(),
                             endpoints: endpoints
                         };
-                        APIDefinitionValidationResponse response = {content: validationResponse.getContent(), isValid: validationResponse.isValid(), info: validationResponseInfo, errors: errorItems};
-                        return response;
+                        if (returnContent && definitionValidationRequest.url is string) {
+                            definitionContent = validationResponse.getContent();
+                        }
+                        APIDefinitionValidationResponse response = {content: definitionContent, isValid: validationResponse.isValid(), info: validationResponseInfo, errors: errorItems};
+                        http:Ok okResponse = {body: response};
+                        return okResponse;
                     }
                     utilapis:ArrayList errorItemsResult = validationResponse.getErrorItems();
                     foreach int i in 0 ... errorItemsResult.size() - 1 {
@@ -1748,17 +1753,21 @@ public class APIClient {
                         ErrorListItem errorListItem = {code: errorItem.getErrorCode().toString(), message: <string>errorItem.getErrorMessage(), description: errorItem.getErrorDescription()};
                         errorItems.push(errorListItem);
                     }
-                    APIDefinitionValidationResponse response = {content: validationResponse.getContent(), isValid: validationResponse.isValid(), info: {}, errors: errorItems};
-                    return response;
-
+                    if (returnContent && definitionValidationRequest.url is string) {
+                        definitionContent = validationResponse.getContent();
+                    }
+                    APIDefinitionValidationResponse response = {content: definitionContent, isValid: validationResponse.isValid(), info: {}, errors: errorItems};
+                    http:Ok okResponse = {body: response};
+                    return okResponse;
+                } else if validationResponse is BadRequestError {
+                    return validationResponse;
                 } else {
-                    runtimeapi:JAPIManagementException excetion = check validationResponse.ensureType(runtimeapi:JAPIManagementException);
-                    runtimeapi:ErrorHandler errorHandler = excetion.getErrorHandler();
-                    BadRequestError badeRequest = {body: {code: errorHandler.getErrorCode(), message: errorHandler.getErrorMessage().toString()}};
-                    return badeRequest;
+                    runtimeapi:JAPIManagementException exception = check validationResponse.ensureType(runtimeapi:JAPIManagementException);
+                    runtimeapi:ErrorHandler errorHandler = exception.getErrorHandler();
+                    BadRequestError badRequest = {body: {code: errorHandler.getErrorCode(), message: errorHandler.getErrorMessage().toString()}};
+                    return badRequest;
                 }
-            }
-            else {
+            } else {
                 return definitionValidationRequest;
             }
         } on fail var e {
@@ -2216,14 +2225,18 @@ public class APIClient {
         boolean fileAvailable = fileName is string && content is byte[];
         boolean urlAvailble = url is string;
         boolean typeAvailable = 'type.length() > 0;
-
+        string[] ALLOWED_API_DEFINITION_TYPES = ["REST", "GRAPHQL", "ASYNC"];
         if !typeAvailable {
             BadRequestError badRequest = {body: {code: 90914, message: "type field unavailable"}};
             return badRequest;
         }
+        if (ALLOWED_API_DEFINITION_TYPES.indexOf('type) is ()) {
+            BadRequestError badRequest = {body: {code: 900912, message: "unsupported API type"}};
+            return badRequest.clone();
+        }
         if url is string {
             if (fileAvailable || inlineApiDefinitionAvailable) {
-                BadRequestError badRequest = {body: {code: 90914, message: "multiple fields of  url,file,inlineAPIDefinition given"}};
+                BadRequestError badRequest = {body: {code: 90914, message: "multiple fields of url, file, inlineAPIDefinition given"}};
                 return badRequest;
             }
             string|error retrieveDefinitionFromUrlResult = self.retrieveDefinitionFromUrl(url);
@@ -2236,13 +2249,13 @@ public class APIClient {
             }
         } else if fileName is string && content is byte[] {
             if (urlAvailble || inlineApiDefinitionAvailable) {
-                BadRequestError badRequest = {body: {code: 90914, message: "multiple fields of  url,file,inlineAPIDefinition given"}};
+                BadRequestError badRequest = {body: {code: 90914, message: "multiple fields of url, file, inlineAPIDefinition given"}};
                 return badRequest;
             }
             validationResponse = runtimeUtil:RuntimeAPICommonUtil_validateOpenAPIDefinition('type, <byte[]>content, "", <string>fileName, true);
         } else if inlineAPIDefinition is string {
             if (fileAvailable || urlAvailble) {
-                BadRequestError badRequest = {body: {code: 90914, message: "multiple fields of  url,file,inlineAPIDefinition given"}};
+                BadRequestError badRequest = {body: {code: 90914, message: "multiple fields of url, file, inlineAPIDefinition given"}};
                 return badRequest;
             }
             validationResponse = runtimeUtil:RuntimeAPICommonUtil_validateOpenAPIDefinition('type, <byte[]>[], <string>inlineAPIDefinition, "", true);
