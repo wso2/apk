@@ -76,6 +76,7 @@ type Config struct {
 	Enforcer         enforcer
 	Envoy            envoy            `toml:"router"`
 	ManagementServer managementServer `toml:"managementServer"`
+	PartitionServer  partitionServer  `toml:"partitionServer"`
 	Runtime          runtime          `toml:"runtime"`
 	Analytics        analytics        `toml:"analytics"`
 	Tracing          tracing
@@ -443,6 +444,14 @@ type managementServer struct {
 	NodeLabel string
 	// GRPCClient represents the configuration related to gRPC connection from Management server to agent
 	GRPCClient gRPCClient
+}
+
+type partitionServer struct {
+	Enabled         bool
+	Host            string
+	Port            int
+	ServiceBasePath string
+	PartitionName   string
 }
 
 type brokerConnectionParameters struct {
