@@ -49,6 +49,7 @@ import (
 	wso2_cache "github.com/wso2/apk/adapter/pkg/discovery/protocol/cache/v3"
 	wso2_resource "github.com/wso2/apk/adapter/pkg/discovery/protocol/resource/v3"
 	eventhubTypes "github.com/wso2/apk/adapter/pkg/eventhub/types"
+	"github.com/wso2/apk/adapter/pkg/operator/apis/dp/v1alpha1"
 	operatorconsts "github.com/wso2/apk/adapter/pkg/operator/constants"
 	"github.com/wso2/apk/adapter/pkg/utils/stringutils"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
@@ -81,10 +82,10 @@ var (
 	orgIDvHostBasepathMap       map[string]map[string]string               // organizationID -> Vhost:basepath -> Vhost:API_UUID
 
 	// Envoy Label as map key
-	envoyListenerConfigMap     map[string]*listenerv3.Listener        // GW-Label -> Listener Configuration map
-	envoyRouteConfigMap        map[string]*routev3.RouteConfiguration // GW-Label -> Routes Configuration map
-	envoyClusterConfigMap      map[string][]*clusterv3.Cluster          // GW-Label -> Global Cluster Configuration map
-	envoyEndpointConfigMap     map[string][]*corev3.Address             // GW-Label -> Global Endpoint Configuration map
+	envoyListenerConfigMap     map[string]*listenerv3.Listener           // GW-Label -> Listener Configuration map
+	envoyRouteConfigMap        map[string]*routev3.RouteConfiguration    // GW-Label -> Routes Configuration map
+	envoyClusterConfigMap      map[string][]*clusterv3.Cluster           // GW-Label -> Global Cluster Configuration map
+	envoyEndpointConfigMap     map[string][]*corev3.Address              // GW-Label -> Global Endpoint Configuration map
 	customRateLimitPoliciesMap map[string][]*model.CustomRateLimitPolicy // GW-Label -> Custom Rate Limit Policies map
 
 	// Listener as map key
@@ -820,7 +821,7 @@ func UpdateRateLimitXDSCache(vHosts []string, mgwSwagger model.MgwSwagger) {
 }
 
 // UpdateRateLimitXDSCacheForCustomPolicies updates the xDS cache of the RateLimiter for custom policies.
-func UpdateRateLimitXDSCacheForCustomPolicies(gwLabel string,customRateLimitPolicies []*model.CustomRateLimitPolicy) {
+func UpdateRateLimitXDSCacheForCustomPolicies(gwLabel string, customRateLimitPolicies []*model.CustomRateLimitPolicy) {
 	rlsPolicyCache.AddCustomRateLimitPolicies(customRateLimitPolicies)
 	UpdateRateLimiterPolicies(gwLabel)
 }
@@ -927,9 +928,9 @@ func UpdateAPICache(vHosts []string, newLabels []string, newlistenersForRoutes [
 }
 
 // UpdateGatewayCache updates the xDS cache related to the Gateway Lifecycle event.
-func UpdateGatewayCache(gateway *gwapiv1b1.Gateway, resolvedListenerCerts map[string]map[string][]byte, 
-	customRateLimitPolicies []*model.CustomRateLimitPolicy) error {
-	listener := oasParser.GetProductionListener(gateway, resolvedListenerCerts)
+func UpdateGatewayCache(gateway *gwapiv1b1.Gateway, resolvedListenerCerts map[string]map[string][]byte,
+	gatewayAPIPolicies map[string]v1alpha1.APIPolicy, gatewayBackendMapping v1alpha1.BackendMapping, customRateLimitPolicies []*model.CustomRateLimitPolicy) error {
+	listener := oasParser.GetProductionListener(gateway, resolvedListenerCerts, gatewayAPIPolicies, gatewayBackendMapping)
 	envoyListenerConfigMap[gateway.Name] = listener
 	conf := config.ReadConfigs()
 	if conf.Envoy.RateLimit.Enabled {

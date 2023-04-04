@@ -81,11 +81,14 @@ func undeployGateway(gatewayState GatewayState) error {
 func AddOrUpdateGateway(gatewayState GatewayState, state string) (string, error) {
 	gateway := gatewayState.GatewayDefinition
 	resolvedListenerCerts := gatewayState.GatewayStateData.GatewayResolvedListenerCerts
-	customRateLimitPolicies := getCustomRateLimitPolicies(gatewayState.CustomRateLimitPolicies)
+	customRateLimitPolicies := getCustomRateLimitPolicies(gatewayState.GatewayStateData.GatewayCustomRateLimitPolicies)
+	gatewayAPIPolicies := gatewayState.GatewayStateData.GatewayAPIPolicies
+	gatewayBackendMapping := gatewayState.GatewayStateData.GatewayBackendMapping
+
 	if state == constants.Create {
-		xds.GenerateGlobalClusters(gateway.Name)
+		xds.GenerateGlobalClusters(gatewayState.GatewayDefinition.Name)
 	}
-	xds.UpdateGatewayCache(gateway, resolvedListenerCerts, customRateLimitPolicies)
+	xds.UpdateGatewayCache(gateway, resolvedListenerCerts, gatewayAPIPolicies, gatewayBackendMapping, customRateLimitPolicies)
 	listeners, clusters, routes, endpoints, apis := xds.GenerateEnvoyResoucesForGateway(gateway.Name)
 	loggers.LoggerAPKOperator.Debugf("listeners: %v", listeners)
 	loggers.LoggerAPKOperator.Debugf("clusters: %v", clusters)
@@ -96,7 +99,7 @@ func AddOrUpdateGateway(gatewayState GatewayState, state string) (string, error)
 	xds.UpdateEnforcerApis(gateway.Name, apis, "")
 	conf := config.ReadConfigs()
 	if conf.Envoy.RateLimit.Enabled {
-		xds.UpdateRateLimitXDSCacheForCustomPolicies(gateway.Name,customRateLimitPolicies)
+		xds.UpdateRateLimitXDSCacheForCustomPolicies(gateway.Name, customRateLimitPolicies)
 	}
 	return "", nil
 }

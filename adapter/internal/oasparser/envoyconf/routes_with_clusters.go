@@ -752,10 +752,25 @@ end`
 		Value:   luaMarshelled.Bytes(),
 	}
 
+	// global lua filter per route config is always disabled
+	luaPerFilterConfigGlobal := lua.LuaPerRoute{
+		Override: &lua.LuaPerRoute_Disabled{Disabled: true},
+	}
+
+	luaGlobalMarshelled := proto.NewBuffer(nil)
+	luaGlobalMarshelled.SetDeterministic(true)
+	_ = luaGlobalMarshelled.Marshal(&luaPerFilterConfigGlobal)
+
+	luaFilterGlobal := &any.Any{
+		TypeUrl: luaPerRouteName,
+		Value:   luaGlobalMarshelled.Bytes(),
+	}
+
 	corsFilter, _ := anypb.New(corsPolicy)
 
 	perRouteFilterConfigs := map[string]*any.Any{
 		wellknown.HTTPExternalAuthorization: extAuthzFilter,
+		LuaGlobal:                           luaFilterGlobal,
 		wellknown.Lua:                       luaFilter,
 		wellknown.CORS:                      corsFilter,
 	}

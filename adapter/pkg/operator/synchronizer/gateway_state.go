@@ -31,9 +31,10 @@ type GatewayState struct {
 }
 
 // GatewayStateData holds the state data of the deployed Gateways resolved listener certs.
+// +k8s:deepcopy-gen=true
 type GatewayStateData struct {
-	GatewayResolvedListenerCerts map[string]map[string][]byte
-	GatewayAPIPolicies           map[string]v1alpha1.APIPolicy
-	GatewayBackendMapping        v1alpha1.BackendMapping
-	CustomRateLimitPolicies      []*v1alpha1.RateLimitPolicy
+	GatewayResolvedListenerCerts   map[string]map[string][]byte
+	GatewayAPIPolicies             map[string]v1alpha1.APIPolicy
+	GatewayBackendMapping          v1alpha1.BackendMapping
+	GatewayCustomRateLimitPolicies []*v1alpha1.RateLimitPolicy
 }

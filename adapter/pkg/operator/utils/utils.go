@@ -19,16 +19,23 @@ package utils
 
 import (
 	"context"
+	"crypto/x509"
+	"encoding/pem"
 	"fmt"
 	"reflect"
 
+	"github.com/wso2/apk/adapter/internal/loggers"
+	"github.com/wso2/apk/adapter/pkg/logging"
+	dpv1alpha1 "github.com/wso2/apk/adapter/pkg/operator/apis/dp/v1alpha1"
 	constants "github.com/wso2/apk/adapter/pkg/operator/constants"
 	"github.com/wso2/apk/adapter/pkg/utils/envutils"
 	"github.com/wso2/apk/adapter/pkg/utils/stringutils"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	k8client "sigs.k8s.io/controller-runtime/pkg/client"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
@@ -244,8 +251,8 @@ func GetPtrSlice[T any](inputSlice []T) []*T {
 	return outputSlice
 }
 
-// GetConfigMapValue call kubernetes client and get the configmap and key
-func GetConfigMapValue(ctx context.Context, client client.Client,
+// getConfigMapValue call kubernetes client and get the configmap and key
+func getConfigMapValue(ctx context.Context, client client.Client,
 	namespace, configMapName, key string) (string, error) {
 	configMap := &corev1.ConfigMap{}
 	err := client.Get(ctx, types.NamespacedName{
@@ -257,8 +264,8 @@ func GetConfigMapValue(ctx context.Context, client client.Client,
 	return configMap.Data[key], nil
 }
 
-// GetSecretValue call kubernetes client and get the secret and key
-func GetSecretValue(ctx context.Context, client client.Client,
+// getSecretValue call kubernetes client and get the secret and key
+func getSecretValue(ctx context.Context, client client.Client,
 	namespace, secretName, key string) (string, error) {
 	secret := &corev1.Secret{}
 	err := client.Get(ctx, types.NamespacedName{
@@ -268,4 +275,108 @@ func GetSecretValue(ctx context.Context, client client.Client,
 		return "", err
 	}
 	return string(secret.Data[key]), nil
+}
+
+// ResolveAndAddBackendToMapping resolves backend from reference and adds it to the backendMapping.
+func ResolveAndAddBackendToMapping(ctx context.Context, client k8client.Client,
+	backendMapping dpv1alpha1.BackendMapping,
+	backendRef dpv1alpha1.BackendReference, apiPolicyNamespace string) {
+	namespace := gwapiv1b1.Namespace(backendRef.Namespace)
+	backendName := types.NamespacedName{
+		Name:      backendRef.Name,
+		Namespace: GetNamespace(&namespace, apiPolicyNamespace),
+	}
+	backend := GetResolvedBackend(ctx, client, backendName)
+	backendMapping[backendName] = backend
+}
+
+// GetResolvedBackend resolves backend TLS configurations.
+func GetResolvedBackend(ctx context.Context, client k8client.Client,
+	backendNamespacedName types.NamespacedName) *dpv1alpha1.ResolvedBackend {
+	resolvedBackend := dpv1alpha1.ResolvedBackend{}
+	resolvedTLSConfig := dpv1alpha1.ResolvedTLSConfig{}
+	var backend = new(dpv1alpha1.Backend)
+	err := client.Get(context.Background(), backendNamespacedName, backend)
+
+	if err != nil {
+		if !apierrors.IsNotFound(err) {
+			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2637, backendNamespacedName, err.Error()))
+		}
+		return nil
+	}
+	resolvedBackend.Services = backend.Spec.Services
+	resolvedBackend.Protocol = backend.Spec.Protocol
+	if backend.Spec.TLS != nil {
+		resolvedTLSConfig.ResolvedCertificate = resolveCertificate(ctx, client,
+			backend.Namespace, *backend.Spec.TLS)
+		resolvedTLSConfig.AllowedSANs = backend.Spec.TLS.AllowedSANs
+		resolvedBackend.TLS = resolvedTLSConfig
+	}
+	if backend.Spec.Security != nil {
+		resolvedBackend.Security = getResolvedBackendSecurity(ctx, client,
+			backend.Namespace, backend.Spec.Security)
+	}
+	return &resolvedBackend
+}
+
+// getResolvedBackendSecurity resolves backend security configurations.
+func getResolvedBackendSecurity(ctx context.Context, client k8client.Client,
+	namespace string, security []dpv1alpha1.SecurityConfig) []dpv1alpha1.ResolvedSecurityConfig {
+	resolvedSecurity := make([]dpv1alpha1.ResolvedSecurityConfig, len(security))
+	for _, sec := range security {
+		switch sec.Type {
+		case "Basic":
+			var err error
+			var username string
+			var password string
+			username, err = getSecretValue(ctx, client,
+				namespace, sec.Basic.SecretRef.Name, sec.Basic.SecretRef.UsernameKey)
+			password, err = getSecretValue(ctx, client,
+				namespace, sec.Basic.SecretRef.Name, sec.Basic.SecretRef.PasswordKey)
+			if err != nil {
+				loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2648, sec.Basic.SecretRef))
+			}
+			resolvedSecurity = append(resolvedSecurity, dpv1alpha1.ResolvedSecurityConfig{
+				Type: "Basic",
+				Basic: dpv1alpha1.ResolvedBasicSecurityConfig{
+					Username: username,
+					Password: password,
+				},
+			})
+		}
+	}
+	return resolvedSecurity
+}
+
+// resolveCertificate reads the certificate from TLSConfig, first checks the certificateInline field,
+// if no value then load the certificate from secretRef using util function called getSecretValue
+func resolveCertificate(ctx context.Context, client k8client.Client, namespace string, tlsConfig dpv1alpha1.TLSConfig) string {
+	var certificate string
+	var err error
+	if len(tlsConfig.CertificateInline) > 0 {
+		certificate = tlsConfig.CertificateInline
+	} else if tlsConfig.SecretRef != nil {
+		if certificate, err = getSecretValue(ctx, client,
+			namespace, tlsConfig.SecretRef.Name, tlsConfig.SecretRef.Key); err != nil {
+			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2642, tlsConfig.SecretRef))
+		}
+	} else if tlsConfig.ConfigMapRef != nil {
+		if certificate, err = getConfigMapValue(ctx, client,
+			namespace, tlsConfig.ConfigMapRef.Name, tlsConfig.ConfigMapRef.Key); err != nil {
+			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2643, tlsConfig.ConfigMapRef))
+		}
+	}
+	if len(certificate) > 0 {
+		block, _ := pem.Decode([]byte(certificate))
+		if block == nil {
+			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2627))
+			return ""
+		}
+		_, err = x509.ParseCertificate(block.Bytes)
+		if err != nil {
+			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2641, err.Error()))
+			return ""
+		}
+	}
+	return certificate
 }

@@ -34,10 +34,15 @@ import (
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/wrappers"
+	"golang.org/x/exp/maps"
+	"k8s.io/apimachinery/pkg/types"
 
 	"github.com/wso2/apk/adapter/config"
+	"github.com/wso2/apk/adapter/internal/interceptor"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
+	"github.com/wso2/apk/adapter/pkg/operator/apis/dp/v1alpha1"
+	"github.com/wso2/apk/adapter/pkg/operator/utils"
 	"google.golang.org/protobuf/types/known/anypb"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
@@ -71,9 +76,25 @@ func CreateRoutesConfigForRds(vHosts []*routev3.VirtualHost, httpListeners strin
 // The relevant private keys and certificates (for securedListener) are fetched from the filepath
 // mentioned in the adapter configuration. These certificate, key values are added
 // as inline records (base64 encoded).
-func CreateListenerByGateway(gateway *gwapiv1b1.Gateway, resolvedListenerCerts map[string]map[string][]byte) *listenerv3.Listener {
+func CreateListenerByGateway(gateway *gwapiv1b1.Gateway, resolvedListenerCerts map[string]map[string][]byte, gatewayAPIPolicies map[string]v1alpha1.APIPolicy,
+	gatewayBackendMapping v1alpha1.BackendMapping) *listenerv3.Listener {
+
+	iInvCtx := &interceptor.InvocationContext{
+		OrganizationID:   "",
+		BasePath:         "",
+		SupportedMethods: "",
+		APIName:          "",
+		APIVersion:       "",
+		PathTemplate:     "",
+		Vhost:            "",
+		ClusterName:      "",
+	}
+
+	reqI, resI := createInterceptors(gatewayAPIPolicies, gatewayBackendMapping)
+	globalLuaScript := getInlineLuaScript(reqI, resI, iInvCtx)
+
 	conf := config.ReadConfigs()
-	httpFilters := getHTTPFilters()
+	httpFilters := getHTTPFilters(globalLuaScript)
 	upgradeFilters := getUpgradeFilters()
 	accessLogs := getAccessLogs()
 	var listeners *listenerv3.Listener
@@ -285,6 +306,48 @@ func CreateListenerByGateway(gateway *gwapiv1b1.Gateway, resolvedListenerCerts m
 		logger.LoggerOasparser.Fatal(err)
 	}
 	return listeners
+}
+
+func createInterceptors(gatewayAPIPolicies map[string]v1alpha1.APIPolicy,
+	gatewayBackendMapping v1alpha1.BackendMapping) (requestInterceptor map[string]model.InterceptEndpoint, responseInterceptor map[string]model.InterceptEndpoint) {
+	requestInterceptorMap := make(map[string]model.InterceptEndpoint)
+	responseInterceptorMap := make(map[string]model.InterceptEndpoint)
+
+	var apiPolicy *v1alpha1.APIPolicy
+	outputAPIPolicy := utils.TieBreaker(utils.GetPtrSlice(maps.Values(gatewayAPIPolicies)))
+	if outputAPIPolicy != nil {
+		apiPolicy = *outputAPIPolicy
+		// resolve the policy with combined values
+		resolvedPolicySpec := utils.SelectPolicy(&apiPolicy.Spec.Override, &apiPolicy.Spec.Default, nil, nil)
+
+		if resolvedPolicySpec != nil {
+			if resolvedPolicySpec.RequestInterceptor != nil {
+				requestInterceptorMap["POST"] = *getInterceptorEndpoint(resolvedPolicySpec.RequestInterceptor, gatewayBackendMapping)
+			}
+			if resolvedPolicySpec.ResponseInterceptor != nil {
+				responseInterceptorMap["POST"] = *getInterceptorEndpoint(resolvedPolicySpec.ResponseInterceptor, gatewayBackendMapping)
+			}
+		}
+	}
+	return requestInterceptorMap, responseInterceptorMap
+}
+
+func getInterceptorEndpoint(interceptor *v1alpha1.InterceptorConfig, gatewayBackendMapping v1alpha1.BackendMapping) *model.InterceptEndpoint {
+	endpoints := model.GetEndpoints(types.NamespacedName{Namespace: interceptor.BackendRef.Namespace, Name: interceptor.BackendRef.Name},
+		gatewayBackendMapping)
+	if len(endpoints) > 0 {
+		conf := config.ReadConfigs()
+		clusterTimeoutV := conf.Envoy.ClusterTimeoutInSeconds
+		requestTimeoutV := conf.Envoy.ClusterTimeoutInSeconds
+		return &model.InterceptEndpoint{
+			Enable:          true,
+			EndpointCluster: model.EndpointCluster{Endpoints: endpoints},
+			ClusterTimeout:  clusterTimeoutV,
+			RequestTimeout:  requestTimeoutV,
+			Includes:        model.GenerateInterceptorIncludes(interceptor.Includes),
+		}
+	}
+	return nil
 }
 
 // CreateVirtualHosts creates VirtualHost configurations for envoy which serves

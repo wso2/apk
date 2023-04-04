@@ -143,3 +143,6 @@ const (
 	RateLimitPolicyOperationLevel string = "OPERATION"
 	RateLimitPolicyAPILevel       string = "API"
 )
+
+// LuaGlobal is the lua filter name for global lua filter
+const LuaGlobal = "envoy.filters.http.lua.global"

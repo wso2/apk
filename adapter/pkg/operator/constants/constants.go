@@ -48,13 +48,12 @@ const (
 const (
 	KindAuthentication = "Authentication"
 	KindAPI            = "API"
-	KindGateway        = "Gateway"
 	KindService        = "Service"
 	//TODO(amali) remove this after fixing the issue in https://github.com/wso2/apk/issues/383
 	KindResource = "Resource"
 	KindScope    = "Scope"
 	KindBackend  = "Backend"
-	KindGateway = "Gateway"
+	KindGateway  = "Gateway"
 )
 
 // Env types
