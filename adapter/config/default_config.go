@@ -277,6 +277,13 @@ var defaultConfig = &Config{
 			BackOffInMilliSeconds: 1000,
 		},
 	},
+	PartitionServer: partitionServer{
+		Enabled:         true,
+		Host:            "partition-server",
+		Port:            9443,
+		ServiceBasePath: "/partition-service",
+		PartitionName:   "default",
+	},
 	Runtime: runtime{
 		Host:            "runtime-service",
 		Port:            9443,

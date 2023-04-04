@@ -158,6 +158,9 @@ func InitOperator() {
 		go xds.HandleApplicationEventsFromMgtServer(mgr.GetClient(), mgr.GetAPIReader())
 		go synchronizer.SendAPIToAPKMgtServer()
 	}
+	if config.ReadConfigs().PartitionServer.Enabled {
+		go synchronizer.SendEventToPartitionServer()
+	}
 
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2604, err))
