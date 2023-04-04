@@ -22,5 +22,5 @@ public type K8sSecret record {|
     string apiVersion = "v1";
     Metadata metadata;
     map<string> data?;
-    map<string> 'type?;
+    string 'type?;
 |};

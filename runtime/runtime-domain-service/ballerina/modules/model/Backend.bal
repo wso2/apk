@@ -39,8 +39,8 @@ public type BasicSecurityConfig record {
 };
 
 public type SecurityConfig record {
-    string 'type;
-    BasicSecurityConfig basic;
+    string 'type?;
+    BasicSecurityConfig basic?;
 };
 
 public type SecretRefConfig record {
