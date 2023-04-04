@@ -33,7 +33,7 @@ export interface paths {
     get: operations["getApplicationRatePlanById"];
     /**
      * Update an Application Rate Plan 
-     * @description Updates an existing application level rate plan. Upon a succesfull update, you will receive the updated application plan as the response.
+     * @description Updates an existing application level rate plan. Upon a successful update, you will receive the updated application plan as the response.
      */
     put: operations["updateApplicationRatePlan"];
     /**
@@ -57,7 +57,7 @@ export interface paths {
   "/business-plans/{planId}": {
     /**
      * Get a Business Plan 
-     * @description This operation can be used to retrieves Business Plan by specifying the Id of the plan as a path paramter
+     * @description This operation can be used to retrieves Business Plan by specifying the Id of the plan as a path parameter
      */
     get: operations["getBusinessPlanById"];
     /**
@@ -67,7 +67,7 @@ export interface paths {
     put: operations["updateBusinessPlan"];
     /**
      * Delete a Business Plan 
-     * @description This operation can be used to delete a business plan by specifying the Id of the plan as a path paramter.
+     * @description This operation can be used to delete a business plan by specifying the Id of the plan as a path parameter.
      */
     delete: operations["removeBusinessPlan"];
   };
@@ -110,7 +110,7 @@ export interface paths {
   "/throttling/policies/import": {
     /**
      * Import a Throttling Policy 
-     * @description This operation can be used to import a Throttling Policy
+     * @description This operation can be used to import a Throttling Policy.
      */
     post: operations["importThrottlingPolicy"];
   };
@@ -232,7 +232,7 @@ export interface paths {
     /**
      * Get Pending Workflow Details by External Workflow Reference
      *  
-     * @description Using this operation, you can retrieve complete details of a pending workflow request that either belongs to application creation, application subscription, application registration, api state change, user self sign up.. You need to provide the External_Workflow_Reference of the workflow Request to retrive it.
+     * @description Using this operation, you can retrieve complete details of a pending workflow request that either belongs to application creation, application subscription, application registration, api state change, user self sign up.. You need to provide the External_Workflow_Reference of the workflow Request to retrieve it.
      */
     get: operations["getWorkflowByExternalRef"];
   };
@@ -285,8 +285,8 @@ export interface paths {
   };
   "/settings": {
     /**
-     * Retreive Admin Settings 
-     * @description Retreive admin settings
+     * Retrieve Admin Settings 
+     * @description Retrieve admin settings
      */
     get: operations["getAdminSettings"];
   };
@@ -302,7 +302,7 @@ export interface paths {
     /**
      * Get Role Scope Mappings
      *  
-     * @description This operation is used to get the list of role scope mapping from tenant-conf for the apim admin dashboard
+     * @description This operation is used to get the list of role scope mapping from tenant-conf for the APK admin dashboard
      */
     get: operations["systemScopesGet"];
     /**
@@ -315,7 +315,7 @@ export interface paths {
   "/system-scopes/role-aliases": {
     /**
      * Retrieve Role Alias Mappings 
-     * @description This operation can be used to retreive role alias mapping
+     * @description This operation can be used to retrieve role alias mapping
      */
     get: operations["getRoleAliasMappings"];
     /**
@@ -382,7 +382,7 @@ export interface paths {
     get: operations["getKeyManagerConfiguration"];
     /**
      * Update a Key Manager 
-     * @description Update a Key Manager by keyManager id
+     * @description Update a Key Manager by keyManager ID
      */
     put: operations["updateKeyManager"];
     /**
@@ -733,7 +733,7 @@ export interface components {
       /**
        * @description Specifies whether inversion of the condition to be matched against the request.
        * 
-       * **Note:** When you add conditional groups for advanced throttling policies, this paramater should have the
+       * **Note:** When you add conditional groups for advanced throttling policies, this parameter should have the
        * same value ('true' or 'false') for the same type of conditional group.
        *  
        * @default false
@@ -765,7 +765,7 @@ export interface components {
       /** @description Ending IP when "IPRANGE" is used as the ipConditionType */
       endingIP?: string;
     };
-    /** JWT claim attibute based throttling condition */
+    /** JWT claim attribute based throttling condition */
     JWTClaimsCondition: {
       /** @description JWT claim URL */
       claimUrl: string;
@@ -824,12 +824,12 @@ export interface components {
     BandwidthLimit: components["schemas"]["ThrottleLimitBase"] & {
       /**
        * Format: int64 
-       * @description Amount of data allowed to be transfered 
+       * @description Amount of data allowed to be transferred 
        * @example 1000
        */
       dataAmount: number;
       /**
-       * @description Unit of data allowed to be transfered. Allowed values are "KB", "MB" and "GB" 
+       * @description Unit of data allowed to be transferred. Allowed values are "KB", "MB" and "GB" 
        * @example KB
        */
       dataUnit: string;
@@ -1063,7 +1063,7 @@ export interface components {
     PublishStatus: {
       /**
        * @description Status of the usage publish request 
-       * @example successfull
+       * @example successful
        */
       status?: string;
       /**
@@ -1155,7 +1155,14 @@ export interface components {
       organizationClaimValue?: string;
       /** @default true */
       enabled?: boolean;
+      /**
+       * @default [
+       *   "*"
+       * ]
+       */
       serviceNamespaces?: (string)[];
+      production?: (string)[];
+      sandbox?: (string)[];
     };
     /** Organization List */
     OrganizationList: {
@@ -1243,7 +1250,7 @@ export interface components {
       /**
        * @description Scope name.
        *  
-       * @example apim:api_publish
+       * @example apk:api_publish
        */
       name?: string;
       /**
@@ -1483,7 +1490,7 @@ export interface components {
     };
     /** Settings */
     ScopeSettings: {
-      /** @example apim:subscribe */
+      /** @example apk:subscribe */
       name?: string;
     };
     /** WorkflowList */
@@ -1891,7 +1898,7 @@ export interface operations {
   updateApplicationRatePlan: {
     /**
      * Update an Application Rate Plan 
-     * @description Updates an existing application level rate plan. Upon a succesfull update, you will receive the updated application plan as the response.
+     * @description Updates an existing application level rate plan. Upon a successful update, you will receive the updated application plan as the response.
      */
     /** @description Policy object that needs to be modified */
     requestBody: {
@@ -1993,7 +2000,7 @@ export interface operations {
   getBusinessPlanById: {
     /**
      * Get a Business Plan 
-     * @description This operation can be used to retrieves Business Plan by specifying the Id of the plan as a path paramter
+     * @description This operation can be used to retrieves Business Plan by specifying the Id of the plan as a path parameter
      */
     responses: {
       /**
@@ -2047,7 +2054,7 @@ export interface operations {
   removeBusinessPlan: {
     /**
      * Delete a Business Plan 
-     * @description This operation can be used to delete a business plan by specifying the Id of the plan as a path paramter.
+     * @description This operation can be used to delete a business plan by specifying the Id of the plan as a path parameter.
      */
     responses: {
       /**
@@ -2224,10 +2231,10 @@ export interface operations {
   importThrottlingPolicy: {
     /**
      * Import a Throttling Policy 
-     * @description This operation can be used to import a Throttling Policy
+     * @description This operation can be used to import a Throttling Policy.
      */
     parameters?: {
-        /** @description Update an existing throttlingpolicy with the same name */
+        /** @description Update an existing throttling policy with the same name. */
       query?: {
         overwrite?: boolean;
       };
@@ -2653,7 +2660,7 @@ export interface operations {
     responses: {
       /**
        * @description OK.
-       * Workflow pendding process list returned.
+       * Workflow pending process list returned.
        */
       200: {
         headers: {
@@ -2673,10 +2680,10 @@ export interface operations {
     /**
      * Get Pending Workflow Details by External Workflow Reference
      *  
-     * @description Using this operation, you can retrieve complete details of a pending workflow request that either belongs to application creation, application subscription, application registration, api state change, user self sign up.. You need to provide the External_Workflow_Reference of the workflow Request to retrive it.
+     * @description Using this operation, you can retrieve complete details of a pending workflow request that either belongs to application creation, application subscription, application registration, api state change, user self sign up.. You need to provide the External_Workflow_Reference of the workflow Request to retrieve it.
      */
     parameters: {
-        /** @description from the externel workflow reference we decide what is the the pending request that the are requesting. */
+        /** @description from the external workflow reference we decide what is the the pending request that the are requesting. */
       path: {
         externalWorkflowRef: string;
       };
@@ -2877,8 +2884,8 @@ export interface operations {
   };
   getAdminSettings: {
     /**
-     * Retreive Admin Settings 
-     * @description Retreive admin settings
+     * Retrieve Admin Settings 
+     * @description Retrieve admin settings
      */
     responses: {
       /**
@@ -2922,7 +2929,7 @@ export interface operations {
     /**
      * Get Role Scope Mappings
      *  
-     * @description This operation is used to get the list of role scope mapping from tenant-conf for the apim admin dashboard
+     * @description This operation is used to get the list of role scope mapping from tenant-conf for the APK admin dashboard
      */
     responses: {
       /**
@@ -2974,7 +2981,7 @@ export interface operations {
   getRoleAliasMappings: {
     /**
      * Retrieve Role Alias Mappings 
-     * @description This operation can be used to retreive role alias mapping
+     * @description This operation can be used to retrieve role alias mapping
      */
     responses: {
       /**
@@ -3228,7 +3235,7 @@ export interface operations {
   updateKeyManager: {
     /**
      * Update a Key Manager 
-     * @description Update a Key Manager by keyManager id
+     * @description Update a Key Manager by keyManager ID
      */
     /** @description Key Manager object with updated information */
     requestBody: {
