@@ -17,6 +17,7 @@
 //
 
 import ballerinax/postgresql;
+import ballerina/log;
 import ballerina/sql;
 
 isolated function addOrganizationDAO(Internal_Organization payload) returns Internal_Organization|APKError {
@@ -93,13 +94,14 @@ isolated function validateOrganizationByNameDAO(string name) returns boolean|APK
         string message = "Error while retrieving connection";
         return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } 
-    sql:ParameterizedQuery query = `SELECT * FROM ORGANIZATION WHERE NAME = ${name}`;
+    sql:ParameterizedQuery query = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName, STATUS as enabled FROM ORGANIZATION WHERE NAME = ${name}`;
     Organization | sql:Error result =  dbClient->queryRow(query);
     if result is sql:NoRowsError {
         return false;
     } else if result is Organization {
         return true;
     } else {
+        log:printError("Error while validating organization name in Database", result);
         string message = "Error while validating organization name in Database";
         return error(message, message = message, description = message, code = 909000, statusCode = "500"); 
     }
