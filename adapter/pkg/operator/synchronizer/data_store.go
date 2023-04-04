@@ -290,9 +290,12 @@ func (ods *OperatorDataStore) AddGatewayState(gateway gwapiv1b1.Gateway, resolve
 	defer ods.mu.Unlock()
 
 	gatewayNamespacedName := utils.NamespacedName(&gateway)
+	listenerData := GatewayStateData{
+		GatewayResolvedListenerCerts: resolvedListenerCerts,
+	}
 	ods.gatewayStore[gatewayNamespacedName] = &GatewayState{
-		GatewayDefinition:     &gateway,
-		ResolvedListenerCerts: resolvedListenerCerts,
+		GatewayDefinition: &gateway,
+		GatewayStateData:  &listenerData,
 	}
 	return *ods.gatewayStore[gatewayNamespacedName]
 }
