@@ -285,7 +285,8 @@ func (ods *OperatorDataStore) DeleteCachedAPI(apiName types.NamespacedName) {
 }
 
 // AddGatewayState stores a new Gateway in the OperatorDataStore.
-func (ods *OperatorDataStore) AddGatewayState(gateway gwapiv1b1.Gateway, customRateLimitPolicies []*dpv1alpha1.RateLimitPolicy) GatewayState {
+func (ods *OperatorDataStore) AddGatewayState(gateway gwapiv1b1.Gateway, 
+	customRateLimitPolicies []*dpv1alpha1.RateLimitPolicy) GatewayState {
 	ods.mu.Lock()
 	defer ods.mu.Unlock()
 

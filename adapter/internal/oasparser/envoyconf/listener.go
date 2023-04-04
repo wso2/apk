@@ -291,7 +291,6 @@ func CreateListenerByGateway(gateway *gwapiv1b1.Gateway) *listenerv3.Listener {
 // request from the vHost domain. The routes array will be included as the routes
 // for the created virtual host.
 func CreateVirtualHosts(vhostToRouteArrayMap map[string][]*routev3.Route, customRateLimitPolicies []*model.CustomRateLimitPolicy) []*routev3.VirtualHost {
-	logger.LoggerOasparser.Infof("XXXXXXXXX Creating Virtual Hosts: %v", len(customRateLimitPolicies))
 	virtualHosts := make([]*routev3.VirtualHost, 0, len(vhostToRouteArrayMap))
 	var rateLimits []*routev3.RateLimit
 	for _, customRateLimitPolicy := range customRateLimitPolicies {
@@ -299,25 +298,17 @@ func CreateVirtualHosts(vhostToRouteArrayMap map[string][]*routev3.Route, custom
 		actions = append(actions, &routev3.RateLimit_Action{
 			ActionSpecifier: &routev3.RateLimit_Action_GenericKey_{
 				GenericKey: &routev3.RateLimit_Action_GenericKey{
-					DescriptorKey:   "org",
+					DescriptorKey:   DescriptorKeyForOrg,
 					DescriptorValue: customRateLimitPolicy.Organization,
 				},
 			},
 		})
-		// actions = append(actions, &routev3.RateLimit_Action{
-		// 	ActionSpecifier: &routev3.RateLimit_Action_GenericKey_{
-		// 		GenericKey: &routev3.RateLimit_Action_GenericKey{
-		// 			DescriptorKey: customRateLimitPolicy.Key,
-		// 			DescriptorValue: customRateLimitPolicy.Value,
-		// 		},
-		// 	},
-		// })
 		actions = append(actions, &routev3.RateLimit_Action{
 			ActionSpecifier: &routev3.RateLimit_Action_Metadata{
 				Metadata: &routev3.RateLimit_Action_MetaData{
 					DescriptorKey: customRateLimitPolicy.Key,
 					MetadataKey: &metadatav3.MetadataKey{
-						Key: "apk.custom.metadata",
+						Key: MetadataNamespaceForCustomPolicies,
 						Path: []*metadatav3.MetadataKey_PathSegment{
 							{
 								Segment: &metadatav3.MetadataKey_PathSegment_Key{

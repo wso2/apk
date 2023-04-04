@@ -68,6 +68,7 @@ const (
 	error2647 = 2647
 	error2648 = 2648
 	error2649 = 2649
+	error2650 = 2650
 )
 
 // Error Log Pkg auth(3001-3099) Config Constants
@@ -319,6 +320,11 @@ var Mapper = map[int]ErrorDetails{
 		ErrorCode: error2649,
 		Message:   "Unable to find associated APIPolicies: %s",
 		Severity:  CRITICAL,
+	},
+	error2650: {
+		ErrorCode: error2650,
+		Message:   "Error while getting custom rate limit policies: %s",
+		Severity:  MAJOR,
 	},
 	error3001: {
 		ErrorCode: error3001,

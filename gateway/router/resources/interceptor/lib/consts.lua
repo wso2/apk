@@ -76,6 +76,7 @@ RESPONSE = {
     INTCPT_CONTEXT = "interceptorContext",
     DYNAMIC_ENDPOINT = "dynamicEndpoint",
     DYNAMIC_METADATA = "properties",
+    RATELIMIT_KEYS = "rateLimitKeys"
 }
 
 DYNAMIC_ENDPOINT = {
@@ -98,3 +99,4 @@ LUA_FILTER_NAME = "envoy.filters.http.lua"
 EXT_AUTHZ_FILTER = "envoy.filters.http.ext_authz"
 SHARED_INFO_META_KEY = "shared.info"
 CUSTOM_METADATA_KEY = "apk.custom.metadata"
+RATELIMIT_METADATA_KEY = "apk.ratelimit.metadata"

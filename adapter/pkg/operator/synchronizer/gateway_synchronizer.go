@@ -104,6 +104,7 @@ func DeleteGateway(gateway *gwapiv1b1.Gateway) (string, error) {
 	return "", nil
 }
 
+// getCustomRateLimitPolicies returns the custom rate limit policies.
 func getCustomRateLimitPolicies(customRateLimitPoliciesDef []*dpv1alpha1.RateLimitPolicy) []*model.CustomRateLimitPolicy {
 	var customRateLimitPolicies []*model.CustomRateLimitPolicy
 	for _, customRateLimitPolicy := range customRateLimitPoliciesDef {

@@ -198,6 +198,7 @@ func (r *rateLimitPolicyCache) generateRateLimitConfig(label string) *rls_config
 		}
 		orgDescriptors = append(orgDescriptors, orgDescriptor)
 	}
+	// Add custom rate limit policies as organization level rate limit policies
 	customRateLimitDescriptors := r.generateCustomPolicyRateLimitConfig()
 	orgDescriptors = append(orgDescriptors, customRateLimitDescriptors...)
 	return &rls_config.RateLimitConfig{
@@ -234,6 +235,7 @@ func (r *rateLimitPolicyCache) updateXdsCache(label string) bool {
 	return true
 }
 
+// AddCustomRateLimitPolicies adds custom rate limit policies to the rateLimitPolicyCache.
 func (r *rateLimitPolicyCache) AddCustomRateLimitPolicies(customRateLimitPolicies []*model.CustomRateLimitPolicy) {
 	r.customRateLimitPolicies = make(map[string]map[string]*rls_config.RateLimitDescriptor) 
 	for _, customRateLimitPolicy := range customRateLimitPolicies {
@@ -260,6 +262,8 @@ func (r *rateLimitPolicyCache) AddCustomRateLimitPolicies(customRateLimitPolicie
 	}
 }
 
+// generateCustomPolicyRateLimitConfig generates rate limit configurations for custom rate limit policies
+// based on the policies stored in the rateLimitPolicyCache.
 func (r *rateLimitPolicyCache) generateCustomPolicyRateLimitConfig() []*rls_config.RateLimitDescriptor{
 	var orgDescriptors []*rls_config.RateLimitDescriptor
 	for org, customRateLimitPolicies := range r.customRateLimitPolicies {

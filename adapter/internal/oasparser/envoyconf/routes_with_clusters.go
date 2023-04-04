@@ -79,6 +79,7 @@ const (
 	DescriptorKeyForMethod            = "method"
 	DescriptorValueForAPIMethod       = "ALL"
 	DescriptorValueForOperationMethod = ":method"
+	MetadataNamespaceForCustomPolicies = "apk.ratelimit.metadata"
 )
 
 // CreateRoutesWithClusters creates envoy routes along with clusters and endpoint instances.

@@ -85,13 +85,16 @@ end
 local function set_dynamic_metadata(handle, interceptor_response_body)
     if interceptor_response_body[RESPONSE.DYNAMIC_METADATA] then
         handle:logDebug("Response body has dynamic metadata. Setting dynamic metadata...")
-        for _, metadata in ipairs(interceptor_response_body[RESPONSE.DYNAMIC_METADATA]) do
-            for metadata_key, metadata_value in pairs(metadata) do
-                handle:logDebug("metadata key: " .. metadata_key)
-                handle:logDebug("metadata value: " .. metadata_value)
-                handle:streamInfo():dynamicMetadata():set(CUSTOM_METADATA_KEY, metadata_key, metadata_value)
-                handle:logDebug("set metadata <key: "..metadata_key..", value: "..metadata_value..">") 
-            end
+        for metadata_key, metadata_value in pairs(interceptor_response_body[RESPONSE.DYNAMIC_METADATA]) do
+            handle:streamInfo():dynamicMetadata():set(CUSTOM_METADATA_KEY, metadata_key, metadata_value)
+            handle:logDebug("set metadata <key: "..metadata_key..", value: "..metadata_value..">")
+        end
+    end
+    if interceptor_response_body[RESPONSE.RATELIMIT_KEYS] then
+        handle:logDebug("Response body has ratelimit keys. Setting ratelimit keys...")
+        for ratelimit_key, ratelimit_value in pairs(interceptor_response_body[RESPONSE.RATELIMIT_KEYS]) do
+            handle:streamInfo():dynamicMetadata():set(RATELIMIT_METADATA_KEY, ratelimit_key, ratelimit_value)
+            handle:logDebug("set throttle <key: "..ratelimit_key..", value: "..ratelimit_value..">")
         end
     end
 end

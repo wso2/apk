@@ -92,13 +92,11 @@ func NewGatewayController(mgr manager.Manager, operatorDataStore *synchronizer.O
 
 	predicates = append(predicates, predicate.NewPredicateFuncs(func(object k8client.Object) bool {
 		rlPolicy := object.(*dpv1alpha1.RateLimitPolicy)
-		if rlPolicy.Spec.TargetRef.Kind == constants.KindGateway {
-			return true
-		}
-		return false
+		return rlPolicy.Spec.TargetRef.Kind == constants.KindGateway
 	}))
 
-	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.RateLimitPolicy{}}, handler.EnqueueRequestsFromMapFunc(r.handleCustomRateLimitPolicies), predicates...); err != nil {
+	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.RateLimitPolicy{}}, 
+		handler.EnqueueRequestsFromMapFunc(r.handleCustomRateLimitPolicies), predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2611, err))
 		return err
 	}
@@ -138,9 +136,8 @@ func (gatewayReconciler *GatewayReconciler) Reconcile(ctx context.Context, req c
 	var gwCondition []metav1.Condition = gatewayDef.Status.Conditions
 	customRateLimitPolicies, err := gatewayReconciler.getCustomRateLimitPoliciesForGateway(utils.NamespacedName(&gatewayDef))
 	if err != nil {
-		loggers.LoggerAPKOperator.Infof("XXXXXX Error: %v", err)
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2650, err))
 	}
-	loggers.LoggerAPKOperator.Infof("XXXXXX customRateLimitPolicies: %v", len(customRateLimitPolicies))
 	if gwCondition[0].Type != "Accepted" {
 		gatewayState := gatewayReconciler.ods.AddGatewayState(gatewayDef, customRateLimitPolicies)
 		*gatewayReconciler.ch <- synchronizer.GatewayEvent{EventType: constants.Create, Event: gatewayState}
@@ -197,14 +194,13 @@ func (gatewayReconciler *GatewayReconciler) handleGatewayStatus(gatewayKey types
 	})
 }
 
+// handleCustomRateLimitPolicies returns the list of gateway reconcile requests
 func (gatewayReconciler *GatewayReconciler) handleCustomRateLimitPolicies(obj k8client.Object) []reconcile.Request {
-	// ctx := context.Background()
 	ratelimitPolicy, ok := obj.(*dpv1alpha1.RateLimitPolicy)
 	if !ok {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2622, ratelimitPolicy))
 		return []reconcile.Request{}
 	}
-	// utils.SelectPolicy(&ratelimitPolicy.Spec.Override, &ratelimitPolicy.Spec.Default, nil, nil)
 	return []reconcile.Request{{
 		NamespacedName: types.NamespacedName{
 			Namespace: ratelimitPolicy.Namespace,
@@ -213,6 +209,7 @@ func (gatewayReconciler *GatewayReconciler) handleCustomRateLimitPolicies(obj k8
 	}
 }
 
+// getCustomRateLimitPoliciesForGateway returns the list of custom rate limit policies for a gateway
 func (gatewayReconciler *GatewayReconciler) getCustomRateLimitPoliciesForGateway(gatewayName types.NamespacedName) ([]*dpv1alpha1.RateLimitPolicy, error) {
 	ctx := context.Background()
 	var ratelimitPolicyList dpv1alpha1.RateLimitPolicyList
@@ -220,10 +217,8 @@ func (gatewayReconciler *GatewayReconciler) getCustomRateLimitPoliciesForGateway
 	if err := gatewayReconciler.client.List(ctx, &ratelimitPolicyList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(gatewayIndex, gatewayName.String()),
 	}); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2623, err))
 		return nil, err
 	}
-	loggers.LoggerAPKOperator.Infof("XXXXXX ratelimitPolicyList: %v", len(ratelimitPolicyList.Items))
 	for _, item := range ratelimitPolicyList.Items {
 		rateLimitPolicy := item
 		rateLimitPolicies = append(rateLimitPolicies, &rateLimitPolicy)
@@ -232,6 +227,7 @@ func (gatewayReconciler *GatewayReconciler) getCustomRateLimitPoliciesForGateway
 }
 
 
+// addGatewayIndexes adds the gateway indexes
 func addGatewayIndexes(ctx context.Context, mgr manager.Manager) error { 
 	return mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.RateLimitPolicy{}, gatewayIndex,
 		func(rawObj k8client.Object) []string {

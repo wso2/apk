@@ -18,7 +18,10 @@
 package v1alpha1
 
 import (
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 )
@@ -69,22 +72,39 @@ func (r *RateLimitPolicy) ValidateDelete() error {
 
 // ValidatePolicies validates the policies in the RateLimitPolicy
 func (r *RateLimitPolicy) ValidatePolicies() error {
-	// var allErrs field.ErrorList
+	var allErrs field.ErrorList
 
-	// if r.Spec.Override.Type == "Api" && (r.Spec.Override.API.RateLimit.RequestsPerUnit == 0 || r.Spec.Override.API.RateLimit.Unit == "") {
-	// 	allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("override").Child("api"),
-	// 		r.Spec.Override.Type, "requestsPerUnit and unit are required for Api type"))
-	// }
+	if r.Spec.Override != nil {
+		if r.Spec.Override.Type == "Api" && (r.Spec.Override.API.RateLimit.RequestsPerUnit == 0 || r.Spec.Override.API.RateLimit.Unit == "") {
+			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("override").Child("api"),
+				r.Spec.Override.Type, "requestsPerUnit and unit are required for Api type"))
+		}
 
-	// if r.Spec.Default.Type == "Api" && (r.Spec.Default.API.RateLimit.RequestsPerUnit == 0 || r.Spec.Default.API.RateLimit.Unit == "") {
-	// 	allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("default").Child("api"),
-	// 		r.Spec.Default.Type, "requestsPerUnit and unit are required for Api type"))
-	// }
+		if r.Spec.Override.Type == "Custom" && (r.Spec.Override.Custom.RateLimit.RequestsPerUnit == 0 || 
+			r.Spec.Override.Custom.RateLimit.Unit == "" || r.Spec.Override.Organization == "") {
+			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("override").Child("custom"),
+				r.Spec.Override.Type, "requestsPerUnit, unit and organization are required for Custom type"))
+		}
+	}
 
-	// if len(allErrs) > 0 {
-	// 	return apierrors.NewInvalid(
-	// 		schema.GroupKind{Group: "dp.wso2.com", Kind: "RateLimitPolicy"},
-	// 		r.Name, allErrs)
-	// }
+	if r.Spec.Default != nil {
+		if r.Spec.Default.Type == "Api" && (r.Spec.Default.API.RateLimit.RequestsPerUnit == 0 || r.Spec.Default.API.RateLimit.Unit == "") {
+			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("default").Child("api"),
+				r.Spec.Default.Type, "requestsPerUnit and unit are required for Api type"))
+		}
+
+		if r.Spec.Default.Type == "Custom" && (r.Spec.Default.Custom.RateLimit.RequestsPerUnit == 0 || 
+			r.Spec.Default.Custom.RateLimit.Unit == "" || r.Spec.Default.Organization == "") {
+			allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("override").Child("custom"),
+				r.Spec.Override.Type, "requestsPerUnit, unit and organization are required for Custom type"))
+		}
+
+	}
+
+	if len(allErrs) > 0 {
+		return apierrors.NewInvalid(
+			schema.GroupKind{Group: "dp.wso2.com", Kind: "RateLimitPolicy"},
+			r.Name, allErrs)
+	}
 	return nil
 }

@@ -480,10 +480,6 @@ func checkRoutes(routes []*routev3.Route, routesFromListener []*routev3.Route) b
 	return true
 }
 
-func applyCustomRateLimitingPolicies(){
-	
-}
-
 // GenerateGlobalClusters generates the globally available clusters and endpoints.
 func GenerateGlobalClusters(label string) {
 	clusters, endpoints := oasParser.GetGlobalClusters()
