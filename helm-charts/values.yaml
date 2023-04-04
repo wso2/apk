@@ -31,8 +31,11 @@ wso2:
       usernameClaim: "sub"
       groupClaim: "groups"
       organizationClaim: "organization"
-      clientId: "45f1c5c8-a92e-11ed-afa1-0242ac120002"
-      clientSecret: "4fbd62ec-a92e-11ed-afa1-0242ac120002"
+      credentials:
+        secretName: "wso2apk-idp-credentials"
+      certificatesSecret:
+        secretName: "wso2apk-idp-certificates"
+        fileName: "idp.crt"
     cp:
       enabled: true
       database:
@@ -503,3 +506,5 @@ redis:
     enabled: false
   image:
     debug: true
+gateway-system:
+  enabled: true

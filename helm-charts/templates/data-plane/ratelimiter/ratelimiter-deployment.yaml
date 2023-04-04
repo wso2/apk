@@ -57,16 +57,45 @@ spec:
               value: "DEBUG"
             - name: LIMIT_RESPONSE_HEADERS_ENABLED
               value: "false"
+            - name: REDIS_TYPE
+            {{ if and .Values.wso2.apk.dp.redis .Values.wso2.apk.dp.redis.type }}
+              value: {{ .Values.wso2.apk.dp.redis.type }}
+            {{ else }}
+              value: "single"
+            {{ end }}
             - name: REDIS_SOCKET_TYPE
               value: "tcp"
             - name: REDIS_URL
+            {{ if and .Values.wso2.apk.dp.redis .Values.wso2.apk.dp.redis.url }}
+              value: {{ .Values.wso2.apk.dp.redis.url }}
+            {{ else }}
               value: "redis-master:6379"
+            {{ end }}
             - name: REDIS_PIPELINE_WINDOW
               value: "0.2ms"
             - name: REDIS_PIPELINE_LIMIT
               value: "0"
+            {{ if and .Values.wso2.apk.dp.redis .Values.wso2.apk.dp.redis.tls }}
             - name: REDIS_TLS
-              value: "false"
+              value: true
+            - name: REDIS_PERSECOND_TLS
+              value: true
+            - name: REDIS_TLS_CLIENT_CERT
+              value: "/home/wso2/security/truststore/redis.crt"
+            - name: REDIS_TLS_CLIENT_KEY
+              value: "/home/wso2/security/keystore/redis.key"
+            {{ end }}
+            {{ if and .Values.wso2.apk.dp.redis .Values.wso2.apk.dp.redis.auth }}
+            - name: REDIS_AUTH
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.wso2.apk.dp.redis.auth.secretName }}
+                  key: {{ .Values.wso2.apk.dp.redis.auth.secretKey }}
+            {{end}}
+            {{ if and .Values.wso2.apk.dp.redis .Values.wso2.apk.dp.redis.poolSize }}
+            - name: REDIS_POOL_SIZE
+              value: {{ .Values.wso2.apk.dp.redis.poolSize }}
+            {{ end }}
             - name: GRPC_HOST
               value: "0.0.0.0"
             - name: GRPC_PORT
