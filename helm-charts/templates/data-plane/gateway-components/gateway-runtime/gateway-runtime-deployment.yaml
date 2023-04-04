@@ -244,11 +244,8 @@ spec:
             {{- end }}
         {{ end }}
           livenessProbe:
-            httpGet:
-              host: localhost
-              port: {{ .Values.wso2.apk.dp.gateway.listener.port }}
-              path: /health
-              scheme: HTTPS
+            exec:
+              command: [ "sh", "router_check_health.sh" ]
             initialDelaySeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.periodSeconds }}
             failureThreshold: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.failureThreshold }}

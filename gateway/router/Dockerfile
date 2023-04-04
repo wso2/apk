@@ -16,7 +16,7 @@
 FROM envoyproxy/envoy:v1.25.1
 LABEL maintainer="WSO2 Docker Maintainers <wso2.com>"
 
-RUN apt-get update && apt-get upgrade -y
+RUN apt-get update && apt-get upgrade -y && apt-get install -y curl
 
 ENV LANG=C.UTF-8
 
@@ -65,6 +65,7 @@ ENV ENVOY_UID=0
 ENV ENVOY_GID=0
 
 COPY resources/LICENSE.txt .
+COPY resources/router_check_health.sh .
 COPY resources/wasm/websocket/mgw-websocket.wasm /home/wso2/wasm/websocket/mgw-websocket.wasm
 COPY resources/security/truststore/ca-certificates.crt /etc/ssl/certs
 COPY resources/interceptor /home/wso2/interceptor
