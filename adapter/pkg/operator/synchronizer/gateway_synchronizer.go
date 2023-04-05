@@ -18,6 +18,7 @@
 package synchronizer
 
 import (
+	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/discovery/xds"
 	"github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
@@ -92,8 +93,10 @@ func AddOrUpdateGateway(gatewayState GatewayState,state string) (string, error) 
 	loggers.LoggerAPKOperator.Debugf("apis: %v", apis)
 	xds.UpdateXdsCacheWithLock(gateway.Name, endpoints, clusters, routes, listeners)
 	xds.UpdateEnforcerApis(gateway.Name, apis, "")
-	xds.UpdateRateLimiterPolicies(gateway.Name)
-	xds.UpdateRateLimitXDSCacheForCustomPolicies(gateway.Name,customRateLimitPolicies)
+	conf := config.ReadConfigs()
+	if conf.Envoy.RateLimit.Enabled {
+		xds.UpdateRateLimitXDSCacheForCustomPolicies(gateway.Name,customRateLimitPolicies)
+	}
 	return "", nil
 }
 

@@ -939,6 +939,9 @@ func UpdateAPICache(vHosts []string, newLabels []string, newlistenersForRoutes [
 func UpdateGatewayCache(gateway *gwapiv1b1.Gateway, customRateLimitPolicies []*model.CustomRateLimitPolicy) error {
 	listener := oasParser.GetProductionListener(gateway)
 	envoyListenerConfigMap[gateway.Name] = listener
-	customRateLimitPoliciesMap[gateway.Name] = customRateLimitPolicies
+	conf := config.ReadConfigs()
+	if conf.Envoy.RateLimit.Enabled {
+		customRateLimitPoliciesMap[gateway.Name] = customRateLimitPolicies
+	}
 	return nil
 }
