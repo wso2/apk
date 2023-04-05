@@ -104,6 +104,91 @@ isolated final model:MediationPolicy[] avilableMediationPolicyList = [
                 validationRegex: "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$"
             }
         ]
+    },
+    {
+        id: "5",
+        'type: MEDIATION_POLICY_TYPE_REQUEST_INTERCEPTOR,
+        name: MEDIATION_POLICY_NAME_ADD_INTERCEPTOR,
+        displayName: "Add Interceptor",
+        description: "This policy allows you to remove a header from the response",
+        applicableFlows: [MEDIATION_POLICY_FLOW_REQUEST],
+        supportedApiTypes: [API_TYPE_REST],
+        policyAttributes: [
+            {
+                name: "headersEnabled",
+                description: "Name of the header to be removed",
+                'type: "String",
+                required: true,
+                validationRegex: "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$"
+            },
+            {
+                name: "bodyEnabled",
+                description: "Name of the header to be removed",
+                'type: "String",
+                required: true,
+                validationRegex: "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$"
+            },
+            {
+                name: "contextEnabled",
+                description: "Name of the header to be removed",
+                'type: "String",
+                required: true,
+                validationRegex: "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$"
+            },
+            {
+                name: "trailersEnabled",
+                description: "Name of the header to be removed",
+                'type: "String",
+                required: true,
+                validationRegex: "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$"
+            },
+            {
+                name: "backendUrl",
+                description: "Name of the header to be removed",
+                'type: "String",
+                required: true,
+                validationRegex: "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$"
+            }
+        ]
+    },
+    {
+        id: "6",
+        'type: MEDIATION_POLICY_TYPE_RESPONSE_INTERCEPTOR,
+        name: MEDIATION_POLICY_NAME_ADD_INTERCEPTOR,
+        displayName: "Add Interceptor",
+        description: "This policy allows you to remove a header from the response",
+        applicableFlows: [MEDIATION_POLICY_FLOW_RESPONSE],
+        supportedApiTypes: [API_TYPE_REST],
+        policyAttributes: [
+            {
+                name: "headersEnabled",
+                description: "Name of the header to be removed",
+                'type: "String",
+                required: true,
+                validationRegex: "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$"
+            },
+            {
+                name: "bodyEnabled",
+                description: "Name of the header to be removed",
+                'type: "String",
+                required: true,
+                validationRegex: "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$"
+            },
+            {
+                name: "trailersEnabled",
+                description: "Name of the header to be removed",
+                'type: "String",
+                required: true,
+                validationRegex: "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$"
+            },
+            {
+                name: "contextEnabled",
+                description: "Name of the header to be removed",
+                'type: "String",
+                required: true,
+                validationRegex: "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$"
+            }
+        ]
     }
 ];
 

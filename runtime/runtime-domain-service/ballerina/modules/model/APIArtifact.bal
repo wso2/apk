@@ -9,7 +9,9 @@ public type APIArtifact record {|
     map<Backend> backendServices = {};
     map<Authentication> authenticationMap = {};
     map<Scope> scopes = {};
-    map<RateLimitPolicy> rateLimitPolicies = {};boolean sandboxEndpointAvailable = false;
+    map<RateLimitPolicy> rateLimitPolicies = {};
+    map<APIPolicy> apiPolicies = {};
+    boolean sandboxEndpointAvailable = false;
     string productionUrl?;
     string sandboxUrl?;
     boolean productionEndpointAvailable = false;
