@@ -1,0 +1,161 @@
+# --------------------------------------------------------------------
+# Copyright (c) 2022, WSO2 LLC. (http://wso2.com) All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# -----------------------------------------------------------------------
+apiVersion: dp.wso2.com/v1alpha1
+kind: API
+metadata:
+  name: http-bin-api
+spec:
+  apiDisplayName: http-bin-api
+  apiType: REST
+  apiVersion: 1.0.8
+  context: /http-bin-api/1.0.8
+  definitionFileRef: swagger-definition-http-bin-api
+  production:
+    - httpRouteRefs:
+      - prod-http-route-http-bin-api-p1
+      - prod-http-route-http-bin-api-p2
+  sandbox:
+    - httpRouteRefs:
+      - sand-http-route-http-bin-api
+  organization: a3b58ccf-6ecc-4557-b5bb-0a35cce38256
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: prod-http-route-http-bin-api-p1
+spec:
+  hostnames:
+    - prod.gw.wso2.com
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: default
+      sectionName: httpslistener
+  rules:
+  - backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: insecure-backend
+    matches:
+    - path:
+        type: PathPrefix
+        value: /http-bin-api/1.0.8/get/
+    filters:
+      - type: URLRewrite
+        urlRewrite:
+          path:
+            type: ReplacePrefixMatch
+            replacePrefixMatch: /get
+  - backendRefs:
+    - group: dp.wso2.com
+      kind: Backend
+      name: secure-backend
+    matches:
+    - path:
+        type: PathPrefix
+        value: /http-bin-api/1.0.8/secure/post/
+      method: POST
+    filters:
+      - type: URLRewrite
+        urlRewrite:
+          path:
+            type: ReplacePrefixMatch
+            replacePrefixMatch: /post
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: prod-http-route-http-bin-api-p2
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: default
+      sectionName: httpslistener
+  rules:
+    - backendRefs:
+        - group: dp.wso2.com
+          kind: Backend
+          name: secure-backend
+      matches:
+        - path:
+            type: PathPrefix
+            value: /http-bin-api/1.0.8/secure/get/
+          method: GET
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /get
+        - type: ExtensionRef
+          extensionRef:
+            group: dp.wso2.com
+            kind: Scope
+            name: pet
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: sand-http-route-http-bin-api
+spec:
+  hostnames:
+    - sand.gw.wso2.com
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: default
+      sectionName: httpslistener
+  rules:
+    - backendRefs:
+      - group: dp.wso2.com
+        kind: Backend
+        name: insecure-backend
+      matches:
+        - path:
+            type: PathPrefix
+            value: /http-bin-api/1.0.8/get
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /get
+        - type: ResponseHeaderModifier
+          responseHeaderModifier:
+            set:
+              - name: custom-response-header
+                value: myvalue
+            remove:
+              - access-control-allow-credentials
+        - type: RequestHeaderModifier
+          requestHeaderModifier:
+            set:
+              - name: custom-request-header
+                value: myvalue
+        - type: ExtensionRef
+          extensionRef:
+            group: dp.wso2.com
+            kind: Authentication
+            name: sand-http-bin-authentication
+---
+apiVersion: dp.wso2.com/v1alpha1
+kind: Scope
+metadata:
+  name: pet
+spec:
+  names:
+    - read:pets

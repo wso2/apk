@@ -688,7 +688,7 @@ public class APIClient {
             if sandboxEndpointConfig is map<anydata> {
                 if sandboxEndpointConfig.hasKey("url") {
                     anydata url = sandboxEndpointConfig.get("url");
-                    model:EndpointSecurity backendSecurity = self.getBackendSecurity(endpointConfig, (),  SANDBOX_TYPE);
+                    model:EndpointSecurity backendSecurity = self.getBackendSecurity(endpointConfig, (), SANDBOX_TYPE, false);
                     model:Backend backendService = check self.createBackendService(api, apiOperation, SANDBOX_TYPE, organization, <string>url, backendSecurity);
                     if backendSecurity.'type == ENDPOINT_SECURITY_TYPE_BASIC {
                         model:SecurityConfig[] securityConfig = <model:SecurityConfig[]>backendService.spec.security;
@@ -697,7 +697,7 @@ public class APIClient {
                             self.setBackendSecurity(secretRefName, (), endpointConfig, SANDBOX_TYPE);
                         }
                     }
-                    
+
                     if apiOperation == () {
                         apiArtifact.sandboxEndpointAvailable = true;
                         apiArtifact.sandboxUrl = <string?>url;
@@ -719,7 +719,7 @@ public class APIClient {
             if productionEndpointConfig is map<anydata> {
                 if productionEndpointConfig.hasKey("url") {
                     anydata url = productionEndpointConfig.get("url");
-                    model:EndpointSecurity backendSecurity = self.getBackendSecurity(endpointConfig, (), PRODUCTION_TYPE);
+                    model:EndpointSecurity backendSecurity = self.getBackendSecurity(endpointConfig, (), PRODUCTION_TYPE, false);
                     model:Backend backendService = check self.createBackendService(api, apiOperation, PRODUCTION_TYPE, organization, <string>url, backendSecurity);
                     if backendSecurity.'type == ENDPOINT_SECURITY_TYPE_BASIC {
                         model:SecurityConfig[] securityConfig = <model:SecurityConfig[]>backendService.spec.security;
@@ -748,7 +748,7 @@ public class APIClient {
         return endpointIdMap;
     }
 
-    private isolated function getBackendSecurity(record {}? endpointConfig, API_serviceInfo? serviceInfo, string endpointType) returns model:EndpointSecurity {
+    private isolated function getBackendSecurity(record {}? endpointConfig, API_serviceInfo? serviceInfo, string endpointType, boolean isCopyApi) returns model:EndpointSecurity {
         model:EndpointSecurity endpointSecurity = {};
         anydata|error endpointSecurityConfig = {};
 
@@ -763,7 +763,7 @@ public class APIClient {
                 anydata|error endpointSecurityType = trap endpointSecurityEntry.get("type");
                 if endpointSecurityType is string {
                     if endpointSecurityType == ENDPOINT_SECURITY_TYPE_BASIC {
-                        if endpointSecurityEntry.hasKey("secretRefName") {
+                        if endpointSecurityEntry.hasKey("secretRefName") && !isCopyApi {
                             endpointSecurity = {
                                 'type: ENDPOINT_SECURITY_TYPE_BASIC,
                                 enabled: true,
@@ -809,7 +809,6 @@ public class APIClient {
         }
 
     }
-
 
     isolated function getLabels(API api, commons:Organization organization) returns map<string> {
         string apiNameHash = crypto:hashSha1(api.name.toBytes()).toBase16();
@@ -905,7 +904,7 @@ public class APIClient {
                 API_serviceInfo? serviceInfo = api.serviceInfo;
                 model:EndpointSecurity backendSecurity = {};
                 if serviceInfo is API_serviceInfo {
-                    backendSecurity = self.getBackendSecurity(serviceInfo , (),  PRODUCTION_TYPE);
+                    backendSecurity = self.getBackendSecurity(serviceInfo, (), PRODUCTION_TYPE, false);
                 }
                 model:Backend backendService = check self.createBackendService(api, (), PRODUCTION_TYPE, organization, self.constructServiceURL(serviceRetrieved), backendSecurity);
                 if backendSecurity.'type == ENDPOINT_SECURITY_TYPE_BASIC {
@@ -1254,10 +1253,23 @@ public class APIClient {
         }
     }
 
-    private isolated function createK8sSecret(model:K8sSecret secret) returns error? {
-        http:Response createK8sResult = check createK8sSecret(secret, getNameSpace(runtimeConfiguration.apiCreationNamespace));
+    private isolated function createK8sSecret(string uniqueSecretName, string username, string password) returns error? {
+        string encodedUsername = username.toBytes().toBase64();
+        string encodedPassword = password.toBytes().toBase64();
+        string nameSpace = getNameSpace(runtimeConfiguration.apiCreationNamespace);
+        model:K8sSecret k8sSecret = {
+            metadata: {
+                name: uniqueSecretName,
+                namespace: nameSpace
+            },
+            data: {
+                username: encodedUsername,
+                password: encodedPassword
+            }
+        };
+        http:Response createK8sResult = check createK8sSecret(k8sSecret, nameSpace);
         if createK8sResult.statusCode == http:STATUS_CREATED {
-            log:printDebug("Created K8s Secret Successfully" + secret.toString());
+            log:printDebug("Created K8s Secret Successfully" + k8sSecret.toString());
         } else {
             json responsePayLoad = check createK8sResult.getJsonPayload();
             model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
@@ -1265,13 +1277,26 @@ public class APIClient {
         }
     }
 
-    private isolated function updateK8sSecret(model:K8sSecret secret) returns error? {
+    private isolated function updateK8sSecret(string uniqueSecretName, string username, string password) returns error? {
+        string encodedUsername = username.toBytes().toBase64();
+        string encodedPassword = password.toBytes().toBase64();
         string nameSpace = getNameSpace(runtimeConfiguration.apiCreationNamespace);
-        model:K8sSecret data = check getK8sSecret(secret.metadata.name, nameSpace);
+        model:K8sSecret k8sSecret = {
+            metadata: {
+                name: uniqueSecretName,
+                namespace: nameSpace
+            },
+            data: {
+                username: encodedUsername,
+                password: encodedPassword
+            }
+        };
+
+        model:K8sSecret data = check getK8sSecret(uniqueSecretName, nameSpace);
         if data is model:K8sSecret {
-            http:Response updateK8sResult = check updateK8sSecret(secret.metadata.name, secret, nameSpace);
+            http:Response updateK8sResult = check updateK8sSecret(uniqueSecretName, k8sSecret, nameSpace);
             if updateK8sResult.statusCode == http:STATUS_OK {
-                log:printDebug("Updated K8s Secret Successfully" + secret.toString());
+                log:printDebug("Updated K8s Secret Successfully" + k8sSecret.toString());
             } else {
                 json responsePayLoad = check updateK8sResult.getJsonPayload();
                 model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
@@ -2087,7 +2112,7 @@ public class APIClient {
     }
 
     isolated function createBackendService(API api, APIOperations? apiOperation, string endpointType, commons:Organization organization, string url,
-    model:EndpointSecurity? endpointSecurity) returns model:Backend|error {
+            model:EndpointSecurity? endpointSecurity) returns model:Backend|error {
         string nameSpace = getNameSpace(runtimeConfiguration.apiCreationNamespace);
         string host = self.gethost(url);
         string|() configMapName = check getConfigMapNameByHostname(api, organization, host);
@@ -2095,42 +2120,14 @@ public class APIClient {
         string uniqueSecretName;
 
         if endpointSecurity !== () && <boolean>endpointSecurity?.enabled {
-            string encodedUsername = (<string>endpointSecurity?.username).toBytes().toBase64();
-            string encodedPassword = (<string>endpointSecurity?.password).toBytes().toBase64();
             if endpointSecurity?.secretRefName is string && endpointSecurity?.secretRefName != null {
                 uniqueSecretName = <string>endpointSecurity?.secretRefName;
-
-                 model:K8sSecret k8sSecret = {
-                    metadata: {
-                        name: uniqueSecretName,
-                        namespace: nameSpace
-                    },
-                    data: {
-                        username: encodedUsername,
-                        password: encodedPassword
-                    }
-                };
-
-                check self.updateK8sSecret(k8sSecret);
-
+                check self.updateK8sSecret(uniqueSecretName, <string>endpointSecurity?.username, <string>endpointSecurity?.password);
             } else {
                 // Get the enpoint security and create a k8 secret
                 uniqueSecretName = uuid:createType1AsString() + "-" + endpointType.toLowerAscii();
-
-                model:K8sSecret k8sSecret = {
-                    metadata: {
-                        name: uniqueSecretName,
-                        namespace: nameSpace
-                    },
-                    data: {
-                        username: encodedUsername,
-                        password: encodedPassword
-                    }
-                };
-
-                check self.createK8sSecret(k8sSecret);
+                check self.createK8sSecret(uniqueSecretName, <string>endpointSecurity?.username, <string>endpointSecurity?.password);
             }
-
 
             securityConfig = {
                 'type: <string>endpointSecurity?.'type,
@@ -2156,7 +2153,7 @@ public class APIClient {
                     }
                 ],
                 protocol: url.startsWith("https:") ? "https" : "http",
-                security: (securityConfig is model:SecurityConfig) ? [securityConfig]: []
+                security: (securityConfig is model:SecurityConfig) ? [securityConfig] : []
             }
         };
         if configMapName is string && backendService.spec.protocol == "https" {
@@ -2766,8 +2763,8 @@ public class APIClient {
     private isolated function prepareBackendRef(model:HTTPBackendRef backendRef, model:APIArtifact apiArtifact, Service? serviceEntry, API oldAPI, API newAPI, string endpointType, commons:Organization organization) returns [string, string]?|error {
         if apiArtifact.serviceMapping.length() >= 1 {
             if serviceEntry is Service {
-                model:EndpointSecurity backendSecurity = self.getBackendSecurity(serviceEntry , (),  PRODUCTION_TYPE);
-                model:Backend backendService = check self.createBackendService(newAPI, (), PRODUCTION_TYPE, organization, self.constructServiceURL(serviceEntry), backendSecurity);
+                model:EndpointSecurity backendSecurity = self.getBackendSecurity(serviceEntry, (), endpointType, true);
+                model:Backend backendService = check self.createBackendService(newAPI, (), endpointType, organization, self.constructServiceURL(serviceEntry), backendSecurity);
                 backendRef.name = backendService.metadata.name;
                 backendRef.namespace = backendService.metadata.namespace;
                 apiArtifact.serviceMapping.removeAll();
@@ -2775,6 +2772,17 @@ public class APIClient {
                 string oldBackenServiceUUID = getBackendServiceUid(oldAPI, (), PRODUCTION_TYPE, organization);
                 _ = apiArtifact.backendServices.remove(oldBackenServiceUUID);
                 self.generateAndSetK8sServiceMapping(apiArtifact, newAPI, serviceEntry, getNameSpace(runtimeConfiguration.apiCreationNamespace), organization);
+
+                if backendSecurity.'type == ENDPOINT_SECURITY_TYPE_BASIC {
+                    model:SecurityConfig[] securityConfig = <model:SecurityConfig[]>backendService.spec.security;
+                    foreach model:SecurityConfig item in securityConfig {
+                        string secretRefName = <string>(<model:BasicSecurityConfig>item.basic).secretRef.name;
+                        API_serviceInfo serviceInfo = <API_serviceInfo>newAPI.serviceInfo.clone();
+                        // self.setBackendSecurity(secretRefName, serviceInfo, (), PRODUCTION_TYPE);
+                        newAPI.serviceInfo = serviceInfo;
+
+                    }
+                }
                 return [oldBackenServiceUUID, backendService.metadata.name];
             }
         } else {
@@ -2787,6 +2795,15 @@ public class APIClient {
                 } else {
                     'service.metadata.name = getBackendServiceUid(newAPI, {}, endpointType, organization);
                 }
+                if (<model:SecurityConfig[]>'service.spec.security).length() > 0 {
+                    string uniqueSecretName = uuid:createType1AsString() + "-" + endpointType.toLowerAscii();
+                    model:EndpointSecurity backendSecurity = self.getBackendSecurity(oldAPI.endpointConfig, (), PRODUCTION_TYPE, true);
+                    check self.createK8sSecret(uniqueSecretName, <string>backendSecurity?.username, <string>backendSecurity?.password);
+                    record {}? endpointConfig = oldAPI.endpointConfig;
+                    // self.setBackendSecurity(uniqueSecretName, (), endpointConfig, endpointType);
+                    newAPI.endpointConfig = endpointConfig;
+                }
+
                 'service.metadata.labels = self.getLabels(newAPI, organization);
                 _ = backendServices.remove(oldBackendRefName);
                 backendServices['service.metadata.name] = 'service;
@@ -3149,7 +3166,7 @@ public class APIClient {
                         ServiceClient serviceClient = new;
                         Service|error serviceEntry = serviceClient.getServiceByNameandNamespace(<string>serviceInfo.name, <string>serviceInfo.namespace);
                         if serviceEntry is Service {
-                            model:EndpointSecurity backendSecurity = self.getBackendSecurity(serviceInfo , (),  PRODUCTION_TYPE);
+                            model:EndpointSecurity backendSecurity = self.getBackendSecurity(serviceInfo, (), PRODUCTION_TYPE, false);
 
                             model:Backend backend = check self.createBackendService(api, (), PRODUCTION_TYPE, organization, self.constructServiceURL(serviceEntry), backendSecurity);
                             apiArtifact.backendServices[backend.metadata.name] = backend;
