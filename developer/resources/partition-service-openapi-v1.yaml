@@ -1,0 +1,150 @@
+---
+openapi: 3.0.1
+info:
+  title: API for Partition Service
+  description: |
+    API for Partition Service
+  version: v1
+paths:
+  /event:
+    post:
+      tags:
+        - Event
+      summary: |
+        Create Event
+      description: |
+        Create Event
+      operationId: createEvent
+      requestBody:
+        description: |
+          Create Event
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Event"
+      responses:
+        "202":
+          description: |
+            Accepted.
+            Created Event
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+components:
+  schemas:
+    Event:
+      title: Event
+      properties:
+        eventType:
+          type: string
+          example: CREATED
+          description: |
+            Event Type
+          enum:
+            - CREATED
+            - UPDATED
+            - DELETED
+        apiId:
+          type: string
+          description: |
+            UUID of API 
+        apiName:
+          type: string
+          description: |
+            API Name
+        apiContext:
+          type: string
+          description: |
+            API Context 
+        apiVersion:
+          type: string
+          description: |
+            API Version 
+        organizationId:
+          type: string
+          description: |
+            Organization ID 
+        partition:
+          type: string
+          description: |
+            Partition Name
+        vhosts:
+          type: array
+          description: |
+            API Deployed Vhosts
+          items:
+            type: string
+            example: "localhost"
+    Error:
+      title: Error object returned with 4XX HTTP Status
+      required:
+        - code
+        - message
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int64
+        message:
+          type: string
+          description: Error message.
+        description:
+          type: string
+          description: |
+            A detailed description of the error message.
+        moreInfo:
+          type: string
+          description: |
+            Preferably a URL with more details about the error.
+        error:
+          type: array
+          description: |
+            If there is more than one error, list them out.
+            For example, list out validation errors by each field.
+          items:
+            $ref: "#/components/schemas/ErrorListItem"
+    ErrorListItem:
+      title: Description of individual errors that may have occurred during a request.
+      required:
+        - code
+        - message
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+          description: |
+            A description on the individual errors that occurred.
+        description:
+          type: string
+          description: |
+            A detailed description of the error message.
+  responses:
+    BadRequest:
+      description: Bad Request. Invalid request or validation error.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 400
+            message: Bad Request
+            description: Invalid request or validation error
+            moreInfo: ""
+            error: []
+    InternalServerError:
+      description: Internal Server Error.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 500
+            message: Internal Server Error
+            description: The server encountered an internal error. Please contact the Administrator.
+            moreInfo: ""
+            error: []

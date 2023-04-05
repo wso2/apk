@@ -60,9 +60,11 @@ data:
       jwksURL = "{{ .Values.wso2.apk.idp.jwksEndpoint }}"
       {{ end }}
       validateSubscription = true
-      consumerKeyClaim = {{ .Values.wso2.apk.idp.consumerKeyClaim | default "azp" }}
+      consumerKeyClaim = "{{ .Values.wso2.apk.idp.consumerKeyClaim | default "azp" }}"
       {{ if .Values.wso2.apk.idp.certificatesSecret }}
       certificateFilePath = "/home/wso2/security/truststore/idp.pem"
+      {{ else }}
+      certificateFilePath = "/home/wso2/security/truststore/wso2carbon.pem"
       {{ end }}
     [[enforcer.security.tokenService]]
       name = ""
