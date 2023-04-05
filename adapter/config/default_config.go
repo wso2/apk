@@ -278,7 +278,7 @@ var defaultConfig = &Config{
 		},
 	},
 	PartitionServer: partitionServer{
-		Enabled:         true,
+		Enabled:         false,
 		Host:            "partition-server",
 		Port:            9443,
 		ServiceBasePath: "/partition-service",
