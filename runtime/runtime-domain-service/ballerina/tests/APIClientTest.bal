@@ -2400,7 +2400,7 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
                 apiWithAPIRateLimits,
                 k8sAPIUUID1,
                 services,
-                [getMockAPIRateLimitPolicy(apiWithAPIRateLimits, organiztion1), getMockRateLimitResponse(getMockAPIRateLimitPolicy(apiWithAPIRateLimits, organiztion1).clone())],
+                [getMockAPIRateLimitPolicy(apiWithAPIRateLimits, organiztion1, apiUUID), getMockRateLimitResponse(getMockAPIRateLimitPolicy(apiWithAPIRateLimits, organiztion1, apiUUID).clone())],
                 createdAPIWithAPIRateLimits.toBalString()
             ],
             "9": [
@@ -2414,7 +2414,7 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
                 apiWithBothRateLimits,
                 k8sAPIUUID1,
                 services,
-                [getMockAPIRateLimitPolicy(apiWithAPIRateLimits, organiztion1), getMockRateLimitResponse(getMockAPIRateLimitPolicy(apiWithAPIRateLimits, organiztion1).clone())],
+                [getMockAPIRateLimitPolicy(apiWithAPIRateLimits, organiztion1, apiUUID), getMockRateLimitResponse(getMockAPIRateLimitPolicy(apiWithAPIRateLimits, organiztion1, apiUUID).clone())],
                 bothRateLimitsPresentError.toBalString()
             ]
         };
@@ -3951,7 +3951,7 @@ function getMockResourceRateLimitPolicy(API api, commons:Organization organiztio
     };
 }
 
-function getMockAPIRateLimitPolicy(API api, commons:Organization organiztion) returns model:RateLimitPolicy {
+function getMockAPIRateLimitPolicy(API api, commons:Organization organiztion, string apiUUID) returns model:RateLimitPolicy {
     return {
         "apiVersion": "dp.wso2.com/v1alpha1",
         "kind": "RateLimitPolicy",
@@ -3966,8 +3966,8 @@ function getMockAPIRateLimitPolicy(API api, commons:Organization organiztion) re
             },
             "targetRef": {
                 "group": "gateway.networking.k8s.io",
-                "kind": "HTTPRoute",
-                "name": "http-route-ref-name",
+                "kind": "API",
+                "name": apiUUID,
                 "namespace": "apk-platform"
             }
         }
@@ -4775,8 +4775,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
                 getMockRuntimeAPI(apiWithAPIRateLimits, apiUUID, organiztion1, ()),
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(apiWithAPIRateLimits, apiUUID, organiztion1, ())),
-                getMockAPIRateLimitPolicy(apiWithAPIRateLimits, organiztion1),
-                getMockRateLimitResponse(getMockAPIRateLimitPolicy(apiWithAPIRateLimits, organiztion1).clone()),
+                getMockAPIRateLimitPolicy(apiWithAPIRateLimits, organiztion1, apiUUID),
+                getMockRateLimitResponse(getMockAPIRateLimitPolicy(apiWithAPIRateLimits, organiztion1, apiUUID).clone()),
                 k8sapiUUID,
                 createdAPI.toBalString()
             ]
