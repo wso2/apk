@@ -176,6 +176,8 @@ spec:
               value: "0.0.0.0"
             - name: ROUTER_ADMIN_PORT
               value: "9000"
+            - name: ROUTER_PORT
+              value: "{{ .Values.wso2.apk.dp.gateway.listener.port }}"
             - name: ROUTER_CLUSTER
               value: "default_cluster"
             - name: ROUTER_LABEL

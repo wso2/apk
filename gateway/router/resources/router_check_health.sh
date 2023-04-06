@@ -17,7 +17,8 @@
 # under the License.
 # -----------------------------------------------------------------------
 
-status_code=$(curl --write-out %{http_code} --silent --output /dev/null https://localhost:9095/health -H 'Authorization: Basic YWRtaW46YWRtaW4=' -k -v)
+ROUTER_PORT="${ROUTER_PORT:-9095}"
+status_code=$(curl --write-out %{http_code} --silent --output /dev/null https://localhost:${ROUTER_PORT}/health -k -v)
 
 if [[ "$status_code" -ne 200 ]] ; then
   echo "Health check status changed to $status_code"
