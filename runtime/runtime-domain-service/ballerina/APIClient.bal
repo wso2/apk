@@ -420,6 +420,7 @@ public class APIClient {
             json generatedSwagger = check self.retrieveGeneratedSwaggerDefinition(api, definition);
             check self.retrieveGeneratedConfigmapForDefinition(apiArtifact, api, generatedSwagger, uniqueId, organization);
             self.generateAndSetAPICRArtifact(apiArtifact, api, organization);
+            self.generateAndSetPolicyCRArtifact(apiArtifact, api, organization);
             self.generateAndSetRuntimeAPIArtifact(apiArtifact, api, (), organization);
             model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact, organization);
             CreatedAPI createdAPI = {body: check convertK8sAPItoAPI(deployAPIToK8sResult, true)};
@@ -795,6 +796,7 @@ public class APIClient {
                 json generatedSwaggerDefinition = check self.retrieveGeneratedSwaggerDefinition(api, ());
                 check self.retrieveGeneratedConfigmapForDefinition(apiArtifact, api, generatedSwaggerDefinition, uniqueId, organization);
                 self.generateAndSetAPICRArtifact(apiArtifact, api, organization);
+                self.generateAndSetPolicyCRArtifact(apiArtifact, api, organization);
                 self.generateAndSetK8sServiceMapping(apiArtifact, api, serviceRetrieved, getNameSpace(runtimeConfiguration.apiCreationNamespace), organization);
                 self.generateAndSetRuntimeAPIArtifact(apiArtifact, api, serviceRetrieved, organization);
                 model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact, organization);
@@ -1161,6 +1163,15 @@ public class APIClient {
         }
     }
 
+    private isolated function generateAndSetPolicyCRArtifact(model:APIArtifact apiArtifact, API api, commons:Organization organization) {
+        if api.apiRateLimit != () {
+            model:RateLimitPolicy? rateLimitPolicyCR = self.generateRateLimitPolicyCR(api, api.apiRateLimit, apiArtifact.uniqueId, (), organization);
+            if rateLimitPolicyCR != () {
+                apiArtifact.rateLimitPolicies[rateLimitPolicyCR.metadata.name] = rateLimitPolicyCR;
+            }
+        }
+    }
+
     private isolated function generateAndSetAPICRArtifact(model:APIArtifact apiArtifact, API api, commons:Organization organization) {
         model:API k8sAPI = {
             metadata: {
@@ -1320,12 +1331,6 @@ public class APIClient {
                     }
                     httpRouteRules.push(httpRouteRule);
                 }
-            }
-        }
-        if api.apiRateLimit != () {
-            model:RateLimitPolicy? rateLimitPolicyCR = self.generateRateLimitPolicyCR(api, api.apiRateLimit, httpRouteRefName, (), organization);
-            if rateLimitPolicyCR != () {
-                apiArtifact.rateLimitPolicies[rateLimitPolicyCR.metadata.name] = rateLimitPolicyCR;
             }
         }
         return httpRouteRules;
@@ -1944,7 +1949,7 @@ public class APIClient {
 
     }
 
-    public isolated function generateRateLimitPolicyCR(API api, APIRateLimit? rateLimit, string httpRouteRefName, APIOperations? operation, commons:Organization organization) returns model:RateLimitPolicy? {
+    public isolated function generateRateLimitPolicyCR(API api, APIRateLimit? rateLimit, string targetRefName, APIOperations? operation, commons:Organization organization) returns model:RateLimitPolicy? {
         model:RateLimitPolicy? rateLimitPolicyCR = ();
         if rateLimit != () {
             rateLimitPolicyCR = {
@@ -1957,8 +1962,8 @@ public class APIClient {
                     default: self.retrieveRateLimitData(rateLimit),
                     targetRef: {
                         group: operation != () ? "dp.wso2.com" : "gateway.networking.k8s.io",
-                        kind: operation != () ? "Resource" : "HTTPRoute",
-                        name: httpRouteRefName,
+                        kind: operation != () ? "Resource" : "API",
+                        name: targetRefName,
                         namespace: currentNameSpace
                     }
                 }
@@ -2351,7 +2356,9 @@ public class APIClient {
     }
 
     private isolated function prepareApiArtifactforNewVersion(model:APIArtifact apiArtifact, Service? serviceEntry, API oldAPI, string newVersion, commons:Organization organization) returns error? {
+        string newAPIuuid = getUniqueIdForAPI(oldAPI.name, newVersion, organization);
         API newAPI = {
+            id: newAPIuuid,
             name: oldAPI.name,
             context: regex:replace(oldAPI.context, oldAPI.'version, newVersion),
             'version: newVersion,
@@ -2406,6 +2413,17 @@ public class APIClient {
         }
         map<string> serviceMapping = {};
         map<string> extenstionRefMappings = {};
+        string oldAPIName = "";
+        model:API? api = apiArtifact.api;
+        if api is model:API {
+            oldAPIName = api.metadata.name;
+        }
+        map<model:RateLimitPolicy> rateLimitPolicies = apiArtifact.rateLimitPolicies;
+        string newAPIName = "";
+        string? newId = newAPI.id;
+        if newId is string {
+            newAPIName = newId;
+        }
         foreach model:Httproute httproute in httproutes {
             string oldHttpRouteName = httproute.metadata.name;
             httproute.metadata.name = retrieveHttpRouteRefName(newAPI, endpointType, organization);
@@ -2475,15 +2493,23 @@ public class APIClient {
                     }
                 }
             }
-
-            map<model:RateLimitPolicy> rateLimitPolicies = apiArtifact.rateLimitPolicies;
             foreach string extensionRefName in rateLimitPolicies.keys() {
                 model:RateLimitPolicy rateLimitPolicyCR = apiArtifact.rateLimitPolicies.get(extensionRefName).clone();
-                if rateLimitPolicyCR.spec.targetRef.kind == "HTTPRoute" && rateLimitPolicyCR.spec.targetRef.name == oldHttpRouteName {
+                if rateLimitPolicyCR.spec.targetRef.kind == "Resource" && rateLimitPolicyCR.spec.targetRef.name == oldHttpRouteName {
                     model:RateLimitPolicy newRateLimitPolicyCR = self.prepareRateLimitPolicyCR(newAPI, rateLimitPolicyCR, httproute.metadata.name, organization);
                     _ = apiArtifact.rateLimitPolicies.remove(extensionRefName);
                     apiArtifact.rateLimitPolicies[newRateLimitPolicyCR.metadata.name] = newRateLimitPolicyCR;
                 }
+            }
+        }
+
+        // adding api level ratelimiting policies
+        foreach string extensionRefName in rateLimitPolicies.keys() {
+            model:RateLimitPolicy rateLimitPolicyCR = apiArtifact.rateLimitPolicies.get(extensionRefName).clone();
+            if rateLimitPolicyCR.spec.targetRef.kind == "API" && rateLimitPolicyCR.spec.targetRef.name == oldAPIName {
+                model:RateLimitPolicy newRateLimitPolicyCR = self.prepareRateLimitPolicyCR(newAPI, rateLimitPolicyCR, newAPIName, organization);
+                _ = apiArtifact.rateLimitPolicies.remove(extensionRefName);
+                apiArtifact.rateLimitPolicies[newRateLimitPolicyCR.metadata.name] = newRateLimitPolicyCR;
             }
         }
     }
@@ -2501,10 +2527,10 @@ public class APIClient {
         return authentication;
     }
 
-    private isolated function prepareRateLimitPolicyCR(API api, model:RateLimitPolicy rateLimitPolicy, string httpRouteRefName, commons:Organization organization) returns model:RateLimitPolicy {
+    private isolated function prepareRateLimitPolicyCR(API api, model:RateLimitPolicy rateLimitPolicy, string targetRefName, commons:Organization organization) returns model:RateLimitPolicy {
         rateLimitPolicy.metadata.name = uuid:createType1AsString();
         rateLimitPolicy.metadata.labels = self.getLabels(api, organization);
-        rateLimitPolicy.spec.targetRef.name = httpRouteRefName;
+        rateLimitPolicy.spec.targetRef.name = targetRefName;
         return rateLimitPolicy;
     }
 
@@ -2542,13 +2568,16 @@ public class APIClient {
     }
 
     private isolated function prepareAPICr(model:APIArtifact apiArtifact, API oldAPI, API newAPI, commons:Organization organization) {
-        string uuid = getUniqueIdForAPI(oldAPI.name, newAPI.'version, organization);
-        apiArtifact.uniqueId = uuid;
         model:API? api = apiArtifact.api;
+        string newAPIName = "";
+        string? newId = newAPI.id;
+        if newId is string {
+            newAPIName = newId;
+        }
         if api is model:API {
             string oldName = api.metadata.name;
             api.spec.apiVersion = newAPI.'version;
-            api.metadata.name = uuid;
+            api.metadata.name = newAPIName;
             api.metadata.labels = self.getLabels(newAPI, organization);
             api.spec.context = newAPI.context;
             string[] prodHTTPRouteRefs = [];
@@ -2567,7 +2596,7 @@ public class APIClient {
             }
             string? definitionFileRef = api.spec.definitionFileRef;
             if definitionFileRef is string {
-                api.spec.definitionFileRef = regex:replaceAll(definitionFileRef, oldName, uuid);
+                api.spec.definitionFileRef = regex:replaceAll(definitionFileRef, oldName, newAPIName);
             }
         }
     }
@@ -2926,6 +2955,7 @@ public class APIClient {
                     }
                 }
                 self.generateAndSetAPICRArtifact(apiArtifact, payload, organization);
+                self.generateAndSetPolicyCRArtifact(apiArtifact, payload, organization);
                 self.generateAndSetRuntimeAPIArtifact(apiArtifact, payload, (), organization);
                 model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact, organization);
                 return check convertK8sAPItoAPI(deployAPIToK8sResult, false);
