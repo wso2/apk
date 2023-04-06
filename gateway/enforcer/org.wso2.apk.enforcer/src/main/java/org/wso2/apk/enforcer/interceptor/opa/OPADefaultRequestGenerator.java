@@ -83,7 +83,6 @@ public class OPADefaultRequestGenerator implements OPARequestGenerator {
         }
 
         // Additional Properties
-        // In APIM additional parameter are appended to the main input payload, handle the same in Choreo Connect
         String addProps = additionalParameters.get(OPAConstants.AdditionalParameters.ADDITIONAL_PROPERTIES);
         if (StringUtils.isNotEmpty(addProps)) {
             Arrays.stream(addProps.split(OPAConstants.AdditionalParameters.PARAM_SEPARATOR))

@@ -28,5 +28,10 @@ import (
 type GatewayState struct {
 	GatewayDefinition *gwapiv1b1.Gateway
 	CustomRateLimitPolicies []*dpv1alpha1.RateLimitPolicy
+	GatewayStateData  *GatewayStateData
 }
 
+// GatewayStateData holds the state data of the deployed Gateways resolved listener certs.
+type GatewayStateData struct {
+	GatewayResolvedListenerCerts map[string]map[string][]byte
+}

@@ -75,7 +75,6 @@ type Config struct {
 	Adapter          adapter
 	Enforcer         enforcer
 	Envoy            envoy            `toml:"router"`
-	ControlPlane     controlPlane     `toml:"controlPlane"`
 	ManagementServer managementServer `toml:"managementServer"`
 	Runtime          runtime          `toml:"runtime"`
 	Analytics        analytics        `toml:"analytics"`
@@ -84,20 +83,14 @@ type Config struct {
 
 // Adapter related Configurations
 type adapter struct {
-	// Server represents the configuration related to REST API (to which the apictl requests)
-	Server server
 	// Consul represents the configuration required to connect to consul service discovery
 	Consul consul
 	// Keystore contains the keyFile and Cert File of the adapter
 	Keystore keystore
 	// Trusted Certificates
 	Truststore truststore
-	// ArtifactsDirectory is the FilePath where the api artifacts are mounted
-	ArtifactsDirectory string
 	// SoapErrorInXMLEnabled is used to configure gateway error responses(local reply) as soap envelope
 	SoapErrorInXMLEnabled bool
-	// SourceControl represents the configuration related to the repository where the api artifacts are stored
-	SourceControl sourceControl
 	// Operator represents the operator related configurations
 	Operator operator
 }
@@ -160,21 +153,6 @@ type enforcer struct {
 	Metrics      metrics
 }
 
-type server struct {
-	// Enabled the serving the REST API
-	Enabled bool `default:"true"`
-	// Host name of the server
-	Host string
-	// Port of the server
-	Port string
-	// APICTL Users
-	Users []APICtlUser
-	// Access token validity duration. Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h". eg: "2h45m"
-	TokenTTL string
-	// Private key to sign the token
-	TokenPrivateKeyPath string
-}
-
 type consul struct {
 	// Deprecated: Use Enabled instead
 	Enable bool
@@ -196,21 +174,6 @@ type consul struct {
 	CertFile string
 	// KeyFile path to the key file(PEM encoded) required for tls connection between adapter and a consul client
 	KeyFile string
-}
-
-type sourceControl struct {
-	// Enabled whether source control should be enabled
-	Enabled bool
-	// PollInterval how frequently the source watcher should be polled to get updates from the remote repository (in seconds)
-	PollInterval int
-	// RetryInterval how frequently the source watcher should retry to fetching artifacts from the remote repository (in seconds)
-	RetryInterval int
-	// MaxRetryCount is the maximum number of times the source watcher should retry to fetching artifacts from the remote repository
-	MaxRetryCount int
-	// ArtifactsDirectory is the FilePath where the api artifacts are created when fetched from the remote repository
-	ArtifactsDirectory string
-	// Repository configurations
-	Repository repository
 }
 
 // Global CORS configurations
@@ -458,36 +421,12 @@ type JwtUser struct {
 	Password string
 }
 
-// APICtlUser represents registered APICtl Users
-type APICtlUser struct {
-	Username string
-	Password string
-}
-
 type repository struct {
 	URL         string
 	Branch      string
 	Username    string
 	AccessToken string
 	SSHKeyFile  string // SSHKeyFile path to the private key file
-}
-
-// ControlPlane struct contains configurations related to the API Manager
-type controlPlane struct {
-	Enabled    bool
-	ServiceURL string
-	// Deprecated: Use ServiceURL instead.
-	ServiceURLDeprecated       string `toml:"serviceUrl"`
-	Username                   string
-	Password                   string
-	SyncApisOnStartUp          bool
-	SendRevisionUpdate         bool
-	EnvironmentLabels          []string
-	RetryInterval              time.Duration
-	SkipSSLVerification        bool
-	BrokerConnectionParameters brokerConnectionParameters
-	HTTPClient                 httpClient
-	RequestWorkerPool          requestWorkerPool
 }
 
 type requestWorkerPool struct {

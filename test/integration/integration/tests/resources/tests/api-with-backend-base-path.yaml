@@ -25,8 +25,9 @@ spec:
   apiVersion: 1.0.0
   context: /rewrite-path-api/1.0.0
   definitionFileRef: swagger-definition-webhook
-  prodHTTPRouteRefs:
-  - test-api-with-backend-base-path-httproute
+  production:
+    - httpRouteRefs:
+      - test-api-with-backend-base-path-httproute
   organization: wso2-org
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1

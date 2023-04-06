@@ -21,6 +21,8 @@ import ballerina/uuid;
 import ballerina/http;
 import runtime_domain_service.model as model;
 import wso2/apk_common_lib as commons;
+import runtime_domain_service.java.io;
+import runtime_domain_service.org.wso2.apk.runtime as runtimeUtil;
 
 commons:Organization organiztion1 = {
     name: "org1",
@@ -276,7 +278,7 @@ function getMockK8sClient() returns http:Client|error {
         .thenReturn(getMockServiceMappings());
     test:prepare(mockK8sClient).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis/01ed7b08-f2b1-1166-82d5-649ae706d29e").thenReturn(mock404Response());
     test:prepare(mockK8sClient).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk/apis/pizzashackAPI1").thenReturn(mock404Response());
-    test:prepare(mockK8sClient).when("get").withArguments("/api/v1/namespaces/apk-platform/configmaps/01ed7aca-eb6b-1178-a200-f604a4ce114a-definition").thenReturn(mockConfigMaps());
+    test:prepare(mockK8sClient).when("get").withArguments("/api/v1/namespaces/apk-platform/configmaps/01ed7aca-eb6b-1178-a200-f604a4ce114a-definition").thenReturn(check mockConfigMaps());
     test:prepare(mockK8sClient).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis/01ed7aca-eb6b-1178-a200-f604a4ce114a").thenReturn(getMockInternalAPI());
     http:ClientError clientError = error("Backend Failure");
     test:prepare(mockK8sClient).when("get").withArguments("/api/v1/namespaces/apk-platform/configmaps/01ed7b08-f2b1-1166-82d5-649ae706d29d-definition").thenReturn(mock404ConfigMap());
@@ -2193,7 +2195,7 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
         };
         BadRequestError bothRateLimitsPresentError = {body: {code: 90918, message: "Presence of both resource level and API level rate limits is not allowed"}};
         string apiUUID = getUniqueIdForAPI(api.name, api.'version, organiztion1);
-        model:ConfigMap configmap = getMockConfigMap1(apiUUID, api);
+        model:ConfigMap configmap = check getMockConfigMap1(apiUUID, api);
         http:Response mockConfigMapResponse = getMockConfigMapResponse(configmap.clone());
         model:Httproute httpRoute = getMockHttpRoute(api, apiUUID, organiztion1);
         http:Response httpRouteResponse = getMockHttpRouteResponse(httpRoute.clone());
@@ -2441,6 +2443,7 @@ function getMockAPIResponse1(API api, string apiUUID, string k8sAPIUUID) returns
 
 function getMockAPI(API api, string apiUUID, string organization) returns model:API {
     APIClient apiClient = new;
+    model:EnvConfig[]? envConfig = [{httpRouteRefs: ["http-route-ref-name"]}];
     model:API k8sapi = {
         "kind": "API",
         "apiVersion": "dp.wso2.com/v1alpha1",
@@ -2452,7 +2455,7 @@ function getMockAPI(API api, string apiUUID, string organization) returns model:
             "context": apiClient.returnFullContext(api.context, api.'version),
             "organization": organization,
             "definitionFileRef": apiUUID + "-definition",
-            "prodHTTPRouteRefs": ["http-route-ref-name"]
+            "production": envConfig
         },
         "status"
                 : null
@@ -2510,6 +2513,7 @@ function getMockRuntimeAPIResponse(model:RuntimeAPI runtimeApi) returns http:Res
 
 function getMockAPI1(API api, string apiUUID, string organization) returns model:API {
     APIClient apiClient = new;
+    model:EnvConfig[]? envConfig = [{httpRouteRefs: ["http-route-ref-name"]}];
     model:API k8sapi = {
         "kind": "API",
         "apiVersion": "dp.wso2.com/v1alpha1",
@@ -2521,7 +2525,7 @@ function getMockAPI1(API api, string apiUUID, string organization) returns model
             "context": apiClient.returnFullContext(api.context, api.'version),
             "organization": organization,
             "definitionFileRef": apiUUID + "-definition",
-            "sandHTTPRouteRefs": ["http-route-ref-name"]
+            "sandbox": envConfig
         },
         "status": null
     };
@@ -3001,12 +3005,12 @@ function getMockHttpRouteWithOperationRateLimits1(API api, string apiUUID, commo
     };
 }
 
-function getMockConfigMap1(string apiUniqueId, API api) returns model:ConfigMap {
+function getMockConfigMap1(string apiUniqueId, API api) returns model:ConfigMap|error {
+    json content = {"openapi":"3.0.1", "info":{"title":"" + api.name + "", "version":"" + api.'version + ""}, "security":[{"default":[]}], "paths":{"/*":{"get":{"responses":{"200":{"description":"OK"}}, "security":[{"default":[]}], "x-auth-type":true, "x-throttling-tier":"Unlimited"}, "put":{"responses":{"200":{"description":"OK"}}, "security":[{"default":[]}], "x-auth-type":true, "x-throttling-tier":"Unlimited"}, "post":{"responses":{"200":{"description":"OK"}}, "security":[{"default":[]}], "x-auth-type":true, "x-throttling-tier":"Unlimited"}, "delete":{"responses":{"200":{"description":"OK"}}, "security":[{"default":[]}], "x-auth-type":true, "x-throttling-tier":"Unlimited"}, "patch":{"responses":{"200":{"description":"OK"}}, "security":[{"default":[]}], "x-auth-type":true, "x-throttling-tier":"Unlimited"}}}, "components":{"securitySchemes":{"default":{"type":"oauth2", "flows":{"implicit":{"authorizationUrl":"https://test.com", "scopes":{}}}}}}}
+;
+    string base64EncodedGzipContent = check getBase64EncodedGzipContent(content.toJsonString().toBytes());
     model:ConfigMap configmap = {
         "apiVersion": "v1",
-        "data": {
-            "openapi.json": "{\"openapi\":\"3.0.1\", \"info\":{\"title\":\"" + api.name + "\", \"version\":\"" + api.'version + "\"}, \"security\":[{\"default\":[]}], \"paths\":{\"/*\":{\"get\":{\"responses\":{\"200\":{\"description\":\"OK\"}}, \"security\":[{\"default\":[]}], \"x-auth-type\":true, \"x-throttling-tier\":\"Unlimited\"}, \"put\":{\"responses\":{\"200\":{\"description\":\"OK\"}}, \"security\":[{\"default\":[]}], \"x-auth-type\":true, \"x-throttling-tier\":\"Unlimited\"}, \"post\":{\"responses\":{\"200\":{\"description\":\"OK\"}}, \"security\":[{\"default\":[]}], \"x-auth-type\":true, \"x-throttling-tier\":\"Unlimited\"}, \"delete\":{\"responses\":{\"200\":{\"description\":\"OK\"}}, \"security\":[{\"default\":[]}], \"x-auth-type\":true, \"x-throttling-tier\":\"Unlimited\"}, \"patch\":{\"responses\":{\"200\":{\"description\":\"OK\"}}, \"security\":[{\"default\":[]}], \"x-auth-type\":true, \"x-throttling-tier\":\"Unlimited\"}}}, \"components\":{\"securitySchemes\":{\"default\":{\"type\":\"oauth2\", \"flows\":{\"implicit\":{\"authorizationUrl\":\"https://test.com\", \"scopes\":{}}}}}}}"
-        },
         "kind": "ConfigMap",
         "metadata": {
             "labels": getLabels(api, organiztion1),
@@ -3014,7 +3018,21 @@ function getMockConfigMap1(string apiUniqueId, API api) returns model:ConfigMap 
             "namespace": "apk-platform"
         }
     };
+    configmap.binaryData = {
+        [CONFIGMAP_DEFINITION_KEY]: base64EncodedGzipContent
+    };
     return configmap;
+}
+
+public function getBase64EncodedGzipContent(byte[] content) returns string|error {
+    byte[]|io:IOException gzipUtilCompressGzipFile = check runtimeUtil:GzipUtil_compressGzipFile(content);
+    if gzipUtilCompressGzipFile is byte[] {
+        byte[] encoderUtilEncodeBase64 = check runtimeUtil:EncoderUtil_encodeBase64(gzipUtilCompressGzipFile);
+        return string:fromBytes(encoderUtilEncodeBase64);
+    } else {
+        return error("Error while encoding the content");
+    }
+
 }
 
 function getMockConfigMapResponse(model:ConfigMap configmap) returns http:Response {
@@ -3965,6 +3983,7 @@ function getMockRateLimitResponse(model:RateLimitPolicy request) returns http:Re
 }
 
 function createAPIDataProvider() returns map<[string, string, API, model:ConfigMap, any, model:Httproute?, any, model:Httproute?, any, [model:Backend, any][], model:API, any, model:RuntimeAPI, any, model:RateLimitPolicy?, any, string, anydata]> {
+    do{
     API api = {
         name: "PizzaAPI",
         context: "/pizzaAPI/1.0.0",
@@ -4325,7 +4344,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
     services.push([backendService1, backendServiceResponse1]);
     [model:Backend, any][] servicesError = [];
     servicesError.push([backendService, backendServiceErrorResponse]);
-    model:ConfigMap configmap = getMockConfigMap1(apiUUID, api);
+    model:ConfigMap configmap = check getMockConfigMap1(apiUUID, api);
     model:Httproute prodhttpRoute = getMockHttpRouteWithBackend(api, apiUUID, backenduuid, PRODUCTION_TYPE, organiztion1);
     model:Httproute sandhttpRoute = getMockHttpRouteWithBackend(api, apiUUID, backenduuid1, SANDBOX_TYPE, organiztion1);
     model:Httproute prodhttpRouteWithOperationPolicies = getMockHttpRouteWithOperationPolicies(api, apiUUID, backenduuid, PRODUCTION_TYPE, organiztion1);
@@ -4340,7 +4359,6 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
     commons:APKError k8sLevelError1 = error("Internal Server Error", code = 900900, message
         = "Internal Server Error", statusCode = 500, description = "Internal Server Error", moreInfo = {});
     commons:APKError invalidAPINameError = error("Invalid API Name", code = 90911, message = "Invalid API Name", statusCode = 400, description = "API Name PizzaAPI Invalid", moreInfo = {});
-    do {
         map<[string, string, API, model:ConfigMap,
     any, model:Httproute|(), any, model:Httproute|(),
     any, [model:Backend, any][], model:API, any, model:RuntimeAPI, any,

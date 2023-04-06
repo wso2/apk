@@ -19,7 +19,6 @@ package model
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"regexp"
 	"text/template"
@@ -27,10 +26,6 @@ import (
 	"github.com/wso2/apk/adapter/internal/loggers"
 	logging "github.com/wso2/apk/adapter/internal/logging"
 	"gopkg.in/yaml.v2"
-)
-
-const (
-	policyCCGateway string = "ChoreoConnect"
 )
 
 var (
@@ -94,7 +89,7 @@ type PolicyDefinition struct {
 	RawData []byte `yaml:"-"`
 }
 
-// GetFormattedOperationalPolicies returns formatted, Choreo Connect policy from a user templated policy
+// GetFormattedOperationalPolicies returns formatted, policy from a user templated policy
 // here, the struct swagger is only used for logging purpose, in case if we introduce logger context to get org ID, API ID, we can remove it from here
 func (p PolicyContainerMap) GetFormattedOperationalPolicies(policies OperationPolicies, swagger *MgwSwagger) (OperationPolicies, error) {
 	fmtPolicies := OperationPolicies{}
@@ -132,7 +127,7 @@ func (p PolicyContainerMap) GetFormattedOperationalPolicies(policies OperationPo
 	return fmtPolicies, nil
 }
 
-// getFormattedPolicyFromTemplated returns formatted, Choreo Connect policy from a user templated policy
+// getFormattedPolicyFromTemplated returns formatted, policy from a user templated policy
 func (p PolicyContainerMap) getFormattedPolicyFromTemplated(policy Policy, flow PolicyFlow, swagger *MgwSwagger) (Policy, error) {
 	policyFullName := policy.GetFullName()
 	spec := p[policyFullName].Specification
@@ -169,7 +164,7 @@ func (p PolicyContainerMap) getFormattedPolicyFromTemplated(policy Policy, flow 
 	// Fill default values
 	spec.fillDefaultsInPolicy(&policy)
 
-	// Check the API Policy supported by Choreo Connect
+	// Check the API Policy supported by APK
 	// Required params may be comming from default values as defined in the policy specification
 	// Hence do the validation after filling default values
 	if err := validatePolicyAction(&policy); err != nil {
@@ -187,9 +182,6 @@ func (spec *PolicySpecification) validatePolicy(policy Policy, flow PolicyFlow) 
 	}
 	if !arrayContains(spec.Data.ApplicableFlows, string(flow)) {
 		return fmt.Errorf("policy flow %q not supported", flow)
-	}
-	if !arrayContains(spec.Data.SupportedGateways, policyCCGateway) {
-		return errors.New("choreo connect gateway not supported")
 	}
 
 	policyPrams, ok := policy.Parameters.(map[string]interface{})

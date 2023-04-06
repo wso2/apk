@@ -13,24 +13,24 @@
 # KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations
 # under the License.
-{{- if .Values.wso2.apk.dp.enabled }}
-kind: "API"
+
+{{- if .Values.wso2.apk.migration.enabled }}
 apiVersion: "dp.wso2.com/v1alpha1"
+kind: "Authentication"
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-api
+  name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-authentication
   namespace: {{ .Release.Namespace }}
   labels:
-    api-name: "runtime-domain-service"
+    api-name: "admin-domain-service"
     api-version: "1.0.0"
 spec:
-  apiDisplayName: "Runtime Domain Service API"
-  apiType: "REST"
-  apiVersion: "1.0.0"
-  context: "/api/am/runtime/1.0.0"
-  organization: "carbon.super"
-  definitionFileRef: ""
-  production:
-    - httpRouteRefs:
-      - {{ template "apk-helm.resource.prefix" . }}-runtime-ds-httproute
-  systemAPI: true
+  override:
+    ext:
+      disabled: true
+    type: "ext"
+  targetRef:
+    group: ""
+    kind: "HTTPRoute"
+    name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-httproute
+    namespace: {{ .Release.Namespace }}
 {{- end -}}

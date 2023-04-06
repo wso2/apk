@@ -397,3 +397,38 @@ groupId = "commons-lang"
 artifactId = "commons-lang"
 version = "2.4"
 
+# transitive dependency of org.wso2.apk:org.wso2.apk.runtime:0.0.1-SNAPSHOT
+[[platform.java11.dependency]]
+groupId = "io.swagger.core.v3"
+artifactId = "swagger-models"
+version = "2.2.8"
+
+# transitive dependency of org.wso2.apk:org.wso2.apk.runtime:0.0.1-SNAPSHOT
+[[platform.java11.dependency]]
+groupId = "io.swagger.core.v3"
+artifactId = "swagger-core"
+version = "2.2.8"
+
+# transitive dependency of io.swagger.core.v3:swagger-core:2.2.8
+[[platform.java11.dependency]]
+groupId = "io.swagger.core.v3"
+artifactId = "swagger-annotations"
+version = "2.2.8"
+
+# transitive dependency of org.wso2.apk:org.wso2.apk.runtime:0.0.1-SNAPSHOT
+[[platform.java11.dependency]]
+groupId = "com.fasterxml.jackson.dataformat"
+artifactId = "jackson-dataformat-yaml"
+version = "2.14.2"
+
+# transitive dependency of com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.14.2
+[[platform.java11.dependency]]
+groupId = "com.fasterxml.jackson.core"
+artifactId = "jackson-core"
+version = "2.14.2"
+
+# transitive dependency of org.wso2.apk:org.wso2.apk.runtime:0.0.1-SNAPSHOT
+[[platform.java11.dependency]]
+groupId = "com.fasterxml.jackson.core"
+artifactId = "jackson-annotations"
+version = "2.14.2"

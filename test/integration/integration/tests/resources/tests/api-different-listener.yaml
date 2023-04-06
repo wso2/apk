@@ -25,8 +25,9 @@ spec:
   apiVersion: 1.0.0
   context: /test-api-with-different-listener/v1.0.0
   definitionFileRef: definition-file
-  prodHTTPRouteRefs:
-  - test-api-with-different-listener-httproute
+  production:
+    - httpRouteRefs:
+      - test-api-with-different-listener-httproute
   organization: wso2-org
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1

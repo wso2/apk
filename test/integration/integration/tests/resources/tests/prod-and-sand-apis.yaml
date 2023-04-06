@@ -25,10 +25,12 @@ spec:
   apiVersion: v1
   context: /prod-sand-test-api/v1
   definitionFileRef: definition-file
-  prodHTTPRouteRefs:
-  - prod-httproute
-  sandHTTPRouteRefs:
-  - sand-httproute
+  production:
+    - httpRouteRefs:
+      - prod-httproute
+  sandbox:
+    - httpRouteRefs:
+      - sand-httproute
   organization: wso2-org
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1

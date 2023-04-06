@@ -5,13 +5,13 @@
 artifactsDirectory = "/home/wso2/artifacts"
 soapErrorInXMLEnabled = false
 
-# Configurations required for configuring the deployment parameters that are used for identifying the Choreo Connect Adapter REST APIs
+# Configurations required for configuring the deployment parameters that are used for identifying the APK Adapter REST APIs
 [adapter.server]
-  # Enable/Disable Choreo Connect Adapter REST API
+  # Enable/Disable APK Adapter REST API
   enabled = true
-  # Hostname of the Choreo Connect Adapter
+  # Hostname of the APK Adapter
   host = "0.0.0.0"
-  # Port of the Choreo Connect Adapter
+  # Port of the APK Adapter
   port = "9843"
   # Time to live for the Adapter access token
   tokenTTL = "1h"
@@ -28,16 +28,16 @@ soapErrorInXMLEnabled = false
   # Virtual host to map to the environment
   vhost = "localhost"
 
-# Configurations of key store used in Choreo Connect Adapter
+# Configurations of key store used in APK Adapter
 [adapter.keystore]
   # Path of the certificate
   certPath = "/home/wso2/security/keystore/mg.pem"
   # Path of the private key
   keyPath = "/home/wso2/security/keystore/mg.key"
 
-# Configurations of trust store used in the Choreo Connect Adapter
+# Configurations of trust store used in the APK Adapter
 [adapter.truststore]
-  # The directory path for the trusted certificates of the Choreo Connect Adapter
+  # The directory path for the trusted certificates of the APK Adapter
   location = "/home/wso2/security/truststore"
 
 # Configurations related to Consul
@@ -46,12 +46,12 @@ soapErrorInXMLEnabled = false
   enabled = false
   # Connection url of the Consul HTTP API
   url = "https://169.254.1.1:8501" # scheme + host ip + port
-  # Time interval (in seconds) in which the Choreo Connect should fetch updates from the Consul service catalog
+  # Time interval (in seconds) in which the APK should fetch updates from the Consul service catalog
   pollInterval = 5
   # Access Control Token generated using Consul
   # You should grant read access to services when creating the token
   ACLToken = "d3a2a719-4221-8c65-5212-58d4727427ac"
-  # Choreo Connect natively integrates with Consul service mesh
+  # APK natively integrates with Consul service mesh
   # Therefore a service name is required to be defined inorder to grant access to other services in mesh
   # This only need to be defined if service mesh enabled in Consul
   mgwServiceName = "wso2"
@@ -106,7 +106,7 @@ soapErrorInXMLEnabled = false
   # If configured true, router appends the immediate downstream ip address to the x-forward-for header
   useRemoteAddress = false
 
-# Configurations of key store used in Choreo Connect Router
+# Configurations of key store used in APK Router
 [router.keystore]
   # Path of the certificate of the Router
   certPath = "/home/wso2/security/keystore/mg.pem"
@@ -115,7 +115,7 @@ soapErrorInXMLEnabled = false
 
 # Cors configurations
 [router.cors]
-  # Enable CORS configurations globally for all endpoints and APIs deployed in Choreo Connect Router
+  # Enable CORS configurations globally for all endpoints and APIs deployed in APK Router
   enabled = true
   # Allowed origins. Set this to [*] to allow all origins
   allowOrigins = ["*"]
@@ -130,7 +130,7 @@ soapErrorInXMLEnabled = false
 
 [router.upstream]
 
-# The configurations for SSL configuration related to the backend connection in Choreo Connect
+# The configurations for SSL configuration related to the backend connection in APK
 [router.upstream.tls]
   # Minimum TLS protocol version
   minimumProtocolVersion = "TLS1_1"
@@ -190,7 +190,7 @@ soapErrorInXMLEnabled = false
   maxConcurrentStreams = 2147483647
 
 [router.downstream]
-# The configurations for SSL configuration related to the client connection in Choreo Connect
+# The configurations for SSL configuration related to the client connection in APK
 [router.downstream.tls]
   # Path to trusted certificates
   trustedCertPath = "/etc/ssl/certs/ca-certificates.crt"
@@ -295,14 +295,14 @@ soapErrorInXMLEnabled = false
 # Position starts from 1
 [[enforcer.filters]]
     # ClassName of the filter
-    className = "org.wso2.choreo.connect.custom.CCCustomFilter"
+    className = "org.wso2.apk.custom.CustomFilter"
     # Position of the filter within final filter-chain
     position = 3
     # Filter specific custom configurations. Only `(string, string)` key-value pairs are accepted
     [enforcer.filters.configProperties]
         testConfig1 = "testValue1"
 
-# The configurations of gRPC netty based server in Enforcer that handles the incoming requests in the Choreo Connect
+# The configurations of gRPC netty based server in Enforcer that handles the incoming requests in the APK
 [enforcer.authService]
   # Port of the Enforcer auth service
   port = 8081
@@ -312,7 +312,7 @@ soapErrorInXMLEnabled = false
   maxHeaderLimit = 8192
   # Keep alive time in seconds for connection with the router via external authz service
   keepAliveTime = 600
-  # Thread pool configurations of gRPC netty based server in Enforcer that handles the incoming requests in the Choreo Connect
+  # Thread pool configurations of gRPC netty based server in Enforcer that handles the incoming requests in the APK
   [enforcer.authService.threadPool]
     # Minimum number of workers to keep alive
     coreSize = 400
@@ -323,7 +323,7 @@ soapErrorInXMLEnabled = false
     # Queue size of the worker threads
     queueSize = 1000
 
-# The configurations of token caching in the Choreo Connect
+# The configurations of token caching in the APK
 [enforcer.cache]
   # Enable/Disable token cache
   enabled = true
@@ -341,7 +341,7 @@ password = "admin"
 [enforcer.restserver]
 enabled = true
 
-# The configuration of the backend jwt generation in the Choreo Connect
+# The configuration of the backend jwt generation in the APK
 [enforcer.jwtGenerator]
   # Enable/Disable backend JWT generation
   enabled = false
@@ -371,7 +371,7 @@ enabled = true
   # Token expiry time in seconds
   tokenTTL = 3600
 
-# The issuer configuration required to generate token at Choreo Connect
+# The issuer configuration required to generate token at APK
 [enforcer.jwtIssuer]
   # Enable/Disable JWT generation
   enabled = true
@@ -389,7 +389,7 @@ enabled = true
   privateKeyPath = "/home/wso2/security/keystore/mg.key"
   # Validity period of the JWT in seconds
   validityPeriod = 3600
-  # Configure allowed users to use the JWT generated by the Choreo Connect. You can provide multiple users
+  # Configure allowed users to use the JWT generated by the APK. You can provide multiple users
   [[enforcer.jwtIssuer.jwtUser]]
     username = "admin"
     password = "$env{enforcer_admin_pwd}"
@@ -540,15 +540,15 @@ enabled = true
       secureEvictionTimePeriod = 5500
       secureMinIdleTimeInPool = 5000
 
-# Metrics configurations for Choreo Connect
+# Metrics configurations for APK
 [enforcer.metrics]
-  # Enable/Disable metrics in Choreo Connect
+  # Enable/Disable metrics in APK
   enabled = false
   type = "azure"
 
 # Control plane's connection details
 [controlPlane]
-  # Enable/Disable Choreo Connect Control plane
+  # Enable/Disable APK Control plane
   enabled = false
   # Service URL of the API Manager
   serviceURL = "https://apim:9443/"
@@ -579,22 +579,9 @@ enabled = true
   [controlPlane.httpClient] 
     requestTimeOut = 30
 
-# Global Adapter related configurations
-[globalAdapter]
-  # Enable Choreo Connect Global adapter client
-  enabled = false
-  # Global adapter Service URL (<Hostname>:<Port>)
-  serviceURL = "global-adapter:18000"
-  # Subject Alternative Name considered for TLS communication with global adapter
-  overrideHostName = ""
-  # Local Adapter Label
-  localLabel = "$env{local_label}"
-  # Retry Interval
-  retryInterval = 5
-
-# Analytics configurations for Choreo Connect
+# Analytics configurations for APK
 [analytics]
-  # Enable/Disable Analytics in Choreo Connect
+  # Enable/Disable Analytics in APK
   enabled = false
   type = "Default"
   
@@ -641,9 +628,9 @@ enabled = true
         # Queue size of the worker threads
         queueSize = 1000
 
-# Tracing configurations for Choreo Connect
+# Tracing configurations for APK Router
 [tracing]
-  # Enable/Disable tracing in Choreo Connect
+  # Enable/Disable tracing in APK
   enabled = false
   # Type of tracer exporter (e.g: azure, zipkin). Use zipkin type for Jaeger as well.
   type = "zipkin"

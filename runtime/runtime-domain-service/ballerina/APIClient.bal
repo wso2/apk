@@ -34,6 +34,7 @@ import ballerina/file;
 import ballerina/io;
 import ballerina/crypto;
 import ballerina/time;
+import runtime_domain_service.java.io as javaio;
 import wso2/apk_common_lib as commons;
 
 public class APIClient {
@@ -75,11 +76,26 @@ public class APIClient {
 
     }
     private isolated function getDefinitionFromConfigMap(model:ConfigMap configmap) returns json|error? {
-        map<string>? data = configmap.data;
-        if data is map<string> {
-            string[] keys = data.keys();
-            if keys.length() == 1 {
-                return check value:fromJsonString(data.get(keys[0]).toString());
+        map<string>? binaryData = configmap.binaryData;
+        string? content = ();
+        if binaryData is map<string> {
+            if binaryData.hasKey(CONFIGMAP_DEFINITION_KEY) {
+                content = binaryData.get(CONFIGMAP_DEFINITION_KEY);
+            } else {
+                string[] keys = binaryData.keys();
+                if keys.length() >= 1 {
+                    content = binaryData.get(keys[0]);
+                }
+            }
+            if content is string {
+                byte[] base64DecodedGzipContent = check runtimeUtil:EncoderUtil_decodeBase64(content.toBytes());
+                byte[]|javaio:IOException gzipUnCompressedContent = check runtimeUtil:GzipUtil_decompressGzipFile(base64DecodedGzipContent);
+                if gzipUnCompressedContent is byte[] {
+                    string definition = check string:fromBytes(gzipUnCompressedContent);
+                    return value:fromJsonString(definition);
+                } else {
+                    return gzipUnCompressedContent.cause();
+                }
             }
         }
         return;
@@ -402,7 +418,7 @@ public class APIClient {
             _ = check self.setHttpRoute(apiArtifact, api, createdEndpoints.hasKey(PRODUCTION_TYPE) ? createdEndpoints.get(PRODUCTION_TYPE) : (), uniqueId, PRODUCTION_TYPE, organization);
             _ = check self.setHttpRoute(apiArtifact, api, createdEndpoints.hasKey(SANDBOX_TYPE) ? createdEndpoints.get(SANDBOX_TYPE) : (), uniqueId, SANDBOX_TYPE, organization);
             json generatedSwagger = check self.retrieveGeneratedSwaggerDefinition(api, definition);
-            self.retrieveGeneratedConfigmapForDefinition(apiArtifact, api, generatedSwagger, uniqueId, organization);
+            check self.retrieveGeneratedConfigmapForDefinition(apiArtifact, api, generatedSwagger, uniqueId, organization);
             self.generateAndSetAPICRArtifact(apiArtifact, api, organization);
             self.generateAndSetRuntimeAPIArtifact(apiArtifact, api, (), organization);
             model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact, organization);
@@ -777,7 +793,7 @@ public class APIClient {
                 };
                 check self.setHttpRoute(apiArtifact, api, endpoint, uniqueId, PRODUCTION_TYPE, organization);
                 json generatedSwaggerDefinition = check self.retrieveGeneratedSwaggerDefinition(api, ());
-                self.retrieveGeneratedConfigmapForDefinition(apiArtifact, api, generatedSwaggerDefinition, uniqueId, organization);
+                check self.retrieveGeneratedConfigmapForDefinition(apiArtifact, api, generatedSwaggerDefinition, uniqueId, organization);
                 self.generateAndSetAPICRArtifact(apiArtifact, api, organization);
                 self.generateAndSetK8sServiceMapping(apiArtifact, api, serviceRetrieved, getNameSpace(runtimeConfiguration.apiCreationNamespace), organization);
                 self.generateAndSetRuntimeAPIArtifact(apiArtifact, api, serviceRetrieved, organization);
@@ -1107,23 +1123,24 @@ public class APIClient {
         }
     }
 
-    private isolated function retrieveGeneratedConfigmapForDefinition(model:APIArtifact apiArtifact, API api, json generatedSwaggerDefinition, string uniqueId, commons:Organization organization) {
-        map<string> configMapData = {};
-        if api.'type == API_TYPE_REST {
-            configMapData["openapi.json"] = generatedSwaggerDefinition.toJsonString();
+    private isolated function retrieveGeneratedConfigmapForDefinition(model:APIArtifact apiArtifact, API api, json generatedSwaggerDefinition, string uniqueId, commons:Organization organization) returns error? {
+        byte[]|javaio:IOException compressedContent = check runtimeUtil:GzipUtil_compressGzipFile(generatedSwaggerDefinition.toJsonString().toBytes());
+        if compressedContent is byte[] {
+            byte[] base64EncodedContent = check runtimeUtil:EncoderUtil_encodeBase64(compressedContent);
+            model:ConfigMap configMap = {
+                metadata: {
+                    name: self.retrieveDefinitionName(uniqueId),
+                    namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace),
+                    uid: (),
+                    creationTimestamp: (),
+                    labels: self.getLabels(api, organization)
+                }
+            };
+            configMap.binaryData = {[CONFIGMAP_DEFINITION_KEY]: check string:fromBytes(base64EncodedContent)};
+            apiArtifact.definition = configMap;
+        } else {
+            return compressedContent.cause();
         }
-        model:ConfigMap configMap = {
-            metadata: {
-                name: self.retrieveDefinitionName(uniqueId),
-                namespace: getNameSpace(runtimeConfiguration.apiCreationNamespace),
-                uid: (),
-                creationTimestamp: (),
-                labels: self.getLabels(api, organization)
-
-            },
-            data: configMapData
-        };
-        apiArtifact.definition = configMap;
     }
 
     isolated function setDefaultOperationsIfNotExist(API api) {
@@ -1176,10 +1193,10 @@ public class APIClient {
             }
         }
         if productionHttpRoutes.length() > 0 {
-            k8sAPI.spec.prodHTTPRouteRefs = productionHttpRoutes;
+            k8sAPI.spec.production = [{httpRouteRefs: productionHttpRoutes}];
         }
         if sandBoxHttpRoutes.length() > 0 {
-            k8sAPI.spec.sandHTTPRouteRefs = sandBoxHttpRoutes;
+            k8sAPI.spec.sandbox = [{httpRouteRefs: sandBoxHttpRoutes}];
         }
         apiArtifact.api = k8sAPI;
     }
@@ -2539,14 +2556,14 @@ public class APIClient {
                 prodHTTPRouteRefs.push(httpRoute.metadata.name);
             }
             if prodHTTPRouteRefs.length() > 0 {
-                api.spec.prodHTTPRouteRefs = prodHTTPRouteRefs;
+                api.spec.production = [{httpRouteRefs: prodHTTPRouteRefs}];
             }
             string[] sandHTTPRouteRefs = [];
             foreach model:Httproute httpRoute in apiArtifact.sandboxRoute {
                 sandHTTPRouteRefs.push(httpRoute.metadata.name);
             }
             if sandHTTPRouteRefs.length() > 0 {
-                api.spec.sandHTTPRouteRefs = sandHTTPRouteRefs;
+                api.spec.sandbox = [{httpRouteRefs: sandHTTPRouteRefs}];
             }
             string? definitionFileRef = api.spec.definitionFileRef;
             if definitionFileRef is string {
@@ -2564,7 +2581,7 @@ public class APIClient {
             infoElement["version"] = newAPI.'version;
             map<json> definitionMap = <map<json>>definitionJson;
             definitionMap["info"] = infoElement;
-            self.retrieveGeneratedConfigmapForDefinition(apiArtifact, newAPI, definitionMap, apiArtifact.uniqueId, organization);
+            check self.retrieveGeneratedConfigmapForDefinition(apiArtifact, newAPI, definitionMap, apiArtifact.uniqueId, organization);
         }
     }
 
@@ -2580,16 +2597,25 @@ public class APIClient {
                     apiArtifact.definition = self.sanitizeConfigMapData(definitionConfigmap);
                 }
             }
-            json[]? prodHTTPRouteRefs = k8sapi.spec.prodHTTPRouteRefs;
-            if prodHTTPRouteRefs is json[] && prodHTTPRouteRefs.length() > 0 {
-                foreach json prodHTTPRouteRef in prodHTTPRouteRefs {
+            
+            model:EnvConfig[]? prodHTTPRouteRefs = k8sapi.spec.production;
+            json[]? httpProdRouteRefs = ();
+            if(prodHTTPRouteRefs is model:EnvConfig[]) {
+                httpProdRouteRefs = prodHTTPRouteRefs[0].httpRouteRefs;
+            }
+            if httpProdRouteRefs is json[] && httpProdRouteRefs.length() > 0 {
+                foreach json prodHTTPRouteRef in httpProdRouteRefs {
                     model:Httproute httpRoute = check getHttpRoute(prodHTTPRouteRef.toString(), k8sapi.metadata.namespace);
                     apiArtifact.productionRoute.push(self.sanitizeHttpRoute(httpRoute));
                 }
             }
-            json[]? sandHTTPRouteRefs = k8sapi.spec.sandHTTPRouteRefs;
-            if sandHTTPRouteRefs is json[] && sandHTTPRouteRefs.length() > 0 {
-                foreach json sandHTTPRouteRef in sandHTTPRouteRefs {
+            model:EnvConfig[]? sandHTTPRouteRefs = k8sapi.spec.sandbox;
+            json[]? httpSandRouteRefs = ();
+            if(sandHTTPRouteRefs is model:EnvConfig[]) {
+                httpSandRouteRefs = sandHTTPRouteRefs[0].httpRouteRefs;
+            }
+            if httpSandRouteRefs is json[] && httpSandRouteRefs.length() > 0 {
+                foreach json sandHTTPRouteRef in httpSandRouteRefs {
                     model:Httproute httpRoute = check getHttpRoute(sandHTTPRouteRef.toString(), k8sapi.metadata.namespace);
                     apiArtifact.sandboxRoute.push(self.sanitizeHttpRoute(httpRoute));
                 }
@@ -2668,13 +2694,23 @@ public class APIClient {
         if api.spec.definitionFileRef is string && api.spec.definitionFileRef.toString().trim().length() > 0 {
             modifiedAPI.spec.definitionFileRef = api.spec.definitionFileRef;
         }
-        string[]|() prodHTTPRouteRefs = api.spec.prodHTTPRouteRefs;
-        if prodHTTPRouteRefs is string[] && prodHTTPRouteRefs.length() > 0 {
-            modifiedAPI.spec.prodHTTPRouteRefs = prodHTTPRouteRefs;
+
+        model:EnvConfig[]? prodHTTPRouteRefs = api.spec.production;
+        string[]|() httpProdRouteRefs = ();
+        if(prodHTTPRouteRefs is model:EnvConfig[]) {
+            httpProdRouteRefs = prodHTTPRouteRefs[0].httpRouteRefs;
         }
-        string[]|() sandHTTPRouteRefs = api.spec.sandHTTPRouteRefs;
-        if sandHTTPRouteRefs is string[] && sandHTTPRouteRefs.length() > 0 {
-            modifiedAPI.spec.sandHTTPRouteRefs = sandHTTPRouteRefs;
+        if httpProdRouteRefs is string[] && httpProdRouteRefs.length() > 0 {
+            modifiedAPI.spec.production = [{httpRouteRefs: httpProdRouteRefs}];
+        }
+
+        model:EnvConfig[]? sandHTTPRouteRefs = api.spec.sandbox;
+        string[]|() httpSandRouteRefs = ();
+        if(sandHTTPRouteRefs is model:EnvConfig[]) {
+            httpSandRouteRefs = sandHTTPRouteRefs[0].httpRouteRefs;
+        }
+        if httpSandRouteRefs is string[] && httpSandRouteRefs.length() > 0 {
+            modifiedAPI.spec.sandbox = [{httpRouteRefs: httpSandRouteRefs}];
         }
         return modifiedAPI;
     }
@@ -2899,13 +2935,13 @@ public class APIClient {
                     _ = check self.setHttpRoute(apiArtifact, payload, createdEndpoints.hasKey(SANDBOX_TYPE) ? createdEndpoints.get(SANDBOX_TYPE) : (), uniqueId, SANDBOX_TYPE, organization);
                 }
                 if definition is string {
-                    self.retrieveGeneratedConfigmapForDefinition(apiArtifact, payload, definition, uniqueId, organization);
+                    check self.retrieveGeneratedConfigmapForDefinition(apiArtifact, payload, definition, uniqueId, organization);
                 } else {
                     model:API? aPI = getAPI(apiId, organization);
                     if aPI is model:API {
                         json internalDefinition = check self.getDefinition(aPI);
                         json generatedSwagger = check self.retrieveGeneratedSwaggerDefinition(payload, internalDefinition.toJsonString());
-                        self.retrieveGeneratedConfigmapForDefinition(apiArtifact, payload, generatedSwagger, uniqueId, organization);
+                        check self.retrieveGeneratedConfigmapForDefinition(apiArtifact, payload, generatedSwagger, uniqueId, organization);
                     }
                 }
                 self.generateAndSetAPICRArtifact(apiArtifact, payload, organization);
