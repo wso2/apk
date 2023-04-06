@@ -423,7 +423,8 @@ public class APIClient {
             self.generateAndSetPolicyCRArtifact(apiArtifact, api, organization);
             self.generateAndSetRuntimeAPIArtifact(apiArtifact, api, (), organization, userName);
             model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact, organization);
-            CreatedAPI createdAPI = {body: check convertK8sAPItoAPI(deployAPIToK8sResult, true)};
+            string locationUrl = runtimeConfiguration.baseURL.url + "/apis/" + deployAPIToK8sResult.metadata.uid.toString();
+            CreatedAPI createdAPI = {body: check convertK8sAPItoAPI(deployAPIToK8sResult, false), headers: {location: locationUrl}};
             return createdAPI;
         } on fail var e {
             if e is commons:APKError {

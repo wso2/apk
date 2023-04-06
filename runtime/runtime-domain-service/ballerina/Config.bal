@@ -41,6 +41,7 @@ public type Header record {|
 # + controlPlane - Field Description  
 # + orgResolver - Field Description 
 # + gatewayConfiguration - Gateway Configuration with name and listener name  
+# + baseURL - Router Configuration with runtime base url
 public type RuntimeConfiguratation record {|
     
     (string[] & readonly) serviceListingNamespaces = [ALL_NAMESPACES];
@@ -52,6 +53,7 @@ public type RuntimeConfiguratation record {|
     commons:IDPConfiguration idpConfiguration;
     ControlPlaneConfiguration controlPlane;
     (GatewayConfigurations & readonly) gatewayConfiguration = {};
+    BaseURL baseURL = {};
 
     string orgResolver = ORG_RESOLVER_CONTROL_PLANE; // controlPlane, k8s/none
 |};
@@ -92,4 +94,8 @@ public type KeyStores record {|
 public type GatewayConfigurations record {|
     string name = "default";
     string listenerName = "httpslistener";
+|};
+
+public type BaseURL record {|
+    string url = "https://prod.api.am.wso2.com:9095/api/am/runtime";
 |};
