@@ -71,7 +71,7 @@ wso2:
             failureThreshold: 5
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           image: wso2/devportal-domain-service:latest
       admin:
         appName: "admin-ds"
@@ -98,7 +98,7 @@ wso2:
             failureThreshold: 5
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           image: wso2/admin-domain-service:latest
       backoffice:
         appName: "backoffice-ds"
@@ -125,7 +125,7 @@ wso2:
             failureThreshold: 5
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           image: wso2/backoffice-domain-service:latest
       devportalUI:
         appName: "devportal-ui"
@@ -168,7 +168,7 @@ wso2:
               cpu: "1000m"
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           image: wso2/management-server:latest
           readinessProbe:
             initialDelaySeconds: 20
@@ -245,7 +245,7 @@ wso2:
             failureThreshold: 5
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           image: wso2/runtime-domain-service:latest
         # configs:
         #   tls:
@@ -273,8 +273,8 @@ wso2:
             failureThreshold: 5
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: IfNotPresent
-          image: adapter:0.0.1-SNAPSHOT
+          imagePullPolicy: Always
+          image: wso2/adapter:latest
           security:
             sslHostname: "adapter"
         # configs:
@@ -311,7 +311,7 @@ wso2:
             failureThreshold: 5
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           image: wso2/ratelimiter:latest
           security:
             sslHostname: "ratelimiter"
@@ -345,8 +345,8 @@ wso2:
               periodSeconds: 20
               failureThreshold: 5
             strategy: Recreate
-            imagePullPolicy: IfNotPresent
-            image: router:0.0.1-SNAPSHOT
+            imagePullPolicy: Always
+            image: wso2/router:latest
             # configs:
             #   tls:
             #     certificatesSecret: "router-cert"
@@ -370,7 +370,7 @@ wso2:
               periodSeconds: 20
               failureThreshold: 5
             strategy: Recreate
-            imagePullPolicy: IfNotPresent
+            imagePullPolicy: Always
             image: wso2/enforcer:latest
             security:
               sslHostname: "enforcer"
@@ -459,7 +459,7 @@ idp:
         failureThreshold: 5
       strategy: Recreate
       replicas: 1
-      imagePullPolicy: IfNotPresent
+      imagePullPolicy: Always
       image: wso2/idp-domain-service:latest
   idpui:
     appName: "idp-ui"
@@ -486,7 +486,7 @@ idp:
         failureThreshold: 5
       strategy: Recreate
       replicas: 1
-      imagePullPolicy: IfNotPresent
+      imagePullPolicy: Always
       image: wso2/idp-ui:latest
     configs:
       idpLoginUrl: "https://prod.idp.am.wso2.com:9095/commonauth/login"

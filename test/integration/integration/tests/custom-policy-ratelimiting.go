@@ -25,8 +25,8 @@ import (
 )
  
  func init() {
-	 // TODO (Amila): Uncomment once AKS test runner is enabled
-	 IntegrationTests = append(IntegrationTests, CustomRateLimitPolicies)
+	 // TODO (lahirude@wso2.com): Uncomment once AKS test runner is enabled
+	 // IntegrationTests = append(IntegrationTests, CustomRateLimitPolicies)
  }
  
  // APILevelInterceptors test
@@ -133,3 +133,4 @@ import (
 		 }
 	 },
  }
+ 
