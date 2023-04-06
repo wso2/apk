@@ -2140,10 +2140,12 @@ public class APIClient {
                         port: check self.getPort(url)
                     }
                 ],
-                protocol: url.startsWith("https:") ? "https" : "http",
-                security: (securityConfig is model:SecurityConfig) ? [securityConfig] : []
+                protocol: url.startsWith("https:") ? "https" : "http"
             }
         };
+        if <boolean>endpointSecurity?.enabled {
+            backendService.spec.security = [securityConfig];
+        }
         if configMapName is string && backendService.spec.protocol == "https" {
             backendService.spec.tls = {
                 configMapRef: {
