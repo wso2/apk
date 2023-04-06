@@ -712,7 +712,7 @@ func (apiReconciler *APIReconciler) getAPIsForAuthentication(obj k8client.Object
 	requests := []reconcile.Request{}
 
 	// todo(amali) move this validation to validation hook
-	if !(authentication.Spec.TargetRef.Kind == constants.KindHTTPRoute || authentication.Spec.TargetRef.Kind == constants.KindResource) {
+	if !(authentication.Spec.TargetRef.Kind == constants.KindAPI || authentication.Spec.TargetRef.Kind == constants.KindResource) {
 		loggers.LoggerAPKOperator.Errorf("Unsupported target ref kind : %s was given for authentication: %s",
 			authentication.Spec.TargetRef.Kind, authentication.Name)
 		return requests
@@ -763,7 +763,7 @@ func (apiReconciler *APIReconciler) getAPIsForAPIPolicy(obj k8client.Object) []r
 	requests := []reconcile.Request{}
 
 	// todo(amali) move this validation to validation hook
-	if !(apiPolicy.Spec.TargetRef.Kind == constants.KindHTTPRoute || apiPolicy.Spec.TargetRef.Kind == constants.KindResource) {
+	if !(apiPolicy.Spec.TargetRef.Kind == constants.KindAPI || apiPolicy.Spec.TargetRef.Kind == constants.KindResource) {
 		loggers.LoggerAPKOperator.Errorf("Unsupported target ref kind : %s was given for authentication: %s",
 			apiPolicy.Spec.TargetRef.Kind, apiPolicy.Name)
 		return requests
@@ -1023,7 +1023,7 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 		func(rawObj k8client.Object) []string {
 			authentication := rawObj.(*dpv1alpha1.Authentication)
 			var httpRoutes []string
-			if authentication.Spec.TargetRef.Kind == constants.KindHTTPRoute {
+			if authentication.Spec.TargetRef.Kind == constants.KindAPI {
 				httpRoutes = append(httpRoutes,
 					types.NamespacedName{
 						Namespace: utils.GetNamespace(
@@ -1064,7 +1064,7 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 		func(rawObj k8client.Object) []string {
 			ratelimitPolicy := rawObj.(*dpv1alpha1.RateLimitPolicy)
 			var httpRoutes []string
-			if ratelimitPolicy.Spec.TargetRef.Kind == constants.KindHTTPRoute {
+			if ratelimitPolicy.Spec.TargetRef.Kind == constants.KindAPI {
 				httpRoutes = append(httpRoutes,
 					types.NamespacedName{
 						Namespace: utils.GetNamespace(
@@ -1147,7 +1147,7 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 		func(rawObj k8client.Object) []string {
 			apiPolicy := rawObj.(*dpv1alpha1.APIPolicy)
 			var httpRoutes []string
-			if apiPolicy.Spec.TargetRef.Kind == constants.KindHTTPRoute {
+			if apiPolicy.Spec.TargetRef.Kind == constants.KindAPI {
 				httpRoutes = append(httpRoutes,
 					types.NamespacedName{
 						Namespace: utils.GetNamespace(

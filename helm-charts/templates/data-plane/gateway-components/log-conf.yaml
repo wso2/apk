@@ -56,11 +56,16 @@ data:
       name = "Domain-service-idp"
       issuer = "{{ .Values.wso2.apk.idp.issuer }}"
       certificateAlias = "wso2carbon"
+      {{ if .Values.wso2.apk.idp.jwksEndpoint }}
       jwksURL = "{{ .Values.wso2.apk.idp.jwksEndpoint }}"
+      {{ end }}
       validateSubscription = true
-      consumerKeyClaim = "clientId"
+      consumerKeyClaim = "{{ .Values.wso2.apk.idp.consumerKeyClaim | default "azp" }}"
+      {{ if .Values.wso2.apk.idp.certificatesSecret }}
+      certificateFilePath = "/home/wso2/security/truststore/idp.pem"
+      {{ else }}
       certificateFilePath = "/home/wso2/security/truststore/wso2carbon.pem"
-
+      {{ end }}
     [[enforcer.security.tokenService]]
       name = ""
       issuer = "{{ .Values.wso2.apk.idp.issuer }}"
@@ -128,12 +133,18 @@ data:
     {{ if .Values.wso2.apk.dp.ratelimiter }}
     [router.ratelimit]
       host = "{{ template "apk-helm.resource.prefix" . }}-ratelimiter-service.{{ .Release.Namespace }}.svc"
-      enabled = {{.Values.wso2.apk.dp.ratelimiter.enabled}}
+      enabled = {{ and .Values.wso2.apk.dp.enabled .Values.wso2.apk.dp.ratelimiter.enabled}}
       keyFilePath = "/home/wso2/security/keystore/router.key"
       certFilePath = "/home/wso2/security/keystore/router.crt"
       caCertFilePath = "/home/wso2/security/truststore/ratelimiter.crt"
     {{end}}
-
+    {{ if .Values.wso2.apk.dp.partitionService}}
+    [partitionServer]
+      enabled = {{.Values.wso2.apk.dp.partitionService.enabled}}
+      host = "{{ .Values.wso2.apk.dp.partitionService.host}}"
+      serviceBasePath = "{{ .Values.wso2.apk.dp.partitionService.serviceBasePath}}"
+      partitionName = "{{ .Values.wso2.apk.dp.partitionService.partitionName}}"
+    {{end}}
 {{ if and .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.filters }}
 {{ range $index, $filter := .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.filters}}
     [[enforcer.filters]]

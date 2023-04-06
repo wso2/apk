@@ -98,6 +98,6 @@ spec:
         - type: jwt
   targetRef:
     group: gateway.networking.k8s.io
-    kind: HTTPRoute
+    kind: API
     namespace: gateway-integration-test-infra
     name: disable-api-security-httproute

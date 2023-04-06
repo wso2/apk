@@ -18,7 +18,10 @@
 package synchronizer
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"strings"
 
 	"context"
@@ -47,10 +50,12 @@ type APIEvent struct {
 var (
 	// TODO: Decide on a buffer size and add to config.
 	mgtServerCh chan APIEvent
+	paritionCh  chan APIEvent
 )
 
 func init() {
 	mgtServerCh = make(chan APIEvent, 10)
+	paritionCh = make(chan APIEvent, 10)
 }
 
 // HandleAPILifeCycleEvents handles the API events generated from OperatorDataStore
@@ -75,6 +80,9 @@ func HandleAPILifeCycleEvents(ch *chan APIEvent) {
 		} else {
 			if config.ReadConfigs().ManagementServer.Enabled {
 				mgtServerCh <- event
+			}
+			if config.ReadConfigs().PartitionServer.Enabled {
+				paritionCh <- event
 			}
 		}
 	}
@@ -201,9 +209,9 @@ func SendAPIToAPKMgtServer() {
 				loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2634, address, err))
 			}
 			_, err = client.ExecuteGRPCCall(func() (interface{}, error) {
-				var definition string;
-				var errDef error;
-				definition, errDef = runtime.GetAPIDefinition(string(api.APIDefinition.GetUID()), api.APIDefinition.Spec.Organization);
+				var definition string
+				var errDef error
+				definition, errDef = runtime.GetAPIDefinition(string(api.APIDefinition.GetUID()), api.APIDefinition.Spec.Organization)
 				if strings.Compare(apiEvent.EventType, constants.Create) == 0 {
 					if errDef != nil {
 						return nil, err
@@ -250,6 +258,70 @@ func SendAPIToAPKMgtServer() {
 			}
 		}
 	}
+}
+
+// SendEventToPartitionServer sends the API create/update/delete event to the partition server.
+func SendEventToPartitionServer() {
+	conf := config.ReadConfigs()
+	for apiEvent := range paritionCh {
+		if !apiEvent.Event.APIDefinition.Spec.SystemAPI {
+			loggers.LoggerAPKOperator.Infof("Sending API to APK management server: %v", apiEvent.Event.APIDefinition.Spec.APIDisplayName)
+			api := apiEvent.Event
+			eventType := apiEvent.EventType
+			context := api.APIDefinition.Spec.Context
+			organization := api.APIDefinition.Spec.Organization
+			version := api.APIDefinition.Spec.APIVersion
+			apiName := api.APIDefinition.Spec.APIDisplayName
+			apiUUID := string(api.APIDefinition.GetUID())
+			var hostNames []string
+			httpRoute := api.ProdHTTPRoute
+			if httpRoute == nil {
+				httpRoute = api.SandHTTPRoute
+			}
+			for _, hostName := range httpRoute.HTTPRoute.Spec.Hostnames {
+				hostNames = append(hostNames, string(hostName))
+			}
+			data := PartitionEvent{
+				EventType:      eventType,
+				APIContext:     context,
+				OrganizationID: organization,
+				APIVersion:     version,
+				APIName:        apiName,
+				APIUUID:        apiUUID,
+				Vhosts:         hostNames,
+				PartitionID:    conf.PartitionServer.PartitionName,
+			}
+			payload, err := json.Marshal(data)
+			if err != nil {
+				loggers.LoggerAPKOperator.Errorf("Error creating Event: %v", err)
+			}
+			req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s%s", conf.PartitionServer.Host, conf.PartitionServer.ServiceBasePath), bytes.NewBuffer(payload))
+			if err != nil {
+				loggers.LoggerAPKOperator.Errorf("Error creating api definition request: %v", err)
+			}
+			req.Header.Set("Content-Type", "application/json; charset=UTF-8")
+			client := &http.Client{}
+			resp, err := client.Do(req)
+			if err != nil {
+				loggers.LoggerAPKOperator.Errorf("Error sending API Event: %v", err)
+			}
+			if resp.StatusCode != http.StatusAccepted {
+				loggers.LoggerAPKOperator.Info("API Event Accepted", resp.Status)
+			}
+		}
+	}
+}
+
+// PartitionEvent is the event sent to the partition server.
+type PartitionEvent struct {
+	EventType      string   `json:"eventType"`
+	APIName        string   `json:"apiName"`
+	APIVersion     string   `json:"apiVersion"`
+	APIContext     string   `json:"apiContext"`
+	OrganizationID string   `json:"organizationId"`
+	PartitionID    string   `json:"partitionId"`
+	APIUUID        string   `json:"apiId"`
+	Vhosts         []string `json:"vhosts"`
 }
 
 // getResourcesForAPI returns []*apiProtos.Resource for HTTPRoute

@@ -50,7 +50,7 @@ func GetAPIDefinition(apiUUID string, organizationUUID string) (string, error) {
 	response, err := runtimeClient.Do(req)
 	if err != nil {
 		loggers.LoggerAPKOperator.Errorf("Error retrieving api definition: %v", err)
-		return "", err;
+		return "", err
 	}
 	defer response.Body.Close()
 	if response.StatusCode == http.StatusOK {
@@ -60,5 +60,5 @@ func GetAPIDefinition(apiUUID string, organizationUUID string) (string, error) {
 		}
 		definitionString = string(bodyBytes)
 	}
-	return definitionString, nil;
+	return definitionString, nil
 }

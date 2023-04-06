@@ -93,7 +93,7 @@ spec:
             {{- else }}
               subPath: tls.crt
             {{- end }}
-        {{ if .Values.wso2.apk.dp.ratelimiter.enabled }}
+        {{ if and .Values.wso2.apk.dp.enabled .Values.wso2.apk.dp.ratelimiter.enabled }}
             - name: ratelimiter-truststore-secret-volume
               mountPath: /home/wso2/security/truststore/ratelimiter.crt
             {{- if and .Values.wso2.apk.dp.ratelimiter.configs .Values.wso2.apk.dp.ratelimiter.configs.tls }}
@@ -116,13 +116,7 @@ spec:
             - mountPath: /tmp/k8s-webhook-server/serving-certs
               name: adapter-webhook-server-cert
               readOnly: true
-            - name:  management-server-truststore-secret-volume
-              mountPath: /home/wso2/security/truststore/management-server.crt
-            {{- if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.cp.managementServer.configs.tls }}
-              subPath: {{ .Values.wso2.apk.cp.managementServer.configs.tls.certFilename | default "tls.key" }}
-            {{- else }}
-              subPath: tls.crt
-            {{- end }}
+            {{ if .Values.wso2.apk.dp.enabled}}
             - name: runtime-ds-tls-volume
               mountPath: /home/wso2/security/truststore/runtime.pem
             {{- if and .Values.wso2.apk.dp.runtime.configs .Values.wso2.apk.dp.runtime.configs.tls }}
@@ -130,7 +124,14 @@ spec:
             {{- else }}
               subPath: tls.crt
             {{- end }}
-
+            {{ end }}
+            - name:  management-server-truststore-secret-volume
+              mountPath: /home/wso2/security/truststore/management-server.crt
+            {{- if and .Values.wso2.apk.cp.managementServer.configs .Values.wso2.apk.cp.managementServer.configs.tls }}
+              subPath: {{ .Values.wso2.apk.cp.managementServer.configs.tls.certFilename | default "tls.key" }}
+            {{- else }}
+              subPath: tls.crt
+            {{- end }}
           readinessProbe:
             exec:
               command: [ "sh", "check_health.sh" ]
@@ -169,6 +170,15 @@ spec:
           secret:
             secretName: {{ template "apk-helm.resource.prefix" . }}-webhook-server-cert
             defaultMode: 420
+        {{ if .Values.wso2.apk.dp.enabled}}
+        - name: runtime-ds-tls-volume
+          secret:
+       {{ if and .Values.wso2.apk.dp.runtime.configs .Values.wso2.apk.dp.runtime.configs.tls }}
+            secretName: {{ .Values.wso2.apk.dp.runtime.configs.tls.certificatesSecret | default (printf "%s-runtime-ds-server-cert" (include "apk-helm.resource.prefix" .)) }}
+       {{ else }}
+            secretName: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-server-cert
+       {{ end }}
+        {{ end }}
         - name: router-truststore-secret-volume
           secret: 
             {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls }}
@@ -176,7 +186,7 @@ spec:
           {{- else }}
             secretName: {{ template "apk-helm.resource.prefix" . }}-router-server-cert
           {{- end }}
-      {{ if .Values.wso2.apk.dp.ratelimiter.enabled }}
+      {{ if and .Values.wso2.apk.dp.enabled .Values.wso2.apk.dp.ratelimiter.enabled }}
         - name: ratelimiter-truststore-secret-volume
           secret:
             {{- if and .Values.wso2.apk.dp.ratelimiter.configs .Values.wso2.apk.dp.ratelimiter.configs.tls }}
@@ -195,12 +205,5 @@ spec:
         - name: management-server-truststore-secret-volume
           secret: 
             secretName: "apk-root-certificate"
-        - name: runtime-ds-tls-volume
-          secret:
-       {{ if and .Values.wso2.apk.dp.runtime.configs .Values.wso2.apk.dp.runtime.configs.tls }}
-            secretName: {{ .Values.wso2.apk.dp.runtime.configs.tls.certificatesSecret | default (printf "%s-runtime-ds-server-cert" (include "apk-helm.resource.prefix" .)) }}
-       {{ else }}
-            secretName: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-server-cert
-       {{ end }}
 
 {{- end -}}
