@@ -28,7 +28,8 @@ spec:
   apiVersion: "1.0.0"
   context: "/api/am/devportal/1.0.0"
   organization: "carbon.super"
-  prodHTTPRouteRefs:
-    - {{ template "apk-helm.resource.prefix" . }}-devportal-ds-httproute
+  production:
+    - httpRouteRefs:
+      - {{ template "apk-helm.resource.prefix" . }}-devportal-ds-httproute
   systemAPI: true
 {{- end -}}

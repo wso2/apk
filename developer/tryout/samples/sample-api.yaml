@@ -23,11 +23,13 @@ spec:
   apiVersion: 1.0.8
   context: /http-bin-api/1.0.8
   definitionFileRef: swagger-definition-http-bin-api
-  prodHTTPRouteRefs:
-  - prod-http-route-http-bin-api-p1
-  - prod-http-route-http-bin-api-p2
-  sandHTTPRouteRefs:
-  - sand-http-route-http-bin-api
+  production:
+    - httpRouteRefs:
+      - prod-http-route-http-bin-api-p1
+      - prod-http-route-http-bin-api-p2
+  sandbox:
+    - httpRouteRefs:
+      - sand-http-route-http-bin-api
   organization: a3b58ccf-6ecc-4557-b5bb-0a35cce38256
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1

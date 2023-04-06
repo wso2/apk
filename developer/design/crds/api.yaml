@@ -10,12 +10,14 @@ spec:
     valueFrom:
      configRef: swagger-definition-SwaggerPetstore.namespace
      uRL: http://example.com
-  prodHTTPRouteRefs:
-  - http-route-SwaggerPetstore-p1
-  - http-route-SwaggerPetstore-p2
-  sandHTTPRouteRef:
-  - http-route-SwaggerPetstore-sand-p1
-  - http-route-SwaggerPetstore-sand-p2
+  production:
+    - httpRouteRefs:
+      - http-route-SwaggerPetstore-p1
+      - http-route-SwaggerPetstore-p2
+  sandbox:
+    - httpRouteRefs:
+      - http-route-SwaggerPetstore-sand-p1
+      - http-route-SwaggerPetstore-sand-p2
   apiType: REST / GraphQL / Async
   context: /pet-store-api/1.0.6
   organization: org1

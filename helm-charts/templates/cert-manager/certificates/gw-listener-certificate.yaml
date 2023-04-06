@@ -13,24 +13,22 @@
 # KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations
 # under the License.
+
+# The following manifests contain a self-signed issuer CR and a certificate CR.
+# More document can be found at https://docs.cert-manager.io
+
 {{- if .Values.wso2.apk.dp.enabled }}
-kind: "API"
-apiVersion: "dp.wso2.com/v1alpha1"
+apiVersion: cert-manager.io/v1
+kind: Certificate
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-api
+  name: {{ template "apk-helm.resource.prefix" . }}-gw-listener-cert
   namespace: {{ .Release.Namespace }}
-  labels:
-    api-name: "runtime-domain-service"
-    api-version: "1.0.0"
 spec:
-  apiDisplayName: "Runtime Domain Service API"
-  apiType: "REST"
-  apiVersion: "1.0.0"
-  context: "/api/am/runtime/1.0.0"
-  organization: "carbon.super"
-  definitionFileRef: ""
-  production:
-    - httpRouteRefs:
-      - {{ template "apk-helm.resource.prefix" . }}-runtime-ds-httproute
-  systemAPI: true
+  dnsNames:
+  - "*.gw.wso2.com"
+  - "prod.gw.wso2.com"
+  issuerRef:
+    kind: ClusterIssuer
+    name: selfsigned-issuer
+  secretName: {{ template "apk-helm.resource.prefix" . }}-gw-listener-cert
 {{- end -}}
