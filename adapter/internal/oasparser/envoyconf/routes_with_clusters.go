@@ -736,7 +736,7 @@ end`
 			Override: &lua.LuaPerRoute_SourceCode{
 				SourceCode: &corev3.DataSource{
 					Specifier: &corev3.DataSource_InlineString{
-						InlineString: getInlineLuaScript(requestInterceptor, responseInterceptor, iInvCtx),
+						InlineString: GetInlineLuaScript(requestInterceptor, responseInterceptor, iInvCtx),
 					},
 				},
 			},
@@ -752,26 +752,11 @@ end`
 		Value:   luaMarshelled.Bytes(),
 	}
 
-	// global lua filter per route config is always disabled
-	luaPerFilterConfigGlobal := lua.LuaPerRoute{
-		Override: &lua.LuaPerRoute_Disabled{Disabled: true},
-	}
-
-	luaGlobalMarshelled := proto.NewBuffer(nil)
-	luaGlobalMarshelled.SetDeterministic(true)
-	_ = luaGlobalMarshelled.Marshal(&luaPerFilterConfigGlobal)
-
-	luaFilterGlobal := &any.Any{
-		TypeUrl: luaPerRouteName,
-		Value:   luaGlobalMarshelled.Bytes(),
-	}
-
 	corsFilter, _ := anypb.New(corsPolicy)
 
 	perRouteFilterConfigs := map[string]*any.Any{
 		wellknown.HTTPExternalAuthorization: extAuthzFilter,
-		LuaGlobal:                           luaFilterGlobal,
-		wellknown.Lua:                       luaFilter,
+		LuaLocal:                            luaFilter,
 		wellknown.CORS:                      corsFilter,
 	}
 
@@ -973,7 +958,8 @@ end`
 	return routes, nil
 }
 
-func getInlineLuaScript(requestInterceptor map[string]model.InterceptEndpoint, responseInterceptor map[string]model.InterceptEndpoint,
+// GetInlineLuaScript creates the inline lua script
+func GetInlineLuaScript(requestInterceptor map[string]model.InterceptEndpoint, responseInterceptor map[string]model.InterceptEndpoint,
 	requestContext *interceptor.InvocationContext) string {
 
 	i := &interceptor.Interceptor{

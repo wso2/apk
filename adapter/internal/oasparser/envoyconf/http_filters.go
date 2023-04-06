@@ -54,7 +54,7 @@ import (
 func getHTTPFilters(globalLuaScript string) []*hcmv3.HttpFilter {
 	extAuth := getExtAuthzHTTPFilter()
 	router := getRouterHTTPFilter()
-	lua := getLuaFilter(wellknown.Lua, `
+	luaLocal := getLuaFilter(LuaLocal, `
 function envoy_on_request(request_handle)
 end
 function envoy_on_response(response_handle)
@@ -65,8 +65,8 @@ end`)
 	httpFilters := []*hcmv3.HttpFilter{
 		cors,
 		extAuth,
+		luaLocal,
 		luaGlobal,
-		lua,
 	}
 	conf := config.ReadConfigs()
 	if conf.Envoy.RateLimit.Enabled {

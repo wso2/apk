@@ -146,3 +146,6 @@ const (
 
 // LuaGlobal is the lua filter name for global lua filter
 const LuaGlobal = "envoy.filters.http.lua.global"
+
+// LuaLocal is the lua filter name for local lua filter
+const LuaLocal = "envoy.filters.http.lua.local"

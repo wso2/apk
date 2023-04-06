@@ -49,7 +49,6 @@ import (
 	wso2_cache "github.com/wso2/apk/adapter/pkg/discovery/protocol/cache/v3"
 	wso2_resource "github.com/wso2/apk/adapter/pkg/discovery/protocol/resource/v3"
 	eventhubTypes "github.com/wso2/apk/adapter/pkg/eventhub/types"
-	"github.com/wso2/apk/adapter/pkg/operator/apis/dp/v1alpha1"
 	operatorconsts "github.com/wso2/apk/adapter/pkg/operator/constants"
 	"github.com/wso2/apk/adapter/pkg/utils/stringutils"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
@@ -475,6 +474,30 @@ func checkRoutes(routes []*routev3.Route, routesFromListener []*routev3.Route) b
 // GenerateGlobalClusters generates the globally available clusters and endpoints.
 func GenerateGlobalClusters(label string) {
 	clusters, endpoints := oasParser.GetGlobalClusters()
+	envoyClusterConfigMap[label] = clusters
+	envoyEndpointConfigMap[label] = endpoints
+}
+
+// GenerateGlobalClustersWithInterceptors generates the globally available clusters and endpoints with interceptors.
+func GenerateGlobalClustersWithInterceptors(label string,
+	gwReqICluster *clusterv3.Cluster, gwReqIAddresses []*corev3.Address,
+	gwResICluster *clusterv3.Cluster, gwResIAddresses []*corev3.Address) {
+	clusters, endpoints := oasParser.GetGlobalClusters()
+
+	if gwReqICluster != nil && len(gwReqIAddresses) > 0 {
+		clusters = append(clusters, gwReqICluster)
+		for _, ep := range gwReqIAddresses {
+			endpoints = append(endpoints, ep)
+		}
+	}
+
+	if gwResICluster != nil && len(gwResIAddresses) > 0 {
+		clusters = append(clusters, gwResICluster)
+		for _, ep := range gwResIAddresses {
+			endpoints = append(endpoints, ep)
+		}
+	}
+
 	envoyClusterConfigMap[label] = clusters
 	envoyEndpointConfigMap[label] = endpoints
 }
@@ -929,8 +952,8 @@ func UpdateAPICache(vHosts []string, newLabels []string, newlistenersForRoutes [
 
 // UpdateGatewayCache updates the xDS cache related to the Gateway Lifecycle event.
 func UpdateGatewayCache(gateway *gwapiv1b1.Gateway, resolvedListenerCerts map[string]map[string][]byte,
-	gatewayAPIPolicies map[string]v1alpha1.APIPolicy, gatewayBackendMapping v1alpha1.BackendMapping, customRateLimitPolicies []*model.CustomRateLimitPolicy) error {
-	listener := oasParser.GetProductionListener(gateway, resolvedListenerCerts, gatewayAPIPolicies, gatewayBackendMapping)
+	gwLuaScript string, customRateLimitPolicies []*model.CustomRateLimitPolicy) error {
+	listener := oasParser.GetProductionListener(gateway, resolvedListenerCerts, gwLuaScript)
 	envoyListenerConfigMap[gateway.Name] = listener
 	conf := config.ReadConfigs()
 	if conf.Envoy.RateLimit.Enabled {
