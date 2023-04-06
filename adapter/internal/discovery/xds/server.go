@@ -927,9 +927,8 @@ func UpdateAPICache(vHosts []string, newLabels []string, newlistenersForRoutes [
 }
 
 // UpdateGatewayCache updates the xDS cache related to the Gateway Lifecycle event.
-func UpdateGatewayCache(gateway *gwapiv1b1.Gateway, customRateLimitPolicies []*model.CustomRateLimitPolicy) error {
-	listener := oasParser.GetProductionListener(gateway)
-func UpdateGatewayCache(gateway *gwapiv1b1.Gateway, resolvedListenerCerts map[string]map[string][]byte) error {
+func UpdateGatewayCache(gateway *gwapiv1b1.Gateway, resolvedListenerCerts map[string]map[string][]byte, 
+	customRateLimitPolicies []*model.CustomRateLimitPolicy) error {
 	listener := oasParser.GetProductionListener(gateway, resolvedListenerCerts)
 	envoyListenerConfigMap[gateway.Name] = listener
 	conf := config.ReadConfigs()

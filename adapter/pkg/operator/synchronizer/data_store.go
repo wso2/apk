@@ -285,9 +285,8 @@ func (ods *OperatorDataStore) DeleteCachedAPI(apiName types.NamespacedName) {
 }
 
 // AddGatewayState stores a new Gateway in the OperatorDataStore.
-func (ods *OperatorDataStore) AddGatewayState(gateway gwapiv1b1.Gateway, 
+func (ods *OperatorDataStore) AddGatewayState(gateway gwapiv1b1.Gateway, resolvedListenerCerts map[string]map[string][]byte, 
 	customRateLimitPolicies []*dpv1alpha1.RateLimitPolicy) GatewayState {
-func (ods *OperatorDataStore) AddGatewayState(gateway gwapiv1b1.Gateway, resolvedListenerCerts map[string]map[string][]byte) GatewayState {
 	ods.mu.Lock()
 	defer ods.mu.Unlock()
 
@@ -304,14 +303,12 @@ func (ods *OperatorDataStore) AddGatewayState(gateway gwapiv1b1.Gateway, resolve
 }
 
 // UpdateGatewayState update/create the GatewayState on ref updates
-func (ods *OperatorDataStore) UpdateGatewayState(gatewayDef *gwapiv1b1.Gateway, 
+func (ods *OperatorDataStore) UpdateGatewayState(gatewayDef *gwapiv1b1.Gateway, resolvedListenerCerts map[string]map[string][]byte, 
 	customRateLimitPolicies []*dpv1alpha1.RateLimitPolicy) (GatewayState, []string, bool) {
-func (ods *OperatorDataStore) UpdateGatewayState(gatewayDef *gwapiv1b1.Gateway, resolvedListenerCerts map[string]map[string][]byte) (GatewayState, []string, bool) {
 	_, found := ods.gatewayStore[utils.NamespacedName(gatewayDef)]
 	if !found {
 		loggers.LoggerAPKOperator.Infof("Adding new gatewaystate as Gateway : %s has not found in memory datastore.", gatewayDef.Name)
-		gatewayState := ods.AddGatewayState(*gatewayDef, resolvedListenerCerts)
-		gatewayState := ods.AddGatewayState(*gatewayDef, customRateLimitPolicies)
+		gatewayState := ods.AddGatewayState(*gatewayDef, resolvedListenerCerts, customRateLimitPolicies)
 		return gatewayState, []string{"GATEWAY"}, true
 	}
 	return ods.processGatewayState(gatewayDef, customRateLimitPolicies)

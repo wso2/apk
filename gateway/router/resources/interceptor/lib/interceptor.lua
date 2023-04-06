@@ -234,7 +234,7 @@ local function include_invocation_context(handle, req_flow_includes, resp_flow_i
         }
         table.shallow_copy(inv_context, inv_context_body)
         -- remove organizationId from invocationContext, since it should not be sent to the interceptor service
-        inv_context_body[INV_CONTEXT.ORG_ID] = nil
+        -- inv_context_body[INV_CONTEXT.ORG_ID] = nil
 
         --#region auth context
         local ext_authz_meta =  handle:streamInfo():dynamicMetadata():get(EXT_AUTHZ_FILTER)

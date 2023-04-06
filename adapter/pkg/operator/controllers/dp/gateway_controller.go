@@ -152,13 +152,11 @@ func (gatewayReconciler *GatewayReconciler) Reconcile(ctx context.Context, req c
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2650, err))
 	}
 	if gwCondition[0].Type != "Accepted" {
-		gatewayState := gatewayReconciler.ods.AddGatewayState(gatewayDef, customRateLimitPolicies)
-		gatewayState := gatewayReconciler.ods.AddGatewayState(gatewayDef, resolvedListenerCerts)
+		gatewayState := gatewayReconciler.ods.AddGatewayState(gatewayDef, resolvedListenerCerts, customRateLimitPolicies)
 		*gatewayReconciler.ch <- synchronizer.GatewayEvent{EventType: constants.Create, Event: gatewayState}
 		gatewayReconciler.handleGatewayStatus(req.NamespacedName, constants.DeployedState, []string{})
 	} else if cachedGateway, events, updated :=
-		gatewayReconciler.ods.UpdateGatewayState(&gatewayDef, customRateLimitPolicies); updated {
-		gatewayReconciler.ods.UpdateGatewayState(&gatewayDef, resolvedListenerCerts); updated {
+		gatewayReconciler.ods.UpdateGatewayState(&gatewayDef, resolvedListenerCerts, customRateLimitPolicies); updated {
 		*gatewayReconciler.ch <- synchronizer.GatewayEvent{EventType: constants.Update, Event: cachedGateway}
 		gatewayReconciler.handleGatewayStatus(req.NamespacedName, constants.UpdatedState, events)
 	}
