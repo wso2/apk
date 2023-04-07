@@ -62,3 +62,7 @@ const string CERTIFICATE_HOSTS = "wso2apk/certificate-host";
 const string CERTIFICATE_KEY_CONFIG_MAP = "endoint.crt";
 const string CONFIG_TYPE_LABEL_VALUE = "certificate";
 const string CONFIGMAP_DEFINITION_KEY = "definition";
+
+const string ORG_RESOLVER_CONTROL_PLANE = "controlPlane";
+const string ORG_RESOLVER_K8s = "k8s";
+const string ORG_RESOLVER_NONE = "none";

@@ -53,7 +53,7 @@ public type RuntimeConfiguratation record {|
     ControlPlaneConfiguration controlPlane;
     (GatewayConfigurations & readonly) gatewayConfiguration = {};
 
-    string orgResolver = "controlPlane"; // controlPlane, k8s
+    string orgResolver = ORG_RESOLVER_CONTROL_PLANE; // controlPlane, k8s/none
 |};
 
 public type Vhost record {|

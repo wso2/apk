@@ -22,7 +22,7 @@ import ballerina/log;
 
 final postgresql:Client|sql:Error dbClient;
 
-public class DBBasedOrgResolver {
+public isolated class DBBasedOrgResolver {
     *OrganizationResolver;
     public function init(DatasourceConfiguration datasourceConfiguration) {
         dbClient =
@@ -38,7 +38,7 @@ public class DBBasedOrgResolver {
         }
     }
 
-    public isolated function retrieveOrganizationFromIDPClaimValue(string organizationClaim) returns Organization|APKError|() {
+    public isolated function retrieveOrganizationFromIDPClaimValue(map<anydata> claims,string organizationClaim) returns Organization|APKError|() {
         postgresql:Client|sql:Error dbClient1 = self.getConnection();
         if dbClient1 is sql:Error {
             log:printInfo("db error", dbClient1);

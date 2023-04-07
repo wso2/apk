@@ -15,20 +15,22 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-import ballerina/http;
 
-# Returns the error response.
-public isolated service class RequestErrorInterceptor {
-    *http:RequestErrorInterceptor;
+public isolated class JWTBaseOrgResolver {
+    *OrganizationResolver;
 
-    isolated resource function 'default [string... path](error err, http:RequestContext ctx) returns http:Response {
-        return getErrorResponse(err);
+    public isolated function retrieveOrganizationByName(string organizationName) returns Organization|APKError|() {
+        return;
+    }
+
+    public isolated function retrieveOrganizationFromIDPClaimValue(map<anydata> claims, string organizationClaim) returns Organization|APKError|() {
+        Organization organization = {
+            displayName: organizationClaim,
+            name: organizationClaim,
+            organizationClaimValue: organizationClaim,
+            uuid: organizationClaim,
+            enabled: true
+        };
+        return organization;
     }
 }
-
-public type ErrorDto record {|
-    int code;
-    string message;
-    string description;
-    map<string> moreInfo = {};
-|};
