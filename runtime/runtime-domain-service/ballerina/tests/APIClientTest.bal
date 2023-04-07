@@ -1963,6 +1963,7 @@ function validateExistenceDataProvider() returns map<[string, anydata]> {
 @test:Config {dataProvider: createApiFromServiceDataProvider}
 function testCreateAPIFromService(string serviceUUId, string apiUUID, [model:ConfigMap, any] configmapResponse, [model:Httproute, any] httproute, [model:K8sServiceMapping, any] servicemapping, [model:API, any] k8sAPI, [model:RuntimeAPI, any] runtimeAPI, API api, string k8sapiUUID, [model:Backend, any][] backendServices, [model:RateLimitPolicy?, any] rateLimitPolicy, anydata expected) returns error? {
     APIClient apiClient = new;
+    string username = "apkUser";
     http:Response configmapResponse404 = new;
     configmapResponse404.statusCode = 404;
     http:ApplicationResponseError internalApiResponse = error("", statusCode = 404, body = "Not Found", headers = {});
@@ -1997,7 +1998,7 @@ function testCreateAPIFromService(string serviceUUId, string apiUUID, [model:Con
     test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis/" + k8sAPI[0].metadata.name).thenReturn(runtimeAPI[0]);
     test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis/" + k8sAPI[0].metadata.name).thenReturn(configmapResponse404);
     test:prepare(k8sApiServerEp).when("delete").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis/" + k8sAPI[0].metadata.name).thenReturn(internalAPIDeletionResponse);
-    any|error aPIFromService = apiClient.createAPIFromService(serviceUUId, api, organiztion1);
+    any|error aPIFromService = apiClient.createAPIFromService(serviceUUId, api, organiztion1, username);
     if aPIFromService is any {
         test:assertEquals(aPIFromService.toBalString(), expected);
     } else {
@@ -2452,6 +2453,7 @@ function getMockAPI(API api, string apiUUID, string organization) returns model:
             "apiDisplayName": api.name,
             "apiType": "REST",
             "apiVersion": api.'version,
+            "apiProvider": "apkUser",
             "context": apiClient.returnFullContext(api.context, api.'version),
             "organization": organization,
             "definitionFileRef": apiUUID + "-definition",
@@ -2465,7 +2467,8 @@ function getMockAPI(API api, string apiUUID, string organization) returns model:
 
 function getMockRuntimeAPI(API api, string apiUUID, commons:Organization organization, Service? serviceEntry) returns model:RuntimeAPI {
     APIClient apiClient = new;
-    model:RuntimeAPI runtimeAPI = apiClient.generateRuntimeAPIArtifact(api, serviceEntry, organization);
+    string userName = "apkUser";
+    model:RuntimeAPI runtimeAPI = apiClient.generateRuntimeAPIArtifact(api, serviceEntry, organization, userName);
     if api.operations is () {
         runtimeAPI.spec.operations = [
             {
@@ -2522,6 +2525,7 @@ function getMockAPI1(API api, string apiUUID, string organization) returns model
             "apiDisplayName": api.name,
             "apiType": "REST",
             "apiVersion": api.'version,
+            "apiProvider": "apkUser",
             "context": apiClient.returnFullContext(api.context, api.'version),
             "organization": organization,
             "definitionFileRef": apiUUID + "-definition",
@@ -3060,6 +3064,7 @@ function testCreateAPI(string apiUUID, string backenduuid, API api, model:Config
         model:RateLimitPolicy? rateLimitPolicy, any rateLimitPolicyResponse
 , string k8sapiUUID, anydata expected) returns error? {
     APIClient apiClient = new;
+    string userName = "apkUser";
     test:prepare(k8sApiServerEp).when("post").withArguments("/api/v1/namespaces/apk-platform/configmaps", configmap).thenReturn(configmapDeployingResponse);
     if prodhttpRoute is model:Httproute {
         test:prepare(k8sApiServerEp).when("post").withArguments("/apis/gateway.networking.k8s.io/v1beta1/namespaces/apk-platform/httproutes", prodhttpRoute).thenReturn(prodhttpResponse);
@@ -3098,7 +3103,7 @@ function testCreateAPI(string apiUUID, string backenduuid, API api, model:Config
     test:prepare(k8sApiServerEp).when("delete").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis/" + k8sApi.metadata.name).thenReturn(internalAPIDeletionResponse);
     test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis/" + k8sApi.metadata.name).thenReturn(runtimeAPI);
     test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis/" + k8sApi.metadata.name).thenReturn(configmapResponse);
-    any|error aPI = apiClient.createAPI(api, (), organiztion1);
+    any|error aPI = apiClient.createAPI(api, (), organiztion1, userName);
     if aPI is any {
         test:assertEquals(aPI.toBalString(), expected);
     } else {

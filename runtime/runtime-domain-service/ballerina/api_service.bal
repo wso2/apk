@@ -35,7 +35,8 @@ http:Service runtimeService = service object {
         final APIClient apiService = new ();
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
-        return apiService.createAPI(payload, (), organization);
+        string user = authenticatedUserContext.username;
+        return apiService.createAPI(payload, (), organization, user);
     }
     isolated resource function get apis/[string apiId](http:RequestContext requestContext) returns API|NotFoundError|InternalServerErrorError|commons:APKError {
         final APIClient apiService = new ();
@@ -47,7 +48,8 @@ http:Service runtimeService = service object {
         final APIClient apiService = new ();
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
-        return apiService.updateAPI(apiId, payload, (), organization);
+        string user = authenticatedUserContext.username;
+        return apiService.updateAPI(apiId, payload, (), organization, user);
     }
     isolated resource function delete apis/[string apiId](http:RequestContext requestContext) returns http:Ok|ForbiddenError|NotFoundError|InternalServerErrorError|BadRequestError|commons:APKError {
         final APIClient apiService = new ();
@@ -65,13 +67,15 @@ http:Service runtimeService = service object {
         final APIClient apiService = new ();
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
-        return apiService.createAPIFromService(serviceKey, payload, organization);
+        string user = authenticatedUserContext.username;
+        return apiService.createAPIFromService(serviceKey, payload, organization, user);
     }
     isolated resource function post apis/'import\-definition(http:RequestContext requestContext, http:Request message) returns CreatedAPI|BadRequestError|PreconditionFailedError|InternalServerErrorError|commons:APKError {
         final APIClient apiService = new ();
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
-        return apiService.importDefinition(message, organization);
+        string user = authenticatedUserContext.username;
+        return apiService.importDefinition(message, organization, user);
     }
     isolated resource function post apis/'validate\-definition(http:RequestContext requestContext, http:Request message, boolean returnContent = false) returns http:Ok|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
         final APIClient apiService = new ();
@@ -93,7 +97,8 @@ http:Service runtimeService = service object {
         final APIClient apiService = new ();
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
-        return apiService.updateAPIDefinition(apiId, message, organization);
+        string user = authenticatedUserContext.username;
+        return apiService.updateAPIDefinition(apiId, message, organization, user);
     }
     isolated resource function get apis/export(http:RequestContext requestContext, string? apiId, string? name, string? 'version, string? format) returns http:Response|NotFoundError|InternalServerErrorError|BadRequestError|commons:APKError {
         final APIClient apiService = new ();
@@ -109,7 +114,8 @@ http:Service runtimeService = service object {
         final APIClient apiService = new ();
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
-        return apiService.copyAPI(newVersion, serviceId, apiId, organization);
+        string user = authenticatedUserContext.username;
+        return apiService.copyAPI(newVersion, serviceId, apiId, organization, user);
     }
     isolated resource function get services(http:RequestContext requestContext, string? query, string sortBy = "createdTime", string sortOrder = "desc", int 'limit = 25, int offset = 0) returns ServiceList|BadRequestError|InternalServerErrorError|commons:APKError {
         final ServiceClient serviceClient = new ();

@@ -15,6 +15,7 @@ public type RuntimeAPISpec record {|
     string context;
     string 'type;
     string 'version;
+    string apiProvider?;
     record {} endpointConfig?;
     Operations[] operations?;
     OperationPolicies apiPolicies?;

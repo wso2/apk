@@ -55,6 +55,9 @@ spec:
                   defined. "Namespace/APIDisplayName" can be used to uniquely identify
                   an API.
                 type: string
+              apiProvider:
+                description: APIProvider denotes the provider of the API.
+                type: string
               apiType:
                 description: APIType denotes the type of the API. Possible values
                   could be REST, GraphQL, Async
@@ -80,7 +83,7 @@ spec:
                   description: EnvConfig contains the environment specific configuration
                   properties:
                     httpRouteRefs:
-                      description: Env denotes the environment of the API.
+                      description: HTTPRouteRefs denotes the environment of the API.
                       items:
                         type: string
                       type: array
@@ -96,7 +99,7 @@ spec:
                   description: EnvConfig contains the environment specific configuration
                   properties:
                     httpRouteRefs:
-                      description: Env denotes the environment of the API.
+                      description: HTTPRouteRefs denotes the environment of the API.
                       items:
                         type: string
                       type: array
