@@ -315,7 +315,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/ratelimiter:0.0.1-m7
+          image: wso2/ratelimiter:latest
           security:
             sslHostname: "ratelimiter"
         # configs:
