@@ -94,7 +94,7 @@ func NewGatewayController(mgr manager.Manager, operatorDataStore *synchronizer.O
 
 	if err := c.Watch(&source.Kind{Type: &gwapiv1b1.Gateway{}}, &handler.EnqueueRequestForObject{},
 		predicates...); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2611, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3100, err))
 		return err
 	}
 
@@ -106,25 +106,25 @@ func NewGatewayController(mgr manager.Manager, operatorDataStore *synchronizer.O
 
 	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.APIPolicy{}}, handler.EnqueueRequestsFromMapFunc(r.getGatewaysForAPIPolicy),
 		predicates...); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2617, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3101, err))
 		return err
 	}
 
 	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.Backend{}}, handler.EnqueueRequestsFromMapFunc(r.getGatewaysForBackend),
 		predicates...); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2615, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3102, err))
 		return err
 	}
 
 	if err := c.Watch(&source.Kind{Type: &corev1.ConfigMap{}}, handler.EnqueueRequestsFromMapFunc(r.getGatewaysForConfigMap),
 		predicates...); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2644, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3103, err))
 		return err
 	}
 
 	if err := c.Watch(&source.Kind{Type: &corev1.Secret{}}, handler.EnqueueRequestsFromMapFunc(r.getGatewaysForSecret),
 		predicates...); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2645, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3104, err))
 		return err
 	}
 
@@ -204,7 +204,7 @@ func (gatewayReconciler *GatewayReconciler) resolveGatewayState(ctx context.Cont
 	for _, listener := range gateway.Spec.Listeners {
 		data, err := gatewayReconciler.resolveListenerSecretRefs(ctx, &listener.TLS.CertificateRefs[0], string(namespace))
 		if err != nil {
-			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2612, err))
+			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3105, err))
 			return nil, err
 		}
 		resolvedListenerCerts[string(listener.Name)] = data
@@ -299,7 +299,7 @@ func (gatewayReconciler *GatewayReconciler) getGatewaysForSecret(obj k8client.Ob
 	ctx := context.Background()
 	secret, ok := obj.(*corev1.Secret)
 	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2622, secret))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3107, secret))
 		return []reconcile.Request{}
 	}
 
@@ -307,7 +307,7 @@ func (gatewayReconciler *GatewayReconciler) getGatewaysForSecret(obj k8client.Ob
 	if err := gatewayReconciler.client.List(ctx, backendList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(secretBackend, utils.NamespacedName(secret).String()),
 	}); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2621, utils.NamespacedName(secret).String()))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3106, utils.NamespacedName(secret).String()))
 		return []reconcile.Request{}
 	}
 
@@ -324,7 +324,7 @@ func (gatewayReconciler *GatewayReconciler) getGatewaysForConfigMap(obj k8client
 	ctx := context.Background()
 	configMap, ok := obj.(*corev1.ConfigMap)
 	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2622, configMap))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3107, configMap))
 		return []reconcile.Request{}
 	}
 
@@ -332,7 +332,7 @@ func (gatewayReconciler *GatewayReconciler) getGatewaysForConfigMap(obj k8client
 	if err := gatewayReconciler.client.List(ctx, backendList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(configMapBackend, utils.NamespacedName(configMap).String()),
 	}); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2638, utils.NamespacedName(configMap).String()))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3108, utils.NamespacedName(configMap).String()))
 		return []reconcile.Request{}
 	}
 
@@ -366,7 +366,7 @@ func (gatewayReconciler *GatewayReconciler) handleGatewayStatus(gatewayKey types
 		UpdateStatus: func(obj k8client.Object) k8client.Object {
 			h, ok := obj.(*gwapiv1b1.Gateway)
 			if !ok {
-				loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2626, obj))
+				loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3109, obj))
 			}
 			hCopy := h.DeepCopy()
 			var gwCondition []metav1.Condition = hCopy.Status.Conditions
