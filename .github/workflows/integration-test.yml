@@ -4,7 +4,7 @@ on:
   pull_request_target:
     types: [opened, synchronize, reopened]
 concurrency: 
-  group: ${{ github.event.number || github.run_id }}
+  group: integration-test-${{ github.event.number || github.run_id }}
 env:
   GH_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}  
 jobs:
@@ -144,7 +144,7 @@ jobs:
       with:
         azcliversion: 2.44.1
         inlineScript: |
-          az aks create --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" --name "${{ secrets.AKS_CLUSTER_NAME }}" --enable-cluster-autoscaler --min-count 1 --max-count 3 --location "southeastasia" --generate-ssh-keys --verbose 
+          az aks create --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" --name "${{ secrets.AKS_CLUSTER_NAME }}-${{ github.event.number || github.run_id }}" --enable-cluster-autoscaler --min-count 1 --max-count 3 --location "southeastasia" --generate-ssh-keys --verbose 
     - uses: azure/aks-set-context@v3
       with:
          resource-group: '${{ secrets.AZURE_RESOURCE_GROUP }}'
@@ -228,7 +228,7 @@ jobs:
       with:
         azcliversion: 2.44.1
         inlineScript: |
-          az aks delete --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --name ${{ secrets.AKS_CLUSTER_NAME }} --yes
+          az aks delete --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --name ${{ secrets.AKS_CLUSTER_NAME }}-${{ github.event.number || github.run_id }} --yes
     - name: Logout from azure
       if: always()
       uses: azure/CLI@v1

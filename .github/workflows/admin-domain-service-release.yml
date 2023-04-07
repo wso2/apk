@@ -38,7 +38,7 @@ on:
     branches:
       - 'main'
 concurrency:
-  group: admin-domain-service-${{ github.event.number }}
+  group: admin-domain-service-${{ github.event.number || github.run_id }}
   cancel-in-progress: true
 env:
   GH_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}

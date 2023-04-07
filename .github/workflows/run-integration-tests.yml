@@ -12,7 +12,7 @@ on:
       - '**/gateway/enforcer/**'
       - '**/gateway/router**'
 concurrency:
-  group: test-${{ github.event.number }}
+  group: test-${{ github.event.number || github.run_id }}
   cancel-in-progress: true
 env:
   GH_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
