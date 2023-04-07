@@ -14,7 +14,7 @@
 ################################################################################
 openapi: 3.0.1
 info:
-  title: WSO2 API Platform for Kubernetes(APK) - BackOffice REST API
+  title: WSO2 API Platform for Kubernetes (APK) - BackOffice REST API
   description: This document specifies a **RESTful API** for WSO2 **APK** - **BackOffice**.
   contact:
     name: WSO2
@@ -51,16 +51,18 @@ paths:
           description: |
             **Search condition**.
 
-            You can search in attributes by using an **"<attribute>:"** modifier.
+            You can search in attributes by using an **`<attribute>:`** modifier.
 
-            Eg.
-            "provider:wso2" will match an API if the provider of the API contains "wso2".
-            "provider:"wso2"" will match an API if the provider of the API is exactly "wso2".
-            "status:PUBLISHED" will match an API if the API is in PUBLISHED state.
+            **Example**
 
-            Also you can use combined modifiers
-            Eg.
-            name:pizzashack version:v1 will match an API if the name of the API is pizzashack and version is v1.
+            - `provider:wso2` will match an API if the provider of the API contains `wso2`.
+            - `provider:"wso2` will match an API if the provider of the API is exactly `wso2`.
+            - `status:PUBLISHED` will match an API if the API is in `PUBLISHED` state.
+
+            In addition, you can use combined modifiers.
+
+            **Example**
+            `name:pizzashack version:v1` will match an API if the name of the API is pizzashack and version is v1.
 
             Supported attribute modifiers are [**version, context, name, status,
             description, provider, api-category, tags, doc, contexttemplate,
@@ -106,7 +108,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/apk/backoffice/v1/apis"'
+          "https://api.am.wso2.com:9095/api/am/backoffice/v1/apis"'
       operationId: getAllAPIs
 
   ######################################################
@@ -163,7 +165,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/apk/backoffice/v1/apis/7a2298c4-c905-403f-8fac-38c73301631f"'
+          "https://api.am.wso2.com:9095/api/am/backoffice/v1/apis/01234567-0123-0123-0123-012345678901"'
       operationId: getAPI
     put:
       tags:
@@ -228,7 +230,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/apk/backoffice/v1/apis/5bca47e1-8233-46a5-9295-525dca337f33"'
+          -H "Content-Type: application/json" -d @data.json "https://api.am.wso2.com:9095/api/am/backoffice/v1/apis/01234567-0123-0123-0123-012345678901"'
       operationId: updateAPI
 
   /apis/{apiId}/definition:
@@ -283,7 +285,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/apk/backoffice/v1/apis/7a2298c4-c905-403f-8fac-38c73301631f/definition"'
+          "https://api.am.wso2.com:9095/api/am/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/definition"'
       operationId: getAPIDefinition
 
   /apis/{apiId}/resource-paths:
@@ -341,7 +343,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/apk/backoffice/v1/apis/96077508-fd01-4fae-bc64-5de0e2baf43c/resource-paths"'
+          "https://api.am.wso2.com:9095/api/am/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/resource-paths"'
       operationId: getAPIResourcePaths
 
   /apis/{apiId}/thumbnail:
@@ -396,7 +398,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/apk/backoffice/v1/apis/5bca47e1-8233-46a5-9295-525dca337f33/thumbnail"
+          "https://api.am.wso2.com:9095/api/am/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/thumbnail"
           > image.jpeg'
       operationId: getAPIThumbnail
 
@@ -466,7 +468,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: multipart/form-data" -F file=@image.jpeg "https://127.0.0.1:9443/api/apk/backoffice/v1/apis/d48a3412-1b85-49be-99f4-b81a3722ae73/thumbnail"'
+          -H "Content-Type: multipart/form-data" -F file=@image.jpeg "https://api.am.wso2.com:9095/api/am/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/thumbnail"'
       operationId: updateAPIThumbnail
 
   /apis/{apiId}/documents:
@@ -518,7 +520,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/apk/backoffice/v1/apis/5bca47e1-8233-46a5-9295-525dca337f33/documents"'
+          "https://api.am.wso2.com:9095/api/am/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/documents"'
       operationId: getAPIDocuments
 
     post:
@@ -574,7 +576,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/apk/backoffice/v1/apis/5bca47e1-8233-46a5-9295-525dca337f33/documents"'
+          -H "Content-Type: application/json" -d @data.json "https://api.am.wso2.com:9095/api/am/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/documents"'
       operationId: addAPIDocument
 
   /apis/{apiId}/documents/{documentId}:
@@ -632,7 +634,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/apk/backoffice/v1/apis/5bca47e1-8233-46a5-9295-525dca337f33/documents/83312daf-0d8a-427b-8f72-12755b7901d3"'
+          "https://api.am.wso2.com:9095/api/am/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/documents/83312daf-0d8a-427b-8f72-12755b7901d3"'
       operationId: getAPIDocument
 
     put:
@@ -697,7 +699,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X PUT -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://127.0.0.1:9443/api/apk/backoffice/v1/apis/5bca47e1-8233-46a5-9295-525dca337f33/documents/83312daf-0d8a-427b-8f72-12755b7901d3"'
+          -H "Content-Type: application/json" -d @data.json "https://api.am.wso2.com:9095/api/am/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/documents/83312daf-0d8a-427b-8f72-12755b7901d3"'
       operationId: updateAPIDocument
 
     delete:
@@ -727,7 +729,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X DELETE -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/apk/backoffice/v1/apis/5bca47e1-8233-46a5-9295-525dca337f33/documents/83312daf-0d8a-427b-8f72-12755b7901d3"'
+          "https://api.am.wso2.com:9095/api/am/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/documents/83312daf-0d8a-427b-8f72-12755b7901d3"'
       operationId: deleteAPIDocument
 
   /apis/{apiId}/documents/{documentId}/content:
@@ -743,7 +745,7 @@ paths:
         1. **Inline type**:
            The content of the document will be retrieved in `text/plain` content type
 
-           _Sample cURL_ : `curl -k -H "Authorization:Bearer 579f0af4-37be-35c7-81a4-f1f1e9ee7c51" -F inlineContent=@"docs.txt" -X POST "https://localhost:9443/api/apk/backoffice/v1/apis/995a4972-3178-4b17-a374-756e0e19127c/documents/43c2bcce-60e7-405f-bc36-e39c0c5e189e/content`
+           _Sample cURL_ : `curl -k -H "Authorization:Bearer 579f0af4-37be-35c7-81a4-f1f1e9ee7c51" -F inlineContent=@"docs.txt" -X POST "https://api.am.wso2.com:9095/api/am/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/documents/43c2bcce-60e7-405f-bc36-e39c0c5e189e/content`
         2. **FILE type**:
            The file will be downloaded with the related content type (eg. `application/pdf`)
         3. **URL type**:
@@ -804,7 +806,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/apk/backoffice/v1/apis/5bca47e1-8233-46a5-9295-525dca337f33/documents/83312daf-0d8a-427b-8f72-12755b7901d3/content"'
+          "https://api.am.wso2.com:9095/api/am/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/documents/83312daf-0d8a-427b-8f72-12755b7901d3/content"'
       operationId: getAPIDocumentContent
 
     post:
@@ -879,7 +881,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: multipart/form-data" -F file=@sample.pdf "https://127.0.0.1:9443/api/apk/backoffice/v1/apis/5bca47e1-8233-46a5-9295-525dca337f33/documents/83312daf-0d8a-427b-8f72-12755b7901d3/content"'
+          -H "Content-Type: multipart/form-data" -F file=@sample.pdf "https://api.am.wso2.com:9095/api/am/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/documents/83312daf-0d8a-427b-8f72-12755b7901d3/content"'
       operationId: addAPIDocumentContent
 
   /apis/{apiId}/comments:
@@ -916,7 +918,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-            "https://localhost:9443/api/apk/backoffice/v1/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments"'
+            "https://localhost:9443/api/apk/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/comments"'
 
     post:
       tags:
@@ -1042,7 +1044,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-            "https://localhost:9443/api/apk/backoffice/v1/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"'
+            "https://localhost:9443/api/apk/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"'
 
     patch:
       tags:
@@ -1114,7 +1116,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X PATCH -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          -H "Content-Type: application/json" -d @data.json "https://localhost:9443/api/apk/backoffice/v1/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"'
+          -H "Content-Type: application/json" -d @data.json "https://localhost:9443/api/apk/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"'
 
     delete:
       tags:
@@ -1154,7 +1156,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: curl -k -X DELETE -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-            "https://localhost:9443/api/apk/backoffice/v1/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"
+            "https://localhost:9443/api/apk/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4"
 
   /apis/{apiId}/comments/{commentId}/replies:
     get:
@@ -1209,7 +1211,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization:Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-            "https://localhost:9443/api/apk/backoffice/v1/apis/e93fb282-b456-48fc-8981-003fb89086ae/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4/replies"'
+            "https://localhost:9443/api/apk/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/comments/d4cf1704-5d09-491c-bc48-4d19ce6ea9b4/replies"'
 
 
   ######################################################
@@ -1224,10 +1226,10 @@ paths:
         This operation can be used to retrieve a list of subscriptions of the user associated with the provided access token. This operation is capable of
 
         1. Retrieving all subscriptions for the user's APIs.
-        `GET https://127.0.0.1:9443/api/apk/backoffice/v1/subscriptions`
+        `GET https://api.am.wso2.com:9095/api/am/backoffice/v1/subscriptions`
 
         2. Retrieving subscriptions for a specific API.
-        `GET https://127.0.0.1:9443/api/apk/backoffice/v1/subscriptions?apiId=c43a325c-260b-4302-81cb-768eafaa3aed`
+        `GET https://api.am.wso2.com:9095/api/am/backoffice/v1/subscriptions?apiId=01234567-0123-0123-0123-012345678901`
       parameters:
         - $ref: '#/components/parameters/apiId-Q-Opt'
         - $ref: '#/components/parameters/limit'
@@ -1275,7 +1277,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/apk/backoffice/v1/subscriptions?apiId=96077508-fd01-4fae-bc64-5de0e2baf43c"'
+          "https://api.am.wso2.com:9095/api/am/backoffice/v1/subscriptions?apiId=01234567-0123-0123-0123-012345678901"'
       operationId: getSubscriptions
 
   /subscriptions/{subscriptionId}/subscriber-info:
@@ -1306,7 +1308,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/apk/backoffice/v1/subscriptions/64eca60b-2e55-4c38-8603-e9e6bad7d809/subscriber-info"'
+          "https://api.am.wso2.com:9095/api/am/backoffice/v1/subscriptions/64eca60b-2e55-4c38-8603-e9e6bad7d809/subscriber-info"'
       operationId: getSubscriberInfoBySubscriptionId
 
   /subscriptions/block-subscription:
@@ -1364,7 +1366,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/apk/backoffice/v1/subscriptions/block-subscription?subscriptionId=64eca60b-2e55-4c38-8603-e9e6bad7d809&blockState=PROD_ONLY_BLOCKED"'
+          "https://api.am.wso2.com:9095/api/am/backoffice/v1/subscriptions/block-subscription?subscriptionId=64eca60b-2e55-4c38-8603-e9e6bad7d809&blockState=PROD_ONLY_BLOCKED"'
       operationId: blockSubscription
 
   /subscriptions/unblock-subscription:
@@ -1409,7 +1411,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/apk/backoffice/v1/subscriptions/unblock-subscription?subscriptionId=64eca60b-2e55-4c38-8603-e9e6bad7d809"'
+          "https://api.am.wso2.com:9095/api/am/backoffice/v1/subscriptions/unblock-subscription?subscriptionId=64eca60b-2e55-4c38-8603-e9e6bad7d809"'
       operationId: unBlockSubscription
 
 
@@ -1462,7 +1464,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/apk/backoffice/v1/usage-plans"'
+          "https://api.am.wso2.com:9095/api/am/backoffice/v1/usage-plans"'
 
   ######################################################
   # The "Content Search Results" resource APIs
@@ -1520,7 +1522,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/apk/backoffice/v1/search?query=pizza"'
+          "https://api.am.wso2.com:9095/api/am/backoffice/v1/search?query=pizza"'
       operationId: search
 
   ######################################################
@@ -1551,7 +1553,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/backoffice/v1/settings"'
+          "https://api.am.wso2.com:9095/api/am/backoffice/v1/settings"'
       operationId: getSettings
 
   ######################################################
@@ -1580,7 +1582,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/apk/backoffice/v1/api-categories"'
+          "https://api.am.wso2.com:9095/api/am/backoffice/v1/api-categories"'
       operationId: getAllAPICategories
 
   /apis/change-lifecycle:
@@ -1636,7 +1638,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -X POST -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/apk/backoffice/v1/apis/change-lifecycle?apiId=890a4f4d-09eb-4877-a323-57f6ce2ed79b&action=Publish"'
+          "https://api.am.wso2.com:9095/api/am/backoffice/v1/apis/change-lifecycle?apiId=01234567-0123-0123-0123-012345678901&action=Publish"'
       operationId: changeAPILifecycle
 
   /apis/{apiId}/lifecycle-history:
@@ -1671,14 +1673,14 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/apk/backoffice/v1/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/lifecycle-history"'
+          "https://api.am.wso2.com:9095/api/am/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/lifecycle-history"'
       operationId: getAPILifecycleHistory
 
   /apis/{apiId}/lifecycle-state:
     get:
       tags:
         - API Lifecycle
-      summary: Get Lifecycle State Data of the API.
+      summary: Get Lifecycle State Data of the API
       description: |
         This operation can be used to retrieve Lifecycle state data of the API.
       parameters:
@@ -1707,7 +1709,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/apk/backoffice/v1/apis/890a4f4d-09eb-4877-a323-57f6ce2ed79b/lifecycle-state"'
+          "https://api.am.wso2.com:9095/api/am/backoffice/v1/apis/01234567-0123-0123-0123-012345678901/lifecycle-state"'
       operationId: getAPILifecycleState
 ######################################################
 # The "Business Plans Collection" resource API
@@ -1718,7 +1720,7 @@ paths:
         - Business Plan (Collection)
       summary: Get all Business Plans
       description: |
-        This operation can be used to retrieve all Business Plans.
+        This operation can be used to retrieve all Business Plans
       parameters:
         - $ref: '#/components/parameters/Accept'
       responses:
@@ -1745,7 +1747,7 @@ paths:
       x-code-samples:
         - lang: Curl
           source: 'curl -k -H "Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8"
-          "https://127.0.0.1:9443/api/am/admin/business-plans"'
+          "https://api.am.wso2.com:9095/api/am/backoffice/v1/business-plans"'
       operationId: getAllBusinessPlans
 components:
   schemas:
