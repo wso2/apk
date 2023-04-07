@@ -119,4 +119,4 @@ spec:
     group: gateway.networking.k8s.io
     kind: API
     namespace: gateway-integration-test-infra
-    name: sand-httproute
+    name: prod-and-sand-apis

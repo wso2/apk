@@ -79,4 +79,4 @@ spec:
   targetRef:
     group: gateway.networking.k8s.io
     kind: API
-    name: api-interceptor-route
+    name: api-interceptor-test-api
