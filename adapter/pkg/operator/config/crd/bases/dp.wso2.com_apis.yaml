@@ -58,36 +58,18 @@ spec:
                 description: Organization denotes the organization. related to the
                   API
                 type: string
-              production:
-                description: 'Production contains a list of references to HttpRoutes
+              prodHTTPRouteRefs:
+                description: 'ProdHTTPRouteRefs contains a list of references to HttpRoutes
                   of type HttpRoute. xref: https://github.com/kubernetes-sigs/gateway-api/blob/main/apis/v1beta1/httproute_types.go'
                 items:
-                  description: EnvConfig contains the environment specific configuration
-                  properties:
-                    httpRouteRefs:
-                      description: Env denotes the environment of the API.
-                      items:
-                        type: string
-                      type: array
-                  required:
-                  - httpRouteRefs
-                  type: object
+                  type: string
                 nullable: true
                 type: array
-              sandbox:
-                description: 'Sandbox contains a list of references to HttpRoutes
+              sandHTTPRouteRefs:
+                description: 'SandHTTPRouteRef contains a list of references to HttpRoutes
                   of type HttpRoute. xref: https://github.com/kubernetes-sigs/gateway-api/blob/main/apis/v1beta1/httproute_types.go'
                 items:
-                  description: EnvConfig contains the environment specific configuration
-                  properties:
-                    httpRouteRefs:
-                      description: Env denotes the environment of the API.
-                      items:
-                        type: string
-                      type: array
-                  required:
-                  - httpRouteRefs
-                  type: object
+                  type: string
                 nullable: true
                 type: array
               systemAPI:

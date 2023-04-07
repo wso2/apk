@@ -25,9 +25,8 @@ spec:
   apiVersion: 1.0.0
   context: /test-api-with-path-params/v1.0.0
   definitionFileRef: definition-file
-  production:
-    - httpRouteRefs:
-      - test-api-with-path-params-httproute
+  prodHTTPRouteRefs:
+  - test-api-with-path-params-httproute
   organization: wso2-org
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1

@@ -20,12 +20,7 @@ import ballerina/test;
 import runtime_domain_service.model;
 
 public function getMockAPIList() returns model:APIList {
-    model:EnvConfig[]? pizzashackAPIEndpoint = [{httpRouteRefs: ["01ed7aca-eb6b-1178-a200-f604a4ce114a-production"]}];
-    model:EnvConfig[]? pizzashackAPI1Endpoint = [{httpRouteRefs: ["01ed7b08-f2b1-1166-82d5-649ae706d29d-production"]}];
-    model:EnvConfig[]? pizzashackAPI11Endpoint = [{httpRouteRefs: ["01ed7aca-eb6b-1178-a200-f604a4ce114a-production"]}];
-    model:EnvConfig[]? pizzashackAPI12Endpoint = [{httpRouteRefs: ["01ed7aca-eb6b-1178-a200-f604a4ce114a-production"]}];
-    model:EnvConfig[]? pizzashackAPI13Endpoint = [{httpRouteRefs: ["01ed7aca-eb6b-1178-a200-f604a4ce114a-production"]}];
-    
+
     model:APIList response = {
         "apiVersion": "dp.wso2.com/v1alpha1",
         "items": [
@@ -47,7 +42,7 @@ public function getMockAPIList() returns model:APIList {
                                     "f:apiVersion": {},
                                     "f:context": {},
                                     "f:definitionFileRef": {},
-                                    "f:production": {}
+                                    "f:prodHTTPRouteRefs": {}
                                 }
                             },
                             "manager": "ballerina",
@@ -68,7 +63,7 @@ public function getMockAPIList() returns model:APIList {
                     "context": "/pizzashack/1.0.0",
                     "organization": "01ed7aca-eb6b-1178-a200-f604a4ce114b",
                     "definitionFileRef": "01ed7aca-eb6b-1178-a200-f604a4ce114a-definition",
-                    "production": pizzashackAPIEndpoint
+                    "prodHTTPRouteRefs": ["01ed7aca-eb6b-1178-a200-f604a4ce114a-production"]
                 }
             },
             {
@@ -89,7 +84,7 @@ public function getMockAPIList() returns model:APIList {
                                     "f:apiVersion": {},
                                     "f:context": {},
                                     "f:definitionFileRef": {},
-                                    "f:production": {}
+                                    "f:prodHTTPRouteRefs": {}
                                 }
                             },
                             "manager": "ballerina",
@@ -110,7 +105,7 @@ public function getMockAPIList() returns model:APIList {
                     "context": "/pizzashack1/1.0.0",
                     "organization": "01ed7aca-eb6b-1178-a200-f604a4ce114b",
                     "definitionFileRef": "01ed7b08-f2b1-1166-82d5-649ae706d29d-definition",
-                    "production": pizzashackAPI1Endpoint
+                    "prodHTTPRouteRefs": ["01ed7b08-f2b1-1166-82d5-649ae706d29d-production"]
                 }
             },
             {
@@ -131,7 +126,7 @@ public function getMockAPIList() returns model:APIList {
                                     "f:apiVersion": {},
                                     "f:context": {},
                                     "f:definitionFileRef": {},
-                                    "f:production": {}
+                                    "f:prodHTTPRouteRefs": {}
                                 }
                             },
                             "manager": "ballerina",
@@ -151,7 +146,7 @@ public function getMockAPIList() returns model:APIList {
                     "apiVersion": "1.0.0",
                     "context": "/pizzashack11/1.0.0",
                     "organization": "01ed7aca-eb6b-1178-a200-f604a4ce114b",
-                    "production": pizzashackAPI11Endpoint
+                    "prodHTTPRouteRefs": ["01ed7aca-eb6b-1178-a200-f604a4ce114a-production"]
                 }
             },
             {
@@ -172,7 +167,7 @@ public function getMockAPIList() returns model:APIList {
                                     "f:apiVersion": {},
                                     "f:context": {},
                                     "f:definitionFileRef": {},
-                                    "f:production": {}
+                                    "f:prodHTTPRouteRefs": {}
                                 }
                             },
                             "manager": "ballerina",
@@ -192,7 +187,7 @@ public function getMockAPIList() returns model:APIList {
                     "apiVersion": "1.0.0",
                     "context": "/pizzashack12/1.0.0",
                     "organization": "01ed7aca-eb6b-1178-a200-f604a4ce114b",
-                    "production": pizzashackAPI12Endpoint,
+                    "prodHTTPRouteRefs": ["01ed7aca-eb6b-1178-a200-f604a4ce114a-production"],
                     "definitionFileRef": ""
                 }
             },
@@ -214,7 +209,7 @@ public function getMockAPIList() returns model:APIList {
                                     "f:apiVersion": {},
                                     "f:context": {},
                                     "f:definitionFileRef": {},
-                                    "f:production": {}
+                                    "f:prodHTTPRouteRefs": {}
                                 }
                             },
                             "manager": "ballerina",
@@ -234,7 +229,7 @@ public function getMockAPIList() returns model:APIList {
                     "apiVersion": "1.0.0",
                     "context": "/pizzashack13/1.0.0",
                     "organization": "01ed7aca-eb6b-1178-a200-f604a4ce114b",
-                    "production": pizzashackAPI13Endpoint,
+                    "prodHTTPRouteRefs": ["01ed7aca-eb6b-1178-a200-f604a4ce114a-production"],
                     "definitionFileRef": "01ed7aca-eb6b-1178-a200-f604a4ce114b-definition"
                 }
             }
@@ -259,12 +254,7 @@ public function getMockWatchAPIEvent() returns string {
             "metadata": {
                 "creationTimestamp": "2022-12-13T18:51:26Z",
                 "generation": 1,
-                "managedFields": [
-                    {
-                        "apiVersion": "dp.wso2.com/v1alpha1", 
-                        "fieldsType": "FieldsV1", 
-                        "fieldsV1": {
-                            "f:spec": {".": {}, "f:apiDisplayName": {}, "f:apiType": {}, "f:apiVersion": {}, "f:context": {}, "f:definitionFileRef": {}, "f:production": {}}}, "manager": "ballerina", "operation": "Update", "time": "2022-12-13T18:51:26Z"}],
+                "managedFields": [{"apiVersion": "dp.wso2.com/v1alpha1", "fieldsType": "FieldsV1", "fieldsV1": {"f:spec": {".": {}, "f:apiDisplayName": {}, "f:apiType": {}, "f:apiVersion": {}, "f:context": {}, "f:definitionFileRef": {}, "f:prodHTTPRouteRefs": {}}}, "manager": "ballerina", "operation": "Update", "time": "2022-12-13T18:51:26Z"}],
                 "name": "01ed7b16-90f7-1a88-8113-a7e71796d460",
                 "namespace": "apk-platform",
                 "resourceVersion": "28702",
@@ -278,9 +268,7 @@ public function getMockWatchAPIEvent() returns string {
                 "context": "/pizzashack6/1.0.0",
                 "organization": "01ed7aca-eb6b-1178-a200-f604a4ce114b",
                 "definitionFileRef": "01ed7b16-90f7-1a88-8113-a7e71796d460-definition",
-                "production": [{
-                    "httpRouteRefs": ["01ed7b16-90f7-1a88-8113-a7e71796d460-production"]
-                }]
+                "prodHTTPRouteRefs": ["01ed7b16-90f7-1a88-8113-a7e71796d460-production"]
             }
         }
     };
@@ -298,7 +286,7 @@ public function getNextMockWatchAPIEvent() returns string {
             "metadata": {
                 "creationTimestamp": "2022-12-14T18:51:26Z",
                 "generation": 1,
-                "managedFields": [{"apiVersion": "dp.wso2.com/v1alpha1", "fieldsV1": {"f:spec": {".": {}, "f:apiDisplayName": {}, "f:apiType": {}, "f:apiVersion": {}, "f:context": {}, "f:definitionFileRef": {}, "f:production": {}}}, "manager": "ballerina", "time": "2022-12-13T09:45:47Z", "operation": "Update", "fieldsType": "FieldsV1"}],
+                "managedFields": [{"apiVersion": "dp.wso2.com/v1alpha1", "fieldsV1": {"f:spec": {".": {}, "f:apiDisplayName": {}, "f:apiType": {}, "f:apiVersion": {}, "f:context": {}, "f:definitionFileRef": {}, "f:prodHTTPRouteRefs": {}}}, "manager": "ballerina", "time": "2022-12-13T09:45:47Z", "operation": "Update", "fieldsType": "FieldsV1"}],
                 "name": "01ed7b16-90f7-1a88-8114-a7e71796d460",
                 "namespace": "apk-platform",
                 "resourceVersion": "28712",
@@ -311,8 +299,7 @@ public function getNextMockWatchAPIEvent() returns string {
                 "apiVersion": "1.0.0",
                 "context": "/demoapi/1.0.0",
                 "definitionFileRef": "01ed7b16-90f7-1a88-8114-a7e71796d460-definition",
-                "production": [{
-                    "httpRouteRefs": ["01ed7b16-90f7-1a88-8114-a7e71796d460-production"]}],
+                "prodHTTPRouteRefs": ["01ed7b16-90f7-1a88-8114-a7e71796d460-production"],
                 "organization": "01ed7aca-eb6b-1178-a200-f604a4ce114b"
             }
         }
@@ -322,7 +309,6 @@ public function getNextMockWatchAPIEvent() returns string {
 }
 
 public function getMockPizzaShakK8sAPI() returns model:API & readonly {
-    model:EnvConfig[]? pizzashackAPIEndpoint = [{httpRouteRefs: ["01ed7aca-eb6b-1178-a200-f604a4ce114a-production"]}];
     model:API k8sAPI = {
         metadata: {
             name: "01ed7aca-eb6b-1178-a200-f604a4ce114a",
@@ -332,7 +318,7 @@ public function getMockPizzaShakK8sAPI() returns model:API & readonly {
             generation: 1,
             selfLink: "/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis/01ed7aca-eb6b-1178-a200-f604a4ce114a",
             resourceVersion: "5833",
-            managedFields: [{"apiVersion": "dp.wso2.com/v1alpha1", "fieldsV1": {"f:spec": {".": {}, "f:apiDisplayName": {}, "f:apiType": {}, "f:apiVersion": {}, "f:context": {}, "f:definitionFileRef": {}, "f:production": {}}}, "manager": "ballerina", "time": "2022-12-13T09:45:47Z", "operation": "Update", "fieldsType": "FieldsV1"}]
+            managedFields: [{"apiVersion": "dp.wso2.com/v1alpha1", "fieldsV1": {"f:spec": {".": {}, "f:apiDisplayName": {}, "f:apiType": {}, "f:apiVersion": {}, "f:context": {}, "f:definitionFileRef": {}, "f:prodHTTPRouteRefs": {}}}, "manager": "ballerina", "time": "2022-12-13T09:45:47Z", "operation": "Update", "fieldsType": "FieldsV1"}]
         },
         spec: {
             apiDisplayName: "pizzashackAPI",
@@ -340,7 +326,7 @@ public function getMockPizzaShakK8sAPI() returns model:API & readonly {
             apiVersion: "1.0.0",
             context: "/pizzashack/1.0.0",
             definitionFileRef: "01ed7aca-eb6b-1178-a200-f604a4ce114a-definition",
-            production: pizzashackAPIEndpoint,
+            prodHTTPRouteRefs: ["01ed7aca-eb6b-1178-a200-f604a4ce114a-production"],
             organization: "01ed7aca-eb6b-1178-a200-f604a4ce114b"
         }
     };
@@ -466,7 +452,6 @@ public function mockOpenAPIJson() returns json {
 }
 
 public function mockpizzashackAPI11Definition() returns json {
-    model:EnvConfig[]? pizzashackAPIEndpoint = [{httpRouteRefs: ["01ed7aca-eb6b-1178-a200-f604a4ce114a-production"]}];
     model:API api = {
         metadata: {
             name: "01ed7aca-eb6b-1178-a200-f604a4ce114a",
@@ -480,7 +465,7 @@ public function mockpizzashackAPI11Definition() returns json {
             apiVersion: "1.0.0",
             context: "/pizzashack11/1.0.0",
             organization: "01ed7aca-eb6b-1178-a200-f604a4ce114b",
-            production: pizzashackAPIEndpoint 
+            prodHTTPRouteRefs: ["01ed7aca-eb6b-1178-a200-f604a4ce114a-production"]
         }
     };
     APIClient apiclient = new ();
@@ -488,7 +473,6 @@ public function mockpizzashackAPI11Definition() returns json {
 }
 
 public function mockPizzashackAPI12Definition() returns json {
-    model:EnvConfig[]? pizzashackAPIEndpoint = [{httpRouteRefs: ["01ed7aca-eb6b-1178-a200-f604a4ce114a-production"]}];
     model:API api = {
         metadata: {
             name: "01ed7aca-eb6b-1178-a200-f604a4ce114a",
@@ -502,7 +486,7 @@ public function mockPizzashackAPI12Definition() returns json {
             apiVersion: "1.0.0",
             context: "/pizzashack12/1.0.0",
             organization: "01ed7aca-eb6b-1178-a200-f604a4ce114b",
-            production: pizzashackAPIEndpoint,
+            prodHTTPRouteRefs: ["01ed7aca-eb6b-1178-a200-f604a4ce114a-production"],
             definitionFileRef: ""
         }
     };
@@ -511,7 +495,6 @@ public function mockPizzashackAPI12Definition() returns json {
 }
 
 public function mockPizzaShackAPI1Definition(string organization) returns json {
-    model:EnvConfig[]? pizzashackAPIEndpoint = [{httpRouteRefs: ["01ed7b08-f2b1-1166-82d5-649ae706d29d-production"]}];
     model:API api = {
         kind: "API",
         metadata: {
@@ -527,7 +510,7 @@ public function mockPizzaShackAPI1Definition(string organization) returns json {
             context: "/pizzashack1/1.0.0",
             organization: organization,
             definitionFileRef: "01ed7b08-f2b1-1166-82d5-649ae706d29d-definition",
-            production: pizzashackAPIEndpoint
+            prodHTTPRouteRefs: ["01ed7b08-f2b1-1166-82d5-649ae706d29d-production"]
         }
     };
     APIClient apiclient = new ();

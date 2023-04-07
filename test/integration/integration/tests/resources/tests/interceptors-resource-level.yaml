@@ -25,9 +25,8 @@ spec:
   apiVersion: 1.0.0
   context: /interceptor/1.0.0
   definitionFileRef: swagger-definition-webhook
-  production:
-    - httpRouteRefs:
-      - resource-interceptor-route
+  prodHTTPRouteRefs: 
+  - resource-interceptor-route
   organization: wso2-org
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1

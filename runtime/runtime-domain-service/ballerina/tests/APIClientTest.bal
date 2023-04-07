@@ -2443,7 +2443,6 @@ function getMockAPIResponse1(API api, string apiUUID, string k8sAPIUUID) returns
 
 function getMockAPI(API api, string apiUUID, string organization) returns model:API {
     APIClient apiClient = new;
-    model:EnvConfig[]? envConfig = [{httpRouteRefs: ["http-route-ref-name"]}];
     model:API k8sapi = {
         "kind": "API",
         "apiVersion": "dp.wso2.com/v1alpha1",
@@ -2455,7 +2454,7 @@ function getMockAPI(API api, string apiUUID, string organization) returns model:
             "context": apiClient.returnFullContext(api.context, api.'version),
             "organization": organization,
             "definitionFileRef": apiUUID + "-definition",
-            "production": envConfig
+            "prodHTTPRouteRefs": ["http-route-ref-name"]
         },
         "status"
                 : null
@@ -2513,7 +2512,6 @@ function getMockRuntimeAPIResponse(model:RuntimeAPI runtimeApi) returns http:Res
 
 function getMockAPI1(API api, string apiUUID, string organization) returns model:API {
     APIClient apiClient = new;
-    model:EnvConfig[]? envConfig = [{httpRouteRefs: ["http-route-ref-name"]}];
     model:API k8sapi = {
         "kind": "API",
         "apiVersion": "dp.wso2.com/v1alpha1",
@@ -2525,7 +2523,7 @@ function getMockAPI1(API api, string apiUUID, string organization) returns model
             "context": apiClient.returnFullContext(api.context, api.'version),
             "organization": organization,
             "definitionFileRef": apiUUID + "-definition",
-            "sandbox": envConfig
+            "sandHTTPRouteRefs": ["http-route-ref-name"]
         },
         "status": null
     };
