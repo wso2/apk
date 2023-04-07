@@ -148,7 +148,7 @@ jobs:
     - uses: azure/aks-set-context@v3
       with:
          resource-group: '${{ secrets.AZURE_RESOURCE_GROUP }}'
-         cluster-name: '${{ secrets.AKS_CLUSTER_NAME }}'
+         cluster-name: '${{ secrets.AKS_CLUSTER_NAME }}-${{ github.event.number || github.run_id }}'
     - name: Create Namespace apk-release
       shell: sh
       run: |
