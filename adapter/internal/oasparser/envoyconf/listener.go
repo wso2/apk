@@ -69,7 +69,7 @@ func CreateRoutesConfigForRds(vHosts []*routev3.VirtualHost, httpListeners strin
 // The relevant private keys and certificates (for securedListener) are fetched from the filepath
 // mentioned in the adapter configuration. These certificate, key values are added
 // as inline records (base64 encoded).
-func CreateListenerByGateway(gateway *gwapiv1b1.Gateway, resolvedListenerCerts map[string]map[string][]byte) *listenerv3.Listener {
+func CreateListenerByGateway(gateway *gwapiv1b1.Gateway) *listenerv3.Listener {
 	conf := config.ReadConfigs()
 	httpFilters := getHTTPFilters()
 	upgradeFilters := getUpgradeFilters()
@@ -89,10 +89,10 @@ func CreateListenerByGateway(gateway *gwapiv1b1.Gateway, resolvedListenerCerts m
 			ServerNames: []string{string(*listenerObj.Hostname)},
 		}
 
-		publicCertData := resolvedListenerCerts[string(listenerObj.Name)]["tls.crt"]
-		privateKeyData := resolvedListenerCerts[string(listenerObj.Name)]["tls.key"]
+		keyPath, certPath := retrieveCertsPaths(string(listenerObj.Name))
+
 		var tlsFilter *tlsv3.DownstreamTlsContext
-		tlsCert := generateTLSCertWithStr(string(privateKeyData), string(publicCertData))
+		tlsCert := generateTLSCert(keyPath, certPath)
 		//TODO: Make this configurable using config map from listener object
 		if conf.Envoy.Downstream.TLS.MTLSAPIsEnabled {
 			tlsFilter = &tlsv3.DownstreamTlsContext{
@@ -301,6 +301,32 @@ func CreateVirtualHosts(vhostToRouteArrayMap map[string][]*routev3.Route) []*rou
 	return virtualHosts
 }
 
+// retrieveCertsPaths retrieves the key and cert paths from the config file
+func retrieveCertsPaths(listenerName string) (string, string) {
+	var keyPath string
+	var certPath string
+	if listenerName == "gatewaylistener" {
+		keyPath = "/home/wso2/security/listeners/gw.key"
+		certPath = "/home/wso2/security/listeners/gw.crt"
+	} else if listenerName == "apilistener" {
+		keyPath = "/home/wso2/security/listeners/api.key"
+		certPath = "/home/wso2/security/listeners/api.crt"
+	} else if listenerName == "idplistener" {
+		keyPath = "/home/wso2/security/listeners/idp.key"
+		certPath = "/home/wso2/security/listeners/idp.crt"
+	} else if listenerName == "examplelistener" {
+		keyPath = "/home/wso2/security/listeners/example.key"
+		certPath = "/home/wso2/security/listeners/example.crt"
+	} else if listenerName == "systemlistener" {
+		keyPath = "/home/wso2/security/listeners/localhost.key"
+		certPath = "/home/wso2/security/listeners/localhost.crt"
+	} else {
+		keyPath = "/home/wso2/security/listeners/gw.key"
+		certPath = "/home/wso2/security/listeners/gw.crt"
+	}
+	return keyPath, certPath
+}
+
 // TODO: (VirajSalaka) Still the following method is not utilized as Sds is not implement. Keeping the Implementation for future reference
 // func generateDefaultSdsSecretFromConfigfile(privateKeyPath string, pulicKeyPath string) (*tlsv3.Secret, error) {
 // 	var secret tlsv3.Secret
@@ -327,24 +353,6 @@ func generateTLSCert(privateKeyPath string, publicKeyPath string) *tlsv3.TlsCert
 		CertificateChain: &corev3.DataSource{
 			Specifier: &corev3.DataSource_Filename{
 				Filename: publicKeyPath,
-			},
-		},
-	}
-	return &tlsCert
-}
-
-// generate TLS certs as inline strings
-func generateTLSCertWithStr(privateKey string, publicKey string) *tlsv3.TlsCertificate {
-	var tlsCert tlsv3.TlsCertificate
-	tlsCert = tlsv3.TlsCertificate{
-		PrivateKey: &corev3.DataSource{
-			Specifier: &corev3.DataSource_InlineString{
-				InlineString: privateKey,
-			},
-		},
-		CertificateChain: &corev3.DataSource{
-			Specifier: &corev3.DataSource_InlineString{
-				InlineString: publicKey,
 			},
 		},
 	}

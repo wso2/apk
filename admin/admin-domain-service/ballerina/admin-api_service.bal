@@ -323,7 +323,7 @@ service /api/am/admin on ep0 {
 
 isolated function handleAPKError(APKError errorDetail) returns InternalServerErrorError|BadRequestError {
     ErrorHandler & readonly detail = errorDetail.detail();
-    if detail.statusCode == "400" {
+    if detail.statusCode=="400" {
         BadRequestError badRequest = {body: {code: detail.code, message: detail.message}};
         return badRequest;
     }

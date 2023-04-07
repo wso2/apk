@@ -919,8 +919,8 @@ func UpdateAPICache(vHosts []string, newLabels []string, newlistenersForRoutes [
 }
 
 // UpdateGatewayCache updates the xDS cache related to the Gateway Lifecycle event.
-func UpdateGatewayCache(gateway *gwapiv1b1.Gateway, resolvedListenerCerts map[string]map[string][]byte) error {
-	listener := oasParser.GetProductionListener(gateway, resolvedListenerCerts)
+func UpdateGatewayCache(gateway *gwapiv1b1.Gateway) error {
+	listener := oasParser.GetProductionListener(gateway)
 	envoyListenerConfigMap[gateway.Name] = listener
 	return nil
 }

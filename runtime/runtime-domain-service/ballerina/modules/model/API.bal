@@ -31,8 +31,8 @@ public type APISpec record {|
     string context;
     string organization;
     string definitionFileRef?;
-    EnvConfig[]|() production= ();
-    EnvConfig[]|() sandbox=();
+    string[]|() prodHTTPRouteRefs= ();
+    string[]|() sandHTTPRouteRefs=();
     boolean systemAPI?;
 |};
 
@@ -42,10 +42,6 @@ public type APIStatus record {
     string message;
     string status;
     string transitionTime;
-};
-
-public type EnvConfig record {
-    string[] httpRouteRefs;
 };
 
 public type APIList record {

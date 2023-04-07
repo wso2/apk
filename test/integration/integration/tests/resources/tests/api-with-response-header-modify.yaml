@@ -25,9 +25,8 @@ spec:
   apiVersion: 1.0.0
   context: /response-header-modify/1.0.0
   definitionFileRef: swagger-definition-webhook
-  production:
-    - httpRouteRefs:
-      - test-api-with-response-header-modify-httproute
+  prodHTTPRouteRefs:
+  - test-api-with-response-header-modify-httproute
   organization: wso2-org
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1

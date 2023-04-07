@@ -86,8 +86,8 @@ func GetGlobalClusters() ([]*clusterv3.Cluster, []*corev3.Address) {
 // The provided set of envoy routes will be assigned under the virtual host
 //
 // The RouteConfiguration is named as "default"
-func GetProductionListener(gateway *gwapiv1b1.Gateway, resolvedListenerCerts map[string]map[string][]byte) *listenerv3.Listener {
-	listeners := envoy.CreateListenerByGateway(gateway, resolvedListenerCerts)
+func GetProductionListener(gateway *gwapiv1b1.Gateway) *listenerv3.Listener {
+	listeners := envoy.CreateListenerByGateway(gateway)
 	return listeners
 }
 

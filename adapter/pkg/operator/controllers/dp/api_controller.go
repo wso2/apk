@@ -205,17 +205,9 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		return ctrl.Result{}, nil
 	}
 
-	var prodHTTPRoute1, sandHTTPRoute1 []string
-	if len(apiDef.Spec.Production) > 0 {
-		prodHTTPRoute1 = apiDef.Spec.Production[0].HTTPRouteRefs
-	}
-	if len(apiDef.Spec.Sandbox) > 0 {
-		sandHTTPRoute1 = apiDef.Spec.Sandbox[0].HTTPRouteRefs
-	}
-
 	// Retrieve HTTPRoutes
-	prodHTTPRoute, sandHTTPRoute, err := apiReconciler.resolveAPIRefs(ctx, prodHTTPRoute1,
-		sandHTTPRoute1, req.NamespacedName.String(), req.Namespace)
+	prodHTTPRoute, sandHTTPRoute, err := apiReconciler.resolveAPIRefs(ctx, apiDef.Spec.ProdHTTPRouteRefs,
+		apiDef.Spec.SandHTTPRouteRefs, req.NamespacedName.String(), req.Namespace)
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2620, req.NamespacedName.String(), err))
 		return ctrl.Result{}, err
@@ -908,26 +900,22 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 		func(rawObj k8client.Object) []string {
 			api := rawObj.(*dpv1alpha1.API)
 			var httpRoutes []string
-			if len(api.Spec.Production) > 0 {
-				for _, ref := range api.Spec.Production[0].HTTPRouteRefs {
-					if ref != "" {
-						httpRoutes = append(httpRoutes,
-							types.NamespacedName{
-								Namespace: api.Namespace,
-								Name:      ref,
-							}.String())
-					}
+			for _, ref := range api.Spec.ProdHTTPRouteRefs {
+				if ref != "" {
+					httpRoutes = append(httpRoutes,
+						types.NamespacedName{
+							Namespace: api.Namespace,
+							Name:      ref,
+						}.String())
 				}
 			}
-			if len(api.Spec.Sandbox) > 0 {
-				for _, ref := range api.Spec.Sandbox[0].HTTPRouteRefs {
-					if ref != "" {
-						httpRoutes = append(httpRoutes,
-							types.NamespacedName{
-								Namespace: api.Namespace,
-								Name:      ref,
-							}.String())
-					}
+			for _, ref := range api.Spec.SandHTTPRouteRefs {
+				if ref != "" {
+					httpRoutes = append(httpRoutes,
+						types.NamespacedName{
+							Namespace: api.Namespace,
+							Name:      ref,
+						}.String())
 				}
 			}
 			return httpRoutes

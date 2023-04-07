@@ -211,6 +211,36 @@ spec:
             {{- else }}
               subPath: tls.crt
             {{- end }}
+            - name: router-listener-secret-volume
+              mountPath: /home/wso2/security/listeners/gw.key
+              subPath: gw.key
+            - name: router-listener-secret-volume
+              mountPath: /home/wso2/security/listeners/gw.crt
+              subPath: gw.crt
+            - name: router-listener-secret-volume
+              mountPath: /home/wso2/security/listeners/api.key
+              subPath: api.key
+            - name: router-listener-secret-volume
+              mountPath: /home/wso2/security/listeners/api.crt
+              subPath: api.crt
+            - name: router-listener-secret-volume
+              mountPath: /home/wso2/security/listeners/idp.key
+              subPath: idp.key
+            - name: router-listener-secret-volume
+              mountPath: /home/wso2/security/listeners/idp.crt
+              subPath: idp.crt
+            - name: router-listener-secret-volume
+              mountPath: /home/wso2/security/listeners/example.key
+              subPath: example.key
+            - name: router-listener-secret-volume
+              mountPath: /home/wso2/security/listeners/example.crt
+              subPath: example.crt
+            - name: router-listener-secret-volume
+              mountPath: /home/wso2/security/listeners/localhost.key
+              subPath: localhost.key
+            - name: router-listener-secret-volume
+              mountPath: /home/wso2/security/listeners/localhost.crt
+              subPath: localhost.crt
             - name: adapter-truststore-secret-volume
               mountPath: /home/wso2/security/truststore/adapter.crt
             {{- if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.dp.adapter.configs.tls }}
@@ -286,6 +316,9 @@ spec:
           {{- else }}
             secretName: {{ template "apk-helm.resource.prefix" . }}-router-server-cert
           {{- end }}
+        - name: router-listener-secret-volume
+          secret:
+            secretName: {{ template "apk-helm.resource.prefix" . }}-listener-crt-secret
         - name: adapter-truststore-secret-volume
           secret: 
           {{- if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.dp.adapter.configs.tls }}
