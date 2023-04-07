@@ -3013,7 +3013,7 @@ public class APIClient {
     # + apiId - Parameter Description  
     # + payload - Parameter Description  
     # + organization - Parameter Description
-    # + userName - Parameter Description
+    # + userName - userName Description
     # + return - Return Value Description
     public isolated function updateAPIDefinition(string apiId, http:Request payload, commons:Organization organization, string userName) returns http:Response|NotFoundError|PreconditionFailedError|InternalServerErrorError|BadRequestError|commons:APKError {
         do {
