@@ -38,6 +38,8 @@ data:
     [wso2.runtime_domain_service.runtimeConfiguration.gatewayConfiguration]
     name = "{{ .Values.wso2.apk.dp.gateway.name }}"
     listenerName = "{{ .Values.wso2.apk.dp.gateway.listener.name}}"
+    [wso2.runtime_domain_service.runtimeConfiguration.baseURL]
+    url = "{{ .Values.wso2.apk.dp.runtime.baseUrl }}/api/am/runtime"
     {{  if .Values.wso2.apk.dp.controlPlane }}
     [wso2.runtime_domain_service.runtimeConfiguration.controlPlane]
     serviceBaseURl = "{{ .Values.wso2.apk.dp.controlPlane.serviceUrl | default (printf "http://%s-admin-ds-service:9444" (include "apk-helm.resource.prefix" .)) }}"

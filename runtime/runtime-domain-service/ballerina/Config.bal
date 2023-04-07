@@ -41,7 +41,7 @@ public type Header record {|
 # + controlPlane - Field Description  
 # + orgResolver - Field Description 
 # + gatewayConfiguration - Gateway Configuration with name and listener name  
-# + baseURL - Router Configuration with runtime base url
+# + baseURL - Runtime base URL
 public type RuntimeConfiguratation record {|
     
     (string[] & readonly) serviceListingNamespaces = [ALL_NAMESPACES];
@@ -97,5 +97,5 @@ public type GatewayConfigurations record {|
 |};
 
 public type BaseURL record {|
-    string url = "https://prod.api.am.wso2.com:9095/api/am/runtime";
+    string url = "";
 |};
