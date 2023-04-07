@@ -42,7 +42,7 @@ on:
 env:
   GH_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
 concurrency:
-  group: idp-ui-${{ github.event.number }}
+  group: idp-ui-${{ github.event.number || github.run_id }}
   cancel-in-progress: true
 
 jobs:

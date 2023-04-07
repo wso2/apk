@@ -41,7 +41,7 @@ on:
 env:
   GH_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}
 concurrency:
-  group: devportal-domain-service-${{ github.event.number }}
+  group: devportal-domain-service-${{ github.event.number || github.run_id }}
   cancel-in-progress: true
 jobs:
   build:
