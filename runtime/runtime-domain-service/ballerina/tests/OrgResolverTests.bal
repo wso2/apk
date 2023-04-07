@@ -18,38 +18,47 @@
 import ballerina/test;
 import wso2/apk_common_lib as commons;
 
-@test:Config{dataProvider: organizationFromIdpClaimValueDataProvider}
+@test:Config {dataProvider: organizationFromIdpClaimValueDataProvider}
 function testRetrieveOrganizationFromIDPClaimValue(string orgclaimValue, commons:Organization? expectedOrg) {
     K8sBaseOrgResolver k8sBaseOrgResolver = new;
-    test:assertEquals(k8sBaseOrgResolver.retrieveOrganizationFromIDPClaimValue(orgclaimValue),expectedOrg);
+    map<anydata> claims = {};
+    test:assertEquals(k8sBaseOrgResolver.retrieveOrganizationFromIDPClaimValue(claims, orgclaimValue), expectedOrg);
 }
-function organizationFromIdpClaimValueDataProvider() returns map<[string,commons:Organization?]>{
-    commons:Organization org2 = {displayName: "org2",
-    name: "org2",
-    organizationClaimValue: "org2",
-    uuid: "01ed7aca-eb6b-1178-a200-f604a4ce114c",
-    enabled: true,serviceListingNamespaces: ["*"]};
-    map<[string,commons:Organization?]> data = {
-        "1":["org2",org2],
-        "2":["org5",()]
+
+function organizationFromIdpClaimValueDataProvider() returns map<[string, commons:Organization?]> {
+    commons:Organization org2 = {
+        displayName: "org2",
+        name: "org2",
+        organizationClaimValue: "org2",
+        uuid: "01ed7aca-eb6b-1178-a200-f604a4ce114c",
+        enabled: true,
+        serviceListingNamespaces: ["*"]
+    };
+    map<[string, commons:Organization?]> data = {
+        "1": ["org2", org2],
+        "2": ["org5", ()]
     };
     return data;
 }
 
-@test:Config{dataProvider: retrieveOrganizationByNameDataProvider}
+@test:Config {dataProvider: retrieveOrganizationByNameDataProvider}
 function testRetrieveOrganizationByName(string orgclaimValue, commons:Organization? expectedOrg) {
     K8sBaseOrgResolver k8sBaseOrgResolver = new;
-    test:assertEquals(k8sBaseOrgResolver.retrieveOrganizationByName(orgclaimValue),expectedOrg);
+    test:assertEquals(k8sBaseOrgResolver.retrieveOrganizationByName(orgclaimValue), expectedOrg);
 }
-function retrieveOrganizationByNameDataProvider() returns map<[string,commons:Organization?]>{
-    commons:Organization org2 = {displayName: "org2",
-    name: "org2",
-    organizationClaimValue: "org2",
-    uuid: "01ed7aca-eb6b-1178-a200-f604a4ce114c",
-    enabled: true,serviceListingNamespaces: ["*"]};
-        map<[string,commons:Organization?]> data = {
-        "1":["org2",org2],
-        "2":["org5",()]
+
+function retrieveOrganizationByNameDataProvider() returns map<[string, commons:Organization?]> {
+    commons:Organization org2 = {
+        displayName: "org2",
+        name: "org2",
+        organizationClaimValue: "org2",
+        uuid: "01ed7aca-eb6b-1178-a200-f604a4ce114c",
+        enabled: true,
+        serviceListingNamespaces: ["*"]
+    };
+    map<[string, commons:Organization?]> data = {
+        "1": ["org2", org2],
+        "2": ["org5", ()]
     };
     return data;
 }

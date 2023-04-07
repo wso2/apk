@@ -21,23 +21,12 @@ import ballerina/http;
 import ballerina/constraint;
 import ballerina/cache;
 
-public class ServiceBaseOrgResolver {
+public isolated class ServiceBaseOrgResolver {
     *commons:OrganizationResolver;
-    http:Client httpClient;
-    map<string>? headers;
-    final cache:Cache orgCache = new ({
-        // The maximum size of the cache is 10.
-        capacity: 1000,
-        // The eviction factor is set to 0.2, which means at the
-        // time of eviction 10*0.2=2 entries get removed from the cache.
-        evictionFactor: 0.2,
-        // The default max age of the cache entry is set to 2 seconds.
-        defaultMaxAge: 600,
-        // The cache cleanup task runs every 3 seconds and clears all
-        // the expired entries.
-        cleanupInterval: 60
-    });
-    final cache:Cache orgnizationClaimValueCache = new ({
+    private final http:Client httpClient;
+    private final map<string>? headers;
+    private final cache:Cache orgCache;
+    private final cache:Cache orgnizationClaimValueCache = new ({
         // The maximum size of the cache is 10.
         capacity: 1000,
         // The eviction factor is set to 0.2, which means at the
@@ -50,9 +39,21 @@ public class ServiceBaseOrgResolver {
         cleanupInterval: 60
     });
     public isolated function init(string serviceBaseURL, map<string>? headers, commons:KeyStore? certificate, boolean enableAuth) returns error? {
+        self.orgCache = new ({
+            // The maximum size of the cache is 10.
+            capacity: 1000,
+            // The eviction factor is set to 0.2, which means at the
+            // time of eviction 10*0.2=2 entries get removed from the cache.
+            evictionFactor: 0.2,
+            // The default max age of the cache entry is set to 2 seconds.
+            defaultMaxAge: 600,
+            // The cache cleanup task runs every 3 seconds and clears all
+            // the expired entries.
+            cleanupInterval: 60
+        });
         TokenIssuerConfiguration issuerConfiguration = runtimeConfiguration.tokenIssuerConfiguration;
         commons:KeyStore & readonly signingCert = runtimeConfiguration.keyStores.signing;
-        self.headers = headers;
+        self.headers = headers.cloneReadOnly();
         boolean secured = serviceBaseURL.startsWith("https:");
         self.httpClient = check new (serviceBaseURL,
         auth = enableAuth ? {
@@ -95,7 +96,7 @@ public class ServiceBaseOrgResolver {
                         };
                         check self.orgCache.put(organizationName, org);
                         check self.orgnizationClaimValueCache.put(org.organizationClaimValue, org.name);
-                        return org;
+                        return org.clone();
                     }
                     return;
                 } else {
@@ -109,7 +110,7 @@ public class ServiceBaseOrgResolver {
         }
     }
 
-    public isolated function retrieveOrganizationFromIDPClaimValue(string organizationClaim) returns commons:Organization|commons:APKError|() {
+    public isolated function retrieveOrganizationFromIDPClaimValue(map<anydata> claims, string organizationClaim) returns commons:Organization|commons:APKError|() {
         do {
             if self.orgnizationClaimValueCache.hasKey(organizationClaim) {
                 string orgName = check self.orgnizationClaimValueCache.get(organizationClaim).ensureType(string);
@@ -128,7 +129,7 @@ public class ServiceBaseOrgResolver {
                 if getOrgnizationByName is OrganizationList {
                     Organization[]? organizations = getOrgnizationByName.list;
                     if organizations is Organization[] && organizations.length() > 0 {
-                        Organization organization = organizations[0];
+                        Organization & readonly organization = organizations[0].cloneReadOnly();
                         return {
                             uuid: <string>organization.id,
                             name: organization.name,

@@ -1,10 +1,10 @@
 import runtime_domain_service.model;
 import wso2/apk_common_lib as commons;
 
-public class K8sBaseOrgResolver {
+public isolated class K8sBaseOrgResolver {
     *commons:OrganizationResolver;
 
-    public isolated function retrieveOrganizationFromIDPClaimValue(string organizationClaim) returns commons:Organization|commons:APKError|() {
+    public isolated function retrieveOrganizationFromIDPClaimValue(map<anydata> claims, string organizationClaim) returns commons:Organization|commons:APKError|() {
         OrgClient orgClient = new;
         model:Organization? retrievedOrg = orgClient.retrieveOrganizationFromIDPClaimValue(organizationClaim);
         if retrievedOrg is model:Organization {

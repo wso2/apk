@@ -33,10 +33,8 @@ configurable RuntimeConfiguratation & readonly runtimeConfiguration = {
     idpConfiguration: {publicKey: {certFilePath: "/home/wso2apk/runtime/security/mg.pem"}},
     controlPlane: {serviceBaseURl: ""}
 };
-K8sBaseOrgResolver k8sBaseOrgResolver = new;
-ServiceBaseOrgResolver serviceBaseOrgResolver = check initializeServiceBaseResolver();
 
-function initializeServiceBaseResolver() returns ServiceBaseOrgResolver|error {
+isolated function initializeServiceBaseResolver() returns ServiceBaseOrgResolver|error {
     map<string> headers = {};
     foreach Header & readonly header in runtimeConfiguration.controlPlane.headers {
         headers[header.name] = header.value;
@@ -44,19 +42,30 @@ function initializeServiceBaseResolver() returns ServiceBaseOrgResolver|error {
     return check new (runtimeConfiguration.controlPlane.serviceBaseURl, headers, runtimeConfiguration.controlPlane.certificate, runtimeConfiguration.controlPlane.enableAuthentication);
 }
 
-function getOrgResolver() returns commons:OrganizationResolver {
-    return runtimeConfiguration.orgResolver == "k8s" ? k8sBaseOrgResolver : serviceBaseOrgResolver;
+final K8sBaseOrgResolver k8sBaseOrgResolver = new;
+final ServiceBaseOrgResolver serviceBaseOrgResolver = check initializeServiceBaseResolver();
+final commons:JWTBaseOrgResolver jwtBaseOrgResolver = new;
+
+isolated function getOrgResolver() returns commons:OrganizationResolver {
+    if runtimeConfiguration.orgResolver == ORG_RESOLVER_CONTROL_PLANE {
+        return serviceBaseOrgResolver;
+    } else if runtimeConfiguration.orgResolver == ORG_RESOLVER_K8s {
+        return k8sBaseOrgResolver;
+    } else {
+        return jwtBaseOrgResolver;
+    }
 }
 
 commons:JWTValidationInterceptor jwtValidationInterceptor = new (runtimeConfiguration.idpConfiguration, getOrgResolver());
 commons:RequestErrorInterceptor requestErrorInterceptor = new;
+commons:ResponseErrorInterceptor responseErrorInterceptor = new;
 listener http:Listener ep1 = new (9444, secureSocket = {
     'key: {
         certFile: <string>runtimeConfiguration.keyStores.tls.certFilePath,
         keyFile: <string>runtimeConfiguration.keyStores.tls.keyFilePath
     }
 },
-    interceptors = [requestErrorInterceptor]
+    interceptors = [requestErrorInterceptor, responseErrorInterceptor]
     );
 listener http:Listener ep0 = new (9443,
 secureSocket = {
@@ -65,7 +74,7 @@ secureSocket = {
         keyFile: <string>runtimeConfiguration.keyStores.tls.keyFilePath
     }
 },
-    interceptors = [jwtValidationInterceptor, requestErrorInterceptor]
+    interceptors = [jwtValidationInterceptor, requestErrorInterceptor, responseErrorInterceptor]
     );
 string kid = uuid:createType1AsString();
 

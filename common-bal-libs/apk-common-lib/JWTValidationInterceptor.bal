@@ -1,17 +1,17 @@
 import ballerina/jwt;
 import ballerina/http;
 
-public service class JWTValidationInterceptor {
+public isolated service class JWTValidationInterceptor {
     *http:RequestInterceptor;
-    private final IDPConfiguration idpConfiguration;
+    private final IDPConfiguration & readonly idpConfiguration;
     private final jwt:ValidatorConfig jwtValidatorConfig;
     private final OrganizationResolver organizationResolver;
-    public function init(IDPConfiguration idpConfiguration, OrganizationResolver organizationResolver) {
-        self.idpConfiguration = idpConfiguration.clone();
+    public isolated function init(IDPConfiguration idpConfiguration, OrganizationResolver organizationResolver) {
+        self.idpConfiguration = idpConfiguration.cloneReadOnly();
         self.organizationResolver = organizationResolver;
-        self.jwtValidatorConfig = initializeJWTValidator(idpConfiguration.clone());
+        self.jwtValidatorConfig = initializeJWTValidator(idpConfiguration.cloneReadOnly()).cloneReadOnly();
     }
-    resource function 'default [string... path](http:RequestContext ctx, http:Request request, http:Caller caller) returns http:NextService|error? {
+    isolated resource function 'default [string... path](http:RequestContext ctx, http:Request request, http:Caller caller) returns http:NextService|error? {
         if path[0] == "health" {
             return ctx.next();
         }
@@ -35,11 +35,12 @@ public service class JWTValidationInterceptor {
         if validatedJWT is jwt:Payload {
             if (validatedJWT.hasKey(self.idpConfiguration.organizationClaim)) {
                 string organizationClaim = <string>validatedJWT.get(self.idpConfiguration.organizationClaim);
-                Organization? retrievedorg = check self.organizationResolver.retrieveOrganizationFromIDPClaimValue(organizationClaim);
+                map<anydata> claims = self.extractCustomClaims(validatedJWT);
+                Organization? retrievedorg = check self.organizationResolver.retrieveOrganizationFromIDPClaimValue(claims, organizationClaim);
                 if retrievedorg is Organization {
                     if retrievedorg.enabled {
                         UserContext userContext = {username: <string>validatedJWT.sub, organization: retrievedorg};
-                        userContext.claims = self.extractCustomClaims(validatedJWT);
+                        userContext.claims = claims;
                         return userContext;
                     } else {
                         APKError apkError = error("Inactive Organization", code = 900951, description = "Organization is inactive", statusCode = 401, message = "Organization is inactive");
@@ -58,7 +59,7 @@ public service class JWTValidationInterceptor {
                     return userContext;
                 } else {
                     APKError apkError = error("Organization not found in APK system", code = 900952, description = "Organization not found in APK system", statusCode = 401, message = "Organization not found in APK system");
-                    return apkError;  
+                    return apkError;
                 }
             }
         }
@@ -85,7 +86,7 @@ public service class JWTValidationInterceptor {
 #
 # + idpConfiguration - Parameter Description
 # + return - Return Value Description
-isolated function initializeJWTValidator(IDPConfiguration idpConfiguration) returns jwt:ValidatorConfig {
+isolated function initializeJWTValidator(IDPConfiguration & readonly idpConfiguration) returns jwt:ValidatorConfig {
     jwt:ValidatorConfig validatorConfig = {issuer: idpConfiguration.issuer};
     string? jwksUrl = idpConfiguration.jwksUrl;
     jwt:ValidatorSignatureConfig signatureConfig = {certFile: idpConfiguration.publicKey.certFilePath};
