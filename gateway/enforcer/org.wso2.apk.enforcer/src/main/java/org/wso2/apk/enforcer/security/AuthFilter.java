@@ -166,6 +166,7 @@ public class AuthFilter implements Filter {
                 if (authenticateResponse.isMandatoryAuthentication()) {
                     authenticated = authenticateResponse.isAuthenticated();
                     setInterceptorAuthContextMetadata(authenticator, requestContext);
+                    setInterceptorAPIMetadata(requestContext);
                 }
                 if (!authenticateResponse.isContinueToNextAuthenticator()) {
                     break;
@@ -326,6 +327,19 @@ public class AuthFilter implements Filter {
                 Objects.toString(authContext.getRawToken(), ""));
         requestContext.addMetadataToMap(InterceptorConstants.AuthContextFields.KEY_TYPE,
                 Objects.toString(requestContext.getMatchedAPI().getEnvType(), ""));
+    }
+
+    private void setInterceptorAPIMetadata(RequestContext requestContext) {
+        requestContext.addMetadataToMap(InterceptorConstants.APIMetadataFields.API_BASE_PATH,
+                Objects.toString(requestContext.getMatchedAPI().getBasePath(), ""));
+        requestContext.addMetadataToMap(InterceptorConstants.APIMetadataFields.API_VERSION,
+                Objects.toString(requestContext.getMatchedAPI().getVersion() , ""));
+        requestContext.addMetadataToMap(InterceptorConstants.APIMetadataFields.API_NAME,
+                Objects.toString(requestContext.getMatchedAPI().getName(), ""));
+        requestContext.addMetadataToMap(InterceptorConstants.APIMetadataFields.API_VHOST,
+                Objects.toString(requestContext.getMatchedAPI().getVhost(), ""));
+        requestContext.addMetadataToMap(InterceptorConstants.APIMetadataFields.API_ORGANIZATION_ID,
+                Objects.toString(requestContext.getMatchedAPI().getOrganizationId(), ""));
     }
 
     /**

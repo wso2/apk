@@ -148,10 +148,10 @@ func generateGlobalInterceptorResource(gatewayAPIPolicies map[string]v1alpha1.AP
 	if len(gatewayAPIPolicies) > 0 && len(gatewayBackendMapping) > 0 {
 		gwReqI, gwResI := createInterceptors(gatewayAPIPolicies, gatewayBackendMapping)
 		if len(gwReqI) > 0 {
-			gwReqICluster, gwReqIAddresses, _ = envoyconf.CreateLuaCluster(nil, gwReqI["POST"])
+			gwReqICluster, gwReqIAddresses, _ = envoyconf.CreateLuaCluster(nil, gwReqI[string(gwapiv1b1.HTTPMethodPost)])
 		}
 		if len(gwResI) > 0 {
-			gwResICluster, gwResIAddresses, _ = envoyconf.CreateLuaCluster(nil, gwResI["POST"])
+			gwResICluster, gwResIAddresses, _ = envoyconf.CreateLuaCluster(nil, gwResI[string(gwapiv1b1.HTTPMethodPost)])
 		}
 		gwLuaScript = getGlobalInterceptorScript(gatewayAPIPolicies, gatewayBackendMapping)
 	}
@@ -196,13 +196,25 @@ func createInterceptors(gatewayAPIPolicies map[string]v1alpha1.APIPolicy,
 			if resolvedPolicySpec.RequestInterceptor != nil {
 				reqIEp := getInterceptorEndpoint(resolvedPolicySpec.RequestInterceptor, gatewayBackendMapping, true)
 				if reqIEp != nil {
-					requestInterceptorMap["POST"] = *reqIEp
+					requestInterceptorMap[string(gwapiv1b1.HTTPMethodPost)] = *reqIEp
+					requestInterceptorMap[string(gwapiv1b1.HTTPMethodGet)] = *reqIEp
+					requestInterceptorMap[string(gwapiv1b1.HTTPMethodDelete)] = *reqIEp
+					requestInterceptorMap[string(gwapiv1b1.HTTPMethodPatch)] = *reqIEp
+					requestInterceptorMap[string(gwapiv1b1.HTTPMethodPut)] = *reqIEp
+					requestInterceptorMap[string(gwapiv1b1.HTTPMethodHead)] = *reqIEp
+					requestInterceptorMap[string(gwapiv1b1.HTTPMethodOptions)] = *reqIEp
 				}
 			}
 			if resolvedPolicySpec.ResponseInterceptor != nil {
 				resIEp := getInterceptorEndpoint(resolvedPolicySpec.ResponseInterceptor, gatewayBackendMapping, false)
 				if resIEp != nil {
-					responseInterceptorMap["POST"] = *resIEp
+					responseInterceptorMap[string(gwapiv1b1.HTTPMethodPost)] = *resIEp
+					responseInterceptorMap[string(gwapiv1b1.HTTPMethodGet)] = *resIEp
+					responseInterceptorMap[string(gwapiv1b1.HTTPMethodDelete)] = *resIEp
+					responseInterceptorMap[string(gwapiv1b1.HTTPMethodPatch)] = *resIEp
+					responseInterceptorMap[string(gwapiv1b1.HTTPMethodPut)] = *resIEp
+					responseInterceptorMap[string(gwapiv1b1.HTTPMethodHead)] = *resIEp
+					responseInterceptorMap[string(gwapiv1b1.HTTPMethodOptions)] = *resIEp
 				}
 			}
 		}

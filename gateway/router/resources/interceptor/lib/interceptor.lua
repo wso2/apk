@@ -214,6 +214,15 @@ local function include_request_info(req_includes, interceptor_request_body, requ
     update_request_body(req_includes, interceptor_request_body, REQUEST.REQ_TRAILERS, request_trailers_table)
 end
 
+local function add_api_metadata(ext_authz_meta, inv_context_body) 
+    for metadata_key, metadata_velue in pairs(ext_authz_meta) do
+        local value = inv_context_body[metadata_key]
+        if value ~= nil and string.len(value) == 0 then
+            inv_context_body[metadata_key] = metadata_velue
+        end
+    end
+end
+
 local function include_invocation_context(handle, req_flow_includes, resp_flow_includes, inv_context, interceptor_request_body, shared_info, request_headers)
     if req_flow_includes[INCLUDES.INV_CONTEXT] or resp_flow_includes[INCLUDES.INV_CONTEXT] then
         -- We first read from "x-forwarded-for" which is the actual client IP, when it comes to scenarios like the request is coming through a load balancer
@@ -239,6 +248,9 @@ local function include_invocation_context(handle, req_flow_includes, resp_flow_i
         --#region auth context
         local ext_authz_meta =  handle:streamInfo():dynamicMetadata():get(EXT_AUTHZ_FILTER)
         if ext_authz_meta then
+            -- This line sets api metadata read from ext auth filter metadata, 
+            -- only if missing in the invocation context
+            add_api_metadata(ext_authz_meta, inv_context_body)
             inv_context_body[INV_CONTEXT.AUTH_CTX] = {
                 [AUTH_CTX.TOKEN_TYPE] = ext_authz_meta["tokenType"], -- API Key|JWT Auth|Internal Key
                 [AUTH_CTX.TOKEN] = ext_authz_meta["token"],
