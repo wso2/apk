@@ -145,7 +145,7 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 
 	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.RateLimitPolicy{}}, handler.EnqueueRequestsFromMapFunc(r.getAPIsForRateLimitPolicy),
 		predicates...); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2617, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2639, err))
 		return err
 	}
 

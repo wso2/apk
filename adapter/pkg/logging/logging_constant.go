@@ -59,6 +59,7 @@ const (
 	error2636 = 2636
 	error2637 = 2637
 	error2638 = 2638
+	error2639 = 2639
 	error2641 = 2641
 	error2642 = 2642
 	error2643 = 2643
@@ -263,6 +264,11 @@ var Mapper = map[int]ErrorDetails{
 	error2638: {
 		ErrorCode: error2638,
 		Message:   "Unable to create webhook for APIPolicy: %v",
+		Severity:  BLOCKER,
+	},
+	error2639: {
+		ErrorCode: error2639,
+		Message:   "Error watching Ratelimit resources: %v",
 		Severity:  BLOCKER,
 	},
 	error2621: {
