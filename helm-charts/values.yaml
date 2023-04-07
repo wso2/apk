@@ -75,7 +75,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/devportal-domain-service:0.0.1-m7
+          image: wso2/devportal-domain-service:latest
       admin:
         appName: "admin-ds"
         deployment:
@@ -102,7 +102,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/admin-domain-service:0.0.1-m7
+          image: wso2/admin-domain-service:latest
       backoffice:
         appName: "backoffice-ds"
         deployment:
@@ -129,7 +129,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/backoffice-domain-service:0.0.1-m7
+          image: wso2/backoffice-domain-service:latest
       devportalUI:
         appName: "devportal-ui"
         deployment:
@@ -172,7 +172,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/management-server:0.0.1-m7
+          image: wso2/management-server:latest
           readinessProbe:
             initialDelaySeconds: 20
             periodSeconds: 20
@@ -249,7 +249,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/runtime-domain-service:0.0.1-m7
+          image: wso2/runtime-domain-service:latest
         # configs:
         #   tls:
         #     certificatesSecret: "my-secret"
@@ -374,7 +374,7 @@ wso2:
               failureThreshold: 5
             strategy: Recreate
             imagePullPolicy: Always
-            image: wso2/enforcer:0.0.1-m7
+            image: wso2/enforcer:latest
             security:
               sslHostname: "enforcer"
             # configs:
@@ -463,7 +463,7 @@ idp:
       strategy: Recreate
       replicas: 1
       imagePullPolicy: Always
-      image: wso2/idp-domain-service:0.0.1-m7
+      image: wso2/idp-domain-service:latest
   idpui:
     appName: "idp-ui"
     deployment:
@@ -490,7 +490,7 @@ idp:
       strategy: Recreate
       replicas: 1
       imagePullPolicy: Always
-      image: wso2/idp-ui:0.0.1-m7
+      image: wso2/idp-ui:latest
     configs:
       idpLoginUrl: "https://prod.idp.am.wso2.com:9095/commonauth/login"
       idpAuthCallBackUrl: "https://prod.idp.am.wso2.com:9095/oauth2/auth-callback"

@@ -29,7 +29,7 @@ import (
 	 // IntegrationTests = append(IntegrationTests, CustomRateLimitPolicies)
  }
  
- // APILevelInterceptors test
+ // CustomRateLimitPolicies test
  var CustomRateLimitPolicies = suite.IntegrationTest{
 	 ShortName:   "CustomRateLimitPolicies",
 	 Description: "Tests API with with custom rate limit policies",
