@@ -29,7 +29,7 @@ spec:
     type: "ext"
   targetRef:
     group: ""
-    kind: "HTTPRoute"
-    name: {{ template "apk-helm.resource.prefix" . }}-idp-ds-httproute
+    kind: "API"
+    name: {{ template "apk-helm.resource.prefix" . }}-idp-ds-api
     namespace: {{ .Release.Namespace }}
 {{- end -}}

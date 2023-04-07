@@ -30,7 +30,7 @@ spec:
     type: "ext"
   targetRef:
     group: ""
-    kind: "HTTPRoute"
-    name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-httproute
+    kind: "API"
+    name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-api
     namespace: {{ .Release.Namespace }}
 {{- end -}}
