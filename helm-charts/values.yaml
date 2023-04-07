@@ -248,8 +248,9 @@ wso2:
             failureThreshold: 5
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: IfNotPresent
-          image: runtime-domain-service:0.0.1-SNAPSHOT
+          imagePullPolicy: Always
+          image: wso2/runtime-domain-service:latest
+        baseUrl: "https://prod.api.am.wso2.com:9095"
         # configs:
         #   tls:
         #     certificatesSecret: "my-secret"
