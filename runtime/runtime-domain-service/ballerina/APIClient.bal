@@ -367,7 +367,20 @@ public class APIClient {
                 }
             }
         }
-        return {list: convertAPIListToAPIInfoList(limitSet), count: limitSet.length(), pagination: {total: apiList.length(), 'limit: 'limit, offset: offset}};
+        string previousAPIId = "";
+        string nextAPIId = "";
+        if offset > sortedAPIS.length() {
+            BadRequestError badRequest = {body: {code: 90912, message: "Invalid Value for Offset"}};
+            return badRequest;
+        } else if offset > 0 {
+            previousAPIId = sortedAPIS[offset - 1].id.toString();
+        }
+        if limitSet.length() < 'limit {
+            nextAPIId = "";
+        } else if (sortedAPIS.length() > offset + 'limit){
+            nextAPIId = sortedAPIS[offset + 'limit].id.toString();
+        }
+        return {list: convertAPIListToAPIInfoList(limitSet), count: limitSet.length(), pagination: {total: apiList.length(), 'limit: 'limit, offset: offset, next: nextAPIId, previous: previousAPIId}};
 
     }
     public isolated function createAPI(API api, string? definition, commons:Organization organization, string userName) returns commons:APKError|CreatedAPI|BadRequestError {

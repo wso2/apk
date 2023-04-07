@@ -592,7 +592,9 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                 "pagination": {
                     "offset": 0,
                     "limit": 10,
-                    "total": 6
+                    "total": 6,
+                    "next": "",
+                    "previous": ""
                 }
             }.toBalString()
         ],
@@ -657,7 +659,9 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                 "pagination": {
                     "offset": 0,
                     "limit": 10,
-                    "total": 6
+                    "total": 6,
+                    "next": "",
+                    "previous": ""
                 }
             }.toBalString()
         ],
@@ -722,7 +726,9 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                 "pagination": {
                     "offset": 0,
                     "limit": 10,
-                    "total": 6
+                    "total": 6,
+                    "next": "",
+                    "previous": ""
                 }
             }.toBalString()
         ],
@@ -787,7 +793,9 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                 "pagination": {
                     "offset": 0,
                     "limit": 10,
-                    "total": 6
+                    "total": 6,
+                    "next": "",
+                    "previous": ""
                 }
             }.toBalString()
         ],
@@ -829,7 +837,9 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                 "pagination": {
                     "offset": 0,
                     "limit": 3,
-                    "total": 6
+                    "total": 6,
+                    "next": "c5ab2423-b9e8-432b-92e8-35e6907ed5f9",
+                    "previous": ""
                 }
             }.toBalString()
         ],
@@ -870,7 +880,9 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                 "pagination": {
                     "offset": 3,
                     "limit": 3,
-                    "total": 6
+                    "total": 6,
+                    "next": "",
+                    "previous": "7b7db1f0-0a9a-4f72-9f9d-5a1696d590c1"
                 }
             }.toBalString()
         ],
@@ -886,7 +898,9 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                 "pagination": {
                     "offset": 6,
                     "limit": 3,
-                    "total": 6
+                    "total": 6,
+                    "next": "",
+                    "previous": "c5ab2423-b9e8-432b-92e8-35e6907ed5f3"
                 }
             }.toBalString()
         ],
@@ -943,7 +957,9 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                 "pagination": {
                     "offset": 0,
                     "limit": 10,
-                    "total": 5
+                    "total": 5,
+                    "next": "",
+                    "previous": ""
                 }
             }.toBalString()
         ],
@@ -1000,7 +1016,9 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                 "pagination": {
                     "offset": 0,
                     "limit": 10,
-                    "total": 5
+                    "total": 5,
+                    "next": "",
+                    "previous": ""
                 }
             }.toBalString()
         ],
@@ -1065,7 +1083,9 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                 "pagination": {
                     "offset": 0,
                     "limit": 10,
-                    "total": 6
+                    "total": 6,
+                    "next": "",
+                    "previous": ""
                 }
             }.toBalString()
         ],
@@ -1081,7 +1101,9 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                 "pagination": {
                     "offset": 0,
                     "limit": 10,
-                    "total": 0
+                    "total": 0,
+                    "next": "",
+                    "previous": ""
                 }
             }.toBalString()
         ],
