@@ -209,7 +209,7 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 			*apiReconciler.ch <- synchronizer.APIEvent{EventType: constants.Delete, Event: apiState}
 			return ctrl.Result{}, nil
 		}
-		loggers.LoggerAPKOperator.Warn(logging.GetErrorByCode(2619, req.NamespacedName.String(), err))
+		loggers.LoggerAPKOperator.Warnf("Api CR related to the reconcile request with key: %s returned error. Assuming API is already deleted, hence ignoring the error : %v", err)
 		return ctrl.Result{}, nil
 	}
 
@@ -225,7 +225,7 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	prodHTTPRoute, sandHTTPRoute, err := apiReconciler.resolveAPIRefs(ctx, prodHTTPRoute1,
 		sandHTTPRoute1, req.NamespacedName.String(), req.Namespace)
 	if err != nil {
-		loggers.LoggerAPKOperator.Warn(logging.GetErrorByCode(2620, req.NamespacedName.String(), err))
+		loggers.LoggerAPKOperator.Warnf("Error retrieving ref CRs for API in namespace : %s, %v", err)
 		return ctrl.Result{}, err
 	}
 	loggers.LoggerAPKOperator.Debugf("HTTPRoutes are retrieved successfully for API CR %s", req.NamespacedName.String())
