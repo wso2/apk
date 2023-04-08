@@ -39,8 +39,6 @@ const (
 	error2616 = 2616
 	error2617 = 2617
 	error2618 = 2618
-	error2619 = 2619
-	error2620 = 2620
 	error2621 = 2621
 	error2622 = 2622
 	error2623 = 2623
@@ -173,17 +171,6 @@ var Mapper = map[int]ErrorDetails{
 		ErrorCode: error2618,
 		Message:   "Error watching scope resources: %v",
 		Severity:  BLOCKER,
-	},
-	error2619: {
-		ErrorCode: error2619,
-		Message: "Api CR related to the reconcile request with key: %s returned error." +
-			" Assuming API is already deleted, hence ignoring the error : %v",
-		Severity: TRIVIAL,
-	},
-	error2620: {
-		ErrorCode: error2620,
-		Message:   "Error retrieving ref CRs for API in namespace : %s, %v",
-		Severity:  TRIVIAL,
 	},
 	error2622: {
 		ErrorCode: error2622,

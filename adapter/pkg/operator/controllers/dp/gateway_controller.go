@@ -112,7 +112,7 @@ func (gatewayReconciler *GatewayReconciler) Reconcile(ctx context.Context, req c
 			*gatewayReconciler.ch <- synchronizer.GatewayEvent{EventType: constants.Delete, Event: gatewayState}
 			return ctrl.Result{}, nil
 		}
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2619, req.NamespacedName.String(), err))
+		loggers.LoggerAPKOperator.Warnf("Gateway CR related to the reconcile request with key: %s returned error. Assuming Gateway is already deleted, hence ignoring the error : %v", err)
 		return ctrl.Result{}, nil
 	}
 	namespace := gwapiv1b1.Namespace(gatewayDef.Namespace)
