@@ -255,11 +255,11 @@ jobs:
       with:
         azcliversion: 2.44.1
         inlineScript: |
-          az aks create --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" --name "${{ secrets.AKS_CLUSTER_NAME }}" --enable-cluster-autoscaler --min-count 1 --max-count 3 --location "southeastasia" --generate-ssh-keys --verbose 
+          az aks create --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" --name "${{ secrets.AKS_CLUSTER_NAME }}-${{ github.event.number || github.run_id }}" --enable-cluster-autoscaler --min-count 1 --max-count 3 --location "southeastasia" --generate-ssh-keys --verbose 
     - uses: azure/aks-set-context@v3
       with:
           resource-group: '${{ secrets.AZURE_RESOURCE_GROUP }}'
-          cluster-name: '${{ secrets.AKS_CLUSTER_NAME }}'
+          cluster-name: '${{ secrets.AKS_CLUSTER_NAME }}-${{ github.event.number || github.run_id }}'
     - name: Create Namespace apk-release
       shell: sh
       run: |
@@ -314,7 +314,7 @@ jobs:
       with:
         azcliversion: 2.44.1
         inlineScript: |
-          az aks delete --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --name ${{ secrets.AKS_CLUSTER_NAME }} --yes
+          az aks delete --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --name ${{ secrets.AKS_CLUSTER_NAME }}-${{ github.event.number || github.run_id }} --yes
     - name: Logout from azure
       if: always()
       uses: azure/CLI@v1
