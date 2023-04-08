@@ -209,7 +209,7 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 			*apiReconciler.ch <- synchronizer.APIEvent{EventType: constants.Delete, Event: apiState}
 			return ctrl.Result{}, nil
 		}
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2619, req.NamespacedName.String(), err))
+		loggers.LoggerAPKOperator.Warn(logging.GetErrorByCode(2619, req.NamespacedName.String(), err))
 		return ctrl.Result{}, nil
 	}
 
@@ -225,7 +225,7 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	prodHTTPRoute, sandHTTPRoute, err := apiReconciler.resolveAPIRefs(ctx, prodHTTPRoute1,
 		sandHTTPRoute1, req.NamespacedName.String(), req.Namespace)
 	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2620, req.NamespacedName.String(), err))
+		loggers.LoggerAPKOperator.Warn(logging.GetErrorByCode(2620, req.NamespacedName.String(), err))
 		return ctrl.Result{}, err
 	}
 	loggers.LoggerAPKOperator.Debugf("HTTPRoutes are retrieved successfully for API CR %s", req.NamespacedName.String())
@@ -720,7 +720,7 @@ func (apiReconciler *APIReconciler) getAPIsForAuthentication(obj k8client.Object
 
 	namespace := utils.GetNamespace((*gwapiv1b1.Namespace)(authentication.Spec.TargetRef.Namespace), authentication.Namespace)
 
-	if authentication.Spec.TargetRef.Kind == constants.KindAPI {
+	if authentication.Spec.TargetRef.Kind == constants.KindResource {
 		loggers.LoggerAPKOperator.Debugf("Finding reconcile API requests for httpRoute: %s in namespace : %s",
 			authentication.Spec.TargetRef.Name, authentication.Namespace)
 		httpRoute := gwapiv1b1.HTTPRoute{}
