@@ -12,4 +12,5 @@ public type EndpointSecurity record {|
     string username?;
     string password?;
     string secretRefName?;
+    string generatedSecretRefName?;
 |};
