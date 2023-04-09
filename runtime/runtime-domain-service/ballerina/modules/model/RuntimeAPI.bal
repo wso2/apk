@@ -8,6 +8,7 @@ public type RuntimeAPI record {|
 public type ServiceInfo record {
     string name;
     string namespace;
+    record {} endpointSecurity?;
 };
 
 public type RuntimeAPISpec record {|
