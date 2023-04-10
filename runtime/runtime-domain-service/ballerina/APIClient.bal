@@ -2372,30 +2372,30 @@ public class APIClient {
         };
         string[] includes = [];
         if flow == "request" {
-            if (<string>parameters.get("headersEnabled") == "true") {
+            if (<boolean>parameters.get("headersEnabled")) {
                 includes.push("request_headers");
             }
-            if (<string>parameters.get("bodyEnabled") == "true") {
+            if (<boolean>parameters.get("bodyEnabled")) {
                 includes.push("request_body");
             }
-            if (<string>parameters.get("trailersEnabled") == "true") {
+            if (<boolean>parameters.get("trailersEnabled")) {
                 includes.push("request_trailers");
             }
-            if (<string>parameters.get("contextEnabled") == "true") {
+            if (<boolean>parameters.get("contextEnabled")) {
                 includes.push("invocation_context");
             }
         }
         if flow == "response" {
-            if (<string>parameters.get("headersEnabled") == "true") {
+            if (<boolean>parameters.get("headersEnabled")) {
                 includes.push("response_headers");
             }
-            if (<string>parameters.get("bodyEnabled") == "true") {
+            if (<boolean>parameters.get("bodyEnabled")) {
                 includes.push("response_body");
             }
-            if (<string>parameters.get("trailersEnabled") == "true") {
+            if (<boolean>parameters.get("trailersEnabled")) {
                 includes.push("response_trailers");
             }
-            if (<string>parameters.get("contextEnabled") == "true") {
+            if (<boolean>parameters.get("contextEnabled")) {
                 includes.push("invocation_context");
             }
         }
