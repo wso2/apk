@@ -2819,7 +2819,7 @@ public class APIClient {
                 } else {
                     'service.metadata.name = getBackendServiceUid(newAPI, {}, endpointType, organization);
                 }
-                if (<model:SecurityConfig[]>'service.spec.security).length() > 0 {
+                if 'service.spec.security is model:SecurityConfig[] {
                     string uniqueSecretName = uuid:createType1AsString() + "-" + endpointType.toLowerAscii();
                     model:EndpointSecurity backendSecurity = self.getBackendSecurity(oldAPI.endpointConfig, (), PRODUCTION_TYPE, true);
                     check self.createK8sSecret(uniqueSecretName, <string>backendSecurity?.username, <string>backendSecurity?.password);

@@ -1987,7 +1987,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"name\": \"testAPIV4\",\n    \"context\": \"/testAPIV4/1.0.0\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        }\n    ],\n    \"serviceInfo\": {\n        \"name\": \"backend\",\n        \"namespace\": \"default\",\n        \"endpoint_security\": {\n            \"production\": {\n                \"enabled\": true,\n                \"type\": \"Basic\",\n                \"username\": \"admin\",\n                \"password\": \"admin\"\n            }\n        }\n\n    }\n}"
+					"raw": "{\n    \"name\": \"testAPIV4\",\n    \"context\": \"/testAPIV4/1.0.0\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        }\n    ],\n    \"serviceInfo\": {\n        \"name\": \"test-apk\",\n        \"namespace\": \"default\",\n        \"endpoint_security\": {\n            \"production\": {\n                \"enabled\": true,\n                \"type\": \"Basic\",\n                \"username\": \"admin\",\n                \"password\": \"admin\"\n            }\n        }\n\n    }\n}"
 				},
 				"url": {
 					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/import-service?serviceKey={{serviceUUID}}",
@@ -2004,7 +2004,7 @@
 					"query": [
 						{
 							"key": "serviceKey",
-							"value": "ebf5ce13-68c7-4a99-a951-034c4410344a"
+							"value": "{{serviceUUID}}"
 						}
 					]
 				}
@@ -2027,8 +2027,8 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Status code is 201\", function () {",
-							"  pm.response.to.have.status(201);",
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
 							"});",
 							"",
 							"pm.test(\"Assert token generation response\", () => {",
@@ -2197,7 +2197,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"id\": \"7d338b1a-5344-4309-b0ad-a78379d9dfed\",\n    \"name\": \"testAPIV4\",\n    \"context\": \"/testAPIV4/1.0.0\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        }\n    ],\n    \"serviceInfo\": {\n        \"name\": \"backend\",\n        \"namespace\": \"default\",\n        \"endpoint_security\": {\n            \"production\": {\n                \"enabled\": true,\n                \"type\": \"Basic\",\n                \"username\": \"admin123\",\n                \"password\": \"admin123\"\n            }\n        }\n\n    }\n}",
+					"raw": "{\n    \"id\": \"7d338b1a-5344-4309-b0ad-a78379d9dfed\",\n    \"name\": \"testAPIV4\",\n    \"context\": \"/testAPIV4/1.0.0\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        }\n    ],\n    \"serviceInfo\": {\n        \"name\": \"backend\",\n        \"namespace\": \"test-apk\",\n        \"endpoint_security\": {\n            \"production\": {\n                \"enabled\": true,\n                \"type\": \"Basic\",\n                \"username\": \"admin123\",\n                \"password\": \"admin123\"\n            }\n        }\n\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -2436,8 +2436,8 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Status code is 201\", function () {",
-							"  pm.response.to.have.status(201);",
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
 							"});",
 							"",
 							"pm.test(\"Assert token generation response\", () => {",
