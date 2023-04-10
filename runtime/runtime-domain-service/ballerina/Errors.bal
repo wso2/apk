@@ -210,8 +210,8 @@ public isolated function e90921() returns commons:APKError {
     ); 
 }
 
-public isolated function e90922() returns commons:APKError {
-    return error commons:APKError("Internal server error",
+public isolated function e90922(error e) returns commons:APKError {
+    return error commons:APKError("Internal server error", e,
         code = 90922,
         message = "Internal server error",
         statusCode = 500,
