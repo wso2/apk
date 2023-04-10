@@ -487,7 +487,7 @@ public class APIClient {
                 if (self.isPolicyEmpty(apiPolicies)) {
                     // Validating resource level operation policy data
                     commons:APKError|() apkError = self.validateOperationPolicyData(operationPolicies, organization);
-                    if (apkError is BadRequestError) {
+                    if (apkError is commons:APKError) {
                         return apkError;
                     }
                 } else {
@@ -846,7 +846,7 @@ public class APIClient {
                 return e90904(serviceKey);
             }
         } on fail var e {
-            return e90922();
+            return e90922(e);
         }
     }
     private isolated function constructServiceURL(Service 'service) returns string {
