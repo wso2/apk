@@ -294,7 +294,7 @@ public class APIClient {
         if query is string && query.toString().trim().length() > 0 {
             return self.filterAPISBasedOnQuery(apilist, query, 'limit, offset, sortBy, sortOrder);
         } else {
-            return self.filterAPIS(apilist, 'limit, offset, sortBy, sortOrder);
+            return self.filterAPIS(apilist, 'limit, offset, sortBy, sortOrder, query.toString().trim());
         }
     }
     private isolated function filterAPISBasedOnQuery(API[] apilist, string query, int 'limit, int offset, string sortBy, string sortOrder) returns APIList|BadRequestError {
@@ -334,9 +334,9 @@ public class APIClient {
         } else {
             filteredList = apilist;
         }
-        return self.filterAPIS(filteredList, 'limit, offset, sortBy, sortOrder);
+        return self.filterAPIS(filteredList, 'limit, offset, sortBy, sortOrder, query);
     }
-    private isolated function filterAPIS(API[] apiList, int 'limit, int offset, string sortBy, string sortOrder) returns APIList|BadRequestError {
+    private isolated function filterAPIS(API[] apiList, int 'limit, int offset, string sortBy, string sortOrder, string query) returns APIList|BadRequestError {
         API[] clonedAPIList = apiList.clone();
         API[] sortedAPIS = [];
         if sortBy == SORT_BY_API_NAME && sortOrder == SORT_ORDER_ASC {
@@ -367,21 +367,31 @@ public class APIClient {
                 }
             }
         }
-        string previousAPIId = "";
-        string nextAPIId = "";
+        string previousAPIList = "";
+        string nextAPIList = "";
         if offset > sortedAPIS.length() {
             BadRequestError badRequest = {body: {code: 90912, message: "Invalid Value for Offset"}};
             return badRequest;
+        } else if offset > 'limit {
+            previousAPIList = self.getPaginatedURL('limit, offset - 'limit, sortBy, sortOrder, query);
         } else if offset > 0 {
-            previousAPIId = sortedAPIS[offset - 1].id.toString();
+            previousAPIList = self.getPaginatedURL('limit, 0, sortBy, sortOrder, query);
         }
         if limitSet.length() < 'limit {
-            nextAPIId = "";
+            nextAPIList = "";
         } else if (sortedAPIS.length() > offset + 'limit){
-            nextAPIId = sortedAPIS[offset + 'limit].id.toString();
+            nextAPIList = self.getPaginatedURL('limit, offset + 'limit, sortBy, sortOrder, query);
         }
-        return {list: convertAPIListToAPIInfoList(limitSet), count: limitSet.length(), pagination: {total: apiList.length(), 'limit: 'limit, offset: offset, next: nextAPIId, previous: previousAPIId}};
-
+        return {list: convertAPIListToAPIInfoList(limitSet), count: limitSet.length(), pagination: {total: apiList.length(), 'limit: 'limit, offset: offset, next: nextAPIList, previous: previousAPIList}};
+    }
+    private isolated function getPaginatedURL(int 'limit, int offset, string sortBy, string sortOrder, string query) returns string {
+        string url = "/apis?limit=%limit%&offset=%offset%&sortBy=%sortBy%&sortOrder=%sortOrder%&query=%query%";
+        url = regex:replace(url, "%limit%", 'limit.toString());
+        url = regex:replace(url, "%offset%", offset.toString());
+        url = regex:replace(url, "%sortBy%", sortBy);
+        url = regex:replace(url, "%sortOrder%", sortOrder);
+        url = regex:replace(url, "%query%", query);
+        return url;
     }
     public isolated function createAPI(API api, string? definition, commons:Organization organization, string userName) returns commons:APKError|CreatedAPI|BadRequestError {
         do {

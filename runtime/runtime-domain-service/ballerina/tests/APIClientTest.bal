@@ -838,7 +838,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     "offset": 0,
                     "limit": 3,
                     "total": 6,
-                    "next": "c5ab2423-b9e8-432b-92e8-35e6907ed5f9",
+                    "next": "/apis?limit=3&offset=3&sortBy=apiName&sortOrder=asc&query=",
                     "previous": ""
                 }
             }.toBalString()
@@ -882,7 +882,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     "limit": 3,
                     "total": 6,
                     "next": "",
-                    "previous": "7b7db1f0-0a9a-4f72-9f9d-5a1696d590c1"
+                    "previous": "/apis?limit=3&offset=0&sortBy=apiName&sortOrder=asc&query="
                 }
             }.toBalString()
         ],
@@ -900,7 +900,7 @@ function getApilistDataProvider() returns map<[string?, int, int, string, string
                     "limit": 3,
                     "total": 6,
                     "next": "",
-                    "previous": "c5ab2423-b9e8-432b-92e8-35e6907ed5f3"
+                    "previous": "/apis?limit=3&offset=3&sortBy=apiName&sortOrder=asc&query="
                 }
             }.toBalString()
         ],
