@@ -36,12 +36,13 @@ public type Header record {|
 # + tokenIssuerConfiguration - Token Issuer Configuration for APIKey.  
 # + keyStores - KeyStore Configuration  
 # + k8sConfiguration - K8s Configuration (debug purpose only.)  
-# + vhost - Field Description  
+# + vhost - Virtual Host Configuration
 # + idpConfiguration - IDP configuration for JWT generated from Enforcer.  
 # + controlPlane - Field Description  
-# + orgResolver - Field Description 
 # + gatewayConfiguration - Gateway Configuration with name and listener name  
-# + baseURL - Runtime base URL
+# + baseURl - Runtime base URL  
+# + orgResolver - Organization resolver.  
+# + migrationMode - Migration mode.
 public type RuntimeConfiguratation record {|
     
     (string[] & readonly) serviceListingNamespaces = [ALL_NAMESPACES];
@@ -53,9 +54,9 @@ public type RuntimeConfiguratation record {|
     commons:IDPConfiguration idpConfiguration;
     ControlPlaneConfiguration controlPlane;
     (GatewayConfigurations & readonly) gatewayConfiguration = {};
-    BaseURL baseURL = {};
-
+    string baseURl = "";
     string orgResolver = ORG_RESOLVER_CONTROL_PLANE; // controlPlane, k8s/none
+    boolean migrationMode = false;
 |};
 
 public type Vhost record {|

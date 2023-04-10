@@ -175,14 +175,15 @@ isolated function getAPI(string id, commons:Organization organization) returns m
 isolated function putallAPIS(map<map<model:API>> orgApiMap, model:API[] apiData) {
     foreach model:API api in apiData {
         boolean systemAPI = api.spec.systemAPI ?: false;
+        string apiUUID = getAPIUUIDFromAPI(api.clone());
         if !systemAPI {
             lock {
                 map<model:API>|error orgmap = trap orgApiMap.get(api.spec.organization);
                 if orgmap is map<model:API> {
-                    orgmap[<string>api.metadata.uid] = api.clone();
+                    orgmap[apiUUID] = api.clone();
                 } else {
                     map<model:API> apiMap = {};
-                    apiMap[<string>api.metadata.uid] = api.clone();
+                    apiMap[apiUUID] = api.clone();
                     orgApiMap[api.spec.organization] = apiMap;
                 }
             }
@@ -199,16 +200,27 @@ isolated function putAPI(model:API api) {
     boolean systemAPI = api.spec.systemAPI ?: false;
     if !systemAPI {
         lock {
+            string apiUUID = getAPIUUIDFromAPI(api.clone());
             map<model:API>|error orgapiMap = trap apilist.get(api.spec.organization);
             if orgapiMap is map<model:API> {
-                orgapiMap[<string>api.metadata.uid] = api.clone();
+                orgapiMap[apiUUID] = api.clone();
             } else {
                 map<model:API> apiMap = {};
-                apiMap[<string>api.metadata.uid] = api.clone();
+                apiMap[apiUUID] = api.clone();
                 apilist[api.spec.organization] = apiMap;
             }
         }
     }
+}
+
+isolated function getAPIUUIDFromAPI(model:API api) returns string {
+    map<string>? annotations = api.clone().metadata.annotations;
+    if annotations is map<string> {
+        if annotations.hasKey(API_UUID_ANNOTATION) {
+            return annotations.get(API_UUID_ANNOTATION);
+        }
+    }
+    return <string>api.metadata.uid;
 }
 
 isolated function updateAPI(model:API api) {
@@ -218,9 +230,10 @@ isolated function updateAPI(model:API api) {
 
 isolated function removeAPI(model:API api) {
     lock {
+        string apiUUID = getAPIUUIDFromAPI(api.clone());
         map<model:API>|error orgapiMap = trap apilist.get(api.spec.organization);
         if orgapiMap is map<model:API> {
-            _ = orgapiMap.remove(<string>api.metadata.uid);
+            _ = orgapiMap.remove(apiUUID);
         }
     }
 }

@@ -21,7 +21,7 @@ import ballerina/http;
 
 isolated function convertK8sAPItoAPI(model:API api, boolean lightWeight) returns API|commons:APKError {
     API convertedModel = {
-        id: api.metadata.uid,
+        id: getAPIUUIDFromAPI(api),
         name: api.spec.apiDisplayName,
         context: api.spec.context,
         'version: api.spec.apiVersion,

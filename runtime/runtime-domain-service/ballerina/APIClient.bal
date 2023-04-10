@@ -372,6 +372,11 @@ public class APIClient {
     }
     public isolated function createAPI(API api, string? definition, commons:Organization organization, string userName) returns commons:APKError|CreatedAPI|BadRequestError {
         do {
+            string? id = api.id;
+            if id is string && !runtimeConfiguration.migrationMode {
+                BadRequestError badRequest = {body: {code: 90911, message: "Invalid property id in Request", description: "Invalid property id in Request"}};
+                return badRequest;
+            }
             if (self.validateName(api.name, organization)) {
                 BadRequestError badRequest = {body: {code: 90911, message: "API Name - " + api.name + " already exist.", description: "API Name - " + api.name + " already exist."}};
                 return badRequest;
@@ -423,7 +428,7 @@ public class APIClient {
             self.generateAndSetPolicyCRArtifact(apiArtifact, api, organization);
             self.generateAndSetRuntimeAPIArtifact(apiArtifact, api, (), organization, userName);
             model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact, organization);
-            string locationUrl = runtimeConfiguration.baseURL.url + "/apis/" + deployAPIToK8sResult.metadata.uid.toString();
+            string locationUrl = runtimeConfiguration.baseURl + "/apis/" + deployAPIToK8sResult.metadata.uid.toString();
             CreatedAPI createdAPI = {body: check convertK8sAPItoAPI(deployAPIToK8sResult, false), headers: {location: locationUrl}};
             return createdAPI;
         } on fail var e {
@@ -754,6 +759,12 @@ public class APIClient {
 
     isolated function createAPIFromService(string serviceKey, API api, commons:Organization organization, string userName) returns CreatedAPI|BadRequestError|InternalServerErrorError|commons:APKError {
         do {
+            string? id = api.id;
+            if id is string && !runtimeConfiguration.migrationMode {
+                BadRequestError badRequest = {body: {code: 90911, message: "Invalid property id in Request", description: "Invalid property id in Request"}};
+                return badRequest;
+            }
+
             if (self.validateName(api.name, organization)) {
                 BadRequestError badRequest = {body: {code: 90911, message: "API Name - " + api.name + " already exist.", description: "API Name - " + api.name + " already exist."}};
                 return badRequest;
@@ -1211,6 +1222,9 @@ public class APIClient {
         }
         if sandBoxHttpRoutes.length() > 0 {
             k8sAPI.spec.sandbox = [{httpRouteRefs: sandBoxHttpRoutes}];
+        }
+        if api.id != () {
+            k8sAPI.metadata["annotations"] = {[API_UUID_ANNOTATION] : <string>api.id};
         }
         apiArtifact.api = k8sAPI;
     }
@@ -2351,7 +2365,7 @@ public class APIClient {
                         if serviceById is Service {
                             check self.prepareApiArtifactforNewVersion(apiArtifact, serviceById, api, newVersion, organization, userName);
                             model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact, organization);
-                            CreatedAPI createdAPI = {body: {name: deployAPIToK8sResult.spec.apiDisplayName, context: self.returnFullContext(deployAPIToK8sResult.spec.context, deployAPIToK8sResult.spec.apiVersion), 'version: deployAPIToK8sResult.spec.apiVersion, id: deployAPIToK8sResult.metadata.uid}};
+                            CreatedAPI createdAPI = {body: {name: deployAPIToK8sResult.spec.apiDisplayName, context: self.returnFullContext(deployAPIToK8sResult.spec.context, deployAPIToK8sResult.spec.apiVersion), 'version: deployAPIToK8sResult.spec.apiVersion, id: getAPIUUIDFromAPI(deployAPIToK8sResult)}};
                             return createdAPI;
                         } else {
                             BadRequestError badRequest = {body: {code: 900921, message: serviceId + " service not exist."}};
@@ -2361,7 +2375,7 @@ public class APIClient {
                 }
                 check self.prepareApiArtifactforNewVersion(apiArtifact, (), api, newVersion, organization, userName);
                 model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact, organization);
-                CreatedAPI createdAPI = {body: {name: deployAPIToK8sResult.spec.apiDisplayName, context: self.returnFullContext(deployAPIToK8sResult.spec.context, deployAPIToK8sResult.spec.apiVersion), 'version: deployAPIToK8sResult.spec.apiVersion, id: deployAPIToK8sResult.metadata.uid}};
+                CreatedAPI createdAPI = {body: {name: deployAPIToK8sResult.spec.apiDisplayName, context: self.returnFullContext(deployAPIToK8sResult.spec.context, deployAPIToK8sResult.spec.apiVersion), 'version: deployAPIToK8sResult.spec.apiVersion, id: getAPIUUIDFromAPI(deployAPIToK8sResult)}};
                 return createdAPI;
             } else {
                 return <NotFoundError>api;
