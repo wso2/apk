@@ -269,7 +269,7 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, prodHTTP
 			namespace, err.Error())
 	}
 	if len(prodHTTPRouteRef) > 0 {
-		if prodHTTPRoute, err = apiReconciler.resolveHTTPRouteRefs(ctx, prodHTTPRouteRef, namespace, apiRef); err != nil {
+		if prodHTTPRoute, err = apiReconciler.resolveHTTPRouteRefs(ctx, prodHTTPRouteRef, namespace, apiRef, apiPolicies); err != nil {
 			return nil, nil, fmt.Errorf("error while resolving production httpRouteref %s in namespace :%s has not found. %s",
 				prodHTTPRouteRef, namespace, err.Error())
 		}
@@ -282,12 +282,10 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, prodHTTP
 		}
 		prodHTTPRoute.Authentications = authentications
 		prodHTTPRoute.RateLimitPolicies = rateLimitPolicies
-		prodHTTPRoute.APIPolicies = apiPolicies
-
 	}
 
 	if len(sandHTTPRouteRef) > 0 {
-		if sandHTTPRoute, err = apiReconciler.resolveHTTPRouteRefs(ctx, sandHTTPRouteRef, namespace, apiRef); err != nil {
+		if sandHTTPRoute, err = apiReconciler.resolveHTTPRouteRefs(ctx, sandHTTPRouteRef, namespace, apiRef, apiPolicies); err != nil {
 			return nil, nil, fmt.Errorf("error while resolving sandbox httpRouteref %s in namespace :%s has not found. %s",
 				sandHTTPRouteRef, namespace, err.Error())
 		}
@@ -300,14 +298,14 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, prodHTTP
 		}
 		sandHTTPRoute.Authentications = authentications
 		sandHTTPRoute.RateLimitPolicies = rateLimitPolicies
-		sandHTTPRoute.APIPolicies = apiPolicies
 	}
 	return prodHTTPRoute, sandHTTPRoute, nil
 }
 
 // resolveHTTPRouteRefs validates following references related to the API
 // - Authentications
-func (apiReconciler *APIReconciler) resolveHTTPRouteRefs(ctx context.Context, httpRouteRef []string, namespace, apiRef string) (*synchronizer.HTTPRouteState, error) {
+func (apiReconciler *APIReconciler) resolveHTTPRouteRefs(ctx context.Context, httpRouteRef []string, namespace, apiRef string, 
+	apiPolicies map[string]dpv1alpha1.APIPolicy) (*synchronizer.HTTPRouteState, error) {
 	httpRouteState := &synchronizer.HTTPRouteState{
 		HTTPRoute: &gwapiv1b1.HTTPRoute{},
 	}
@@ -328,6 +326,7 @@ func (apiReconciler *APIReconciler) resolveHTTPRouteRefs(ctx context.Context, ht
 		return nil, fmt.Errorf("error while getting httproute resource apipolicy %s in namespace :%s, %s", httpRouteRef,
 			namespace, err.Error())
 	}
+	httpRouteState.APIPolicies = apiPolicies
 	httpRouteState.BackendMapping = apiReconciler.getResolvedBackendsMapping(ctx, httpRouteState)
 	httpRouteState.Scopes, err = apiReconciler.getScopesForHTTPRoute(ctx, httpRouteState.HTTPRoute, apiRef)
 	return httpRouteState, err
