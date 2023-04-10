@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "fffe8f9e-a3f9-499e-a9bb-2613928effb8",
+		"_postman_id": "62967d7f-dec1-46ea-b460-e2d4e7d323c4",
 		"name": "Test Runtime API Operations",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -821,8 +821,8 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Status code is 201\", function () {",
-							"  pm.response.to.have.status(201);",
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
 							"});",
 							"",
 							"pm.test(\"Assert token generation response\", () => {",
@@ -1443,8 +1443,8 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Status code is 201\", function () {",
-							"  pm.response.to.have.status(201);",
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
 							"});",
 							"",
 							"pm.test(\"Assert token generation response\", () => {",
