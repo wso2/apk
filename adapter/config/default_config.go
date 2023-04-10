@@ -234,7 +234,7 @@ var defaultConfig = &Config{
 			Header:                "X-JWT-Assertion",
 			SigningAlgorithm:      "SHA256withRSA",
 			EnableUserClaims:      false,
-			GatewayGeneratorImpl:  "org.wso2.carbon.apimgt.common.gateway.jwtgenerator.APIMgtGatewayJWTGeneratorImpl",
+			GatewayGeneratorImpl:  "org.wso2.apk.enforcer.commons.jwtgenerator.APIMgtGatewayJWTGeneratorImpl",
 			ClaimsExtractorImpl:   "org.wso2.carbon.apimgt.impl.token.ExtendedDefaultClaimsRetriever",
 			PublicCertificatePath: "/home/wso2/security/truststore/mg.pem",
 			PrivateKeyPath:        "/home/wso2/security/keystore/mg.key",

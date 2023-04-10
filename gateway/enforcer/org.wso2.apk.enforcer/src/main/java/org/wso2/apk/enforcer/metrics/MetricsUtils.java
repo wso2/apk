@@ -25,8 +25,8 @@ import io.envoyproxy.envoy.service.accesslog.v3.StreamAccessLogsMessage;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.wso2.carbon.apimgt.common.analytics.collectors.AnalyticsDataProvider;
-import org.wso2.carbon.apimgt.common.analytics.publishers.dto.Latencies;
+import org.wso2.apk.enforcer.commons.analytics.collectors.AnalyticsDataProvider;
+import org.wso2.apk.enforcer.commons.analytics.publishers.dto.Latencies;
 import org.wso2.apk.enforcer.analytics.ChoreoAnalyticsProvider;
 import org.wso2.apk.enforcer.constants.AnalyticsConstants;
 

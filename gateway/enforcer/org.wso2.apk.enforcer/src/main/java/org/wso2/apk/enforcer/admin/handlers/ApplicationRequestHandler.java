@@ -18,7 +18,7 @@
 package org.wso2.apk.enforcer.admin.handlers;
 
 import io.grpc.netty.shaded.io.netty.handler.codec.http.HttpResponseStatus;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.wso2.apk.enforcer.admin.AdminUtils;
 import org.wso2.apk.enforcer.constants.AdminConstants;
 import org.wso2.apk.enforcer.models.Application;

@@ -18,7 +18,7 @@
 
 package org.wso2.apk.enforcer.security.jwt.issuer;
 
-import org.wso2.carbon.apimgt.common.gateway.exception.JWTGeneratorException;
+import org.wso2.apk.enforcer.commons.exception.JWTGeneratorException;
 import org.wso2.apk.enforcer.security.TokenValidationContext;
 
 /**

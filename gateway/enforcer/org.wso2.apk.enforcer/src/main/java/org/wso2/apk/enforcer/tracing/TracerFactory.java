@@ -21,7 +21,7 @@ package org.wso2.apk.enforcer.tracing;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.wso2.apk.enforcer.config.ConfigHolder;

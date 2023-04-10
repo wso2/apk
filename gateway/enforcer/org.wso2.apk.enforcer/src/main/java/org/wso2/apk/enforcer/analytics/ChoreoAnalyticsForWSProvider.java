@@ -20,19 +20,19 @@ package org.wso2.apk.enforcer.analytics;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.wso2.carbon.apimgt.common.analytics.Constants;
-import org.wso2.carbon.apimgt.common.analytics.collectors.AnalyticsDataProvider;
-import org.wso2.carbon.apimgt.common.analytics.exceptions.DataNotFoundException;
-import org.wso2.carbon.apimgt.common.analytics.publishers.dto.API;
-import org.wso2.carbon.apimgt.common.analytics.publishers.dto.Application;
-import org.wso2.carbon.apimgt.common.analytics.publishers.dto.Error;
-import org.wso2.carbon.apimgt.common.analytics.publishers.dto.Latencies;
-import org.wso2.carbon.apimgt.common.analytics.publishers.dto.MetaInfo;
-import org.wso2.carbon.apimgt.common.analytics.publishers.dto.Operation;
-import org.wso2.carbon.apimgt.common.analytics.publishers.dto.Target;
-import org.wso2.carbon.apimgt.common.analytics.publishers.dto.enums.EventCategory;
-import org.wso2.carbon.apimgt.common.analytics.publishers.dto.enums.FaultCategory;
-import org.wso2.carbon.apimgt.common.analytics.publishers.dto.enums.FaultSubCategory;
+import org.wso2.apk.enforcer.commons.analytics.Constants;
+import org.wso2.apk.enforcer.commons.analytics.collectors.AnalyticsDataProvider;
+import org.wso2.apk.enforcer.commons.analytics.exceptions.DataNotFoundException;
+import org.wso2.apk.enforcer.commons.analytics.publishers.dto.API;
+import org.wso2.apk.enforcer.commons.analytics.publishers.dto.Application;
+import org.wso2.apk.enforcer.commons.analytics.publishers.dto.Error;
+import org.wso2.apk.enforcer.commons.analytics.publishers.dto.Latencies;
+import org.wso2.apk.enforcer.commons.analytics.publishers.dto.MetaInfo;
+import org.wso2.apk.enforcer.commons.analytics.publishers.dto.Operation;
+import org.wso2.apk.enforcer.commons.analytics.publishers.dto.Target;
+import org.wso2.apk.enforcer.commons.analytics.publishers.dto.enums.EventCategory;
+import org.wso2.apk.enforcer.commons.analytics.publishers.dto.enums.FaultCategory;
+import org.wso2.apk.enforcer.commons.analytics.publishers.dto.enums.FaultSubCategory;
 import org.wso2.choreo.connect.discovery.service.websocket.WebSocketFrameRequest;
 import org.wso2.apk.enforcer.constants.APIConstants;
 import org.wso2.apk.enforcer.constants.AnalyticsConstants;
@@ -213,7 +213,17 @@ public class ChoreoAnalyticsForWSProvider implements AnalyticsDataProvider {
     }
 
     @Override
+    public String getUserName() {
+        return null;
+    }
+
+    @Override
     public String getEndUserIP() {
         return extAuthMetadata.get(MetadataConstants.CLIENT_IP_KEY);
+    }
+
+    @Override
+    public Map<String, Object> getProperties() {
+        return AnalyticsDataProvider.super.getProperties();
     }
 }

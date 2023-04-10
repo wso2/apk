@@ -14,19 +14,13 @@
 # limitations under the License.
 [libraries]
 amazonaws-awslambda = {module = "org.wso2.orbit.com.amazonaws:awslambda", version.ref = "awslambda"}
-analytic-databridge = {module = "org.wso2.carbon.analytics-common:org.wso2.carbon.databridge.commons", version.ref = "wso2-analytics"}
-analytic-databridge-binary = {module = "org.wso2.carbon.analytics-common:org.wso2.carbon.databridge.commons.binary", version.ref = "wso2-analytics"}
 analytic-publisher = {module = "org.wso2.am.analytics.publisher:org.wso2.am.analytics.publisher.client", version.ref = "am-analytics"}
-andes = {module = "org.wso2.andes.wso2:andes-client", version.ref = "andes"}
 apicurio-data-models = {module = "io.apicurio:apicurio-data-models", version.ref = "apicurio"}
 aspectjrt = {module = "org.aspectj:aspectjrt", version.ref = "aspectj"}
 azure-applicationinsights = {module = "com.microsoft.azure:applicationinsights-core", version.ref = "azure-applicationinsights"}
 azure-messaging = {module = "com.azure:azure-messaging-eventhubs", version.ref = "azure-messaging"}
 azure-monitor-opentelemetry = {module = "com.azure:azure-monitor-opentelemetry-exporter", version.ref = "azure-monitor-opentelemetry"}
 azure-okhttp = {module = "com.azure:azure-core-http-okhttp", version.ref = "azure-okhttp"}
-carbon-apimgt-analytics = {module = "org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.common.analytics", version.ref = "carbon-apimgt-common"}
-carbon-apimgt-gateway = {module = "org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.common.gateway", version.ref = "carbon-apimgt-common"}
-carbon-apimgt-jms = {module = "org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.common.jms", version.ref = "carbon-apimgt-common"}
 commons-codec = {module = "commons-codec:commons-codec", version.ref = "commons-codec"}
 commons-collection = {module = "org.apache.commons:commons-collections4", version.ref = "commons-collection"}
 commons-io = {module = "commons-io:commons-io", version.ref = "commons-io"}
@@ -85,10 +79,6 @@ opentelemetry-exporter-zipkin = {module = "io.opentelemetry:opentelemetry-export
 opentelemetry-extension-trace-propagators = {module = "io.opentelemetry:opentelemetry-extension-trace-propagators", version.ref = "opentelemetry"}
 opentelemetry-sdk = {module = "io.opentelemetry:opentelemetry-sdk", version.ref = "opentelemetry"}
 opentelemetry-semconv = {module = "io.opentelemetry:opentelemetry-semconv", version.ref = "opentelemetry-semconv"}
-org-wso2-apk-apimgt-api = {module = "org.wso2.apk:org.wso2.apk.apimgt.api", version.ref = "apimgt"}
-org-wso2-apk-apimgt-impl = {module = "org.wso2.apk:org.wso2.apk.apimgt.impl", version.ref = "apimgt"}
-org-wso2-apk-apimgt-rest-api-util = {module = "org.wso2.apk:org.wso2.apk.apimgt.rest.api.util", version.ref = "apimgt"}
-org-wso2-apk-apimgt-user = {module = "org.wso2.apk:org.wso2.apk.apimgt.user", version.ref = "apimgt"}
 pdfbox = {module = "org.apache.pdfbox:pdfbox", version.ref = "apache-pdfbox"}
 postgresql = {module = "org.postgresql:postgresql", version.ref = "postgresql"}
 snakeyaml = {module = "org.yaml:snakeyaml", version.ref = "snakeyaml"}
@@ -120,17 +110,14 @@ openapi-generator-plugin = {id = "org.openapi.generator", version.ref = "openapi
 
 [versions]
 am-analytics = "1.0.10"
-andes = "3.3.23"
 apache-pdfbox = "2.0.25"
 apicurio = "1.1.5"
-apimgt = "0.1.0-SNAPSHOT"
 aspectj = "1.9.5"
 awslambda = "1.11.1034.wso2v2"
 azure-applicationinsights = "2.6.3"
 azure-messaging = "5.15.2"
 azure-monitor-opentelemetry = "1.0.0-beta.6"
 azure-okhttp = "1.11.6"
-carbon-apimgt-common = "9.26.59"
 commons-codec = "1.14"
 commons-collection = "4.1"
 commons-io = "2.11.0"
@@ -183,7 +170,6 @@ swagger-parser-v3 = "2.1.13"
 tomcat = "6.0.53"
 websocket = "1.5.3"
 wsdl4j = "1.6.3.wso2v3"
-wso2-analytics = "6.1.60"
 damnhandy = "2.1.8"
 wso2-uri-templates = "1.6.5"
 xerces = "2.8.1.wso2v2"

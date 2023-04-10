@@ -21,7 +21,7 @@ package org.wso2.apk.enforcer.common;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import org.wso2.carbon.apimgt.common.gateway.dto.JWTValidationInfo;
+import org.wso2.apk.enforcer.commons.dto.JWTValidationInfo;
 import org.wso2.apk.enforcer.config.ConfigHolder;
 import org.wso2.apk.enforcer.config.dto.CacheDto;
 import org.wso2.apk.enforcer.security.jwt.SignedJWTInfo;

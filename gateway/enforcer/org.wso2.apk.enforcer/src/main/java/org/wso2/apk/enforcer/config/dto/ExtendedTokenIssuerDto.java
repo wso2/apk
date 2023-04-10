@@ -18,7 +18,7 @@
 
 package org.wso2.apk.enforcer.config.dto;
 
-import org.wso2.carbon.apimgt.common.gateway.dto.TokenIssuerDto;
+import org.wso2.apk.enforcer.commons.dto.TokenIssuerDto;
 
 /**
  * Holds meta data related to a JWT token issuer.

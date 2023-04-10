@@ -27,16 +27,8 @@ sourceSets {
 
 dependencies {
     compileOnly libs.tomcat
-    implementation libs.analytic.databridge
-    implementation libs.analytic.databridge.binary
     implementation(libs.analytic.publisher) {
         exclude group: 'com.squareup.okhttp3', module: 'okhttp'
-    }
-    implementation(libs.andes) {
-        exclude group: 'org.codehaus.woodstox', module: 'wstx-asl'
-        exclude group: 'org.ops4j.pax.logging', module: 'pax-logging-api'
-        exclude group: 'commons-io', module: 'commons-io'
-        exclude group: 'jline', module: 'jline'
     }
     implementation libs.azure.applicationinsights
     implementation(libs.azure.messaging) {
@@ -46,21 +38,7 @@ dependencies {
     implementation (libs.azure.okhttp) {
         exclude group: 'com.squareup.okhttp3', module: 'okhttp'
     }
-    implementation(libs.carbon.apimgt.analytics) {
-        exclude group: 'com.fasterxml.jackson.core', module: 'jackson-databind'
-        exclude group: 'com.squareup.okhttp3', module: 'okhttp'
-    }
-    implementation(libs.carbon.apimgt.gateway) {
-        exclude group: 'com.fasterxml.jackson.core', module: 'jackson-databind'
-        exclude group: 'com.squareup.okhttp3', module: 'okhttp'
-    }
-    implementation(libs.carbon.apimgt.jms) {
-        exclude group: 'org.wso2.orbit.commons-fileupload', module: 'commons-fileupload'
-        exclude group: 'org.codehaus.woodstox', module: 'wstx-asl'
-        exclude group: 'commons-httpclient', module: 'commons-httpclient'
-        exclude group: 'commons-io', module: 'commons-io'
-        exclude group: 'jline', module: 'jline'
-    }
+
     implementation libs.commons.lang3
     implementation libs.commons.pool
     implementation libs.commons.io
@@ -100,6 +78,7 @@ dependencies {
     implementation libs.swagger.core.v3
     implementation libs.toml
     implementation libs.websocket
+    implementation libs.json.simple
     implementation project(':org.wso2.apk.enforcer.commons')
     implementation project(':org.wso2.choreo.connect.discovery')
     // Added as direct dependency for transitive dependency version upgrades

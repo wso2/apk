@@ -361,7 +361,7 @@ enabled = true
   # Enable/Disable user claims
   enableUserClaims = false
   # Custom JWT generator
-  gatewayGeneratorImpl = "org.wso2.carbon.apimgt.common.gateway.jwtgenerator.APIMgtGatewayJWTGeneratorImpl"
+  gatewayGeneratorImpl = "ExtendedDefaultClaimsRetriever.APIMgtGatewayJWTGeneratorImpl"
   # Custom Claim Retriever to add custom claims into JWT
   claimsExtractorImpl = "org.wso2.carbon.apimgt.impl.token.ExtendedDefaultClaimsRetriever"
   # Public certificate for generated JWT
