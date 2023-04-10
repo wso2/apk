@@ -38,9 +38,6 @@ dependencies {
     implementation (libs.azure.okhttp) {
         exclude group: 'com.squareup.okhttp3', module: 'okhttp'
     }
-<<<<<<< HEAD
-
-=======
     implementation(libs.carbon.apimgt.analytics) {
         exclude group: 'com.fasterxml.jackson.core', module: 'jackson-databind'
         exclude group: 'com.squareup.okhttp3', module: 'okhttp'
@@ -57,7 +54,6 @@ dependencies {
         exclude group: 'commons-io', module: 'commons-io'
         exclude group: 'jline', module: 'jline'
     }
->>>>>>> e5916675 (Upgrade dependencies)
     implementation libs.commons.lang3
     implementation libs.commons.pool
     implementation libs.commons.io
