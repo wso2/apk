@@ -21,7 +21,7 @@ package org.wso2.apk.enforcer.security.mtls;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.wso2.choreo.connect.discovery.api.Certificate;
+import org.wso2.apk.enforcer.discovery.api.Certificate;
 import org.wso2.apk.enforcer.constants.APIConstants;
 
 import java.io.ByteArrayInputStream;

@@ -17,11 +17,11 @@
  */
 package org.wso2.apk.enforcer.api;
 
-import org.wso2.choreo.connect.discovery.api.EndpointClusterConfig;
-import org.wso2.choreo.connect.discovery.api.Operation;
-import org.wso2.choreo.connect.discovery.api.OperationPolicies;
-import org.wso2.choreo.connect.discovery.api.Scopes;
-import org.wso2.choreo.connect.discovery.api.SecurityList;
+import org.wso2.apk.enforcer.discovery.api.EndpointClusterConfig;
+import org.wso2.apk.enforcer.discovery.api.Operation;
+import org.wso2.apk.enforcer.discovery.api.OperationPolicies;
+import org.wso2.apk.enforcer.discovery.api.Scopes;
+import org.wso2.apk.enforcer.discovery.api.SecurityList;
 import org.wso2.apk.enforcer.commons.model.EndpointCluster;
 import org.wso2.apk.enforcer.commons.model.EndpointSecurity;
 import org.wso2.apk.enforcer.commons.model.Policy;
@@ -50,7 +50,7 @@ public class Utils {
      * @param rpcEndpointCluster XDS specific EndpointCluster Instance
      * @return Enforcer Specific XDS cluster instance
      */
-    public static EndpointCluster processEndpoints(org.wso2.choreo.connect.discovery.api.EndpointCluster
+    public static EndpointCluster processEndpoints(org.wso2.apk.enforcer.discovery.api.EndpointCluster
                                                            rpcEndpointCluster) {
         if (rpcEndpointCluster == null || rpcEndpointCluster.getUrlsCount() == 0) {
             return null;
@@ -70,14 +70,14 @@ public class Utils {
         if (rpcEndpointCluster.hasConfig()) {
             EndpointClusterConfig endpointClusterConfig = rpcEndpointCluster.getConfig();
             if (endpointClusterConfig.hasRetryConfig()) {
-                org.wso2.choreo.connect.discovery.api.RetryConfig rpcRetryConfig
+                org.wso2.apk.enforcer.discovery.api.RetryConfig rpcRetryConfig
                         = endpointClusterConfig.getRetryConfig();
                 RetryConfig retryConfig = new RetryConfig(rpcRetryConfig.getCount(),
                         rpcRetryConfig.getStatusCodesList().toArray(new Integer[0]));
                 endpointCluster.setRetryConfig(retryConfig);
             }
             if (endpointClusterConfig.hasTimeoutConfig()) {
-                org.wso2.choreo.connect.discovery.api.TimeoutConfig timeoutConfig
+                org.wso2.apk.enforcer.discovery.api.TimeoutConfig timeoutConfig
                         = endpointClusterConfig.getTimeoutConfig();
                 endpointCluster.setRouteTimeoutInMillis(timeoutConfig.getRouteTimeoutInMillis());
             }
@@ -131,9 +131,9 @@ public class Utils {
     }
 
     private static ArrayList<Policy> genPolicyList
-            (List<org.wso2.choreo.connect.discovery.api.Policy> operationPoliciesList) {
+            (List<org.wso2.apk.enforcer.discovery.api.Policy> operationPoliciesList) {
         ArrayList<Policy> policyList = new ArrayList<>();
-        for (org.wso2.choreo.connect.discovery.api.Policy policy : operationPoliciesList) {
+        for (org.wso2.apk.enforcer.discovery.api.Policy policy : operationPoliciesList) {
             policyList.add(new Policy(policy.getAction(), policy.getParametersMap()));
         }
         return policyList;

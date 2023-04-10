@@ -17,7 +17,7 @@
  */
 package org.wso2.apk.enforcer.api;
 
-import org.wso2.choreo.connect.discovery.api.Api;
+import org.wso2.apk.enforcer.discovery.api.Api;
 import org.wso2.apk.enforcer.commons.Filter;
 import org.wso2.apk.enforcer.commons.model.APIConfig;
 import org.wso2.apk.enforcer.commons.model.RequestContext;

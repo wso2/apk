@@ -22,7 +22,7 @@
 //import org.apache.logging.log4j.LogManager;
 //import org.apache.logging.log4j.Logger;
 //import org.apache.logging.log4j.ThreadContext;
-//import org.wso2.choreo.connect.discovery.service.websocket.WebSocketFrameRequest;
+//import org.wso2.apk.enforcer.discovery.service.websocket.WebSocketFrameRequest;
 //import org.wso2.apk.enforcer.api.APIFactory;
 //import org.wso2.apk.enforcer.api.WebSocketAPI;
 //import org.wso2.apk.enforcer.commons.model.APIConfig;

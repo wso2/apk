@@ -19,7 +19,7 @@
 package org.wso2.apk.enforcer.analytics;
 
 import io.envoyproxy.envoy.service.accesslog.v3.StreamAccessLogsMessage;
-//import org.wso2.choreo.connect.discovery.service.websocket.WebSocketFrameRequest;
+//import org.wso2.apk.enforcer.discovery.service.websocket.WebSocketFrameRequest;
 
 import java.util.Map;
 

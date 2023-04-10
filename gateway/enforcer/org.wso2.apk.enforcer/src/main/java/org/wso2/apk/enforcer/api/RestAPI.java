@@ -20,13 +20,13 @@ package org.wso2.apk.enforcer.api;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.wso2.choreo.connect.discovery.api.Api;
-import org.wso2.choreo.connect.discovery.api.Certificate;
-import org.wso2.choreo.connect.discovery.api.Operation;
-import org.wso2.choreo.connect.discovery.api.Resource;
-import org.wso2.choreo.connect.discovery.api.Scopes;
-import org.wso2.choreo.connect.discovery.api.SecurityList;
-import org.wso2.choreo.connect.discovery.api.SecurityScheme;
+import org.wso2.apk.enforcer.discovery.api.Api;
+import org.wso2.apk.enforcer.discovery.api.Certificate;
+import org.wso2.apk.enforcer.discovery.api.Operation;
+import org.wso2.apk.enforcer.discovery.api.Resource;
+import org.wso2.apk.enforcer.discovery.api.Scopes;
+import org.wso2.apk.enforcer.discovery.api.SecurityList;
+import org.wso2.apk.enforcer.discovery.api.SecurityScheme;
 import org.wso2.apk.enforcer.analytics.AnalyticsFilter;
 import org.wso2.apk.enforcer.commons.Filter;
 import org.wso2.apk.enforcer.commons.model.APIConfig;
@@ -227,13 +227,13 @@ public class RestAPI implements API {
     }
 
     private MockedApiConfig getMockedApiOperationConfig(
-            org.wso2.choreo.connect.discovery.api.MockedApiConfig mockedApiConfig, String operationName) {
+            org.wso2.apk.enforcer.discovery.api.MockedApiConfig mockedApiConfig, String operationName) {
         MockedApiConfig configData = new MockedApiConfig();
         Map<String, MockedResponseConfig> responses = new HashMap<>();
-        for (org.wso2.choreo.connect.discovery.api.MockedResponseConfig response : mockedApiConfig.getResponsesList()) {
+        for (org.wso2.apk.enforcer.discovery.api.MockedResponseConfig response : mockedApiConfig.getResponsesList()) {
             MockedResponseConfig responseData = new MockedResponseConfig();
             List<MockedHeaderConfig> headers = new ArrayList<>();
-            for (org.wso2.choreo.connect.discovery.api.MockedHeaderConfig header : response.getHeadersList()) {
+            for (org.wso2.apk.enforcer.discovery.api.MockedHeaderConfig header : response.getHeadersList()) {
                 MockedHeaderConfig headerConfig = new MockedHeaderConfig();
                 headerConfig.setName(header.getName());
                 headerConfig.setValue(header.getValue());
@@ -242,10 +242,10 @@ public class RestAPI implements API {
             responseData.setHeaders(headers);
             HashMap<String, MockedContentExamples> contentMap = new HashMap<>();
 
-            for (org.wso2.choreo.connect.discovery.api.MockedContentConfig contentConfig : response.getContentList()) {
+            for (org.wso2.apk.enforcer.discovery.api.MockedContentConfig contentConfig : response.getContentList()) {
                 MockedContentExamples mockedContentExamples = new MockedContentExamples();
                 HashMap<String, String> exampleMap = new HashMap<>();
-                for (org.wso2.choreo.connect.discovery.api.MockedContentExample exampleConfig :
+                for (org.wso2.apk.enforcer.discovery.api.MockedContentExample exampleConfig :
                         contentConfig.getExamplesList()) {
                     exampleMap.put(exampleConfig.getRef(), exampleConfig.getBody());
                 }
