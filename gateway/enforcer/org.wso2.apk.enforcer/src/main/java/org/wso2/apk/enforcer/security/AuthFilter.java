@@ -139,6 +139,8 @@ public class AuthFilter implements Filter {
 
     @Override
     public boolean handleRequest(RequestContext requestContext) {
+        // Set API metadata for interceptors
+        setInterceptorAPIMetadata(requestContext);
 
         // It is required to skip the auth Filter if the lifecycle status is prototype
         if (APIConstants.PROTOTYPED_LIFE_CYCLE_STATUS.equals(
@@ -166,7 +168,6 @@ public class AuthFilter implements Filter {
                 if (authenticateResponse.isMandatoryAuthentication()) {
                     authenticated = authenticateResponse.isAuthenticated();
                     setInterceptorAuthContextMetadata(authenticator, requestContext);
-                    setInterceptorAPIMetadata(requestContext);
                 }
                 if (!authenticateResponse.isContinueToNextAuthenticator()) {
                     break;

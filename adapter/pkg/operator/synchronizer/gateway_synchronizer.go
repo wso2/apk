@@ -99,11 +99,10 @@ func AddOrUpdateGateway(gatewayState GatewayState, state string) (string, error)
 	if state == constants.Create {
 		xds.GenerateGlobalClusters(gatewayState.GatewayDefinition.Name)
 	}
-	if state == constants.Create || state == constants.Update {
-		xds.GenerateGlobalClustersWithInterceptors(gateway.Name,
-			gwReqICluster, gwReqIAddresses,
-			gwResICluster, gwResIAddresses)
-	}
+
+	xds.GenerateGlobalClustersWithInterceptors(gateway.Name,
+		gwReqICluster, gwReqIAddresses,
+		gwResICluster, gwResIAddresses)
 
 	xds.UpdateGatewayCache(gateway, resolvedListenerCerts, gwLuaScript, customRateLimitPolicies)
 	listeners, clusters, routes, endpoints, apis := xds.GenerateEnvoyResoucesForGateway(gateway.Name)
@@ -227,9 +226,9 @@ func getInterceptorEndpoint(interceptor *v1alpha1.InterceptorConfig, gatewayBack
 		gatewayBackendMapping)
 	var clusterName string
 	if isReq {
-		clusterName = "request_interceptor_global_cluster"
+		clusterName = constants.GlobalRequestInterceptorClusterName
 	} else {
-		clusterName = "response_interceptor_global_cluster"
+		clusterName = constants.GlobalResponseInterceptorClusterName
 	}
 	if len(endpoints) > 0 {
 		conf := config.ReadConfigs()

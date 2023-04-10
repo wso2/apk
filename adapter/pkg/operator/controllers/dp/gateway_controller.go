@@ -79,11 +79,6 @@ func NewGatewayController(mgr manager.Manager, operatorDataStore *synchronizer.O
 	}
 
 	ctx := context.Background()
-	if err := addGatewayIndexes(ctx, mgr); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2612, err))
-		return err
-	}
-
 	conf := config.ReadConfigs()
 	predicates := []predicate.Predicate{predicate.NewPredicateFuncs(utils.FilterByNamespaces(conf.Adapter.Operator.Namespaces))}
 

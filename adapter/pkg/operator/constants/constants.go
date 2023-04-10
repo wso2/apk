@@ -66,3 +66,9 @@ const (
 const (
 	OrganizationHeader = "X-WSO2-Organization"
 )
+
+// Global interceptor cluster names
+const (
+	GlobalRequestInterceptorClusterName  = "request_interceptor_global_cluster"
+	GlobalResponseInterceptorClusterName = "response_interceptor_global_cluster"
+)
