@@ -23,19 +23,23 @@ public type RateLimitPolicy record {|
 |};
 
 public type RateLimitSpec record {|
-    RateLimitData default?;
+    RateLimitData 'default?;
     RateLimitData override?;
     TargetRef targetRef;
 |};
 
-public type RateLimitData record {|
-    RateLimitDetails api?;
+public type RateLimitData record {
+    APIRateLimitDetails api?;
     string 'type?;
-|};
+    string organization;
+};
 
-public type RateLimitDetails record {|
+public type RateLimitDataSpec record {|
     int requestsPerUnit?;
     string unit?;
+|};
+public type APIRateLimitDetails record {|
+    RateLimitDataSpec rateLimit?;
 |};
 
 public type RateLimitPolicyList record {

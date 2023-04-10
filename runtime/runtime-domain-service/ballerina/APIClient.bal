@@ -1138,7 +1138,7 @@ public class APIClient {
                     labels: self.getLabels(api, organization)
                 }
             };
-            configMap.binaryData = {[CONFIGMAP_DEFINITION_KEY]: check string:fromBytes(base64EncodedContent)};
+            configMap.binaryData = {[CONFIGMAP_DEFINITION_KEY] : check string:fromBytes(base64EncodedContent)};
             apiArtifact.definition = configMap;
         } else {
             return compressedContent.cause();
@@ -1282,7 +1282,7 @@ public class APIClient {
         string gatewayName = runtimeConfiguration.gatewayConfiguration.name;
         string listenerName = runtimeConfiguration.gatewayConfiguration.listenerName;
         model:ParentReference[] parentRefs = [];
-        model:ParentReference parentRef = {group: "gateway.networking.k8s.io", kind: "Gateway", name: gatewayName, sectionName:listenerName};
+        model:ParentReference parentRef = {group: "gateway.networking.k8s.io", kind: "Gateway", name: gatewayName, sectionName: listenerName};
         parentRefs.push(parentRef);
         return parentRefs;
     }
@@ -1968,7 +1968,7 @@ public class APIClient {
                     labels: self.getLabels(api, organization)
                 },
                 spec: {
-                    default: self.retrieveRateLimitData(rateLimit),
+                    default: self.retrieveRateLimitData(rateLimit, organization),
                     targetRef: {
                         group: operation != () ? "dp.wso2.com" : "gateway.networking.k8s.io",
                         kind: operation != () ? "Resource" : "API",
@@ -1981,12 +1981,15 @@ public class APIClient {
         return rateLimitPolicyCR;
     }
 
-    isolated function retrieveRateLimitData(APIRateLimit rateLimit) returns model:RateLimitData {
+    isolated function retrieveRateLimitData(APIRateLimit rateLimit, commons:Organization organization) returns model:RateLimitData {
         model:RateLimitData rateLimitData = {
             api: {
-                requestsPerUnit: rateLimit.requestsPerUnit,
-                unit: rateLimit.unit
+                rateLimit: {
+                    requestsPerUnit: rateLimit.requestsPerUnit,
+                    unit: rateLimit.unit
+                }
             },
+            organization: organization.uuid,
             'type: "Api"
         };
         return rateLimitData;
@@ -2639,10 +2642,10 @@ public class APIClient {
                     apiArtifact.definition = self.sanitizeConfigMapData(definitionConfigmap);
                 }
             }
-            
+
             model:EnvConfig[]? prodHTTPRouteRefs = k8sapi.spec.production;
             json[]? httpProdRouteRefs = ();
-            if(prodHTTPRouteRefs is model:EnvConfig[]) {
+            if (prodHTTPRouteRefs is model:EnvConfig[]) {
                 httpProdRouteRefs = prodHTTPRouteRefs[0].httpRouteRefs;
             }
             if httpProdRouteRefs is json[] && httpProdRouteRefs.length() > 0 {
@@ -2653,7 +2656,7 @@ public class APIClient {
             }
             model:EnvConfig[]? sandHTTPRouteRefs = k8sapi.spec.sandbox;
             json[]? httpSandRouteRefs = ();
-            if(sandHTTPRouteRefs is model:EnvConfig[]) {
+            if (sandHTTPRouteRefs is model:EnvConfig[]) {
                 httpSandRouteRefs = sandHTTPRouteRefs[0].httpRouteRefs;
             }
             if httpSandRouteRefs is json[] && httpSandRouteRefs.length() > 0 {
@@ -2739,7 +2742,7 @@ public class APIClient {
 
         model:EnvConfig[]? prodHTTPRouteRefs = api.spec.production;
         string[]|() httpProdRouteRefs = ();
-        if(prodHTTPRouteRefs is model:EnvConfig[]) {
+        if (prodHTTPRouteRefs is model:EnvConfig[]) {
             httpProdRouteRefs = prodHTTPRouteRefs[0].httpRouteRefs;
         }
         if httpProdRouteRefs is string[] && httpProdRouteRefs.length() > 0 {
@@ -2748,7 +2751,7 @@ public class APIClient {
 
         model:EnvConfig[]? sandHTTPRouteRefs = api.spec.sandbox;
         string[]|() httpSandRouteRefs = ();
-        if(sandHTTPRouteRefs is model:EnvConfig[]) {
+        if (sandHTTPRouteRefs is model:EnvConfig[]) {
             httpSandRouteRefs = sandHTTPRouteRefs[0].httpRouteRefs;
         }
         if httpSandRouteRefs is string[] && httpSandRouteRefs.length() > 0 {
