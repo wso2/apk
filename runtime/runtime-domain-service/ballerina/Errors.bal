@@ -15,7 +15,6 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-
 // Before adding another function for a new error code
 // make sure there is no already existing error code for that.
 // If there is an error code for that, reuse it.
