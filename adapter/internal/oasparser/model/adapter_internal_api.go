@@ -577,8 +577,8 @@ func GenerateInterceptorIncludes(includes []dpv1alpha1.InterceptorInclusion) *in
 	return includesV
 }
 
-// CreateDummyMgwSwaggerForTests creates a dummy MgwSwagger struct to be used for unit tests
-func CreateDummyMgwSwaggerForTests(title, version, basePath string, resources []*Resource) *AdapterInternalAPI {
+// CreateDummyAdapterInternalAPIForTests creates a dummy AdapterInternalAPI struct to be used for unit tests
+func CreateDummyAdapterInternalAPIForTests(title, version, basePath string, resources []*Resource) *AdapterInternalAPI {
 	return &AdapterInternalAPI{
 		title:         title,
 		version:       version,

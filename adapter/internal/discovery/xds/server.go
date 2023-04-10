@@ -799,9 +799,9 @@ func UpdateEnforcerRevokedTokens(revokedTokens []types.Resource) {
 }
 
 // UpdateRateLimitXDSCache updates the xDS cache of the RateLimiter.
-func UpdateRateLimitXDSCache(vHosts []string, mgwSwagger model.AdapterInternalAPI) {
+func UpdateRateLimitXDSCache(vHosts []string, adapterInternalAPI model.AdapterInternalAPI) {
 	// Add Rate Limit inline policies in API to the cache
-	rlsPolicyCache.AddAPILevelRateLimitPolicies(vHosts, &mgwSwagger)
+	rlsPolicyCache.AddAPILevelRateLimitPolicies(vHosts, &adapterInternalAPI)
 }
 
 // UpdateRateLimitXDSCacheForCustomPolicies updates the xDS cache of the RateLimiter for custom policies.

@@ -39,18 +39,18 @@ func testAddAPILevelRateLimitPolicies(t *testing.T) {
 
 	tests := []struct {
 		desc                      string
-		mgwSwagger                *model.AdapterInternalAPI
+		adapterInternalAPI        *model.AdapterInternalAPI
 		apiLevelRateLimitPolicies map[string]map[string]map[string][]*rls_config.RateLimitDescriptor
 	}{
 		{
 			desc:                      "Add an API with no Rate Limit policies",
-			mgwSwagger:                getDummyAPISwagger("1", nil, nil, nil, nil, nil),
+			adapterInternalAPI:        getDummyAPISwagger("1", nil, nil, nil, nil, nil),
 			apiLevelRateLimitPolicies: map[string]map[string]map[string][]*rls_config.RateLimitDescriptor{},
 		},
 		{
 			// Note: Each test case is depend on the earlier test cases
-			desc:       "Add an API with API Level Rate Limit Policy",
-			mgwSwagger: getDummyAPISwagger("2", p5000PerMin, nil, nil, nil, nil),
+			desc:               "Add an API with API Level Rate Limit Policy",
+			adapterInternalAPI: getDummyAPISwagger("2", p5000PerMin, nil, nil, nil, nil),
 			apiLevelRateLimitPolicies: map[string]map[string]map[string][]*rls_config.RateLimitDescriptor{
 				"org1": {"vhost1": {
 					"vhost1:2": {&rls_config.RateLimitDescriptor{
@@ -72,8 +72,8 @@ func testAddAPILevelRateLimitPolicies(t *testing.T) {
 		},
 		{
 			// Note: Each test case is depend on the earlier test cases
-			desc:       "Add an API with no Rate Limit policies",
-			mgwSwagger: getDummyAPISwagger("4", nil, nil, nil, nil, nil),
+			desc:               "Add an API with no Rate Limit policies",
+			adapterInternalAPI: getDummyAPISwagger("4", nil, nil, nil, nil, nil),
 			apiLevelRateLimitPolicies: map[string]map[string]map[string][]*rls_config.RateLimitDescriptor{
 				"org1": {"vhost1": {
 					"vhost1:2": {&rls_config.RateLimitDescriptor{
@@ -95,8 +95,8 @@ func testAddAPILevelRateLimitPolicies(t *testing.T) {
 		},
 		{
 			// Note: Each test case is depend on the earlier test cases
-			desc:       "Add an API with Operation Level Rate Limit policies",
-			mgwSwagger: getDummyAPISwagger("5", nil, p100000PerHOUR, nil, nil, p2000PerMin),
+			desc:               "Add an API with Operation Level Rate Limit policies",
+			adapterInternalAPI: getDummyAPISwagger("5", nil, p100000PerHOUR, nil, nil, p2000PerMin),
 			apiLevelRateLimitPolicies: map[string]map[string]map[string][]*rls_config.RateLimitDescriptor{
 				"org1": {"vhost1": {
 					"vhost1:2": {&rls_config.RateLimitDescriptor{
@@ -150,7 +150,7 @@ func testAddAPILevelRateLimitPolicies(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.desc, func(t *testing.T) {
-			rlsPolicyCache.AddAPILevelRateLimitPolicies([]string{"vhost1"}, test.mgwSwagger)
+			rlsPolicyCache.AddAPILevelRateLimitPolicies([]string{"vhost1"}, test.adapterInternalAPI)
 			assert.Equal(t, test.apiLevelRateLimitPolicies, rlsPolicyCache.apiLevelRateLimitPolicies, test.desc)
 		})
 	}
@@ -466,11 +466,11 @@ func getDummyAPISwagger(apiID string, apiPolicy, res1GetPolicy, res1PostPolicy, 
 	res1 := model.CreateMinimalDummyResourceForTests("/res1", []*model.Operation{res1GetOp, res1PostOp}, "id1", nil, false)
 	res2 := model.CreateMinimalDummyResourceForTests("/res2", []*model.Operation{res2GetOp, res2PostOp}, "id2", nil, false)
 
-	mgwSwagger := model.CreateDummyMgwSwaggerForTests(fmt.Sprintf("API-%s", apiID), "v1.0.0", fmt.Sprintf("/base-path-%s", apiID), []*model.Resource{
+	adapterInternalAPI := model.CreateDummyAdapterInternalAPIForTests(fmt.Sprintf("API-%s", apiID), "v1.0.0", fmt.Sprintf("/base-path-%s", apiID), []*model.Resource{
 		&res1, &res2,
 	})
-	mgwSwagger.UUID = apiID
-	mgwSwagger.RateLimitPolicy = apiPolicy
-	mgwSwagger.OrganizationID = "org1"
-	return mgwSwagger
+	adapterInternalAPI.UUID = apiID
+	adapterInternalAPI.RateLimitPolicy = apiPolicy
+	adapterInternalAPI.OrganizationID = "org1"
+	return adapterInternalAPI
 }
