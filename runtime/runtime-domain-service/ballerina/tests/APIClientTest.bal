@@ -455,7 +455,7 @@ function prefixMatchDataProvider() returns map<[API, model:Endpoint, APIOperatio
 @test:Config {dataProvider: apiDefinitionDataProvider}
 public function testGetAPIDefinitionByID(string apiid, anydata expectedResponse) returns error? {
     APIClient apiclient = new ();
-    http:Response|NotFoundError|PreconditionFailedError|InternalServerErrorError aPIDefinitionByID = apiclient.getAPIDefinitionByID(apiid, organiztion1,"application/json");
+    http:Response|NotFoundError|PreconditionFailedError|InternalServerErrorError aPIDefinitionByID = apiclient.getAPIDefinitionByID(apiid, organiztion1, APPLICATION_JSON_MEDIA_TYPE);
     if aPIDefinitionByID is http:Response {
         json jsonPayload = check aPIDefinitionByID.getJsonPayload();
         test:assertEquals(jsonPayload.toBalString(), expectedResponse);

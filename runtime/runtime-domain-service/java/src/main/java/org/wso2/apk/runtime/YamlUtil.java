@@ -32,10 +32,15 @@ public class YamlUtil {
      * This method used to convert jsonString to yaml string.
      * @param jsonString string representation of Json.
      * @return string representation of yaml.
-     * @throws JsonProcessingException if any exception occurred in conversion.
+     * @throws Exception
      */
-    public String fromJsonStringToYaml(String jsonString) throws JsonProcessingException {
+    public String fromJsonStringToYaml(String jsonString) throws Exception {
+        try {
+
         JsonNode jsonNodeTree = new ObjectMapper().readTree(jsonString);
         return new YAMLMapper().writeValueAsString(jsonNodeTree);
+        } catch (JsonProcessingException e){
+            throw new Exception("Error occurred while converting json to yaml" + e);
+        }
     }
 }

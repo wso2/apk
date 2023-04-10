@@ -36,7 +36,6 @@ import ballerina/crypto;
 import ballerina/time;
 import runtime_domain_service.java.io as javaio;
 import wso2/apk_common_lib as commons;
-import runtime_domain_service.com.fasterxml.jackson.core;
 
 public class APIClient {
 
@@ -47,19 +46,19 @@ public class APIClient {
             if definition is json {
                 http:Response response = new;
                 if accept is string {
-                    if accept == "application/json" || accept == "*/*" {
+                    if accept == APPLICATION_JSON_MEDIA_TYPE || accept == ALL_MEDIA_TYPE {
                         response.setJsonPayload(definition);
                         response.statusCode = 200;
                         return response;
-                    } else if accept == "application/yaml" {
+                    } else if accept == APPLICATION_YAML_MEDIA_TYPE {
                         runtimeUtil:YamlUtil yamlUtil = runtimeUtil:newYamlUtil1();
-                        string?|core:JsonProcessingException convertedYaml = yamlUtil.fromJsonStringToYaml(definition.toString());
+                        string?|lang:Exception convertedYaml = yamlUtil.fromJsonStringToYaml(definition.toString());
                         if convertedYaml is string {
                             response.setTextPayload(convertedYaml);
                             response.statusCode = 200;
                             return response;
-                        } else {
-                            log:printError("Error while converting json to yaml:", convertedYaml);
+                        } else if convertedYaml is lang:Exception {
+                            log:printError("Error while converting json to yaml:" + convertedYaml.toString());
                             InternalServerErrorError internalError = {body: {code: 909000, message: "Internal Error Occured while converting json to yaml"}};
                             return internalError;
                         }
@@ -3102,7 +3101,7 @@ public class APIClient {
                                 }
                                 updateAPI.operations = sortedOperations;
                                 _ = check self.updateAPI(apiId, updateAPI, validateAndRetrieveDefinitionResult.getContent(), organization, userName);
-                                return self.getAPIDefinitionByID(apiId, organization,"application/json");
+                                return self.getAPIDefinitionByID(apiId, organization, APPLICATION_JSON_MEDIA_TYPE);
                             } else {
                                 log:printError("Error occured retrieving uri templates from definition", uRITemplates);
                                 runtimeapi:JAPIManagementException excetion = check uRITemplates.ensureType(runtimeapi:JAPIManagementException);
