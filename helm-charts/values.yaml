@@ -27,7 +27,7 @@ wso2:
       authorizeEndpoint: "https://prod.idp.am.wso2.com:9095/oauth2/authorize"
       tokenEndpoint: "https://prod.idp.am.wso2.com:9095/oauth2/token"
       revokeEndpoint: "https://prod.idp.am.wso2.com:9095/oauth2/revoke"
-      #jwksEndpoint: ""      
+      #jwksEndpoint: ""
       usernameClaim: "sub"
       groupClaim: "groups"
       organizationClaim: "organization"
@@ -184,12 +184,12 @@ wso2:
 
         # configs:
         #   tls:
-            # certificatesSecret: "management-server-cert"
-            # fileName: "certificate.crt"
-          # adapters:
-          #   - name: adapter-1
-          #     certificatesSecret: "adapter-1-cert"
-          #     fileName: "certificate.crt"
+        # certificatesSecret: "management-server-cert"
+        # fileName: "certificate.crt"
+        # adapters:
+        #   - name: adapter-1
+        #     certificatesSecret: "adapter-1-cert"
+        #     fileName: "certificate.crt"
       cnpg:
         npi: cnpg-npi
         instances: 1
@@ -208,21 +208,21 @@ wso2:
           port: 9095
           protocol: HTTPS
       # controlPlane:
-      #   serviceUrl: "http://control-plane-wso2-apk-admin-ds-service.control-plane.svc.cluster.local:9444/api/am/internal/v1"    
+      #   serviceUrl: "http://control-plane-wso2-apk-admin-ds-service.control-plane.svc.cluster.local:9444/api/am/internal/v1"
       #   enableHostNameVerification: true
-        # tls:
-        #   enabled: false
-        #   certificatesSecret: "organization-managetment-server-cert"
-        #   fileName: "certificate.crt"
-        # headers:
-        #   - name: "apiKey"
-        #     value: "123-456-789"
+      # tls:
+      #   enabled: false
+      #   certificatesSecret: "organization-managetment-server-cert"
+      #   fileName: "certificate.crt"
+      # headers:
+      #   - name: "apiKey"
+      #     value: "123-456-789"
       # managementServer:
       #   enabled: false
       #   serviceUrl: "https://control-plane-wso2-apk-management-server.control-plane.svc.cluster.local"
-        # tls:
-        #   certificatesSecret: "organization-managetment-server-cert"
-        #   fileName: "certificate.crt"
+      # tls:
+      #   certificatesSecret: "organization-managetment-server-cert"
+      #   fileName: "certificate.crt"
       runtime:
         appName: "runtime-ds"
         deployment:
@@ -281,13 +281,13 @@ wso2:
           security:
             sslHostname: "adapter"
         # configs:
-          # apiNamespaces:
-          #   - "dataplane-1"
-          #   - "dataplane-2"
-          # tls:
-          #   certificatesSecret: "adapter-cert"
-          #   certKeyFilename: ""
-          #   certFilename: ""
+        # apiNamespaces:
+        #   - "dataplane-1"
+        #   - "dataplane-2"
+        # tls:
+        #   certificatesSecret: "adapter-cert"
+        #   certKeyFilename: ""
+        #   certFilename: ""
       ratelimiter:
         enabled: true
         appName: "ratelimiter"
@@ -389,9 +389,9 @@ wso2:
             #         - name: filterConfig1
             #           value: filterConfig1
     migration:
-    # This flag should be enabled only in a migration scenario.
-    # It is not recommended to run a production deployment with this flag enabled.
-      enabled: false        
+      # This flag should be enabled only in a migration scenario.
+      # It is not recommended to run a production deployment with this flag enabled.
+      enabled: false
 certmanager:
   enabled: true
   enableClusterIssuer: true

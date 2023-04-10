@@ -81,10 +81,11 @@ var (
 	orgIDvHostBasepathMap       map[string]map[string]string               // organizationID -> Vhost:basepath -> Vhost:API_UUID
 
 	// Envoy Label as map key
-	envoyListenerConfigMap map[string]*listenerv3.Listener        // GW-Label -> Listener Configuration map
-	envoyRouteConfigMap    map[string]*routev3.RouteConfiguration // GW-Label -> Routes Configuration map
-	envoyClusterConfigMap  map[string][]*clusterv3.Cluster        // GW-Label -> Global Cluster Configuration map
-	envoyEndpointConfigMap map[string][]*corev3.Address           // GW-Label -> Global Endpoint Configuration map
+	envoyListenerConfigMap     map[string]*listenerv3.Listener        // GW-Label -> Listener Configuration map
+	envoyRouteConfigMap        map[string]*routev3.RouteConfiguration // GW-Label -> Routes Configuration map
+	envoyClusterConfigMap      map[string][]*clusterv3.Cluster          // GW-Label -> Global Cluster Configuration map
+	envoyEndpointConfigMap     map[string][]*corev3.Address             // GW-Label -> Global Endpoint Configuration map
+	customRateLimitPoliciesMap map[string][]*model.CustomRateLimitPolicy // GW-Label -> Custom Rate Limit Policies map
 
 	// Listener as map key
 	listenerToRouteArrayMap map[string][]*routev3.Route // Listener -> Routes map
@@ -147,6 +148,7 @@ func init() {
 	envoyClusterConfigMap = make(map[string][]*clusterv3.Cluster)
 	envoyEndpointConfigMap = make(map[string][]*corev3.Address)
 	listenerToRouteArrayMap = make(map[string][]*routev3.Route)
+	customRateLimitPoliciesMap = make(map[string][]*model.CustomRateLimitPolicy)
 
 	orgIDAPIMgwSwaggerMap = make(map[string]map[string]model.MgwSwagger)       // organizationID -> Vhost:API_UUID -> MgwSwagger struct map
 	orgIDAPIvHostsMap = make(map[string]map[string][]string)                   // organizationID -> UUID-prod/sand -> Envoy Vhost Array map
@@ -438,7 +440,7 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 				vhostToRouteArrayFilteredMap[vhost] = routes
 			}
 		}
-		routesConfig = oasParser.GetRouteConfigs(vhostToRouteArrayFilteredMap, listener.Name)
+		routesConfig = oasParser.GetRouteConfigs(vhostToRouteArrayFilteredMap, listener.Name, customRateLimitPoliciesMap[gatewayName])
 		envoyRouteConfigMap[gatewayName] = routesConfig
 		logger.LoggerXds.Debugf("Listener : %v and routes %v", listener, routesConfig)
 	} else {
@@ -817,6 +819,12 @@ func UpdateRateLimitXDSCache(vHosts []string, mgwSwagger model.MgwSwagger) {
 	rlsPolicyCache.AddAPILevelRateLimitPolicies(vHosts, &mgwSwagger)
 }
 
+// UpdateRateLimitXDSCacheForCustomPolicies updates the xDS cache of the RateLimiter for custom policies.
+func UpdateRateLimitXDSCacheForCustomPolicies(gwLabel string,customRateLimitPolicies []*model.CustomRateLimitPolicy) {
+	rlsPolicyCache.AddCustomRateLimitPolicies(customRateLimitPolicies)
+	UpdateRateLimiterPolicies(gwLabel)
+}
+
 // UpdateAPICache updates the xDS cache related to the API Lifecycle event.
 func UpdateAPICache(vHosts []string, newLabels []string, newlistenersForRoutes []string, mgwSwagger model.MgwSwagger) error {
 	mutexForInternalMapUpdate.Lock()
@@ -919,8 +927,13 @@ func UpdateAPICache(vHosts []string, newLabels []string, newlistenersForRoutes [
 }
 
 // UpdateGatewayCache updates the xDS cache related to the Gateway Lifecycle event.
-func UpdateGatewayCache(gateway *gwapiv1b1.Gateway, resolvedListenerCerts map[string]map[string][]byte) error {
+func UpdateGatewayCache(gateway *gwapiv1b1.Gateway, resolvedListenerCerts map[string]map[string][]byte, 
+	customRateLimitPolicies []*model.CustomRateLimitPolicy) error {
 	listener := oasParser.GetProductionListener(gateway, resolvedListenerCerts)
 	envoyListenerConfigMap[gateway.Name] = listener
+	conf := config.ReadConfigs()
+	if conf.Envoy.RateLimit.Enabled {
+		customRateLimitPoliciesMap[gateway.Name] = customRateLimitPolicies
+	}
 	return nil
 }

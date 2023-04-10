@@ -275,3 +275,51 @@ spec:
 #     secretRef:
 #       name: interceptor-cert-secret
 #       key: ca.crt
+# ---
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: interceptor-backend-v1
+#   namespace: gateway-integration-test-infra
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app: interceptor-backend-v1
+#   template:
+#     metadata:
+#       labels:
+#         app: interceptor-backend-v1
+#     spec:
+#       containers:
+#         - name: interceptor-backend-v1
+#           image: nomadxd/interceptor-service:latest
+#           ports:
+#             - containerPort: 8080
+#           imagePullPolicy: Always
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: interceptor-backend-v1
+#   namespace: gateway-integration-test-infra
+# spec:
+#   selector:
+#     app: interceptor-backend-v1
+#   ports:
+#     - name: http
+#       port: 9081
+#       targetPort: 8080
+# ---
+# apiVersion: dp.wso2.com/v1alpha1
+# kind: Backend
+# metadata:
+#   name: interceptor-backend-v1
+#   namespace: gateway-integration-test-infra
+# spec:
+#   protocol: http
+#   services:
+#     - host: interceptor-backend-v1.apk
+#       port: 9081
+# ---
+

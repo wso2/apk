@@ -27,8 +27,10 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	k8error "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/types"
 
+	dpv1alpha1 "github.com/wso2/apk/adapter/pkg/operator/apis/dp/v1alpha1"
 	"github.com/wso2/apk/adapter/pkg/operator/constants"
 	"github.com/wso2/apk/adapter/pkg/operator/status"
 	"github.com/wso2/apk/adapter/pkg/operator/synchronizer"
@@ -37,6 +39,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 
@@ -74,10 +77,27 @@ func NewGatewayController(mgr manager.Manager, operatorDataStore *synchronizer.O
 	}
 
 	conf := config.ReadConfigs()
+	ctx := context.Background()
 	predicates := []predicate.Predicate{predicate.NewPredicateFuncs(utils.FilterByNamespaces(conf.Adapter.Operator.Namespaces))}
+
+	if err := addGatewayIndexes(ctx, mgr); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2612, err))
+		return err
+	}
 
 	if err := c.Watch(&source.Kind{Type: &gwapiv1b1.Gateway{}}, &handler.EnqueueRequestForObject{},
 		predicates...); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2611, err))
+		return err
+	}
+
+	predicates = append(predicates, predicate.NewPredicateFuncs(func(object k8client.Object) bool {
+		rlPolicy := object.(*dpv1alpha1.RateLimitPolicy)
+		return rlPolicy.Spec.TargetRef.Kind == constants.KindGateway
+	}))
+
+	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.RateLimitPolicy{}}, 
+		handler.EnqueueRequestsFromMapFunc(r.handleCustomRateLimitPolicies), predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2611, err))
 		return err
 	}
@@ -127,13 +147,16 @@ func (gatewayReconciler *GatewayReconciler) Reconcile(ctx context.Context, req c
 	}
 
 	var gwCondition []metav1.Condition = gatewayDef.Status.Conditions
-
+	customRateLimitPolicies, err := gatewayReconciler.getCustomRateLimitPoliciesForGateway(utils.NamespacedName(&gatewayDef))
+	if err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2650, err))
+	}
 	if gwCondition[0].Type != "Accepted" {
-		gatewayState := gatewayReconciler.ods.AddGatewayState(gatewayDef, resolvedListenerCerts)
+		gatewayState := gatewayReconciler.ods.AddGatewayState(gatewayDef, resolvedListenerCerts, customRateLimitPolicies)
 		*gatewayReconciler.ch <- synchronizer.GatewayEvent{EventType: constants.Create, Event: gatewayState}
 		gatewayReconciler.handleGatewayStatus(req.NamespacedName, constants.DeployedState, []string{})
 	} else if cachedGateway, events, updated :=
-		gatewayReconciler.ods.UpdateGatewayState(&gatewayDef, resolvedListenerCerts); updated {
+		gatewayReconciler.ods.UpdateGatewayState(&gatewayDef, resolvedListenerCerts, customRateLimitPolicies); updated {
 		*gatewayReconciler.ch <- synchronizer.GatewayEvent{EventType: constants.Update, Event: cachedGateway}
 		gatewayReconciler.handleGatewayStatus(req.NamespacedName, constants.UpdatedState, events)
 	}
@@ -194,4 +217,56 @@ func (gatewayReconciler *GatewayReconciler) handleGatewayStatus(gatewayKey types
 			return hCopy
 		},
 	})
+}
+
+// handleCustomRateLimitPolicies returns the list of gateway reconcile requests
+func (gatewayReconciler *GatewayReconciler) handleCustomRateLimitPolicies(obj k8client.Object) []reconcile.Request {
+	ratelimitPolicy, ok := obj.(*dpv1alpha1.RateLimitPolicy)
+	if !ok {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2622, ratelimitPolicy))
+		return []reconcile.Request{}
+	}
+	return []reconcile.Request{{
+		NamespacedName: types.NamespacedName{
+			Namespace: ratelimitPolicy.Namespace,
+			Name:      string(ratelimitPolicy.Spec.TargetRef.Name),
+		},},
+	}
+}
+
+// getCustomRateLimitPoliciesForGateway returns the list of custom rate limit policies for a gateway
+func (gatewayReconciler *GatewayReconciler) getCustomRateLimitPoliciesForGateway(gatewayName types.NamespacedName) ([]*dpv1alpha1.RateLimitPolicy, error) {
+	ctx := context.Background()
+	var ratelimitPolicyList dpv1alpha1.RateLimitPolicyList
+	var rateLimitPolicies []*dpv1alpha1.RateLimitPolicy
+	if err := gatewayReconciler.client.List(ctx, &ratelimitPolicyList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(gatewayIndex, gatewayName.String()),
+	}); err != nil {
+		return nil, err
+	}
+	for _, item := range ratelimitPolicyList.Items {
+		rateLimitPolicy := item
+		rateLimitPolicies = append(rateLimitPolicies, &rateLimitPolicy)
+	}
+	return rateLimitPolicies, nil
+}
+
+
+// addGatewayIndexes adds the gateway indexes
+func addGatewayIndexes(ctx context.Context, mgr manager.Manager) error { 
+	return mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.RateLimitPolicy{}, gatewayIndex,
+		func(rawObj k8client.Object) []string {
+			ratelimitPolicy := rawObj.(*dpv1alpha1.RateLimitPolicy)
+			var gateways []string
+			if ratelimitPolicy.Spec.TargetRef.Kind == constants.KindGateway {
+				gateways = append(gateways,
+					types.NamespacedName{
+						Namespace: utils.GetNamespace(
+							(*gwapiv1b1.Namespace)(ratelimitPolicy.Spec.TargetRef.Namespace),
+							ratelimitPolicy.Namespace),
+						Name: string(ratelimitPolicy.Spec.TargetRef.Name),
+					}.String())
+			}
+			return gateways
+		})
 }

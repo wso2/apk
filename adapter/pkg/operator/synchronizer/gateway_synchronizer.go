@@ -18,9 +18,12 @@
 package synchronizer
 
 import (
+	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/discovery/xds"
 	"github.com/wso2/apk/adapter/internal/loggers"
+	"github.com/wso2/apk/adapter/internal/oasparser/model"
 	"github.com/wso2/apk/adapter/pkg/logging"
+	dpv1alpha1 "github.com/wso2/apk/adapter/pkg/operator/apis/dp/v1alpha1"
 	"github.com/wso2/apk/adapter/pkg/operator/constants"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
@@ -78,10 +81,11 @@ func undeployGateway(gatewayState GatewayState) error {
 func AddOrUpdateGateway(gatewayState GatewayState, state string) (string, error) {
 	gateway := gatewayState.GatewayDefinition
 	resolvedListenerCerts := gatewayState.GatewayStateData.GatewayResolvedListenerCerts
+	customRateLimitPolicies := getCustomRateLimitPolicies(gatewayState.CustomRateLimitPolicies)
 	if state == constants.Create {
 		xds.GenerateGlobalClusters(gateway.Name)
 	}
-	xds.UpdateGatewayCache(gateway, resolvedListenerCerts)
+	xds.UpdateGatewayCache(gateway, resolvedListenerCerts, customRateLimitPolicies)
 	listeners, clusters, routes, endpoints, apis := xds.GenerateEnvoyResoucesForGateway(gateway.Name)
 	loggers.LoggerAPKOperator.Debugf("listeners: %v", listeners)
 	loggers.LoggerAPKOperator.Debugf("clusters: %v", clusters)
@@ -90,7 +94,10 @@ func AddOrUpdateGateway(gatewayState GatewayState, state string) (string, error)
 	loggers.LoggerAPKOperator.Debugf("apis: %v", apis)
 	xds.UpdateXdsCacheWithLock(gateway.Name, endpoints, clusters, routes, listeners)
 	xds.UpdateEnforcerApis(gateway.Name, apis, "")
-	xds.UpdateRateLimiterPolicies(gateway.Name)
+	conf := config.ReadConfigs()
+	if conf.Envoy.RateLimit.Enabled {
+		xds.UpdateRateLimitXDSCacheForCustomPolicies(gateway.Name,customRateLimitPolicies)
+	}
 	return "", nil
 }
 
@@ -99,4 +106,14 @@ func DeleteGateway(gateway *gwapiv1b1.Gateway) (string, error) {
 	xds.UpdateXdsCacheWithLock(gateway.Name, nil, nil, nil, nil)
 	xds.UpdateEnforcerApis(gateway.Name, nil, "")
 	return "", nil
+}
+
+// getCustomRateLimitPolicies returns the custom rate limit policies.
+func getCustomRateLimitPolicies(customRateLimitPoliciesDef []*dpv1alpha1.RateLimitPolicy) []*model.CustomRateLimitPolicy {
+	var customRateLimitPolicies []*model.CustomRateLimitPolicy
+	for _, customRateLimitPolicy := range customRateLimitPoliciesDef {
+		customRLPolicy := model.ParseCustomRateLimitPolicy(*customRateLimitPolicy)
+		customRateLimitPolicies = append(customRateLimitPolicies, customRLPolicy)
+	}
+	return customRateLimitPolicies
 }

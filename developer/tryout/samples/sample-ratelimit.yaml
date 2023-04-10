@@ -6,8 +6,9 @@ spec:
   default:
     type: Api
     api:
-      requestsPerUnit: 5
-      unit: Minute
+      rateLimit:
+        requestsPerUnit: 5
+        unit: Minute
   targetRef:
     kind: API
     name: sand-http-route-http-bin-api

@@ -1,0 +1,113 @@
+# --------------------------------------------------------------------
+# Copyright (c) 2023, WSO2 LLC. (http://wso2.com) All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# -----------------------------------------------------------------------
+apiVersion: dp.wso2.com/v1alpha1
+kind: RateLimitPolicy
+metadata:
+  name: http-bin-ratelimit-usergroup
+  namespace: gateway-integration-test-infra
+spec:
+  override:
+    type: Custom
+    custom:
+      key: rlkey_user
+      value: bob
+      rateLimit:
+        requestsPerUnit: 4
+        unit: Minute
+    organization: default
+  targetRef:
+    kind: Gateway
+    name: default
+    group: gateway.networking.k8s.io
+---
+apiVersion: dp.wso2.com/v1alpha1
+kind: APIPolicy
+metadata:
+  name: interceptor-api-policy-api-level
+  namespace: gateway-integration-test-infra
+spec:
+  override:
+    requestInterceptor:
+      backendRef:
+        name: interceptor-backend-v1
+      includes:
+        - request_body
+        - request_headers
+        - invocation_context
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: API
+    name: prod-http-route-http-bin-api-basic
+---
+apiVersion: dp.wso2.com/v1alpha1
+kind: API
+metadata:
+  name: http-bin-api-basic
+  namespace: gateway-integration-test-infra
+spec:
+  apiDisplayName: http-bin-api-basic
+  apiType: REST
+  apiVersion: 1.0.8
+  context: /http-bin-api/1.0.8
+  definitionFileRef: swagger-definition-http-bin-api
+  production:
+    - httpRouteRefs:
+      - prod-http-route-http-bin-api-basic
+  organization: a3b58ccf-6ecc-4557-b5bb-0a35cce38256
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: prod-http-route-http-bin-api-basic
+  namespace: gateway-integration-test-infra
+spec:
+  hostnames:
+    - prod.gw.wso2.com
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: default
+      sectionName: httpslistener
+  rules:
+    - backendRefs:
+        - group: dp.wso2.com
+          kind: Backend
+          name: infra-backend-v1
+      matches:
+        - path:
+            type: PathPrefix
+            value: /http-bin-api-basic/1.0.8/get/
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /get
+    - backendRefs:
+        - group: dp.wso2.com
+          kind: Backend
+          name: infra-backend-v1
+      matches:
+        - path:
+            type: PathPrefix
+            value: /http-bin-api-basic/1.0.8/secure/post/
+          method: POST
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /post

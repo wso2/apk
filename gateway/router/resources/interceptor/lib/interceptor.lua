@@ -85,9 +85,16 @@ end
 local function set_dynamic_metadata(handle, interceptor_response_body)
     if interceptor_response_body[RESPONSE.DYNAMIC_METADATA] then
         handle:logDebug("Response body has dynamic metadata. Setting dynamic metadata...")
-        for metadata_key, metadata_velue in pairs(interceptor_response_body[RESPONSE.DYNAMIC_METADATA]) do
-            handle:streamInfo():dynamicMetadata():set(CUSTOM_METADATA_KEY, metadata_key, metadata_velue)
-            handle:logDebug("set metadata <key: "..metadata_key..", value: "..metadata_velue..">")
+        for metadata_key, metadata_value in pairs(interceptor_response_body[RESPONSE.DYNAMIC_METADATA]) do
+            handle:streamInfo():dynamicMetadata():set(CUSTOM_METADATA_KEY, metadata_key, metadata_value)
+            handle:logDebug("set metadata <key: "..metadata_key..", value: "..metadata_value..">")
+        end
+    end
+    if interceptor_response_body[RESPONSE.RATELIMIT_KEYS] then
+        handle:logDebug("Response body has ratelimit keys. Setting ratelimit keys...")
+        for ratelimit_key, ratelimit_value in pairs(interceptor_response_body[RESPONSE.RATELIMIT_KEYS]) do
+            handle:streamInfo():dynamicMetadata():set(RATELIMIT_METADATA_KEY, ratelimit_key, ratelimit_value)
+            handle:logDebug("set throttle <key: "..ratelimit_key..", value: "..ratelimit_value..">")
         end
     end
 end
@@ -227,7 +234,7 @@ local function include_invocation_context(handle, req_flow_includes, resp_flow_i
         }
         table.shallow_copy(inv_context, inv_context_body)
         -- remove organizationId from invocationContext, since it should not be sent to the interceptor service
-        inv_context_body[INV_CONTEXT.ORG_ID] = nil
+        -- inv_context_body[INV_CONTEXT.ORG_ID] = nil
 
         --#region auth context
         local ext_authz_meta =  handle:streamInfo():dynamicMetadata():get(EXT_AUTHZ_FILTER)
