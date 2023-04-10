@@ -370,7 +370,7 @@ public class APIClient {
         return {list: convertAPIListToAPIInfoList(limitSet), count: limitSet.length(), pagination: {total: apiList.length(), 'limit: 'limit, offset: offset}};
 
     }
-    public isolated function createAPI(API api, string? definition, commons:Organization organization) returns commons:APKError|CreatedAPI|BadRequestError {
+    public isolated function createAPI(API api, string? definition, commons:Organization organization, string userName) returns commons:APKError|CreatedAPI|BadRequestError {
         do {
             if (self.validateName(api.name, organization)) {
                 BadRequestError badRequest = {body: {code: 90911, message: "API Name - " + api.name + " already exist.", description: "API Name - " + api.name + " already exist."}};
@@ -419,9 +419,9 @@ public class APIClient {
             _ = check self.setHttpRoute(apiArtifact, api, createdEndpoints.hasKey(SANDBOX_TYPE) ? createdEndpoints.get(SANDBOX_TYPE) : (), uniqueId, SANDBOX_TYPE, organization);
             json generatedSwagger = check self.retrieveGeneratedSwaggerDefinition(api, definition);
             check self.retrieveGeneratedConfigmapForDefinition(apiArtifact, api, generatedSwagger, uniqueId, organization);
-            self.generateAndSetAPICRArtifact(apiArtifact, api, organization);
+            self.generateAndSetAPICRArtifact(apiArtifact, api, organization, userName);
             self.generateAndSetPolicyCRArtifact(apiArtifact, api, organization);
-            self.generateAndSetRuntimeAPIArtifact(apiArtifact, api, (), organization);
+            self.generateAndSetRuntimeAPIArtifact(apiArtifact, api, (), organization, userName);
             model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact, organization);
             CreatedAPI createdAPI = {body: check convertK8sAPItoAPI(deployAPIToK8sResult, true)};
             return createdAPI;
@@ -538,11 +538,11 @@ public class APIClient {
         return ();
     }
 
-    private isolated function generateAndSetRuntimeAPIArtifact(model:APIArtifact apiArtifact, API api, Service? serviceEntry, commons:Organization organization) {
+    private isolated function generateAndSetRuntimeAPIArtifact(model:APIArtifact apiArtifact, API api, Service? serviceEntry, commons:Organization organization, string userName) {
 
-        apiArtifact.runtimeAPI = self.generateRuntimeAPIArtifact(api, serviceEntry, organization);
+        apiArtifact.runtimeAPI = self.generateRuntimeAPIArtifact(api, serviceEntry, organization, userName);
     }
-    public isolated function generateRuntimeAPIArtifact(API api, Service? serviceEntry, commons:Organization organization) returns model:RuntimeAPI {
+    public isolated function generateRuntimeAPIArtifact(API api, Service? serviceEntry, commons:Organization organization, string userName) returns model:RuntimeAPI {
         model:RuntimeAPI runtimeAPI = {
             metadata: {
                 name: getUniqueIdForAPI(api.name, api.'version, organization),
@@ -554,6 +554,7 @@ public class APIClient {
                 context: api.context,
                 'version: api.'version,
                 'type: api.'type,
+                apiProvider: userName,
                 endpointConfig: api.endpointConfig
             }
         };
@@ -750,7 +751,7 @@ public class APIClient {
         return false;
     }
 
-    isolated function createAPIFromService(string serviceKey, API api, commons:Organization organization) returns CreatedAPI|BadRequestError|InternalServerErrorError|commons:APKError {
+    isolated function createAPIFromService(string serviceKey, API api, commons:Organization organization, string userName) returns CreatedAPI|BadRequestError|InternalServerErrorError|commons:APKError {
         do {
             if (self.validateName(api.name, organization)) {
                 BadRequestError badRequest = {body: {code: 90911, message: "API Name - " + api.name + " already exist.", description: "API Name - " + api.name + " already exist."}};
@@ -795,10 +796,10 @@ public class APIClient {
                 check self.setHttpRoute(apiArtifact, api, endpoint, uniqueId, PRODUCTION_TYPE, organization);
                 json generatedSwaggerDefinition = check self.retrieveGeneratedSwaggerDefinition(api, ());
                 check self.retrieveGeneratedConfigmapForDefinition(apiArtifact, api, generatedSwaggerDefinition, uniqueId, organization);
-                self.generateAndSetAPICRArtifact(apiArtifact, api, organization);
+                self.generateAndSetAPICRArtifact(apiArtifact, api, organization, userName);
                 self.generateAndSetPolicyCRArtifact(apiArtifact, api, organization);
                 self.generateAndSetK8sServiceMapping(apiArtifact, api, serviceRetrieved, getNameSpace(runtimeConfiguration.apiCreationNamespace), organization);
-                self.generateAndSetRuntimeAPIArtifact(apiArtifact, api, serviceRetrieved, organization);
+                self.generateAndSetRuntimeAPIArtifact(apiArtifact, api, serviceRetrieved, organization, userName);
                 model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact, organization);
                 CreatedAPI createdAPI = {body: check convertK8sAPItoAPI(deployAPIToK8sResult, false)};
                 return createdAPI;
@@ -1172,7 +1173,7 @@ public class APIClient {
         }
     }
 
-    private isolated function generateAndSetAPICRArtifact(model:APIArtifact apiArtifact, API api, commons:Organization organization) {
+    private isolated function generateAndSetAPICRArtifact(model:APIArtifact apiArtifact, API api, commons:Organization organization, string userName) {
         model:API k8sAPI = {
             metadata: {
                 name: apiArtifact.uniqueId,
@@ -1183,6 +1184,7 @@ public class APIClient {
                 apiDisplayName: api.name,
                 apiType: api.'type,
                 apiVersion: api.'version,
+                apiProvider: userName,
                 context: self.returnFullContext(api.context, api.'version),
                 organization: organization.uuid
             }
@@ -2160,7 +2162,7 @@ public class APIClient {
         }
     }
 
-    public isolated function importDefinition(http:Request payload, commons:Organization organization) returns commons:APKError|CreatedAPI|InternalServerErrorError|BadRequestError {
+    public isolated function importDefinition(http:Request payload, commons:Organization organization, string userName) returns commons:APKError|CreatedAPI|InternalServerErrorError|BadRequestError {
         do {
             ImportDefintionRequest|BadRequestError importDefinitionRequest = check self.mapImportDefinitionRequest(payload);
             if importDefinitionRequest is ImportDefintionRequest {
@@ -2190,7 +2192,7 @@ public class APIClient {
                                 }
                             }
                             additionalPropertes.operations = operations;
-                            return self.createAPI(additionalPropertes, validateAndRetrieveDefinitionResult.getContent(), organization);
+                            return self.createAPI(additionalPropertes, validateAndRetrieveDefinitionResult.getContent(), organization, userName);
                         }
                         log:printError("Error occured retrieving uri templates from definition", uRITemplates);
                         runtimeapi:JAPIManagementException excetion = check uRITemplates.ensureType(runtimeapi:JAPIManagementException);
@@ -2325,7 +2327,7 @@ public class APIClient {
         };
         return importDefintionRequest;
     }
-    public isolated function copyAPI(string newVersion, string? serviceId, string apiId, commons:Organization organization) returns CreatedAPI|NotFoundError|BadRequestError|commons:APKError {
+    public isolated function copyAPI(string newVersion, string? serviceId, string apiId, commons:Organization organization, string userName) returns CreatedAPI|NotFoundError|BadRequestError|commons:APKError {
         // validating API existence.
         if newVersion.trim().length() == 0 || apiId.trim().length() == 0 {
             BadRequestError badRequest = {body: {code: 900912, message: "new Version/APIID not exist."}};
@@ -2345,7 +2347,7 @@ public class APIClient {
                     if serviceId is string && serviceId.toString().trim().length() > 0 {
                         Service|error serviceById = getServiceById(serviceId);
                         if serviceById is Service {
-                            check self.prepareApiArtifactforNewVersion(apiArtifact, serviceById, api, newVersion, organization);
+                            check self.prepareApiArtifactforNewVersion(apiArtifact, serviceById, api, newVersion, organization, userName);
                             model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact, organization);
                             CreatedAPI createdAPI = {body: {name: deployAPIToK8sResult.spec.apiDisplayName, context: self.returnFullContext(deployAPIToK8sResult.spec.context, deployAPIToK8sResult.spec.apiVersion), 'version: deployAPIToK8sResult.spec.apiVersion, id: deployAPIToK8sResult.metadata.uid}};
                             return createdAPI;
@@ -2355,7 +2357,7 @@ public class APIClient {
                         }
                     }
                 }
-                check self.prepareApiArtifactforNewVersion(apiArtifact, (), api, newVersion, organization);
+                check self.prepareApiArtifactforNewVersion(apiArtifact, (), api, newVersion, organization, userName);
                 model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact, organization);
                 CreatedAPI createdAPI = {body: {name: deployAPIToK8sResult.spec.apiDisplayName, context: self.returnFullContext(deployAPIToK8sResult.spec.context, deployAPIToK8sResult.spec.apiVersion), 'version: deployAPIToK8sResult.spec.apiVersion, id: deployAPIToK8sResult.metadata.uid}};
                 return createdAPI;
@@ -2371,7 +2373,7 @@ public class APIClient {
         }
     }
 
-    private isolated function prepareApiArtifactforNewVersion(model:APIArtifact apiArtifact, Service? serviceEntry, API oldAPI, string newVersion, commons:Organization organization) returns error? {
+    private isolated function prepareApiArtifactforNewVersion(model:APIArtifact apiArtifact, Service? serviceEntry, API oldAPI, string newVersion, commons:Organization organization, string userName) returns error? {
         string newAPIuuid = getUniqueIdForAPI(oldAPI.name, newVersion, organization);
         API newAPI = {
             id: newAPIuuid,
@@ -2387,7 +2389,7 @@ public class APIClient {
         self.prepareK8sServiceMapping(apiArtifact, serviceEntry, oldAPI, newAPI, organization);
         self.prepareAPICr(apiArtifact, oldAPI, newAPI, organization);
         self.prepareBackendCertificateCR(apiArtifact, oldAPI, newAPI, organization);
-        apiArtifact.runtimeAPI = self.generateRuntimeAPIArtifact(newAPI, serviceEntry, organization);
+        apiArtifact.runtimeAPI = self.generateRuntimeAPIArtifact(newAPI, serviceEntry, organization, userName);
 
     }
 
@@ -2909,7 +2911,7 @@ public class APIClient {
         return [zipName, zipPath];
     }
 
-    public isolated function updateAPI(string apiId, API payload, string? definition, commons:Organization organization) returns API|BadRequestError|ForbiddenError|NotFoundError|PreconditionFailedError|InternalServerErrorError|commons:APKError {
+    public isolated function updateAPI(string apiId, API payload, string? definition, commons:Organization organization, string userName) returns API|BadRequestError|ForbiddenError|NotFoundError|PreconditionFailedError|InternalServerErrorError|commons:APKError {
         do {
             API|NotFoundError api = check self.getAPIById(apiId, organization);
             if api is API {
@@ -2989,9 +2991,9 @@ public class APIClient {
                         check self.retrieveGeneratedConfigmapForDefinition(apiArtifact, payload, generatedSwagger, uniqueId, organization);
                     }
                 }
-                self.generateAndSetAPICRArtifact(apiArtifact, payload, organization);
+                self.generateAndSetAPICRArtifact(apiArtifact, payload, organization, userName);
                 self.generateAndSetPolicyCRArtifact(apiArtifact, payload, organization);
-                self.generateAndSetRuntimeAPIArtifact(apiArtifact, payload, (), organization);
+                self.generateAndSetRuntimeAPIArtifact(apiArtifact, payload, (), organization, userName);
                 model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact, organization);
                 return check convertK8sAPItoAPI(deployAPIToK8sResult, false);
             } else {
@@ -3011,8 +3013,9 @@ public class APIClient {
     # + apiId - Parameter Description  
     # + payload - Parameter Description  
     # + organization - Parameter Description
+    # + userName - userName Description
     # + return - Return Value Description
-    public isolated function updateAPIDefinition(string apiId, http:Request payload, commons:Organization organization) returns http:Response|NotFoundError|PreconditionFailedError|InternalServerErrorError|BadRequestError|commons:APKError {
+    public isolated function updateAPIDefinition(string apiId, http:Request payload, commons:Organization organization, string userName) returns http:Response|NotFoundError|PreconditionFailedError|InternalServerErrorError|BadRequestError|commons:APKError {
         do {
             API|NotFoundError api = check self.getAPIById(apiId, organization);
             if api is API {
@@ -3058,7 +3061,7 @@ public class APIClient {
 
                                 }
                                 updateAPI.operations = sortedOperations;
-                                _ = check self.updateAPI(apiId, updateAPI, validateAndRetrieveDefinitionResult.getContent(), organization);
+                                _ = check self.updateAPI(apiId, updateAPI, validateAndRetrieveDefinitionResult.getContent(), organization, userName);
                                 return self.getAPIDefinitionByID(apiId, organization);
                             } else {
                                 log:printError("Error occured retrieving uri templates from definition", uRITemplates);

@@ -75,6 +75,10 @@ type APISpec struct {
 	//
 	Context string `json:"context"`
 
+	// APIProvider denotes the provider of the API.
+	// +optional
+	APIProvider string `json:"apiProvider"`
+
 	// Organization denotes the organization.
 	// related to the API
 	//
