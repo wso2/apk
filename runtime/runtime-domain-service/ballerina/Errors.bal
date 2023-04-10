@@ -70,7 +70,7 @@ public isolated function e90906() returns commons:APKError {
     return error commons:APKError( "Unsupported API type",
         code = 90906,
         message = "Unsupported API type",
-        statusCode = 400,
+        statusCode = 406,
         description = "Unsupported API type"
     ); 
 }
@@ -79,7 +79,7 @@ public isolated function e90907() returns commons:APKError {
     return error commons:APKError( "Multiple fields of url, file, inlineAPIDefinition given",
         code = 90907,
         message = "Multiple fields of url, file, inlineAPIDefinition given",
-        statusCode = 400,
+        statusCode = 406,
         description = "Multiple fields of url, file, inlineAPIDefinition given"
     ); 
 }
@@ -88,7 +88,7 @@ public isolated function e90908() returns commons:APKError {
     return error commons:APKError( "Atleast one of the field required",
         code = 90908,
         message = "Atleast one of the field required",
-        statusCode = 400,
+        statusCode = 406,
         description = "Atleast one of the field required"
     ); 
 }
@@ -97,7 +97,7 @@ public isolated function e90909() returns commons:APKError {
     return error commons:APKError( "Additional properties not provided",
         code = 90909,
         message = "Additional properties not provided",
-        statusCode = 400,
+        statusCode = 406,
         description = "Additional properties not provided"
     ); 
 }
@@ -106,7 +106,7 @@ public isolated function e90910() returns commons:APKError {
     return error commons:APKError( "Invalid operation policy name",
         code = 90910,
         message = "Invalid operation policy name",
-        statusCode = 400,
+        statusCode = 406,
         description = "Invalid operation policy name"
     ); 
 }
@@ -133,7 +133,7 @@ public isolated function e90913() returns commons:APKError {
     return error commons:APKError( "Sandbox endpoint not specified",
         code = 90913,
         message = "Sandbox endpoint not specified",
-        statusCode = 400,
+        statusCode = 406,
         description = "Sandbox endpoint not specified"
     ); 
 }
@@ -142,7 +142,7 @@ public isolated function e90914() returns commons:APKError {
     return error commons:APKError( "Production endpoint not specified",
         code = 90914,
         message = "Production endpoint not specified",
-        statusCode = 400,
+        statusCode = 406,
         description = "Production endpoint not specified"
     ); 
 }
@@ -151,7 +151,7 @@ public isolated function e90915(string apiContext) returns commons:APKError {
     return error commons:APKError("API context " + apiContext + " invalid",
         code = 90915,
         message = "API context " + apiContext + " invalid",
-        statusCode = 400,
+        statusCode = 406,
         description = "API context " + apiContext + " invalid"
     ); 
 }
@@ -160,7 +160,7 @@ public isolated function e90916(string apiName) returns commons:APKError {
     return error commons:APKError("API name " + apiName + " invalid",
         code = 90916,
         message = "API name " + apiName + " invalid",
-        statusCode = 400,
+        statusCode = 406,
         description = "API name " + apiName + " invalid"
     ); 
 }
@@ -169,7 +169,7 @@ public isolated function e90917() returns commons:APKError {
     return error commons:APKError("Invalid API request",
         code = 90917,
         message = "Invalid API request",
-        statusCode = 400,
+        statusCode = 406,
         description = "Invalid API request"
     ); 
 }
@@ -178,7 +178,7 @@ public isolated function e90918() returns commons:APKError {
     return error commons:APKError("Error while generating token",
         code = 90918,
         message = "Error while generating token",
-        statusCode = 400,
+        statusCode = 500,
         description = "Error while generating token"
     ); 
 }
@@ -187,7 +187,7 @@ public isolated function e90919(string keyWord) returns commons:APKError {
     return error commons:APKError("Invalid KeyWord " + keyWord,
         code = 90919,
         message = "Invalid KeyWord " + keyWord,
-        statusCode = 400,
+        statusCode = 406,
         description = "Invalid KeyWord " + keyWord
     ); 
 }
@@ -196,7 +196,7 @@ public isolated function e90920() returns commons:APKError {
     return error commons:APKError("Invalid Sort By/Sort Order value",
         code = 90920,
         message = "Invalid Sort By/Sort Order value",
-        statusCode = 400,
+        statusCode = 406,
         description = "Invalid Sort By/Sort Order value"
     ); 
 }
@@ -205,7 +205,7 @@ public isolated function e90921() returns commons:APKError {
     return error commons:APKError("Atleast one operation need to specified",
         code = 90921,
         message = "Atleast one operation need to specified",
-        statusCode = 400,
+        statusCode = 406,
         description = "Atleast one operation need to specified"
     ); 
 }
@@ -219,20 +219,13 @@ public isolated function e90922(error e) returns commons:APKError {
     ); 
 }
 
-public isolated function e90923() returns commons:APKError {
-    return error commons:APKError("Internal server error",
-        code = 90923,
-        message = "Internal server error",
-        statusCode = 500,
-        description = "Internal server error"
-    ); 
-}
+// e90923 is here
 
 public isolated function e90924(string policyName) returns commons:APKError {
     return error commons:APKError( "Invalid parameters provided for policy " + policyName,
         code = 90924,
         message = "Invalid parameters provided for policy " + policyName,
-        statusCode = 400,
+        statusCode = 406,
         description = "Invalid parameters provided for policy " + policyName
     ); 
 }
@@ -241,7 +234,7 @@ public isolated function e90925() returns commons:APKError {
     return error commons:APKError( "Presence of both resource level and API level operation policies is not allowed",
         code = 90925,
         message = "Presence of both resource level and API level operation policies is not allowed",
-        statusCode = 400,
+        statusCode = 406,
         description = "Presence of both resource level and API level operation policies is not allowed"
     ); 
 }
@@ -250,7 +243,7 @@ public isolated function e90926() returns commons:APKError {
     return error commons:APKError( "Presence of both resource level and API level rate limits is not allowed",
         code = 90926,
         message = "Presence of both resource level and API level rate limits is not allowed",
-        statusCode = 400,
+        statusCode = 406,
         description = "Presence of both resource level and API level rate limits is not allowed"
     ); 
 }
