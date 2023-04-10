@@ -33,7 +33,7 @@ import org.wso2.apk.enforcer.commons.analytics.publishers.dto.Target;
 import org.wso2.apk.enforcer.commons.analytics.publishers.dto.enums.EventCategory;
 import org.wso2.apk.enforcer.commons.analytics.publishers.dto.enums.FaultCategory;
 import org.wso2.apk.enforcer.commons.analytics.publishers.dto.enums.FaultSubCategory;
-import org.wso2.choreo.connect.discovery.service.websocket.WebSocketFrameRequest;
+import org.wso2.apk.enforcer.discovery.service.websocket.WebSocketFrameRequest;
 import org.wso2.apk.enforcer.constants.APIConstants;
 import org.wso2.apk.enforcer.constants.AnalyticsConstants;
 import org.wso2.apk.enforcer.constants.MetadataConstants;

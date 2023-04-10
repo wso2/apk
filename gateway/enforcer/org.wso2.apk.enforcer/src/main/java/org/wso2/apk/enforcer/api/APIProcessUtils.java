@@ -27,7 +27,7 @@ import org.wso2.apk.enforcer.commons.model.EndpointSecurity;
  */
 public class APIProcessUtils {
     public static EndpointSecurity[] convertProtoEndpointSecurity
-        (List<org.wso2.choreo.connect.discovery.api.SecurityInfo> protoSecurityInfo) {
+        (List<org.wso2.apk.enforcer.discovery.api.SecurityInfo> protoSecurityInfo) {
         EndpointSecurity[] securityInfo = new EndpointSecurity[protoSecurityInfo.size()];
         for (int i = 0; i < protoSecurityInfo.size(); i++) {
             EndpointSecurity security = new EndpointSecurity();

@@ -32,7 +32,7 @@ import org.json.JSONObject;
 import org.wso2.apk.enforcer.commons.constants.GraphQLConstants;
 import org.wso2.apk.enforcer.commons.graphql.GraphQLProcessorUtil;
 import org.wso2.apk.enforcer.commons.graphql.QueryValidator;
-import org.wso2.choreo.connect.discovery.api.GraphqlComplexity;
+import org.wso2.apk.enforcer.discovery.api.GraphqlComplexity;
 import org.wso2.apk.enforcer.api.API;
 import org.wso2.apk.enforcer.api.APIFactory;
 import org.wso2.apk.enforcer.commons.exception.EnforcerException;

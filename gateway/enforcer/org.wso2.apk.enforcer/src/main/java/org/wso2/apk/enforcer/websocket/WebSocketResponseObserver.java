@@ -25,8 +25,8 @@
 //import org.java_websocket.enums.Opcode;
 //import org.java_websocket.exceptions.InvalidDataException;
 //import org.java_websocket.framing.Framedata;
-//import org.wso2.choreo.connect.discovery.service.websocket.WebSocketFrameRequest;
-//import org.wso2.choreo.connect.discovery.service.websocket.WebSocketFrameResponse;
+//import org.wso2.apk.enforcer.discovery.service.websocket.WebSocketFrameRequest;
+//import org.wso2.apk.enforcer.discovery.service.websocket.WebSocketFrameResponse;
 //import org.wso2.apk.enforcer.analytics.AnalyticsFilter;
 //import org.wso2.apk.enforcer.config.ConfigHolder;
 //import org.wso2.apk.enforcer.constants.APIConstants;

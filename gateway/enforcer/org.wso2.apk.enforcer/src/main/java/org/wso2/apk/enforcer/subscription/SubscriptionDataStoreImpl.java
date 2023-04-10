@@ -21,7 +21,7 @@ package org.wso2.apk.enforcer.subscription;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.wso2.choreo.connect.discovery.subscription.APIs;
+import org.wso2.apk.enforcer.discovery.subscription.APIs;
 import org.wso2.apk.enforcer.constants.APIConstants;
 import org.wso2.apk.enforcer.discovery.ApiListDiscoveryClient;
 import org.wso2.apk.enforcer.discovery.ApplicationDiscoveryClient;
@@ -148,10 +148,10 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
         ApplicationKeyMappingDiscoveryClient.getInstance().watchApplicationKeyMappings();
     }
 
-    public void addSubscriptions(List<org.wso2.choreo.connect.discovery.subscription.Subscription> subscriptionList) {
+    public void addSubscriptions(List<org.wso2.apk.enforcer.discovery.subscription.Subscription> subscriptionList) {
         Map<String, Subscription> newSubscriptionMap = new ConcurrentHashMap<>();
 
-        for (org.wso2.choreo.connect.discovery.subscription.Subscription subscription : subscriptionList) {
+        for (org.wso2.apk.enforcer.discovery.subscription.Subscription subscription : subscriptionList) {
             Subscription newSubscription = new Subscription();
             newSubscription.setSubscriptionId(subscription.getSubscriptionUUID());
             newSubscription.setPolicyId(subscription.getPolicyId());
@@ -170,10 +170,10 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
     }
 
 
-    public void addApplications(List<org.wso2.choreo.connect.discovery.subscription.Application> applicationList) {
+    public void addApplications(List<org.wso2.apk.enforcer.discovery.subscription.Application> applicationList) {
         Map<String, Application> newApplicationMap = new ConcurrentHashMap<>();
 
-        for (org.wso2.choreo.connect.discovery.subscription.Application application : applicationList) {
+        for (org.wso2.apk.enforcer.discovery.subscription.Application application : applicationList) {
             Application newApplication = new Application();
             newApplication.setId(application.getId());
             newApplication.setName(application.getName());
@@ -216,10 +216,10 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
     }
 
     public void addApplicationPolicies(
-            List<org.wso2.choreo.connect.discovery.subscription.ApplicationPolicy> applicationPolicyList) {
+            List<org.wso2.apk.enforcer.discovery.subscription.ApplicationPolicy> applicationPolicyList) {
         Map<String, ApplicationPolicy> newAppPolicyMap = new ConcurrentHashMap<>();
 
-        for (org.wso2.choreo.connect.discovery.subscription.ApplicationPolicy applicationPolicy :
+        for (org.wso2.apk.enforcer.discovery.subscription.ApplicationPolicy applicationPolicy :
                 applicationPolicyList) {
             ApplicationPolicy newApplicationPolicy = new ApplicationPolicy();
             newApplicationPolicy.setId(applicationPolicy.getId());
@@ -236,10 +236,10 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
     }
 
     public void addSubscriptionPolicies(
-            List<org.wso2.choreo.connect.discovery.subscription.SubscriptionPolicy> subscriptionPolicyList) {
+            List<org.wso2.apk.enforcer.discovery.subscription.SubscriptionPolicy> subscriptionPolicyList) {
         Map<String, SubscriptionPolicy> newSubscriptionPolicyMap = new ConcurrentHashMap<>();
 
-        for (org.wso2.choreo.connect.discovery.subscription.SubscriptionPolicy subscriptionPolicy :
+        for (org.wso2.apk.enforcer.discovery.subscription.SubscriptionPolicy subscriptionPolicy :
                 subscriptionPolicyList) {
             SubscriptionPolicy newSubscriptionPolicy = new SubscriptionPolicy();
             newSubscriptionPolicy.setId(subscriptionPolicy.getId());
@@ -261,11 +261,11 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
     }
 
     public void addApplicationKeyMappings(
-            List<org.wso2.choreo.connect.discovery.subscription.ApplicationKeyMapping> applicationKeyMappingList) {
+            List<org.wso2.apk.enforcer.discovery.subscription.ApplicationKeyMapping> applicationKeyMappingList) {
         Map<ApplicationKeyMappingCacheKey, ApplicationKeyMapping> newApplicationKeyMappingMap =
                 new ConcurrentHashMap<>();
 
-        for (org.wso2.choreo.connect.discovery.subscription.ApplicationKeyMapping applicationKeyMapping :
+        for (org.wso2.apk.enforcer.discovery.subscription.ApplicationKeyMapping applicationKeyMapping :
                 applicationKeyMappingList) {
             ApplicationKeyMapping mapping = new ApplicationKeyMapping();
             mapping.setApplicationId(applicationKeyMapping.getApplicationId());

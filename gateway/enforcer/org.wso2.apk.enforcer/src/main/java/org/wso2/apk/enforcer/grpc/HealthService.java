@@ -3,9 +3,9 @@ package org.wso2.apk.enforcer.grpc;
 import io.grpc.stub.StreamObserver;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.wso2.choreo.connect.discovery.service.health.HealthCheckRequest;
-import org.wso2.choreo.connect.discovery.service.health.HealthCheckResponse;
-import org.wso2.choreo.connect.discovery.service.health.HealthGrpc;
+import org.wso2.apk.enforcer.discovery.service.health.HealthCheckRequest;
+import org.wso2.apk.enforcer.discovery.service.health.HealthCheckResponse;
+import org.wso2.apk.enforcer.discovery.service.health.HealthGrpc;
 
 /**
  * This is the gRPC server written to serve the health state of enforcer.

@@ -18,7 +18,7 @@
 
 package org.wso2.apk.enforcer.subscription;
 
-import org.wso2.choreo.connect.discovery.subscription.APIs;
+import org.wso2.apk.enforcer.discovery.subscription.APIs;
 import org.wso2.apk.enforcer.models.API;
 import org.wso2.apk.enforcer.models.ApiPolicy;
 import org.wso2.apk.enforcer.models.Application;
@@ -92,20 +92,20 @@ public interface SubscriptionDataStore {
      */
     ApplicationPolicy getApplicationPolicyByName(String policyName);
 
-    void addSubscriptions(List<org.wso2.choreo.connect.discovery.subscription.Subscription> subscriptionList);
+    void addSubscriptions(List<org.wso2.apk.enforcer.discovery.subscription.Subscription> subscriptionList);
 
-    void addApplications(List<org.wso2.choreo.connect.discovery.subscription.Application> applicationList);
+    void addApplications(List<org.wso2.apk.enforcer.discovery.subscription.Application> applicationList);
 
     void addApis(List<APIs> apisList);
 
     void addApplicationPolicies(
-            List<org.wso2.choreo.connect.discovery.subscription.ApplicationPolicy> applicationPolicyList);
+            List<org.wso2.apk.enforcer.discovery.subscription.ApplicationPolicy> applicationPolicyList);
 
     void addSubscriptionPolicies(
-            List<org.wso2.choreo.connect.discovery.subscription.SubscriptionPolicy> subscriptionPolicyList);
+            List<org.wso2.apk.enforcer.discovery.subscription.SubscriptionPolicy> subscriptionPolicyList);
 
     void addApplicationKeyMappings(
-            List<org.wso2.choreo.connect.discovery.subscription.ApplicationKeyMapping> applicationKeyMappingList);
+            List<org.wso2.apk.enforcer.discovery.subscription.ApplicationKeyMapping> applicationKeyMappingList);
 
     void addOrUpdateApplication(Application application);
 

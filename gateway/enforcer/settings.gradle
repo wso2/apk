@@ -18,7 +18,6 @@
 rootProject.name = 'enforcer-parent'
  include(':org.wso2.apk.enforcer')
  include(':org.wso2.apk.enforcer.commons')
- include(':org.wso2.choreo.connect.discovery')
  include(':resources')
 
 dependencyResolutionManagement {

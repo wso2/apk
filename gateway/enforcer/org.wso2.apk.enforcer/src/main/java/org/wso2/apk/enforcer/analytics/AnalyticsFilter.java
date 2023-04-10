@@ -27,7 +27,7 @@ import org.apache.logging.log4j.ThreadContext;
 import org.wso2.apk.enforcer.commons.analytics.collectors.AnalyticsCustomDataProvider;
 import org.wso2.apk.enforcer.commons.analytics.collectors.impl.GenericRequestDataCollector;
 import org.wso2.apk.enforcer.commons.analytics.exceptions.AnalyticsException;
-import org.wso2.choreo.connect.discovery.service.websocket.WebSocketFrameRequest;
+import org.wso2.apk.enforcer.discovery.service.websocket.WebSocketFrameRequest;
 import org.wso2.apk.enforcer.commons.logging.ErrorDetails;
 import org.wso2.apk.enforcer.commons.logging.LoggingConstants;
 import org.wso2.apk.enforcer.commons.model.AuthenticationContext;
