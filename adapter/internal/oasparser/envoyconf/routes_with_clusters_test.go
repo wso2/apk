@@ -40,10 +40,16 @@ func TestCreateRoutesWithClustersWithExactAndRegularExpressionRules(t *testing.T
 			Name:      "test-api-2",
 		},
 		Spec: v1alpha1.APISpec{
-			APIDisplayName:    "test-api-2",
-			APIVersion:        "2.0.0",
-			Context:           "/test-api/2.0.0",
-			ProdHTTPRouteRefs: []string{"test-api-2-prod-http-route"},
+			APIDisplayName: "test-api-2",
+			APIVersion:     "2.0.0",
+			Context:        "/test-api/2.0.0",
+			Production: []v1alpha1.EnvConfig{
+				{
+					HTTPRouteRefs: []string{
+						"test-api-2-prod-http-route",
+					},
+				},
+			},
 		},
 	}
 	apiState.APIDefinition = &apiDefinition
@@ -183,10 +189,16 @@ func TestCreateRoutesWithClustersWithMultiplePathPrefixRules(t *testing.T) {
 			Name:      "test-api-1",
 		},
 		Spec: v1alpha1.APISpec{
-			APIDisplayName:    "test-api",
-			APIVersion:        "1.0.0",
-			Context:           "/test-api/1.0.0",
-			ProdHTTPRouteRefs: []string{"test-api-1-prod-http-route"},
+			APIDisplayName: "test-api",
+			APIVersion:     "1.0.0",
+			Context:        "/test-api/1.0.0",
+			Production: []v1alpha1.EnvConfig{
+				{
+					HTTPRouteRefs: []string{
+						"test-api-1-prod-http-route",
+					},
+				},
+			},
 		},
 	}
 	apiState.APIDefinition = &apiDefinition
@@ -348,10 +360,16 @@ func TestCreateRoutesWithClustersWithBackendTLSConfigs(t *testing.T) {
 			Name:      "test-api-3",
 		},
 		Spec: v1alpha1.APISpec{
-			APIDisplayName:    "test-api-3",
-			APIVersion:        "1.0.0",
-			Context:           "/test-api-3/1.0.0",
-			ProdHTTPRouteRefs: []string{"test-api-3-prod-http-route"},
+			APIDisplayName: "test-api-3",
+			APIVersion:     "1.0.0",
+			Context:        "/test-api-3/1.0.0",
+			Production: []v1alpha1.EnvConfig{
+				{
+					HTTPRouteRefs: []string{
+						"test-api-3-prod-http-route",
+					},
+				},
+			},
 		},
 	}
 	apiState.APIDefinition = &apiDefinition
@@ -661,10 +679,16 @@ func TestCreateRoutesWithClustersDifferentBackendRefs(t *testing.T) {
 			Name:      "test-api-different-backendrefs",
 		},
 		Spec: v1alpha1.APISpec{
-			APIDisplayName:    "test-api-different-backendrefs",
-			APIVersion:        "1.0.0",
-			Context:           "/test-api-different-backendrefs/1.0.0",
-			ProdHTTPRouteRefs: []string{"test-api-different-backendrefs-prod-http-route"},
+			APIDisplayName: "test-api-different-backendrefs",
+			APIVersion:     "1.0.0",
+			Context:        "/test-api-different-backendrefs/1.0.0",
+			Production: []v1alpha1.EnvConfig{
+				{
+					HTTPRouteRefs: []string{
+						"test-api-different-backendrefs-prod-http-route",
+					},
+				},
+			},
 		},
 	}
 	apiState.APIDefinition = &apiDefinition
@@ -769,10 +793,16 @@ func TestCreateRoutesWithClustersSameBackendRefs(t *testing.T) {
 			Name:      "test-api-same-backendrefs",
 		},
 		Spec: v1alpha1.APISpec{
-			APIDisplayName:    "test-api-same-backendrefs",
-			APIVersion:        "1.0.0",
-			Context:           "/test-api-same-backendrefs/1.0.0",
-			ProdHTTPRouteRefs: []string{"test-api-same-backendrefs-prod-http-route"},
+			APIDisplayName: "test-api-same-backendrefs",
+			APIVersion:     "1.0.0",
+			Context:        "/test-api-same-backendrefs/1.0.0",
+			Production: []v1alpha1.EnvConfig{
+				{
+					HTTPRouteRefs: []string{
+						"test-api-same-backendrefs-prod-http-route",
+					},
+				},
+			},
 		},
 	}
 	apiState.APIDefinition = &apiDefinition

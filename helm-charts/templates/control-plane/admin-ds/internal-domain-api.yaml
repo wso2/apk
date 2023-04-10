@@ -28,7 +28,8 @@ spec:
   apiVersion: "v1"
   context: "/api/am/internal/v1"
   organization: "carbon.super"
-  prodHTTPRouteRefs:
-    - {{ template "apk-helm.resource.prefix" . }}-internal-ds-httproute
+  production:
+    - httpRouteRefs:
+      - {{ template "apk-helm.resource.prefix" . }}-internal-ds-httproute
   systemAPI: true
 {{- end -}}

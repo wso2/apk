@@ -24,6 +24,7 @@ import (
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/pkg/logging"
+	corev1 "k8s.io/api/core/v1"
 	k8error "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -101,6 +102,7 @@ func NewGatewayController(mgr manager.Manager, operatorDataStore *synchronizer.O
 func (gatewayReconciler *GatewayReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	// Check whether the Gateway CR exist, if not consider as a DELETE event.
 	var gatewayDef gwapiv1b1.Gateway
+	resolvedListenerCerts := make(map[string]map[string][]byte)
 	if err := gatewayReconciler.client.Get(ctx, req.NamespacedName, &gatewayDef); err != nil {
 		gatewayState, found := gatewayReconciler.ods.GetCachedGateway(req.NamespacedName)
 		if found && k8error.IsNotFound(err) {
@@ -113,18 +115,41 @@ func (gatewayReconciler *GatewayReconciler) Reconcile(ctx context.Context, req c
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2619, req.NamespacedName.String(), err))
 		return ctrl.Result{}, nil
 	}
+	namespace := gwapiv1b1.Namespace(gatewayDef.Namespace)
+	// Retireve listener Certificates
+	for _, listener := range gatewayDef.Spec.Listeners {
+		data, err := gatewayReconciler.resolveListenerSecretRefs(ctx, &listener.TLS.CertificateRefs[0], string(namespace))
+		if err != nil {
+			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2612, err))
+			return ctrl.Result{}, err
+		}
+		resolvedListenerCerts[string(listener.Name)] = data
+	}
+
 	var gwCondition []metav1.Condition = gatewayDef.Status.Conditions
 
 	if gwCondition[0].Type != "Accepted" {
-		gatewayState := gatewayReconciler.ods.AddGatewayState(gatewayDef)
+		gatewayState := gatewayReconciler.ods.AddGatewayState(gatewayDef, resolvedListenerCerts)
 		*gatewayReconciler.ch <- synchronizer.GatewayEvent{EventType: constants.Create, Event: gatewayState}
 		gatewayReconciler.handleGatewayStatus(req.NamespacedName, constants.DeployedState, []string{})
 	} else if cachedGateway, events, updated :=
-		gatewayReconciler.ods.UpdateGatewayState(&gatewayDef); updated {
+		gatewayReconciler.ods.UpdateGatewayState(&gatewayDef, resolvedListenerCerts); updated {
 		*gatewayReconciler.ch <- synchronizer.GatewayEvent{EventType: constants.Update, Event: cachedGateway}
 		gatewayReconciler.handleGatewayStatus(req.NamespacedName, constants.UpdatedState, events)
 	}
 	return ctrl.Result{}, nil
+}
+
+// resolveListenerSecretRefs resolves the certificate secret references in the related listeners in Gateway CR
+func (gatewayReconciler *GatewayReconciler) resolveListenerSecretRefs(ctx context.Context, secretRef *gwapiv1b1.SecretObjectReference, gatewayNamespace string) (map[string][]byte, error) {
+	var secret corev1.Secret
+	namespace := gwapiv1b1.Namespace(string(*secretRef.Namespace))
+	if err := gatewayReconciler.client.Get(ctx, types.NamespacedName{Name: string(secretRef.Name),
+		Namespace: utils.GetNamespace(&namespace, gatewayNamespace)}, &secret); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2612, secretRef.Name, string(*secretRef.Namespace), err))
+		return nil, err
+	}
+	return secret.Data, nil
 }
 
 // handleStatus updates the Gateway CR update

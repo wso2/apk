@@ -25,8 +25,9 @@ spec:
   apiVersion: v1
   context: /disable-resource-security/v1
   definitionFileRef: definition-file
-  prodHTTPRouteRefs:
-  - disable-resoruce-security-httproute
+  production:
+    - httpRouteRefs:
+      - disable-resoruce-security-httproute
   organization: wso2-org
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
