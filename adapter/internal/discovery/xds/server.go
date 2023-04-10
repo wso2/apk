@@ -38,18 +38,17 @@ import (
 
 	envoy_resource "github.com/envoyproxy/go-control-plane/pkg/resource/v3"
 	"github.com/wso2/apk/adapter/config"
-	apiModel "github.com/wso2/apk/adapter/internal/api/models"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
 	logging "github.com/wso2/apk/adapter/internal/logging"
 	oasParser "github.com/wso2/apk/adapter/internal/oasparser"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
 	"github.com/wso2/apk/adapter/internal/oasparser/envoyconf"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
+	operatorconsts "github.com/wso2/apk/adapter/internal/operator/constants"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/subscription"
 	wso2_cache "github.com/wso2/apk/adapter/pkg/discovery/protocol/cache/v3"
 	wso2_resource "github.com/wso2/apk/adapter/pkg/discovery/protocol/resource/v3"
 	eventhubTypes "github.com/wso2/apk/adapter/pkg/eventhub/types"
-	operatorconsts "github.com/wso2/apk/adapter/pkg/operator/constants"
 	"github.com/wso2/apk/adapter/pkg/utils/stringutils"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
@@ -708,44 +707,6 @@ func UpdateXdsCacheWithLock(label string, endpoints []types.Resource, clusters [
 	mutexForXdsUpdate.Lock()
 	defer mutexForXdsUpdate.Unlock()
 	return updateXdsCache(label, endpoints, clusters, routes, listeners)
-}
-
-// ListApis returns a list of objects that holds info about each API
-func ListApis(apiType string, organizationID string, limit *int64) *apiModel.APIMeta {
-	var limitValue int
-	if limit == nil {
-		limitValue = len(orgIDAPIMgwSwaggerMap[organizationID])
-	} else {
-		limitValue = int(*limit)
-	}
-	var apisArray []*apiModel.APIMetaListItem
-	i := 0
-	for apiIdentifier, mgwSwagger := range orgIDAPIMgwSwaggerMap[organizationID] {
-		if i == limitValue {
-			break
-		}
-		if apiType == "" || mgwSwagger.GetAPIType() == apiType {
-			var apiMetaListItem apiModel.APIMetaListItem
-			apiMetaListItem.APIName = mgwSwagger.GetTitle()
-			apiMetaListItem.Version = mgwSwagger.GetVersion()
-			apiMetaListItem.APIType = mgwSwagger.GetAPIType()
-			apiMetaListItem.Context = mgwSwagger.GetXWso2Basepath()
-			apiMetaListItem.GatewayEnvs = orgIDOpenAPIEnvoyMap[organizationID][apiIdentifier]
-			vhost := "ERROR"
-			if vh, err := ExtractVhostFromAPIIdentifier(apiIdentifier); err == nil {
-				vhost = vh
-			}
-			apiMetaListItem.Vhosts = []string{vhost}
-			// orgIDAPIvHostsMap[organizationID][apiIdentifier]
-			apisArray = append(apisArray, &apiMetaListItem)
-			i++
-		}
-	}
-	var apiMetaObject apiModel.APIMeta
-	apiMetaObject.Total = int64(len(orgIDAPIMgwSwaggerMap[organizationID]))
-	apiMetaObject.Count = int64(len(apisArray))
-	apiMetaObject.List = apisArray
-	return &apiMetaObject
 }
 
 // GenerateIdentifierForAPI generates an identifier unique to the API
