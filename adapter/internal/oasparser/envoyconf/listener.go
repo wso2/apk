@@ -71,9 +71,9 @@ func CreateRoutesConfigForRds(vHosts []*routev3.VirtualHost, httpListeners strin
 // The relevant private keys and certificates (for securedListener) are fetched from the filepath
 // mentioned in the adapter configuration. These certificate, key values are added
 // as inline records (base64 encoded).
-func CreateListenerByGateway(gateway *gwapiv1b1.Gateway, resolvedListenerCerts map[string]map[string][]byte) *listenerv3.Listener {
+func CreateListenerByGateway(gateway *gwapiv1b1.Gateway, resolvedListenerCerts map[string]map[string][]byte, gwLuaScript string) *listenerv3.Listener {
 	conf := config.ReadConfigs()
-	httpFilters := getHTTPFilters()
+	var httpFilters []*hcmv3.HttpFilter
 	upgradeFilters := getUpgradeFilters()
 	accessLogs := getAccessLogs()
 	var listeners *listenerv3.Listener
@@ -83,6 +83,15 @@ func CreateListenerByGateway(gateway *gwapiv1b1.Gateway, resolvedListenerCerts m
 	var filterChains []*listenerv3.FilterChain
 
 	for _, listenerObj := range gateway.Spec.Listeners {
+		if listenerObj.Name == "gatewaylistener" {
+			httpFilters = getHTTPFilters(gwLuaScript)
+		} else {
+			httpFilters = getHTTPFilters(`
+function envoy_on_request(request_handle)
+end
+function envoy_on_response(response_handle)
+end`)
+		}
 		listenerPort = uint32(listenerObj.Port)
 		listenerProtocol = string(listenerObj.Protocol)
 		listenerName = defaultHTTPSListenerName

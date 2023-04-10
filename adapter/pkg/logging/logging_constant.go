@@ -76,6 +76,20 @@ const (
 	error3002 = 3002
 )
 
+// Error codes gateway controller (3100-3199)
+const (
+	error3100 = 3100
+	error3101 = 3101
+	error3102 = 3102
+	error3103 = 3103
+	error3104 = 3104
+	error3105 = 3105
+	error3106 = 3106
+	error3107 = 3107
+	error3108 = 3108
+	error3109 = 3109
+)
+
 // Mapper used to keep error details for error logs
 var Mapper = map[int]ErrorDetails{
 	error2600: {
@@ -328,5 +342,55 @@ var Mapper = map[int]ErrorDetails{
 		ErrorCode: error3002,
 		Message:   "Error creating ssh public key: %s",
 		Severity:  CRITICAL,
+	},
+	error3100: {
+		ErrorCode: error3100,
+		Message:   "Error watching Gateway resources: %v",
+		Severity:  BLOCKER,
+	},
+	error3101: {
+		ErrorCode: error3101,
+		Message:   "Error watching APIPolicy resources: %v",
+		Severity:  BLOCKER,
+	},
+	error3102: {
+		ErrorCode: error3102,
+		Message:   "Error watching Backend resources: %v",
+		Severity:  BLOCKER,
+	},
+	error3103: {
+		ErrorCode: error3103,
+		Message:   "Error watching ConfigMap resources: %v",
+		Severity:  BLOCKER,
+	},
+	error3104: {
+		ErrorCode: error3104,
+		Message:   "Error watching Secret resources: %v",
+		Severity:  BLOCKER,
+	},
+	error3105: {
+		ErrorCode: error3105,
+		Message:   "Error resolving listener certificates: %v",
+		Severity:  BLOCKER,
+	},
+	error3106: {
+		ErrorCode: error3106,
+		Message:   "Unable to find associated Backends for Secret: %s",
+		Severity:  CRITICAL,
+	},
+	error3107: {
+		ErrorCode: error3107,
+		Message:   "Unexpected object type, bypassing reconciliation: %v",
+		Severity:  TRIVIAL,
+	},
+	error3108: {
+		ErrorCode: error3108,
+		Message:   "Unable to find associated Backends for ConfigMap: %s",
+		Severity:  CRITICAL,
+	},
+	error3109: {
+		ErrorCode: error3109,
+		Message:   "Error while updating Gateway status %v",
+		Severity:  BLOCKER,
 	},
 }

@@ -32,4 +32,16 @@ public class InterceptorConstants {
         public static final String TOKEN = "token";
         public static final String KEY_TYPE = "keyType"; // PRODUCTION or SANDBOX
     }
+
+    /**
+     * Data names for api metadata fileds
+     */
+    public static class APIMetadataFields {
+        public static final String API_BASE_PATH = "basePath";
+        public static final String API_NAME = "apiName";
+        public static final String API_VERSION = "apiVersion";
+        public static final String API_VHOST = "vhost";
+        public static final String API_ORGANIZATION_ID = "organizationId";
+
+    }
 }

@@ -223,7 +223,7 @@ func (swagger *MgwSwagger) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPRoute, ht
 			}
 			resolvedBackend, ok := httpRouteParams.BackendMapping[backendName]
 			if ok {
-				endPoints = append(endPoints, getEndpoints(backendName, httpRouteParams.BackendMapping)...)
+				endPoints = append(endPoints, GetEndpoints(backendName, httpRouteParams.BackendMapping)...)
 				for _, security := range resolvedBackend.Security {
 					switch security.Type {
 					case "Basic":
@@ -282,7 +282,7 @@ func addOperationLevelInterceptors(policies *OperationPolicies, apiPolicy *dpv1a
 				Name:      requestInterceptor.BackendRef.Name,
 				Namespace: utils.GetNamespace((*gwapiv1b1.Namespace)(&requestInterceptor.BackendRef.Namespace), apiPolicy.Namespace),
 			}
-			endpoints := getEndpoints(backendName, backendMapping)
+			endpoints := GetEndpoints(backendName, backendMapping)
 			if len(endpoints) > 0 {
 				policyParameters[constants.InterceptorEndpoints] = endpoints
 				policyParameters[constants.InterceptorServiceIncludes] = requestInterceptor.Includes
@@ -300,7 +300,7 @@ func addOperationLevelInterceptors(policies *OperationPolicies, apiPolicy *dpv1a
 				Name:      responseInterceptor.BackendRef.Name,
 				Namespace: utils.GetNamespace((*gwapiv1b1.Namespace)(&responseInterceptor.BackendRef.Namespace), apiPolicy.Namespace),
 			}
-			endpoints := getEndpoints(backendName, backendMapping)
+			endpoints := GetEndpoints(backendName, backendMapping)
 			if len(endpoints) > 0 {
 				policyParameters[constants.InterceptorEndpoints] = endpoints
 				policyParameters[constants.InterceptorServiceIncludes] = responseInterceptor.Includes
@@ -314,8 +314,8 @@ func addOperationLevelInterceptors(policies *OperationPolicies, apiPolicy *dpv1a
 	}
 }
 
-// getEndpoints creates endpoints using resolved backends in backendMapping
-func getEndpoints(backendName types.NamespacedName, backendMapping dpv1alpha1.BackendMapping) []Endpoint {
+// GetEndpoints creates endpoints using resolved backends in backendMapping
+func GetEndpoints(backendName types.NamespacedName, backendMapping dpv1alpha1.BackendMapping) []Endpoint {
 	endpoints := []Endpoint{}
 	backend, ok := backendMapping[backendName]
 	if ok && backend != nil {

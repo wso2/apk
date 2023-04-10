@@ -24,6 +24,7 @@ import (
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/pkg/logging"
+	"golang.org/x/exp/maps"
 	corev1 "k8s.io/api/core/v1"
 	k8error "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -48,7 +49,8 @@ import (
 )
 
 const (
-	gatewayIndex = "gatewayIndex"
+	gatewayRateLimitPolicyIndex = "gatewayRateLimitPolicyIndex"
+	gatewayAPIPolicyIndex       = "gatewayAPIPolicyIndex"
 )
 
 // GatewayReconciler reconciles a Gateway object
@@ -76,8 +78,8 @@ func NewGatewayController(mgr manager.Manager, operatorDataStore *synchronizer.O
 		return err
 	}
 
-	conf := config.ReadConfigs()
 	ctx := context.Background()
+	conf := config.ReadConfigs()
 	predicates := []predicate.Predicate{predicate.NewPredicateFuncs(utils.FilterByNamespaces(conf.Adapter.Operator.Namespaces))}
 
 	if err := addGatewayIndexes(ctx, mgr); err != nil {
@@ -87,18 +89,37 @@ func NewGatewayController(mgr manager.Manager, operatorDataStore *synchronizer.O
 
 	if err := c.Watch(&source.Kind{Type: &gwapiv1b1.Gateway{}}, &handler.EnqueueRequestForObject{},
 		predicates...); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3100, err))
+		return err
+	}
+
+	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.RateLimitPolicy{}},
+		handler.EnqueueRequestsFromMapFunc(r.handleCustomRateLimitPolicies), predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2611, err))
 		return err
 	}
 
-	predicates = append(predicates, predicate.NewPredicateFuncs(func(object k8client.Object) bool {
-		rlPolicy := object.(*dpv1alpha1.RateLimitPolicy)
-		return rlPolicy.Spec.TargetRef.Kind == constants.KindGateway
-	}))
+	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.APIPolicy{}}, handler.EnqueueRequestsFromMapFunc(r.getGatewaysForAPIPolicy),
+		predicates...); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3101, err))
+		return err
+	}
 
-	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.RateLimitPolicy{}}, 
-		handler.EnqueueRequestsFromMapFunc(r.handleCustomRateLimitPolicies), predicates...); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2611, err))
+	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.Backend{}}, handler.EnqueueRequestsFromMapFunc(r.getGatewaysForBackend),
+		predicates...); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3102, err))
+		return err
+	}
+
+	if err := c.Watch(&source.Kind{Type: &corev1.ConfigMap{}}, handler.EnqueueRequestsFromMapFunc(r.getGatewaysForConfigMap),
+		predicates...); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3103, err))
+		return err
+	}
+
+	if err := c.Watch(&source.Kind{Type: &corev1.Secret{}}, handler.EnqueueRequestsFromMapFunc(r.getGatewaysForSecret),
+		predicates...); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3104, err))
 		return err
 	}
 
@@ -121,8 +142,8 @@ func NewGatewayController(mgr manager.Manager, operatorDataStore *synchronizer.O
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.13.0/pkg/reconcile
 func (gatewayReconciler *GatewayReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	// Check whether the Gateway CR exist, if not consider as a DELETE event.
+	loggers.LoggerAPKOperator.Infof("Reconciling gateway...")
 	var gatewayDef gwapiv1b1.Gateway
-	resolvedListenerCerts := make(map[string]map[string][]byte)
 	if err := gatewayReconciler.client.Get(ctx, req.NamespacedName, &gatewayDef); err != nil {
 		gatewayState, found := gatewayReconciler.ods.GetCachedGateway(req.NamespacedName)
 		if found && k8error.IsNotFound(err) {
@@ -135,28 +156,20 @@ func (gatewayReconciler *GatewayReconciler) Reconcile(ctx context.Context, req c
 		loggers.LoggerAPKOperator.Warnf("Gateway CR related to the reconcile request with key: %s returned error. Assuming Gateway is already deleted, hence ignoring the error : %v", err)
 		return ctrl.Result{}, nil
 	}
-	namespace := gwapiv1b1.Namespace(gatewayDef.Namespace)
-	// Retireve listener Certificates
-	for _, listener := range gatewayDef.Spec.Listeners {
-		data, err := gatewayReconciler.resolveListenerSecretRefs(ctx, &listener.TLS.CertificateRefs[0], string(namespace))
-		if err != nil {
-			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2612, err))
-			return ctrl.Result{}, err
-		}
-		resolvedListenerCerts[string(listener.Name)] = data
+	var gwCondition []metav1.Condition = gatewayDef.Status.Conditions
+
+	gatewayStateData, err := gatewayReconciler.resolveGatewayState(ctx, gatewayDef)
+	if err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2620, req.NamespacedName.String(), err))
+		return ctrl.Result{}, err
 	}
 
-	var gwCondition []metav1.Condition = gatewayDef.Status.Conditions
-	customRateLimitPolicies, err := gatewayReconciler.getCustomRateLimitPoliciesForGateway(utils.NamespacedName(&gatewayDef))
-	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2650, err))
-	}
 	if gwCondition[0].Type != "Accepted" {
-		gatewayState := gatewayReconciler.ods.AddGatewayState(gatewayDef, resolvedListenerCerts, customRateLimitPolicies)
+		gatewayState := gatewayReconciler.ods.AddGatewayState(gatewayDef, gatewayStateData)
 		*gatewayReconciler.ch <- synchronizer.GatewayEvent{EventType: constants.Create, Event: gatewayState}
 		gatewayReconciler.handleGatewayStatus(req.NamespacedName, constants.DeployedState, []string{})
 	} else if cachedGateway, events, updated :=
-		gatewayReconciler.ods.UpdateGatewayState(&gatewayDef, resolvedListenerCerts, customRateLimitPolicies); updated {
+		gatewayReconciler.ods.UpdateGatewayState(&gatewayDef, gatewayStateData); updated {
 		*gatewayReconciler.ch <- synchronizer.GatewayEvent{EventType: constants.Update, Event: cachedGateway}
 		gatewayReconciler.handleGatewayStatus(req.NamespacedName, constants.UpdatedState, events)
 	}
@@ -173,6 +186,156 @@ func (gatewayReconciler *GatewayReconciler) resolveListenerSecretRefs(ctx contex
 		return nil, err
 	}
 	return secret.Data, nil
+}
+
+// resolveGatewayState resolves the GatewayState struct using gwapiv1b1.Gateway and resource indexes
+func (gatewayReconciler *GatewayReconciler) resolveGatewayState(ctx context.Context,
+	gateway gwapiv1b1.Gateway) (*synchronizer.GatewayStateData, error) {
+	gatewayState := &synchronizer.GatewayStateData{}
+	var err error
+	resolvedListenerCerts := make(map[string]map[string][]byte)
+	namespace := gwapiv1b1.Namespace(gateway.Namespace)
+	// Retireve listener Certificates
+	for _, listener := range gateway.Spec.Listeners {
+		data, err := gatewayReconciler.resolveListenerSecretRefs(ctx, &listener.TLS.CertificateRefs[0], string(namespace))
+		if err != nil {
+			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3105, err))
+			return nil, err
+		}
+		resolvedListenerCerts[string(listener.Name)] = data
+	}
+	gatewayState.GatewayResolvedListenerCerts = resolvedListenerCerts
+	if gatewayState.GatewayAPIPolicies, err = gatewayReconciler.getAPIPoliciesForGateway(ctx, &gateway); err != nil {
+		return nil, fmt.Errorf("error while getting gateway apipolicy for gateway: %s, %s", utils.NamespacedName(&gateway).String(), err.Error())
+	}
+	customRateLimitPolicies, err := gatewayReconciler.getCustomRateLimitPoliciesForGateway(utils.NamespacedName(&gateway))
+	if err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2650, err))
+	}
+	gatewayState.GatewayCustomRateLimitPolicies = customRateLimitPolicies
+	gatewayState.GatewayBackendMapping = gatewayReconciler.getResolvedBackendsMapping(ctx, gatewayState)
+	return gatewayState, nil
+}
+
+func (gatewayReconciler *GatewayReconciler) getAPIPoliciesForGateway(ctx context.Context,
+	gateway *gwapiv1b1.Gateway) (map[string]dpv1alpha1.APIPolicy, error) {
+	apiPolicies := make(map[string]dpv1alpha1.APIPolicy)
+	apiPolicyList := &dpv1alpha1.APIPolicyList{}
+	if err := gatewayReconciler.client.List(ctx, apiPolicyList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(gatewayAPIPolicyIndex, utils.NamespacedName(gateway).String()),
+	}); err != nil {
+		return nil, err
+	}
+	for _, apipolicy := range apiPolicyList.Items {
+		apiPolicies[utils.NamespacedName(&apipolicy).String()] = apipolicy
+	}
+	return apiPolicies, nil
+}
+
+func (gatewayReconciler *GatewayReconciler) getResolvedBackendsMapping(ctx context.Context,
+	gatewayStateData *synchronizer.GatewayStateData) dpv1alpha1.BackendMapping {
+	backendMapping := make(dpv1alpha1.BackendMapping)
+
+	if gatewayStateData.GatewayAPIPolicies != nil {
+		allAPIPolicies := maps.Values(gatewayStateData.GatewayAPIPolicies)
+		for _, apiPolicy := range allAPIPolicies {
+			if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.RequestInterceptor != nil {
+				utils.ResolveAndAddBackendToMapping(ctx, gatewayReconciler.client, backendMapping,
+					apiPolicy.Spec.Default.RequestInterceptor.BackendRef, apiPolicy.Namespace)
+			}
+			if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.RequestInterceptor != nil {
+				utils.ResolveAndAddBackendToMapping(ctx, gatewayReconciler.client, backendMapping,
+					apiPolicy.Spec.Override.RequestInterceptor.BackendRef, apiPolicy.Namespace)
+			}
+			if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.ResponseInterceptor != nil {
+				utils.ResolveAndAddBackendToMapping(ctx, gatewayReconciler.client, backendMapping,
+					apiPolicy.Spec.Default.ResponseInterceptor.BackendRef, apiPolicy.Namespace)
+			}
+			if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.ResponseInterceptor != nil {
+				utils.ResolveAndAddBackendToMapping(ctx, gatewayReconciler.client, backendMapping,
+					apiPolicy.Spec.Override.ResponseInterceptor.BackendRef, apiPolicy.Namespace)
+			}
+		}
+	}
+
+	return backendMapping
+}
+
+// getGatewaysForBackend triggers the Gateway controller reconcile method based on the changes detected
+// in backend resources.
+func (gatewayReconciler *GatewayReconciler) getGatewaysForBackend(obj k8client.Object) []reconcile.Request {
+	ctx := context.Background()
+	backend, ok := obj.(*dpv1alpha1.Backend)
+	if !ok {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2624, backend))
+		return []reconcile.Request{}
+	}
+
+	requests := []reconcile.Request{}
+
+	apiPolicyList := &dpv1alpha1.APIPolicyList{}
+	if err := gatewayReconciler.client.List(ctx, apiPolicyList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(backendAPIPolicyIndex, utils.NamespacedName(backend).String()),
+	}); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2649, utils.NamespacedName(backend).String()))
+		return []reconcile.Request{}
+	}
+
+	for _, apiPolicy := range apiPolicyList.Items {
+		requests = append(requests, gatewayReconciler.getGatewaysForAPIPolicy(&apiPolicy)...)
+	}
+
+	return requests
+}
+
+// getGatewaysForSecret triggers the Gateway controller reconcile method based on the changes detected
+// in secret resources.
+func (gatewayReconciler *GatewayReconciler) getGatewaysForSecret(obj k8client.Object) []reconcile.Request {
+	ctx := context.Background()
+	secret, ok := obj.(*corev1.Secret)
+	if !ok {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3107, secret))
+		return []reconcile.Request{}
+	}
+
+	backendList := &dpv1alpha1.BackendList{}
+	if err := gatewayReconciler.client.List(ctx, backendList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(secretBackend, utils.NamespacedName(secret).String()),
+	}); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3106, utils.NamespacedName(secret).String()))
+		return []reconcile.Request{}
+	}
+
+	requests := []reconcile.Request{}
+	for _, backend := range backendList.Items {
+		requests = append(requests, gatewayReconciler.getGatewaysForBackend(&backend)...)
+	}
+	return requests
+}
+
+// getGatewaysForConfigMap triggers the API controller reconcile method based on the changes detected
+// in configMap resources.
+func (gatewayReconciler *GatewayReconciler) getGatewaysForConfigMap(obj k8client.Object) []reconcile.Request {
+	ctx := context.Background()
+	configMap, ok := obj.(*corev1.ConfigMap)
+	if !ok {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3107, configMap))
+		return []reconcile.Request{}
+	}
+
+	backendList := &dpv1alpha1.BackendList{}
+	if err := gatewayReconciler.client.List(ctx, backendList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(configMapBackend, utils.NamespacedName(configMap).String()),
+	}); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3108, utils.NamespacedName(configMap).String()))
+		return []reconcile.Request{}
+	}
+
+	requests := []reconcile.Request{}
+	for _, backend := range backendList.Items {
+		requests = append(requests, gatewayReconciler.getGatewaysForBackend(&backend)...)
+	}
+	return requests
 }
 
 // handleStatus updates the Gateway CR update
@@ -198,7 +361,7 @@ func (gatewayReconciler *GatewayReconciler) handleGatewayStatus(gatewayKey types
 		UpdateStatus: func(obj k8client.Object) k8client.Object {
 			h, ok := obj.(*gwapiv1b1.Gateway)
 			if !ok {
-				loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2626, obj))
+				loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3109, obj))
 			}
 			hCopy := h.DeepCopy()
 			var gwCondition []metav1.Condition = hCopy.Status.Conditions
@@ -226,12 +389,16 @@ func (gatewayReconciler *GatewayReconciler) handleCustomRateLimitPolicies(obj k8
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2622, ratelimitPolicy))
 		return []reconcile.Request{}
 	}
-	return []reconcile.Request{{
-		NamespacedName: types.NamespacedName{
-			Namespace: ratelimitPolicy.Namespace,
-			Name:      string(ratelimitPolicy.Spec.TargetRef.Name),
-		},},
+	requests := []reconcile.Request{}
+	if ratelimitPolicy.Spec.TargetRef.Kind == constants.KindGateway {
+		requests = append(requests, reconcile.Request{
+			NamespacedName: types.NamespacedName{
+				Namespace: ratelimitPolicy.Namespace,
+				Name:      string(ratelimitPolicy.Spec.TargetRef.Name),
+			},
+		})
 	}
+	return requests
 }
 
 // getCustomRateLimitPoliciesForGateway returns the list of custom rate limit policies for a gateway
@@ -240,7 +407,7 @@ func (gatewayReconciler *GatewayReconciler) getCustomRateLimitPoliciesForGateway
 	var ratelimitPolicyList dpv1alpha1.RateLimitPolicyList
 	var rateLimitPolicies []*dpv1alpha1.RateLimitPolicy
 	if err := gatewayReconciler.client.List(ctx, &ratelimitPolicyList, &k8client.ListOptions{
-		FieldSelector: fields.OneTermEqualSelector(gatewayIndex, gatewayName.String()),
+		FieldSelector: fields.OneTermEqualSelector(gatewayRateLimitPolicyIndex, gatewayName.String()),
 	}); err != nil {
 		return nil, err
 	}
@@ -251,10 +418,32 @@ func (gatewayReconciler *GatewayReconciler) getCustomRateLimitPoliciesForGateway
 	return rateLimitPolicies, nil
 }
 
+// getGatewaysForAPIPolicy triggers the Gateway controller reconcile method
+// based on the changes detected from APIPolicy objects.
+func (gatewayReconciler *GatewayReconciler) getGatewaysForAPIPolicy(obj k8client.Object) []reconcile.Request {
+	apiPolicy, ok := obj.(*dpv1alpha1.APIPolicy)
+	if !ok {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2624, apiPolicy))
+		return nil
+	}
 
-// addGatewayIndexes adds the gateway indexes
-func addGatewayIndexes(ctx context.Context, mgr manager.Manager) error { 
-	return mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.RateLimitPolicy{}, gatewayIndex,
+	if !(apiPolicy.Spec.TargetRef.Kind == constants.KindGateway) {
+		return nil
+	}
+
+	return []reconcile.Request{{
+		NamespacedName: types.NamespacedName{
+			Name: string(apiPolicy.Spec.TargetRef.Name),
+			Namespace: utils.GetNamespace(
+				(*gwapiv1b1.Namespace)(apiPolicy.Spec.TargetRef.Namespace), apiPolicy.Namespace),
+		},
+	}}
+}
+
+// addGatewayIndexes adds indexers related to Gateways
+func addGatewayIndexes(ctx context.Context, mgr manager.Manager) error {
+	// Gateway to RateLimitPolicy indexer
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.RateLimitPolicy{}, gatewayRateLimitPolicyIndex,
 		func(rawObj k8client.Object) []string {
 			ratelimitPolicy := rawObj.(*dpv1alpha1.RateLimitPolicy)
 			var gateways []string
@@ -268,5 +457,24 @@ func addGatewayIndexes(ctx context.Context, mgr manager.Manager) error {
 					}.String())
 			}
 			return gateways
+		}); err != nil {
+		return err
+	}
+
+	// Gateway to APIPolicy indexer
+	err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.APIPolicy{}, gatewayAPIPolicyIndex,
+		func(rawObj k8client.Object) []string {
+			apiPolicy := rawObj.(*dpv1alpha1.APIPolicy)
+			var httpRoutes []string
+			if apiPolicy.Spec.TargetRef.Kind == constants.KindGateway {
+				httpRoutes = append(httpRoutes,
+					types.NamespacedName{
+						Namespace: utils.GetNamespace(
+							(*gwapiv1b1.Namespace)(apiPolicy.Spec.TargetRef.Namespace), apiPolicy.Namespace),
+						Name: string(apiPolicy.Spec.TargetRef.Name),
+					}.String())
+			}
+			return httpRoutes
 		})
+	return err
 }

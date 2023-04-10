@@ -18,13 +18,21 @@
 package synchronizer
 
 import (
+	clusterv3 "github.com/envoyproxy/go-control-plane/envoy/config/cluster/v3"
+	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/discovery/xds"
+	"github.com/wso2/apk/adapter/internal/interceptor"
 	"github.com/wso2/apk/adapter/internal/loggers"
+	"github.com/wso2/apk/adapter/internal/oasparser/envoyconf"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
 	"github.com/wso2/apk/adapter/pkg/logging"
+	"github.com/wso2/apk/adapter/pkg/operator/apis/dp/v1alpha1"
 	dpv1alpha1 "github.com/wso2/apk/adapter/pkg/operator/apis/dp/v1alpha1"
 	"github.com/wso2/apk/adapter/pkg/operator/constants"
+	"github.com/wso2/apk/adapter/pkg/operator/utils"
+	"golang.org/x/exp/maps"
+	"k8s.io/apimachinery/pkg/types"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
@@ -81,11 +89,22 @@ func undeployGateway(gatewayState GatewayState) error {
 func AddOrUpdateGateway(gatewayState GatewayState, state string) (string, error) {
 	gateway := gatewayState.GatewayDefinition
 	resolvedListenerCerts := gatewayState.GatewayStateData.GatewayResolvedListenerCerts
-	customRateLimitPolicies := getCustomRateLimitPolicies(gatewayState.CustomRateLimitPolicies)
+	customRateLimitPolicies := getCustomRateLimitPolicies(gatewayState.GatewayStateData.GatewayCustomRateLimitPolicies)
+	gatewayAPIPolicies := gatewayState.GatewayStateData.GatewayAPIPolicies
+	gatewayBackendMapping := gatewayState.GatewayStateData.GatewayBackendMapping
+
+	gwLuaScript, gwReqICluster, gwReqIAddresses, gwResICluster, gwResIAddresses :=
+		generateGlobalInterceptorResource(gatewayAPIPolicies, gatewayBackendMapping)
+
 	if state == constants.Create {
-		xds.GenerateGlobalClusters(gateway.Name)
+		xds.GenerateGlobalClusters(gatewayState.GatewayDefinition.Name)
 	}
-	xds.UpdateGatewayCache(gateway, resolvedListenerCerts, customRateLimitPolicies)
+
+	xds.GenerateGlobalClustersWithInterceptors(gateway.Name,
+		gwReqICluster, gwReqIAddresses,
+		gwResICluster, gwResIAddresses)
+
+	xds.UpdateGatewayCache(gateway, resolvedListenerCerts, gwLuaScript, customRateLimitPolicies)
 	listeners, clusters, routes, endpoints, apis := xds.GenerateEnvoyResoucesForGateway(gateway.Name)
 	loggers.LoggerAPKOperator.Debugf("listeners: %v", listeners)
 	loggers.LoggerAPKOperator.Debugf("clusters: %v", clusters)
@@ -96,7 +115,7 @@ func AddOrUpdateGateway(gatewayState GatewayState, state string) (string, error)
 	xds.UpdateEnforcerApis(gateway.Name, apis, "")
 	conf := config.ReadConfigs()
 	if conf.Envoy.RateLimit.Enabled {
-		xds.UpdateRateLimitXDSCacheForCustomPolicies(gateway.Name,customRateLimitPolicies)
+		xds.UpdateRateLimitXDSCacheForCustomPolicies(gateway.Name, customRateLimitPolicies)
 	}
 	return "", nil
 }
@@ -116,4 +135,113 @@ func getCustomRateLimitPolicies(customRateLimitPoliciesDef []*dpv1alpha1.RateLim
 		customRateLimitPolicies = append(customRateLimitPolicies, customRLPolicy)
 	}
 	return customRateLimitPolicies
+}
+
+func generateGlobalInterceptorResource(gatewayAPIPolicies map[string]v1alpha1.APIPolicy,
+	gatewayBackendMapping v1alpha1.BackendMapping) (string, *clusterv3.Cluster, []*corev3.Address,
+	*clusterv3.Cluster, []*corev3.Address) {
+	var gwLuaScript string
+	var gwReqICluster, gwResICluster *clusterv3.Cluster
+	var gwReqIAddresses, gwResIAddresses []*corev3.Address
+
+	if len(gatewayAPIPolicies) > 0 && len(gatewayBackendMapping) > 0 {
+		gwReqI, gwResI := createInterceptors(gatewayAPIPolicies, gatewayBackendMapping)
+		if len(gwReqI) > 0 {
+			gwReqICluster, gwReqIAddresses, _ = envoyconf.CreateLuaCluster(nil, gwReqI[string(gwapiv1b1.HTTPMethodPost)])
+		}
+		if len(gwResI) > 0 {
+			gwResICluster, gwResIAddresses, _ = envoyconf.CreateLuaCluster(nil, gwResI[string(gwapiv1b1.HTTPMethodPost)])
+		}
+		gwLuaScript = getGlobalInterceptorScript(gatewayAPIPolicies, gatewayBackendMapping)
+	}
+	return gwLuaScript, gwReqICluster, gwReqIAddresses, gwResICluster, gwResIAddresses
+}
+
+func getGlobalInterceptorScript(gatewayAPIPolicies map[string]v1alpha1.APIPolicy,
+	gatewayBackendMapping v1alpha1.BackendMapping) string {
+	iInvCtx := &interceptor.InvocationContext{
+		OrganizationID:   "",
+		BasePath:         "",
+		SupportedMethods: "",
+		APIName:          "",
+		APIVersion:       "",
+		PathTemplate:     "",
+		Vhost:            "",
+		ClusterName:      "",
+	}
+	reqI, resI := createInterceptors(gatewayAPIPolicies, gatewayBackendMapping)
+	if len(reqI) > 0 || len(resI) > 0 {
+		return envoyconf.GetInlineLuaScript(reqI, resI, iInvCtx)
+	}
+	return `
+function envoy_on_request(request_handle)
+end
+function envoy_on_response(response_handle)
+end
+`
+}
+
+func createInterceptors(gatewayAPIPolicies map[string]v1alpha1.APIPolicy,
+	gatewayBackendMapping v1alpha1.BackendMapping) (requestInterceptor map[string]model.InterceptEndpoint, responseInterceptor map[string]model.InterceptEndpoint) {
+	requestInterceptorMap := make(map[string]model.InterceptEndpoint)
+	responseInterceptorMap := make(map[string]model.InterceptEndpoint)
+
+	var apiPolicy *v1alpha1.APIPolicy
+	outputAPIPolicy := utils.TieBreaker(utils.GetPtrSlice(maps.Values(gatewayAPIPolicies)))
+	if outputAPIPolicy != nil {
+		apiPolicy = *outputAPIPolicy
+		resolvedPolicySpec := utils.SelectPolicy(&apiPolicy.Spec.Override, &apiPolicy.Spec.Default, nil, nil)
+		if resolvedPolicySpec != nil {
+			if resolvedPolicySpec.RequestInterceptor != nil {
+				reqIEp := getInterceptorEndpoint(resolvedPolicySpec.RequestInterceptor, gatewayBackendMapping, true)
+				if reqIEp != nil {
+					requestInterceptorMap[string(gwapiv1b1.HTTPMethodPost)] = *reqIEp
+					requestInterceptorMap[string(gwapiv1b1.HTTPMethodGet)] = *reqIEp
+					requestInterceptorMap[string(gwapiv1b1.HTTPMethodDelete)] = *reqIEp
+					requestInterceptorMap[string(gwapiv1b1.HTTPMethodPatch)] = *reqIEp
+					requestInterceptorMap[string(gwapiv1b1.HTTPMethodPut)] = *reqIEp
+					requestInterceptorMap[string(gwapiv1b1.HTTPMethodHead)] = *reqIEp
+					requestInterceptorMap[string(gwapiv1b1.HTTPMethodOptions)] = *reqIEp
+				}
+			}
+			if resolvedPolicySpec.ResponseInterceptor != nil {
+				resIEp := getInterceptorEndpoint(resolvedPolicySpec.ResponseInterceptor, gatewayBackendMapping, false)
+				if resIEp != nil {
+					responseInterceptorMap[string(gwapiv1b1.HTTPMethodPost)] = *resIEp
+					responseInterceptorMap[string(gwapiv1b1.HTTPMethodGet)] = *resIEp
+					responseInterceptorMap[string(gwapiv1b1.HTTPMethodDelete)] = *resIEp
+					responseInterceptorMap[string(gwapiv1b1.HTTPMethodPatch)] = *resIEp
+					responseInterceptorMap[string(gwapiv1b1.HTTPMethodPut)] = *resIEp
+					responseInterceptorMap[string(gwapiv1b1.HTTPMethodHead)] = *resIEp
+					responseInterceptorMap[string(gwapiv1b1.HTTPMethodOptions)] = *resIEp
+				}
+			}
+		}
+	}
+	return requestInterceptorMap, responseInterceptorMap
+}
+
+func getInterceptorEndpoint(interceptor *v1alpha1.InterceptorConfig, gatewayBackendMapping v1alpha1.BackendMapping, isReq bool) *model.InterceptEndpoint {
+	endpoints := model.GetEndpoints(types.NamespacedName{Namespace: interceptor.BackendRef.Namespace, Name: interceptor.BackendRef.Name},
+		gatewayBackendMapping)
+	var clusterName string
+	if isReq {
+		clusterName = constants.GlobalRequestInterceptorClusterName
+	} else {
+		clusterName = constants.GlobalResponseInterceptorClusterName
+	}
+	if len(endpoints) > 0 {
+		conf := config.ReadConfigs()
+		clusterTimeoutV := conf.Envoy.ClusterTimeoutInSeconds
+		requestTimeoutV := conf.Envoy.ClusterTimeoutInSeconds
+		return &model.InterceptEndpoint{
+			Enable:          true,
+			ClusterName:     clusterName,
+			EndpointCluster: model.EndpointCluster{Endpoints: endpoints},
+			ClusterTimeout:  clusterTimeoutV,
+			RequestTimeout:  requestTimeoutV,
+			Includes:        model.GenerateInterceptorIncludes(interceptor.Includes),
+		}
+	}
+	return nil
 }

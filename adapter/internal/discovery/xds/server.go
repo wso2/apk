@@ -81,10 +81,10 @@ var (
 	orgIDvHostBasepathMap       map[string]map[string]string               // organizationID -> Vhost:basepath -> Vhost:API_UUID
 
 	// Envoy Label as map key
-	envoyListenerConfigMap     map[string]*listenerv3.Listener        // GW-Label -> Listener Configuration map
-	envoyRouteConfigMap        map[string]*routev3.RouteConfiguration // GW-Label -> Routes Configuration map
-	envoyClusterConfigMap      map[string][]*clusterv3.Cluster          // GW-Label -> Global Cluster Configuration map
-	envoyEndpointConfigMap     map[string][]*corev3.Address             // GW-Label -> Global Endpoint Configuration map
+	envoyListenerConfigMap     map[string]*listenerv3.Listener           // GW-Label -> Listener Configuration map
+	envoyRouteConfigMap        map[string]*routev3.RouteConfiguration    // GW-Label -> Routes Configuration map
+	envoyClusterConfigMap      map[string][]*clusterv3.Cluster           // GW-Label -> Global Cluster Configuration map
+	envoyEndpointConfigMap     map[string][]*corev3.Address              // GW-Label -> Global Endpoint Configuration map
 	customRateLimitPoliciesMap map[string][]*model.CustomRateLimitPolicy // GW-Label -> Custom Rate Limit Policies map
 
 	// Listener as map key
@@ -478,6 +478,30 @@ func GenerateGlobalClusters(label string) {
 	envoyEndpointConfigMap[label] = endpoints
 }
 
+// GenerateGlobalClustersWithInterceptors generates the globally available clusters and endpoints with interceptors.
+func GenerateGlobalClustersWithInterceptors(label string,
+	gwReqICluster *clusterv3.Cluster, gwReqIAddresses []*corev3.Address,
+	gwResICluster *clusterv3.Cluster, gwResIAddresses []*corev3.Address) {
+	clusters, endpoints := oasParser.GetGlobalClusters()
+
+	if gwReqICluster != nil && len(gwReqIAddresses) > 0 {
+		clusters = append(clusters, gwReqICluster)
+		for _, ep := range gwReqIAddresses {
+			endpoints = append(endpoints, ep)
+		}
+	}
+
+	if gwResICluster != nil && len(gwResIAddresses) > 0 {
+		clusters = append(clusters, gwResICluster)
+		for _, ep := range gwResIAddresses {
+			endpoints = append(endpoints, ep)
+		}
+	}
+
+	envoyClusterConfigMap[label] = clusters
+	envoyEndpointConfigMap[label] = endpoints
+}
+
 // use UpdateXdsCacheWithLock to avoid race conditions
 func updateXdsCache(label string, endpoints []types.Resource, clusters []types.Resource, routes []types.Resource, listeners []types.Resource) bool {
 	version := rand.Intn(maxRandomInt)
@@ -820,7 +844,7 @@ func UpdateRateLimitXDSCache(vHosts []string, mgwSwagger model.MgwSwagger) {
 }
 
 // UpdateRateLimitXDSCacheForCustomPolicies updates the xDS cache of the RateLimiter for custom policies.
-func UpdateRateLimitXDSCacheForCustomPolicies(gwLabel string,customRateLimitPolicies []*model.CustomRateLimitPolicy) {
+func UpdateRateLimitXDSCacheForCustomPolicies(gwLabel string, customRateLimitPolicies []*model.CustomRateLimitPolicy) {
 	rlsPolicyCache.AddCustomRateLimitPolicies(customRateLimitPolicies)
 	UpdateRateLimiterPolicies(gwLabel)
 }
@@ -927,9 +951,9 @@ func UpdateAPICache(vHosts []string, newLabels []string, newlistenersForRoutes [
 }
 
 // UpdateGatewayCache updates the xDS cache related to the Gateway Lifecycle event.
-func UpdateGatewayCache(gateway *gwapiv1b1.Gateway, resolvedListenerCerts map[string]map[string][]byte, 
-	customRateLimitPolicies []*model.CustomRateLimitPolicy) error {
-	listener := oasParser.GetProductionListener(gateway, resolvedListenerCerts)
+func UpdateGatewayCache(gateway *gwapiv1b1.Gateway, resolvedListenerCerts map[string]map[string][]byte,
+	gwLuaScript string, customRateLimitPolicies []*model.CustomRateLimitPolicy) error {
+	listener := oasParser.GetProductionListener(gateway, resolvedListenerCerts, gwLuaScript)
 	envoyListenerConfigMap[gateway.Name] = listener
 	conf := config.ReadConfigs()
 	if conf.Envoy.RateLimit.Enabled {

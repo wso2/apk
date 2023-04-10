@@ -53,7 +53,7 @@ const (
 	KindResource = "Resource"
 	KindScope    = "Scope"
 	KindBackend  = "Backend"
-	KindGateway = "Gateway"
+	KindGateway  = "Gateway"
 )
 
 // Env types
@@ -65,4 +65,10 @@ const (
 // Header names in runtime
 const (
 	OrganizationHeader = "X-WSO2-Organization"
+)
+
+// Global interceptor cluster names
+const (
+	GlobalRequestInterceptorClusterName  = "request_interceptor_global_cluster"
+	GlobalResponseInterceptorClusterName = "response_interceptor_global_cluster"
 )

@@ -41,7 +41,7 @@ func TestCreateListenerWithRds(t *testing.T) {
 	listenerObj.Protocol = "HTTPS"
 	gateway.Spec.Listeners = append(gateway.Spec.Listeners, *listenerObj)
 	resolvedListenerCerts := make(map[string]map[string][]byte)
-	listeners := CreateListenerByGateway(gateway, resolvedListenerCerts)
+	listeners := CreateListenerByGateway(gateway, resolvedListenerCerts, "")
 	assert.NotEmpty(t, listeners, "Listeners creation has been failed")
 
 	securedListener := listeners

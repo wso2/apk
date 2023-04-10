@@ -51,16 +51,22 @@ import (
 )
 
 // getHTTPFilters generates httpFilter configuration
-func getHTTPFilters() []*hcmv3.HttpFilter {
+func getHTTPFilters(globalLuaScript string) []*hcmv3.HttpFilter {
 	extAuth := getExtAuthzHTTPFilter()
 	router := getRouterHTTPFilter()
-	lua := getLuaFilter()
+	luaLocal := getLuaFilter(LuaLocal, `
+function envoy_on_request(request_handle)
+end
+function envoy_on_response(response_handle)
+end`)
+	luaGlobal := getLuaFilter(LuaGlobal, globalLuaScript)
 	cors := getCorsHTTPFilter()
 
 	httpFilters := []*hcmv3.HttpFilter{
 		cors,
 		extAuth,
-		lua,
+		luaGlobal,
+		luaLocal,
 	}
 	conf := config.ReadConfigs()
 	if conf.Envoy.RateLimit.Enabled {
@@ -230,14 +236,11 @@ func getExtAuthzHTTPFilter() *hcmv3.HttpFilter {
 }
 
 // getLuaFilter gets Lua http filter.
-func getLuaFilter() *hcmv3.HttpFilter {
+func getLuaFilter(filterName, defaultScript string) *hcmv3.HttpFilter {
 	luaConfig := &luav3.Lua{
 		DefaultSourceCode: &corev3.DataSource{
 			Specifier: &corev3.DataSource_InlineString{
-				InlineString: "function envoy_on_request(request_handle)" +
-					"\nend" +
-					"\nfunction envoy_on_response(response_handle)" +
-					"\nend",
+				InlineString: defaultScript,
 			},
 		},
 	}
@@ -246,7 +249,7 @@ func getLuaFilter() *hcmv3.HttpFilter {
 		logger.LoggerOasparser.Error(err2)
 	}
 	luaFilter := hcmv3.HttpFilter{
-		Name: wellknown.Lua,
+		Name: filterName,
 		ConfigType: &hcmv3.HttpFilter_TypedConfig{
 			TypedConfig: ext,
 		},

@@ -285,37 +285,33 @@ func (ods *OperatorDataStore) DeleteCachedAPI(apiName types.NamespacedName) {
 }
 
 // AddGatewayState stores a new Gateway in the OperatorDataStore.
-func (ods *OperatorDataStore) AddGatewayState(gateway gwapiv1b1.Gateway, resolvedListenerCerts map[string]map[string][]byte, 
-	customRateLimitPolicies []*dpv1alpha1.RateLimitPolicy) GatewayState {
+func (ods *OperatorDataStore) AddGatewayState(gateway gwapiv1b1.Gateway,
+	gatewayStateData *GatewayStateData) GatewayState {
 	ods.mu.Lock()
 	defer ods.mu.Unlock()
 
 	gatewayNamespacedName := utils.NamespacedName(&gateway)
-	listenerData := GatewayStateData{
-		GatewayResolvedListenerCerts: resolvedListenerCerts,
-	}
 	ods.gatewayStore[gatewayNamespacedName] = &GatewayState{
 		GatewayDefinition: &gateway,
-		CustomRateLimitPolicies: customRateLimitPolicies,
-		GatewayStateData:  &listenerData,
+		GatewayStateData:  gatewayStateData,
 	}
 	return *ods.gatewayStore[gatewayNamespacedName]
 }
 
 // UpdateGatewayState update/create the GatewayState on ref updates
-func (ods *OperatorDataStore) UpdateGatewayState(gatewayDef *gwapiv1b1.Gateway, resolvedListenerCerts map[string]map[string][]byte, 
-	customRateLimitPolicies []*dpv1alpha1.RateLimitPolicy) (GatewayState, []string, bool) {
+func (ods *OperatorDataStore) UpdateGatewayState(gatewayDef *gwapiv1b1.Gateway,
+	gatewayStateData *GatewayStateData) (GatewayState, []string, bool) {
 	_, found := ods.gatewayStore[utils.NamespacedName(gatewayDef)]
 	if !found {
 		loggers.LoggerAPKOperator.Infof("Adding new gatewaystate as Gateway : %s has not found in memory datastore.", gatewayDef.Name)
-		gatewayState := ods.AddGatewayState(*gatewayDef, resolvedListenerCerts, customRateLimitPolicies)
+		gatewayState := ods.AddGatewayState(*gatewayDef, gatewayStateData)
 		return gatewayState, []string{"GATEWAY"}, true
 	}
-	return ods.processGatewayState(gatewayDef, customRateLimitPolicies)
+	return ods.processGatewayState(gatewayDef, gatewayStateData.GatewayCustomRateLimitPolicies)
 }
 
 // processGatewayState process and update the GatewayState on ref updates
-func (ods *OperatorDataStore) processGatewayState(gatewayDef *gwapiv1b1.Gateway, 
+func (ods *OperatorDataStore) processGatewayState(gatewayDef *gwapiv1b1.Gateway,
 	customRateLimitPolicies []*dpv1alpha1.RateLimitPolicy) (GatewayState, []string, bool) {
 	ods.mu.Lock()
 	defer ods.mu.Unlock()
@@ -329,8 +325,8 @@ func (ods *OperatorDataStore) processGatewayState(gatewayDef *gwapiv1b1.Gateway,
 		events = append(events, "Gateway Definition")
 	}
 
-	if !reflect.DeepEqual(cachedGateway.CustomRateLimitPolicies, customRateLimitPolicies) {
-		cachedGateway.CustomRateLimitPolicies = customRateLimitPolicies
+	if !reflect.DeepEqual(cachedGateway.GatewayStateData.GatewayCustomRateLimitPolicies, customRateLimitPolicies) {
+		cachedGateway.GatewayStateData.GatewayCustomRateLimitPolicies = customRateLimitPolicies
 		updated = true
 		events = append(events, "Gateway Custom RateLimit Policies")
 	}

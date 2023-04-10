@@ -19,8 +19,6 @@ package controllers
 
 import (
 	"context"
-	"crypto/x509"
-	"encoding/pem"
 	"fmt"
 
 	"github.com/wso2/apk/adapter/config"
@@ -475,7 +473,7 @@ func (apiReconciler *APIReconciler) getResolvedBackendsMapping(ctx context.Conte
 				Name:      string(backend.Name),
 				Namespace: utils.GetNamespace(backend.Namespace, httpRoute.Namespace),
 			}
-			resolvedBackend := apiReconciler.getResolvedBackend(ctx, backendNamespacedName)
+			resolvedBackend := utils.GetResolvedBackend(ctx, apiReconciler.client, backendNamespacedName)
 			if resolvedBackend != nil {
 				backendMapping[backendNamespacedName] = resolvedBackend
 			}
@@ -487,129 +485,25 @@ func (apiReconciler *APIReconciler) getResolvedBackendsMapping(ctx context.Conte
 		maps.Values(httpRouteState.ResourceAPIPolicies)...)
 	for _, apiPolicy := range allAPIPolicies {
 		if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.RequestInterceptor != nil {
-			apiReconciler.resolveAndAddBackendToMapping(ctx, backendMapping,
+			utils.ResolveAndAddBackendToMapping(ctx, apiReconciler.client, backendMapping,
 				apiPolicy.Spec.Default.RequestInterceptor.BackendRef, apiPolicy.Namespace)
 		}
 		if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.RequestInterceptor != nil {
-			apiReconciler.resolveAndAddBackendToMapping(ctx, backendMapping,
+			utils.ResolveAndAddBackendToMapping(ctx, apiReconciler.client, backendMapping,
 				apiPolicy.Spec.Override.RequestInterceptor.BackendRef, apiPolicy.Namespace)
 		}
 		if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.ResponseInterceptor != nil {
-			apiReconciler.resolveAndAddBackendToMapping(ctx, backendMapping,
+			utils.ResolveAndAddBackendToMapping(ctx, apiReconciler.client, backendMapping,
 				apiPolicy.Spec.Default.ResponseInterceptor.BackendRef, apiPolicy.Namespace)
 		}
 		if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.ResponseInterceptor != nil {
-			apiReconciler.resolveAndAddBackendToMapping(ctx, backendMapping,
+			utils.ResolveAndAddBackendToMapping(ctx, apiReconciler.client, backendMapping,
 				apiPolicy.Spec.Override.ResponseInterceptor.BackendRef, apiPolicy.Namespace)
 		}
 	}
 
 	loggers.LoggerAPKOperator.Debugf("Generated backendMapping: %v", backendMapping)
 	return backendMapping
-}
-
-// resolveAndAddBackendToMapping resolves backend from reference and adds it to the backendMapping.
-func (apiReconciler *APIReconciler) resolveAndAddBackendToMapping(ctx context.Context, backendMapping dpv1alpha1.BackendMapping,
-	backendRef dpv1alpha1.BackendReference, apiPolicyNamespace string) {
-	namespace := gwapiv1b1.Namespace(backendRef.Namespace)
-	backendName := types.NamespacedName{
-		Name:      backendRef.Name,
-		Namespace: utils.GetNamespace(&namespace, apiPolicyNamespace),
-	}
-	backend := apiReconciler.getResolvedBackend(ctx, backendName)
-	backendMapping[backendName] = backend
-}
-
-// getTLSConfigForBackend resolves backend TLS configurations.
-func (apiReconciler *APIReconciler) getResolvedBackend(ctx context.Context,
-	backendNamespacedName types.NamespacedName) *dpv1alpha1.ResolvedBackend {
-	resolvedBackend := dpv1alpha1.ResolvedBackend{}
-	resolvedTLSConfig := dpv1alpha1.ResolvedTLSConfig{}
-
-	var backend = new(dpv1alpha1.Backend)
-	err := apiReconciler.client.Get(context.Background(), backendNamespacedName, backend)
-
-	if err != nil {
-		if !k8error.IsNotFound(err) {
-			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2637, backendNamespacedName, err.Error()))
-		}
-		return nil
-	}
-	resolvedBackend.Services = backend.Spec.Services
-	resolvedBackend.Protocol = backend.Spec.Protocol
-	if backend.Spec.TLS != nil {
-		resolvedTLSConfig.ResolvedCertificate = resolveCertificate(ctx, apiReconciler.client,
-			backend.Namespace, *backend.Spec.TLS)
-		resolvedTLSConfig.AllowedSANs = backend.Spec.TLS.AllowedSANs
-		resolvedBackend.TLS = resolvedTLSConfig
-	}
-	if backend.Spec.Security != nil {
-		resolvedBackend.Security = getResolvedBackendSecurity(ctx, apiReconciler.client,
-			backend.Namespace, backend.Spec.Security)
-	}
-	return &resolvedBackend
-}
-
-// getResolvedBackendSecurity resolves backend security configurations.
-func getResolvedBackendSecurity(ctx context.Context, client k8client.Client,
-	namespace string, security []dpv1alpha1.SecurityConfig) []dpv1alpha1.ResolvedSecurityConfig {
-	resolvedSecurity := make([]dpv1alpha1.ResolvedSecurityConfig, len(security))
-	for _, sec := range security {
-		switch sec.Type {
-		case "Basic":
-			var err1, err2 error
-			var username string
-			var password string
-			username, err1 = utils.GetSecretValue(ctx, client,
-				namespace, sec.Basic.SecretRef.Name, sec.Basic.SecretRef.UsernameKey)
-			password, err2 = utils.GetSecretValue(ctx, client,
-				namespace, sec.Basic.SecretRef.Name, sec.Basic.SecretRef.PasswordKey)
-			if err1 != nil || err2 != nil {
-				loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2648, sec.Basic.SecretRef))
-			}
-			resolvedSecurity = append(resolvedSecurity, dpv1alpha1.ResolvedSecurityConfig{
-				Type: "Basic",
-				Basic: dpv1alpha1.ResolvedBasicSecurityConfig{
-					Username: username,
-					Password: password,
-				},
-			})
-		}
-	}
-	return resolvedSecurity
-}
-
-// resolveCertificate reads the certificate from TLSConfig, first checks the certificateInline field,
-// if no value then load the certificate from secretRef using util function called GetSecretValue
-func resolveCertificate(ctx context.Context, client k8client.Client, namespace string, tlsConfig dpv1alpha1.TLSConfig) string {
-	var certificate string
-	var err error
-	if len(tlsConfig.CertificateInline) > 0 {
-		certificate = tlsConfig.CertificateInline
-	} else if tlsConfig.SecretRef != nil {
-		if certificate, err = utils.GetSecretValue(ctx, client,
-			namespace, tlsConfig.SecretRef.Name, tlsConfig.SecretRef.Key); err != nil {
-			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2642, tlsConfig.SecretRef))
-		}
-	} else if tlsConfig.ConfigMapRef != nil {
-		if certificate, err = utils.GetConfigMapValue(ctx, client,
-			namespace, tlsConfig.ConfigMapRef.Name, tlsConfig.ConfigMapRef.Key); err != nil {
-			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2643, tlsConfig.ConfigMapRef))
-		}
-	}
-	if len(certificate) > 0 {
-		block, _ := pem.Decode([]byte(certificate))
-		if block == nil {
-			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2627))
-			return ""
-		}
-		_, err = x509.ParseCertificate(block.Bytes)
-		if err != nil {
-			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2641, err.Error()))
-			return ""
-		}
-	}
-	return certificate
 }
 
 // getAPIForHTTPRoute triggers the API controller reconcile method based on the changes detected
