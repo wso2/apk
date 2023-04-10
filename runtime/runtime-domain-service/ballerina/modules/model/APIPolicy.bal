@@ -28,10 +28,10 @@ public type APIPolicySpec record {|
     TargetRef targetRef;
 |};
 
-public type APIPolicyData record {|
+public type APIPolicyData record {
     APIPolicyDetails requestInterceptor?;
     APIPolicyDetails responseInterceptor?;
-|};
+};
 
 public type APIPolicyDetails record {|
     BackendRefDetails backendRef;
