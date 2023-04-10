@@ -134,9 +134,9 @@ func TestCreateRoutesWithClustersWithExactAndRegularExpressionRules(t *testing.T
 
 	apiState.ProdHTTPRoute = &httpRouteState
 
-	mgwSwagger, err := synchronizer.GenerateMGWSwagger(apiState, &httpRouteState, constants.Production)
-	assert.Nil(t, err, "Error should not be present when apiState is converted to a MgwSwagger object")
-	routes, clusters, _, _ := envoy.CreateRoutesWithClusters(*mgwSwagger, nil, "prod.gw.wso2.com", "carbon.super")
+	adapterInternalAPI, err := synchronizer.GenerateAdapterInternalAPI(apiState, &httpRouteState, constants.Production)
+	assert.Nil(t, err, "Error should not be present when apiState is converted to a AdapterInternalAPI object")
+	routes, clusters, _, _ := envoy.CreateRoutesWithClusters(*adapterInternalAPI, nil, "prod.gw.wso2.com", "carbon.super")
 	assert.Equal(t, 2, len(clusters), "Number of production clusters created is incorrect.")
 
 	exactPathCluster := clusters[0]
@@ -284,9 +284,9 @@ func TestCreateRoutesWithClustersWithMultiplePathPrefixRules(t *testing.T) {
 
 	apiState.ProdHTTPRoute = &httpRouteState
 
-	mgwSwagger, err := synchronizer.GenerateMGWSwagger(apiState, &httpRouteState, constants.Production)
-	assert.Nil(t, err, "Error should not be present when apiState is converted to a MgwSwagger object")
-	routes, clusters, _, _ := envoy.CreateRoutesWithClusters(*mgwSwagger, nil, "prod.gw.wso2.com", "carbon.super")
+	adapterInternalAPI, err := synchronizer.GenerateAdapterInternalAPI(apiState, &httpRouteState, constants.Production)
+	assert.Nil(t, err, "Error should not be present when apiState is converted to a AdapterInternalAPI object")
+	routes, clusters, _, _ := envoy.CreateRoutesWithClusters(*adapterInternalAPI, nil, "prod.gw.wso2.com", "carbon.super")
 	assert.Equal(t, 2, len(clusters), "Number of production clusters created is incorrect.")
 
 	orderServiceCluster := clusters[0]
@@ -429,9 +429,9 @@ func TestCreateRoutesWithClustersWithBackendTLSConfigs(t *testing.T) {
 
 	apiState.ProdHTTPRoute = &httpRouteState
 
-	mgwSwagger, err := synchronizer.GenerateMGWSwagger(apiState, &httpRouteState, constants.Production)
-	assert.Nil(t, err, "Error should not be present when apiState is converted to a MgwSwagger object")
-	_, clusters, _, _ := envoy.CreateRoutesWithClusters(*mgwSwagger, nil, "prod.gw.wso2.com", "carbon.super")
+	adapterInternalAPI, err := synchronizer.GenerateAdapterInternalAPI(apiState, &httpRouteState, constants.Production)
+	assert.Nil(t, err, "Error should not be present when apiState is converted to a AdapterInternalAPI object")
+	_, clusters, _, _ := envoy.CreateRoutesWithClusters(*adapterInternalAPI, nil, "prod.gw.wso2.com", "carbon.super")
 	assert.Equal(t, 1, len(clusters), "Number of production clusters created is incorrect.")
 
 	exactPathCluster := clusters[0]
@@ -484,10 +484,10 @@ func createDefaultBackendRef(backendName string) gwapiv1b1.HTTPBackendRef {
 // 	assert.Nil(t, err, "Error while reading the api.yaml file : %v"+apiYamlFilePath)
 // 	apiYaml, err := model.NewAPIYaml(apiYamlByteArr)
 // 	assert.Nil(t, err, "Error occurred while processing api.yaml")
-// 	var mgwSwagger model.MgwSwagger
-// 	err = mgwSwagger.PopulateFromAPIYaml(apiYaml)
+// 	var adapterInternalAPI model.AdapterInternalAPI
+// 	err = adapterInternalAPI.PopulateFromAPIYaml(apiYaml)
 
-// 	asyncapiFilePath := config.GetMgwHome() + "/../adapter/test-resources/envoycodegen/asyncapi_websocket.yaml"
+// 	asyncapiFilePath := config.GetApkHome() + "/../adapter/test-resources/envoycodegen/asyncapi_websocket.yaml"
 // 	asyncapiByteArr, err := ioutil.ReadFile(asyncapiFilePath)
 // 	assert.Nil(t, err, "Error while reading file : %v"+asyncapiFilePath)
 // 	apiJsn, conversionErr := utils.ToJSON(asyncapiByteArr)
@@ -497,9 +497,9 @@ func createDefaultBackendRef(backendName string) gwapiv1b1.HTTPBackendRef {
 // 	err = json.Unmarshal(apiJsn, &asyncapi)
 // 	assert.Nil(t, err, "Error occurred while parsing asyncapi_websocket.yaml")
 
-// 	err = mgwSwagger.SetInfoAsyncAPI(asyncapi)
-// 	assert.Nil(t, err, "Error while populating the MgwSwagger object for web socket APIs")
-// 	routes, clusters, _, _ := envoy.CreateRoutesWithClusters(mgwSwagger, nil, nil, "localhost", "carbon.super")
+// 	err = adapterInternalAPI.SetInfoAsyncAPI(asyncapi)
+// 	assert.Nil(t, err, "Error while populating the AdapterInternalAPI object for web socket APIs")
+// 	routes, clusters, _, _ := envoy.CreateRoutesWithClusters(adapterInternalAPI, nil, nil, "localhost", "carbon.super")
 
 // 	if strings.HasSuffix(apiYamlFilePath, "api.yaml") {
 // 		assert.Equal(t, len(clusters), 2, "Number of clusters created incorrect")
@@ -525,7 +525,7 @@ func createDefaultBackendRef(backendName string) gwapiv1b1.HTTPBackendRef {
 // 		route := routes[0].GetMatch().GetSafeRegex().Regex
 // 		assert.Equal(t, "^/echowebsocket/1.0/notifications[/]{0,1}", route, "route created mismatch")
 
-// 		throttlingPolicy := mgwSwagger.GetXWso2ThrottlingTier()
+// 		throttlingPolicy := adapterInternalAPI.GetXWso2ThrottlingTier()
 // 		assert.Equal(t, throttlingPolicy, "5PerMin", "API throttling policy is not assigned.")
 // 	}
 // 	if strings.HasSuffix(apiYamlFilePath, "api_prod.yaml") {
@@ -579,10 +579,10 @@ func TestCreateHealthEndpoint(t *testing.T) {
 // 	assert.Nil(t, err, "Error while reading the api.yaml file : %v"+apiYamlFilePath)
 // 	apiYaml, err := model.NewAPIYaml(apiYamlByteArr)
 // 	assert.Nil(t, err, "Error occurred while processing api.yaml")
-// 	var mgwSwagger model.MgwSwagger
-// 	err = mgwSwagger.PopulateFromAPIYaml(apiYaml)
-// 	assert.Nil(t, err, "Error while populating the MgwSwagger object for web socket APIs")
-// 	_, clusters, _, _ := envoy.CreateRoutesWithClusters(mgwSwagger, nil, nil, "localhost", "carbon.super")
+// 	var adapterInternalAPI model.AdapterInternalAPI
+// 	err = adapterInternalAPI.PopulateFromAPIYaml(apiYaml)
+// 	assert.Nil(t, err, "Error while populating the AdapterInternalAPI object for web socket APIs")
+// 	_, clusters, _, _ := envoy.CreateRoutesWithClusters(adapterInternalAPI, nil, nil, "localhost", "carbon.super")
 
 // 	assert.Equal(t, len(clusters), 1, "Number of clusters created incorrect")
 // 	productionCluster := clusters[0]
@@ -629,13 +629,13 @@ func TestCreateHealthEndpoint(t *testing.T) {
 
 // todo(amali) add a test similar to the below using crs
 // func testCreateRoutesWithClustersAPIClusters(t *testing.T) {
-// 	openapiFilePath := config.GetMgwHome() + "/../adapter/test-resources/envoycodegen/openapi_prod_sand_clusters.yaml"
+// 	openapiFilePath := config.GetApkHome() + "/../adapter/test-resources/envoycodegen/openapi_prod_sand_clusters.yaml"
 // 	openapiByteArr, err := ioutil.ReadFile(openapiFilePath)
 // 	assert.Nil(t, err, "Error while reading the openapi file : "+openapiFilePath)
-// 	mgwSwaggerForOpenapi := model.MgwSwagger{}
-// 	err = mgwSwaggerForOpenapi.GetMgwSwagger(openapiByteArr)
-// 	assert.Nil(t, err, "Error should not be present when openAPI definition is converted to a MgwSwagger object")
-// 	routes, clusters, _, _ := envoy.CreateRoutesWithClusters(mgwSwaggerForOpenapi, nil, nil, "localhost", "carbon.super")
+// 	adapterInternalAPIForOpenapi := model.AdapterInternalAPI{}
+// 	err = adapterInternalAPIForOpenapi.GetAdapterInternalAPI(openapiByteArr)
+// 	assert.Nil(t, err, "Error should not be present when openAPI definition is converted to a AdapterInternalAPI object")
+// 	routes, clusters, _, _ := envoy.CreateRoutesWithClusters(adapterInternalAPIForOpenapi, nil, nil, "localhost", "carbon.super")
 
 // 	assert.Equal(t, 2, len(clusters), "Number of production clusters created is incorrect.")
 // 	// As the first cluster is always related to API level cluster
@@ -779,9 +779,9 @@ func TestCreateRoutesWithClustersDifferentBackendRefs(t *testing.T) {
 
 	apiState.ProdHTTPRoute = &httpRouteState
 
-	mgwSwagger, err := synchronizer.GenerateMGWSwagger(apiState, &httpRouteState, constants.Production)
-	assert.Nil(t, err, "Error should not be present when apiState is converted to a MgwSwagger object")
-	_, clusters, _, _ := envoy.CreateRoutesWithClusters(*mgwSwagger, nil, "prod.gw.wso2.com", "carbon.super")
+	adapterInternalAPI, err := synchronizer.GenerateAdapterInternalAPI(apiState, &httpRouteState, constants.Production)
+	assert.Nil(t, err, "Error should not be present when apiState is converted to a AdapterInternalAPI object")
+	_, clusters, _, _ := envoy.CreateRoutesWithClusters(*adapterInternalAPI, nil, "prod.gw.wso2.com", "carbon.super")
 	assert.Equal(t, 2, len(clusters), "Number of production clusters created is incorrect.")
 }
 
@@ -887,8 +887,8 @@ func TestCreateRoutesWithClustersSameBackendRefs(t *testing.T) {
 
 	apiState.ProdHTTPRoute = &httpRouteState
 
-	mgwSwagger, err := synchronizer.GenerateMGWSwagger(apiState, &httpRouteState, constants.Production)
-	assert.Nil(t, err, "Error should not be present when apiState is converted to a MgwSwagger object")
-	_, clusters, _, _ := envoy.CreateRoutesWithClusters(*mgwSwagger, nil, "prod.gw.wso2.com", "carbon.super")
+	adapterInternalAPI, err := synchronizer.GenerateAdapterInternalAPI(apiState, &httpRouteState, constants.Production)
+	assert.Nil(t, err, "Error should not be present when apiState is converted to a AdapterInternalAPI object")
+	_, clusters, _, _ := envoy.CreateRoutesWithClusters(*adapterInternalAPI, nil, "prod.gw.wso2.com", "carbon.super")
 	assert.Equal(t, 1, len(clusters), "Number of production clusters created is incorrect.")
 }

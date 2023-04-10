@@ -186,8 +186,8 @@ func TestCreateRouteExtAuthzContext(t *testing.T) {
 }
 
 func TestGenerateTLSCert(t *testing.T) {
-	publicKeyPath := config.GetMgwHome() + "/adapter/security/localhost.pem"
-	privateKeyPath := config.GetMgwHome() + "/adapter/security/localhost.key"
+	publicKeyPath := config.GetApkHome() + "/adapter/security/localhost.pem"
+	privateKeyPath := config.GetApkHome() + "/adapter/security/localhost.key"
 
 	tlsCert := generateTLSCert(privateKeyPath, publicKeyPath)
 
@@ -428,11 +428,11 @@ func TestGenerateSubstitutionString(t *testing.T) {
 }
 
 func TestCreateUpstreamTLSContext(t *testing.T) {
-	certFilePath := config.GetMgwHome() + "/test-resources/testcrt.crt"
+	certFilePath := config.GetApkHome() + "/test-resources/testcrt.crt"
 	certByteArr, err := ioutil.ReadFile(certFilePath)
 	assert.Nil(t, err, "Error while reading the certificate : "+certFilePath)
-	defaultMgwKeyPath := "/home/wso2/security/keystore/mg.key"
-	defaultMgwCertPath := "/home/wso2/security/keystore/mg.pem"
+	defaultAPKKeyPath := "/home/wso2/security/keystore/mg.key"
+	defaultAPKCertPath := "/home/wso2/security/keystore/mg.pem"
 	defaultCipherArray := "ECDHE-ECDSA-AES128-GCM-SHA256, ECDHE-RSA-AES128-GCM-SHA256, ECDHE-ECDSA-AES128-SHA," +
 		" ECDHE-RSA-AES128-SHA, AES128-GCM-SHA256, AES128-SHA, ECDHE-ECDSA-AES256-GCM-SHA384, ECDHE-RSA-AES256-GCM-SHA384," +
 		" ECDHE-ECDSA-AES256-SHA, ECDHE-RSA-AES256-SHA, AES256-GCM-SHA384, AES256-SHA"
@@ -457,7 +457,7 @@ func TestCreateUpstreamTLSContext(t *testing.T) {
 		},
 	}}
 
-	tlsCert := generateTLSCert(defaultMgwKeyPath, defaultMgwCertPath)
+	tlsCert := generateTLSCert(defaultAPKKeyPath, defaultAPKCertPath)
 	upstreamTLSContextWithCerts := createUpstreamTLSContext(certByteArr, nil, hostNameAddress, false)
 	upstreamTLSContextWithoutCerts := createUpstreamTLSContext(nil, nil, hostNameAddress, false)
 	upstreamTLSContextWithIP := createUpstreamTLSContext(certByteArr, nil, hostNameAddressWithIP, false)

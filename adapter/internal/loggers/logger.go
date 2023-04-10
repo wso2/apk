@@ -42,7 +42,7 @@ const (
 	pkgSvcDiscovery            = "github.com/wso2/apk/adapter/internal/svcdiscovery"
 	pkgNotifier                = "github.com/wso2/apk/adapter/internal/notifier"
 	pkgAPI                     = "github.com/wso2/apk/adapter/internal/api"
-	pkgMgw                     = "github.com/wso2/apk/adapter/internal/adapter"
+	pkgAPK                     = "github.com/wso2/apk/adapter/internal/adapter"
 	pkgRateLimiterXdsCallbacks = "github.com/wso2/apk/adapter/internal/discovery/xds/ratelimitercallbacks"
 )
 
@@ -58,7 +58,7 @@ var (
 	LoggerSvcDiscovery            logging.Log
 	LoggerNotifier                logging.Log
 	LoggerAPI                     logging.Log
-	LoggerMgw                     logging.Log
+	LoggerAPK                     logging.Log
 	LoggerRateLimiterXdsCallbacks logging.Log
 )
 
@@ -79,6 +79,6 @@ func UpdateLoggers() {
 	LoggerRateLimiterXdsCallbacks = logging.InitPackageLogger(pkgRateLimiterXdsCallbacks)
 	LoggerNotifier = logging.InitPackageLogger(pkgNotifier)
 	LoggerAPI = logging.InitPackageLogger(pkgAPI)
-	LoggerMgw = logging.InitPackageLogger(pkgMgw)
+	LoggerAPK = logging.InitPackageLogger(pkgAPK)
 	logrus.Info("Updated loggers")
 }

@@ -37,10 +37,10 @@ import (
 
 // GetRoutesClustersEndpoints generates the routes, clusters and endpoints (envoy)
 // when the openAPI Json is provided. For websockets apiJsn created from api.yaml file is considered.
-func GetRoutesClustersEndpoints(mgwSwagger model.MgwSwagger, interceptorCerts map[string][]byte,
+func GetRoutesClustersEndpoints(adapterInternalAPI model.AdapterInternalAPI, interceptorCerts map[string][]byte,
 	vHost string, organizationID string) ([]*routev3.Route, []*clusterv3.Cluster, []*corev3.Address, error) {
 
-	routes, clusters, endpoints, err := envoy.CreateRoutesWithClusters(mgwSwagger, interceptorCerts,
+	routes, clusters, endpoints, err := envoy.CreateRoutesWithClusters(adapterInternalAPI, interceptorCerts,
 		vHost, organizationID)
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("error while creating routes, clusters and endpoints. %v", err)
@@ -134,7 +134,7 @@ func UpdateRoutesConfig(routeConfig *routev3.RouteConfiguration, vhostToRouteArr
 
 // GetEnforcerAPI retrieves the ApiDS object model for a given swagger definition
 // along with the vhost to deploy the API.
-func GetEnforcerAPI(mgwSwagger model.MgwSwagger, vhost string) *api.Api {
+func GetEnforcerAPI(adapterInternalAPI model.AdapterInternalAPI, vhost string) *api.Api {
 	resources := []*api.Resource{}
 	securitySchemes := []*api.SecurityScheme{}
 	securityList := []*api.SecurityList{}
@@ -142,8 +142,8 @@ func GetEnforcerAPI(mgwSwagger model.MgwSwagger, vhost string) *api.Api {
 	clientCertificates := []*api.Certificate{}
 
 	logger.LoggerOasparser.Debugf("Security schemes in GetEnforcerAPI method : %s. %v",
-		mgwSwagger.GetTitle(), mgwSwagger.GetSecurityScheme())
-	for _, securityScheme := range mgwSwagger.GetSecurityScheme() {
+		adapterInternalAPI.GetTitle(), adapterInternalAPI.GetSecurityScheme())
+	for _, securityScheme := range adapterInternalAPI.GetSecurityScheme() {
 		scheme := &api.SecurityScheme{
 			DefinitionName: securityScheme.DefinitionName,
 			Type:           securityScheme.Type,
@@ -153,7 +153,7 @@ func GetEnforcerAPI(mgwSwagger model.MgwSwagger, vhost string) *api.Api {
 		securitySchemes = append(securitySchemes, scheme)
 	}
 
-	for _, security := range mgwSwagger.GetSecurity() {
+	for _, security := range adapterInternalAPI.GetSecurity() {
 		mapOfSecurity := make(map[string]*api.Scopes)
 		for key, scopes := range security {
 			scopeList := &api.Scopes{
@@ -167,7 +167,7 @@ func GetEnforcerAPI(mgwSwagger model.MgwSwagger, vhost string) *api.Api {
 		securityList = append(securityList, securityMap)
 	}
 
-	for _, res := range mgwSwagger.GetResources() {
+	for _, res := range adapterInternalAPI.GetResources() {
 		var operations = make([]*api.Operation, len(res.GetMethod()))
 		for i, op := range res.GetMethod() {
 			operations[i] = GetEnforcerAPIOperation(*op, isMockedAPI)
@@ -186,7 +186,7 @@ func GetEnforcerAPI(mgwSwagger model.MgwSwagger, vhost string) *api.Api {
 		resources = append(resources, resource)
 	}
 
-	for _, cert := range mgwSwagger.GetClientCerts() {
+	for _, cert := range adapterInternalAPI.GetClientCerts() {
 		certificate := &api.Certificate{
 			Alias:   cert.Alias,
 			Tier:    cert.Tier,
@@ -196,28 +196,28 @@ func GetEnforcerAPI(mgwSwagger model.MgwSwagger, vhost string) *api.Api {
 	}
 
 	return &api.Api{
-		Id:                  mgwSwagger.GetID(),
-		Title:               mgwSwagger.GetTitle(),
-		BasePath:            mgwSwagger.GetXWso2Basepath(),
-		Version:             mgwSwagger.GetVersion(),
-		ApiType:             mgwSwagger.GetAPIType(),
+		Id:                  adapterInternalAPI.GetID(),
+		Title:               adapterInternalAPI.GetTitle(),
+		BasePath:            adapterInternalAPI.GetXWso2Basepath(),
+		Version:             adapterInternalAPI.GetVersion(),
+		ApiType:             adapterInternalAPI.GetAPIType(),
 		Resources:           resources,
-		ApiLifeCycleState:   mgwSwagger.LifecycleStatus,
-		Tier:                mgwSwagger.GetXWso2ThrottlingTier(),
+		ApiLifeCycleState:   adapterInternalAPI.LifecycleStatus,
+		Tier:                adapterInternalAPI.GetXWso2ThrottlingTier(),
 		SecurityScheme:      securitySchemes,
 		Security:            securityList,
-		AuthorizationHeader: mgwSwagger.GetXWSO2AuthHeader(),
-		DisableSecurity:     mgwSwagger.GetDisableSecurity(),
-		OrganizationId:      mgwSwagger.OrganizationID,
+		AuthorizationHeader: adapterInternalAPI.GetXWSO2AuthHeader(),
+		DisableSecurity:     adapterInternalAPI.GetDisableSecurity(),
+		OrganizationId:      adapterInternalAPI.OrganizationID,
 		Vhost:               vhost,
-		EnvType:             mgwSwagger.EnvType,
+		EnvType:             adapterInternalAPI.EnvType,
 		// IsMockedApi:         isMockedAPI,
 		ClientCertificates:  clientCertificates,
-		MutualSSL:           mgwSwagger.GetXWSO2MutualSSL(),
-		ApplicationSecurity: mgwSwagger.GetXWSO2ApplicationSecurity(),
-		// GraphQLSchema:         mgwSwagger.GraphQLSchema,
-		// GraphqlComplexityInfo: mgwSwagger.GraphQLComplexities.Data.List,
-		SystemAPI: mgwSwagger.IsSystemAPI,
+		MutualSSL:           adapterInternalAPI.GetXWSO2MutualSSL(),
+		ApplicationSecurity: adapterInternalAPI.GetXWSO2ApplicationSecurity(),
+		// GraphQLSchema:         adapterInternalAPI.GraphQLSchema,
+		// GraphqlComplexityInfo: adapterInternalAPI.GraphQLComplexities.Data.List,
+		SystemAPI: adapterInternalAPI.IsSystemAPI,
 	}
 }
 

@@ -32,11 +32,10 @@ import (
 	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
 )
 
-// MgwSwagger represents the object structure holding the information related to the
-// openAPI object. The values are populated from the extensions/properties mentioned at
-// the root level of the openAPI definition. The pathItem level information is represented
-// by the resources array which contains the MgwResource entries.
-type MgwSwagger struct {
+// AdapterInternalAPI represents the object structure holding the information related to the
+// adapter internal representation. The values are populated from the operator. The pathItem level information is represented
+// by the resources array which contains the Resource entries.
+type AdapterInternalAPI struct {
 	id                       string
 	UUID                     string
 	apiType                  string
@@ -129,13 +128,13 @@ type EndpointConfig struct {
 	CircuitBreakers *CircuitBreakers `mapstructure:"circuitBreakers"`
 }
 
-// RetryConfig holds the parameters for retries done by cc to the EndpointCluster
+// RetryConfig holds the parameters for retries done by apk to the EndpointCluster
 type RetryConfig struct {
 	Count       int32    `mapstructure:"count"`
 	StatusCodes []uint32 `mapstructure:"statusCodes"`
 }
 
-// CircuitBreakers holds the parameters for retries done by cc to the EndpointCluster
+// CircuitBreakers holds the parameters for retries done by apk to the EndpointCluster
 type CircuitBreakers struct {
 	MaxConnections     int32 `mapstructure:"maxConnections"`
 	MaxRequests        int32 `mapstructure:"maxRequests"`
@@ -186,99 +185,99 @@ type Certificate struct {
 }
 
 // GetCorsConfig returns the CorsConfiguration Object.
-func (swagger *MgwSwagger) GetCorsConfig() *CorsConfig {
+func (swagger *AdapterInternalAPI) GetCorsConfig() *CorsConfig {
 	return swagger.xWso2Cors
 }
 
 // GetAPIType returns the openapi version
-func (swagger *MgwSwagger) GetAPIType() string {
+func (swagger *AdapterInternalAPI) GetAPIType() string {
 	return swagger.apiType
 }
 
 // GetVersion returns the API version
-func (swagger *MgwSwagger) GetVersion() string {
+func (swagger *AdapterInternalAPI) GetVersion() string {
 	return swagger.version
 }
 
 // GetTitle returns the API Title
-func (swagger *MgwSwagger) GetTitle() string {
+func (swagger *AdapterInternalAPI) GetTitle() string {
 	return swagger.title
 }
 
 // GetXWso2Basepath returns the basepath set via the vendor extension.
-func (swagger *MgwSwagger) GetXWso2Basepath() string {
+func (swagger *AdapterInternalAPI) GetXWso2Basepath() string {
 	return swagger.xWso2Basepath
 }
 
 // GetXWso2HTTP2BackendEnabled returns the http2 backend enabled set via the vendor extension.
-func (swagger *MgwSwagger) GetXWso2HTTP2BackendEnabled() bool {
+func (swagger *AdapterInternalAPI) GetXWso2HTTP2BackendEnabled() bool {
 	return swagger.xWso2HTTP2BackendEnabled
 }
 
 // GetVendorExtensions returns the map of vendor extensions which are defined
 // at openAPI's root level.
-func (swagger *MgwSwagger) GetVendorExtensions() map[string]interface{} {
+func (swagger *AdapterInternalAPI) GetVendorExtensions() map[string]interface{} {
 	return swagger.vendorExtensions
 }
 
 // GetXWso2Endpoints returns the array of x wso2 endpoints.
-func (swagger *MgwSwagger) GetXWso2Endpoints() map[string]*EndpointCluster {
+func (swagger *AdapterInternalAPI) GetXWso2Endpoints() map[string]*EndpointCluster {
 	return swagger.xWso2Endpoints
 }
 
 // GetResources returns the array of resources (openAPI path level info)
-func (swagger *MgwSwagger) GetResources() []*Resource {
+func (swagger *AdapterInternalAPI) GetResources() []*Resource {
 	return swagger.resources
 }
 
 // GetDescription returns the description of the openapi
-func (swagger *MgwSwagger) GetDescription() string {
+func (swagger *AdapterInternalAPI) GetDescription() string {
 	return swagger.description
 }
 
 // GetXWso2ThrottlingTier returns the Throttling tier via the vendor extension.
-func (swagger *MgwSwagger) GetXWso2ThrottlingTier() string {
+func (swagger *AdapterInternalAPI) GetXWso2ThrottlingTier() string {
 	return swagger.xWso2ThrottlingTier
 }
 
 // GetDisableSecurity returns the authType via the vendor extension.
-func (swagger *MgwSwagger) GetDisableSecurity() bool {
+func (swagger *AdapterInternalAPI) GetDisableSecurity() bool {
 	return swagger.disableSecurity
 }
 
 // GetID returns the Id of the API
-func (swagger *MgwSwagger) GetID() string {
+func (swagger *AdapterInternalAPI) GetID() string {
 	return swagger.id
 }
 
 // GetXWso2RequestBodyPass returns boolean value to indicate
 // whether it is allowed to pass request body to the enforcer or not.
-func (swagger *MgwSwagger) GetXWso2RequestBodyPass() bool {
+func (swagger *AdapterInternalAPI) GetXWso2RequestBodyPass() bool {
 	return swagger.xWso2RequestBodyPass
 }
 
 // GetClientCerts returns the client certificates of the API
-func (swagger *MgwSwagger) GetClientCerts() []Certificate {
+func (swagger *AdapterInternalAPI) GetClientCerts() []Certificate {
 	return swagger.clientCertificates
 }
 
 // SetClientCerts set the client certificates of the API
-func (swagger *MgwSwagger) SetClientCerts(certs []Certificate) {
+func (swagger *AdapterInternalAPI) SetClientCerts(certs []Certificate) {
 	swagger.clientCertificates = certs
 }
 
 // SetID set the Id of the API
-func (swagger *MgwSwagger) SetID(id string) {
+func (swagger *AdapterInternalAPI) SetID(id string) {
 	swagger.id = id
 }
 
 // SetName sets the name of the API
-func (swagger *MgwSwagger) SetName(name string) {
+func (swagger *AdapterInternalAPI) SetName(name string) {
 	swagger.title = name
 }
 
 // SetSecurityScheme sets the securityschemes of the API
-func (swagger *MgwSwagger) SetSecurityScheme(securityScheme []SecurityScheme) {
+func (swagger *AdapterInternalAPI) SetSecurityScheme(securityScheme []SecurityScheme) {
 	swagger.securityScheme = securityScheme
 }
 
@@ -290,65 +289,65 @@ func (swagger *MgwSwagger) SetSecurityScheme(securityScheme []SecurityScheme) {
 //   - 'write:pets'
 //   - 'read:pets'
 //   - ApiKeyAuth: []
-func (swagger *MgwSwagger) SetSecurity(security []map[string][]string) {
+func (swagger *AdapterInternalAPI) SetSecurity(security []map[string][]string) {
 	swagger.security = security
 }
 
 // SetVersion sets the version of the API
-func (swagger *MgwSwagger) SetVersion(version string) {
+func (swagger *AdapterInternalAPI) SetVersion(version string) {
 	swagger.version = version
 }
 
 // SetXWso2AuthHeader sets the authHeader of the API
-func (swagger *MgwSwagger) SetXWso2AuthHeader(authHeader string) {
+func (swagger *AdapterInternalAPI) SetXWso2AuthHeader(authHeader string) {
 	if swagger.xWso2AuthHeader == "" {
 		swagger.xWso2AuthHeader = authHeader
 	}
 }
 
 // GetXWSO2AuthHeader returns the auth header set via the vendor extension.
-func (swagger *MgwSwagger) GetXWSO2AuthHeader() string {
+func (swagger *AdapterInternalAPI) GetXWSO2AuthHeader() string {
 	return swagger.xWso2AuthHeader
 }
 
 // GetSecurityScheme returns the securitySchemes of the API
-func (swagger *MgwSwagger) GetSecurityScheme() []SecurityScheme {
+func (swagger *AdapterInternalAPI) GetSecurityScheme() []SecurityScheme {
 	return swagger.securityScheme
 }
 
 // GetSecurity returns the API level security of the API
-func (swagger *MgwSwagger) GetSecurity() []map[string][]string {
+func (swagger *AdapterInternalAPI) GetSecurity() []map[string][]string {
 	return swagger.security
 }
 
 // SetXWSO2MutualSSL sets the optional or mandatory mTLS
-func (swagger *MgwSwagger) SetXWSO2MutualSSL(mutualSSl string) {
+func (swagger *AdapterInternalAPI) SetXWSO2MutualSSL(mutualSSl string) {
 	swagger.xWso2MutualSSL = mutualSSl
 }
 
 // GetXWSO2MutualSSL returns the optional or mandatory mTLS
-func (swagger *MgwSwagger) GetXWSO2MutualSSL() string {
+func (swagger *AdapterInternalAPI) GetXWSO2MutualSSL() string {
 	return swagger.xWso2MutualSSL
 }
 
 // SetXWSO2ApplicationSecurity sets the optional or mandatory application security
-func (swagger *MgwSwagger) SetXWSO2ApplicationSecurity(applicationSecurity bool) {
+func (swagger *AdapterInternalAPI) SetXWSO2ApplicationSecurity(applicationSecurity bool) {
 	swagger.xWso2ApplicationSecurity = applicationSecurity
 }
 
 // GetXWSO2ApplicationSecurity returns the optional or mandatory application security
-func (swagger *MgwSwagger) GetXWSO2ApplicationSecurity() bool {
+func (swagger *AdapterInternalAPI) GetXWSO2ApplicationSecurity() bool {
 	return swagger.xWso2ApplicationSecurity
 }
 
 // GetOrganizationID returns OrganizationID
-func (swagger *MgwSwagger) GetOrganizationID() string {
+func (swagger *AdapterInternalAPI) GetOrganizationID() string {
 	return swagger.OrganizationID
 }
 
-// Validate method confirms that the mgwSwagger has all required fields in the required format.
+// Validate method confirms that the adapterInternalAPI has all required fields in the required format.
 // This needs to be checked prior to generate router/enforcer related resources.
-func (swagger *MgwSwagger) Validate() error {
+func (swagger *AdapterInternalAPI) Validate() error {
 	for _, res := range swagger.resources {
 		if res.endpoints == nil || len(res.endpoints.Endpoints) == 0 {
 			logger.LoggerOasparser.Errorf("No Endpoints are provided for the resources in %s:%s",
@@ -450,7 +449,7 @@ func generateEndpointCluster(endpoints []Endpoint, endpointType string) *Endpoin
 }
 
 // GetOperationInterceptors returns operation interceptors
-func (swagger *MgwSwagger) GetOperationInterceptors(apiInterceptor InterceptEndpoint, resourceInterceptor InterceptEndpoint, operations []*Operation, isIn bool) map[string]InterceptEndpoint {
+func (swagger *AdapterInternalAPI) GetOperationInterceptors(apiInterceptor InterceptEndpoint, resourceInterceptor InterceptEndpoint, operations []*Operation, isIn bool) map[string]InterceptEndpoint {
 	interceptorOperationMap := make(map[string]InterceptEndpoint)
 
 	for _, op := range operations {
@@ -485,7 +484,7 @@ func (swagger *MgwSwagger) GetOperationInterceptors(apiInterceptor InterceptEndp
 }
 
 // GetInterceptor returns interceptors
-func (swagger *MgwSwagger) GetInterceptor(vendorExtensions map[string]interface{}, extensionName string, level string) InterceptEndpoint {
+func (swagger *AdapterInternalAPI) GetInterceptor(vendorExtensions map[string]interface{}, extensionName string, level string) InterceptEndpoint {
 	var endpointCluster EndpointCluster
 	conf := config.ReadConfigs()
 	clusterTimeoutV := conf.Envoy.ClusterTimeoutInSeconds
@@ -549,7 +548,7 @@ func (swagger *MgwSwagger) GetInterceptor(vendorExtensions map[string]interface{
 				Level:           level,
 			}
 		}
-		logger.LoggerOasparser.Error("Error parsing response interceptors values to mgwSwagger")
+		logger.LoggerOasparser.Error("Error parsing response interceptors values to adapterInternalAPI")
 	}
 	return InterceptEndpoint{}
 }
@@ -578,9 +577,9 @@ func GenerateInterceptorIncludes(includes []dpv1alpha1.InterceptorInclusion) *in
 	return includesV
 }
 
-// CreateDummyMgwSwaggerForTests creates a dummy MgwSwagger struct to be used for unit tests
-func CreateDummyMgwSwaggerForTests(title, version, basePath string, resources []*Resource) *MgwSwagger {
-	return &MgwSwagger{
+// CreateDummyAdapterInternalAPIForTests creates a dummy AdapterInternalAPI struct to be used for unit tests
+func CreateDummyAdapterInternalAPIForTests(title, version, basePath string, resources []*Resource) *AdapterInternalAPI {
+	return &AdapterInternalAPI{
 		title:         title,
 		version:       version,
 		xWso2Basepath: basePath,

@@ -1,5 +1,4 @@
-# todo(amali) do something for these
-# The configuration file for mgw
+# The configuration file for APK
 
 [adapter] # --------------------------------------------------------
 
@@ -55,7 +54,7 @@ soapErrorInXMLEnabled = false
   # APK natively integrates with Consul service mesh
   # Therefore a service name is required to be defined inorder to grant access to other services in mesh
   # This only need to be defined if service mesh enabled in Consul
-  mgwServiceName = "wso2"
+  apkServiceName = "wso2"
   # Set this to true if service mesh is enabled in Consul
   serviceMeshEnabled = false
   # Certs for tls
@@ -437,10 +436,10 @@ enabled = true
 # Issuer 2 - Issuer for Enforcer test key
 [[enforcer.security.tokenService]]
   # Provide unique name for the JWT issuer
-  name = "MGW"
+  name = "APK"
   issuer = "https://localhost:9095/testkey"
   # Alias name given in Enforcer truststore for the public certificate of the JWT issuer
-  certificateAlias = "mgw"
+  certificateAlias = "apk"
   # URL of the JWKs endpoint
   jwksURL = ""
   # Validate subscribed APIs

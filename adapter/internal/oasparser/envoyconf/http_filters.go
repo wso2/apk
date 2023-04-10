@@ -39,14 +39,12 @@ import (
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/durationpb"
 
-	//rls "github.com/envoyproxy/go-control-plane/envoy/config/ratelimit/v3"
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/wso2/apk/adapter/config"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
 	logging "github.com/wso2/apk/adapter/internal/logging"
 
-	//mgw_websocket "github.com/wso2/micro-gw/internal/oasparser/envoyconf/api"
 	"github.com/golang/protobuf/ptypes/any"
 )
 
@@ -131,12 +129,12 @@ func getUpgradeFilters() []*hcmv3.HttpFilter {
 
 	cors := getCorsHTTPFilter()
 	extAauth := getExtAuthzHTTPFilter()
-	mgwWebSocketWASM := getMgwWebSocketWASMFilter()
+	apkWebSocketWASM := getAPKWebSocketWASMFilter()
 	router := getRouterHTTPFilter()
 	upgradeFilters := []*hcmv3.HttpFilter{
 		cors,
 		extAauth,
-		mgwWebSocketWASM,
+		apkWebSocketWASM,
 		router,
 	}
 	return upgradeFilters
@@ -257,10 +255,10 @@ func getLuaFilter(filterName, defaultScript string) *hcmv3.HttpFilter {
 	return &luaFilter
 }
 
-func getMgwWebSocketWASMFilter() *hcmv3.HttpFilter {
+func getAPKWebSocketWASMFilter() *hcmv3.HttpFilter {
 	config := &wrappers.StringValue{
 		Value: `{
-			"node_id": "mgw_node_1",
+			"node_id": "apk_node_1",
 			"rate_limit_service": "ext-authz",
 			"timeout": "20s",
 			"failure_mode_deny": "true"
@@ -270,19 +268,19 @@ func getMgwWebSocketWASMFilter() *hcmv3.HttpFilter {
 	if err != nil {
 		logger.LoggerOasparser.Error(err)
 	}
-	mgwWebsocketWASMConfig := wasmv3.PluginConfig{
-		Name:   mgwWebSocketWASMFilterName,
-		RootId: mgwWebSocketWASMFilterRoot,
+	apkWebsocketWASMConfig := wasmv3.PluginConfig{
+		Name:   apkWebSocketWASMFilterName,
+		RootId: apkWebSocketWASMFilterRoot,
 		Vm: &wasmv3.PluginConfig_VmConfig{
 			VmConfig: &wasmv3.VmConfig{
-				VmId:             mgwWASMVmID,
-				Runtime:          mgwWASMVmRuntime,
+				VmId:             apkWASMVmID,
+				Runtime:          apkWASMVmRuntime,
 				AllowPrecompiled: true,
 				Code: &corev3.AsyncDataSource{
 					Specifier: &corev3.AsyncDataSource_Local{
 						Local: &corev3.DataSource{
 							Specifier: &corev3.DataSource_Filename{
-								Filename: mgwWebSocketWASM,
+								Filename: apkWebSocketWASM,
 							},
 						},
 					},
@@ -295,16 +293,16 @@ func getMgwWebSocketWASMFilter() *hcmv3.HttpFilter {
 		},
 	}
 
-	mgwWebSocketWASMFilterConfig := &wasm_filter_v3.Wasm{
-		Config: &mgwWebsocketWASMConfig,
+	apkWebSocketWASMFilterConfig := &wasm_filter_v3.Wasm{
+		Config: &apkWebsocketWASMConfig,
 	}
 
-	ext, err2 := proto.Marshal(mgwWebSocketWASMFilterConfig)
+	ext, err2 := proto.Marshal(apkWebSocketWASMFilterConfig)
 	if err2 != nil {
 		logger.LoggerOasparser.Error(err2)
 	}
-	mgwWebSocketFilter := hcmv3.HttpFilter{
-		Name: mgwWebSocketWASMFilterName,
+	apkWebSocketFilter := hcmv3.HttpFilter{
+		Name: apkWebSocketWASMFilterName,
 		ConfigType: &hcmv3.HttpFilter_TypedConfig{
 			TypedConfig: &any.Any{
 				TypeUrl: "type.googleapis.com/envoy.extensions.filters.http.wasm.v3.Wasm",
@@ -312,6 +310,6 @@ func getMgwWebSocketWASMFilter() *hcmv3.HttpFilter {
 			},
 		},
 	}
-	return &mgwWebSocketFilter
+	return &apkWebSocketFilter
 
 }

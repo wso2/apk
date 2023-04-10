@@ -26,21 +26,21 @@ import (
 
 func TestUpdateAPICache(t *testing.T) {
 	tests := []struct {
-		name          string
-		vHosts        []string
-		labels        []string
-		listeners     []string
-		mgwSwagger    model.MgwSwagger
-		EnvType       string
-		action        string
-		deletedvHosts []string
+		name               string
+		vHosts             []string
+		labels             []string
+		listeners          []string
+		adapterInternalAPI model.AdapterInternalAPI
+		EnvType            string
+		action             string
+		deletedvHosts      []string
 	}{
 		{
 			name:      "Test creating first prod api",
 			vHosts:    []string{"prod1.gw.abc.com", "prod2.gw.abc.com"},
 			labels:    []string{"default"},
 			listeners: []string{"httpslistener"},
-			mgwSwagger: model.MgwSwagger{
+			adapterInternalAPI: model.AdapterInternalAPI{
 				UUID:           "api-1-uuid",
 				EnvType:        "prod",
 				OrganizationID: "org-1",
@@ -53,7 +53,7 @@ func TestUpdateAPICache(t *testing.T) {
 			vHosts:    []string{"sand3.gw.abc.com", "sand4.gw.abc.com"},
 			labels:    []string{"default"},
 			listeners: []string{"httpslistener"},
-			mgwSwagger: model.MgwSwagger{
+			adapterInternalAPI: model.AdapterInternalAPI{
 				UUID:           "app-1-uuid",
 				EnvType:        "sand",
 				OrganizationID: "org-1",
@@ -66,7 +66,7 @@ func TestUpdateAPICache(t *testing.T) {
 			vHosts:    []string{"prod1.gw.pqr.com", "prod2.gw.pqr.com"},
 			labels:    []string{"default"},
 			listeners: []string{"httpslistener"},
-			mgwSwagger: model.MgwSwagger{
+			adapterInternalAPI: model.AdapterInternalAPI{
 				UUID:           "api-2-uuid",
 				EnvType:        "prod",
 				OrganizationID: "org-2",
@@ -79,7 +79,7 @@ func TestUpdateAPICache(t *testing.T) {
 			vHosts:    []string{"prod1.gw.abc.com", "prod2.gw.abc.com"},
 			labels:    []string{"default"},
 			listeners: []string{"httpslistener"},
-			mgwSwagger: model.MgwSwagger{
+			adapterInternalAPI: model.AdapterInternalAPI{
 				UUID:           "api-1-uuid",
 				EnvType:        "prod",
 				OrganizationID: "org-1",
@@ -90,7 +90,7 @@ func TestUpdateAPICache(t *testing.T) {
 			name:      "Test deleting api 1 both prod and sand",
 			labels:    []string{"default"},
 			listeners: []string{"httpslistener"},
-			mgwSwagger: model.MgwSwagger{
+			adapterInternalAPI: model.AdapterInternalAPI{
 				UUID:           "app-1-uuid",
 				OrganizationID: "org-1",
 			},
@@ -105,9 +105,9 @@ func TestUpdateAPICache(t *testing.T) {
 			switch test.action {
 			case "CREATE":
 			case "UPDATE":
-				UpdateAPICache(test.vHosts, test.labels, test.listeners, test.mgwSwagger)
-				identifier := GetvHostsIdentifier(test.mgwSwagger.UUID, "prod")
-				actualvHosts, ok := orgIDAPIvHostsMap[test.mgwSwagger.OrganizationID][identifier]
+				UpdateAPICache(test.vHosts, test.labels, test.listeners, test.adapterInternalAPI)
+				identifier := GetvHostsIdentifier(test.adapterInternalAPI.UUID, "prod")
+				actualvHosts, ok := orgIDAPIvHostsMap[test.adapterInternalAPI.OrganizationID][identifier]
 				if !ok {
 					t.Errorf("orgIDAPIvHostsMap has not updated with new entry with the key: %s, %v",
 						identifier, orgIDAPIvHostsMap)
@@ -115,23 +115,23 @@ func TestUpdateAPICache(t *testing.T) {
 				assert.Equal(t, actualvHosts, test.vHosts, "Not expected vHosts found, expected: %v but found: %v",
 					test.vHosts, actualvHosts)
 				for _, vhsot := range actualvHosts {
-					testExistsInMapping(t, orgIDAPIMgwSwaggerMap[test.mgwSwagger.OrganizationID],
-						GenerateIdentifierForAPIWithUUID(vhsot, test.mgwSwagger.UUID), true)
-					testExistsInMapping(t, orgIDOpenAPIRoutesMap[test.mgwSwagger.OrganizationID],
-						GenerateIdentifierForAPIWithUUID(vhsot, test.mgwSwagger.UUID), true)
-					testExistsInMapping(t, orgIDOpenAPIClustersMap[test.mgwSwagger.OrganizationID],
-						GenerateIdentifierForAPIWithUUID(vhsot, test.mgwSwagger.UUID), true)
-					testExistsInMapping(t, orgIDOpenAPIEndpointsMap[test.mgwSwagger.OrganizationID],
-						GenerateIdentifierForAPIWithUUID(vhsot, test.mgwSwagger.UUID), true)
-					testExistsInMapping(t, orgIDOpenAPIEnforcerApisMap[test.mgwSwagger.OrganizationID],
-						GenerateIdentifierForAPIWithUUID(vhsot, test.mgwSwagger.UUID), true)
+					testExistsInMapping(t, orgIDAPIAdapterInternalAPIMap[test.adapterInternalAPI.OrganizationID],
+						GenerateIdentifierForAPIWithUUID(vhsot, test.adapterInternalAPI.UUID), true)
+					testExistsInMapping(t, orgIDOpenAPIRoutesMap[test.adapterInternalAPI.OrganizationID],
+						GenerateIdentifierForAPIWithUUID(vhsot, test.adapterInternalAPI.UUID), true)
+					testExistsInMapping(t, orgIDOpenAPIClustersMap[test.adapterInternalAPI.OrganizationID],
+						GenerateIdentifierForAPIWithUUID(vhsot, test.adapterInternalAPI.UUID), true)
+					testExistsInMapping(t, orgIDOpenAPIEndpointsMap[test.adapterInternalAPI.OrganizationID],
+						GenerateIdentifierForAPIWithUUID(vhsot, test.adapterInternalAPI.UUID), true)
+					testExistsInMapping(t, orgIDOpenAPIEnforcerApisMap[test.adapterInternalAPI.OrganizationID],
+						GenerateIdentifierForAPIWithUUID(vhsot, test.adapterInternalAPI.UUID), true)
 				}
 			case "DELETE":
-				DeleteAPICREvent(test.labels, test.mgwSwagger.UUID, test.mgwSwagger.OrganizationID)
-				prodIdentifier := GetvHostsIdentifier(test.mgwSwagger.UUID, "prod")
-				sandIdentifier := GetvHostsIdentifier(test.mgwSwagger.UUID, "sand")
-				_, prodExists := orgIDAPIvHostsMap[test.mgwSwagger.OrganizationID][prodIdentifier]
-				_, sandExists := orgIDAPIvHostsMap[test.mgwSwagger.OrganizationID][sandIdentifier]
+				DeleteAPICREvent(test.labels, test.adapterInternalAPI.UUID, test.adapterInternalAPI.OrganizationID)
+				prodIdentifier := GetvHostsIdentifier(test.adapterInternalAPI.UUID, "prod")
+				sandIdentifier := GetvHostsIdentifier(test.adapterInternalAPI.UUID, "sand")
+				_, prodExists := orgIDAPIvHostsMap[test.adapterInternalAPI.OrganizationID][prodIdentifier]
+				_, sandExists := orgIDAPIvHostsMap[test.adapterInternalAPI.OrganizationID][sandIdentifier]
 				if prodExists {
 					t.Errorf("orgIDAPIvHostsMap has a mapping for prod after api deletion")
 				}
@@ -139,16 +139,16 @@ func TestUpdateAPICache(t *testing.T) {
 					t.Errorf("orgIDAPIvHostsMap has a mapping for sand after api deletion")
 				}
 				for _, vhsot := range test.deletedvHosts {
-					testExistsInMapping(t, orgIDAPIMgwSwaggerMap[test.mgwSwagger.OrganizationID],
-						GenerateIdentifierForAPIWithUUID(vhsot, test.mgwSwagger.UUID), false)
-					testExistsInMapping(t, orgIDOpenAPIRoutesMap[test.mgwSwagger.OrganizationID],
-						GenerateIdentifierForAPIWithUUID(vhsot, test.mgwSwagger.UUID), false)
-					testExistsInMapping(t, orgIDOpenAPIClustersMap[test.mgwSwagger.OrganizationID],
-						GenerateIdentifierForAPIWithUUID(vhsot, test.mgwSwagger.UUID), false)
-					testExistsInMapping(t, orgIDOpenAPIEndpointsMap[test.mgwSwagger.OrganizationID],
-						GenerateIdentifierForAPIWithUUID(vhsot, test.mgwSwagger.UUID), false)
-					testExistsInMapping(t, orgIDOpenAPIEnforcerApisMap[test.mgwSwagger.OrganizationID],
-						GenerateIdentifierForAPIWithUUID(vhsot, test.mgwSwagger.UUID), false)
+					testExistsInMapping(t, orgIDAPIAdapterInternalAPIMap[test.adapterInternalAPI.OrganizationID],
+						GenerateIdentifierForAPIWithUUID(vhsot, test.adapterInternalAPI.UUID), false)
+					testExistsInMapping(t, orgIDOpenAPIRoutesMap[test.adapterInternalAPI.OrganizationID],
+						GenerateIdentifierForAPIWithUUID(vhsot, test.adapterInternalAPI.UUID), false)
+					testExistsInMapping(t, orgIDOpenAPIClustersMap[test.adapterInternalAPI.OrganizationID],
+						GenerateIdentifierForAPIWithUUID(vhsot, test.adapterInternalAPI.UUID), false)
+					testExistsInMapping(t, orgIDOpenAPIEndpointsMap[test.adapterInternalAPI.OrganizationID],
+						GenerateIdentifierForAPIWithUUID(vhsot, test.adapterInternalAPI.UUID), false)
+					testExistsInMapping(t, orgIDOpenAPIEnforcerApisMap[test.adapterInternalAPI.OrganizationID],
+						GenerateIdentifierForAPIWithUUID(vhsot, test.adapterInternalAPI.UUID), false)
 				}
 			}
 		})

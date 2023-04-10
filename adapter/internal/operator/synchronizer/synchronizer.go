@@ -116,22 +116,22 @@ func deleteAPIFromEnv(httpRoute *gwapiv1b1.HTTPRoute, apiState APIState) error {
 func deployAPIInGateway(apiState APIState) error {
 	var err error
 	if apiState.ProdHTTPRoute != nil {
-		_, err = GenerateMGWSwagger(apiState, apiState.ProdHTTPRoute, constants.Production)
+		_, err = GenerateAdapterInternalAPI(apiState, apiState.ProdHTTPRoute, constants.Production)
 	}
 	if err != nil {
 		return err
 	}
 	if apiState.SandHTTPRoute != nil {
-		_, err = GenerateMGWSwagger(apiState, apiState.SandHTTPRoute, constants.Sandbox)
+		_, err = GenerateAdapterInternalAPI(apiState, apiState.SandHTTPRoute, constants.Sandbox)
 	}
 	return err
 }
 
-// GenerateMGWSwagger this will populate a mgwswagger representation for an HTTPRoute
-func GenerateMGWSwagger(apiState APIState, httpRoute *HTTPRouteState, envType string) (*model.MgwSwagger, error) {
-	var mgwSwagger model.MgwSwagger
-	mgwSwagger.SetInfoAPICR(*apiState.APIDefinition)
-	mgwSwagger.EnvType = envType
+// GenerateAdapterInternalAPI this will populate a AdapterInternalAPI representation for an HTTPRoute
+func GenerateAdapterInternalAPI(apiState APIState, httpRoute *HTTPRouteState, envType string) (*model.AdapterInternalAPI, error) {
+	var adapterInternalAPI model.AdapterInternalAPI
+	adapterInternalAPI.SetInfoAPICR(*apiState.APIDefinition)
+	adapterInternalAPI.EnvType = envType
 	httpRouteParams := model.HTTPRouteParams{
 		AuthSchemes:               httpRoute.Authentications,
 		ResourceAuthSchemes:       httpRoute.ResourceAuthentications,
@@ -142,11 +142,11 @@ func GenerateMGWSwagger(apiState APIState, httpRoute *HTTPRouteState, envType st
 		RateLimitPolicies:         httpRoute.RateLimitPolicies,
 		ResourceRateLimitPolicies: httpRoute.ResourceRateLimitPolicies,
 	}
-	if err := mgwSwagger.SetInfoHTTPRouteCR(httpRoute.HTTPRoute, httpRouteParams); err != nil {
+	if err := adapterInternalAPI.SetInfoHTTPRouteCR(httpRoute.HTTPRoute, httpRouteParams); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2631, err))
 		return nil, err
 	}
-	if err := mgwSwagger.Validate(); err != nil {
+	if err := adapterInternalAPI.Validate(); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2632, err))
 		return nil, err
 	}
@@ -156,13 +156,13 @@ func GenerateMGWSwagger(apiState APIState, httpRoute *HTTPRouteState, envType st
 
 	conf := config.ReadConfigs()
 	if conf.Envoy.RateLimit.Enabled {
-		xds.UpdateRateLimitXDSCache(vHosts, mgwSwagger)
+		xds.UpdateRateLimitXDSCache(vHosts, adapterInternalAPI)
 	}
-	err := xds.UpdateAPICache(vHosts, labels, listeners, mgwSwagger)
+	err := xds.UpdateAPICache(vHosts, labels, listeners, adapterInternalAPI)
 	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2633, mgwSwagger.GetTitle(), mgwSwagger.GetVersion(), vHosts, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2633, adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), vHosts, err))
 	}
-	return &mgwSwagger, nil
+	return &adapterInternalAPI, nil
 }
 
 // getVhostForAPI returns the vHosts related to an API.

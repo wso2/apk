@@ -44,9 +44,9 @@
   certificateFilePath = "/home/wso2/security/truststore/wso2carbon.pem"
 
 [[enforcer.security.tokenService]]
-  name = "MGW"
+  name = "APK"
   issuer = "https://localhost:9095/testkey"
-  certificateAlias = "mgw"
+  certificateAlias = "apk"
   jwksURL = ""
   validateSubscription = false
   consumerKeyClaim = ""

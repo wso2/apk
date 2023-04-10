@@ -32,13 +32,13 @@ package model
 // 	}
 // }
 
-// // SetInfoGraphQLAPI populates the MgwSwagger object with information in api.yaml.
-// func (swagger *MgwSwagger) SetInfoGraphQLAPI(apiYaml APIYaml) error {
+// // SetInfoGraphQLAPI populates the AdapterInternalAPI object with information in api.yaml.
+// func (swagger *AdapterInternalAPI) SetInfoGraphQLAPI(apiYaml APIYaml) error {
 
 // 	var securitySchemes []SecurityScheme
 // 	var isAPIKeyEnabled bool
 
-// 	// assigns mgw security schemes
+// 	// assigns security schemes
 // 	for _, securitySchemeValue := range apiYaml.Data.SecurityScheme {
 // 		if securitySchemeValue == constants.Oauth2TypeInOAS {
 // 			securitySchemes = append(securitySchemes, SecurityScheme{DefinitionName: "default", Type: securitySchemeValue})

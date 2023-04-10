@@ -31,7 +31,6 @@ import (
 	logging "github.com/wso2/apk/adapter/internal/logging"
 	"github.com/wso2/apk/adapter/internal/oasparser/envoyconf"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
-	mgw "github.com/wso2/apk/adapter/internal/oasparser/model"
 	"github.com/wso2/apk/adapter/pkg/utils/stringutils"
 )
 
@@ -69,15 +68,15 @@ type rateLimitPolicyCache struct {
 }
 
 // AddAPILevelRateLimitPolicies adds inline Rate Limit policies in APIs to be updated in the Rate Limiter service.
-func (r *rateLimitPolicyCache) AddAPILevelRateLimitPolicies(vHosts []string, mgwSwagger *mgw.MgwSwagger) {
+func (r *rateLimitPolicyCache) AddAPILevelRateLimitPolicies(vHosts []string, adapterInternalAPI *model.AdapterInternalAPI) {
 
 	rlsConfigs := []*rls_config.RateLimitDescriptor{}
 
 	// The map apiOperations is used to keep `Pat:HTTPmethod` unique to make sure the Rate Limiter Config to be consistent (not to have duplicate rate limit policies)
 	// path -> HTTP method
 	apiOperations := make(map[string]map[string]struct{})
-	for _, resource := range mgwSwagger.GetResources() {
-		path := mgwSwagger.GetXWso2Basepath() + resource.GetPath()
+	for _, resource := range adapterInternalAPI.GetResources() {
+		path := adapterInternalAPI.GetXWso2Basepath() + resource.GetPath()
 		if _, ok := apiOperations[path]; !ok {
 			apiOperations[path] = make(map[string]struct{})
 		}
@@ -111,11 +110,11 @@ func (r *rateLimitPolicyCache) AddAPILevelRateLimitPolicies(vHosts []string, mgw
 		}
 	}
 
-	if mgwSwagger.RateLimitPolicy != nil {
-		apiLevelRLPolicyConfig := parseRateLimitPolicyToXDS(mgwSwagger.RateLimitPolicy)
+	if adapterInternalAPI.RateLimitPolicy != nil {
+		apiLevelRLPolicyConfig := parseRateLimitPolicyToXDS(adapterInternalAPI.RateLimitPolicy)
 		rlsConfigs = append(rlsConfigs, &rls_config.RateLimitDescriptor{
 			Key:   envoyconf.DescriptorKeyForPath,
-			Value: mgwSwagger.GetXWso2Basepath(),
+			Value: adapterInternalAPI.GetXWso2Basepath(),
 			Descriptors: []*rls_config.RateLimitDescriptor{
 				{
 					Key:       envoyconf.DescriptorKeyForMethod,
@@ -131,7 +130,7 @@ func (r *rateLimitPolicyCache) AddAPILevelRateLimitPolicies(vHosts []string, mgw
 		return
 	}
 
-	org := mgwSwagger.OrganizationID
+	org := adapterInternalAPI.OrganizationID
 
 	r.apiLevelMu.Lock()
 	defer r.apiLevelMu.Unlock()
@@ -142,7 +141,7 @@ func (r *rateLimitPolicyCache) AddAPILevelRateLimitPolicies(vHosts []string, mgw
 		if _, ok := r.apiLevelRateLimitPolicies[org][vHost]; !ok {
 			r.apiLevelRateLimitPolicies[org][vHost] = make(map[string][]*rls_config.RateLimitDescriptor)
 		}
-		apiIdentifier := GenerateIdentifierForAPIWithUUID(vHost, mgwSwagger.UUID)
+		apiIdentifier := GenerateIdentifierForAPIWithUUID(vHost, adapterInternalAPI.UUID)
 		r.apiLevelRateLimitPolicies[org][vHost][apiIdentifier] = rlsConfigs
 	}
 }
@@ -154,7 +153,7 @@ func (r *rateLimitPolicyCache) DeleteAPILevelRateLimitPolicies(org, vHost, apiID
 	delete(r.apiLevelRateLimitPolicies[org][vHost], apiID)
 }
 
-func parseRateLimitPolicyToXDS(policy *mgw.RateLimitPolicy) *rls_config.RateLimitPolicy {
+func parseRateLimitPolicyToXDS(policy *model.RateLimitPolicy) *rls_config.RateLimitPolicy {
 	if policy != nil {
 		unit := getRateLimitUnit(policy.SpanUnit)
 		return &rls_config.RateLimitPolicy{
@@ -237,12 +236,12 @@ func (r *rateLimitPolicyCache) updateXdsCache(label string) bool {
 
 // AddCustomRateLimitPolicies adds custom rate limit policies to the rateLimitPolicyCache.
 func (r *rateLimitPolicyCache) AddCustomRateLimitPolicies(customRateLimitPolicies []*model.CustomRateLimitPolicy) {
-	r.customRateLimitPolicies = make(map[string]map[string]*rls_config.RateLimitDescriptor) 
+	r.customRateLimitPolicies = make(map[string]map[string]*rls_config.RateLimitDescriptor)
 	for _, customRateLimitPolicy := range customRateLimitPolicies {
 		if r.customRateLimitPolicies[customRateLimitPolicy.Organization] == nil {
 			r.customRateLimitPolicies[customRateLimitPolicy.Organization] = make(map[string]*rls_config.RateLimitDescriptor)
 			r.customRateLimitPolicies[customRateLimitPolicy.Organization][customRateLimitPolicy.Key+"_"+customRateLimitPolicy.Value] = &rls_config.RateLimitDescriptor{
-				Key:  customRateLimitPolicy.Key,
+				Key:   customRateLimitPolicy.Key,
 				Value: customRateLimitPolicy.Value,
 				RateLimit: &rls_config.RateLimitPolicy{
 					Unit:            getRateLimitUnit(customRateLimitPolicy.RateLimit.Unit),
@@ -251,7 +250,7 @@ func (r *rateLimitPolicyCache) AddCustomRateLimitPolicies(customRateLimitPolicie
 			}
 		} else {
 			r.customRateLimitPolicies[customRateLimitPolicy.Organization][customRateLimitPolicy.Key+"_"+customRateLimitPolicy.Value] = &rls_config.RateLimitDescriptor{
-				Key:  customRateLimitPolicy.Key,
+				Key:   customRateLimitPolicy.Key,
 				Value: customRateLimitPolicy.Value,
 				RateLimit: &rls_config.RateLimitPolicy{
 					Unit:            getRateLimitUnit(customRateLimitPolicy.RateLimit.Unit),
@@ -264,7 +263,7 @@ func (r *rateLimitPolicyCache) AddCustomRateLimitPolicies(customRateLimitPolicie
 
 // generateCustomPolicyRateLimitConfig generates rate limit configurations for custom rate limit policies
 // based on the policies stored in the rateLimitPolicyCache.
-func (r *rateLimitPolicyCache) generateCustomPolicyRateLimitConfig() []*rls_config.RateLimitDescriptor{
+func (r *rateLimitPolicyCache) generateCustomPolicyRateLimitConfig() []*rls_config.RateLimitDescriptor {
 	var orgDescriptors []*rls_config.RateLimitDescriptor
 	for org, customRateLimitPolicies := range r.customRateLimitPolicies {
 		descriptors := []*rls_config.RateLimitDescriptor{}
@@ -284,6 +283,6 @@ func init() {
 	rlsPolicyCache = &rateLimitPolicyCache{
 		xdsCache:                  gcp_cache.NewSnapshotCache(false, IDHash{}, nil),
 		apiLevelRateLimitPolicies: make(map[string]map[string]map[string][]*rls_config.RateLimitDescriptor),
-		customRateLimitPolicies: make(map[string]map[string]*rls_config.RateLimitDescriptor),
+		customRateLimitPolicies:   make(map[string]map[string]*rls_config.RateLimitDescriptor),
 	}
 }

@@ -39,14 +39,14 @@ allprojects {
 tasks.register('go_test', Exec) {
     group 'go'
     description 'Automates testing the packages named by the import paths.'
-    environment "MGW_HOME", "$rootDir/../adapter/resources"
+    environment "APK_HOME", "$rootDir/../adapter/resources"
     environment "APK_ADAPTER_SERVER_PORT", "9401"
     environment "APK_Enforcer_JwtGenerator_Enabled", "true"
     environment "APK_Analytics_Adapter_bufferSizeBytes", "32768"
     environment "APK_Enforcer_JwtIssuer_ValidityPeriod", "1800"
     environment "APK_Adapter_Consul_PollInterval", "2"
     environment "APK_analytics_enforcer_configProperties_authToken", "test-token"
-    environment "APK_enforcer_security_tokenService_1_name", "MGW-Test"
+    environment "APK_enforcer_security_tokenService_1_name", "APK-Test"
     environment "adapter_admin_pwd", "password"
 
     environment "APK_test_test_stringarray", "foo2, bar2"

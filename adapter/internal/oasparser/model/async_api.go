@@ -82,8 +82,8 @@ package model
 // 	}
 // }
 
-// // SetInfoAsyncAPI populates the MgwSwagger object with information in asyncapi.yaml.
-// func (swagger *MgwSwagger) SetInfoAsyncAPI(asyncAPI AsyncAPI) error {
+// // SetInfoAsyncAPI populates the AdapterInternalAPI object with information in asyncapi.yaml.
+// func (swagger *AdapterInternalAPI) SetInfoAsyncAPI(asyncAPI AsyncAPI) error {
 // 	swagger.vendorExtensions = asyncAPI.VendorExtensions
 // 	swagger.disableSecurity = ResolveDisableSecurity(asyncAPI.VendorExtensions)
 // 	swagger.securityScheme = asyncAPI.getSecuritySchemes()

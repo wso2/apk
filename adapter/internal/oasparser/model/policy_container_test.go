@@ -159,7 +159,7 @@ func TestPolicySpecificationValidatePolicy(t *testing.T) {
 // 			},
 // 		},
 // 	}
-// 	actualFormattedP, err := proj.Policies.GetFormattedOperationalPolicies(apiYaml.Data.Operations[0].OperationPolicies, &MgwSwagger{})
+// 	actualFormattedP, err := proj.Policies.GetFormattedOperationalPolicies(apiYaml.Data.Operations[0].OperationPolicies, &AdapterInternalAPI{})
 // 	assert.Nil(t, err)
 // 	assert.Equal(t, expFormattedP, actualFormattedP, "Converting operational policies to format failed")
 // }
