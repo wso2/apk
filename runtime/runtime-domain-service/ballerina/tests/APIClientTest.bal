@@ -2261,15 +2261,31 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
         model:RuntimeAPI mockRuntimeAPIWithAPIRateLimits = getMockRuntimeAPI(apiWithAPIRateLimits, apiUUID, organiztion1, serviceRecord);
         http:Response mockRuntimeResponseWithAPIRateLimits = getMockRuntimeAPIResponse(mockRuntimeAPIWithAPIRateLimits.clone());
         http:Response serviceMappingResponse = getMockServiceMappingResponse(mockServiceMappingRequest.clone());
-        BadRequestError nameAlreadyExistError = {body: {code: 90911, message: "API Name - " + alreadyNameExist.name + " already exist.", description: "API Name - " + alreadyNameExist.name + " already exist."}};
+        commons:APKError nameAlreadyExistError = error commons:APKError(
+            "API Name - " + alreadyNameExist.name + " already exist",
+            code = 90911,
+            message = "API Name - " + alreadyNameExist.name + " already exist",
+            statusCode = 409,
+            description = "API Name - " + alreadyNameExist.name + " already exist"
+        );
         API contextAlreadyExist = {
             name: "PizzaAPI",
             context: "/pizzashack/1.0.0",
             'version: "1.0.0"
         };
-        BadRequestError contextAlreadyExistError = {body: {code: 90911, message: "API Context - " + contextAlreadyExist.context + " already exist.", description: "API Context " + contextAlreadyExist.context + " already exist."}};
-        BadRequestError serviceNotExist = {body: {code: 90913, message: "Service from 275b00d1-722c-4df2-b65a-9b14677abe4a not found."}};
-
+        commons:APKError contextAlreadyExistError = error commons:APKError(
+           "API Context - " + contextAlreadyExist.context + " already exist",
+           code = 90912,
+           message = "API Context - " + contextAlreadyExist.context + " already exist",
+           statusCode = 409,
+           description = "API Context - " + contextAlreadyExist.context + " already exist"
+        );
+        commons:APKError serviceNotExist = error commons:APKError( "Service from 275b00d1-722c-4df2-b65a-9b14677abe4a not found",
+            code = 90904,
+            message =  "Service from 275b00d1-722c-4df2-b65a-9b14677abe4a not found",
+            statusCode = 404,
+            description =  "Service from 275b00d1-722c-4df2-b65a-9b14677abe4a not found"
+        );
         CreatedAPI createdAPI = {
             body: {
                 id: k8sAPIUUID1,

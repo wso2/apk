@@ -49,11 +49,11 @@ public isolated function e90903() returns commons:APKError {
 }
 
 public isolated function e90904(string serviceKey) returns commons:APKError {
-    return error commons:APKError( "Service from " + serviceKey + " not found.",
+    return error commons:APKError( "Service from " + serviceKey + " not found",
         code = 90904,
-        message =  "Service from " + serviceKey + " not found.",
+        message =  "Service from " + serviceKey + " not found",
         statusCode = 404,
-        description =  "Service from " + serviceKey + " not found."
+        description =  "Service from " + serviceKey + " not found"
     ); 
 }
 
