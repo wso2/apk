@@ -33,6 +33,7 @@ const string PRODUCTION_TYPE = "production";
 const string SANDBOX_TYPE = "sandbox";
 const string PRIMARY_ENDPOINT = "primary";
 const string ENDPOINT_SECURITY_TYPE_BASIC = "basic";
+const string ENDPOINT_SECURITY_TYPE_BASIC_CASE = "Basic";
 const string DEFAULT_MODIFIED_ENDPOINT_PASSWORD = "*****"; //5 stars
 const string ZIP_FILE_EXTENSTION = ".zip";
 const string PROTOCOL_HTTP = "http";
