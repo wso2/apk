@@ -527,9 +527,18 @@ public function testGetAPIList(string? query, int 'limit, int offset, string sor
 }
 
 function getApilistDataProvider() returns map<[string?, int, int, string, string, anydata]> {
-    BadRequestError badRequestError = {"body": {"code": 90912, "message": "Invalid Sort By/Sort Order Value "}};
-    BadRequestError badRequest = {body: {code: 90912, message: "Invalid KeyWord type1"}};
-
+    commons:APKError badRequestError = error commons:APKError("Invalid Sort By/Sort Order value",
+        code = 90920,
+        message = "Invalid Sort By/Sort Order value",
+        statusCode = 406,
+        description = "Invalid Sort By/Sort Order value"
+    );
+    commons:APKError badRequest = error commons:APKError("Invalid keyword type1",
+        code = 90919,
+        message = "Invalid keyword type1",
+        statusCode = 406,
+        description = "Invalid keyword type1"
+    );
     map<[string?, int, int, string, string, anydata]> dataSet = {
         "1": [
             (),
@@ -1969,8 +1978,18 @@ function testValidateAPIExistence(string query, anydata expected) {
 
 function validateExistenceDataProvider() returns map<[string, anydata]> {
     http:Ok ok = {};
-    BadRequestError badRequest = {body: {code: 90912, message: "Invalid KeyWord type"}};
-    NotFoundError notFound = {body: {code: 900914, message: "context/name doesn't exist"}};
+    commons:APKError badRequest = error commons:APKError("Invalid keyword type",
+        code = 90919,
+        message = "Invalid keyword type",
+        statusCode = 406,
+        description = "Invalid keyword type"
+    );
+    commons:APKError notFound = error commons:APKError( "Context/Name doesn't exist",
+        code = 90902,
+        message = "Context/Name doesn't exist",
+        statusCode = 404,
+        description = "Context/Name doesn't exist"
+    ); 
     map<[string, anydata]> data = {
         "1": ["name:pizzashackAPI", ok.toBalString()],
         "2": ["name:mockapi", notFound.toBalString()],
@@ -2122,7 +2141,12 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
                 }
             ]
         };
-        BadRequestError invalidPolicyNameError = {body: {code: 90915, message: "Invalid operation policy name"}};
+        commons:APKError invalidPolicyNameError = error commons:APKError( "Invalid operation policy name",
+        code = 90910,
+        message = "Invalid operation policy name",
+        statusCode = 406,
+        description = "Invalid operation policy name"
+    );
         API apiWithOperationRateLimits = {
             "name": "PizzaAPI",
             "context": "/pizzaAPI/1.0.0",
@@ -2216,7 +2240,12 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
                 "unit": "Minute"
             }
         };
-        BadRequestError bothRateLimitsPresentError = {body: {code: 90918, message: "Presence of both resource level and API level rate limits is not allowed"}};
+        commons:APKError bothRateLimitsPresentError = error commons:APKError( "Presence of both resource level and API level rate limits is not allowed",
+            code = 90926,
+            message = "Presence of both resource level and API level rate limits is not allowed",
+            statusCode = 406,
+            description = "Presence of both resource level and API level rate limits is not allowed"
+        );
         string apiUUID = getUniqueIdForAPI(api.name, api.'version, organiztion1);
         model:ConfigMap configmap = check getMockConfigMap1(apiUUID, api);
         http:Response mockConfigMapResponse = getMockConfigMapResponse(configmap.clone());
@@ -4901,9 +4930,18 @@ public function testGetMediationPolicyList(string? query, int 'limit, int offset
 }
 
 function getMediationPolicyListDataProvider() returns map<[string?, int, int, string, string, anydata]> {
-    BadRequestError badRequestError = {"body": {"code": 90912, "message": "Invalid Sort By/Sort Order Value "}};
-    BadRequestError badRequest = {body: {code: 90912, message: "Invalid KeyWord name1"}};
-
+    commons:APKError badRequestError = error commons:APKError("Invalid Sort By/Sort Order value",
+        code = 90920,
+        message = "Invalid Sort By/Sort Order value",
+        statusCode = 406,
+        description = "Invalid Sort By/Sort Order value"
+    );
+    commons:APKError badRequest = error commons:APKError("Invalid keyword name1",
+        code = 90919,
+        message = "Invalid keyword name1",
+        statusCode = 406,
+        description = "Invalid keyword name1"
+    );
     map<[string?, int, int, string, string, anydata]> dataSet = {
         "1": [
             (),

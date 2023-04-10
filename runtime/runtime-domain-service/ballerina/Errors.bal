@@ -184,11 +184,11 @@ public isolated function e90918() returns commons:APKError {
 }
 
 public isolated function e90919(string keyWord) returns commons:APKError {
-    return error commons:APKError("Invalid KeyWord " + keyWord,
+    return error commons:APKError("Invalid keyword " + keyWord,
         code = 90919,
-        message = "Invalid KeyWord " + keyWord,
+        message = "Invalid keyword " + keyWord,
         statusCode = 406,
-        description = "Invalid KeyWord " + keyWord
+        description = "Invalid keyword " + keyWord
     ); 
 }
 
