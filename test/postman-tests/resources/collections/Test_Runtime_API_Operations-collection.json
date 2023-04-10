@@ -2027,8 +2027,8 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Status code is 200\", function () {",
-							"  pm.response.to.have.status(200);",
+							"pm.test(\"Status code is 201\", function () {",
+							"  pm.response.to.have.status(201);",
 							"});",
 							"",
 							"pm.test(\"Assert token generation response\", () => {",
@@ -2073,7 +2073,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"context\": \"/{{testAPIV2Context}}\" ,\n    \"name\": \"{{testAPIV2Name}}\" ,\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\"\n}\n"
+					"raw": "{\n    \"context\": \"/{{testAPIV4Context}}\" ,\n    \"name\": \"{{testAPIV4Name}}\" ,\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\"\n}\n"
 				},
 				"url": {
 					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIV4UUID}}/generate-key",
@@ -2436,8 +2436,8 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Status code is 200\", function () {",
-							"  pm.response.to.have.status(200);",
+							"pm.test(\"Status code is 201\", function () {",
+							"  pm.response.to.have.status(201);",
 							"});",
 							"",
 							"pm.test(\"Assert token generation response\", () => {",
@@ -2482,7 +2482,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"context\": \"/{{testAPIV2Context}}\" ,\n    \"name\": \"{{testAPIV2Name}}\" ,\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\"\n}\n"
+					"raw": "{\n    \"context\": \"/{{testAPIV4Context}}\" ,\n    \"name\": \"{{testAPIV4Name}}\" ,\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\"\n}\n"
 				},
 				"url": {
 					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIV4UUID}}/generate-key",
