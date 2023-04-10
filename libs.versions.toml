@@ -97,6 +97,7 @@ wso2-uri-templates = {module = "org.wso2.uri.template:wso2-uri-templates", versi
 xerces = {module = "xerces.wso2:xercesImpl", version.ref = "xerces"}
 #Added as direct dependency for transitive dependency version upgrades
 reactor-netty-http = {module = "io.projectreactor.netty:reactor-netty-http", version.ref = "reactor-netty-http"}
+protobuf-java = {module = "com.google.protobuf:protobuf-java", version.ref = "protobuf-java"}
 #Test dependencies
 hamcrest = {module = "org.hamcrest:hamcrest-all", version.ref = "hamcrest"}
 jacoco-agent = {module = "org.jacoco:org.jacoco.agent", version.ref = "jacoco"}
@@ -175,6 +176,7 @@ wso2-uri-templates = "1.6.5"
 xerces = "2.8.1.wso2v2"
 #Added as direct dependency for transitive dependency version upgrades
 reactor-netty-http = "1.0.24"
+protobuf-java = "3.21.7"
 #Test dependencies
 hamcrest = "1.3"
 jacoco = "0.8.4"
@@ -182,4 +184,4 @@ mockito = "2.23.4"
 powermock = "2.0.2"
 xml-apis = "1.4.01"
 # Plugins
-openapi-generator-plugin = "6.5.0"
+openapi-generator-plugin = "6.2.1"
