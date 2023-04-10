@@ -59,6 +59,7 @@ const string CERTIFICATE_SUBJECT = "wso2apk/certificate-subject";
 const string CERTIFICATE_NOT_BEFORE = "wso2apk/certificate-not-before";
 const string CERTIFICATE_NOT_AFTER = "wso2apk/certificate-not-after";
 const string CERTIFICATE_HOSTS = "wso2apk/certificate-host";
+const string API_UUID_ANNOTATION = "wso2apk/api-uuid";
 const string CERTIFICATE_KEY_CONFIG_MAP = "endoint.crt";
 const string CONFIG_TYPE_LABEL_VALUE = "certificate";
 const string CONFIGMAP_DEFINITION_KEY = "definition";

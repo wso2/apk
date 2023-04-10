@@ -9,7 +9,7 @@ certFilePath = "/media/tharindud/dev/satoken/runtime.pem"
 [wso2.runtime_domain_service.runtimeConfiguration.idpConfiguration.publicKey]
 certFilePath = "/media/tharindud/dev/satoken/mg.pem"
 [wso2.runtime_domain_service.runtimeConfiguration.controlPlane]
-serviceBaseURl = "https://api.am.wso2.com:9095/api/am/internal/v1"
+serviceBaseURl = "https://prod.api.am.wso2.com:9095/api/am/internal/v1"
 [wso2.runtime_domain_service.runtimeConfiguration.controlPlane.certificate]
 certFilePath = "/media/tharindud/dev/satoken/router.pem"
 [wso2.runtime_domain_service.runtimeConfiguration.gatewayConfiguration]

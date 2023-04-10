@@ -26,6 +26,13 @@ data:
     level = "DEBUG"
     [ballerina.http]
     traceLogConsole = true
+    [wso2.runtime_domain_service.runtimeConfiguration]
+    {{  if and .Values.wso2.apk.dp.runtime.configs .Values.wso2.apk.dp.runtime.configs.baseUrl }}
+    baseURl = "{{ .Values.wso2.apk.dp.runtime.configs.baseUrl }}/api/am/runtime"
+    {{ else }}
+    baseURl = "https://prod.api.am.wso2.com:9095/api/am/runtime"
+    {{ end }}
+    migrationMode = {{ and .Values.wso2.apk.migration .Values.wso2.apk.migration.enabled | default false }}
     [wso2.runtime_domain_service.runtimeConfiguration.idpConfiguration]
     organizationClaim = "{{ .Values.wso2.apk.idp.organizationClaim }}"
     [wso2.runtime_domain_service.runtimeConfiguration.idpConfiguration.publicKey]
@@ -38,8 +45,6 @@ data:
     [wso2.runtime_domain_service.runtimeConfiguration.gatewayConfiguration]
     name = "{{ .Values.wso2.apk.dp.gateway.name }}"
     listenerName = "{{ .Values.wso2.apk.dp.gateway.listener.name}}"
-    [wso2.runtime_domain_service.runtimeConfiguration.baseURL]
-    url = "{{ .Values.wso2.apk.dp.runtime.baseUrl }}/api/am/runtime"
     {{  if .Values.wso2.apk.dp.controlPlane }}
     [wso2.runtime_domain_service.runtimeConfiguration.controlPlane]
     serviceBaseURl = "{{ .Values.wso2.apk.dp.controlPlane.serviceUrl | default (printf "http://%s-admin-ds-service:9444" (include "apk-helm.resource.prefix" .)) }}"

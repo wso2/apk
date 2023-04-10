@@ -250,12 +250,12 @@ wso2:
           replicas: 1
           imagePullPolicy: Always
           image: wso2/runtime-domain-service:latest
-        baseUrl: "https://prod.api.am.wso2.com:9095"
         # configs:
-        #   tls:
-        #     certificatesSecret: "my-secret"
-        #     certKeyFilename: "tls.key"
-        #     certFilename: "certchain.crt"
+        #   baseUrl: "https://prod.api.am.wso2.com:9095/api/am/runtime"
+          # tls:
+          #   certificatesSecret: "my-secret"
+          #   certKeyFilename: "tls.key"
+          #   certFilename: "certchain.crt"
       adapter:
         appName: "adapter"
         deployment:
@@ -277,7 +277,7 @@ wso2:
             failureThreshold: 5
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           image: wso2/adapter:latest
           security:
             sslHostname: "adapter"
@@ -374,8 +374,8 @@ wso2:
               periodSeconds: 20
               failureThreshold: 5
             strategy: Recreate
-            imagePullPolicy: IfNotPresent
-            image: enforcer:0.0.1-SNAPSHOT
+            imagePullPolicy: Always
+            image: wso2/enforcer:lastest
             security:
               sslHostname: "enforcer"
             # configs:
