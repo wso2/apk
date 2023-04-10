@@ -1607,14 +1607,15 @@ public class APIClient {
         }
     }
 
-    public isolated function generateAPIKey(string apiId, commons:Organization organization) returns APIKey|BadRequestError|NotFoundError|InternalServerErrorError {
+    public isolated function generateAPIKey(string apiId, commons:Organization organization) returns http:Ok|BadRequestError|NotFoundError|InternalServerErrorError {
         model:API? api = getAPI(apiId, organization);
         if api is model:API {
             InternalTokenGenerator tokenGenerator = new ();
             string|jwt:Error generatedToken = tokenGenerator.generateToken(api, APK_USER);
             if generatedToken is string {
                 APIKey apiKey = {apikey: generatedToken, validityTime: <int>runtimeConfiguration.tokenIssuerConfiguration.expTime};
-                return apiKey;
+                http:Ok okResponse = {body: apiKey};
+                return okResponse;
             } else {
                 log:printError("Error while Genereting token for API : " + apiId, generatedToken);
                 InternalServerErrorError internalError = {body: {code: 90911, message: "Error while Generating Token"}};
