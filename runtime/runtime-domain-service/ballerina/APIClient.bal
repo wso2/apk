@@ -1581,23 +1581,11 @@ public class APIClient {
                         }
                     }
                     if operation.operationPolicies != () {
-                        OperationPolicy[]? request = operation.operationPolicies?.request;
-                        if request is OperationPolicy[] {
-                            model:APIPolicy? apiPolicyCR = self.generateAPIPolicyAndBackendCR(apiArtifact, api, operation, request, organization, httpRouteRefName, "request");
-                            if apiPolicyCR != () {
-                                apiArtifact.apiPolicies[apiPolicyCR.metadata.name] = apiPolicyCR;
-                                model:HTTPRouteFilter apiPolicyFilter = {'type: "ExtensionRef", extensionRef: {group: "dp.wso2.com", kind: "APIPolicy", name: apiPolicyCR.metadata.name}};
-                                (<model:HTTPRouteFilter[]>filters).push(apiPolicyFilter);
-                            }
-                        }
-                        OperationPolicy[]? response = operation.operationPolicies?.response;
-                        if response is OperationPolicy[] {
-                            model:APIPolicy? apiPolicyCR = self.generateAPIPolicyAndBackendCR(apiArtifact, api, operation, response, organization, httpRouteRefName, "response");
-                            if apiPolicyCR != () {
-                                apiArtifact.apiPolicies[apiPolicyCR.metadata.name] = apiPolicyCR;
-                                model:HTTPRouteFilter apiPolicyFilter = {'type: "ExtensionRef", extensionRef: {group: "dp.wso2.com", kind: "APIPolicy", name: apiPolicyCR.metadata.name}};
-                                (<model:HTTPRouteFilter[]>filters).push(apiPolicyFilter);
-                            }
+                        model:APIPolicy? apiPolicyCR = self.generateAPIPolicyAndBackendCR(apiArtifact, api, operation, operation.operationPolicies, organization, httpRouteRefName, endpointType);
+                        if apiPolicyCR != () {
+                            apiArtifact.apiPolicies[apiPolicyCR.metadata.name] = apiPolicyCR;
+                            model:HTTPRouteFilter apiPolicyFilter = {'type: "ExtensionRef", extensionRef: {group: "dp.wso2.com", kind: "APIPolicy", name: apiPolicyCR.metadata.name}};
+                            (<model:HTTPRouteFilter[]>filters).push(apiPolicyFilter);
                         }
                     }
                     httpRouteRules.push(httpRouteRule);
@@ -1611,43 +1599,30 @@ public class APIClient {
             }
         }
         if api.apiPolicies != () {
-            OperationPolicy[]? request = api.apiPolicies?.request;
-            if request is OperationPolicy[] {
-                model:APIPolicy? apiPolicyCR = self.generateAPIPolicyAndBackendCR(apiArtifact, api, (), request, organization, httpRouteRefName, "request");
-                if apiPolicyCR != () {
-                    apiArtifact.apiPolicies[apiPolicyCR.metadata.name] = apiPolicyCR;
-                }
-            }
-            OperationPolicy[]? response = api.apiPolicies?.response;
-            if response is OperationPolicy[] {
-                model:APIPolicy? apiPolicyCR = self.generateAPIPolicyAndBackendCR(apiArtifact, api, (), response, organization, httpRouteRefName, "response");
-                if apiPolicyCR != () {
-                    apiArtifact.apiPolicies[apiPolicyCR.metadata.name] = apiPolicyCR;
-                }
+            model:APIPolicy? apiPolicyCR = self.generateAPIPolicyAndBackendCR(apiArtifact, api, (), api.apiPolicies, organization, httpRouteRefName, endpointType);
+            if apiPolicyCR != () {
+                apiArtifact.apiPolicies[apiPolicyCR.metadata.name] = apiPolicyCR;
             }
         }
         return httpRouteRules;
     }
 
-    private isolated function generateAPIPolicyAndBackendCR(model:APIArtifact apiArtifact, API api, APIOperations? operations, OperationPolicy[] policies, commons:Organization organization, string httpRouteRefName, string flow) returns model:APIPolicy? {
-        foreach OperationPolicy policy in policies {
-            string policyName = policy.policyName;
-            record {}? policyParameters = policy.parameters;
-            if (policyParameters is record {}) {
-                if (policyName == "addInterceptor") {
-                    string backendUrl = <string>policyParameters.get("backendUrl");
-                    model:Backend|error backendService = self.createBackendService(api, operations, SANDBOX_TYPE, organization, backendUrl, ());
-                    if backendService is model:Backend {
-                        apiArtifact.backendServices[backendService.metadata.name] = (backendService);
-                        model:APIPolicy? apiPolicyCR = self.generateAPIPolicyCR(api, policy, httpRouteRefName, operations, policyParameters, organization, backendService.metadata.name, flow);
-                        if apiPolicyCR != () {
-                            return apiPolicyCR;
-                        }
-                    }
-                }
-            }
+    private isolated function generateAPIPolicyAndBackendCR(model:APIArtifact apiArtifact, API api, APIOperations? operations, APIOperationPolicies? policies, commons:Organization organization, string httpRouteRefName, string endpointType) returns model:APIPolicy? {
+        model:APIPolicyData defaultSpecData = {};
+        OperationPolicy[]? request = policies?.request;
+        model:APIPolicyDetails? requestInterceptor = self.retrieveAPIPolicyDetails(apiArtifact, api, operations, endpointType, organization, request, "request");
+        if requestInterceptor is model:APIPolicyDetails {
+            defaultSpecData.requestInterceptor = requestInterceptor;
         }
-        return ();
+        OperationPolicy[]? response = policies?.response;
+        model:APIPolicyDetails? responseInterceptor = self.retrieveAPIPolicyDetails(apiArtifact, api, operations, endpointType, organization, response, "response");
+        if responseInterceptor is model:APIPolicyDetails {
+            defaultSpecData.responseInterceptor = responseInterceptor;
+        }
+        model:APIPolicy? apiPolicyCR = self.generateAPIPolicyCR(api, httpRouteRefName, operations, organization, defaultSpecData);
+        if apiPolicyCR != () {
+            return apiPolicyCR;
+        }
     }
 
     private isolated function generateScopeCR(model:APIArtifact apiArtifact, API api, commons:Organization organization, string scope) returns model:Scope {
@@ -2344,7 +2319,7 @@ public class APIClient {
         return rateLimitData;
     }
 
-    public isolated function generateAPIPolicyCR(API api, OperationPolicy policy, string httpRouteRefName, APIOperations? operation, record {} parameters, commons:Organization organization, string interceptorBackend, string flow) returns model:APIPolicy? {
+    public isolated function generateAPIPolicyCR(API api, string httpRouteRefName, APIOperations? operation, commons:Organization organization, model:APIPolicyData policyData) returns model:APIPolicy? {
         model:APIPolicy? apiPolicyCR = ();
         apiPolicyCR = {
             metadata: {
@@ -2353,7 +2328,7 @@ public class APIClient {
                 labels: self.getLabels(api, organization)
             },
             spec: {
-                default: self.retrieveAPIPolicyData(parameters, interceptorBackend, flow),
+                default: policyData,
                 targetRef: {
                     group: operation != () ? "dp.wso2.com" : "gateway.networking.k8s.io",
                     kind: operation != () ? "Resource" : "HTTPRoute",
@@ -2365,17 +2340,38 @@ public class APIClient {
         return apiPolicyCR;
     }
 
-    isolated function retrieveAPIPolicyData(record {} parameters, string interceptorBackend, string flow) returns model:APIPolicyData? {
-        if flow == "request" {
-            model:APIPolicyData apiPolicyData = {
-                requestInterceptor: {
-                    backendRef: {
-                        name: interceptorBackend,
-                        namespace: currentNameSpace
+    isolated function retrieveAPIPolicyDetails(model:APIArtifact apiArtifact, API api, APIOperations? operations, string endpointType, commons:Organization organization, OperationPolicy[]? policies, string flow) returns model:APIPolicyDetails? {
+        if policies is OperationPolicy[] {
+            foreach OperationPolicy policy in policies {
+                string policyName = policy.policyName;
+                record {}? policyParameters = policy.parameters;
+                if (policyParameters is record {}) {
+                    if (policyName == "addInterceptor") {
+                        string backendUrl = <string>policyParameters.get("backendUrl");
+                        model:Backend|error backendService = self.createBackendService(api, operations, SANDBOX_TYPE, organization, backendUrl, ());
+                        if backendService is model:Backend {
+                            apiArtifact.backendServices[backendService.metadata.name] = (backendService);
+                            model:APIPolicyDetails? interceptorSpec = self.retrieveAPIPolicyData(policyParameters, backendService.metadata.name, flow);
+                            if interceptorSpec is model:APIPolicyDetails {
+                                return interceptorSpec;
+                            }
+                        }
                     }
                 }
-            };
-            string[] includes = [];
+            }
+        }
+        return ();
+    }
+
+    isolated function retrieveAPIPolicyData(record {} parameters, string interceptorBackend, string flow) returns model:APIPolicyDetails? {
+        model:APIPolicyDetails apiPolicyDetails = {
+            backendRef: {
+                name: interceptorBackend,
+                namespace: currentNameSpace
+            }
+        };
+        string[] includes = [];
+        if flow == "request" {
             if (<string>parameters.get("headersEnabled") == "true") {
                 includes.push("request_headers");
             }
@@ -2388,19 +2384,8 @@ public class APIClient {
             if (<string>parameters.get("contextEnabled") == "true") {
                 includes.push("invocation_context");
             }
-            apiPolicyData.requestInterceptor.includes = includes;
-            return apiPolicyData;
         }
-        else if flow == "response" {
-            model:APIPolicyData apiPolicyData = {
-                responseInterceptor: {
-                    backendRef: {
-                        name: interceptorBackend,
-                        namespace: currentNameSpace
-                    }
-                }
-            };
-            string[] includes = [];
+        if flow == "response" {
             if (<string>parameters.get("headersEnabled") == "true") {
                 includes.push("response_headers");
             }
@@ -2413,11 +2398,11 @@ public class APIClient {
             if (<string>parameters.get("contextEnabled") == "true") {
                 includes.push("invocation_context");
             }
-            apiPolicyData.responseInterceptor.includes = includes;
-            return apiPolicyData;
-        } else {
-            return ();
         }
+        if includes.length() > 0 {
+            apiPolicyDetails.includes = includes;
+        }
+        return apiPolicyDetails;
     }
 
     public isolated function retrieveDefaultDefinition(model:API api) returns json {
