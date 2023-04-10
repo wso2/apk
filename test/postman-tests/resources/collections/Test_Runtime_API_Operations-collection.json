@@ -1990,7 +1990,7 @@
 					"raw": "{\n    \"name\": \"testAPIV4\",\n    \"context\": \"/testAPIV4/1.0.0\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        }\n    ],\n    \"serviceInfo\": {\n        \"name\": \"backend\",\n        \"namespace\": \"default\",\n        \"endpoint_security\": {\n            \"production\": {\n                \"enabled\": true,\n                \"type\": \"Basic\",\n                \"username\": \"admin\",\n                \"password\": \"admin\"\n            }\n        }\n\n    }\n}"
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/import-service?serviceKey=ebf5ce13-68c7-4a99-a951-034c4410344a",
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/import-service?serviceKey={{serviceUUID}}",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
