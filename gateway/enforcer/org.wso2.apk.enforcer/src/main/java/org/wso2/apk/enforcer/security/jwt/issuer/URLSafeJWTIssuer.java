@@ -21,7 +21,7 @@ package org.wso2.apk.enforcer.security.jwt.issuer;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.carbon.apimgt.common.gateway.exception.JWTGeneratorException;
+import org.wso2.apk.enforcer.commons.exception.JWTGeneratorException;
 
 /**
  * URL safe JWT issuer implementation.

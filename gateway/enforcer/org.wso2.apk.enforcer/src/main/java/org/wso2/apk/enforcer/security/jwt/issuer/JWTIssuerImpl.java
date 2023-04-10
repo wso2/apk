@@ -18,10 +18,10 @@
 
 package org.wso2.apk.enforcer.security.jwt.issuer;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.carbon.apimgt.common.gateway.exception.JWTGeneratorException;
+import org.wso2.apk.enforcer.commons.exception.JWTGeneratorException;
 import org.wso2.apk.enforcer.constants.APIConstants;
 import org.wso2.apk.enforcer.security.TokenValidationContext;
 

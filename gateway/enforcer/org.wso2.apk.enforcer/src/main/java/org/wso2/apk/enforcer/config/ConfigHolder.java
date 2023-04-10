@@ -22,9 +22,9 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.wso2.carbon.apimgt.common.gateway.dto.ClaimMappingDto;
-import org.wso2.carbon.apimgt.common.gateway.dto.JWKSConfigurationDTO;
-import org.wso2.carbon.apimgt.common.gateway.dto.JWTConfigurationDto;
+import org.wso2.apk.enforcer.commons.dto.ClaimMappingDto;
+import org.wso2.apk.enforcer.commons.dto.JWKSConfigurationDTO;
+import org.wso2.apk.enforcer.commons.dto.JWTConfigurationDto;
 import org.wso2.choreo.connect.discovery.config.enforcer.Analytics;
 import org.wso2.choreo.connect.discovery.config.enforcer.AuthHeader;
 import org.wso2.choreo.connect.discovery.config.enforcer.Cache;
@@ -102,7 +102,6 @@ public class ConfigHolder {
     private TrustManagerFactory trustManagerFactory = null;
     private ArrayList<ExtendedTokenIssuerDto> configIssuerList;
     private static final String dtoPackageName = EnforcerConfig.class.getPackageName();
-    private static final String apimDTOPackageName = "org.wso2.carbon.apimgt";
 
     private ConfigHolder() {
         loadTrustStore();
@@ -448,8 +447,7 @@ public class ConfigHolder {
         List<Field> classFields = Arrays.asList(config.getClass().getDeclaredFields());
         //extended config class env variables should also be resolved
         if (config.getClass().getSuperclass() != null && (
-                config.getClass().getSuperclass().getPackageName().contains(dtoPackageName) || config.getClass()
-                        .getSuperclass().getPackageName().contains(apimDTOPackageName))) {
+                config.getClass().getSuperclass().getPackageName().contains(dtoPackageName))) {
             processRecursiveObject(config, config.getClass().getSuperclass().getDeclaredFields());
         }
         processRecursiveObject(config, config.getClass().getDeclaredFields());
@@ -473,8 +471,7 @@ public class ConfigHolder {
                                 .isAssignableFrom(char[].class)) {
                             field.set(config, getEnvValue(field.get(config)));
                             continue;
-                        } else if (entry.getValue().getClass().getPackageName().contains(dtoPackageName) || entry
-                                .getValue().getClass().getPackageName().contains(apimDTOPackageName)) {
+                        } else if (entry.getValue().getClass().getPackageName().contains(dtoPackageName)) {
                             resolveConfigsWithEnvs(entry.getValue());
                         }
                     }
@@ -482,16 +479,14 @@ public class ConfigHolder {
                     // handles the config objects saved as arrays
                     Object[] objectArray = (Object[]) field.get(config);
                     for (Object arrayObject : objectArray) {
-                        if (arrayObject.getClass().getPackageName().contains(dtoPackageName) || arrayObject.getClass()
-                                .getPackageName().contains(apimDTOPackageName)) {
+                        if (arrayObject.getClass().getPackageName().contains(dtoPackageName)) {
                             resolveConfigsWithEnvs(arrayObject);
                         } else if (arrayObject.getClass().isAssignableFrom(String.class) || arrayObject.getClass()
                                 .isAssignableFrom(char[].class)) {
                             field.set(config, getEnvValue(arrayObject));
                         }
                     }
-                } else if (field.getType().getPackageName().contains(dtoPackageName) || field.getType().getPackageName()
-                        .contains(apimDTOPackageName)) { //recursively call the dto objects in the same package
+                } else if (field.getType().getPackageName().contains(dtoPackageName)) { //recursively call the dto objects in the same package
                     resolveConfigsWithEnvs(field.get(config));
                 }
             } catch (IllegalAccessException e) {

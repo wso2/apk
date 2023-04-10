@@ -19,13 +19,13 @@
 package org.wso2.apk.enforcer.keymgt;
 
 import com.google.gson.Gson;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.wso2.carbon.apimgt.common.gateway.dto.ClaimMappingDto;
-import org.wso2.carbon.apimgt.common.gateway.dto.JWKSConfigurationDTO;
+import org.wso2.apk.enforcer.commons.dto.ClaimMappingDto;
+import org.wso2.apk.enforcer.commons.dto.JWKSConfigurationDTO;
 import org.wso2.choreo.connect.discovery.keymgt.KeyManagerConfig;
 import org.wso2.apk.enforcer.commons.logging.ErrorDetails;
 import org.wso2.apk.enforcer.commons.logging.LoggingConstants;

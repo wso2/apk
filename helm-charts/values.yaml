@@ -248,8 +248,8 @@ wso2:
             failureThreshold: 5
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: Always
-          image: wso2/runtime-domain-service:latest
+          imagePullPolicy: IfNotPresent
+          image: runtime-domain-service:0.0.1-SNAPSHOT
         # configs:
         #   tls:
         #     certificatesSecret: "my-secret"
@@ -276,7 +276,7 @@ wso2:
             failureThreshold: 5
           strategy: Recreate
           replicas: 1
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           image: wso2/adapter:latest
           security:
             sslHostname: "adapter"
@@ -373,8 +373,8 @@ wso2:
               periodSeconds: 20
               failureThreshold: 5
             strategy: Recreate
-            imagePullPolicy: Always
-            image: wso2/enforcer:latest
+            imagePullPolicy: IfNotPresent
+            image: enforcer:0.0.1-SNAPSHOT
             security:
               sslHostname: "enforcer"
             # configs:

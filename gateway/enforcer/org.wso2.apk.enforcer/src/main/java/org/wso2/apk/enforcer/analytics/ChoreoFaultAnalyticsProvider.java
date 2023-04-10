@@ -19,19 +19,19 @@
 package org.wso2.apk.enforcer.analytics;
 
 import org.apache.commons.lang3.StringUtils;
-import org.wso2.carbon.apimgt.common.analytics.collectors.AnalyticsCustomDataProvider;
-import org.wso2.carbon.apimgt.common.analytics.collectors.AnalyticsDataProvider;
-import org.wso2.carbon.apimgt.common.analytics.publishers.dto.API;
-import org.wso2.carbon.apimgt.common.analytics.publishers.dto.Application;
-import org.wso2.carbon.apimgt.common.analytics.publishers.dto.Error;
-import org.wso2.carbon.apimgt.common.analytics.publishers.dto.ExtendedAPI;
-import org.wso2.carbon.apimgt.common.analytics.publishers.dto.Latencies;
-import org.wso2.carbon.apimgt.common.analytics.publishers.dto.MetaInfo;
-import org.wso2.carbon.apimgt.common.analytics.publishers.dto.Operation;
-import org.wso2.carbon.apimgt.common.analytics.publishers.dto.Target;
-import org.wso2.carbon.apimgt.common.analytics.publishers.dto.enums.EventCategory;
-import org.wso2.carbon.apimgt.common.analytics.publishers.dto.enums.FaultCategory;
-import org.wso2.carbon.apimgt.common.analytics.publishers.dto.enums.FaultSubCategory;
+import org.wso2.apk.enforcer.commons.analytics.collectors.AnalyticsCustomDataProvider;
+import org.wso2.apk.enforcer.commons.analytics.collectors.AnalyticsDataProvider;
+import org.wso2.apk.enforcer.commons.analytics.publishers.dto.API;
+import org.wso2.apk.enforcer.commons.analytics.publishers.dto.Application;
+import org.wso2.apk.enforcer.commons.analytics.publishers.dto.Error;
+import org.wso2.apk.enforcer.commons.analytics.publishers.dto.ExtendedAPI;
+import org.wso2.apk.enforcer.commons.analytics.publishers.dto.Latencies;
+import org.wso2.apk.enforcer.commons.analytics.publishers.dto.MetaInfo;
+import org.wso2.apk.enforcer.commons.analytics.publishers.dto.Operation;
+import org.wso2.apk.enforcer.commons.analytics.publishers.dto.Target;
+import org.wso2.apk.enforcer.commons.analytics.publishers.dto.enums.EventCategory;
+import org.wso2.apk.enforcer.commons.analytics.publishers.dto.enums.FaultCategory;
+import org.wso2.apk.enforcer.commons.analytics.publishers.dto.enums.FaultSubCategory;
 import org.wso2.choreo.connect.discovery.service.websocket.WebSocketFrameRequest;
 import org.wso2.apk.enforcer.commons.model.AuthenticationContext;
 import org.wso2.apk.enforcer.commons.model.RequestContext;
@@ -227,6 +227,11 @@ public class ChoreoFaultAnalyticsProvider implements AnalyticsDataProvider {
     @Override
     public String getUserAgentHeader() {
         // UserAgent header is not validated for fault events.
+        return null;
+    }
+
+    @Override
+    public String getUserName() {
         return null;
     }
 

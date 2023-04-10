@@ -18,9 +18,9 @@
 
 package org.wso2.apk.enforcer.config;
 
-import org.wso2.carbon.apimgt.common.gateway.dto.JWTConfigurationDto;
-import org.wso2.carbon.apimgt.common.gateway.jwttransformer.DefaultJWTTransformer;
-import org.wso2.carbon.apimgt.common.gateway.jwttransformer.JWTTransformer;
+import org.wso2.apk.enforcer.commons.dto.JWTConfigurationDto;
+import org.wso2.apk.enforcer.commons.jwttransformer.DefaultJWTTransformer;
+import org.wso2.apk.enforcer.commons.jwttransformer.JWTTransformer;
 import org.wso2.apk.enforcer.config.dto.AdminRestServerDto;
 import org.wso2.apk.enforcer.config.dto.AnalyticsDTO;
 import org.wso2.apk.enforcer.config.dto.AuthHeaderDto;

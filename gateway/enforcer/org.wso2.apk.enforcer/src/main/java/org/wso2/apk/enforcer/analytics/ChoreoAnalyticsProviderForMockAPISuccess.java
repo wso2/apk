@@ -22,10 +22,10 @@ import io.envoyproxy.envoy.data.accesslog.v3.AccessLogCommon;
 import io.envoyproxy.envoy.data.accesslog.v3.HTTPAccessLogEntry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.wso2.carbon.apimgt.common.analytics.publishers.dto.Error;
-import org.wso2.carbon.apimgt.common.analytics.publishers.dto.Latencies;
-import org.wso2.carbon.apimgt.common.analytics.publishers.dto.enums.EventCategory;
-import org.wso2.carbon.apimgt.common.analytics.publishers.dto.enums.FaultCategory;
+import org.wso2.apk.enforcer.commons.analytics.publishers.dto.Error;
+import org.wso2.apk.enforcer.commons.analytics.publishers.dto.Latencies;
+import org.wso2.apk.enforcer.commons.analytics.publishers.dto.enums.EventCategory;
+import org.wso2.apk.enforcer.commons.analytics.publishers.dto.enums.FaultCategory;
 
 import java.util.concurrent.TimeUnit;
 

@@ -18,7 +18,7 @@
 //package org.wso2.apk.enforcer.server;
 //
 //import io.opentelemetry.context.Scope;
-//import org.apache.commons.lang.StringUtils;
+//import org.apache.commons.lang3.StringUtils;
 //import org.apache.logging.log4j.LogManager;
 //import org.apache.logging.log4j.Logger;
 //import org.apache.logging.log4j.ThreadContext;

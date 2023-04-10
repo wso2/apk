@@ -96,7 +96,7 @@ data:
     claimDialect = "http://wso2.org/claims"
     header = "X-JWT-Assertion"
     signingAlgorithm = "SHA256withRSA"
-    gatewayGeneratorImpl = "org.wso2.carbon.apimgt.common.gateway.jwtgenerator.APIMgtGatewayJWTGeneratorImpl"
+    gatewayGeneratorImpl = "org.wso2.apk.enforcer.commons.jwtgenerator.APIMgtGatewayJWTGeneratorImpl"
     publicCertificatePath = "/home/wso2/security/truststore/mg.pem"
     privateKeyPath = "/home/wso2/security/keystore/mg.key"
 
@@ -440,7 +440,7 @@ data:
     # Enable/Disable user claims
     enableUserClaims = false
     # Custom JWT generator
-    gatewayGeneratorImpl = "org.wso2.carbon.apimgt.common.gateway.jwtgenerator.APIMgtGatewayJWTGeneratorImpl"
+    gatewayGeneratorImpl = "org.wso2.apk.enforcer.commons.jwtgenerator.APIMgtGatewayJWTGeneratorImpl"
     # Custom Claim Retriever to add custom claims into JWT
     claimsExtractorImpl = "org.wso2.carbon.apimgt.impl.token.ExtendedDefaultClaimsRetriever"
     # Public certificate for generated JWT
@@ -805,7 +805,7 @@ data:
     appender.ENFORCER_ACCESS_LOG.filter.threshold.type = ThresholdFilter
     appender.ENFORCER_ACCESS_LOG.filter.threshold.level = DEBUG
 
-    loggers = enforcer, io-swagger-v3, enforcer-interceptors, carbon-apimgt
+    loggers = enforcer, io-swagger-v3, enforcer-interceptors
 
     # Log to access log file
     logger.enforcer-interceptors.name = org.wso2.apk.enforcer.grpc.interceptors
@@ -820,12 +820,6 @@ data:
     logger.enforcer.additivity = false
     logger.enforcer.appenderRef.rolling.ref = ENFORCER_LOGFILE
     logger.enforcer.appenderRef.console.ref = ENFORCER_CONSOLE
-
-    logger.carbon-apimgt.name = org.wso2.carbon.apimgt
-    logger.carbon-apimgt.level = INFO
-    logger.carbon-apimgt.additivity = false
-    logger.carbon-apimgt.appenderRef.ENFORCER_LOGFILE.ref = ENFORCER_LOGFILE
-    logger.carbon-apimgt.appenderRef.console.ref = ENFORCER_CONSOLE
 
     logger.io-swagger-v3.name = io.swagger.v3.parser
     logger.io-swagger-v3.level = ERROR

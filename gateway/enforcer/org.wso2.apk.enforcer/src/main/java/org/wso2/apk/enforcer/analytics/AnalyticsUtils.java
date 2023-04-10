@@ -22,7 +22,7 @@ import io.envoyproxy.envoy.data.accesslog.v3.HTTPAccessLogEntry;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.wso2.carbon.apimgt.common.analytics.collectors.AnalyticsCustomDataProvider;
+import org.wso2.apk.enforcer.commons.analytics.collectors.AnalyticsCustomDataProvider;
 import org.wso2.apk.enforcer.commons.model.AuthenticationContext;
 import org.wso2.apk.enforcer.commons.model.RequestContext;
 import org.wso2.apk.enforcer.constants.AnalyticsConstants;

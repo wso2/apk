@@ -22,7 +22,7 @@ import io.envoyproxy.envoy.service.auth.v3.CheckRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
-import org.wso2.carbon.apimgt.common.gateway.constants.GraphQLConstants;
+import org.wso2.apk.enforcer.commons.constants.GraphQLConstants;
 import org.wso2.apk.enforcer.api.API;
 import org.wso2.apk.enforcer.api.APIFactory;
 import org.wso2.apk.enforcer.api.ResponseObject;
