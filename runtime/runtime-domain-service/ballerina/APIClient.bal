@@ -766,16 +766,16 @@ public class APIClient {
             if endpointSecurityEntry is map<anydata> {
                 anydata|error endpointSecurityType = trap endpointSecurityEntry.get("type");
                 if endpointSecurityType is string {
-                    if endpointSecurityType == ENDPOINT_SECURITY_TYPE_BASIC {
+                    if endpointSecurityType.toLowerAscii() == ENDPOINT_SECURITY_TYPE_BASIC {
                         if endpointSecurityEntry.hasKey("secretRefName") && !isCopyApi {
                             endpointSecurity = {
-                                'type: ENDPOINT_SECURITY_TYPE_BASIC,
+                                'type: endpointSecurityType,
                                 enabled: true,
                                 secretRefName: <string>endpointSecurityEntry.get("secretRefName")
                             };
-                        } else if endpointSecurityEntry.hasKey("generatedSecretRefName")  {
+                        } else if endpointSecurityEntry.hasKey("generatedSecretRefName") && !isCopyApi {
                             endpointSecurity = {
-                                'type: ENDPOINT_SECURITY_TYPE_BASIC,
+                                'type: endpointSecurityType,
                                 enabled: true,
                                 username: <string>endpointSecurityEntry.get("username"),
                                 password: <string>endpointSecurityEntry.get("password"),
@@ -783,7 +783,7 @@ public class APIClient {
                             };
                         } else {
                             endpointSecurity = {
-                                'type: ENDPOINT_SECURITY_TYPE_BASIC,
+                                'type: endpointSecurityType,
                                 enabled: true,
                                 username: <string>endpointSecurityEntry.get("username"),
                                 password: <string>endpointSecurityEntry.get("password")
@@ -811,13 +811,13 @@ public class APIClient {
                 anydata|error endpointSecurityType = trap endpointSecurityEntry.get("type");
                 anydata|error endpointSecretRefName = trap endpointSecurityEntry.get("secretRefName");
                 if endpointSecurityType is string {
-                    if endpointSecurityType == ENDPOINT_SECURITY_TYPE_BASIC {
+                    if endpointSecurityType.toLowerAscii() == ENDPOINT_SECURITY_TYPE_BASIC {
                         if endpointSecretRefName is string && endpointSecretRefName != "" {
                             endpointSecurityEntry["secretRefName"] = secretRefName;
                         } else {
                             endpointSecurityEntry["generatedSecretRefName"] = secretRefName;
                             endpointSecurityEntry["password"] = DEFAULT_MODIFIED_ENDPOINT_PASSWORD;
-                        }   
+                        }
                     }
                 }
             }
@@ -2111,7 +2111,7 @@ public class APIClient {
     }
 
     isolated function createBackendService(API api, APIOperations? apiOperation, string endpointType, commons:Organization organization, string url,
-        model:EndpointSecurity? endpointSecurity) returns model:Backend|error {
+            model:EndpointSecurity? endpointSecurity) returns model:Backend|error {
         string nameSpace = getNameSpace(runtimeConfiguration.apiCreationNamespace);
         string host = self.gethost(url);
         string|() configMapName = check getConfigMapNameByHostname(api, organization, host);
@@ -2122,11 +2122,11 @@ public class APIClient {
             if endpointSecurity?.secretRefName is string && endpointSecurity?.secretRefName != null {
                 // When user provides k8 secret for basic auth
                 uniqueSecretName = <string>endpointSecurity?.secretRefName;
-            } else if endpointSecurity?.generatedSecretRefName is string &&  <string>endpointSecurity?.password != DEFAULT_MODIFIED_ENDPOINT_PASSWORD {
+            } else if endpointSecurity?.generatedSecretRefName is string && <string>endpointSecurity?.password != DEFAULT_MODIFIED_ENDPOINT_PASSWORD {
                 // User is updating the basic auth endpoint security
                 uniqueSecretName = <string>endpointSecurity?.generatedSecretRefName;
                 check self.updateK8sSecret(uniqueSecretName, <string>endpointSecurity?.username, <string>endpointSecurity?.password);
-            } else if endpointSecurity?.generatedSecretRefName is string &&  <string>endpointSecurity?.password == DEFAULT_MODIFIED_ENDPOINT_PASSWORD {
+            } else if endpointSecurity?.generatedSecretRefName is string && <string>endpointSecurity?.password == DEFAULT_MODIFIED_ENDPOINT_PASSWORD {
                 uniqueSecretName = <string>endpointSecurity?.generatedSecretRefName;
             } else {
                 // When user adds basic auth endpoint security username and password
