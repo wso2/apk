@@ -57,7 +57,7 @@ http:Service runtimeService = service object {
         commons:Organization organization = authenticatedUserContext.organization;
         return apiService.deleteAPIById(apiId, organization);
     }
-    isolated resource function post apis/[string apiId]/'generate\-key(http:RequestContext requestContext) returns APIKey|BadRequestError|NotFoundError|ForbiddenError|InternalServerErrorError|commons:APKError {
+    isolated resource function post apis/[string apiId]/'generate\-key(http:RequestContext requestContext) returns http:Ok|BadRequestError|NotFoundError|ForbiddenError|InternalServerErrorError|commons:APKError {
         final APIClient apiService = new ();
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
