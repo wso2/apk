@@ -693,7 +693,7 @@ public class APIClient {
                     if backendSecurity.'type == ENDPOINT_SECURITY_TYPE_BASIC {
                         model:SecurityConfig[] securityConfig = <model:SecurityConfig[]>backendService.spec.security;
                         foreach model:SecurityConfig item in securityConfig {
-                            string secretRefName = <string>(<model:BasicSecurityConfig>item.basic).secretRef.name;
+                            anydata secretRefName = (<model:BasicSecurityConfig>item.basic).secretRef.name;
                             self.setBackendSecurity(secretRefName, (), endpointConfig, SANDBOX_TYPE);
                         }
                     }
@@ -724,7 +724,7 @@ public class APIClient {
                     if backendSecurity.'type == ENDPOINT_SECURITY_TYPE_BASIC {
                         model:SecurityConfig[] securityConfig = <model:SecurityConfig[]>backendService.spec.security;
                         foreach model:SecurityConfig item in securityConfig {
-                            string secretRefName = <string>(<model:BasicSecurityConfig>item.basic).secretRef.name;
+                            anydata secretRefName = (<model:BasicSecurityConfig>item.basic).secretRef.name;
                             self.setBackendSecurity(secretRefName, (), endpointConfig, PRODUCTION_TYPE);
                         }
                     }
@@ -761,17 +761,18 @@ public class APIClient {
             anydata|error endpointSecurityEntry = trap endpointSecurityConfig.get(endpointType);
             if endpointSecurityEntry is map<anydata> {
                 anydata|error endpointSecurityType = trap endpointSecurityEntry.get("type");
-                if endpointSecurityType is string {
-                    if endpointSecurityType.toLowerAscii() == ENDPOINT_SECURITY_TYPE_BASIC {
+                anydata|error endpointSecurityEnabled = trap endpointSecurityEntry.get("enabled");
+                if endpointSecurityType is string && endpointSecurityEnabled is boolean {
+                    if endpointSecurityType.toLowerAscii() == ENDPOINT_SECURITY_TYPE_BASIC && endpointSecurityEnabled {
                         if endpointSecurityEntry.hasKey("secretRefName") && !isCopyApi {
                             endpointSecurity = {
-                                'type: endpointSecurityType,
+                                'type: ENDPOINT_SECURITY_TYPE_BASIC,
                                 enabled: true,
                                 secretRefName: <string>endpointSecurityEntry.get("secretRefName")
                             };
                         } else if endpointSecurityEntry.hasKey("generatedSecretRefName") && !isCopyApi {
                             endpointSecurity = {
-                                'type: endpointSecurityType,
+                                'type: ENDPOINT_SECURITY_TYPE_BASIC,
                                 enabled: true,
                                 username: <string>endpointSecurityEntry.get("username"),
                                 password: <string>endpointSecurityEntry.get("password"),
@@ -779,7 +780,7 @@ public class APIClient {
                             };
                         } else {
                             endpointSecurity = {
-                                'type: endpointSecurityType,
+                                'type: ENDPOINT_SECURITY_TYPE_BASIC,
                                 enabled: true,
                                 username: <string>endpointSecurityEntry.get("username"),
                                 password: <string>endpointSecurityEntry.get("password")
@@ -792,7 +793,7 @@ public class APIClient {
         return endpointSecurity;
     }
 
-    private isolated function setBackendSecurity(string secretRefName, API_serviceInfo? serviceInfo, record {}? endpointConfig, string endpointType) {
+    private isolated function setBackendSecurity(anydata secretRefName, API_serviceInfo? serviceInfo, record {}? endpointConfig, string endpointType) {
         anydata|error endpointSecurityConfig = {};
 
         if (endpointConfig is map<anydata>) {
@@ -808,12 +809,17 @@ public class APIClient {
                 anydata|error endpointSecretRefName = trap endpointSecurityEntry.get("secretRefName");
                 if endpointSecurityType is string {
                     if endpointSecurityType.toLowerAscii() == ENDPOINT_SECURITY_TYPE_BASIC {
-                        if endpointSecretRefName is string && endpointSecretRefName != "" {
-                            endpointSecurityEntry["secretRefName"] = secretRefName;
+                        if secretRefName is string {
+                            if endpointSecretRefName is string && endpointSecretRefName != "" {
+                                endpointSecurityEntry["secretRefName"] = secretRefName;
+                            } else {
+                                endpointSecurityEntry["generatedSecretRefName"] = secretRefName;
+                                endpointSecurityEntry["password"] = DEFAULT_MODIFIED_ENDPOINT_PASSWORD;
+                            }
                         } else {
-                            endpointSecurityEntry["generatedSecretRefName"] = secretRefName;
                             endpointSecurityEntry["password"] = DEFAULT_MODIFIED_ENDPOINT_PASSWORD;
                         }
+                        
                     }
                 }
             }
@@ -921,7 +927,7 @@ public class APIClient {
                 if backendSecurity.'type == ENDPOINT_SECURITY_TYPE_BASIC {
                     model:SecurityConfig[] securityConfig = <model:SecurityConfig[]>backendService.spec.security;
                     foreach model:SecurityConfig item in securityConfig {
-                        string secretRefName = <string>(<model:BasicSecurityConfig>item.basic).secretRef.name;
+                        anydata secretRefName = (<model:BasicSecurityConfig>item.basic).secretRef.name;
                         self.setBackendSecurity(secretRefName, serviceInfo, (), PRODUCTION_TYPE);
                     }
                 }
@@ -2146,7 +2152,7 @@ public class APIClient {
                 check self.createK8sSecret(uniqueSecretName, <string>endpointSecurity?.username, <string>endpointSecurity?.password);
             }
             securityConfig = {
-                'type: <string>endpointSecurity?.'type,
+                'type: ENDPOINT_SECURITY_TYPE_BASIC_CASE,
                 basic: {
                     secretRef: {
                         name: uniqueSecretName
@@ -2794,9 +2800,9 @@ public class APIClient {
                 if backendSecurity.'type == ENDPOINT_SECURITY_TYPE_BASIC {
                     model:SecurityConfig[] securityConfig = <model:SecurityConfig[]>backendService.spec.security;
                     foreach model:SecurityConfig item in securityConfig {
-                        string secretRefName = <string>(<model:BasicSecurityConfig>item.basic).secretRef.name;
+                        anydata secretRefName = (<model:BasicSecurityConfig>item.basic).secretRef.name;
                         API_serviceInfo serviceInfo = <API_serviceInfo>newAPI.serviceInfo.clone();
-                        // self.setBackendSecurity(secretRefName, serviceInfo, (), PRODUCTION_TYPE);
+                        self.setBackendSecurity(secretRefName, serviceInfo, (), PRODUCTION_TYPE);
                         newAPI.serviceInfo = serviceInfo;
 
                     }
@@ -2818,7 +2824,7 @@ public class APIClient {
                     model:EndpointSecurity backendSecurity = self.getBackendSecurity(oldAPI.endpointConfig, (), PRODUCTION_TYPE, true);
                     check self.createK8sSecret(uniqueSecretName, <string>backendSecurity?.username, <string>backendSecurity?.password);
                     record {}? endpointConfig = oldAPI.endpointConfig;
-                    // self.setBackendSecurity(uniqueSecretName, (), endpointConfig, endpointType);
+                    self.setBackendSecurity(uniqueSecretName, (), endpointConfig, endpointType);
                     newAPI.endpointConfig = endpointConfig;
                 }
 
