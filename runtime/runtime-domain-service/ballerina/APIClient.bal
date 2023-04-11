@@ -947,7 +947,8 @@ public class APIClient {
                 self.generateAndSetK8sServiceMapping(apiArtifact, api, serviceRetrieved, getNameSpace(runtimeConfiguration.apiCreationNamespace), organization);
                 self.generateAndSetRuntimeAPIArtifact(apiArtifact, api, serviceRetrieved, organization, userName);
                 model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact, organization);
-                CreatedAPI createdAPI = {body: check convertK8sAPItoAPI(deployAPIToK8sResult, false)};
+                string locationUrl = runtimeConfiguration.baseURl + "/apis/" + deployAPIToK8sResult.metadata.uid.toString();
+                CreatedAPI createdAPI = {body: check convertK8sAPItoAPI(deployAPIToK8sResult, false), headers: {location: locationUrl}};
                 return createdAPI;
             } else {
                 return e909004(serviceKey);
