@@ -35,24 +35,8 @@ isolated function convertK8sAPItoAPI(model:API api, boolean lightWeight) returns
     if !lightWeight {
         model:RuntimeAPI|http:ClientError internalAPI = getInternalAPI(api.metadata.name, api.metadata.namespace);
         if internalAPI is model:RuntimeAPI {
-            
-            record {|anydata...;|}? endpointConfig = internalAPI.spec.endpointConfig.clone();
+            record {|anydata...;|}? endpointConfig = internalAPI.spec.endpointConfig;
             if endpointConfig is record {} {
-                anydata|error endpointSecurityConfig = trap endpointConfig.get("endpoint_security");
-                 if endpointSecurityConfig is map<anydata> {
-                    anydata|error endpointSecurityEntryProd = trap endpointSecurityConfig.get("production");
-                    anydata|error endpointSecurityEntrySand = trap endpointSecurityConfig.get("sandbox");
-                    if endpointSecurityEntryProd is map<anydata> {
-                        if endpointSecurityEntryProd.hasKey("generatedSecretRefName") {
-                          // _ = endpointSecurityEntryProd.remove("generatedSecretRefName");
-                        }
-                    }
-                    if endpointSecurityEntrySand is map<anydata> {
-                        if endpointSecurityEntrySand.hasKey("generatedSecretRefName") {
-                          // _ = endpointSecurityEntrySand.remove("generatedSecretRefName");
-                        }
-                    }
-                }
                 convertedModel.endpointConfig = endpointConfig;
             }
             model:OperationPolicies? apiPolicies = internalAPI.spec.apiPolicies;
