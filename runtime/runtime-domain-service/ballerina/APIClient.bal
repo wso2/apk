@@ -73,7 +73,7 @@ public class APIClient {
                 }
             } else {
                 log:printError("Error while reading definition:", definition);
-                return e909023();
+                return e909023(e = error("Internal error occured while retrieving definition"));
             }
         }
         return e909001(id);
@@ -91,7 +91,7 @@ public class APIClient {
             // definitionFileRef not specified or empty. definitionfile
             return self.retrieveDefaultDefinition(api);
         } on fail var e {
-            return e909023();
+            return e909023(e);
         }
     }
     private isolated function getDefinitionFromConfigMap(model:ConfigMap configmap) returns json|error? {
@@ -144,7 +144,7 @@ public class APIClient {
                     }
                 }
             } on fail var e {
-                return e909027();
+                return e909027(e);
             }
         }
         return e909001(id);

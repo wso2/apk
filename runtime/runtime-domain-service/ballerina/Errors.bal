@@ -219,8 +219,8 @@ public isolated function e909022(string msg, error e) returns commons:APKError {
     ); 
 }
 
-public isolated function e909023() returns commons:APKError {
-    return error commons:APKError("Internal error occured while retrieving definition",
+public isolated function e909023(error e) returns commons:APKError {
+    return error commons:APKError("Internal error occured while retrieving definition", e,
         code = 909023,
         message = "Internal error occured while retrieving definition",
         statusCode = 500,
@@ -255,8 +255,8 @@ public isolated function e909026() returns commons:APKError {
     ); 
 }
 
-public isolated function e909027() returns commons:APKError {
-    return error commons:APKError( "Error while retrieving API",
+public isolated function e909027(error e) returns commons:APKError {
+    return error commons:APKError( "Error while retrieving API", e,
         code = 909027,
         message = "Error while retrieving API",
         statusCode = 500,

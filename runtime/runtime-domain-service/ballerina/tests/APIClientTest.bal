@@ -460,7 +460,12 @@ public function testGetAPIDefinitionByID(string apiid, anydata expectedResponse)
         json jsonPayload = check aPIDefinitionByID.getJsonPayload();
         test:assertEquals(jsonPayload.toBalString(), expectedResponse);
     } else {
-        test:assertEquals(aPIDefinitionByID.toBalString(), expectedResponse);
+        if aPIDefinitionByID is any {
+            test:assertEquals(aPIDefinitionByID.toBalString(), expectedResponse);
+        }
+        else {
+            test:assertEquals(aPIDefinitionByID.toBalString(), expectedResponse);
+        }
     }
 }
 
