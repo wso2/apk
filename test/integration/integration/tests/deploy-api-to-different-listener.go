@@ -35,13 +35,13 @@ var APIDifferentListener = suite.IntegrationTest{
 	Manifests:   []string{"tests/api-different-listener.yaml"},
 	Test: func(t *testing.T, suite *suite.IntegrationTestSuite) {
 		ns := "gateway-integration-test-infra"
-		gwAddr := "diff-listner-api.test.api.am.wso2.com:9095"
+		gwAddr := "api.am.wso2.com:9095"
 		token := http.GetTestToken(t)
 
 		testCases := []http.ExpectedResponse{
 			{
 				Request: http.Request{
-					Host: "diff-listner-api.test.api.am.wso2.com",
+					Host: "api.am.wso2.com",
 					Path: "/test-api-with-different-listener/v1.0.0/user/user123/playlist/watch-later",
 				},
 				ExpectedRequest: &http.ExpectedRequest{
@@ -54,7 +54,7 @@ var APIDifferentListener = suite.IntegrationTest{
 			},
 			{
 				Request: http.Request{
-					Host: "diff-listner-api.test.api.am.wso2.com",
+					Host: "api.am.wso2.com",
 					Path: "/test-api-with-different-listener/v1.0.0/user/user123/other-path",
 				},
 				Response: http.Response{StatusCode: 404},

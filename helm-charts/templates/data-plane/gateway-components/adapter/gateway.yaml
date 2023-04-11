@@ -20,7 +20,7 @@ spec:
             name: {{ template "apk-helm.resource.prefix" . }}-example-listener-cert
             namespace: {{ .Release.Namespace }}
     - name: apilistener
-      hostname: "*.api.am.wso2.com"
+      hostname: "api.am.wso2.com"
       port: {{ .Values.wso2.apk.dp.gateway.listener.port }}
       protocol: {{ .Values.wso2.apk.dp.gateway.listener.protocol }}
       tls:
@@ -31,7 +31,7 @@ spec:
             name: {{ template "apk-helm.resource.prefix" . }}-system-api-listener-cert
             namespace: {{ .Release.Namespace }}
     - name: idplistener
-      hostname: "*.idp.am.wso2.com"
+      hostname: "idp.am.wso2.com"
       port: {{ .Values.wso2.apk.dp.gateway.listener.port }}
       protocol: {{ .Values.wso2.apk.dp.gateway.listener.protocol }}
       tls:

@@ -50,7 +50,7 @@ sudo echo "$IP backend-base-path.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP path-param-api.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP gateway-integration-test-infra.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP no-base-path.test.gw.wso2.com" | sudo tee -a /etc/hosts
-sudo echo "$IP diff-listner-api.test.api.am.wso2.com" | sudo tee -a /etc/hosts
+sudo echo "$IP api.am.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP disable-api-security.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP disable-resource-security.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP prod-api.test.gw.wso2.com" | sudo tee -a /etc/hosts
