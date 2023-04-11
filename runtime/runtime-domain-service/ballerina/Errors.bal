@@ -362,3 +362,12 @@ public isolated function e909038(error e) returns commons:APKError {
         description = "Error while updating endpoint certificate"
     ); 
 }
+
+public isolated function e909039() returns commons:APKError {
+    return error commons:APKError( "Invalid value for offset",
+        code = 909039,
+        message = "Invalid value for offset",
+        statusCode = 406,
+        description = "Invalid value for offset"
+    ); 
+}
