@@ -107,83 +107,40 @@ isolated final model:MediationPolicy[] avilableMediationPolicyList = [
     },
     {
         id: "5",
-        'type: MEDIATION_POLICY_TYPE_REQUEST_INTERCEPTOR,
+        'type: MEDIATION_POLICY_TYPE_INTERCEPTOR,
         name: MEDIATION_POLICY_NAME_ADD_INTERCEPTOR,
         displayName: "Add Interceptor",
-        description: "This policy allows you to remove a header from the response",
-        applicableFlows: [MEDIATION_POLICY_FLOW_REQUEST],
+        description: "This policy allows you to engage an interceptor service",
+        applicableFlows: [MEDIATION_POLICY_FLOW_REQUEST, MEDIATION_POLICY_FLOW_RESPONSE],
         supportedApiTypes: [API_TYPE_REST],
         policyAttributes: [
             {
                 name: "headersEnabled",
-                description: "Name of the header to be removed",
-                'type: "String",
-                required: true,
-                validationRegex: "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$"
+                description: "Indicates whether request/response header details should be sent to the interceptor service",
+                'type: "boolean",
+                required: false
             },
             {
                 name: "bodyEnabled",
-                description: "Name of the header to be removed",
-                'type: "String",
-                required: true,
-                validationRegex: "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$"
+                description: "Indicates whether request/response body details should be sent to the interceptor service",
+                'type: "boolean",
+                required: false
             },
             {
                 name: "contextEnabled",
-                description: "Name of the header to be removed",
-                'type: "String",
-                required: true,
-                validationRegex: "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$"
+                description: "Indicates whether context details should be sent to the interceptor service",
+                'type: "boolean",
+                required: false
             },
             {
                 name: "trailersEnabled",
-                description: "Name of the header to be removed",
-                'type: "String",
-                required: true,
-                validationRegex: "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$"
+                description: "Indicates whether request/response trailer details should be sent to the interceptor service",
+                'type: "boolean",
+                required: false
             },
             {
                 name: "backendUrl",
-                description: "Name of the header to be removed",
-                'type: "String",
-                required: true,
-                validationRegex: "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$"
-            }
-        ]
-    },
-    {
-        id: "6",
-        'type: MEDIATION_POLICY_TYPE_RESPONSE_INTERCEPTOR,
-        name: MEDIATION_POLICY_NAME_ADD_INTERCEPTOR,
-        displayName: "Add Interceptor",
-        description: "This policy allows you to remove a header from the response",
-        applicableFlows: [MEDIATION_POLICY_FLOW_RESPONSE],
-        supportedApiTypes: [API_TYPE_REST],
-        policyAttributes: [
-            {
-                name: "headersEnabled",
-                description: "Name of the header to be removed",
-                'type: "String",
-                required: true,
-                validationRegex: "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$"
-            },
-            {
-                name: "bodyEnabled",
-                description: "Name of the header to be removed",
-                'type: "String",
-                required: true,
-                validationRegex: "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$"
-            },
-            {
-                name: "trailersEnabled",
-                description: "Name of the header to be removed",
-                'type: "String",
-                required: true,
-                validationRegex: "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$"
-            },
-            {
-                name: "contextEnabled",
-                description: "Name of the header to be removed",
+                description: "Backend URL of the interceptor service",
                 'type: "String",
                 required: true,
                 validationRegex: "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$"

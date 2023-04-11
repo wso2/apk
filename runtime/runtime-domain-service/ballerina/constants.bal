@@ -43,8 +43,7 @@ isolated string[] ALLOWED_API_TYPES = [API_TYPE_REST];
 
 const string MEDIATION_POLICY_TYPE_REQUEST_HEADER_MODIFIER = "RequestHeaderModifier";
 const string MEDIATION_POLICY_TYPE_RESPONSE_HEADER_MODIFIER = "ResponseHeaderModifier";
-const string MEDIATION_POLICY_TYPE_REQUEST_INTERCEPTOR = "RequestInterceptor";
-const string MEDIATION_POLICY_TYPE_RESPONSE_INTERCEPTOR = "ResponseInterceptor";
+const string MEDIATION_POLICY_TYPE_INTERCEPTOR = "Interceptor";
 const string MEDIATION_POLICY_NAME_ADD_HEADER = "addHeader";
 const string MEDIATION_POLICY_NAME_REMOVE_HEADER = "removeHeader";
 const string MEDIATION_POLICY_TYPE_URL_REWRITE = "URLRewrite";
