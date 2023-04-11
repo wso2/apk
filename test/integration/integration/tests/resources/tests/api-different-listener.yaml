@@ -43,7 +43,7 @@ spec:
     namespace: apk-integration-test
     sectionName: httpslistener
   hostnames:
-  - diff-listner-api.test.api.am.wso2.com
+  - api.am.wso2.com
   rules:
   - matches:
     - path:

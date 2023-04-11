@@ -31,7 +31,7 @@ data:
     {{  if and .Values.wso2.apk.dp.runtime.configs .Values.wso2.apk.dp.runtime.configs.baseUrl }}
     baseURl = "{{ .Values.wso2.apk.dp.runtime.configs.baseUrl }}/api/am/runtime"
     {{ else }}
-    baseURl = "https://prod.api.am.wso2.com:9095/api/am/runtime"
+    baseURl = "https://api.am.wso2.com:9095/api/am/runtime"
     {{ end }}
     migrationMode = {{ and .Values.wso2.apk.migration .Values.wso2.apk.migration.enabled | default false }}
     [wso2.runtime_domain_service.runtimeConfiguration.idpConfiguration]
