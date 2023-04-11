@@ -36,6 +36,7 @@ on:
       - synchronize
     paths:
       - '**/runtime/runtime-domain-service/**'
+      - '**/common-bal-libs/**'
     branches:
       - 'main'
 env:

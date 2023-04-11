@@ -38,6 +38,7 @@ data:
     enabled = true
     [wso2.admin_service.idpConfiguration]
     organizationClaim = "{{ .Values.wso2.apk.idp.organizationClaim }}"
+    userClaim = "{{ .Values.wso2.apk.idp.usernameClaim }}"
     [wso2.admin_service.idpConfiguration.publicKey]
     certFilePath = "/home/wso2apk/admin/security/mg.pem"
     [wso2.admin_service.keyStores.tls]

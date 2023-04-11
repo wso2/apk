@@ -36,6 +36,7 @@ on:
       - synchronize
     paths:
       - '**/backoffice/backoffice-domain-service/**'
+      - '**/common-bal-libs/**'
     branches:
       - 'main'
 concurrency:

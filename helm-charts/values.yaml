@@ -31,6 +31,7 @@ wso2:
       usernameClaim: "sub"
       groupClaim: "groups"
       organizationClaim: "organization"
+      # organizationResolver: "controlplane" # controlplane,none
       # credentials:
       #   secretName: "wso2apk-idp-credentials"
       # certificatesSecret:
@@ -235,14 +236,10 @@ wso2:
               memory: "1028Mi"
               cpu: "1000m"
           readinessProbe:
-            path: /health
-            port: 9443
             initialDelaySeconds: 20
             periodSeconds: 20
             failureThreshold: 5
           livenessProbe:
-            path: /health
-            port: 9443
             initialDelaySeconds: 20
             periodSeconds: 20
             failureThreshold: 5
@@ -250,7 +247,8 @@ wso2:
           replicas: 1
           imagePullPolicy: Always
           image: wso2/runtime-domain-service:latest
-        # configs:
+          configs:
+        #   authrorization: true
         #   baseUrl: "https://prod.api.am.wso2.com:9095/api/am/runtime"
           # tls:
           #   certificatesSecret: "my-secret"
@@ -375,7 +373,7 @@ wso2:
               failureThreshold: 5
             strategy: Recreate
             imagePullPolicy: Always
-            image: wso2/enforcer:lastest
+            image: wso2/enforcer:latest
             security:
               sslHostname: "enforcer"
             # configs:

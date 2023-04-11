@@ -33,13 +33,13 @@ public isolated service class JWTValidationInterceptor {
             validatedJWT = jwt:validate(header, self.jwtValidatorConfig.clone());
         }
         if validatedJWT is jwt:Payload {
+            map<anydata> claims = self.extractCustomClaims(validatedJWT);
             if (validatedJWT.hasKey(self.idpConfiguration.organizationClaim)) {
                 string organizationClaim = <string>validatedJWT.get(self.idpConfiguration.organizationClaim);
-                map<anydata> claims = self.extractCustomClaims(validatedJWT);
                 Organization? retrievedorg = check self.organizationResolver.retrieveOrganizationFromIDPClaimValue(claims, organizationClaim);
                 if retrievedorg is Organization {
                     if retrievedorg.enabled {
-                        UserContext userContext = {username: <string>validatedJWT.sub, organization: retrievedorg};
+                        UserContext userContext = {username: <string>validatedJWT.get(self.idpConfiguration.userClaim), organization: retrievedorg};
                         userContext.claims = claims;
                         return userContext;
                     } else {
@@ -54,7 +54,7 @@ public isolated service class JWTValidationInterceptor {
                 // find default organization
                 Organization? retrievedorg = check self.organizationResolver.retrieveOrganizationByName(DEFAULT_ORGANIZATION_NAME);
                 if retrievedorg is Organization {
-                    UserContext userContext = {username: <string>validatedJWT.sub, organization: retrievedorg};
+                    UserContext userContext = {username: <string>validatedJWT.get(self.idpConfiguration.userClaim), organization: retrievedorg};
                     userContext.claims = self.extractCustomClaims(validatedJWT);
                     return userContext;
                 } else {
