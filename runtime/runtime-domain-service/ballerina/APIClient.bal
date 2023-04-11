@@ -39,15 +39,38 @@ import wso2/apk_common_lib as commons;
 
 public class APIClient {
 
-    public isolated function getAPIDefinitionByID(string id, commons:Organization organization) returns http:Response|NotFoundError|PreconditionFailedError|InternalServerErrorError {
+    public isolated function getAPIDefinitionByID(string id, commons:Organization organization, string? accept) returns http:Response|NotFoundError|PreconditionFailedError|InternalServerErrorError {
         model:API? api = getAPI(id, organization);
         if api is model:API {
             json|error definition = self.getDefinition(api);
             if definition is json {
                 http:Response response = new;
-                response.setJsonPayload(definition);
-                response.statusCode = 200;
-                return response;
+                if accept is string {
+                    if accept == APPLICATION_JSON_MEDIA_TYPE || accept == ALL_MEDIA_TYPE {
+                        response.setJsonPayload(definition);
+                        response.statusCode = 200;
+                        return response;
+                    } else if accept == APPLICATION_YAML_MEDIA_TYPE {
+                        runtimeUtil:YamlUtil yamlUtil = runtimeUtil:newYamlUtil1();
+                        string?|lang:Exception convertedYaml = yamlUtil.fromJsonStringToYaml(definition.toString());
+                        if convertedYaml is string {
+                            response.setTextPayload(convertedYaml);
+                            response.statusCode = 200;
+                            return response;
+                        } else if convertedYaml is lang:Exception {
+                            log:printError("Error while converting json to yaml:" + convertedYaml.toString());
+                            InternalServerErrorError internalError = {body: {code: 909000, message: "Internal Error Occured while converting json to yaml"}};
+                            return internalError;
+                        }
+                    } else {
+                        PreconditionFailedError preconditionFailed = {body: {code: 909100, message: "Accept header should be application/json or application/yaml"}};
+                        return preconditionFailed;
+                    }
+                } else {
+                    response.setJsonPayload(definition);
+                    response.statusCode = 200;
+                    return response;
+                }
             } else {
                 log:printError("Error while reading definition:", definition);
                 InternalServerErrorError internalError = {body: {code: 909000, message: "Internal Error Occured while retrieving definition"}};
@@ -3101,7 +3124,7 @@ public class APIClient {
                                 }
                                 updateAPI.operations = sortedOperations;
                                 _ = check self.updateAPI(apiId, updateAPI, validateAndRetrieveDefinitionResult.getContent(), organization, userName);
-                                return self.getAPIDefinitionByID(apiId, organization);
+                                return self.getAPIDefinitionByID(apiId, organization, APPLICATION_JSON_MEDIA_TYPE);
                             } else {
                                 log:printError("Error occured retrieving uri templates from definition", uRITemplates);
                                 runtimeapi:JAPIManagementException excetion = check uRITemplates.ensureType(runtimeapi:JAPIManagementException);

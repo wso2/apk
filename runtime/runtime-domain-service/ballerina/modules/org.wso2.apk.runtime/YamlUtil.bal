@@ -1,6 +1,5 @@
 import ballerina/jballerina.java;
 import runtime_domain_service.java.lang as javalang;
-import runtime_domain_service.com.fasterxml.jackson.core as comfasterxmljacksoncore;
 
 # Ballerina class mapping for the Java `org.wso2.apk.runtime.YamlUtil` class.
 @java:Binding {'class: "org.wso2.apk.runtime.YamlUtil"}
@@ -36,11 +35,11 @@ public distinct class YamlUtil {
     # The function that maps to the `fromJsonStringToYaml` method of `org.wso2.apk.runtime.YamlUtil`.
     #
     # + arg0 - The `string` value required to map with the Java method parameter.
-    # + return - The `string` or the `comfasterxmljacksoncore:JsonProcessingException` value returning from the Java mapping.
-    public isolated function fromJsonStringToYaml(string arg0) returns string?|comfasterxmljacksoncore:JsonProcessingException {
+    # + return - The `string` or the `javalang:Exception` value returning from the Java mapping.
+    public isolated function fromJsonStringToYaml(string arg0) returns string?|javalang:Exception {
         handle|error externalObj = org_wso2_apk_runtime_YamlUtil_fromJsonStringToYaml(self.jObj, java:fromString(arg0));
         if (externalObj is error) {
-            comfasterxmljacksoncore:JsonProcessingException e = error comfasterxmljacksoncore:JsonProcessingException(comfasterxmljacksoncore:JSONPROCESSINGEXCEPTION, externalObj, message = externalObj.message());
+            javalang:Exception e = error javalang:Exception(javalang:EXCEPTION, externalObj, message = externalObj.message());
             return e;
         } else {
             return java:toString(externalObj);

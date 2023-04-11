@@ -13,7 +13,7 @@ http:Service internalRuntimeService = service object {
                 uuid: header,
                 enabled: true
             };
-            return apiClient.getAPIDefinitionByID(apiId, organization);
+            return apiClient.getAPIDefinitionByID(apiId, organization,APPLICATION_JSON_MEDIA_TYPE);
         }else {
             PreconditionFailedError preconditionFailedError = {body: {code: 900901, message: "X-WSO2-Organization is missing in request"}};
             return preconditionFailedError;

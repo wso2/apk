@@ -67,3 +67,7 @@ const string CONFIGMAP_DEFINITION_KEY = "definition";
 const string ORG_RESOLVER_CONTROL_PLANE = "controlPlane";
 const string ORG_RESOLVER_K8s = "k8s";
 const string ORG_RESOLVER_NONE = "none";
+
+const string APPLICATION_JSON_MEDIA_TYPE = "application/json";
+const string APPLICATION_YAML_MEDIA_TYPE = "application/yaml";
+const string ALL_MEDIA_TYPE = "*/*";

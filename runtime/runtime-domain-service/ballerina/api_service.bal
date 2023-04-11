@@ -87,11 +87,11 @@ http:Service runtimeService = service object {
         commons:Organization organization = authenticatedUserContext.organization;
         return apiService.validateAPIExistence(query, organization);
     }
-    isolated resource function get apis/[string apiId]/definition(http:RequestContext requestContext) returns http:Response|NotFoundError|PreconditionFailedError|InternalServerErrorError|commons:APKError {
+    isolated resource function get apis/[string apiId]/definition(http:RequestContext requestContext,@http:Header string? accept = APPLICATION_JSON_MEDIA_TYPE) returns http:Response|NotFoundError|PreconditionFailedError|InternalServerErrorError|commons:APKError {
         final APIClient apiService = new ();
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
-        return apiService.getAPIDefinitionByID(apiId, organization);
+        return apiService.getAPIDefinitionByID(apiId, organization, accept);
     }
     isolated resource function put apis/[string apiId]/definition(http:RequestContext requestContext, http:Request message) returns http:Response|BadRequestError|ForbiddenError|NotFoundError|PreconditionFailedError|InternalServerErrorError|commons:APKError {
         final APIClient apiService = new ();
