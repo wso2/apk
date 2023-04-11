@@ -21,198 +21,198 @@
 
 import wso2/apk_common_lib as commons;
 
-public isolated function e90901(string id) returns commons:APKError {
+public isolated function e909001(string id) returns commons:APKError {
     return error commons:APKError( id + " not found",
-        code = 90902,
+        code = 909001,
         message = id + " not found",
         statusCode = 404,
         description = id + " not found"
     ); 
 }
 
-public isolated function e90902() returns commons:APKError {
+public isolated function e909002() returns commons:APKError {
     return error commons:APKError( "Context/Name doesn't exist",
-        code = 90902,
+        code = 909002,
         message = "Context/Name doesn't exist",
         statusCode = 404,
         description = "Context/Name doesn't exist"
     ); 
 }
 
-public isolated function e90903() returns commons:APKError {
+public isolated function e909003() returns commons:APKError {
     return error commons:APKError( "apiId not found in request",
-        code = 90903,
+        code = 909003,
         message = "apiId not found in request",
         statusCode = 404,
         description = "apiId not found in request"
     ); 
 }
 
-public isolated function e90904(string serviceKey) returns commons:APKError {
+public isolated function e909004(string serviceKey) returns commons:APKError {
     return error commons:APKError( "Service from " + serviceKey + " not found",
-        code = 90904,
+        code = 909004,
         message =  "Service from " + serviceKey + " not found",
         statusCode = 404,
         description =  "Service from " + serviceKey + " not found"
     ); 
 }
 
-public isolated function e90905() returns commons:APKError {
+public isolated function e909005() returns commons:APKError {
     return error commons:APKError( "type field unavailable",
-        code = 90905,
+        code = 909005,
         message = "type field unavailable",
         statusCode = 404,
         description = "type field unavailable"
     ); 
 }
 
-public isolated function e90906() returns commons:APKError {
+public isolated function e909006() returns commons:APKError {
     return error commons:APKError( "Unsupported API type",
-        code = 90906,
+        code = 909006,
         message = "Unsupported API type",
         statusCode = 406,
         description = "Unsupported API type"
     ); 
 }
 
-public isolated function e90907() returns commons:APKError {
+public isolated function e909007() returns commons:APKError {
     return error commons:APKError( "Multiple fields of url, file, inlineAPIDefinition given",
-        code = 90907,
+        code = 909007,
         message = "Multiple fields of url, file, inlineAPIDefinition given",
         statusCode = 406,
         description = "Multiple fields of url, file, inlineAPIDefinition given"
     ); 
 }
 
-public isolated function e90908() returns commons:APKError {
+public isolated function e909008() returns commons:APKError {
     return error commons:APKError( "Atleast one of the field required",
-        code = 90908,
+        code = 909008,
         message = "Atleast one of the field required",
         statusCode = 406,
         description = "Atleast one of the field required"
     ); 
 }
 
-public isolated function e90909() returns commons:APKError {
+public isolated function e909009() returns commons:APKError {
     return error commons:APKError( "Additional properties not provided",
-        code = 90909,
+        code = 909009,
         message = "Additional properties not provided",
         statusCode = 406,
         description = "Additional properties not provided"
     ); 
 }
 
-public isolated function e90910() returns commons:APKError {
+public isolated function e909010() returns commons:APKError {
     return error commons:APKError( "Invalid operation policy name",
-        code = 90910,
+        code = 909010,
         message = "Invalid operation policy name",
         statusCode = 406,
         description = "Invalid operation policy name"
     ); 
 }
 
-public isolated function e90911(string apiName) returns commons:APKError {
+public isolated function e909011(string apiName) returns commons:APKError {
     return error commons:APKError( "API Name - " + apiName + " already exist",
-        code = 90911,
+        code = 909011,
         message = "API Name - " + apiName + " already exist",
         statusCode = 409,
         description = "API Name - " + apiName + " already exist"
     ); 
 }
 
-public isolated function e90912(string apiContext) returns commons:APKError {
+public isolated function e909012(string apiContext) returns commons:APKError {
     return error commons:APKError( "API Context - " + apiContext + " already exist",
-        code = 90912,
+        code = 909012,
         message = "API Context - " + apiContext + " already exist",
         statusCode = 409,
         description = "API Context - " + apiContext + " already exist"
     ); 
 }
 
-public isolated function e90913() returns commons:APKError {
+public isolated function e909013() returns commons:APKError {
     return error commons:APKError( "Sandbox endpoint not specified",
-        code = 90913,
+        code = 909013,
         message = "Sandbox endpoint not specified",
         statusCode = 406,
         description = "Sandbox endpoint not specified"
     ); 
 }
 
-public isolated function e90914() returns commons:APKError {
+public isolated function e909014() returns commons:APKError {
     return error commons:APKError( "Production endpoint not specified",
-        code = 90914,
+        code = 909014,
         message = "Production endpoint not specified",
         statusCode = 406,
         description = "Production endpoint not specified"
     ); 
 }
 
-public isolated function e90915(string apiContext) returns commons:APKError {
+public isolated function e909015(string apiContext) returns commons:APKError {
     return error commons:APKError("API context " + apiContext + " invalid",
-        code = 90915,
+        code = 909015,
         message = "API context " + apiContext + " invalid",
         statusCode = 406,
         description = "API context " + apiContext + " invalid"
     ); 
 }
 
-public isolated function e90916(string apiName) returns commons:APKError {
+public isolated function e909016(string apiName) returns commons:APKError {
     return error commons:APKError("API name " + apiName + " invalid",
-        code = 90916,
+        code = 909016,
         message = "API name " + apiName + " invalid",
         statusCode = 406,
         description = "API name " + apiName + " invalid"
     ); 
 }
 
-public isolated function e90917() returns commons:APKError {
+public isolated function e909017() returns commons:APKError {
     return error commons:APKError("Invalid API request",
-        code = 90917,
+        code = 909017,
         message = "Invalid API request",
         statusCode = 406,
         description = "Invalid API request"
     ); 
 }
 
-public isolated function e90918() returns commons:APKError {
+public isolated function e909018() returns commons:APKError {
     return error commons:APKError("Error while generating token",
-        code = 90918,
+        code = 909018,
         message = "Error while generating token",
         statusCode = 500,
         description = "Error while generating token"
     ); 
 }
 
-public isolated function e90919(string keyWord) returns commons:APKError {
+public isolated function e909019(string keyWord) returns commons:APKError {
     return error commons:APKError("Invalid keyword " + keyWord,
-        code = 90919,
+        code = 909019,
         message = "Invalid keyword " + keyWord,
         statusCode = 406,
         description = "Invalid keyword " + keyWord
     ); 
 }
 
-public isolated function e90920() returns commons:APKError {
+public isolated function e909020() returns commons:APKError {
     return error commons:APKError("Invalid Sort By/Sort Order value",
-        code = 90920,
+        code = 909020,
         message = "Invalid Sort By/Sort Order value",
         statusCode = 406,
         description = "Invalid Sort By/Sort Order value"
     ); 
 }
 
-public isolated function e90921() returns commons:APKError {
+public isolated function e909021() returns commons:APKError {
     return error commons:APKError("Atleast one operation need to specified",
-        code = 90921,
+        code = 909021,
         message = "Atleast one operation need to specified",
         statusCode = 406,
         description = "Atleast one operation need to specified"
     ); 
 }
 
-public isolated function e90922(error e) returns commons:APKError {
+public isolated function e909022(error e) returns commons:APKError {
     return error commons:APKError("Internal server error", e,
-        code = 90922,
+        code = 909022,
         message = "Internal server error",
         statusCode = 500,
         description = "Internal server error"
@@ -221,27 +221,27 @@ public isolated function e90922(error e) returns commons:APKError {
 
 // e90923 is here
 
-public isolated function e90924(string policyName) returns commons:APKError {
+public isolated function e909024(string policyName) returns commons:APKError {
     return error commons:APKError( "Invalid parameters provided for policy " + policyName,
-        code = 90924,
+        code = 909024,
         message = "Invalid parameters provided for policy " + policyName,
         statusCode = 406,
         description = "Invalid parameters provided for policy " + policyName
     ); 
 }
 
-public isolated function e90925() returns commons:APKError {
+public isolated function e909025() returns commons:APKError {
     return error commons:APKError( "Presence of both resource level and API level operation policies is not allowed",
-        code = 90925,
+        code = 909025,
         message = "Presence of both resource level and API level operation policies is not allowed",
         statusCode = 406,
         description = "Presence of both resource level and API level operation policies is not allowed"
     ); 
 }
 
-public isolated function e90926() returns commons:APKError {
+public isolated function e909026() returns commons:APKError {
     return error commons:APKError( "Presence of both resource level and API level rate limits is not allowed",
-        code = 90926,
+        code = 909026,
         message = "Presence of both resource level and API level rate limits is not allowed",
         statusCode = 406,
         description = "Presence of both resource level and API level rate limits is not allowed"

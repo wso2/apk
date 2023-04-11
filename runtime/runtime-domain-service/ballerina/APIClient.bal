@@ -341,7 +341,7 @@ public class APIClient {
                         }
                     }
                 } else {
-                    return e90919(keyWord);
+                    return e909019(keyWord);
                 }
             } else {
                 string keyWordValue = query + "|\\w+" + query + "\\w+" + "|" + query + "\\w+" + "|\\w+" + query;
@@ -378,7 +378,7 @@ public class APIClient {
                 order by api.createdTime descending
                 select api;
         } else {
-            return e90920();
+            return e909020();
         }
         API[] limitSet = [];
         if sortedAPIS.length() > offset {
@@ -422,7 +422,7 @@ public class APIClient {
                 return badRequest;
             }
             if (self.validateName(api.name, organization)) {
-                return e90911(api.name);
+                return e909011(api.name);
             }
             lock {
                 if (ALLOWED_API_TYPES.indexOf(api.'type) is ()) {
@@ -431,7 +431,7 @@ public class APIClient {
                 }
             }
             if self.validateContextAndVersion(api.context, api.'version, organization) {
-                return e90912(api.context);
+                return e909012(api.context);
             }
 
             self.setDefaultOperationsIfNotExist(api);
@@ -440,7 +440,7 @@ public class APIClient {
             APIOperations[]? operations = api.operations;
             if operations is APIOperations[] {
                 if operations.length() == 0 {
-                    return e90921();
+                    return e909021();
                 }
                 // Validating operation policies.
                 commons:APKError|() apkError = self.validateOperationPolicies(api.apiPolicies, operations, organization);
@@ -453,7 +453,7 @@ public class APIClient {
                     return invalidRateLimitError;
                 }
             } else {
-                return e90921();
+                return e909021();
             }
             record {}? endpointConfig = api.endpointConfig;
             map<model:Endpoint|()> createdEndpoints = {};
@@ -492,7 +492,7 @@ public class APIClient {
                     }
                 } else {
                     // Presence of both resource level and API level operation policies.
-                    return e90925();
+                    return e909025();
                 }
             }
         }
@@ -547,12 +547,12 @@ public class APIClient {
 
                             if (allowedPolicyAttributes != receivedPolicyParameters) {
                                 // Allowed policy attributes does not match with the parameters provided
-                                return e90924(policyName);
+                                return e909024(policyName);
                             }
                         }
                     } else {
                         // Invalid operation policy name.
-                        return e90910();
+                        return e909010();
                     }
                 }
             }
@@ -568,7 +568,7 @@ public class APIClient {
                 APIRateLimit? operationRateLimit = operation.operationRateLimit;
                 if (operationRateLimit != ()) {
                     // Presence of both resource level and API level rate limits.
-                    return e90926();
+                    return e909026();
                 }
             }
         }
@@ -709,7 +709,7 @@ public class APIClient {
                         url: <string?>url
                     };
                 } else {
-                    return e90913();
+                    return e909013();
                 }
             }
         }
@@ -730,7 +730,7 @@ public class APIClient {
                         url: <string?>url
                     };
                 } else {
-                    return e90914();
+                    return e909014();
                 }
             }
         }
@@ -795,7 +795,7 @@ public class APIClient {
             }
 
             if (self.validateName(api.name, organization)) {
-                return e90911(api.name);
+                return e909011(api.name);
             }
             lock {
                 if (ALLOWED_API_TYPES.indexOf(api.'type) is ()) {
@@ -804,7 +804,7 @@ public class APIClient {
                 }
             }
             if self.validateContextAndVersion(api.context, api.'version, organization) {
-                return e90912(api.context);
+                return e909012(api.context);
             }
             self.setDefaultOperationsIfNotExist(api);
             APIOperations[]? operations = api.operations;
@@ -843,10 +843,10 @@ public class APIClient {
                 CreatedAPI createdAPI = {body: check convertK8sAPItoAPI(deployAPIToK8sResult, false)};
                 return createdAPI;
             } else {
-                return e90904(serviceKey);
+                return e909004(serviceKey);
             }
         } on fail var e {
-            return e90922(e);
+            return e909022(e);
         }
     }
     private isolated function constructServiceURL(Service 'service) returns string {
@@ -939,12 +939,12 @@ public class APIClient {
                         model:StatusCause[] 'causes = details.'causes;
                         foreach model:StatusCause 'cause in 'causes {
                             if 'cause.'field == "spec.context" {
-                                return e90915(k8sAPI.spec.context);
+                                return e909015(k8sAPI.spec.context);
                             } else if 'cause.'field == "spec.apiDisplayName" {
-                                return e90916(k8sAPI.spec.apiDisplayName);
+                                return e909016(k8sAPI.spec.apiDisplayName);
                             }
                         }
-                        return e90917();
+                        return e909017();
                     }
                     return self.handleK8sTimeout(statusResponse);
                 }
@@ -962,12 +962,12 @@ public class APIClient {
                         model:StatusCause[] 'causes = details.'causes;
                         foreach model:StatusCause 'cause in 'causes {
                             if 'cause.'field == "spec.context" {       
-                                return e90915(k8sAPI.spec.context);
+                                return e909015(k8sAPI.spec.context);
                             } else if 'cause.'field == "spec.apiDisplayName" {
-                                return e90916(k8sAPI.spec.apiDisplayName);
+                                return e909016(k8sAPI.spec.apiDisplayName);
                             }
                         }
-                        return e90917();
+                        return e909017();
                     }
                     return self.handleK8sTimeout(statusResponse);
                 }
@@ -989,7 +989,7 @@ public class APIClient {
                 model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
                 model:StatusDetails? details = statusResponse.details;
                 if details is model:StatusDetails {
-                    return e90917();
+                    return e909017();
                 }
                 return self.handleK8sTimeout(statusResponse);
             }
@@ -1653,10 +1653,10 @@ public class APIClient {
                 return okResponse;
             } else {
                 log:printError("Error while Genereting token for API : " + apiId, generatedToken);
-                return e90918();
+                return e909018();
             }
         } else {
-            return e90901(apiId);
+            return e909001(apiId);
         }
     }
 
@@ -2178,7 +2178,7 @@ public class APIClient {
             } else if keyWord == "context" {
                 exist = self.validateContext(keyWordValue, organization);
             } else {
-                return e90919(keyWord);
+                return e909019(keyWord);
             }
         } else {
             // Consider full string as name;
@@ -2188,7 +2188,7 @@ public class APIClient {
             http:Ok ok = {};
             return ok;
         } else {
-            return e90902();
+            return e909002();
         }
     }
 
@@ -2267,14 +2267,14 @@ public class APIClient {
         boolean typeAvailable = 'type.length() > 0;
         string[] ALLOWED_API_DEFINITION_TYPES = ["REST", "GRAPHQL", "ASYNC"];
         if !typeAvailable {
-            return e90905();
+            return e909005();
         }
         if (ALLOWED_API_DEFINITION_TYPES.indexOf('type) is ()) {
-            return e90906();
+            return e909006();
         }
         if url is string {
             if (fileAvailable || inlineApiDefinitionAvailable) {
-                return e90907();
+                return e909007();
             }
             string|error retrieveDefinitionFromUrlResult = self.retrieveDefinitionFromUrl(url);
             if retrieveDefinitionFromUrlResult is string {
@@ -2286,16 +2286,16 @@ public class APIClient {
             }
         } else if fileName is string && content is byte[] {
             if (urlAvailble || inlineApiDefinitionAvailable) {
-                return e90907();
+                return e909007();
             }
             validationResponse = runtimeUtil:RuntimeAPICommonUtil_validateOpenAPIDefinition('type, <byte[]>content, "", <string>fileName, true);
         } else if inlineAPIDefinition is string {
             if (fileAvailable || urlAvailble) {
-                return e90907();
+                return e909007();
             }
             validationResponse = runtimeUtil:RuntimeAPICommonUtil_validateOpenAPIDefinition('type, <byte[]>[], <string>inlineAPIDefinition, "", true);
         } else {
-            return e90908();
+            return e909008();
         }
         return validationResponse;
     }
@@ -2328,13 +2328,13 @@ public class APIClient {
             }
         }
         if 'type is () {
-            return e90905();
+            return e909005();
         }
         if url is () && fileName is () && inlineAPIDefinition is () && fileContent is () {
-            return e90908();
+            return e909008();
         }
         if additionalProperties is () || additionalProperties.length() == 0 {
-            return e90909();
+            return e909009();
         }
         json apiObject = check value:fromJsonString(additionalProperties);
         API api = check apiObject.cloneWithType(API);
@@ -2906,7 +2906,7 @@ public class APIClient {
                 return apkError;
             }
         } else {
-            return e90903();
+            return e909003();
         }
     }
 
@@ -2973,7 +2973,7 @@ public class APIClient {
                 APIOperations[]? operations = payload.operations;
                 if operations is APIOperations[] {
                     if operations.length() == 0 {
-                        return e90921();
+                        return e909021();
                     }
                     // Validating operation policies.
                     commons:APKError|() apkError = self.validateOperationPolicies(api.apiPolicies, operations, organization);
@@ -2986,7 +2986,7 @@ public class APIClient {
                         return invalidRateLimitError;
                     }
                 } else {
-                    return e90921();
+                    return e909021();
                 }
                 if endpoint is model:Endpoint {
                     _ = check self.setHttpRoute(apiArtifact, payload, endpoint, uniqueId, PRODUCTION_TYPE, organization);
@@ -3142,7 +3142,7 @@ public class APIClient {
                         }
                     }
                 } else {
-                    return e90919(keyWord);
+                    return e909019(keyWord);
                 }
             } else {
                 string keyWordValue = query + "|\\w+" + query + "\\w+" + "|" + query + "\\w+" + "|\\w+" + query;
@@ -3180,7 +3180,7 @@ public class APIClient {
                 order by mediationPolicy.id descending
                 select mediationPolicy;
         } else {
-            return e90920();
+            return e909020();
         }
         MediationPolicy[] limitSet = [];
         if sortedMediationPolicies.length() > offset {
