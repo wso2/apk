@@ -732,6 +732,178 @@
 			"response": []
 		},
 		{
+			"name": "RuntimeAPI Create APIV4 for Endpoint Security test - Services",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"  pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Assert API creation response\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.name).equals(pm.collectionVariables.get('testAPIV4Name'));",
+							"    pm.expect(responseJson.context).equals(pm.collectionVariables.get('testAPIV4Context'));",
+							"    pm.expect(responseJson.version).equals(\"1.0.0\");",
+							"    pm.expect(responseJson.type).equals(\"REST\");",
+							"    pm.collectionVariables.set(\"APIV4UUID\",responseJson.id)",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Host",
+						"value": "prod.api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"context\": \"{{testAPIV4Context}}\" ,\n    \"name\": \"{{testAPIV4Name}}\" ,\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\"\n}"
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/import-service?serviceKey={{serviceUUID}}",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"import-service"
+					],
+					"query": [
+						{
+							"key": "serviceKey",
+							"value": "{{serviceUUID}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "RuntimeAPI Create APIV5 for Endpoint Security - Direct Endpoints",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"  pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Assert API creation response\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.name).equals(pm.collectionVariables.get('testAPIV5Name'));",
+							"    pm.expect(responseJson.context).equals(pm.collectionVariables.get('testAPIV5Context'));",
+							"    pm.expect(responseJson.version).equals(\"1.0.0\");",
+							"    pm.expect(responseJson.type).equals(\"REST\");",
+							"    pm.collectionVariables.set(\"APIV5UUID\",responseJson.id)",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Host",
+						"value": "prod.api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"testAPIV5\",\n    \"context\": \"/testAPIV5/1.0.0\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        }\n    ],\n    \"endpointConfig\": {\n        \"endpoint_type\": \"http\",\n        \"sandbox_endpoints\": {\n            \"url\": \"https://httpbin.org\"\n        },\n        \"production_endpoints\": {\n            \"url\": \"https://httpbin.org\"\n        }\n    }\n}"
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "RuntimeAPI List APIs",
 			"event": [
 				{
@@ -1428,7 +1600,7 @@
 			"response": []
 		},
 		{
-			"name": "RuntimeAPI Create Access Key for APIV2 Copy",
+			"name": "RuntimeAPI Create Access Key for APIV2 Copy 2",
 			"event": [
 				{
 					"listen": "prerequest",
@@ -1923,95 +2095,6 @@
 			"response": []
 		},
 		{
-			"name": "RuntimeAPI Create APIV4 with Endpoint Security for Services",
-			"event": [
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							""
-						],
-						"type": "text/javascript"
-					}
-				},
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Status code is 201\", function () {",
-							"  pm.response.to.have.status(201);",
-							"});",
-							"",
-							"pm.test(\"Assert API creation response\", () => {",
-							"    //parse the response JSON and test three properties",
-							"    const responseJson = pm.response.json();",
-							"    pm.expect(responseJson.name).equals(pm.collectionVariables.get('testAPIV4Name'));",
-							"    pm.expect(responseJson.context).equals(pm.collectionVariables.get('testAPIV4Context'));",
-							"    pm.expect(responseJson.version).equals(\"1.0.0\");",
-							"    pm.expect(responseJson.type).equals(\"REST\");",
-							"    pm.collectionVariables.set(\"APIV4UUID\",responseJson.id)",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{access_token}}",
-							"type": "string"
-						}
-					]
-				},
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"type": "text"
-					},
-					{
-						"key": "Accept",
-						"value": "application/json",
-						"type": "text"
-					},
-					{
-						"key": "Host",
-						"value": "prod.api.am.wso2.com",
-						"type": "default"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"name\": \"testAPIV4\",\n    \"context\": \"/testAPIV4/1.0.0\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        }\n    ],\n    \"serviceInfo\": {\n        \"name\": \"{{testServiceName}}\",\n        \"namespace\": \"{{testServiceNamespace}}\",\n        \"endpoint_security\": {\n            \"production\": {\n                \"enabled\": true,\n                \"type\": \"Basic\",\n                \"username\": \"admin\",\n                \"password\": \"admin\"\n            }\n        }\n\n    }\n}"
-				},
-				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/import-service?serviceKey={{serviceUUID}}",
-					"host": [
-						"{{gatewayBaseURl}}"
-					],
-					"path": [
-						"api",
-						"am",
-						"runtime",
-						"apis",
-						"import-service"
-					],
-					"query": [
-						{
-							"key": "serviceKey",
-							"value": "{{serviceUUID}}"
-						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
 			"name": "RuntimeAPI List APIs",
 			"event": [
 				{
@@ -2163,6 +2246,80 @@
 			"response": []
 		},
 		{
+			"name": "Add Endpoint Security for API4 - Service",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Host",
+						"value": "prod.api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": \"{{APIV4UUID}}\",\n    \"name\": \"testAPIV4\",\n    \"context\": \"/testAPIV4/1.0.0\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        }\n    ],\n    \"serviceInfo\": {\n        \"name\": \"{{testServiceName}}\",\n        \"namespace\": \"{{testServiceNamespace}}\",\n        \"endpoint_security\": {\n            \"production\": {\n                \"enabled\": true,\n                \"type\": \"Basic\",\n                \"username\": \"admin\",\n                \"password\": \"admin\"\n            }\n        }\n\n    }\n}"
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIV4UUID}}",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIV4UUID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "call service resource with Endpoint security - Service",
 			"event": [
 				{
@@ -2267,7 +2424,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"id\": \"7d338b1a-5344-4309-b0ad-a78379d9dfed\",\n    \"name\": \"testAPIV4\",\n    \"context\": \"/testAPIV4/1.0.0\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        }\n    ],\n    \"serviceInfo\": {\n        \"name\": \"{{testServiceName}}\",\n        \"namespace\": \"{{testServiceNamespace}}\",\n        \"endpoint_security\": {\n            \"production\": {\n                \"enabled\": true,\n                \"type\": \"Basic\",\n                \"username\": \"admin123\",\n                \"password\": \"admin123\"\n            }\n        }\n\n    }\n}",
+					"raw": "{\n    \"id\": \"{{APIV4UUID}}\",\n    \"name\": \"testAPIV4\",\n    \"context\": \"/testAPIV4/1.0.0\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        }\n    ],\n    \"serviceInfo\": {\n        \"name\": \"{{testServiceName}}\",\n        \"namespace\": \"{{testServiceNamespace}}\",\n        \"endpoint_security\": {\n            \"production\": {\n                \"enabled\": true,\n                \"type\": \"Basic\",\n                \"username\": \"admin123\",\n                \"password\": \"admin123\"\n            }\n        }\n\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -2408,89 +2565,6 @@
 			"response": []
 		},
 		{
-			"name": "RuntimeAPI Create APIV4 with Endpoint Security for Direct Endpoints",
-			"event": [
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							""
-						],
-						"type": "text/javascript"
-					}
-				},
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Status code is 201\", function () {",
-							"  pm.response.to.have.status(201);",
-							"});",
-							"",
-							"pm.test(\"Assert API creation response\", () => {",
-							"    //parse the response JSON and test three properties",
-							"    const responseJson = pm.response.json();",
-							"    pm.expect(responseJson.name).equals(pm.collectionVariables.get('testAPIV4Name'));",
-							"    pm.expect(responseJson.context).equals(pm.collectionVariables.get('testAPIV4Context'));",
-							"    pm.expect(responseJson.version).equals(\"1.0.0\");",
-							"    pm.expect(responseJson.type).equals(\"REST\");",
-							"    pm.collectionVariables.set(\"APIV4UUID\",responseJson.id)",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{access_token}}",
-							"type": "string"
-						}
-					]
-				},
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"type": "text"
-					},
-					{
-						"key": "Accept",
-						"value": "application/json",
-						"type": "text"
-					},
-					{
-						"key": "Host",
-						"value": "prod.api.am.wso2.com",
-						"type": "default"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"name\": \"testAPIV4\",\n    \"context\": \"/testAPIV4/1.0.0\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        }\n    ],\n    \"endpointConfig\": {\n        \"endpoint_type\": \"http\",\n        \"sandbox_endpoints\": {\n            \"url\": \"https://httpbin.org\"\n        },\n        \"production_endpoints\": {\n            \"url\": \"https://httpbin.org\"\n        },\n        \"endpoint_security\": {\n            \"production\": {\n                \"enabled\": true,\n                \"type\": \"Basic\",\n                \"username\": \"admin\",\n                \"password\": \"admin\"\n            },\n            \"sandbox\": {\n                \"enabled\": false,\n                \"type\": \"Basic\",\n                \"username\": \"admin1\",\n                \"password\": \"admin1\"\n            }\n        }\n    }\n}"
-				},
-				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/",
-					"host": [
-						"{{gatewayBaseURl}}"
-					],
-					"path": [
-						"api",
-						"am",
-						"runtime",
-						"apis",
-						""
-					]
-				}
-			},
-			"response": []
-		},
-		{
 			"name": "RuntimeAPI List APIs",
 			"event": [
 				{
@@ -2565,7 +2639,7 @@
 			"response": []
 		},
 		{
-			"name": "RuntimeAPI Create Access Key for APIV4 - Endpoint",
+			"name": "RuntimeAPI Create Access Key for APIV5 - Endpoint",
 			"event": [
 				{
 					"listen": "prerequest",
@@ -2625,7 +2699,7 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIV4UUID}}/generate-key",
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIV5UUID}}/generate-key",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
@@ -2634,8 +2708,82 @@
 						"am",
 						"runtime",
 						"apis",
-						"{{APIV4UUID}}",
+						"{{APIV5UUID}}",
 						"generate-key"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add Endpoint Security for API5 - Direct Endpoints",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Host",
+						"value": "prod.api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": \"{{APIV5UUID}}\",\n    \"name\": \"testAPIV5\",\n    \"context\": \"/testAPIV5/1.0.0\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        }\n    ],\n    \"endpointConfig\": {\n        \"endpoint_type\": \"http\",\n        \"sandbox_endpoints\": {\n            \"url\": \"https://httpbin.org\"\n        },\n        \"production_endpoints\": {\n            \"url\": \"https://httpbin.org\"\n        },\n        \"endpoint_security\": {\n            \"production\": {\n                \"enabled\": true,\n                \"type\": \"Basic\",\n                \"username\": \"admin\",\n                \"password\": \"admin\"\n            },\n            \"sandbox\": {\n                \"enabled\": false,\n                \"type\": \"Basic\",\n                \"username\": \"admin1\",\n                \"password\": \"admin1\"\n            }\n        }\n    }\n}"
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIV5UUID}}",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIV5UUID}}"
 					]
 				}
 			},
@@ -2685,9 +2833,9 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}{{testAPIV4Context}}/headers",
+					"raw": "{{gatewayBaseURl}}{{testAPIV5Context}}/headers",
 					"host": [
-						"{{gatewayBaseURl}}{{testAPIV4Context}}"
+						"{{gatewayBaseURl}}{{testAPIV5Context}}"
 					],
 					"path": [
 						"headers"
@@ -2746,7 +2894,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"id\": \"7d338b1a-5344-4309-b0ad-a78379d9dfed\",\n    \"name\": \"testAPIV4\",\n    \"context\": \"/testAPIV4/1.0.0\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        }\n    ],\n    \"endpointConfig\": {\n        \"endpoint_type\": \"http\",\n        \"sandbox_endpoints\": {\n            \"url\": \"https://httpbin.org\"\n        },\n        \"production_endpoints\": {\n            \"url\": \"https://httpbin.org\"\n        },\n        \"endpoint_security\": {\n            \"production\": {\n                \"enabled\": true,\n                \"type\": \"Basic\",\n                \"username\": \"admin123\",\n                \"password\": \"admin123\"\n            },\n            \"sandbox\": {\n                \"enabled\": false,\n                \"type\": \"Basic\",\n                \"username\": \"admin1\",\n                \"password\": \"admin1\"\n            }\n        }\n    }\n}",
+					"raw": "{\n    \"id\": \"{{APIV5UUID}}\",\n    \"name\": \"testAPIV5\",\n    \"context\": \"/testAPIV5/1.0.0\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        }\n    ],\n    \"endpointConfig\": {\n        \"endpoint_type\": \"http\",\n        \"sandbox_endpoints\": {\n            \"url\": \"https://httpbin.org\"\n        },\n        \"production_endpoints\": {\n            \"url\": \"https://httpbin.org\"\n        },\n        \"endpoint_security\": {\n            \"production\": {\n                \"enabled\": true,\n                \"type\": \"Basic\",\n                \"username\": \"admin123\",\n                \"password\": \"admin123\"\n            },\n            \"sandbox\": {\n                \"enabled\": false,\n                \"type\": \"Basic\",\n                \"username\": \"admin1\",\n                \"password\": \"admin1\"\n            }\n        }\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -2754,7 +2902,7 @@
 					}
 				},
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIV4UUID}}",
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIV5UUID}}",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
@@ -2763,7 +2911,7 @@
 						"am",
 						"runtime",
 						"apis",
-						"{{APIV4UUID}}"
+						"{{APIV5UUID}}"
 					]
 				}
 			},
@@ -2813,12 +2961,12 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/testAPIV4/1.0.0/headers",
+					"raw": "{{gatewayBaseURl}}/testAPIV5/1.0.0/headers",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
 					"path": [
-						"testAPIV4",
+						"testAPIV5",
 						"1.0.0",
 						"headers"
 					]
@@ -2873,7 +3021,7 @@
 					}
 				],
 				"url": {
-					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIV4UUID}}",
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIV5UUID}}",
 					"host": [
 						"{{gatewayBaseURl}}"
 					],
@@ -2882,7 +3030,7 @@
 						"am",
 						"runtime",
 						"apis",
-						"{{APIV4UUID}}"
+						"{{APIV5UUID}}"
 					]
 				}
 			},
@@ -2984,6 +3132,21 @@
 		{
 			"key": "testAPIV4Context",
 			"value": "/testAPIV4/1.0.0",
+			"type": "string"
+		},
+		{
+			"key": "APIV5UUID",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "testAPIV5Name",
+			"value": "testAPIV5",
+			"type": "string"
+		},
+		{
+			"key": "testAPIV5Context",
+			"value": "/testAPIV5/1.0.0",
 			"type": "string"
 		}
 	]
