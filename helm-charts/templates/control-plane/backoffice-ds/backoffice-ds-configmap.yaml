@@ -36,6 +36,7 @@ data:
     driver = "{{ .Values.wso2.apk.cp.database.driver }}"
     [wso2.backoffice_service.idpConfiguration]
     organizationClaim = "{{ .Values.wso2.apk.idp.organizationClaim }}"
+    userClaim = "{{ .Values.wso2.apk.idp.usernameClaim }}"
     [wso2.backoffice_service.idpConfiguration.publicKey]
     certFilePath = "/home/wso2apk/backoffice/security/mg.pem"
     [wso2.backoffice_service.keyStores.tls]

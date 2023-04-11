@@ -36,6 +36,7 @@ on:
       - synchronize
     paths:
       - '**/devportal/devportal-domain-service/**'
+      - '**/common-bal-libs/**'
     branches:
       - 'main'
 env:

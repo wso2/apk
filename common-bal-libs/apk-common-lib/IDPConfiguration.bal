@@ -17,15 +17,17 @@
 //
 # Description
 #
-# + issuer - issuer of the JWT token
-# + jwksUrl - URL of the JWKS endpoint
+# + issuer - issuer of the JWT token  
+# + jwksUrl - URL of the JWKS endpoint  
 # + organizationClaim - organization claim of the JWT token  
-# + authorizationHeader - authorization header of the JWT token
+# + userClaim - user claim of the JWT token
+# + authorizationHeader - authorization header of the JWT token  
 # + publicKey - public key of the JWT token
 public type IDPConfiguration record {|
 string issuer = "wso2.org/products/am";
 string jwksUrl? ;
 string organizationClaim ="organization";
+string userClaim = "sub";
 string authorizationHeader = "X-JWT-Assertion";
 KeyStore publicKey;
 |};

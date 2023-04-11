@@ -35,6 +35,7 @@ on:
       - synchronize
     paths:
       - '**/admin/admin-domain-service/**'
+      - '**/common-bal-libs/**'
     branches:
       - 'main'
 concurrency:
