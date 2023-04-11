@@ -2838,6 +2838,7 @@ public class APIClient {
             oldAPIName = api.metadata.name;
         }
         map<model:RateLimitPolicy> rateLimitPolicies = apiArtifact.rateLimitPolicies;
+        map<model:APIPolicy> apiPolicies = apiArtifact.apiPolicies;
         string newAPIName = "";
         string? newId = newAPI.id;
         if newId is string {
@@ -2907,6 +2908,15 @@ public class APIClient {
                                     extenstionRefMappings[extensionRef.name] = newRateLimitPolicyCR.metadata.name;
                                     extensionRef.name = newRateLimitPolicyCR.metadata.name;
                                 }
+                            } else if extensionRef.kind == "APIPolicy" {
+                                if apiArtifact.apiPolicies.hasKey(extensionRef.name) {
+                                    model:APIPolicy apiPolicyCR = apiArtifact.apiPolicies.get(extensionRef.name).clone();
+                                    model:APIPolicy newAPIPolicyCR = self.prepareAPIPolicyCR(newAPI, apiPolicyCR, httproute.metadata.name, organization);
+                                    _ = apiArtifact.apiPolicies.remove(extensionRef.name);
+                                    apiArtifact.apiPolicies[newAPIPolicyCR.metadata.name] = newAPIPolicyCR;
+                                    extenstionRefMappings[extensionRef.name] = newAPIPolicyCR.metadata.name;
+                                    extensionRef.name = newAPIPolicyCR.metadata.name;
+                                }
                             }
                         }
                     }
@@ -2931,6 +2941,16 @@ public class APIClient {
                 apiArtifact.rateLimitPolicies[newRateLimitPolicyCR.metadata.name] = newRateLimitPolicyCR;
             }
         }
+
+        // adding api level API policies
+        foreach string extensionRefName in apiPolicies.keys() {
+            model:APIPolicy apiPolicyCR = apiArtifact.apiPolicies.get(extensionRefName).clone();
+            if apiPolicyCR.spec.targetRef.kind == "API" && apiPolicyCR.spec.targetRef.name == oldAPIName {
+                model:APIPolicy newAPIPolicyCR = self.prepareAPIPolicyCR(newAPI, apiPolicyCR, newAPIName, organization);
+                _ = apiArtifact.apiPolicies.remove(extensionRefName);
+                apiArtifact.apiPolicies[newAPIPolicyCR.metadata.name] = newAPIPolicyCR;
+            }
+        }
     }
 
     private isolated function prepareScopeCR(model:APIArtifact apiArtifact, API api, model:Scope scope, commons:Organization organization) returns model:Scope {
@@ -2951,6 +2971,13 @@ public class APIClient {
         rateLimitPolicy.metadata.labels = self.getLabels(api, organization);
         rateLimitPolicy.spec.targetRef.name = targetRefName;
         return rateLimitPolicy;
+    }
+
+    private isolated function prepareAPIPolicyCR(API api, model:APIPolicy apiPolicy, string targetRefName, commons:Organization organization) returns model:APIPolicy {
+        apiPolicy.metadata.name = uuid:createType1AsString();
+        apiPolicy.metadata.labels = self.getLabels(api, organization);
+        apiPolicy.spec.targetRef.name = targetRefName;
+        return apiPolicy;
     }
 
     private isolated function prepareBackendRef(model:HTTPBackendRef backendRef, model:APIArtifact apiArtifact, Service? serviceEntry, API oldAPI, API newAPI, string endpointType, commons:Organization organization) returns [string, string]?|error {
@@ -3152,6 +3179,10 @@ public class APIClient {
             foreach model:RateLimitPolicy rateLimitPolicy in rateLimitPolicyList.items {
                 apiArtifact.rateLimitPolicies[rateLimitPolicy.metadata.name] = self.sanitizeRateLimitPolicyCR(rateLimitPolicy);
             }
+            model:APIPolicyList apiPolicyList = check getAPIPolicyCRsForAPI(k8sapi.spec.apiDisplayName, k8sapi.spec.apiVersion, k8sapi.metadata.namespace, organization);
+            foreach model:APIPolicy apiPolicy in apiPolicyList.items {
+                apiArtifact.apiPolicies[apiPolicy.metadata.name] = self.sanitizeAPIPolicyCR(apiPolicy);
+            }
             apiArtifact.api = self.sanitizeAPICR(k8sapi);
             model:ConfigMap[] endpointCertificateList = check getConfigMapsForAPICertificate(k8sapi.spec.apiDisplayName, k8sapi.spec.apiVersion, organization);
             foreach model:ConfigMap endpointCertificate in endpointCertificateList {
@@ -3178,6 +3209,14 @@ public class APIClient {
             spec: rateLimitPolicy.spec
         };
         return sanitizedRateLimitPolicy;
+    }
+
+    private isolated function sanitizeAPIPolicyCR(model:APIPolicy apiPolicy) returns model:APIPolicy {
+        model:APIPolicy sanitizedAPIPolicy = {
+            metadata: {name: apiPolicy.metadata.name, namespace: apiPolicy.metadata.namespace, labels: apiPolicy.metadata.labels},
+            spec: apiPolicy.spec
+        };
+        return sanitizedAPIPolicy;
     }
 
     private isolated function sanitizeRuntimeAPI(model:RuntimeAPI runtimeAPI) returns model:RuntimeAPI {
