@@ -39,7 +39,7 @@ import wso2/apk_common_lib as commons;
 
 public class APIClient {
 
-    public isolated function getAPIDefinitionByID(string id, commons:Organization organization, string? accept) returns http:Response|NotFoundError|PreconditionFailedError|InternalServerErrorError {
+    public isolated function getAPIDefinitionByID(string id, commons:Organization organization, string? accept) returns http:Response|NotFoundError|PreconditionFailedError|InternalServerErrorError|commons:APKError {
         model:API? api = getAPI(id, organization);
         if api is model:API {
             json|error definition = self.getDefinition(api);
