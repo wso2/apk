@@ -1987,7 +1987,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"name\": \"testAPIV4\",\n    \"context\": \"/testAPIV4/1.0.0\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        }\n    ],\n    \"serviceInfo\": {\n        \"name\": \"test-apk\",\n        \"namespace\": \"default\",\n        \"endpoint_security\": {\n            \"production\": {\n                \"enabled\": true,\n                \"type\": \"Basic\",\n                \"username\": \"admin\",\n                \"password\": \"admin\"\n            }\n        }\n\n    }\n}"
+					"raw": "{\n    \"name\": \"testAPIV4\",\n    \"context\": \"/testAPIV4/1.0.0\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        }\n    ],\n    \"serviceInfo\": {\n        \"name\": \"{{testServiceName}}\",\n        \"namespace\": \"{{testServiceNamespace}}\",\n        \"endpoint_security\": {\n            \"production\": {\n                \"enabled\": true,\n                \"type\": \"Basic\",\n                \"username\": \"admin\",\n                \"password\": \"admin\"\n            }\n        }\n\n    }\n}"
 				},
 				"url": {
 					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/import-service?serviceKey={{serviceUUID}}",
@@ -2012,6 +2012,80 @@
 			"response": []
 		},
 		{
+			"name": "RuntimeAPI List APIs",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Services available in k8s cluster\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.list.length).to.be.above(0);",
+							"});",
+							"",
+							"console.log('Getting all APIs in namespace and find sample service required for test');",
+							"_.each(pm.response.json().list, (APIEntry) => {",
+							"    if(APIEntry.name === pm.collectionVariables.get('testAPIV4Name')) {",
+							"    pm.expect(APIEntry.context).equals( pm.collectionVariables.get('testAPIV4Context'));",
+							"    pm.expect(APIEntry.version).equals(\"1.0.0\");",
+							"    pm.expect(APIEntry.type).equals(\"REST\");",
+							"    console.log(\"API entry found and verified details\");",
+							"    }",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Host",
+						"value": "prod.api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "RuntimeAPI Create Access Key for APIV4 - Service",
 			"event": [
 				{
@@ -2027,8 +2101,8 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Status code is 201\", function () {",
-							"  pm.response.to.have.status(201);",
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
 							"});",
 							"",
 							"pm.test(\"Assert token generation response\", () => {",
@@ -2071,10 +2145,6 @@
 						"type": "default"
 					}
 				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"context\": \"/{{testAPIV4Context}}\" ,\n    \"name\": \"{{testAPIV4Name}}\" ,\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\"\n}\n"
-				},
 				"url": {
 					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIV4UUID}}/generate-key",
 					"host": [
@@ -2197,7 +2267,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"id\": \"7d338b1a-5344-4309-b0ad-a78379d9dfed\",\n    \"name\": \"testAPIV4\",\n    \"context\": \"/testAPIV4/1.0.0\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        }\n    ],\n    \"serviceInfo\": {\n        \"name\": \"backend\",\n        \"namespace\": \"test-apk\",\n        \"endpoint_security\": {\n            \"production\": {\n                \"enabled\": true,\n                \"type\": \"Basic\",\n                \"username\": \"admin123\",\n                \"password\": \"admin123\"\n            }\n        }\n\n    }\n}",
+					"raw": "{\n    \"id\": \"7d338b1a-5344-4309-b0ad-a78379d9dfed\",\n    \"name\": \"testAPIV4\",\n    \"context\": \"/testAPIV4/1.0.0\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [],\n                \"response\": []\n            }\n        }\n    ],\n    \"serviceInfo\": {\n        \"name\": \"{{testServiceName}}\",\n        \"namespace\": \"{{testServiceNamespace}}\",\n        \"endpoint_security\": {\n            \"production\": {\n                \"enabled\": true,\n                \"type\": \"Basic\",\n                \"username\": \"admin123\",\n                \"password\": \"admin123\"\n            }\n        }\n\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -2421,6 +2491,80 @@
 			"response": []
 		},
 		{
+			"name": "RuntimeAPI List APIs",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Services available in k8s cluster\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.list.length).to.be.above(0);",
+							"});",
+							"",
+							"console.log('Getting all APIs in namespace and find sample service required for test');",
+							"_.each(pm.response.json().list, (APIEntry) => {",
+							"    if(APIEntry.name === pm.collectionVariables.get('testAPIV4Name')) {",
+							"    pm.expect(APIEntry.context).equals( pm.collectionVariables.get('testAPIV4Context'));",
+							"    pm.expect(APIEntry.version).equals(\"1.0.0\");",
+							"    pm.expect(APIEntry.type).equals(\"REST\");",
+							"    console.log(\"API entry found and verified details\");",
+							"    }",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Host",
+						"value": "prod.api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "RuntimeAPI Create Access Key for APIV4 - Endpoint",
 			"event": [
 				{
@@ -2436,8 +2580,8 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Status code is 201\", function () {",
-							"  pm.response.to.have.status(201);",
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
 							"});",
 							"",
 							"pm.test(\"Assert token generation response\", () => {",
@@ -2480,10 +2624,6 @@
 						"type": "default"
 					}
 				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"context\": \"/{{testAPIV4Context}}\" ,\n    \"name\": \"{{testAPIV4Name}}\" ,\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\"\n}\n"
-				},
 				"url": {
 					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIV4UUID}}/generate-key",
 					"host": [
@@ -2834,8 +2974,7 @@
 		},
 		{
 			"key": "APIV4UUID",
-			"value": "",
-			"type": "string"
+			"value": ""
 		},
 		{
 			"key": "testAPIV4Name",
