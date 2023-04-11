@@ -210,8 +210,8 @@ public isolated function e909021() returns commons:APKError {
     ); 
 }
 
-public isolated function e909022(error e) returns commons:APKError {
-    return error commons:APKError("Internal server error", e,
+public isolated function e909022(string msg, error e) returns commons:APKError {
+    return error commons:APKError(msg, e,
         code = 909022,
         message = "Internal server error",
         statusCode = 500,
@@ -219,7 +219,14 @@ public isolated function e909022(error e) returns commons:APKError {
     ); 
 }
 
-// e90923 is here
+public isolated function e909023() returns commons:APKError {
+    return error commons:APKError("Internal error occured while retrieving definition",
+        code = 909023,
+        message = "Internal error occured while retrieving definition",
+        statusCode = 500,
+        description = "Internal error occured while retrieving definition"
+    ); 
+}
 
 public isolated function e909024(string policyName) returns commons:APKError {
     return error commons:APKError( "Invalid parameters provided for policy " + policyName,
@@ -245,5 +252,113 @@ public isolated function e909026() returns commons:APKError {
         message = "Presence of both resource level and API level rate limits is not allowed",
         statusCode = 406,
         description = "Presence of both resource level and API level rate limits is not allowed"
+    ); 
+}
+
+public isolated function e909027() returns commons:APKError {
+    return error commons:APKError( "Error while retrieving API",
+        code = 909027,
+        message = "Error while retrieving API",
+        statusCode = 500,
+        description = "Error while retrieving API"
+    ); 
+}
+
+public isolated function e909028() returns commons:APKError {
+    return error commons:APKError( "Internal error occured while deploying API",
+        code = 909028,
+        message = "Internal error occured while deploying API",
+        statusCode = 500,
+        description = "Internal error occured while deploying API"
+    ); 
+}
+
+public isolated function e909029(error e) returns commons:APKError {
+    return error commons:APKError( "Error while retrieving Mediation policy", e,
+        code = 909029,
+        message = "Error while retrieving Mediation policy",
+        statusCode = 500,
+        description = "Error while retrieving Mediation policy"
+    ); 
+}
+
+public isolated function e909030() returns commons:APKError {
+    return error commons:APKError( "Certificate is expired",
+        code = 909030,
+        message = "Certificate is expired",
+        statusCode = 400,
+        description = "Certificate is expired"
+    ); 
+}
+
+public isolated function e909031(error e) returns commons:APKError {
+    return error commons:APKError( "Error while adding certificate", e,
+        code = 909031,
+        message = "Error while adding certificate",
+        statusCode = 500,
+        description = "Error while adding certificate"
+    ); 
+}
+
+public isolated function e909032() returns commons:APKError {
+    return error commons:APKError( "Host/Certificte is empty in payload",
+        code = 909032,
+        message = "Host/Certificte is empty in payload",
+        statusCode = 500,
+        description = "Host/Certificte is empty in payload"
+    ); 
+}
+
+public isolated function e909033(error e) returns commons:APKError {
+    return error commons:APKError( "Error while retrieving endpoint certificate request", e,
+        code = 909033,
+        message = "Error while retrieving endpoint certificate request",
+        statusCode = 500,
+        description = "Error while retrieving endpoint certificate request"
+    ); 
+}
+
+public isolated function e909034(string certificateId) returns commons:APKError {
+    return error commons:APKError( "Certificate " + certificateId + " not found",
+        code = 909034,
+        message = "Certificate " + certificateId + " not found",
+        statusCode = 404,
+        description = "Certificate " + certificateId + " not found"
+    ); 
+}
+
+public isolated function e909035(error e) returns commons:APKError {
+    return error commons:APKError( "Error while deleting endpoint certificate", e,
+        code = 909035,
+        message = "Error while deleting endpoint certificate",
+        statusCode = 500,
+        description = "Error while deleting endpoint certificate"
+    ); 
+}
+
+public isolated function e909036(error e) returns commons:APKError {
+    return error commons:APKError( "Error while getting endpoint certificate content", e,
+        code = 909036,
+        message = "Error while getting endpoint certificate content",
+        statusCode = 500,
+        description = "Error while getting endpoint certificate content"
+    ); 
+}
+
+public isolated function e909037(error e) returns commons:APKError {
+    return error commons:APKError( "Error while getting endpoint certificate by id", e,
+        code = 909037,
+        message = "Error while getting endpoint certificate by id",
+        statusCode = 500,
+        description = "Error while getting endpoint certificate by id"
+    ); 
+}
+
+public isolated function e909038(error e) returns commons:APKError {
+    return error commons:APKError( "Error while updating endpoint certificate", e,
+        code = 909038,
+        message = "Error while updating endpoint certificate",
+        statusCode = 500,
+        description = "Error while updating endpoint certificate"
     ); 
 }

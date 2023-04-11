@@ -73,12 +73,10 @@ public class APIClient {
                 }
             } else {
                 log:printError("Error while reading definition:", definition);
-                InternalServerErrorError internalError = {body: {code: 909000, message: "Internal Error Occured while retrieving definition"}};
-                return internalError;
+                return e909023();
             }
         }
-        NotFoundError notfound = {body: {code: 909100, message: id + " not found."}};
-        return notfound;
+        return e909001(id);
     }
 
     private isolated function getDefinition(model:API api) returns json|commons:APKError {
@@ -93,10 +91,8 @@ public class APIClient {
             // definitionFileRef not specified or empty. definitionfile
             return self.retrieveDefaultDefinition(api);
         } on fail var e {
-            string message = "Internal Error occured while retrieving api Definition";
-            return error(message, e, message = message, description = message, code = 909000, statusCode = 500);
+            return e909023();
         }
-
     }
     private isolated function getDefinitionFromConfigMap(model:ConfigMap configmap) returns json|error? {
         map<string>? binaryData = configmap.binaryData;
@@ -148,11 +144,10 @@ public class APIClient {
                     }
                 }
             } on fail var e {
-                return error("Error while retrieving API", e, message = "Error while retrieving API", description = "Error while retrieving API", code = 909000, statusCode = 500);
+                return e909027();
             }
         }
-        NotFoundError notfound = {body: {code: 909100, message: id + " not found."}};
-        return notfound;
+        return e909001(id);
     }
 
     //Delete APIs deployed in a namespace by APIId.
@@ -207,7 +202,7 @@ public class APIClient {
             }
         } on fail var e {
             log:printError("Error occured deleting httproutes", e);
-            return error("Error occured deleting httproutes", message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = 500);
+            return e909022("Error occured deleting httproutes", e);
         }
     }
     private isolated function deleteInternalAPI(string k8sAPIName, string apiNameSpace) returns commons:APKError? {
@@ -223,7 +218,7 @@ public class APIClient {
             }
         } on fail var e {
             log:printError("Error occured deleting Internal API", e);
-            return error("Error occured deleting servicemapping", message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = 500);
+            return e909022("Error occured deleting servicemapping", e);
         }
     }
     private isolated function deleteBackends(model:API api, commons:Organization organization) returns commons:APKError? {
@@ -246,7 +241,7 @@ public class APIClient {
             }
         } on fail var e {
             log:printError("Error occured deleting servicemapping", e);
-            return error("Error occured deleting servicemapping", message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = 500);
+            return e909022("Error occured deleting servicemapping", e);
         }
     }
 
@@ -270,7 +265,7 @@ public class APIClient {
             }
         } on fail var e {
             log:printError("Error occured deleting servicemapping", e);
-            return error("Error occured deleting servicemapping", message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = 500);
+            return e909022("Error occured deleting servicemapping", e);
         }
     }
     private isolated function deleteScopeCrsForAPI(model:API api, commons:Organization organization) returns commons:APKError? {
@@ -293,7 +288,7 @@ public class APIClient {
             }
         } on fail var e {
             log:printError("Error occured deleting scope", e);
-            return error("Error occured deleting scopes", message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = 500);
+            return e909022("Error occured deleting scope", e);
         }
     }
 
@@ -312,7 +307,7 @@ public class APIClient {
             API convertedModel = check convertK8sAPItoAPI(api, true);
             apilist.push(convertedModel);
         } on fail var e {
-            return error("Error occured while getting API list", e, message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = 500);
+            return e909022("Error occured while getting API list", e);
         }
         if query is string && query.toString().trim().length() > 0 {
             return self.filterAPISBasedOnQuery(apilist, query, 'limit, offset, sortBy, sortOrder);
@@ -476,7 +471,7 @@ public class APIClient {
                 return e;
             }
             log:printError("Internal Error occured", e);
-            return error("Internal Error occured", code = 909000, message = "Internal Error occured", description = "Internal Error occured", statusCode = 500);
+            return e909022("Internal Error occured", e);
         }
     }
 
@@ -846,7 +841,7 @@ public class APIClient {
                 return e909004(serviceKey);
             }
         } on fail var e {
-            return e909022(e);
+            return e909022("Internal server error", e);
         }
     }
     private isolated function constructServiceURL(Service 'service) returns string {
@@ -885,8 +880,7 @@ public class APIClient {
                 return e;
             }
             log:printError("Internal Error occured while deploying API", e);
-            commons:APKError internalError = error("Internal Error occured while deploying API", code = 909000, statusCode = 500, description = "Internal Error occured while deploying API", message = "Internal Error occured while deploying API");
-            return internalError;
+            return e909028();
         }
     }
     private isolated function deployEndpointCertificates(model:APIArtifact apiArtifact) returns error? {
@@ -973,8 +967,7 @@ public class APIClient {
                 }
             }
         } else {
-            commons:APKError badRequestError = error("Internal Error occured", code = 909000, message = "Internal Error occured", description = "Internal Error occured", statusCode = 500);
-            return badRequestError;
+            return e909022("Internal error occured", e = error("Internal error occured"));
         }
     }
     private isolated function deployRuntimeAPI(model:APIArtifact apiArtifact) returns error? {
@@ -994,7 +987,7 @@ public class APIClient {
                 return self.handleK8sTimeout(statusResponse);
             }
         } else {
-            return error("Internal Error occured", code = 909000, message = "Internal Error occured", description = "Internal Error occured", statusCode = 500);
+            return e909022("Internal error occured", e = error("Internal error occured"));
         }
     }
     private isolated function deployHttpRoutes(model:Httproute[] httproutes) returns error? {
@@ -1152,7 +1145,7 @@ public class APIClient {
             }
         } on fail var e {
             log:printError("Error occured deleting rate limit policy", e);
-            return error("Error occured deleting rate limit policy", message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = 500);
+            return e909022("Error occured deleting rate limit policy", e);
         }
     }
 
@@ -1426,7 +1419,7 @@ public class APIClient {
             }
         } on fail var e {
             log:printError("Internal Error occured", e);
-            return error("Internal Error occured", code = 909000, message = "Internal Error occured", description = "Internal Error occured", statusCode = 500);
+            return e909022("Internal Error occured", e);
         }
     }
 
@@ -1751,9 +1744,8 @@ public class APIClient {
             return;
         } on fail var e {
             log:printError("Error occured deleting servicemapping", e);
-            return error("Error occured deleting servicemapping", message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = 500);
+            return e909022("Error occured deleting servicemapping", e);
         }
-
     }
 
     public isolated function validateDefinition(http:Request message, boolean returnContent) returns InternalServerErrorError|BadRequestError|http:Ok|commons:APKError {
@@ -2389,8 +2381,8 @@ public class APIClient {
             if e is commons:APKError {
                 return e;
             }
-            log:printError("Internal Error occured", e);
-            return error("Internal Error occured", code = 909000, message = "Internal Error occured", description = "Internal Error occured", statusCode = 500);
+            log:printError("Internal error occured", e);
+            return e909022("Internal error occured", e);
         }
     }
 
@@ -3021,8 +3013,8 @@ public class APIClient {
             if e is commons:APKError {
                 return e;
             }
-            log:printError("Internal Error occured", e);
-            return error("Internal Error occured", code = 909000, message = "Internal Error occured", description = "Internal Error occured", statusCode = 500);
+            log:printError("Internal error occured", e);
+            return e909022("Internal error occured", e);
         }
     }
 
@@ -3199,7 +3191,7 @@ public class APIClient {
     # + id - Policy Id
     # + organization - Organization
     # + return - Return a Mediation Policy.
-    public isolated function getMediationPolicyById(string id, commons:Organization organization) returns MediationPolicy|NotFoundError|commons:APKError {
+    public isolated function getMediationPolicyById(string id, commons:Organization organization) returns MediationPolicy|commons:APKError {
         boolean mediationPolicyIDAvailable = id.length() > 0 ? true : false;
         if (mediationPolicyIDAvailable && string:length(id.toString()) > 0)
         {
@@ -3211,11 +3203,10 @@ public class APIClient {
                     }
                 }
             } on fail var e {
-                return error("Error while retrieving Mediation policy", e, message = "Error while retrieving Mediation policy", description = "Error while retrieving Mediation policy", code = 909000, statusCode = 500);
+                return e909029(e);
             }
         }
-        NotFoundError notfound = {body: {code: 909100, message: id + " not found."}};
-        return notfound;
+        return e909001(id);
     }
 
     # This returns list of Mediation Policies.
@@ -3233,7 +3224,7 @@ public class APIClient {
             MediationPolicy policyItem = convertPolicyModeltoPolicy(mediationPolicy);
             mediationPolicyList.push(policyItem);
         } on fail var e {
-            return error("Error occured while getting Mediation policy list", e, message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = 500);
+            return e909022("Error occured while getting Mediation policy list", e);
         }
         if query is string && query.toString().trim().length() > 0 {
             return self.filterMediationPoliciesBasedOnQuery(mediationPolicyList, query, 'limit, offset, sortBy, sortOrder);
@@ -3242,15 +3233,14 @@ public class APIClient {
         }
     }
 
-    public isolated function getCertificates(string apiId, string? endpoint, int 'limit, int offset, commons:Organization organization) returns Certificates|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
+    public isolated function getCertificates(string apiId, string? endpoint, int 'limit, int offset, commons:Organization organization) returns Certificates|BadRequestError|InternalServerErrorError|commons:APKError {
         model:API? api = getAPI(apiId, organization);
         if api is model:API {
             model:Certificate[] certificates = check getCertificatesForAPIId(api.clone(), organization.clone());
             [model:Certificate[], int] filtredCerts = self.filterCertificatesBasedOnQuery(certificates.clone(), endpoint, 'limit, offset);
             return {certificates: self.transformCertificateToCertMetadata(filtredCerts[0].cloneReadOnly()), count: filtredCerts[0].length(), pagination: {total: filtredCerts[1], 'limit: 'limit, offset: offset}};
         } else {
-            NotFoundError notfound = {body: {code: 909100, message: apiId + " not found."}};
-            return notfound.clone();
+            return e909001(apiId);
         }
     }
 
@@ -3298,18 +3288,16 @@ public class APIClient {
                     OkCertMetadata okCertMetaData = {body: {certificateId: deployedConfigMap.metadata.uid, endpoint: endpointCertificate.host}};
                     return okCertMetaData;
                 } else {
-                    BadRequestError badRequest = {body: {code: 909100, message: "Certificate is expired."}};
-                    return badRequest;
+                    return e909030();
                 }
             } else {
-                NotFoundError notfound = {body: {code: 909100, message: apiId + " not found."}};
-                return notfound;
+                return e909001(apiId);
             }
         } on fail var e {
             if e is commons:APKError {
                 return e;
             } else {
-                return error("Error while adding certificate", e, message = "Error while adding certificate", description = "Error while adding certificate", code = 909000, statusCode = 500);
+                return e909031(e);
             }
         }
     }
@@ -3334,17 +3322,16 @@ public class APIClient {
                 }
             }
             if (host is () || certificateFileName is () || certificateFileContent is ()) {
-
-                return error("host/certificte is empty in payload.", message = "host/certificte is empty in payload.", description = "host/certificte is empty in payload.", code = 909000, statusCode = 500);
+                return e909032();
             } else {
                 return {host: host, fileName: certificateFileName, certificateFileContent: certificateFileContent};
             }
         } on fail var e {
-            return error("Error while retrieving endpoint certificate request", e, message = "Error while retrieving endpoint certificate request", description = "Error while retrieving endpoint certificate request", code = 909000, statusCode = 500);
+            return e909033(e);
         }
     }
 
-    public isolated function getEndpointCertificateByID(string apiId, string certificateId, commons:Organization organization) returns CertificateInfo|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
+    public isolated function getEndpointCertificateByID(string apiId, string certificateId, commons:Organization organization) returns CertificateInfo|BadRequestError|InternalServerErrorError|commons:APKError {
         do {
             model:API? api = getAPI(apiId, organization);
             if api is model:API {
@@ -3362,19 +3349,18 @@ public class APIClient {
                 };
                 return certificateInfo;
             } else {
-                NotFoundError notfound = {body: {code: 909100, message: apiId + " not found."}};
-                return notfound;
+                return e909001(apiId);
             }
         } on fail var e {
             if e is commons:APKError {
                 return e;
             } else {
-                return error("Error while getting endpoint certificate by id", e, message = "Error while getting endpoint certificate by id", description = "Error while getting endpoint certificate by id", code = 909000, statusCode = 500);
+                return e909037(e);
             }
         }
     }
 
-    public isolated function updateEndpointCertificate(string apiId, string certificateId, http:Request request, commons:Organization organization) returns CertMetadata|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
+    public isolated function updateEndpointCertificate(string apiId, string certificateId, http:Request request, commons:Organization organization) returns CertMetadata|BadRequestError|InternalServerErrorError|commons:APKError {
         do {
             model:API? api = getAPI(apiId, organization);
             if api is model:API {
@@ -3389,23 +3375,20 @@ public class APIClient {
                         CertMetadata okCertMetaData = {certificateId: deployedConfigMap.metadata.uid, endpoint: endpointCertificate.host};
                         return okCertMetaData;
                     } else {
-                        BadRequestError badRequest = {body: {code: 909100, message: "Certificate is expired."}};
-                        return badRequest;
+                        return e909030();
                     }
                 } else {
-                    NotFoundError notfound = {body: {code: 909100, message: "Certificate " + certificateId + " not found."}};
-                    return notfound;
+                    return e909034(certificateId);
                 }
             } else {
-                NotFoundError notfound = {body: {code: 909100, message: apiId + " not found."}};
-                return notfound;
+                return e909001(apiId);
             }
         }
         on fail var e {
             if e is commons:APKError {
                 return e;
             } else {
-                return error("Error while updating endpoint certificate", e, message = "Error while updating endpoint certificate", description = "Error while updating endpoint certificate", code = 909000, statusCode = 500);
+                return e909038(e);
             }
         }
     }
@@ -3420,24 +3403,22 @@ public class APIClient {
                     http:Ok okResponse = {body: "Certificate deleted successfully"};
                     return okResponse;
                 } else {
-                    NotFoundError notfound = {body: {code: 909100, message: "Certificate " + certificateId + " not found."}};
-                    return notfound;
+                    return e909034(certificateId);
                 }
             } else {
-                NotFoundError notfound = {body: {code: 909100, message: apiId + " not found."}};
-                return notfound;
+                return e909001(apiId);
             }
         }
         on fail var e {
             if e is commons:APKError {
                 return e;
             } else {
-                return error("Error while deleting endpoint certificate", e, message = "Error while deleting endpoint certificate", description = "Error while deleting endpoint certificate", code = 909000, statusCode = 500);
+                return e909035(e);
             }
         }
     }
 
-    public isolated function getEndpointCertificateContent(string apiId, string certificateId, commons:Organization organization) returns http:Response|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
+    public isolated function getEndpointCertificateContent(string apiId, string certificateId, commons:Organization organization) returns http:Response|BadRequestError|InternalServerErrorError|commons:APKError {
         do {
             model:API? api = getAPI(apiId, organization);
             if api is model:API {
@@ -3451,15 +3432,14 @@ public class APIClient {
                 response.statusCode = 200;
                 return response;
             } else {
-                NotFoundError notfound = {body: {code: 909100, message: apiId + " not found."}};
-                return notfound;
+                return e909001(apiId);
             }
         }
         on fail var e {
             if e is commons:APKError {
                 return e;
             } else {
-                return error("Error while getting endpoint certificate content", e, message = "Error while getting endpoint certificate content", description = "Error while getting endpoint certificate content", code = 909000, statusCode = 500);
+                return e909036(e);
             }
         }
     }
