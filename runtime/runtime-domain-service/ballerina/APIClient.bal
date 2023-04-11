@@ -2375,7 +2375,8 @@ public class APIClient {
                 }
                 check self.prepareApiArtifactforNewVersion(apiArtifact, (), api, newVersion, organization, userName);
                 model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact, organization);
-                CreatedAPI createdAPI = {body: {name: deployAPIToK8sResult.spec.apiDisplayName, context: self.returnFullContext(deployAPIToK8sResult.spec.context, deployAPIToK8sResult.spec.apiVersion), 'version: deployAPIToK8sResult.spec.apiVersion, id: getAPIUUIDFromAPI(deployAPIToK8sResult)}};
+                string locationUrl = runtimeConfiguration.baseURl + "/apis/" + deployAPIToK8sResult.metadata.uid.toString();
+                CreatedAPI createdAPI = {body: check convertK8sAPItoAPI(deployAPIToK8sResult, false), headers: {location: locationUrl}};
                 return createdAPI;
             } else {
                 return <NotFoundError>api;
