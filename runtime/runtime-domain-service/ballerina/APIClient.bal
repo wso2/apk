@@ -315,6 +315,7 @@ public class APIClient {
             return self.filterAPIS(apilist, 'limit, offset, sortBy, sortOrder, query.toString().trim());
         }
     }
+
     private isolated function filterAPISBasedOnQuery(API[] apilist, string query, int 'limit, int offset, string sortBy, string sortOrder) returns APIList|commons:APKError {
         API[] filteredList = [];
         if query.length() > 0 {
@@ -353,7 +354,8 @@ public class APIClient {
         }
         return self.filterAPIS(filteredList, 'limit, offset, sortBy, sortOrder, query);
     }
-    private isolated function filterAPIS(API[] apiList, int 'limit, int offset, string sortBy, string sortOrder, string query) returns APIList|BadRequestError {
+
+    private isolated function filterAPIS(API[] apiList, int 'limit, int offset, string sortBy, string sortOrder, string query) returns APIList|commons:APKError {
         API[] clonedAPIList = apiList.clone();
         API[] sortedAPIS = [];
         if sortBy == SORT_BY_API_NAME && sortOrder == SORT_ORDER_ASC {
@@ -386,8 +388,7 @@ public class APIClient {
         string previousAPIList = "";
         string nextAPIList = "";
         if offset > sortedAPIS.length() {
-            BadRequestError badRequest = {body: {code: 90912, message: "Invalid Value for Offset"}};
-            return badRequest;
+            return e909039();
         } else if offset > 'limit {
             previousAPIList = self.getPaginatedURL('limit, offset - 'limit, sortBy, sortOrder, query);
         } else if offset > 0 {
@@ -400,6 +401,7 @@ public class APIClient {
         }
         return {list: convertAPIListToAPIInfoList(limitSet), count: limitSet.length(), pagination: {total: apiList.length(), 'limit: 'limit, offset: offset, next: nextAPIList, previous: previousAPIList}};
     }
+
     private isolated function getPaginatedURL(int 'limit, int offset, string sortBy, string sortOrder, string query) returns string {
         string url = "/apis?limit=%limit%&offset=%offset%&sortBy=%sortBy%&sortOrder=%sortOrder%&query=%query%";
         url = regex:replace(url, "%limit%", 'limit.toString());
@@ -409,6 +411,7 @@ public class APIClient {
         url = regex:replace(url, "%query%", query);
         return url;
     }
+
     public isolated function createAPI(API api, string? definition, commons:Organization organization, string userName) returns commons:APKError|CreatedAPI|BadRequestError {
         do {
             string? id = api.id;
@@ -1635,7 +1638,7 @@ public class APIClient {
         }
     }
 
-    public isolated function generateAPIKey(string apiId, commons:Organization organization) returns http:Ok|BadRequestError|NotFoundError|InternalServerErrorError {
+    public isolated function generateAPIKey(string apiId, commons:Organization organization) returns http:Ok|commons:APKError {
         model:API? api = getAPI(apiId, organization);
         if api is model:API {
             InternalTokenGenerator tokenGenerator = new ();
