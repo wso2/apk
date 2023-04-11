@@ -35,7 +35,7 @@ isolated function convertK8sAPItoAPI(model:API api, boolean lightWeight) returns
     if !lightWeight {
         model:RuntimeAPI|http:ClientError internalAPI = getInternalAPI(api.metadata.name, api.metadata.namespace);
         if internalAPI is model:RuntimeAPI {
-            record {|anydata...;|}? endpointConfig = internalAPI.spec.endpointConfig;
+            record {|anydata...;|}? endpointConfig = internalAPI.spec.endpointConfig.clone();
             if endpointConfig is record {} {
                 convertedModel.endpointConfig = endpointConfig;
             }
