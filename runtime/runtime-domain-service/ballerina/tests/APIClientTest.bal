@@ -470,8 +470,19 @@ public function testGetAPIDefinitionByID(string apiid, anydata expectedResponse)
 }
 
 public function apiDefinitionDataProvider() returns map<[string, anydata]> {
-    NotFoundError notfound = {body: {code: 909100, message: "c5ab2423-b9e8-432b-92e8-35e6907ed5e9 not found."}};
-    InternalServerErrorError internalError = {body: {code: 909000, message: "Internal Error Occured while retrieving definition"}};
+    commons:APKError notfound = error commons:APKError( "c5ab2423-b9e8-432b-92e8-35e6907ed5e9 not found",
+        code = 909001,
+        message = "c5ab2423-b9e8-432b-92e8-35e6907ed5e9 not found",
+        statusCode = 404,
+        description = "c5ab2423-b9e8-432b-92e8-35e6907ed5e9 not found"
+    );
+    commons:APKError internalError = error commons:APKError("Internal error occured while retrieving definition", 
+        error("Internal error occured while retrieving definition"),
+        code = 909023,
+        message = "Internal error occured while retrieving definition",
+        statusCode = 500,
+        description = "Internal error occured while retrieving definition"
+    ); 
 
     map<[string, anydata]> dataSet = {
         "1": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e8", mockOpenAPIJson().toBalString()],
@@ -512,7 +523,12 @@ public function apiByIdDataProvider() returns map<[string, commons:Organization,
         ],
         createdTime: "2022-12-13T09:45:47Z"
     };
-    NotFoundError notfound = {body: {code: 909100, message: "c5ab2423-b9e8-432b-92e8-35e6907ed5e9 not found."}};
+    commons:APKError notfound = error commons:APKError( "c5ab2423-b9e8-432b-92e8-35e6907ed5e9 not found",
+        code = 909001,
+        message = "c5ab2423-b9e8-432b-92e8-35e6907ed5e9 not found",
+        statusCode = 404,
+        description = "c5ab2423-b9e8-432b-92e8-35e6907ed5e9 not found"
+    ); 
     map<[string, commons:Organization, anydata]> dataset = {
         "1": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e8", organiztion1, api1.toBalString()],
         "2": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e9", organiztion1, notfound.toBalString()]
@@ -4920,7 +4936,12 @@ public function mediationPolicyByIdDataProvider() returns map<[string, commons:O
             }
         ]
     };
-    NotFoundError notfound = {body: {code: 909100, message: "6 not found."}};
+    commons:APKError notfound = error commons:APKError( "6 not found",
+        code = 909001,
+        message = "6 not found",
+        statusCode = 404,
+        description = "6 not found"
+    ); 
     map<[string, commons:Organization, anydata]> dataset = {
         "1": ["1", organiztion1, mediationPolicy1.toBalString()],
         "2": ["6", organiztion1, notfound.toBalString()]
