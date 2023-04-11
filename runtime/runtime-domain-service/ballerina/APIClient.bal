@@ -1613,9 +1613,11 @@ public class APIClient {
         if responseInterceptor is model:APIPolicyDetails {
             defaultSpecData.responseInterceptor = responseInterceptor;
         }
-        model:APIPolicy? apiPolicyCR = self.generateAPIPolicyCR(api, targetRefName, operations, organization, defaultSpecData);
-        if apiPolicyCR != () {
-            return apiPolicyCR;
+        if defaultSpecData != {} {
+            model:APIPolicy? apiPolicyCR = self.generateAPIPolicyCR(api, targetRefName, operations, organization, defaultSpecData);
+            if apiPolicyCR != () {
+                return apiPolicyCR;
+            }
         }
         return ();
     }
