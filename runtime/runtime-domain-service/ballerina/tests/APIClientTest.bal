@@ -62,6 +62,11 @@ function testRetrieveRateLimitPolicyRefName(APIOperations? operaion) returns str
     return "rate-limit-policy-ref-name";
 }
 
+@test:Mock {functionName: "retrieveAPIPolicyRefName"}
+function testRetrieveAPIPolicyRefName() returns string {
+    return "api-policy-ref-name";
+}
+
 int serviceMappingIndex = 0;
 
 @test:Mock {functionName: "getServiceMappingClient"}
@@ -3169,7 +3174,8 @@ function testCreateAPI(string apiUUID, string backenduuid, API api, model:Config
         any prodhttpResponse, model:Httproute? sandHttpRoute, any sandhttpResponse,
         [model:Backend, any][] backendServices,
         model:API k8sApi, any k8sapiResponse, model:RuntimeAPI runtimeAPI, any runtimeAPIResponse,
-        model:RateLimitPolicy? rateLimitPolicy, any rateLimitPolicyResponse
+        model:RateLimitPolicy? rateLimitPolicy, any rateLimitPolicyResponse,
+        model:APIPolicy? apiPolicy, any apiPolicyResponse
 , string k8sapiUUID, anydata expected) returns error? {
     APIClient apiClient = new;
     string userName = "apkUser";
@@ -3182,6 +3188,9 @@ function testCreateAPI(string apiUUID, string backenduuid, API api, model:Config
     }
     if rateLimitPolicy is model:RateLimitPolicy {
         test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/ratelimitpolicies", rateLimitPolicy).thenReturn(rateLimitPolicyResponse);
+    }
+    if apiPolicy is model:APIPolicy {
+        test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apipolicies", apiPolicy).thenReturn(apiPolicyResponse);
     }
 
     foreach [model:Backend, any] backend in backendServices {
@@ -4043,6 +4052,188 @@ function getMockHttpRouteWithOperationRateLimits(API api, string apiUUID, string
     };
 }
 
+function getMockHttpRouteWithOperationInterceptorPolicy(API api, string apiUUID, string backenduuid, string 'type, commons:Organization organization) returns model:Httproute {
+    string hostnames = 'type == PRODUCTION_TYPE ? string:concat(organization.uuid, ".", "gw.wso2.com") : string:concat(organization.uuid, ".", "sandbox.gw.wso2.com");
+    return {
+        "apiVersion": "gateway.networking.k8s.io/v1beta1",
+        "kind": "HTTPRoute",
+        "metadata": {"name": "http-route-ref-name", "namespace": "apk-platform", "labels": getLabels(api, organization)},
+        "spec": {
+            "hostnames": [
+                hostnames
+            ],
+            "rules": [
+                {
+                    "matches": [
+                        {
+                            "path": {
+                                "type": "RegularExpression",
+                                "value": "/pizzaAPI/1.0.0(.*)"
+                            },
+                            "method": "GET"
+                        }
+                    ],
+                    "filters": [
+                        {
+                            "type": "URLRewrite",
+                            "urlRewrite": {
+                                "path": {
+                                    "type": "ReplaceFullPath",
+                                    "replaceFullPath": "\\1"
+                                }
+                            }
+                        },
+                        {
+                            "type": "ExtensionRef",
+                            "extensionRef": {
+                                "group": "dp.wso2.com",
+                                "kind": "APIPolicy",
+                                "name": "api-policy-ref-name"
+                            }
+                        }
+                    ],
+                    "backendRefs": [
+                        {
+                            "group": "dp.wso2.com",
+                            "kind": "Backend",
+                            "name": backenduuid,
+                            "namespace": "apk-platform"
+                        }
+                    ]
+                },
+                {
+                    "matches": [
+                        {
+                            "path": {
+                                "type": "RegularExpression",
+                                "value": "/pizzaAPI/1.0.0(.*)"
+                            },
+                            "method": "PUT"
+                        }
+                    ],
+                    "filters": [
+                        {
+                            "type": "URLRewrite",
+                            "urlRewrite": {
+                                "path": {
+                                    "type": "ReplaceFullPath",
+                                    "replaceFullPath": "\\1"
+                                }
+                            }
+                        }
+                    ],
+                    "backendRefs": [
+                        {
+                            "group": "dp.wso2.com",
+                            "kind": "Backend",
+                            "name": backenduuid,
+                            "namespace": "apk-platform"
+                        }
+                    ]
+                },
+                {
+                    "matches": [
+                        {
+                            "path": {
+                                "type": "RegularExpression",
+                                "value": "/pizzaAPI/1.0.0(.*)"
+                            },
+                            "method": "POST"
+                        }
+                    ],
+                    "filters": [
+                        {
+                            "type": "URLRewrite",
+                            "urlRewrite": {
+                                "path": {
+                                    "type": "ReplaceFullPath",
+                                    "replaceFullPath": "\\1"
+                                }
+                            }
+                        }
+                    ],
+                    "backendRefs": [
+                        {
+                            "group": "dp.wso2.com",
+                            "kind": "Backend",
+                            "name": backenduuid,
+                            "namespace": "apk-platform"
+                        }
+                    ]
+                },
+                {
+                    "matches": [
+                        {
+                            "path": {
+                                "type": "RegularExpression",
+                                "value": "/pizzaAPI/1.0.0(.*)"
+                            },
+                            "method": "DELETE"
+                        }
+                    ],
+                    "filters": [
+                        {
+                            "type": "URLRewrite",
+                            "urlRewrite": {
+                                "path": {
+                                    "type": "ReplaceFullPath",
+                                    "replaceFullPath": "\\1"
+                                }
+                            }
+                        }
+                    ],
+                    "backendRefs": [
+                        {
+                            "group": "dp.wso2.com",
+                            "kind": "Backend",
+                            "name": backenduuid,
+                            "namespace": "apk-platform"
+                        }
+                    ]
+                },
+                {
+                    "matches": [
+                        {
+                            "path": {
+                                "type": "RegularExpression",
+                                "value": "/pizzaAPI/1.0.0(.*)"
+                            },
+                            "method": "PATCH"
+                        }
+                    ],
+                    "filters": [
+                        {
+                            "type": "URLRewrite",
+                            "urlRewrite": {
+                                "path": {
+                                    "type": "ReplaceFullPath",
+                                    "replaceFullPath": "\\1"
+                                }
+                            }
+                        }
+                    ],
+                    "backendRefs": [
+                        {
+                            "group": "dp.wso2.com",
+                            "kind": "Backend",
+                            "name": backenduuid,
+                            "namespace": "apk-platform"
+                        }
+                    ]
+                }
+            ],
+            "parentRefs": [
+                {
+                    "group": "gateway.networking.k8s.io",
+                    "kind": "Gateway",
+                    "name": "default",
+                    "sectionName": "httpslistener"
+                }
+            ]
+        }
+    };
+}
+
 function getMockResourceRateLimitPolicy(API api, commons:Organization organiztion) returns model:RateLimitPolicy {
     return {
         "apiVersion": "dp.wso2.com/v1alpha1",
@@ -4104,7 +4295,79 @@ function getMockRateLimitResponse(model:RateLimitPolicy request) returns http:Re
     return response;
 }
 
-function createAPIDataProvider() returns map<[string, string, API, model:ConfigMap, any, model:Httproute?, any, model:Httproute?, any, [model:Backend, any][], model:API, any, model:RuntimeAPI, any, model:RateLimitPolicy?, any, string, anydata]> {
+function getMockResourceLevelPolicy(API api, commons:Organization organiztion) returns model:APIPolicy {
+    return {
+        "apiVersion": "dp.wso2.com/v1alpha1",
+        "kind": "APIPolicy",
+        "metadata": {"name": "api-policy-ref-name", "namespace": "apk-platform", "labels": getLabels(api, organiztion)},
+        "spec": {
+            "default": {
+                "requestInterceptor": {
+                    "backendRef": {
+                        "name": getBackendServiceUid(api, (), INTERCEPTOR_TYPE, organiztion),
+                        "namespace": "apk-platform"
+                    },
+                    "includes": ["request_headers", "invocation_context"]
+                },
+                "responseInterceptor": {
+                    "backendRef": {
+                        "name": getBackendServiceUid(api, (), INTERCEPTOR_TYPE, organiztion),
+                        "namespace": "apk-platform"
+                    },
+                    "includes": ["response_body", "invocation_context"]
+                }
+            },
+            "targetRef": {
+                "group": "dp.wso2.com",
+                "kind": "Resource",
+                "name": "http-route-ref-name",
+                "namespace": "apk-platform"
+            }
+        }
+    };
+}
+
+function getMockAPILevelPolicy(API api, commons:Organization organiztion, string apiUUID) returns model:APIPolicy {
+    return {
+        "apiVersion": "dp.wso2.com/v1alpha1",
+        "kind": "APIPolicy",
+        "metadata": {"name": "api-policy-ref-name", "namespace": "apk-platform", "labels": getLabels(api, organiztion)},
+        "spec": {
+            "default": {
+                "requestInterceptor": {
+                    "backendRef": {
+                        "name": getBackendServiceUid(api, (), INTERCEPTOR_TYPE, organiztion),
+                        "namespace": "apk-platform"
+                    },
+                    "includes": ["request_headers", "invocation_context"]
+                },
+                "responseInterceptor": {
+                    "backendRef": {
+                        "name": getBackendServiceUid(api, (), INTERCEPTOR_TYPE, organiztion),
+                        "namespace": "apk-platform"
+                    },
+                    "includes": ["response_body", "invocation_context"]
+                }
+            },
+            "targetRef": {
+                "group": "dp.wso2.com",
+                "kind": "API",
+                "name": apiUUID,
+                "namespace": "apk-platform"
+            }
+        }
+    };
+}
+
+function getMockAPIPolicyResponse(model:APIPolicy request) returns http:Response {
+    http:Response response = new;
+    response.statusCode = 201;
+    request.metadata.uid = uuid:createType1AsString();
+    response.setJsonPayload(request.toJson());
+    return response;
+}
+
+function createAPIDataProvider() returns map<[string, string, API, model:ConfigMap, any, model:Httproute?, any, model:Httproute?, any, [model:Backend, any][], model:API, any, model:RuntimeAPI, any, model:RateLimitPolicy?, any, model:APIPolicy?, any, string, anydata]> {
     do {
         API api = {
             name: "PizzaAPI",
@@ -4475,6 +4738,128 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             statusCode = 406,
             description = "Presence of both resource level and API level rate limits is not allowed"
         );
+        json apiWithOperationLevelInterceptorPolicy = {
+            "name": "PizzaAPI",
+            "context": "/pizzaAPI/1.0.0",
+            "version": "1.0.0",
+            "endpointConfig": {"production_endpoints": {"url": "https://localhost"}},
+            "operations": [
+                {
+                    "target": "/*",
+                    "verb": "GET",
+                    "authTypeEnabled": true,
+                    "operationPolicies": {
+                        "request": [
+                            {
+                                "policyName": "addInterceptor",
+                                "parameters":
+                                {
+                                    "headersEnabled": true,
+                                    "bodyEnabled": false,
+                                    "trailersEnabled": false,
+                                    "contextEnabled": true,
+                                    "backendUrl": "http://interceptor-backend.interceptor:9082"
+                                }
+                            }
+                        ],
+                        "response": [
+                            {
+                                "policyName": "addInterceptor",
+                                "parameters":
+                                {
+                                    "headersEnabled": false,
+                                    "bodyEnabled": true,
+                                    "trailersEnabled": false,
+                                    "contextEnabled": true,
+                                    "backendUrl": "http://interceptor-backend.interceptor:9082"
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "target": "/*",
+                    "verb": "PUT",
+                    "authTypeEnabled": true
+                },
+                {
+                    "target": "/*",
+                    "verb": "POST",
+                    "authTypeEnabled": true
+                },
+                {
+                    "target": "/*",
+                    "verb": "DELETE",
+                    "authTypeEnabled": true
+                },
+                {
+                    "target": "/*",
+                    "verb": "PATCH",
+                    "authTypeEnabled": true
+                }
+            ]
+        };
+        json apiWithAPILevelInterceptorPolicy = {
+            "name": "PizzaAPI",
+            "context": "/pizzaAPI/1.0.0",
+            "version": "1.0.0",
+            "endpointConfig": {"production_endpoints": {"url": "https://localhost"}},
+            "operations": [
+                {
+                    target: "/*",
+                    verb: "GET",
+                    authTypeEnabled: true
+                },
+                {
+                    target: "/*",
+                    verb: "PUT",
+                    authTypeEnabled: true
+                },
+                {
+                    target: "/*",
+                    verb: "POST",
+                    authTypeEnabled: true
+                },
+                {
+                    target: "/*",
+                    verb: "DELETE",
+                    authTypeEnabled: true
+                },
+                {
+                    target: "/*",
+                    verb: "PATCH",
+                    authTypeEnabled: true
+                }
+            ],
+            "apiPolicies": {
+                "request": [
+                    {
+                        "policyName": "addInterceptor",
+                        "parameters":
+                        {
+                            "headersEnabled": true,
+                            "bodyEnabled": false,
+                            "trailersEnabled": false,
+                            "contextEnabled": true,
+                            "backendUrl": "http://interceptor-backend.interceptor:9082"
+                        }
+                    }
+                ],
+                "response": [
+                    {
+                        "policyName": "addInterceptor",
+                        "parameters":
+                        {
+                            "headersEnabled": false,
+                            "bodyEnabled": true,
+                            "trailersEnabled": false,
+                            "contextEnabled": true,
+                            "backendUrl": "http://interceptor-backend.interceptor:9082"
+                        }
+                    }
+                ]
+            }
+        };
         string apiUUID = getUniqueIdForAPI(api.name, api.'version, organiztion1);
         string backenduuid = getBackendServiceUid(api, (), PRODUCTION_TYPE, organiztion1);
         string backenduuid1 = getBackendServiceUid(api, (), SANDBOX_TYPE, organiztion1);
@@ -4504,6 +4889,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
         model:Httproute prodhttpRouteWithOperationPolicies = getMockHttpRouteWithOperationPolicies(api, apiUUID, backenduuid, PRODUCTION_TYPE, organiztion1);
         model:Httproute prodhttpRouteWithAPIPolicies = getMockHttpRouteWithAPIPolicies(api, apiUUID, backenduuid, PRODUCTION_TYPE, organiztion1);
         model:Httproute prodhttpRouteWithOperationRateLimits = getMockHttpRouteWithOperationRateLimits(api, apiUUID, backenduuid, PRODUCTION_TYPE, organiztion1);
+        model:Httproute prodhttpRouteWithOperationInterceptorPolicy = getMockHttpRouteWithOperationInterceptorPolicy(api, apiUUID, backenduuid, PRODUCTION_TYPE, organiztion1);
         string locationUrl = runtimeConfiguration.baseURl + "/apis/" + k8sapiUUID;
 
         CreatedAPI createdAPI = {body: {name: "PizzaAPI", context: "/pizzaAPI/1.0.0", 'version: "1.0.0", id: k8sapiUUID, createdTime: "2023-01-17T11:23:49Z", endpointConfig: {"production_endpoints":{"url":"https://localhost"}}, operations: [{"target":"/*","verb":"GET","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"PUT","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"POST","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"DELETE","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"PATCH","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}}]}, headers: {location:locationUrl}};
@@ -4512,6 +4898,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
         CreatedAPI CreatedAPIWithAPIPolicies = {body: {name: "PizzaAPI", context: "/pizzaAPI/1.0.0", 'version: "1.0.0", id: k8sapiUUID, createdTime: "2023-01-17T11:23:49Z", endpointConfig: {"production_endpoints":{"url":"https://localhost"}}, operations: [{"target":"/*","verb":"GET","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"PUT","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"POST","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"DELETE","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"PATCH","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}}], apiPolicies: {"request":[{"policyName":"addHeader","policyVersion":"v1","parameters":{"headerName":"customadd","headerValue":"customvalue"}}],"response":[{"policyName":"removeHeader","policyVersion":"v1","parameters":{"headerName":"content-length"}}]}}, headers: {location:locationUrl}};
         CreatedAPI CreatedAPIWithOperationRateLimits = {body: {name: "PizzaAPI", context: "/pizzaAPI/1.0.0", 'version: "1.0.0", id: k8sapiUUID, createdTime: "2023-01-17T11:23:49Z", endpointConfig: {"production_endpoints":{"url":"https://localhost"}}, operations: [{"target":"/*","verb":"GET","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]},"operationRateLimit":{"requestsPerUnit":10,"unit":"Minute"}},{"target":"/*","verb":"PUT","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"POST","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"DELETE","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"PATCH","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}}]}, headers: {location:locationUrl}};
         CreatedAPI CreatedAPIWithAPIRateLimits = {body: {name: "PizzaAPI", context: "/pizzaAPI/1.0.0", 'version: "1.0.0", id: k8sapiUUID, createdTime: "2023-01-17T11:23:49Z", endpointConfig: {"production_endpoints":{"url":"https://localhost"}}, operations: [{"target":"/*","verb":"GET","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"PUT","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"POST","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"DELETE","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"PATCH","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}}], apiRateLimit: {"requestsPerUnit":10,"unit":"Minute"}}, headers: {location:locationUrl}};
+        CreatedAPI CreatedAPIWithOperationLevelInterceptorPolicy = {body: {name: "PizzaAPI", context: "/pizzaAPI/1.0.0", 'version: "1.0.0", id: k8sapiUUID, createdTime: "2023-01-17T11:23:49Z", endpointConfig: {"production_endpoints":{"url":"https://localhost"}}, operations: [{"target":"/*","verb":"GET","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[{"policyName":"addInterceptor","policyVersion":"v1","parameters":{"headersEnabled":true,"bodyEnabled":false,"trailersEnabled":false,"contextEnabled":true,"backendUrl": "http://legacy-xml-backend-v1.inter:9082"}}],"response":[{"policyName":"addInterceptor","policyVersion":"v1","parameters":{"headersEnabled":false,"bodyEnabled":true,"trailersEnabled":false,"contextEnabled":true,"backendUrl": "http://legacy-xml-backend-v1.inter:9082"}}]}},{"target":"/*","verb":"PUT","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"POST","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"DELETE","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"PATCH","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}}]}, headers: {location:locationUrl}};
+        CreatedAPI CreatedAPIWithAPILevelInterceptorPolicy = {body: {name: "PizzaAPI", context: "/pizzaAPI/1.0.0", 'version: "1.0.0", id: k8sapiUUID, createdTime: "2023-01-17T11:23:49Z", endpointConfig: {"production_endpoints":{"url":"https://localhost"}}, operations: [{"target":"/*","verb":"GET","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"PUT","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"POST","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"DELETE","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"PATCH","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}}], apiPolicies: {"request":[{"policyName":"addInterceptor","policyVersion":"v1","parameters":{"headersEnabled":true,"bodyEnabled":false,"trailersEnabled":false,"contextEnabled":true,"backendUrl": "http://legacy-xml-backend-v1.inter:9082"}}],"response":[{"policyName":"addInterceptor","policyVersion":"v1","parameters":{"headersEnabled":false,"bodyEnabled":true,"trailersEnabled":false,"contextEnabled":true,"backendUrl": "http://legacy-xml-backend-v1.inter:9082"}}]}}, headers: {location:locationUrl}};
 
         commons:APKError productionEndpointNotSpecifiedError = error commons:APKError( "Production endpoint not specified",
             code = 909014,
@@ -4538,7 +4926,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
         map<[string, string, API, model:ConfigMap,
     any, model:Httproute|(), any, model:Httproute|(),
     any, [model:Backend, any][], model:API, any, model:RuntimeAPI, any,
-    model:RateLimitPolicy|(), any, string,
+    model:RateLimitPolicy|(), any, model:APIPolicy|(), any, string,
     anydata]> data = {
             "1": [
                 apiUUID,
@@ -4555,6 +4943,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
                 getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
+                (),
+                (),
                 (),
                 (),
                 k8sapiUUID,
@@ -4578,6 +4968,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
                 (),
                 (),
+                (),
+                (),
                 k8sapiUUID,
                 nameAlreadyExistError.toBalString()
             ],
@@ -4598,6 +4990,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
                 (),
                 (),
+                (),
+                (),
                 k8sapiUUID,
                 contextAlreadyExistError.toBalString()
             ],
@@ -4616,6 +5010,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockAPIResponse(getMockAPI1(api, apiUUID, organiztion1.uuid), k8sapiUUID),
                 getMockRuntimeAPI(sandboxOnlyAPI, apiUUID, organiztion1, ()),
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(sandboxOnlyAPI, apiUUID, organiztion1, ())),
+                (),
+                (),
                 (),
                 (),
                 k8sapiUUID,
@@ -4639,6 +5035,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
                 (),
                 (),
+                (),
+                (),
                 k8sapiUUID,
                 productionEndpointNotSpecifiedError.toBalString()
             ],
@@ -4657,6 +5055,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
                 getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
+                (),
+                (),
                 (),
                 (),
                 k8sapiUUID,
@@ -4680,6 +5080,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
                 (),
                 (),
+                (),
+                (),
                 k8sapiUUID,
                 k8sLevelError1.toBalString()
             ]
@@ -4699,6 +5101,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
                 getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
+                (),
+                (),
                 (),
                 (),
                 k8sapiUUID,
@@ -4722,6 +5126,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
                 (),
                 (),
+                (),
+                (),
                 k8sapiUUID,
                 k8sLevelError1.toBalString()
             ]
@@ -4741,6 +5147,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
                 getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
+                (),
+                (),
                 (),
                 (),
                 k8sapiUUID,
@@ -4764,6 +5172,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
                 (),
                 (),
+                (),
+                (),
                 k8sapiUUID,
                 k8sLevelError.toBalString()
             ]
@@ -4783,6 +5193,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockAPIErrorNameExist(),
                 getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
+                (),
+                (),
                 (),
                 (),
                 k8sapiUUID,
@@ -4806,6 +5218,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
                 (),
                 (),
+                (),
+                (),
                 k8sapiUUID,
                 bothPoliciesPresentError.toBalString()
             ]
@@ -4825,6 +5239,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockAPIErrorNameExist(),
                 getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
+                (),
+                (),
                 (),
                 (),
                 k8sapiUUID,
@@ -4848,6 +5264,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
                 (),
                 (),
+                (),
+                (),
                 k8sapiUUID,
                 invalidPolicyParametersError.toBalString()
             ]
@@ -4867,6 +5285,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
                 getMockRuntimeAPI(check apiWithOperationPolicies.cloneWithType(API), apiUUID, organiztion1, ()),
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(check apiWithOperationPolicies.cloneWithType(API), apiUUID, organiztion1, ())),
+                (),
+                (),
                 (),
                 (),
                 k8sapiUUID,
@@ -4890,6 +5310,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(check apiWithAPIPolicies.cloneWithType(API), apiUUID, organiztion1, ())),
                 (),
                 (),
+                (),
+                (),
                 k8sapiUUID,
                 CreatedAPIWithAPIPolicies.toBalString()
             ]
@@ -4909,6 +5331,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockAPIErrorNameExist(),
                 getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
+                (),
+                (),
                 (),
                 (),
                 k8sapiUUID,
@@ -4932,6 +5356,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(apiWithOperationRateLimits, apiUUID, organiztion1, ())),
                 getMockResourceRateLimitPolicy(apiWithOperationRateLimits, organiztion1),
                 getMockRateLimitResponse(getMockResourceRateLimitPolicy(apiWithOperationRateLimits, organiztion1).clone()),
+                (),
+                (),
                 k8sapiUUID,
                 CreatedAPIWithOperationRateLimits.toBalString()
             ]
@@ -4953,8 +5379,56 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(apiWithAPIRateLimits, apiUUID, organiztion1, ())),
                 getMockAPIRateLimitPolicy(apiWithAPIRateLimits, organiztion1, apiUUID),
                 getMockRateLimitResponse(getMockAPIRateLimitPolicy(apiWithAPIRateLimits, organiztion1, apiUUID).clone()),
+                (),
+                (),
                 k8sapiUUID,
                 CreatedAPIWithAPIRateLimits.toBalString()
+            ]
+        ,
+            "21": [
+                apiUUID,
+                backenduuid,
+                check apiWithOperationLevelInterceptorPolicy.cloneWithType(API),
+                configmap,
+                getMockConfigMapResponse(configmap.clone()),
+                prodhttpRouteWithOperationInterceptorPolicy,
+                getMockHttpRouteResponse(prodhttpRouteWithOperationInterceptorPolicy.clone()),
+                (),
+                (),
+                services,
+                getMockAPI(api, apiUUID, organiztion1.uuid),
+                getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
+                getMockRuntimeAPI(check apiWithOperationLevelInterceptorPolicy.cloneWithType(API), apiUUID, organiztion1, ()),
+                getMockRuntimeAPIResponse(getMockRuntimeAPI(check apiWithOperationLevelInterceptorPolicy.cloneWithType(API), apiUUID, organiztion1, ())),
+                (),
+                (),
+                getMockResourceLevelPolicy(check apiWithOperationLevelInterceptorPolicy.cloneWithType(API), organiztion1),
+                getMockAPIPolicyResponse(getMockResourceLevelPolicy(check apiWithOperationLevelInterceptorPolicy.cloneWithType(API), organiztion1).clone()),
+                k8sapiUUID,
+                CreatedAPIWithOperationLevelInterceptorPolicy.toBalString()
+            ]
+        ,
+            "22": [
+                apiUUID,
+                backenduuid,
+                check apiWithAPILevelInterceptorPolicy.cloneWithType(API),
+                configmap,
+                getMockConfigMapResponse(configmap.clone()),
+                prodhttpRoute,
+                getMockHttpRouteResponse(prodhttpRoute.clone()),
+                (),
+                (),
+                services,
+                getMockAPI(api, apiUUID, organiztion1.uuid),
+                getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
+                getMockRuntimeAPI(check apiWithAPILevelInterceptorPolicy.cloneWithType(API), apiUUID, organiztion1, ()),
+                getMockRuntimeAPIResponse(getMockRuntimeAPI(check apiWithAPILevelInterceptorPolicy.cloneWithType(API), apiUUID, organiztion1, ())),
+                (),
+                (),
+                getMockAPILevelPolicy(check apiWithAPILevelInterceptorPolicy.cloneWithType(API), organiztion1, apiUUID),
+                getMockAPIPolicyResponse(getMockAPILevelPolicy(check apiWithAPILevelInterceptorPolicy.cloneWithType(API), organiztion1, apiUUID).clone()),
+                k8sapiUUID,
+                CreatedAPIWithAPILevelInterceptorPolicy.toBalString()
             ]
         };
         return data;
