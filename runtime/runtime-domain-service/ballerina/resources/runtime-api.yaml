@@ -2275,7 +2275,7 @@ components:
       name: sortOrder
       in: query
       description: |
-        Order of sorting(ascending/descending).
+        Order of sorting (ascending/descending).
       required: false
       style: form
       explode: true
@@ -2285,30 +2285,34 @@ components:
         enum:
           - asc
           - desc
+      example: desc
     serviceId:
       name: serviceId
       in: path
-      description: name of the service
+      description: Name of the service
       required: true
       style: simple
       explode: false
       schema:
         type: string
+      example: my-service
     gatewayId:
       name: gatewayId
       in: path
-      description: name of the gateway
+      description: Name of the gateway
       required: true
       style: simple
       explode: false
       schema:
         type: string
+      example: my-gateway
     policyId:
       name: policyId
       in: path
-      description: policy uuid
+      description: Policy UUID
       required: true
       style: simple
       explode: false
       schema:
         type: string
+      example: ratelimit
