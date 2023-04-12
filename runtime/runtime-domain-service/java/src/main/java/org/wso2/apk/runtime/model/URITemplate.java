@@ -30,7 +30,7 @@ public class URITemplate implements Serializable{
     private String resourceURI;
     private String resourceSandboxURI;
     private String httpVerb;
-    private boolean authEnabled;
+    private boolean authEnabled = true;
     private String throttlingTier;
     private Scope scope;
     private List<Scope> scopes = new ArrayList<Scope>();

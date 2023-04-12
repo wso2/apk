@@ -1638,7 +1638,7 @@ public class APIClient {
                 targetRef: {
                     group: "",
                     kind: "Resource",
-                    name: retrieveHttpRouteRefName(api, endpointType, organization),
+                    name: getUniqueIdForAPI(api.name, api.'version, organization),
                     namespace: nameSpace
                 },
                 override: {
