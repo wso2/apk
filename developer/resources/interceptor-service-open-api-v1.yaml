@@ -119,6 +119,8 @@ components:
           $ref: "#/components/schemas/InterceptorContext"
         properties:
           $ref: "#/components/schemas/Properties"
+        rateLimitKeys:
+          $ref: "#/components/schemas/RateLimitKeys"
     ResponseHandlerRequestBody:
       title: Request body of Response handler
       type: object
@@ -285,3 +287,12 @@ components:
         Map (string-to-string dictionary) of key value pairs of properties
       example:
         property-1-key: property-1-value
+    RateLimitKeys:
+      title: RateLimitKeys
+      type: object
+      additionalProperties:
+        type: string
+      description: |
+        Map (string-to-string dictionary) of key value pairs of rate limit keys
+      example:
+        ratelimit-key-1: ratelimit-value-1
