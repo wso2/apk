@@ -314,6 +314,7 @@ public type Service record {|
     string namespace;
     string 'type;
     PortMapping[] portmapping?;
+    record {} endpointSecurity?;
     string createdTime?;
 |};
 
