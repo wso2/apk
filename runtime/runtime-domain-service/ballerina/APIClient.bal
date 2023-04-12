@@ -2339,7 +2339,8 @@ public class APIClient {
                 if (policyParameters is record {}) {
                     if (policyName == "addInterceptor") {
                         string backendUrl = <string>policyParameters.get("backendUrl");
-                        model:Backend|error backendService = self.createBackendService(api, operations, INTERCEPTOR_TYPE, organization, backendUrl, ());
+                        model:EndpointSecurity backendSecurity = {};
+                        model:Backend|error backendService = self.createBackendService(api, operations, INTERCEPTOR_TYPE, organization, backendUrl, backendSecurity);
                         if backendService is model:Backend {
                             apiArtifact.backendServices[backendService.metadata.name] = (backendService);
                             model:APIPolicyDetails? interceptorSpec = self.retrieveAPIPolicyData(policyParameters, backendService.metadata.name, flow);
