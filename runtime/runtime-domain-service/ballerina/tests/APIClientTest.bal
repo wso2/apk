@@ -2341,6 +2341,7 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
             statusCode = 404,
             description =  "Service from 275b00d1-722c-4df2-b65a-9b14677abe4a not found"
         );
+        string locationUrl = runtimeConfiguration.baseURl + "/apis/" + k8sAPIUUID1;
         CreatedAPI createdAPI = {
             body: {
                 id: k8sAPIUUID1,
@@ -2357,6 +2358,9 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
                 ],
                 serviceInfo: {name: "backend", namespace: "apk"},
                 createdTime: "2023-01-17T11:23:49Z"
+            },
+            headers: {
+                location:locationUrl
             }
         };
         json requestPolicy = {
@@ -2397,6 +2401,9 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
                 ],
                 serviceInfo: {name: "backend", namespace: "apk"},
                 createdTime: "2023-01-17T11:23:49Z"
+            },
+            headers: {
+                location:locationUrl
             }
         };
         CreatedAPI createdAPIWithOperationRateLimits = {
@@ -2415,6 +2422,9 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
                 ],
                 serviceInfo: {name: "backend", namespace: "apk"},
                 createdTime: "2023-01-17T11:23:49Z"
+            },
+            headers: {
+                location:locationUrl
             }
         };
         CreatedAPI createdAPIWithAPIRateLimits = {
@@ -2434,6 +2444,9 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
                 apiRateLimit: rateLimit,
                 serviceInfo: {name: "backend", namespace: "apk"},
                 createdTime: "2023-01-17T11:23:49Z"
+            },
+            headers: {
+                location:locationUrl
             }
         };
         map<[string, string, [model:ConfigMap, any], [model:Httproute, any], [model:K8sServiceMapping, any], [model:API, any], [model:RuntimeAPI, any], API, string, [model:Backend, any][], [model:RateLimitPolicy|(), any], anydata]> data = {
