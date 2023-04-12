@@ -2335,11 +2335,11 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
            statusCode = 409,
            description = "API Context - " + contextAlreadyExist.context + " already exist"
         );
-        commons:APKError serviceNotExist = error commons:APKError( "Service from 275b00d1-722c-4df2-b65a-9b14677abe4a not found",
-            code = 909004,
-            message =  "Service from 275b00d1-722c-4df2-b65a-9b14677abe4a not found",
+        commons:APKError serviceNotExist = error commons:APKError( "275b00d1-722c-4df2-b65a-9b14677abe4a service does not exist",
+            code = 909047,
+            message = "275b00d1-722c-4df2-b65a-9b14677abe4a service does not exist",
             statusCode = 404,
-            description =  "Service from 275b00d1-722c-4df2-b65a-9b14677abe4a not found"
+            description =  "275b00d1-722c-4df2-b65a-9b14677abe4a service does not exist"
         );
         string locationUrl = runtimeConfiguration.baseURl + "/apis/" + k8sAPIUUID1;
         CreatedAPI createdAPI = {
@@ -4523,8 +4523,12 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
         );
         commons:APKError k8sLevelError = error("Internal error occured while deploying API", code = 909028, message
         = "Internal error occured while deploying API", statusCode = 500, description = "Internal error occured while deploying API", moreInfo = {});
-        commons:APKError k8sLevelError1 = error("Internal Server Error", code = 900900, message
-        = "Internal Server Error", statusCode = 500, description = "Internal Server Error", moreInfo = {});
+        commons:APKError k8sLevelError1 = error commons:APKError("Internal server error", error("Internal server error"),
+            code = 909022,
+            message = "Internal server error",
+            statusCode = 500,
+            description = "Internal server error"
+        ); 
             commons:APKError invalidAPINameError = error commons:APKError("API name PizzaAPI invalid",
             code = 909016,
             message = "API name PizzaAPI invalid",
