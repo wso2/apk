@@ -1574,7 +1574,7 @@ public class APIClient {
                         }
                     }
                     if operation.operationRateLimit != () {
-                        model:RateLimitPolicy? rateLimitPolicyCR = self.generateRateLimitPolicyCR(api, operation.operationRateLimit, httpRouteRefName, operation, organization);
+                        model:RateLimitPolicy? rateLimitPolicyCR = self.generateRateLimitPolicyCR(api, operation.operationRateLimit, apiArtifact.uniqueId, operation, organization);
                         if rateLimitPolicyCR != () {
                             apiArtifact.rateLimitPolicies[rateLimitPolicyCR.metadata.name] = rateLimitPolicyCR;
                             model:HTTPRouteFilter rateLimitPolicyFilter = {'type: "ExtensionRef", extensionRef: {group: "dp.wso2.com", kind: "RateLimitPolicy", name: rateLimitPolicyCR.metadata.name}};
@@ -2895,7 +2895,7 @@ public class APIClient {
                             } else if extensionRef.kind == "RateLimitPolicy" {
                                 if apiArtifact.rateLimitPolicies.hasKey(extensionRef.name) {
                                     model:RateLimitPolicy rateLimitPolicyCR = apiArtifact.rateLimitPolicies.get(extensionRef.name).clone();
-                                    model:RateLimitPolicy newRateLimitPolicyCR = self.prepareRateLimitPolicyCR(newAPI, rateLimitPolicyCR, httproute.metadata.name, organization);
+                                    model:RateLimitPolicy newRateLimitPolicyCR = self.prepareRateLimitPolicyCR(newAPI, rateLimitPolicyCR, organization);
                                     _ = apiArtifact.rateLimitPolicies.remove(extensionRef.name);
                                     apiArtifact.rateLimitPolicies[newRateLimitPolicyCR.metadata.name] = newRateLimitPolicyCR;
                                     extenstionRefMappings[extensionRef.name] = newRateLimitPolicyCR.metadata.name;
@@ -2915,21 +2915,13 @@ public class APIClient {
                     }
                 }
             }
-            foreach string extensionRefName in rateLimitPolicies.keys() {
-                model:RateLimitPolicy rateLimitPolicyCR = apiArtifact.rateLimitPolicies.get(extensionRefName).clone();
-                if rateLimitPolicyCR.spec.targetRef.kind == "Resource" && rateLimitPolicyCR.spec.targetRef.name == oldHttpRouteName {
-                    model:RateLimitPolicy newRateLimitPolicyCR = self.prepareRateLimitPolicyCR(newAPI, rateLimitPolicyCR, httproute.metadata.name, organization);
-                    _ = apiArtifact.rateLimitPolicies.remove(extensionRefName);
-                    apiArtifact.rateLimitPolicies[newRateLimitPolicyCR.metadata.name] = newRateLimitPolicyCR;
-                }
-            }
         }
 
         // adding api level ratelimiting policies
         foreach string extensionRefName in rateLimitPolicies.keys() {
             model:RateLimitPolicy rateLimitPolicyCR = apiArtifact.rateLimitPolicies.get(extensionRefName).clone();
-            if rateLimitPolicyCR.spec.targetRef.kind == "API" && rateLimitPolicyCR.spec.targetRef.name == oldAPIName {
-                model:RateLimitPolicy newRateLimitPolicyCR = self.prepareRateLimitPolicyCR(newAPI, rateLimitPolicyCR, newAPIName, organization);
+            if rateLimitPolicyCR.spec.targetRef.name == oldAPIName {
+                model:RateLimitPolicy newRateLimitPolicyCR = self.prepareRateLimitPolicyCR(newAPI, rateLimitPolicyCR, organization);
                 _ = apiArtifact.rateLimitPolicies.remove(extensionRefName);
                 apiArtifact.rateLimitPolicies[newRateLimitPolicyCR.metadata.name] = newRateLimitPolicyCR;
             }
@@ -2955,14 +2947,14 @@ public class APIClient {
     private isolated function prepareAuthenticationCR(model:APIArtifact apiArtifact, API api, model:Authentication authentication, string endpointType, commons:Organization organization) returns model:Authentication {
         authentication.metadata.name = self.retrieveDisableAuthenticationRefName(api, endpointType, organization);
         authentication.metadata.labels = self.getLabels(api, organization);
-        authentication.spec.targetRef.name = retrieveHttpRouteRefName(api, endpointType, organization);
+        authentication.spec.targetRef.name = apiArtifact.uniqueId;
         return authentication;
     }
 
-    private isolated function prepareRateLimitPolicyCR(API api, model:RateLimitPolicy rateLimitPolicy, string targetRefName, commons:Organization organization) returns model:RateLimitPolicy {
+    private isolated function prepareRateLimitPolicyCR(API api, model:RateLimitPolicy rateLimitPolicy, commons:Organization organization) returns model:RateLimitPolicy {
         rateLimitPolicy.metadata.name = uuid:createType1AsString();
         rateLimitPolicy.metadata.labels = self.getLabels(api, organization);
-        rateLimitPolicy.spec.targetRef.name = targetRefName;
+        rateLimitPolicy.spec.targetRef.name = getUniqueIdForAPI(api.name, api.'version, organization);
         return rateLimitPolicy;
     }
 

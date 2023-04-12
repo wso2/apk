@@ -2712,7 +2712,7 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
                 apiWithOperationRateLimits,
                 k8sAPIUUID1,
                 services,
-                [getMockResourceRateLimitPolicy(apiWithOperationRateLimits, organiztion1), getMockRateLimitResponse(getMockResourceRateLimitPolicy(apiWithOperationRateLimits, organiztion1).clone())],
+                [getMockResourceRateLimitPolicy(apiWithOperationRateLimits, organiztion1, apiUUID), getMockRateLimitResponse(getMockResourceRateLimitPolicy(apiWithOperationRateLimits, organiztion1, apiUUID).clone())],
                 [(), ()],
                 createdAPIWithOperationRateLimits.toBalString()
             ],
@@ -4652,7 +4652,7 @@ function getMockHttpRouteWithOperationInterceptorPolicy(API api, string apiUUID,
     };
 }
 
-function getMockResourceRateLimitPolicy(API api, commons:Organization organiztion) returns model:RateLimitPolicy {
+function getMockResourceRateLimitPolicy(API api, commons:Organization organiztion, string apiUUID) returns model:RateLimitPolicy {
     return {
         "apiVersion": "dp.wso2.com/v1alpha1",
         "kind": "RateLimitPolicy",
@@ -4672,7 +4672,7 @@ function getMockResourceRateLimitPolicy(API api, commons:Organization organiztio
             "targetRef": {
                 "group": "dp.wso2.com",
                 "kind": "Resource",
-                "name": "http-route-ref-name",
+                "name": apiUUID,
                 "namespace": "apk-platform"
             }
         }
@@ -5789,8 +5789,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
                 getMockRuntimeAPI(apiWithOperationRateLimits, apiUUID, organiztion1, ()),
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(apiWithOperationRateLimits, apiUUID, organiztion1, ())),
-                getMockResourceRateLimitPolicy(apiWithOperationRateLimits, organiztion1),
-                getMockRateLimitResponse(getMockResourceRateLimitPolicy(apiWithOperationRateLimits, organiztion1).clone()),
+                getMockResourceRateLimitPolicy(apiWithOperationRateLimits, organiztion1, apiUUID),
+                getMockRateLimitResponse(getMockResourceRateLimitPolicy(apiWithOperationRateLimits, organiztion1, apiUUID).clone()),
                 (),
                 (),
                 k8sapiUUID,
