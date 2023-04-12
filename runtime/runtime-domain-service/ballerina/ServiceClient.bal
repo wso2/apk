@@ -29,7 +29,7 @@ public class ServiceClient {
             return self.filterServicesBasedOnQuery(serviceList, query, sortBy, sortOrder, 'limit, offset);
         }
 
-        return self.sortAndLimitServices(serviceList, sortBy, sortOrder, 'limit, offset);
+        return self.sortAndLimitServices(serviceList, sortBy, sortOrder, 'limit, offset, query.toString().trim());
     }
 
     public isolated function getServiceById(string serviceId,commons:Organization organization) returns Service|BadRequestError|NotFoundError|InternalServerErrorError {
@@ -174,10 +174,10 @@ public class ServiceClient {
         } else {
             filteredList = servicesList;
         }
-        return self.sortAndLimitServices(filteredList, sortBy, sortOrder, 'limit, offset);
+        return self.sortAndLimitServices(filteredList, sortBy, sortOrder, 'limit, offset, query);
     }
 
-    private isolated function sortAndLimitServices(Service[] servicesList, string sortBy, string sortOrder, int 'limit, int offset) returns ServiceList|BadRequestError {
+    private isolated function sortAndLimitServices(Service[] servicesList, string sortBy, string sortOrder, int 'limit, int offset, string query) returns ServiceList|BadRequestError {
         Service[] clonedServiceList = servicesList.clone();
         Service[] sortedServices = [];
         if sortBy == SORT_BY_SERVICE_NAME && sortOrder == SORT_ORDER_ASC {
@@ -208,7 +208,23 @@ public class ServiceClient {
                 }
             }
         }
-        ServiceList serviceList = {list: limitedServices, pagination: {offset: offset, 'limit: 'limit, total: sortedServices.length()}};
+
+        string previousServices = "";
+        string nextServices = "";
+        APIClient apiClient = new();
+        if offset > sortedServices.length() {
+            previousServices = "";
+        } else if offset > 'limit {
+            previousServices = apiClient.getPaginatedURL("services", 'limit, offset - 'limit, sortBy, sortOrder, query);
+        } else if offset > 0 {
+            previousServices = apiClient.getPaginatedURL("services", 'limit, 0, sortBy, sortOrder, query);
+        }
+        if limitedServices.length() < 'limit {
+            nextServices = "";
+        } else if (sortedServices.length() > offset + 'limit){
+            nextServices = apiClient.getPaginatedURL("services", 'limit, offset + 'limit, sortBy, sortOrder, query);
+        }
+        ServiceList serviceList = {list: limitedServices, pagination: {offset: offset, 'limit: 'limit, total: sortedServices.length(), next: nextServices, previous: previousServices}};
         return serviceList;
     }
 }

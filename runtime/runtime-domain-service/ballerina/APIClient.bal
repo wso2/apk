@@ -383,25 +383,25 @@ public class APIClient {
                 }
             }
         }
-        string previousAPIList = "";
-        string nextAPIList = "";
+        string previousAPIs = "";
+        string nextAPIs = "";
         if offset > sortedAPIS.length() {
-            return e909039();
+            previousAPIs = "";
         } else if offset > 'limit {
-            previousAPIList = self.getPaginatedURL('limit, offset - 'limit, sortBy, sortOrder, query);
+            previousAPIs = self.getPaginatedURL("apis", 'limit, offset - 'limit, sortBy, sortOrder, query);
         } else if offset > 0 {
-            previousAPIList = self.getPaginatedURL('limit, 0, sortBy, sortOrder, query);
+            previousAPIs = self.getPaginatedURL("apis", 'limit, 0, sortBy, sortOrder, query);
         }
         if limitSet.length() < 'limit {
-            nextAPIList = "";
+            nextAPIs = "";
         } else if (sortedAPIS.length() > offset + 'limit) {
-            nextAPIList = self.getPaginatedURL('limit, offset + 'limit, sortBy, sortOrder, query);
+            nextAPIs = self.getPaginatedURL("apis", 'limit, offset + 'limit, sortBy, sortOrder, query);
         }
-        return {list: convertAPIListToAPIInfoList(limitSet), count: limitSet.length(), pagination: {total: apiList.length(), 'limit: 'limit, offset: offset, next: nextAPIList, previous: previousAPIList}};
+        return {list: convertAPIListToAPIInfoList(limitSet), count: limitSet.length(), pagination: {total: apiList.length(), 'limit: 'limit, offset: offset, next: nextAPIs, previous: previousAPIs}};
     }
-
-    private isolated function getPaginatedURL(int 'limit, int offset, string sortBy, string sortOrder, string query) returns string {
-        string url = "/apis?limit=%limit%&offset=%offset%&sortBy=%sortBy%&sortOrder=%sortOrder%&query=%query%";
+    public isolated function getPaginatedURL(string category, int 'limit, int offset, string sortBy, string sortOrder, string query) returns string {
+        string url = "/%type%?limit=%limit%&offset=%offset%&sortBy=%sortBy%&sortOrder=%sortOrder%&query=%query%";
+        url = regex:replace(url, "%type%", category);
         url = regex:replace(url, "%limit%", 'limit.toString());
         url = regex:replace(url, "%offset%", offset.toString());
         url = regex:replace(url, "%sortBy%", sortBy);
@@ -3633,10 +3633,10 @@ public class APIClient {
         } else {
             filteredList = mediationPolicyList;
         }
-        return self.filterMediationPolicies(filteredList, 'limit, offset, sortBy, sortOrder);
+        return self.filterMediationPolicies(filteredList, 'limit, offset, sortBy, sortOrder, query);
     }
 
-    private isolated function filterMediationPolicies(MediationPolicy[] mediationPolicyList, int 'limit, int offset, string sortBy, string sortOrder) returns MediationPolicyList|commons:APKError {
+    private isolated function filterMediationPolicies(MediationPolicy[] mediationPolicyList, int 'limit, int offset, string sortBy, string sortOrder, string query) returns MediationPolicyList|commons:APKError {
         MediationPolicy[] clonedMediationPolicyList = mediationPolicyList.clone();
         MediationPolicy[] sortedMediationPolicies = [];
         if sortBy == SORT_BY_POLICY_NAME && sortOrder == SORT_ORDER_ASC {
@@ -3666,7 +3666,21 @@ public class APIClient {
                 }
             }
         }
-        return {list: limitSet, count: limitSet.length(), pagination: {total: mediationPolicyList.length(), 'limit: 'limit, offset: offset}};
+        string previousPolicies = "";
+        string nextPolicies = "";
+        if offset > sortedMediationPolicies.length() {
+            previousPolicies = "";
+        } else if offset > 'limit {
+            previousPolicies = self.getPaginatedURL("policies", 'limit, offset - 'limit, sortBy, sortOrder, query);
+        } else if offset > 0 {
+            previousPolicies = self.getPaginatedURL("policies", 'limit, 0, sortBy, sortOrder, query);
+        }
+        if limitSet.length() < 'limit {
+            nextPolicies = "";
+        } else if (sortedMediationPolicies.length() > offset + 'limit){
+            nextPolicies = self.getPaginatedURL("policies", 'limit, offset + 'limit, sortBy, sortOrder, query);
+        }
+        return {list: limitSet, count: limitSet.length(), pagination: {total: mediationPolicyList.length(), 'limit: 'limit, offset: offset, next: nextPolicies, previous: previousPolicies}};
 
     }
 
@@ -3713,7 +3727,7 @@ public class APIClient {
         if query is string && query.toString().trim().length() > 0 {
             return self.filterMediationPoliciesBasedOnQuery(mediationPolicyList, query, 'limit, offset, sortBy, sortOrder);
         } else {
-            return self.filterMediationPolicies(mediationPolicyList, 'limit, offset, sortBy, sortOrder);
+            return self.filterMediationPolicies(mediationPolicyList, 'limit, offset, sortBy, sortOrder, query.toString().trim());
         }
     }
 
