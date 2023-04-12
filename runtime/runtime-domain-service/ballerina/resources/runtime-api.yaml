@@ -1951,6 +1951,25 @@ components:
         endpoint_security:
           type: object
           properties: {}
+          description: |
+            Endpoint security of the API.
+
+            `Basic Auth Endpoint security`
+              {
+                "production":       {
+                   "enabled": true,
+                   "type": "Basic",
+                   "username": "admin",
+                   "password": "admin"
+
+                }
+              }
+          example:
+            production:
+              enabled: true
+              type: Basic
+              username: admin
+              password: admin
     APIDefinitionValidationResponse_info:
       type: object
       description: |
