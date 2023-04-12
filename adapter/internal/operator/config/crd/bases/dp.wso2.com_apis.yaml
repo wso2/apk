@@ -15,7 +15,20 @@ spec:
     singular: api
   scope: Namespaced
   versions:
-  - name: v1alpha1
+  - additionalPrinterColumns:
+    - jsonPath: .spec.apiDisplayName
+      name: API Name
+      type: string
+    - jsonPath: .spec.apiVersion
+      name: Version
+      type: string
+    - jsonPath: .spec.context
+      name: Context
+      type: string
+    - jsonPath: .spec.organization
+      name: Organization
+      type: string
+    name: v1alpha1
     schema:
       openAPIV3Schema:
         description: API is the Schema for the apis API
