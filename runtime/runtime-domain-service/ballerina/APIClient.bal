@@ -396,7 +396,7 @@ public class APIClient {
         }
         if limitSet.length() < 'limit {
             nextAPIList = "";
-        } else if (sortedAPIS.length() > offset + 'limit){
+        } else if (sortedAPIS.length() > offset + 'limit) {
             nextAPIList = self.getPaginatedURL('limit, offset + 'limit, sortBy, sortOrder, query);
         }
         return {list: convertAPIListToAPIInfoList(limitSet), count: limitSet.length(), pagination: {total: apiList.length(), 'limit: 'limit, offset: offset, next: nextAPIList, previous: previousAPIList}};
@@ -680,7 +680,8 @@ public class APIClient {
         if serviceEntry is Service {
             runtimeAPI.spec.serviceInfo = {
                 name: serviceEntry.name,
-                namespace: serviceEntry.namespace
+                namespace: serviceEntry.namespace,
+                endpointSecurity: serviceEntry.endpointSecurity
             };
         }
         return runtimeAPI;
@@ -1067,7 +1068,7 @@ public class APIClient {
                     if details is model:StatusDetails {
                         model:StatusCause[] 'causes = details.'causes;
                         foreach model:StatusCause 'cause in 'causes {
-                            if 'cause.'field == "spec.context" {       
+                            if 'cause.'field == "spec.context" {
                                 return e909015(k8sAPI.spec.context);
                             } else if 'cause.'field == "spec.apiDisplayName" {
                                 return e909016(k8sAPI.spec.apiDisplayName);
@@ -2796,7 +2797,7 @@ public class APIClient {
                 _ = apiArtifact.backendServices.remove(oldBackenServiceUUID);
                 self.generateAndSetK8sServiceMapping(apiArtifact, newAPI, serviceEntry, getNameSpace(runtimeConfiguration.apiCreationNamespace), organization);
 
-                if backendSecurity.'type == ENDPOINT_SECURITY_TYPE_BASIC && backendSecurity.enabled  {
+                if backendSecurity.'type == ENDPOINT_SECURITY_TYPE_BASIC && backendSecurity.enabled {
                     model:SecurityConfig[] securityConfig = <model:SecurityConfig[]>backendService.spec.security;
                     foreach model:SecurityConfig item in securityConfig {
                         anydata secretRefName = (<model:BasicSecurityConfig>item.basic).secretRef.name;
@@ -2865,7 +2866,7 @@ public class APIClient {
                 check self.createK8sSecretFromSecretRef(newUniqueSecretName, k8SecretCopy);
                 self.setBackendSecurity(newUniqueSecretName, serviceInfo, (), endpointType);
             }
-        } 
+        }
         return backendSecurity;
     }
 
@@ -3215,19 +3216,30 @@ public class APIClient {
                 model:APIArtifact apiArtifact = {uniqueId: uniqueId};
                 API_serviceInfo? serviceInfo = payload.serviceInfo;
                 model:Endpoint? endpoint = ();
+                Service?|error serviceEntry = ();
                 if serviceInfo is API_serviceInfo {
                     if payload.serviceInfo is API_serviceInfo {
                         ServiceClient serviceClient = new;
-                        Service|error serviceEntry = serviceClient.getServiceByNameandNamespace(<string>serviceInfo.name, <string>serviceInfo.namespace);
+                        serviceEntry = serviceClient.getServiceByNameandNamespace(<string>serviceInfo.name, <string>serviceInfo.namespace);
                         if serviceEntry is Service {
                             model:EndpointSecurity backendSecurity = self.getBackendSecurity(serviceInfo, (), PRODUCTION_TYPE);
                             model:Backend backend = check self.createBackendService(api, (), PRODUCTION_TYPE, organization, self.constructServiceURL(serviceEntry), backendSecurity);
+                            if backendSecurity.'type == ENDPOINT_SECURITY_TYPE_BASIC {
+                                model:SecurityConfig[] securityConfig = <model:SecurityConfig[]>backend.spec.security;
+                                foreach model:SecurityConfig item in securityConfig {
+                                    anydata secretRefName = (<model:BasicSecurityConfig>item.basic).secretRef.name;
+                                    self.setBackendSecurity(secretRefName, serviceInfo, (), PRODUCTION_TYPE);
+                                }
+                            }
                             apiArtifact.backendServices[backend.metadata.name] = backend;
                             endpoint = {
                                 namespace: backend.metadata.namespace,
                                 name: backend.metadata.name,
                                 serviceEntry: true
                             };
+                            if serviceInfo.endpoint_security is map<anydata> {
+                                serviceEntry.endpointSecurity = serviceInfo.endpoint_security;
+                            }
                         } else {
                             BadRequestError badRequest = {body: {code: 900930, message: "Service not found."}};
                             return badRequest;
@@ -3275,7 +3287,11 @@ public class APIClient {
                 }
                 self.generateAndSetAPICRArtifact(apiArtifact, payload, organization, userName);
                 self.generateAndSetPolicyCRArtifact(apiArtifact, payload, organization);
-                self.generateAndSetRuntimeAPIArtifact(apiArtifact, payload, (), organization, userName);
+                if serviceEntry is Service {
+                    self.generateAndSetRuntimeAPIArtifact(apiArtifact, payload, serviceEntry, organization, userName);
+                } else {
+                    self.generateAndSetRuntimeAPIArtifact(apiArtifact, payload, (), organization, userName);
+                }
                 model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact, organization);
                 return check convertK8sAPItoAPI(deployAPIToK8sResult, false);
             } else {
