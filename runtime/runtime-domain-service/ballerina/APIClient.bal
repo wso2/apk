@@ -1731,9 +1731,6 @@ public class APIClient {
                     string httpHeader = <string>policyParameters.get("headerName");
                     removePolicies.push(httpHeader);
                 }
-                if (policyName == "interceptor") {
-
-                }
             }
         }
         model:HTTPHeaderFilter headerModifier = {};
@@ -1742,9 +1739,6 @@ public class APIClient {
         }
         if (removePolicies != []) {
             headerModifier.remove = removePolicies;
-        }
-        if headerModifier != {} {
-
         }
         return headerModifier;
     }
