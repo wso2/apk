@@ -48,14 +48,15 @@ public isolated function e909003() returns commons:APKError {
     ); 
 }
 
-public isolated function e909004(string serviceKey) returns commons:APKError {
-    return error commons:APKError( "Service from " + serviceKey + " not found",
-        code = 909004,
-        message =  "Service from " + serviceKey + " not found",
-        statusCode = 404,
-        description =  "Service from " + serviceKey + " not found"
-    ); 
-}
+// this error has been removed. can add another one to this code.
+// public isolated function e909004(string serviceKey) returns commons:APKError {
+//     return error commons:APKError( "Service from " + serviceKey + " not found",
+//         code = 909004,
+//         message =  "Service from " + serviceKey + " not found",
+//         statusCode = 404,
+//         description =  "Service from " + serviceKey + " not found"
+//     ); 
+// }
 
 public isolated function e909005() returns commons:APKError {
     return error commons:APKError( "type field unavailable",
@@ -369,5 +370,86 @@ public isolated function e909039() returns commons:APKError {
         message = "Invalid value for offset",
         statusCode = 406,
         description = "Invalid value for offset"
+    ); 
+}
+
+public isolated function e909040() returns commons:APKError {
+    return error commons:APKError( "Internal Error Occured while converting json to yaml",
+        code = 909040,
+        message = "Internal Error Occured while converting json to yaml",
+        statusCode = 500,
+        description = "Internal Error Occured while converting json to yaml"
+    ); 
+}
+
+public isolated function e909041() returns commons:APKError {
+    return error commons:APKError( "Accept header should be application/json or application/yaml",
+        code = 909041,
+        message = "Accept header should be application/json or application/yaml",
+        statusCode = 406,
+        description = "Accept header should be application/json or application/yaml"
+    ); 
+}
+
+public isolated function e909042() returns commons:APKError {
+    return error commons:APKError( "Unsupported API type",
+        code = 909042,
+        message = "Unsupported API type",
+        statusCode = 400,
+        description = "Unsupported API type"
+    ); 
+}
+
+public isolated function e909043() returns commons:APKError {
+    return error commons:APKError( "Error occured while generating openapi definition",
+        code = 909043,
+        message = "Error occured while generating openapi definition",
+        statusCode = 500,
+        description = "Error occured while generating openapi definition"
+    ); 
+}
+
+public isolated function e909044() returns commons:APKError {
+    return error commons:APKError( "Retrieve definition from Url result",
+        code = 909044,
+        message = "Retrieve definition from Url result",
+        statusCode = 406,
+        description = "Retrieve definition from Url result"
+    ); 
+}
+
+public isolated function e909045() returns commons:APKError {
+    return error commons:APKError( "New Version/APIID does not exist",
+        code = 909045,
+        message = "New Version/APIID does not exist",
+        statusCode = 404,
+        description = "New Version/APIID does not exist"
+    ); 
+}
+
+public isolated function e909046(string newVersion) returns commons:APKError {
+    return error commons:APKError( "New version - " + newVersion + " already exist",
+        code = 909046,
+        message = "New version - " + newVersion + " already exist",
+        statusCode = 409,
+        description = "New version - " + newVersion + " already exist"
+    ); 
+}
+
+public isolated function e909047(string serviceId) returns commons:APKError {
+    return error commons:APKError( serviceId + " service does not exist",
+        code = 909047,
+        message = serviceId + " service does not exist",
+        statusCode = 404,
+        description = serviceId + " service does not exist"
+    ); 
+}
+
+public isolated function e909048() returns commons:APKError {
+    return error commons:APKError( "API Type change not supported from update",
+        code = 909048,
+        message = "API Type change not supported from update",
+        statusCode = 406,
+        description = "API Type change not supported from update"
     ); 
 }

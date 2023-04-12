@@ -59,12 +59,10 @@ public class APIClient {
                             return response;
                         } else if convertedYaml is lang:Exception {
                             log:printError("Error while converting json to yaml:" + convertedYaml.toString());
-                            InternalServerErrorError internalError = {body: {code: 909000, message: "Internal Error Occured while converting json to yaml"}};
-                            return internalError;
+                            return e909040();
                         }
                     } else {
-                        PreconditionFailedError preconditionFailed = {body: {code: 909100, message: "Accept header should be application/json or application/yaml"}};
-                        return preconditionFailed;
+                        return e909041();
                     }
                 } else {
                     response.setJsonPayload(definition);
@@ -176,8 +174,7 @@ public class APIClient {
                 _ = check self.deleteBackends(api, organization);
                 _ = check self.deleteInternalAPI(api.metadata.name, api.metadata.namespace);
             } else {
-                NotFoundError apiNotfound = {body: {code: 900910, description: "API with " + id + " not found", message: "API not found"}};
-                return apiNotfound;
+                return e909001(id);
             }
         }
         return http:OK;
@@ -424,8 +421,7 @@ public class APIClient {
             }
             lock {
                 if (ALLOWED_API_TYPES.indexOf(api.'type) is ()) {
-                    BadRequestError badRequest = {body: {code: 900912, message: "unsupported API Type."}};
-                    return badRequest.clone();
+                    return e909042();
                 }
             }
             if self.validateContextAndVersion(api.context, api.'version, organization) {
@@ -894,8 +890,7 @@ public class APIClient {
             }
             lock {
                 if (ALLOWED_API_TYPES.indexOf(api.'type) is ()) {
-                    BadRequestError badRequest = {body: {code: 900912, message: "unsupported API Type."}};
-                    return badRequest.clone();
+                    return e909042();
                 }
             }
             if self.validateContextAndVersion(api.context, api.'version, organization) {
@@ -951,7 +946,7 @@ public class APIClient {
                 CreatedAPI createdAPI = {body: check convertK8sAPItoAPI(deployAPIToK8sResult, false), headers: {location: locationUrl}};
                 return createdAPI;
             } else {
-                return e909004(serviceKey);
+                return e909047(serviceKey);
             }
         } on fail var e {
             return e909022("Internal server error", e);
@@ -1812,12 +1807,12 @@ public class APIClient {
                 return jsonString;
             } else {
                 log:printError("Error on converting to json", jsonString);
-                return error("Error occured while generating openapi definition", code = 900920, message = "Error occured while generating openapi definition", statusCode = 500, description = "Error occured while generating openapi definition");
+                return e909043();
             }
         } else if retrievedDefinition is () {
             return "";
         } else {
-            return error("Error occured while generating openapi definition", code = 900920, message = "Error occured while generating openapi definition", statusCode = 500, description = "Error occured while generating openapi definition");
+            return e909043();
         }
     }
 
@@ -1988,8 +1983,7 @@ public class APIClient {
                 return definitionValidationRequest;
             }
         } on fail var e {
-            commons:APKError apkError = error("Internal Error", e, code = 900900, message = "InternalServer Error", description = "InternalServer Error", statusCode = 500);
-            return apkError;
+            return e909022("Internal error", e);
         }
     }
 
@@ -2134,8 +2128,7 @@ public class APIClient {
                 log:printError("K8s API Timeout happens when invoking k8s api");
             }
         }
-        commons:APKError apkError = error("Internal Server Error", code = 900900, message = "Internal Server Error", statusCode = 500, description = "Internal Server Error");
-        return apkError;
+        return e909022("Internal server error", e = error("Internal server error"));
     }
 
     isolated function createBackendService(API api, APIOperations? apiOperation, string endpointType, commons:Organization organization, string url,
@@ -2408,8 +2401,7 @@ public class APIClient {
             if importDefinitionRequest is ImportDefintionRequest {
                 lock {
                     if (ALLOWED_API_TYPES.indexOf(importDefinitionRequest.'type) is ()) {
-                        BadRequestError badRequest = {body: {code: 900912, message: "unsupported API Type."}};
-                        return badRequest.clone();
+                        return e909006();
                     }
                 }
                 runtimeapi:APIDefinitionValidationResponse|runtimeapi:APIManagementException|BadRequestError validateAndRetrieveDefinitionResult = check self.validateAndRetrieveDefinition(importDefinitionRequest.'type, importDefinitionRequest.url, importDefinitionRequest.inlineAPIDefinition, importDefinitionRequest.content, importDefinitionRequest.fileName);
@@ -2464,8 +2456,7 @@ public class APIClient {
             }
         } on fail var e {
             log:printError("Error occured importing API", e);
-            InternalServerErrorError internalError = {body: {code: 900900, message: "Internal Error."}};
-            return internalError;
+            return e909022("Internal Error", e);
         }
     }
 
@@ -2491,8 +2482,7 @@ public class APIClient {
                 validationResponse = runtimeUtil:RuntimeAPICommonUtil_validateOpenAPIDefinition('type, [], retrieveDefinitionFromUrlResult, fileName ?: "", true);
             } else {
                 log:printError("Error occured while retrieving definition from url", retrieveDefinitionFromUrlResult);
-                BadRequestError badRequest = {body: {code: 900900, message: "retrieveDefinitionFromUrlResult"}};
-                return badRequest;
+                return e909044();
             }
         } else if fileName is string && content is byte[] {
             if (urlAvailble || inlineApiDefinitionAvailable) {
@@ -2561,8 +2551,7 @@ public class APIClient {
     public isolated function copyAPI(string newVersion, string? serviceId, string apiId, commons:Organization organization, string userName) returns CreatedAPI|NotFoundError|BadRequestError|commons:APKError {
         // validating API existence.
         if newVersion.trim().length() == 0 || apiId.trim().length() == 0 {
-            BadRequestError badRequest = {body: {code: 900912, message: "new Version/APIID not exist."}};
-            return badRequest;
+            return e909045();
         }
         do {
             API|NotFoundError api = check self.getAPIById(apiId, organization);
@@ -2570,8 +2559,7 @@ public class APIClient {
                 model:APIArtifact apiArtifact = check self.getApiArtifact(api, organization);
                 // validating version
                 if isAPIVersionExist(api.name, newVersion, organization) {
-                    BadRequestError badRequest = {body: {code: 900920, message: newVersion + " already exist."}};
-                    return badRequest;
+                    return e909046(newVersion);
                 }
                 //validating serviceuid if exist.
                 if apiArtifact.serviceMapping.length() > 0 {
@@ -2583,8 +2571,7 @@ public class APIClient {
                             CreatedAPI createdAPI = {body: {name: deployAPIToK8sResult.spec.apiDisplayName, context: self.returnFullContext(deployAPIToK8sResult.spec.context, deployAPIToK8sResult.spec.apiVersion), 'version: deployAPIToK8sResult.spec.apiVersion, id: getAPIUUIDFromAPI(deployAPIToK8sResult)}};
                             return createdAPI;
                         } else {
-                            BadRequestError badRequest = {body: {code: 900921, message: serviceId + " service not exist."}};
-                            return badRequest;
+                            return e909047(serviceId);
                         }
                     }
                 }
@@ -2990,8 +2977,7 @@ public class APIClient {
             }
             return apiArtifact;
         } else {
-            commons:APKError apkError = error(string:'join("API with ", <string>api.id, " not found"), message = "API not found", code = 900910, description = string:'join("API with ", <string>api.id, " not found"), statusCode = 404);
-            return apkError;
+            return e909001(<string>api.id);
         }
     }
 
@@ -3167,8 +3153,7 @@ public class APIClient {
                     return <NotFoundError>api;
                 }
             } on fail var e {
-                commons:APKError apkError = error("Internal Error occured when exporting api", e, message = "Internal Error.", code = 900900, description = "Internal Error.", statusCode = 500);
-                return apkError;
+                return e909022("Internal error occured when exporting api", e);
             }
         } else {
             return e909003();
@@ -3201,16 +3186,13 @@ public class APIClient {
             API|NotFoundError api = check self.getAPIById(apiId, organization);
             if api is API {
                 if payload.'type != api.'type {
-                    BadRequestError badRequest = {body: {code: 900930, message: "API Type change not supported from update."}};
-                    return badRequest;
+                    return e909048();
                 }
                 if payload.context != api.context {
-                    BadRequestError badRequest = {body: {code: 900930, message: "Context change not supported from update."}};
-                    return badRequest;
+                    return e909048();
                 }
                 if payload.'version != api.'version {
-                    BadRequestError badRequest = {body: {code: 900930, message: "Version change not supported from update."}};
-                    return badRequest;
+                    return e909048();
                 }
                 self.setDefaultOperationsIfNotExist(payload);
                 string uniqueId = getUniqueIdForAPI(payload.name, payload.'version, organization);
@@ -3231,8 +3213,7 @@ public class APIClient {
                                 serviceEntry: true
                             };
                         } else {
-                            BadRequestError badRequest = {body: {code: 900930, message: "Service not found."}};
-                            return badRequest;
+                            return e909047("Given ID");
                         }
                     }
                 }
@@ -3382,8 +3363,7 @@ public class APIClient {
             }
         } on fail var e {
             log:printError("Error occured importing API", e);
-            InternalServerErrorError internalError = {body: {code: 900900, message: "Internal Error."}};
-            return internalError;
+            return e909022("Error occured importing API", e);
         }
     }
 
