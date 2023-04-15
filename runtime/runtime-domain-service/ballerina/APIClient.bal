@@ -1694,19 +1694,25 @@ public class APIClient {
         if operationPoliciesToUse is APIOperationPolicies {
             OperationPolicy[]? request = operationPoliciesToUse.request;
             if request is OperationPolicy[] {
-                model:HTTPRouteFilter requestHeaderFilter = {
-                    'type: "RequestHeaderModifier",
-                    requestHeaderModifier: self.extractHttpHeaderFilterData(request, organization)
-                };
-                routeFilters.push(requestHeaderFilter);
+                model:HTTPHeaderFilter requestHeaderModifier = self.extractHttpHeaderFilterData(request, organization);
+                if requestHeaderModifier != {} {
+                    model:HTTPRouteFilter requestHeaderFilter = {
+                        'type: "RequestHeaderModifier",
+                        requestHeaderModifier: requestHeaderModifier
+                    };
+                    routeFilters.push(requestHeaderFilter);
+                }
             }
             OperationPolicy[]? response = operationPoliciesToUse.response;
             if response is OperationPolicy[] {
-                model:HTTPRouteFilter responseHeaderFilter = {
-                    'type: "ResponseHeaderModifier",
-                    responseHeaderModifier: self.extractHttpHeaderFilterData(response, organization)
-                };
-                routeFilters.push(responseHeaderFilter);
+                model:HTTPHeaderFilter responseHeaderModifier = self.extractHttpHeaderFilterData(response, organization);
+                if responseHeaderModifier != {} {
+                    model:HTTPRouteFilter responseHeaderFilter = {
+                        'type: "ResponseHeaderModifier",
+                        responseHeaderModifier: responseHeaderModifier
+                    };
+                    routeFilters.push(responseHeaderFilter);
+                }
             }
         }
         return routeFilters;
@@ -2258,6 +2264,9 @@ public class APIClient {
                 protocol: url.startsWith("https:") ? "https" : "http"
             }
         };
+        if endpointType == INTERCEPTOR_TYPE {
+            backendService.metadata.name = getInterceptorServiceUid(api, endpointType, organization, url);
+        }
         if <boolean>endpointSecurity?.enabled {
             backendService.spec.security = [securityConfig];
         }
@@ -3959,6 +3968,13 @@ public isolated function getBackendServiceUid(API api, APIOperations? apiOperati
         concatanatedString = hashedValue.toBase16();
         return "backend-" + concatanatedString + "-api";
     }
+}
+
+public isolated function getInterceptorServiceUid(API api, string endpointType, commons:Organization organization, string backendUrl) returns string {
+    string concatanatedString = string:'join("-", organization.uuid, api.name, 'api.'version, endpointType, backendUrl);
+    byte[] hashedValue = crypto:hashSha1(concatanatedString.toBytes());
+    concatanatedString = hashedValue.toBase16();
+    return "backend-" + concatanatedString + "-interceptor";
 }
 
 public isolated function getBackendPolicyUid(API api, string endpointType, commons:Organization organization) returns string {
