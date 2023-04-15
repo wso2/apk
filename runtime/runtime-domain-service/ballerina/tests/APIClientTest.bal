@@ -2638,6 +2638,9 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
                 ],
                 serviceInfo: {name: "backend", namespace: "apk"},
                 createdTime: "2023-01-17T11:23:49Z"
+            },
+            headers: {
+                location:locationUrl
             }
         };
         CreatedAPI createdAPIWithAPILevelInterceptorPolicy = {
@@ -2657,6 +2660,9 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
                 apiPolicies: {request: [check requestInterceptorPolicy.cloneWithType(OperationPolicy)], response: [check responseInterceptorPolicy.cloneWithType(OperationPolicy)]},
                 serviceInfo: {name: "backend", namespace: "apk"},
                 createdTime: "2023-01-17T11:23:49Z"
+            },
+            headers: {
+                location:locationUrl
             }
         };
 
