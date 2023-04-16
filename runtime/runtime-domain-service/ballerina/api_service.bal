@@ -129,11 +129,11 @@ http:Service runtimeService = service object {
         commons:Organization organization = authenticatedUserContext.organization;
         return serviceClient.getServiceById(serviceId, organization);
     }
-    isolated resource function get services/[string serviceId]/usage(http:RequestContext requestContext) returns APIList|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
+    isolated resource function get services/[string serviceId]/usage(http:RequestContext requestContext, string? query, string sortBy = "createdTime", string sortOrder = "desc", int 'limit = 25, int offset = 0) returns APIList|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
         final ServiceClient serviceClient = new ();
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
-        return serviceClient.getServiceUsageByServiceId(serviceId, organization);
+        return serviceClient.getServiceUsageByServiceId(query, 'limit, offset, sortBy, sortOrder, serviceId, organization);
     }
     isolated resource function get policies(http:RequestContext requestContext, string? query, int 'limit = 25, int offset = 0, string sortBy = "id", string sortOrder = "asc", @http:Header string? accept = "application/json") returns MediationPolicyList|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
         final APIClient apiService = new ();
