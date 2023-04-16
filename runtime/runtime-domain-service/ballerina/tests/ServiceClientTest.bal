@@ -113,7 +113,9 @@ public function getServicesDataProvider() returns map<[string|(), string, string
                 "pagination": {
                     "offset": 0,
                     "limit": 10,
-                    "total": 6
+                    "total": 6,
+                    "next": "",
+                    "previous": ""
                 }
             }.toBalString()
         ],
@@ -219,7 +221,9 @@ public function getServicesDataProvider() returns map<[string|(), string, string
                 "pagination": {
                     "offset": 0,
                     "limit": 10,
-                    "total": 6
+                    "total": 6,
+                    "next": "",
+                    "previous": ""
                 }
             }.toBalString()
         ],
@@ -325,7 +329,9 @@ public function getServicesDataProvider() returns map<[string|(), string, string
                 "pagination": {
                     "offset": 0,
                     "limit": 10,
-                    "total": 6
+                    "total": 6,
+                    "next": "",
+                    "previous": ""
                 }
             }.toBalString()
         ],
@@ -431,7 +437,9 @@ public function getServicesDataProvider() returns map<[string|(), string, string
                 "pagination": {
                     "offset": 0,
                     "limit": 10,
-                    "total": 6
+                    "total": 6,
+                    "next": "",
+                    "previous": ""
                 }
             }.toBalString()
         ],
@@ -492,7 +500,9 @@ public function getServicesDataProvider() returns map<[string|(), string, string
                 "pagination": {
                     "offset": 0,
                     "limit": 3,
-                    "total": 6
+                    "total": 6,
+                    "next": "/services?limit=3&offset=3&sortBy=serviceName&sortOrder=desc&query=",
+                    "previous": ""
                 }
             }.toBalString()
         ],
@@ -507,7 +517,9 @@ public function getServicesDataProvider() returns map<[string|(), string, string
                 "pagination": {
                     "offset": 6,
                     "limit": 3,
-                    "total": 6
+                    "total": 6,
+                    "next": "",
+                    "previous": "/services?limit=3&offset=3&sortBy=serviceName&sortOrder=desc&query="
                 }
             }.toBalString()
         ],
@@ -540,7 +552,9 @@ public function getServicesDataProvider() returns map<[string|(), string, string
                 "pagination": {
                     "offset": 0,
                     "limit": 10,
-                    "total": 1
+                    "total": 1,
+                    "next": "",
+                    "previous": ""
                 }
             }.toBalString()
         ],
@@ -586,7 +600,9 @@ public function getServicesDataProvider() returns map<[string|(), string, string
                 "pagination": {
                     "offset": 0,
                     "limit": 10,
-                    "total": 2
+                    "total": 2,
+                    "next": "",
+                    "previous": ""
                 }
             }.toBalString()
         ],
@@ -617,7 +633,9 @@ public function getServicesDataProvider() returns map<[string|(), string, string
                 "pagination": {
                     "offset": 0,
                     "limit": 10,
-                    "total": 1
+                    "total": 1,
+                    "next": "",
+                    "previous": ""
                 }
             }.toBalString()
         ],

@@ -6109,7 +6109,9 @@ function getMediationPolicyListDataProvider() returns map<[string?, int, int, st
                 "pagination": {
                     "offset": 0,
                     "limit": 10,
-                    "total": 5
+                    "total": 5,
+                    "next": "",
+                    "previous": ""
                 }
             }.toBalString()
         ],
@@ -6275,7 +6277,9 @@ function getMediationPolicyListDataProvider() returns map<[string?, int, int, st
                 "pagination": {
                     "offset": 0,
                     "limit": 10,
-                    "total": 5
+                    "total": 5,
+                    "next": "",
+                    "previous": ""
                 }
             }.toBalString()
         ],
@@ -6441,7 +6445,9 @@ function getMediationPolicyListDataProvider() returns map<[string?, int, int, st
                 "pagination": {
                     "offset": 0,
                     "limit": 10,
-                    "total": 5
+                    "total": 5,
+                    "next": "",
+                    "previous": ""
                 }
             }.toBalString()
         ],
@@ -6607,7 +6613,9 @@ function getMediationPolicyListDataProvider() returns map<[string?, int, int, st
                 "pagination": {
                     "offset": 0,
                     "limit": 10,
-                    "total": 5
+                    "total": 5,
+                    "next": "",
+                    "previous": ""
                 }
             }.toBalString()
         ],
@@ -6683,7 +6691,9 @@ function getMediationPolicyListDataProvider() returns map<[string?, int, int, st
                 "pagination": {
                     "offset": 0,
                     "limit": 2,
-                    "total": 5
+                    "total": 5,
+                    "next": "/policies?limit=2&offset=2&sortBy=policyName&sortOrder=asc&query=",
+                    "previous": ""
                 }
             }.toBalString()
         ],
@@ -6776,7 +6786,9 @@ function getMediationPolicyListDataProvider() returns map<[string?, int, int, st
                 "pagination": {
                     "offset": 2,
                     "limit": 2,
-                    "total": 5
+                    "total": 5,
+                    "next": "",
+                    "previous": "/policies?limit=2&offset=0&sortBy=policyName&sortOrder=desc&query="
                 }
             }.toBalString()
         ],
@@ -6792,7 +6804,9 @@ function getMediationPolicyListDataProvider() returns map<[string?, int, int, st
                 "pagination": {
                     "offset": 6,
                     "limit": 3,
-                    "total": 5
+                    "total": 5,
+                    "next": "",
+                    "previous": ""
                 }
             }.toBalString()
         ],
@@ -6914,7 +6928,9 @@ function getMediationPolicyListDataProvider() returns map<[string?, int, int, st
                 "pagination": {
                     "offset": 0,
                     "limit": 10,
-                    "total": 3
+                    "total": 3,
+                    "next": "",
+                    "previous": ""
                 }
             }.toBalString()
         ],
@@ -7036,7 +7052,9 @@ function getMediationPolicyListDataProvider() returns map<[string?, int, int, st
                 "pagination": {
                     "offset": 0,
                     "limit": 10,
-                    "total": 3
+                    "total": 3,
+                    "next": "",
+                    "previous": ""
                 }
             }.toBalString()
         ],
@@ -7052,7 +7070,9 @@ function getMediationPolicyListDataProvider() returns map<[string?, int, int, st
                 "pagination": {
                     "offset": 0,
                     "limit": 10,
-                    "total": 0
+                    "total": 0,
+                    "next": "",
+                    "previous": ""
                 }
             }.toBalString()
         ],
