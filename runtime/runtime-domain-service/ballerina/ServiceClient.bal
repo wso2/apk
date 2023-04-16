@@ -115,26 +115,114 @@ public class ServiceClient {
         return createServiceModel(serviceByNameAndNamespace);
     }
 
-    public isolated function getServiceUsageByServiceId(string serviceId, commons:Organization organization) returns APIList|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
-        APIInfo[] apiInfos = [];
+    public isolated function getServiceUsageByServiceId(string? query, int 'limit, int offset, string sortBy, string sortOrder, string serviceId, commons:Organization organization) returns APIList|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
+        API[] apilist = [];
         Service|BadRequestError|NotFoundError|InternalServerErrorError serviceEntry = self.getServiceById(serviceId,organization);
         if serviceEntry is Service {
             model:API[] k8sAPIS = check retrieveAPIMappingsForService(serviceEntry, organization);
             foreach model:API k8sAPI in k8sAPIS {
-                apiInfos.push({
-                    context: k8sAPI.spec.context,
-                    createdTime: k8sAPI.metadata.creationTimestamp,
-                    name: k8sAPI.spec.apiDisplayName,
-                    id: k8sAPI.metadata.uid,
-                    'type: k8sAPI.spec.apiType,
-                    'version: k8sAPI.spec.apiVersion
-                });
+                API convertedModel = check convertK8sAPItoAPI(k8sAPI, true);
+                apilist.push(convertedModel);
+            } on fail var e {
+            return e909022("Error occured while getting API list", e);
             }
-            APIList apiList = {list: apiInfos, count: apiInfos.length(), pagination: {total: apiInfos.length()}};
-            return apiList;
+            if query is string && query.toString().trim().length() > 0 {
+                return self.filterAPISBasedOnQuery(apilist, query, 'limit, offset, sortBy, sortOrder, serviceId);
+            } else {
+                return self.filterAPIS(apilist, 'limit, offset, sortBy, sortOrder, query.toString().trim(), serviceId);
+            }
         } else {
             return serviceEntry;
         }
+    }
+
+    private isolated function filterAPISBasedOnQuery(API[] apilist, string query, int 'limit, int offset, string sortBy, string sortOrder, string serviceId) returns APIList|commons:APKError {
+        API[] filteredList = [];
+        if query.length() > 0 {
+            int? semiCollonIndex = string:indexOf(query, ":", 0);
+            if semiCollonIndex is int && semiCollonIndex > 0 {
+                string keyWord = query.substring(0, semiCollonIndex);
+                string keyWordValue = query.substring(keyWord.length() + 1, query.length());
+                keyWordValue = keyWordValue + "|\\w+" + keyWordValue + "\\w+" + "|" + keyWordValue + "\\w+" + "|\\w+" + keyWordValue;
+                if keyWord.trim() == SEARCH_CRITERIA_NAME {
+                    foreach API api in apilist {
+                        if (regex:matches(api.name, keyWordValue)) {
+                            filteredList.push(api);
+                        }
+                    }
+                } else if keyWord.trim() == SEARCH_CRITERIA_TYPE {
+                    foreach API api in apilist {
+                        if (regex:matches(api.'type, keyWordValue)) {
+                            filteredList.push(api);
+                        }
+                    }
+                } else {
+                    return e909019(keyWord);
+                }
+            } else {
+                string keyWordValue = query + "|\\w+" + query + "\\w+" + "|" + query + "\\w+" + "|\\w+" + query;
+
+                foreach API api in apilist {
+
+                    if (regex:matches(api.name, keyWordValue)) {
+                        filteredList.push(api);
+                    }
+                }
+            }
+        } else {
+            filteredList = apilist;
+        }
+        return self.filterAPIS(filteredList, 'limit, offset, sortBy, sortOrder, query, serviceId);
+    }
+
+    private isolated function filterAPIS(API[] apiList, int 'limit, int offset, string sortBy, string sortOrder, string query, string serviceId) returns APIList|commons:APKError {
+        API[] clonedAPIList = apiList.clone();
+        API[] sortedAPIS = [];
+        if sortBy == SORT_BY_API_NAME && sortOrder == SORT_ORDER_ASC {
+            sortedAPIS = from var api in clonedAPIList
+                order by api.name ascending
+                select api;
+        } else if sortBy == SORT_BY_API_NAME && sortOrder == SORT_ORDER_DESC {
+            sortedAPIS = from var api in clonedAPIList
+                order by api.name descending
+                select api;
+        } else if sortBy == SORT_BY_CREATED_TIME && sortOrder == SORT_ORDER_ASC {
+            sortedAPIS = from var api in clonedAPIList
+                order by api.createdTime ascending
+                select api;
+        } else if sortBy == SORT_BY_CREATED_TIME && sortOrder == SORT_ORDER_DESC {
+            sortedAPIS = from var api in clonedAPIList
+                order by api.createdTime descending
+                select api;
+        } else {
+            return e909020();
+        }
+        API[] limitSet = [];
+        if sortedAPIS.length() > offset {
+            foreach int i in offset ... (sortedAPIS.length() - 1) {
+                if limitSet.length() < 'limit {
+                    limitSet.push(sortedAPIS[i]);
+                }
+            }
+        }
+        string previousAPIs = "";
+        string nextAPIs = "";
+        string urlTemplate = "/services/%serviceID%/usage?limit=%limit%&offset=%offset%&sortBy=%sortBy%&sortOrder=%sortOrder%&query=%query%";
+        urlTemplate = regex:replace(urlTemplate, "%serviceID%", serviceId);
+        APIClient apiClient = new();
+        if offset > sortedAPIS.length() {
+            previousAPIs = "";
+        } else if offset > 'limit {
+            previousAPIs = apiClient.getPaginatedURL(urlTemplate, 'limit, offset - 'limit, sortBy, sortOrder, query);
+        } else if offset > 0 {
+            previousAPIs = apiClient.getPaginatedURL(urlTemplate, 'limit, 0, sortBy, sortOrder, query);
+        }
+        if limitSet.length() < 'limit {
+            nextAPIs = "";
+        } else if (sortedAPIS.length() > offset + 'limit){
+            nextAPIs = apiClient.getPaginatedURL(urlTemplate, 'limit, offset + 'limit, sortBy, sortOrder, query);
+        }
+        return {list: convertAPIListToAPIInfoList(limitSet), count: limitSet.length(), pagination: {total: apiList.length(), 'limit: 'limit, offset: offset, next: nextAPIs, previous: previousAPIs}};
     }
 
     public isolated function filterServicesBasedOnQuery(Service[] servicesList, string query, string sortBy, string sortOrder, int 'limit, int offset) returns ServiceList|BadRequestError|InternalServerErrorError {
@@ -211,18 +299,19 @@ public class ServiceClient {
 
         string previousServices = "";
         string nextServices = "";
+        string urlTemplate = "/services?limit=%limit%&offset=%offset%&sortBy=%sortBy%&sortOrder=%sortOrder%&query=%query%";
         APIClient apiClient = new();
         if offset > sortedServices.length() {
             previousServices = "";
         } else if offset > 'limit {
-            previousServices = apiClient.getPaginatedURL("services", 'limit, offset - 'limit, sortBy, sortOrder, query);
+            previousServices = apiClient.getPaginatedURL(urlTemplate, 'limit, offset - 'limit, sortBy, sortOrder, query);
         } else if offset > 0 {
-            previousServices = apiClient.getPaginatedURL("services", 'limit, 0, sortBy, sortOrder, query);
+            previousServices = apiClient.getPaginatedURL(urlTemplate, 'limit, 0, sortBy, sortOrder, query);
         }
         if limitedServices.length() < 'limit {
             nextServices = "";
         } else if (sortedServices.length() > offset + 'limit){
-            nextServices = apiClient.getPaginatedURL("services", 'limit, offset + 'limit, sortBy, sortOrder, query);
+            nextServices = apiClient.getPaginatedURL(urlTemplate, 'limit, offset + 'limit, sortBy, sortOrder, query);
         }
         ServiceList serviceList = {list: limitedServices, pagination: {offset: offset, 'limit: 'limit, total: sortedServices.length(), next: nextServices, previous: previousServices}};
         return serviceList;
