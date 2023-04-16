@@ -677,9 +677,9 @@ public function serviceByIdDataProvider() returns map<[string, anydata]> {
 }
 
 @test:Config {dataProvider: serviceUsageDataProvider}
-public function testServiceUsageByID(string serviceId, anydata expected) {
+public function testServiceUsageByID(string? query, int 'limit, int offset, string sortBy, string sortOrder, string serviceId, anydata expected) {
     ServiceClient serviceClient = new;
-    any|error serviceUsageByServiceId = serviceClient.getServiceUsageByServiceId(serviceId,organiztion1);
+    any|error serviceUsageByServiceId = serviceClient.getServiceUsageByServiceId(query, 'limit, offset, sortBy, sortOrder, serviceId, organiztion1);
     if serviceUsageByServiceId is any {
         test:assertEquals(serviceUsageByServiceId.toBalString(), expected);
     } else {
@@ -687,10 +687,15 @@ public function testServiceUsageByID(string serviceId, anydata expected) {
     }
 }
 
-function serviceUsageDataProvider() returns map<[string, anydata]> {
+function serviceUsageDataProvider() returns map<[string?, int, int, string, string, string, anydata]> {
     NotFoundError notfound = {body: {code: 90914, message: "Service 275b00d1-722c-4df2-b65a-9b14678abe6b not found"}};
-    map<[string, anydata]> data = {
+    map<[string?, int, int, string, string, string, anydata]> data = {
         "1": [
+            (),
+            10,
+            0,
+            SORT_BY_API_NAME,
+            SORT_ORDER_ASC,
             "275b00d1-722c-4df2-b65a-9b14677abe4b",
             {
                 "count": 2,
@@ -713,12 +718,41 @@ function serviceUsageDataProvider() returns map<[string, anydata]> {
                     }
                 ],
                 "pagination": {
-                    "total": 2
+                    "offset": 0,
+                    "limit": 10,
+                    "total": 2,
+                    "next": "",
+                    "previous": ""
                 }
             }.toBalString()
         ],
-        "2": ["275b00d1-722c-4df2-b65a-9b14677abe5b", {"count": 0, "list": [], "pagination": {"total": 0}}.toBalString()],
-        "3": ["275b00d1-722c-4df2-b65a-9b14678abe6b", notfound.toBalString()]
+        "2": [
+            (),
+            10,
+            0,
+            SORT_BY_API_NAME,
+            SORT_ORDER_ASC,
+            "275b00d1-722c-4df2-b65a-9b14677abe5b", 
+            {
+                "count": 0, 
+                "list": [], 
+                "pagination": {
+                    "offset": 0,
+                    "limit": 10,
+                    "total": 0,
+                    "next": "",
+                    "previous": ""
+                }
+            }.toBalString()
+        ],
+        "3": [(),
+            10,
+            0,
+            SORT_BY_API_NAME,
+            SORT_ORDER_ASC,
+            "275b00d1-722c-4df2-b65a-9b14678abe6b", 
+            notfound.toBalString()
+        ]
 
     };
     return data;
