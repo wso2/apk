@@ -287,7 +287,13 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, prodHTTP
 	}
 
 	if len(prodHTTPRouteRef) > 0 {
-		if prodHTTPRoute, err = apiReconciler.resolveHTTPRouteRefs(ctx, prodHTTPRouteRef, namespace, apiRef, apiPolicies); err != nil {
+		prodHTTPRoute.Authentications = authentications
+		prodHTTPRoute.RateLimitPolicies = rateLimitPolicies
+		prodHTTPRoute.ResourceAuthentications = resourceAuthentications
+		prodHTTPRoute.ResourceRateLimitPolicies = resourceRateLimitPolicies
+		prodHTTPRoute.ResourceAPIPolicies = resourceAPIPolicies
+		prodHTTPRoute.APIPolicies = apiPolicies
+		if prodHTTPRoute, err = apiReconciler.resolveHTTPRouteRefs(ctx, prodHTTPRoute, prodHTTPRouteRef, namespace, apiRef, apiPolicies); err != nil {
 			return nil, nil, fmt.Errorf("error while resolving production httpRouteref %s in namespace :%s has not found. %s",
 				prodHTTPRouteRef, namespace, err.Error())
 		}
@@ -298,15 +304,16 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, prodHTTP
 			return nil, nil, fmt.Errorf("no gateway available for httpRouteref %s in namespace :%s has not found",
 				prodHTTPRouteRef, namespace)
 		}
-		prodHTTPRoute.Authentications = authentications
-		prodHTTPRoute.RateLimitPolicies = rateLimitPolicies
-		prodHTTPRoute.ResourceAuthentications = resourceAuthentications
-		prodHTTPRoute.ResourceRateLimitPolicies = resourceRateLimitPolicies
-		prodHTTPRoute.ResourceAPIPolicies = resourceAPIPolicies
 	}
 
 	if len(sandHTTPRouteRef) > 0 {
-		if sandHTTPRoute, err = apiReconciler.resolveHTTPRouteRefs(ctx, sandHTTPRouteRef, namespace, apiRef, apiPolicies); err != nil {
+		sandHTTPRoute.Authentications = authentications
+		sandHTTPRoute.RateLimitPolicies = rateLimitPolicies
+		sandHTTPRoute.ResourceAuthentications = resourceAuthentications
+		sandHTTPRoute.ResourceRateLimitPolicies = resourceRateLimitPolicies
+		sandHTTPRoute.ResourceAPIPolicies = resourceAPIPolicies
+		sandHTTPRoute.APIPolicies = apiPolicies
+		if sandHTTPRoute, err = apiReconciler.resolveHTTPRouteRefs(ctx, sandHTTPRoute, sandHTTPRouteRef, namespace, apiRef, apiPolicies); err != nil {
 			return nil, nil, fmt.Errorf("error while resolving sandbox httpRouteref %s in namespace :%s has not found. %s",
 				sandHTTPRouteRef, namespace, err.Error())
 		}
@@ -317,28 +324,19 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, prodHTTP
 			return nil, nil, fmt.Errorf("no gateway available for httpRouteref %s in namespace :%s has not found",
 				sandHTTPRouteRef, namespace)
 		}
-		sandHTTPRoute.Authentications = authentications
-		sandHTTPRoute.RateLimitPolicies = rateLimitPolicies
-		sandHTTPRoute.ResourceAuthentications = resourceAuthentications
-		sandHTTPRoute.ResourceRateLimitPolicies = resourceRateLimitPolicies
-		sandHTTPRoute.ResourceAPIPolicies = resourceAPIPolicies
 	}
 	return prodHTTPRoute, sandHTTPRoute, nil
 }
 
 // resolveHTTPRouteRefs validates following references related to the API
 // - Authentications
-func (apiReconciler *APIReconciler) resolveHTTPRouteRefs(ctx context.Context, httpRouteRef []string, namespace, apiRef string,
+func (apiReconciler *APIReconciler) resolveHTTPRouteRefs(ctx context.Context, httpRouteState *synchronizer.HTTPRouteState, httpRouteRef []string, namespace, apiRef string,
 	apiPolicies map[string]dpv1alpha1.APIPolicy) (*synchronizer.HTTPRouteState, error) {
-	httpRouteState := &synchronizer.HTTPRouteState{
-		HTTPRoute: &gwapiv1b1.HTTPRoute{},
-	}
 	var err error
 	httpRouteState.HTTPRoute, err = apiReconciler.concatHTTPRoutes(ctx, httpRouteRef, namespace)
 	if err != nil {
 		return nil, err
 	}
-	httpRouteState.APIPolicies = apiPolicies
 	httpRouteState.BackendMapping = apiReconciler.getResolvedBackendsMapping(ctx, httpRouteState)
 	httpRouteState.Scopes, err = apiReconciler.getScopesForHTTPRoute(ctx, httpRouteState.HTTPRoute, apiRef)
 	return httpRouteState, err
