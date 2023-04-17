@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { settings, tenant, apiCategories, applicationThrottlePolicies } from './dummyPayloads';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const Settings = require('Settings');
-const restApi = Settings.server.restApi;
+// const Settings = require('Settings');
+// const restApi = Settings.server.restApi;
 
 type JSONValue =
     | string
@@ -46,14 +46,14 @@ const useAxios = ({ url }: useFetchProps) => {
     const [data, setData] = useState<any | null>(null);
     const [loading, setLoading] = useState<JSONValue | null>(true);
     const [error, setError] = useState<string>("");
-    let fetchUrl = '';
-    if (restApi.endsWith('/') && url.startsWith('/')) {
-        fetchUrl = restApi.slice(0, -1) + url;
-    } else if (!restApi.endsWith('/') && !url.startsWith('/')) {
-        fetchUrl = restApi + '/' + url;
-    } else {
-        fetchUrl = restApi + url;
-    }
+    // let fetchUrl = '';
+    // if (restApi.endsWith('/') && url.startsWith('/')) {
+    //     fetchUrl = restApi.slice(0, -1) + url;
+    // } else if (!restApi.endsWith('/') && !url.startsWith('/')) {
+    //     fetchUrl = restApi + '/' + url;
+    // } else {
+    //     fetchUrl = restApi + url;
+    // }
 
     useEffect(() => {
         /** =================== Remove the following logics when the actual impl is there */

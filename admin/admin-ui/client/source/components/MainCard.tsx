@@ -9,7 +9,8 @@ import { Card, CardContent, CardHeader, CardProps, Divider, Typography } from '@
 // header style
 const headerSX = {
     p: 2.5,
-    '& .MuiCardHeader-action': { m: '0px auto', alignSelf: 'center' }
+    '& .MuiCardHeader-action': { m: '0px auto', alignSelf: 'center' },
+    backgroundColor: 'transparent',//(theme) => (theme.palette.mode === 'dark' ? theme.palette.dark.main : theme.palette.grey[50])
 };
 
 // ==============================|| CUSTOM - MAIN CARD ||============================== //
@@ -41,7 +42,7 @@ const MainCard = forwardRef<Ref, MainCardProps>(
             boxShadow,
             children,
             content = true,
-            contentSX = {},
+            contentSX = { backgroundColor: '#fff'},
             darkTitle,
             divider = true,
             elevation,
@@ -61,11 +62,12 @@ const MainCard = forwardRef<Ref, MainCardProps>(
             <Card
                 elevation={elevation || 0}
                 ref={ref}
+                {...others}
                 sx={{
-                    ...sx.sx,
+                    ...sx,
                     border: border ? '1px solid' : 'none',
                     borderRadius: 2,
-                    borderColor: theme.palette.mode === 'dark' ? theme.palette.divider : theme.palette.grey[100],
+                    borderColor: theme.palette.mode === 'dark' ? theme.palette.divider : theme.palette.grey.A200,
                     boxShadow: boxShadow && (!border || theme.palette.mode === 'dark') ? shadow || theme.customShadows.z1 : 'inherit',
                     ':hover': {
                         boxShadow: boxShadow ? shadow || theme.customShadows.z1 : 'inherit'
@@ -75,7 +77,8 @@ const MainCard = forwardRef<Ref, MainCardProps>(
                         p: '16px !important',
                         fontFamily: theme.typography.fontFamily,
                         fontSize: '0.75rem'
-                    }
+                    },
+                    backgroundColor: 'transparent',
                 }}
                 {...others}
 

@@ -11,7 +11,7 @@ import MainLayout from 'layout/MainLayout';
 
 // render - sample page
 const SamplePage = Loadable(lazy(() => import('pages/sample/SamplePage')));
-const ApplicationRatePlans = Loadable(lazy(() => import('pages/ApplicationPolicies/ListApplicationRatePlans')));
+const ApplicationRatePlans = Loadable(lazy(() => import('pages/ApplicationRatePlans/ListApplicationRatePlans')));
 
 // ==============================|| MAIN ROUTING ||============================== //
 export default function MainRoutes() {

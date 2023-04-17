@@ -15,8 +15,6 @@ import MainCard from '../MainCard';
 interface BreadcrumbsProps {
     navigation: any;
     title: boolean;
-    titleBottom?: boolean;
-    card?: boolean;
     divider?: boolean;
     others?: any;
 }
@@ -93,7 +91,7 @@ const Breadcrumbs = ({ navigation, title, ...others }: BreadcrumbsProps) => {
                             </MuiBreadcrumbs>
                         </Grid>
                         {title && (
-                            <Grid item sx={{ mt: 2 }}>
+                            <Grid item sx={{ mt: 2, mb: 2 }}>
                                 <Typography variant="h3">{item.title}</Typography>
                             </Grid>
                         )}

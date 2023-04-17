@@ -2,11 +2,8 @@
 import { styled } from '@mui/material/styles';
 import Drawer from '@mui/material/Drawer';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires, no-undef
-const Settings = require('Settings');
-
 const openedMixin = (theme) => ({
-    width: Settings.theme.drawerWidth,
+    width: 260,
     borderRight: `1px solid ${theme.palette.divider}`,
     transition: theme.transitions.create('width', {
         easing: theme.transitions.easing.sharp,
@@ -30,7 +27,7 @@ const closedMixin = (theme) => ({
 // ==============================|| DRAWER - MINI STYLED ||============================== //
 
 const MiniDrawerStyled = styled(Drawer, { shouldForwardProp: (prop) => prop !== 'open' })(({ theme, open }) => ({
-    width: Settings.theme.drawerWidth,
+    width: 260,
     flexShrink: 0,
     whiteSpace: 'nowrap',
     boxSizing: 'border-box',

@@ -5,11 +5,16 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const fs = require('fs');
+
 // Live reloading libs import
 var livereload = require("livereload");
 const connectLivereload = require("connect-livereload");
+
 // Routes
-var usersRouter = require('./routes/users');
+var tokenRoutes = require('./routes/tokenRoutes');
+var serviceRouters = require('./routes/serviceRouters');
+var apiRoutes = require('./routes/apiRoutes');
+
 // Initialize express
 var app = express();
 
@@ -23,7 +28,6 @@ liveReloadServer.server.once("connection", () => {
 });
 // app.use(connectLivereload());
 // Live reload browser end
-
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -31,8 +35,10 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Server side route definitions
+app.use('/token', tokenRoutes);
+app.use('/services', serviceRouters);
+app.use('/api', apiRoutes);
 
-app.use('/users', usersRouter);
 // app.use('/specs', specs);
 
 // Serving the static react files
@@ -61,7 +67,7 @@ app.use(function(err, req, res, next) {
 
   // render the error page
   res.status(err.status || 500);
-  res.render('error');
+  res.send(err.message);
 });
 
 module.exports = app;

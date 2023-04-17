@@ -22,6 +22,7 @@ import {
 import MainCard from 'components/MainCard';
 import Transitions from 'components/@extended/Transitions';
 import ProfileTab from './ProfileTab';
+import { useAuth } from 'auth/AuthProvider';
 
 // assets
 import { LogoutOutlined } from '@ant-design/icons';
@@ -52,10 +53,7 @@ function a11yProps(index) {
 
 const Profile = () => {
     const theme = useTheme();
-
-    const handleLogout = async () => {
-        // logout
-    };
+    const { user, logout } = useAuth();
 
     const anchorRef = useRef<HTMLButtonElement>(null);
     const [open, setOpen] = useState(false);
@@ -89,7 +87,7 @@ const Profile = () => {
             >
                 <Stack direction="row" spacing={2} alignItems="center" sx={{ p: 0.5 }}>
                     <Avatar alt="profile user" src='/images/avatar-1.png' sx={{ width: 32, height: 32 }} />
-                    <Typography variant="subtitle1">John Doe</Typography>
+                    <Typography variant="subtitle1">{user.user}</Typography>
                 </Stack>
             </ButtonBase>
             <Popper
@@ -132,7 +130,7 @@ const Profile = () => {
                                                     <Stack direction="row" spacing={1.25} alignItems="center">
                                                         <Avatar alt="profile user" src='/images/avatar-1.png' sx={{ width: 32, height: 32 }} />
                                                         <Stack>
-                                                            <Typography variant="h6">John Doe</Typography>
+                                                            <Typography variant="h6">{user.user}</Typography>
                                                             <Typography variant="body2" color="textSecondary">
                                                                 UI/UX Designer
                                                             </Typography>
@@ -140,14 +138,14 @@ const Profile = () => {
                                                     </Stack>
                                                 </Grid>
                                                 <Grid item>
-                                                    <IconButton size="large" color="secondary" onClick={handleLogout}>
+                                                    <IconButton size="large" color="secondary" onClick={logout}>
                                                         <LogoutOutlined />
                                                     </IconButton>
                                                 </Grid>
                                             </Grid>
                                         </CardContent>
                                         {open && (
-                                            <ProfileTab handleLogout={handleLogout} />
+                                            <ProfileTab />
                                         )}
                                     </MainCard>
                                 </ClickAwayListener>

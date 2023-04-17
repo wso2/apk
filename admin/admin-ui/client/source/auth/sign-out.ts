@@ -11,7 +11,7 @@ const Settings = require('Settings');
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export const sendSignOutRequest =  (redirectUri: string, sessionClearCallback: any): Promise<any> | undefined => {
     const logoutEndpoint = getEndSessionEndpoint();
-    const logoutRequest = logoutEndpoint + "?client_id=" + Settings.idp.IDP_CLIENT_ID + "&returnTo=" + redirectUri
+    const logoutRequest = logoutEndpoint + "?client_id=" + Settings.idp.client_id + "&returnTo=" + redirectUri
     if (!logoutEndpoint || logoutEndpoint.trim().length === 0) {
         return Promise.reject(new Error("Invalid logout endpoint found."));
     }
