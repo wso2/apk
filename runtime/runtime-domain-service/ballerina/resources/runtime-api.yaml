@@ -1602,6 +1602,7 @@ components:
         validationRegex:
           type: string
           description: UI validation regex for the attribute
+          example: /^[A-Za-z]+$/ (only accepts alphabetic characters)
         type:
           type: string
           description: Type of the attribute
@@ -1620,13 +1621,16 @@ components:
         code:
           type: integer
           format: int64
+          example: 400
         message:
           type: string
           description: Error message.
+          example: Bad Request
         description:
           type: string
           description: |
             A detail description about the error message.
+          example: The request is invalid or malformed.
         moreInfo:
           type: string
           description: |
@@ -1647,12 +1651,15 @@ components:
       properties:
         code:
           type: string
+          example: "INVALID_REQUEST"
         message:
           type: string
+          example: "Request body is missing required field 'name'"
           description: |
             Description about individual errors occurred
         description:
           type: string
+          example: "Error occurred while processing the request" 
           description: |
             A detail description about the error message.
     APIDefinitionValidationResponse:
@@ -1670,6 +1677,19 @@ components:
           type: string
           description: |
             OpenAPI definition content.
+          example: |
+            openapi: "3.0.0"
+            info:
+              title: My API
+              version: 1.0.0
+              description: This is a sample API definition
+            paths:
+              /hello:
+                get:
+                  summary: Hello World
+                  responses:
+                    '200':
+                      description: A successful response
         info:
           $ref: "#/components/schemas/APIDefinitionValidationResponse_info"
         errors:
@@ -1679,6 +1699,13 @@ components:
             For example, list out validation errors by each field.
           items:
             $ref: "#/components/schemas/ErrorListItem"
+          example:
+            - code: "INVALID_FORMAT"
+              message: "The value provided for 'version' is not in the correct format."
+              description: "The 'version' field should be in the format X.Y.Z."
+            - code: "MISSING_FIELD"
+              message: "The 'description' field is required."
+              description: "The 'description' field is required for this operation."
     SearchResult:
       title: Search Result
       required:
@@ -1702,23 +1729,34 @@ components:
       properties:
         offset:
           type: integer
+          description: |
+            The starting index of the resources returned in the current subset.
+            This is usually used in conjunction with the `limit` parameter.
           example: 0
         limit:
           type: integer
-          example: 1
+          description: |
+            The maximum number of resources returned in the current subset.
+            This is usually used in conjunction with the `offset` parameter.
+          example: 10
         total:
           type: integer
-          example: 10
+          description: |
+            The total number of resources available across all subsets.
+            This is usually returned in the first subset.
+          example: 100
         next:
           type: string
           description: |
-            Link to the next subset of resources qualified.
-            Empty if no more resources are to be returned.
+            The URL to the next subset of resources.
+            Empty if no more resources are available.
+          example: "https://api.example.com/resources?offset=10&limit=10"
         previous:
           type: string
           description: |
-            Link to the previous subset of resources qualified.
+            The URL to the previous subset of resources.
             Empty if current subset is the first subset returned.
+          example: "https://api.example.com/resources?offset=0&limit=10"
     ServiceList:
       title: Paginated List of Services in Service Catalog
       type: object
@@ -1830,24 +1868,33 @@ components:
           type: string
           description: Type of Definition.
           format: string
+          example: "REST"
         file:
           type: string
           description: Definition to upload as a file
           format: binary
+          example: "file contents"
         url:
           type: string
           description: Definition url
+          example: "https://example.com/api-definition.yaml"
         additionalProperties:
           type: string
           description: Additional attributes specified as a stringified JSON with API's schema
+          example: '{"title": "My API", "version": "1.0.0"}'
         inlineAPIDefinition:
           type: string
           description: Inline content of the API definition
+          example: "openapi: 3.0.0\ninfo:\n  title: My API\n  version: 1.0.0\npaths:\n  /hello:\n    
+          get:\n      responses:\n        '200':\n          description: OK\n          content:\n           
+           text/plain:\n              schema:\n                type: string\n                
+           example: 'Hello, world!'"
     apis_validatedefinition_body:
       properties:
         url:
           type: string
           description: API definition definition url
+          example: https://example.com/api-definition.yaml
         file:
           type: string
           description: API definition as a file
@@ -1856,17 +1903,51 @@ components:
           type: string
           description: API definition type - REST/ASYNC/GRAPHQL
           default: REST
+          example: REST
         inlineAPIDefinition:
           type: string
           description: Inline content of the API definition
+          example: |
+            openapi: 3.0.0
+            info:
+              title: Example API
+              version: 1.0.0
+            paths:
+              /example:
+                get:
+                  summary: Get example
+                  responses:
+                    '200':
+                      description: Successful response
     apiId_definition_body:
       properties:
         apiDefinition:
           type: string
           description: API definition of the API
+          example: |
+            openapi: 3.0.0
+            info:
+              title: Example API
+              version: 1.0.0
+            paths:
+              /example:
+                get:
+                  summary: Example endpoint
+                  responses:
+                    '200':
+                      description: OK
+                      content:
+                        application/json:
+                          schema:
+                            type: object
+                            properties:
+                              message:
+                                type: string
+                                example: Hello, world!
         url:
           type: string
           description: API definition URL of the API
+          example: https://example.com/api.yaml
         file:
           type: string
           description: API definition as a file
@@ -2194,7 +2275,7 @@ components:
       name: sortOrder
       in: query
       description: |
-        Order of sorting(ascending/descending).
+        Order of sorting (ascending/descending).
       required: false
       style: form
       explode: true
@@ -2204,30 +2285,34 @@ components:
         enum:
           - asc
           - desc
+      example: desc
     serviceId:
       name: serviceId
       in: path
-      description: name of the service
+      description: Name of the service
       required: true
       style: simple
       explode: false
       schema:
         type: string
+      example: my-service
     gatewayId:
       name: gatewayId
       in: path
-      description: name of the gateway
+      description: Name of the gateway
       required: true
       style: simple
       explode: false
       schema:
         type: string
+      example: my-gateway
     policyId:
       name: policyId
       in: path
-      description: policy uuid
+      description: Policy UUID
       required: true
       style: simple
       explode: false
       schema:
         type: string
+      example: ratelimit
