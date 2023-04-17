@@ -110,7 +110,7 @@ xml-apis = {module = "xml-apis:xml-apis", version.ref = "xml-apis"}
 openapi-generator-plugin = {id = "org.openapi.generator", version.ref = "openapi-generator-plugin"}
 
 [versions]
-am-analytics = "1.0.10"
+am-analytics = "1.2.3"
 apache-pdfbox = "2.0.25"
 apicurio = "1.1.5"
 aspectj = "1.9.5"
