@@ -106,10 +106,6 @@ http:Service runtimeService = service object {
         commons:Organization organization = authenticatedUserContext.organization;
         return apiService.exportAPI(apiId, organization);
     }
-    isolated resource function post apis/'import(boolean? overwrite, @http:Payload json payload) returns http:Ok|ForbiddenError|ConflictError|PreconditionFailedError|InternalServerErrorError {
-        InternalServerErrorError internalError = {body: {code: 900910, message: "Not implemented"}};
-        return internalError;
-    }
     isolated resource function post apis/'copy\-api(http:RequestContext requestContext, string newVersion, string? serviceId, string apiId) returns CreatedAPI|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
         final APIClient apiService = new ();
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
