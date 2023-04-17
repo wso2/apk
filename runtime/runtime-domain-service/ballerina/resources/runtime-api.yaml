@@ -937,44 +937,6 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /apis/import:
-    post:
-      tags:
-        - Import Export
-      summary: Import an API
-      description: |
-        This operation can be used to import an API.
-      operationId: importAPI
-      parameters:
-        - name: overwrite
-          in: query
-          description: |
-            Whether to update the API or not. This is used when updating already existing APIs
-          required: false
-          style: form
-          explode: true
-          schema:
-            type: boolean
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              $ref: "#/components/schemas/apis_import_body"
-      responses:
-        "200":
-          description: |
-            Created.
-            API Imported Successfully.
-        "403":
-          $ref: "#/components/responses/Forbidden"
-        "409":
-          $ref: "#/components/responses/Conflict"
-
-        "412":
-          $ref: "#/components/responses/PreconditionFailed"
-
-        "500":
-          $ref: "#/components/responses/InternalServerError"
   /apis/copy-api:
     post:
       tags:
@@ -2061,14 +2023,6 @@ components:
         file:
           type: string
           description: API definition as a file
-          format: binary
-    apis_import_body:
-      required:
-        - file
-      properties:
-        file:
-          type: string
-          description: Zip archive consisting on exported API configuration
           format: binary
     API_serviceInfo:
       type: object
