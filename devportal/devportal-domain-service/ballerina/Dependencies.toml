@@ -390,7 +390,7 @@ modules = [
 [[package]]
 org = "wso2"
 name = "devportal_service"
-version = "0.0.1-SNAPSHOT"
+version = "0.0.1-m8"
 dependencies = [
 	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "http"},
