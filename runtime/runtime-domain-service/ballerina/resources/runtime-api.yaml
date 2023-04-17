@@ -1140,6 +1140,59 @@ paths:
           explode: false
           schema:
             type: string
+        - name: limit
+          in: query
+          description: |
+            Maximum size of resource array to return.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: integer
+            default: 25
+        - name: offset
+          in: query
+          description: |
+            Starting point within the complete list of items qualified.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: integer
+            default: 0
+        - name: sortBy
+          in: query
+          description: |
+            Criteria for sorting.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            default: createdTime
+            enum:
+              - apiName
+              - createdTime
+        - name: sortOrder
+          in: query
+          description: |
+            Order of sorting(ascending/descending).
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            default: desc
+            enum:
+              - asc
+              - desc
+        - name: query
+          in: query
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
       responses:
         "200":
           description: |
@@ -1945,10 +1998,7 @@ components:
         inlineAPIDefinition:
           type: string
           description: Inline content of the API definition
-          example: "openapi: 3.0.0\ninfo:\n  title: My API\n  version: 1.0.0\npaths:\n  /hello:\n    
-          get:\n      responses:\n        '200':\n          description: OK\n          content:\n           
-           text/plain:\n              schema:\n                type: string\n                
-           example: 'Hello, world!'"
+          example: "openapi: 3.0.0\ninfo:\n  title: My API\n  version: 1.0.0\npaths:\n  /hello:\n    get:\n      responses:\n        '200':\n          description: OK\n          content:\n            text/plain:\n              schema:\n                type: string\n                 example: 'Hello, world!'"
     apis_validatedefinition_body:
       properties:
         url:
