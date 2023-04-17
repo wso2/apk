@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<% // =============================================================  %>
+<% // ========== We are using lodash template syntax here =========  %>
+<html>
+  <head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;1,100;1,200;1,300;1,400;1,500;1,600&display=swap" rel="stylesheet">
+    <meta charset="utf-8"/>
+    <title><%= htmlWebpackPlugin.options.title %></title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="text/javascript" src="/conf/Settings.js"></script>
+    <% // =============================================================  %>
+    <% // ========== Need to load the live reloading manually =========  %>
+    <% if( htmlWebpackPlugin.options.templateParameters.env === 'development' ) { %>
+    <script src="http://localhost:35729/livereload.js?snipver=1" async="" defer=""></script>
+    <% } %>
+  </body>
+</html>
