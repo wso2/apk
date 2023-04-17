@@ -6787,7 +6787,7 @@ function getMediationPolicyListDataProvider() returns map<[string?, int, int, st
                     "offset": 2,
                     "limit": 2,
                     "total": 5,
-                    "next": "",
+                    "next": "/policies?limit=2&offset=4&sortBy=policyName&sortOrder=desc&query=",
                     "previous": "/policies?limit=2&offset=0&sortBy=policyName&sortOrder=desc&query="
                 }
             }.toBalString()
