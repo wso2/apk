@@ -63,7 +63,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "http"
-version = "2.6.0"
+version = "2.6.1"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "cache"},
