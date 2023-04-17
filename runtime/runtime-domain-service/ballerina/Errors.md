@@ -7,7 +7,7 @@ These are the runtime domain service errors and their respective error codes.
 | 909001  | 404 | **ID** not found |
 | 909002  | 404 | Context/Name doesn't exist |
 | 909003  | 404 | apiId not found in request |
-| 909004  | 404 | Serive from **serviceKey** not found |
+| 909004  | --- | - |
 | 909005  | 404 | type field unavailable |
 | 909006  | 406 | Unsupported API type |
 | 909007  | 406 | Multiple fields of url, file, inlineAPIDefinition given |
@@ -42,3 +42,13 @@ These are the runtime domain service errors and their respective error codes.
 | 909036  | 500 | Error while getting endpoint certificate content |
 | 909037  | 500 | Error while getting endpoint certificate by id |
 | 909038  | 500 | Error while updating endpoint certificate |
+| 909039  | 406 | Invalid value for offset |
+| 909040  | 500 | Internal Error Occured while converting json to yaml |
+| 909041  | 406 | Accept header should be application/json or application/yaml |
+| 909042  | 400 | Unsupported API type |
+| 909043  | 500 | Error occured while generating openapi definition |
+| 909044  | 406 | Retrieve definition from Url result |
+| 909045  | 404 | New Version/APIID does not exist |
+| 909046  | 409 | New version **newVersion** already exist |
+| 909047  | 404 | **serviceId** service does not exist |
+| 909048  | 406 | API Type change not supported from update |
