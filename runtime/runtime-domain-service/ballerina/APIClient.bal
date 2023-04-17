@@ -172,6 +172,7 @@ public class APIClient {
                 _ = check self.deleteScopeCrsForAPI(api, organization);
                 _ = check self.deleteRateLimitPolicyCRs(api, organization);
                 _ = check self.deleteBackends(api, organization);
+                _ = check self.deleteAPIPolicyCRs(api, organization);
                 _ = check self.deleteInternalAPI(api.metadata.name, api.metadata.namespace);
             } else {
                 return e909001(id);
@@ -522,7 +523,6 @@ public class APIClient {
                 record {}? policyParameters = policy.parameters;
                 if (policyParameters is record {}) {
                     string[] allowedPolicyAttributes = [];
-                    string[] receivedPolicyParameters = [];
                     any|error mediationPolicyList = self.getMediationPolicyList(SEARCH_CRITERIA_NAME + ":" + policyName, 1, 0,
                         SORT_BY_POLICY_NAME, SORT_ORDER_ASC, organization);
                     if (mediationPolicyList is MediationPolicyList && mediationPolicyList.count > 0) {
@@ -536,12 +536,10 @@ public class APIClient {
                             }
                             string[] keys = policyParameters.keys();
                             foreach string key in keys {
-                                receivedPolicyParameters.push(key);
-                            }
-
-                            if (allowedPolicyAttributes != receivedPolicyParameters) {
-                                // Allowed policy attributes does not match with the parameters provided
-                                return e909024(policyName);
+                                if allowedPolicyAttributes.indexOf(key) is () {
+                                    // Invalid parameter provided for given policy
+                                    return e909024(policyName);
+                                }
                             }
                         }
                     } else {
@@ -970,6 +968,7 @@ public class APIClient {
                 _ = check self.deleteScopeCrsForAPI(api, organization);
                 check self.deleteBackends(api, organization);
                 check self.deleteRateLimitPolicyCRs(api, organization);
+                check self.deleteAPIPolicyCRs(api, organization);
                 check self.deleteInternalAPI(api.metadata.name, api.metadata.namespace);
                 check self.deleteEndpointCertificates(api, organization);
             }
@@ -978,6 +977,7 @@ public class APIClient {
             check self.deployBackendServices(apiArtifact);
             check self.deployAuthneticationCRs(apiArtifact);
             check self.deployRateLimitPolicyCRs(apiArtifact);
+            check self.deployAPIPolicyCRs(apiArtifact);
             check self.deployHttpRoutes(apiArtifact.productionRoute);
             check self.deployHttpRoutes(apiArtifact.sandboxRoute);
             check self.deployServiceMappings(apiArtifact);
@@ -1330,6 +1330,43 @@ public class APIClient {
         }
     }
 
+    private isolated function deployAPIPolicyCRs(model:APIArtifact apiArtifact) returns error? {
+        foreach model:APIPolicy apiPolicy in apiArtifact.apiPolicies {
+            http:Response deployAPIPolicyResult = check deployAPIPolicyCR(apiPolicy, getNameSpace(runtimeConfiguration.apiCreationNamespace));
+            if deployAPIPolicyResult.statusCode == http:STATUS_CREATED {
+                log:printDebug("Deployed APIPolicy Successfully" + apiPolicy.toString());
+            } else {
+                json responsePayLoad = check deployAPIPolicyResult.getJsonPayload();
+                model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                check self.handleK8sTimeout(statusResponse);
+            }
+        }
+    }
+
+    private isolated function deleteAPIPolicyCRs(model:API api, commons:Organization organization) returns commons:APKError? {
+        do {
+            model:APIPolicyList|http:ClientError apiPolicyCrListResponse = check getAPIPolicyCRsForAPI(api.spec.apiDisplayName, api.spec.apiVersion, api.metadata.namespace, organization);
+            if apiPolicyCrListResponse is model:APIPolicyList {
+                foreach model:APIPolicy item in apiPolicyCrListResponse.items {
+                    http:Response|http:ClientError apiPolicyCRDeletionResponse = deleteAPIPolicyCR(item.metadata.name, item.metadata.namespace);
+                    if apiPolicyCRDeletionResponse is http:Response {
+                        if apiPolicyCRDeletionResponse.statusCode != http:STATUS_OK {
+                            json responsePayLoad = check apiPolicyCRDeletionResponse.getJsonPayload();
+                            model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                            check self.handleK8sTimeout(statusResponse);
+                        }
+                    } else {
+                        log:printError("Error occured while deleting API policy");
+                    }
+                }
+                return;
+            }
+        } on fail var e {
+            log:printError("Error occured deleting rate limit policy", e);
+            return error("Error occured deleting rate limit policy", message = "Internal Server Error", code = 909000, description = "Internal Server Error", statusCode = 500);
+        }
+    }
+
     private isolated function retrieveGeneratedConfigmapForDefinition(model:APIArtifact apiArtifact, API api, json generatedSwaggerDefinition, string uniqueId, commons:Organization organization) returns error? {
         byte[]|javaio:IOException compressedContent = check runtimeUtil:GzipUtil_compressGzipFile(generatedSwaggerDefinition.toJsonString().toBytes());
         if compressedContent is byte[] {
@@ -1373,6 +1410,12 @@ public class APIClient {
             model:RateLimitPolicy? rateLimitPolicyCR = self.generateRateLimitPolicyCR(api, api.apiRateLimit, apiArtifact.uniqueId, (), organization);
             if rateLimitPolicyCR != () {
                 apiArtifact.rateLimitPolicies[rateLimitPolicyCR.metadata.name] = rateLimitPolicyCR;
+            }
+        }
+        if api.apiPolicies != () {
+            model:APIPolicy? apiPolicyCR = self.generateAPIPolicyAndBackendCR(apiArtifact, api, (), api.apiPolicies, organization, apiArtifact.uniqueId);
+            if apiPolicyCR != () {
+                apiArtifact.apiPolicies[apiPolicyCR.metadata.name] = apiPolicyCR;
             }
         }
     }
@@ -1538,11 +1581,40 @@ public class APIClient {
                             (<model:HTTPRouteFilter[]>filters).push(rateLimitPolicyFilter);
                         }
                     }
+                    if operation.operationPolicies != () {
+                        model:APIPolicy? apiPolicyCR = self.generateAPIPolicyAndBackendCR(apiArtifact, api, operation, operation.operationPolicies, organization, httpRouteRefName);
+                        if apiPolicyCR != () {
+                            apiArtifact.apiPolicies[apiPolicyCR.metadata.name] = apiPolicyCR;
+                            model:HTTPRouteFilter apiPolicyFilter = {'type: "ExtensionRef", extensionRef: {group: "dp.wso2.com", kind: "APIPolicy", name: apiPolicyCR.metadata.name}};
+                            (<model:HTTPRouteFilter[]>filters).push(apiPolicyFilter);
+                        }
+                    }
                     httpRouteRules.push(httpRouteRule);
                 }
             }
         }
         return httpRouteRules;
+    }
+
+    private isolated function generateAPIPolicyAndBackendCR(model:APIArtifact apiArtifact, API api, APIOperations? operations, APIOperationPolicies? policies, commons:Organization organization, string targetRefName) returns model:APIPolicy? {
+        model:APIPolicyData defaultSpecData = {};
+        OperationPolicy[]? request = policies?.request;
+        model:APIPolicyDetails? requestInterceptor = self.retrieveAPIPolicyDetails(apiArtifact, api, operations, organization, request, "request");
+        if requestInterceptor is model:APIPolicyDetails {
+            defaultSpecData.requestInterceptor = requestInterceptor;
+        }
+        OperationPolicy[]? response = policies?.response;
+        model:APIPolicyDetails? responseInterceptor = self.retrieveAPIPolicyDetails(apiArtifact, api, operations, organization, response, "response");
+        if responseInterceptor is model:APIPolicyDetails {
+            defaultSpecData.responseInterceptor = responseInterceptor;
+        }
+        if defaultSpecData != {} {
+            model:APIPolicy? apiPolicyCR = self.generateAPIPolicyCR(api, targetRefName, operations, organization, defaultSpecData);
+            if apiPolicyCR != () {
+                return apiPolicyCR;
+            }
+        }
+        return ();
     }
 
     private isolated function generateScopeCR(model:APIArtifact apiArtifact, API api, commons:Organization organization, string scope) returns model:Scope {
@@ -1617,19 +1689,25 @@ public class APIClient {
         if operationPoliciesToUse is APIOperationPolicies {
             OperationPolicy[]? request = operationPoliciesToUse.request;
             if request is OperationPolicy[] {
-                model:HTTPRouteFilter requestHeaderFilter = {
-                    'type: "RequestHeaderModifier",
-                    requestHeaderModifier: self.extractHttpHeaderFilterData(request, organization)
-                };
-                routeFilters.push(requestHeaderFilter);
+                model:HTTPHeaderFilter requestHeaderModifier = self.extractHttpHeaderFilterData(request, organization);
+                if requestHeaderModifier != {} {
+                    model:HTTPRouteFilter requestHeaderFilter = {
+                        'type: "RequestHeaderModifier",
+                        requestHeaderModifier: requestHeaderModifier
+                    };
+                    routeFilters.push(requestHeaderFilter);
+                }
             }
             OperationPolicy[]? response = operationPoliciesToUse.response;
             if response is OperationPolicy[] {
-                model:HTTPRouteFilter responseHeaderFilter = {
-                    'type: "ResponseHeaderModifier",
-                    responseHeaderModifier: self.extractHttpHeaderFilterData(response, organization)
-                };
-                routeFilters.push(responseHeaderFilter);
+                model:HTTPHeaderFilter responseHeaderModifier = self.extractHttpHeaderFilterData(response, organization);
+                if responseHeaderModifier != {} {
+                    model:HTTPRouteFilter responseHeaderFilter = {
+                        'type: "ResponseHeaderModifier",
+                        responseHeaderModifier: responseHeaderModifier
+                    };
+                    routeFilters.push(responseHeaderFilter);
+                }
             }
         }
         return routeFilters;
@@ -1644,7 +1722,6 @@ public class APIClient {
             record {}? policyParameters = policy.parameters;
             if (policyParameters is record {}) {
                 if (policyName == "addHeader") {
-
                     model:HTTPHeader httpHeader = {
                         name: <string>policyParameters.get("headerName"),
                         value: <string>policyParameters.get("headerValue")
@@ -2180,6 +2257,9 @@ public class APIClient {
                 protocol: url.startsWith("https:") ? "https" : "http"
             }
         };
+        if endpointType == INTERCEPTOR_TYPE {
+            backendService.metadata.name = getInterceptorServiceUid(api, endpointType, organization, url);
+        }
         if <boolean>endpointSecurity?.enabled {
             backendService.spec.security = [securityConfig];
         }
@@ -2230,6 +2310,101 @@ public class APIClient {
             'type: "Api"
         };
         return rateLimitData;
+    }
+
+    public isolated function generateAPIPolicyCR(API api, string targetRefName, APIOperations? operation, commons:Organization organization, model:APIPolicyData policyData) returns model:APIPolicy? {
+        model:APIPolicy? apiPolicyCR = ();
+        apiPolicyCR = {
+            metadata: {
+                name: retrieveAPIPolicyRefName(),
+                namespace: currentNameSpace,
+                labels: self.getLabels(api, organization)
+            },
+            spec: {
+                default: policyData,
+                targetRef: {
+                    group: "dp.wso2.com",
+                    kind: operation != () ? "Resource" : "API",
+                    name: targetRefName,
+                    namespace: currentNameSpace
+                }
+            }
+        };
+        return apiPolicyCR;
+    }
+
+    isolated function retrieveAPIPolicyDetails(model:APIArtifact apiArtifact, API api, APIOperations? operations, commons:Organization organization, OperationPolicy[]? policies, string flow) returns model:APIPolicyDetails? {
+        if policies is OperationPolicy[] {
+            foreach OperationPolicy policy in policies {
+                string policyName = policy.policyName;
+                record {}? policyParameters = policy.parameters;
+                if (policyParameters is record {}) {
+                    if (policyName == "addInterceptor") {
+                        string backendUrl = <string>policyParameters.get("backendUrl");
+                        model:EndpointSecurity backendSecurity = {};
+                        model:Backend|error backendService = self.createBackendService(api, operations, INTERCEPTOR_TYPE, organization, backendUrl, backendSecurity);
+                        if backendService is model:Backend {
+                            apiArtifact.backendServices[backendService.metadata.name] = (backendService);
+                            model:APIPolicyDetails? interceptorSpec = self.retrieveAPIPolicyData(policyParameters, backendService.metadata.name, flow);
+                            if interceptorSpec is model:APIPolicyDetails {
+                                return interceptorSpec;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return ();
+    }
+
+    isolated function retrieveAPIPolicyData(record {} parameters, string interceptorBackend, string flow) returns model:APIPolicyDetails? {
+        model:APIPolicyDetails apiPolicyDetails = {
+            backendRef: {
+                name: interceptorBackend,
+                namespace: currentNameSpace
+            }
+        };
+        string[] includes = [];
+        if flow == "request" {
+            anydata headersEnabled = parameters["headersEnabled"];
+            if headersEnabled is boolean && headersEnabled {
+                includes.push("request_headers");
+            }
+            anydata bodyEnabled = parameters["bodyEnabled"];
+            if bodyEnabled is boolean && bodyEnabled {
+                includes.push("request_body");
+            }
+            anydata trailersEnabled = parameters["trailersEnabled"];
+            if trailersEnabled is boolean && trailersEnabled {
+                includes.push("request_trailers");
+            }
+            anydata contextEnabled = parameters["contextEnabled"];
+            if contextEnabled is boolean && contextEnabled {
+                includes.push("invocation_context");
+            }
+        }
+        if flow == "response" {
+            anydata headersEnabled = parameters["headersEnabled"];
+            if headersEnabled is boolean && headersEnabled {
+                includes.push("response_headers");
+            }
+            anydata bodyEnabled = parameters["bodyEnabled"];
+            if bodyEnabled is boolean && bodyEnabled {
+                includes.push("response_body");
+            }
+            anydata trailersEnabled = parameters["trailersEnabled"];
+            if trailersEnabled is boolean && trailersEnabled {
+                includes.push("response_trailers");
+            }
+            anydata contextEnabled = parameters["contextEnabled"];
+            if contextEnabled is boolean && contextEnabled {
+                includes.push("invocation_context");
+            }
+        }
+        if includes.length() > 0 {
+            apiPolicyDetails.includes = includes;
+        }
+        return apiPolicyDetails;
     }
 
     public isolated function retrieveDefaultDefinition(model:API api) returns json {
@@ -2656,6 +2831,7 @@ public class APIClient {
             oldAPIName = api.metadata.name;
         }
         map<model:RateLimitPolicy> rateLimitPolicies = apiArtifact.rateLimitPolicies;
+        map<model:APIPolicy> apiPolicies = apiArtifact.apiPolicies;
         string newAPIName = "";
         string? newId = newAPI.id;
         if newId is string {
@@ -2725,6 +2901,15 @@ public class APIClient {
                                     extenstionRefMappings[extensionRef.name] = newRateLimitPolicyCR.metadata.name;
                                     extensionRef.name = newRateLimitPolicyCR.metadata.name;
                                 }
+                            } else if extensionRef.kind == "APIPolicy" {
+                                if apiArtifact.apiPolicies.hasKey(extensionRef.name) {
+                                    model:APIPolicy apiPolicyCR = apiArtifact.apiPolicies.get(extensionRef.name).clone();
+                                    model:APIPolicy newAPIPolicyCR = self.prepareAPIPolicyCR(newAPI, apiPolicyCR, httproute.metadata.name, organization);
+                                    _ = apiArtifact.apiPolicies.remove(extensionRef.name);
+                                    apiArtifact.apiPolicies[newAPIPolicyCR.metadata.name] = newAPIPolicyCR;
+                                    extenstionRefMappings[extensionRef.name] = newAPIPolicyCR.metadata.name;
+                                    extensionRef.name = newAPIPolicyCR.metadata.name;
+                                }
                             }
                         }
                     }
@@ -2749,6 +2934,16 @@ public class APIClient {
                 apiArtifact.rateLimitPolicies[newRateLimitPolicyCR.metadata.name] = newRateLimitPolicyCR;
             }
         }
+
+        // adding api level API policies
+        foreach string extensionRefName in apiPolicies.keys() {
+            model:APIPolicy apiPolicyCR = apiArtifact.apiPolicies.get(extensionRefName).clone();
+            if apiPolicyCR.spec.targetRef.kind == "API" && apiPolicyCR.spec.targetRef.name == oldAPIName {
+                model:APIPolicy newAPIPolicyCR = self.prepareAPIPolicyCR(newAPI, apiPolicyCR, newAPIName, organization);
+                _ = apiArtifact.apiPolicies.remove(extensionRefName);
+                apiArtifact.apiPolicies[newAPIPolicyCR.metadata.name] = newAPIPolicyCR;
+            }
+        }
     }
 
     private isolated function prepareScopeCR(model:APIArtifact apiArtifact, API api, model:Scope scope, commons:Organization organization) returns model:Scope {
@@ -2769,6 +2964,13 @@ public class APIClient {
         rateLimitPolicy.metadata.labels = self.getLabels(api, organization);
         rateLimitPolicy.spec.targetRef.name = targetRefName;
         return rateLimitPolicy;
+    }
+
+    private isolated function prepareAPIPolicyCR(API api, model:APIPolicy apiPolicy, string targetRefName, commons:Organization organization) returns model:APIPolicy {
+        apiPolicy.metadata.name = uuid:createType1AsString();
+        apiPolicy.metadata.labels = self.getLabels(api, organization);
+        apiPolicy.spec.targetRef.name = targetRefName;
+        return apiPolicy;
     }
 
     private isolated function prepareBackendRef(model:HTTPBackendRef backendRef, model:APIArtifact apiArtifact, Service? serviceEntry, API oldAPI, API newAPI, string endpointType, commons:Organization organization) returns [string, string]?|error {
@@ -2970,6 +3172,10 @@ public class APIClient {
             foreach model:RateLimitPolicy rateLimitPolicy in rateLimitPolicyList.items {
                 apiArtifact.rateLimitPolicies[rateLimitPolicy.metadata.name] = self.sanitizeRateLimitPolicyCR(rateLimitPolicy);
             }
+            model:APIPolicyList apiPolicyList = check getAPIPolicyCRsForAPI(k8sapi.spec.apiDisplayName, k8sapi.spec.apiVersion, k8sapi.metadata.namespace, organization);
+            foreach model:APIPolicy apiPolicy in apiPolicyList.items {
+                apiArtifact.apiPolicies[apiPolicy.metadata.name] = self.sanitizeAPIPolicyCR(apiPolicy);
+            }
             apiArtifact.api = self.sanitizeAPICR(k8sapi);
             model:ConfigMap[] endpointCertificateList = check getConfigMapsForAPICertificate(k8sapi.spec.apiDisplayName, k8sapi.spec.apiVersion, organization);
             foreach model:ConfigMap endpointCertificate in endpointCertificateList {
@@ -2995,6 +3201,14 @@ public class APIClient {
             spec: rateLimitPolicy.spec
         };
         return sanitizedRateLimitPolicy;
+    }
+
+    private isolated function sanitizeAPIPolicyCR(model:APIPolicy apiPolicy) returns model:APIPolicy {
+        model:APIPolicy sanitizedAPIPolicy = {
+            metadata: {name: apiPolicy.metadata.name, namespace: apiPolicy.metadata.namespace, labels: apiPolicy.metadata.labels},
+            spec: apiPolicy.spec
+        };
+        return sanitizedAPIPolicy;
     }
 
     private isolated function sanitizeRuntimeAPI(model:RuntimeAPI runtimeAPI) returns model:RuntimeAPI {
@@ -3736,6 +3950,13 @@ public isolated function getBackendServiceUid(API api, APIOperations? apiOperati
     }
 }
 
+public isolated function getInterceptorServiceUid(API api, string endpointType, commons:Organization organization, string backendUrl) returns string {
+    string concatanatedString = string:'join("-", organization.uuid, api.name, 'api.'version, endpointType, backendUrl);
+    byte[] hashedValue = crypto:hashSha1(concatanatedString.toBytes());
+    concatanatedString = hashedValue.toBase16();
+    return "backend-" + concatanatedString + "-interceptor";
+}
+
 public isolated function getBackendPolicyUid(API api, string endpointType, commons:Organization organization) returns string {
     string concatanatedString = uuid:createType1AsString();
     return "backendpolicy-" + concatanatedString;
@@ -3753,6 +3974,14 @@ public isolated function getUniqueIdForAPI(string name, string 'version, commons
 }
 
 public isolated function retrieveHttpRouteRefName(API api, string 'type, commons:Organization organization) returns string {
+    return uuid:createType1AsString();
+}
+
+public isolated function retrieveAPIPolicyRefName() returns string {
+    return uuid:createType1AsString();
+}
+
+public isolated function retrieveInterceptorBackendRefName() returns string {
     return uuid:createType1AsString();
 }
 

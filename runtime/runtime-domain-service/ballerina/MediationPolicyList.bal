@@ -104,6 +104,48 @@ isolated final model:MediationPolicy[] avilableMediationPolicyList = [
                 validationRegex: "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$"
             }
         ]
+    },
+    {
+        id: "5",
+        'type: MEDIATION_POLICY_TYPE_INTERCEPTOR,
+        name: MEDIATION_POLICY_NAME_ADD_INTERCEPTOR,
+        displayName: "Add Interceptor",
+        description: "This policy allows you to engage an interceptor service",
+        applicableFlows: [MEDIATION_POLICY_FLOW_REQUEST, MEDIATION_POLICY_FLOW_RESPONSE],
+        supportedApiTypes: [API_TYPE_REST],
+        policyAttributes: [
+            {
+                name: "headersEnabled",
+                description: "Indicates whether request/response header details should be sent to the interceptor service",
+                'type: "boolean",
+                required: false
+            },
+            {
+                name: "bodyEnabled",
+                description: "Indicates whether request/response body details should be sent to the interceptor service",
+                'type: "boolean",
+                required: false
+            },
+            {
+                name: "contextEnabled",
+                description: "Indicates whether context details should be sent to the interceptor service",
+                'type: "boolean",
+                required: false
+            },
+            {
+                name: "trailersEnabled",
+                description: "Indicates whether request/response trailer details should be sent to the interceptor service",
+                'type: "boolean",
+                required: false
+            },
+            {
+                name: "backendUrl",
+                description: "Backend URL of the interceptor service",
+                'type: "String",
+                required: true,
+                validationRegex: "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$"
+            }
+        ]
     }
 ];
 

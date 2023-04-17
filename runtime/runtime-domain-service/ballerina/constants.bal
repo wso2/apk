@@ -31,6 +31,7 @@ const string SORT_BY_SERVICE_CREATED_TIME = "createdTime";
 const string CONTEXT_ALREADY_EXIST_K8s_VALIDATION_MESSAGE = "an API has been already created for the context";
 const string PRODUCTION_TYPE = "production";
 const string SANDBOX_TYPE = "sandbox";
+const string INTERCEPTOR_TYPE = "interceptor";
 const string PRIMARY_ENDPOINT = "primary";
 const string ENDPOINT_SECURITY_TYPE_BASIC = "basic";
 const string ENDPOINT_SECURITY_TYPE_BASIC_CASE = "Basic";
@@ -42,9 +43,11 @@ isolated string[] ALLOWED_API_TYPES = [API_TYPE_REST];
 
 const string MEDIATION_POLICY_TYPE_REQUEST_HEADER_MODIFIER = "RequestHeaderModifier";
 const string MEDIATION_POLICY_TYPE_RESPONSE_HEADER_MODIFIER = "ResponseHeaderModifier";
+const string MEDIATION_POLICY_TYPE_INTERCEPTOR = "Interceptor";
 const string MEDIATION_POLICY_NAME_ADD_HEADER = "addHeader";
 const string MEDIATION_POLICY_NAME_REMOVE_HEADER = "removeHeader";
 const string MEDIATION_POLICY_TYPE_URL_REWRITE = "URLRewrite";
+const string MEDIATION_POLICY_NAME_ADD_INTERCEPTOR = "addInterceptor";
 const string MEDIATION_POLICY_FLOW_REQUEST  = "request";
 const string MEDIATION_POLICY_FLOW_RESPONSE  = "response";
 

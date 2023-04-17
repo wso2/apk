@@ -62,6 +62,11 @@ function testRetrieveRateLimitPolicyRefName(APIOperations? operaion) returns str
     return "rate-limit-policy-ref-name";
 }
 
+@test:Mock {functionName: "retrieveAPIPolicyRefName"}
+function testRetrieveAPIPolicyRefName() returns string {
+    return "api-policy-ref-name";
+}
+
 int serviceMappingIndex = 0;
 
 @test:Mock {functionName: "getServiceMappingClient"}
@@ -2028,7 +2033,7 @@ function validateExistenceDataProvider() returns map<[string, anydata]> {
 }
 
 @test:Config {dataProvider: createApiFromServiceDataProvider}
-function testCreateAPIFromService(string serviceUUId, string apiUUID, [model:ConfigMap, any] configmapResponse, [model:Httproute, any] httproute, [model:K8sServiceMapping, any] servicemapping, [model:API, any] k8sAPI, [model:RuntimeAPI, any] runtimeAPI, API api, string k8sapiUUID, [model:Backend, any][] backendServices, [model:RateLimitPolicy?, any] rateLimitPolicy, anydata expected) returns error? {
+function testCreateAPIFromService(string serviceUUId, string apiUUID, [model:ConfigMap, any] configmapResponse, [model:Httproute, any] httproute, [model:K8sServiceMapping, any] servicemapping, [model:API, any] k8sAPI, [model:RuntimeAPI, any] runtimeAPI, API api, string k8sapiUUID, [model:Backend, any][] backendServices, [model:RateLimitPolicy?, any] rateLimitPolicy, [model:APIPolicy?, any] apiPolicy, anydata expected) returns error? {
     APIClient apiClient = new;
     string username = "apkUser";
     http:Response configmapResponse404 = new;
@@ -2040,6 +2045,7 @@ function testCreateAPIFromService(string serviceUUId, string apiUUID, [model:Con
     model:BackendList backendList = {metadata: {}, items: []};
     model:ScopeList scopeList = {metadata: {}, items: []};
     model:RateLimitPolicyList rateLimitPolicyList = {metadata: {}, items: []};
+    model:APIPolicyList apiPolicyList = {metadata: {}, items: []};
     http:Response internalAPIDeletionResponse = new;
     internalAPIDeletionResponse.statusCode = 200;
 
@@ -2049,7 +2055,11 @@ function testCreateAPIFromService(string serviceUUId, string apiUUID, [model:Con
     if rateLimitPolicy[0] is model:RateLimitPolicy {
         test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/ratelimitpolicies", rateLimitPolicy[0]).thenReturn(rateLimitPolicy[1]);
     }
+    if apiPolicy[0] is model:APIPolicy {
+        test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apipolicies", apiPolicy[0]).thenReturn(apiPolicy[1]);
+    }
     test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/ratelimitpolicies?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version, organiztion1)).thenReturn(rateLimitPolicyList);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apipolicies?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version, organiztion1)).thenReturn(apiPolicyList);
     test:prepare(k8sApiServerEp).when("post").withArguments("/api/v1/namespaces/apk-platform/configmaps", configmapResponse[0]).thenReturn(configmapResponse[1]);
     test:prepare(k8sApiServerEp).when("post").withArguments("/apis/gateway.networking.k8s.io/v1beta1/namespaces/apk-platform/httproutes", httproute[0]).thenReturn(httproute[1]);
     test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/servicemappings", servicemapping[0]).thenReturn(servicemapping[1]);
@@ -2073,7 +2083,7 @@ function testCreateAPIFromService(string serviceUUId, string apiUUID, [model:Con
     }
 }
 
-function createApiFromServiceDataProvider() returns map<[string, string, [model:ConfigMap, any], [model:Httproute, any], [model:K8sServiceMapping, any], [model:API, any], [model:RuntimeAPI, any], API, string, [model:Backend, any][], [model:RateLimitPolicy?, any], anydata]> {
+function createApiFromServiceDataProvider() returns map<[string, string, [model:ConfigMap, any], [model:Httproute, any], [model:K8sServiceMapping, any], [model:API, any], [model:RuntimeAPI, any], API, string, [model:Backend, any][], [model:RateLimitPolicy?, any], [model:APIPolicy?, any], anydata]> {
     do {
 
         string k8sAPIUUID1 = uuid:createType1AsString();
@@ -2272,6 +2282,126 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
             statusCode = 406,
             description = "Presence of both resource level and API level rate limits is not allowed"
         );
+        json apiWithOperationLevelInterceptorPolicy = {
+            "name": "PizzaAPI",
+            "context": "/pizzaAPI/1.0.0",
+            "version": "1.0.0",
+            "operations": [
+                {
+                    "target": "/*",
+                    "verb": "GET",
+                    "authTypeEnabled": true,
+                    "operationPolicies": {
+                        "request": [
+                            {
+                                "policyName": "addInterceptor",
+                                "parameters":
+                                {
+                                    "headersEnabled": true,
+                                    "bodyEnabled": false,
+                                    "trailersEnabled": false,
+                                    "contextEnabled": true,
+                                    "backendUrl": "http://interceptor-backend1.interceptor:9082"
+                                }
+                            }
+                        ],
+                        "response": [
+                            {
+                                "policyName": "addInterceptor",
+                                "parameters":
+                                {
+                                    "headersEnabled": false,
+                                    "bodyEnabled": true,
+                                    "trailersEnabled": false,
+                                    "contextEnabled": true,
+                                    "backendUrl": "http://interceptor-backend2.interceptor:9083"
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "target": "/*",
+                    "verb": "PUT",
+                    "authTypeEnabled": true
+                },
+                {
+                    "target": "/*",
+                    "verb": "POST",
+                    "authTypeEnabled": true
+                },
+                {
+                    "target": "/*",
+                    "verb": "DELETE",
+                    "authTypeEnabled": true
+                },
+                {
+                    "target": "/*",
+                    "verb": "PATCH",
+                    "authTypeEnabled": true
+                }
+            ]
+        };
+        json apiWithAPILevelInterceptorPolicy = {
+            "name": "PizzaAPI",
+            "context": "/pizzaAPI/1.0.0",
+            "version": "1.0.0",
+            "operations": [
+                {
+                    target: "/*",
+                    verb: "GET",
+                    authTypeEnabled: true
+                },
+                {
+                    target: "/*",
+                    verb: "PUT",
+                    authTypeEnabled: true
+                },
+                {
+                    target: "/*",
+                    verb: "POST",
+                    authTypeEnabled: true
+                },
+                {
+                    target: "/*",
+                    verb: "DELETE",
+                    authTypeEnabled: true
+                },
+                {
+                    target: "/*",
+                    verb: "PATCH",
+                    authTypeEnabled: true
+                }
+            ],
+            "apiPolicies": {
+                "request": [
+                    {
+                        "policyName": "addInterceptor",
+                        "parameters":
+                        {
+                            "headersEnabled": true,
+                            "bodyEnabled": false,
+                            "trailersEnabled": false,
+                            "contextEnabled": true,
+                            "backendUrl": "http://interceptor-backend1.interceptor:9082"
+                        }
+                    }
+                ],
+                "response": [
+                    {
+                        "policyName": "addInterceptor",
+                        "parameters":
+                        {
+                            "headersEnabled": false,
+                            "bodyEnabled": true,
+                            "trailersEnabled": false,
+                            "contextEnabled": true,
+                            "backendUrl": "http://interceptor-backend2.interceptor:9083"
+                        }
+                    }
+                ]
+            }
+        };
         string apiUUID = getUniqueIdForAPI(api.name, api.'version, organiztion1);
         model:ConfigMap configmap = check getMockConfigMap1(apiUUID, api);
         http:Response mockConfigMapResponse = getMockConfigMapResponse(configmap.clone());
@@ -2280,6 +2410,8 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
         model:Httproute httpRouteWithPolicies = getMockHttpRouteWithOperationPolicies1(api, apiUUID, organiztion1);
         http:Response httpRouteWithPoliciesResponse = getMockHttpRouteResponse(httpRouteWithPolicies.clone());
         model:Httproute httpRouteWithOperationRateLimits = getMockHttpRouteWithOperationRateLimits1(api, apiUUID, organiztion1);
+        model:Httproute httpRouteWithInterceptorPolicy = getMockHttpRouteWithOperationInterceptorPolicy1(api, apiUUID, organiztion1);
+        http:Response httpRouteWithInterceptorPolicyResponse = getMockHttpRouteResponse(httpRouteWithInterceptorPolicy.clone());
         http:Response httpRouteWithOperationRateLimitsResponse = getMockHttpRouteResponse(httpRouteWithOperationRateLimits.clone());
         model:K8sServiceMapping mockServiceMappingRequest = getMockServiceMappingRequest(api, apiUUID);
         model:API mockAPI = getMockAPI(api, apiUUID, organiztion1.uuid);
@@ -2299,13 +2431,27 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
             ]
         };
         string backenduuid = getBackendServiceUid(api, (), PRODUCTION_TYPE, organiztion1);
+        string interceptorBackenduuid1 = getInterceptorServiceUid(api, INTERCEPTOR_TYPE, organiztion1, "http://interceptor-backend1.interceptor:9082");
+        string interceptorBackenduuid2 = getInterceptorServiceUid(api, INTERCEPTOR_TYPE, organiztion1, "http://interceptor-backend2.interceptor:9083");
         model:Backend backendService = {
             metadata: {name: backenduuid, namespace: "apk-platform", labels: getLabels(api, organiztion1)},
             spec: {services: [{host: string:'join(".", 'serviceRecord.name, 'serviceRecord.namespace, "svc.cluster.local"), port: 80}], protocol: "http"}
         };
+        model:Backend interceptorBackendService1 = {
+            metadata: {name: interceptorBackenduuid1, namespace: "apk-platform", labels: getLabels(api, organiztion1)},
+            spec: {services: [{host: "interceptor-backend1.interceptor", port: 9082}], protocol: "http"}
+        };
+        model:Backend interceptorBackendService2 = {
+            metadata: {name: interceptorBackenduuid2, namespace: "apk-platform", labels: getLabels(api, organiztion1)},
+            spec: {services: [{host: "interceptor-backend2.interceptor", port: 9083}], protocol: "http"}
+        };
         http:Response backendServiceResponse = getOKBackendServiceResponse(backendService);
+        http:Response interceptorBackendServiceResponse1 = getOKBackendServiceResponse(interceptorBackendService1);
+        http:Response interceptorBackendServiceResponse2 = getOKBackendServiceResponse(interceptorBackendService2);
         [model:Backend, any][] services = [];
         services.push([backendService, backendServiceResponse]);
+        services.push([interceptorBackendService1, interceptorBackendServiceResponse1]);
+        services.push([interceptorBackendService2, interceptorBackendServiceResponse2]);
 
         model:RuntimeAPI mockRuntimeAPI = getMockRuntimeAPI(api, apiUUID, organiztion1, serviceRecord);
         http:Response mockRuntimeResponse = getMockRuntimeAPIResponse(mockRuntimeAPI.clone());
@@ -2315,6 +2461,10 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
         http:Response mockRuntimeResponseWithOperationRateLimits = getMockRuntimeAPIResponse(mockRuntimeAOperationRateLimits.clone());
         model:RuntimeAPI mockRuntimeAPIWithAPIRateLimits = getMockRuntimeAPI(apiWithAPIRateLimits, apiUUID, organiztion1, serviceRecord);
         http:Response mockRuntimeResponseWithAPIRateLimits = getMockRuntimeAPIResponse(mockRuntimeAPIWithAPIRateLimits.clone());
+        model:RuntimeAPI mockRuntimeAPIWithOperationInterceptorPolicy = getMockRuntimeAPI(check apiWithOperationLevelInterceptorPolicy.cloneWithType(API), apiUUID, organiztion1, serviceRecord);
+        http:Response mockRuntimeResponseWithOperationInterceptorPolicy = getMockRuntimeAPIResponse(mockRuntimeAPIWithOperationInterceptorPolicy.clone());
+        model:RuntimeAPI mockRuntimeAPIWithAPIInterceptorPolicy = getMockRuntimeAPI(check apiWithAPILevelInterceptorPolicy.cloneWithType(API), apiUUID, organiztion1, serviceRecord);
+        http:Response mockRuntimeResponseWithAPIInterceptorPolicy = getMockRuntimeAPIResponse(mockRuntimeAPIWithAPIInterceptorPolicy.clone());
         http:Response serviceMappingResponse = getMockServiceMappingResponse(mockServiceMappingRequest.clone());
         commons:APKError nameAlreadyExistError = error commons:APKError(
             "API Name - " + alreadyNameExist.name + " already exist",
@@ -2371,7 +2521,6 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
                 "headerName": "customadd",
                 "headerValue": "customvalue"
             }
-
         };
         json responsePolicy = {
             "policyName": "removeHeader",
@@ -2379,6 +2528,30 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
             "parameters":
             {
                 "headerName": "content-length"
+            }
+        };
+        json requestInterceptorPolicy = {
+            "policyName": "addInterceptor",
+            "policyVersion": "v1",
+            "parameters":
+            {
+                "headersEnabled": true,
+                "bodyEnabled": false,
+                "trailersEnabled": false,
+                "contextEnabled": true,
+                "backendUrl": "http://interceptor-backend1.interceptor:9082"
+            }
+        };
+        json responseInterceptorPolicy = {
+            "policyName": "addInterceptor",
+            "policyVersion": "v1",
+            "parameters":
+            {
+                "headersEnabled": false,
+                "bodyEnabled": true,
+                "trailersEnabled": false,
+                "contextEnabled": true,
+                "backendUrl": "http://interceptor-backend2.interceptor:9083"
             }
         };
         APIRateLimit rateLimit = {
@@ -2449,11 +2622,55 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
                 location:locationUrl
             }
         };
-        map<[string, string, [model:ConfigMap, any], [model:Httproute, any], [model:K8sServiceMapping, any], [model:API, any], [model:RuntimeAPI, any], API, string, [model:Backend, any][], [model:RateLimitPolicy|(), any], anydata]> data = {
-            "1": ["275b00d1-722c-4df2-b65a-9b14677abe4b", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], api, k8sAPIUUID1, services, [(), ()], createdAPI.toBalString()],
-            "2": ["275b00d1-722c-4df2-b65a-9b14677abe4b", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], alreadyNameExist, k8sAPIUUID1, services, [(), ()], nameAlreadyExistError.toBalString()],
-            "3": ["275b00d1-722c-4df2-b65a-9b14677abe4b", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], contextAlreadyExist, k8sAPIUUID1, services, [(), ()], contextAlreadyExistError.toBalString()],
-            "4": ["275b00d1-722c-4df2-b65a-9b14677abe4a", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], api, k8sAPIUUID1, services, [(), ()], serviceNotExist.toBalString()],
+        CreatedAPI createdAPIWithOperationLevelInterceptorPolicy = {
+            body: {
+                id: k8sAPIUUID1,
+                name: "PizzaAPI",
+                context: "/pizzaAPI/1.0.0",
+                'version: "1.0.0",
+                'type: "REST",
+                operations: [
+                    {target: "/*", verb: "GET", authTypeEnabled: true, scopes: [], operationPolicies: {request: [check requestInterceptorPolicy.cloneWithType(OperationPolicy)], response: [check responseInterceptorPolicy.cloneWithType(OperationPolicy)]}},
+                    {target: "/*", verb: "PUT", authTypeEnabled: true, scopes: [], operationPolicies: {request: [], response: []}},
+                    {target: "/*", verb: "POST", authTypeEnabled: true, scopes: [], operationPolicies: {request: [], response: []}},
+                    {target: "/*", verb: "DELETE", authTypeEnabled: true, scopes: [], operationPolicies: {request: [], response: []}},
+                    {target: "/*", verb: "PATCH", authTypeEnabled: true, scopes: [], operationPolicies: {request: [], response: []}}
+                ],
+                serviceInfo: {name: "backend", namespace: "apk"},
+                createdTime: "2023-01-17T11:23:49Z"
+            },
+            headers: {
+                location:locationUrl
+            }
+        };
+        CreatedAPI createdAPIWithAPILevelInterceptorPolicy = {
+            body: {
+                id: k8sAPIUUID1,
+                name: "PizzaAPI",
+                context: "/pizzaAPI/1.0.0",
+                'version: "1.0.0",
+                'type: "REST",
+                operations: [
+                    {target: "/*", verb: "GET", authTypeEnabled: true, scopes: [], operationPolicies: {request: [], response: []}},
+                    {target: "/*", verb: "PUT", authTypeEnabled: true, scopes: [], operationPolicies: {request: [], response: []}},
+                    {target: "/*", verb: "POST", authTypeEnabled: true, scopes: [], operationPolicies: {request: [], response: []}},
+                    {target: "/*", verb: "DELETE", authTypeEnabled: true, scopes: [], operationPolicies: {request: [], response: []}},
+                    {target: "/*", verb: "PATCH", authTypeEnabled: true, scopes: [], operationPolicies: {request: [], response: []}}
+                ],
+                apiPolicies: {request: [check requestInterceptorPolicy.cloneWithType(OperationPolicy)], response: [check responseInterceptorPolicy.cloneWithType(OperationPolicy)]},
+                serviceInfo: {name: "backend", namespace: "apk"},
+                createdTime: "2023-01-17T11:23:49Z"
+            },
+            headers: {
+                location:locationUrl
+            }
+        };
+
+        map<[string, string, [model:ConfigMap, any], [model:Httproute, any], [model:K8sServiceMapping, any], [model:API, any], [model:RuntimeAPI, any], API, string, [model:Backend, any][], [model:RateLimitPolicy|(), any], [model:APIPolicy|(), any], anydata]> data = {
+            "1": ["275b00d1-722c-4df2-b65a-9b14677abe4b", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], api, k8sAPIUUID1, services, [(), ()], [(), ()], createdAPI.toBalString()],
+            "2": ["275b00d1-722c-4df2-b65a-9b14677abe4b", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], alreadyNameExist, k8sAPIUUID1, services, [(), ()], [(), ()], nameAlreadyExistError.toBalString()],
+            "3": ["275b00d1-722c-4df2-b65a-9b14677abe4b", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], contextAlreadyExist, k8sAPIUUID1, services, [(), ()], [(), ()], contextAlreadyExistError.toBalString()],
+            "4": ["275b00d1-722c-4df2-b65a-9b14677abe4a", apiUUID, [configmap, mockConfigMapResponse], [httpRoute, httpRouteResponse], [mockServiceMappingRequest, serviceMappingResponse], [mockAPI, mockAPIResponse], [mockRuntimeAPI, mockRuntimeResponse], api, k8sAPIUUID1, services, [(), ()], [(), ()], serviceNotExist.toBalString()],
             "5": [
                 "275b00d1-722c-4df2-b65a-9b14677abe4b",
                 apiUUID,
@@ -2465,6 +2682,7 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
                 check apiWithOperationPolicies.cloneWithType(API),
                 k8sAPIUUID1,
                 services,
+                [(), ()],
                 [(), ()],
                 createdAPIWithPolicies.toBalString()
             ],
@@ -2480,6 +2698,7 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
                 k8sAPIUUID1,
                 services,
                 [(), ()],
+                [(), ()],
                 invalidPolicyNameError.toBalString()
             ],
             "7": [
@@ -2494,6 +2713,7 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
                 k8sAPIUUID1,
                 services,
                 [getMockResourceRateLimitPolicy(apiWithOperationRateLimits, organiztion1), getMockRateLimitResponse(getMockResourceRateLimitPolicy(apiWithOperationRateLimits, organiztion1).clone())],
+                [(), ()],
                 createdAPIWithOperationRateLimits.toBalString()
             ],
             "8": [
@@ -2508,6 +2728,7 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
                 k8sAPIUUID1,
                 services,
                 [getMockAPIRateLimitPolicy(apiWithAPIRateLimits, organiztion1, apiUUID), getMockRateLimitResponse(getMockAPIRateLimitPolicy(apiWithAPIRateLimits, organiztion1, apiUUID).clone())],
+                [(), ()],
                 createdAPIWithAPIRateLimits.toBalString()
             ],
             "9": [
@@ -2522,7 +2743,38 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
                 k8sAPIUUID1,
                 services,
                 [getMockAPIRateLimitPolicy(apiWithAPIRateLimits, organiztion1, apiUUID), getMockRateLimitResponse(getMockAPIRateLimitPolicy(apiWithAPIRateLimits, organiztion1, apiUUID).clone())],
+                [(), ()],
                 bothRateLimitsPresentError.toBalString()
+            ],
+            "10": [
+                "275b00d1-722c-4df2-b65a-9b14677abe4b",
+                apiUUID,
+                [configmap, mockConfigMapResponse],
+                [httpRouteWithInterceptorPolicy, httpRouteWithInterceptorPolicyResponse],
+                [mockServiceMappingRequest, serviceMappingResponse],
+                [mockAPI, mockAPIResponse],
+                [mockRuntimeAPIWithOperationInterceptorPolicy, mockRuntimeResponseWithOperationInterceptorPolicy],
+                check apiWithOperationLevelInterceptorPolicy.cloneWithType(API),
+                k8sAPIUUID1,
+                services,
+                [(), ()],
+                [getMockResourceLevelPolicy(check apiWithOperationLevelInterceptorPolicy.cloneWithType(API), organiztion1), getMockAPIPolicyResponse(getMockResourceLevelPolicy(check apiWithOperationLevelInterceptorPolicy.cloneWithType(API), organiztion1).clone())],
+                createdAPIWithOperationLevelInterceptorPolicy.toBalString()
+            ],
+            "11": [
+                "275b00d1-722c-4df2-b65a-9b14677abe4b",
+                apiUUID,
+                [configmap, mockConfigMapResponse],
+                [httpRoute, httpRouteResponse],
+                [mockServiceMappingRequest, serviceMappingResponse],
+                [mockAPI, mockAPIResponse],
+                [mockRuntimeAPIWithAPIInterceptorPolicy, mockRuntimeResponseWithAPIInterceptorPolicy],
+                check apiWithAPILevelInterceptorPolicy.cloneWithType(API),
+                k8sAPIUUID1,
+                services,
+                [(), ()],
+                [getMockAPILevelPolicy(check apiWithAPILevelInterceptorPolicy.cloneWithType(API), organiztion1, apiUUID), getMockAPIPolicyResponse(getMockAPILevelPolicy(check apiWithAPILevelInterceptorPolicy.cloneWithType(API), organiztion1, apiUUID).clone())],
+                createdAPIWithAPILevelInterceptorPolicy.toBalString()
             ]
         };
         return data;
@@ -2671,7 +2923,7 @@ function getMockHttpRoute(API api, string apiUUID, commons:Organization organizt
                             "group": "dp.wso2.com",
                             "kind": "Backend",
                             "name": getBackendServiceUid(api, (), PRODUCTION_TYPE, organiztion),
-                            "namespace": "apk"
+                            "namespace": "apk-platform"
                         }
                     ]
                 },
@@ -2683,7 +2935,7 @@ function getMockHttpRoute(API api, string apiUUID, commons:Organization organizt
                             "group": "dp.wso2.com",
                             "kind": "Backend",
                             "name": getBackendServiceUid(api, (), PRODUCTION_TYPE, organiztion),
-                            "namespace": "apk"
+                            "namespace": "apk-platform"
                         }
                     ]
                 },
@@ -2695,7 +2947,7 @@ function getMockHttpRoute(API api, string apiUUID, commons:Organization organizt
                             "group": "dp.wso2.com",
                             "kind": "Backend",
                             "name": getBackendServiceUid(api, (), PRODUCTION_TYPE, organiztion),
-                            "namespace": "apk"
+                            "namespace": "apk-platform"
                         }
                     ]
                 },
@@ -2707,7 +2959,7 @@ function getMockHttpRoute(API api, string apiUUID, commons:Organization organizt
                             "group": "dp.wso2.com",
                             "kind": "Backend",
                             "name": getBackendServiceUid(api, (), PRODUCTION_TYPE, organiztion),
-                            "namespace": "apk"
+                            "namespace": "apk-platform"
                         }
                     ]
                 },
@@ -2719,7 +2971,7 @@ function getMockHttpRoute(API api, string apiUUID, commons:Organization organizt
                             "group": "dp.wso2.com",
                             "kind": "Backend",
                             "name": getBackendServiceUid(api, (), PRODUCTION_TYPE, organiztion),
-                            "namespace": "apk"
+                            "namespace": "apk-platform"
                         }
                     ]
                 }
@@ -2789,7 +3041,7 @@ function getMockHttpRouteWithOperationPolicies1(API api, string apiUUID, commons
                             "group": "dp.wso2.com",
                             "kind": "Backend",
                             "name": getBackendServiceUid(api, (), PRODUCTION_TYPE, organiztion),
-                            "namespace": "apk"
+                            "namespace": "apk-platform"
                         }
                     ]
                 },
@@ -2819,8 +3071,7 @@ function getMockHttpRouteWithOperationPolicies1(API api, string apiUUID, commons
                             "group": "dp.wso2.com",
                             "kind": "Backend",
                             "name": getBackendServiceUid(api, (), PRODUCTION_TYPE, organiztion),
-                            "namespace": "apk",
-                            "weight": 1
+                            "namespace": "apk-platform"
                         }
                     ]
                 },
@@ -2850,8 +3101,7 @@ function getMockHttpRouteWithOperationPolicies1(API api, string apiUUID, commons
                             "group": "dp.wso2.com",
                             "kind": "Backend",
                             "name": getBackendServiceUid(api, (), PRODUCTION_TYPE, organiztion),
-                            "namespace": "apk",
-                            "weight": 1
+                            "namespace": "apk-platform"
                         }
                     ]
                 },
@@ -2881,8 +3131,7 @@ function getMockHttpRouteWithOperationPolicies1(API api, string apiUUID, commons
                             "group": "dp.wso2.com",
                             "kind": "Backend",
                             "name": getBackendServiceUid(api, (), PRODUCTION_TYPE, organiztion),
-                            "namespace": "apk",
-                            "weight": 1
+                            "namespace": "apk-platform"
                         }
                     ]
                 },
@@ -2912,8 +3161,7 @@ function getMockHttpRouteWithOperationPolicies1(API api, string apiUUID, commons
                             "group": "dp.wso2.com",
                             "kind": "Backend",
                             "name": getBackendServiceUid(api, (), PRODUCTION_TYPE, organiztion),
-                            "namespace": "apk",
-                            "weight": 1
+                            "namespace": "apk-platform"
                         }
                     ]
                 }
@@ -2974,7 +3222,7 @@ function getMockHttpRouteWithOperationRateLimits1(API api, string apiUUID, commo
                             "group": "dp.wso2.com",
                             "kind": "Backend",
                             "name": getBackendServiceUid(api, (), PRODUCTION_TYPE, organiztion),
-                            "namespace": "apk"
+                            "namespace": "apk-platform"
                         }
                     ]
                 },
@@ -3004,8 +3252,7 @@ function getMockHttpRouteWithOperationRateLimits1(API api, string apiUUID, commo
                             "group": "dp.wso2.com",
                             "kind": "Backend",
                             "name": getBackendServiceUid(api, (), PRODUCTION_TYPE, organiztion),
-                            "namespace": "apk",
-                            "weight": 1
+                            "namespace": "apk-platform"
                         }
                     ]
                 },
@@ -3035,8 +3282,7 @@ function getMockHttpRouteWithOperationRateLimits1(API api, string apiUUID, commo
                             "group": "dp.wso2.com",
                             "kind": "Backend",
                             "name": getBackendServiceUid(api, (), PRODUCTION_TYPE, organiztion),
-                            "namespace": "apk",
-                            "weight": 1
+                            "namespace": "apk-platform"
                         }
                     ]
                 },
@@ -3066,8 +3312,7 @@ function getMockHttpRouteWithOperationRateLimits1(API api, string apiUUID, commo
                             "group": "dp.wso2.com",
                             "kind": "Backend",
                             "name": getBackendServiceUid(api, (), PRODUCTION_TYPE, organiztion),
-                            "namespace": "apk",
-                            "weight": 1
+                            "namespace": "apk-platform"
                         }
                     ]
                 },
@@ -3097,8 +3342,188 @@ function getMockHttpRouteWithOperationRateLimits1(API api, string apiUUID, commo
                             "group": "dp.wso2.com",
                             "kind": "Backend",
                             "name": getBackendServiceUid(api, (), PRODUCTION_TYPE, organiztion),
-                            "namespace": "apk",
-                            "weight": 1
+                            "namespace": "apk-platform"
+                        }
+                    ]
+                }
+            ],
+            "parentRefs": [
+                {
+                    "group": "gateway.networking.k8s.io",
+                    "kind": "Gateway",
+                    "name": "default",
+                    "sectionName": "httpslistener"
+                }
+            ]
+        }
+    };
+}
+
+function getMockHttpRouteWithOperationInterceptorPolicy1(API api, string apiUUID, commons:Organization organiztion) returns model:Httproute {
+    return {
+        "apiVersion": "gateway.networking.k8s.io/v1beta1",
+        "kind": "HTTPRoute",
+        "metadata": {"name": "http-route-ref-name", "namespace": "apk-platform", "labels": getLabels(api, organiztion)},
+        "spec": {
+            "hostnames": [
+                string:concat(organiztion.uuid, ".", "gw.wso2.com")
+            ],
+            "rules": [
+                {
+                    "matches": [
+                        {
+                            "path": {
+                                "type": "RegularExpression",
+                                "value": "/pizzaAPI/1.0.0(.*)"
+                            },
+                            "method": "GET"
+                        }
+                    ],
+                    "filters": [
+                        {
+                            "type": "URLRewrite",
+                            "urlRewrite": {
+                                "path": {
+                                    "type": "ReplaceFullPath",
+                                    "replaceFullPath": "\\1"
+                                }
+                            }
+                        },
+                        {
+                            "type": "ExtensionRef",
+                            "extensionRef": {
+                                "group": "dp.wso2.com",
+                                "kind": "APIPolicy",
+                                "name": "api-policy-ref-name"
+                            }
+                        }
+                    ],
+                    "backendRefs": [
+                        {
+                            "group": "dp.wso2.com",
+                            "kind": "Backend",
+                            "name": getBackendServiceUid(api, (), PRODUCTION_TYPE, organiztion),
+                            "namespace": "apk-platform"
+                        }
+                    ]
+                },
+                {
+                    "matches": [
+                        {
+                            "path": {
+                                "type": "RegularExpression",
+                                "value": "/pizzaAPI/1.0.0(.*)"
+                            },
+                            "method": "PUT"
+                        }
+                    ],
+                    "filters": [
+                        {
+                            "type": "URLRewrite",
+                            "urlRewrite": {
+                                "path": {
+                                    "type": "ReplaceFullPath",
+                                    "replaceFullPath": "\\1"
+                                }
+                            }
+                        }
+                    ],
+                    "backendRefs": [
+                        {
+                            "group": "dp.wso2.com",
+                            "kind": "Backend",
+                            "name": getBackendServiceUid(api, (), PRODUCTION_TYPE, organiztion),
+                            "namespace": "apk-platform"
+                        }
+                    ]
+                },
+                {
+                    "matches": [
+                        {
+                            "path": {
+                                "type": "RegularExpression",
+                                "value": "/pizzaAPI/1.0.0(.*)"
+                            },
+                            "method": "POST"
+                        }
+                    ],
+                    "filters": [
+                        {
+                            "type": "URLRewrite",
+                            "urlRewrite": {
+                                "path": {
+                                    "type": "ReplaceFullPath",
+                                    "replaceFullPath": "\\1"
+                                }
+                            }
+                        }
+                    ],
+                    "backendRefs": [
+                        {
+                            "group": "dp.wso2.com",
+                            "kind": "Backend",
+                            "name": getBackendServiceUid(api, (), PRODUCTION_TYPE, organiztion),
+                            "namespace": "apk-platform"
+                        }
+                    ]
+                },
+                {
+                    "matches": [
+                        {
+                            "path": {
+                                "type": "RegularExpression",
+                                "value": "/pizzaAPI/1.0.0(.*)"
+                            },
+                            "method": "DELETE"
+                        }
+                    ],
+                    "filters": [
+                        {
+                            "type": "URLRewrite",
+                            "urlRewrite": {
+                                "path": {
+                                    "type": "ReplaceFullPath",
+                                    "replaceFullPath": "\\1"
+                                }
+                            }
+                        }
+                    ],
+                    "backendRefs": [
+                        {
+                            "group": "dp.wso2.com",
+                            "kind": "Backend",
+                            "name": getBackendServiceUid(api, (), PRODUCTION_TYPE, organiztion),
+                            "namespace": "apk-platform"
+                        }
+                    ]
+                },
+                {
+                    "matches": [
+                        {
+                            "path": {
+                                "type": "RegularExpression",
+                                "value": "/pizzaAPI/1.0.0(.*)"
+                            },
+                            "method": "PATCH"
+                        }
+                    ],
+                    "filters": [
+                        {
+                            "type": "URLRewrite",
+                            "urlRewrite": {
+                                "path": {
+                                    "type": "ReplaceFullPath",
+                                    "replaceFullPath": "\\1"
+                                }
+                            }
+                        }
+                    ],
+                    "backendRefs": [
+                        {
+                            "group": "dp.wso2.com",
+                            "kind": "Backend",
+                            "name": getBackendServiceUid(api, (), PRODUCTION_TYPE, organiztion),
+                            "namespace": "apk-platform"
                         }
                     ]
                 }
@@ -3167,7 +3592,8 @@ function testCreateAPI(string apiUUID, string backenduuid, API api, model:Config
         any prodhttpResponse, model:Httproute? sandHttpRoute, any sandhttpResponse,
         [model:Backend, any][] backendServices,
         model:API k8sApi, any k8sapiResponse, model:RuntimeAPI runtimeAPI, any runtimeAPIResponse,
-        model:RateLimitPolicy? rateLimitPolicy, any rateLimitPolicyResponse
+        model:RateLimitPolicy? rateLimitPolicy, any rateLimitPolicyResponse,
+        model:APIPolicy? apiPolicy, any apiPolicyResponse
 , string k8sapiUUID, anydata expected) returns error? {
     APIClient apiClient = new;
     string userName = "apkUser";
@@ -3180,6 +3606,9 @@ function testCreateAPI(string apiUUID, string backenduuid, API api, model:Config
     }
     if rateLimitPolicy is model:RateLimitPolicy {
         test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/ratelimitpolicies", rateLimitPolicy).thenReturn(rateLimitPolicyResponse);
+    }
+    if apiPolicy is model:APIPolicy {
+        test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apipolicies", apiPolicy).thenReturn(apiPolicyResponse);
     }
 
     foreach [model:Backend, any] backend in backendServices {
@@ -3196,7 +3625,9 @@ function testCreateAPI(string apiUUID, string backenduuid, API api, model:Config
     model:BackendList serviceList = {metadata: {}, items: []};
     model:ScopeList scopeList = {metadata: {}, items: []};
     model:RateLimitPolicyList rateLimitPolicyList = {metadata: {}, items: []};
+    model:APIPolicyList apiPolicyList = {metadata: {}, items: []};
     test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/ratelimitpolicies?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version, organiztion1)).thenReturn(rateLimitPolicyList);
+    test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apipolicies?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version, organiztion1)).thenReturn(apiPolicyList);
     test:prepare(k8sApiServerEp).when("get").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/scopes?labelSelector=" + check generateUrlEncodedLabelSelector(api.name, api.'version, organiztion1)).thenReturn(scopeList);
     test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/apis", k8sApi).thenReturn(k8sapiResponse);
     test:prepare(k8sApiServerEp).when("post").withArguments("/apis/dp.wso2.com/v1alpha1/namespaces/apk-platform/runtimeapis", runtimeAPI).thenReturn(runtimeAPIResponse);
@@ -4039,6 +4470,188 @@ function getMockHttpRouteWithOperationRateLimits(API api, string apiUUID, string
     };
 }
 
+function getMockHttpRouteWithOperationInterceptorPolicy(API api, string apiUUID, string backenduuid, string 'type, commons:Organization organization) returns model:Httproute {
+    string hostnames = 'type == PRODUCTION_TYPE ? string:concat(organization.uuid, ".", "gw.wso2.com") : string:concat(organization.uuid, ".", "sandbox.gw.wso2.com");
+    return {
+        "apiVersion": "gateway.networking.k8s.io/v1beta1",
+        "kind": "HTTPRoute",
+        "metadata": {"name": "http-route-ref-name", "namespace": "apk-platform", "labels": getLabels(api, organization)},
+        "spec": {
+            "hostnames": [
+                hostnames
+            ],
+            "rules": [
+                {
+                    "matches": [
+                        {
+                            "path": {
+                                "type": "RegularExpression",
+                                "value": "/pizzaAPI/1.0.0(.*)"
+                            },
+                            "method": "GET"
+                        }
+                    ],
+                    "filters": [
+                        {
+                            "type": "URLRewrite",
+                            "urlRewrite": {
+                                "path": {
+                                    "type": "ReplaceFullPath",
+                                    "replaceFullPath": "\\1"
+                                }
+                            }
+                        },
+                        {
+                            "type": "ExtensionRef",
+                            "extensionRef": {
+                                "group": "dp.wso2.com",
+                                "kind": "APIPolicy",
+                                "name": "api-policy-ref-name"
+                            }
+                        }
+                    ],
+                    "backendRefs": [
+                        {
+                            "group": "dp.wso2.com",
+                            "kind": "Backend",
+                            "name": backenduuid,
+                            "namespace": "apk-platform"
+                        }
+                    ]
+                },
+                {
+                    "matches": [
+                        {
+                            "path": {
+                                "type": "RegularExpression",
+                                "value": "/pizzaAPI/1.0.0(.*)"
+                            },
+                            "method": "PUT"
+                        }
+                    ],
+                    "filters": [
+                        {
+                            "type": "URLRewrite",
+                            "urlRewrite": {
+                                "path": {
+                                    "type": "ReplaceFullPath",
+                                    "replaceFullPath": "\\1"
+                                }
+                            }
+                        }
+                    ],
+                    "backendRefs": [
+                        {
+                            "group": "dp.wso2.com",
+                            "kind": "Backend",
+                            "name": backenduuid,
+                            "namespace": "apk-platform"
+                        }
+                    ]
+                },
+                {
+                    "matches": [
+                        {
+                            "path": {
+                                "type": "RegularExpression",
+                                "value": "/pizzaAPI/1.0.0(.*)"
+                            },
+                            "method": "POST"
+                        }
+                    ],
+                    "filters": [
+                        {
+                            "type": "URLRewrite",
+                            "urlRewrite": {
+                                "path": {
+                                    "type": "ReplaceFullPath",
+                                    "replaceFullPath": "\\1"
+                                }
+                            }
+                        }
+                    ],
+                    "backendRefs": [
+                        {
+                            "group": "dp.wso2.com",
+                            "kind": "Backend",
+                            "name": backenduuid,
+                            "namespace": "apk-platform"
+                        }
+                    ]
+                },
+                {
+                    "matches": [
+                        {
+                            "path": {
+                                "type": "RegularExpression",
+                                "value": "/pizzaAPI/1.0.0(.*)"
+                            },
+                            "method": "DELETE"
+                        }
+                    ],
+                    "filters": [
+                        {
+                            "type": "URLRewrite",
+                            "urlRewrite": {
+                                "path": {
+                                    "type": "ReplaceFullPath",
+                                    "replaceFullPath": "\\1"
+                                }
+                            }
+                        }
+                    ],
+                    "backendRefs": [
+                        {
+                            "group": "dp.wso2.com",
+                            "kind": "Backend",
+                            "name": backenduuid,
+                            "namespace": "apk-platform"
+                        }
+                    ]
+                },
+                {
+                    "matches": [
+                        {
+                            "path": {
+                                "type": "RegularExpression",
+                                "value": "/pizzaAPI/1.0.0(.*)"
+                            },
+                            "method": "PATCH"
+                        }
+                    ],
+                    "filters": [
+                        {
+                            "type": "URLRewrite",
+                            "urlRewrite": {
+                                "path": {
+                                    "type": "ReplaceFullPath",
+                                    "replaceFullPath": "\\1"
+                                }
+                            }
+                        }
+                    ],
+                    "backendRefs": [
+                        {
+                            "group": "dp.wso2.com",
+                            "kind": "Backend",
+                            "name": backenduuid,
+                            "namespace": "apk-platform"
+                        }
+                    ]
+                }
+            ],
+            "parentRefs": [
+                {
+                    "group": "gateway.networking.k8s.io",
+                    "kind": "Gateway",
+                    "name": "default",
+                    "sectionName": "httpslistener"
+                }
+            ]
+        }
+    };
+}
+
 function getMockResourceRateLimitPolicy(API api, commons:Organization organiztion) returns model:RateLimitPolicy {
     return {
         "apiVersion": "dp.wso2.com/v1alpha1",
@@ -4100,7 +4713,79 @@ function getMockRateLimitResponse(model:RateLimitPolicy request) returns http:Re
     return response;
 }
 
-function createAPIDataProvider() returns map<[string, string, API, model:ConfigMap, any, model:Httproute?, any, model:Httproute?, any, [model:Backend, any][], model:API, any, model:RuntimeAPI, any, model:RateLimitPolicy?, any, string, anydata]> {
+function getMockResourceLevelPolicy(API api, commons:Organization organiztion) returns model:APIPolicy {
+    return {
+        "apiVersion": "dp.wso2.com/v1alpha1",
+        "kind": "APIPolicy",
+        "metadata": {"name": "api-policy-ref-name", "namespace": "apk-platform", "labels": getLabels(api, organiztion)},
+        "spec": {
+            "default": {
+                "requestInterceptor": {
+                    "backendRef": {
+                        "name": getInterceptorServiceUid(api, INTERCEPTOR_TYPE, organiztion, "http://interceptor-backend1.interceptor:9082"),
+                        "namespace": "apk-platform"
+                    },
+                    "includes": ["request_headers", "invocation_context"]
+                },
+                "responseInterceptor": {
+                    "backendRef": {
+                        "name": getInterceptorServiceUid(api, INTERCEPTOR_TYPE, organiztion, "http://interceptor-backend2.interceptor:9083"),
+                        "namespace": "apk-platform"
+                    },
+                    "includes": ["response_body", "invocation_context"]
+                }
+            },
+            "targetRef": {
+                "group": "dp.wso2.com",
+                "kind": "Resource",
+                "name": "http-route-ref-name",
+                "namespace": "apk-platform"
+            }
+        }
+    };
+}
+
+function getMockAPILevelPolicy(API api, commons:Organization organiztion, string apiUUID) returns model:APIPolicy {
+    return {
+        "apiVersion": "dp.wso2.com/v1alpha1",
+        "kind": "APIPolicy",
+        "metadata": {"name": "api-policy-ref-name", "namespace": "apk-platform", "labels": getLabels(api, organiztion)},
+        "spec": {
+            "default": {
+                "requestInterceptor": {
+                    "backendRef": {
+                        "name": getInterceptorServiceUid(api, INTERCEPTOR_TYPE, organiztion, "http://interceptor-backend1.interceptor:9082"),
+                        "namespace": "apk-platform"
+                    },
+                    "includes": ["request_headers", "invocation_context"]
+                },
+                "responseInterceptor": {
+                    "backendRef": {
+                        "name": getInterceptorServiceUid(api, INTERCEPTOR_TYPE, organiztion, "http://interceptor-backend2.interceptor:9083"),
+                        "namespace": "apk-platform"
+                    },
+                    "includes": ["response_body", "invocation_context"]
+                }
+            },
+            "targetRef": {
+                "group": "dp.wso2.com",
+                "kind": "API",
+                "name": apiUUID,
+                "namespace": "apk-platform"
+            }
+        }
+    };
+}
+
+function getMockAPIPolicyResponse(model:APIPolicy request) returns http:Response {
+    http:Response response = new;
+    response.statusCode = 201;
+    request.metadata.uid = uuid:createType1AsString();
+    response.setJsonPayload(request.toJson());
+    return response;
+}
+
+function createAPIDataProvider() returns map<[string, string, API, model:ConfigMap, any, model:Httproute?, any, model:Httproute?, any, [model:Backend, any][], model:API, any, model:RuntimeAPI, any, model:RateLimitPolicy?, any, model:APIPolicy?, any, string, anydata]> {
     do {
         API api = {
             name: "PizzaAPI",
@@ -4471,9 +5156,133 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             statusCode = 406,
             description = "Presence of both resource level and API level rate limits is not allowed"
         );
+        json apiWithOperationLevelInterceptorPolicy = {
+            "name": "PizzaAPI",
+            "context": "/pizzaAPI/1.0.0",
+            "version": "1.0.0",
+            "endpointConfig": {"production_endpoints": {"url": "https://localhost"}},
+            "operations": [
+                {
+                    "target": "/*",
+                    "verb": "GET",
+                    "authTypeEnabled": true,
+                    "operationPolicies": {
+                        "request": [
+                            {
+                                "policyName": "addInterceptor",
+                                "parameters":
+                                {
+                                    "headersEnabled": true,
+                                    "bodyEnabled": false,
+                                    "trailersEnabled": false,
+                                    "contextEnabled": true,
+                                    "backendUrl": "http://interceptor-backend1.interceptor:9082"
+                                }
+                            }
+                        ],
+                        "response": [
+                            {
+                                "policyName": "addInterceptor",
+                                "parameters":
+                                {
+                                    "headersEnabled": false,
+                                    "bodyEnabled": true,
+                                    "trailersEnabled": false,
+                                    "contextEnabled": true,
+                                    "backendUrl": "http://interceptor-backend2.interceptor:9083"
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "target": "/*",
+                    "verb": "PUT",
+                    "authTypeEnabled": true
+                },
+                {
+                    "target": "/*",
+                    "verb": "POST",
+                    "authTypeEnabled": true
+                },
+                {
+                    "target": "/*",
+                    "verb": "DELETE",
+                    "authTypeEnabled": true
+                },
+                {
+                    "target": "/*",
+                    "verb": "PATCH",
+                    "authTypeEnabled": true
+                }
+            ]
+        };
+        json apiWithAPILevelInterceptorPolicy = {
+            "name": "PizzaAPI",
+            "context": "/pizzaAPI/1.0.0",
+            "version": "1.0.0",
+            "endpointConfig": {"production_endpoints": {"url": "https://localhost"}},
+            "operations": [
+                {
+                    target: "/*",
+                    verb: "GET",
+                    authTypeEnabled: true
+                },
+                {
+                    target: "/*",
+                    verb: "PUT",
+                    authTypeEnabled: true
+                },
+                {
+                    target: "/*",
+                    verb: "POST",
+                    authTypeEnabled: true
+                },
+                {
+                    target: "/*",
+                    verb: "DELETE",
+                    authTypeEnabled: true
+                },
+                {
+                    target: "/*",
+                    verb: "PATCH",
+                    authTypeEnabled: true
+                }
+            ],
+            "apiPolicies": {
+                "request": [
+                    {
+                        "policyName": "addInterceptor",
+                        "parameters":
+                        {
+                            "headersEnabled": true,
+                            "bodyEnabled": false,
+                            "trailersEnabled": false,
+                            "contextEnabled": true,
+                            "backendUrl": "http://interceptor-backend1.interceptor:9082"
+                        }
+                    }
+                ],
+                "response": [
+                    {
+                        "policyName": "addInterceptor",
+                        "parameters":
+                        {
+                            "headersEnabled": false,
+                            "bodyEnabled": true,
+                            "trailersEnabled": false,
+                            "contextEnabled": true,
+                            "backendUrl": "http://interceptor-backend2.interceptor:9083"
+                        }
+                    }
+                ]
+            }
+        };
         string apiUUID = getUniqueIdForAPI(api.name, api.'version, organiztion1);
         string backenduuid = getBackendServiceUid(api, (), PRODUCTION_TYPE, organiztion1);
         string backenduuid1 = getBackendServiceUid(api, (), SANDBOX_TYPE, organiztion1);
+        string interceptorBackenduuid1 = getInterceptorServiceUid(api, INTERCEPTOR_TYPE, organiztion1, "http://interceptor-backend1.interceptor:9082");
+        string interceptorBackenduuid2 = getInterceptorServiceUid(api, INTERCEPTOR_TYPE, organiztion1, "http://interceptor-backend2.interceptor:9083");
         string k8sapiUUID = uuid:createType1AsString();
         model:Backend backendService = {
             metadata: {name: backenduuid, namespace: "apk-platform", labels: getLabels(api, organiztion1)},
@@ -4482,16 +5291,27 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
         model:Backend backendService1 = {
             metadata: {name: backenduuid1, namespace: "apk-platform", labels: getLabels(api, organiztion1)},
             spec: {services: [{host: "localhost", port: 443}], protocol: "https"}
-        }
-        ;
+        };
+        model:Backend interceptorBackendService1 = {
+            metadata: {name: interceptorBackenduuid1, namespace: "apk-platform", labels: getLabels(api, organiztion1)},
+            spec: {services: [{host: "interceptor-backend1.interceptor", port: 9082}], protocol: "http"}
+        };
+        model:Backend interceptorBackendService2 = {
+            metadata: {name: interceptorBackenduuid2, namespace: "apk-platform", labels: getLabels(api, organiztion1)},
+            spec: {services: [{host: "interceptor-backend2.interceptor", port: 9083}], protocol: "http"}
+        };
         http:Response backendServiceResponse = getOKBackendServiceResponse(backendService);
         http:Response backendServiceResponse1 = getOKBackendServiceResponse(backendService);
+        http:Response interceptorBackendServiceResponse1 = getOKBackendServiceResponse(interceptorBackendService1);
+        http:Response interceptorBackendServiceResponse2 = getOKBackendServiceResponse(interceptorBackendService2);
         http:Response backendServiceErrorResponse = new;
         backendServiceErrorResponse.statusCode = 403;
         [model:Backend, any][] services = [];
         services.push([backendService, backendServiceResponse]);
         [model:Backend, any][] services1 = [];
         services.push([backendService1, backendServiceResponse1]);
+        services.push([interceptorBackendService1, interceptorBackendServiceResponse1]);
+        services.push([interceptorBackendService2, interceptorBackendServiceResponse2]);
         [model:Backend, any][] servicesError = [];
         servicesError.push([backendService, backendServiceErrorResponse]);
         model:ConfigMap configmap = check getMockConfigMap1(apiUUID, api);
@@ -4500,6 +5320,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
         model:Httproute prodhttpRouteWithOperationPolicies = getMockHttpRouteWithOperationPolicies(api, apiUUID, backenduuid, PRODUCTION_TYPE, organiztion1);
         model:Httproute prodhttpRouteWithAPIPolicies = getMockHttpRouteWithAPIPolicies(api, apiUUID, backenduuid, PRODUCTION_TYPE, organiztion1);
         model:Httproute prodhttpRouteWithOperationRateLimits = getMockHttpRouteWithOperationRateLimits(api, apiUUID, backenduuid, PRODUCTION_TYPE, organiztion1);
+        model:Httproute prodhttpRouteWithOperationInterceptorPolicy = getMockHttpRouteWithOperationInterceptorPolicy(api, apiUUID, backenduuid, PRODUCTION_TYPE, organiztion1);
         string locationUrl = runtimeConfiguration.baseURl + "/apis/" + k8sapiUUID;
 
         CreatedAPI createdAPI = {body: {name: "PizzaAPI", context: "/pizzaAPI/1.0.0", 'version: "1.0.0", id: k8sapiUUID, createdTime: "2023-01-17T11:23:49Z", endpointConfig: {"production_endpoints":{"url":"https://localhost"}}, operations: [{"target":"/*","verb":"GET","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"PUT","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"POST","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"DELETE","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"PATCH","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}}]}, headers: {location:locationUrl}};
@@ -4508,6 +5329,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
         CreatedAPI CreatedAPIWithAPIPolicies = {body: {name: "PizzaAPI", context: "/pizzaAPI/1.0.0", 'version: "1.0.0", id: k8sapiUUID, createdTime: "2023-01-17T11:23:49Z", endpointConfig: {"production_endpoints":{"url":"https://localhost"}}, operations: [{"target":"/*","verb":"GET","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"PUT","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"POST","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"DELETE","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"PATCH","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}}], apiPolicies: {"request":[{"policyName":"addHeader","policyVersion":"v1","parameters":{"headerName":"customadd","headerValue":"customvalue"}}],"response":[{"policyName":"removeHeader","policyVersion":"v1","parameters":{"headerName":"content-length"}}]}}, headers: {location:locationUrl}};
         CreatedAPI CreatedAPIWithOperationRateLimits = {body: {name: "PizzaAPI", context: "/pizzaAPI/1.0.0", 'version: "1.0.0", id: k8sapiUUID, createdTime: "2023-01-17T11:23:49Z", endpointConfig: {"production_endpoints":{"url":"https://localhost"}}, operations: [{"target":"/*","verb":"GET","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]},"operationRateLimit":{"requestsPerUnit":10,"unit":"Minute"}},{"target":"/*","verb":"PUT","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"POST","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"DELETE","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"PATCH","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}}]}, headers: {location:locationUrl}};
         CreatedAPI CreatedAPIWithAPIRateLimits = {body: {name: "PizzaAPI", context: "/pizzaAPI/1.0.0", 'version: "1.0.0", id: k8sapiUUID, createdTime: "2023-01-17T11:23:49Z", endpointConfig: {"production_endpoints":{"url":"https://localhost"}}, operations: [{"target":"/*","verb":"GET","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"PUT","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"POST","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"DELETE","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"PATCH","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}}], apiRateLimit: {"requestsPerUnit":10,"unit":"Minute"}}, headers: {location:locationUrl}};
+        CreatedAPI CreatedAPIWithOperationLevelInterceptorPolicy = {body: {name: "PizzaAPI", context: "/pizzaAPI/1.0.0", 'version: "1.0.0", id: k8sapiUUID, createdTime: "2023-01-17T11:23:49Z", endpointConfig: {"production_endpoints":{"url":"https://localhost"}}, operations: [{"target":"/*","verb":"GET","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[{"policyName":"addInterceptor","policyVersion":"v1","parameters":{"headersEnabled":true,"bodyEnabled":false,"contextEnabled":true,"backendUrl": "http://interceptor-backend1.interceptor:9082","trailersEnabled":false}}],"response":[{"policyName":"addInterceptor","policyVersion":"v1","parameters":{"headersEnabled":false,"bodyEnabled":true,"contextEnabled":true,"backendUrl": "http://interceptor-backend2.interceptor:9083","trailersEnabled":false}}]}},{"target":"/*","verb":"PUT","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"POST","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"DELETE","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"PATCH","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}}]}, headers: {location:locationUrl}};
+        CreatedAPI CreatedAPIWithAPILevelInterceptorPolicy = {body: {name: "PizzaAPI", context: "/pizzaAPI/1.0.0", 'version: "1.0.0", id: k8sapiUUID, createdTime: "2023-01-17T11:23:49Z", endpointConfig: {"production_endpoints":{"url":"https://localhost"}}, operations: [{"target":"/*","verb":"GET","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"PUT","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"POST","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"DELETE","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"PATCH","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}}], apiPolicies: {"request":[{"policyName":"addInterceptor","policyVersion":"v1","parameters":{"headersEnabled":true,"bodyEnabled":false,"contextEnabled":true,"backendUrl": "http://interceptor-backend1.interceptor:9082","trailersEnabled":false}}],"response":[{"policyName":"addInterceptor","policyVersion":"v1","parameters":{"headersEnabled":false,"bodyEnabled":true,"contextEnabled":true,"backendUrl": "http://interceptor-backend2.interceptor:9083","trailersEnabled":false}}]}}, headers: {location:locationUrl}};
 
         commons:APKError productionEndpointNotSpecifiedError = error commons:APKError( "Production endpoint not specified",
             code = 909014,
@@ -4538,7 +5361,7 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
         map<[string, string, API, model:ConfigMap,
     any, model:Httproute|(), any, model:Httproute|(),
     any, [model:Backend, any][], model:API, any, model:RuntimeAPI, any,
-    model:RateLimitPolicy|(), any, string,
+    model:RateLimitPolicy|(), any, model:APIPolicy|(), any, string,
     anydata]> data = {
             "1": [
                 apiUUID,
@@ -4555,6 +5378,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
                 getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
+                (),
+                (),
                 (),
                 (),
                 k8sapiUUID,
@@ -4578,6 +5403,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
                 (),
                 (),
+                (),
+                (),
                 k8sapiUUID,
                 nameAlreadyExistError.toBalString()
             ],
@@ -4598,6 +5425,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
                 (),
                 (),
+                (),
+                (),
                 k8sapiUUID,
                 contextAlreadyExistError.toBalString()
             ],
@@ -4616,6 +5445,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockAPIResponse(getMockAPI1(api, apiUUID, organiztion1.uuid), k8sapiUUID),
                 getMockRuntimeAPI(sandboxOnlyAPI, apiUUID, organiztion1, ()),
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(sandboxOnlyAPI, apiUUID, organiztion1, ())),
+                (),
+                (),
                 (),
                 (),
                 k8sapiUUID,
@@ -4639,6 +5470,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
                 (),
                 (),
+                (),
+                (),
                 k8sapiUUID,
                 productionEndpointNotSpecifiedError.toBalString()
             ],
@@ -4657,6 +5490,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
                 getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
+                (),
+                (),
                 (),
                 (),
                 k8sapiUUID,
@@ -4680,6 +5515,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
                 (),
                 (),
+                (),
+                (),
                 k8sapiUUID,
                 k8sLevelError1.toBalString()
             ]
@@ -4699,6 +5536,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
                 getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
+                (),
+                (),
                 (),
                 (),
                 k8sapiUUID,
@@ -4722,6 +5561,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
                 (),
                 (),
+                (),
+                (),
                 k8sapiUUID,
                 k8sLevelError1.toBalString()
             ]
@@ -4741,6 +5582,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
                 getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
+                (),
+                (),
                 (),
                 (),
                 k8sapiUUID,
@@ -4764,6 +5607,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
                 (),
                 (),
+                (),
+                (),
                 k8sapiUUID,
                 k8sLevelError.toBalString()
             ]
@@ -4783,6 +5628,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockAPIErrorNameExist(),
                 getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
+                (),
+                (),
                 (),
                 (),
                 k8sapiUUID,
@@ -4806,6 +5653,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
                 (),
                 (),
+                (),
+                (),
                 k8sapiUUID,
                 bothPoliciesPresentError.toBalString()
             ]
@@ -4825,6 +5674,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockAPIErrorNameExist(),
                 getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
+                (),
+                (),
                 (),
                 (),
                 k8sapiUUID,
@@ -4848,6 +5699,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
                 (),
                 (),
+                (),
+                (),
                 k8sapiUUID,
                 invalidPolicyParametersError.toBalString()
             ]
@@ -4867,6 +5720,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
                 getMockRuntimeAPI(check apiWithOperationPolicies.cloneWithType(API), apiUUID, organiztion1, ()),
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(check apiWithOperationPolicies.cloneWithType(API), apiUUID, organiztion1, ())),
+                (),
+                (),
                 (),
                 (),
                 k8sapiUUID,
@@ -4890,6 +5745,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(check apiWithAPIPolicies.cloneWithType(API), apiUUID, organiztion1, ())),
                 (),
                 (),
+                (),
+                (),
                 k8sapiUUID,
                 CreatedAPIWithAPIPolicies.toBalString()
             ]
@@ -4909,6 +5766,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockAPIErrorNameExist(),
                 getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
+                (),
+                (),
                 (),
                 (),
                 k8sapiUUID,
@@ -4932,6 +5791,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(apiWithOperationRateLimits, apiUUID, organiztion1, ())),
                 getMockResourceRateLimitPolicy(apiWithOperationRateLimits, organiztion1),
                 getMockRateLimitResponse(getMockResourceRateLimitPolicy(apiWithOperationRateLimits, organiztion1).clone()),
+                (),
+                (),
                 k8sapiUUID,
                 CreatedAPIWithOperationRateLimits.toBalString()
             ]
@@ -4953,8 +5814,56 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(apiWithAPIRateLimits, apiUUID, organiztion1, ())),
                 getMockAPIRateLimitPolicy(apiWithAPIRateLimits, organiztion1, apiUUID),
                 getMockRateLimitResponse(getMockAPIRateLimitPolicy(apiWithAPIRateLimits, organiztion1, apiUUID).clone()),
+                (),
+                (),
                 k8sapiUUID,
                 CreatedAPIWithAPIRateLimits.toBalString()
+            ]
+        ,
+            "21": [
+                apiUUID,
+                backenduuid,
+                check apiWithOperationLevelInterceptorPolicy.cloneWithType(API),
+                configmap,
+                getMockConfigMapResponse(configmap.clone()),
+                prodhttpRouteWithOperationInterceptorPolicy,
+                getMockHttpRouteResponse(prodhttpRouteWithOperationInterceptorPolicy.clone()),
+                (),
+                (),
+                services,
+                getMockAPI(api, apiUUID, organiztion1.uuid),
+                getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
+                getMockRuntimeAPI(check apiWithOperationLevelInterceptorPolicy.cloneWithType(API), apiUUID, organiztion1, ()),
+                getMockRuntimeAPIResponse(getMockRuntimeAPI(check apiWithOperationLevelInterceptorPolicy.cloneWithType(API), apiUUID, organiztion1, ())),
+                (),
+                (),
+                getMockResourceLevelPolicy(check apiWithOperationLevelInterceptorPolicy.cloneWithType(API), organiztion1),
+                getMockAPIPolicyResponse(getMockResourceLevelPolicy(check apiWithOperationLevelInterceptorPolicy.cloneWithType(API), organiztion1).clone()),
+                k8sapiUUID,
+                CreatedAPIWithOperationLevelInterceptorPolicy.toBalString()
+            ]
+        ,
+            "22": [
+                apiUUID,
+                backenduuid,
+                check apiWithAPILevelInterceptorPolicy.cloneWithType(API),
+                configmap,
+                getMockConfigMapResponse(configmap.clone()),
+                prodhttpRoute,
+                getMockHttpRouteResponse(prodhttpRoute.clone()),
+                (),
+                (),
+                services,
+                getMockAPI(api, apiUUID, organiztion1.uuid),
+                getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
+                getMockRuntimeAPI(check apiWithAPILevelInterceptorPolicy.cloneWithType(API), apiUUID, organiztion1, ()),
+                getMockRuntimeAPIResponse(getMockRuntimeAPI(check apiWithAPILevelInterceptorPolicy.cloneWithType(API), apiUUID, organiztion1, ())),
+                (),
+                (),
+                getMockAPILevelPolicy(check apiWithAPILevelInterceptorPolicy.cloneWithType(API), organiztion1, apiUUID),
+                getMockAPIPolicyResponse(getMockAPILevelPolicy(check apiWithAPILevelInterceptorPolicy.cloneWithType(API), organiztion1, apiUUID).clone()),
+                k8sapiUUID,
+                CreatedAPIWithAPILevelInterceptorPolicy.toBalString()
             ]
         };
         return data;
@@ -5045,7 +5954,7 @@ function getMediationPolicyListDataProvider() returns map<[string?, int, int, st
             SORT_BY_POLICY_NAME,
             SORT_ORDER_ASC,
             {
-                "count": 4,
+                "count": 5,
                 "list": [
                     {
                         "id": "1",
@@ -5106,6 +6015,53 @@ function getMediationPolicyListDataProvider() returns map<[string?, int, int, st
                         ]
                     },
                     {
+                        "id": "5",
+                        "type": "Interceptor",
+                        "name": "addInterceptor",
+                        "displayName": "Add Interceptor",
+                        "description": "This policy allows you to engage an interceptor service",
+                        "applicableFlows": [
+                            "request",
+                            "response"
+                        ],
+                        "supportedApiTypes": [
+                            "REST"
+                        ],
+                        "policyAttributes": [
+                            {
+                                "name": "headersEnabled",
+                                "description": "Indicates whether request/response header details should be sent to the interceptor service",
+                                "required": false,
+                                "type": "boolean"
+                            },
+                            {
+                                "name": "bodyEnabled",
+                                "description": "Indicates whether request/response body details should be sent to the interceptor service",
+                                "required": false,
+                                "type": "boolean"
+                            },
+                            {
+                                "name": "contextEnabled",
+                                "description": "Indicates whether context details should be sent to the interceptor service",
+                                "required": false,
+                                "type": "boolean"
+                            },
+                            {
+                                "name": "trailersEnabled",
+                                "description": "Indicates whether request/response trailer details should be sent to the interceptor service",
+                                "required": false,
+                                "type": "boolean"
+                            },
+                            {
+                                "name": "backendUrl",
+                                "description": "Backend URL of the interceptor service",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            }
+                        ]
+                    },
+                    {
                         "id": "2",
                         "type": "RequestHeaderModifier",
                         "name": "removeHeader",
@@ -5153,7 +6109,7 @@ function getMediationPolicyListDataProvider() returns map<[string?, int, int, st
                 "pagination": {
                     "offset": 0,
                     "limit": 10,
-                    "total": 4
+                    "total": 5
                 }
             }.toBalString()
         ],
@@ -5164,7 +6120,7 @@ function getMediationPolicyListDataProvider() returns map<[string?, int, int, st
             SORT_BY_POLICY_NAME,
             SORT_ORDER_DESC,
             {
-                "count": 4,
+                "count": 5,
                 "list": [
                     {
                         "id": "2",
@@ -5204,6 +6160,53 @@ function getMediationPolicyListDataProvider() returns map<[string?, int, int, st
                             {
                                 "name": "headerName",
                                 "description": "Name of the header to be removed",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "5",
+                        "type": "Interceptor",
+                        "name": "addInterceptor",
+                        "displayName": "Add Interceptor",
+                        "description": "This policy allows you to engage an interceptor service",
+                        "applicableFlows": [
+                            "request",
+                            "response"
+                        ],
+                        "supportedApiTypes": [
+                            "REST"
+                        ],
+                        "policyAttributes": [
+                            {
+                                "name": "headersEnabled",
+                                "description": "Indicates whether request/response header details should be sent to the interceptor service",
+                                "required": false,
+                                "type": "boolean"
+                            },
+                            {
+                                "name": "bodyEnabled",
+                                "description": "Indicates whether request/response body details should be sent to the interceptor service",
+                                "required": false,
+                                "type": "boolean"
+                            },
+                            {
+                                "name": "contextEnabled",
+                                "description": "Indicates whether context details should be sent to the interceptor service",
+                                "required": false,
+                                "type": "boolean"
+                            },
+                            {
+                                "name": "trailersEnabled",
+                                "description": "Indicates whether request/response trailer details should be sent to the interceptor service",
+                                "required": false,
+                                "type": "boolean"
+                            },
+                            {
+                                "name": "backendUrl",
+                                "description": "Backend URL of the interceptor service",
                                 "required": true,
                                 "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
                                 "type": "String"
@@ -5272,7 +6275,7 @@ function getMediationPolicyListDataProvider() returns map<[string?, int, int, st
                 "pagination": {
                     "offset": 0,
                     "limit": 10,
-                    "total": 4
+                    "total": 5
                 }
             }.toBalString()
         ],
@@ -5283,7 +6286,7 @@ function getMediationPolicyListDataProvider() returns map<[string?, int, int, st
             SORT_BY_ID,
             SORT_ORDER_ASC,
             {
-                "count": 4,
+                "count": 5,
                 "list": [
                     {
                         "id": "1",
@@ -5386,12 +6389,59 @@ function getMediationPolicyListDataProvider() returns map<[string?, int, int, st
                                 "type": "String"
                             }
                         ]
+                    },
+                    {
+                        "id": "5",
+                        "type": "Interceptor",
+                        "name": "addInterceptor",
+                        "displayName": "Add Interceptor",
+                        "description": "This policy allows you to engage an interceptor service",
+                        "applicableFlows": [
+                            "request",
+                            "response"
+                        ],
+                        "supportedApiTypes": [
+                            "REST"
+                        ],
+                        "policyAttributes": [
+                            {
+                                "name": "headersEnabled",
+                                "description": "Indicates whether request/response header details should be sent to the interceptor service",
+                                "required": false,
+                                "type": "boolean"
+                            },
+                            {
+                                "name": "bodyEnabled",
+                                "description": "Indicates whether request/response body details should be sent to the interceptor service",
+                                "required": false,
+                                "type": "boolean"
+                            },
+                            {
+                                "name": "contextEnabled",
+                                "description": "Indicates whether context details should be sent to the interceptor service",
+                                "required": false,
+                                "type": "boolean"
+                            },
+                            {
+                                "name": "trailersEnabled",
+                                "description": "Indicates whether request/response trailer details should be sent to the interceptor service",
+                                "required": false,
+                                "type": "boolean"
+                            },
+                            {
+                                "name": "backendUrl",
+                                "description": "Backend URL of the interceptor service",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            }
+                        ]
                     }
                 ],
                 "pagination": {
                     "offset": 0,
                     "limit": 10,
-                    "total": 4
+                    "total": 5
                 }
             }.toBalString()
         ],
@@ -5402,8 +6452,55 @@ function getMediationPolicyListDataProvider() returns map<[string?, int, int, st
             SORT_BY_ID,
             SORT_ORDER_DESC,
             {
-                "count": 4,
+                "count": 5,
                 "list": [
+                    {
+                        "id": "5",
+                        "type": "Interceptor",
+                        "name": "addInterceptor",
+                        "displayName": "Add Interceptor",
+                        "description": "This policy allows you to engage an interceptor service",
+                        "applicableFlows": [
+                            "request",
+                            "response"
+                        ],
+                        "supportedApiTypes": [
+                            "REST"
+                        ],
+                        "policyAttributes": [
+                            {
+                                "name": "headersEnabled",
+                                "description": "Indicates whether request/response header details should be sent to the interceptor service",
+                                "required": false,
+                                "type": "boolean"
+                            },
+                            {
+                                "name": "bodyEnabled",
+                                "description": "Indicates whether request/response body details should be sent to the interceptor service",
+                                "required": false,
+                                "type": "boolean"
+                            },
+                            {
+                                "name": "contextEnabled",
+                                "description": "Indicates whether context details should be sent to the interceptor service",
+                                "required": false,
+                                "type": "boolean"
+                            },
+                            {
+                                "name": "trailersEnabled",
+                                "description": "Indicates whether request/response trailer details should be sent to the interceptor service",
+                                "required": false,
+                                "type": "boolean"
+                            },
+                            {
+                                "name": "backendUrl",
+                                "description": "Backend URL of the interceptor service",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            }
+                        ]
+                    },
                     {
                         "id": "4",
                         "type": "ResponseHeaderModifier",
@@ -5510,7 +6607,7 @@ function getMediationPolicyListDataProvider() returns map<[string?, int, int, st
                 "pagination": {
                     "offset": 0,
                     "limit": 10,
-                    "total": 4
+                    "total": 5
                 }
             }.toBalString()
         ],
@@ -5586,7 +6683,7 @@ function getMediationPolicyListDataProvider() returns map<[string?, int, int, st
                 "pagination": {
                     "offset": 0,
                     "limit": 2,
-                    "total": 4
+                    "total": 5
                 }
             }.toBalString()
         ],
@@ -5600,28 +6697,46 @@ function getMediationPolicyListDataProvider() returns map<[string?, int, int, st
                 "count": 2,
                 "list": [
                     {
-                        "id": "1",
-                        "type": "RequestHeaderModifier",
-                        "name": "addHeader",
-                        "displayName": "Add Header",
-                        "description": "This policy allows you to add a new header to the request",
+                        "id": "5",
+                        "type": "Interceptor",
+                        "name": "addInterceptor",
+                        "displayName": "Add Interceptor",
+                        "description": "This policy allows you to engage an interceptor service",
                         "applicableFlows": [
-                            "request"
+                            "request",
+                            "response"
                         ],
                         "supportedApiTypes": [
                             "REST"
                         ],
                         "policyAttributes": [
                             {
-                                "name": "headerName",
-                                "description": "Name of the header to be added",
-                                "required": true,
-                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
-                                "type": "String"
+                                "name": "headersEnabled",
+                                "description": "Indicates whether request/response header details should be sent to the interceptor service",
+                                "required": false,
+                                "type": "boolean"
                             },
                             {
-                                "name": "headerValue",
-                                "description": "Value of the header",
+                                "name": "bodyEnabled",
+                                "description": "Indicates whether request/response body details should be sent to the interceptor service",
+                                "required": false,
+                                "type": "boolean"
+                            },
+                            {
+                                "name": "contextEnabled",
+                                "description": "Indicates whether context details should be sent to the interceptor service",
+                                "required": false,
+                                "type": "boolean"
+                            },
+                            {
+                                "name": "trailersEnabled",
+                                "description": "Indicates whether request/response trailer details should be sent to the interceptor service",
+                                "required": false,
+                                "type": "boolean"
+                            },
+                            {
+                                "name": "backendUrl",
+                                "description": "Backend URL of the interceptor service",
                                 "required": true,
                                 "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
                                 "type": "String"
@@ -5629,13 +6744,13 @@ function getMediationPolicyListDataProvider() returns map<[string?, int, int, st
                         ]
                     },
                     {
-                        "id": "3",
-                        "type": "ResponseHeaderModifier",
+                        "id": "1",
+                        "type": "RequestHeaderModifier",
                         "name": "addHeader",
                         "displayName": "Add Header",
-                        "description": "This policy allows you to add a new header to the response",
+                        "description": "This policy allows you to add a new header to the request",
                         "applicableFlows": [
-                            "response"
+                            "request"
                         ],
                         "supportedApiTypes": [
                             "REST"
@@ -5661,7 +6776,7 @@ function getMediationPolicyListDataProvider() returns map<[string?, int, int, st
                 "pagination": {
                     "offset": 2,
                     "limit": 2,
-                    "total": 4
+                    "total": 5
                 }
             }.toBalString()
         ],
@@ -5677,7 +6792,7 @@ function getMediationPolicyListDataProvider() returns map<[string?, int, int, st
                 "pagination": {
                     "offset": 6,
                     "limit": 3,
-                    "total": 4
+                    "total": 5
                 }
             }.toBalString()
         ],
@@ -5688,7 +6803,7 @@ function getMediationPolicyListDataProvider() returns map<[string?, int, int, st
             SORT_BY_POLICY_NAME,
             SORT_ORDER_ASC,
             {
-                "count": 2,
+                "count": 3,
                 "list": [
                     {
                         "id": "1",
@@ -5747,12 +6862,59 @@ function getMediationPolicyListDataProvider() returns map<[string?, int, int, st
                                 "type": "String"
                             }
                         ]
+                    },
+                    {
+                        "id": "5",
+                        "type": "Interceptor",
+                        "name": "addInterceptor",
+                        "displayName": "Add Interceptor",
+                        "description": "This policy allows you to engage an interceptor service",
+                        "applicableFlows": [
+                            "request",
+                            "response"
+                        ],
+                        "supportedApiTypes": [
+                            "REST"
+                        ],
+                        "policyAttributes": [
+                            {
+                                "name": "headersEnabled",
+                                "description": "Indicates whether request/response header details should be sent to the interceptor service",
+                                "required": false,
+                                "type": "boolean"
+                            },
+                            {
+                                "name": "bodyEnabled",
+                                "description": "Indicates whether request/response body details should be sent to the interceptor service",
+                                "required": false,
+                                "type": "boolean"
+                            },
+                            {
+                                "name": "contextEnabled",
+                                "description": "Indicates whether context details should be sent to the interceptor service",
+                                "required": false,
+                                "type": "boolean"
+                            },
+                            {
+                                "name": "trailersEnabled",
+                                "description": "Indicates whether request/response trailer details should be sent to the interceptor service",
+                                "required": false,
+                                "type": "boolean"
+                            },
+                            {
+                                "name": "backendUrl",
+                                "description": "Backend URL of the interceptor service",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            }
+                        ]
                     }
                 ],
                 "pagination": {
                     "offset": 0,
                     "limit": 10,
-                    "total": 2
+                    "total": 3
                 }
             }.toBalString()
         ],
@@ -5763,7 +6925,7 @@ function getMediationPolicyListDataProvider() returns map<[string?, int, int, st
             SORT_BY_POLICY_NAME,
             SORT_ORDER_ASC,
             {
-                "count": 2,
+                "count": 3,
                 "list": [
                     {
                         "id": "1",
@@ -5822,12 +6984,59 @@ function getMediationPolicyListDataProvider() returns map<[string?, int, int, st
                                 "type": "String"
                             }
                         ]
+                    },
+                    {
+                        "id": "5",
+                        "type": "Interceptor",
+                        "name": "addInterceptor",
+                        "displayName": "Add Interceptor",
+                        "description": "This policy allows you to engage an interceptor service",
+                        "applicableFlows": [
+                            "request",
+                            "response"
+                        ],
+                        "supportedApiTypes": [
+                            "REST"
+                        ],
+                        "policyAttributes": [
+                            {
+                                "name": "headersEnabled",
+                                "description": "Indicates whether request/response header details should be sent to the interceptor service",
+                                "required": false,
+                                "type": "boolean"
+                            },
+                            {
+                                "name": "bodyEnabled",
+                                "description": "Indicates whether request/response body details should be sent to the interceptor service",
+                                "required": false,
+                                "type": "boolean"
+                            },
+                            {
+                                "name": "contextEnabled",
+                                "description": "Indicates whether context details should be sent to the interceptor service",
+                                "required": false,
+                                "type": "boolean"
+                            },
+                            {
+                                "name": "trailersEnabled",
+                                "description": "Indicates whether request/response trailer details should be sent to the interceptor service",
+                                "required": false,
+                                "type": "boolean"
+                            },
+                            {
+                                "name": "backendUrl",
+                                "description": "Backend URL of the interceptor service",
+                                "required": true,
+                                "validationRegex": "^([a-zA-Z_][a-zA-Z\\d_\\-\\ ]*)$",
+                                "type": "String"
+                            }
+                        ]
                     }
                 ],
                 "pagination": {
                     "offset": 0,
                     "limit": 10,
-                    "total": 2
+                    "total": 3
                 }
             }.toBalString()
         ],
