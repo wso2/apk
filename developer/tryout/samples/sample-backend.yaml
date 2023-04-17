@@ -22,7 +22,7 @@ metadata:
   name: insecure-backend
 spec:
   services:
-  - host: backend.ns
+  - host: backend
     port: 80
   security:
   - type: Basic
