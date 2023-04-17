@@ -100,4 +100,4 @@ spec:
   targetRef:
     group: gateway.networking.k8s.io
     kind: Resource
-    name: resource-interceptor-route
+    name: resource-interceptor-test-api

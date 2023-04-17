@@ -19,5 +19,5 @@ spec:
         - type: jwt
   targetRef:
     kind: Resource
-    name: sand-http-route-http-bin-api
+    name: http-bin-api #provide API ref name
     group: gateway.networking.k8s.io

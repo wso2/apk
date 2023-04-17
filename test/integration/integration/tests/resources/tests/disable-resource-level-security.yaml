@@ -105,4 +105,4 @@ spec:
     group: gateway.networking.k8s.io
     kind: Resource
     namespace: gateway-integration-test-infra
-    name: disable-resoruce-security-httproute
+    name: disable-resoruce-security
