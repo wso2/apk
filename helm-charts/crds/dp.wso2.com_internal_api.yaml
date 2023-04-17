@@ -88,6 +88,17 @@ spec:
                         },
                         "production_endpoints":       {
                           "url": "https://pizzashack-service:8080/am/sample/pizzashack/v3/api/"
+                        },
+                        "endpoint_security": {
+                          "production": {
+                              "enabled": true,
+                              "type": "Basic",
+                              "username": "admin",
+                              "password": "admin"
+                          },
+                          "sandbox": {
+                              "enabled": false
+                          }
                         }
                       }
                   example:
@@ -96,6 +107,14 @@ spec:
                       url: https://pizzashack-service:8080/am/sample/pizzashack/v3/api/
                     production_endpoints:
                       url: https://pizzashack-service:8080/am/sample/pizzashack/v3/api/
+                    endpoint_security:
+                      production:
+                        enabled: true
+                        type: Basic
+                        username: admin
+                        password: admin
+                      sandbox:
+                        enabled: false
                 operations:
                   type: array
                   example:
@@ -135,6 +154,17 @@ spec:
                               },
                               "production_endpoints":       {
                                 "url": "https://pizzashack-service:8080/am/sample/pizzashack/v3/api/"
+                              },
+                              "endpoint_security": {
+                                "production": {
+                                    "enabled": true,
+                                    "type": "Basic",
+                                    "username": "admin",
+                                    "password": "admin"
+                                },
+                                "sandbox": {
+                                    "enabled": false
+                                }
                               }
                             }
                         example:
@@ -143,6 +173,14 @@ spec:
                             url: https://pizzashack-service:8080/am/sample/pizzashack/v3/api/
                           production_endpoints:
                             url: https://pizzashack-service:8080/am/sample/pizzashack/v3/api/
+                          endpoint_security:
+                            production:
+                              enabled: true
+                              type: Basic
+                              username: admin
+                              password: admin
+                            sandbox:
+                              enabled: false
                       scopes:
                         type: array
                         example: []
@@ -200,6 +238,29 @@ spec:
                     namespace:
                       type: string
                       example: apk-platform
+                    endpointSecurity:
+                      type: object
+                      x-kubernetes-preserve-unknown-fields: true
+                      properties: {}
+                      description: |
+                        Endpoint security of the API.
+
+                        `Basic Auth Endpoint security`
+                          {
+                            "production":       {
+                              "enabled": true,
+                              "type": "Basic",
+                              "username": "admin",
+                              "password": "admin"
+
+                            }
+                          }
+                      example:
+                        production:
+                          enabled: true
+                          type: Basic
+                          username: admin
+                          password: admin
                 apiPolicies:
                   type: object
                   properties:

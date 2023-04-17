@@ -65,7 +65,11 @@ isolated function convertK8sAPItoAPI(model:API api, boolean lightWeight) returns
             }
             model:ServiceInfo? serviceInfo = internalAPI.spec.serviceInfo;
             if serviceInfo is model:ServiceInfo {
-                convertedModel.serviceInfo = {name: serviceInfo.name, namespace: serviceInfo.namespace};
+                if serviceInfo.endpointSecurity is map<anydata> {
+                    convertedModel.serviceInfo = {name: serviceInfo.name, namespace: serviceInfo.namespace, endpoint_security: serviceInfo.endpointSecurity};
+                } else {
+                    convertedModel.serviceInfo = {name: serviceInfo.name, namespace: serviceInfo.namespace};
+                }
             }
         } else if internalAPI is http:ApplicationResponseError {
             if internalAPI.detail().statusCode != 404 {
