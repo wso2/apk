@@ -1,61 +1,56 @@
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: Gateway
 metadata:
-  name: {{ .Values.wso2.apk.dp.gateway.name }}
+  name: "default"
   namespace: {{ .Release.Namespace }}
   annotations:
     cert-manager.io/issuer: selfsigned-issuer
 spec:
-  gatewayClassName: {{ .Values.wso2.apk.dp.gateway.name }}
+  gatewayClassName: "default"
   listeners:
-    - name: examplelistener
-      hostname: "*.example.com"
-      port: {{ .Values.wso2.apk.dp.gateway.listener.port }}
-      protocol: {{ .Values.wso2.apk.dp.gateway.listener.protocol }}
-      tls:
-        mode: Terminate
-        certificateRefs:
-          - kind: Secret
-            group: ""
-            name: {{ template "apk-helm.resource.prefix" . }}-example-listener-cert
-            namespace: {{ .Release.Namespace }}
+    {{ if or .Values.wso2.apk.dp.enabled .Values.wso2.apk.cp.enabled }}
     - name: apilistener
-      hostname: "api.am.wso2.com"
-      port: {{ .Values.wso2.apk.dp.gateway.listener.port }}
-      protocol: {{ .Values.wso2.apk.dp.gateway.listener.protocol }}
+      hostname: "{{ .Values.wso2.apk.listener.hostname | default "api.am.wso2.com"}}"
+      port: 9095
+      protocol: "HTTPS"
       tls:
         mode: Terminate
         certificateRefs:
           - kind: Secret
             group: ""
-            name: {{ template "apk-helm.resource.prefix" . }}-system-api-listener-cert
+            name: {{ .Values.wso2.apk.listener.secretName | default (printf "%s-system-api-listener-cert" (include "apk-helm.resource.prefix" .))}}
             namespace: {{ .Release.Namespace }}
+    {{end}}
+    {{ if and .Values.idp.enabled}}
     - name: idplistener
-      hostname: "idp.am.wso2.com"
-      port: {{ .Values.wso2.apk.dp.gateway.listener.port }}
-      protocol: {{ .Values.wso2.apk.dp.gateway.listener.protocol }}
+      hostname: "{{ .Values.idp.listener.hostname | default "idp.am.wso2.com"}}"
+      port: 9095
+      protocol: "HTTPS"
       tls:
         mode: Terminate
         certificateRefs:
           - kind: Secret
             group: ""
-            name: {{ template "apk-helm.resource.prefix" . }}-idp-listener-cert
+            name: {{ .Values.idp.listener.secretName | default (printf "%s-idp-listener-cert" (include "apk-helm.resource.prefix" .))}}
             namespace: {{ .Release.Namespace }}
+    {{ end }}
+    {{ if .Values.wso2.apk.dp.enabled }}
     - name: gatewaylistener
-      hostname: "{{ .Values.wso2.apk.dp.gateway.listener.hostname }}"
-      port: {{ .Values.wso2.apk.dp.gateway.listener.port }}
-      protocol: {{ .Values.wso2.apk.dp.gateway.listener.protocol }}
-      tls:
+      hostname: "*.{{ .Values.wso2.apk.dp.gateway.listener.hostname }}"
+      port: 9095
+      protocol: "HTTPS"
+      tls:  
         mode: Terminate
         certificateRefs:
           - kind: Secret
             group: ""
-            name: {{ template "apk-helm.resource.prefix" . }}-gw-listener-cert
+            name: {{ .Values.wso2.apk.dp.gateway.listener.secretName | default (printf "%s-gw-listener-cert" (include "apk-helm.resource.prefix" .)) }}
             namespace: {{ .Release.Namespace }}
+    {{ end }}
     - name: systemlistener
       hostname: "localhost"
-      port: {{ .Values.wso2.apk.dp.gateway.listener.port }}
-      protocol: {{ .Values.wso2.apk.dp.gateway.listener.protocol }}
+      port: 9095
+      protocol: "HTTPS"
       tls:
         mode: Terminate
         certificateRefs:

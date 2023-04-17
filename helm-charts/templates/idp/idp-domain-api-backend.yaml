@@ -29,7 +29,7 @@ spec:
    - {{ template "apk-helm.resource.prefix" . }}-idp-ds-service.{{ .Release.Namespace }}.svc
   secretRef:
   {{- if and .Values.idp.idpds.configs .Values.idp.idpds.configs.tls }}
-    name: {{.Values.idp.idpds.configs.tls.certificatesSecret}}
+    name: {{.Values.idp.idpds.configs.tls.secretName}}
     key: {{.Values.idp.idpds.configs.tls.certFilename}}
   {{- else }}
     name: {{ template "apk-helm.resource.prefix" . }}-idp-ds-server-cert

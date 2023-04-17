@@ -2848,7 +2848,6 @@ public class APIClient {
             newAPIName = newId;
         }
         foreach model:Httproute httproute in httproutes {
-            string oldHttpRouteName = httproute.metadata.name;
             httproute.metadata.name = retrieveHttpRouteRefName(newAPI, endpointType, organization);
             httproute.metadata.labels = self.getLabels(newAPI, organization);
             model:HTTPRouteRule[] routeRules = httproute.spec.rules;

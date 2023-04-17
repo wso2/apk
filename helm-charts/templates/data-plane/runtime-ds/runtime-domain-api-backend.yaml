@@ -29,7 +29,7 @@ spec:
    - {{ template "apk-helm.resource.prefix" . }}-runtime-ds-service.{{ .Release.Namespace }}.svc
   secretRef:
   {{- if and .Values.wso2.apk.dp.runtime.configs .Values.wso2.apk.dp.runtime.configs.tls }}
-    name: {{.Values.wso2.apk.dp.runtime.configs.tls.certificatesSecret}}
+    name: {{.Values.wso2.apk.dp.runtime.configs.tls.secretName}}
     key: {{.Values.wso2.apk.dp.runtime.configs.tls.certFilename}}
   {{- else }}
     name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-server-cert

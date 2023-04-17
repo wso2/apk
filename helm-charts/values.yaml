@@ -15,6 +15,9 @@
 # under the License.
 
 wso2:
+  subscription:
+    imagePullSecrets: ""
+    
   apk:
     auth:
       enabled: true
@@ -22,20 +25,26 @@ wso2:
       enableClusterRoleCreation: true
       serviceAccountName: wso2apk-platform
       roleName: wso2apk-role
+    listener:
+      hostname: "api.am.wso2.com"
+      # secretName: "idp-tls"
     idp:
       issuer: "https://idp.am.wso2.com/token"
       authorizeEndpoint: "https://idp.am.wso2.com:9095/oauth2/authorize"
       tokenEndpoint: "https://idp.am.wso2.com:9095/oauth2/token"
       revokeEndpoint: "https://idp.am.wso2.com:9095/oauth2/revoke"
-      #jwksEndpoint: ""
+      # jwksEndpoint: ""
       usernameClaim: "sub"
       groupClaim: "groups"
       organizationClaim: "organization"
-      # organizationResolver: "controlplane" # controlplane,none
-      # credentials:
-      #   secretName: "wso2apk-idp-credentials"
-      # certificatesSecret:
+      # organizationResolver: "controlPlane" # controlplane,none
+      credentials:
+        secretName: "wso2apk-idp-credentials"
+      # tls:
       #   secretName: "wso2apk-idp-certificates"
+      #   fileName: "idp.crt"
+      # signing:
+      #   secretName: "wso2apk-idp-signing"
       #   fileName: "idp.crt"
     cp:
       enabled: true
@@ -62,14 +71,10 @@ wso2:
               memory: "1028Mi"
               cpu: "1000m"
           readinessProbe:
-            path: /health
-            port: 9443
             initialDelaySeconds: 20
             periodSeconds: 20
             failureThreshold: 5
           livenessProbe:
-            path: /health
-            port: 9443
             initialDelaySeconds: 20
             periodSeconds: 20
             failureThreshold: 5
@@ -89,14 +94,10 @@ wso2:
               memory: "1028Mi"
               cpu: "1000m"
           readinessProbe:
-            path: /health
-            port: 9443
             initialDelaySeconds: 20
             periodSeconds: 20
             failureThreshold: 5
           livenessProbe:
-            path: /health
-            port: 9443
             initialDelaySeconds: 20
             periodSeconds: 20
             failureThreshold: 5
@@ -116,14 +117,10 @@ wso2:
               memory: "1028Mi"
               cpu: "1000m"
           readinessProbe:
-            path: /health
-            port: 9443
             initialDelaySeconds: 20
             periodSeconds: 20
             failureThreshold: 5
           livenessProbe:
-            path: /health
-            port: 9443
             initialDelaySeconds: 20
             periodSeconds: 20
             failureThreshold: 5
@@ -131,34 +128,6 @@ wso2:
           replicas: 1
           imagePullPolicy: Always
           image: wso2/backoffice-domain-service:latest
-      devportalUI:
-        appName: "devportal-ui"
-        deployment:
-          npi: devportal-ui-npi
-          resources:
-            requests:
-              memory: "128Mi"
-              cpu: "100m"
-            limits:
-              memory: "1028Mi"
-              cpu: "1000m"
-          readinessProbe:
-            path: /
-            port: 8080
-            initialDelaySeconds: 20
-            periodSeconds: 20
-            failureThreshold: 5
-          livenessProbe:
-            path: /
-            port: 8080
-            initialDelaySeconds: 20
-            periodSeconds: 20
-            failureThreshold: 5
-          strategy: Recreate
-          replicas: 0
-          imagePullPolicy: IfNotPresent
-          # TODO update image
-          image: chanaka3d/portals:linux1.0.0
       managementServer:
         appName: "management-server"
         deployment:
@@ -182,48 +151,44 @@ wso2:
             initialDelaySeconds: 20
             periodSeconds: 20
             failureThreshold: 5
-
         # configs:
         #   tls:
-        # certificatesSecret: "management-server-cert"
-        # fileName: "certificate.crt"
-        # adapters:
-        #   - name: adapter-1
-        #     certificatesSecret: "adapter-1-cert"
-        #     fileName: "certificate.crt"
+        #     secretName: "management-server-cert"
+        #     certKeyFilename: "tls.key"
+        #     certFilename: "certchain.crt"
       cnpg:
         npi: cnpg-npi
         instances: 1
         clusterName: cluster-example
-        appUserPassword: password
+        appUserPassword: passwordidp-tls
         superUserPassword: password
     dp:
       enabled: true
-      gatewayAPI:
-        enabled: true
       gateway:
-        name: default
         listener:
-          name: httpslistener
-          hostname: "*.gw.wso2.com"
-          port: 9095
-          protocol: HTTPS
+          hostname: "gw.wso2.com"
+          # secretName: "idp-tls"
       # controlPlane:
-      #   serviceUrl: "http://control-plane-wso2-apk-admin-ds-service.control-plane.svc.cluster.local:9444/api/am/internal/v1"
-      #   enableHostNameVerification: true
-      # tls:
-      #   enabled: false
-      #   certificatesSecret: "organization-managetment-server-cert"
-      #   fileName: "certificate.crt"
-      # headers:
-      #   - name: "apiKey"
-      #     value: "123-456-789"
+        # enabled: true
+        # serviceUrl: "http://control-plane-wso2-apk-admin-ds-service.control-plane.svc.cluster.local:9444/api/am/internal/v1"
+        # enableHostNameVerification: true
+        # tls:
+        #   secretName: "organization-managetment-server-cert"
+        #   fileName: "certificate.crt"
+        # headers:
+        #   - name: "apiKey"
+        #     value: "123-456-789"
       # managementServer:
-      #   enabled: false
+      #   enabled: true
       #   serviceUrl: "https://control-plane-wso2-apk-management-server.control-plane.svc.cluster.local"
-      # tls:
-      #   certificatesSecret: "organization-managetment-server-cert"
-      #   fileName: "certificate.crt"
+      #   tls:
+      #     secretName: "managetment-server-cert"
+      #     fileName: "certificate.crt"
+      # partitionServer:
+      #   enabled: false
+      #   host: "https://control-plane-wso2-apk-partition-server.control-plane.svc.cluster.local"
+      #   serviceBasePath: "/api/am/publisher/v1"
+      #   partitionName: "default"
       runtime:
         appName: "runtime-ds"
         deployment:
@@ -247,13 +212,13 @@ wso2:
           replicas: 1
           imagePullPolicy: Always
           image: wso2/runtime-domain-service:latest
-          configs:
-        #   authrorization: true
-        #   baseUrl: "https://api.am.wso2.com:9095/api/am/runtime"
-          # tls:
-          #   certificatesSecret: "my-secret"
-          #   certKeyFilename: "tls.key"
-          #   certFilename: "certchain.crt"
+          # configs:
+          #   authrorization: true
+          #   baseUrl: "https://api.am.wso2.com:9095/api/am/runtime"
+          #   tls:
+          #     secretName: "my-secret"
+          #     certKeyFilename: "tls.key"
+          #     certFilename: "certchain.crt"
       adapter:
         appName: "adapter"
         deployment:
@@ -280,13 +245,12 @@ wso2:
           security:
             sslHostname: "adapter"
         # configs:
-        # apiNamespaces:
-        #   - "dataplane-1"
-        #   - "dataplane-2"
-        # tls:
-        #   certificatesSecret: "adapter-cert"
-        #   certKeyFilename: ""
-        #   certFilename: ""
+        #   apiNamespaces:
+        #     - "dataplane-1"
+        #   tls:
+        #     secretName: "adapter-cert"
+        #     certKeyFilename: ""
+        #     certFilename: ""
       ratelimiter:
         enabled: true
         appName: "ratelimiter"
@@ -317,12 +281,12 @@ wso2:
           image: wso2/ratelimiter:latest
           security:
             sslHostname: "ratelimiter"
-        # configs:
-        #   tls:
-        #     certificatesSecret: "ratelimiter-cert"
-        #     certKeyFilename: ""
-        #     certFilename: ""
-        #     certCAFilename: ""
+          # configs:
+          #   tls:
+          #     secretName: "ratelimiter-cert"
+          #     certKeyFilename: ""
+          #     certFilename: ""
+          #     certCAFilename: ""
       gatewayRuntime:
         appName: "router"
         deployment:
@@ -351,7 +315,7 @@ wso2:
             image: wso2/router:latest
             # configs:
             #   tls:
-            #     certificatesSecret: "router-cert"
+            #     secretName: "router-cert"
             #     certKeyFilename: ""
             #     certFilename: ""
           enforcer:
@@ -378,7 +342,7 @@ wso2:
               sslHostname: "enforcer"
             # configs:
             #   tls:
-            #     certificatesSecret: "router-cert"
+            #     secretName: "router-cert"
             #     certKeyFilename: ""
             #     certFilename: ""
             #   filters:
@@ -418,6 +382,9 @@ postgresql:
 
 idp:
   enabled: true
+  listener:
+    hostname: "idp.am.wso2.com"
+    # secretName: "idp-tls"
   database:
     enabled: true
     driver: "org.postgresql.Driver"
@@ -505,5 +472,5 @@ redis:
     enabled: false
   image:
     debug: true
-gateway-system:
+gatewaySystem:
   enabled: true

@@ -95,6 +95,7 @@ public type KeyStores record {|
 public type GatewayConfigurations record {|
     string name = "default";
     string listenerName = "httpslistener";
+    string hostname = "gw.wso2.com";
 |};
 
 public type BaseURL record {|

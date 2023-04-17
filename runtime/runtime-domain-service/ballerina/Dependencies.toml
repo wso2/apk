@@ -448,7 +448,6 @@ dependencies = [
 ]
 modules = [
 	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service"},
-	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service.com.fasterxml.jackson.core"},
 	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service.java.io"},
 	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service.java.lang"},
 	{org = "wso2", packageName = "runtime_domain_service", moduleName = "runtime_domain_service.java.nio.charset"},

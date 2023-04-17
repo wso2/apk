@@ -128,7 +128,7 @@ spec:
             - name:  management-server-truststore-secret-volume
               mountPath: /home/wso2/security/truststore/management-server.crt
             {{- if and .Values.wso2.apk.cp.managementServer.configs .Values.wso2.apk.cp.managementServer.configs.tls }}
-              subPath: {{ .Values.wso2.apk.cp.managementServer.configs.tls.certFilename | default "tls.key" }}
+              subPath: {{ .Values.wso2.apk.cp.managementServer.configs.tls.secretName | default "tls.key" }}
             {{- else }}
               subPath: tls.crt
             {{- end }}
@@ -147,15 +147,12 @@ spec:
       {{- if and .Values.wso2.subscription .Values.wso2.subscription.imagePullSecrets}}
       imagePullSecrets:
         - name: {{ .Values.wso2.subscription.imagePullSecrets }}
-      {{- else if and .Values.wso2.subscription (not (eq .Values.wso2.subscription.username "")) (not (eq .Values.wso2.subscription.password "")) }}
-      imagePullSecrets:
-        - name: {{ template "apk-helm.resource.prefix" . }}-apk-wso2-private-registry-creds
       {{ end }}      
       volumes: 
         - name: adapter-keystore-secret-volume
           secret:
           {{- if and .Values.wso2.apk.dp.adapter.configs .Values.wso2.apk.dp.adapter.configs.tls }}
-            secretName: {{ .Values.wso2.apk.dp.adapter.configs.tls.certificatesSecret | default (printf "%s-adapter-server-cert" (include "apk-helm.resource.prefix" .)) }}
+            secretName: {{ .Values.wso2.apk.dp.adapter.configs.tls.secretName | default (printf "%s-adapter-server-cert" (include "apk-helm.resource.prefix" .)) }}
           {{- else }}
             secretName: {{ template "apk-helm.resource.prefix" . }}-adapter-server-cert
           {{- end }}
@@ -174,7 +171,7 @@ spec:
         - name: runtime-ds-tls-volume
           secret:
        {{ if and .Values.wso2.apk.dp.runtime.configs .Values.wso2.apk.dp.runtime.configs.tls }}
-            secretName: {{ .Values.wso2.apk.dp.runtime.configs.tls.certificatesSecret | default (printf "%s-runtime-ds-server-cert" (include "apk-helm.resource.prefix" .)) }}
+            secretName: {{ .Values.wso2.apk.dp.runtime.configs.tls.secretName | default (printf "%s-runtime-ds-server-cert" (include "apk-helm.resource.prefix" .)) }}
        {{ else }}
             secretName: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-server-cert
        {{ end }}
@@ -182,7 +179,7 @@ spec:
         - name: router-truststore-secret-volume
           secret: 
             {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls }}
-            secretName: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.secretName | default (printf "%s-router-server-cert" (include "apk-helm.resource.prefix" .)) }}
+            secretName: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls.secretName | default (printf "%s-router-server-cert" (include "apk-helm.resource.prefix" .)) }}
           {{- else }}
             secretName: {{ template "apk-helm.resource.prefix" . }}-router-server-cert
           {{- end }}
@@ -190,7 +187,7 @@ spec:
         - name: ratelimiter-truststore-secret-volume
           secret:
             {{- if and .Values.wso2.apk.dp.ratelimiter.configs .Values.wso2.apk.dp.ratelimiter.configs.tls }}
-            secretName: {{ .Values.wso2.apk.dp.ratelimiter.configs.secretName | default (printf "%s-ratelimiter-server-cert" (include "apk-helm.resource.prefix" .)) }}
+            secretName: {{ .Values.wso2.apk.dp.ratelimiter.configs.tls.secretName | default (printf "%s-ratelimiter-server-cert" (include "apk-helm.resource.prefix" .)) }}
           {{- else }}
             secretName: {{ template "apk-helm.resource.prefix" . }}-ratelimiter-server-cert
           {{- end }}
@@ -198,12 +195,16 @@ spec:
         - name: enforcer-truststore-secret-volume
           secret: 
             {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls }}
-            secretName: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.secretName | default (printf "%s-enforcer-server-cert" (include "apk-helm.resource.prefix" .)) }}
+            secretName: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls.secretName | default (printf "%s-enforcer-server-cert" (include "apk-helm.resource.prefix" .)) }}
           {{- else }}
             secretName: {{ template "apk-helm.resource.prefix" . }}-enforcer-server-cert
           {{- end }}
         - name: management-server-truststore-secret-volume
           secret: 
+            {{- if and .Values.wso2.apk.dp.managementServer .Values.wso2.apk.dp.managementServer.configs .Values.wso2.apk.dp.managementServer.configs.tls }}
+            secretName: {{ .Values.wso2.apk.dp.managementServer.configs.tls.secretName | default "apk-root-certificate" }}
+          {{- else }}
             secretName: "apk-root-certificate"
+          {{- end }}
 
 {{- end -}}

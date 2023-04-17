@@ -29,7 +29,7 @@ spec:
    - {{ template "apk-helm.resource.prefix" . }}-devportal-ds-service.{{ .Release.Namespace }}.svc
   secretRef:
   {{- if and .Values.wso2.apk.cp.devportal.configs .Values.wso2.apk.cp.devportal.configs.tls }}
-    name: {{.Values.wso2.apk.cp.devportal.configs.tls.certificatesSecret}}
+    name: {{.Values.wso2.apk.cp.devportal.configs.tls.secretName}}
     key: {{.Values.wso2.apk.cp.devportal.configs.tls.certFilename}}
   {{- else }}
     name: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-server-cert
