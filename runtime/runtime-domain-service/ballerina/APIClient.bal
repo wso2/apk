@@ -1582,7 +1582,7 @@ public class APIClient {
                         }
                     }
                     if operation.operationPolicies != () {
-                        model:APIPolicy? apiPolicyCR = self.generateAPIPolicyAndBackendCR(apiArtifact, api, operation, operation.operationPolicies, organization, httpRouteRefName);
+                        model:APIPolicy? apiPolicyCR = self.generateAPIPolicyAndBackendCR(apiArtifact, api, operation, operation.operationPolicies, organization, apiArtifact.uniqueId);
                         if apiPolicyCR != () {
                             apiArtifact.apiPolicies[apiPolicyCR.metadata.name] = apiPolicyCR;
                             model:HTTPRouteFilter apiPolicyFilter = {'type: "ExtensionRef", extensionRef: {group: "dp.wso2.com", kind: "APIPolicy", name: apiPolicyCR.metadata.name}};
@@ -1637,7 +1637,7 @@ public class APIClient {
                 targetRef: {
                     group: "",
                     kind: "Resource",
-                    name: retrieveHttpRouteRefName(api, endpointType, organization),
+                    name: getUniqueIdForAPI(api.name, api.'version, organization),
                     namespace: nameSpace
                 },
                 override: {
@@ -2920,7 +2920,7 @@ public class APIClient {
         // adding api level ratelimiting policies
         foreach string extensionRefName in rateLimitPolicies.keys() {
             model:RateLimitPolicy rateLimitPolicyCR = apiArtifact.rateLimitPolicies.get(extensionRefName).clone();
-            if rateLimitPolicyCR.spec.targetRef.name == oldAPIName {
+            if rateLimitPolicyCR.spec.targetRef.kind == "API" && rateLimitPolicyCR.spec.targetRef.name == oldAPIName {
                 model:RateLimitPolicy newRateLimitPolicyCR = self.prepareRateLimitPolicyCR(newAPI, rateLimitPolicyCR, organization);
                 _ = apiArtifact.rateLimitPolicies.remove(extensionRefName);
                 apiArtifact.rateLimitPolicies[newRateLimitPolicyCR.metadata.name] = newRateLimitPolicyCR;
@@ -2947,7 +2947,7 @@ public class APIClient {
     private isolated function prepareAuthenticationCR(model:APIArtifact apiArtifact, API api, model:Authentication authentication, string endpointType, commons:Organization organization) returns model:Authentication {
         authentication.metadata.name = self.retrieveDisableAuthenticationRefName(api, endpointType, organization);
         authentication.metadata.labels = self.getLabels(api, organization);
-        authentication.spec.targetRef.name = apiArtifact.uniqueId;
+        authentication.spec.targetRef.name = getUniqueIdForAPI(api.name, api.'version, organization);
         return authentication;
     }
 
@@ -2961,7 +2961,7 @@ public class APIClient {
     private isolated function prepareAPIPolicyCR(API api, model:APIPolicy apiPolicy, string targetRefName, commons:Organization organization) returns model:APIPolicy {
         apiPolicy.metadata.name = uuid:createType1AsString();
         apiPolicy.metadata.labels = self.getLabels(api, organization);
-        apiPolicy.spec.targetRef.name = targetRefName;
+        apiPolicy.spec.targetRef.name = getUniqueIdForAPI(api.name, api.'version, organization);
         return apiPolicy;
     }
 

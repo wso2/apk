@@ -2758,7 +2758,7 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
                 k8sAPIUUID1,
                 services,
                 [(), ()],
-                [getMockResourceLevelPolicy(check apiWithOperationLevelInterceptorPolicy.cloneWithType(API), organiztion1), getMockAPIPolicyResponse(getMockResourceLevelPolicy(check apiWithOperationLevelInterceptorPolicy.cloneWithType(API), organiztion1).clone())],
+                [getMockResourceLevelPolicy(check apiWithOperationLevelInterceptorPolicy.cloneWithType(API), organiztion1, apiUUID), getMockAPIPolicyResponse(getMockResourceLevelPolicy(check apiWithOperationLevelInterceptorPolicy.cloneWithType(API), organiztion1, apiUUID).clone())],
                 createdAPIWithOperationLevelInterceptorPolicy.toBalString()
             ],
             "11": [
@@ -4713,7 +4713,7 @@ function getMockRateLimitResponse(model:RateLimitPolicy request) returns http:Re
     return response;
 }
 
-function getMockResourceLevelPolicy(API api, commons:Organization organiztion) returns model:APIPolicy {
+function getMockResourceLevelPolicy(API api, commons:Organization organiztion, string apiUUID) returns model:APIPolicy {
     return {
         "apiVersion": "dp.wso2.com/v1alpha1",
         "kind": "APIPolicy",
@@ -4738,7 +4738,7 @@ function getMockResourceLevelPolicy(API api, commons:Organization organiztion) r
             "targetRef": {
                 "group": "dp.wso2.com",
                 "kind": "Resource",
-                "name": "http-route-ref-name",
+                "name": apiUUID,
                 "namespace": "apk-platform"
             }
         }
@@ -5837,8 +5837,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 getMockRuntimeAPIResponse(getMockRuntimeAPI(check apiWithOperationLevelInterceptorPolicy.cloneWithType(API), apiUUID, organiztion1, ())),
                 (),
                 (),
-                getMockResourceLevelPolicy(check apiWithOperationLevelInterceptorPolicy.cloneWithType(API), organiztion1),
-                getMockAPIPolicyResponse(getMockResourceLevelPolicy(check apiWithOperationLevelInterceptorPolicy.cloneWithType(API), organiztion1).clone()),
+                getMockResourceLevelPolicy(check apiWithOperationLevelInterceptorPolicy.cloneWithType(API), organiztion1, apiUUID),
+                getMockAPIPolicyResponse(getMockResourceLevelPolicy(check apiWithOperationLevelInterceptorPolicy.cloneWithType(API), organiztion1, apiUUID).clone()),
                 k8sapiUUID,
                 CreatedAPIWithOperationLevelInterceptorPolicy.toBalString()
             ]
