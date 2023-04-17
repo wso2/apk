@@ -2595,8 +2595,16 @@ public class APIClient {
                             lang:Object[] uriTemplates = check uRITemplates.toArray();
                             foreach lang:Object uritemplate in uriTemplates {
                                 runtimeModels:URITemplate template = check java:cast(uritemplate);
+                                boolean skip = false;
                                 if operations is APIOperations[] {
-                                    operations.push({target: template.getUriTemplate(), authTypeEnabled: template.isAuthEnabled(), verb: template.getHTTPVerb().toString().toUpperAscii()});
+                                    foreach APIOperations operation in operations {
+                                        if operation.target == template.getUriTemplate() && operation.verb == template.getHTTPVerb().toString().toUpperAscii() {
+                                           skip = true;
+                                        }
+                                    }
+                                    if !skip {
+                                        operations.push({target: template.getUriTemplate(), authTypeEnabled: template.isAuthEnabled(), verb: template.getHTTPVerb().toString().toUpperAscii()});
+                                    }
                                 }
                             }
                             additionalPropertes.operations = operations;
