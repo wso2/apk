@@ -49,10 +49,6 @@ listener http:Listener internalAdminEp = new (9444, secureSocket = {
 
 function init() {
     log:printInfo("Starting APK Admin Domain Service...");
-    APKConfiguration apkConfig = {
-        throttlingConfiguration: throttleConfig,
-        datasourceConfiguration: datasourceConfiguration
-    };
     dbClient =
         new (host = datasourceConfiguration.host,
     username = datasourceConfiguration.username,

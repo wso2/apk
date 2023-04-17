@@ -29,7 +29,7 @@ spec:
    - {{ template "apk-helm.resource.prefix" . }}-admin-ds-service.{{ .Release.Namespace }}.svc
   secretRef:
   {{- if and .Values.wso2.apk.cp.admin.configs .Values.wso2.apk.cp.admin.configs.tls }}
-    name: {{.Values.wso2.apk.cp.admin.configs.tls.certificatesSecret}}
+    name: {{.Values.wso2.apk.cp.admin.configs.tls.secretName}}
     key: {{.Values.wso2.apk.cp.admin.configs.tls.certFilename}}
   {{- else }}
     name: {{ template "apk-helm.resource.prefix" . }}-admin-ds-server-cert

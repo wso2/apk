@@ -24,7 +24,7 @@ metadata:
     api-version: "1.0.0"
 spec:
   hostnames:
-  - "idp.am.wso2.com"
+  - "{{ .Values.idp.listener.hostname | default "idp.am.wso2.com"}}"
   rules:
   - matches:
     - path:

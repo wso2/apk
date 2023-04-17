@@ -24,7 +24,7 @@ metadata:
     api-version: "1.0.0"
 spec:
   hostnames:
-  - "api.am.wso2.com"
+  - "{{ .Values.wso2.apk.listener.hostname | default "api.am.wso2.com"}}"
   rules:
   - matches:
     - path:

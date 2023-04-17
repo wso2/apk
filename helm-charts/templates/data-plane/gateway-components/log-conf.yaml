@@ -28,7 +28,7 @@ data:
       location = "/home/wso2/security/truststore"
 
     [router]
-      securedListenerPort = {{ .Values.wso2.apk.dp.gateway.listener.port }}
+      securedListenerPort = 9095
       systemHost = "localhost"
       useRemoteAddress = false
 
@@ -61,7 +61,7 @@ data:
       {{ end }}
       validateSubscription = true
       consumerKeyClaim = "{{ .Values.wso2.apk.idp.consumerKeyClaim | default "azp" }}"
-      {{ if .Values.wso2.apk.idp.certificatesSecret }}
+      {{ if and .Values.wso2.apk.idp.signing .Values.wso2.apk.idp.signing.secretName }}
       certificateFilePath = "/home/wso2/security/truststore/idp.pem"
       {{ else }}
       certificateFilePath = "/home/wso2/security/truststore/wso2carbon.pem"
@@ -140,10 +140,10 @@ data:
     {{end}}
     {{ if .Values.wso2.apk.dp.partitionService}}
     [partitionServer]
-      enabled = {{.Values.wso2.apk.dp.partitionService.enabled}}
-      host = "{{ .Values.wso2.apk.dp.partitionService.host}}"
-      serviceBasePath = "{{ .Values.wso2.apk.dp.partitionService.serviceBasePath}}"
-      partitionName = "{{ .Values.wso2.apk.dp.partitionService.partitionName}}"
+      enabled = {{.Values.wso2.apk.dp.partitionServer.enabled}}
+      host = "{{ .Values.wso2.apk.dp.partitionServer.host}}"
+      serviceBasePath = "{{ .Values.wso2.apk.dp.partitionServer.serviceBasePath}}"
+      partitionName = "{{ .Values.wso2.apk.dp.partitionServer.partitionName}}"
     {{end}}
 {{ if and .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.filters }}
 {{ range $index, $filter := .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.filters}}

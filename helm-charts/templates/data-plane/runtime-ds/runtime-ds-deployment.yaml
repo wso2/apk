@@ -68,11 +68,19 @@ spec:
             - mountPath: /home/wso2apk/runtime/conf/Config.toml
               name: config-toml-volume
               subPath: Config.toml
+            {{if .Values.wso2.apk.dp.controlPlane}}
+            {{if .Values.wso2.apk.dp.controlPlane.enabled }}
             {{ if and .Values.wso2.apk.dp.controlPlane .Values.wso2.apk.dp.controlPlane.tls }}
             - mountPath: /home/wso2apk/runtime/security/controlplane.pem
               name: cp-public-key-volume
               subPath: {{ .Values.wso2.apk.dp.controlPlane.tls.fileName | default "tls.crt"}}
             {{else}}
+            - mountPath: /home/wso2apk/runtime/security/controlplane.pem
+              name: cp-public-key-volume
+              subPath: tls.crt
+            {{ end }}
+            {{ end }}
+            {{ else }}
             - mountPath: /home/wso2apk/runtime/security/controlplane.pem
               name: cp-public-key-volume
               subPath: tls.crt
@@ -94,9 +102,6 @@ spec:
       {{- if and .Values.wso2.subscription .Values.wso2.subscription.imagePullSecrets}}
       imagePullSecrets:
         - name: {{ .Values.wso2.subscription.imagePullSecrets }}
-      {{- else if and .Values.wso2.subscription (not (eq .Values.wso2.subscription.username "")) (not (eq .Values.wso2.subscription.password "")) }}
-      imagePullSecrets:
-        - name: {{ template "apk-helm.resource.prefix" . }}-apk-wso2-private-registry-creds
       {{ end }}      
 
       volumes:
@@ -109,19 +114,27 @@ spec:
         - name: config-toml-volume
           configMap:
             name: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-configmap
+        {{if and .Values.wso2.apk.dp.controlPlane}}
+        {{if .Values.wso2.apk.dp.controlPlane.enabled }}
         {{ if and .Values.wso2.apk.dp.controlPlane .Values.wso2.apk.dp.controlPlane.tls }}
         - name: cp-public-key-volume
           secret:
-            secretName: {{ .Values.wso2.apk.dp.controlPlane.tls.certificatesSecret | default (printf "%s-admin-ds-server-cert" (include "apk-helm.resource.prefix" .)) }}
+            secretName: {{ .Values.wso2.apk.dp.controlPlane.tls.secretName | default (printf "%s-admin-ds-server-cert" (include "apk-helm.resource.prefix" .)) }}
         {{else}}
         - name: cp-public-key-volume
           secret:
             secretName: {{ template "apk-helm.resource.prefix" . }}-admin-ds-server-cert
        {{ end }}
+        {{ end }}
+        {{ else }}
+        - name: cp-public-key-volume
+          secret:
+            secretName: {{ template "apk-helm.resource.prefix" . }}-admin-ds-server-cert
+        {{ end }}
         - name: runtime-ds-tls-volume
           secret:
        {{ if and .Values.wso2.apk.dp.runtime.configs .Values.wso2.apk.dp.runtime.configs.tls }}
-            secretName: {{ .Values.wso2.apk.dp.runtime.configs.tls.certificatesSecret | default (printf "%s-runtime-ds-server-cert" (include "apk-helm.resource.prefix" .)) }}
+            secretName: {{ .Values.wso2.apk.dp.runtime.configs.tls.secretName | default (printf "%s-runtime-ds-server-cert" (include "apk-helm.resource.prefix" .)) }}
        {{ else }}
             secretName: {{ template "apk-helm.resource.prefix" . }}-runtime-ds-server-cert
        {{ end }}
