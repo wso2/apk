@@ -163,7 +163,7 @@ http:Service runtimeService = service object {
         commons:Organization organization = authenticatedUserContext.organization;
         return apiService.getEndpointCertificateByID(apiId,certificateId, organization);
     }
-    resource function put apis/[string apiId]/'endpoint\-certificates/[string certificateId](http:RequestContext requestContext,http:Request request) returns CertMetadata|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
+    resource function put apis/[string apiId]/'endpoint\-certificates/[string certificateId](http:RequestContext requestContext,http:Request request) returns OkCertMetadata|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
         final APIClient apiService = new ();
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;

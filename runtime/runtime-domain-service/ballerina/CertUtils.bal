@@ -123,7 +123,7 @@ isolated function convertConfigMapToCertificate(model:ConfigMap configMap) retur
     boolean active = false;
     [int, decimal] currentTime = time:utcNow();
     if currentTime[0] >= check int:fromString(notBefore) && currentTime[0] <= check int:fromString(notAfter) {
-        active = false;
+        active = true;
     }
     return {
         'version: certificateVersion,

@@ -3749,7 +3749,23 @@ public class APIClient {
         if api is model:API {
             model:Certificate[] certificates = check getCertificatesForAPIId(api.clone(), organization.clone());
             [model:Certificate[], int] filtredCerts = self.filterCertificatesBasedOnQuery(certificates.clone(), endpoint, 'limit, offset);
-            return {certificates: self.transformCertificateToCertMetadata(filtredCerts[0].cloneReadOnly()), count: filtredCerts[0].length(), pagination: {total: filtredCerts[1], 'limit: 'limit, offset: offset}};
+            string previousCertificates = "";
+            string nextCertificates = "";
+            string urlTemplate = "/apis/%apiId%/endpoint-certificates?limit=%limit%&offset=%offset%&endpoint=%query%";
+            urlTemplate = regex:replace(urlTemplate, "%apiId%", apiId);
+            if offset > certificates.length() {
+                previousCertificates = "";
+            } else if offset > 'limit {
+                previousCertificates = self.getPaginatedURL(urlTemplate, 'limit, offset - 'limit, "", "", endpoint.toString());
+            } else if offset > 0 {
+                previousCertificates = self.getPaginatedURL(urlTemplate, 'limit, 0, "", "", endpoint.toString());
+            }
+            if filtredCerts[0].length() < 'limit {
+                nextCertificates = "";
+            } else if (certificates.length() > offset + 'limit) {
+                nextCertificates = self.getPaginatedURL(urlTemplate, 'limit, offset + 'limit, "", "", endpoint.toString());
+            }
+            return {certificates: self.transformCertificateToCertMetadata(filtredCerts[0].cloneReadOnly()), count: filtredCerts[0].length(), pagination: {total: filtredCerts[1], 'limit: 'limit, offset: offset, next: nextCertificates, previous: previousCertificates}};
         } else {
             return e909001(apiId);
         }
@@ -3796,7 +3812,8 @@ public class APIClient {
                 if (validateCertificateExpiryResult[1]) {
                     model:ConfigMap certificateConfigMapEntry = check createCertificateConfigMapEntry(check convertK8sAPItoAPI(api, true), endpointCertificate, <crypto:Certificate>validateCertificateExpiryResult[0], organization);
                     model:ConfigMap deployedConfigMap = check self.deployConfigMap(certificateConfigMapEntry);
-                    OkCertMetadata okCertMetaData = {body: {certificateId: deployedConfigMap.metadata.uid, endpoint: endpointCertificate.host}};
+                    string locationUrl = runtimeConfiguration.baseURl + "/apis/" + apiId + "/endpoint-certificates/" + deployedConfigMap.metadata.uid.toString();
+                    OkCertMetadata okCertMetaData = {body: {certificateId: deployedConfigMap.metadata.uid, endpoint: endpointCertificate.host}, headers: {location: locationUrl}};
                     return okCertMetaData;
                 } else {
                     return e909030();
@@ -3854,8 +3871,8 @@ public class APIClient {
                     subject: certificate.subject,
                     status: certificate.active ? "Active" : "Expired",
                     validity: {
-                        'from: check time:civilToString(time:utcToCivil(notBeforeTime)),
-                        to: check time:civilToString(time:utcToCivil(notAfterTime))
+                        'from: time:utcToString((notBeforeTime)),
+                        to: time:utcToString((notAfterTime))
                     }
                 };
                 return certificateInfo;
@@ -3871,7 +3888,7 @@ public class APIClient {
         }
     }
 
-    public isolated function updateEndpointCertificate(string apiId, string certificateId, http:Request request, commons:Organization organization) returns CertMetadata|BadRequestError|InternalServerErrorError|commons:APKError {
+    public isolated function updateEndpointCertificate(string apiId, string certificateId, http:Request request, commons:Organization organization) returns OkCertMetadata|BadRequestError|InternalServerErrorError|commons:APKError {
         do {
             model:API? api = getAPI(apiId, organization);
             if api is model:API {
@@ -3883,7 +3900,8 @@ public class APIClient {
                         model:ConfigMap certificateConfigMapEntry = check createCertificateConfigMapEntry(check convertK8sAPItoAPI(api, true), endpointCertificate, <crypto:Certificate>validateCertificateExpiryResult[0], organization);
                         certificateConfigMapEntry.metadata.name = configMapById.metadata.name;
                         model:ConfigMap deployedConfigMap = check self.updateConfigMap(certificateConfigMapEntry);
-                        CertMetadata okCertMetaData = {certificateId: deployedConfigMap.metadata.uid, endpoint: endpointCertificate.host};
+                        string locationUrl = runtimeConfiguration.baseURl + "/apis/" + apiId + "/endpoint-certificates/" + deployedConfigMap.metadata.uid.toString();
+                        OkCertMetadata okCertMetaData = {body: {certificateId: deployedConfigMap.metadata.uid, endpoint: endpointCertificate.host}, headers: {location: locationUrl}};
                         return okCertMetaData;
                     } else {
                         return e909030();
