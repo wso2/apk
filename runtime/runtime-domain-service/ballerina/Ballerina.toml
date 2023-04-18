@@ -1,7 +1,7 @@
 [package]
 org = "wso2"
 name = "runtime_domain_service"
-version = "0.0.1-SNAPSHOT"
+version = "0.0.1-m8"
 distribution = "2201.2.3"
 
 [build-options]
@@ -16,8 +16,8 @@ repository = "local"
 [[platform.java11.dependency]]
 groupId = "org.wso2.apk"
 artifactId = "org.wso2.apk.runtime"
-version = "0.0.1-SNAPSHOT"
-path = "../java/build/libs/org.wso2.apk.runtime-0.0.1-SNAPSHOT.jar"
+version = "0.0.1-m8"
+path = "../java/build/libs/org.wso2.apk.runtime-0.0.1-m8.jar"
 
 # transitive dependency of org.wso2.apk:org.wso2.apk.runtime:0.0.1-SNAPSHOT
 [[platform.java11.dependency]]
@@ -241,7 +241,17 @@ groupId = "jakarta.xml.bind"
 artifactId = "jakarta.xml.bind-api"
 version = "2.3.2"
 
+# transitive dependency of io.swagger.core.v3:swagger-core:2.2.9
+[[platform.java11.dependency]]
+groupId = "jakarta.activation"
+artifactId = "jakarta.activation-api"
+version = "1.2.1"
 
+# transitive dependency of io.swagger.core.v3:swagger-core:2.2.9
+[[platform.java11.dependency]]
+groupId = "org.apache.commons"
+artifactId = "commons-lang3"
+version = "3.12.0"
 
 # transitive dependency of io.swagger.core.v3:swagger-core:2.2.9
 [[platform.java11.dependency]]
