@@ -2581,7 +2581,7 @@ public class APIClient {
                         return e909006();
                     }
                 }
-                runtimeapi:APIDefinitionValidationResponse|runtimeapi:APIManagementException validateAndRetrieveDefinitionResult = check self.validateAndRetrieveDefinition(importDefinitionRequest.'type, importDefinitionRequest.url, importDefinitionRequest.inlineAPIDefinition, importDefinitionRequest.content, importDefinitionRequest.fileName);
+                runtimeapi:APIDefinitionValidationResponse|runtimeapi:APIManagementException|commons:APKError validateAndRetrieveDefinitionResult = check self.validateAndRetrieveDefinition(importDefinitionRequest.'type, importDefinitionRequest.url, importDefinitionRequest.inlineAPIDefinition, importDefinitionRequest.content, importDefinitionRequest.fileName);
                 if validateAndRetrieveDefinitionResult is runtimeapi:APIDefinitionValidationResponse {
                     if validateAndRetrieveDefinitionResult.isValid() {
                         runtimeapi:APIDefinition parser = validateAndRetrieveDefinitionResult.getParser();
