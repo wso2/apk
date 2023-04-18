@@ -3347,19 +3347,23 @@ public class APIClient {
                     foreach model:Httproute httpRoute in apiArtifact.sandboxRoute {
                         _ = check self.convertAndStoreYamlFile(httpRoute.toJsonString(), httpRoute.metadata.name, zipDir, "httproutes");
                     }
-
                     foreach model:K8sServiceMapping servicemapping in apiArtifact.serviceMapping {
                         _ = check self.convertAndStoreYamlFile(servicemapping.toJsonString(), servicemapping.metadata.name, zipDir, "servicemappings");
                     }
                     foreach model:Backend backend in apiArtifact.backendServices {
                         _ = check self.convertAndStoreYamlFile(backend.toJsonString(), backend.metadata.name, zipDir, "backends");
-
                     }
                     foreach model:Scope scope in apiArtifact.scopes {
                         _ = check self.convertAndStoreYamlFile(scope.toJsonString(), scope.metadata.name, zipDir, "scopes");
                     }
                     foreach model:ConfigMap endpointCertificate in apiArtifact.endpointCertificates {
                         _ = check self.convertAndStoreYamlFile(endpointCertificate.toJsonString(), endpointCertificate.metadata.name, zipDir, "endpoint-certificates");
+                    }
+                    foreach model:RateLimitPolicy rateLimitPolicy in apiArtifact.rateLimitPolicies {
+                        _ = check self.convertAndStoreYamlFile(rateLimitPolicy.toJsonString(), rateLimitPolicy.metadata.name, zipDir, "policies/ratelimits");
+                    }
+                    foreach model:APIPolicy apiPolicy in apiArtifact.apiPolicies {
+                        _ = check self.convertAndStoreYamlFile(apiPolicy.toJsonString(), apiPolicy.metadata.name, zipDir, "policies/apipolicies");
                     }
                     model:RuntimeAPI? runtimeAPI = apiArtifact.runtimeAPI;
                     if runtimeAPI is model:RuntimeAPI {
