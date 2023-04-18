@@ -149,7 +149,7 @@ public class APIClient {
     }
 
     //Delete APIs deployed in a namespace by APIId.
-    public isolated function deleteAPIById(string id, commons:Organization organization) returns http:Ok|ForbiddenError|commons:APKError {
+    public isolated function deleteAPIById(string id, commons:Organization organization) returns http:Ok|commons:APKError {
         boolean APIIDAvailable = id.length() > 0 ? true : false;
         if (APIIDAvailable && string:length(id.toString()) > 0)
         {
@@ -3454,7 +3454,7 @@ public class APIClient {
         return [zipName, zipPath];
     }
 
-    public isolated function updateAPI(string apiId, API payload, string? definition, commons:Organization organization, string userName) returns API|ForbiddenError|PreconditionFailedError|commons:APKError {
+    public isolated function updateAPI(string apiId, API payload, string? definition, commons:Organization organization, string userName) returns API|PreconditionFailedError|commons:APKError {
         do {
             API|commons:APKError api = check self.getAPIById(apiId, organization);
             if api is API {
