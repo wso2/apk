@@ -3575,9 +3575,9 @@ public class APIClient {
             API|commons:APKError api = check self.getAPIById(apiId, organization);
             if api is API {
                 API updateAPI = {...api};
-                DefinitionValidationRequest|BadRequestError definitionValidationRequest = check self.mapApiDefinitionPayload(payload);
+                DefinitionValidationRequest|commons:APKError definitionValidationRequest = check self.mapApiDefinitionPayload(payload);
                 if definitionValidationRequest is DefinitionValidationRequest {
-                    runtimeapi:APIDefinitionValidationResponse|runtimeapi:APIManagementException|BadRequestError validateAndRetrieveDefinitionResult = check self.validateAndRetrieveDefinition(updateAPI.'type, definitionValidationRequest.url, definitionValidationRequest.inlineAPIDefinition, definitionValidationRequest.content, definitionValidationRequest.fileName);
+                    runtimeapi:APIDefinitionValidationResponse|runtimeapi:APIManagementException|commons:APKError validateAndRetrieveDefinitionResult = check self.validateAndRetrieveDefinition(updateAPI.'type, definitionValidationRequest.url, definitionValidationRequest.inlineAPIDefinition, definitionValidationRequest.content, definitionValidationRequest.fileName);
                     if validateAndRetrieveDefinitionResult is runtimeapi:APIDefinitionValidationResponse {
                         if validateAndRetrieveDefinitionResult.isValid() {
                             runtimeapi:APIDefinition parser = validateAndRetrieveDefinitionResult.getParser();
@@ -3622,8 +3622,8 @@ public class APIClient {
                                 log:printError("Error occured retrieving uri templates from definition", uRITemplates);
                                 runtimeapi:JAPIManagementException excetion = check uRITemplates.ensureType(runtimeapi:JAPIManagementException);
                                 runtimeapi:ErrorHandler errorHandler = excetion.getErrorHandler();
-                                BadRequestError badeRequest = {body: {code: errorHandler.getErrorCode(), message: errorHandler.getErrorMessage().toString()}};
-                                return badeRequest;
+
+                                return e909000(errorHandler.getErrorCode(), errorHandler.getErrorMessage().toString());
                             }
                         }
                         // Error definition.
@@ -3636,17 +3636,16 @@ public class APIClient {
                         }
                         BadRequestError badRequest = {body: {code: 90091, message: "Invalid API Definition", 'error: errorItems}};
                         return badRequest;
-                    } else if validateAndRetrieveDefinitionResult is BadRequestError {
+                    } else if validateAndRetrieveDefinitionResult is commons:APKError {
                         return validateAndRetrieveDefinitionResult;
                     } else {
                         log:printError("Error occured creating api from defintion", validateAndRetrieveDefinitionResult);
                         runtimeapi:JAPIManagementException excetion = check validateAndRetrieveDefinitionResult.ensureType(runtimeapi:JAPIManagementException);
                         runtimeapi:ErrorHandler errorHandler = excetion.getErrorHandler();
-                        BadRequestError badeRequest = {body: {code: errorHandler.getErrorCode(), message: errorHandler.getErrorMessage().toString()}};
-                        return badeRequest;
+                        return e909000(errorHandler.getErrorCode(), errorHandler.getErrorMessage().toString());
                     }
                 } else {
-                    return <BadRequestError>definitionValidationRequest;
+                    return <commons:APKError>definitionValidationRequest;
                 }
             } else {
                 return <commons:APKError>api;
@@ -3777,7 +3776,7 @@ public class APIClient {
     # + sortOrder - SortOrder  Parameter
     # + organization - Organization
     # + return - Return list of Mediation Policies.
-    public isolated function getMediationPolicyList(string? query, int 'limit, int offset, string sortBy, string sortOrder, commons:Organization organization) returns MediationPolicyList|BadRequestError|InternalServerErrorError|commons:APKError {
+    public isolated function getMediationPolicyList(string? query, int 'limit, int offset, string sortBy, string sortOrder, commons:Organization organization) returns MediationPolicyList|InternalServerErrorError|commons:APKError {
         MediationPolicy[] mediationPolicyList = [];
         foreach model:MediationPolicy mediationPolicy in getAvailableMediaionPolicies(organization) {
             MediationPolicy policyItem = convertPolicyModeltoPolicy(mediationPolicy);
@@ -3792,7 +3791,7 @@ public class APIClient {
         }
     }
 
-    public isolated function getCertificates(string apiId, string? endpoint, int 'limit, int offset, commons:Organization organization) returns Certificates|BadRequestError|InternalServerErrorError|commons:APKError {
+    public isolated function getCertificates(string apiId, string? endpoint, int 'limit, int offset, commons:Organization organization) returns Certificates|InternalServerErrorError|commons:APKError {
         model:API? api = getAPI(apiId, organization);
         if api is model:API {
             model:Certificate[] certificates = check getCertificatesForAPIId(api.clone(), organization.clone());
@@ -3851,7 +3850,7 @@ public class APIClient {
         return [limitSet, filteredList.length()];
     }
 
-    public isolated function addCertificate(string apiId, http:Request request, commons:Organization organization) returns OkCertMetadata|BadRequestError|InternalServerErrorError|commons:APKError {
+    public isolated function addCertificate(string apiId, http:Request request, commons:Organization organization) returns OkCertMetadata|InternalServerErrorError|commons:APKError {
         do {
             model:API? api = getAPI(apiId, organization);
             if api is model:API {
@@ -3907,7 +3906,7 @@ public class APIClient {
         }
     }
 
-    public isolated function getEndpointCertificateByID(string apiId, string certificateId, commons:Organization organization) returns CertificateInfo|BadRequestError|InternalServerErrorError|commons:APKError {
+    public isolated function getEndpointCertificateByID(string apiId, string certificateId, commons:Organization organization) returns CertificateInfo|InternalServerErrorError|commons:APKError {
         do {
             model:API? api = getAPI(apiId, organization);
             if api is model:API {
@@ -3936,7 +3935,7 @@ public class APIClient {
         }
     }
 
-    public isolated function updateEndpointCertificate(string apiId, string certificateId, http:Request request, commons:Organization organization) returns OkCertMetadata|BadRequestError|InternalServerErrorError|commons:APKError {
+    public isolated function updateEndpointCertificate(string apiId, string certificateId, http:Request request, commons:Organization organization) returns OkCertMetadata|commons:APKError {
         do {
             model:API? api = getAPI(apiId, organization);
             if api is model:API {
@@ -3970,7 +3969,7 @@ public class APIClient {
         }
     }
 
-    public isolated function deleteEndpointCertificate(string apiId, string certificateId, commons:Organization organization) returns http:Ok|BadRequestError|InternalServerErrorError|commons:APKError {
+    public isolated function deleteEndpointCertificate(string apiId, string certificateId, commons:Organization organization) returns http:Ok|InternalServerErrorError|commons:APKError {
         do {
             model:API? api = getAPI(apiId, organization);
             if api is model:API {
@@ -3995,7 +3994,7 @@ public class APIClient {
         }
     }
 
-    public isolated function getEndpointCertificateContent(string apiId, string certificateId, commons:Organization organization) returns http:Response|BadRequestError|InternalServerErrorError|commons:APKError {
+    public isolated function getEndpointCertificateContent(string apiId, string certificateId, commons:Organization organization) returns http:Response|InternalServerErrorError|commons:APKError {
         do {
             model:API? api = getAPI(apiId, organization);
             if api is model:API {
