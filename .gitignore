@@ -69,3 +69,7 @@ bin
 gateway/router/envoy-filters/**/bazel-*
 gateway/router/envoy-filters/.vscode
 gateway/router/envoy-filters/.idea
+
+# node_modules
+developer/samples/request-response-mediation-interceptors/apk-nodejs-legacy-xml-backend/node_modules/
+developer/samples/request-response-mediation-interceptors/apk-nodejs-interceptor-server-generated/node_modules/

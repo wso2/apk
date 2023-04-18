@@ -1,0 +1,15 @@
+{
+  "name": "apk-nodejs-legacy-xml-backend",
+  "version": "1.0.0",
+  "description": "legacy xml backend",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "http": "^0.0.1-security",
+    "uri": "^0.1.0"
+  }
+}
