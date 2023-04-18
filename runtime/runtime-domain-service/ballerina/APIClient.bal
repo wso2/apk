@@ -2009,7 +2009,7 @@ public class APIClient {
         }
     }
 
-    public isolated function validateDefinition(http:Request message, boolean returnContent) returns InternalServerErrorError|BadRequestError|http:Ok|commons:APKError {
+    public isolated function validateDefinition(http:Request message, boolean returnContent) returns InternalServerErrorError|http:Ok|commons:APKError {
         do {
             DefinitionValidationRequest|commons:APKError definitionValidationRequest = check self.mapApiDefinitionPayload(message);
             if definitionValidationRequest is DefinitionValidationRequest {
@@ -2056,8 +2056,7 @@ public class APIClient {
                 } else {
                     runtimeapi:JAPIManagementException exception = check validationResponse.ensureType(runtimeapi:JAPIManagementException);
                     runtimeapi:ErrorHandler errorHandler = exception.getErrorHandler();
-                    BadRequestError badRequest = {body: {code: errorHandler.getErrorCode(), message: errorHandler.getErrorMessage().toString()}};
-                    return badRequest;
+                    return e909000(errorHandler.getErrorCode(), errorHandler.getErrorMessage().toString());
                 }
             } else {
                 return definitionValidationRequest;
@@ -2575,14 +2574,14 @@ public class APIClient {
 
     public isolated function importDefinition(http:Request payload, commons:Organization organization, string userName) returns commons:APKError|CreatedAPI|InternalServerErrorError|BadRequestError {
         do {
-            ImportDefintionRequest|BadRequestError importDefinitionRequest = check self.mapImportDefinitionRequest(payload);
+            ImportDefintionRequest|commons:APKError importDefinitionRequest = check self.mapImportDefinitionRequest(payload);
             if importDefinitionRequest is ImportDefintionRequest {
                 lock {
                     if (ALLOWED_API_TYPES.indexOf(importDefinitionRequest.'type) is ()) {
                         return e909006();
                     }
                 }
-                runtimeapi:APIDefinitionValidationResponse|runtimeapi:APIManagementException|BadRequestError validateAndRetrieveDefinitionResult = check self.validateAndRetrieveDefinition(importDefinitionRequest.'type, importDefinitionRequest.url, importDefinitionRequest.inlineAPIDefinition, importDefinitionRequest.content, importDefinitionRequest.fileName);
+                runtimeapi:APIDefinitionValidationResponse|runtimeapi:APIManagementException validateAndRetrieveDefinitionResult = check self.validateAndRetrieveDefinition(importDefinitionRequest.'type, importDefinitionRequest.url, importDefinitionRequest.inlineAPIDefinition, importDefinitionRequest.content, importDefinitionRequest.fileName);
                 if validateAndRetrieveDefinitionResult is runtimeapi:APIDefinitionValidationResponse {
                     if validateAndRetrieveDefinitionResult.isValid() {
                         runtimeapi:APIDefinition parser = validateAndRetrieveDefinitionResult.getParser();
@@ -2615,8 +2614,7 @@ public class APIClient {
                         log:printError("Error occured retrieving uri templates from definition", uRITemplates);
                         runtimeapi:JAPIManagementException excetion = check uRITemplates.ensureType(runtimeapi:JAPIManagementException);
                         runtimeapi:ErrorHandler errorHandler = excetion.getErrorHandler();
-                        BadRequestError badeRequest = {body: {code: errorHandler.getErrorCode(), message: errorHandler.getErrorMessage().toString()}};
-                        return badeRequest;
+                        return e909000(errorHandler.getErrorCode(), errorHandler.getErrorMessage().toString());
                     }
                     // Error definition.
                     ErrorListItem[] errorItems = [];
@@ -2628,17 +2626,16 @@ public class APIClient {
                     }
                     BadRequestError badRequest = {body: {code: 90091, message: "Invalid API Definition", 'error: errorItems}};
                     return badRequest;
-                } else if validateAndRetrieveDefinitionResult is BadRequestError {
+                } else if validateAndRetrieveDefinitionResult is commons:APKError {
                     return validateAndRetrieveDefinitionResult;
                 } else {
                     log:printError("Error occured creating api from defintion", validateAndRetrieveDefinitionResult);
                     runtimeapi:JAPIManagementException excetion = check validateAndRetrieveDefinitionResult.ensureType(runtimeapi:JAPIManagementException);
                     runtimeapi:ErrorHandler errorHandler = excetion.getErrorHandler();
-                    BadRequestError badeRequest = {body: {code: errorHandler.getErrorCode(), message: errorHandler.getErrorMessage().toString()}};
-                    return badeRequest;
+                    return e909000(errorHandler.getErrorCode(), errorHandler.getErrorMessage().toString());
                 }
             } else {
-                return <BadRequestError>importDefinitionRequest;
+                return <commons:APKError>importDefinitionRequest;
             }
         } on fail var e {
             log:printError("Error occured importing API", e);
@@ -2686,7 +2683,7 @@ public class APIClient {
         return validationResponse;
     }
 
-    private isolated function mapImportDefinitionRequest(http:Request message) returns ImportDefintionRequest|error|BadRequestError {
+    private isolated function mapImportDefinitionRequest(http:Request message) returns ImportDefintionRequest|error|commons:APKError {
         string|() url = ();
         string|() fileName = ();
         byte[]|() fileContent = ();
@@ -2734,7 +2731,7 @@ public class APIClient {
         };
         return importDefintionRequest;
     }
-    public isolated function copyAPI(string newVersion, string? serviceId, string apiId, commons:Organization organization, string userName) returns CreatedAPI|BadRequestError|commons:APKError {
+    public isolated function copyAPI(string newVersion, string? serviceId, string apiId, commons:Organization organization, string userName) returns CreatedAPI|commons:APKError {
         // validating API existence.
         if newVersion.trim().length() == 0 || apiId.trim().length() == 0 {
             return e909045();
@@ -3374,7 +3371,7 @@ public class APIClient {
         };
     }
 
-    public isolated function exportAPI(string? apiId, commons:Organization organization) returns commons:APKError|http:Response|BadRequestError {
+    public isolated function exportAPI(string? apiId, commons:Organization organization) returns commons:APKError|http:Response {
         if apiId is string {
             do {
                 API|commons:APKError api = check self.getAPIById(apiId, organization);
@@ -3457,7 +3454,7 @@ public class APIClient {
         return [zipName, zipPath];
     }
 
-    public isolated function updateAPI(string apiId, API payload, string? definition, commons:Organization organization, string userName) returns API|BadRequestError|ForbiddenError|PreconditionFailedError|InternalServerErrorError|commons:APKError {
+    public isolated function updateAPI(string apiId, API payload, string? definition, commons:Organization organization, string userName) returns API|ForbiddenError|PreconditionFailedError|InternalServerErrorError|commons:APKError {
         do {
             API|commons:APKError api = check self.getAPIById(apiId, organization);
             if api is API {

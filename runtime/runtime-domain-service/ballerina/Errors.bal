@@ -21,6 +21,15 @@
 
 import wso2/apk_common_lib as commons;
 
+public isolated function e909000(int code, string msg) returns commons:APKError {
+    return error commons:APKError( msg,
+        code = 909000,
+        message = msg,
+        statusCode = code,
+        description = msg
+    ); 
+}
+
 public isolated function e909001(string id) returns commons:APKError {
     return error commons:APKError( id + " not found",
         code = 909001,
@@ -47,16 +56,6 @@ public isolated function e909003() returns commons:APKError {
         description = "apiId not found in request"
     ); 
 }
-
-// this error has been removed. can add another one to this code.
-// public isolated function e909004(string serviceKey) returns commons:APKError {
-//     return error commons:APKError( "Service from " + serviceKey + " not found",
-//         code = 909004,
-//         message =  "Service from " + serviceKey + " not found",
-//         statusCode = 404,
-//         description =  "Service from " + serviceKey + " not found"
-//     ); 
-// }
 
 public isolated function e909004() returns commons:APKError {
     return error commons:APKError( "Invalid property id in Request",
