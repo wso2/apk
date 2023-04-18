@@ -299,7 +299,7 @@ public class APIClient {
     # + sortOrder - Parameter Description  
     # + organization - Parameter Description
     # + return - Return list of APIS in namsepace.
-    public isolated function getAPIList(string? query, int 'limit, int offset, string sortBy, string sortOrder, commons:Organization organization) returns APIList|BadRequestError|commons:APKError {
+    public isolated function getAPIList(string? query, int 'limit, int offset, string sortBy, string sortOrder, commons:Organization organization) returns APIList|commons:APKError {
         API[] apilist = [];
         foreach model:API api in getAPIs(organization) {
             API convertedModel = check convertK8sAPItoAPI(api, true);
@@ -411,12 +411,11 @@ public class APIClient {
         return url;
     }
 
-    public isolated function createAPI(API api, string? definition, commons:Organization organization, string userName) returns commons:APKError|CreatedAPI|BadRequestError {
+    public isolated function createAPI(API api, string? definition, commons:Organization organization, string userName) returns commons:APKError|CreatedAPI {
         do {
             string? id = api.id;
             if id is string && !runtimeConfiguration.migrationMode {
-                BadRequestError badRequest = {body: {code: 90911, message: "Invalid property id in Request", description: "Invalid property id in Request"}};
-                return badRequest;
+                return e909004();
             }
             if (self.validateName(api.name, organization)) {
                 return e909011(api.name);
@@ -877,12 +876,11 @@ public class APIClient {
         return false;
     }
 
-    isolated function createAPIFromService(string serviceKey, API api, commons:Organization organization, string userName) returns CreatedAPI|BadRequestError|InternalServerErrorError|commons:APKError {
+    isolated function createAPIFromService(string serviceKey, API api, commons:Organization organization, string userName) returns CreatedAPI|InternalServerErrorError|commons:APKError {
         do {
             string? id = api.id;
             if id is string && !runtimeConfiguration.migrationMode {
-                BadRequestError badRequest = {body: {code: 90911, message: "Invalid property id in Request", description: "Invalid property id in Request"}};
-                return badRequest;
+                return e909004();
             }
 
             if (self.validateName(api.name, organization)) {
@@ -2013,9 +2011,9 @@ public class APIClient {
 
     public isolated function validateDefinition(http:Request message, boolean returnContent) returns InternalServerErrorError|BadRequestError|http:Ok|commons:APKError {
         do {
-            DefinitionValidationRequest|BadRequestError definitionValidationRequest = check self.mapApiDefinitionPayload(message);
+            DefinitionValidationRequest|commons:APKError definitionValidationRequest = check self.mapApiDefinitionPayload(message);
             if definitionValidationRequest is DefinitionValidationRequest {
-                runtimeapi:APIDefinitionValidationResponse|runtimeapi:APIManagementException|error|BadRequestError validationResponse = self.validateAndRetrieveDefinition(definitionValidationRequest.'type, definitionValidationRequest.url, definitionValidationRequest.inlineAPIDefinition, definitionValidationRequest.content, definitionValidationRequest.fileName);
+                runtimeapi:APIDefinitionValidationResponse|runtimeapi:APIManagementException|error|commons:APKError validationResponse = self.validateAndRetrieveDefinition(definitionValidationRequest.'type, definitionValidationRequest.url, definitionValidationRequest.inlineAPIDefinition, definitionValidationRequest.content, definitionValidationRequest.fileName);
                 if validationResponse is runtimeapi:APIDefinitionValidationResponse {
                     string[] endpoints = [];
                     ErrorListItem[] errorItems = [];
@@ -2053,7 +2051,7 @@ public class APIClient {
                     APIDefinitionValidationResponse response = {content: definitionContent, isValid: validationResponse.isValid(), info: {}, errors: errorItems};
                     http:Ok okResponse = {body: response};
                     return okResponse;
-                } else if validationResponse is BadRequestError {
+                } else if validationResponse is commons:APKError {
                     return validationResponse;
                 } else {
                     runtimeapi:JAPIManagementException exception = check validationResponse.ensureType(runtimeapi:JAPIManagementException);
@@ -2069,7 +2067,7 @@ public class APIClient {
         }
     }
 
-    private isolated function mapApiDefinitionPayload(http:Request message) returns DefinitionValidationRequest|BadRequestError|error {
+    private isolated function mapApiDefinitionPayload(http:Request message) returns DefinitionValidationRequest|commons:APKError|error {
         string|() url = ();
         string|() fileName = ();
         byte[]|() fileContent = ();
@@ -2648,7 +2646,7 @@ public class APIClient {
         }
     }
 
-    private isolated function validateAndRetrieveDefinition(string 'type, string? url, string? inlineAPIDefinition, byte[]? content, string? fileName) returns runtimeapi:APIDefinitionValidationResponse|runtimeapi:APIManagementException|error|BadRequestError {
+    private isolated function validateAndRetrieveDefinition(string 'type, string? url, string? inlineAPIDefinition, byte[]? content, string? fileName) returns runtimeapi:APIDefinitionValidationResponse|runtimeapi:APIManagementException|error|commons:APKError {
         runtimeapi:APIDefinitionValidationResponse|runtimeapi:APIManagementException|error validationResponse;
         boolean inlineApiDefinitionAvailable = inlineAPIDefinition is string;
         boolean fileAvailable = fileName is string && content is byte[];
