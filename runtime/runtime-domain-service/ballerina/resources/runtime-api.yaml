@@ -663,9 +663,9 @@ paths:
                   type: string
                   description: The certificate that needs to be uploaded.
                   format: binary
-                endpoint:
+                host:
                   type: string
-                  description: Endpoint to which the certificate should be applied.
+                  description: Host of the endpoint to which the certificate should be applied.
         required: true
       responses:
         200:
