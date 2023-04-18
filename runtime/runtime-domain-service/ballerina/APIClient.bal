@@ -956,6 +956,9 @@ public class APIClient {
         PortMapping portMapping = self.retrievePort('service);
         return <string>portMapping.protocol + "://" + string:'join(".", 'service.name, 'service.namespace, "svc.cluster.local") + ":" + portMapping.port.toString();
     }
+    private isolated function constructURLFromBackendSpec(model:BackendSpec backendSpec) returns string {
+        return backendSpec.protocol + "://" + backendSpec.services[0].host +  backendSpec.services[0].port.toString();
+    }
     private isolated function deployAPIToK8s(model:APIArtifact apiArtifact, commons:Organization organization) returns commons:APKError|model:API {
         do {
             model:ConfigMap? definition = apiArtifact.definition;
@@ -2914,6 +2917,7 @@ public class APIClient {
                             } else if extensionRef.kind == "APIPolicy" {
                                 if apiArtifact.apiPolicies.hasKey(extensionRef.name) {
                                     model:APIPolicy apiPolicyCR = apiArtifact.apiPolicies.get(extensionRef.name).clone();
+                                    self.prepareInterceptorBackends(apiArtifact, apiPolicyCR, newAPI, organization);
                                     model:APIPolicy newAPIPolicyCR = self.prepareAPIPolicyCR(newAPI, apiPolicyCR, httproute.metadata.name, organization);
                                     _ = apiArtifact.apiPolicies.remove(extensionRef.name);
                                     apiArtifact.apiPolicies[newAPIPolicyCR.metadata.name] = newAPIPolicyCR;
@@ -2941,11 +2945,52 @@ public class APIClient {
         foreach string extensionRefName in apiPolicies.keys() {
             model:APIPolicy apiPolicyCR = apiArtifact.apiPolicies.get(extensionRefName).clone();
             if apiPolicyCR.spec.targetRef.kind == "API" && apiPolicyCR.spec.targetRef.name == oldAPIName {
+                self.prepareInterceptorBackends(apiArtifact, apiPolicyCR, newAPI, organization);
                 model:APIPolicy newAPIPolicyCR = self.prepareAPIPolicyCR(newAPI, apiPolicyCR, newAPIName, organization);
                 _ = apiArtifact.apiPolicies.remove(extensionRefName);
                 apiArtifact.apiPolicies[newAPIPolicyCR.metadata.name] = newAPIPolicyCR;
             }
         }
+    }
+
+    private isolated function prepareInterceptorBackends(model:APIArtifact apiArtifact, model:APIPolicy apiPolicyCR, API newAPI, commons:Organization organization) {
+        model:APIPolicyData? interceptorPolicy = apiPolicyCR.spec.default;
+        if interceptorPolicy is model:APIPolicyData {
+            string[] backendServicesToRemove = [];
+            model:APIPolicyDetails? requestInterceptor = interceptorPolicy.requestInterceptor;
+            if requestInterceptor is model:APIPolicyDetails {
+                string? backendRefName = self.extractExistingBackendRefs(apiArtifact, requestInterceptor, newAPI, organization);
+                if backendRefName is string {
+                    backendServicesToRemove.push(backendRefName);
+                }
+            }
+            model:APIPolicyDetails? responseInterceptor = interceptorPolicy.responseInterceptor;
+            if responseInterceptor is model:APIPolicyDetails {
+                string? backendRefName = self.extractExistingBackendRefs(apiArtifact, responseInterceptor, newAPI, organization);
+                if backendRefName is string {
+                    backendServicesToRemove.push(backendRefName);
+                }
+            }
+            foreach string backendRefName in backendServicesToRemove {
+                if apiArtifact.backendServices.hasKey(backendRefName) {
+                    _ = apiArtifact.backendServices.remove(backendRefName);
+                }
+            }
+        }
+    }
+
+    private isolated function extractExistingBackendRefs(model:APIArtifact apiArtifact, model:APIPolicyDetails? interceptor, API newAPI, commons:Organization organization) returns string? {
+        if interceptor is model:APIPolicyDetails {
+            string backendRefName = interceptor.backendRef.name;
+            if apiArtifact.backendServices.hasKey(backendRefName) {
+                model:Backend backend = apiArtifact.backendServices.get(backendRefName).clone();
+                model:Backend newBackend = self.prepareInterceptorBackendCR(newAPI, backend, organization, backend.spec);
+                apiArtifact.backendServices[newBackend.metadata.name] = newBackend;
+                interceptor.backendRef.name = newBackend.metadata.name;
+                return backendRefName;
+            }
+        }
+        return ();
     }
 
     private isolated function prepareScopeCR(model:APIArtifact apiArtifact, API api, model:Scope scope, commons:Organization organization) returns model:Scope {
@@ -2973,6 +3018,13 @@ public class APIClient {
         apiPolicy.metadata.labels = self.getLabels(api, organization);
         apiPolicy.spec.targetRef.name = getUniqueIdForAPI(api.name, api.'version, organization);
         return apiPolicy;
+    }
+
+    private isolated function prepareInterceptorBackendCR(API api, model:Backend backend, commons:Organization organization, model:BackendSpec spec) returns model:Backend {
+        string backendUrl = self.constructURLFromBackendSpec(spec);
+        backend.metadata.name = getInterceptorServiceUid(api, INTERCEPTOR_TYPE, organization, backendUrl);
+        backend.metadata.labels = self.getLabels(api, organization);
+        return backend;
     }
 
     private isolated function prepareBackendRef(model:HTTPBackendRef backendRef, model:APIArtifact apiArtifact, Service? serviceEntry, API oldAPI, API newAPI, string endpointType, commons:Organization organization) returns [string, string]?|error {
@@ -3010,7 +3062,7 @@ public class APIClient {
         string oldBackendRefName = backendRef.name;
         if backendServices.hasKey(oldBackendRefName) {
             model:Backend 'service = backendServices.get(oldBackendRefName).clone();
-            if 'service.metadata.name.includes("-api-") {
+            if 'service.metadata.name.includes("-api") {
                 'service.metadata.name = getBackendServiceUid(newAPI, (), endpointType, organization);
             } else {
                 'service.metadata.name = getBackendServiceUid(newAPI, {}, endpointType, organization);
