@@ -2742,6 +2742,7 @@ public class APIClient {
             API|NotFoundError api = check self.getAPIById(apiId, organization);
             if api is API {
                 model:APIArtifact apiArtifact = check self.getApiArtifact(api, organization);
+                apiArtifact.uniqueId = getUniqueIdForAPI(api.name, newVersion, organization);
                 // validating version
                 if isAPIVersionExist(api.name, newVersion, organization) {
                     return e909046(newVersion);
@@ -2996,28 +2997,34 @@ public class APIClient {
                     }
                 }
                 return [oldBackenServiceUUID, backendService.metadata.name];
+            } else {
+                return self.prepareBackendRefForAPIArtifact(backendRef, apiArtifact, newAPI, endpointType, organization);
             }
         } else {
-            map<model:Backend> backendServices = apiArtifact.backendServices;
-            string oldBackendRefName = backendRef.name;
-            if backendServices.hasKey(oldBackendRefName) {
-                model:Backend 'service = backendServices.get(oldBackendRefName).clone();
-                if 'service.metadata.name.includes("-api-") {
-                    'service.metadata.name = getBackendServiceUid(newAPI, (), endpointType, organization);
-                } else {
-                    'service.metadata.name = getBackendServiceUid(newAPI, {}, endpointType, organization);
-                }
-                model:RuntimeAPI? runtimeAPI = apiArtifact.runtimeAPI;
-                if runtimeAPI is model:RuntimeAPI {
-                    record {}? endpointConfig = runtimeAPI.spec.endpointConfig.clone();
-                    _ = check self.prepareBackendSecurityForEndpoints('service, endpointConfig, endpointType, newAPI, organization);
-                }
-                'service.metadata.labels = self.getLabels(newAPI, organization);
-                _ = backendServices.remove(oldBackendRefName);
-                backendServices['service.metadata.name] = 'service;
-                backendRef.name = 'service.metadata.name;
-                return [oldBackendRefName, 'service.metadata.name];
+            return self.prepareBackendRefForAPIArtifact(backendRef, apiArtifact, newAPI, endpointType, organization);
+        }
+    }
+
+    private isolated function prepareBackendRefForAPIArtifact(model:HTTPBackendRef backendRef, model:APIArtifact apiArtifact, API newAPI, string endpointType, commons:Organization organization) returns [string, string]?|error {
+        map<model:Backend> backendServices = apiArtifact.backendServices;
+        string oldBackendRefName = backendRef.name;
+        if backendServices.hasKey(oldBackendRefName) {
+            model:Backend 'service = backendServices.get(oldBackendRefName).clone();
+            if 'service.metadata.name.includes("-api-") {
+                'service.metadata.name = getBackendServiceUid(newAPI, (), endpointType, organization);
+            } else {
+                'service.metadata.name = getBackendServiceUid(newAPI, {}, endpointType, organization);
             }
+            model:RuntimeAPI? runtimeAPI = apiArtifact.runtimeAPI;
+            if runtimeAPI is model:RuntimeAPI {
+                record {}? endpointConfig = runtimeAPI.spec.endpointConfig.clone();
+                _ = check self.prepareBackendSecurityForEndpoints('service, endpointConfig, endpointType, newAPI, organization);
+            }
+            'service.metadata.labels = self.getLabels(newAPI, organization);
+            _ = backendServices.remove(oldBackendRefName);
+            backendServices['service.metadata.name] = 'service;
+            backendRef.name = 'service.metadata.name;
+            return [oldBackendRefName, 'service.metadata.name];
         }
         return;
     }
@@ -3341,19 +3348,23 @@ public class APIClient {
                     foreach model:Httproute httpRoute in apiArtifact.sandboxRoute {
                         _ = check self.convertAndStoreYamlFile(httpRoute.toJsonString(), httpRoute.metadata.name, zipDir, "httproutes");
                     }
-
                     foreach model:K8sServiceMapping servicemapping in apiArtifact.serviceMapping {
                         _ = check self.convertAndStoreYamlFile(servicemapping.toJsonString(), servicemapping.metadata.name, zipDir, "servicemappings");
                     }
                     foreach model:Backend backend in apiArtifact.backendServices {
                         _ = check self.convertAndStoreYamlFile(backend.toJsonString(), backend.metadata.name, zipDir, "backends");
-
                     }
                     foreach model:Scope scope in apiArtifact.scopes {
                         _ = check self.convertAndStoreYamlFile(scope.toJsonString(), scope.metadata.name, zipDir, "scopes");
                     }
                     foreach model:ConfigMap endpointCertificate in apiArtifact.endpointCertificates {
                         _ = check self.convertAndStoreYamlFile(endpointCertificate.toJsonString(), endpointCertificate.metadata.name, zipDir, "endpoint-certificates");
+                    }
+                    foreach model:RateLimitPolicy rateLimitPolicy in apiArtifact.rateLimitPolicies {
+                        _ = check self.convertAndStoreYamlFile(rateLimitPolicy.toJsonString(), rateLimitPolicy.metadata.name, zipDir, "policies/ratelimits");
+                    }
+                    foreach model:APIPolicy apiPolicy in apiArtifact.apiPolicies {
+                        _ = check self.convertAndStoreYamlFile(apiPolicy.toJsonString(), apiPolicy.metadata.name, zipDir, "policies/apipolicies");
                     }
                     model:RuntimeAPI? runtimeAPI = apiArtifact.runtimeAPI;
                     if runtimeAPI is model:RuntimeAPI {
@@ -3485,6 +3496,7 @@ public class APIClient {
                 self.generateAndSetAPICRArtifact(apiArtifact, payload, organization, userName);
                 self.generateAndSetPolicyCRArtifact(apiArtifact, payload, organization);
                 if serviceEntry is Service {
+                    self.generateAndSetK8sServiceMapping(apiArtifact, api, serviceEntry, getNameSpace(runtimeConfiguration.apiCreationNamespace), organization);
                     self.generateAndSetRuntimeAPIArtifact(apiArtifact, payload, serviceEntry, organization, userName);
                 } else {
                     self.generateAndSetRuntimeAPIArtifact(apiArtifact, payload, (), organization, userName);
