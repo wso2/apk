@@ -39,7 +39,7 @@ import wso2/apk_common_lib as commons;
 
 public class APIClient {
 
-    public isolated function getAPIDefinitionByID(string id, commons:Organization organization, string? accept) returns http:Response|PreconditionFailedError|commons:APKError {
+    public isolated function getAPIDefinitionByID(string id, commons:Organization organization, string? accept) returns http:Response|commons:APKError {
         model:API? api = getAPI(id, organization);
         if api is model:API {
             json|error definition = self.getDefinition(api);
@@ -3454,7 +3454,7 @@ public class APIClient {
         return [zipName, zipPath];
     }
 
-    public isolated function updateAPI(string apiId, API payload, string? definition, commons:Organization organization, string userName) returns API|PreconditionFailedError|commons:APKError {
+    public isolated function updateAPI(string apiId, API payload, string? definition, commons:Organization organization, string userName) returns API|commons:APKError {
         do {
             API|commons:APKError api = check self.getAPIById(apiId, organization);
             if api is API {
@@ -3570,7 +3570,7 @@ public class APIClient {
     # + organization - Parameter Description
     # + userName - userName Description
     # + return - Return Value Description
-    public isolated function updateAPIDefinition(string apiId, http:Request payload, commons:Organization organization, string userName) returns http:Response|PreconditionFailedError|BadRequestError|commons:APKError {
+    public isolated function updateAPIDefinition(string apiId, http:Request payload, commons:Organization organization, string userName) returns http:Response|BadRequestError|commons:APKError {
         do {
             API|commons:APKError api = check self.getAPIById(apiId, organization);
             if api is API {
