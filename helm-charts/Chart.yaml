@@ -2,7 +2,7 @@ apiVersion: v2
 name: apk-helm
 description: A Helm chart for APK components
 type: application
-version: 0.1.0
+version: 0.0.1-m8
 appVersion: "1.16.0"
 dependencies:
   - name: postgresql
