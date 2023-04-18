@@ -39,7 +39,7 @@ import wso2/apk_common_lib as commons;
 
 public class APIClient {
 
-    public isolated function getAPIDefinitionByID(string id, commons:Organization organization, string? accept) returns http:Response|PreconditionFailedError|InternalServerErrorError|commons:APKError {
+    public isolated function getAPIDefinitionByID(string id, commons:Organization organization, string? accept) returns http:Response|PreconditionFailedError|commons:APKError {
         model:API? api = getAPI(id, organization);
         if api is model:API {
             json|error definition = self.getDefinition(api);
@@ -149,7 +149,7 @@ public class APIClient {
     }
 
     //Delete APIs deployed in a namespace by APIId.
-    public isolated function deleteAPIById(string id, commons:Organization organization) returns http:Ok|ForbiddenError|InternalServerErrorError|commons:APKError {
+    public isolated function deleteAPIById(string id, commons:Organization organization) returns http:Ok|ForbiddenError|commons:APKError {
         boolean APIIDAvailable = id.length() > 0 ? true : false;
         if (APIIDAvailable && string:length(id.toString()) > 0)
         {
@@ -876,7 +876,7 @@ public class APIClient {
         return false;
     }
 
-    isolated function createAPIFromService(string serviceKey, API api, commons:Organization organization, string userName) returns CreatedAPI|InternalServerErrorError|commons:APKError {
+    isolated function createAPIFromService(string serviceKey, API api, commons:Organization organization, string userName) returns CreatedAPI|commons:APKError {
         do {
             string? id = api.id;
             if id is string && !runtimeConfiguration.migrationMode {
@@ -2009,7 +2009,7 @@ public class APIClient {
         }
     }
 
-    public isolated function validateDefinition(http:Request message, boolean returnContent) returns InternalServerErrorError|http:Ok|commons:APKError {
+    public isolated function validateDefinition(http:Request message, boolean returnContent) returns http:Ok|commons:APKError {
         do {
             DefinitionValidationRequest|commons:APKError definitionValidationRequest = check self.mapApiDefinitionPayload(message);
             if definitionValidationRequest is DefinitionValidationRequest {
@@ -2572,7 +2572,7 @@ public class APIClient {
         }
     }
 
-    public isolated function importDefinition(http:Request payload, commons:Organization organization, string userName) returns commons:APKError|CreatedAPI|InternalServerErrorError|BadRequestError {
+    public isolated function importDefinition(http:Request payload, commons:Organization organization, string userName) returns commons:APKError|CreatedAPI|BadRequestError {
         do {
             ImportDefintionRequest|commons:APKError importDefinitionRequest = check self.mapImportDefinitionRequest(payload);
             if importDefinitionRequest is ImportDefintionRequest {
@@ -3454,7 +3454,7 @@ public class APIClient {
         return [zipName, zipPath];
     }
 
-    public isolated function updateAPI(string apiId, API payload, string? definition, commons:Organization organization, string userName) returns API|ForbiddenError|PreconditionFailedError|InternalServerErrorError|commons:APKError {
+    public isolated function updateAPI(string apiId, API payload, string? definition, commons:Organization organization, string userName) returns API|ForbiddenError|PreconditionFailedError|commons:APKError {
         do {
             API|commons:APKError api = check self.getAPIById(apiId, organization);
             if api is API {
@@ -3570,7 +3570,7 @@ public class APIClient {
     # + organization - Parameter Description
     # + userName - userName Description
     # + return - Return Value Description
-    public isolated function updateAPIDefinition(string apiId, http:Request payload, commons:Organization organization, string userName) returns http:Response|PreconditionFailedError|InternalServerErrorError|BadRequestError|commons:APKError {
+    public isolated function updateAPIDefinition(string apiId, http:Request payload, commons:Organization organization, string userName) returns http:Response|PreconditionFailedError|BadRequestError|commons:APKError {
         do {
             API|commons:APKError api = check self.getAPIById(apiId, organization);
             if api is API {
@@ -3776,7 +3776,7 @@ public class APIClient {
     # + sortOrder - SortOrder  Parameter
     # + organization - Organization
     # + return - Return list of Mediation Policies.
-    public isolated function getMediationPolicyList(string? query, int 'limit, int offset, string sortBy, string sortOrder, commons:Organization organization) returns MediationPolicyList|InternalServerErrorError|commons:APKError {
+    public isolated function getMediationPolicyList(string? query, int 'limit, int offset, string sortBy, string sortOrder, commons:Organization organization) returns MediationPolicyList|commons:APKError {
         MediationPolicy[] mediationPolicyList = [];
         foreach model:MediationPolicy mediationPolicy in getAvailableMediaionPolicies(organization) {
             MediationPolicy policyItem = convertPolicyModeltoPolicy(mediationPolicy);
@@ -3791,7 +3791,7 @@ public class APIClient {
         }
     }
 
-    public isolated function getCertificates(string apiId, string? endpoint, int 'limit, int offset, commons:Organization organization) returns Certificates|InternalServerErrorError|commons:APKError {
+    public isolated function getCertificates(string apiId, string? endpoint, int 'limit, int offset, commons:Organization organization) returns Certificates|commons:APKError {
         model:API? api = getAPI(apiId, organization);
         if api is model:API {
             model:Certificate[] certificates = check getCertificatesForAPIId(api.clone(), organization.clone());
@@ -3850,7 +3850,7 @@ public class APIClient {
         return [limitSet, filteredList.length()];
     }
 
-    public isolated function addCertificate(string apiId, http:Request request, commons:Organization organization) returns OkCertMetadata|InternalServerErrorError|commons:APKError {
+    public isolated function addCertificate(string apiId, http:Request request, commons:Organization organization) returns OkCertMetadata|commons:APKError {
         do {
             model:API? api = getAPI(apiId, organization);
             if api is model:API {
@@ -3906,7 +3906,7 @@ public class APIClient {
         }
     }
 
-    public isolated function getEndpointCertificateByID(string apiId, string certificateId, commons:Organization organization) returns CertificateInfo|InternalServerErrorError|commons:APKError {
+    public isolated function getEndpointCertificateByID(string apiId, string certificateId, commons:Organization organization) returns CertificateInfo|commons:APKError {
         do {
             model:API? api = getAPI(apiId, organization);
             if api is model:API {
@@ -3969,7 +3969,7 @@ public class APIClient {
         }
     }
 
-    public isolated function deleteEndpointCertificate(string apiId, string certificateId, commons:Organization organization) returns http:Ok|InternalServerErrorError|commons:APKError {
+    public isolated function deleteEndpointCertificate(string apiId, string certificateId, commons:Organization organization) returns http:Ok|commons:APKError {
         do {
             model:API? api = getAPI(apiId, organization);
             if api is model:API {
@@ -3994,7 +3994,7 @@ public class APIClient {
         }
     }
 
-    public isolated function getEndpointCertificateContent(string apiId, string certificateId, commons:Organization organization) returns http:Response|InternalServerErrorError|commons:APKError {
+    public isolated function getEndpointCertificateContent(string apiId, string certificateId, commons:Organization organization) returns http:Response|commons:APKError {
         do {
             model:API? api = getAPI(apiId, organization);
             if api is model:API {
