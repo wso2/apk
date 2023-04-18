@@ -2848,7 +2848,6 @@ public class APIClient {
             newAPIName = newId;
         }
         foreach model:Httproute httproute in httproutes {
-            string oldHttpRouteName = httproute.metadata.name;
             httproute.metadata.name = retrieveHttpRouteRefName(newAPI, endpointType, organization);
             httproute.metadata.labels = self.getLabels(newAPI, organization);
             model:HTTPRouteRule[] routeRules = httproute.spec.rules;
@@ -2997,28 +2996,34 @@ public class APIClient {
                     }
                 }
                 return [oldBackenServiceUUID, backendService.metadata.name];
+            } else {
+                return self.prepareBackendRefForAPIArtifact(backendRef, apiArtifact, newAPI, endpointType, organization);
             }
         } else {
-            map<model:Backend> backendServices = apiArtifact.backendServices;
-            string oldBackendRefName = backendRef.name;
-            if backendServices.hasKey(oldBackendRefName) {
-                model:Backend 'service = backendServices.get(oldBackendRefName).clone();
-                if 'service.metadata.name.includes("-api-") {
-                    'service.metadata.name = getBackendServiceUid(newAPI, (), endpointType, organization);
-                } else {
-                    'service.metadata.name = getBackendServiceUid(newAPI, {}, endpointType, organization);
-                }
-                model:RuntimeAPI? runtimeAPI = apiArtifact.runtimeAPI;
-                if runtimeAPI is model:RuntimeAPI {
-                    record {}? endpointConfig = runtimeAPI.spec.endpointConfig.clone();
-                    _ = check self.prepareBackendSecurityForEndpoints('service, endpointConfig, endpointType, newAPI, organization);
-                }
-                'service.metadata.labels = self.getLabels(newAPI, organization);
-                _ = backendServices.remove(oldBackendRefName);
-                backendServices['service.metadata.name] = 'service;
-                backendRef.name = 'service.metadata.name;
-                return [oldBackendRefName, 'service.metadata.name];
+            return self.prepareBackendRefForAPIArtifact(backendRef, apiArtifact, newAPI, endpointType, organization);
+        }
+    }
+
+    private isolated function prepareBackendRefForAPIArtifact(model:HTTPBackendRef backendRef, model:APIArtifact apiArtifact, API newAPI, string endpointType, commons:Organization organization) returns [string, string]?|error {
+        map<model:Backend> backendServices = apiArtifact.backendServices;
+        string oldBackendRefName = backendRef.name;
+        if backendServices.hasKey(oldBackendRefName) {
+            model:Backend 'service = backendServices.get(oldBackendRefName).clone();
+            if 'service.metadata.name.includes("-api-") {
+                'service.metadata.name = getBackendServiceUid(newAPI, (), endpointType, organization);
+            } else {
+                'service.metadata.name = getBackendServiceUid(newAPI, {}, endpointType, organization);
             }
+            model:RuntimeAPI? runtimeAPI = apiArtifact.runtimeAPI;
+            if runtimeAPI is model:RuntimeAPI {
+                record {}? endpointConfig = runtimeAPI.spec.endpointConfig.clone();
+                _ = check self.prepareBackendSecurityForEndpoints('service, endpointConfig, endpointType, newAPI, organization);
+            }
+            'service.metadata.labels = self.getLabels(newAPI, organization);
+            _ = backendServices.remove(oldBackendRefName);
+            backendServices['service.metadata.name] = 'service;
+            backendRef.name = 'service.metadata.name;
+            return [oldBackendRefName, 'service.metadata.name];
         }
         return;
     }
