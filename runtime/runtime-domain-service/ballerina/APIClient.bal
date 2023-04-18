@@ -39,7 +39,7 @@ import wso2/apk_common_lib as commons;
 
 public class APIClient {
 
-    public isolated function getAPIDefinitionByID(string id, commons:Organization organization, string? accept) returns http:Response|NotFoundError|PreconditionFailedError|InternalServerErrorError|commons:APKError {
+    public isolated function getAPIDefinitionByID(string id, commons:Organization organization, string? accept) returns http:Response|PreconditionFailedError|InternalServerErrorError|commons:APKError {
         model:API? api = getAPI(id, organization);
         if api is model:API {
             json|error definition = self.getDefinition(api);
@@ -128,7 +128,7 @@ public class APIClient {
     }
 
     //Get APIs deployed in default namespace by APIId.
-    public isolated function getAPIById(string id, commons:Organization organization) returns API|NotFoundError|commons:APKError {
+    public isolated function getAPIById(string id, commons:Organization organization) returns API|commons:APKError {
         boolean APIIDAvailable = id.length() > 0 ? true : false;
         if (APIIDAvailable && string:length(id.toString()) > 0)
         {
@@ -149,7 +149,7 @@ public class APIClient {
     }
 
     //Delete APIs deployed in a namespace by APIId.
-    public isolated function deleteAPIById(string id, commons:Organization organization) returns http:Ok|ForbiddenError|NotFoundError|InternalServerErrorError|commons:APKError {
+    public isolated function deleteAPIById(string id, commons:Organization organization) returns http:Ok|ForbiddenError|InternalServerErrorError|commons:APKError {
         boolean APIIDAvailable = id.length() > 0 ? true : false;
         if (APIIDAvailable && string:length(id.toString()) > 0)
         {
@@ -2736,13 +2736,13 @@ public class APIClient {
         };
         return importDefintionRequest;
     }
-    public isolated function copyAPI(string newVersion, string? serviceId, string apiId, commons:Organization organization, string userName) returns CreatedAPI|NotFoundError|BadRequestError|commons:APKError {
+    public isolated function copyAPI(string newVersion, string? serviceId, string apiId, commons:Organization organization, string userName) returns CreatedAPI|BadRequestError|commons:APKError {
         // validating API existence.
         if newVersion.trim().length() == 0 || apiId.trim().length() == 0 {
             return e909045();
         }
         do {
-            API|NotFoundError api = check self.getAPIById(apiId, organization);
+            API|commons:APKError api = check self.getAPIById(apiId, organization);
             if api is API {
                 model:APIArtifact apiArtifact = check self.getApiArtifact(api, organization);
                 apiArtifact.uniqueId = getUniqueIdForAPI(api.name, newVersion, organization);
@@ -2770,7 +2770,7 @@ public class APIClient {
                 CreatedAPI createdAPI = {body: check convertK8sAPItoAPI(deployAPIToK8sResult, false), headers: {location: locationUrl}};
                 return createdAPI;
             } else {
-                return <NotFoundError>api;
+                return <commons:APKError>api;
             }
         } on fail var e {
             if e is commons:APKError {
@@ -3376,10 +3376,10 @@ public class APIClient {
         };
     }
 
-    public isolated function exportAPI(string? apiId, commons:Organization organization) returns commons:APKError|NotFoundError|http:Response|BadRequestError {
+    public isolated function exportAPI(string? apiId, commons:Organization organization) returns commons:APKError|http:Response|BadRequestError {
         if apiId is string {
             do {
-                API|NotFoundError api = check self.getAPIById(apiId, organization);
+                API|commons:APKError api = check self.getAPIById(apiId, organization);
                 if api is API {
                     model:APIArtifact apiArtifact = check self.getApiArtifact(api, organization);
                     string zipDir = check file:createTempDir(uuid:createType1AsString());
@@ -3428,7 +3428,7 @@ public class APIClient {
                     response.addHeader("Content-Disposition", "attachment; filename=" + zipName[0]);
                     return response;
                 } else {
-                    return <NotFoundError>api;
+                    return <commons:APKError>api;
                 }
             } on fail var e {
                 return e909022("Internal error occured when exporting api", e);
@@ -3459,9 +3459,9 @@ public class APIClient {
         return [zipName, zipPath];
     }
 
-    public isolated function updateAPI(string apiId, API payload, string? definition, commons:Organization organization, string userName) returns API|BadRequestError|ForbiddenError|NotFoundError|PreconditionFailedError|InternalServerErrorError|commons:APKError {
+    public isolated function updateAPI(string apiId, API payload, string? definition, commons:Organization organization, string userName) returns API|BadRequestError|ForbiddenError|PreconditionFailedError|InternalServerErrorError|commons:APKError {
         do {
-            API|NotFoundError api = check self.getAPIById(apiId, organization);
+            API|commons:APKError api = check self.getAPIById(apiId, organization);
             if api is API {
                 if payload.'type != api.'type {
                     return e909048();
@@ -3575,9 +3575,9 @@ public class APIClient {
     # + organization - Parameter Description
     # + userName - userName Description
     # + return - Return Value Description
-    public isolated function updateAPIDefinition(string apiId, http:Request payload, commons:Organization organization, string userName) returns http:Response|NotFoundError|PreconditionFailedError|InternalServerErrorError|BadRequestError|commons:APKError {
+    public isolated function updateAPIDefinition(string apiId, http:Request payload, commons:Organization organization, string userName) returns http:Response|PreconditionFailedError|InternalServerErrorError|BadRequestError|commons:APKError {
         do {
-            API|NotFoundError api = check self.getAPIById(apiId, organization);
+            API|commons:APKError api = check self.getAPIById(apiId, organization);
             if api is API {
                 API updateAPI = {...api};
                 DefinitionValidationRequest|BadRequestError definitionValidationRequest = check self.mapApiDefinitionPayload(payload);
@@ -3654,7 +3654,7 @@ public class APIClient {
                     return <BadRequestError>definitionValidationRequest;
                 }
             } else {
-                return <NotFoundError>api;
+                return <commons:APKError>api;
             }
         } on fail var e {
             log:printError("Error occured importing API", e);
@@ -3782,7 +3782,7 @@ public class APIClient {
     # + sortOrder - SortOrder  Parameter
     # + organization - Organization
     # + return - Return list of Mediation Policies.
-    public isolated function getMediationPolicyList(string? query, int 'limit, int offset, string sortBy, string sortOrder, commons:Organization organization) returns MediationPolicyList|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
+    public isolated function getMediationPolicyList(string? query, int 'limit, int offset, string sortBy, string sortOrder, commons:Organization organization) returns MediationPolicyList|BadRequestError|InternalServerErrorError|commons:APKError {
         MediationPolicy[] mediationPolicyList = [];
         foreach model:MediationPolicy mediationPolicy in getAvailableMediaionPolicies(organization) {
             MediationPolicy policyItem = convertPolicyModeltoPolicy(mediationPolicy);
@@ -3856,7 +3856,7 @@ public class APIClient {
         return [limitSet, filteredList.length()];
     }
 
-    public isolated function addCertificate(string apiId, http:Request request, commons:Organization organization) returns OkCertMetadata|BadRequestError|InternalServerErrorError|NotFoundError|commons:APKError {
+    public isolated function addCertificate(string apiId, http:Request request, commons:Organization organization) returns OkCertMetadata|BadRequestError|InternalServerErrorError|commons:APKError {
         do {
             model:API? api = getAPI(apiId, organization);
             if api is model:API {
@@ -3975,7 +3975,7 @@ public class APIClient {
         }
     }
 
-    public isolated function deleteEndpointCertificate(string apiId, string certificateId, commons:Organization organization) returns http:Ok|BadRequestError|NotFoundError|InternalServerErrorError|commons:APKError {
+    public isolated function deleteEndpointCertificate(string apiId, string certificateId, commons:Organization organization) returns http:Ok|BadRequestError|InternalServerErrorError|commons:APKError {
         do {
             model:API? api = getAPI(apiId, organization);
             if api is model:API {
