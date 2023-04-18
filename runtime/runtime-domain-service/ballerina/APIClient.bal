@@ -2742,6 +2742,7 @@ public class APIClient {
             API|NotFoundError api = check self.getAPIById(apiId, organization);
             if api is API {
                 model:APIArtifact apiArtifact = check self.getApiArtifact(api, organization);
+                apiArtifact.uniqueId = getUniqueIdForAPI(api.name, newVersion, organization);
                 // validating version
                 if isAPIVersionExist(api.name, newVersion, organization) {
                     return e909046(newVersion);
@@ -3495,6 +3496,7 @@ public class APIClient {
                 self.generateAndSetAPICRArtifact(apiArtifact, payload, organization, userName);
                 self.generateAndSetPolicyCRArtifact(apiArtifact, payload, organization);
                 if serviceEntry is Service {
+                    self.generateAndSetK8sServiceMapping(apiArtifact, api, serviceEntry, getNameSpace(runtimeConfiguration.apiCreationNamespace), organization);
                     self.generateAndSetRuntimeAPIArtifact(apiArtifact, payload, serviceEntry, organization, userName);
                 } else {
                     self.generateAndSetRuntimeAPIArtifact(apiArtifact, payload, (), organization, userName);
