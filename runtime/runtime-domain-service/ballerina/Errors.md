@@ -4,10 +4,11 @@ These are the runtime domain service errors and their respective error codes.
 
 | Error Code | Status Code | Error Message |
 |---|---|---|
+| 909000  | --- | Common code for other error |
 | 909001  | 404 | **ID** not found |
 | 909002  | 404 | Context/Name doesn't exist |
 | 909003  | 404 | apiId not found in request |
-| 909004  | --- | - |
+| 909004  | 406 | Invalid property id in Request |
 | 909005  | 404 | type field unavailable |
 | 909006  | 406 | Unsupported API type |
 | 909007  | 406 | Multiple fields of url, file, inlineAPIDefinition given |
