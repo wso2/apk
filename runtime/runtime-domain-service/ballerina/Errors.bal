@@ -58,6 +58,15 @@ public isolated function e909003() returns commons:APKError {
 //     ); 
 // }
 
+public isolated function e909004() returns commons:APKError {
+    return error commons:APKError( "Invalid property id in Request",
+        code = 909004,
+        message = "Invalid property id in Request",
+        statusCode = 406,
+        description = "Invalid property id in Request"
+    ); 
+}
+
 public isolated function e909005() returns commons:APKError {
     return error commons:APKError( "type field unavailable",
         code = 909005,
