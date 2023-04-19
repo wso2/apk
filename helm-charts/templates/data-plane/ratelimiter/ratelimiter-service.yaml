@@ -23,7 +23,7 @@ metadata:
 spec:
   # label keys and values that must match in order to receive traffic for this service
   selector:
-{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.wso2.apk.dp.ratelimiter.appName ) | indent 4}}
+{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" "ratelimiter" ) | indent 4}}
   ports:
     - name: endpoint1
       protocol: TCP

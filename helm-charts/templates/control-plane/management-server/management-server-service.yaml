@@ -23,7 +23,7 @@ metadata:
 spec:
   type: ClusterIP
   selector:
-{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.wso2.apk.cp.managementServer.appName ) | indent 4}}
+{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" "management-server" ) | indent 4}}
   ports:
     - name: "xds-management-server"
       port: 18000

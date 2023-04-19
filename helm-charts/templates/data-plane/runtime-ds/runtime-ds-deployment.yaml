@@ -26,12 +26,11 @@ spec:
     type: {{ .Values.wso2.apk.dp.runtime.deployment.strategy }}
   selector:
     matchLabels:
-{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.wso2.apk.dp.runtime.appName ) | indent 6}}
+{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" "runtime-ds" ) | indent 6}}
   template:
     metadata:
       labels:
-        networkPolicyId: {{ .Values.wso2.apk.dp.runtime.deployment.npi }}
-{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.wso2.apk.dp.runtime.appName ) | indent 8}}
+{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" "runtime-ds" ) | indent 8}}
     spec:
       serviceAccountName: {{ .Values.wso2.apk.auth.serviceAccountName }}
       containers:

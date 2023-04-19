@@ -1,0 +1,705 @@
+# Copyright (c) 2022, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
+#
+# WSO2 LLC. licenses this file to you under the Apache License,
+# Version 2.0 (the "License"); you may not use this file except
+# in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+wso2:
+  subscription:
+  
+    # -- Optionally specify image pull secrets.
+    imagePullSecrets: ""
+    
+  apk:
+    auth:
+      # -- Enable Service Account Creation
+      enabled: true
+      # --  Enable Service Account Creation
+      enableServiceAccountCreation: true
+      # --  Enable Cluster Role Creation
+      enableClusterRoleCreation: true
+      # -- Service Account name
+      serviceAccountName: wso2apk-platform
+      # --  Cluster Role name
+      roleName: wso2apk-role
+    listener:
+      # -- System api listener hostname
+      hostname: "api.am.wso2.com"
+      # -- System api listener certificates. If you are using a custom certificate.
+      # secretName: "idp-tls"
+    idp:
+      # -- IDP issuer value
+      issuer: "https://idp.am.wso2.com/token"
+      # -- IDP authorization endpoint
+      authorizeEndpoint: "https://idp.am.wso2.com:9095/oauth2/authorize"
+      # -- IDP token endpoint
+      tokenEndpoint: "https://idp.am.wso2.com:9095/oauth2/token"
+      # -- IDP revoke endpoint
+      revokeEndpoint: "https://idp.am.wso2.com:9095/oauth2/revoke"
+      # -- IDP jwks endpoint (optional)
+      jwksEndpoint: ""
+      # -- Optionally configure username Claim in JWT.
+      usernameClaim: "sub"
+      # -- Optionally configure groups Claim in JWT.
+      groupClaim: "groups"
+      # -- Optionally configure organization Claim in JWT.
+      organizationClaim: "organization"
+      # -- Optionally configure organization Resolution method for APK (controlPlane/none)).
+      organizationResolver: "controlPlane"
+      credentials:
+      # -- IDP credentials secret name to be configured with 
+        secretName: ""
+      tls:
+        # --  IDP public certificate secret name
+        secretName: ""
+        # -- IDP public certificate file name
+        fileName: ""
+      signing:
+        # -- IDP jwt signing certificate secret name
+        secretName: ""
+        # -- IDP jwt signing certificate file name
+        fileName: ""
+    cp:
+      # -- Enabled control plane.
+      enabled: true
+      database:
+        # -- Database Driver class.
+        driver: "org.postgresql.Driver"
+        # -- Database URL.
+        url: "jdbc:postgresql://wso2apk-db-service:5432/WSO2AM_DB"
+        # -- Database Host.
+        host: "wso2apk-db-service"
+        # -- Database Port.
+        port: 5432
+        # -- Database Name.
+        databaseName: "WSO2AM_DB"
+        # -- Database Username.
+        username: "wso2carbon"
+        # -- Database Password.
+        password: "wso2carbon"
+        # -- Database validation query.
+        validationQuery: "SELECT 1"
+        # -- Database validation timeout in ms.
+        validationTimeout: 250
+      devportal:
+        deployment:
+          resources:
+            requests:
+              # -- CPU request for the container
+              memory: "128Mi"
+              # -- Memory request for the container
+              cpu: "100m"
+            limits:
+              # -- CPU limit for the container
+              memory: "1028Mi"
+              # -- Memory limit for the container
+              cpu: "1000m"
+          readinessProbe:
+            # -- Number of seconds after the container has started before liveness probes are initiated.
+            initialDelaySeconds: 20
+            # -- How often (in seconds) to perform the probe.
+            periodSeconds: 20
+            # -- Minimum consecutive failures for the probe to be considered failed after having succeeded.
+            failureThreshold: 5
+          livenessProbe:
+            # -- Number of seconds after the container has started before liveness probes are initiated.
+            initialDelaySeconds: 20
+            # -- How often (in seconds) to perform the probe.
+            periodSeconds: 20
+            # -- Minimum consecutive failures for the probe to be considered failed after having succeeded.
+            failureThreshold: 5
+          # -- Deployment strategy
+          strategy: Recreate
+          # -- Number of replicas
+          replicas: 1
+          # -- Image pull policy
+          imagePullPolicy: Always
+          # -- Image
+          image: wso2/devportal-domain-service:0.0.1-m8
+      admin:
+        deployment:
+          resources:
+            requests:
+              # -- CPU request for the container
+              memory: "128Mi"
+              # -- Memory request for the container
+              cpu: "100m"
+            limits:
+              # -- CPU limit for the container
+              memory: "1028Mi"
+              # -- Memory limit for the container
+              cpu: "1000m"
+          readinessProbe:
+            # -- Number of seconds after the container has started before liveness probes are initiated.
+            initialDelaySeconds: 20
+            # -- How often (in seconds) to perform the probe.
+            periodSeconds: 20
+            # -- Minimum consecutive failures for the probe to be considered failed after having succeeded.
+            failureThreshold: 5
+          livenessProbe:
+            # -- Number of seconds after the container has started before liveness probes are initiated.
+            initialDelaySeconds: 20
+            # -- How often (in seconds) to perform the probe.
+            periodSeconds: 20
+            # -- Minimum consecutive failures for the probe to be considered failed after having succeeded.
+            failureThreshold: 5
+          # -- Deployment strategy
+          strategy: Recreate
+          # -- Number of replicas
+          replicas: 1
+          # -- Image pull policy
+          imagePullPolicy: Always
+          # -- Image
+          image: wso2/admin-domain-service:0.0.1-m8
+      backoffice:
+        deployment:
+          resources:
+            requests:
+              # -- CPU request for the container
+              memory: "128Mi"
+              # -- Memory request for the container
+              cpu: "100m"
+            limits:
+              # -- CPU limit for the container
+              memory: "1028Mi"
+              # -- Memory limit for the container
+              cpu: "1000m"
+          readinessProbe:
+            # -- Number of seconds after the container has started before liveness probes are initiated.
+            initialDelaySeconds: 20
+            # -- How often (in seconds) to perform the probe.
+            periodSeconds: 20
+            # -- Minimum consecutive failures for the probe to be considered failed after having succeeded.
+            failureThreshold: 5
+          livenessProbe:
+            # -- Number of seconds after the container has started before liveness probes are initiated.
+            initialDelaySeconds: 20
+            # -- How often (in seconds) to perform the probe.
+            periodSeconds: 20
+            # -- Minimum consecutive failures for the probe to be considered failed after having succeeded.
+            failureThreshold: 5
+          # -- Deployment strategy
+          strategy: Recreate
+          # -- Number of replicas
+          replicas: 1
+          # -- Image pull policy
+          imagePullPolicy: Always
+          # -- Image
+          image: wso2/backoffice-domain-service:0.0.1-m8
+      managementServer:
+        deployment:
+          resources:
+            requests:
+              # -- CPU request for the container
+              memory: "128Mi"
+              # -- Memory request for the container
+              cpu: "100m"
+            limits:
+              # -- CPU limit for the container
+              memory: "1028Mi"
+              # -- Memory limit for the container
+              cpu: "1000m"
+          # -- Deployment strategy
+          strategy: Recreate
+          # -- Number of replicas
+          replicas: 1
+          # -- Image pull policy
+          imagePullPolicy: Always
+          # -- Image
+          image: wso2/management-server:0.0.1-m8
+          readinessProbe:
+            # -- Number of seconds after the container has started before liveness probes are initiated.
+            initialDelaySeconds: 20
+            # -- How often (in seconds) to perform the probe.
+            periodSeconds: 20
+            # -- Minimum consecutive failures for the probe to be considered failed after having succeeded.
+            failureThreshold: 5
+          livenessProbe:
+            # -- Number of seconds after the container has started before liveness probes are initiated.
+            initialDelaySeconds: 20
+            # -- How often (in seconds) to perform the probe.
+            periodSeconds: 20
+            # -- Minimum consecutive failures for the probe to be considered failed after having succeeded.
+            failureThreshold: 5
+        configs:
+          tls:
+            # -- TLS secret name
+            secretName: "management-server-cert"
+            # -- TLS key file name
+            certKeyFilename: "tls.key"
+            # -- TLS certificate file name
+            certFilename: "certchain.crt"
+    dp:
+     # -- Enable the deployment of the Data Plane
+      enabled: true
+      gateway:
+        listener:
+          # -- Gateway Listener Hostname
+          hostname: "gw.wso2.com"
+          # -- Gateway Listener Certificate Secret Name
+          secretName: ""
+      controlPlane:
+        # -- Enable the control plane for Dataplane.
+        enabled: true
+        # -- Control Plane Service URL
+        serviceUrl: ""
+        # -- Hostname verification for the control plane 
+        enableHostNameVerification: true
+        tls:
+          # -- TLS secret name for control-plane public certificate.
+          secretName: "organization-managetment-server-cert"
+          # -- TLS certificate file name.
+          fileName: "certificate.crt"
+        # -- optional headers to be send to control plane service.
+        headers:
+          - name: ""
+            value: ""
+      managementServer:
+        # -- Enable management server for Data Plane.
+        enabled: true
+        # -- Management Server Service URL
+        serviceUrl: "https://control-plane-wso2-apk-management-server.control-plane.svc.cluster.local"
+        tls:
+          # -- TLS secret name for management server public certificate.
+          secretName: "managetment-server-cert"
+          # -- TLS certificate file name.
+          fileName: "certificate.crt"
+      partitionServer:
+        # -- Enable partition server for Data Plane.
+        enabled: false
+        # -- Partition Server Service URL
+        host: ""
+        # -- Partition Server Service Base Path.
+        serviceBasePath: "/api/am/publisher/v1"
+        # -- Partition Name.
+        partitionName: "default"
+        tls:
+          # -- TLS secret name for Partition Server Public Certificate.
+          secretName: "managetment-server-cert"
+          # -- TLS certificate file name.
+          fileName: "certificate.crt"
+      runtime:
+        deployment:
+          resources:
+            requests:
+              # -- CPU request for the container
+              memory: "128Mi"
+              # -- Memory request for the container
+              cpu: "100m"
+            limits:
+              # -- CPU limit for the container
+              memory: "1028Mi"
+              # -- Memory limit for the container
+              cpu: "1000m"
+          readinessProbe:
+            # -- Number of seconds after the container has started before liveness probes are initiated.
+            initialDelaySeconds: 20
+            # -- How often (in seconds) to perform the probe.
+            periodSeconds: 20
+            # -- Minimum consecutive failures for the probe to be considered failed after having succeeded.
+            failureThreshold: 5
+          livenessProbe:
+            # -- Number of seconds after the container has started before liveness probes are initiated.
+            initialDelaySeconds: 20
+            # -- How often (in seconds) to perform the probe.
+            periodSeconds: 20
+            # -- Minimum consecutive failures for the probe to be considered failed after having succeeded.
+            failureThreshold: 5
+          # -- Deployment strategy
+          strategy: Recreate
+          # -- Number of replicas
+          replicas: 1
+          # -- Image pull policy
+          imagePullPolicy: Always
+          # -- Image
+          image: wso2/runtime-domain-service:0.0.1-m8
+          configs:
+            # -- Enable authorization for runtime api.
+            authrorization: true
+            # -- Baseurl for runtime api.
+            baseUrl: "https://api.am.wso2.com:9095/api/am/runtime"
+            tls:
+              # -- TLS secret name for runtime public certificate.
+              secretName: ""
+              # -- TLS certificate file name.
+              certKeyFilename: ""
+              # -- TLS certificate file name.
+              certFilename: ""
+      adapter:
+        deployment:
+          resources:
+            requests:
+              # -- CPU request for the container
+              memory: "128Mi"
+              # -- Memory request for the container
+              cpu: "100m"
+            limits:
+              # -- CPU limit for the container
+              memory: "1028Mi"
+              # -- Memory limit for the container
+              cpu: "1000m"
+          readinessProbe:
+            # -- Number of seconds after the container has started before liveness probes are initiated.
+            initialDelaySeconds: 20
+            # -- How often (in seconds) to perform the probe.
+            periodSeconds: 20
+            # -- Minimum consecutive failures for the probe to be considered failed after having succeeded.
+            failureThreshold: 5
+          livenessProbe:
+            # -- Number of seconds after the container has started before liveness probes are initiated.
+            initialDelaySeconds: 20
+            # -- How often (in seconds) to perform the probe.
+            periodSeconds: 20
+            # -- Minimum consecutive failures for the probe to be considered failed after having succeeded.
+            failureThreshold: 5
+          # -- Deployment strategy
+          strategy: Recreate
+          # -- Number of replicas
+          replicas: 1
+          # -- Image pull policy
+          imagePullPolicy: Always
+          # -- Image
+          image: wso2/adapter:0.0.1-m8
+          security:
+            # -- Enable security for adapter.
+            sslHostname: "adapter"
+        configs:
+          # -- Optionally configure namespaces to watch for apis.
+          apiNamespaces:
+          tls:
+            # -- TLS secret name for adapter public certificate.
+            secretName: ""
+            # -- TLS certificate file name.
+            certKeyFilename: ""
+            # -- TLS certificate file name.
+            certFilename: ""
+      ratelimiter:
+        # -- Enable the deployment of the Rate Limiter
+        enabled: true
+        deployment:
+          resources:
+            requests:
+              # -- CPU request for the container
+              memory: "128Mi"
+              # -- Memory request for the container
+              cpu: "100m"
+            limits:
+              # -- CPU limit for the container
+              memory: "1028Mi"
+              # -- Memory limit for the container
+              cpu: "1000m"
+          readinessProbe:
+            # -- Number of seconds after the container has started before liveness probes are initiated.
+            initialDelaySeconds: 20
+            # -- How often (in seconds) to perform the probe.
+            periodSeconds: 20
+            # -- Minimum consecutive failures for the probe to be considered failed after having succeeded.
+            failureThreshold: 5
+          livenessProbe:
+            # -- Number of seconds after the container has started before liveness probes are initiated.
+            initialDelaySeconds: 20
+            # -- How often (in seconds) to perform the probe.
+            periodSeconds: 20
+            # -- Minimum consecutive failures for the probe to be considered failed after having succeeded.
+            failureThreshold: 5
+          # -- Deployment strategy
+          strategy: Recreate
+          # -- Number of replicas
+          replicas: 1
+          # -- Image pull policy
+          imagePullPolicy: Always
+          # -- Image
+          image: wso2/ratelimiter:0.0.1-m8
+          security:
+            # -- hostname for the rate limiter
+            sslHostname: "ratelimiter"
+          configs:
+            tls:
+              # -- TLS secret name for rate limiter public certificate.
+              secretName: "ratelimiter-cert"
+              # -- TLS certificate file name.
+              certKeyFilename: ""
+              # -- TLS certificate file name.
+              certFilename: ""
+              # -- TLS CA certificate file name.
+              certCAFilename: ""
+      gatewayRuntime:
+        deployment:
+          # -- Number of replicas
+          replicas: 1
+          router:
+            resources:
+              requests:
+                # -- CPU request for the container
+                memory: "128Mi"
+                # -- Memory request for the container
+                cpu: "100m"
+              limits:
+                # -- CPU limit for the container
+                memory: "1028Mi"
+                # -- Memory limit for the container
+                cpu: "1000m"
+            readinessProbe:
+              # -- Number of seconds after the container has started before liveness probes are initiated.
+              initialDelaySeconds: 20
+              # -- How often (in seconds) to perform the probe.
+              periodSeconds: 20
+              # -- Minimum consecutive failures for the probe to be considered failed after having succeeded.
+              failureThreshold: 5
+            livenessProbe:
+              # -- Number of seconds after the container has started before liveness probes are initiated.
+              initialDelaySeconds: 20
+              # -- How often (in seconds) to perform the probe.
+              periodSeconds: 20
+              # -- Minimum consecutive failures for the probe to be considered failed after having succeeded.
+              failureThreshold: 5
+            # -- Deployment strategy
+            strategy: Recreate
+            # -- Image pull policy
+            imagePullPolicy: Always
+            # -- Image
+            image: wso2/router:0.0.1-m8
+            configs:
+              tls:
+                # -- TLS secret name for router public certificate.
+                secretName: "router-cert"
+                # -- TLS certificate file name.
+                certKeyFilename: ""
+                # -- TLS certificate file name.
+                certFilename: ""
+          enforcer:
+            resources:
+              requests:
+                # -- CPU request for the container
+                memory: "128Mi"
+                # -- Memory request for the container
+                cpu: "100m"
+              limits:
+                # -- CPU limit for the container
+                memory: "1028Mi"
+                # -- Memory limit for the container
+                cpu: "1000m"
+            readinessProbe:
+              # -- Number of seconds after the container has started before liveness probes are initiated.
+              initialDelaySeconds: 20
+              # -- How often (in seconds) to perform the probe.
+              periodSeconds: 20
+              # -- Minimum consecutive failures for the probe to be considered failed after having succeeded.
+              failureThreshold: 5
+            livenessProbe:
+              # -- Number of seconds after the container has started before liveness probes are initiated.
+              initialDelaySeconds: 20
+              # -- How often (in seconds) to perform the probe.
+              periodSeconds: 20
+              # -- Minimum consecutive failures for the probe to be considered failed after having succeeded.
+              failureThreshold: 5
+            # -- Deployment strategy
+            strategy: Recreate
+            # -- Image pull policy
+            imagePullPolicy: Always
+            # -- Image
+            image: wso2/enforcer:0.0.1-m8
+            security:
+              # -- hostname for the enforcer
+              sslHostname: "enforcer"
+            configs:
+              tls:
+                # -- TLS secret name for enforcer public certificate.
+                secretName: ""
+                # -- TLS certificate file name.
+                certKeyFilename: ""
+                # -- TLS certificate file name.
+                certFilename: ""
+    migration:
+      # -- This flag should be enabled only in a migration scenario.
+      # -- It is not recommended to run a production deployment with this flag enabled.
+      enabled: false
+idp:
+  # -- Enable Non production identity server
+  enabled: true
+  listener:
+    # -- identity server hostname
+    hostname: "idp.am.wso2.com"
+    # -- identity server certificate
+    secretName: "idp-tls"
+  database:
+    # -- identity server database driver
+    driver: "org.postgresql.Driver"
+    # -- identity server database url
+    url: "jdbc:postgresql://wso2apk-db-service:5432/WSO2AM_DB"
+    # -- identity server database host
+    host: "wso2apk-db-service"
+    # -- identity server database port
+    port: 5432
+    # -- identity server database name
+    databaseName: "WSO2AM_DB"
+    # -- identity server database username
+    username: "wso2carbon"
+    # -- identity server database password
+    password: "wso2carbon"
+    # -- identity server database validation query
+    validationQuery: "SELECT 1"
+    # -- identity server database validation timeout
+    validationTimeout: 250
+  idpds:
+    config:
+      # -- identity server issuer url
+      issuer: "https://idp.am.wso2.com/token"
+      # -- identity server keyId
+      keyId: "gateway_certificate_alias"
+      # -- identity server hostname.
+      hostname: "idp.am.wso2.com"
+      # -- identity server login page url
+      loginPageURl: "https://idp.am.wso2.com:9095/authenticationEndpoint/login"
+      # -- identity server login error page url
+      loginErrorPageUrl: "https://idp.am.wso2.com:9095/authenticationEndpoint/error"
+      # -- identity server login callback page url
+      loginCallBackURl: "https://idp.am.wso2.com:9095/authenticationEndpoint/login-callback"
+    deployment:
+      resources:
+        requests:
+          # -- CPU request for the container
+          memory: "128Mi"
+          # -- Memory request for the container
+          cpu: "100m"
+        limits:
+          # -- CPU limit for the container
+          memory: "1028Mi"
+          # -- Memory limit for the container
+          cpu: "1000m"
+      readinessProbe:
+        # -- Number of seconds after the container has started before liveness probes are initiated.
+        initialDelaySeconds: 20
+        # -- How often (in seconds) to perform the probe.
+        periodSeconds: 20
+        # -- Minimum consecutive failures for the probe to be considered failed after having succeeded.
+        failureThreshold: 5
+      livenessProbe:
+        # -- Number of seconds after the container has started before liveness probes are initiated.
+        initialDelaySeconds: 20
+        # -- How often (in seconds) to perform the probe.
+        periodSeconds: 20
+        # -- Minimum consecutive failures for the probe to be considered failed after having succeeded.
+        failureThreshold: 5
+      # -- Deployment strategy
+      strategy: Recreate
+      # -- Number of replicas
+      replicas: 1
+      # -- Image pull policy
+      imagePullPolicy: Always
+      # -- Image
+      image: wso2/idp-domain-service:latest
+  idpui:
+    deployment:
+      resources:
+        requests:
+          # -- CPU request for the container
+          memory: "128Mi"
+          # -- Memory request for the container
+          cpu: "100m"
+        limits:
+          # -- CPU limit for the container
+          memory: "1028Mi"
+          # -- Memory limit for the container
+          cpu: "1000m"
+      readinessProbe:
+        # -- Number of seconds after the container has started before liveness probes are initiated.
+        initialDelaySeconds: 20
+        # -- How often (in seconds) to perform the probe.
+        periodSeconds: 20
+        # -- Minimum consecutive failures for the probe to be considered failed after having succeeded.
+        failureThreshold: 5
+      livenessProbe:
+        # -- Number of seconds after the container has started before liveness probes are initiated.
+        initialDelaySeconds: 20
+        # -- How often (in seconds) to perform the probe.
+        periodSeconds: 20
+        # -- Minimum consecutive failures for the probe to be considered failed after having succeeded.
+        failureThreshold: 5
+      # -- Deployment strategy
+      strategy: Recreate
+      # -- Number of replicas
+      replicas: 1
+      # -- Image pull policy
+      imagePullPolicy: Always
+      # -- Image
+      image: wso2/idp-ui:0.0.1-m8
+    configs:
+      # -- identity server Login URL
+      idpLoginUrl: "https://idp.am.wso2.com:9095/commonauth/login"
+      # -- identity server authCallBackUrl
+      idpAuthCallBackUrl: "https://idp.am.wso2.com:9095/oauth2/auth-callback"
+
+gatewaySystem:
+  # -- Enable gateway system to install gateway system components
+  enabled: true
+
+
+certmanager:
+  # -- Enable certificate manager to generate certificates
+  enabled: true
+  # -- Enable cluster issuer to generate certificates
+  enableClusterIssuer: true
+  # -- Enable root CA to generate certificates
+  enableRootCa: true
+postgresql:
+  # -- Enable postgresql database
+  enabled: true
+  # -- String to fully override common.names.fullname template
+  fullnameOverride: "wso2apk-db-service"
+  auth:
+    # -- Name for a custom database to create
+    database: WSO2AM_DB
+    # -- Password for the "postgres" admin user. Ignored if auth.existingSecret is provided
+    postgresPassword: wso2carbon
+    # -- Name for a custom user to create
+    username: wso2carbon
+    # -- Password for the custom user to create. Ignored if auth.existingSecret is provided
+    password: wso2carbon
+  primary:
+    # -- Extended PostgreSQL Primary configuration (appended to main or default configuration)
+    extendedConfiguration: |
+      max_connections = 400
+    initdb:
+      # -- ConfigMap with PostgreSQL initialization scripts
+      scriptsConfigMap: postgres-initdb-scripts-configmap
+      # -- Specify the PostgreSQL username to execute the initdb scripts
+      user: wso2carbon
+      # -- Specify the PostgreSQL password to execute the initdb scripts
+      password: wso2carbon
+    service:
+      ports:
+        # -- PostgreSQL service port
+        postgresql: 5432
+  image:
+    # -- Enable debug mode
+    debug: true
+
+redis:
+  # -- Enable redis
+  enabled: true
+  # -- Redis® architecture. Allowed values: standalone or replication. 
+  architecture: standalone
+  # -- String to fully override common.names.fullname template
+  fullnameOverride: redis
+  primary:
+    service:
+      ports:
+        # -- Redis service port
+        redis: 6379
+  auth:
+    # -- Enable password authentication	
+    enabled: false
+  image:
+    # -- Enable debug mode
+    debug: true

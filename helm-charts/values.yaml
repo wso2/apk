@@ -49,7 +49,6 @@ wso2:
     cp:
       enabled: true
       database:
-        enabled: true
         driver: "org.postgresql.Driver"
         url: "jdbc:postgresql://wso2apk-db-service:5432/WSO2AM_DB"
         host: "wso2apk-db-service"
@@ -60,9 +59,7 @@ wso2:
         validationQuery: "SELECT 1"
         validationTimeout: 250
       devportal:
-        appName: "devportal-ds"
         deployment:
-          npi: devportal-ds-npi
           resources:
             requests:
               memory: "128Mi"
@@ -83,9 +80,7 @@ wso2:
           imagePullPolicy: Always
           image: wso2/devportal-domain-service:0.0.1-m8
       admin:
-        appName: "admin-ds"
         deployment:
-          npi: admin-ds-npi
           resources:
             requests:
               memory: "128Mi"
@@ -106,9 +101,7 @@ wso2:
           imagePullPolicy: Always
           image: wso2/admin-domain-service:0.0.1-m8
       backoffice:
-        appName: "backoffice-ds"
         deployment:
-          npi: backoffice-ds-npi
           resources:
             requests:
               memory: "128Mi"
@@ -129,9 +122,7 @@ wso2:
           imagePullPolicy: Always
           image: wso2/backoffice-domain-service:0.0.1-m8
       managementServer:
-        appName: "management-server"
         deployment:
-          npi: management-server-npi
           resources:
             requests:
               memory: "128Mi"
@@ -156,12 +147,6 @@ wso2:
         #     secretName: "management-server-cert"
         #     certKeyFilename: "tls.key"
         #     certFilename: "certchain.crt"
-      cnpg:
-        npi: cnpg-npi
-        instances: 1
-        clusterName: cluster-example
-        appUserPassword: passwordidp-tls
-        superUserPassword: password
     dp:
       enabled: true
       gateway:
@@ -190,9 +175,7 @@ wso2:
       #   serviceBasePath: "/api/am/publisher/v1"
       #   partitionName: "default"
       runtime:
-        appName: "runtime-ds"
         deployment:
-          npi: runtime-ds-npi
           resources:
             requests:
               memory: "128Mi"
@@ -220,9 +203,7 @@ wso2:
           #     certKeyFilename: "tls.key"
           #     certFilename: "certchain.crt"
       adapter:
-        appName: "adapter"
         deployment:
-          npi: adapter-npi
           resources:
             requests:
               memory: "128Mi"
@@ -253,9 +234,7 @@ wso2:
         #     certFilename: ""
       ratelimiter:
         enabled: true
-        appName: "ratelimiter"
         deployment:
-          npi: ratelimiter-npi
           resources:
             requests:
               memory: "128Mi"
@@ -264,14 +243,10 @@ wso2:
               memory: "1028Mi"
               cpu: "1000m"
           readinessProbe:
-            path: /healthcheck
-            port: 8090
             initialDelaySeconds: 20
             periodSeconds: 20
             failureThreshold: 5
           livenessProbe:
-            path: /healthcheck
-            port: 8090
             initialDelaySeconds: 20
             periodSeconds: 20
             failureThreshold: 5
@@ -288,11 +263,9 @@ wso2:
           #     certFilename: ""
           #     certCAFilename: ""
       gatewayRuntime:
-        appName: "router"
         deployment:
           replicas: 1
           router:
-            npi: router-npi
             resources:
               requests:
                 memory: "128Mi"
@@ -301,12 +274,10 @@ wso2:
                 memory: "1028Mi"
                 cpu: "1000m"
             readinessProbe:
-              host: "prod.gw.wso2.com"
               initialDelaySeconds: 20
               periodSeconds: 20
               failureThreshold: 5
             livenessProbe:
-              host: "prod.gw.wso2.com"
               initialDelaySeconds: 20
               periodSeconds: 20
               failureThreshold: 5
@@ -319,7 +290,6 @@ wso2:
             #     certKeyFilename: ""
             #     certFilename: ""
           enforcer:
-            npi: enforcer-npi
             resources:
               requests:
                 memory: "128Mi"
@@ -352,34 +322,9 @@ wso2:
             #         - name: filterConfig1
             #           value: filterConfig1
     migration:
-      # This flag should be enabled only in a migration scenario.
-      # It is not recommended to run a production deployment with this flag enabled.
+      # -- This flag should be enabled only in a migration scenario.
+      # -- It is not recommended to run a production deployment with this flag enabled.
       enabled: false
-certmanager:
-  enabled: true
-  enableClusterIssuer: true
-  enableRootCa: true
-postgresql:
-  enabled: true
-  fullnameOverride: "wso2apk-db-service"
-  auth:
-    database: WSO2AM_DB
-    postgresPassword: wso2carbon
-    username: wso2carbon
-    password: wso2carbon
-  primary:
-    extendedConfiguration: |
-      max_connections = 400
-    initdb:
-      scriptsConfigMap: postgres-initdb-scripts-configmap
-      user: wso2carbon
-      password: wso2carbon
-    service:
-      ports:
-        postgresql: 5432
-  image:
-    debug: true
-
 idp:
   enabled: true
   listener:
@@ -433,7 +378,6 @@ idp:
   idpui:
     appName: "idp-ui"
     deployment:
-      npi: idp-ui-npi
       resources:
         requests:
           memory: "128Mi"
@@ -442,14 +386,10 @@ idp:
           memory: "1028Mi"
           cpu: "1000m"
       readinessProbe:
-        path: /authenticationEndpoint/health
-        port: 9443
         initialDelaySeconds: 20
         periodSeconds: 20
         failureThreshold: 5
       livenessProbe:
-        path: /authenticationEndpoint/health
-        port: 9443
         initialDelaySeconds: 20
         periodSeconds: 20
         failureThreshold: 5
@@ -460,6 +400,36 @@ idp:
     configs:
       idpLoginUrl: "https://idp.am.wso2.com:9095/commonauth/login"
       idpAuthCallBackUrl: "https://idp.am.wso2.com:9095/oauth2/auth-callback"
+
+gatewaySystem:
+  enabled: true
+
+
+certmanager:
+  enabled: true
+  enableClusterIssuer: true
+  enableRootCa: true
+postgresql:
+  enabled: true
+  fullnameOverride: "wso2apk-db-service"
+  auth:
+    database: WSO2AM_DB
+    postgresPassword: wso2carbon
+    username: wso2carbon
+    password: wso2carbon
+  primary:
+    extendedConfiguration: |
+      max_connections = 400
+    initdb:
+      scriptsConfigMap: postgres-initdb-scripts-configmap
+      user: wso2carbon
+      password: wso2carbon
+    service:
+      ports:
+        postgresql: 5432
+  image:
+    debug: true
+
 redis:
   enabled: true
   architecture: standalone
@@ -472,5 +442,3 @@ redis:
     enabled: false
   image:
     debug: true
-gatewaySystem:
-  enabled: true

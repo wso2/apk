@@ -26,12 +26,11 @@ spec:
     type: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.strategy }}
   selector:
     matchLabels:
-{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.wso2.apk.dp.gatewayRuntime.appName ) | indent 6}}
+{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" "router" ) | indent 6}}
   template:
     metadata:
       labels:
-        networkPolicyId: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.npi }}
-{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.wso2.apk.dp.gatewayRuntime.appName ) | indent 8}}
+{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" "router" ) | indent 8}}
     spec:
       initContainers:
         - name: check-adapter
