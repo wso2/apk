@@ -42,7 +42,7 @@ public isolated function addApplicationUsagePlanDAO(ApplicationRatePlan atp) ret
     }
 }
 
-public isolated function getApplicationUsagePlanByIdDAO(string policyId) returns ApplicationRatePlan|commons:APKError|NotFoundError {
+public isolated function getApplicationUsagePlanByIdDAO(string policyId) returns ApplicationRatePlan|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return e909401(dbClient);
@@ -55,8 +55,7 @@ public isolated function getApplicationUsagePlanByIdDAO(string policyId) returns
         ApplicationRatePlanDAO | sql:Error result =  dbClient->queryRow(query);
         if result is sql:NoRowsError {
             log:printDebug(result.toString());
-            NotFoundError nfe = {body:{code: 90916, message: "Application Usage Plan not found"}};
-            return nfe;
+            return e909429();
         } else if result is ApplicationRatePlanDAO {
             if result.defaulLimitType == "requestCount" {
                 ApplicationRatePlan arp = {planName: result.planName, displayName: result.displayName, 
@@ -198,7 +197,7 @@ public isolated function addBusinessPlanDAO(BusinessPlan stp) returns BusinessPl
     }
 }
 
-public isolated function getBusinessPlanByIdDAO(string policyId) returns BusinessPlan|commons:APKError|NotFoundError {
+public isolated function getBusinessPlanByIdDAO(string policyId) returns BusinessPlan|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return e909401(dbClient);
@@ -211,8 +210,7 @@ public isolated function getBusinessPlanByIdDAO(string policyId) returns Busines
         BusinessPlanDAO | sql:Error result =  dbClient->queryRow(query);
         if result is sql:NoRowsError {
             log:printDebug(result.toString());
-            NotFoundError nfe = {body:{code: 90916, message: "Business Plan not found"}};
-            return nfe;
+            return e909430();
         } else if result is BusinessPlanDAO {
             if result.defaulLimitType == "requestCount" {
                 BusinessPlan bp = {planName: result.planName, displayName: result.displayName, 
@@ -355,7 +353,7 @@ public isolated function addDenyPolicyDAO(BlockingCondition bc) returns Blocking
     }
 }
 
-public isolated function getDenyPolicyByIdDAO(string policyId) returns BlockingCondition|commons:APKError|NotFoundError {
+public isolated function getDenyPolicyByIdDAO(string policyId) returns BlockingCondition|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return e909401(dbClient);
@@ -365,8 +363,7 @@ public isolated function getDenyPolicyByIdDAO(string policyId) returns BlockingC
         BlockingCondition | sql:Error result =  dbClient->queryRow(query);
         if result is sql:NoRowsError {
             log:printDebug(result.toString());
-            NotFoundError nfe = {body:{code: 90916, message: "Deny Policy not found"}};
-            return nfe;
+            return e909431();
         } else if result is BlockingCondition {
             log:printDebug(result.toString());
             return result;

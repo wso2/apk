@@ -236,3 +236,75 @@ public isolated function e909423(error e) returns commons:APKError {
         description = "Internal Error occured while retrieving Deny Policies"
     ); 
 }
+
+public isolated function e909424(string payloadName) returns commons:APKError {
+    return error commons:APKError( "API Category already exists by name:" + payloadName,
+        code = 909424,
+        message = "API Category already exists by name:" + payloadName,
+        statusCode = 400,
+        description = "API Category already exists by name:" + payloadName
+    ); 
+}
+
+public isolated function e909425(string name) returns commons:APKError {
+    return error commons:APKError( "API Category already exists by name:"+ name,
+        code = 909425,
+        message = "API Category already exists by name:"+ name,
+        statusCode = 400,
+        description = "API Category already exists by name:"+ name
+    ); 
+}
+
+public isolated function e909426() returns commons:APKError {
+    return error commons:APKError( "API Category not found",
+        code = 909426,
+        message = "API Category not found",
+        statusCode = 404,
+        description = "API Category not found"
+    ); 
+}
+
+public isolated function e909427(string name) returns commons:APKError {
+    return error commons:APKError( "Organization already exists by name:" + name,
+        code = 909427,
+        message = "Organization already exists by name:" + name,
+        statusCode = 409,
+        description = "Organization already exists by name:" + name
+    ); 
+}
+
+public isolated function e909428(string id) returns commons:APKError {
+    return error commons:APKError( "Organization ID not exist by:" + id,
+        code = 909428,
+        message = "Organization ID not exist by:" + id,
+        statusCode = 400,
+        description = "Organization ID not exist by:" + id
+    ); 
+}
+
+public isolated function e909429() returns commons:APKError {
+    return error commons:APKError( "Application Usage Plan not found",
+        code = 909429,
+        message = "Application Usage Plan not found",
+        statusCode = 404,
+        description = "Application Usage Plan not found"
+    ); 
+}
+
+public isolated function e909430() returns commons:APKError {
+    return error commons:APKError( "Business Plan not found",
+        code = 909430,
+        message = "Business Plan not found",
+        statusCode = 404,
+        description = "Business Plan not found"
+    ); 
+}
+
+public isolated function e909431() returns commons:APKError {
+    return error commons:APKError( "Deny Policy not found",
+        code = 909431,
+        message = "Deny Policy not found",
+        statusCode = 404,
+        description = "Deny Policy not found"
+    ); 
+}
