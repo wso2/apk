@@ -3536,7 +3536,8 @@ public class APIClient {
                     _ = check self.setHttpRoute(apiArtifact, payload, createdEndpoints.hasKey(SANDBOX_TYPE) ? createdEndpoints.get(SANDBOX_TYPE) : (), uniqueId, SANDBOX_TYPE, organization);
                 }
                 if definition is string {
-                    check self.retrieveGeneratedConfigmapForDefinition(apiArtifact, payload, definition, uniqueId, organization);
+                    json generatedSwagger = check self.retrieveGeneratedSwaggerDefinition(payload, definition);
+                    check self.retrieveGeneratedConfigmapForDefinition(apiArtifact, payload, generatedSwagger, uniqueId, organization);
                 } else {
                     model:API? aPI = getAPI(apiId, organization);
                     if aPI is model:API {
