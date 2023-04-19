@@ -182,3 +182,57 @@ public isolated function e909417() returns commons:APKError {
         description = "Error while retrieving organization data from Database"
     ); 
 }
+
+public isolated function e909418() returns commons:APKError {
+    return error commons:APKError( "Error while retrieving Application Usage Plan",
+        code = 909418,
+        message = "Error while retrieving Application Usage Plan",
+        statusCode = 500,
+        description = "Error while retrieving Application Usage Plan"
+    ); 
+}
+
+public isolated function e909419(error e) returns commons:APKError {
+    return error commons:APKError( "Internal Error occured while retrieving Application Usage Plans", e,
+        code = 909419,
+        message = "Internal Error occured while retrieving Application Usage Plans",
+        statusCode = 500,
+        description = "Internal Error occured while retrieving Application Usage Plans"
+    ); 
+}
+
+public isolated function e909420(error e) returns commons:APKError {
+    return error commons:APKError( "Error while retrieving Business Plan", e,
+        code = 909420,
+        message = "Error while retrieving Business Plan",
+        statusCode = 500,
+        description = "Error while retrieving Business Plan"
+    ); 
+}
+
+public isolated function e909421(error e) returns commons:APKError {
+    return error commons:APKError( "Internal Error occured while retrieving Business Plans", e,
+        code = 909421,
+        message = "Internal Error occured while retrieving Business Plans",
+        statusCode = 500,
+        description = "Internal Error occured while retrieving Business Plans"
+    ); 
+}
+
+public isolated function e909422(error e) returns commons:APKError {
+    return error commons:APKError( "Error while retrieving Deny Policy from DB", e,
+        code = 909422,
+        message = "Error while retrieving Deny Policy from DB",
+        statusCode = 500,
+        description = "Error while retrieving Deny Policy from DB"
+    ); 
+}
+
+public isolated function e909423(error e) returns commons:APKError {
+    return error commons:APKError( "Internal Error occured while retrieving Deny Policies", e,
+        code = 909423,
+        message = "Internal Error occured while retrieving Deny Policies",
+        statusCode = 500,
+        description = "Internal Error occured while retrieving Deny Policies"
+    ); 
+}
