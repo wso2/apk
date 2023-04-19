@@ -44,6 +44,11 @@ public type CreatedAPI record {|
     API body;
 |};
 
+public type UpdatedAPI record {|
+    *http:Ok;
+    API body;
+|};
+
 public type PreconditionFailedError record {|
     *http:PreconditionFailed;
     Error body;
