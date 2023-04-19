@@ -19,12 +19,13 @@
 import ballerinax/postgresql;
 import ballerina/log;
 import ballerina/sql;
+import wso2/apk_common_lib as commons;
 
-isolated function addOrganizationDAO(Internal_Organization payload) returns Internal_Organization|APKError {
+isolated function addOrganizationDAO(Internal_Organization payload) returns Internal_Organization|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         postgresql:JsonBinaryValue namespace = new (payload.serviceNamespaces.toJson());
         sql:ParameterizedQuery query = `INSERT INTO ORGANIZATION(UUID, NAME, 
@@ -37,14 +38,14 @@ isolated function addOrganizationDAO(Internal_Organization payload) returns Inte
                 return addOrganizationClaimMappingDAO(dbClient, payload);
             } else {
                 string message = "Error while inserting vhosts data into Database";
-                return error(message, message = message, description = message, code = 909000, statusCode = "500");
+                return error(message, message = message, description = message, code = 909000, statusCode = 500);
             }
         }
     }
     return payload;
 }
 
-isolated function addOrganizationClaimMappingDAO(postgresql:Client dbClient, Internal_Organization payload) returns Internal_Organization|APKError {
+isolated function addOrganizationClaimMappingDAO(postgresql:Client dbClient, Internal_Organization payload) returns Internal_Organization|commons:APKError {
     foreach OrganizationClaim e in payload.claimList {
         sql:ParameterizedQuery query = `INSERT INTO ORGANIZATION_CLAIM_MAPPING(UUID, CLAIM_KEY, 
         CLAIM_VALUE) VALUES (${payload.id},${e.claimKey},
@@ -54,7 +55,7 @@ isolated function addOrganizationClaimMappingDAO(postgresql:Client dbClient, Int
             continue;
         } else { 
             string message = "Error while inserting organization claim data into Database";
-            return error(message, result, message = message, description = message, code = 909000, statusCode = "500"); 
+            return error(message, result, message = message, description = message, code = 909000, statusCode = 500); 
         }
     }
     return payload;
@@ -88,11 +89,11 @@ isolated function addVhostsDAO (postgresql:Client dbClient, Internal_Organizatio
    return true;
 }
 
-isolated function validateOrganizationByNameDAO(string name) returns boolean|APKError {
+isolated function validateOrganizationByNameDAO(string name) returns boolean|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } 
     sql:ParameterizedQuery query = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName, STATUS as enabled FROM ORGANIZATION WHERE NAME = ${name}`;
     Organization | sql:Error result =  dbClient->queryRow(query);
@@ -103,16 +104,16 @@ isolated function validateOrganizationByNameDAO(string name) returns boolean|APK
     } else {
         log:printError("Error while validating organization name in Database", result);
         string message = "Error while validating organization name in Database";
-        return error(message, message = message, description = message, code = 909000, statusCode = "500"); 
+        return error(message, message = message, description = message, code = 909000, statusCode = 500); 
     }
     
 }
 
-isolated function validateOrganizationById(string? id) returns boolean|APKError {
+isolated function validateOrganizationById(string? id) returns boolean|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } 
     sql:ParameterizedQuery query = `select exists(SELECT 1 FROM ORGANIZATION WHERE UUID = ${id})`;
     boolean | sql:Error result =  dbClient->queryRow(query);
@@ -120,15 +121,15 @@ isolated function validateOrganizationById(string? id) returns boolean|APKError 
         return result;
     } else { 
         string message = "Error while validating organization id in Database";
-        return error(message, message = message, description = message, code = 909000, statusCode = "500"); 
+        return error(message, message = message, description = message, code = 909000, statusCode = 500); 
     }   
 }
 
-isolated function updateOrganizationDAO(string id, Internal_Organization payload) returns Internal_Organization|APKError {
+isolated function updateOrganizationDAO(string id, Internal_Organization payload) returns Internal_Organization|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         postgresql:JsonBinaryValue namespace = new (payload.serviceNamespaces.toJson());
         sql:ParameterizedQuery query = `UPDATE ORGANIZATION SET NAME =${payload.name},
@@ -140,16 +141,16 @@ isolated function updateOrganizationDAO(string id, Internal_Organization payload
                     return updateOrganizationClaimMappingDAO(dbClient, id, payload);
                 } else {
                     string message = "Error while updating vhosts data into Database";
-                    return error(message, message = message, description = message, code = 909000, statusCode = "500");
+                    return error(message, message = message, description = message, code = 909000, statusCode = 500);
                 }
             } else { 
             string message = "Error while updating organization data into Database";
-            return error(message, message = message, description = message, code = 909000, statusCode = "500"); 
+            return error(message, message = message, description = message, code = 909000, statusCode = 500); 
         }
     }
 }
 
-isolated function updateOrganizationClaimMappingDAO(postgresql:Client dbClient, string id, Internal_Organization payload) returns Internal_Organization|APKError {
+isolated function updateOrganizationClaimMappingDAO(postgresql:Client dbClient, string id, Internal_Organization payload) returns Internal_Organization|commons:APKError {
     sql:ParameterizedQuery query = `DELETE FROM ORGANIZATION_CLAIM_MAPPING WHERE UUID = ${id}`;
     sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
     if result is sql:ExecutionResult {
@@ -162,7 +163,7 @@ isolated function updateOrganizationClaimMappingDAO(postgresql:Client dbClient, 
                 continue;
             } else { 
                 string message = "Error while inserting organization claim data into Database";
-                return error(message, result1, message = message, description = message, code = 909000, statusCode = "500"); 
+                return error(message, result1, message = message, description = message, code = 909000, statusCode = 500); 
             }
         }
     }
@@ -202,11 +203,11 @@ isolated function updateVhostsDAO (postgresql:Client dbClient, string id, Intern
     return false;
 }
 
-public isolated function getAllOrganizationDAO() returns Internal_Organization[]|APKError {
+public isolated function getAllOrganizationDAO() returns Internal_Organization[]|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         do {
             map<Internal_Organization> organization = {};
@@ -256,16 +257,16 @@ public isolated function getAllOrganizationDAO() returns Internal_Organization[]
             return organization.toArray();
         } on fail var e {
         	string message = e.message();
-            return error(message, e, message = message, description = message, code = 909001, statusCode = "500");
+            return error(message, e, message = message, description = message, code = 909001, statusCode = 500);
         }
     }
 }
 
-isolated function getOrganizationByIdDAO(string id) returns Internal_Organization|APKError {
+isolated function getOrganizationByIdDAO(string id) returns Internal_Organization|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         do {
             sql:ParameterizedQuery query = `SELECT ORGANIZATION.UUID as id, NAME as name, DISPLAY_NAME as displayName, STATUS as enabled, claim_key as claimKey, 
@@ -328,23 +329,23 @@ isolated function getOrganizationByIdDAO(string id) returns Internal_Organizatio
 
             if (organization1.id == "") {
                 string message = "Organization not found";
-                return error(message, message = message, description = message, code = 909000, statusCode = "404");
+                return error(message, message = message, description = message, code = 909000, statusCode = 404);
             } else {
                  return organization1;
             }
 
             } on fail var e {
         	string message = "Internal Error occured while retrieving organization data from Database";
-            return error(message, e, message = message, description = message, code = 909001, statusCode = "500");
+            return error(message, e, message = message, description = message, code = 909001, statusCode = 500);
         }
     }
 }
 
-isolated function removeOrganizationDAO(string id) returns boolean|APKError {
+isolated function removeOrganizationDAO(string id) returns boolean|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         sql:ParameterizedQuery query = `DELETE FROM ORGANIZATION WHERE UUID = ${id}`;
         sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
@@ -352,27 +353,27 @@ isolated function removeOrganizationDAO(string id) returns boolean|APKError {
             return true;
         } else { 
             string message = "Error while deleting organization data from Database";
-            return error(message, result, message = message, description = message, code = 909000, statusCode = "500"); 
+            return error(message, result, message = message, description = message, code = 909000, statusCode = 500); 
         }
     }
 }
 
-isolated function getOrganizationByOrganizationClaimDAO(string claim) returns Internal_Organization|APKError {
+isolated function getOrganizationByOrganizationClaimDAO(string claim) returns Internal_Organization|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } else { 
         sql:ParameterizedQuery query = `SELECT UUID as id FROM ORGANIZATION_CLAIM_MAPPING where claim_value =${claim}`;
         string | sql:Error result =  dbClient->queryRow(query);
         if result is sql:NoRowsError {
             string message = "No organization found";
-            return error(message, message = message, description = message, code = 909000, statusCode = "404"); 
+            return error(message, message = message, description = message, code = 909000, statusCode = 404); 
         } else if result is string {
             return getOrganizationByIdDAO(result);
         } else { 
             string message = "Error while retrieving organization data from Database";
-            return error(message, message = message, description = message, code = 909000, statusCode = "500"); 
+            return error(message, message = message, description = message, code = 909000, statusCode = 500); 
         }
     }
     

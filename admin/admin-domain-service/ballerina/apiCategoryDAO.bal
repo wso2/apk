@@ -19,12 +19,12 @@
 import ballerina/log;
 import ballerinax/postgresql;
 import ballerina/sql;
+import wso2/apk_common_lib as commons;
 
-isolated function addAPICategoryDAO(APICategory payload, string org) returns APICategory|APKError {
+isolated function addAPICategoryDAO(APICategory payload, string org) returns APICategory|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
-        string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return e909401(dbClient);
     } else {
         sql:ParameterizedQuery query = `INSERT INTO API_CATEGORIES (UUID, NAME, 
         DESCRIPTION, ORGANIZATION) VALUES (${payload.id},${payload.name},
@@ -34,17 +34,15 @@ isolated function addAPICategoryDAO(APICategory payload, string org) returns API
             return payload;
         } else { 
             log:printError(result.toString());
-            string message = "Error while inserting data into Database";
-            return error(message, result, message = message, description = message, code = 909000, statusCode = "500"); 
+            return e909402(result);
         }
     }
 }
 
-public isolated function checkAPICategoryExistsByNameDAO(string categoryName, string org) returns boolean|APKError {
+public isolated function checkAPICategoryExistsByNameDAO(string categoryName, string org) returns boolean|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
-        string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return e909401(dbClient);
     } else {
         sql:ParameterizedQuery query = `SELECT UUID as ID, NAME, DESCRIPTION 
         FROM API_CATEGORIES WHERE NAME =${categoryName} AND ORGANIZATION =${org}`;
@@ -56,17 +54,15 @@ public isolated function checkAPICategoryExistsByNameDAO(string categoryName, st
             return true;
         } else {
             log:printError(result.toString());
-            string message = "Error while checking API Category existence";
-            return error(message, result, message = message, description = message, code = 909000, statusCode = "500"); 
+            return e909404(result);
         }
     }
 }
 
-isolated function getAPICategoriesDAO(string org) returns APICategory[]|APKError {
+isolated function getAPICategoriesDAO(string org) returns APICategory[]|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
-        string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return e909401(dbClient);
     } else {
         do {
             sql:ParameterizedQuery query = `SELECT UUID as ID, NAME, DESCRIPTION 
@@ -76,17 +72,15 @@ isolated function getAPICategoriesDAO(string org) returns APICategory[]|APKError
             check apiCategoryStream.close();
             return apiCategoryList;
         } on fail var e {
-        	string message = "Internal Error occured while retrieving API Categories";
-            return error(message, e, message = message, description = message, code = 909001, statusCode = "500");
+            return e909403(e);
         }
     }
 }
 
-isolated function getAPICategoryByIdDAO(string id, string org) returns APICategory|APKError|NotFoundError {
+isolated function getAPICategoryByIdDAO(string id, string org) returns APICategory|commons:APKError|NotFoundError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
-        string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return e909401(dbClient);
     } else {
         sql:ParameterizedQuery query = `SELECT UUID as ID, NAME, DESCRIPTION 
         FROM API_CATEGORIES WHERE UUID =${id} AND ORGANIZATION =${org}`;
@@ -99,17 +93,15 @@ isolated function getAPICategoryByIdDAO(string id, string org) returns APICatego
             return result;
         } else {
             log:printError(result.toString());
-            string message = "Error while checking API Category existence";
-            return error(message, result, message = message, description = message, code = 909000, statusCode = "500"); 
+            return e909404(result);
         }
     }
 }
 
-isolated function updateAPICategoryDAO(APICategory body, string org) returns APICategory|APKError {
+isolated function updateAPICategoryDAO(APICategory body, string org) returns APICategory|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
-        string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return e909401(dbClient);
     } else {
         sql:ParameterizedQuery query = `UPDATE API_CATEGORIES SET NAME = ${body.name},
          DESCRIPTION = ${body.description} WHERE UUID = ${body.id} AND ORGANIZATION = ${org}`;
@@ -118,17 +110,15 @@ isolated function updateAPICategoryDAO(APICategory body, string org) returns API
             return body;
         } else {
             log:printError(result.toString());
-            string message = "Error while updating data record in the Database";
-            return error(message, result, message = message, description = message, code = 909000, statusCode = "500"); 
+            return e909405(result);
         }
     }
 }
 
-isolated function deleteAPICategoryDAO(string id, string org) returns APKError|string {
+isolated function deleteAPICategoryDAO(string id, string org) returns commons:APKError|string {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
-        string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return e909401(dbClient);
     } else {
         sql:ParameterizedQuery query = `DELETE FROM API_CATEGORIES WHERE UUID = ${id} AND ORGANIZATION = ${org}`;
         sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
@@ -136,8 +126,7 @@ isolated function deleteAPICategoryDAO(string id, string org) returns APKError|s
             return "";
         } else { 
             log:printError(result.toString());
-            string message = "Error while deleting data record in the Database";
-            return error(message, result, message = message, description = message, code = 909000, statusCode = "500"); 
+            return e909406(result);
         }
     }
 }

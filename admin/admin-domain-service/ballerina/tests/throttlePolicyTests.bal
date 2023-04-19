@@ -18,6 +18,7 @@
 
 import ballerina/test;
 import ballerina/log;
+import wso2/apk_common_lib as commons;
 
 ApplicationRatePlan  applicationUsagePlan = {planName: "25PerMin", description: "25 Per Minute",
 'type:"ApplicationThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"}};
@@ -44,12 +45,12 @@ function addApplicationUsagePlanTest() {
             }
         }
     };
-    ApplicationRatePlan|APKError createdAppPol = addApplicationUsagePlan(payload);
+    ApplicationRatePlan|commons:APKError createdAppPol = addApplicationUsagePlan(payload);
     if createdAppPol is ApplicationRatePlan {
         test:assertTrue(true,"Application usage plan added successfully");
         applicationUsagePlan = createdAppPol;
         log:printInfo(createdAppPol.toString());
-    } else if createdAppPol is APKError {
+    } else if createdAppPol is commons:APKError {
         log:printError(createdAppPol.toString());
         test:assertFail("Error occured while adding Application Usage Plan");
     }
@@ -59,7 +60,7 @@ function addApplicationUsagePlanTest() {
 function getApplicationUsagePlanByIdTest(){
     string? planId = applicationUsagePlan.planId;
     if planId is string {
-        ApplicationRatePlan|APKError|NotFoundError policy = getApplicationUsagePlanById(planId);
+        ApplicationRatePlan|commons:APKError|NotFoundError policy = getApplicationUsagePlanById(planId);
         if policy is ApplicationRatePlan {
             test:assertTrue(true, "Successfully retrieved Application Usage Plan");
             log:printInfo(policy.toString());
@@ -73,11 +74,11 @@ function getApplicationUsagePlanByIdTest(){
 
 @test:Config {dependsOn: [getApplicationUsagePlanByIdTest]}
 function getApplicationUsagePlansTest(){
-    ApplicationRatePlanList|APKError appPolicyList = getApplicationUsagePlans();
+    ApplicationRatePlanList|commons:APKError appPolicyList = getApplicationUsagePlans();
     if appPolicyList is ApplicationRatePlanList {
     test:assertTrue(true, "Successfully retrieved all Application Usage Plans");
     log:printInfo(appPolicyList.toString());
-    } else if appPolicyList is APKError {
+    } else if appPolicyList is commons:APKError {
         test:assertFail("Error occured while retrieving all Application Usage Plans");
     }
 }
@@ -99,10 +100,10 @@ function updateApplicationUsagePlanTest() {
     };
     string? planId = applicationUsagePlan.planId;
     if planId is string {
-        ApplicationRatePlan|NotFoundError|APKError createdAppPol = updateApplicationUsagePlan(planId,payload);
+        ApplicationRatePlan|NotFoundError|commons:APKError createdAppPol = updateApplicationUsagePlan(planId,payload);
         if createdAppPol is ApplicationRatePlan {
             test:assertTrue(true,"Application usage plan updated successfully");
-        } else if createdAppPol is APKError {
+        } else if createdAppPol is commons:APKError {
             log:printError(createdAppPol.toString());
             test:assertFail("Error occured while updating Application Usage Plan");
         } else if createdAppPol is NotFoundError {
@@ -147,11 +148,11 @@ function addBusinessPlanTest() {
         "rateLimitTimeUnit": "sec",
         "customAttributes": []
     };
-    BusinessPlan|APKError createdBusinessPlan = addBusinessPlan(payload);
+    BusinessPlan|commons:APKError createdBusinessPlan = addBusinessPlan(payload);
     if createdBusinessPlan is BusinessPlan {
         test:assertTrue(true,"Business Plan added successfully");
         businessPlan.planId = createdBusinessPlan.planId;
-    } else if createdBusinessPlan is APKError {
+    } else if createdBusinessPlan is commons:APKError {
         test:assertFail("Error occured while adding Business Plan");
     }
 }
@@ -160,7 +161,7 @@ function addBusinessPlanTest() {
 function getBusinessPlanByIdTest() {
     string? planId = businessPlan.planId;
     if planId is string {
-        BusinessPlan|APKError|NotFoundError businessPlanResponse = getBusinessPlanById(planId);
+        BusinessPlan|commons:APKError|NotFoundError businessPlanResponse = getBusinessPlanById(planId);
         if businessPlanResponse is BusinessPlan {
             test:assertTrue(true,"Successfully retrieved Business Plan");
         } else {
@@ -173,10 +174,10 @@ function getBusinessPlanByIdTest() {
 
 @test:Config {dependsOn: [getBusinessPlanByIdTest]}
 function getBusinessPlansTest() {
-    BusinessPlanList|APKError businessPlansResponse = getBusinessPlans();
+    BusinessPlanList|commons:APKError businessPlansResponse = getBusinessPlans();
     if businessPlansResponse is BusinessPlanList {
         test:assertTrue(true,"Successfully retrieved all Business Plans");
-    } else if businessPlansResponse is APKError {
+    } else if businessPlansResponse is commons:APKError {
         test:assertFail("Error occured while retrieving all Business Plans");
     }
 }
@@ -201,10 +202,10 @@ function updateBusinessPlanTest() {
     };
     string? planId = businessPlan.planId;
     if planId is string {
-        BusinessPlan|NotFoundError|APKError updatedBusinessPlan = updateBusinessPlan(planId,payload);
+        BusinessPlan|NotFoundError|commons:APKError updatedBusinessPlan = updateBusinessPlan(planId,payload);
         if updatedBusinessPlan is BusinessPlan {
             test:assertTrue(true,"Business Plan updated successfully");
-        } else if updatedBusinessPlan is APKError {
+        } else if updatedBusinessPlan is commons:APKError {
             test:assertFail("Error occured while updating Business Plan");
         }
     } else {
@@ -216,10 +217,10 @@ function updateBusinessPlanTest() {
 function removeBusinessPlanTest(){
     string? planId = businessPlan.planId;
     if planId is string {
-        APKError|string status = removeBusinessPlan(planId);
+        commons:APKError|string status = removeBusinessPlan(planId);
         if status is string {
             test:assertTrue(true, "Successfully deleted Business Plan");
-        } else if status is  APKError {
+        } else if status is  commons:APKError {
             test:assertFail("Error occured while deleting Business Plan");
         }
     } else {
@@ -234,11 +235,11 @@ function addDenyPolicyTest() {
         "conditionValue": "admin:MyApp6",
         "conditionStatus": true
     };
-    BlockingCondition|APKError createdDenyPolicy = addDenyPolicy(payload);
+    BlockingCondition|commons:APKError createdDenyPolicy = addDenyPolicy(payload);
     if createdDenyPolicy is BlockingCondition {
         test:assertTrue(true,"Deny Policy added successfully");
         denyPolicy.policyId = createdDenyPolicy.policyId;
-    } else if createdDenyPolicy is APKError {
+    } else if createdDenyPolicy is commons:APKError {
         test:assertFail("Error occured while adding Deny Policy");
     }
 }
@@ -247,7 +248,7 @@ function addDenyPolicyTest() {
 function getDenyPolicyByIdTest() {
     string? policyId = denyPolicy.policyId;
     if policyId is string {
-        BlockingCondition|APKError|NotFoundError denyPolicyResponse = getDenyPolicyById(policyId);
+        BlockingCondition|commons:APKError|NotFoundError denyPolicyResponse = getDenyPolicyById(policyId);
         if denyPolicyResponse is BlockingCondition {
             test:assertTrue(true,"Successfully retrieved Deny Policy");
         } else  {
@@ -260,10 +261,10 @@ function getDenyPolicyByIdTest() {
 
 @test:Config {dependsOn: [getDenyPolicyByIdTest]}
 function getAllDenyPoliciesTest() {
-    BlockingConditionList|APKError denyPoliciesResponse = getAllDenyPolicies();
+    BlockingConditionList|commons:APKError denyPoliciesResponse = getAllDenyPolicies();
     if denyPoliciesResponse is BlockingConditionList {
         test:assertTrue(true,"Successfully retrieved all Deny Policy");
-    } else if denyPoliciesResponse is APKError {
+    } else if denyPoliciesResponse is commons:APKError {
         test:assertFail("Error occured while retrieving all Deny Policy");
     }
 }
@@ -273,10 +274,10 @@ function updateDenyPolicyTest() {
     string? policyId = denyPolicy.policyId;
     if policyId is string {
         BlockingConditionStatus status = {conditionStatus: false, policyId: policyId};
-        string?|BlockingCondition|NotFoundError|APKError denyPolicyResponse = updateDenyPolicy(policyId, status);
+        string?|BlockingCondition|NotFoundError|commons:APKError denyPolicyResponse = updateDenyPolicy(policyId, status);
         if denyPolicyResponse is BlockingCondition {
             test:assertTrue(true,"Successfully updated Deny Policy Status");
-        } else if denyPolicyResponse is APKError {
+        } else if denyPolicyResponse is commons:APKError {
             test:assertFail("Error occured while updating Deny Policy Status");
         }
     } else {
@@ -288,10 +289,10 @@ function updateDenyPolicyTest() {
 function removeDenyPolicyTest(){
     string? policyId = denyPolicy.policyId;
     if policyId is string {
-        APKError|string status = removeDenyPolicy(policyId);
+        commons:APKError|string status = removeDenyPolicy(policyId);
         if status is string {
         test:assertTrue(true, "Successfully deleted Deny Policy");
-        } else if status is  APKError {
+        } else if status is  commons:APKError {
             test:assertFail("Error occured while deleting Deny Policy");
         }
     } else {

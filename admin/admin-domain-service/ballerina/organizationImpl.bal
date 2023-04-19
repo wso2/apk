@@ -17,6 +17,7 @@
 //
 
 import ballerina/uuid;
+import wso2/apk_common_lib as commons;
 
 isolated function createInternalFromOrganization(Organization payload) returns Internal_Organization {
     OrganizationClaim orgClaim = {
@@ -51,14 +52,14 @@ isolated function createOrganizationFromInternal(Internal_Organization payload) 
     return organization;
 }
 
-isolated function addOrganization(Organization payload) returns Organization|APKError {
+isolated function addOrganization(Organization payload) returns Organization|commons:APKError {
     boolean validateOrganization = check validateOrganizationByNameDAO(payload.name);
     if validateOrganization is true {
         string message = "Organization already exists by name:" + payload.name;
-        return error(message, message = message, description = message, code = 90911, statusCode = "409");
+        return error(message, message = message, description = message, code = 90911, statusCode = 409);
     }
     payload.id = uuid:createType1AsString();
-    Internal_Organization|APKError organization = addOrganizationDAO(createInternalFromOrganization(payload));
+    Internal_Organization|commons:APKError organization = addOrganizationDAO(createInternalFromOrganization(payload));
     if organization is Internal_Organization {
         Organization createdOrganization = createOrganizationFromInternal(organization);
         return createdOrganization;
@@ -67,14 +68,14 @@ isolated function addOrganization(Organization payload) returns Organization|APK
     } 
 }
 
-isolated function updatedOrganization(string id, Organization payload) returns Organization|APKError {
+isolated function updatedOrganization(string id, Organization payload) returns Organization|commons:APKError {
     boolean validateOrganizationId = check validateOrganizationById(id);
     if validateOrganizationId is false {
         string message = "Organization ID not exist by:" + id;
-        return error(message, message = message, description = message, code = 90911, statusCode = "400");
+        return error(message, message = message, description = message, code = 90911, statusCode = 400);
     }
     payload.id = id;
-    Internal_Organization|APKError organization = updateOrganizationDAO(id, createInternalFromOrganization(payload));
+    Internal_Organization|commons:APKError organization = updateOrganizationDAO(id, createInternalFromOrganization(payload));
     if organization is Internal_Organization {
        return createOrganizationFromInternal(organization);
     } else {
@@ -82,8 +83,8 @@ isolated function updatedOrganization(string id, Organization payload) returns O
     } 
 }
 
-isolated function getAllOrganization() returns OrganizationList|APKError {
-    Internal_Organization[]|APKError getOrgnizations = getAllOrganizationDAO();
+isolated function getAllOrganization() returns OrganizationList|commons:APKError {
+    Internal_Organization[]|commons:APKError getOrgnizations = getAllOrganizationDAO();
     if getOrgnizations is Internal_Organization[] {
         int count = getOrgnizations.length();
         Organization[] organizations = [];
@@ -97,8 +98,8 @@ isolated function getAllOrganization() returns OrganizationList|APKError {
     }
 }
 
-isolated function getOrganizationById(string id) returns Organization|APKError {
-    Internal_Organization|APKError organization = getOrganizationByIdDAO(id);
+isolated function getOrganizationById(string id) returns Organization|commons:APKError {
+    Internal_Organization|commons:APKError organization = getOrganizationByIdDAO(id);
     if organization is Internal_Organization {
         return createOrganizationFromInternal(organization);
     } else {
@@ -106,20 +107,20 @@ isolated function getOrganizationById(string id) returns Organization|APKError {
     }
 }
 
-isolated function removeOrganization(string id) returns boolean|APKError {
+isolated function removeOrganization(string id) returns boolean|commons:APKError {
     boolean validateOrganizationId = check validateOrganizationById(id);
     if validateOrganizationId is false {
         string message = "Organization ID not exist by:" + id;
-        return error(message, message = message, description = message, code = 90911, statusCode = "400");
+        return error(message, message = message, description = message, code = 90911, statusCode = 400);
     }
-    boolean|APKError organization = removeOrganizationDAO(id);
+    boolean|commons:APKError organization = removeOrganizationDAO(id);
     return organization;
 }
 
-isolated function getOrganizationByOrganizationClaim() returns Organization|APKError{
+isolated function getOrganizationByOrganizationClaim() returns Organization|commons:APKError{
     //TO DO: Get organization claim from JWT
     string organizationClaimValue = "organizationClaimValue";
-    Internal_Organization|APKError organization = getOrganizationByOrganizationClaimDAO(organizationClaimValue);
+    Internal_Organization|commons:APKError organization = getOrganizationByOrganizationClaimDAO(organizationClaimValue);
     if organization is Internal_Organization {
         return createOrganizationFromInternal(organization);
     } else {
