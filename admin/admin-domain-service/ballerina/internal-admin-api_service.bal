@@ -15,8 +15,11 @@
 // specific language governing permissions and limitations
 // under the License.
 //
+
+import wso2/apk_common_lib as commons;
+
 service /api/am/internal/v1 on internalAdminEp {
-    resource function get organizations(string? organizationName, string? organizationClaimValue) returns OrganizationList|error|BadRequestError {
+    resource function get organizations(string? organizationName, string? organizationClaimValue) returns OrganizationList|error|commons:APKError {
         if organizationName is string && organizationClaimValue is () {
             Internal_Organization organizationByNameDAO = check getOrganizationByNameDAO(organizationName);
             OrganizationList organizationList = {
@@ -32,8 +35,7 @@ service /api/am/internal/v1 on internalAdminEp {
             };
             return organizationList;
         } else if organizationName is string && organizationClaimValue is string {
-            BadRequestError badRequestError = {body: {code: 900900, message: "Invalid query parameters. Only one of the query parameters can be provided."}};
-            return badRequestError;
+            return e909407();
         }
         return check getAllOrganization();
     }
