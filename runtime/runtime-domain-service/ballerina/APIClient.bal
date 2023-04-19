@@ -3459,7 +3459,7 @@ public class APIClient {
         return [zipName, zipPath];
     }
 
-    public isolated function updateAPI(string apiId, API payload, string? definition, commons:Organization organization, string userName) returns API|BadRequestError|ForbiddenError|NotFoundError|PreconditionFailedError|InternalServerErrorError|commons:APKError {
+    public isolated function updateAPI(string apiId, API payload, string? definition, commons:Organization organization, string userName) returns UpdatedAPI|BadRequestError|ForbiddenError|NotFoundError|PreconditionFailedError|InternalServerErrorError|commons:APKError {
         do {
             API|NotFoundError api = check self.getAPIById(apiId, organization);
             if api is API {
@@ -3555,7 +3555,9 @@ public class APIClient {
                     self.generateAndSetRuntimeAPIArtifact(apiArtifact, payload, (), organization, userName);
                 }
                 model:API deployAPIToK8sResult = check self.deployAPIToK8s(apiArtifact, organization);
-                return check convertK8sAPItoAPI(deployAPIToK8sResult, false);
+                string locationUrl = runtimeConfiguration.baseURl + "/apis/" + apiId;
+                UpdatedAPI updatedAPI = {body: check convertK8sAPItoAPI(deployAPIToK8sResult, false), headers: {location: locationUrl}};
+                return updatedAPI;
             } else {
                 return api;
             }
@@ -3622,7 +3624,14 @@ public class APIClient {
                                 }
                                 updateAPI.operations = sortedOperations;
                                 _ = check self.updateAPI(apiId, updateAPI, validateAndRetrieveDefinitionResult.getContent(), organization, userName);
-                                return self.getAPIDefinitionByID(apiId, organization, APPLICATION_JSON_MEDIA_TYPE);
+                                http:Response|NotFoundError|PreconditionFailedError|InternalServerErrorError|commons:APKError response = self.getAPIDefinitionByID(apiId, organization, APPLICATION_JSON_MEDIA_TYPE);
+                                if response is http:Response {
+                                    string locationUrl = runtimeConfiguration.baseURl + "/apis/" + apiId + "/definition";
+                                    response.setHeader("location", locationUrl);
+                                    return response;
+                                } else {
+                                    return response;
+                                }
                             } else {
                                 log:printError("Error occured retrieving uri templates from definition", uRITemplates);
                                 runtimeapi:JAPIManagementException excetion = check uRITemplates.ensureType(runtimeapi:JAPIManagementException);
