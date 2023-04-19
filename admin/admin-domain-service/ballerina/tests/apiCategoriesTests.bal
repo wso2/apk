@@ -81,7 +81,7 @@ function updateAPICategoryTestNegative1() {
         if createdApiCategory is APICategory {
             test:assertFail("API Category updated successfully");
         } else if createdApiCategory is commons:APKError {
-            test:assertFail("Error occured while adding API Category");
+            test:assertTrue(true, "Not Found Error");
         }
     } else {
         test:assertFail("Category ID isn't a string");
