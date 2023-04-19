@@ -26,12 +26,11 @@ spec:
     type: {{ .Values.idp.idpds.deployment.strategy }}
   selector:
     matchLabels:
-{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.idp.idpds.appName ) | indent 6}}
+{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" "idp-ds" ) | indent 6}}
   template:
     metadata:
       labels:
-        # networkPolicyId: {{ .Values.idp.idpds.deployment.npi }}
-{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.idp.idpds.appName ) | indent 8}}
+{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" "idp-ds" ) | indent 8}}
     spec:
       initContainers:
         - name: init-db

@@ -26,12 +26,11 @@ spec:
     type: {{ .Values.idp.idpui.deployment.strategy }}
   selector:
     matchLabels:
-{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.idp.idpui.appName ) | indent 6}}
+{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" "idp-ui" ) | indent 6}}
   template:
     metadata:
       labels:
-        # networkPolicyId: {{ .Values.idp.idpui.deployment.npi }}
-{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" .Values.idp.idpui.appName ) | indent 8}}
+{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" "idp-ui" ) | indent 8}}
     spec:
       containers:
         - name: idpui
