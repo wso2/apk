@@ -87,8 +87,7 @@ isolated function getAPICategoryByIdDAO(string id, string org) returns APICatego
         APICategory | sql:Error result =  dbClient->queryRow(query);
         if result is sql:NoRowsError {
             log:printDebug(result.toString());
-            NotFoundError nfe = {body:{code: 90916, message: "API Category not found"}};
-            return nfe;
+            return e909426();
         } else if result is APICategory {
             return result;
         } else {

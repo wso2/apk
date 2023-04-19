@@ -55,8 +55,7 @@ isolated function createOrganizationFromInternal(Internal_Organization payload) 
 isolated function addOrganization(Organization payload) returns Organization|commons:APKError {
     boolean validateOrganization = check validateOrganizationByNameDAO(payload.name);
     if validateOrganization is true {
-        string message = "Organization already exists by name:" + payload.name;
-        return error(message, message = message, description = message, code = 90911, statusCode = 409);
+        return e909427(payload.name);
     }
     payload.id = uuid:createType1AsString();
     Internal_Organization|commons:APKError organization = addOrganizationDAO(createInternalFromOrganization(payload));
@@ -71,8 +70,7 @@ isolated function addOrganization(Organization payload) returns Organization|com
 isolated function updatedOrganization(string id, Organization payload) returns Organization|commons:APKError {
     boolean validateOrganizationId = check validateOrganizationById(id);
     if validateOrganizationId is false {
-        string message = "Organization ID not exist by:" + id;
-        return error(message, message = message, description = message, code = 90911, statusCode = 400);
+        return e909428(id);
     }
     payload.id = id;
     Internal_Organization|commons:APKError organization = updateOrganizationDAO(id, createInternalFromOrganization(payload));
@@ -110,8 +108,7 @@ isolated function getOrganizationById(string id) returns Organization|commons:AP
 isolated function removeOrganization(string id) returns boolean|commons:APKError {
     boolean validateOrganizationId = check validateOrganizationById(id);
     if validateOrganizationId is false {
-        string message = "Organization ID not exist by:" + id;
-        return error(message, message = message, description = message, code = 90911, statusCode = 400);
+        return e909428(id);
     }
     boolean|commons:APKError organization = removeOrganizationDAO(id);
     return organization;

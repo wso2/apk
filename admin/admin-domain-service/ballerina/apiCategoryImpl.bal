@@ -25,8 +25,7 @@ isolated function addAPICategory(APICategory payload) returns APICategory|common
     if existingCategory is commons:APKError {
         return existingCategory;
     } else if existingCategory is true {
-        string message = "API Category already exists by name:" + payload.name;
-        return error(message, message = message, description = message, code = 90911, statusCode = 400);
+        return e909424(payload.name);
     }
     string categoryId = uuid:createType1AsString();
     payload.id = categoryId;
@@ -75,9 +74,7 @@ isolated function updateAPICategory(string id, APICategory body) returns APICate
             }
             //We allow to update API Category name given that the new category name is not taken yet
             if existingCategory is true {
-                string message = "API Category already exists by name:"+ body.name;
-                commons:APKError e = error(message, message = message, description = message, code = 90911, statusCode = 400);
-                return e;
+                return e909425(body.name);
             }
         } 
     }
