@@ -80,7 +80,7 @@ function updateAPICategoryTestNegative1() {
         APICategory|error createdApiCategory = updateAPICategory("01ed9241-2d5d-1b98-8ecb-40f85676b081",payload);
         if createdApiCategory is APICategory {
             test:assertFail("API Category updated successfully");
-        } else if createdApiCategory is APKError {
+        } else if createdApiCategory is commons:APKError {
             test:assertFail("Error occured while adding API Category");
         }
     } else {
