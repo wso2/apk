@@ -77,7 +77,7 @@ isolated function getAPICategoriesDAO(string org) returns APICategory[]|commons:
     }
 }
 
-isolated function getAPICategoryByIdDAO(string id, string org) returns APICategory|commons:APKError|NotFoundError {
+isolated function getAPICategoryByIdDAO(string id, string org) returns APICategory|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return e909401(dbClient);

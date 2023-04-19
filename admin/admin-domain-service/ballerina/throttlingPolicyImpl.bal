@@ -37,8 +37,8 @@ isolated function addApplicationUsagePlan(ApplicationRatePlan body) returns Appl
     return policy;
 }
 
-isolated function getApplicationUsagePlanById(string policyId) returns ApplicationRatePlan|commons:APKError|NotFoundError {
-    ApplicationRatePlan|commons:APKError|NotFoundError policy = getApplicationUsagePlanByIdDAO(policyId);
+isolated function getApplicationUsagePlanById(string policyId) returns ApplicationRatePlan|commons:APKError {
+    ApplicationRatePlan|commons:APKError policy = getApplicationUsagePlanByIdDAO(policyId);
     return policy;
 }
 
@@ -54,8 +54,8 @@ isolated function getApplicationUsagePlans() returns ApplicationRatePlanList|com
     }
 }
 
-isolated function updateApplicationUsagePlan(string policyId, ApplicationRatePlan body) returns ApplicationRatePlan|NotFoundError|commons:APKError {
-    ApplicationRatePlan|commons:APKError|NotFoundError existingPolicy = getApplicationUsagePlanByIdDAO(policyId);
+isolated function updateApplicationUsagePlan(string policyId, ApplicationRatePlan body) returns ApplicationRatePlan|commons:APKError {
+    ApplicationRatePlan|commons:APKError existingPolicy = getApplicationUsagePlanByIdDAO(policyId);
     if existingPolicy is ApplicationRatePlan {
         body.planId = policyId;
         //body.policyName = existingPolicy.name;
@@ -101,8 +101,8 @@ isolated function addBusinessPlan(BusinessPlan body) returns BusinessPlan|common
     return policy;
 }
 
-isolated function getBusinessPlanById(string policyId) returns BusinessPlan|commons:APKError|NotFoundError {
-    BusinessPlan|commons:APKError|NotFoundError policy = getBusinessPlanByIdDAO(policyId);
+isolated function getBusinessPlanById(string policyId) returns BusinessPlan|commons:APKError {
+    BusinessPlan|commons:APKError policy = getBusinessPlanByIdDAO(policyId);
     return policy;
 }
 
@@ -118,8 +118,8 @@ isolated function getBusinessPlans() returns BusinessPlanList|commons:APKError {
     }
 }
 
-isolated function updateBusinessPlan(string policyId, BusinessPlan body) returns BusinessPlan|NotFoundError|commons:APKError {
-    BusinessPlan|commons:APKError|NotFoundError existingPolicy = getBusinessPlanByIdDAO(policyId);
+isolated function updateBusinessPlan(string policyId, BusinessPlan body) returns BusinessPlan|commons:APKError {
+    BusinessPlan|commons:APKError existingPolicy = getBusinessPlanByIdDAO(policyId);
     if existingPolicy is BusinessPlan {
         body.planId = policyId;
         //body.policyName = existingPolicy.name;
@@ -166,8 +166,8 @@ isolated function addDenyPolicy(BlockingCondition body) returns BlockingConditio
     return policy;
 }
 
-isolated function getDenyPolicyById(string policyId) returns BlockingCondition|commons:APKError|NotFoundError {
-    BlockingCondition|commons:APKError|NotFoundError policy = getDenyPolicyByIdDAO(policyId);
+isolated function getDenyPolicyById(string policyId) returns BlockingCondition|commons:APKError {
+    BlockingCondition|commons:APKError policy = getDenyPolicyByIdDAO(policyId);
     return policy;
 }
 
@@ -183,8 +183,8 @@ isolated function getAllDenyPolicies() returns BlockingConditionList|commons:APK
     }
 }
 
-isolated function updateDenyPolicy(string policyId, BlockingConditionStatus status) returns BlockingCondition|NotFoundError|commons:APKError {
-    BlockingCondition|commons:APKError|NotFoundError existingPolicy = getDenyPolicyByIdDAO(policyId);
+isolated function updateDenyPolicy(string policyId, BlockingConditionStatus status) returns BlockingCondition|commons:APKError {
+    BlockingCondition|commons:APKError existingPolicy = getDenyPolicyByIdDAO(policyId);
     if existingPolicy !is BlockingCondition {
         return existingPolicy;
     } else {
@@ -194,7 +194,7 @@ isolated function updateDenyPolicy(string policyId, BlockingConditionStatus stat
     if response is commons:APKError{
         return response;
     }
-    BlockingCondition|commons:APKError|NotFoundError updatedPolicy = getDenyPolicyByIdDAO(policyId);
+    BlockingCondition|commons:APKError updatedPolicy = getDenyPolicyByIdDAO(policyId);
     if updatedPolicy is BlockingCondition {
         return updatedPolicy;
     } else {
