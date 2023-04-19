@@ -60,7 +60,7 @@ function addApplicationUsagePlanTest() {
 function getApplicationUsagePlanByIdTest(){
     string? planId = applicationUsagePlan.planId;
     if planId is string {
-        ApplicationRatePlan|commons:APKError|NotFoundError policy = getApplicationUsagePlanById(planId);
+        ApplicationRatePlan|commons:APKError policy = getApplicationUsagePlanById(planId);
         if policy is ApplicationRatePlan {
             test:assertTrue(true, "Successfully retrieved Application Usage Plan");
             log:printInfo(policy.toString());
@@ -100,15 +100,12 @@ function updateApplicationUsagePlanTest() {
     };
     string? planId = applicationUsagePlan.planId;
     if planId is string {
-        ApplicationRatePlan|NotFoundError|commons:APKError createdAppPol = updateApplicationUsagePlan(planId,payload);
+        ApplicationRatePlan|commons:APKError createdAppPol = updateApplicationUsagePlan(planId,payload);
         if createdAppPol is ApplicationRatePlan {
             test:assertTrue(true,"Application usage plan updated successfully");
         } else if createdAppPol is commons:APKError {
             log:printError(createdAppPol.toString());
             test:assertFail("Error occured while updating Application Usage Plan");
-        } else if createdAppPol is NotFoundError {
-            log:printError(createdAppPol.toString());
-            test:assertFail("Plan Not Found Error occured while updating Application Usage Plan");
         }
     } else {
         test:assertFail("Plan ID isn't a string");
@@ -161,7 +158,7 @@ function addBusinessPlanTest() {
 function getBusinessPlanByIdTest() {
     string? planId = businessPlan.planId;
     if planId is string {
-        BusinessPlan|commons:APKError|NotFoundError businessPlanResponse = getBusinessPlanById(planId);
+        BusinessPlan|commons:APKError businessPlanResponse = getBusinessPlanById(planId);
         if businessPlanResponse is BusinessPlan {
             test:assertTrue(true,"Successfully retrieved Business Plan");
         } else {
@@ -202,7 +199,7 @@ function updateBusinessPlanTest() {
     };
     string? planId = businessPlan.planId;
     if planId is string {
-        BusinessPlan|NotFoundError|commons:APKError updatedBusinessPlan = updateBusinessPlan(planId,payload);
+        BusinessPlan|commons:APKError updatedBusinessPlan = updateBusinessPlan(planId,payload);
         if updatedBusinessPlan is BusinessPlan {
             test:assertTrue(true,"Business Plan updated successfully");
         } else if updatedBusinessPlan is commons:APKError {
@@ -248,7 +245,7 @@ function addDenyPolicyTest() {
 function getDenyPolicyByIdTest() {
     string? policyId = denyPolicy.policyId;
     if policyId is string {
-        BlockingCondition|commons:APKError|NotFoundError denyPolicyResponse = getDenyPolicyById(policyId);
+        BlockingCondition|commons:APKError denyPolicyResponse = getDenyPolicyById(policyId);
         if denyPolicyResponse is BlockingCondition {
             test:assertTrue(true,"Successfully retrieved Deny Policy");
         } else  {
@@ -274,7 +271,7 @@ function updateDenyPolicyTest() {
     string? policyId = denyPolicy.policyId;
     if policyId is string {
         BlockingConditionStatus status = {conditionStatus: false, policyId: policyId};
-        string?|BlockingCondition|NotFoundError|commons:APKError denyPolicyResponse = updateDenyPolicy(policyId, status);
+        string?|BlockingCondition|commons:APKError denyPolicyResponse = updateDenyPolicy(policyId, status);
         if denyPolicyResponse is BlockingCondition {
             test:assertTrue(true,"Successfully updated Deny Policy Status");
         } else if denyPolicyResponse is commons:APKError {
