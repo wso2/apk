@@ -60,11 +60,9 @@ function updateAPICategoryTest() {
     APICategory payload = {name: "MyCat1", description: "My Desc 1 new"};
     string? catId = apiCategory.id;
     if catId is string {
-        APICategory|NotFoundError|commons:APKError createdApiCategory = updateAPICategory(catId,payload);
+        APICategory|commons:APKError createdApiCategory = updateAPICategory(catId,payload);
         if createdApiCategory is APICategory {
             test:assertTrue(true,"API Category updated successfully");
-        } else if createdApiCategory is NotFoundError {
-            test:assertFail("Not Found Error");
         } else if createdApiCategory is commons:APKError {
             test:assertFail("Error occured while adding API Category");
         }
@@ -79,11 +77,9 @@ function updateAPICategoryTestNegative1() {
     APICategory payload = {name: "MyCat1", description: "My Desc 1 new"};
     string? catId = apiCategory.id;
     if catId is string {
-        APICategory|NotFoundError|error createdApiCategory = updateAPICategory("01ed9241-2d5d-1b98-8ecb-40f85676b081",payload);
+        APICategory|error createdApiCategory = updateAPICategory("01ed9241-2d5d-1b98-8ecb-40f85676b081",payload);
         if createdApiCategory is APICategory {
             test:assertFail("API Category updated successfully");
-        } else if createdApiCategory is NotFoundError {
-            test:assertTrue(true, "Not Found Error");
         } else if createdApiCategory is APKError {
             test:assertFail("Error occured while adding API Category");
         }
@@ -102,11 +98,9 @@ function updateAPICategoryTestNegative2() {
     APICategory payload = {name: "MyCat2", description: "My Desc 1 new"};
     string? catId = apiCategory.id;
     if catId is string {
-        APICategory|NotFoundError|commons:APKError createdApiCategory = updateAPICategory(catId,payload);
+        APICategory|commons:APKError createdApiCategory = updateAPICategory(catId,payload);
         if createdApiCategory is APICategory {
             test:assertFail("API Category updated successfully");
-        } else if createdApiCategory is NotFoundError {
-            test:assertFail("Not Found Error");
         } else if createdApiCategory is commons:APKError {
             test:assertTrue(true,"Error occured while adding API Category");
         }
