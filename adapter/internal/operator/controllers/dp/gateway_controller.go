@@ -239,21 +239,29 @@ func (gatewayReconciler *GatewayReconciler) getResolvedBackendsMapping(ctx conte
 	if gatewayStateData.GatewayAPIPolicies != nil {
 		allAPIPolicies := maps.Values(gatewayStateData.GatewayAPIPolicies)
 		for _, apiPolicy := range allAPIPolicies {
-			if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.RequestInterceptor != nil {
-				utils.ResolveAndAddBackendToMapping(ctx, gatewayReconciler.client, backendMapping,
-					apiPolicy.Spec.Default.RequestInterceptor.BackendRef, apiPolicy.Namespace)
+			if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.RequestInterceptors != nil {
+				for _, requestInterceptor := range apiPolicy.Spec.Default.RequestInterceptors {
+					utils.ResolveAndAddBackendToMapping(ctx, gatewayReconciler.client, backendMapping,
+						requestInterceptor.BackendRef, apiPolicy.Namespace)
+				}
 			}
-			if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.RequestInterceptor != nil {
-				utils.ResolveAndAddBackendToMapping(ctx, gatewayReconciler.client, backendMapping,
-					apiPolicy.Spec.Override.RequestInterceptor.BackendRef, apiPolicy.Namespace)
+			if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.RequestInterceptors != nil {
+				for _, requestInterceptor := range apiPolicy.Spec.Override.RequestInterceptors {
+					utils.ResolveAndAddBackendToMapping(ctx, gatewayReconciler.client, backendMapping,
+						requestInterceptor.BackendRef, apiPolicy.Namespace)
+				}
 			}
-			if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.ResponseInterceptor != nil {
-				utils.ResolveAndAddBackendToMapping(ctx, gatewayReconciler.client, backendMapping,
-					apiPolicy.Spec.Default.ResponseInterceptor.BackendRef, apiPolicy.Namespace)
+			if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.ResponseInterceptors != nil {
+				for _, responseInterceptor := range apiPolicy.Spec.Default.ResponseInterceptors {
+					utils.ResolveAndAddBackendToMapping(ctx, gatewayReconciler.client, backendMapping,
+						responseInterceptor.BackendRef, apiPolicy.Namespace)
+				}
 			}
-			if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.ResponseInterceptor != nil {
-				utils.ResolveAndAddBackendToMapping(ctx, gatewayReconciler.client, backendMapping,
-					apiPolicy.Spec.Override.ResponseInterceptor.BackendRef, apiPolicy.Namespace)
+			if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.ResponseInterceptors != nil {
+				for _, responseInterceptor := range apiPolicy.Spec.Override.ResponseInterceptors {
+					utils.ResolveAndAddBackendToMapping(ctx, gatewayReconciler.client, backendMapping,
+						responseInterceptor.BackendRef, apiPolicy.Namespace)
+				}
 			}
 		}
 	}

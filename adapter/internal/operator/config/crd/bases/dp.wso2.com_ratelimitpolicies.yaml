@@ -49,7 +49,7 @@ spec:
                               allowed per unit time
                             type: integer
                           unit:
-                            description: Unit is the unit of the requestPerUnit
+                            description: Unit is the unit of the requestsPerUnit
                             enum:
                             - Minute
                             - Hour
@@ -71,7 +71,7 @@ spec:
                               allowed per unit time
                             type: integer
                           unit:
-                            description: Unit is the unit of the requestPerUnit
+                            description: Unit is the unit of the requestsPerUnit
                             enum:
                             - Minute
                             - Hour
@@ -109,7 +109,7 @@ spec:
                               allowed per unit time
                             type: integer
                           unit:
-                            description: Unit is the unit of the requestPerUnit
+                            description: Unit is the unit of the requestsPerUnit
                             enum:
                             - Minute
                             - Hour
@@ -131,7 +131,7 @@ spec:
                               allowed per unit time
                             type: integer
                           unit:
-                            description: Unit is the unit of the requestPerUnit
+                            description: Unit is the unit of the requestsPerUnit
                             enum:
                             - Minute
                             - Hour

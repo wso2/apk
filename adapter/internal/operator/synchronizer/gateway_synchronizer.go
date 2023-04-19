@@ -192,8 +192,9 @@ func createInterceptors(gatewayAPIPolicies map[string]v1alpha1.APIPolicy,
 		apiPolicy = *outputAPIPolicy
 		resolvedPolicySpec := utils.SelectPolicy(&apiPolicy.Spec.Override, &apiPolicy.Spec.Default, nil, nil)
 		if resolvedPolicySpec != nil {
-			if resolvedPolicySpec.RequestInterceptor != nil {
-				reqIEp := getInterceptorEndpoint(resolvedPolicySpec.RequestInterceptor, gatewayBackendMapping, true)
+			if resolvedPolicySpec.RequestInterceptors != nil {
+				// oniy first request interceptor is supported in gateway level
+				reqIEp := getInterceptorEndpoint(&resolvedPolicySpec.RequestInterceptors[0], gatewayBackendMapping, true)
 				if reqIEp != nil {
 					requestInterceptorMap[string(gwapiv1b1.HTTPMethodPost)] = *reqIEp
 					requestInterceptorMap[string(gwapiv1b1.HTTPMethodGet)] = *reqIEp
@@ -204,8 +205,9 @@ func createInterceptors(gatewayAPIPolicies map[string]v1alpha1.APIPolicy,
 					requestInterceptorMap[string(gwapiv1b1.HTTPMethodOptions)] = *reqIEp
 				}
 			}
-			if resolvedPolicySpec.ResponseInterceptor != nil {
-				resIEp := getInterceptorEndpoint(resolvedPolicySpec.ResponseInterceptor, gatewayBackendMapping, false)
+			if resolvedPolicySpec.ResponseInterceptors != nil {
+				// only first response interceptor is supported in gateway level
+				resIEp := getInterceptorEndpoint(&resolvedPolicySpec.ResponseInterceptors[0], gatewayBackendMapping, false)
 				if resIEp != nil {
 					responseInterceptorMap[string(gwapiv1b1.HTTPMethodPost)] = *resIEp
 					responseInterceptorMap[string(gwapiv1b1.HTTPMethodGet)] = *resIEp

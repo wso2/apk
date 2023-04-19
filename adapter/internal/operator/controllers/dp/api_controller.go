@@ -493,21 +493,29 @@ func (apiReconciler *APIReconciler) getResolvedBackendsMapping(ctx context.Conte
 	allAPIPolicies := append(maps.Values(httpRouteState.APIPolicies),
 		maps.Values(httpRouteState.ResourceAPIPolicies)...)
 	for _, apiPolicy := range allAPIPolicies {
-		if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.RequestInterceptor != nil {
-			utils.ResolveAndAddBackendToMapping(ctx, apiReconciler.client, backendMapping,
-				apiPolicy.Spec.Default.RequestInterceptor.BackendRef, apiPolicy.Namespace)
+		if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.RequestInterceptors != nil {
+			for _, requestInterceptor := range apiPolicy.Spec.Default.RequestInterceptors {
+				utils.ResolveAndAddBackendToMapping(ctx, apiReconciler.client, backendMapping,
+					requestInterceptor.BackendRef, apiPolicy.Namespace)
+			}
 		}
-		if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.RequestInterceptor != nil {
-			utils.ResolveAndAddBackendToMapping(ctx, apiReconciler.client, backendMapping,
-				apiPolicy.Spec.Override.RequestInterceptor.BackendRef, apiPolicy.Namespace)
+		if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.RequestInterceptors != nil {
+			for _, requestInterceptor := range apiPolicy.Spec.Override.RequestInterceptors {
+				utils.ResolveAndAddBackendToMapping(ctx, apiReconciler.client, backendMapping,
+					requestInterceptor.BackendRef, apiPolicy.Namespace)
+			}
 		}
-		if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.ResponseInterceptor != nil {
-			utils.ResolveAndAddBackendToMapping(ctx, apiReconciler.client, backendMapping,
-				apiPolicy.Spec.Default.ResponseInterceptor.BackendRef, apiPolicy.Namespace)
+		if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.ResponseInterceptors != nil {
+			for _, responseInterceptor := range apiPolicy.Spec.Default.ResponseInterceptors {
+				utils.ResolveAndAddBackendToMapping(ctx, apiReconciler.client, backendMapping,
+					responseInterceptor.BackendRef, apiPolicy.Namespace)
+			}
 		}
-		if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.ResponseInterceptor != nil {
-			utils.ResolveAndAddBackendToMapping(ctx, apiReconciler.client, backendMapping,
-				apiPolicy.Spec.Override.ResponseInterceptor.BackendRef, apiPolicy.Namespace)
+		if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.ResponseInterceptors != nil {
+			for _, responseInterceptor := range apiPolicy.Spec.Override.ResponseInterceptors {
+				utils.ResolveAndAddBackendToMapping(ctx, apiReconciler.client, backendMapping,
+					responseInterceptor.BackendRef, apiPolicy.Namespace)
+			}
 		}
 	}
 
@@ -1024,37 +1032,45 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 		func(rawObj k8client.Object) []string {
 			apiPolicy := rawObj.(*dpv1alpha1.APIPolicy)
 			var backends []string
-			if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.RequestInterceptor != nil {
-				backends = append(backends,
-					types.NamespacedName{
-						Namespace: utils.GetNamespace(
-							(*gwapiv1b1.Namespace)(&apiPolicy.Spec.Default.RequestInterceptor.BackendRef.Namespace), apiPolicy.Namespace),
-						Name: string(apiPolicy.Spec.Default.RequestInterceptor.BackendRef.Name),
-					}.String())
+			if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.RequestInterceptors != nil {
+				for _, requestInterceptor := range apiPolicy.Spec.Default.RequestInterceptors {
+					backends = append(backends,
+						types.NamespacedName{
+							Namespace: utils.GetNamespace(
+								(*gwapiv1b1.Namespace)(&requestInterceptor.BackendRef.Namespace), apiPolicy.Namespace),
+							Name: string(requestInterceptor.BackendRef.Name),
+						}.String())
+				}
 			}
-			if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.RequestInterceptor != nil {
-				backends = append(backends,
-					types.NamespacedName{
-						Namespace: utils.GetNamespace(
-							(*gwapiv1b1.Namespace)(&apiPolicy.Spec.Override.RequestInterceptor.BackendRef.Namespace), apiPolicy.Namespace),
-						Name: string(apiPolicy.Spec.Override.RequestInterceptor.BackendRef.Name),
-					}.String())
+			if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.RequestInterceptors != nil {
+				for _, requestInterceptor := range apiPolicy.Spec.Override.RequestInterceptors {
+					backends = append(backends,
+						types.NamespacedName{
+							Namespace: utils.GetNamespace(
+								(*gwapiv1b1.Namespace)(&requestInterceptor.BackendRef.Namespace), apiPolicy.Namespace),
+							Name: string(requestInterceptor.BackendRef.Name),
+						}.String())
+				}
 			}
-			if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.ResponseInterceptor != nil {
-				backends = append(backends,
-					types.NamespacedName{
-						Namespace: utils.GetNamespace(
-							(*gwapiv1b1.Namespace)(&apiPolicy.Spec.Default.ResponseInterceptor.BackendRef.Namespace), apiPolicy.Namespace),
-						Name: string(apiPolicy.Spec.Default.ResponseInterceptor.BackendRef.Name),
-					}.String())
+			if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.ResponseInterceptors != nil {
+				for _, responseInterceptor := range apiPolicy.Spec.Default.ResponseInterceptors {
+					backends = append(backends,
+						types.NamespacedName{
+							Namespace: utils.GetNamespace(
+								(*gwapiv1b1.Namespace)(&responseInterceptor.BackendRef.Namespace), apiPolicy.Namespace),
+							Name: string(responseInterceptor.BackendRef.Name),
+						}.String())
+				}
 			}
-			if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.ResponseInterceptor != nil {
-				backends = append(backends,
-					types.NamespacedName{
-						Namespace: utils.GetNamespace(
-							(*gwapiv1b1.Namespace)(&apiPolicy.Spec.Override.ResponseInterceptor.BackendRef.Namespace), apiPolicy.Namespace),
-						Name: string(apiPolicy.Spec.Override.ResponseInterceptor.BackendRef.Name),
-					}.String())
+			if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.ResponseInterceptors != nil {
+				for _, responseInterceptor := range apiPolicy.Spec.Override.ResponseInterceptors {
+					backends = append(backends,
+						types.NamespacedName{
+							Namespace: utils.GetNamespace(
+								(*gwapiv1b1.Namespace)(&responseInterceptor.BackendRef.Namespace), apiPolicy.Namespace),
+							Name: string(responseInterceptor.BackendRef.Name),
+						}.String())
+				}
 			}
 			return backends
 		}); err != nil {
