@@ -17,6 +17,7 @@
 //
 
 import ballerina/test;
+import wso2/apk_common_lib as commons;
 
 Organization  organization = {
         id: "01234567-0123-0123-0123-012345678901",
@@ -33,12 +34,12 @@ string orgId = "";
 
 @test:Config {}
 function addOrganizationTest() {
-    Organization|APKError response = addOrganization(organization);
+    Organization|commons:APKError response = addOrganization(organization);
     if response is Organization {
         
         orgId = response.id.toString();
         test:assertTrue(true,"Organization added successfully");
-    } else if response is APKError {
+    } else if response is commons:APKError {
         test:assertFail("Error occured while adding Organization");
     }
     
@@ -55,10 +56,10 @@ function updateOrganizationTest() {
         "string"
         ]
     };
-    Organization|APKError response = updatedOrganization(orgId, updateOrganization);
+    Organization|commons:APKError response = updatedOrganization(orgId, updateOrganization);
     if response is Organization {
         test:assertTrue(true,"Organization updated successfully");
-    } else if response is APKError {
+    } else if response is commons:APKError {
         test:assertFail("Error occured while updating Organization");
     }
     
@@ -67,30 +68,30 @@ function updateOrganizationTest() {
 
 @test:Config {dependsOn: [updateOrganizationTest]}
 function getOrganizationsTest() {
-    OrganizationList|APKError response = getAllOrganization();
+    OrganizationList|commons:APKError response = getAllOrganization();
     if response is OrganizationList {
         test:assertTrue(true,"Organization list retrieved successfully");
-    } else if response is APKError {
+    } else if response is commons:APKError {
         test:assertFail("Error occured while retrieving Organization list");
     }
 }
 
 @test:Config {dependsOn: [getOrganizationsTest]}
 function getOrganizationTest() {
-    Organization|APKError response = getOrganizationById(orgId);
+    Organization|commons:APKError response = getOrganizationById(orgId);
     if response is Organization {
         test:assertTrue(true,"Organization retrieved successfully");
-    } else if response is APKError {
+    } else if response is commons:APKError {
         test:assertFail("Error occured while retrieving Organization");
     }
 }
 
 @test:Config {dependsOn: [getOrganizationTest]}
 function deleteOrganizationTest() {
-    boolean|APKError response = removeOrganization(orgId);
+    boolean|commons:APKError response = removeOrganization(orgId);
     if response is boolean {
         test:assertTrue(true,"Organization deleted successfully");
-    } else if response is APKError {
+    } else if response is commons:APKError {
         test:assertFail("Error occured while deleting Organization");
     }
 }

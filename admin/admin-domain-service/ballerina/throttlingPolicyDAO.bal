@@ -19,12 +19,13 @@
 import ballerina/log;
 import ballerinax/postgresql;
 import ballerina/sql;
+import wso2/apk_common_lib as commons;
 
-public isolated function addApplicationUsagePlanDAO(ApplicationRatePlan atp) returns ApplicationRatePlan|APKError {
+public isolated function addApplicationUsagePlanDAO(ApplicationRatePlan atp) returns ApplicationRatePlan|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         string org = "carbon.super";
         sql:ParameterizedQuery query = `INSERT INTO APPLICATION_USAGE_PLAN (NAME, DISPLAY_NAME, 
@@ -38,16 +39,16 @@ public isolated function addApplicationUsagePlanDAO(ApplicationRatePlan atp) ret
         } else if result is sql:Error {
             log:printDebug(result.toString());
             string message = "Error while inserting data into Database";
-            return error(message, result, message = message, description = message, code = 909000, statusCode = "500"); 
+            return error(message, result, message = message, description = message, code = 909000, statusCode = 500); 
         }
     }
 }
 
-public isolated function getApplicationUsagePlanByIdDAO(string policyId) returns ApplicationRatePlan|APKError|NotFoundError {
+public isolated function getApplicationUsagePlanByIdDAO(string policyId) returns ApplicationRatePlan|commons:APKError|NotFoundError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         string org = "carbon.super";
         sql:ParameterizedQuery query = `SELECT NAME as PLANNAME, DISPLAY_NAME as DISPLAYNAME, DESCRIPTION, 
@@ -88,16 +89,16 @@ public isolated function getApplicationUsagePlanByIdDAO(string policyId) returns
         } else {
             log:printError(result.toString());
             string message = "Error while retrieving Application Usage Plan";
-            return error(message, result, message = message, description = message, code = 909000, statusCode = "500"); 
+            return error(message, result, message = message, description = message, code = 909000, statusCode = 500); 
         }
     }
 }
 
-public isolated function getApplicationUsagePlansDAO(string org) returns ApplicationRatePlan[]|APKError {
+public isolated function getApplicationUsagePlansDAO(string org) returns ApplicationRatePlan[]|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         do {
             sql:ParameterizedQuery query = `SELECT NAME as PLANNAME, DISPLAY_NAME as DISPLAYNAME, DESCRIPTION, 
@@ -137,16 +138,16 @@ public isolated function getApplicationUsagePlansDAO(string org) returns Applica
             return usagePlans;
         } on fail var e {
         	string message = "Internal Error occured while retrieving Application Usage Plans";
-            return error(message, e, message = message, description = message, code = 909001, statusCode = "500");
+            return error(message, e, message = message, description = message, code = 909001, statusCode = 500);
         }
     }
 }
 
-public isolated function updateApplicationUsagePlanDAO(ApplicationRatePlan atp) returns ApplicationRatePlan|APKError {
+public isolated function updateApplicationUsagePlanDAO(ApplicationRatePlan atp) returns ApplicationRatePlan|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         string org = "carbon.super";
         sql:ParameterizedQuery query = `UPDATE APPLICATION_USAGE_PLAN SET DISPLAY_NAME = ${atp.displayName},
@@ -159,16 +160,16 @@ public isolated function updateApplicationUsagePlanDAO(ApplicationRatePlan atp) 
         } else {
             log:printDebug(result.toString());
             string message = "Error while updating data record in the Database";
-            return error(message, result, message = message, description = message, code = 909000, statusCode = "500");
+            return error(message, result, message = message, description = message, code = 909000, statusCode = 500);
         }
     }
 }
 
-public isolated function deleteApplicationUsagePlanDAO(string policyId) returns string|APKError {
+public isolated function deleteApplicationUsagePlanDAO(string policyId) returns string|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         string org = "carbon.super";
         sql:ParameterizedQuery query = `DELETE FROM APPLICATION_USAGE_PLAN WHERE UUID = ${policyId} AND ORGANIZATION = ${org}`;
@@ -178,16 +179,16 @@ public isolated function deleteApplicationUsagePlanDAO(string policyId) returns 
         } else {
             log:printError(result.toString());
             string message = "Error while deleting data record in the Database";
-            return error(message, result, message = message, description = message, code = 909000, statusCode = "500");
+            return error(message, result, message = message, description = message, code = 909000, statusCode = 500);
         }
     }
 }
 
-public isolated function addBusinessPlanDAO(BusinessPlan stp) returns BusinessPlan|APKError {
+public isolated function addBusinessPlanDAO(BusinessPlan stp) returns BusinessPlan|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         string org = "carbon.super";
         sql:ParameterizedQuery query = `INSERT INTO BUSINESS_PLAN (NAME, DISPLAY_NAME, ORGANIZATION, DESCRIPTION, 
@@ -204,16 +205,16 @@ public isolated function addBusinessPlanDAO(BusinessPlan stp) returns BusinessPl
         } else { 
             log:printError(result.toString());
             string message = "Error while inserting data into Database";
-            return error(message, result, message = message, description = message, code = 909000, statusCode = "500");
+            return error(message, result, message = message, description = message, code = 909000, statusCode = 500);
         }
     }
 }
 
-public isolated function getBusinessPlanByIdDAO(string policyId) returns BusinessPlan|APKError|NotFoundError {
+public isolated function getBusinessPlanByIdDAO(string policyId) returns BusinessPlan|commons:APKError|NotFoundError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         string org = "carbon.super";
         sql:ParameterizedQuery query = `SELECT NAME as PLANNAME, DISPLAY_NAME as DISPLAYNAME, DESCRIPTION, 
@@ -257,16 +258,16 @@ public isolated function getBusinessPlanByIdDAO(string policyId) returns Busines
         } else {
             log:printError(result.toString());
             string message = "Error while retrieving Business Plan";
-            return error(message, result, message = message, description = message, code = 909000, statusCode = "500");
+            return error(message, result, message = message, description = message, code = 909000, statusCode = 500);
         }
     }
 }
 
-public isolated function getBusinessPlansDAO(string org) returns BusinessPlan[]|APKError {
+public isolated function getBusinessPlansDAO(string org) returns BusinessPlan[]|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         do {
             sql:ParameterizedQuery query = `SELECT NAME as PLANNAME, DISPLAY_NAME as DISPLAYNAME, DESCRIPTION, 
@@ -309,16 +310,16 @@ public isolated function getBusinessPlansDAO(string org) returns BusinessPlan[]|
             return businessPlans;
         } on fail var e {
         	string message = "Internal Error occured while retrieving Business Plans";
-            return error(message, e, message = message, description = message, code = 909001, statusCode = "500");
+            return error(message, e, message = message, description = message, code = 909001, statusCode = 500);
         }
     }
 }
 
-public isolated function updateBusinessPlanDAO(BusinessPlan stp) returns BusinessPlan|APKError {
+public isolated function updateBusinessPlanDAO(BusinessPlan stp) returns BusinessPlan|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         string org = "carbon.super";
         sql:ParameterizedQuery query = `UPDATE BUSINESS_PLAN SET DISPLAY_NAME = ${stp.displayName},
@@ -332,16 +333,16 @@ public isolated function updateBusinessPlanDAO(BusinessPlan stp) returns Busines
         } else {
             log:printError(result.toString());
             string message = "Error while updating data record in the Database";
-            return error(message, result, message = message, description = message, code = 909000, statusCode = "500");
+            return error(message, result, message = message, description = message, code = 909000, statusCode = 500);
         }
     }
 }
 
-public isolated function deleteBusinessPlanDAO(string policyId) returns string|APKError {
+public isolated function deleteBusinessPlanDAO(string policyId) returns string|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         string org = "carbon.super";
         sql:ParameterizedQuery query = `DELETE FROM BUSINESS_PLAN WHERE UUID = ${policyId} AND ORGANIZATION = ${org}`;
@@ -351,16 +352,16 @@ public isolated function deleteBusinessPlanDAO(string policyId) returns string|A
         } else {
             log:printError(result.toString());
             string message = "Error while deleting data record in the Database";
-            return error(message, result, message = message, description = message, code = 909000, statusCode = "500");
+            return error(message, result, message = message, description = message, code = 909000, statusCode = 500);
         }
     }
 }
 
-public isolated function addDenyPolicyDAO(BlockingCondition bc) returns BlockingCondition|APKError {
+public isolated function addDenyPolicyDAO(BlockingCondition bc) returns BlockingCondition|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         string org = "carbon.super";
         sql:ParameterizedQuery query = `INSERT INTO BLOCK_CONDITION (TYPE,BLOCK_CONDITION,ENABLED,ORGANIZATION,UUID) 
@@ -371,16 +372,16 @@ public isolated function addDenyPolicyDAO(BlockingCondition bc) returns Blocking
         } else {
             log:printError(result.toString());
             string message = "Error while inserting data into Database";
-            return error(message, result, message = message, description = message, code = 909000, statusCode = "500"); 
+            return error(message, result, message = message, description = message, code = 909000, statusCode = 500); 
         }
     }
 }
 
-public isolated function getDenyPolicyByIdDAO(string policyId) returns BlockingCondition|APKError|NotFoundError {
+public isolated function getDenyPolicyByIdDAO(string policyId) returns BlockingCondition|commons:APKError|NotFoundError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         string org = "carbon.super";
         sql:ParameterizedQuery query = `SELECT UUID as POLICYID, TYPE as CONDITIONTYPE, BLOCK_CONDITION as CONDITIONVALUE, ENABLED::BOOLEAN as CONDITIONSTATUS FROM BLOCK_CONDITION WHERE UUID =${policyId} AND ORGANIZATION =${org}`;
@@ -395,16 +396,16 @@ public isolated function getDenyPolicyByIdDAO(string policyId) returns BlockingC
         } else {
             log:printError(result.toString());
             string message = "Error while retrieving Deny Policy from DB";
-            return error(message, result, message = message, description = message, code = 909000, statusCode = "500"); 
+            return error(message, result, message = message, description = message, code = 909000, statusCode = 500); 
         }
     }
 }
 
-public isolated function getDenyPoliciesDAO(string org) returns BlockingCondition[]|APKError {
+public isolated function getDenyPoliciesDAO(string org) returns BlockingCondition[]|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         do {
             sql:ParameterizedQuery query = `SELECT UUID as POLICYID, TYPE as CONDITIONTYPE, BLOCK_CONDITION as CONDITIONVALUE, ENABLED::BOOLEAN as CONDITIONSTATUS FROM BLOCK_CONDITION WHERE ORGANIZATION =${org}`;
@@ -414,16 +415,16 @@ public isolated function getDenyPoliciesDAO(string org) returns BlockingConditio
             return denyPolicies;
         } on fail var e {
         	string message = "Internal Error occured while retrieving Deny Policies";
-            return error(message, e, message = message, description = message, code = 909001, statusCode = "500");
+            return error(message, e, message = message, description = message, code = 909001, statusCode = 500);
         }
     }
 }
 
-public isolated function updateDenyPolicyDAO(BlockingConditionStatus status) returns string|APKError {
+public isolated function updateDenyPolicyDAO(BlockingConditionStatus status) returns string|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         sql:ParameterizedQuery query = `UPDATE BLOCK_CONDITION SET ENABLED = ${status.conditionStatus} WHERE UUID = ${status.policyId}`;
         sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
@@ -432,16 +433,16 @@ public isolated function updateDenyPolicyDAO(BlockingConditionStatus status) ret
         } else { 
             log:printError(result.toString());
             string message = "Error while inserting data into Database";
-            return error(message, result, message = message, description = message, code = 909000, statusCode = "500"); 
+            return error(message, result, message = message, description = message, code = 909000, statusCode = 500); 
         }
     }
 }
 
-public isolated function deleteDenyPolicyDAO(string policyId) returns string|APKError {
+public isolated function deleteDenyPolicyDAO(string policyId) returns string|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         string org = "carbon.super";
         sql:ParameterizedQuery query = `DELETE FROM BLOCK_CONDITION WHERE UUID = ${policyId} AND ORGANIZATION = ${org}`;
@@ -451,7 +452,7 @@ public isolated function deleteDenyPolicyDAO(string policyId) returns string|APK
         } else {
             log:printError(result.toString());
             string message = "Error while deleting data record in the Database";
-            return error(message, result, message = message, description = message, code = 909000, statusCode = "500"); 
+            return error(message, result, message = message, description = message, code = 909000, statusCode = 500); 
         }
     }
 }

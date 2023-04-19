@@ -17,17 +17,18 @@
 //
 
 import ballerina/test;
+import wso2/apk_common_lib as commons;
 
 APICategory  apiCategory = {name: "MyCat1", description: "My Desc 1", id: "01ed9241-2d5d-1b98-8ecb-40f85676b081", numberOfAPIs: 2};
 
 @test:Config {}
 function addAPICategoryTest() {
     APICategory payload = {name: "MyCat1", description: "My Desc 1"};
-    APICategory|APKError createdApiCategory = addAPICategory(payload);
+    APICategory|commons:APKError createdApiCategory = addAPICategory(payload);
     if createdApiCategory is APICategory {
         test:assertTrue(true,"API Category added successfully");
         apiCategory.id = createdApiCategory.id;
-    } else if createdApiCategory is APKError {
+    } else if createdApiCategory is commons:APKError {
         test:assertFail("Error occured while adding API Category");
     }
 }
@@ -36,20 +37,20 @@ function addAPICategoryTest() {
 function addAPICategoryTestNegative1() {
     APICategory payload = {name: "MyCat1", description: "My Desc 1"};
     //API Category Name alrady exisitng
-    APICategory|APKError createdApiCategory = addAPICategory(payload);
+    APICategory|commons:APKError createdApiCategory = addAPICategory(payload);
     if createdApiCategory is APICategory {
         test:assertFail("API Category added successfully");
-    } else if createdApiCategory is APKError {
+    } else if createdApiCategory is commons:APKError {
         test:assertTrue(true, "Error occured while adding API Category");
     }
 }
 
 @test:Config {dependsOn: [addAPICategoryTest]}
 function getAllCategoryListTest() {
-    APICategoryList|APKError apiCategoryList = getAllCategoryList();
+    APICategoryList|commons:APKError apiCategoryList = getAllCategoryList();
     if apiCategoryList is APICategoryList {
         test:assertTrue(true,"API Category list retrieved successfully");
-    } else if apiCategoryList is APKError {
+    } else if apiCategoryList is commons:APKError {
         test:assertFail("Error occured while retrieving API Category List");
     }
 }
@@ -59,12 +60,12 @@ function updateAPICategoryTest() {
     APICategory payload = {name: "MyCat1", description: "My Desc 1 new"};
     string? catId = apiCategory.id;
     if catId is string {
-        APICategory|NotFoundError|APKError createdApiCategory = updateAPICategory(catId,payload);
+        APICategory|NotFoundError|commons:APKError createdApiCategory = updateAPICategory(catId,payload);
         if createdApiCategory is APICategory {
             test:assertTrue(true,"API Category updated successfully");
         } else if createdApiCategory is NotFoundError {
             test:assertFail("Not Found Error");
-        } else if createdApiCategory is APKError {
+        } else if createdApiCategory is commons:APKError {
             test:assertFail("Error occured while adding API Category");
         }
     } else {
@@ -95,18 +96,18 @@ function updateAPICategoryTestNegative1() {
 function updateAPICategoryTestNegative2() {
     // Another API Category by same name exists
     APICategory payloadOther = {name: "MyCat2", description: "My Desc 1"};
-    APICategory|APKError anotherApiCategory = addAPICategory(payloadOther);
+    APICategory|commons:APKError anotherApiCategory = addAPICategory(payloadOther);
 
     // New Name
     APICategory payload = {name: "MyCat2", description: "My Desc 1 new"};
     string? catId = apiCategory.id;
     if catId is string {
-        APICategory|NotFoundError|APKError createdApiCategory = updateAPICategory(catId,payload);
+        APICategory|NotFoundError|commons:APKError createdApiCategory = updateAPICategory(catId,payload);
         if createdApiCategory is APICategory {
             test:assertFail("API Category updated successfully");
         } else if createdApiCategory is NotFoundError {
             test:assertFail("Not Found Error");
-        } else if createdApiCategory is APKError {
+        } else if createdApiCategory is commons:APKError {
             test:assertTrue(true,"Error occured while adding API Category");
         }
     } else {
@@ -118,10 +119,10 @@ function updateAPICategoryTestNegative2() {
 function removeAPICategoryTest(){
     string? catId = apiCategory.id;
     if catId is string {
-        APKError|string status = removeAPICategory(catId);
+        commons:APKError|string status = removeAPICategory(catId);
         if status is string {
         test:assertTrue(true, "Successfully deleted API Category");
-        } else if status is  APKError {
+        } else if status is  commons:APKError {
             test:assertFail("Error occured while deleting API Category");
         }
     } else {
