@@ -59,9 +59,9 @@ isolated function getAllCategoryList() returns APICategoryList|commons:APKError 
     }
 }
 
-isolated function updateAPICategory(string id, APICategory body) returns APICategory|NotFoundError|commons:APKError {
+isolated function updateAPICategory(string id, APICategory body) returns APICategory|commons:APKError {
     string org = "carbon.super";
-    APICategory|commons:APKError|NotFoundError existingAPICategory = getAPICategoryByIdDAO(id, org);
+    APICategory|commons:APKError existingAPICategory = getAPICategoryByIdDAO(id, org);
     if existingAPICategory !is APICategory {
         return existingAPICategory;
     } else {
