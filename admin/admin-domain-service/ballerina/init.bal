@@ -34,18 +34,19 @@ configurable commons:IDPConfiguration idpConfiguration = {
 commons:DBBasedOrgResolver organizationResolver = new (datasourceConfiguration);
 commons:JWTValidationInterceptor jwtValidationInterceptor = new (idpConfiguration, organizationResolver);
 commons:RequestErrorInterceptor requestErrorInterceptor = new;
+commons:ResponseErrorInterceptor responseErrorInterceptor = new;
 listener http:Listener ep0 = new (9443, secureSocket = {
     'key: {
         certFile: <string>keyStores.tls.certFilePath,
         keyFile: <string>keyStores.tls.keyFilePath
     }
-}, interceptors = [jwtValidationInterceptor, requestErrorInterceptor]);
+}, interceptors = [jwtValidationInterceptor, requestErrorInterceptor, responseErrorInterceptor]);
 listener http:Listener internalAdminEp = new (9444, secureSocket = {
     'key: {
         certFile: <string>keyStores.tls.certFilePath,
         keyFile: <string>keyStores.tls.keyFilePath
     }
-}, interceptors = [requestErrorInterceptor]);
+}, interceptors = [requestErrorInterceptor, responseErrorInterceptor]);
 
 function init() {
     log:printInfo("Starting APK Admin Domain Service...");
