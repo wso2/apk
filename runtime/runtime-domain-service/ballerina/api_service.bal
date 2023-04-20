@@ -44,7 +44,7 @@ http:Service runtimeService = service object {
         commons:Organization organization = authenticatedUserContext.organization;
         return apiService.getAPIById(apiId, organization);
     }
-    isolated resource function put apis/[string apiId](http:RequestContext requestContext, @http:Payload API payload) returns UpdatedAPI|BadRequestError|ForbiddenError|NotFoundError|PreconditionFailedError|InternalServerErrorError|commons:APKError {
+    isolated resource function put apis/[string apiId](http:RequestContext requestContext, @http:Payload API payload) returns API|BadRequestError|ForbiddenError|NotFoundError|PreconditionFailedError|InternalServerErrorError|commons:APKError {
         final APIClient apiService = new ();
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;

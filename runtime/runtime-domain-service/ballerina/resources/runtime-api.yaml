@@ -202,13 +202,6 @@ paths:
             OK.
             Successful response with updated API object
           headers:
-            Location:
-              description: |
-                The URL of the newly created resource.
-              style: simple
-              explode: false
-              schema:
-                type: string
             Content-Type:
               description: |
                 The content type of the body.
@@ -552,13 +545,6 @@ paths:
             OK.
             Successful response with updated Swagger definition
           headers:
-            Location:
-              description: |
-                The URL of the newly created resource.
-              style: simple
-              explode: false
-              schema:
-                type: string
             Content-Type:
               description: |
                 The content type of the body.
@@ -761,11 +747,6 @@ paths:
             OK.
             The Certificate updated successfully.
           headers:
-            Location:
-              description: |
-                The URL of the newly created resource.
-              schema:
-                type: string
             Content-Type:
               description: |
                 The content type of the body.
