@@ -461,3 +461,21 @@ public isolated function e909048() returns commons:APKError {
         description = "API Type change not supported from update"
     ); 
 }
+
+public isolated function e909049() returns commons:APKError {
+    return error commons:APKError( "Context change not supported from update",
+        code = 909049,
+        message = "Context change not supported from update",
+        statusCode = 406,
+        description = "Context change not supported from update"
+    ); 
+}
+
+public isolated function e909050() returns commons:APKError {
+    return error commons:APKError( "Version change not supported from update",
+        code = 909050,
+        message = "Version change not supported from update",
+        statusCode = 406,
+        description = "Version change not supported from update"
+    ); 
+}

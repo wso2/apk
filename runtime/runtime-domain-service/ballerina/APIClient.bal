@@ -3462,10 +3462,10 @@ public class APIClient {
                     return e909048();
                 }
                 if payload.context != api.context {
-                    return e909048();
+                    return e909049();
                 }
                 if payload.'version != api.'version {
-                    return e909048();
+                    return e909050();
                 }
                 self.setDefaultOperationsIfNotExist(payload);
                 string uniqueId = getUniqueIdForAPI(payload.name, payload.'version, organization);
