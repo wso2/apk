@@ -27,42 +27,34 @@ service /api/am/admin on ep0 {
         ApplicationRatePlanList|commons:APKError appPolicyList = getApplicationUsagePlans();
         if appPolicyList is ApplicationRatePlanList {
             log:printDebug(appPolicyList.toString());
-            return appPolicyList;
-        } else {
-            return handleAPKError(appPolicyList);
         }
+        return appPolicyList;
     }
     isolated resource function post 'application\-rate\-plans(@http:Payload ApplicationRatePlan payload, @http:Header string 'content\-type = "application/json") returns ApplicationRatePlan|commons:APKError {
         ApplicationRatePlan|commons:APKError createdAppPol = addApplicationUsagePlan(payload);
         if createdAppPol is ApplicationRatePlan {
             log:printDebug(createdAppPol.toString());
-            return createdAppPol;
-        } else {
-            return handleAPKError(createdAppPol);
         }
+        return createdAppPol;
     }
     isolated resource function get 'application\-rate\-plans/[string planId]() returns ApplicationRatePlan|commons:APKError {
         ApplicationRatePlan|commons:APKError appPolicy = getApplicationUsagePlanById(planId);
         if appPolicy is ApplicationRatePlan {
             log:printDebug(appPolicy.toString());
-            return appPolicy;
-        } else {
-            return handleAPKError(appPolicy);
         }
+        return appPolicy;
     }
     isolated resource function put 'application\-rate\-plans/[string planId](@http:Payload ApplicationRatePlan payload, @http:Header string 'content\-type = "application/json") returns ApplicationRatePlan|commons:APKError {
         ApplicationRatePlan|commons:APKError appPolicy = updateApplicationUsagePlan(planId, payload);
         if appPolicy is ApplicationRatePlan {
             log:printDebug(appPolicy.toString());
-            return appPolicy;
-        } else {
-            return handleAPKError(appPolicy);
         }
+        return appPolicy;
     }
     isolated resource function delete 'application\-rate\-plans/[string planId]() returns http:Ok|commons:APKError {
         string|commons:APKError ex = removeApplicationUsagePlan(planId);
         if ex is commons:APKError {
-            return handleAPKError(ex);
+            return ex;
         } else {
             return http:OK;
         }
@@ -71,41 +63,30 @@ service /api/am/admin on ep0 {
         BusinessPlanList|commons:APKError subPolicyList = getBusinessPlans();
         if subPolicyList is BusinessPlanList {
             log:printDebug(subPolicyList.toString());
-            return subPolicyList;
-        } else {
-            return handleAPKError(subPolicyList);
         }
+        return subPolicyList;
     }
     isolated resource function post 'business\-plans(@http:Payload BusinessPlan payload, @http:Header string 'content\-type = "application/json") returns BusinessPlan|commons:APKError {
         BusinessPlan|commons:APKError createdSubPol = addBusinessPlan(payload);
         if createdSubPol is BusinessPlan {
             log:printDebug(createdSubPol.toString());
-            return createdSubPol;
-        } else {
-            return handleAPKError(createdSubPol);
         }
+        return createdSubPol;
     }
     isolated resource function get 'business\-plans/[string planId]() returns BusinessPlan|commons:APKError {
         BusinessPlan|commons:APKError subPolicy = getBusinessPlanById(planId);
         if subPolicy is BusinessPlan {
             log:printDebug(subPolicy.toString());
-            return subPolicy;
-        } else {
-            return handleAPKError(subPolicy);
         }
+        return subPolicy;
     }
     isolated resource function put 'business\-plans/[string planId](@http:Payload BusinessPlan payload, @http:Header string 'content\-type = "application/json") returns BusinessPlan|commons:APKError {
-        BusinessPlan|commons:APKError  subPolicy = updateBusinessPlan(planId, payload);
-        if subPolicy is BusinessPlan {
-            return subPolicy;
-        } else {
-            return handleAPKError(subPolicy);
-        }
+        return updateBusinessPlan(planId, payload);
     }
     isolated resource function delete 'business\-plans/[string planId]() returns http:Ok|commons:APKError{
         string|commons:APKError ex = removeBusinessPlan(planId);
         if ex is commons:APKError {
-            return handleAPKError(ex);
+            return ex;
         } else {
             return http:OK;
         }
@@ -125,35 +106,26 @@ service /api/am/admin on ep0 {
     // resource function post throttling/policies/'import(boolean? overwrite, @http:Payload json payload) returns http:Ok|ForbiddenError|NotFoundError|ConflictError|InternalServerErrorError {
     // }
     isolated resource function get 'deny\-policies(@http:Header string? accept = "application/json") returns BlockingConditionList|commons:APKError {
-        BlockingConditionList|commons:APKError conditionList = getAllDenyPolicies();
-        if conditionList is BlockingConditionList {
-            return conditionList;
-        } else {
-            return handleAPKError(conditionList);
-        }
+        return getAllDenyPolicies();
     }
     isolated resource function post 'deny\-policies(@http:Payload BlockingCondition payload, @http:Header string 'content\-type = "application/json") returns BlockingCondition|commons:APKError {
         BlockingCondition|commons:APKError createdDenyPol = addDenyPolicy(payload);
         if createdDenyPol is BlockingCondition {
             log:printDebug(createdDenyPol.toString());
-            return createdDenyPol;
-        } else {
-            return handleAPKError(createdDenyPol);
         }
+        return createdDenyPol;
     }
     isolated resource function get 'deny\-policies/[string policyId]() returns BlockingCondition|commons:APKError {
         BlockingCondition|commons:APKError denyPolicy = getDenyPolicyById(policyId);
         if denyPolicy is BlockingCondition {
             log:printDebug(denyPolicy.toString());
-            return denyPolicy;
-        } else {
-            return handleAPKError(denyPolicy);
         }
+        return denyPolicy;
     }
     isolated resource function delete 'deny\-policies/[string policyId]() returns http:Ok|commons:APKError {
         string|commons:APKError ex = removeDenyPolicy(policyId);
         if ex is commons:APKError {
-            return handleAPKError(ex);
+            return ex;
         } else {
             return http:OK;
         }
@@ -162,10 +134,8 @@ service /api/am/admin on ep0 {
         BlockingCondition|commons:APKError updatedPolicy = updateDenyPolicy(policyId, payload);
         if updatedPolicy is BlockingCondition {
             log:printDebug(updatedPolicy.toString());
-            return updatedPolicy;
-        } else {
-            return handleAPKError(updatedPolicy);
         }
+        return updatedPolicy;
     }
     // resource function get applications(string? user, string? name, string? tenantDomain, int 'limit = 25, int offset = 0, @http:Header string? accept = "application/json", string sortBy = "name", string sortOrder = "asc") returns ApplicationList|BadRequestError|NotAcceptableError {
     // }
@@ -200,33 +170,18 @@ service /api/am/admin on ep0 {
     // resource function get 'custom\-urls/[string tenantDomain]() returns CustomUrlInfo|NotFoundError|NotAcceptableError {
     // }
     isolated resource function get 'api\-categories() returns APICategoryList|commons:APKError {
-        APICategoryList|commons:APKError apiCategoryList = getAllCategoryList();
-        if apiCategoryList is APICategoryList {
-            return apiCategoryList;
-        } else {
-            return handleAPKError(apiCategoryList);
-        }
+        return getAllCategoryList();
     }
     isolated resource function post 'api\-categories(@http:Payload APICategory payload) returns APICategory|commons:APKError {
-        APICategory|commons:APKError createdApiCategory = addAPICategory(payload);
-        if createdApiCategory is APICategory {
-            return createdApiCategory;
-        } else {
-            return handleAPKError(createdApiCategory);
-        }
+        return addAPICategory(payload);
     }
     isolated resource function put 'api\-categories/[string apiCategoryId](@http:Payload APICategory payload) returns APICategory|commons:APKError {
-        APICategory|commons:APKError  apiCategory = updateAPICategory(apiCategoryId, payload);
-        if apiCategory is APICategory {
-            return apiCategory;
-        } else {
-            return handleAPKError(apiCategory);
-        }
+        return updateAPICategory(apiCategoryId, payload);
     }
     isolated resource function delete 'api\-categories/[string apiCategoryId]() returns http:Ok|commons:APKError {
         string|commons:APKError ex = removeAPICategory(apiCategoryId);
         if ex is commons:APKError {
-            return handleAPKError(ex);
+            return ex;
         } else {
             return http:OK;
         }
@@ -268,66 +223,31 @@ service /api/am/admin on ep0 {
     // resource function post 'key\-managers/discover(@http:Payload json payload) returns KeyManagerWellKnownResponse {
     // }
     isolated resource function get organizations() returns OrganizationList|commons:APKError {
-        OrganizationList|commons:APKError getAllOrganizationList = getAllOrganization();
-        if getAllOrganizationList is OrganizationList {
-            return getAllOrganizationList;
-        } else {
-            return handleAPKError(getAllOrganizationList);
-        }
+        return getAllOrganization();
     }
 
 
     isolated resource function post organizations(@http:Payload Organization payload) returns Organization|commons:APKError {
-        Organization|commons:APKError createdOrganization = addOrganization(payload);
-        if createdOrganization is Organization {
-            return createdOrganization;
-        } else {
-            return handleAPKError(createdOrganization);
-        }
+        return addOrganization(payload);
     }
 
     isolated resource function get organizations/[string organizationId]() returns Organization|commons:APKError {
-        Organization|commons:APKError getOrganization = getOrganizationById(organizationId);
-        if getOrganization is Organization {
-            return getOrganization;
-        } else {
-            return handleAPKError(getOrganization);
-        }
+        return getOrganizationById(organizationId);
     }
 
     isolated resource function put organizations/[string organizationId](@http:Payload Organization payload) returns Organization|commons:APKError {
-        Organization|commons:APKError updateOrganization = updatedOrganization(organizationId, payload);
-        if updateOrganization is Organization {
-            return updateOrganization;
-        } else {
-            return handleAPKError(updateOrganization);
-        }
+        return updatedOrganization(organizationId, payload);
     }
 
     resource function delete organizations/[string organizationId]() returns http:Ok|commons:APKError {
         boolean|commons:APKError deleteOrganization = removeOrganization(organizationId);
         if deleteOrganization is commons:APKError {
-            return handleAPKError(deleteOrganization);
+            return deleteOrganization;
         } else {
             return http:OK;
         }
     }
     resource function get 'organization\-info() returns Organization|commons:APKError {
-        Organization|commons:APKError getOrganization = getOrganizationByOrganizationClaim();
-        if getOrganization is Organization {
-            return getOrganization;
-        } else {
-            return handleAPKError(getOrganization);
-        }
+        return getOrganizationByOrganizationClaim();
     }
-}
-
-isolated function handleAPKError(commons:APKError errorDetail) returns commons:APKError {
-    commons:ErrorHandler & readonly detail = errorDetail.detail();
-    return error commons:APKError( detail.message,
-        code = 909400,
-        message = detail.message,
-        statusCode = detail.code,
-        description = detail.message
-    ); 
 }
