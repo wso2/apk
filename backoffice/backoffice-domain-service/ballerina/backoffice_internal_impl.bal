@@ -51,8 +51,12 @@ isolated function createAPI(APIBody body, string organization) returns API|error
 # + apiId - API Id parameter
 # + organization - organization
 # + return - Return Value API | error
-isolated function getAPI_internal(string apiId, string organization) returns API|APKError {
-    return db_getAPI_internal(apiId, organization);
+isolated function getAPI_internal(string apiId, string organization) returns API|APKError|error {
+    API|APKError|error response = db_getAPI_internal(apiId, organization);
+    if response is error {
+        return error("Error while retrieving API data");
+    }
+    return response;
 }
 
 # This function used to connect API update service to database

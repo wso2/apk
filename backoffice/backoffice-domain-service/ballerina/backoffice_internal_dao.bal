@@ -85,10 +85,10 @@ isolated function db_AddDefinition(APIBody apiBody, string organization) returns
 # + apiId - API Id parameter
 # + organization - organization
 # + return - API | error
-isolated function db_getAPI_internal(string apiId, string organization) returns API|APKError {
+isolated function db_getAPI_internal(string apiId, string organization) returns API | APKError| error {
     postgresql:Client | error db_Client  = getConnection();
     if db_Client is error {
-        return e909607();
+        return error("Issue while conecting to databse");
     } else {
         sql:ParameterizedQuery GET_API_Prefix = `SELECT API_UUID AS ID, API_ID as APIID,
         API_PROVIDER as PROVIDER, API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS 
