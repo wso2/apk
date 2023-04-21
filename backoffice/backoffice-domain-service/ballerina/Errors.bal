@@ -84,5 +84,14 @@ public isolated function e909606(string apiId) returns APKError {
     ); 
 }
 
+public isolated function e909607() returns APKError {
+    return error APKError( "Issue while conecting to databse",
+        code = 909607,
+        message = "Issue while conecting to databse",
+        statusCode = "500",
+        description = "Issue while conecting to databse"
+    ); 
+}
+
 
 
