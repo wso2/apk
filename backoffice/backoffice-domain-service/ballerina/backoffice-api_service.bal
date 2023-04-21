@@ -40,7 +40,7 @@ listener http:Listener ep0 = new (BACKOFFICE_PORT, secureSocket = {
 
 service /api/am/backoffice on ep0 {
 
-    isolated resource function get apis(string? query, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0, string sortBy = "createdTime", string sortOrder = "desc", @http:Header string? accept = "application/json") returns APIList|http:NotModified|NotAcceptableError|InternalServerErrorError|BadRequestError {
+    isolated resource function get apis(string? query, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0, string sortBy = "createdTime", string sortOrder = "desc", @http:Header string? accept = "application/json") returns APIList|http:NotModified|APKError {
         APIList|APKError apiList = getAPIList('limit, offset, query, "carbon.super");
         if apiList is APIList {
             return apiList;
@@ -49,7 +49,7 @@ service /api/am/backoffice on ep0 {
         }
     }
 
-    isolated resource function get apis/[string apiId](@http:Header string? 'if\-none\-match) returns API|http:NotModified|NotFoundError|NotAcceptableError|BadRequestError|InternalServerErrorError {
+    isolated resource function get apis/[string apiId](@http:Header string? 'if\-none\-match) returns API|http:NotModified|APKError {
         API|APKError response = getAPI(apiId);
         if response is API {
             return response;
@@ -57,7 +57,7 @@ service /api/am/backoffice on ep0 {
             return handleAPKError(response);
         }
     }
-    resource function put apis/[string apiId](@http:Header string? 'if\-none\-match, @http:Payload ModifiableAPI payload) returns API|BadRequestError|ForbiddenError|NotFoundError|PreconditionFailedError|BadRequestError|InternalServerErrorError {
+    resource function put apis/[string apiId](@http:Header string? 'if\-none\-match, @http:Payload ModifiableAPI payload) returns API|APKError {
         API|APKError updatedAPI = updateAPI(apiId, payload, "carbon.super");
         if updatedAPI is API {
             return updatedAPI;
@@ -65,9 +65,9 @@ service /api/am/backoffice on ep0 {
         return handleAPKError(updatedAPI);
     }
 
-    isolated resource function get apis/[string apiId]/definition(@http:Header string? 'if\-none\-match) returns APIDefinition|http:NotModified|NotFoundError|NotAcceptableError|BadRequestError|InternalServerErrorError {
-        APIDefinition|NotFoundError|APKError apiDefinition = getAPIDefinition(apiId);
-        if apiDefinition is APIDefinition|NotFoundError {
+    isolated resource function get apis/[string apiId]/definition(@http:Header string? 'if\-none\-match) returns APIDefinition|http:NotModified|APKError {
+        APIDefinition|APKError apiDefinition = getAPIDefinition(apiId);
+        if apiDefinition is APIDefinition {
             log:printDebug(apiDefinition.toString());
             return apiDefinition;
         } else {
@@ -106,7 +106,7 @@ service /api/am/backoffice on ep0 {
     // }
     // resource function get apis/[string apiId]/comments/[string commentId]/replies(@http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0, boolean includeCommenterInfo = false) returns CommentList|UnauthorizedError|NotFoundError|NotAcceptableError|InternalServerErrorError {
     // }
-    isolated resource function get subscriptions(string? apiId, @http:Header string? 'if\-none\-match, string? query, int 'limit = 25, int offset = 0) returns SubscriptionList|http:NotModified|NotAcceptableError|BadRequestError|InternalServerErrorError {
+    isolated resource function get subscriptions(string? apiId, @http:Header string? 'if\-none\-match, string? query, int 'limit = 25, int offset = 0) returns SubscriptionList|http:NotModified|APKError {
         SubscriptionList|APKError subList = getSubscriptions(apiId);
         if subList is SubscriptionList {
             return subList;
@@ -116,7 +116,7 @@ service /api/am/backoffice on ep0 {
     }
     // resource function get subscriptions/[string subscriptionId]/'subscriber\-info() returns SubscriberInfo|NotFoundError {
     // }
-    isolated resource function post subscriptions/'block\-subscription(string subscriptionId, string blockState, @http:Header string? 'if\-match) returns http:Ok|BadRequestError|NotFoundError|PreconditionFailedError|InternalServerErrorError {
+    isolated resource function post subscriptions/'block\-subscription(string subscriptionId, string blockState, @http:Header string? 'if\-match) returns http:Ok|APKError {
         string|APKError response = blockSubscription(subscriptionId, blockState);
         if response is APKError {
             return handleAPKError(response);
@@ -124,7 +124,7 @@ service /api/am/backoffice on ep0 {
             return http:OK;
         }
     }
-    isolated resource function post subscriptions/'unblock\-subscription(string subscriptionId, @http:Header string? 'if\-match) returns http:Ok|BadRequestError|NotFoundError|PreconditionFailedError|InternalServerErrorError {
+    isolated resource function post subscriptions/'unblock\-subscription(string subscriptionId, @http:Header string? 'if\-match) returns http:Ok|APKError {
         string|error response = unblockSubscription(subscriptionId);
         if response is APKError {
             return handleAPKError(response);
@@ -139,7 +139,7 @@ service /api/am/backoffice on ep0 {
     // resource function get settings() returns Settings|NotFoundError {
     // }
 
-    isolated resource function get 'api\-categories() returns APICategoryList|BadRequestError|InternalServerErrorError {
+    isolated resource function get 'api\-categories() returns APICategoryList|APKError {
         APICategoryList|APKError apiCategoryList = getAllCategoryList();
         if apiCategoryList is APICategoryList {
             return apiCategoryList;
@@ -148,7 +148,7 @@ service /api/am/backoffice on ep0 {
         }
     }
 
-    isolated resource function post apis/'change\-lifecycle(string targetState, string apiId, @http:Header string? 'if\-match) returns LifecycleState|BadRequestError|UnauthorizedError|NotFoundError|ConflictError|InternalServerErrorError|BadRequestError|error {
+    isolated resource function post apis/'change\-lifecycle(string targetState, string apiId, @http:Header string? 'if\-match) returns LifecycleState|APKError|error {
         LifecycleState|error changeState = changeLifeCyleState(targetState, apiId, "carbon.super");
         if changeState is LifecycleState {
             return changeState;
@@ -156,7 +156,7 @@ service /api/am/backoffice on ep0 {
             return error("Error while updating LC state of API" + changeState.message());
         }
     }
-    isolated resource function get apis/[string apiId]/'lifecycle\-history(@http:Header string? 'if\-none\-match) returns LifecycleHistory|UnauthorizedError|NotFoundError|InternalServerErrorError|BadRequestError {
+    isolated resource function get apis/[string apiId]/'lifecycle\-history(@http:Header string? 'if\-none\-match) returns LifecycleHistory|APKError {
         LifecycleHistory|APKError lcList = getLcEventHistory(apiId);
         if lcList is LifecycleHistory {
             return lcList;
@@ -164,7 +164,7 @@ service /api/am/backoffice on ep0 {
             return handleAPKError(lcList);
         }
     }
-    isolated resource function get apis/[string apiId]/'lifecycle\-state(@http:Header string? 'if\-none\-match) returns LifecycleState|UnauthorizedError|NotFoundError|InternalServerErrorError|BadRequestError|error {
+    isolated resource function get apis/[string apiId]/'lifecycle\-state(@http:Header string? 'if\-none\-match) returns LifecycleState|APKError|error {
         LifecycleState|error currentState = getLifeCyleState(apiId, "carbon.super");
         if currentState is LifecycleState {
             return currentState;
@@ -172,7 +172,7 @@ service /api/am/backoffice on ep0 {
             return error("Error while getting LC state of API" + currentState.message());
         }
     }
-    resource function get 'business\-plans(@http:Header string? accept = "application/json") returns BusinessPlanList|InternalServerErrorError|BadRequestError {
+    resource function get 'business\-plans(@http:Header string? accept = "application/json") returns BusinessPlanList|APKError {
         BusinessPlanList|APKError subPolicyList = getBusinessPlans();
         if subPolicyList is BusinessPlanList {
             log:printDebug(subPolicyList.toString());

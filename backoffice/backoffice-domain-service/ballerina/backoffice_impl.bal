@@ -206,8 +206,8 @@ isolated function getAPI(string apiId) returns API|APKError {
     return  getAPI;
 }
 
-isolated function getAPIDefinition(string apiId) returns APIDefinition|NotFoundError|APKError {
-    APIDefinition|NotFoundError|APKError apiDefinition = db_getAPIDefinition(apiId);
+isolated function getAPIDefinition(string apiId) returns APIDefinition|APKError {
+    APIDefinition|APKError apiDefinition = db_getAPIDefinition(apiId);
     return apiDefinition;
 }
 
@@ -217,14 +217,8 @@ isolated function updateAPI(string apiId, ModifiableAPI payload, string organiza
     return api;
 }
 
-isolated function handleAPKError(APKError errorDetail) returns InternalServerErrorError|BadRequestError{
-            ErrorHandler & readonly detail = errorDetail.detail();
-        if detail.statusCode == "400" {
-            BadRequestError badRequest = {body: {code: detail.code, message: detail.message}};
-            return badRequest;
-        }
-        InternalServerErrorError internalServerError = {body: {code: detail.code, message: detail.message}};
-        return internalServerError;
+isolated function handleAPKError(APKError errorDetail) returns APKError{
+    return errorDetail;
 }
 
 isolated function getAllCategoryList() returns APICategoryList|APKError {
