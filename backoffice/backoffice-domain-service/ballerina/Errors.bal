@@ -84,5 +84,23 @@ public isolated function e909606(string apiId) returns commons:APKError {
     ); 
 }
 
+public isolated function e909607(error e) returns commons:APKError {
+    return error commons:APKError( "Internal Error occured while retrieving APIs", e,
+        code = 909607,
+        message = "Internal Error occured while retrieving APIs",
+        statusCode = 500,
+        description = "Internal Error occured while retrieving APIs"
+    ); 
+}
+
+public isolated function e909608(error e) returns commons:APKError {
+    return error commons:APKError( "Error while updating LC state into Database", e,
+        code = 909608,
+        message = "Error while updating LC state into Database",
+        statusCode = 500,
+        description = "Error while updating LC state into Database"
+    ); 
+}
+
 
 

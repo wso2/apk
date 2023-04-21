@@ -37,8 +37,7 @@ isolated function db_getAPIsDAO() returns API[]|commons:APKError {
             check apisStream.close();
             return apis;
         } on fail var e {
-        	string message = "Internal Error occured while retrieving APIs";
-            return error(message, e, message = message, description = message, code = 909001, statusCode = 500);
+            return e909607(e);
         }
     }
 }
@@ -63,8 +62,7 @@ isolated function db_changeLCState(string targetState, string apiId, string orga
         if result is sql:ExecutionResult {
             return targetState;
         } else {
-            string message = "Error while updating LC state into Database";
-            return error(message, result, message = message, description = message, code = 909002, statusCode = 500);   
+            return e909608(result);  
         }
     }
 }
@@ -323,8 +321,7 @@ isolated function getAPIsByQueryDAO(string payload, string org) returns API[]|co
             return apis;
         } on fail var e {
             io:print(e);
-            string message = "Internal Error occured while retrieving APIs";
-            return error(message, e, message = message, description = message, code = 909001, statusCode = 500);
+            return e909607(e)
         }
     }
 }
