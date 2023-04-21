@@ -58,12 +58,13 @@ public isolated function e909003() returns commons:APKError {
 //     ); 
 // }
 
-public isolated function e909005() returns commons:APKError {
-    return error commons:APKError( "type field unavailable",
+public isolated function e909005(string 'field) returns commons:APKError {
+    string msg = 'field + " field(s) unavailable";
+    return error commons:APKError(msg,
         code = 909005,
-        message = "type field unavailable",
+        message = msg,
         statusCode = 404,
-        description = "type field unavailable"
+        description = msg
     ); 
 }
 
