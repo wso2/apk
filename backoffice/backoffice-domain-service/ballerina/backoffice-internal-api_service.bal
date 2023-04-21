@@ -9,7 +9,7 @@ listener http:Listener ep1 = new (BACKOFFICE_PORT_INT, secureSocket = {
 }, interceptors = [requestErrorInterceptor]);
 
 service /api/am/backoffice/internal on ep1 {
-    isolated resource function post apis(@http:Payload json payload) returns CreatedAPI|BadRequestError|UnsupportedMediaTypeError|error {
+    isolated resource function post apis(@http:Payload json payload) returns CreatedAPI|error {
         APIBody apiBody = check payload.cloneWithType(APIBody);
 
         API|error? createdApi = createAPI(apiBody, "carbon.super");
@@ -20,7 +20,7 @@ service /api/am/backoffice/internal on ep1 {
         return error("Error while adding API", createdApi);
     }
 
-    isolated resource function get apis/[string apiId](@http:Header string? 'if\-none\-match) returns API|BadRequestError|NotAcceptableError|APKError|error {
+    isolated resource function get apis/[string apiId](@http:Header string? 'if\-none\-match) returns API|APKError|error {
         API | APKError | error ? response = getAPI_internal(apiId, "carbon.super");
         if (response is API | APKError) {
             return response;
