@@ -22,6 +22,7 @@ import com.google.common.cache.LoadingCache;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSVerifier;
+import com.nimbusds.jose.crypto.ECDSAVerifier;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
@@ -49,12 +50,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.KeyFactory;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
+import java.security.*;
 import java.security.cert.Certificate;
-import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -99,22 +97,51 @@ public class JWTUtils {
      *
      * @param jwt       SignedJwt Token
      * @param publicKey public certificate
-     * @return whether the signature is verified or or not
+     * @return whether the signature is verified or not
      */
-    public static boolean verifyTokenSignature(SignedJWT jwt, RSAPublicKey publicKey) {
+    private static boolean verifyTokenSignature(SignedJWT jwt, RSAPublicKey publicKey) {
+
+        try {
+            JWSVerifier jwsVerifier = new RSASSAVerifier(publicKey);
+            return jwt.verify(jwsVerifier);
+        } catch (JOSEException e) {
+            log.error("Error while verifying JWT signature", e);
+            return false;
+        }
+    }
+
+    /**
+     * Verify the JWT token signature.
+     *
+     * @param jwt       SignedJwt Token
+     * @param publicKey public certificate
+     * @return whether the signature is verified or not
+     */
+    public static boolean verifyTokenSignature(SignedJWT jwt, PublicKey publicKey) {
 
         JWSAlgorithm algorithm = jwt.getHeader().getAlgorithm();
-        if ((JWSAlgorithm.RS256.equals(algorithm) || JWSAlgorithm.RS512.equals(algorithm) || JWSAlgorithm.RS384
-                .equals(algorithm))) {
-            try {
-                JWSVerifier jwsVerifier = new RSASSAVerifier(publicKey);
-                return jwt.verify(jwsVerifier);
-            } catch (JOSEException e) {
-                log.error("Error while verifying JWT signature", e);
-                return false;
-            }
-        } else {
-            log.error("Public key is not a RSA");
+        if ((JWSAlgorithm.RS256.equals(algorithm) || JWSAlgorithm.RS512.equals(algorithm) || JWSAlgorithm.RS384.equals(algorithm))) {
+            return verifyTokenSignature(jwt, (RSAPublicKey) publicKey);
+        } else if ((JWSAlgorithm.ES256.equals(algorithm) || JWSAlgorithm.ES384.equals(algorithm) || JWSAlgorithm.ES512.equals(algorithm) || JWSAlgorithm.ES256K.equals(algorithm))) {
+            return verifyTokenSignature(jwt, (ECPublicKey) publicKey);
+        }
+        log.error("Public key is not a RSA");
+        return false;
+    }
+
+    /**
+     * Verify the JWT token signature.
+     *
+     * @param jwt       SignedJwt Token
+     * @param publicKey public certificate
+     * @return whether the signature is verified or not
+     */
+    private static boolean verifyTokenSignature(SignedJWT jwt, ECPublicKey publicKey) {
+        try {
+            JWSVerifier jwsVerifier = new ECDSAVerifier(publicKey);
+            return jwt.verify(jwsVerifier);
+        } catch (JOSEException e) {
+            log.error("Error while verifying JWT signature", e);
             return false;
         }
     }
@@ -141,14 +168,7 @@ public class JWTUtils {
         }
 
         if (publicCert != null) {
-            JWSAlgorithm algorithm = jwt.getHeader().getAlgorithm();
-            if ((JWSAlgorithm.RS256.equals(algorithm) || JWSAlgorithm.RS512.equals(algorithm) || JWSAlgorithm.RS384
-                    .equals(algorithm))) {
-                return verifyTokenSignature(jwt, (RSAPublicKey) publicCert.getPublicKey());
-            } else {
-                log.error("Public key is not RSA");
-                throw new EnforcerException("Public key is not RSA");
-            }
+            return verifyTokenSignature(jwt, publicCert.getPublicKey());
         } else {
             log.error("Couldn't find a public certificate to verify the signature");
             throw new EnforcerException("Couldn't find a public certificate to verify the signature");
@@ -156,27 +176,22 @@ public class JWTUtils {
     }
 
     public static PrivateKey getPrivateKey(String filePath) throws EnforcerException {
-        PrivateKey privateKey;
         try {
             String strKeyPEM;
             Path keyPath = Paths.get(filePath);
             String key = Files.readString(keyPath, Charset.defaultCharset());
 
-            strKeyPEM = key
-                    .replace(Constants.BEGINING_OF_PRIVATE_KEY, "")
-                    .replaceAll("\n", "").replaceAll("\r", "") // certs could be created in a Unix/Windows platform
+            strKeyPEM = key.replace(Constants.BEGINING_OF_PRIVATE_KEY, "").replaceAll("\n", "").replaceAll("\r", "") // certs could be created in a Unix/Windows platform
                     .replace(Constants.END_OF_PRIVATE_KEY, "");
 
             byte[] encoded = Base64.getDecoder().decode(strKeyPEM);
             KeyFactory kf = KeyFactory.getInstance(Constants.RSA);
             PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encoded);
-            RSAPrivateKey rsaPrivateKey = (RSAPrivateKey) kf.generatePrivate(keySpec);
-            privateKey = rsaPrivateKey;
+            return kf.generatePrivate(keySpec);
         } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException e) {
             log.debug("Error obtaining private key", e);
             throw new EnforcerException("Error obtaining private key");
         }
-        return privateKey;
     }
 
     /**
@@ -196,7 +211,7 @@ public class JWTUtils {
             if (cachedEntry != null) {
                 signedJWTInfo = (SignedJWTInfo) cachedEntry;
             }
-            if (signedJWTInfo == null  || !signedJWTInfo.getToken().equals(accessToken)) {
+            if (signedJWTInfo == null || !signedJWTInfo.getToken().equals(accessToken)) {
                 SignedJWT signedJWT = SignedJWT.parse(accessToken);
                 JWTClaimsSet jwtClaimsSet = signedJWT.getJWTClaimsSet();
                 signedJWTInfo = new SignedJWTInfo(accessToken, signedJWT, jwtClaimsSet);
@@ -218,8 +233,7 @@ public class JWTUtils {
      */
     public static boolean isExpired(String token) {
         String[] splitToken = token.split("\\.");
-        org.json.JSONObject payload = new org.json.JSONObject(new String(Base64.getUrlDecoder().
-                decode(splitToken[1])));
+        org.json.JSONObject payload = new org.json.JSONObject(new String(Base64.getUrlDecoder().decode(splitToken[1])));
         long exp = payload.getLong(JwtConstants.EXP);
         long timestampSkew = FilterUtils.getTimeStampSkewInSeconds();
         return (exp - TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()) < timestampSkew);
@@ -231,14 +245,11 @@ public class JWTUtils {
      * @param apiKeyValidationInfoDTO empty JWT info DTO to be populated with anonymous details
      * @param kmReference             name of the token service
      */
-    public static void updateApplicationNameForSubscriptionDisabledKM(APIKeyValidationInfoDTO apiKeyValidationInfoDTO,
-                                                                      String kmReference) {
+    public static void updateApplicationNameForSubscriptionDisabledKM(APIKeyValidationInfoDTO apiKeyValidationInfoDTO, String kmReference) {
         String applicationRef = APIConstants.ANONYMOUS_PREFIX + kmReference;
         apiKeyValidationInfoDTO.setApplicationName(applicationRef);
         apiKeyValidationInfoDTO.setApplicationId(-1);
-        apiKeyValidationInfoDTO.setApplicationUUID(
-                UUID.nameUUIDFromBytes(
-                        applicationRef.getBytes(StandardCharsets.UTF_8)).toString());
+        apiKeyValidationInfoDTO.setApplicationUUID(UUID.nameUUIDFromBytes(applicationRef.getBytes(StandardCharsets.UTF_8)).toString());
         apiKeyValidationInfoDTO.setApplicationTier(APIConstants.UNLIMITED_TIER);
     }
 }

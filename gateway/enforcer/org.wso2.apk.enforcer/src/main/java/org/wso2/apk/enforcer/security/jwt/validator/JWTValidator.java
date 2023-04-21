@@ -19,6 +19,8 @@
 package org.wso2.apk.enforcer.security.jwt.validator;
 
 import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.jwk.ECKey;
+import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jwt.JWTClaimsSet;
@@ -38,6 +40,8 @@ import org.wso2.apk.enforcer.security.jwt.SignedJWTInfo;
 import org.wso2.apk.enforcer.util.JWTUtils;
 
 import java.io.IOException;
+import java.security.PublicKey;
+import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;
 import java.util.Arrays;
@@ -118,22 +122,30 @@ public class JWTValidator {
                     if (jwkSet == null) {
                         jwkSet = retrieveJWKSet(tokenIssuer);
                     }
-                    if (jwkSet.getKeyByKeyId(keyID) == null) {
+                    JWK jwkSetKeyByKeyId = jwkSet.getKeyByKeyId(keyID);
+                    if (jwkSetKeyByKeyId == null) {
                         jwkSet = retrieveJWKSet(tokenIssuer);
                     }
-                    if (jwkSet.getKeyByKeyId(keyID) instanceof RSAKey) {
-                        RSAKey keyByKeyId = (RSAKey) jwkSet.getKeyByKeyId(keyID);
+                    jwkSetKeyByKeyId = jwkSet.getKeyByKeyId(keyID);
+                    if (jwkSetKeyByKeyId instanceof RSAKey) {
+                        RSAKey keyByKeyId = (RSAKey) jwkSetKeyByKeyId;
                         RSAPublicKey rsaPublicKey = keyByKeyId.toRSAPublicKey();
                         if (rsaPublicKey != null) {
                             return JWTUtils.verifyTokenSignature(signedJWT, rsaPublicKey);
+                        }
+                    } else if (jwkSetKeyByKeyId instanceof ECKey) {
+                        ECKey keyByKeyId = (ECKey) jwkSetKeyByKeyId;
+                        ECPublicKey ecPublicKey = keyByKeyId.toECPublicKey();
+                        if (ecPublicKey != null) {
+                            return JWTUtils.verifyTokenSignature(signedJWT, ecPublicKey);
                         }
                     } else {
                         throw new EnforcerException("Key Algorithm not supported");
                     }
                 } else if (tokenIssuer.getCertificate() != null) {
                     logger.debug("Retrieve certificate from Token issuer and validating");
-                    RSAPublicKey rsaPublicKey = (RSAPublicKey) tokenIssuer.getCertificate().getPublicKey();
-                    return JWTUtils.verifyTokenSignature(signedJWT, rsaPublicKey);
+                    PublicKey publicKey = tokenIssuer.getCertificate().getPublicKey();
+                    return JWTUtils.verifyTokenSignature(signedJWT, publicKey);
                 } else {
                     //TODO: (VirajSalaka) Come up with a fix
                     return JWTUtils.verifyTokenSignature(signedJWT, keyID);
@@ -165,7 +177,9 @@ public class JWTValidator {
         jwtValidationInfo.setValid(true);
         jwtValidationInfo.setClaims(jwtClaimsSet.getClaims());
         jwtValidationInfo.setExpiryTime(jwtClaimsSet.getExpirationTime().getTime());
-        jwtValidationInfo.setIssuedTime(jwtClaimsSet.getIssueTime().getTime());
+        if (jwtClaimsSet.getIssueTime() != null) {
+            jwtValidationInfo.setIssuedTime(jwtClaimsSet.getIssueTime().getTime());
+        }
         jwtValidationInfo.setUser(jwtClaimsSet.getSubject());
         jwtValidationInfo.setJti(jwtClaimsSet.getJWTID());
         if (jwtClaimsSet.getClaim(APIConstants.JwtTokenConstants.SCOPE) != null) {
