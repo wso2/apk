@@ -53,7 +53,7 @@ isolated function createAPI(APIBody body, string organization) returns API|error
 # + return - Return Value API | error
 isolated function getAPI_internal(string apiId, string organization) returns API|APKError|error {
     API|APKError|error response = db_getAPI_internal(apiId, organization);
-    if response is error {
+    if response is error && response !is APKError {
         return error("Error while retrieving API data");
     }
     return response;
