@@ -108,7 +108,7 @@ func AddSingleApplication(label string, application *apkmgt_application.Applicat
 			wso2_resource.APKMgtApplicationType: {application},
 		})
 	} else {
-		resourceMap := currentSnapshot.GetResourcesAndTTL(typeURL)
+		resourceMap := currentSnapshot.GetResourcesAndTTL(wso2_resource.APKMgtApplicationType)
 		resourceMap[application.Uuid] = types.ResourceWithTTL{
 			Resource: application,
 		}
@@ -122,7 +122,7 @@ func AddSingleApplication(label string, application *apkmgt_application.Applicat
 	applicationCache.SetSnapshot(context.Background(), label, newSnapshot)
 	introducedLabels[label] = true
 	logger.LoggerXds.Infof("Application Snapshot is updated for label %s with the version %d. New snapshot "+
-		"size is %d.", label, version, len(newSnapshot.GetResourcesAndTTL(typeURL)))
+		"size is %d.", label, version, len(newSnapshot.GetResourcesAndTTL(wso2_resource.APKMgtApplicationType)))
 
 }
 
@@ -140,7 +140,7 @@ func RemoveApplication(label, appUUID string) {
 			continue
 		}
 
-		resourceMap := currentSnapshot.GetResourcesAndTTL(typeURL)
+		resourceMap := currentSnapshot.GetResourcesAndTTL(wso2_resource.APKMgtApplicationType)
 		_, apiFound := resourceMap[appUUID]
 		// If the Application is found, then the xds cache is updated and returned.
 		if apiFound {
@@ -154,7 +154,7 @@ func RemoveApplication(label, appUUID string) {
 			defer applicationCacheMutex.Unlock()
 			applicationCache.SetSnapshot(context.Background(), label, newSnapshot)
 			logger.LoggerXds.Infof("API Snaphsot is updated for label %s with the version %d. New snapshot "+
-				"size is %d.", label, version, len(newSnapshot.GetResourcesAndTTL(typeURL)))
+				"size is %d.", label, version, len(newSnapshot.GetResourcesAndTTL(wso2_resource.APKMgtApplicationType)))
 			return
 		}
 	}
@@ -193,7 +193,7 @@ func AddMultipleApplications(applicationEventArray []*internal_types.Application
 			snapshotMap[label] = &newSnapshot
 		} else {
 			// error occurs if no snapshot is under the provided label
-			resourceMap := snapshotEntry.GetResourcesAndTTL(typeURL)
+			resourceMap := snapshotEntry.GetResourcesAndTTL(wso2_resource.APKMgtApplicationType)
 			resourceMap[appUUID] = types.ResourceWithTTL{
 				Resource: application,
 			}

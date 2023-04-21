@@ -30,6 +30,8 @@ configurable KeyStores & readonly keyStores = {
     signing: {keyFilePath: "/home/wso2apk/devportal/security/mg.pem"}
 };
 configurable SDKConfiguration sdkConfig = ?;
+configurable K8sConfiguration k8sConfig = ?;
+configurable ManagementServerConfiguration & readonly managementServerConfig = ?;
 
 final postgresql:Client|sql:Error dbClient;
 configurable int DEVPORTAL_PORT = 9443;

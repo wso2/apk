@@ -18,6 +18,8 @@
 
 import ballerina/log;
 import ballerina/uuid;
+import wso2/notification_grpc_client;
+import ballerina/time;
 
 isolated function addApplication(Application application, string org, string user) returns NotFoundError|Application|APKError {
     string applicationId = uuid:createType1AsString();
@@ -32,7 +34,32 @@ isolated function addApplication(Application application, string org, string use
     if subscriberId is int {
         log:printDebug("subscriber id" + subscriberId.toString());
         Application|APKError createdApp = addApplicationDAO(application, subscriberId, org);
-        return createdApp;
+        if createdApp is Application {
+            string[]|APKError hostList = retrieveManagementServerHostsList();
+            if hostList is string[] {
+                string eventId = uuid:createType1AsString();
+                time:Utc currTime = time:utcNow();
+                string date = time:utcToString(currTime);
+                ApplicationGRPC createApplicationRequest = {eventId: eventId, applicationId: createdApp.name, uuid: applicationId, timeStamp: date, organization: org};
+                foreach string host in hostList {
+                    log:printDebug("Retrieved Mgt Host:"+host);
+                    string devportalPubCert = <string>keyStores.tls.certFilePath;
+                    string devportalKeyCert = <string>keyStores.tls.keyFilePath;
+                    string pubCertPath = managementServerConfig.certPath;
+                    NotificationResponse|error applicationNotification = notification_grpc_client:createApplication(createApplicationRequest,
+                    "https://" + host + ":8766", pubCertPath, devportalPubCert, devportalKeyCert);
+                    if applicationNotification is error {
+                        string message = "Error while sending application create grpc event";
+                        log:printError(applicationNotification.toString());
+                        return error(message, applicationNotification, message = message, description = message, code = 909000, statusCode = "500");
+                    }
+                }
+            } else {
+                return hostList;
+            }
+        } 
+        return application;
+        
     } else {
         return subscriberId;
     }
@@ -78,6 +105,32 @@ isolated function updateApplication(string appId, Application application, strin
     if subscriberId is int {
         log:printDebug("subscriber id" + subscriberId.toString());
         Application|APKError updatedApp = updateApplicationDAO(application, subscriberId, org);
+        if updatedApp is Application {
+            string[]|APKError hostList = retrieveManagementServerHostsList();
+            if hostList is string[] {
+                string eventId = uuid:createType1AsString();
+                time:Utc currTime = time:utcNow();
+                string date = time:utcToString(currTime);
+                ApplicationGRPC createApplicationRequest = {eventId: eventId, applicationId: updatedApp.name, uuid: appId, timeStamp: date, organization: org};
+                foreach string host in hostList {
+                    log:printDebug("Retrieved Host:"+host);
+                    string devportalPubCert = <string>keyStores.tls.certFilePath;
+                    string devportalKeyCert = <string>keyStores.tls.keyFilePath;
+                    string pubCertPath = managementServerConfig.certPath;
+                    NotificationResponse|error applicationNotification = notification_grpc_client:createApplication(createApplicationRequest,
+                    "https://" + host + ":8766", pubCertPath, devportalPubCert, devportalKeyCert);
+                    if applicationNotification is error {
+                        string message = "Error while sending application create grpc event";
+                        log:printError(applicationNotification.toString());
+                        return error(message, applicationNotification, message = message, description = message, code = 909000, statusCode = "500");
+                    }
+                }
+            } else {
+                return hostList;
+            }
+        } else {
+            return updatedApp;
+        }
         return updatedApp;
     } else {
         return subscriberId;
@@ -86,6 +139,31 @@ isolated function updateApplication(string appId, Application application, strin
 
 isolated function deleteApplication(string appId, string organization) returns string|APKError {
     APKError|string status = deleteApplicationDAO(appId,organization);
+    if status is string {
+        string[]|APKError hostList = retrieveManagementServerHostsList();
+        if hostList is string[] {
+            string eventId = uuid:createType1AsString();
+            time:Utc currTime = time:utcNow();
+            string date = time:utcToString(currTime);
+            ApplicationGRPC deleteApplicationRequest = {eventId: eventId, applicationId: appId, uuid: appId, timeStamp: date, organization: organization};
+            string devportalPubCert = <string>keyStores.tls.certFilePath;
+            string devportalKeyCert = <string>keyStores.tls.keyFilePath;
+            string pubCertPath = <string>managementServerConfig.certPath;
+            foreach string host in hostList {
+                NotificationResponse|error applicationNotification = notification_grpc_client:deleteApplication(deleteApplicationRequest,
+                "https://" + host + ":8766", pubCertPath, devportalPubCert, devportalKeyCert);
+                if applicationNotification is error {
+                    string message = "Error while sending application delete grpc event";
+                    log:printError(applicationNotification.toString());
+                    return error(message, applicationNotification, message = message, description = message, code = 909000, statusCode = "500");
+                }
+            }
+        } else {
+            return hostList;
+        }
+    } else {
+        return status;
+    } 
     return status;
 }
 
@@ -169,3 +247,12 @@ isolated function generateAPIKeyForApplication(string username, Application appl
 isolated function checkUserAccessAllowedForApplication(Application application, string user) returns boolean {
     return true;
 }
+
+isolated function retrieveManagementServerHostsList() returns string[]|APKError {
+    string managementServerServiceName = managementServerConfig.serviceName;
+    string managementServerNamespace = managementServerConfig.namespace;
+    log:printDebug("Service:" + managementServerServiceName);
+    log:printDebug("Namespace:" + managementServerNamespace);
+    string[]|APKError hostList = getPodFromNameAndNamespace(managementServerServiceName,managementServerNamespace);
+    return hostList;
+ }

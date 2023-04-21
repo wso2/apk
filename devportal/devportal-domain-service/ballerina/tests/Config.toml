@@ -1,6 +1,10 @@
 [wso2.devportal_service]
 DEVPORTAL_PORT = 9443
 
+[wso2.devportal_service.k8sConfig]
+host = "localhost:9090"
+serviceAccountPath = "tests/resources/serviceAccount"
+
 [wso2.devportal_service.datasourceConfiguration]
 description = "Database for devportal"
 url = "jdbc:postgresql://localhost:10320/WSO2AM_DB"
@@ -33,3 +37,8 @@ groupId = "org.wso2"
 artifactId = "org.wso2.client."
 modelPackage = "org.wso2.client.model."
 apiPackage = "org.wso2.client.api."
+
+[wso2.devportal_service.managementServerConfig]
+serviceName = "apk-test-wso2-apk-management-server"
+namespace = "apk"
+certPath = "/home/wso2apk/devportal/security/truststore/management-server.pem"
