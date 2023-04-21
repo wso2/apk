@@ -45,7 +45,7 @@ function getAPIByIdTest() {
 
 @test:Config {dependsOn: [createAPITest]}
 function getAPIDefinitionTest() {
-    APIDefinition|NotFoundError|APKError getAPIDef = getAPIDefinition("01ed75e2-b30b-18c8-wwf2-25da7edd2231");
+    APIDefinition|APKError getAPIDef = getAPIDefinition("01ed75e2-b30b-18c8-wwf2-25da7edd2231");
     if getAPIDef is API {
         test:assertTrue(true, "Successfully retrieve API Definition");
         log:printInfo(getAPIDef.toString());
