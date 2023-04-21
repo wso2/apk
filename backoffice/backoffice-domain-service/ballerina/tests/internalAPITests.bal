@@ -85,8 +85,10 @@ function createAPITest() {
 
 @test:Config {dataProvider: getApiDataProvider}
 public function testGetApi(string apiId, string organization, anydata expectedData) {
-    API|NotFoundError|error getAPI = getAPI_internal(apiId, organization);
-    if getAPI is API|NotFoundError {
+    API|APKError|error getAPI = getAPI_internal(apiId, organization);
+    if getAPI is API {
+        test:assertEquals(getAPI.toBalString(), expectedData);
+    } else if getAPI is APKError {
         test:assertEquals(getAPI.toBalString(), expectedData);
     } else {
         test:assertFail("Error while retrieving API data");
@@ -95,7 +97,12 @@ public function testGetApi(string apiId, string organization, anydata expectedDa
 
 public function getApiDataProvider() returns map<[string, string, anydata]> {
 
-    NotFoundError notfound = {body: {code: 90916, message: "API not found in the database"}};
+    APKError notfound = error APKError( "API not found in the database",
+        code = 909603,
+        message = "API not found in the database",
+        statusCode = "404",
+        description = "API not found in the database"
+    );
     map<[string, string, anydata]> dataset = {
         "1": [
             "01ed75e2-b30b-18c8-wwf2-25da7edd2231",
@@ -171,7 +178,7 @@ function updateInternalAPITest() {
             }
             }
         };
-        API|NotFoundError|error updateAPI = updateAPI_internal("01ed75e2-b30b-18c8-wwf2-25da7edd2231", updateBody, "carbon.super");
+        API|APKError|error updateAPI = updateAPI_internal("01ed75e2-b30b-18c8-wwf2-25da7edd2231", updateBody, "carbon.super");
             if updateAPI is API {
                 test:assertTrue(true, "Successfully updtaing API");
             } else if updateAPI is  error {

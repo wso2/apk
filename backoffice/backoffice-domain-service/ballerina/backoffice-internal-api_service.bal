@@ -20,9 +20,9 @@ service /api/am/backoffice/internal on ep1 {
         return error("Error while adding API", createdApi);
     }
 
-    isolated resource function get apis/[string apiId](@http:Header string? 'if\-none\-match) returns API|BadRequestError|NotAcceptableError|NotFoundError|error {
-        API | NotFoundError | error ? response = getAPI_internal(apiId, "carbon.super");
-        if (response is API | NotFoundError) {
+    isolated resource function get apis/[string apiId](@http:Header string? 'if\-none\-match) returns API|BadRequestError|NotAcceptableError|APKError|error {
+        API | APKError | error ? response = getAPI_internal(apiId, "carbon.super");
+        if (response is API | APKError) {
             return response;
         }
         return error("Error while retireving API");
@@ -41,16 +41,18 @@ service /api/am/backoffice/internal on ep1 {
         return error("Error while updating API");
     }
 
-    isolated resource function delete apis/[string apiId](@http:Header string? 'if\-match) returns http:Ok|ForbiddenError|NotFoundError|ConflictError|PreconditionFailedError|http:InternalServerError {
-        string|NotFoundError|error? response = deleteAPI(apiId, "carbon.super");
-        if response is error {
-            http:InternalServerError internalError = {body: {code: 90912, message: "Internal Error while deleting API By Id"}};
-            return internalError;
+    isolated resource function delete apis/[string apiId](@http:Header string? 'if\-match) returns http:Ok|APKError {
+        string|APKError|error? response = deleteAPI(apiId, "carbon.super");
+        if response is APKError {
+            return response;
+        }
+        else if response is error {
+            return e909605();
         } else {
             return http:OK;
         }
     }
-    isolated resource function put apis/[string apiId]/definition(@http:Header string? 'if\-match, @http:Payload APIDefinition1 payload) returns string|BadRequestError|ForbiddenError|NotFoundError|PreconditionFailedError|error {
+    isolated resource function put apis/[string apiId]/definition(@http:Header string? 'if\-match, @http:Payload APIDefinition1 payload) returns string|error {
         APIDefinition1|error? updateDef = updateDefinition(payload, apiId);
         if updateDef is APIDefinition1 {
             APIDefinition1 crAPI = check updateDef.cloneWithType(APIDefinition1);

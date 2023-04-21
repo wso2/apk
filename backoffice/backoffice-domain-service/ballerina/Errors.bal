@@ -66,5 +66,23 @@ public isolated function e909604() returns APKError {
     ); 
 }
 
+public isolated function e909605() returns APKError {
+    return error APKError( "Internal Error while deleting API By Id",
+        code = 909605,
+        message = "Internal Error while deleting API By Id",
+        statusCode = "500",
+        description = "Internal Error while deleting API By Id"
+    ); 
+}
+
+public isolated function e909606(string apiId) returns APKError {
+    return error APKError( "API with " + apiId + " not found",
+        code = 909606,
+        message = "API with " + apiId + " not found",
+        statusCode = "404",
+        description = "API with " + apiId + " not found"
+    ); 
+}
+
 
 

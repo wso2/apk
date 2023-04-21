@@ -87,8 +87,8 @@ isolated function updateAPI_internal(string apiId, APIBody body, string organiza
 # + apiId - API Id parameter
 # + organization - organization
 # + return - Return Value string | error
-isolated function deleteAPI(string apiId, string organization) returns string|NotFoundError|error? {
-    API|NotFoundError api = check getAPI_internal(apiId, organization);
+isolated function deleteAPI(string apiId, string organization) returns string|APKError|error? {
+    API|APKError api = check getAPI_internal(apiId, organization);
     if api is API {
         error?|string apiDel = db_deleteAPI(apiId);
         if apiDel is error {
@@ -100,8 +100,7 @@ isolated function deleteAPI(string apiId, string organization) returns string|No
         }
         return apiDel;
     } else {
-        NotFoundError apiNotfound = {body: {code: 900910, description: "API with " + apiId + " not found", message: "API not found"}};
-        return apiNotfound;
+        return e909606(apiId);
     }
 }
 
