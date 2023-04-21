@@ -28,14 +28,14 @@ service /api/am/backoffice/internal on ep1 {
         return error("Error while retireving API");
     }
 
-    isolated resource function put apis/[string apiId](@http:Header string? 'if\-match, @http:Payload json payload) returns API|BadRequestError|ForbiddenError|NotFoundError|ConflictError|PreconditionFailedError|error {
+    isolated resource function put apis/[string apiId](@http:Header string? 'if\-match, @http:Payload json payload) returns API|APKError|error {
         APIBody apiUpdateBody = check payload.cloneWithType(APIBody);
 
-        API|NotFoundError |error? updatedAPI = updateAPI_internal(apiId, apiUpdateBody, "carbon.super");
+        API|APKError |error? updatedAPI = updateAPI_internal(apiId, apiUpdateBody, "carbon.super");
         if updatedAPI is API {
             API upAPI = check updatedAPI.cloneWithType(API);
             return upAPI;
-        } else if (updatedAPI is NotFoundError) {
+        } else if (updatedAPI is APKError) {
             return updatedAPI;
         }
         return error("Error while updating API");

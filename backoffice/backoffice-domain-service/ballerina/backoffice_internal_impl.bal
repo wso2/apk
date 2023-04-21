@@ -51,8 +51,8 @@ isolated function createAPI(APIBody body, string organization) returns API|error
 # + apiId - API Id parameter
 # + organization - organization
 # + return - Return Value API | error
-isolated function getAPI_internal(string apiId, string organization) returns API|NotFoundError|error {
-    API|NotFoundError|error response = db_getAPI_internal(apiId, organization);
+isolated function getAPI_internal(string apiId, string organization) returns API|APKError|error {
+    API|APKError|error response = db_getAPI_internal(apiId, organization);
     if response is error {
         return error("Error while retrieving API data");
     }
@@ -65,8 +65,8 @@ isolated function getAPI_internal(string apiId, string organization) returns API
 # + apiId - API Id parameter
 # + organization - organization
 # + return - Return Value API | error
-isolated function updateAPI_internal(string apiId, APIBody body, string organization) returns API|NotFoundError|error {
-    API|NotFoundError api = check getAPI_internal(apiId, organization);
+isolated function updateAPI_internal(string apiId, APIBody body, string organization) returns API|APKError|error {
+    API|APKError api = check getAPI_internal(apiId, organization);
     if api is API {
         API|error apiUp = db_updateAPI_internal(apiId, body, organization);
         if apiUp is error {

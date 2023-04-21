@@ -48,3 +48,23 @@ public isolated function e909602() returns APKError {
     ); 
 }
 
+public isolated function e909603() returns APKError {
+    return error APKError( "API not found in the database",
+        code = 909603,
+        message = "API not found in the database",
+        statusCode = "404",
+        description = "API not found in the database"
+    ); 
+}
+
+public isolated function e909604() returns APKError {
+    return error APKError( "Error while retrieving API",
+        code = 909604,
+        message = "Error while retrieving API",
+        statusCode = "500",
+        description = "Error while retrieving API"
+    ); 
+}
+
+
+

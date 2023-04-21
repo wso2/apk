@@ -85,7 +85,7 @@ isolated function db_AddDefinition(APIBody apiBody, string organization) returns
 # + apiId - API Id parameter
 # + organization - organization
 # + return - API | error
-isolated function db_getAPI_internal(string apiId, string organization) returns API | NotFoundError| error {
+isolated function db_getAPI_internal(string apiId, string organization) returns API | APKError| error {
     postgresql:Client | error db_Client  = getConnection();
     if db_Client is error {
         return error("Issue while conecting to databse");
@@ -99,13 +99,11 @@ isolated function db_getAPI_internal(string apiId, string organization) returns 
         API | sql:Error result =  db_Client->queryRow(sqlQuery);
         
         if result is sql:NoRowsError {
-            NotFoundError nfe = {body:{code: 90916, message: "API not found in the database"}};
-            return nfe;
+            return e909603();
         } else if result is API {
             return result;
         } else {
-            string message = "Error while retrieving API";
-            return error(message, result, message = message, description = message, code = 909004, statusCode = "500");
+            return e909604();
         }
     }
 }
