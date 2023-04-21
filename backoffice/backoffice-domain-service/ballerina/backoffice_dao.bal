@@ -321,7 +321,7 @@ isolated function getAPIsByQueryDAO(string payload, string org) returns API[]|co
             return apis;
         } on fail var e {
             io:print(e);
-            return e909607(e)
+            return e909607(e);
         }
     }
 }
