@@ -251,7 +251,7 @@ isolated function db_getAPI(string apiId) returns API|APKError {
     }
 }
 
-isolated function db_getAPIDefinition(string apiId) returns APIDefinition|NotFoundError|APKError {
+isolated function db_getAPIDefinition(string apiId) returns APIDefinition|APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
@@ -261,8 +261,7 @@ isolated function db_getAPIDefinition(string apiId) returns APIDefinition|NotFou
         FROM API_ARTIFACT WHERE API_UUID =${apiId}`;
         APIDefinition | sql:Error result =  dbClient->queryRow(query);
         if result is sql:NoRowsError {
-            NotFoundError nfe = {body:{code: 90915, message: "API Definition Not Found for provided API ID"}};
-            return nfe;
+            return e909602();
         } else if result is APIDefinition {
             return result;
         } else {
