@@ -1,4 +1,5 @@
 import ballerina/http;
+import wso2/apk_common_lib as commons;
 
 configurable int BACKOFFICE_PORT_INT = 9444;
 listener http:Listener ep1 = new (BACKOFFICE_PORT_INT, secureSocket = {
@@ -20,30 +21,30 @@ service /api/am/backoffice/internal on ep1 {
         return error("Error while adding API", createdApi);
     }
 
-    isolated resource function get apis/[string apiId](@http:Header string? 'if\-none\-match) returns API|APKError|error {
-        API | APKError | error ? response = getAPI_internal(apiId, "carbon.super");
-        if (response is API | APKError) {
+    isolated resource function get apis/[string apiId](@http:Header string? 'if\-none\-match) returns API|commons:APKError|error {
+        API | commons:APKError | error ? response = getAPI_internal(apiId, "carbon.super");
+        if (response is API | commons:APKError) {
             return response;
         }
         return error("Error while retireving API");
     }
 
-    isolated resource function put apis/[string apiId](@http:Header string? 'if\-match, @http:Payload json payload) returns API|APKError|error {
+    isolated resource function put apis/[string apiId](@http:Header string? 'if\-match, @http:Payload json payload) returns API|commons:APKError|error {
         APIBody apiUpdateBody = check payload.cloneWithType(APIBody);
 
-        API|APKError |error? updatedAPI = updateAPI_internal(apiId, apiUpdateBody, "carbon.super");
+        API|commons:APKError |error? updatedAPI = updateAPI_internal(apiId, apiUpdateBody, "carbon.super");
         if updatedAPI is API {
             API upAPI = check updatedAPI.cloneWithType(API);
             return upAPI;
-        } else if (updatedAPI is APKError) {
+        } else if (updatedAPI is commons:APKError) {
             return updatedAPI;
         }
         return error("Error while updating API");
     }
 
-    isolated resource function delete apis/[string apiId](@http:Header string? 'if\-match) returns http:Ok|APKError {
-        string|APKError|error? response = deleteAPI(apiId, "carbon.super");
-        if response is APKError {
+    isolated resource function delete apis/[string apiId](@http:Header string? 'if\-match) returns http:Ok|commons:APKError {
+        string|commons:APKError|error? response = deleteAPI(apiId, "carbon.super");
+        if response is commons:APKError {
             return response;
         }
         else if response is error {

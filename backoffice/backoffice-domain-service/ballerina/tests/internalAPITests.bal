@@ -19,6 +19,8 @@
 import ballerina/log;
 import ballerina/test;
 
+import wso2/apk_common_lib as commons;
+
 @test:Config {}
 function createAPITest() {
     APIBody body = {
@@ -85,10 +87,10 @@ function createAPITest() {
 
 @test:Config {dataProvider: getApiDataProvider}
 public function testGetApi(string apiId, string organization, anydata expectedData) {
-    API|APKError|error getAPI = getAPI_internal(apiId, organization);
+    API|commons:APKError|error getAPI = getAPI_internal(apiId, organization);
     if getAPI is API {
         test:assertEquals(getAPI.toBalString(), expectedData);
-    } else if getAPI is APKError {
+    } else if getAPI is commons:APKError {
         test:assertEquals(getAPI.toBalString(), expectedData);
     } else {
         test:assertFail("Error while retrieving API data");
@@ -97,10 +99,10 @@ public function testGetApi(string apiId, string organization, anydata expectedDa
 
 public function getApiDataProvider() returns map<[string, string, anydata]> {
 
-    APKError notfound = error APKError( "API not found in the database",
+    commons:APKError notfound = error commons:APKError( "API not found in the database",
         code = 909603,
         message = "API not found in the database",
-        statusCode = "404",
+        statusCode = 404,
         description = "API not found in the database"
     );
     map<[string, string, anydata]> dataset = {
@@ -178,7 +180,7 @@ function updateInternalAPITest() {
             }
             }
         };
-        API|APKError|error updateAPI = updateAPI_internal("01ed75e2-b30b-18c8-wwf2-25da7edd2231", updateBody, "carbon.super");
+        API|commons:APKError|error updateAPI = updateAPI_internal("01ed75e2-b30b-18c8-wwf2-25da7edd2231", updateBody, "carbon.super");
             if updateAPI is API {
                 test:assertTrue(true, "Successfully updtaing API");
             } else if updateAPI is  error {

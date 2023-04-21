@@ -21,11 +21,13 @@ import ballerina/time;
 import ballerinax/postgresql;
 import ballerina/io;
 
-isolated function db_getAPIsDAO() returns API[]|APKError {
+import wso2/apk_common_lib as commons;
+
+isolated function db_getAPIsDAO() returns API[]|commons:APKError {
     postgresql:Client | error db_Client  = getConnection();
     if db_Client is error {
         string message = "Error while retrieving connection";
-        return error(message, db_Client, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, db_Client, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         do {
             sql:ParameterizedQuery GET_API = `SELECT API_UUID AS ID, API_ID as APIID,
@@ -37,21 +39,21 @@ isolated function db_getAPIsDAO() returns API[]|APKError {
             return apis;
         } on fail var e {
         	string message = "Internal Error occured while retrieving APIs";
-            return error(message, e, message = message, description = message, code = 909001, statusCode = "500");
+            return error(message, e, message = message, description = message, code = 909001, statusCode = 500);
         }
     }
 }
 
-isolated function db_changeLCState(string targetState, string apiId, string organization) returns string|APKError {
+isolated function db_changeLCState(string targetState, string apiId, string organization) returns string|commons:APKError {
     postgresql:Client | error db_Client  = getConnection();
     if db_Client is error {
         string message = "Error while retrieving connection";
-        return error(message, db_Client, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, db_Client, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         string newState = actionToLCState(targetState);
         if newState.equalsIgnoreCaseAscii("any") {
             string message = "Invalid Lifecycle targetState";
-            return error(message, message = message, description = message, code = 909002, statusCode = "400");
+            return error(message, message = message, description = message, code = 909002, statusCode = 400);
         }
         sql:ParameterizedQuery UPDATE_API_LifeCycle_Prefix = `UPDATE api SET status = `;
         sql:ParameterizedQuery values = `${newState}
@@ -64,16 +66,16 @@ isolated function db_changeLCState(string targetState, string apiId, string orga
             return targetState;
         } else {
             string message = "Error while updating LC state into Database";
-            return error(message, result, message = message, description = message, code = 909002, statusCode = "500");   
+            return error(message, result, message = message, description = message, code = 909002, statusCode = 500);   
         }
     }
 }
 
-isolated function db_getCurrentLCStatus(string apiId, string organization) returns string|APKError {
+isolated function db_getCurrentLCStatus(string apiId, string organization) returns string|commons:APKError {
     postgresql:Client | error db_Client  = getConnection();
     if db_Client is error {
         string message = "Error while retrieving connection";
-        return error(message, db_Client, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, db_Client, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         sql:ParameterizedQuery GET_API_LifeCycle_Prefix = `SELECT status from api where api_uuid = `;
         sql:ParameterizedQuery values = `${apiId}`;
@@ -85,7 +87,7 @@ isolated function db_getCurrentLCStatus(string apiId, string organization) retur
             return result;
         } else {
             string message = "Error while geting LC state from Database";
-            return error(message, result, message = message, description = message, code = 909002, statusCode = "500");
+            return error(message, result, message = message, description = message, code = 909002, statusCode = 500);
         }
     }
 }
@@ -97,12 +99,12 @@ isolated function db_getCurrentLCStatus(string apiId, string organization) retur
 # + prev_state - prev_state 
 # + new_state - new_state
 # + return - API | error
-isolated function db_AddLCEvent(string? apiId, string? prev_state, string? new_state, string organization) returns string | APKError {
+isolated function db_AddLCEvent(string? apiId, string? prev_state, string? new_state, string organization) returns string|commons:APKError {
     postgresql:Client | error db_client  = getConnection();
     time:Utc utc = time:utcNow();
     if db_client is error {
         string message = "Error while retrieving connection";
-        return error(message, db_client, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, db_client, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         sql:ParameterizedQuery values = `${apiId},
                                         ${prev_state}, 
@@ -120,16 +122,16 @@ isolated function db_AddLCEvent(string? apiId, string? prev_state, string? new_s
             return result.toString();
         } else {
             string message = "Error while inserting data into Database";
-            return error(message, result, message = message, description = message, code = 909002, statusCode = "500");
+            return error(message, result, message = message, description = message, code = 909002, statusCode = 500);
         }
     }
 }
 
-isolated function db_getLCEventHistory(string apiId) returns LifecycleHistoryItem[]|APKError {
+isolated function db_getLCEventHistory(string apiId) returns LifecycleHistoryItem[]|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         do{
             sql:ParameterizedQuery query = `SELECT previous_state, new_state, user_id, event_date FROM api_lc_event WHERE api_id =${apiId}`;
@@ -139,17 +141,17 @@ isolated function db_getLCEventHistory(string apiId) returns LifecycleHistoryIte
             return lcItems;
         } on fail var e {
         	string message = "Internal Error occured while retrieving LC event History";
-            return error(message, e, message = message, description = message, code = 909001, statusCode = "500");
+            return error(message, e, message = message, description = message, code = 909001, statusCode = 500);
         }
     }
 }
 
 
-isolated function db_getSubscriptionsForAPI(string apiId) returns Subscription[]|APKError {
+isolated function db_getSubscriptionsForAPI(string apiId) returns Subscription[]|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         
         sql:ParameterizedQuery query = `SELECT api_id FROM api WHERE api_uuid =${apiId}`;
@@ -178,21 +180,21 @@ isolated function db_getSubscriptionsForAPI(string apiId) returns Subscription[]
                 return subsList;
             } on fail var e {
                 string message = "Internal Error while geting subscription infomation";
-                return error(message, e, message = message, description = message, code = 909003, statusCode = "500");
+                return error(message, e, message = message, description = message, code = 909003, statusCode = 500);
             }
         } else {
             string message = "Internal Error while geting API for provided apiId " + apiId;
-            return error(message, result, message = message, description = message, code = 909003, statusCode = "500");
+            return error(message, result, message = message, description = message, code = 909003, statusCode = 500);
         }
     }
 }
 
 
-isolated function db_blockSubscription(string subscriptionId, string blockState) returns string|APKError {
+isolated function db_blockSubscription(string subscriptionId, string blockState) returns string|commons:APKError {
     postgresql:Client | error db_client  = getConnection();
     if db_client is error {
         string message = "Error while retrieving connection";
-        return error(message, db_client, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, db_client, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         sql:ParameterizedQuery SUBSCRIPTION_BLOCK_Prefix = `UPDATE subscription set sub_status = `; 
         sql:ParameterizedQuery values = `${blockState} where uuid = ${subscriptionId}`;
@@ -203,16 +205,16 @@ isolated function db_blockSubscription(string subscriptionId, string blockState)
             return "blocked";
         } else {
             string message = "Error while changing status of the subscription in the Database";
-            return error(message, result, message = message, description = message, code = 909003, statusCode = "500");
+            return error(message, result, message = message, description = message, code = 909003, statusCode = 500);
         }
     }
 }
 
-isolated function db_unblockSubscription(string subscriptionId) returns string|APKError {
+isolated function db_unblockSubscription(string subscriptionId) returns string|commons:APKError {
     postgresql:Client | error db_client  = getConnection();
     if db_client is error {
         string message = "Error while retrieving connection";
-        return error(message, db_client, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, db_client, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         sql:ParameterizedQuery SUBSCRIPTION_UNBLOCK_Prefix = `UPDATE subscription set sub_status = 'UNBLOCKED'`; 
         sql:ParameterizedQuery values = ` where uuid = ${subscriptionId}`;
@@ -223,16 +225,16 @@ isolated function db_unblockSubscription(string subscriptionId) returns string|A
             return "Unblocked";
         } else {
             string message = "Error while changing status of the subscription in the Database";
-            return error(message, result, message = message, description = message, code = 909003, statusCode = "500");
+            return error(message, result, message = message, description = message, code = 909003, statusCode = 500);
         }
     }
 }
 
-isolated function db_getAPI(string apiId) returns API|APKError {
+isolated function db_getAPI(string apiId) returns API|commons:APKError {
     postgresql:Client | error db_Client  = getConnection();
     if db_Client is error {
         string message = "Error while retrieving connection";
-        return error(message, db_Client, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, db_Client, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         sql:ParameterizedQuery GET_API_Prefix = `SELECT API_UUID AS ID, API_ID as APIID,
         API_PROVIDER as PROVIDER, API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS,string_to_array(SDK::text,',')::text[] AS SDK,string_to_array(API_TIER::text,',') AS POLICIES, ARTIFACT as ARTIFACT
@@ -246,16 +248,16 @@ isolated function db_getAPI(string apiId) returns API|APKError {
             return result;
         } else {
             string message = "Error while retriving API";
-            return error(message, result, message = message, description = message, code = 909004, statusCode = "500");
+            return error(message, result, message = message, description = message, code = 909004, statusCode = 500);
         }
     }
 }
 
-isolated function db_getAPIDefinition(string apiId) returns APIDefinition|APKError {
+isolated function db_getAPIDefinition(string apiId) returns APIDefinition|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         sql:ParameterizedQuery query = `SELECT encode(API_DEFINITION, 'escape')::text AS schemaDefinition, MEDIA_TYPE as type
         FROM API_ARTIFACT WHERE API_UUID =${apiId}`;
@@ -266,16 +268,16 @@ isolated function db_getAPIDefinition(string apiId) returns APIDefinition|APKErr
             return result;
         } else {
             string message = "Internal Error while retrieving API Definition";
-            return error(message, result, message = message, description = message, code = 909005, statusCode = "500");
+            return error(message, result, message = message, description = message, code = 909005, statusCode = 500);
         }
     }
 }
 
-isolated function db_updateAPI(string apiId, ModifiableAPI payload, string organization) returns API|APKError {
+isolated function db_updateAPI(string apiId, ModifiableAPI payload, string organization) returns API|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         postgresql:JsonBinaryValue sdk = new (payload.sdk.toJson());
         postgresql:JsonBinaryValue categories = new (payload.categories.toJson());
@@ -291,17 +293,17 @@ isolated function db_updateAPI(string apiId, ModifiableAPI payload, string organ
             return db_getAPI(apiId);
         } else {
             string message = "Error while updating API data into Database";
-            return error(message, result, message = message, description = message, code = 909005, statusCode = "500"); 
+            return error(message, result, message = message, description = message, code = 909005, statusCode = 500); 
         }
     }
 }
 
 
-isolated function getAPICategoriesDAO(string org) returns APICategory[]|APKError {
+isolated function getAPICategoriesDAO(string org) returns APICategory[]|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         do {
             sql:ParameterizedQuery query = `SELECT UUID as ID, NAME, DESCRIPTION 
@@ -312,16 +314,16 @@ isolated function getAPICategoriesDAO(string org) returns APICategory[]|APKError
             return apiCategoryList;
         } on fail var e {
         	string message = "Internal Error occured while retrieving API Categories";
-            return error(message, e, message = message, description = message, code = 909001, statusCode = "500");
+            return error(message, e, message = message, description = message, code = 909001, statusCode = 500);
         }
     }
 }
 
-isolated function getAPIsByQueryDAO(string payload, string org) returns API[]|APKError {
+isolated function getAPIsByQueryDAO(string payload, string org) returns API[]|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         do {
             sql:ParameterizedQuery query = `SELECT DISTINCT API_UUID AS ID, API_ID as APIID,
@@ -335,16 +337,16 @@ isolated function getAPIsByQueryDAO(string payload, string org) returns API[]|AP
         } on fail var e {
             io:print(e);
             string message = "Internal Error occured while retrieving APIs";
-            return error(message, e, message = message, description = message, code = 909001, statusCode = "500");
+            return error(message, e, message = message, description = message, code = 909001, statusCode = 500);
         }
     }
 }
 
-public isolated function getBusinessPlansDAO(string org) returns BusinessPlan[]|APKError {
+public isolated function getBusinessPlansDAO(string org) returns BusinessPlan[]|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
-        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
+        return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
     } else {
         do {
             sql:ParameterizedQuery query = `SELECT NAME as PLANNAME, DISPLAY_NAME as DISPLAYNAME, DESCRIPTION, 
@@ -387,7 +389,7 @@ public isolated function getBusinessPlansDAO(string org) returns BusinessPlan[]|
             return businessPlans;
         } on fail var e {
         	string message = "Internal Error occured while retrieving Business Plans";
-            return error(message, e, message = message, description = message, code = 909001, statusCode = "500");
+            return error(message, e, message = message, description = message, code = 909001, statusCode = 500);
         }
     }
 }

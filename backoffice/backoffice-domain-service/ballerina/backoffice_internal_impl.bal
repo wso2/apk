@@ -16,6 +16,8 @@
 // under the License.
 //
 
+import wso2/apk_common_lib as commons;
+
 # This function used to connect API create service to database
 #
 # + body - API parameter
@@ -51,9 +53,9 @@ isolated function createAPI(APIBody body, string organization) returns API|error
 # + apiId - API Id parameter
 # + organization - organization
 # + return - Return Value API | error
-isolated function getAPI_internal(string apiId, string organization) returns API|APKError|error {
-    API|APKError|error response = db_getAPI_internal(apiId, organization);
-    if response is error && response !is APKError {
+isolated function getAPI_internal(string apiId, string organization) returns API|commons:APKError|error {
+    API|commons:APKError|error response = db_getAPI_internal(apiId, organization);
+    if response is error && response !is commons:APKError {
         return error("Error while retrieving API data");
     }
     return response;
@@ -65,8 +67,8 @@ isolated function getAPI_internal(string apiId, string organization) returns API
 # + apiId - API Id parameter
 # + organization - organization
 # + return - Return Value API | error
-isolated function updateAPI_internal(string apiId, APIBody body, string organization) returns API|APKError|error {
-    API|APKError api = check getAPI_internal(apiId, organization);
+isolated function updateAPI_internal(string apiId, APIBody body, string organization) returns API|commons:APKError|error {
+    API|commons:APKError api = check getAPI_internal(apiId, organization);
     if api is API {
         API|error apiUp = db_updateAPI_internal(apiId, body, organization);
         if apiUp is error {
@@ -87,8 +89,8 @@ isolated function updateAPI_internal(string apiId, APIBody body, string organiza
 # + apiId - API Id parameter
 # + organization - organization
 # + return - Return Value string | error
-isolated function deleteAPI(string apiId, string organization) returns string|APKError|error? {
-    API|APKError api = check getAPI_internal(apiId, organization);
+isolated function deleteAPI(string apiId, string organization) returns string|commons:APKError|error? {
+    API|commons:APKError api = check getAPI_internal(apiId, organization);
     if api is API {
         error?|string apiDel = db_deleteAPI(apiId);
         if apiDel is error {

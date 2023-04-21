@@ -19,6 +19,8 @@
 import ballerina/http;
 import ballerina/log;
 
+import wso2/apk_common_lib as commons;
+
 configurable int BACKOFFICE_PORT = 9443;
 
 listener http:Listener ep0 = new (BACKOFFICE_PORT, secureSocket = {
@@ -40,39 +42,23 @@ listener http:Listener ep0 = new (BACKOFFICE_PORT, secureSocket = {
 
 service /api/am/backoffice on ep0 {
 
-    isolated resource function get apis(string? query, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0, string sortBy = "createdTime", string sortOrder = "desc", @http:Header string? accept = "application/json") returns APIList|http:NotModified|APKError {
-        APIList|APKError apiList = getAPIList('limit, offset, query, "carbon.super");
-        if apiList is APIList {
-            return apiList;
-        } else {
-            return handleAPKError(apiList);
-        }
+    isolated resource function get apis(string? query, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0, string sortBy = "createdTime", string sortOrder = "desc", @http:Header string? accept = "application/json") returns APIList|http:NotModified|commons:APKError {
+        return getAPIList('limit, offset, query, "carbon.super");
     }
 
-    isolated resource function get apis/[string apiId](@http:Header string? 'if\-none\-match) returns API|http:NotModified|APKError {
-        API|APKError response = getAPI(apiId);
-        if response is API {
-            return response;
-        } else {
-            return handleAPKError(response);
-        }
+    isolated resource function get apis/[string apiId](@http:Header string? 'if\-none\-match) returns API|http:NotModified|commons:APKError {
+        return getAPI(apiId);
     }
-    resource function put apis/[string apiId](@http:Header string? 'if\-none\-match, @http:Payload ModifiableAPI payload) returns API|APKError {
-        API|APKError updatedAPI = updateAPI(apiId, payload, "carbon.super");
-        if updatedAPI is API {
-            return updatedAPI;
-        }
-        return handleAPKError(updatedAPI);
+    resource function put apis/[string apiId](@http:Header string? 'if\-none\-match, @http:Payload ModifiableAPI payload) returns API|commons:APKError {
+        return updateAPI(apiId, payload, "carbon.super");
     }
 
-    isolated resource function get apis/[string apiId]/definition(@http:Header string? 'if\-none\-match) returns APIDefinition|http:NotModified|APKError {
-        APIDefinition|APKError apiDefinition = getAPIDefinition(apiId);
+    isolated resource function get apis/[string apiId]/definition(@http:Header string? 'if\-none\-match) returns APIDefinition|http:NotModified|commons:APKError {
+        APIDefinition|commons:APKError apiDefinition = getAPIDefinition(apiId);
         if apiDefinition is APIDefinition {
             log:printDebug(apiDefinition.toString());
-            return apiDefinition;
-        } else {
-            return handleAPKError(apiDefinition);
         }
+        return apiDefinition;
     }
     // resource function get apis/[string apiId]/'resource\-paths(@http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0) returns ResourcePathList|http:NotModified|NotFoundError|NotAcceptableError {
     // }
@@ -106,28 +92,23 @@ service /api/am/backoffice on ep0 {
     // }
     // resource function get apis/[string apiId]/comments/[string commentId]/replies(@http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0, boolean includeCommenterInfo = false) returns CommentList|UnauthorizedError|NotFoundError|NotAcceptableError|InternalServerErrorError {
     // }
-    isolated resource function get subscriptions(string? apiId, @http:Header string? 'if\-none\-match, string? query, int 'limit = 25, int offset = 0) returns SubscriptionList|http:NotModified|APKError {
-        SubscriptionList|APKError subList = getSubscriptions(apiId);
-        if subList is SubscriptionList {
-            return subList;
-        } else {
-            return handleAPKError(subList);
-        }
+    isolated resource function get subscriptions(string? apiId, @http:Header string? 'if\-none\-match, string? query, int 'limit = 25, int offset = 0) returns SubscriptionList|http:NotModified|commons:APKError {
+        return getSubscriptions(apiId);
     }
     // resource function get subscriptions/[string subscriptionId]/'subscriber\-info() returns SubscriberInfo|NotFoundError {
     // }
-    isolated resource function post subscriptions/'block\-subscription(string subscriptionId, string blockState, @http:Header string? 'if\-match) returns http:Ok|APKError {
-        string|APKError response = blockSubscription(subscriptionId, blockState);
-        if response is APKError {
-            return handleAPKError(response);
+    isolated resource function post subscriptions/'block\-subscription(string subscriptionId, string blockState, @http:Header string? 'if\-match) returns http:Ok|commons:APKError {
+        string|commons:APKError response = blockSubscription(subscriptionId, blockState);
+        if response is commons:APKError {
+            return response;
         } else {
             return http:OK;
         }
     }
-    isolated resource function post subscriptions/'unblock\-subscription(string subscriptionId, @http:Header string? 'if\-match) returns http:Ok|APKError {
+    isolated resource function post subscriptions/'unblock\-subscription(string subscriptionId, @http:Header string? 'if\-match) returns http:Ok|commons:APKError {
         string|error response = unblockSubscription(subscriptionId);
-        if response is APKError {
-            return handleAPKError(response);
+        if response is commons:APKError {
+            return response;
         } else {
             return http:OK;
         }
@@ -139,16 +120,11 @@ service /api/am/backoffice on ep0 {
     // resource function get settings() returns Settings|NotFoundError {
     // }
 
-    isolated resource function get 'api\-categories() returns APICategoryList|APKError {
-        APICategoryList|APKError apiCategoryList = getAllCategoryList();
-        if apiCategoryList is APICategoryList {
-            return apiCategoryList;
-        } else {
-            return handleAPKError(apiCategoryList);
-        }
+    isolated resource function get 'api\-categories() returns APICategoryList|commons:APKError {
+        return getAllCategoryList();
     }
 
-    isolated resource function post apis/'change\-lifecycle(string targetState, string apiId, @http:Header string? 'if\-match) returns LifecycleState|APKError|error {
+    isolated resource function post apis/'change\-lifecycle(string targetState, string apiId, @http:Header string? 'if\-match) returns LifecycleState|commons:APKError|error {
         LifecycleState|error changeState = changeLifeCyleState(targetState, apiId, "carbon.super");
         if changeState is LifecycleState {
             return changeState;
@@ -156,15 +132,10 @@ service /api/am/backoffice on ep0 {
             return error("Error while updating LC state of API" + changeState.message());
         }
     }
-    isolated resource function get apis/[string apiId]/'lifecycle\-history(@http:Header string? 'if\-none\-match) returns LifecycleHistory|APKError {
-        LifecycleHistory|APKError lcList = getLcEventHistory(apiId);
-        if lcList is LifecycleHistory {
-            return lcList;
-        } else {
-            return handleAPKError(lcList);
-        }
+    isolated resource function get apis/[string apiId]/'lifecycle\-history(@http:Header string? 'if\-none\-match) returns LifecycleHistory|commons:APKError {
+        return getLcEventHistory(apiId);
     }
-    isolated resource function get apis/[string apiId]/'lifecycle\-state(@http:Header string? 'if\-none\-match) returns LifecycleState|APKError|error {
+    isolated resource function get apis/[string apiId]/'lifecycle\-state(@http:Header string? 'if\-none\-match) returns LifecycleState|commons:APKError|error {
         LifecycleState|error currentState = getLifeCyleState(apiId, "carbon.super");
         if currentState is LifecycleState {
             return currentState;
@@ -172,13 +143,11 @@ service /api/am/backoffice on ep0 {
             return error("Error while getting LC state of API" + currentState.message());
         }
     }
-    resource function get 'business\-plans(@http:Header string? accept = "application/json") returns BusinessPlanList|APKError {
-        BusinessPlanList|APKError subPolicyList = getBusinessPlans();
+    resource function get 'business\-plans(@http:Header string? accept = "application/json") returns BusinessPlanList|commons:APKError {
+        BusinessPlanList|commons:APKError subPolicyList = getBusinessPlans();
         if subPolicyList is BusinessPlanList {
-            log:printDebug(subPolicyList.toString());
-            return subPolicyList;
-        } else {
-            return handleAPKError(subPolicyList);
+            log:printDebug(subPolicyList.toString());    
         }
+        return subPolicyList;
     }
 }

@@ -39,47 +39,47 @@ public isolated function e909601(error e) returns commons:APKError {
     ); 
 }
 
-public isolated function e909602() returns APKError {
-    return error APKError( "API Definition Not Found for provided API ID",
+public isolated function e909602() returns commons:APKError {
+    return error commons:APKError( "API Definition Not Found for provided API ID",
         code = 909602,
         message = "API Definition Not Found for provided API ID",
-        statusCode = "404",
+        statusCode = 404,
         description = "API Definition Not Found for provided API ID"
     ); 
 }
 
-public isolated function e909603() returns APKError {
-    return error APKError( "API not found in the database",
+public isolated function e909603() returns commons:APKError {
+    return error commons:APKError( "API not found in the database",
         code = 909603,
         message = "API not found in the database",
-        statusCode = "404",
+        statusCode = 404,
         description = "API not found in the database"
     ); 
 }
 
-public isolated function e909604() returns APKError {
-    return error APKError( "Error while retrieving API",
+public isolated function e909604() returns commons:APKError {
+    return error commons:APKError( "Error while retrieving API",
         code = 909604,
         message = "Error while retrieving API",
-        statusCode = "500",
+        statusCode = 500,
         description = "Error while retrieving API"
     ); 
 }
 
-public isolated function e909605() returns APKError {
-    return error APKError( "Internal Error while deleting API By Id",
+public isolated function e909605() returns commons:APKError {
+    return error commons:APKError( "Internal Error while deleting API By Id",
         code = 909605,
         message = "Internal Error while deleting API By Id",
-        statusCode = "500",
+        statusCode = 500,
         description = "Internal Error while deleting API By Id"
     ); 
 }
 
-public isolated function e909606(string apiId) returns APKError {
-    return error APKError( "API with " + apiId + " not found",
+public isolated function e909606(string apiId) returns commons:APKError {
+    return error commons:APKError( "API with " + apiId + " not found",
         code = 909606,
         message = "API with " + apiId + " not found",
-        statusCode = "404",
+        statusCode = 404,
         description = "API with " + apiId + " not found"
     ); 
 }

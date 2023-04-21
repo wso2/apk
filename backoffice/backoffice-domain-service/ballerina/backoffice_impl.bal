@@ -16,13 +16,14 @@
 // under the License.
 //
 
+import wso2/apk_common_lib as commons;
 
 # This function used to get API from database
 #
 # + return - Return Value string?|APIList|error
-isolated function getAPIList(int 'limit, int  offset, string? query, string organization) returns APIList|APKError {
+isolated function getAPIList(int 'limit, int  offset, string? query, string organization) returns APIList|commons:APKError {
     if query !is string {
-        API[]|APKError apis = db_getAPIsDAO();
+        API[]|commons:APKError apis = db_getAPIsDAO();
         if apis is API[] {
             API[] limitSet = [];
             if apis.length() > offset {
@@ -43,7 +44,7 @@ isolated function getAPIList(int 'limit, int  offset, string? query, string orga
             int? index = query.indexOf(":");
             if index is int {
                 string modifiedQuery = "%" + query.substring(index+1) +"%";
-                API[]|APKError apis = getAPIsByQueryDAO(modifiedQuery,organization);
+                API[]|commons:APKError apis = getAPIsByQueryDAO(modifiedQuery,organization);
                 if apis is API[] {
                     API[] limitSet = [];
                     if apis.length() > offset {
@@ -60,12 +61,12 @@ isolated function getAPIList(int 'limit, int  offset, string? query, string orga
                 }
             } else {
                 string message = "Invalid Content Search Text Provided. Missing :";
-                APKError e = error(message, message = message, description = message, code = 90911, statusCode = "400");
+                commons:APKError e = error(message, message = message, description = message, code = 90911, statusCode = 400);
                 return e;
             }
         } else {
             string message = "Invalid Content Search Text Provided. Missing content keyword";
-            APKError e = error(message, message = message, description = message, code = 90911, statusCode = "400");
+            commons:APKError e = error(message, message = message, description = message, code = 90911, statusCode = 400);
             return e;
         }
     }
@@ -160,8 +161,8 @@ isolated function getTransitionsFromState(string state) returns json|error {
 #
 # + apiId - API Id parameter
 # + return - Return Value LifecycleHistory
-isolated function getLcEventHistory(string apiId) returns LifecycleHistory|APKError {
-    LifecycleHistoryItem[]|APKError lcHistory = db_getLCEventHistory(apiId);
+isolated function getLcEventHistory(string apiId) returns LifecycleHistory|commons:APKError {
+    LifecycleHistoryItem[]|commons:APKError lcHistory = db_getLCEventHistory(apiId);
     if lcHistory is LifecycleHistoryItem[] {
         int count = lcHistory.length();
         LifecycleHistory eventList = {count: count, list: lcHistory};
@@ -173,8 +174,8 @@ isolated function getLcEventHistory(string apiId) returns LifecycleHistory|APKEr
 
 
 
-isolated function getSubscriptions(string? apiId) returns SubscriptionList|APKError {
-    Subscription[]|APKError subcriptions;
+isolated function getSubscriptions(string? apiId) returns SubscriptionList|commons:APKError {
+    Subscription[]|commons:APKError subcriptions;
         subcriptions = check db_getSubscriptionsForAPI(apiId.toString());
         if subcriptions is Subscription[] {
             int count = subcriptions.length();
@@ -186,44 +187,40 @@ isolated function getSubscriptions(string? apiId) returns SubscriptionList|APKEr
 }
 
 
-isolated function blockSubscription(string subscriptionId, string blockState) returns string|APKError {
+isolated function blockSubscription(string subscriptionId, string blockState) returns string|commons:APKError {
     if ("blocked".equalsIgnoreCaseAscii(blockState) || "prod_only_blocked".equalsIgnoreCaseAscii(blockState)) {
-        APKError|string blockSub = db_blockSubscription(subscriptionId, blockState);
+        commons:APKError|string blockSub = db_blockSubscription(subscriptionId, blockState);
         return blockSub;
     } else {
         string message = "Invalid blockState provided";
-        return error(message, message = message, description = message, code = 909002, statusCode = "400");    
+        return error(message, message = message, description = message, code = 909002, statusCode = 400);    
     }
 }
 
-isolated function unblockSubscription(string subscriptionId) returns string|APKError {
-    APKError|string unblockSub = db_unblockSubscription(subscriptionId);
+isolated function unblockSubscription(string subscriptionId) returns string|commons:APKError {
+    commons:APKError|string unblockSub = db_unblockSubscription(subscriptionId);
     return  unblockSub;
 }
 
-isolated function getAPI(string apiId) returns API|APKError {
-    API|APKError getAPI = check db_getAPI(apiId);
+isolated function getAPI(string apiId) returns API|commons:APKError {
+    API|commons:APKError getAPI = check db_getAPI(apiId);
     return  getAPI;
 }
 
-isolated function getAPIDefinition(string apiId) returns APIDefinition|APKError {
-    APIDefinition|APKError apiDefinition = db_getAPIDefinition(apiId);
+isolated function getAPIDefinition(string apiId) returns APIDefinition|commons:APKError {
+    APIDefinition|commons:APKError apiDefinition = db_getAPIDefinition(apiId);
     return apiDefinition;
 }
 
 
-isolated function updateAPI(string apiId, ModifiableAPI payload, string organization) returns API|APKError {
-    API|APKError api = db_updateAPI(apiId, payload, organization);
+isolated function updateAPI(string apiId, ModifiableAPI payload, string organization) returns API|commons:APKError {
+    API|commons:APKError api = db_updateAPI(apiId, payload, organization);
     return api;
 }
 
-isolated function handleAPKError(APKError errorDetail) returns APKError{
-    return errorDetail;
-}
-
-isolated function getAllCategoryList() returns APICategoryList|APKError {
+isolated function getAllCategoryList() returns APICategoryList|commons:APKError {
     string org = "carbon.super";
-    APICategory[]|APKError categories = getAPICategoriesDAO(org);
+    APICategory[]|commons:APKError categories = getAPICategoriesDAO(org);
     if categories is APICategory[] {
         int count = categories.length();
         APICategoryList apiCategoriesList = {count: count, list: categories};
@@ -233,9 +230,9 @@ isolated function getAllCategoryList() returns APICategoryList|APKError {
     }
 }
 
-isolated function getBusinessPlans() returns BusinessPlanList|APKError {
+isolated function getBusinessPlans() returns BusinessPlanList|commons:APKError {
     string org = "carbon.super";
-    BusinessPlan[]|APKError businessPlans = getBusinessPlansDAO(org);
+    BusinessPlan[]|commons:APKError businessPlans = getBusinessPlansDAO(org);
     if businessPlans is BusinessPlan[] {
         int count = businessPlans.length();
         BusinessPlanList BusinessPlansList = {count: count, list: businessPlans};
