@@ -1526,7 +1526,8 @@ public class APIClient {
         foreach Vhost vhost in vhosts {
             if vhost.'type == endpointType {
                 foreach string host in vhost.hosts {
-                    hosts.push(string:concat(organization.uuid, ".", host));
+                    string hostname = string:concat(organization.uuid, ".", host);
+                    hosts.push(hostname.toLowerAscii());
                 }
             }
         }
