@@ -112,8 +112,7 @@ isolated function getLifeCyleState(string apiId, string organization) returns Li
         json lcPayload =  check getTransitionsFromState(currentLCState);
         LifecycleState|error lcGet =  lcPayload.cloneWithType(LifecycleState);
         if lcGet is error {
-            string message = "Error while retrieving connection";
-            return error(message, message = message, description = message, code = 909000, statusCode = "500");
+            return e909601(lcGet);
         }
         return lcGet;
     } else {
