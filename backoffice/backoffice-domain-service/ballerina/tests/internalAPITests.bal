@@ -85,13 +85,11 @@ function createAPITest() {
 
 @test:Config {dataProvider: getApiDataProvider}
 public function testGetApi(string apiId, string organization, anydata expectedData) {
-    API|APKError|error getAPI = getAPI_internal(apiId, organization);
+    API|APKError getAPI = getAPI_internal(apiId, organization);
     if getAPI is API {
         test:assertEquals(getAPI.toBalString(), expectedData);
-    } else if getAPI is APKError {
-        test:assertEquals(getAPI.toBalString(), expectedData);
     } else {
-        test:assertFail("Error while retrieving API data");
+        test:assertEquals(getAPI.toBalString(), expectedData);
     }
 }
 
