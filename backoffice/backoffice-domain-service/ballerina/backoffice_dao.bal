@@ -49,8 +49,7 @@ isolated function db_changeLCState(string targetState, string apiId, string orga
     } else {
         string newState = actionToLCState(targetState);
         if newState.equalsIgnoreCaseAscii("any") {
-            string message = "Invalid Lifecycle targetState";
-            return error(message, message = message, description = message, code = 909002, statusCode = 400);
+            return e909609();
         }
         sql:ParameterizedQuery UPDATE_API_LifeCycle_Prefix = `UPDATE api SET status = `;
         sql:ParameterizedQuery values = `${newState}
@@ -81,8 +80,7 @@ isolated function db_getCurrentLCStatus(string apiId, string organization) retur
         if result is string {
             return result;
         } else {
-            string message = "Error while geting LC state from Database";
-            return error(message, result, message = message, description = message, code = 909002, statusCode = 500);
+            return e909610(result);
         }
     }
 }
@@ -115,8 +113,7 @@ isolated function db_AddLCEvent(string? apiId, string? prev_state, string? new_s
         if result is sql:ExecutionResult {
             return result.toString();
         } else {
-            string message = "Error while inserting data into Database";
-            return error(message, result, message = message, description = message, code = 909002, statusCode = 500);
+            return e909611(result);
         }
     }
 }
@@ -133,8 +130,7 @@ isolated function db_getLCEventHistory(string apiId) returns LifecycleHistoryIte
             check lcStream.close();
             return lcItems;
         } on fail var e {
-        	string message = "Internal Error occured while retrieving LC event History";
-            return error(message, e, message = message, description = message, code = 909001, statusCode = 500);
+            return e909612(e);
         }
     }
 }
@@ -171,12 +167,10 @@ isolated function db_getSubscriptionsForAPI(string apiId) returns Subscription[]
                 };
                 return subsList;
             } on fail var e {
-                string message = "Internal Error while geting subscription infomation";
-                return error(message, e, message = message, description = message, code = 909003, statusCode = 500);
+                return e909613(e);
             }
         } else {
-            string message = "Internal Error while geting API for provided apiId " + apiId;
-            return error(message, result, message = message, description = message, code = 909003, statusCode = 500);
+            return e909614(result, apiId);
         }
     }
 }
@@ -195,8 +189,7 @@ isolated function db_blockSubscription(string subscriptionId, string blockState)
         if result is sql:ExecutionResult {
             return "blocked";
         } else {
-            string message = "Error while changing status of the subscription in the Database";
-            return error(message, result, message = message, description = message, code = 909003, statusCode = 500);
+            return e909615(result);
         }
     }
 }
@@ -214,8 +207,7 @@ isolated function db_unblockSubscription(string subscriptionId) returns string|c
         if result is sql:ExecutionResult {
             return "Unblocked";
         } else {
-            string message = "Error while changing status of the subscription in the Database";
-            return error(message, result, message = message, description = message, code = 909003, statusCode = 500);
+            return e909615(result);
         }
     }
 }
@@ -236,8 +228,7 @@ isolated function db_getAPI(string apiId) returns API|commons:APKError {
         if result is API {
             return result;
         } else {
-            string message = "Error while retriving API";
-            return error(message, result, message = message, description = message, code = 909004, statusCode = 500);
+            return e909616(result);
         }
     }
 }
@@ -255,8 +246,7 @@ isolated function db_getAPIDefinition(string apiId) returns APIDefinition|common
         } else if result is APIDefinition {
             return result;
         } else {
-            string message = "Internal Error while retrieving API Definition";
-            return error(message, result, message = message, description = message, code = 909005, statusCode = 500);
+            return e909617(result);
         }
     }
 }
@@ -279,8 +269,7 @@ isolated function db_updateAPI(string apiId, ModifiableAPI payload, string organ
         if result is sql:ExecutionResult {
             return db_getAPI(apiId);
         } else {
-            string message = "Error while updating API data into Database";
-            return error(message, result, message = message, description = message, code = 909005, statusCode = 500); 
+            return e909618(result);
         }
     }
 }
@@ -299,8 +288,7 @@ isolated function getAPICategoriesDAO(string org) returns APICategory[]|commons:
             check apiCategoryStream.close();
             return apiCategoryList;
         } on fail var e {
-        	string message = "Internal Error occured while retrieving API Categories";
-            return error(message, e, message = message, description = message, code = 909001, statusCode = 500);
+            return e909619(e);
         }
     }
 }
@@ -371,8 +359,7 @@ public isolated function getBusinessPlansDAO(string org) returns BusinessPlan[]|
             }
             return businessPlans;
         } on fail var e {
-        	string message = "Internal Error occured while retrieving Business Plans";
-            return error(message, e, message = message, description = message, code = 909001, statusCode = 500);
+            return e909620(e);
         }
     }
 }

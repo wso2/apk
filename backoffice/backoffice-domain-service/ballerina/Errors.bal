@@ -102,5 +102,137 @@ public isolated function e909608(error e) returns commons:APKError {
     ); 
 }
 
+public isolated function e909609() returns commons:APKError {
+    return error commons:APKError( "Invalid Lifecycle targetState",
+        code = 909609,
+        message = "Invalid Lifecycle targetState",
+        statusCode = 400,
+        description = "Invalid Lifecycle targetState"
+    ); 
+}
 
+public isolated function e909610(error e) returns commons:APKError {
+    return error commons:APKError( "Error while geting LC state from Database", e,
+        code = 909610,
+        message = "Error while geting LC state from Database",
+        statusCode = 400,
+        description = "Error while geting LC state from Database"
+    ); 
+}
 
+public isolated function e909611(error e) returns commons:APKError {
+    return error commons:APKError( "Error while inserting data into Database", e,
+        code = 909611,
+        message = "Error while inserting data into Database",
+        statusCode = 500,
+        description = "Error while inserting data into Database"
+    ); 
+}
+
+public isolated function e909612(error e) returns commons:APKError {
+    return error commons:APKError( "Internal Error occured while retrieving LC event History", e,
+        code = 909612,
+        message = "Internal Error occured while retrieving LC event History",
+        statusCode = 500,
+        description = "Internal Error occured while retrieving LC event History"
+    ); 
+}
+
+public isolated function e909613(error e) returns commons:APKError {
+    return error commons:APKError( "Internal Error while geting subscription infomation", e,
+        code = 909613,
+        message = "Internal Error while geting subscription infomation",
+        statusCode = 500,
+        description = "Internal Error while geting subscription infomation"
+    ); 
+}
+
+public isolated function e909614(error e, string apiId) returns commons:APKError {
+    return error commons:APKError( "Internal Error while geting API for provided apiId " + apiId, e,
+        code = 909614,
+        message = "Internal Error while geting API for provided apiId " + apiId,
+        statusCode = 500,
+        description = "Internal Error while geting API for provided apiId " + apiId
+    ); 
+}
+
+public isolated function e909615(error e) returns commons:APKError {
+    return error commons:APKError( "Error while changing status of the subscription in the Database", e,
+        code = 909615,
+        message = "Error while changing status of the subscription in the Database",
+        statusCode = 500,
+        description = "Error while changing status of the subscription in the Database"
+    ); 
+}
+
+public isolated function e909616(error e) returns commons:APKError {
+    return error commons:APKError( "Error while retriving API", e,
+        code = 909616,
+        message = "Error while retriving API",
+        statusCode = 500,
+        description = "Error while retriving API"
+    ); 
+}
+
+public isolated function e909617(error e) returns commons:APKError {
+    return error commons:APKError( "Internal Error while retrieving API Definition", e,
+        code = 909617,
+        message = "Internal Error while retrieving API Definition",
+        statusCode = 500,
+        description = "Internal Error while retrieving API Definition"
+    ); 
+}
+
+public isolated function e909618(error e) returns commons:APKError {
+    return error commons:APKError( "Error while updating API data into Database", e,
+        code = 909618,
+        message = "Error while updating API data into Database",
+        statusCode = 500,
+        description = "Error while updating API data into Database"
+    ); 
+}
+
+public isolated function e909619(error e) returns commons:APKError {
+    return error commons:APKError( "Internal Error occured while retrieving API Categories", e,
+        code = 909619,
+        message = "Internal Error occured while retrieving API Categories",
+        statusCode = 500,
+        description = "Internal Error occured while retrieving API Categories"
+    ); 
+}
+
+public isolated function e909620(error e) returns commons:APKError {
+    return error commons:APKError( "Internal Error occured while retrieving Business Plans", e,
+        code = 909620,
+        message = "Internal Error occured while retrieving Business Plans",
+        statusCode = 500,
+        description = "Internal Error occured while retrieving Business Plans"
+    ); 
+}
+
+public isolated function e909621() returns commons:APKError {
+    return error commons:APKError( "Invalid Content Search Text Provided. Missing :",
+        code = 909621,
+        message = "Invalid Content Search Text Provided. Missing :",
+        statusCode = 400,
+        description = "Invalid Content Search Text Provided. Missing :"
+    ); 
+}
+
+public isolated function e909622() returns commons:APKError {
+    return error commons:APKError( "Invalid Content Search Text Provided. Missing content keyword",
+        code = 909622,
+        message = "Invalid Content Search Text Provided. Missing content keyword",
+        statusCode = 400,
+        description = "Invalid Content Search Text Provided. Missing content keyword"
+    ); 
+}
+
+public isolated function e909623() returns commons:APKError {
+    return error commons:APKError( "Invalid blockState provided",
+        code = 909623,
+        message = "Invalid blockState provided",
+        statusCode = 400,
+        description = "Invalid blockState provided"
+    ); 
+}

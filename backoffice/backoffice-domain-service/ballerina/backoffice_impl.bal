@@ -60,14 +60,10 @@ isolated function getAPIList(int 'limit, int  offset, string? query, string orga
                     return apis;
                 }
             } else {
-                string message = "Invalid Content Search Text Provided. Missing :";
-                commons:APKError e = error(message, message = message, description = message, code = 90911, statusCode = 400);
-                return e;
+                return e909621();
             }
         } else {
-            string message = "Invalid Content Search Text Provided. Missing content keyword";
-            commons:APKError e = error(message, message = message, description = message, code = 90911, statusCode = 400);
-            return e;
+            return e909622();
         }
     }
 }
@@ -191,8 +187,7 @@ isolated function blockSubscription(string subscriptionId, string blockState) re
         commons:APKError|string blockSub = db_blockSubscription(subscriptionId, blockState);
         return blockSub;
     } else {
-        string message = "Invalid blockState provided";
-        return error(message, message = message, description = message, code = 909002, statusCode = 400);    
+        return e909623();    
     }
 }
 
