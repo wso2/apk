@@ -6,8 +6,6 @@ coverage:
   status:
     project: off
     patch: off
-fixes:
-  - "/home/runner/work/apk/apk/apk-repo/::"
 flag_management:
   individual_flags:
     - name: adapter
