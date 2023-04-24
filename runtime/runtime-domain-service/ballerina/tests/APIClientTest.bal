@@ -458,12 +458,25 @@ function prefixMatchDataProvider() returns map<[API, model:Endpoint, APIOperatio
 }
 
 @test:Config {dataProvider: apiDefinitionDataProvider}
-public function testGetAPIDefinitionByID(string apiid, anydata expectedResponse) returns error? {
+public function testGetAPIDefinitionByID(string apiid, string? accept, anydata expectedResponse) returns error? {
     APIClient apiclient = new ();
-    http:Response|NotFoundError|PreconditionFailedError|InternalServerErrorError|commons:APKError aPIDefinitionByID = apiclient.getAPIDefinitionByID(apiid, organiztion1, APPLICATION_JSON_MEDIA_TYPE);
+    http:Response|NotFoundError|PreconditionFailedError|InternalServerErrorError|commons:APKError aPIDefinitionByID = apiclient.getAPIDefinitionByID(apiid, organiztion1, accept);
     if aPIDefinitionByID is http:Response {
-        json jsonPayload = check aPIDefinitionByID.getJsonPayload();
-        test:assertEquals(jsonPayload.toBalString(), expectedResponse);
+        string payload;
+        if accept == APPLICATION_JSON_MEDIA_TYPE {
+            test:assertEquals(aPIDefinitionByID.getContentType(), APPLICATION_JSON_MEDIA_TYPE);
+            json jsonPayload = check aPIDefinitionByID.getJsonPayload();
+            payload = jsonPayload.toBalString();
+        } else if accept == APPLICATION_YAML_MEDIA_TYPE {
+            test:assertEquals(aPIDefinitionByID.getContentType(), APPLICATION_YAML_MEDIA_TYPE);
+            payload = check aPIDefinitionByID.getTextPayload();
+        } else {
+            test:assertEquals(aPIDefinitionByID.getContentType(), APPLICATION_JSON_MEDIA_TYPE);
+            json jsonPayload = check aPIDefinitionByID.getJsonPayload();
+            payload = jsonPayload.toBalString();
+
+        }
+        test:assertEquals(payload, expectedResponse);
     } else {
         if aPIDefinitionByID is any {
             test:assertEquals(aPIDefinitionByID.toBalString(), expectedResponse);
@@ -474,31 +487,44 @@ public function testGetAPIDefinitionByID(string apiid, anydata expectedResponse)
     }
 }
 
-public function apiDefinitionDataProvider() returns map<[string, anydata]> {
-    commons:APKError notfound = error commons:APKError( "c5ab2423-b9e8-432b-92e8-35e6907ed5e9 not found",
+public function apiDefinitionDataProvider() returns map<[string, string?, anydata]> {
+    commons:APKError notfound = error commons:APKError("c5ab2423-b9e8-432b-92e8-35e6907ed5e9 not found",
         code = 909001,
         message = "c5ab2423-b9e8-432b-92e8-35e6907ed5e9 not found",
         statusCode = 404,
         description = "c5ab2423-b9e8-432b-92e8-35e6907ed5e9 not found"
     );
-    commons:APKError internalError = error commons:APKError("Internal error occured while retrieving definition", 
+    commons:APKError internalError = error commons:APKError("Internal error occured while retrieving definition",
         error("Internal error occured while retrieving definition"),
         code = 909023,
         message = "Internal error occured while retrieving definition",
         statusCode = 500,
         description = "Internal error occured while retrieving definition"
-    ); 
+    );
+    commons:APKError error909041 = error commons:APKError("Accept header should be application/json or application/yaml",
+        code = 909041,
+        message = "Accept header should be application/json or application/yaml",
+        statusCode = 406,
+        description = "Accept header should be application/json or application/yaml"
+    );
+    do {
 
-    map<[string, anydata]> dataSet = {
-        "1": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e8", mockOpenAPIJson().toBalString()],
-        "2": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e9", notfound.toBalString()],
-        "3": ["c5ab2423-b9e8-432b-92e8-35e6907ed5f9", mockpizzashackAPI11Definition().toBalString()],
-        "4": ["c5ab2423-b9e8-432b-92e8-35e6907ed5f1", mockPizzashackAPI12Definition().toBalString()],
-        "5": ["7b7db1f0-0a9a-4f72-9f9d-5a1696d590c1", mockPizzaShackAPI1Definition(organiztion1.uuid).toBalString()],
-        "6": ["c5ab2423-b9e8-432b-92e8-35e6907ed5f3", internalError.toBalString()]
+        map<[string, string?, anydata]> dataSet = {
+            "1": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e8", APPLICATION_JSON_MEDIA_TYPE, mockOpenAPIJson().toBalString()],
+            "2": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e8", (), mockOpenAPIJson().toBalString()],
+            "3": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e8", APPLICATION_YAML_MEDIA_TYPE, check convertJsonToYaml(mockOpenAPIJson().toString())],
+            "4": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e9", APPLICATION_JSON_MEDIA_TYPE, notfound.toBalString()],
+            "5": ["c5ab2423-b9e8-432b-92e8-35e6907ed5f9", APPLICATION_JSON_MEDIA_TYPE, mockpizzashackAPI11Definition().toBalString()],
+            "6": ["c5ab2423-b9e8-432b-92e8-35e6907ed5f1", APPLICATION_JSON_MEDIA_TYPE, mockPizzashackAPI12Definition().toBalString()],
+            "7": ["7b7db1f0-0a9a-4f72-9f9d-5a1696d590c1", APPLICATION_JSON_MEDIA_TYPE, mockPizzaShackAPI1Definition(organiztion1.uuid).toBalString()],
+            "8": ["c5ab2423-b9e8-432b-92e8-35e6907ed5f3", APPLICATION_JSON_MEDIA_TYPE, internalError.toBalString()],
+            "9": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e8", "text/plain", error909041.toBalString()]
 
-    };
-    return dataSet;
+        };
+        return dataSet;
+    } on fail var e {
+        test:assertFail(msg = e.message());
+    }
 }
 
 @test:Config {dataProvider: apiByIdDataProvider}
@@ -528,12 +554,12 @@ public function apiByIdDataProvider() returns map<[string, commons:Organization,
         ],
         createdTime: "2022-12-13T09:45:47Z"
     };
-    commons:APKError notfound = error commons:APKError( "c5ab2423-b9e8-432b-92e8-35e6907ed5e9 not found",
+    commons:APKError notfound = error commons:APKError("c5ab2423-b9e8-432b-92e8-35e6907ed5e9 not found",
         code = 909001,
         message = "c5ab2423-b9e8-432b-92e8-35e6907ed5e9 not found",
         statusCode = 404,
         description = "c5ab2423-b9e8-432b-92e8-35e6907ed5e9 not found"
-    ); 
+    );
     map<[string, commons:Organization, anydata]> dataset = {
         "1": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e8", organiztion1, api1.toBalString()],
         "2": ["c5ab2423-b9e8-432b-92e8-35e6907ed5e9", organiztion1, notfound.toBalString()]
@@ -2015,12 +2041,12 @@ function validateExistenceDataProvider() returns map<[string, anydata]> {
         statusCode = 406,
         description = "Invalid keyword type"
     );
-    commons:APKError notFound = error commons:APKError( "Context/Name doesn't exist",
+    commons:APKError notFound = error commons:APKError("Context/Name doesn't exist",
         code = 909002,
         message = "Context/Name doesn't exist",
         statusCode = 404,
         description = "Context/Name doesn't exist"
-    ); 
+    );
     map<[string, anydata]> data = {
         "1": ["name:pizzashackAPI", ok.toBalString()],
         "2": ["name:mockapi", notFound.toBalString()],
@@ -2177,7 +2203,7 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
                 }
             ]
         };
-        commons:APKError invalidPolicyNameError = error commons:APKError( "Invalid operation policy name",
+        commons:APKError invalidPolicyNameError = error commons:APKError("Invalid operation policy name",
         code = 909010,
         message = "Invalid operation policy name",
         statusCode = 406,
@@ -2276,7 +2302,7 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
                 "unit": "Minute"
             }
         };
-        commons:APKError bothRateLimitsPresentError = error commons:APKError( "Presence of both resource level and API level rate limits is not allowed",
+        commons:APKError bothRateLimitsPresentError = error commons:APKError("Presence of both resource level and API level rate limits is not allowed",
             code = 909026,
             message = "Presence of both resource level and API level rate limits is not allowed",
             statusCode = 406,
@@ -2479,17 +2505,17 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
             'version: "1.0.0"
         };
         commons:APKError contextAlreadyExistError = error commons:APKError(
-           "API Context - " + contextAlreadyExist.context + " already exist",
-           code = 909012,
-           message = "API Context - " + contextAlreadyExist.context + " already exist",
-           statusCode = 409,
-           description = "API Context - " + contextAlreadyExist.context + " already exist"
+            "API Context - " + contextAlreadyExist.context + " already exist",
+            code = 909012,
+            message = "API Context - " + contextAlreadyExist.context + " already exist",
+            statusCode = 409,
+            description = "API Context - " + contextAlreadyExist.context + " already exist"
         );
-        commons:APKError serviceNotExist = error commons:APKError( "275b00d1-722c-4df2-b65a-9b14677abe4a service does not exist",
+        commons:APKError serviceNotExist = error commons:APKError("275b00d1-722c-4df2-b65a-9b14677abe4a service does not exist",
             code = 909047,
             message = "275b00d1-722c-4df2-b65a-9b14677abe4a service does not exist",
             statusCode = 404,
-            description =  "275b00d1-722c-4df2-b65a-9b14677abe4a service does not exist"
+            description = "275b00d1-722c-4df2-b65a-9b14677abe4a service does not exist"
         );
         string locationUrl = runtimeConfiguration.baseURl + "/apis/" + k8sAPIUUID1;
         CreatedAPI createdAPI = {
@@ -2510,7 +2536,7 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
                 createdTime: "2023-01-17T11:23:49Z"
             },
             headers: {
-                location:locationUrl
+                location: locationUrl
             }
         };
         json requestPolicy = {
@@ -2576,7 +2602,7 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
                 createdTime: "2023-01-17T11:23:49Z"
             },
             headers: {
-                location:locationUrl
+                location: locationUrl
             }
         };
         CreatedAPI createdAPIWithOperationRateLimits = {
@@ -2597,7 +2623,7 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
                 createdTime: "2023-01-17T11:23:49Z"
             },
             headers: {
-                location:locationUrl
+                location: locationUrl
             }
         };
         CreatedAPI createdAPIWithAPIRateLimits = {
@@ -2619,7 +2645,7 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
                 createdTime: "2023-01-17T11:23:49Z"
             },
             headers: {
-                location:locationUrl
+                location: locationUrl
             }
         };
         CreatedAPI createdAPIWithOperationLevelInterceptorPolicy = {
@@ -2640,7 +2666,7 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
                 createdTime: "2023-01-17T11:23:49Z"
             },
             headers: {
-                location:locationUrl
+                location: locationUrl
             }
         };
         CreatedAPI createdAPIWithAPILevelInterceptorPolicy = {
@@ -2662,7 +2688,7 @@ function createApiFromServiceDataProvider() returns map<[string, string, [model:
                 createdTime: "2023-01-17T11:23:49Z"
             },
             headers: {
-                location:locationUrl
+                location: locationUrl
             }
         };
 
@@ -3645,6 +3671,837 @@ function testCreateAPI(string apiUUID, string backenduuid, API api, model:Config
         test:assertEquals(aPI.toBalString(), expected);
     } else {
         test:assertEquals(aPI.toBalString(), expected);
+    }
+}
+
+@test:Config {dataProvider: createAPIRateLimitPolicyProvider}
+function testCreateAPIWithRatelimitPolicy(string apiUUID, string backenduuid, API api, model:ConfigMap configmap,
+        any configmapDeployingResponse, model:Httproute? prodhttpRoute,
+        any prodhttpResponse, model:Httproute? sandHttpRoute, any sandhttpResponse,
+        [model:Backend, any][] backendServices,
+        model:API k8sApi, any k8sapiResponse, model:RuntimeAPI runtimeAPI, any runtimeAPIResponse,
+        model:RateLimitPolicy? rateLimitPolicy, any rateLimitPolicyResponse,
+        model:APIPolicy? apiPolicy, any apiPolicyResponse
+, string k8sapiUUID, anydata expected) returns error? {
+    return testCreateAPI(apiUUID, backenduuid, api, configmap, configmapDeployingResponse, prodhttpRoute, prodhttpResponse,
+            sandHttpRoute, sandhttpResponse, backendServices, k8sApi, k8sapiResponse, runtimeAPI, runtimeAPIResponse,
+            rateLimitPolicy, rateLimitPolicyResponse, apiPolicy, apiPolicyResponse, k8sapiUUID, expected);
+}
+
+function createAPIRateLimitPolicyProvider() returns map<[string, string, API, model:ConfigMap, any, model:Httproute?, any, model:Httproute?, any, [model:Backend, any][], model:API, any, model:RuntimeAPI, any, model:RateLimitPolicy?, any, model:APIPolicy?, any, string, anydata]> {
+    do {
+        API api = {
+            name: "PizzaAPI",
+            context: "/pizzaAPI/1.0.0",
+            'version: "1.0.0",
+            endpointConfig: {"production_endpoints": {"url": "https://localhost"}}
+        };
+
+        API apiWithAPIRateLimits = {
+            "name": "PizzaAPI",
+            "context": "/pizzaAPI/1.0.0",
+            "version": "1.0.0",
+            "endpointConfig": {"production_endpoints": {"url": "https://localhost"}},
+            "operations": [
+                {
+                    "target": "/*",
+                    "verb": "GET",
+                    "authTypeEnabled": true
+                },
+                {
+                    "target": "/*",
+                    "verb": "PUT",
+                    "authTypeEnabled": true
+                },
+                {
+                    "target": "/*",
+                    "verb": "POST",
+                    "authTypeEnabled": true
+                },
+                {
+                    "target": "/*",
+                    "verb": "DELETE",
+                    "authTypeEnabled": true
+                },
+                {
+                    "target": "/*",
+                    "verb": "PATCH",
+                    "authTypeEnabled": true
+                }
+            ],
+            "apiRateLimit": {
+                "requestsPerUnit": 10,
+                "unit": "Minute"
+            }
+        };
+        API apiWithBothRateLimits = {
+            "name": "PizzaAPIPolicies",
+            "context": "/pizzaAPIPolcies/1.0.0",
+            "version": "1.0.0",
+            "endpointConfig": {"production_endpoints": {"url": "https://localhost"}},
+            "operations": [
+                {
+                    "target": "/menu",
+                    "verb": "GET",
+                    "authTypeEnabled": true,
+                    "operationRateLimit": {
+                        "requestsPerUnit": 10,
+                        "unit": "Minute"
+                    }
+                }
+            ],
+            "apiRateLimit": {
+                "requestsPerUnit": 10,
+                "unit": "Minute"
+            }
+        };
+        API apiWithOperationRateLimits = {
+            "name": "PizzaAPI",
+            "context": "/pizzaAPI/1.0.0",
+            "version": "1.0.0",
+            "endpointConfig": {"production_endpoints": {"url": "https://localhost"}},
+            "operations": [
+                {
+                    "target": "/*",
+                    "verb": "GET",
+                    "authTypeEnabled": true,
+                    "operationRateLimit": {
+                        "requestsPerUnit": 10,
+                        "unit": "Minute"
+                    }
+                },
+                {
+                    "target": "/*",
+                    "verb": "PUT",
+                    "authTypeEnabled": true
+                },
+                {
+                    "target": "/*",
+                    "verb": "POST",
+                    "authTypeEnabled": true
+                },
+                {
+                    "target": "/*",
+                    "verb": "DELETE",
+                    "authTypeEnabled": true
+                },
+                {
+                    "target": "/*",
+                    "verb": "PATCH",
+                    "authTypeEnabled": true
+                }
+            ]
+        };
+        commons:APKError bothRateLimitsPresentError = error commons:APKError("Presence of both resource level and API level rate limits is not allowed",
+            code = 909026,
+            message = "Presence of both resource level and API level rate limits is not allowed",
+            statusCode = 406,
+            description = "Presence of both resource level and API level rate limits is not allowed"
+        );
+        string apiUUID = getUniqueIdForAPI(api.name, api.'version, organiztion1);
+        string backenduuid = getBackendServiceUid(api, (), PRODUCTION_TYPE, organiztion1);
+        string backenduuid1 = getBackendServiceUid(api, (), SANDBOX_TYPE, organiztion1);
+        string interceptorBackenduuid1 = getInterceptorServiceUid(api, INTERCEPTOR_TYPE, organiztion1, "http://interceptor-backend1.interceptor:9082");
+        string interceptorBackenduuid2 = getInterceptorServiceUid(api, INTERCEPTOR_TYPE, organiztion1, "http://interceptor-backend2.interceptor:9083");
+        string k8sapiUUID = uuid:createType1AsString();
+        model:Backend backendService = {
+            metadata: {name: backenduuid, namespace: "apk-platform", labels: getLabels(api, organiztion1)},
+            spec: {services: [{host: "localhost", port: 443}], protocol: "https"}
+        };
+        model:Backend backendService1 = {
+            metadata: {name: backenduuid1, namespace: "apk-platform", labels: getLabels(api, organiztion1)},
+            spec: {services: [{host: "localhost", port: 443}], protocol: "https"}
+        };
+        model:Backend interceptorBackendService1 = {
+            metadata: {name: interceptorBackenduuid1, namespace: "apk-platform", labels: getLabels(api, organiztion1)},
+            spec: {services: [{host: "interceptor-backend1.interceptor", port: 9082}], protocol: "http"}
+        };
+        model:Backend interceptorBackendService2 = {
+            metadata: {name: interceptorBackenduuid2, namespace: "apk-platform", labels: getLabels(api, organiztion1)},
+            spec: {services: [{host: "interceptor-backend2.interceptor", port: 9083}], protocol: "http"}
+        };
+        http:Response backendServiceResponse = getOKBackendServiceResponse(backendService);
+        http:Response backendServiceResponse1 = getOKBackendServiceResponse(backendService);
+        http:Response interceptorBackendServiceResponse1 = getOKBackendServiceResponse(interceptorBackendService1);
+        http:Response interceptorBackendServiceResponse2 = getOKBackendServiceResponse(interceptorBackendService2);
+        http:Response backendServiceErrorResponse = new;
+        backendServiceErrorResponse.statusCode = 403;
+        [model:Backend, any][] services = [];
+        services.push([backendService, backendServiceResponse]);
+        services.push([backendService1, backendServiceResponse1]);
+        services.push([interceptorBackendService1, interceptorBackendServiceResponse1]);
+        services.push([interceptorBackendService2, interceptorBackendServiceResponse2]);
+        [model:Backend, any][] servicesError = [];
+        servicesError.push([backendService, backendServiceErrorResponse]);
+        model:ConfigMap configmap = check getMockConfigMap1(apiUUID, api);
+        model:Httproute prodhttpRoute = getMockHttpRouteWithBackend(api, apiUUID, backenduuid, PRODUCTION_TYPE, organiztion1);
+        model:Httproute prodhttpRouteWithOperationRateLimits = getMockHttpRouteWithOperationRateLimits(api, apiUUID, backenduuid, PRODUCTION_TYPE, organiztion1);
+        string locationUrl = runtimeConfiguration.baseURl + "/apis/" + k8sapiUUID;
+
+        CreatedAPI CreatedAPIWithOperationRateLimits = {body: {name: "PizzaAPI", context: "/pizzaAPI/1.0.0", 'version: "1.0.0", id: k8sapiUUID, createdTime: "2023-01-17T11:23:49Z", endpointConfig: {"production_endpoints": {"url": "https://localhost"}}, operations: [{"target": "/*", "verb": "GET", "authTypeEnabled": true, "scopes": [], "operationPolicies": {"request": [], "response": []}, "operationRateLimit": {"requestsPerUnit": 10, "unit": "Minute"}}, {"target": "/*", "verb": "PUT", "authTypeEnabled": true, "scopes": [], "operationPolicies": {"request": [], "response": []}}, {"target": "/*", "verb": "POST", "authTypeEnabled": true, "scopes": [], "operationPolicies": {"request": [], "response": []}}, {"target": "/*", "verb": "DELETE", "authTypeEnabled": true, "scopes": [], "operationPolicies": {"request": [], "response": []}}, {"target": "/*", "verb": "PATCH", "authTypeEnabled": true, "scopes": [], "operationPolicies": {"request": [], "response": []}}]}, headers: {location: locationUrl}};
+        CreatedAPI CreatedAPIWithAPIRateLimits = {body: {name: "PizzaAPI", context: "/pizzaAPI/1.0.0", 'version: "1.0.0", id: k8sapiUUID, createdTime: "2023-01-17T11:23:49Z", endpointConfig: {"production_endpoints": {"url": "https://localhost"}}, operations: [{"target": "/*", "verb": "GET", "authTypeEnabled": true, "scopes": [], "operationPolicies": {"request": [], "response": []}}, {"target": "/*", "verb": "PUT", "authTypeEnabled": true, "scopes": [], "operationPolicies": {"request": [], "response": []}}, {"target": "/*", "verb": "POST", "authTypeEnabled": true, "scopes": [], "operationPolicies": {"request": [], "response": []}}, {"target": "/*", "verb": "DELETE", "authTypeEnabled": true, "scopes": [], "operationPolicies": {"request": [], "response": []}}, {"target": "/*", "verb": "PATCH", "authTypeEnabled": true, "scopes": [], "operationPolicies": {"request": [], "response": []}}], apiRateLimit: {"requestsPerUnit": 10, "unit": "Minute"}}, headers: {location: locationUrl}};
+
+        map<[string, string, API, model:ConfigMap,
+    any, model:Httproute|(), any, model:Httproute|(),
+    any, [model:Backend, any][], model:API, any, model:RuntimeAPI, any,
+    model:RateLimitPolicy|(), any, model:APIPolicy|(), any, string,
+    anydata]> data = {
+            "1": [
+                apiUUID,
+                backenduuid,
+                apiWithBothRateLimits,
+                configmap,
+                getMockConfigMapResponse(configmap.clone()),
+                prodhttpRoute,
+                getMockHttpRouteResponse(prodhttpRoute.clone()),
+                (),
+                (),
+                services,
+                getMockAPI(api, apiUUID, organiztion1.uuid),
+                getMockAPIErrorNameExist(),
+                getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
+                getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
+                (),
+                (),
+                (),
+                (),
+                k8sapiUUID,
+                bothRateLimitsPresentError.toBalString()
+            ]
+        ,
+            "2": [
+                apiUUID,
+                backenduuid,
+                apiWithOperationRateLimits,
+                configmap,
+                getMockConfigMapResponse(configmap.clone()),
+                prodhttpRouteWithOperationRateLimits,
+                getMockHttpRouteResponse(prodhttpRouteWithOperationRateLimits.clone()),
+                (),
+                (),
+                services,
+                getMockAPI(api, apiUUID, organiztion1.uuid),
+                getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
+                getMockRuntimeAPI(apiWithOperationRateLimits, apiUUID, organiztion1, ()),
+                getMockRuntimeAPIResponse(getMockRuntimeAPI(apiWithOperationRateLimits, apiUUID, organiztion1, ())),
+                getMockResourceRateLimitPolicy(apiWithOperationRateLimits, organiztion1, apiUUID),
+                getMockRateLimitResponse(getMockResourceRateLimitPolicy(apiWithOperationRateLimits, organiztion1, apiUUID).clone()),
+                (),
+                (),
+                k8sapiUUID,
+                CreatedAPIWithOperationRateLimits.toBalString()
+            ]
+        ,
+            "3": [
+                apiUUID,
+                backenduuid,
+                apiWithAPIRateLimits,
+                configmap,
+                getMockConfigMapResponse(configmap.clone()),
+                prodhttpRoute,
+                getMockHttpRouteResponse(prodhttpRoute.clone()),
+                (),
+                (),
+                services,
+                getMockAPI(api, apiUUID, organiztion1.uuid),
+                getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
+                getMockRuntimeAPI(apiWithAPIRateLimits, apiUUID, organiztion1, ()),
+                getMockRuntimeAPIResponse(getMockRuntimeAPI(apiWithAPIRateLimits, apiUUID, organiztion1, ())),
+                getMockAPIRateLimitPolicy(apiWithAPIRateLimits, organiztion1, apiUUID),
+                getMockRateLimitResponse(getMockAPIRateLimitPolicy(apiWithAPIRateLimits, organiztion1, apiUUID).clone()),
+                (),
+                (),
+                k8sapiUUID,
+                CreatedAPIWithAPIRateLimits.toBalString()
+            ]
+        };
+        return data;
+    } on fail var e {
+        test:assertFail("tests failed===" + e.message());
+    }
+}
+
+@test:Config {dataProvider: createAPIWithOperationPolicyProvider}
+function testCreateAPIWithOperationPolicy(string apiUUID, string backenduuid, API api, model:ConfigMap configmap,
+        any configmapDeployingResponse, model:Httproute? prodhttpRoute,
+        any prodhttpResponse, model:Httproute? sandHttpRoute, any sandhttpResponse,
+        [model:Backend, any][] backendServices,
+        model:API k8sApi, any k8sapiResponse, model:RuntimeAPI runtimeAPI, any runtimeAPIResponse,
+        model:RateLimitPolicy? rateLimitPolicy, any rateLimitPolicyResponse,
+        model:APIPolicy? apiPolicy, any apiPolicyResponse
+, string k8sapiUUID, anydata expected) returns error? {
+    return testCreateAPI(apiUUID, backenduuid, api, configmap, configmapDeployingResponse, prodhttpRoute, prodhttpResponse,
+            sandHttpRoute, sandhttpResponse, backendServices, k8sApi, k8sapiResponse, runtimeAPI, runtimeAPIResponse,
+            rateLimitPolicy, rateLimitPolicyResponse, apiPolicy, apiPolicyResponse, k8sapiUUID, expected);
+}
+
+function createAPIWithOperationPolicyProvider() returns map<[string, string, API, model:ConfigMap, any, model:Httproute?, any, model:Httproute?, any, [model:Backend, any][], model:API, any, model:RuntimeAPI, any, model:RateLimitPolicy?, any, model:APIPolicy?, any, string, anydata]> {
+    do {
+        API api = {
+            name: "PizzaAPI",
+            context: "/pizzaAPI/1.0.0",
+            'version: "1.0.0",
+            endpointConfig: {"production_endpoints": {"url": "https://localhost"}}
+        };
+        json apiWithOperationPolicies = {
+            "name": "PizzaAPI",
+            "context": "/pizzaAPI/1.0.0",
+            "version": "1.0.0",
+            "endpointConfig": {"production_endpoints": {"url": "https://localhost"}},
+            "operations": [
+                {
+                    "target": "/*",
+                    "verb": "GET",
+                    "authTypeEnabled": true,
+                    "operationPolicies": {
+                        "request": [
+                            {
+                                "policyName": "addHeader",
+                                "parameters":
+                                {
+                                    "headerName": "customadd",
+                                    "headerValue": "customvalue"
+                                }
+
+                            }
+                        ],
+                        "response": [
+                            {
+                                "policyName": "removeHeader",
+                                "parameters":
+                                {
+                                    "headerName": "content-length"
+                                }
+
+                            }
+                        ]
+                    }
+                },
+                {
+                    "target": "/*",
+                    "verb": "PUT",
+                    "authTypeEnabled": true
+                },
+                {
+                    "target": "/*",
+                    "verb": "POST",
+                    "authTypeEnabled": true
+                },
+                {
+                    "target": "/*",
+                    "verb": "DELETE",
+                    "authTypeEnabled": true
+                },
+                {
+                    "target": "/*",
+                    "verb": "PATCH",
+                    "authTypeEnabled": true
+                }
+            ]
+        };
+        json apiWithAPIPolicies = {
+            "name": "PizzaAPI",
+            "context": "/pizzaAPI/1.0.0",
+            "version": "1.0.0",
+            "endpointConfig": {"production_endpoints": {"url": "https://localhost"}},
+            "operations": [
+                {
+                    target: "/*",
+                    verb: "GET",
+                    authTypeEnabled: true
+                },
+                {
+                    target: "/*",
+                    verb: "PUT",
+                    authTypeEnabled: true
+                },
+                {
+                    target: "/*",
+                    verb: "POST",
+                    authTypeEnabled: true
+                },
+                {
+                    target: "/*",
+                    verb: "DELETE",
+                    authTypeEnabled: true
+                },
+                {
+                    target: "/*",
+                    verb: "PATCH",
+                    authTypeEnabled: true
+                }
+            ],
+            "apiPolicies": {
+                request: [
+                    {
+                        policyName: "addHeader",
+                        "parameters":
+                        {
+                            "headerName": "customadd",
+                            "headerValue": "customvalue"
+                        }
+
+                    }
+                ],
+                "response": [
+                    {
+                        policyName: "removeHeader",
+                        "parameters":
+                        {
+                            "headerName": "content-length"
+                        }
+
+                    }
+                ]
+            }
+        };
+        json apiWithBothPolicies = {
+            "name": "PizzaAPIPolicies",
+            "context": "/pizzaAPIPolcies/1.0.0",
+            "version": "1.0.0",
+            "endpointConfig": {"production_endpoints": {"url": "https://localhost"}},
+            "operations": [
+                {
+                    "target": "/menu",
+                    "verb": "GET",
+                    "authTypeEnabled": true,
+                    "operationPolicies": {
+                        "request": [
+                            {
+                                "policyName": "addHeader",
+                                "parameters":
+                                {
+                                    "headerName": "customadd",
+                                    "headerValue": "customvalue"
+                                }
+                            }
+                        ]
+                    }
+                }
+            ],
+            "apiPolicies": {
+                "request": [
+                    {
+                        "policyName": "addHeader",
+                        "parameters":
+                        {
+                            "headerName": "customadd",
+                            "headerValue": "customvalue"
+                        }
+
+                    }
+                ]
+            }
+        };
+        commons:APKError bothPoliciesPresentError = error commons:APKError("Presence of both resource level and API level operation policies is not allowed",
+            code = 909025,
+            message = "Presence of both resource level and API level operation policies is not allowed",
+            statusCode = 406,
+            description = "Presence of both resource level and API level operation policies is not allowed"
+        );
+        json apiWithInvalidPolicyName = {
+            "name": "PizzaAPIOps",
+            "context": "/pizzaAPIOps/1.0.0",
+            "version": "1.0.0",
+            "endpointConfig": {"production_endpoints": {"url": "https://localhost"}},
+            "operations": [
+                {
+                    "target": "/menu",
+                    "verb": "GET",
+                    "authTypeEnabled": true,
+                    "operationPolicies": {
+                        "request": [
+                            {
+                                "policyName": "addHeader1",
+                                "parameters":
+                                {
+                                    "headerName": "customadd",
+                                    "headerValue": "customvalue"
+                                }
+
+                            }
+                        ]
+                    }
+                }
+            ]
+        };
+        commons:APKError invalidPolicyNameError = error commons:APKError("Invalid operation policy name",
+            code = 909010,
+            message = "Invalid operation policy name",
+            statusCode = 406,
+            description = "Invalid operation policy name"
+        );
+        json apiWithInvalidPolicyParameters = {
+            "name": "PizzaAPIOps",
+            "context": "/pizzaAPIOps/1.0.0",
+            "version": "1.0.0",
+            "endpointConfig": {"production_endpoints": {"url": "https://localhost"}},
+            "operations": [
+                {
+                    "target": "/menu",
+                    "verb": "GET",
+                    "authTypeEnabled": true,
+                    "operationPolicies": {
+                        "request": [
+                            {
+                                "policyName": "addHeader",
+                                "parameters":
+                                {
+                                    "headerName1": "customadd",
+                                    "headerValue": "customvalue"
+                                }
+
+                            }
+                        ]
+                    }
+                }
+            ]
+        };
+        commons:APKError invalidPolicyParametersError = error commons:APKError("Invalid parameters provided for policy addHeader",
+            code = 909024,
+            message = "Invalid parameters provided for policy addHeader",
+            statusCode = 406,
+            description = "Invalid parameters provided for policy addHeader"
+        );
+        json apiWithOperationLevelInterceptorPolicy = {
+            "name": "PizzaAPI",
+            "context": "/pizzaAPI/1.0.0",
+            "version": "1.0.0",
+            "endpointConfig": {"production_endpoints": {"url": "https://localhost"}},
+            "operations": [
+                {
+                    "target": "/*",
+                    "verb": "GET",
+                    "authTypeEnabled": true,
+                    "operationPolicies": {
+                        "request": [
+                            {
+                                "policyName": "addInterceptor",
+                                "parameters":
+                                {
+                                    "headersEnabled": true,
+                                    "bodyEnabled": false,
+                                    "trailersEnabled": false,
+                                    "contextEnabled": true,
+                                    "backendUrl": "http://interceptor-backend1.interceptor:9082"
+                                }
+                            }
+                        ],
+                        "response": [
+                            {
+                                "policyName": "addInterceptor",
+                                "parameters":
+                                {
+                                    "headersEnabled": false,
+                                    "bodyEnabled": true,
+                                    "trailersEnabled": false,
+                                    "contextEnabled": true,
+                                    "backendUrl": "http://interceptor-backend2.interceptor:9083"
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "target": "/*",
+                    "verb": "PUT",
+                    "authTypeEnabled": true
+                },
+                {
+                    "target": "/*",
+                    "verb": "POST",
+                    "authTypeEnabled": true
+                },
+                {
+                    "target": "/*",
+                    "verb": "DELETE",
+                    "authTypeEnabled": true
+                },
+                {
+                    "target": "/*",
+                    "verb": "PATCH",
+                    "authTypeEnabled": true
+                }
+            ]
+        };
+        json apiWithAPILevelInterceptorPolicy = {
+            "name": "PizzaAPI",
+            "context": "/pizzaAPI/1.0.0",
+            "version": "1.0.0",
+            "endpointConfig": {"production_endpoints": {"url": "https://localhost"}},
+            "operations": [
+                {
+                    target: "/*",
+                    verb: "GET",
+                    authTypeEnabled: true
+                },
+                {
+                    target: "/*",
+                    verb: "PUT",
+                    authTypeEnabled: true
+                },
+                {
+                    target: "/*",
+                    verb: "POST",
+                    authTypeEnabled: true
+                },
+                {
+                    target: "/*",
+                    verb: "DELETE",
+                    authTypeEnabled: true
+                },
+                {
+                    target: "/*",
+                    verb: "PATCH",
+                    authTypeEnabled: true
+                }
+            ],
+            "apiPolicies": {
+                "request": [
+                    {
+                        "policyName": "addInterceptor",
+                        "parameters":
+                        {
+                            "headersEnabled": true,
+                            "bodyEnabled": false,
+                            "trailersEnabled": false,
+                            "contextEnabled": true,
+                            "backendUrl": "http://interceptor-backend1.interceptor:9082"
+                        }
+                    }
+                ],
+                "response": [
+                    {
+                        "policyName": "addInterceptor",
+                        "parameters":
+                        {
+                            "headersEnabled": false,
+                            "bodyEnabled": true,
+                            "trailersEnabled": false,
+                            "contextEnabled": true,
+                            "backendUrl": "http://interceptor-backend2.interceptor:9083"
+                        }
+                    }
+                ]
+            }
+        };
+        string apiUUID = getUniqueIdForAPI(api.name, api.'version, organiztion1);
+        string backenduuid = getBackendServiceUid(api, (), PRODUCTION_TYPE, organiztion1);
+        string backenduuid1 = getBackendServiceUid(api, (), SANDBOX_TYPE, organiztion1);
+        string interceptorBackenduuid1 = getInterceptorServiceUid(api, INTERCEPTOR_TYPE, organiztion1, "http://interceptor-backend1.interceptor:9082");
+        string interceptorBackenduuid2 = getInterceptorServiceUid(api, INTERCEPTOR_TYPE, organiztion1, "http://interceptor-backend2.interceptor:9083");
+        string k8sapiUUID = uuid:createType1AsString();
+        model:Backend backendService = {
+            metadata: {name: backenduuid, namespace: "apk-platform", labels: getLabels(api, organiztion1)},
+            spec: {services: [{host: "localhost", port: 443}], protocol: "https"}
+        };
+        model:Backend backendService1 = {
+            metadata: {name: backenduuid1, namespace: "apk-platform", labels: getLabels(api, organiztion1)},
+            spec: {services: [{host: "localhost", port: 443}], protocol: "https"}
+        };
+        model:Backend interceptorBackendService1 = {
+            metadata: {name: interceptorBackenduuid1, namespace: "apk-platform", labels: getLabels(api, organiztion1)},
+            spec: {services: [{host: "interceptor-backend1.interceptor", port: 9082}], protocol: "http"}
+        };
+        model:Backend interceptorBackendService2 = {
+            metadata: {name: interceptorBackenduuid2, namespace: "apk-platform", labels: getLabels(api, organiztion1)},
+            spec: {services: [{host: "interceptor-backend2.interceptor", port: 9083}], protocol: "http"}
+        };
+        http:Response backendServiceResponse = getOKBackendServiceResponse(backendService);
+        http:Response backendServiceResponse1 = getOKBackendServiceResponse(backendService);
+        http:Response interceptorBackendServiceResponse1 = getOKBackendServiceResponse(interceptorBackendService1);
+        http:Response interceptorBackendServiceResponse2 = getOKBackendServiceResponse(interceptorBackendService2);
+        http:Response backendServiceErrorResponse = new;
+        backendServiceErrorResponse.statusCode = 403;
+        [model:Backend, any][] services = [];
+        services.push([backendService, backendServiceResponse]);
+        services.push([backendService1, backendServiceResponse1]);
+        services.push([interceptorBackendService1, interceptorBackendServiceResponse1]);
+        services.push([interceptorBackendService2, interceptorBackendServiceResponse2]);
+        [model:Backend, any][] servicesError = [];
+        servicesError.push([backendService, backendServiceErrorResponse]);
+        model:ConfigMap configmap = check getMockConfigMap1(apiUUID, api);
+        model:Httproute prodhttpRoute = getMockHttpRouteWithBackend(api, apiUUID, backenduuid, PRODUCTION_TYPE, organiztion1);
+        model:Httproute prodhttpRouteWithOperationPolicies = getMockHttpRouteWithOperationPolicies(api, apiUUID, backenduuid, PRODUCTION_TYPE, organiztion1);
+        model:Httproute prodhttpRouteWithAPIPolicies = getMockHttpRouteWithAPIPolicies(api, apiUUID, backenduuid, PRODUCTION_TYPE, organiztion1);
+        model:Httproute prodhttpRouteWithOperationInterceptorPolicy = getMockHttpRouteWithOperationInterceptorPolicy(api, apiUUID, backenduuid, PRODUCTION_TYPE, organiztion1);
+        string locationUrl = runtimeConfiguration.baseURl + "/apis/" + k8sapiUUID;
+
+        CreatedAPI CreatedAPIWithOperationPolicies = {body: {name: "PizzaAPI", context: "/pizzaAPI/1.0.0", 'version: "1.0.0", id: k8sapiUUID, createdTime: "2023-01-17T11:23:49Z", endpointConfig: {"production_endpoints": {"url": "https://localhost"}}, operations: [{"target": "/*", "verb": "GET", "authTypeEnabled": true, "scopes": [], "operationPolicies": {"request": [{"policyName": "addHeader", "policyVersion": "v1", "parameters": {"headerName": "customadd", "headerValue": "customvalue"}}], "response": [{"policyName": "removeHeader", "policyVersion": "v1", "parameters": {"headerName": "content-length"}}]}}, {"target": "/*", "verb": "PUT", "authTypeEnabled": true, "scopes": [], "operationPolicies": {"request": [], "response": []}}, {"target": "/*", "verb": "POST", "authTypeEnabled": true, "scopes": [], "operationPolicies": {"request": [], "response": []}}, {"target": "/*", "verb": "DELETE", "authTypeEnabled": true, "scopes": [], "operationPolicies": {"request": [], "response": []}}, {"target": "/*", "verb": "PATCH", "authTypeEnabled": true, "scopes": [], "operationPolicies": {"request": [], "response": []}}]}, headers: {location: locationUrl}};
+        CreatedAPI CreatedAPIWithAPIPolicies = {body: {name: "PizzaAPI", context: "/pizzaAPI/1.0.0", 'version: "1.0.0", id: k8sapiUUID, createdTime: "2023-01-17T11:23:49Z", endpointConfig: {"production_endpoints": {"url": "https://localhost"}}, operations: [{"target": "/*", "verb": "GET", "authTypeEnabled": true, "scopes": [], "operationPolicies": {"request": [], "response": []}}, {"target": "/*", "verb": "PUT", "authTypeEnabled": true, "scopes": [], "operationPolicies": {"request": [], "response": []}}, {"target": "/*", "verb": "POST", "authTypeEnabled": true, "scopes": [], "operationPolicies": {"request": [], "response": []}}, {"target": "/*", "verb": "DELETE", "authTypeEnabled": true, "scopes": [], "operationPolicies": {"request": [], "response": []}}, {"target": "/*", "verb": "PATCH", "authTypeEnabled": true, "scopes": [], "operationPolicies": {"request": [], "response": []}}], apiPolicies: {"request": [{"policyName": "addHeader", "policyVersion": "v1", "parameters": {"headerName": "customadd", "headerValue": "customvalue"}}], "response": [{"policyName": "removeHeader", "policyVersion": "v1", "parameters": {"headerName": "content-length"}}]}}, headers: {location: locationUrl}};
+        CreatedAPI CreatedAPIWithOperationLevelInterceptorPolicy = {body: {name: "PizzaAPI", context: "/pizzaAPI/1.0.0", 'version: "1.0.0", id: k8sapiUUID, createdTime: "2023-01-17T11:23:49Z", endpointConfig: {"production_endpoints": {"url": "https://localhost"}}, operations: [{"target": "/*", "verb": "GET", "authTypeEnabled": true, "scopes": [], "operationPolicies": {"request": [{"policyName": "addInterceptor", "policyVersion": "v1", "parameters": {"headersEnabled": true, "bodyEnabled": false, "contextEnabled": true, "backendUrl": "http://interceptor-backend1.interceptor:9082", "trailersEnabled": false}}], "response": [{"policyName": "addInterceptor", "policyVersion": "v1", "parameters": {"headersEnabled": false, "bodyEnabled": true, "contextEnabled": true, "backendUrl": "http://interceptor-backend2.interceptor:9083", "trailersEnabled": false}}]}}, {"target": "/*", "verb": "PUT", "authTypeEnabled": true, "scopes": [], "operationPolicies": {"request": [], "response": []}}, {"target": "/*", "verb": "POST", "authTypeEnabled": true, "scopes": [], "operationPolicies": {"request": [], "response": []}}, {"target": "/*", "verb": "DELETE", "authTypeEnabled": true, "scopes": [], "operationPolicies": {"request": [], "response": []}}, {"target": "/*", "verb": "PATCH", "authTypeEnabled": true, "scopes": [], "operationPolicies": {"request": [], "response": []}}]}, headers: {location: locationUrl}};
+        CreatedAPI CreatedAPIWithAPILevelInterceptorPolicy = {body: {name: "PizzaAPI", context: "/pizzaAPI/1.0.0", 'version: "1.0.0", id: k8sapiUUID, createdTime: "2023-01-17T11:23:49Z", endpointConfig: {"production_endpoints": {"url": "https://localhost"}}, operations: [{"target": "/*", "verb": "GET", "authTypeEnabled": true, "scopes": [], "operationPolicies": {"request": [], "response": []}}, {"target": "/*", "verb": "PUT", "authTypeEnabled": true, "scopes": [], "operationPolicies": {"request": [], "response": []}}, {"target": "/*", "verb": "POST", "authTypeEnabled": true, "scopes": [], "operationPolicies": {"request": [], "response": []}}, {"target": "/*", "verb": "DELETE", "authTypeEnabled": true, "scopes": [], "operationPolicies": {"request": [], "response": []}}, {"target": "/*", "verb": "PATCH", "authTypeEnabled": true, "scopes": [], "operationPolicies": {"request": [], "response": []}}], apiPolicies: {"request": [{"policyName": "addInterceptor", "policyVersion": "v1", "parameters": {"headersEnabled": true, "bodyEnabled": false, "contextEnabled": true, "backendUrl": "http://interceptor-backend1.interceptor:9082", "trailersEnabled": false}}], "response": [{"policyName": "addInterceptor", "policyVersion": "v1", "parameters": {"headersEnabled": false, "bodyEnabled": true, "contextEnabled": true, "backendUrl": "http://interceptor-backend2.interceptor:9083", "trailersEnabled": false}}]}}, headers: {location: locationUrl}};
+
+        map<[string, string, API, model:ConfigMap,
+    any, model:Httproute|(), any, model:Httproute|(),
+    any, [model:Backend, any][], model:API, any, model:RuntimeAPI, any,
+    model:RateLimitPolicy|(), any, model:APIPolicy|(), any, string,
+    anydata]> data = {
+
+            "1": [
+                apiUUID,
+                backenduuid,
+                check apiWithBothPolicies.cloneWithType(API),
+                configmap,
+                getMockConfigMapResponse(configmap.clone()),
+                prodhttpRoute,
+                getMockHttpRouteResponse(prodhttpRoute.clone()),
+                (),
+                (),
+                services,
+                getMockAPI(api, apiUUID, organiztion1.uuid),
+                getMockAPIErrorNameExist(),
+                getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
+                getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
+                (),
+                (),
+                (),
+                (),
+                k8sapiUUID,
+                bothPoliciesPresentError.toBalString()
+            ]
+        ,
+            "2": [
+                apiUUID,
+                backenduuid,
+                check apiWithInvalidPolicyName.cloneWithType(API),
+                configmap,
+                getMockConfigMapResponse(configmap.clone()),
+                prodhttpRoute,
+                getMockHttpRouteResponse(prodhttpRoute.clone()),
+                (),
+                (),
+                services,
+                getMockAPI(api, apiUUID, organiztion1.uuid),
+                getMockAPIErrorNameExist(),
+                getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
+                getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
+                (),
+                (),
+                (),
+                (),
+                k8sapiUUID,
+                invalidPolicyNameError.toBalString()
+            ]
+        ,
+            "3": [
+                apiUUID,
+                backenduuid,
+                check apiWithInvalidPolicyParameters.cloneWithType(API),
+                configmap,
+                getMockConfigMapResponse(configmap.clone()),
+                prodhttpRoute,
+                getMockHttpRouteResponse(prodhttpRoute.clone()),
+                (),
+                (),
+                services,
+                getMockAPI(api, apiUUID, organiztion1.uuid),
+                getMockAPIErrorNameExist(),
+                getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
+                getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
+                (),
+                (),
+                (),
+                (),
+                k8sapiUUID,
+                invalidPolicyParametersError.toBalString()
+            ]
+        ,
+            "4": [
+                apiUUID,
+                backenduuid,
+                check apiWithOperationPolicies.cloneWithType(API),
+                configmap,
+                getMockConfigMapResponse(configmap.clone()),
+                prodhttpRouteWithOperationPolicies,
+                getMockHttpRouteResponse(prodhttpRouteWithOperationPolicies.clone()),
+                (),
+                (),
+                services,
+                getMockAPI(api, apiUUID, organiztion1.uuid),
+                getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
+                getMockRuntimeAPI(check apiWithOperationPolicies.cloneWithType(API), apiUUID, organiztion1, ()),
+                getMockRuntimeAPIResponse(getMockRuntimeAPI(check apiWithOperationPolicies.cloneWithType(API), apiUUID, organiztion1, ())),
+                (),
+                (),
+                (),
+                (),
+                k8sapiUUID,
+                CreatedAPIWithOperationPolicies.toBalString()
+            ]
+        ,
+            "5": [
+                apiUUID,
+                backenduuid,
+                check apiWithAPIPolicies.cloneWithType(API),
+                configmap,
+                getMockConfigMapResponse(configmap.clone()),
+                prodhttpRouteWithAPIPolicies,
+                getMockHttpRouteResponse(prodhttpRouteWithAPIPolicies.clone()),
+                (),
+                (),
+                services,
+                getMockAPI(api, apiUUID, organiztion1.uuid),
+                getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
+                getMockRuntimeAPI(check apiWithAPIPolicies.cloneWithType(API), apiUUID, organiztion1, ()),
+                getMockRuntimeAPIResponse(getMockRuntimeAPI(check apiWithAPIPolicies.cloneWithType(API), apiUUID, organiztion1, ())),
+                (),
+                (),
+                (),
+                (),
+                k8sapiUUID,
+                CreatedAPIWithAPIPolicies.toBalString()
+            ]
+        ,
+            "6": [
+                apiUUID,
+                backenduuid,
+                check apiWithOperationLevelInterceptorPolicy.cloneWithType(API),
+                configmap,
+                getMockConfigMapResponse(configmap.clone()),
+                prodhttpRouteWithOperationInterceptorPolicy,
+                getMockHttpRouteResponse(prodhttpRouteWithOperationInterceptorPolicy.clone()),
+                (),
+                (),
+                services,
+                getMockAPI(api, apiUUID, organiztion1.uuid),
+                getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
+                getMockRuntimeAPI(check apiWithOperationLevelInterceptorPolicy.cloneWithType(API), apiUUID, organiztion1, ()),
+                getMockRuntimeAPIResponse(getMockRuntimeAPI(check apiWithOperationLevelInterceptorPolicy.cloneWithType(API), apiUUID, organiztion1, ())),
+                (),
+                (),
+                getMockResourceLevelPolicy(check apiWithOperationLevelInterceptorPolicy.cloneWithType(API), organiztion1, apiUUID),
+                getMockAPIPolicyResponse(getMockResourceLevelPolicy(check apiWithOperationLevelInterceptorPolicy.cloneWithType(API), organiztion1, apiUUID).clone()),
+                k8sapiUUID,
+                CreatedAPIWithOperationLevelInterceptorPolicy.toBalString()
+            ]
+        ,
+            "7": [
+                apiUUID,
+                backenduuid,
+                check apiWithAPILevelInterceptorPolicy.cloneWithType(API),
+                configmap,
+                getMockConfigMapResponse(configmap.clone()),
+                prodhttpRoute,
+                getMockHttpRouteResponse(prodhttpRoute.clone()),
+                (),
+                (),
+                services,
+                getMockAPI(api, apiUUID, organiztion1.uuid),
+                getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
+                getMockRuntimeAPI(check apiWithAPILevelInterceptorPolicy.cloneWithType(API), apiUUID, organiztion1, ()),
+                getMockRuntimeAPIResponse(getMockRuntimeAPI(check apiWithAPILevelInterceptorPolicy.cloneWithType(API), apiUUID, organiztion1, ())),
+                (),
+                (),
+                getMockAPILevelPolicy(check apiWithAPILevelInterceptorPolicy.cloneWithType(API), organiztion1, apiUUID),
+                getMockAPIPolicyResponse(getMockAPILevelPolicy(check apiWithAPILevelInterceptorPolicy.cloneWithType(API), organiztion1, apiUUID).clone()),
+                k8sapiUUID,
+                CreatedAPIWithAPILevelInterceptorPolicy.toBalString()
+            ]
+        };
+        return data;
+    } on fail var e {
+        test:assertFail("tests failed===" + e.message());
     }
 }
 
@@ -4829,455 +5686,12 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             'version: "1.0.0"
         };
         commons:APKError contextAlreadyExistError = error commons:APKError(
-           "API Context - " + contextAlreadyExist.context + " already exist",
-           code = 909012,
-           message = "API Context - " + contextAlreadyExist.context + " already exist",
-           statusCode = 409,
-           description = "API Context - " + contextAlreadyExist.context + " already exist"
+            "API Context - " + contextAlreadyExist.context + " already exist",
+            code = 909012,
+            message = "API Context - " + contextAlreadyExist.context + " already exist",
+            statusCode = 409,
+            description = "API Context - " + contextAlreadyExist.context + " already exist"
         );
-        json apiWithOperationPolicies = {
-            "name": "PizzaAPI",
-            "context": "/pizzaAPI/1.0.0",
-            "version": "1.0.0",
-            "endpointConfig": {"production_endpoints": {"url": "https://localhost"}},
-            "operations": [
-                {
-                    "target": "/*",
-                    "verb": "GET",
-                    "authTypeEnabled": true,
-                    "operationPolicies": {
-                        "request": [
-                            {
-                                "policyName": "addHeader",
-                                "parameters":
-                                {
-                                    "headerName": "customadd",
-                                    "headerValue": "customvalue"
-                                }
-
-                            }
-                        ],
-                        "response": [
-                            {
-                                "policyName": "removeHeader",
-                                "parameters":
-                                {
-                                    "headerName": "content-length"
-                                }
-
-                            }
-                        ]
-                    }
-                },
-                {
-                    "target": "/*",
-                    "verb": "PUT",
-                    "authTypeEnabled": true
-                },
-                {
-                    "target": "/*",
-                    "verb": "POST",
-                    "authTypeEnabled": true
-                },
-                {
-                    "target": "/*",
-                    "verb": "DELETE",
-                    "authTypeEnabled": true
-                },
-                {
-                    "target": "/*",
-                    "verb": "PATCH",
-                    "authTypeEnabled": true
-                }
-            ]
-        };
-        json apiWithAPIPolicies = {
-            "name": "PizzaAPI",
-            "context": "/pizzaAPI/1.0.0",
-            "version": "1.0.0",
-            "endpointConfig": {"production_endpoints": {"url": "https://localhost"}},
-            "operations": [
-                {
-                    target: "/*",
-                    verb: "GET",
-                    authTypeEnabled: true
-                },
-                {
-                    target: "/*",
-                    verb: "PUT",
-                    authTypeEnabled: true
-                },
-                {
-                    target: "/*",
-                    verb: "POST",
-                    authTypeEnabled: true
-                },
-                {
-                    target: "/*",
-                    verb: "DELETE",
-                    authTypeEnabled: true
-                },
-                {
-                    target: "/*",
-                    verb: "PATCH",
-                    authTypeEnabled: true
-                }
-            ],
-            "apiPolicies": {
-                request: [
-                    {
-                        policyName: "addHeader",
-                        "parameters":
-                        {
-                            "headerName": "customadd",
-                            "headerValue": "customvalue"
-                        }
-
-                    }
-                ],
-                "response": [
-                    {
-                        policyName: "removeHeader",
-                        "parameters":
-                        {
-                            "headerName": "content-length"
-                        }
-
-                    }
-                ]
-            }
-        };
-        json apiWithBothPolicies = {
-            "name": "PizzaAPIPolicies",
-            "context": "/pizzaAPIPolcies/1.0.0",
-            "version": "1.0.0",
-            "endpointConfig": {"production_endpoints": {"url": "https://localhost"}},
-            "operations": [
-                {
-                    "target": "/menu",
-                    "verb": "GET",
-                    "authTypeEnabled": true,
-                    "operationPolicies": {
-                        "request": [
-                            {
-                                "policyName": "addHeader",
-                                "parameters":
-                                {
-                                    "headerName": "customadd",
-                                    "headerValue": "customvalue"
-                                }
-                            }
-                        ]
-                    }
-                }
-            ],
-            "apiPolicies": {
-                "request": [
-                    {
-                        "policyName": "addHeader",
-                        "parameters":
-                        {
-                            "headerName": "customadd",
-                            "headerValue": "customvalue"
-                        }
-
-                    }
-                ]
-            }
-        };
-        commons:APKError bothPoliciesPresentError = error commons:APKError( "Presence of both resource level and API level operation policies is not allowed",
-            code = 909025,
-            message = "Presence of both resource level and API level operation policies is not allowed",
-            statusCode = 406,
-            description = "Presence of both resource level and API level operation policies is not allowed"
-        );
-        json apiWithInvalidPolicyName = {
-            "name": "PizzaAPIOps",
-            "context": "/pizzaAPIOps/1.0.0",
-            "version": "1.0.0",
-            "endpointConfig": {"production_endpoints": {"url": "https://localhost"}},
-            "operations": [
-                {
-                    "target": "/menu",
-                    "verb": "GET",
-                    "authTypeEnabled": true,
-                    "operationPolicies": {
-                        "request": [
-                            {
-                                "policyName": "addHeader1",
-                                "parameters":
-                                {
-                                    "headerName": "customadd",
-                                    "headerValue": "customvalue"
-                                }
-
-                            }
-                        ]
-                    }
-                }
-            ]
-        };
-        commons:APKError invalidPolicyNameError = error commons:APKError( "Invalid operation policy name",
-            code = 909010,
-            message = "Invalid operation policy name",
-            statusCode = 406,
-            description = "Invalid operation policy name"
-        );
-        json apiWithInvalidPolicyParameters = {
-            "name": "PizzaAPIOps",
-            "context": "/pizzaAPIOps/1.0.0",
-            "version": "1.0.0",
-            "endpointConfig": {"production_endpoints": {"url": "https://localhost"}},
-            "operations": [
-                {
-                    "target": "/menu",
-                    "verb": "GET",
-                    "authTypeEnabled": true,
-                    "operationPolicies": {
-                        "request": [
-                            {
-                                "policyName": "addHeader",
-                                "parameters":
-                                {
-                                    "headerName1": "customadd",
-                                    "headerValue": "customvalue"
-                                }
-
-                            }
-                        ]
-                    }
-                }
-            ]
-        };
-        commons:APKError invalidPolicyParametersError = error commons:APKError( "Invalid parameters provided for policy addHeader",
-            code = 909024,
-            message = "Invalid parameters provided for policy addHeader",
-            statusCode = 406,
-            description = "Invalid parameters provided for policy addHeader"
-        );
-        API apiWithOperationRateLimits = {
-            "name": "PizzaAPI",
-            "context": "/pizzaAPI/1.0.0",
-            "version": "1.0.0",
-            "endpointConfig": {"production_endpoints": {"url": "https://localhost"}},
-            "operations": [
-                {
-                    "target": "/*",
-                    "verb": "GET",
-                    "authTypeEnabled": true,
-                    "operationRateLimit": {
-                        "requestsPerUnit": 10,
-                        "unit": "Minute"
-                    }
-                },
-                {
-                    "target": "/*",
-                    "verb": "PUT",
-                    "authTypeEnabled": true
-                },
-                {
-                    "target": "/*",
-                    "verb": "POST",
-                    "authTypeEnabled": true
-                },
-                {
-                    "target": "/*",
-                    "verb": "DELETE",
-                    "authTypeEnabled": true
-                },
-                {
-                    "target": "/*",
-                    "verb": "PATCH",
-                    "authTypeEnabled": true
-                }
-            ]
-        };
-        API apiWithAPIRateLimits = {
-            "name": "PizzaAPI",
-            "context": "/pizzaAPI/1.0.0",
-            "version": "1.0.0",
-            "endpointConfig": {"production_endpoints": {"url": "https://localhost"}},
-            "operations": [
-                {
-                    "target": "/*",
-                    "verb": "GET",
-                    "authTypeEnabled": true
-                },
-                {
-                    "target": "/*",
-                    "verb": "PUT",
-                    "authTypeEnabled": true
-                },
-                {
-                    "target": "/*",
-                    "verb": "POST",
-                    "authTypeEnabled": true
-                },
-                {
-                    "target": "/*",
-                    "verb": "DELETE",
-                    "authTypeEnabled": true
-                },
-                {
-                    "target": "/*",
-                    "verb": "PATCH",
-                    "authTypeEnabled": true
-                }
-            ],
-            "apiRateLimit": {
-                "requestsPerUnit": 10,
-                "unit": "Minute"
-            }
-        };
-        API apiWithBothRateLimits = {
-            "name": "PizzaAPIPolicies",
-            "context": "/pizzaAPIPolcies/1.0.0",
-            "version": "1.0.0",
-            "endpointConfig": {"production_endpoints": {"url": "https://localhost"}},
-            "operations": [
-                {
-                    "target": "/menu",
-                    "verb": "GET",
-                    "authTypeEnabled": true,
-                    "operationRateLimit": {
-                        "requestsPerUnit": 10,
-                        "unit": "Minute"
-                    }
-                }
-            ],
-            "apiRateLimit": {
-                "requestsPerUnit": 10,
-                "unit": "Minute"
-            }
-        };
-        commons:APKError bothRateLimitsPresentError = error commons:APKError( "Presence of both resource level and API level rate limits is not allowed",
-            code = 909026,
-            message = "Presence of both resource level and API level rate limits is not allowed",
-            statusCode = 406,
-            description = "Presence of both resource level and API level rate limits is not allowed"
-        );
-        json apiWithOperationLevelInterceptorPolicy = {
-            "name": "PizzaAPI",
-            "context": "/pizzaAPI/1.0.0",
-            "version": "1.0.0",
-            "endpointConfig": {"production_endpoints": {"url": "https://localhost"}},
-            "operations": [
-                {
-                    "target": "/*",
-                    "verb": "GET",
-                    "authTypeEnabled": true,
-                    "operationPolicies": {
-                        "request": [
-                            {
-                                "policyName": "addInterceptor",
-                                "parameters":
-                                {
-                                    "headersEnabled": true,
-                                    "bodyEnabled": false,
-                                    "trailersEnabled": false,
-                                    "contextEnabled": true,
-                                    "backendUrl": "http://interceptor-backend1.interceptor:9082"
-                                }
-                            }
-                        ],
-                        "response": [
-                            {
-                                "policyName": "addInterceptor",
-                                "parameters":
-                                {
-                                    "headersEnabled": false,
-                                    "bodyEnabled": true,
-                                    "trailersEnabled": false,
-                                    "contextEnabled": true,
-                                    "backendUrl": "http://interceptor-backend2.interceptor:9083"
-                                }
-                            }
-                        ]
-                    }
-                },
-                {
-                    "target": "/*",
-                    "verb": "PUT",
-                    "authTypeEnabled": true
-                },
-                {
-                    "target": "/*",
-                    "verb": "POST",
-                    "authTypeEnabled": true
-                },
-                {
-                    "target": "/*",
-                    "verb": "DELETE",
-                    "authTypeEnabled": true
-                },
-                {
-                    "target": "/*",
-                    "verb": "PATCH",
-                    "authTypeEnabled": true
-                }
-            ]
-        };
-        json apiWithAPILevelInterceptorPolicy = {
-            "name": "PizzaAPI",
-            "context": "/pizzaAPI/1.0.0",
-            "version": "1.0.0",
-            "endpointConfig": {"production_endpoints": {"url": "https://localhost"}},
-            "operations": [
-                {
-                    target: "/*",
-                    verb: "GET",
-                    authTypeEnabled: true
-                },
-                {
-                    target: "/*",
-                    verb: "PUT",
-                    authTypeEnabled: true
-                },
-                {
-                    target: "/*",
-                    verb: "POST",
-                    authTypeEnabled: true
-                },
-                {
-                    target: "/*",
-                    verb: "DELETE",
-                    authTypeEnabled: true
-                },
-                {
-                    target: "/*",
-                    verb: "PATCH",
-                    authTypeEnabled: true
-                }
-            ],
-            "apiPolicies": {
-                "request": [
-                    {
-                        "policyName": "addInterceptor",
-                        "parameters":
-                        {
-                            "headersEnabled": true,
-                            "bodyEnabled": false,
-                            "trailersEnabled": false,
-                            "contextEnabled": true,
-                            "backendUrl": "http://interceptor-backend1.interceptor:9082"
-                        }
-                    }
-                ],
-                "response": [
-                    {
-                        "policyName": "addInterceptor",
-                        "parameters":
-                        {
-                            "headersEnabled": false,
-                            "bodyEnabled": true,
-                            "trailersEnabled": false,
-                            "contextEnabled": true,
-                            "backendUrl": "http://interceptor-backend2.interceptor:9083"
-                        }
-                    }
-                ]
-            }
-        };
         string apiUUID = getUniqueIdForAPI(api.name, api.'version, organiztion1);
         string backenduuid = getBackendServiceUid(api, (), PRODUCTION_TYPE, organiztion1);
         string backenduuid1 = getBackendServiceUid(api, (), SANDBOX_TYPE, organiztion1);
@@ -5317,28 +5731,18 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
         model:ConfigMap configmap = check getMockConfigMap1(apiUUID, api);
         model:Httproute prodhttpRoute = getMockHttpRouteWithBackend(api, apiUUID, backenduuid, PRODUCTION_TYPE, organiztion1);
         model:Httproute sandhttpRoute = getMockHttpRouteWithBackend(api, apiUUID, backenduuid1, SANDBOX_TYPE, organiztion1);
-        model:Httproute prodhttpRouteWithOperationPolicies = getMockHttpRouteWithOperationPolicies(api, apiUUID, backenduuid, PRODUCTION_TYPE, organiztion1);
-        model:Httproute prodhttpRouteWithAPIPolicies = getMockHttpRouteWithAPIPolicies(api, apiUUID, backenduuid, PRODUCTION_TYPE, organiztion1);
-        model:Httproute prodhttpRouteWithOperationRateLimits = getMockHttpRouteWithOperationRateLimits(api, apiUUID, backenduuid, PRODUCTION_TYPE, organiztion1);
-        model:Httproute prodhttpRouteWithOperationInterceptorPolicy = getMockHttpRouteWithOperationInterceptorPolicy(api, apiUUID, backenduuid, PRODUCTION_TYPE, organiztion1);
         string locationUrl = runtimeConfiguration.baseURl + "/apis/" + k8sapiUUID;
 
-        CreatedAPI createdAPI = {body: {name: "PizzaAPI", context: "/pizzaAPI/1.0.0", 'version: "1.0.0", id: k8sapiUUID, createdTime: "2023-01-17T11:23:49Z", endpointConfig: {"production_endpoints":{"url":"https://localhost"}}, operations: [{"target":"/*","verb":"GET","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"PUT","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"POST","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"DELETE","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"PATCH","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}}]}, headers: {location:locationUrl}};
-        CreatedAPI createdSandboxOnlyAPI = {body: {name: "PizzaAPI", context: "/pizzaAPI/1.0.0", 'version: "1.0.0", id: k8sapiUUID, createdTime: "2023-01-17T11:23:49Z", endpointConfig: {"sandbox_endpoints":{"url":"https://localhost"}}, operations: [{"target":"/*","verb":"GET","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"PUT","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"POST","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"DELETE","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"PATCH","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}}]}, headers: {location:locationUrl}};
-        CreatedAPI CreatedAPIWithOperationPolicies = {body: {name: "PizzaAPI", context: "/pizzaAPI/1.0.0", 'version: "1.0.0", id: k8sapiUUID, createdTime: "2023-01-17T11:23:49Z", endpointConfig: {"production_endpoints":{"url":"https://localhost"}}, operations: [{"target":"/*","verb":"GET","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[{"policyName":"addHeader","policyVersion":"v1","parameters":{"headerName":"customadd","headerValue":"customvalue"}}],"response":[{"policyName":"removeHeader","policyVersion":"v1","parameters":{"headerName":"content-length"}}]}},{"target":"/*","verb":"PUT","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"POST","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"DELETE","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"PATCH","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}}]}, headers: {location:locationUrl}};
-        CreatedAPI CreatedAPIWithAPIPolicies = {body: {name: "PizzaAPI", context: "/pizzaAPI/1.0.0", 'version: "1.0.0", id: k8sapiUUID, createdTime: "2023-01-17T11:23:49Z", endpointConfig: {"production_endpoints":{"url":"https://localhost"}}, operations: [{"target":"/*","verb":"GET","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"PUT","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"POST","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"DELETE","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"PATCH","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}}], apiPolicies: {"request":[{"policyName":"addHeader","policyVersion":"v1","parameters":{"headerName":"customadd","headerValue":"customvalue"}}],"response":[{"policyName":"removeHeader","policyVersion":"v1","parameters":{"headerName":"content-length"}}]}}, headers: {location:locationUrl}};
-        CreatedAPI CreatedAPIWithOperationRateLimits = {body: {name: "PizzaAPI", context: "/pizzaAPI/1.0.0", 'version: "1.0.0", id: k8sapiUUID, createdTime: "2023-01-17T11:23:49Z", endpointConfig: {"production_endpoints":{"url":"https://localhost"}}, operations: [{"target":"/*","verb":"GET","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]},"operationRateLimit":{"requestsPerUnit":10,"unit":"Minute"}},{"target":"/*","verb":"PUT","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"POST","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"DELETE","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"PATCH","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}}]}, headers: {location:locationUrl}};
-        CreatedAPI CreatedAPIWithAPIRateLimits = {body: {name: "PizzaAPI", context: "/pizzaAPI/1.0.0", 'version: "1.0.0", id: k8sapiUUID, createdTime: "2023-01-17T11:23:49Z", endpointConfig: {"production_endpoints":{"url":"https://localhost"}}, operations: [{"target":"/*","verb":"GET","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"PUT","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"POST","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"DELETE","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"PATCH","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}}], apiRateLimit: {"requestsPerUnit":10,"unit":"Minute"}}, headers: {location:locationUrl}};
-        CreatedAPI CreatedAPIWithOperationLevelInterceptorPolicy = {body: {name: "PizzaAPI", context: "/pizzaAPI/1.0.0", 'version: "1.0.0", id: k8sapiUUID, createdTime: "2023-01-17T11:23:49Z", endpointConfig: {"production_endpoints":{"url":"https://localhost"}}, operations: [{"target":"/*","verb":"GET","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[{"policyName":"addInterceptor","policyVersion":"v1","parameters":{"headersEnabled":true,"bodyEnabled":false,"contextEnabled":true,"backendUrl": "http://interceptor-backend1.interceptor:9082","trailersEnabled":false}}],"response":[{"policyName":"addInterceptor","policyVersion":"v1","parameters":{"headersEnabled":false,"bodyEnabled":true,"contextEnabled":true,"backendUrl": "http://interceptor-backend2.interceptor:9083","trailersEnabled":false}}]}},{"target":"/*","verb":"PUT","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"POST","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"DELETE","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"PATCH","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}}]}, headers: {location:locationUrl}};
-        CreatedAPI CreatedAPIWithAPILevelInterceptorPolicy = {body: {name: "PizzaAPI", context: "/pizzaAPI/1.0.0", 'version: "1.0.0", id: k8sapiUUID, createdTime: "2023-01-17T11:23:49Z", endpointConfig: {"production_endpoints":{"url":"https://localhost"}}, operations: [{"target":"/*","verb":"GET","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"PUT","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"POST","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"DELETE","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}},{"target":"/*","verb":"PATCH","authTypeEnabled":true,"scopes":[],"operationPolicies":{"request":[],"response":[]}}], apiPolicies: {"request":[{"policyName":"addInterceptor","policyVersion":"v1","parameters":{"headersEnabled":true,"bodyEnabled":false,"contextEnabled":true,"backendUrl": "http://interceptor-backend1.interceptor:9082","trailersEnabled":false}}],"response":[{"policyName":"addInterceptor","policyVersion":"v1","parameters":{"headersEnabled":false,"bodyEnabled":true,"contextEnabled":true,"backendUrl": "http://interceptor-backend2.interceptor:9083","trailersEnabled":false}}]}}, headers: {location:locationUrl}};
+        CreatedAPI createdAPI = {body: {name: "PizzaAPI", context: "/pizzaAPI/1.0.0", 'version: "1.0.0", id: k8sapiUUID, createdTime: "2023-01-17T11:23:49Z", endpointConfig: {"production_endpoints": {"url": "https://localhost"}}, operations: [{"target": "/*", "verb": "GET", "authTypeEnabled": true, "scopes": [], "operationPolicies": {"request": [], "response": []}}, {"target": "/*", "verb": "PUT", "authTypeEnabled": true, "scopes": [], "operationPolicies": {"request": [], "response": []}}, {"target": "/*", "verb": "POST", "authTypeEnabled": true, "scopes": [], "operationPolicies": {"request": [], "response": []}}, {"target": "/*", "verb": "DELETE", "authTypeEnabled": true, "scopes": [], "operationPolicies": {"request": [], "response": []}}, {"target": "/*", "verb": "PATCH", "authTypeEnabled": true, "scopes": [], "operationPolicies": {"request": [], "response": []}}]}, headers: {location: locationUrl}};
+        CreatedAPI createdSandboxOnlyAPI = {body: {name: "PizzaAPI", context: "/pizzaAPI/1.0.0", 'version: "1.0.0", id: k8sapiUUID, createdTime: "2023-01-17T11:23:49Z", endpointConfig: {"sandbox_endpoints": {"url": "https://localhost"}}, operations: [{"target": "/*", "verb": "GET", "authTypeEnabled": true, "scopes": [], "operationPolicies": {"request": [], "response": []}}, {"target": "/*", "verb": "PUT", "authTypeEnabled": true, "scopes": [], "operationPolicies": {"request": [], "response": []}}, {"target": "/*", "verb": "POST", "authTypeEnabled": true, "scopes": [], "operationPolicies": {"request": [], "response": []}}, {"target": "/*", "verb": "DELETE", "authTypeEnabled": true, "scopes": [], "operationPolicies": {"request": [], "response": []}}, {"target": "/*", "verb": "PATCH", "authTypeEnabled": true, "scopes": [], "operationPolicies": {"request": [], "response": []}}]}, headers: {location: locationUrl}};
 
-        commons:APKError productionEndpointNotSpecifiedError = error commons:APKError( "Production endpoint not specified",
+        commons:APKError productionEndpointNotSpecifiedError = error commons:APKError("Production endpoint not specified",
             code = 909014,
             message = "Production endpoint not specified",
             statusCode = 406,
             description = "Production endpoint not specified"
         );
-        commons:APKError sandboxEndpointNotSpecifiedError = error commons:APKError( "Sandbox endpoint not specified",
+        commons:APKError sandboxEndpointNotSpecifiedError = error commons:APKError("Sandbox endpoint not specified",
             code = 909013,
             message = "Sandbox endpoint not specified",
             statusCode = 406,
@@ -5351,8 +5755,8 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
             message = "Internal server error",
             statusCode = 500,
             description = "Internal server error"
-        ); 
-            commons:APKError invalidAPINameError = error commons:APKError("API name PizzaAPI invalid",
+        );
+        commons:APKError invalidAPINameError = error commons:APKError("API name PizzaAPI invalid",
             code = 909016,
             message = "API name PizzaAPI invalid",
             statusCode = 406,
@@ -5635,236 +6039,6 @@ function createAPIDataProvider() returns map<[string, string, API, model:ConfigM
                 k8sapiUUID,
                 invalidAPINameError.toBalString()
             ]
-        ,
-            "13": [
-                apiUUID,
-                backenduuid,
-                check apiWithBothPolicies.cloneWithType(API),
-                configmap,
-                getMockConfigMapResponse(configmap.clone()),
-                prodhttpRoute,
-                getMockHttpRouteResponse(prodhttpRoute.clone()),
-                (),
-                (),
-                services,
-                getMockAPI(api, apiUUID, organiztion1.uuid),
-                getMockAPIErrorNameExist(),
-                getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
-                getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
-                (),
-                (),
-                (),
-                (),
-                k8sapiUUID,
-                bothPoliciesPresentError.toBalString()
-            ]
-        ,
-            "14": [
-                apiUUID,
-                backenduuid,
-                check apiWithInvalidPolicyName.cloneWithType(API),
-                configmap,
-                getMockConfigMapResponse(configmap.clone()),
-                prodhttpRoute,
-                getMockHttpRouteResponse(prodhttpRoute.clone()),
-                (),
-                (),
-                services,
-                getMockAPI(api, apiUUID, organiztion1.uuid),
-                getMockAPIErrorNameExist(),
-                getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
-                getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
-                (),
-                (),
-                (),
-                (),
-                k8sapiUUID,
-                invalidPolicyNameError.toBalString()
-            ]
-        ,
-            "15": [
-                apiUUID,
-                backenduuid,
-                check apiWithInvalidPolicyParameters.cloneWithType(API),
-                configmap,
-                getMockConfigMapResponse(configmap.clone()),
-                prodhttpRoute,
-                getMockHttpRouteResponse(prodhttpRoute.clone()),
-                (),
-                (),
-                services,
-                getMockAPI(api, apiUUID, organiztion1.uuid),
-                getMockAPIErrorNameExist(),
-                getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
-                getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
-                (),
-                (),
-                (),
-                (),
-                k8sapiUUID,
-                invalidPolicyParametersError.toBalString()
-            ]
-        ,
-            "16": [
-                apiUUID,
-                backenduuid,
-                check apiWithOperationPolicies.cloneWithType(API),
-                configmap,
-                getMockConfigMapResponse(configmap.clone()),
-                prodhttpRouteWithOperationPolicies,
-                getMockHttpRouteResponse(prodhttpRouteWithOperationPolicies.clone()),
-                (),
-                (),
-                services,
-                getMockAPI(api, apiUUID, organiztion1.uuid),
-                getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
-                getMockRuntimeAPI(check apiWithOperationPolicies.cloneWithType(API), apiUUID, organiztion1, ()),
-                getMockRuntimeAPIResponse(getMockRuntimeAPI(check apiWithOperationPolicies.cloneWithType(API), apiUUID, organiztion1, ())),
-                (),
-                (),
-                (),
-                (),
-                k8sapiUUID,
-                CreatedAPIWithOperationPolicies.toBalString()
-            ]
-        ,
-            "17": [
-                apiUUID,
-                backenduuid,
-                check apiWithAPIPolicies.cloneWithType(API),
-                configmap,
-                getMockConfigMapResponse(configmap.clone()),
-                prodhttpRouteWithAPIPolicies,
-                getMockHttpRouteResponse(prodhttpRouteWithAPIPolicies.clone()),
-                (),
-                (),
-                services,
-                getMockAPI(api, apiUUID, organiztion1.uuid),
-                getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
-                getMockRuntimeAPI(check apiWithAPIPolicies.cloneWithType(API), apiUUID, organiztion1, ()),
-                getMockRuntimeAPIResponse(getMockRuntimeAPI(check apiWithAPIPolicies.cloneWithType(API), apiUUID, organiztion1, ())),
-                (),
-                (),
-                (),
-                (),
-                k8sapiUUID,
-                CreatedAPIWithAPIPolicies.toBalString()
-            ]
-        ,
-            "18": [
-                apiUUID,
-                backenduuid,
-                apiWithBothRateLimits,
-                configmap,
-                getMockConfigMapResponse(configmap.clone()),
-                prodhttpRoute,
-                getMockHttpRouteResponse(prodhttpRoute.clone()),
-                (),
-                (),
-                services,
-                getMockAPI(api, apiUUID, organiztion1.uuid),
-                getMockAPIErrorNameExist(),
-                getMockRuntimeAPI(api, apiUUID, organiztion1, ()),
-                getMockRuntimeAPIResponse(getMockRuntimeAPI(api, apiUUID, organiztion1, ())),
-                (),
-                (),
-                (),
-                (),
-                k8sapiUUID,
-                bothRateLimitsPresentError.toBalString()
-            ]
-        ,
-            "19": [
-                apiUUID,
-                backenduuid,
-                apiWithOperationRateLimits,
-                configmap,
-                getMockConfigMapResponse(configmap.clone()),
-                prodhttpRouteWithOperationRateLimits,
-                getMockHttpRouteResponse(prodhttpRouteWithOperationRateLimits.clone()),
-                (),
-                (),
-                services,
-                getMockAPI(api, apiUUID, organiztion1.uuid),
-                getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
-                getMockRuntimeAPI(apiWithOperationRateLimits, apiUUID, organiztion1, ()),
-                getMockRuntimeAPIResponse(getMockRuntimeAPI(apiWithOperationRateLimits, apiUUID, organiztion1, ())),
-                getMockResourceRateLimitPolicy(apiWithOperationRateLimits, organiztion1, apiUUID),
-                getMockRateLimitResponse(getMockResourceRateLimitPolicy(apiWithOperationRateLimits, organiztion1, apiUUID).clone()),
-                (),
-                (),
-                k8sapiUUID,
-                CreatedAPIWithOperationRateLimits.toBalString()
-            ]
-        ,
-            "20": [
-                apiUUID,
-                backenduuid,
-                apiWithAPIRateLimits,
-                configmap,
-                getMockConfigMapResponse(configmap.clone()),
-                prodhttpRoute,
-                getMockHttpRouteResponse(prodhttpRoute.clone()),
-                (),
-                (),
-                services,
-                getMockAPI(api, apiUUID, organiztion1.uuid),
-                getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
-                getMockRuntimeAPI(apiWithAPIRateLimits, apiUUID, organiztion1, ()),
-                getMockRuntimeAPIResponse(getMockRuntimeAPI(apiWithAPIRateLimits, apiUUID, organiztion1, ())),
-                getMockAPIRateLimitPolicy(apiWithAPIRateLimits, organiztion1, apiUUID),
-                getMockRateLimitResponse(getMockAPIRateLimitPolicy(apiWithAPIRateLimits, organiztion1, apiUUID).clone()),
-                (),
-                (),
-                k8sapiUUID,
-                CreatedAPIWithAPIRateLimits.toBalString()
-            ]
-        ,
-            "21": [
-                apiUUID,
-                backenduuid,
-                check apiWithOperationLevelInterceptorPolicy.cloneWithType(API),
-                configmap,
-                getMockConfigMapResponse(configmap.clone()),
-                prodhttpRouteWithOperationInterceptorPolicy,
-                getMockHttpRouteResponse(prodhttpRouteWithOperationInterceptorPolicy.clone()),
-                (),
-                (),
-                services,
-                getMockAPI(api, apiUUID, organiztion1.uuid),
-                getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
-                getMockRuntimeAPI(check apiWithOperationLevelInterceptorPolicy.cloneWithType(API), apiUUID, organiztion1, ()),
-                getMockRuntimeAPIResponse(getMockRuntimeAPI(check apiWithOperationLevelInterceptorPolicy.cloneWithType(API), apiUUID, organiztion1, ())),
-                (),
-                (),
-                getMockResourceLevelPolicy(check apiWithOperationLevelInterceptorPolicy.cloneWithType(API), organiztion1, apiUUID),
-                getMockAPIPolicyResponse(getMockResourceLevelPolicy(check apiWithOperationLevelInterceptorPolicy.cloneWithType(API), organiztion1, apiUUID).clone()),
-                k8sapiUUID,
-                CreatedAPIWithOperationLevelInterceptorPolicy.toBalString()
-            ]
-        ,
-            "22": [
-                apiUUID,
-                backenduuid,
-                check apiWithAPILevelInterceptorPolicy.cloneWithType(API),
-                configmap,
-                getMockConfigMapResponse(configmap.clone()),
-                prodhttpRoute,
-                getMockHttpRouteResponse(prodhttpRoute.clone()),
-                (),
-                (),
-                services,
-                getMockAPI(api, apiUUID, organiztion1.uuid),
-                getMockAPIResponse(getMockAPI(api, apiUUID, organiztion1.uuid), k8sapiUUID),
-                getMockRuntimeAPI(check apiWithAPILevelInterceptorPolicy.cloneWithType(API), apiUUID, organiztion1, ()),
-                getMockRuntimeAPIResponse(getMockRuntimeAPI(check apiWithAPILevelInterceptorPolicy.cloneWithType(API), apiUUID, organiztion1, ())),
-                (),
-                (),
-                getMockAPILevelPolicy(check apiWithAPILevelInterceptorPolicy.cloneWithType(API), organiztion1, apiUUID),
-                getMockAPIPolicyResponse(getMockAPILevelPolicy(check apiWithAPILevelInterceptorPolicy.cloneWithType(API), organiztion1, apiUUID).clone()),
-                k8sapiUUID,
-                CreatedAPIWithAPILevelInterceptorPolicy.toBalString()
-            ]
         };
         return data;
     } on fail var e {
@@ -5909,12 +6083,12 @@ public function mediationPolicyByIdDataProvider() returns map<[string, commons:O
             }
         ]
     };
-    commons:APKError notfound = error commons:APKError( "6 not found",
+    commons:APKError notfound = error commons:APKError("6 not found",
         code = 909001,
         message = "6 not found",
         statusCode = 404,
         description = "6 not found"
-    ); 
+    );
     map<[string, commons:Organization, anydata]> dataset = {
         "1": ["1", organiztion1, mediationPolicy1.toBalString()],
         "2": ["6", organiztion1, notfound.toBalString()]

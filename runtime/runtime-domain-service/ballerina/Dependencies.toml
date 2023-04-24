@@ -313,7 +313,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "task"
-version = "2.3.1"
+version = "2.3.2"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "time"}
@@ -413,6 +413,7 @@ dependencies = [
 	{org = "ballerina", name = "jwt"},
 	{org = "ballerina", name = "lang.value"},
 	{org = "ballerina", name = "log"},
+	{org = "ballerina", name = "os"},
 	{org = "ballerina", name = "sql"},
 	{org = "ballerinax", name = "postgresql"}
 ]
