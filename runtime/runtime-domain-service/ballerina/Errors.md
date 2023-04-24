@@ -36,7 +36,7 @@ These are the runtime domain service errors and their respective error codes.
 | 909029  | 500 | Error while retrieving Mediation policy |
 | 909030  | 400 | Certificate is expired |
 | 909031  | 500 | Error while adding certificate |
-| 909031  | 500 | Host/Certificte is empty in payload |
+| 909032  | 500 | Host/Certificte is empty in payload |
 | 909033  | 500 | Error while retrieving endpoint certificate request |
 | 909034  | 404 | Certificate **certificateId** not found |
 | 909035  | 500 | Error while deleting endpoint certificate |
@@ -53,3 +53,5 @@ These are the runtime domain service errors and their respective error codes.
 | 909046  | 409 | New version **newVersion** already exist |
 | 909047  | 404 | **serviceId** service does not exist |
 | 909048  | 406 | API Type change not supported from update |
+| 909049  | 406 | Context change not supported from update |
+| 909050  | 406 | Version change not supported from update |
