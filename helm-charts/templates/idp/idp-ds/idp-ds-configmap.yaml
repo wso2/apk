@@ -30,7 +30,6 @@ data:
     port = {{ .Values.idp.database.port }}
     databaseName = "{{ .Values.idp.database.databaseName }}"
     username = "{{ .Values.idp.database.username }}"
-    password = "{{ .Values.idp.database.password }}"
     validationTimeout = {{ .Values.idp.database.validationTimeout }}
     testQuery = "{{ .Values.idp.database.validationQuery }}"
     driver = "{{ .Values.idp.database.driver }}"

@@ -21,8 +21,8 @@ import ballerina/uuid;
 import wso2/apk_common_lib as commons;
 
 isolated function generateToken(JWTTokenInfo jwtInfo) returns string|error {
-        TokenIssuerConfiguration & readonly issuerConfiguration = apkConfig.tokenIssuerConfiguration;
-        commons:KeyStore & readonly signingCert = apkConfig.keyStores.signing;
+        TokenIssuerConfiguration & readonly issuerConfiguration = issuerConfig.cloneReadOnly();
+        commons:KeyStore & readonly signingCert = keyStores.signing;
         string jwtid = uuid:createType1AsString();
         jwt:IssuerConfig issuerConfig = {
             issuer: issuerConfiguration.issuer,

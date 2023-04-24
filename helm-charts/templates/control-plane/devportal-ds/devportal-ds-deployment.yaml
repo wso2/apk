@@ -84,6 +84,17 @@ spec:
             {{- else }}
               subPath: tls.crt
             {{- end }}
+          env:
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  {{ if and .Values.wso2.apk.cp.database .Values.wso2.apk.cp.database.secretName }}
+                  name: "{{ .Values.wso2.apk.cp.database.secretName}}"
+                  key: "{{ .Values.wso2.apk.cp.database.secretKey}}"
+                  {{ else }}
+                  name: "apk-db-secret"
+                  key: "DB_PASSWORD"
+                  {{ end }}
       {{- if and .Values.wso2.subscription .Values.wso2.subscription.imagePullSecrets}}
       imagePullSecrets:
         - name: {{ .Values.wso2.subscription.imagePullSecrets }}

@@ -18,42 +18,10 @@
 import wso2/apk_common_lib as commons;
 
 type ThrottlingConfiguration record {
-    BlockCondition blockCondition = {
-        enabled: true
-    };
     boolean enableUnlimitedTier = true;
-    boolean enableHeaderConditions = false;
-    boolean enableJWTClaimConditions = false;
-    boolean enableQueryParamConditions = false;
-    boolean enablePolicyDeployment = true;
 };
 
-type BlockCondition record {
-    boolean enabled = true;
-};
 
-type DatasourceConfiguration record {
-    string name = "jdbc/apkdb";
-    string description;
-    string url;
-    string host;
-    int port;
-    string databaseName;
-    string username;
-    string password;
-    int maxPoolSize = 50;
-    int minIdle = 20;
-    int maxLifeTime = 60000;
-    int validationTimeout;
-    boolean autoCommit = true;
-    string testQuery;
-    string driver;
-};
-
-type APKConfiguration record {
-    ThrottlingConfiguration throttlingConfiguration;
-    DatasourceConfiguration datasourceConfiguration;
-};
 
 public type KeyStores record {|
     commons:KeyStore tls;

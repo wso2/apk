@@ -22,7 +22,7 @@ import ballerina/sql;
 import ballerina/http;
 import wso2/apk_common_lib as commons;
 
-configurable DatasourceConfiguration datasourceConfiguration = ?;
+configurable commons:DatasourceConfiguration datasourceConfiguration = ?;
 final postgresql:Client|sql:Error dbClient;
 configurable ThrottlingConfiguration throttleConfig = ?;
 configurable KeyStores keyStores = {

@@ -22,40 +22,32 @@ import ballerina/sql;
 import ballerina/http;
 import wso2/apk_common_lib as commons;
 
-configurable DatasourceConfiguration datasourceConfiguration = ?;
+configurable commons:DatasourceConfiguration datasourceConfiguration = ?;
 configurable ThrottlingConfiguration throttleConfig = ?;
-configurable TokenIssuerConfiguration issuerConfig = ?;
-configurable KeyStores keyStores = {
+configurable TokenIssuerConfiguration & readonly issuerConfig = ?;
+configurable KeyStores & readonly keyStores = {
     tls: {certFilePath: "/home/wso2apk/devportal/security/devportal.pem", keyFilePath: "/home/wso2apk/devportal/security/devportal.key"},
     signing: {keyFilePath: "/home/wso2apk/devportal/security/mg.pem"}
 };
 configurable SDKConfiguration sdkConfig = ?;
 
 final postgresql:Client|sql:Error dbClient;
-final APKConfiguration & readonly apkConfig;
 configurable int DEVPORTAL_PORT = 9443;
-
-configurable commons:IDPConfiguration idpConfiguration = {
+configurable commons:IDPConfiguration & readonly idpConfiguration = {
     publicKey: {keyFilePath: "/home/wso2apk/devportal/security/mg.pem"}
 };
 commons:DBBasedOrgResolver organizationResolver = new (datasourceConfiguration);
 commons:JWTValidationInterceptor jwtValidationInterceptor = new (idpConfiguration, organizationResolver);
 commons:RequestErrorInterceptor requestErrorInterceptor = new;
-listener http:Listener ep0 = new (DEVPORTAL_PORT,secureSocket = {
+listener http:Listener ep0 = new (DEVPORTAL_PORT, secureSocket = {
     'key: {
         certFile: <string>keyStores.tls.certFilePath,
         keyFile: <string>keyStores.tls.keyFilePath
     }
-},interceptors = [jwtValidationInterceptor, requestErrorInterceptor]);
+}, interceptors = [jwtValidationInterceptor, requestErrorInterceptor]);
 
 function init() {
     log:printInfo("Starting APK Devportal Domain Service...");
-    apkConfig = {
-        throttlingConfiguration: throttleConfig,
-        datasourceConfiguration: datasourceConfiguration,
-        tokenIssuerConfiguration: issuerConfig,
-        keyStores: keyStores
-    };
     dbClient =
         new (host = datasourceConfiguration.host,
     username = datasourceConfiguration.username,
