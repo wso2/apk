@@ -259,7 +259,7 @@ spec:
             {{ end }}
           livenessProbe:
             exec:
-              command: [ "sh", "router_check_health.sh" ]
+              command: [ "sh", "router_check_health.sh", "health" ]
             initialDelaySeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.periodSeconds }}
             failureThreshold: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.failureThreshold }}

@@ -20,7 +20,7 @@
 ROUTER_PORT="${ROUTER_PORT:-9095}"
 status_code=$(curl --write-out %{http_code} --silent --output /dev/null https://localhost:${ROUTER_PORT}/health -k -v)
 
-if [[ "$1" -eq "ready" ]] ; then
+if [[ "$1" = "ready" ]] ; then
   echo "checking ready state"
   status_code=$(curl --write-out %{http_code} --silent --output /dev/null https://localhost:${ROUTER_PORT}/ready -k -v)
 fi
