@@ -17,13 +17,14 @@
 //
 
 import ballerina/test;
+import wso2/apk_common_lib as commons;
 
 @test:Config {}
 function getAllCategoryTest() {
-    APICategory[]|APKError updateAPI = getAPICategoriesDAO("carbon.super");
+    APICategory[]|commons:APKError updateAPI = getAPICategoriesDAO("carbon.super");
         if updateAPI is APICategory[] {
             test:assertTrue(true, "Successfully retrive all API categories");
-        } else if updateAPI is  APKError {
+        } else if updateAPI is  commons:APKError {
             test:assertFail("Error occured while retrive API categories");
     }
 }

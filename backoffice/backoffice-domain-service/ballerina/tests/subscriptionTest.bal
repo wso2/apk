@@ -17,14 +17,14 @@
 //
 
 import ballerina/test;
-
+import wso2/apk_common_lib as commons;
 
 @test:Config {dependsOn: [createAPITest]}
 function getAllSubcriptions() {
-    SubscriptionList|APKError getSub = getSubscriptions("01ed75e2-b30b-18c8-wwf2-25da7edd2231");
+    SubscriptionList|commons:APKError getSub = getSubscriptions("01ed75e2-b30b-18c8-wwf2-25da7edd2231");
         if getSub is SubscriptionList {
             test:assertTrue(true, "Successfully retrive all subscriptions");
-        } else if getSub is  APKError {
+        } else if getSub is  commons:APKError {
             test:assertFail("Error occured while retrive subscriptions");
     }
 }

@@ -20,6 +20,8 @@ import ballerina/sql;
 import ballerinax/postgresql;
 import ballerina/time;
 
+import wso2/apk_common_lib as commons;
+
 # Add API details to the database 
 #
 # + apiBody - API Parameter
@@ -85,7 +87,7 @@ isolated function db_AddDefinition(APIBody apiBody, string organization) returns
 # + apiId - API Id parameter
 # + organization - organization
 # + return - API | error
-isolated function db_getAPI_internal(string apiId, string organization) returns API | APKError| error {
+isolated function db_getAPI_internal(string apiId, string organization) returns API | commons:APKError| error {
     postgresql:Client | error db_Client  = getConnection();
     if db_Client is error {
         return error("Issue while conecting to databse");

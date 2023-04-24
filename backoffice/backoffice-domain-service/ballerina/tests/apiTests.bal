@@ -18,14 +18,15 @@
 
 import ballerina/log;
 import ballerina/test;
+import wso2/apk_common_lib as commons;
 
 @test:Config {dependsOn: [createAPITest]}
 function getAPITest() {
-    APIList|APKError getAPI = getAPIList(25,0,"content:pizza","carbon.super");
+    APIList|commons:APKError getAPI = getAPIList(25,0,"content:pizza","carbon.super");
     if getAPI is APIList {
         test:assertTrue(true, "Successfully retrieve APIs");
         log:printInfo(getAPI.toString());
-    } else if getAPI is  APKError {
+    } else if getAPI is  commons:APKError {
         log:printError(getAPI.toString());
         test:assertFail("Error occured while creating API");
     }
@@ -33,11 +34,11 @@ function getAPITest() {
 
 @test:Config {dependsOn: [createAPITest]}
 function getAPIByIdTest() {
-    API|APKError getAPIById = getAPI("01ed75e2-b30b-18c8-wwf2-25da7edd2231");
+    API|commons:APKError getAPIById = getAPI("01ed75e2-b30b-18c8-wwf2-25da7edd2231");
     if getAPIById is API {
         test:assertTrue(true, "Successfully retrieve API");
         log:printInfo(getAPIById.toString());
-    } else if getAPIById is  APKError {
+    } else if getAPIById is  commons:APKError {
         log:printError(getAPIById.toString());
         test:assertFail("Error occured while creating API");
     }
@@ -45,11 +46,11 @@ function getAPIByIdTest() {
 
 @test:Config {dependsOn: [createAPITest]}
 function getAPIDefinitionTest() {
-    APIDefinition|APKError getAPIDef = getAPIDefinition("01ed75e2-b30b-18c8-wwf2-25da7edd2231");
+    APIDefinition|commons:APKError getAPIDef = getAPIDefinition("01ed75e2-b30b-18c8-wwf2-25da7edd2231");
     if getAPIDef is API {
         test:assertTrue(true, "Successfully retrieve API Definition");
         log:printInfo(getAPIDef.toString());
-    } else if getAPIDef is  APKError {
+    } else if getAPIDef is  commons:APKError {
         log:printError(getAPIDef.toString());
         test:assertFail("Error occured while retrieve API Definition");
     }
@@ -70,11 +71,11 @@ function updateAPITest() {
                 "mysub1","mysub2"
             ]
         };
-    API|APKError updateAPICr = updateAPI("01ed75e2-b30b-18c8-wwf2-25da7edd2231", payload, "carbon.super");
+    API|commons:APKError updateAPICr = updateAPI("01ed75e2-b30b-18c8-wwf2-25da7edd2231", payload, "carbon.super");
     if updateAPICr is API {
         test:assertTrue(true, "Successfully Update API");
         log:printInfo(updateAPICr.toString());
-    } else if updateAPICr is  APKError {
+    } else if updateAPICr is  commons:APKError {
         log:printError(updateAPICr.toString());
         test:assertFail("Error occured while updating API");
     }
