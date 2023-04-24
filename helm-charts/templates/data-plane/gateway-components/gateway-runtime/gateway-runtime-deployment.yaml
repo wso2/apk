@@ -263,6 +263,18 @@ spec:
             initialDelaySeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.periodSeconds }}
             failureThreshold: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.failureThreshold }}
+          readinessProbe:
+            exec:
+              command: [ "sh", "router_check_health.sh", "ready" ]
+            initialDelaySeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.readinessProbe.periodSeconds }}
+            failureThreshold: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.readinessProbe.failureThreshold }}
+          startupProbe:
+            exec:
+              command: [ "sh", "router_check_health.sh", "ready" ]
+            initialDelaySeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.readinessProbe.periodSeconds }}
+            failureThreshold: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.readinessProbe.failureThreshold }}
       {{- if and .Values.wso2.subscription .Values.wso2.subscription.imagePullSecrets}}
       imagePullSecrets:
         - name: {{ .Values.wso2.subscription.imagePullSecrets }}

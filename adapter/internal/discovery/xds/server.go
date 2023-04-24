@@ -358,6 +358,12 @@ func updateXdsCacheOnAPIChange(oldLabels []string, newLabels []string) bool {
 	return revisionStatus
 }
 
+// SetReady Method to set the status after the last api is fected and updated in router.
+func SetReady(isReady bool) {
+	logger.LoggerXds.Infof("Finished deploying startup APIs. Deploying the readiness endpoint...")
+	isReady = true
+}
+
 // GenerateEnvoyResoucesForGateway generates envoy resources for a given gateway
 // This method will list out all APIs mapped to the label. and generate envoy resources for all of these APIs.
 func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,

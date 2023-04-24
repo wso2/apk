@@ -154,7 +154,7 @@ func (r *API) validateAPIContextExists() *field.Error {
 	ctx := context.Background()
 	conf := config.ReadConfigs()
 	apiList := &APIList{}
-	listOptions := RetrieveNamespaceListOptions(conf.Adapter.Operator.Namespaces)
+	listOptions := retrieveNamespaceListOptions(conf.Adapter.Operator.Namespaces)
 	if err := c.List(ctx, apiList, &listOptions); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2605, err.Error()))
 		return field.InternalError(field.NewPath("spec").Child("context"),
@@ -173,8 +173,8 @@ func (r *API) validateAPIContextExists() *field.Error {
 	return nil
 }
 
-// RetrieveNamespaceListOptions retrieve namespace list options for the given namespaces
-func RetrieveNamespaceListOptions(namespaces []string) client.ListOptions {
+// retrieveNamespaceListOptions retrieve namespace list options for the given namespaces
+func retrieveNamespaceListOptions(namespaces []string) client.ListOptions {
 	var listOptions client.ListOptions
 	if namespaces == nil {
 		listOptions = client.ListOptions{}
