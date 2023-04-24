@@ -28,7 +28,7 @@ listener http:Listener ep0 = new (BACKOFFICE_PORT, secureSocket = {
         certFile: <string>keyStores.tls.certFilePath,
         keyFile: <string>keyStores.tls.keyFilePath
     }
-}, interceptors = [jwtValidationInterceptor, requestErrorInterceptor]);
+}, interceptors = [jwtValidationInterceptor, requestErrorInterceptor, responseErrorInterceptor]);
 
 @http:ServiceConfig {
     cors: {

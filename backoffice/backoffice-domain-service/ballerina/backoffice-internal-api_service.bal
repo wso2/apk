@@ -7,7 +7,7 @@ listener http:Listener ep1 = new (BACKOFFICE_PORT_INT, secureSocket = {
         certFile: <string>keyStores.tls.certFilePath,
         keyFile: <string>keyStores.tls.keyFilePath
     }
-}, interceptors = [requestErrorInterceptor]);
+}, interceptors = [requestErrorInterceptor, responseErrorInterceptor]);
 
 service /api/am/backoffice/internal on ep1 {
     isolated resource function post apis(@http:Payload json payload) returns CreatedAPI|error {

@@ -34,6 +34,7 @@ configurable KeyStores keyStores = {
 commons:DBBasedOrgResolver organizationResolver = new (datasourceConfiguration);
 commons:JWTValidationInterceptor jwtValidationInterceptor = new (idpConfiguration, organizationResolver);
 commons:RequestErrorInterceptor requestErrorInterceptor = new;
+commons:ResponseErrorInterceptor responseErrorInterceptor = new;
 
 function init() {
     log:printInfo("Starting APK Backoffice Domain Service...");

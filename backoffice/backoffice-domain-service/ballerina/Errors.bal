@@ -21,15 +21,6 @@
 
 import wso2/apk_common_lib as commons;
 
-public isolated function e909600(error e) returns commons:APKError {
-    return error commons:APKError( e.message(), e,
-        code = 909600,
-        message = e.message(),
-        statusCode = 500,
-        description = e.message()
-    ); 
-}
-
 public isolated function e909601(error e) returns commons:APKError {
     return error commons:APKError( "Error while retrieving connection", e,
         code = 909601,
