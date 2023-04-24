@@ -21,7 +21,7 @@ import ballerinax/postgresql;
 import ballerina/sql;
 import wso2/apk_common_lib as commons;
 
-configurable DatasourceConfiguration datasourceConfiguration = ?;
+configurable commons:DatasourceConfiguration datasourceConfiguration = ?;
 final postgresql:Client|sql:Error dbClient;
 
 configurable commons:IDPConfiguration idpConfiguration = {

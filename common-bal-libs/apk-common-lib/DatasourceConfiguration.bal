@@ -1,3 +1,4 @@
+import ballerina/os;
 public type DatasourceConfiguration record {
     string name = "jdbc/apkdb";
     string description;
@@ -6,7 +7,7 @@ public type DatasourceConfiguration record {
     int port;
     string databaseName;
     string username;
-    string password;
+    string password = os:getEnv("DB_PASSWORD");
     int maxPoolSize = 50;
     int minIdle = 20;
     int maxLifeTime = 60000;

@@ -1,3 +1,4 @@
+import ballerina/os;
 //
 // Copyright (c) 2023, WSO2 LLC. (http://www.wso2.com).
 //
@@ -71,7 +72,7 @@ public type DatasourceConfiguration record {
     string description;
     string url;
     string username;
-    string password;
+    string password = os:getEnv("DB_PASSWORD");
     string host;
     int port;
     string databaseName;

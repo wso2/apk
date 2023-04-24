@@ -55,7 +55,8 @@ wso2:
         port: 5432
         databaseName: "WSO2AM_DB"
         username: "wso2carbon"
-        password: "wso2carbon"
+        secretName: "apk-db-secret"
+        secretKey: "DB_PASSWORD"
         validationQuery: "SELECT 1"
         validationTimeout: 250
       devportal:
@@ -78,7 +79,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/devportal-domain-service:0.0.1-m8
+          image: wso2/devportal-domain-service:latest
       admin:
         deployment:
           resources:
@@ -99,7 +100,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/admin-domain-service:0.0.1-m8
+          image: wso2/admin-domain-service:latest
       backoffice:
         deployment:
           resources:
@@ -120,7 +121,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/backoffice-domain-service:0.0.1-m8
+          image: wso2/backoffice-domain-service:latest
       managementServer:
         deployment:
           resources:
@@ -194,7 +195,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/runtime-domain-service:0.0.1-m8
+          image: wso2/runtime-domain-service:latest
           # configs:
           #   authrorization: true
           #   baseUrl: "https://api.am.wso2.com:9095/api/am/runtime"
@@ -307,7 +308,7 @@ wso2:
               failureThreshold: 5
             strategy: Recreate
             imagePullPolicy: Always
-            image: wso2/enforcer:0.0.1-m8
+            image: wso2/enforcer:latest
             security:
               sslHostname: "enforcer"
             # configs:
@@ -338,7 +339,8 @@ idp:
     port: 5432
     databaseName: "WSO2AM_DB"
     username: "wso2carbon"
-    password: "wso2carbon"
+    secretName: "apk-db-secret"
+    secretKey: "DB_PASSWORD"
     validationQuery: "SELECT 1"
     validationTimeout: 250
   idpds:
@@ -374,7 +376,7 @@ idp:
       strategy: Recreate
       replicas: 1
       imagePullPolicy: Always
-      image: wso2/idp-domain-service:0.0.1-m8
+      image: wso2/idp-domain-service:latest
   idpui:
     appName: "idp-ui"
     deployment:

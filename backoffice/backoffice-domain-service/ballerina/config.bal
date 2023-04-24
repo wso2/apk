@@ -17,27 +17,7 @@
 //
 import wso2/apk_common_lib as commons;
 
-type DatasourceConfiguration record {
-    string name = "jdbc/apkdb";
-    string description;
-    string url;
-    string username;
-    string password;
-    string host;
-    int port;
-    string databaseName;
-    int maxPoolSize = 50;
-    int minIdle = 20;
-    int maxLifeTime = 60000;
-    int validationTimeout;
-    boolean autoCommit = true;
-    string testQuery;
-    string driver;
-};
 
-type APKConfiguration record {
-    DatasourceConfiguration datasourceConfiguration;
-};
 public type KeyStores record{|
         commons:KeyStore tls;
 |};

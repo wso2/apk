@@ -30,7 +30,6 @@ data:
     port = {{ .Values.wso2.apk.cp.database.port }}
     databaseName = "{{ .Values.wso2.apk.cp.database.databaseName }}"
     username = "{{ .Values.wso2.apk.cp.database.username }}"
-    password = "{{ .Values.wso2.apk.cp.database.password }}"
     validationTimeout = {{ .Values.wso2.apk.cp.database.validationTimeout }}
     testQuery = "{{ .Values.wso2.apk.cp.database.validationQuery }}"
     driver = "{{ .Values.wso2.apk.cp.database.driver }}"
