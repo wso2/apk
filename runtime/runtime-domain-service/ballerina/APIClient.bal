@@ -55,6 +55,7 @@ public class APIClient {
                         string?|lang:Exception convertedYaml = yamlUtil.fromJsonStringToYaml(definition.toString());
                         if convertedYaml is string {
                             response.setTextPayload(convertedYaml);
+                            response.setHeader("Content-Type", APPLICATION_YAML_MEDIA_TYPE);
                             response.statusCode = 200;
                             return response;
                         } else if convertedYaml is lang:Exception {
