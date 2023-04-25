@@ -14,15 +14,10 @@
 # limitations under the License.
 # -----------------------------------------------------------------------
 {{- if and .Values.gatewaySystem .Values.gatewaySystem.enabled }}
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: gateway-system
----
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
-  name: gateway-api-admission
+  name: {{ template "apk-helm.resource.prefix" . }}-gateway-api-admission
 webhooks:
   - name: validate.gateway.networking.k8s.io
     matchPolicy: Equivalent
@@ -38,8 +33,13 @@ webhooks:
     clientConfig:
       service:
         name: gateway-api-admission-server
-        namespace: gateway-system
+        namespace: {{ .Release.Namespace }}
         path: "/validate"
+    namespaceSelector:
+      matchExpressions:
+      - key: metadata.namespace
+        operator: In
+        values: ["{{.Release.Namespace}}"]
 ---
 apiVersion: v1
 kind: Service
@@ -47,7 +47,7 @@ metadata:
   labels:
     name: gateway-api-webhook-server
   name: gateway-api-admission-server
-  namespace: gateway-system
+  namespace: {{ .Release.Namespace }}
 spec:
   type: ClusterIP
   ports:
@@ -61,7 +61,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: gateway-api-admission-server
-  namespace: gateway-system
+  namespace: {{ .Release.Namespace }}
   labels:
     name: gateway-api-admission-server
 spec:
@@ -106,14 +106,17 @@ spec:
           secret:
             secretName: gateway-api-admission
 ---
+{{ if and .Values.gatewaySystem.enableServiceAccountCreation}}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: gateway-api-admission
   labels:
     name: gateway-api-webhook
-  namespace: gateway-system
+  namespace: {{ .Release.Namespace }}
+{{ end }}
 ---
+{{ if and .Values.gatewaySystem .Values.gatewaySystem.enableClusterRoleCreation}}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -128,6 +131,7 @@ rules:
     verbs:
       - get
       - update
+{{ end }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -136,7 +140,6 @@ metadata:
   annotations:
   labels:
     name: gateway-api-webhook
-  namespace: gateway-system
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -144,7 +147,7 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: gateway-api-admission
-    namespace: gateway-system
+    namespace: {{ .Release.Namespace }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -153,7 +156,7 @@ metadata:
   annotations:
   labels:
     name: gateway-api-webhook
-  namespace: gateway-system
+  namespace: {{ .Release.Namespace }}
 rules:
   - apiGroups:
       - ''
@@ -170,7 +173,7 @@ metadata:
   annotations:
   labels:
     name: gateway-api-webhook
-  namespace: gateway-system
+  namespace: {{ .Release.Namespace }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -178,7 +181,7 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: gateway-api-admission
-    namespace: gateway-system
+    namespace: {{ .Release.Namespace }}
 ---
 apiVersion: batch/v1
 kind: Job
@@ -187,7 +190,7 @@ metadata:
   annotations:
   labels:
     name: gateway-api-webhook
-  namespace: gateway-system
+  namespace: {{ .Release.Namespace }}
 spec:
   template:
     metadata:
@@ -197,12 +200,12 @@ spec:
     spec:
       containers:
         - name: create
-          image: k8s.gcr.io/ingress-nginx/kube-webhook-certgen:v1.1.1
+          image: registry.k8s.io/ingress-nginx/kube-webhook-certgen:v1.1.1
           imagePullPolicy: IfNotPresent
           args:
             - create
-            - --host=gateway-api-admission-server,gateway-api-admission-server.gateway-system.svc
-            - --namespace=gateway-system
+            - --host=gateway-api-admission-server,gateway-api-admission-server.{{.Release.Namespace}}.svc
+            - --namespace={{.Release.Namespace}}
             - --secret-name=gateway-api-admission
           env:
             - name: POD_NAMESPACE
@@ -210,7 +213,11 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
       restartPolicy: OnFailure
+      {{ if and .Values.gatewaySystem .Values.gatewaySystem.serviceAccountName}}
+      serviceAccountName: {{ .Values.gatewaySystem.serviceAccountName}}
+      {{ else }}
       serviceAccountName: gateway-api-admission
+      {{ end }}
       securityContext:
         runAsNonRoot: true
         runAsUser: 2000
@@ -221,7 +228,7 @@ metadata:
   name: gateway-api-admission-patch
   labels:
     name: gateway-api-webhook
-  namespace: gateway-system
+  namespace: {{ .Release.Namespace }}
 spec:
   template:
     metadata:
@@ -231,12 +238,12 @@ spec:
     spec:
       containers:
         - name: patch
-          image: k8s.gcr.io/ingress-nginx/kube-webhook-certgen:v1.1.1
+          image: registry.k8s.io/ingress-nginx/kube-webhook-certgen:v1.1.1
           imagePullPolicy: IfNotPresent
           args:
             - patch
-            - --webhook-name=gateway-api-admission
-            - --namespace=gateway-system
+            - --webhook-name={{ template "apk-helm.resource.prefix" . }}-gateway-api-admission
+            - --namespace={{.Release.Namespace}}
             - --patch-mutating=false
             - --patch-validating=true
             - --secret-name=gateway-api-admission
@@ -247,7 +254,11 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
       restartPolicy: OnFailure
+      {{ if and .Values.gatewaySystem .Values.gatewaySystem.serviceAccountName}}
+      serviceAccountName: {{ .Values.gatewaySystem.serviceAccountName}}
+      {{ else }}
       serviceAccountName: gateway-api-admission
+      {{ end }}
       securityContext:
         runAsNonRoot: true
         runAsUser: 2000
