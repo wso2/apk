@@ -1,9 +1,8 @@
 {
 	"info": {
-		"_postman_id": "fd28a261-61cc-43a4-b45a-2651fbe0c967",
+		"_postman_id": "6408ddfd-99dd-4ec1-b18e-79fa360a5657",
 		"name": "Test API Rate Limiting",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "12641717"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
@@ -367,8 +366,8 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Status code is 201\", function () {",
-							"  pm.response.to.have.status(201);",
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
 							"});",
 							"",
 							"pm.test(\"Assert token generation response\", () => {",
@@ -439,20 +438,34 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"var currentCount = pm.environment.get('requestsPerUnit')",
-							"if (currentCount > 0) {",
+							"",
+							"var currentCount = pm.variables.get('requestCount')",
+							"if (currentCount == undefined){",
+							"currentCount = 1;",
+							"}",
+							"console.log(currentCount);",
+							"if (currentCount <= 5) {",
 							"    pm.test(\"Check API response and status code is 200\", function () {",
 							"        pm.response.to.have.status(200);",
 							"    });",
-							"    currentCount = currentCount - 1;",
-							"    pm.environment.set(\"requestsPerUnit\", currentCount);",
+							"    currentCount = currentCount + 1;",
+							"    pm.variables.set(\"requestCount\", currentCount);",
 							"    postman.setNextRequest(\"OperationRateLimit Call Rate Limit Applied Resource Using APIKey\");",
 							"} else {",
 							"    pm.test(\"Check API response and status code is 429\", function () {",
 							"        pm.response.to.have.status(429);",
 							"    });",
-							"    pm.environment.set('requestsPerUnit', 5)",
+							"    pm.variables.set('requestCount', 5)",
 							"}"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
 						],
 						"type": "text/javascript"
 					}
@@ -501,19 +514,24 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"var currentCount = pm.environment.get('requestsPerUnit')",
-							"if (currentCount > 0) {",
+							"",
+							"var currentCount = pm.variables.get('requestCount1')",
+							"if (currentCount == undefined){",
+							"currentCount = 1;",
+							"}",
+							"console.log(currentCount);",
+							"if (currentCount <= 5) {",
 							"    pm.test(\"Check API response and status code is 200\", function () {",
 							"        pm.response.to.have.status(200);",
 							"    });",
-							"    currentCount = currentCount - 1;",
-							"    pm.environment.set(\"requestsPerUnit\", currentCount);",
+							"    currentCount = currentCount + 1;",
+							"    pm.variables.set(\"requestCount1\", currentCount);",
 							"    postman.setNextRequest(\"OperationRateLimit Call Rate Limit Not Applied Resource using APIKey\");",
 							"} else {",
 							"    pm.test(\"Check API response and status code is 200\", function () {",
 							"        pm.response.to.have.status(200);",
 							"    });",
-							"    pm.environment.set('requestsPerUnit', 5)",
+							"    pm.variables.set('requestCount1', 5)",
 							"}"
 						],
 						"type": "text/javascript"
@@ -587,8 +605,13 @@
 							"        pm.expect(operations.operationRateLimit.unit).equals(\"Minute\");",
 							"    }",
 							"})",
-							"setTimeout(function(){}, 1000);",
-							"pm.environment.set(\"requestsPerUnit\", 10);"
+							"const now = new Date();",
+							"let seconds = now.getSeconds();",
+							"if (seconds >0){",
+							"setTimeout(function() {",
+							"}, (120-seconds) * 1000); ",
+							"}",
+							""
 						],
 						"type": "text/javascript"
 					}
@@ -645,18 +668,24 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"var currentCount = pm.environment.get('requestsPerUnit')",
-							"if (currentCount > 0) {",
+							"",
+							"var currentCount = pm.variables.get('requestCount3')",
+							"if (currentCount == undefined){",
+							"currentCount = 1;",
+							"}",
+							"console.log(currentCount);",
+							"if (currentCount <= 10) {",
 							"    pm.test(\"Check API response and status code is 200\", function () {",
 							"        pm.response.to.have.status(200);",
 							"    });",
-							"    currentCount = currentCount - 1;",
-							"    pm.environment.set(\"requestsPerUnit\", currentCount);",
+							"    currentCount = currentCount + 1;",
+							"    pm.variables.set(\"requestCount3\", currentCount);",
 							"    postman.setNextRequest(\"OperationRateLimit Call Updated Rate Limit Applied Resource Using APIKey\");",
 							"} else {",
 							"    pm.test(\"Check API response and status code is 429\", function () {",
 							"        pm.response.to.have.status(429);",
 							"    });",
+							"    pm.variables.set('requestCount3', 5)",
 							"}"
 						],
 						"type": "text/javascript"
@@ -700,6 +729,82 @@
 			"response": []
 		},
 		{
+			"name": "OperationRateLimit Call Rate Limit Applied Resource Using APIKey get",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"",
+							"var currentCount = pm.variables.get('requestCount4')",
+							"if (currentCount == undefined){",
+							"currentCount = 1;",
+							"}",
+							"console.log(currentCount);",
+							"if (currentCount <= 5) {",
+							"    pm.test(\"Check API response and status code is 200\", function () {",
+							"        pm.response.to.have.status(200);",
+							"    });",
+							"    currentCount = currentCount + 1;",
+							"    pm.variables.set(\"requestCount4\", currentCount);",
+							"    postman.setNextRequest(\"OperationRateLimit Call Rate Limit Applied Resource Using APIKey get\");",
+							"} else {",
+							"    pm.test(\"Check API response and status code is 429\", function () {",
+							"        pm.response.to.have.status(429);",
+							"    });",
+							"    pm.variables.set('requestCount4', 5)",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "HOST",
+						"value": "a3b58ccf-6ecc-4557-b5bb-0a35cce38256.gw.wso2.com",
+						"type": "text"
+					},
+					{
+						"key": "Internal-Key",
+						"value": "{{APITestKey}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURl}}{{rateLimitAPIContext}}/get",
+					"host": [
+						"{{gatewayBaseURl}}{{rateLimitAPIContext}}"
+					],
+					"path": [
+						"get"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "OperationRateLimit Copy API",
 			"event": [
 				{
@@ -719,7 +824,7 @@
 							"    _.each(responseJson.operations, (operations) => {",
 							"        if(operations.target === \"/get\") {",
 							"            //verifying rate limit content",
-							"            pm.expect(operations.operationRateLimit.requestsPerUnit).equals(10);",
+							"            pm.expect(operations.operationRateLimit.requestsPerUnit).equals(5);",
 							"            pm.expect(operations.operationRateLimit.unit).equals(\"Minute\");",
 							"        }",
 							"    })",
@@ -863,18 +968,161 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"var currentCount = pm.environment.get('requestsPerUnit')",
-							"if (currentCount > 0) {",
+							"",
+							"var currentCount = pm.variables.get('requestCount5')",
+							"if (currentCount == undefined){",
+							"currentCount = 1;",
+							"}",
+							"console.log(currentCount);",
+							"if (currentCount <= 5) {",
 							"    pm.test(\"Check API response and status code is 200\", function () {",
 							"        pm.response.to.have.status(200);",
 							"    });",
-							"    currentCount = currentCount - 1;",
-							"    pm.environment.set(\"requestsPerUnit\", currentCount);",
+							"    currentCount = currentCount + 1;",
+							"    pm.variables.set(\"requestCount5\", currentCount);",
 							"    postman.setNextRequest(\"OperationRateLimit Call Deleted Rate Limit Resource Using APIKey\");",
 							"} else {",
 							"    pm.test(\"Check API response and status code is 200\", function () {",
 							"        pm.response.to.have.status(200);",
 							"    });",
+							"    pm.variables.set('requestCount5', 5)",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "HOST",
+						"value": "a3b58ccf-6ecc-4557-b5bb-0a35cce38256.gw.wso2.com",
+						"type": "text"
+					},
+					{
+						"key": "Internal-Key",
+						"value": "{{APITestKey}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURl}}{{rateLimitAPIContext}}/get",
+					"host": [
+						"{{gatewayBaseURl}}{{rateLimitAPIContext}}"
+					],
+					"path": [
+						"get"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "OperationRateLimit change operation level to API level",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.variables.set(\"APIUUID\",pm.collectionVariables.get('APIUUID'))",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"setTimeout(function(){}, 1000);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": \"{{APIUUID}}\",\n    \"name\": \"{{rateLimitAPIName}}\",\n    \"context\": \"{{rateLimitAPIContext}}\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"operations\": [\n        {\n            \"target\": \"/get\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true\n        },\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true\n        }\n    ],\n    \"apiRateLimit\": {\n        \"requestsPerUnit\": 10,\n        \"unit\": \"Minute\"\n    },\n    \"serviceInfo\": {\n        \"name\": \"{{testServiceName}}\",\n        \"namespace\": \"{{testServiceNamespace}}\"\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIUUID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "OperationRateLimit Call Changed to API level APIKey",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"",
+							"var currentCount = pm.variables.get('requestCount12')",
+							"if (currentCount == undefined){",
+							"currentCount = 1;",
+							"}",
+							"console.log(currentCount);",
+							"if (currentCount <= 10) {",
+							"    pm.test(\"Check API response and status code is 200\", function () {",
+							"        pm.response.to.have.status(200);",
+							"    });",
+							"    currentCount = currentCount + 1;",
+							"    pm.variables.set(\"requestCount12\", currentCount);",
+							"    postman.setNextRequest(\"OperationRateLimit Call Changed to API level APIKey\");",
+							"} else {",
+							"    pm.test(\"Check API response and status code is 429\", function () {",
+							"        pm.response.to.have.status(429);",
+							"    });",
+							"    pm.variables.set('requestCount12', 0)",
 							"}"
 						],
 						"type": "text/javascript"
@@ -933,8 +1181,8 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Status code is 201\", function () {",
-							"  pm.response.to.have.status(201);",
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
 							"});",
 							"",
 							"pm.test(\"Assert token generation response\", () => {",
@@ -980,7 +1228,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"context\": \"/rateLimitAPI/2.0.0\" ,\n    \"name\": \"{{rateLimitAPIName}}\" ,\n    \"version\": \"2.0.0\",\n    \"type\": \"REST\"\n}\n"
+					"raw": ""
 				},
 				"url": {
 					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIV2UUID}}/generate-key",
@@ -1006,18 +1254,24 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"var currentCount = pm.environment.get('requestsPerUnit')",
-							"if (currentCount > 0) {",
+							"",
+							"var currentCount = pm.variables.get('requestCount6')",
+							"if (currentCount == undefined){",
+							"currentCount = 1;",
+							"}",
+							"console.log(currentCount);",
+							"if (currentCount <= 5) {",
 							"    pm.test(\"Check API response and status code is 200\", function () {",
 							"        pm.response.to.have.status(200);",
 							"    });",
-							"    currentCount = currentCount - 1;",
-							"    pm.environment.set(\"requestsPerUnit\", currentCount);",
+							"    currentCount = currentCount + 1;",
+							"    pm.variables.set(\"requestCount6\", currentCount);",
 							"    postman.setNextRequest(\"OperationRateLimit Call Rate Limit Applied Resource V2 Using APIKey\");",
 							"} else {",
 							"    pm.test(\"Check API response and status code is 429\", function () {",
 							"        pm.response.to.have.status(429);",
 							"    });",
+							"    pm.variables.set('requestCount6', 5)",
 							"}"
 						],
 						"type": "text/javascript"
@@ -1293,8 +1547,8 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Status code is 201\", function () {",
-							"  pm.response.to.have.status(201);",
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
 							"});",
 							"",
 							"pm.test(\"Assert token generation response\", () => {",
@@ -1302,7 +1556,14 @@
 							"    const responseJson = pm.response.json();",
 							"    pm.expect(parseInt(responseJson.validityTime)).greaterThan(100);",
 							"    pm.collectionVariables.set('APITestKey', responseJson.apikey);",
-							"});"
+							"});",
+							"const now = new Date();",
+							"let seconds = now.getSeconds();",
+							"if (seconds >0){",
+							"setTimeout(function() {",
+							"}, (60-seconds) * 1000); ",
+							"}",
+							""
 						],
 						"type": "text/javascript"
 					}
@@ -1365,18 +1626,19 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"var currentCount = pm.environment.get('requestsPerUnit')",
-							"if (currentCount > 0) {",
+							"",
+							"var currentCount = pm.variables.get('requestCount134')",
+							"if (currentCount == undefined){",
+							"currentCount = 1;",
+							"}",
+							"console.log(currentCount);",
+							"if (currentCount <= 10) {",
 							"    pm.test(\"Check API response and status code is 200\", function () {",
 							"        pm.response.to.have.status(200);",
 							"    });",
-							"    currentCount = currentCount - 1;",
-							"    pm.environment.set(\"requestsPerUnit\", currentCount);",
-							"    if (currentCount > 5) {",
-							"        postman.setNextRequest(\"APIRateLimit Call API Rate Limit Applied Resource Using APIKey\");",
-							"    } else {",
-							"        postman.setNextRequest(\"APIRateLimit Call API Rate Limit Applied Resource 2 using APIKey\");",
-							"    }",
+							"    currentCount = currentCount + 1;",
+							"    pm.variables.set(\"requestCount134\", currentCount);",
+							"    postman.setNextRequest(\"APIRateLimit Call API Rate Limit Applied Resource Using APIKey\");",
 							"} else {",
 							"    pm.test(\"Check API response and status code is 429\", function () {",
 							"        pm.response.to.have.status(429);",
@@ -1430,20 +1692,9 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"var currentCount = pm.environment.get('requestsPerUnit')",
-							"if (currentCount > 0) {",
-							"    pm.test(\"Check API response and status code is 200\", function () {",
-							"        pm.response.to.have.status(200);",
-							"    });",
-							"    currentCount = currentCount - 1;",
-							"    pm.environment.set(\"requestsPerUnit\", currentCount);",
-							"    postman.setNextRequest(\"APIRateLimit Call API Rate Limit Applied Resource 2 using APIKey\");",
-							"} else {",
 							"    pm.test(\"Check API response and status code is 429\", function () {",
 							"        pm.response.to.have.status(429);",
-							"    });",
-							"    postman.setNextRequest(\"APIRateLimit Delete Rate Limit\");",
-							"}"
+							"    });"
 						],
 						"type": "text/javascript"
 					}
@@ -1580,8 +1831,8 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Status code is 201\", function () {",
-							"  pm.response.to.have.status(201);",
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
 							"});",
 							"",
 							"pm.test(\"Assert token generation response\", () => {",
@@ -1590,7 +1841,13 @@
 							"    pm.expect(parseInt(responseJson.validityTime)).greaterThan(100);",
 							"    pm.collectionVariables.set('APITestKey', responseJson.apikey);",
 							"});",
-							"pm.environment.set('requestsPerUnit', 10)"
+							"pm.environment.set('requestsPerUnit', 10)",
+							"const now = new Date();",
+							"let seconds = now.getSeconds();",
+							"if (seconds >0){",
+							"setTimeout(function() {",
+							"}, (60-seconds) * 1000); ",
+							"}"
 						],
 						"type": "text/javascript"
 					}
@@ -1653,18 +1910,24 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"var currentCount = pm.environment.get('requestsPerUnit')",
-							"if (currentCount > 0) {",
+							"",
+							"var currentCount = pm.variables.get('requestCount7')",
+							"if (currentCount == undefined){",
+							"currentCount = 1;",
+							"}",
+							"console.log(currentCount);",
+							"if (currentCount <= 10) {",
 							"    pm.test(\"Check API response and status code is 200\", function () {",
 							"        pm.response.to.have.status(200);",
 							"    });",
-							"    currentCount = currentCount - 1;",
-							"    pm.environment.set(\"requestsPerUnit\", currentCount);",
+							"    currentCount = currentCount + 1;",
+							"    pm.variables.set(\"requestCount7\", currentCount);",
 							"    postman.setNextRequest(\"APIRateLimit Call API Rate Limit Applied Resource V2 Using APIKey\");",
 							"} else {",
 							"    pm.test(\"Check API response and status code is 429\", function () {",
 							"        pm.response.to.have.status(429);",
 							"    });",
+							"    pm.variables.set('requestCount7', 10)",
 							"}"
 						],
 						"type": "text/javascript"
@@ -1776,7 +2039,6 @@
 					"listen": "prerequest",
 					"script": {
 						"exec": [
-							"pm.variables.set(\"APIUUID\",pm.collectionVariables.get('APIUUID'))",
 							""
 						],
 						"type": "text/javascript"
@@ -1840,25 +2102,38 @@
 			"response": []
 		},
 		{
-			"name": "APIRateLimit Call Deleted Rate Limit Resource Using APIKey",
+			"name": "APIRateLimit Create Access Key for RateLimitAPI Copy 2",
 			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"var currentCount = pm.environment.get('requestsPerUnit')",
-							"if (currentCount > 0) {",
-							"    pm.test(\"Check API response and status code is 200\", function () {",
-							"        pm.response.to.have.status(200);",
-							"    });",
-							"    currentCount = currentCount - 1;",
-							"    pm.environment.set(\"requestsPerUnit\", currentCount);",
-							"    postman.setNextRequest(\"APIRateLimit Call Deleted Rate Limit Resource Using APIKey\");",
-							"} else {",
-							"    pm.test(\"Check API response and status code is 200\", function () {",
-							"        pm.response.to.have.status(200);",
-							"    });",
-							"}"
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Assert token generation response\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(parseInt(responseJson.validityTime)).greaterThan(100);",
+							"    pm.collectionVariables.set('APITestKey', responseJson.apikey);",
+							"});",
+							"const now = new Date();",
+							"let seconds = now.getSeconds();",
+							"if (seconds >0){",
+							"setTimeout(function() {",
+							"}, (120-seconds) * 1000); ",
+							"}",
+							""
 						],
 						"type": "text/javascript"
 					}
@@ -1874,6 +2149,80 @@
 							"type": "string"
 						}
 					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"context\": \"{{rateLimitAPIContext}}\",\n    \"name\": \"{{rateLimitAPIName}}\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\"\n}\n"
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID2}}/generate-key",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIUUID2}}",
+						"generate-key"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "APIRateLimit Call Deleted Rate Limit Resource Using APIKey",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"",
+							"var currentCount = pm.variables.get('requestCount8')",
+							"if (currentCount == undefined){",
+							"currentCount = 1;",
+							"}",
+							"console.log(currentCount);",
+							"if (currentCount <= 10) {",
+							"    pm.test(\"Check API response and status code is 200\", function () {",
+							"        pm.response.to.have.status(200);",
+							"    });",
+							"    currentCount = currentCount + 1;",
+							"    pm.variables.set(\"requestCount8\", currentCount);",
+							"    postman.setNextRequest(\"APIRateLimit Call Deleted Rate Limit Resource Using APIKey\");",
+							"} else {",
+							"    pm.test(\"Check API response and status code is 200\", function () {",
+							"        pm.response.to.have.status(200);",
+							"    });",
+							"    pm.variables.set('requestCount8', 10)",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
 				},
 				"method": "GET",
 				"header": [
@@ -2146,8 +2495,8 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Status code is 201\", function () {",
-							"  pm.response.to.have.status(201);",
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
 							"});",
 							"",
 							"pm.test(\"Assert token generation response\", () => {",
@@ -2155,7 +2504,14 @@
 							"    const responseJson = pm.response.json();",
 							"    pm.expect(parseInt(responseJson.validityTime)).greaterThan(100);",
 							"    pm.collectionVariables.set('APITestKey', responseJson.apikey);",
-							"});"
+							"});",
+							"const now = new Date();",
+							"let seconds = now.getSeconds();",
+							"if (seconds >0){",
+							"setTimeout(function() {",
+							"}, (60-seconds) * 1000); ",
+							"}",
+							""
 						],
 						"type": "text/javascript"
 					}
@@ -2192,7 +2548,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"context\": \"{{rateLimitAPIContextv3}}\",\n    \"name\": \"{{rateLimitAPINamev3}}\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\"\n}\n"
+					"raw": ""
 				},
 				"url": {
 					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID3}}/generate-key",
@@ -2218,19 +2574,24 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"var currentCount = pm.environment.get('requestsPerUnit')",
-							"if (currentCount > 0) {",
+							"",
+							"var currentCount = pm.variables.get('requestCount9')",
+							"if (currentCount == undefined){",
+							"currentCount = 1;",
+							"}",
+							"console.log(currentCount);",
+							"if (currentCount <= 10) {",
 							"    pm.test(\"Check API response and status code is 200\", function () {",
 							"        pm.response.to.have.status(200);",
 							"    });",
-							"    currentCount = currentCount - 1;",
-							"    pm.environment.set(\"requestsPerUnit\", currentCount);",
+							"    currentCount = currentCount + 1;",
+							"    pm.variables.set(\"requestCount9\", currentCount);",
 							"    postman.setNextRequest(\"APIRateLimit Call Updated Rate Limit Applied Resource Using APIKey\");",
 							"} else {",
 							"    pm.test(\"Check API response and status code is 429\", function () {",
 							"        pm.response.to.have.status(429);",
 							"    });",
-							"    pm.environment.set('requestsPerUnit', 10)",
+							"    pm.variables.set('requestCount9', 10)",
 							"}"
 						],
 						"type": "text/javascript"
