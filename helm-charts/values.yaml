@@ -405,6 +405,9 @@ idp:
 
 gatewaySystem:
   enabled: true
+  enableServiceAccountCreation: true
+  enableClusterRoleCreation: true
+  serviceAccountName: gateway-api-admission
 
 
 certmanager:
