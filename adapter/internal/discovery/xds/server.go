@@ -479,19 +479,23 @@ func GenerateGlobalClusters(label string) {
 
 // GenerateGlobalClustersWithInterceptors generates the globally available clusters and endpoints with interceptors.
 func GenerateGlobalClustersWithInterceptors(label string,
-	gwReqICluster *clusterv3.Cluster, gwReqIAddresses []*corev3.Address,
-	gwResICluster *clusterv3.Cluster, gwResIAddresses []*corev3.Address) {
+	gwReqIClusters []*clusterv3.Cluster, gwReqIAddresses []*corev3.Address,
+	gwResIClusters []*clusterv3.Cluster, gwResIAddresses []*corev3.Address) {
 	clusters, endpoints := oasParser.GetGlobalClusters()
 
-	if gwReqICluster != nil && len(gwReqIAddresses) > 0 {
-		clusters = append(clusters, gwReqICluster)
+	if len(gwReqIClusters) > 0 && len(gwReqIAddresses) > 0 {
+		for _, gwReqICluster := range gwReqIClusters {
+			clusters = append(clusters, gwReqICluster)
+		}
 		for _, ep := range gwReqIAddresses {
 			endpoints = append(endpoints, ep)
 		}
 	}
 
-	if gwResICluster != nil && len(gwResIAddresses) > 0 {
-		clusters = append(clusters, gwResICluster)
+	if len(gwResIClusters) > 0 && len(gwResIAddresses) > 0 {
+		for _, gwResICluster := range gwResIClusters {
+			clusters = append(clusters, gwResICluster)
+		}
 		for _, ep := range gwResIAddresses {
 			endpoints = append(endpoints, ep)
 		}

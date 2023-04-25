@@ -22,6 +22,7 @@ package model
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -227,15 +228,16 @@ func (operation *Operation) GetID() string {
 }
 
 // GetCallInterceptorService returns the interceptor configs for a given operation.
-func (operation *Operation) GetCallInterceptorService(isIn bool) InterceptEndpoint {
+func (operation *Operation) GetCallInterceptorService(isIn bool) []*InterceptEndpoint {
 	var policies []Policy
+	var interceptEndpoints []*InterceptEndpoint
 	if isIn {
 		policies = operation.policies.Request
 	} else {
 		policies = operation.policies.Response
 	}
 	if len(policies) > 0 {
-		for _, policy := range policies {
+		for policyIndex, policy := range policies {
 			if strings.EqualFold(constants.ActionInterceptorService, policy.Action) {
 				if paramMap, isMap := policy.Parameters.(map[string]interface{}); isMap {
 					endpoints, endpointsFound := paramMap[constants.InterceptorEndpoints]
@@ -253,21 +255,22 @@ func (operation *Operation) GetCallInterceptorService(isIn bool) InterceptEndpoi
 									includesV = GenerateInterceptorIncludes(includes)
 								}
 							}
-							return InterceptEndpoint{
+							interceptEndpoints = append(interceptEndpoints, &InterceptEndpoint{
+								ClusterName:     fmt.Sprintf(policy.PolicyName, policyIndex),
 								Enable:          true,
 								EndpointCluster: EndpointCluster{Endpoints: endpoints},
 								ClusterTimeout:  clusterTimeoutV,
 								RequestTimeout:  requestTimeoutV,
 								Includes:        includesV,
 								Level:           constants.OperationLevelInterceptor,
-							}
+							})
 						}
 					}
 				}
 			}
 		}
 	}
-	return InterceptEndpoint{}
+	return interceptEndpoints
 }
 
 // NewOperation Creates and returns operation type object

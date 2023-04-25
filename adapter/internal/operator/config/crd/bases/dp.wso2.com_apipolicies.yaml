@@ -67,6 +67,7 @@ spec:
                       required:
                       - backendRef
                       type: object
+                    maxItems: 10
                     type: array
                   requestQueryModifier:
                     description: RequestQueryModifier allows to modify request query
@@ -135,6 +136,7 @@ spec:
                       required:
                       - backendRef
                       type: object
+                    maxItems: 10
                     type: array
                 type: object
               override:
@@ -169,6 +171,7 @@ spec:
                       required:
                       - backendRef
                       type: object
+                    maxItems: 10
                     type: array
                   requestQueryModifier:
                     description: RequestQueryModifier allows to modify request query
@@ -237,6 +240,7 @@ spec:
                       required:
                       - backendRef
                       type: object
+                    maxItems: 10
                     type: array
                 type: object
               targetRef:

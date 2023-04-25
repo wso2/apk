@@ -93,7 +93,7 @@ func AddOrUpdateGateway(gatewayState GatewayState, state string) (string, error)
 	gatewayAPIPolicies := gatewayState.GatewayStateData.GatewayAPIPolicies
 	gatewayBackendMapping := gatewayState.GatewayStateData.GatewayBackendMapping
 
-	gwLuaScript, gwReqICluster, gwReqIAddresses, gwResICluster, gwResIAddresses :=
+	gwLuaScript, gwReqIClusters, gwReqIAddresses, gwResIClusters, gwResIAddresses :=
 		generateGlobalInterceptorResource(gatewayAPIPolicies, gatewayBackendMapping)
 
 	if state == constants.Create {
@@ -101,8 +101,8 @@ func AddOrUpdateGateway(gatewayState GatewayState, state string) (string, error)
 	}
 
 	xds.GenerateGlobalClustersWithInterceptors(gateway.Name,
-		gwReqICluster, gwReqIAddresses,
-		gwResICluster, gwResIAddresses)
+		gwReqIClusters, gwReqIAddresses,
+		gwResIClusters, gwResIAddresses)
 
 	xds.UpdateGatewayCache(gateway, resolvedListenerCerts, gwLuaScript, customRateLimitPolicies)
 	listeners, clusters, routes, endpoints, apis := xds.GenerateEnvoyResoucesForGateway(gateway.Name)
@@ -138,23 +138,27 @@ func getCustomRateLimitPolicies(customRateLimitPoliciesDef []*dpv1alpha1.RateLim
 }
 
 func generateGlobalInterceptorResource(gatewayAPIPolicies map[string]v1alpha1.APIPolicy,
-	gatewayBackendMapping v1alpha1.BackendMapping) (string, *clusterv3.Cluster, []*corev3.Address,
-	*clusterv3.Cluster, []*corev3.Address) {
+	gatewayBackendMapping v1alpha1.BackendMapping) (string, []*clusterv3.Cluster, []*corev3.Address,
+	[]*clusterv3.Cluster, []*corev3.Address) {
 	var gwLuaScript string
-	var gwReqICluster, gwResICluster *clusterv3.Cluster
+	var gwReqIClusters, gwResIClusters []*clusterv3.Cluster
 	var gwReqIAddresses, gwResIAddresses []*corev3.Address
 
 	if len(gatewayAPIPolicies) > 0 && len(gatewayBackendMapping) > 0 {
-		gwReqI, gwResI := createInterceptors(gatewayAPIPolicies, gatewayBackendMapping)
-		if len(gwReqI) > 0 {
-			gwReqICluster, gwReqIAddresses, _ = envoyconf.CreateLuaCluster(nil, gwReqI[string(gwapiv1b1.HTTPMethodPost)])
+		gwReqIs, gwResIs := createInterceptors(gatewayAPIPolicies, gatewayBackendMapping)
+		for _, gwReqI := range gwReqIs {
+			cluster, addresses, _ := envoyconf.CreateLuaCluster(nil, *gwReqI[string(gwapiv1b1.HTTPMethodPost)])
+			gwReqIClusters = append(gwReqIClusters, cluster)
+			gwReqIAddresses = append(gwReqIAddresses, addresses...)
 		}
-		if len(gwResI) > 0 {
-			gwResICluster, gwResIAddresses, _ = envoyconf.CreateLuaCluster(nil, gwResI[string(gwapiv1b1.HTTPMethodPost)])
+		for _, gwResI := range gwResIs {
+			cluster, addresses, _ := envoyconf.CreateLuaCluster(nil, *gwResI[string(gwapiv1b1.HTTPMethodPost)])
+			gwResIClusters = append(gwResIClusters, cluster)
+			gwResIAddresses = append(gwResIAddresses, addresses...)
 		}
 		gwLuaScript = getGlobalInterceptorScript(gatewayAPIPolicies, gatewayBackendMapping)
 	}
-	return gwLuaScript, gwReqICluster, gwReqIAddresses, gwResICluster, gwResIAddresses
+	return gwLuaScript, gwReqIClusters, gwReqIAddresses, gwResIClusters, gwResIAddresses
 }
 
 func getGlobalInterceptorScript(gatewayAPIPolicies map[string]v1alpha1.APIPolicy,
@@ -182,9 +186,9 @@ end
 }
 
 func createInterceptors(gatewayAPIPolicies map[string]v1alpha1.APIPolicy,
-	gatewayBackendMapping v1alpha1.BackendMapping) (requestInterceptor map[string]model.InterceptEndpoint, responseInterceptor map[string]model.InterceptEndpoint) {
-	requestInterceptorMap := make(map[string]model.InterceptEndpoint)
-	responseInterceptorMap := make(map[string]model.InterceptEndpoint)
+	gatewayBackendMapping v1alpha1.BackendMapping) (requestInterceptor []map[string]*model.InterceptEndpoint, responseInterceptor []map[string]*model.InterceptEndpoint) {
+	var requestInterceptorMap []map[string]*model.InterceptEndpoint
+	var responseInterceptorMap []map[string]*model.InterceptEndpoint
 
 	var apiPolicy *v1alpha1.APIPolicy
 	outputAPIPolicy := utils.TieBreaker(utils.GetPtrSlice(maps.Values(gatewayAPIPolicies)))
@@ -193,29 +197,37 @@ func createInterceptors(gatewayAPIPolicies map[string]v1alpha1.APIPolicy,
 		resolvedPolicySpec := utils.SelectPolicy(&apiPolicy.Spec.Override, &apiPolicy.Spec.Default, nil, nil)
 		if resolvedPolicySpec != nil {
 			if resolvedPolicySpec.RequestInterceptors != nil {
-				// oniy first request interceptor is supported in gateway level
-				reqIEp := getInterceptorEndpoint(&resolvedPolicySpec.RequestInterceptors[0], gatewayBackendMapping, true)
-				if reqIEp != nil {
-					requestInterceptorMap[string(gwapiv1b1.HTTPMethodPost)] = *reqIEp
-					requestInterceptorMap[string(gwapiv1b1.HTTPMethodGet)] = *reqIEp
-					requestInterceptorMap[string(gwapiv1b1.HTTPMethodDelete)] = *reqIEp
-					requestInterceptorMap[string(gwapiv1b1.HTTPMethodPatch)] = *reqIEp
-					requestInterceptorMap[string(gwapiv1b1.HTTPMethodPut)] = *reqIEp
-					requestInterceptorMap[string(gwapiv1b1.HTTPMethodHead)] = *reqIEp
-					requestInterceptorMap[string(gwapiv1b1.HTTPMethodOptions)] = *reqIEp
+				for _, reqI := range resolvedPolicySpec.RequestInterceptors {
+					reqIEp := getInterceptorEndpoint(&reqI, gatewayBackendMapping, true)
+					if reqIEp != nil {
+						interceptorMap := map[string]*model.InterceptEndpoint{
+							string(gwapiv1b1.HTTPMethodPost):    reqIEp,
+							string(gwapiv1b1.HTTPMethodGet):     reqIEp,
+							string(gwapiv1b1.HTTPMethodDelete):  reqIEp,
+							string(gwapiv1b1.HTTPMethodPatch):   reqIEp,
+							string(gwapiv1b1.HTTPMethodPut):     reqIEp,
+							string(gwapiv1b1.HTTPMethodHead):    reqIEp,
+							string(gwapiv1b1.HTTPMethodOptions): reqIEp,
+						}
+						requestInterceptorMap = append(requestInterceptorMap, interceptorMap)
+					}
 				}
 			}
 			if resolvedPolicySpec.ResponseInterceptors != nil {
-				// only first response interceptor is supported in gateway level
-				resIEp := getInterceptorEndpoint(&resolvedPolicySpec.ResponseInterceptors[0], gatewayBackendMapping, false)
-				if resIEp != nil {
-					responseInterceptorMap[string(gwapiv1b1.HTTPMethodPost)] = *resIEp
-					responseInterceptorMap[string(gwapiv1b1.HTTPMethodGet)] = *resIEp
-					responseInterceptorMap[string(gwapiv1b1.HTTPMethodDelete)] = *resIEp
-					responseInterceptorMap[string(gwapiv1b1.HTTPMethodPatch)] = *resIEp
-					responseInterceptorMap[string(gwapiv1b1.HTTPMethodPut)] = *resIEp
-					responseInterceptorMap[string(gwapiv1b1.HTTPMethodHead)] = *resIEp
-					responseInterceptorMap[string(gwapiv1b1.HTTPMethodOptions)] = *resIEp
+				for _, resI := range resolvedPolicySpec.ResponseInterceptors {
+					resIEp := getInterceptorEndpoint(&resI, gatewayBackendMapping, false)
+					if resIEp != nil {
+						interceptorMap := map[string]*model.InterceptEndpoint{
+							string(gwapiv1b1.HTTPMethodPost):    resIEp,
+							string(gwapiv1b1.HTTPMethodGet):     resIEp,
+							string(gwapiv1b1.HTTPMethodDelete):  resIEp,
+							string(gwapiv1b1.HTTPMethodPatch):   resIEp,
+							string(gwapiv1b1.HTTPMethodPut):     resIEp,
+							string(gwapiv1b1.HTTPMethodHead):    resIEp,
+							string(gwapiv1b1.HTTPMethodOptions): resIEp,
+						}
+						responseInterceptorMap = append(responseInterceptorMap, interceptorMap)
+					}
 				}
 			}
 		}

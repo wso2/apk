@@ -67,18 +67,18 @@ type WireLogValues struct {
 
 // CombinedTemplateValues holds combined values for both WireLogValues properties and Interceptor properties in the same level
 type CombinedTemplateValues struct {
-	WireLogValues
+	LogConfig *config.WireLogConfig
 	interceptor.Interceptor
 }
 
 // Constants relevant to the route related ratelimit configurations
 const (
-	DescriptorKeyForOrg               = "org"
-	DescriptorKeyForVhost             = "vhost"
-	DescriptorKeyForPath              = "path"
-	DescriptorKeyForMethod            = "method"
-	DescriptorValueForAPIMethod       = "ALL"
-	DescriptorValueForOperationMethod = ":method"
+	DescriptorKeyForOrg                = "org"
+	DescriptorKeyForVhost              = "vhost"
+	DescriptorKeyForPath               = "path"
+	DescriptorKeyForMethod             = "method"
+	DescriptorValueForAPIMethod        = "ALL"
+	DescriptorValueForOperationMethod  = ":method"
 	MetadataNamespaceForCustomPolicies = "apk.ratelimit.metadata"
 )
 
@@ -137,7 +137,7 @@ func CreateRoutesWithClusters(adapterInternalAPI model.AdapterInternalAPI, inter
 			interceptorCerts, vHost, organizationID, apiRequestInterceptor, apiResponseInterceptor, resource)
 		clusters = append(clusters, clustersI...)
 		endpoints = append(endpoints, endpointsI...)
-		routeP, err := createRoutes(genRouteCreateParams(&adapterInternalAPI, resource, vHost, basePath, clusterName, *operationalReqInterceptors, *operationalRespInterceptorVal, organizationID, false))
+		routeP, err := createRoutes(genRouteCreateParams(&adapterInternalAPI, resource, vHost, basePath, clusterName, operationalReqInterceptors, operationalRespInterceptorVal, organizationID, false))
 		if err != nil {
 			logger.LoggerXds.ErrorC(logging.GetErrorByCode(2231, adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), resource.GetPath(), err.Error()))
 			return nil, nil, nil, fmt.Errorf("error while creating routes. %v", err)
@@ -959,53 +959,65 @@ end`
 }
 
 // GetInlineLuaScript creates the inline lua script
-func GetInlineLuaScript(requestInterceptor map[string]model.InterceptEndpoint, responseInterceptor map[string]model.InterceptEndpoint,
+func GetInlineLuaScript(requestInterceptor []map[string]*model.InterceptEndpoint, responseInterceptor []map[string]*model.InterceptEndpoint,
 	requestContext *interceptor.InvocationContext) string {
 
-	i := &interceptor.Interceptor{
-		Context:      requestContext,
-		RequestFlow:  make(map[string]interceptor.Config),
-		ResponseFlow: make(map[string]interceptor.Config),
+	interceptorConfig := interceptor.Interceptor{
+		Context:              requestContext,
+		RequestInterceptors:  make([]map[string]interceptor.Config, len(requestInterceptor)),
+		ResponseInterceptors: make([]map[string]interceptor.Config, len(responseInterceptor)),
 	}
+
 	if len(requestInterceptor) > 0 {
-		i.IsRequestFlowEnabled = true
-		for method, op := range requestInterceptor {
-			i.RequestFlow[method] = interceptor.Config{
-				ExternalCall: &interceptor.HTTPCallConfig{
-					ClusterName: op.ClusterName,
-					// multiplying in seconds here because in configs we are directly getting config to time.Duration
-					// which is in nano seconds, so multiplying it in seconds here
-					Timeout:         strconv.FormatInt((op.RequestTimeout * time.Second).Milliseconds(), 10),
-					AuthorityHeader: op.EndpointCluster.Endpoints[0].GetAuthorityHeader(),
-				},
-				Include: op.Includes,
+		for interceptorIndex, reqInterceptors := range requestInterceptor {
+			for method, op := range reqInterceptors {
+				config := interceptor.Config{
+					ExternalCall: &interceptor.HTTPCallConfig{
+						ClusterName: op.ClusterName,
+						// multiplying in seconds here because in configs we are directly getting config to time.Duration
+						// which is in nano seconds, so multiplying it in seconds here
+						Timeout:         strconv.FormatInt((op.RequestTimeout * time.Second).Milliseconds(), 10),
+						AuthorityHeader: op.EndpointCluster.Endpoints[0].GetAuthorityHeader(),
+					},
+					Include: op.Includes,
+				}
+				if interceptorConfig.RequestInterceptors[interceptorIndex] == nil {
+					interceptorConfig.RequestInterceptors[interceptorIndex] = map[string]interceptor.Config{method: config}
+				} else {
+					interceptorConfig.RequestInterceptors[interceptorIndex][method] = config
+				}
 			}
 		}
 	}
 	if len(responseInterceptor) > 0 {
-		i.IsResponseFlowEnabled = true
-		for method, op := range responseInterceptor {
-			i.ResponseFlow[method] = interceptor.Config{
-				ExternalCall: &interceptor.HTTPCallConfig{
-					ClusterName: op.ClusterName,
-					// multiplying in seconds here because in configs we are directly getting config to time.Duration
-					// which is in nano seconds, so multiplying it in seconds here
-					Timeout:         strconv.FormatInt((op.RequestTimeout * time.Second).Milliseconds(), 10),
-					AuthorityHeader: op.EndpointCluster.Endpoints[0].GetAuthorityHeader(),
-				},
-				Include: op.Includes,
+		for interceptorIndex, resInterceptors := range responseInterceptor {
+			for method, op := range resInterceptors {
+				config := interceptor.Config{
+					ExternalCall: &interceptor.HTTPCallConfig{
+						ClusterName: op.ClusterName,
+						// multiplying in seconds here because in configs we are directly getting config to time.Duration
+						// which is in nano seconds, so multiplying it in seconds here
+						Timeout:         strconv.FormatInt((op.RequestTimeout * time.Second).Milliseconds(), 10),
+						AuthorityHeader: op.EndpointCluster.Endpoints[0].GetAuthorityHeader(),
+					},
+					Include: op.Includes,
+				}
+				if interceptorConfig.ResponseInterceptors[interceptorIndex] == nil {
+					interceptorConfig.ResponseInterceptors[interceptorIndex] = map[string]interceptor.Config{method: config}
+				} else {
+					interceptorConfig.ResponseInterceptors[interceptorIndex][method] = config
+				}
 			}
 		}
 	}
 	templateValues := CombinedTemplateValues{
-		WireLogValues{
-			LogConfig: config.GetWireLogConfig(),
-		},
-		*i,
+		config.GetWireLogConfig(),
+		interceptorConfig,
 	}
 
-	templateString := interceptor.GetTemplate(i.IsRequestFlowEnabled,
-		i.IsResponseFlowEnabled)
+	templateString := interceptor.GetTemplate(
+		len(interceptorConfig.RequestInterceptors) > 0,
+		len(interceptorConfig.ResponseInterceptors) > 0)
 
 	return interceptor.GetInterceptor(templateValues, templateString)
 }
@@ -1342,8 +1354,8 @@ func getCorsPolicy(corsConfig *model.CorsConfig) *cors_filter_v3.CorsPolicy {
 }
 
 func genRouteCreateParams(swagger *model.AdapterInternalAPI, resource *model.Resource, vHost, endpointBasePath string,
-	clusterName string, requestInterceptor map[string]model.InterceptEndpoint,
-	responseInterceptor map[string]model.InterceptEndpoint, organizationID string, isSandbox bool) *routeCreateParams {
+	clusterName string, requestInterceptor []map[string]*model.InterceptEndpoint,
+	responseInterceptor []map[string]*model.InterceptEndpoint, organizationID string, isSandbox bool) *routeCreateParams {
 
 	params := &routeCreateParams{
 		organizationID:               organizationID,
@@ -1449,13 +1461,11 @@ func createInterceptorAPIClusters(adapterInternalAPI model.AdapterInternalAPI, i
 
 func createInterceptorResourceClusters(adapterInternalAPI model.AdapterInternalAPI, interceptorCerts map[string][]byte, vHost string, organizationID string,
 	apiRequestInterceptor *model.InterceptEndpoint, apiResponseInterceptor *model.InterceptEndpoint, resource *model.Resource) (clustersP []*clusterv3.Cluster, addressesP []*corev3.Address,
-	operationalReqInterceptorsEndpoint *map[string]model.InterceptEndpoint, operationalRespInterceptorValEndpoint *map[string]model.InterceptEndpoint) {
+	operationalReqInterceptorsEndpoint []map[string]*model.InterceptEndpoint, operationalRespInterceptorValEndpoint []map[string]*model.InterceptEndpoint) {
 	var (
 		clusters  []*clusterv3.Cluster
 		endpoints []*corev3.Address
 	)
-	resourceRequestInterceptor := apiRequestInterceptor
-	resourceResponseInterceptor := apiResponseInterceptor
 	apiTitle := adapterInternalAPI.GetTitle()
 	apiVersion := adapterInternalAPI.GetVersion()
 	reqInterceptorVal := adapterInternalAPI.GetInterceptor(resource.GetVendorExtensions(), xWso2requestInterceptor, ResourceLevelInterceptor)
@@ -1467,29 +1477,30 @@ func createInterceptorResourceClusters(adapterInternalAPI model.AdapterInternalA
 		if err != nil {
 			logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2244, apiTitle, err.Error()))
 		} else {
-			resourceRequestInterceptor = &reqInterceptorVal
 			clusters = append(clusters, cluster)
 			endpoints = append(endpoints, addresses...)
 		}
 	}
 
 	// create operational level response interceptor clusters
-	operationalReqInterceptors := adapterInternalAPI.GetOperationInterceptors(*apiRequestInterceptor, *resourceRequestInterceptor, resource.GetMethod(), true)
-	for method, opI := range operationalReqInterceptors {
-		if opI.Enable && opI.Level == OperationLevelInterceptor {
-			logger.LoggerOasparser.Debugf("Operation level request interceptors found for %v:%v-%v-%v", apiTitle, apiVersion, resource.GetPath(),
-				opI.ClusterName)
-			opID := opI.ClusterName
-			opI.ClusterName = getClusterName(requestInterceptClustersNamePrefix, organizationID, vHost, apiTitle, apiVersion, opID)
-			operationalReqInterceptors[method] = opI // since cluster name is updated
-			cluster, addresses, err := CreateLuaCluster(interceptorCerts, opI)
-			if err != nil {
-				logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2245, apiTitle, apiVersion, resource.GetPath(), opID, err.Error()))
-				// setting resource level interceptor to failed operation level interceptor.
-				operationalReqInterceptors[method] = *resourceRequestInterceptor
-			} else {
-				clusters = append(clusters, cluster)
-				endpoints = append(endpoints, addresses...)
+	operationalReqInterceptors := adapterInternalAPI.GetOperationInterceptors(resource.GetMethod(), true)
+	for _, opIs := range operationalReqInterceptors {
+		for _, opI := range opIs {
+			if opI != nil && opI.Enable && opI.Level == OperationLevelInterceptor {
+				logger.LoggerOasparser.Debugf("Operation level request interceptors found for %v:%v-%v-%v", apiTitle, apiVersion, resource.GetPath(),
+					opI.ClusterName)
+				opID := opI.ClusterName
+				opI.ClusterName = getClusterName(requestInterceptClustersNamePrefix, organizationID, vHost, apiTitle, apiVersion, opID)
+				// operationalReqInterceptors[method] = opI // since cluster name is updated
+				cluster, addresses, err := CreateLuaCluster(interceptorCerts, *opI)
+				if err != nil {
+					logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2245, apiTitle, apiVersion, resource.GetPath(), opID, err.Error()))
+					// setting resource level interceptor to failed operation level interceptor.
+					// operationalReqInterceptors[method] = resourceRequestInterceptor
+				} else {
+					clusters = append(clusters, cluster)
+					endpoints = append(endpoints, addresses...)
+				}
 			}
 		}
 	}
@@ -1504,32 +1515,32 @@ func createInterceptorResourceClusters(adapterInternalAPI model.AdapterInternalA
 		if err != nil {
 			logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2246, apiTitle, err.Error()))
 		} else {
-			resourceResponseInterceptor = &respInterceptorVal
 			clusters = append(clusters, cluster)
 			endpoints = append(endpoints, addresses...)
 		}
 	}
 
 	// create operation level response interceptor clusters
-	operationalRespInterceptorVal := adapterInternalAPI.GetOperationInterceptors(*apiResponseInterceptor, *resourceResponseInterceptor, resource.GetMethod(),
-		false)
-	for method, opI := range operationalRespInterceptorVal {
-		if opI.Enable && opI.Level == OperationLevelInterceptor {
-			logger.LoggerOasparser.Debugf("Operational level response interceptors found for %v:%v-%v-%v", apiTitle, apiVersion, resource.GetPath(),
-				opI.ClusterName)
-			opID := opI.ClusterName
-			opI.ClusterName = getClusterName(responseInterceptClustersNamePrefix, organizationID, vHost, apiTitle, apiVersion, opID)
-			operationalRespInterceptorVal[method] = opI // since cluster name is updated
-			cluster, addresses, err := CreateLuaCluster(interceptorCerts, opI)
-			if err != nil {
-				logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2247, apiTitle, apiVersion, resource.GetPath(), opID, err.Error()))
-				// setting resource level interceptor to failed operation level interceptor.
-				operationalRespInterceptorVal[method] = *resourceResponseInterceptor
-			} else {
-				clusters = append(clusters, cluster)
-				endpoints = append(endpoints, addresses...)
+	operationalRespInterceptorVal := adapterInternalAPI.GetOperationInterceptors(resource.GetMethod(), false)
+	for _, opIs := range operationalRespInterceptorVal {
+		for _, opI := range opIs {
+			if opI != nil && opI.Enable && opI.Level == OperationLevelInterceptor {
+				logger.LoggerOasparser.Debugf("Operational level response interceptors found for %v:%v-%v-%v", apiTitle, apiVersion, resource.GetPath(),
+					opI.ClusterName)
+				opID := opI.ClusterName
+				opI.ClusterName = getClusterName(responseInterceptClustersNamePrefix, organizationID, vHost, apiTitle, apiVersion, opID)
+				// operationalRespInterceptorVal[method] = opI // since cluster name is updated
+				cluster, addresses, err := CreateLuaCluster(interceptorCerts, *opI)
+				if err != nil {
+					logger.LoggerOasparser.ErrorC(logging.GetErrorByCode(2247, apiTitle, apiVersion, resource.GetPath(), opID, err.Error()))
+					// setting resource level interceptor to failed operation level interceptor.
+					// operationalRespInterceptorVal[method] = resourceResponseInterceptor
+				} else {
+					clusters = append(clusters, cluster)
+					endpoints = append(endpoints, addresses...)
+				}
 			}
 		}
 	}
-	return clusters, endpoints, &operationalReqInterceptors, &operationalRespInterceptorVal
+	return clusters, endpoints, operationalReqInterceptors, operationalRespInterceptorVal
 }
