@@ -42,18 +42,24 @@ listener http:Listener ep0 = new (BACKOFFICE_PORT, secureSocket = {
 
 service /api/am/backoffice on ep0 {
 
-    isolated resource function get apis(string? query, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0, string sortBy = "createdTime", string sortOrder = "desc", @http:Header string? accept = "application/json") returns APIList|http:NotModified|commons:APKError {
-        return getAPIList('limit, offset, query, "carbon.super");
+    isolated resource function get apis(http:RequestContext requestContext, string? query, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0, string sortBy = "createdTime", string sortOrder = "desc", @http:Header string? accept = "application/json") returns APIList|http:NotModified|commons:APKError {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        return getAPIList('limit, offset, query, organization.uuid);
     }
 
-    isolated resource function get apis/[string apiId](@http:Header string? 'if\-none\-match) returns API|http:NotModified|commons:APKError {
+    isolated resource function get apis/[string apiId](http:RequestContext requestContext, @http:Header string? 'if\-none\-match) returns API|http:NotModified|commons:APKError {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
         return getAPI(apiId);
     }
-    resource function put apis/[string apiId](@http:Header string? 'if\-none\-match, @http:Payload ModifiableAPI payload) returns API|commons:APKError {
-        return updateAPI(apiId, payload, "carbon.super");
+    resource function put apis/[string apiId](http:RequestContext requestContext, @http:Header string? 'if\-none\-match, @http:Payload ModifiableAPI payload) returns API|commons:APKError {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        return updateAPI(apiId, payload, organization.uuid);
     }
 
-    isolated resource function get apis/[string apiId]/definition(@http:Header string? 'if\-none\-match) returns APIDefinition|http:NotModified|commons:APKError {
+    isolated resource function get apis/[string apiId]/definition(http:RequestContext requestContext, @http:Header string? 'if\-none\-match) returns APIDefinition|http:NotModified|commons:APKError {
         APIDefinition|commons:APKError apiDefinition = getAPIDefinition(apiId);
         if apiDefinition is APIDefinition {
             log:printDebug(apiDefinition.toString());
@@ -92,12 +98,12 @@ service /api/am/backoffice on ep0 {
     // }
     // resource function get apis/[string apiId]/comments/[string commentId]/replies(@http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0, boolean includeCommenterInfo = false) returns CommentList|UnauthorizedError|NotFoundError|NotAcceptableError|InternalServerErrorError {
     // }
-    isolated resource function get subscriptions(string? apiId, @http:Header string? 'if\-none\-match, string? query, int 'limit = 25, int offset = 0) returns SubscriptionList|http:NotModified|commons:APKError {
+    isolated resource function get subscriptions(http:RequestContext requestContext, string? apiId, @http:Header string? 'if\-none\-match, string? query, int 'limit = 25, int offset = 0) returns SubscriptionList|http:NotModified|commons:APKError {
         return getSubscriptions(apiId);
     }
     // resource function get subscriptions/[string subscriptionId]/'subscriber\-info() returns SubscriberInfo|NotFoundError {
     // }
-    isolated resource function post subscriptions/'block\-subscription(string subscriptionId, string blockState, @http:Header string? 'if\-match) returns http:Ok|commons:APKError {
+    isolated resource function post subscriptions/'block\-subscription(http:RequestContext requestContext, string subscriptionId, string blockState, @http:Header string? 'if\-match) returns http:Ok|commons:APKError {
         string|commons:APKError response = blockSubscription(subscriptionId, blockState);
         if response is commons:APKError {
             return response;
@@ -105,7 +111,7 @@ service /api/am/backoffice on ep0 {
             return http:OK;
         }
     }
-    isolated resource function post subscriptions/'unblock\-subscription(string subscriptionId, @http:Header string? 'if\-match) returns http:Ok|commons:APKError {
+    isolated resource function post subscriptions/'unblock\-subscription(http:RequestContext requestContext, string subscriptionId, @http:Header string? 'if\-match) returns http:Ok|commons:APKError {
         string|error response = unblockSubscription(subscriptionId);
         if response is commons:APKError {
             return response;
@@ -120,30 +126,34 @@ service /api/am/backoffice on ep0 {
     // resource function get settings() returns Settings|NotFoundError {
     // }
 
-    isolated resource function get 'api\-categories() returns APICategoryList|commons:APKError {
+    isolated resource function get 'api\-categories(http:RequestContext requestContext) returns APICategoryList|commons:APKError {
         return getAllCategoryList();
     }
 
-    isolated resource function post apis/'change\-lifecycle(string targetState, string apiId, @http:Header string? 'if\-match) returns LifecycleState|commons:APKError|error {
-        LifecycleState|error changeState = changeLifeCyleState(targetState, apiId, "carbon.super");
+    isolated resource function post apis/'change\-lifecycle(http:RequestContext requestContext, string targetState, string apiId, @http:Header string? 'if\-match) returns LifecycleState|commons:APKError|error {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        LifecycleState|error changeState = changeLifeCyleState(targetState, apiId, organization.uuid);
         if changeState is LifecycleState {
             return changeState;
         } else {
             return error("Error while updating LC state of API" + changeState.message());
         }
     }
-    isolated resource function get apis/[string apiId]/'lifecycle\-history(@http:Header string? 'if\-none\-match) returns LifecycleHistory|commons:APKError {
+    isolated resource function get apis/[string apiId]/'lifecycle\-history(http:RequestContext requestContext, @http:Header string? 'if\-none\-match) returns LifecycleHistory|commons:APKError {
         return getLcEventHistory(apiId);
     }
-    isolated resource function get apis/[string apiId]/'lifecycle\-state(@http:Header string? 'if\-none\-match) returns LifecycleState|commons:APKError|error {
-        LifecycleState|error currentState = getLifeCyleState(apiId, "carbon.super");
+    isolated resource function get apis/[string apiId]/'lifecycle\-state(http:RequestContext requestContext, @http:Header string? 'if\-none\-match) returns LifecycleState|commons:APKError|error {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        LifecycleState|error currentState = getLifeCyleState(apiId, organization.uuid);
         if currentState is LifecycleState {
             return currentState;
         } else {
             return error("Error while getting LC state of API" + currentState.message());
         }
     }
-    resource function get 'business\-plans(@http:Header string? accept = "application/json") returns BusinessPlanList|commons:APKError {
+    resource function get 'business\-plans(http:RequestContext requestContext, @http:Header string? accept = "application/json") returns BusinessPlanList|commons:APKError {
         BusinessPlanList|commons:APKError subPolicyList = getBusinessPlans();
         if subPolicyList is BusinessPlanList {
             log:printDebug(subPolicyList.toString());    
