@@ -50,16 +50,36 @@ task generate_environment_json {
     newEnvironmentJsonFile.text = newEnvironmentJson;
     }
 }
+tasks.register('run_all_collection'){
+    group 'postman'
+    description 'Run postman collection'
+    mustRunAfter 'generate_environment_json'
+     doLast {
+        def index = 0;
+        fileTree(dir: 'resources/collections').visit { FileVisitDetails details ->
+            if (details.file.isFile()) {
+                def report_name = "test-report-"+index+".xml";
+                def file_name  = details.file.absolutePath;
+                exec {
+                commandLine 'newman', 'run' , file_name , '--environment', "$buildDir/APK_environment.json", '--insecure', '--reporters', 'junit,cli', '--reporter-junit-export', "$buildDir/$report_name", '--suppress-exit-code', '--verbose', '--delay-request', '1000'
+                }
+                println("Found file: $file_name")
+                index += 1;
+            }
+        }
+    }
+}
 
 tasks.register('test'){
     group 'test'
     description 'Run tests'
     dependsOn generate_environment_json
     mustRunAfter generate_environment_json
-    dependsOn admin_postman_collection
-    dependsOn devportal_postman_collection
-    dependsOn backoffice_postman_collection
-    dependsOn runtime_postman_collection
+    // dependsOn admin_postman_collection
+    // dependsOn devportal_postman_collection
+    // dependsOn backoffice_postman_collection
+    // dependsOn runtime_postman_collection
+    dependsOn run_all_collection
     doLast{
         println buildDir
     }   
