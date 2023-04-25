@@ -22,6 +22,18 @@ import ballerina/log;
 @test:Mock { functionName: "generateToken" }
 test:MockFunction generateTokenMock = new();
 
+@test:Mock { functionName: "updateApplication",moduleName: "wso2/notification_grpc_client" }
+public isolated function updateApplicationMock(ApplicationGRPC updateApplicationRequest, string endpoint, string pubCert, string devCert, string devKey) returns error|NotificationResponse {
+    NotificationResponse noti= {code: "OK"};
+    return noti;
+}
+
+@test:Mock { functionName: "deleteApplication",moduleName: "wso2/notification_grpc_client" }
+public isolated function deleteApplicationMock(ApplicationGRPC deleteApplicationRequest, string endpoint, string pubCert, string devCert, string devKey) returns error|NotificationResponse {
+    NotificationResponse noti= {code: "OK"};
+    return noti;
+}
+
 Application application  ={name:"sampleApp",throttlingPolicy:"30PerMin",description: "sample application"};
 
 @test:BeforeSuite
@@ -72,6 +84,8 @@ function beforeFunc1() {
 
 @test:Config {}
 function addApplicationTest() {
+    string[] testHosts= ["http://localhost:9090"];
+    test:when(retrieveManagementServerHostsListMock).thenReturn(testHosts);
     Application payload = {name:"sampleApp",throttlingPolicy:"25PerMin",description: "sample application"};
     NotFoundError|Application|APKError createdApplication = addApplication(payload, "carbon.super", "apkuser");
     if createdApplication is Application {
@@ -109,6 +123,8 @@ function getApplicationListTest(){
 
 @test:Config {dependsOn: [getApplicationListTest]}
 function updateApplicationTest() {
+    string[] testHosts= ["http://localhost:9090"];
+    test:when(retrieveManagementServerHostsListMock).thenReturn(testHosts);
     Application payload = {name:"sampleApp",throttlingPolicy:"25PerMin",description: "sample application updated"};
     string? appId = application.applicationId;
     if appId is string {

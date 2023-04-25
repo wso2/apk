@@ -18,6 +18,9 @@
 
 import ballerina/uuid;
 import ballerina/lang.value;
+import wso2/notification_grpc_client;
+import ballerina/time;
+import ballerina/log;
 
 isolated function addSubscription(Subscription payload, string org, string user) returns Subscription|APKError|NotFoundError|error {
     int apiId = 0;
@@ -60,6 +63,32 @@ isolated function addSubscription(Subscription payload, string org, string user)
     payload.subscriptionId = subscriptionId;
     payload.status = "UNBLOCKED";
     Subscription|APKError createdSub = addSubscriptionDAO(payload,user,apiId,appId);
+    if createdSub is Subscription {
+        string[]|APKError hostList = retrieveManagementServerHostsList();
+        if hostList is string[] {
+            string eventId = uuid:createType1AsString();
+            time:Utc currTime = time:utcNow();
+            string date = time:utcToString(currTime);
+            SubscriptionGRPC createSubscriptionRequest = {eventId: eventId, applicationId: createdSub.applicationId, uuid: subscriptionId, timeStamp: date, organization: org};
+            string devportalPubCert = <string>keyStores.tls.certFilePath;
+            string devportalKeyCert = <string>keyStores.tls.keyFilePath;
+            string pubCertPath = managementServerConfig.certPath;
+            foreach string host in hostList {
+                NotificationResponse|error subscriptionNotification = notification_grpc_client:createSubscription(createSubscriptionRequest,
+                "https://" + host + ":8766",pubCertPath,devportalPubCert,devportalKeyCert);
+                if subscriptionNotification is error {
+                    string message = "Error while sending subscription create grpc event";
+                    log:printError(subscriptionNotification.toString());
+                    APKError e = error(message, subscriptionNotification, message = message, description = message, code = 909000, statusCode = "500");
+                    return e;
+                }
+            }
+        } else {
+            return hostList;
+        }
+    } else {
+        return createdSub;
+    }
     return createdSub;
 }
 
@@ -90,7 +119,34 @@ isolated function getSubscriptionById(string subId, string org) returns Subscrip
 
 isolated function deleteSubscription(string subId, string organization) returns string|APKError {
     APKError|string status = deleteSubscriptionDAO(subId,organization);
+    if status is string {
+        string[]|APKError hostList = retrieveManagementServerHostsList();
+        if hostList is string[] {
+            string eventId = uuid:createType1AsString();
+            time:Utc currTime = time:utcNow();
+            string date = time:utcToString(currTime);
+            SubscriptionGRPC deleteSubscriptionRequest = {eventId: eventId, applicationId: subId, uuid: subId, timeStamp: date, organization: organization};
+            string devportalPubCert = <string>keyStores.tls.certFilePath;
+            string devportalKeyCert = <string>keyStores.tls.keyFilePath;
+            string pubCertPath = managementServerConfig.certPath;
+            foreach string host in hostList {
+                NotificationResponse|error subscriptionNotification = notification_grpc_client:deleteSubscription(deleteSubscriptionRequest,
+                "https://" + host + ":8766",pubCertPath,devportalPubCert,devportalKeyCert);
+                if subscriptionNotification is error {
+                    string message = "Error while sending subscription delete grpc event";
+                    log:printError(subscriptionNotification.toString());
+                    APKError e = error(message, subscriptionNotification, message = message, description = message, code = 909000, statusCode = "500");
+                    return e;
+                }
+            }
+        } else {
+            return hostList;
+        }
+    } else {
+        return status;
+    }
     return status;
+
 }
 
 isolated function updateSubscription(string subId, Subscription payload, string org, string user) returns Subscription|NotFoundError|APKError |error{
@@ -138,6 +194,32 @@ isolated function updateSubscription(string subId, Subscription payload, string 
     }
     payload.status = "UNBLOCKED";
     Subscription|APKError createdSub = updateSubscriptionDAO(payload,user,apiId,appId);
+    if createdSub is Subscription {
+        string[]|APKError hostList = retrieveManagementServerHostsList();
+        if hostList is string[] {
+            string eventId = uuid:createType1AsString();
+            time:Utc currTime = time:utcNow();
+            string date = time:utcToString(currTime);
+            SubscriptionGRPC updateSubscriptionRequest = {eventId: eventId, applicationId: createdSub.applicationId, uuid: subId, timeStamp: date, organization: org};
+            string devportalPubCert = <string>keyStores.tls.certFilePath;
+            string devportalKeyCert = <string>keyStores.tls.keyFilePath;
+            string pubCertPath = managementServerConfig.certPath;
+            foreach string host in hostList {
+                NotificationResponse|error subscriptionNotification = notification_grpc_client:updateSubscription(updateSubscriptionRequest,
+                "https://" + host + ":8766",pubCertPath,devportalPubCert,devportalKeyCert);
+                if subscriptionNotification is error {
+                    string message = "Error while sending subscription update grpc event";
+                    log:printError(subscriptionNotification.toString());
+                    APKError e = error(message, subscriptionNotification, message = message, description = message, code = 909000, statusCode = "500");
+                    return e;
+                }
+            }
+        } else {
+            return hostList;
+        }
+    } else {
+        return createdSub;
+    }
     return createdSub;
 }
 

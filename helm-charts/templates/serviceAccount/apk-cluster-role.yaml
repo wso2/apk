@@ -21,7 +21,7 @@ metadata:
   name: {{ .Values.wso2.apk.auth.roleName }}
 rules:
   - apiGroups: [""]
-    resources: ["services","configmaps","secrets"]
+    resources: ["services","configmaps","secrets","endpoints"]
     verbs: ["get","list","watch","update","delete","create"]
   - apiGroups: ["gateway.networking.k8s.io"]
     resources: ["httproutes","gateways"]

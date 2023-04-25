@@ -55,4 +55,11 @@ data:
     artifactId = "org.wso2.client."
     modelPackage = "org.wso2.client.model."
     apiPackage = "org.wso2.client.api."
+    [wso2.devportal_service.k8sConfig]
+    host = "kubernetes.default"
+    serviceAccountPath = "/var/run/secrets/kubernetes.io/serviceaccount"
+    [wso2.devportal_service.managementServerConfig]
+    serviceName = "{{ template "apk-helm.resource.prefix" . }}-management-server"
+    namespace = "{{ .Release.Namespace }}"
+    certPath = "/home/wso2apk/devportal/security/truststore/management-server.pem"
 {{- end -}}

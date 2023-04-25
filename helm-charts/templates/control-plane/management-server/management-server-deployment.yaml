@@ -77,6 +77,20 @@ spec:
             {{- else }}
               subPath: tls.crt
             {{- end }}
+            - name: devportal-ds-tls-volume
+              mountPath: /home/wso2/security/truststore/devportal.pem
+            {{- if and .Values.wso2.apk.cp.devportal.configs .Values.wso2.apk.cp.devportal.configs.tls }}
+              subPath: {{ .Values.wso2.apk.cp.devportal.configs.tls.certFilename | default "tls.crt" }}
+            {{- else }}
+              subPath: tls.crt
+            {{- end }}
+            - name: admin-ds-tls-volume
+              mountPath: /home/wso2/security/truststore/admin.pem
+            {{- if and .Values.wso2.apk.cp.admin.configs .Values.wso2.apk.cp.admin.configs.tls }}
+              subPath: {{ .Values.wso2.apk.cp.admin.configs.tls.certFilename | default "tls.crt" }}
+            {{- else }}
+              subPath: tls.crt
+            {{- end }}
             - name: management-server-config-toml-volume
               mountPath: /home/wso2/conf/
           readinessProbe:
@@ -120,6 +134,20 @@ spec:
             secretName: {{ .Values.wso2.apk.cp.backoffice.configs.tls.secretName | default (printf "%s-backoffice-ds-server-cert" (include "apk-helm.resource.prefix" .)) }}
            {{ else }}
             secretName: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-server-cert
+          {{ end }}
+        - name: devportal-ds-tls-volume
+          secret:
+            {{ if and .Values.wso2.apk.cp.devportal.configs .Values.wso2.apk.cp.devportal.configs.tls }}
+            secretName: {{ .Values.wso2.apk.cp.devportal.configs.tls.secretName | default (printf "%s-devportal-ds-server-cert" (include "apk-helm.resource.prefix" .)) }}
+            {{ else }}
+            secretName: {{ template "apk-helm.resource.prefix" . }}-devportal-ds-server-cert
+          {{ end }}
+        - name: admin-ds-tls-volume
+          secret:
+            {{ if and .Values.wso2.apk.cp.admin.configs .Values.wso2.apk.cp.admin.configs.tls }}
+            secretName: {{ .Values.wso2.apk.cp.admin.configs.tls.secretName | default (printf "%s-admin-ds-server-cert" (include "apk-helm.resource.prefix" .)) }}
+            {{ else }}
+            secretName: {{ template "apk-helm.resource.prefix" . }}-admin-ds-server-cert
           {{ end }}
 
 {{- end -}}
