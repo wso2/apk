@@ -2586,10 +2586,10 @@
 							"    });",
 							"    currentCount = currentCount + 1;",
 							"    pm.variables.set(\"requestCount9\", currentCount);",
-							"    postman.setNextRequest(\"APIRateLimit Call Deleted Rate Limit Resource Using APIKey\");",
+							"    postman.setNextRequest(\"APIRateLimit Call Updated Rate Limit Applied Resource Using APIKey\");",
 							"} else {",
-							"    pm.test(\"Check API response and status code is 200\", function () {",
-							"        pm.response.to.have.status(200);",
+							"    pm.test(\"Check API response and status code is 429\", function () {",
+							"        pm.response.to.have.status(429);",
 							"    });",
 							"    pm.variables.set('requestCount9', 10)",
 							"}"
