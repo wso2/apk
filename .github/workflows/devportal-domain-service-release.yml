@@ -88,7 +88,7 @@ jobs:
           git merge origin/main
       - name: build common bal libs
         run: |
-          cd apk-repo/common-bal-libs/apk-common-lib
+          cd apk-repo/common-bal-libs
           ./gradlew build
       - name: Run Gradle build
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.release_version != '' && github.event.inputs.next_version != ''   
