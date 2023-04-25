@@ -10,6 +10,7 @@
 .hg/
 .hgignore
 .svn/
+.checkov.yaml
 # Common backup files
 *.swp
 *.bak
