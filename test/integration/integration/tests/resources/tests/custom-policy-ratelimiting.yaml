@@ -40,8 +40,8 @@ metadata:
   namespace: gateway-integration-test-infra
 spec:
   override:
-    requestInterceptor:
-      backendRef:
+    requestInterceptors:
+    - backendRef:
         name: interceptor-backend-v1
       includes:
         - request_body

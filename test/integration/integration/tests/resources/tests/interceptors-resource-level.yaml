@@ -88,14 +88,14 @@ metadata:
   namespace: gateway-integration-test-infra
 spec:
   override:
-    requestInterceptor:
-      backendRef:
+    requestInterceptors:
+    - backendRef:
          name: interceptor-backend-v1
       includes:
       - request_body
       - request_headers
-    responseInterceptor:
-      backendRef:
+    responseInterceptors:
+    - backendRef:
          name: interceptor-backend-v1
   targetRef:
     group: gateway.networking.k8s.io

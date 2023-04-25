@@ -21,15 +21,15 @@ metadata:
   namespace: interceptor
 spec:
   override:
-    requestInterceptor:
-      backendRef:
+    requestInterceptors:
+    - backendRef:
          name: interceptor-backend
       includes:
       - request_body
       - request_headers
       - invocation_context
-    responseInterceptor:
-      backendRef:
+    responseInterceptors:
+    - backendRef:
          name: interceptor-backend
       includes:
       - response_headers
