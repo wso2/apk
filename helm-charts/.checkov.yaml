@@ -1,3 +1,0 @@
-skip-path:
-  - templates/data-plane/gateway-api
-  - charts/
