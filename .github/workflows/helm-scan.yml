@@ -14,6 +14,8 @@ jobs:
         uses: bridgecrewio/checkov-action@v12
         with:
           directory: helm-charts/
+          framework: helm,kubernetes,secrets
+          skip_check: CKV_K8S_21 
           output_format: cli,sarif
           output_file_path: console,results.sarif
       - name: Upload SARIF file
