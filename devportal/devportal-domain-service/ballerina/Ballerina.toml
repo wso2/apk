@@ -2,7 +2,7 @@
 org = "wso2"
 name = "devportal_service"
 version = "0.0.1-SNAPSHOT"
-distribution = "2201.2.0"
+distribution = "2201.5.0"
 
 [build-options]
 observabilityIncluded = true

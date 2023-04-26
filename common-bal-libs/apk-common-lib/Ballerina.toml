@@ -2,4 +2,4 @@
 org = "wso2"
 name = "apk_common_lib"
 version = "0.0.1-SNAPSHOT"
-distribution = "2201.3.0"
+distribution = "2201.5.0"
