@@ -1,7 +1,8 @@
 import wso2/apk_common_lib as commons;
 import ballerina/http;
 
-http:Service internalRuntimeService = service object {
+
+service /api/am/internal/runtime on ep1 {
     isolated resource function get apis/[string apiId]/definition(http:Request request) returns http:Response|NotFoundError|PreconditionFailedError|InternalServerErrorError|commons:APKError {
         string|http:HeaderNotFoundError header = request.getHeader("X-WSO2-Organization");
         if header is string {
@@ -19,4 +20,4 @@ http:Service internalRuntimeService = service object {
             return preconditionFailedError;
         }
     }
-};
+}
