@@ -2,7 +2,7 @@
 org = "wso2"
 name = "runtime_domain_service"
 version = "PROJECT_VERSION"
-distribution = "2201.2.3"
+distribution = "2201.5.0"
 
 [build-options]
 observabilityIncluded = false

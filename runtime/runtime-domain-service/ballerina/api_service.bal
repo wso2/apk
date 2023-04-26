@@ -24,7 +24,7 @@ import wso2/apk_common_lib as commons;
     id: "runtime-api-service"
 }
 
-http:Service runtimeService = service object {
+service /api/am/runtime on ep0 {
     isolated resource function get apis(http:RequestContext requestContext, string? query, int 'limit = 25, int offset = 0, string sortBy = "createdTime", string sortOrder = "desc") returns APIList|InternalServerErrorError|BadRequestError|commons:APKError {
         final APIClient apiService = new ();
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
@@ -181,4 +181,4 @@ http:Service runtimeService = service object {
         commons:Organization organization = authenticatedUserContext.organization;
         return apiService.getEndpointCertificateContent(apiId,certificateId, organization);
     }
-};
+}
