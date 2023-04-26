@@ -332,7 +332,6 @@ idp:
     hostname: "idp.am.wso2.com"
     # secretName: "idp-tls"
   database:
-    enabled: true
     driver: "org.postgresql.Driver"
     url: "jdbc:postgresql://wso2apk-db-service:5432/WSO2AM_DB"
     host: "wso2apk-db-service"
@@ -351,9 +350,7 @@ idp:
       loginPageURl: "https://idp.am.wso2.com:9095/authenticationEndpoint/login"
       loginErrorPageUrl: "https://idp.am.wso2.com:9095/authenticationEndpoint/error"
       loginCallBackURl: "https://idp.am.wso2.com:9095/authenticationEndpoint/login-callback"
-    appName: "idp-ds"
     deployment:
-      npi: idp-ds-npi
       resources:
         requests:
           memory: "128Mi"
@@ -362,14 +359,10 @@ idp:
           memory: "1028Mi"
           cpu: "1000m"
       readinessProbe:
-        path: /health
-        port: 9443
         initialDelaySeconds: 20
         periodSeconds: 20
         failureThreshold: 5
       livenessProbe:
-        path: /health
-        port: 9443
         initialDelaySeconds: 20
         periodSeconds: 20
         failureThreshold: 5
@@ -378,7 +371,6 @@ idp:
       imagePullPolicy: Always
       image: wso2/idp-domain-service:latest
   idpui:
-    appName: "idp-ui"
     deployment:
       resources:
         requests:
