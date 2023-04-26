@@ -35,7 +35,7 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
       - name: Install Ballerina distribution.
         shell: sh
-        run: "sudo dpkg -i ballerina-dist/ballerina-2201.4.0-swan-lake-linux-x64.deb"
+        run: "sudo dpkg -i ballerina-dist/ballerina-2201.5.0-swan-lake-linux-x64.deb"
       - name: Verify Ballerina Version
         shell: sh
         run: "bal -v"

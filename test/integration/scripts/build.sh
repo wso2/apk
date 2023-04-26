@@ -23,7 +23,7 @@ set -e
 
 # mkdir -p ballerina-dist
 # wget 'https://dist.ballerina.io/downloads/2201.5.0/ballerina-2201.5.0-swan-lake-linux-x64.deb' -P ballerina-dist
-# sudo dpkg -i ballerina-dist/ballerina-2201.4.0-swan-lake-linux-x64.deb
+# sudo dpkg -i ballerina-dist/ballerina-2201.5.0-swan-lake-linux-x64.deb
 
 current_dir=$PWD;
 # cd $current_dir;
