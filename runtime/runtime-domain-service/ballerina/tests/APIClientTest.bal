@@ -43,9 +43,7 @@ commons:Organization organiztion2 = {
     properties: []
 };
 
-@test:Mock {functionName: "startAndAttachServices"}
-function getMockStartandAttachServices() returns error? {
-}
+
 
 @test:Mock {functionName: "getBackendPolicyUid"}
 function testgetBackendPolicyUid(API api, string? endpointType, commons:Organization organization) returns string {

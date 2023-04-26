@@ -17,7 +17,6 @@
 //
 import ballerina/log;
 import ballerina/http;
-import ballerina/lang.runtime;
 import ballerina/uuid;
 import wso2/apk_common_lib as commons;
 
@@ -109,22 +108,5 @@ function init() returns error? {
     _ = check retrieveAllConfigMapsAtStartup((), ());
     ConfigMapListingTask configMapTask = new (configMapResourceVersion);
     _ = check configMapTask.startListening();
-    _ = check startAndAttachServices();
     log:printInfo("Initializing Runtime Domain Service..");
-}
-
-public function deRegisterep() returns error? {
-    _ = check ep0.gracefulStop();
-    _ = check ep1.gracefulStop();
-}
-
-function startAndAttachServices() returns error? {
-    check ep0.attach(healthService, "/");
-    check ep0.attach(runtimeService, "/api/am/runtime");
-    check ep0.'start();
-    runtime:registerListener(ep0);
-    check ep1.attach(internalRuntimeService, "/api/am/internal/runtime");
-    check ep1.'start();
-    runtime:registerListener(ep1);
-    runtime:onGracefulStop(deRegisterep);
 }
