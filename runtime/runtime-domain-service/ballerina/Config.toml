@@ -21,8 +21,3 @@ listenerName = "httpslistener"
 
 [ballerina.http]
 traceLogConsole = true
-
-
-[ballerina.log]
-level = "DEBUG"
-
