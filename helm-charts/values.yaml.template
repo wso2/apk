@@ -85,8 +85,10 @@ wso2:
         databaseName: "WSO2AM_DB"
         # -- Database Username.
         username: "wso2carbon"
-        # -- Database Password.
-        password: "wso2carbon"
+        # -- Database Password secret name.
+        secretName: "apk-db-secret"
+        # -- Database Password secret key.
+        secretKey: "DB_PASSWORD"
         # -- Database validation query.
         validationQuery: "SELECT 1"
         # -- Database validation timeout in ms.
@@ -125,7 +127,7 @@ wso2:
           # -- Image pull policy
           imagePullPolicy: Always
           # -- Image
-          image: wso2/devportal-domain-service:0.0.1-m8
+          image: wso2/devportal-domain-service:latest
       admin:
         deployment:
           resources:
@@ -160,7 +162,7 @@ wso2:
           # -- Image pull policy
           imagePullPolicy: Always
           # -- Image
-          image: wso2/admin-domain-service:0.0.1-m8
+          image: wso2/admin-domain-service:latest
       backoffice:
         deployment:
           resources:
@@ -195,7 +197,7 @@ wso2:
           # -- Image pull policy
           imagePullPolicy: Always
           # -- Image
-          image: wso2/backoffice-domain-service:0.0.1-m8
+          image: wso2/backoffice-domain-service:latest
       managementServer:
         deployment:
           resources:
@@ -322,7 +324,7 @@ wso2:
           # -- Image pull policy
           imagePullPolicy: Always
           # -- Image
-          image: wso2/runtime-domain-service:0.0.1-m8
+          image: wso2/runtime-domain-service:latest
           configs:
             # -- Enable authorization for runtime api.
             authrorization: true
@@ -508,7 +510,7 @@ wso2:
             # -- Image pull policy
             imagePullPolicy: Always
             # -- Image
-            image: wso2/enforcer:0.0.1-m8
+            image: wso2/enforcer:latest
             security:
               # -- hostname for the enforcer
               sslHostname: "enforcer"
@@ -545,8 +547,10 @@ idp:
     databaseName: "WSO2AM_DB"
     # -- identity server database username
     username: "wso2carbon"
-    # -- identity server database password
-    password: "wso2carbon"
+    # -- identity server database password secret name
+    secretName: "apk-db-secret"
+    # -- identity server database password secret key
+    secretKey: "DB_PASSWORD"
     # -- identity server database validation query
     validationQuery: "SELECT 1"
     # -- identity server database validation timeout
@@ -643,6 +647,9 @@ idp:
 gatewaySystem:
   # -- Enable gateway system to install gateway system components
   enabled: true
+  enableServiceAccountCreation: true
+  enableClusterRoleCreation: true
+  serviceAccountName: gateway-api-admission
 
 
 certmanager:
