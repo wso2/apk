@@ -23,13 +23,13 @@ import wso2/apk_common_lib as commons;
 # + body - API parameter
 # + organization - organization
 # + return - Return Value API | error
-isolated function createAPI(APIBody body, string organization) returns API|error {
+isolated function createAPI(APIBody body) returns API|error {
     transaction {
-        API|error apiCr = db_createAPI(body, organization);
+        API|error apiCr = db_createAPI(body, body.apiProperties.organization);
         if apiCr is API {
-            API|error defCr = db_AddDefinition(body, organization);
+            API|error defCr = db_AddDefinition(body, body.apiProperties.organization);
             if defCr is API {
-                string|error lcEveCr = db_AddLCEvent_internal(body.apiProperties.id, "carbon.super");
+                string|error lcEveCr = db_AddLCEvent_internal(body.apiProperties.id, body.apiProperties.organization);
                 if lcEveCr is string {
                     check commit;
                 } else {
@@ -53,8 +53,8 @@ isolated function createAPI(APIBody body, string organization) returns API|error
 # + apiId - API Id parameter
 # + organization - organization
 # + return - Return Value API | error
-isolated function getAPI_internal(string apiId, string organization) returns API|commons:APKError|error {
-    API|commons:APKError|error response = db_getAPI_internal(apiId, organization);
+isolated function getAPI_internal(string apiId) returns API|commons:APKError|error {
+    API|commons:APKError|error response = db_getAPI_internal(apiId);
     if response is error && response !is commons:APKError {
         return error("Error while retrieving API data");
     }
@@ -67,10 +67,10 @@ isolated function getAPI_internal(string apiId, string organization) returns API
 # + apiId - API Id parameter
 # + organization - organization
 # + return - Return Value API | error
-isolated function updateAPI_internal(string apiId, APIBody body, string organization) returns API|commons:APKError|error {
-    API|commons:APKError api = check getAPI_internal(apiId, organization);
+isolated function updateAPI_internal(string apiId, APIBody body) returns API|commons:APKError|error {
+    API|commons:APKError api = check getAPI_internal(apiId);
     if api is API {
-        API|error apiUp = db_updateAPI_internal(apiId, body, organization);
+        API|error apiUp = db_updateAPI_internal(apiId, body);
         if apiUp is error {
             return error("Error while updating API data");
         }
@@ -89,8 +89,8 @@ isolated function updateAPI_internal(string apiId, APIBody body, string organiza
 # + apiId - API Id parameter
 # + organization - organization
 # + return - Return Value string | error
-isolated function deleteAPI(string apiId, string organization) returns string|commons:APKError|error? {
-    API|commons:APKError api = check getAPI_internal(apiId, organization);
+isolated function deleteAPI(string apiId) returns string|commons:APKError|error? {
+    API|commons:APKError api = check getAPI_internal(apiId);
     if api is API {
         error?|string apiDel = db_deleteAPI(apiId);
         if apiDel is error {

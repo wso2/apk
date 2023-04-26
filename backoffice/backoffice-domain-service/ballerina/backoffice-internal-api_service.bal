@@ -13,7 +13,7 @@ service /api/am/backoffice/internal on ep1 {
     isolated resource function post apis(@http:Payload json payload) returns CreatedAPI|error {
         APIBody apiBody = check payload.cloneWithType(APIBody);
 
-        API|error? createdApi = createAPI(apiBody, "carbon.super");
+        API|error? createdApi = createAPI(apiBody);
         if createdApi is API {
             CreatedAPI crAPI = {body: check createdApi.cloneWithType(API)};
             return crAPI;
@@ -22,7 +22,7 @@ service /api/am/backoffice/internal on ep1 {
     }
 
     isolated resource function get apis/[string apiId](@http:Header string? 'if\-none\-match) returns API|commons:APKError|error {
-        API | commons:APKError | error ? response = getAPI_internal(apiId, "carbon.super");
+        API | commons:APKError | error ? response = getAPI_internal(apiId);
         if (response is API | commons:APKError) {
             return response;
         }
@@ -32,7 +32,7 @@ service /api/am/backoffice/internal on ep1 {
     isolated resource function put apis/[string apiId](@http:Header string? 'if\-match, @http:Payload json payload) returns API|commons:APKError|error {
         APIBody apiUpdateBody = check payload.cloneWithType(APIBody);
 
-        API|commons:APKError |error? updatedAPI = updateAPI_internal(apiId, apiUpdateBody, "carbon.super");
+        API|commons:APKError |error? updatedAPI = updateAPI_internal(apiId, apiUpdateBody);
         if updatedAPI is API {
             API upAPI = check updatedAPI.cloneWithType(API);
             return upAPI;
@@ -43,7 +43,7 @@ service /api/am/backoffice/internal on ep1 {
     }
 
     isolated resource function delete apis/[string apiId](@http:Header string? 'if\-match) returns http:Ok|commons:APKError {
-        string|commons:APKError|error? response = deleteAPI(apiId, "carbon.super");
+        string|commons:APKError|error? response = deleteAPI(apiId);
         if response is commons:APKError {
             return response;
         }
