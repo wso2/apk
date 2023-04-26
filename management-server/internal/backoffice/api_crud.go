@@ -23,7 +23,7 @@ type api struct {
 	Context         string `json:"context"`
 	Version         string `json:"version"`
 	Provider        string `json:"provider"`
-	OrganizationId  string `json:"organization"`
+	OrganizationID  string `json:"organization"`
 	LifeCycleStatus string `json:"LifeCycleStatus"`
 }
 
@@ -58,7 +58,7 @@ func composeRequestBody(api *apiProtos.API) requestData {
 	request.APIProperties.Context = api.Context
 	request.APIProperties.Version = api.Version
 	request.APIProperties.Provider = api.Provider
-	request.APIProperties.OrganizationId = api.OrganizationId
+	request.APIProperties.OrganizationID = api.OrganizationId
 	json.Unmarshal([]byte(api.Definition), &request.Definition)
 	return *request
 }
