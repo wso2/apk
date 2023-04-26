@@ -36,18 +36,30 @@ service NotificationService {
 
 message Application {
     string eventId = 1;
-    string applicationId = 2;
+    string name = 2;
     string uuid = 3;
-    string timeStamp = 4;
-    string organization = 5;
+    string owner = 4;
+    string policy = 5;
+    map<string, string> attributes = 6;
+    message Key {
+        string key = 1;
+        string keyManager = 2;
+    }
+    repeated Key keys = 7;
+    string organization = 8;
+    string timeStamp = 9;
 }
 
 message Subscription {
     string eventId = 1;
-    string applicationId = 2;
-    string uuid = 3;
-    string timeStamp = 4;
-    string organization = 5;
+    string applicationRef = 2;
+    string apiRef = 3;
+    string policyId = 4;
+    string subStatus = 5;
+    string subscriber = 6;
+    string uuid = 7;
+    string timeStamp = 8;
+    string organization = 9;
 }
 
 message NotificationResponse {

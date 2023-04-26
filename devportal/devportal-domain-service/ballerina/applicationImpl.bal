@@ -40,7 +40,9 @@ isolated function addApplication(Application application, string org, string use
                 string eventId = uuid:createType1AsString();
                 time:Utc currTime = time:utcNow();
                 string date = time:utcToString(currTime);
-                ApplicationGRPC createApplicationRequest = {eventId: eventId, applicationId: createdApp.name, uuid: applicationId, timeStamp: date, organization: org};
+                ApplicationGRPC createApplicationRequest = {eventId: eventId, name: createdApp.name, uuid: applicationId, 
+                owner: user, policy: createdApp.throttlingPolicy, keys: [],  
+                attributes: [], timeStamp: date, organization: org};
                 foreach string host in hostList {
                     log:printDebug("Retrieved Mgt Host:"+host);
                     string devportalPubCert = <string>keyStores.tls.certFilePath;
@@ -111,7 +113,9 @@ isolated function updateApplication(string appId, Application application, strin
                 string eventId = uuid:createType1AsString();
                 time:Utc currTime = time:utcNow();
                 string date = time:utcToString(currTime);
-                ApplicationGRPC createApplicationRequest = {eventId: eventId, applicationId: updatedApp.name, uuid: appId, timeStamp: date, organization: org};
+                ApplicationGRPC createApplicationRequest = {eventId: eventId, name: updatedApp.name, uuid: appId, 
+                owner: user, policy: updatedApp.throttlingPolicy, keys: [],  
+                attributes: [], timeStamp: date, organization: org};
                 foreach string host in hostList {
                     log:printDebug("Retrieved Host:"+host);
                     string devportalPubCert = <string>keyStores.tls.certFilePath;
@@ -145,7 +149,7 @@ isolated function deleteApplication(string appId, string organization) returns s
             string eventId = uuid:createType1AsString();
             time:Utc currTime = time:utcNow();
             string date = time:utcToString(currTime);
-            ApplicationGRPC deleteApplicationRequest = {eventId: eventId, applicationId: appId, uuid: appId, timeStamp: date, organization: organization};
+            ApplicationGRPC deleteApplicationRequest = {eventId: eventId, uuid: appId, timeStamp: date, organization: organization};
             string devportalPubCert = <string>keyStores.tls.certFilePath;
             string devportalKeyCert = <string>keyStores.tls.keyFilePath;
             string pubCertPath = <string>managementServerConfig.certPath;

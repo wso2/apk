@@ -11,15 +11,17 @@ option java_multiple_files = true;
 
 // Application data model
 message Application {
-    int32 id = 1;
-    string uuid = 2;
-	string name = 3;
-	int32 subId = 4;
-	string subName = 5;
-	string policy = 6;
-	string tokenType = 7;
-	map<string, string> attributes = 8;
-	int32 tenantId = 9;
-	string tenantDomain = 10;
-	int64 timestamp = 11;
+    string eventId = 1;
+    string name = 2;
+    string uuid = 3;
+    string owner = 4;
+    string policy = 5;
+    map<string, string> attributes = 6;
+    message Key {
+        string key = 1;
+        string keyManager = 2;
+    }
+    repeated Key keys = 7;
+    string organization = 8;
+    string timeStamp = 9;
 }

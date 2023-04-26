@@ -19,11 +19,6 @@
 package synchronizer
 
 import (
-	"fmt"
-
-	"github.com/wso2/apk/adapter/pkg/logging"
-	"github.com/wso2/apk/management-server/internal/database"
-	"github.com/wso2/apk/management-server/internal/logger"
 	"github.com/wso2/apk/management-server/internal/types"
 	"github.com/wso2/apk/management-server/internal/xds"
 )
@@ -55,20 +50,9 @@ func AddSubscriptionEventsToChannel(event types.SubscriptionEvent) {
 func ProcessApplicationEvents() {
 	for e := range ApplicationCreateAndDeleteEventChannel {
 		if e.IsRemoveEvent {
-			database.DbCache.Delete(e.UUID)
 			xds.RemoveApplication(e.Label, e.UUID)
 		} else {
-			app, err := database.GetApplicationByUUID(e.UUID)
-			if err != nil {
-				logger.LoggerDatabase.ErrorC(logging.ErrorDetails{
-					Message: fmt.Sprintf("Error retrieving application for uuid : %s from database error: %v, "+
-						"hence skipping add to xdx cache", e.UUID, err),
-					Severity:  logging.MINOR,
-					ErrorCode: 1101,
-				})
-				return
-			}
-			xds.AddSingleApplication(e.Label, app)
+			xds.AddSingleApplication(e.Label, e)
 		}
 	}
 }
@@ -77,28 +61,9 @@ func ProcessApplicationEvents() {
 func ProcessSubscriptionEvents() {
 	for e := range SubscriptionCreateAndDeleteEventChannel {
 		if e.IsRemoveEvent {
-			err := database.DbCache.DeleteSubscriptionFromApplication(e.AppUUID, e.UUID)
-			if err == database.ErrApplicationNotInCache {
-				database.GetApplicationByUUID(e.AppUUID)
-			}
-			app, _ := database.DbCache.Read(e.AppUUID)
-			xds.AddSingleApplication(e.Label, app)
-		} else if e.IsUpdateEvent {
-			sub, _ := database.GetSubscriptionByUUID(e.UUID)
-			err := database.DbCache.UpdateSubscriptionInApplication(e.AppUUID, sub)
-			if err == database.ErrApplicationNotInCache {
-				database.GetApplicationByUUID(e.AppUUID)
-			}
-			app, _ := database.DbCache.Read(e.AppUUID)
-			xds.AddSingleApplication(e.Label, app)
+			xds.RemoveSubscription(e.Label, e.UUID)
 		} else {
-			sub, _ := database.GetSubscriptionByUUID(e.UUID)
-			err := database.DbCache.AddSubscriptionForApplication(e.AppUUID, sub)
-			if err == database.ErrApplicationNotInCache {
-				database.GetApplicationByUUID(e.AppUUID)
-			}
-			app, _ := database.DbCache.Read(e.AppUUID)
-			xds.AddSingleApplication(e.Label, app)
+			xds.AddSingleSubscription(e.Label, e)
 		}
 	}
 }

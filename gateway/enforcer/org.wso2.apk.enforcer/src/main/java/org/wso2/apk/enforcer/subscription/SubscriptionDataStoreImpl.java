@@ -153,12 +153,12 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
 
         for (org.wso2.apk.enforcer.discovery.subscription.Subscription subscription : subscriptionList) {
             Subscription newSubscription = new Subscription();
-            newSubscription.setSubscriptionId(subscription.getSubscriptionUUID());
+            newSubscription.setSubscriptionId(subscription.getUuid());
             newSubscription.setPolicyId(subscription.getPolicyId());
-            newSubscription.setApiUUID(subscription.getApiUUID());
-            newSubscription.setAppUUID(subscription.getAppUUID());
-            newSubscription.setSubscriptionState(subscription.getSubscriptionState());
-            newSubscription.setTimeStamp(subscription.getTimeStamp());
+            newSubscription.setApiUUID(subscription.getApiRef());
+            newSubscription.setAppUUID(subscription.getApplicationRef());
+            newSubscription.setSubscriptionState(subscription.getSubStatus());
+            newSubscription.setTimeStamp(Long.parseLong(subscription.getTimeStamp()));
 
             newSubscriptionMap.put(newSubscription.getCacheKey(), newSubscription);
         }
@@ -175,14 +175,10 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
 
         for (org.wso2.apk.enforcer.discovery.subscription.Application application : applicationList) {
             Application newApplication = new Application();
-            newApplication.setId(application.getId());
             newApplication.setName(application.getName());
             newApplication.setPolicy(application.getPolicy());
-            newApplication.setSubId(application.getSubId());
-            newApplication.setSubName(application.getSubName());
-            newApplication.setTokenType(application.getTokenType());
             newApplication.setUUID(application.getUuid());
-            newApplication.setTenantDomain(application.getTenantDomain());
+            newApplication.setTenantDomain(application.getOrganization());
             application.getAttributesMap().forEach(newApplication::addAttribute);
 
             newApplicationMap.put(newApplication.getCacheKey(), newApplication);

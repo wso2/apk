@@ -8,110 +8,110 @@ public interface SubscriptionOrBuilder extends
     com.google.protobuf.MessageOrBuilder {
 
   /**
-   * <code>string subscriptionId = 1;</code>
-   * @return The subscriptionId.
+   * <code>string eventId = 1;</code>
+   * @return The eventId.
    */
-  java.lang.String getSubscriptionId();
+  java.lang.String getEventId();
   /**
-   * <code>string subscriptionId = 1;</code>
-   * @return The bytes for subscriptionId.
+   * <code>string eventId = 1;</code>
+   * @return The bytes for eventId.
    */
   com.google.protobuf.ByteString
-      getSubscriptionIdBytes();
+      getEventIdBytes();
 
   /**
-   * <code>string policyId = 2;</code>
+   * <code>string applicationRef = 2;</code>
+   * @return The applicationRef.
+   */
+  java.lang.String getApplicationRef();
+  /**
+   * <code>string applicationRef = 2;</code>
+   * @return The bytes for applicationRef.
+   */
+  com.google.protobuf.ByteString
+      getApplicationRefBytes();
+
+  /**
+   * <code>string apiRef = 3;</code>
+   * @return The apiRef.
+   */
+  java.lang.String getApiRef();
+  /**
+   * <code>string apiRef = 3;</code>
+   * @return The bytes for apiRef.
+   */
+  com.google.protobuf.ByteString
+      getApiRefBytes();
+
+  /**
+   * <code>string policyId = 4;</code>
    * @return The policyId.
    */
   java.lang.String getPolicyId();
   /**
-   * <code>string policyId = 2;</code>
+   * <code>string policyId = 4;</code>
    * @return The bytes for policyId.
    */
   com.google.protobuf.ByteString
       getPolicyIdBytes();
 
   /**
-   * <code>int32 apiId = 3;</code>
-   * @return The apiId.
+   * <code>string subStatus = 5;</code>
+   * @return The subStatus.
    */
-  int getApiId();
-
+  java.lang.String getSubStatus();
   /**
-   * <code>int32 appId = 4;</code>
-   * @return The appId.
-   */
-  int getAppId();
-
-  /**
-   * <code>string subscriptionState = 5;</code>
-   * @return The subscriptionState.
-   */
-  java.lang.String getSubscriptionState();
-  /**
-   * <code>string subscriptionState = 5;</code>
-   * @return The bytes for subscriptionState.
+   * <code>string subStatus = 5;</code>
+   * @return The bytes for subStatus.
    */
   com.google.protobuf.ByteString
-      getSubscriptionStateBytes();
+      getSubStatusBytes();
 
   /**
-   * <code>int64 timeStamp = 6;</code>
+   * <code>string subscriber = 6;</code>
+   * @return The subscriber.
+   */
+  java.lang.String getSubscriber();
+  /**
+   * <code>string subscriber = 6;</code>
+   * @return The bytes for subscriber.
+   */
+  com.google.protobuf.ByteString
+      getSubscriberBytes();
+
+  /**
+   * <code>string uuid = 7;</code>
+   * @return The uuid.
+   */
+  java.lang.String getUuid();
+  /**
+   * <code>string uuid = 7;</code>
+   * @return The bytes for uuid.
+   */
+  com.google.protobuf.ByteString
+      getUuidBytes();
+
+  /**
+   * <code>string timeStamp = 8;</code>
    * @return The timeStamp.
    */
-  long getTimeStamp();
-
+  java.lang.String getTimeStamp();
   /**
-   * <code>int32 tenantId = 7;</code>
-   * @return The tenantId.
-   */
-  int getTenantId();
-
-  /**
-   * <code>string tenantDomain = 8;</code>
-   * @return The tenantDomain.
-   */
-  java.lang.String getTenantDomain();
-  /**
-   * <code>string tenantDomain = 8;</code>
-   * @return The bytes for tenantDomain.
+   * <code>string timeStamp = 8;</code>
+   * @return The bytes for timeStamp.
    */
   com.google.protobuf.ByteString
-      getTenantDomainBytes();
+      getTimeStampBytes();
 
   /**
-   * <code>string subscriptionUUID = 9;</code>
-   * @return The subscriptionUUID.
+   * <code>string organization = 9;</code>
+   * @return The organization.
    */
-  java.lang.String getSubscriptionUUID();
+  java.lang.String getOrganization();
   /**
-   * <code>string subscriptionUUID = 9;</code>
-   * @return The bytes for subscriptionUUID.
+   * <code>string organization = 9;</code>
+   * @return The bytes for organization.
    */
   com.google.protobuf.ByteString
-      getSubscriptionUUIDBytes();
-
-  /**
-   * <code>string appUUID = 10;</code>
-   * @return The appUUID.
-   */
-  java.lang.String getAppUUID();
-  /**
-   * <code>string appUUID = 10;</code>
-   * @return The bytes for appUUID.
-   */
-  com.google.protobuf.ByteString
-      getAppUUIDBytes();
-
-  /**
-   * <code>string apiUUID = 11;</code>
-   * @return The apiUUID.
-   */
-  java.lang.String getApiUUID();
-  /**
-   * <code>string apiUUID = 11;</code>
-   * @return The bytes for apiUUID.
-   */
-  com.google.protobuf.ByteString
-      getApiUUIDBytes();
+      getOrganizationBytes();
 }

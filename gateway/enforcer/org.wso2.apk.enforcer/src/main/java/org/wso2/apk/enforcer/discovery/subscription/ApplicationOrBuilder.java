@@ -8,83 +8,71 @@ public interface ApplicationOrBuilder extends
     com.google.protobuf.MessageOrBuilder {
 
   /**
-   * <code>int32 id = 1;</code>
-   * @return The id.
+   * <code>string eventId = 1;</code>
+   * @return The eventId.
    */
-  int getId();
-
+  java.lang.String getEventId();
   /**
-   * <code>string uuid = 2;</code>
-   * @return The uuid.
-   */
-  java.lang.String getUuid();
-  /**
-   * <code>string uuid = 2;</code>
-   * @return The bytes for uuid.
+   * <code>string eventId = 1;</code>
+   * @return The bytes for eventId.
    */
   com.google.protobuf.ByteString
-      getUuidBytes();
+      getEventIdBytes();
 
   /**
-   * <code>string name = 3;</code>
+   * <code>string name = 2;</code>
    * @return The name.
    */
   java.lang.String getName();
   /**
-   * <code>string name = 3;</code>
+   * <code>string name = 2;</code>
    * @return The bytes for name.
    */
   com.google.protobuf.ByteString
       getNameBytes();
 
   /**
-   * <code>int32 subId = 4;</code>
-   * @return The subId.
+   * <code>string uuid = 3;</code>
+   * @return The uuid.
    */
-  int getSubId();
-
+  java.lang.String getUuid();
   /**
-   * <code>string subName = 5;</code>
-   * @return The subName.
-   */
-  java.lang.String getSubName();
-  /**
-   * <code>string subName = 5;</code>
-   * @return The bytes for subName.
+   * <code>string uuid = 3;</code>
+   * @return The bytes for uuid.
    */
   com.google.protobuf.ByteString
-      getSubNameBytes();
+      getUuidBytes();
 
   /**
-   * <code>string policy = 6;</code>
+   * <code>string owner = 4;</code>
+   * @return The owner.
+   */
+  java.lang.String getOwner();
+  /**
+   * <code>string owner = 4;</code>
+   * @return The bytes for owner.
+   */
+  com.google.protobuf.ByteString
+      getOwnerBytes();
+
+  /**
+   * <code>string policy = 5;</code>
    * @return The policy.
    */
   java.lang.String getPolicy();
   /**
-   * <code>string policy = 6;</code>
+   * <code>string policy = 5;</code>
    * @return The bytes for policy.
    */
   com.google.protobuf.ByteString
       getPolicyBytes();
 
   /**
-   * <code>string tokenType = 7;</code>
-   * @return The tokenType.
-   */
-  java.lang.String getTokenType();
-  /**
-   * <code>string tokenType = 7;</code>
-   * @return The bytes for tokenType.
-   */
-  com.google.protobuf.ByteString
-      getTokenTypeBytes();
-
-  /**
-   * <code>map&lt;string, string&gt; attributes = 8;</code>
+   * <code>map&lt;string, string&gt; attributes = 6;</code>
    */
   int getAttributesCount();
   /**
-   * <code>map&lt;string, string&gt; attributes = 8;</code>
+   * <code>map&lt;string, string&gt; attributes = 6;</code>
    */
   boolean containsAttributes(
       java.lang.String key);
@@ -95,45 +83,69 @@ public interface ApplicationOrBuilder extends
   java.util.Map<java.lang.String, java.lang.String>
   getAttributes();
   /**
-   * <code>map&lt;string, string&gt; attributes = 8;</code>
+   * <code>map&lt;string, string&gt; attributes = 6;</code>
    */
   java.util.Map<java.lang.String, java.lang.String>
   getAttributesMap();
   /**
-   * <code>map&lt;string, string&gt; attributes = 8;</code>
+   * <code>map&lt;string, string&gt; attributes = 6;</code>
    */
 
   java.lang.String getAttributesOrDefault(
       java.lang.String key,
       java.lang.String defaultValue);
   /**
-   * <code>map&lt;string, string&gt; attributes = 8;</code>
+   * <code>map&lt;string, string&gt; attributes = 6;</code>
    */
 
   java.lang.String getAttributesOrThrow(
       java.lang.String key);
 
   /**
-   * <code>int32 tenantId = 9;</code>
-   * @return The tenantId.
+   * <code>repeated .wso2.discovery.subscription.Application.Key keys = 7;</code>
    */
-  int getTenantId();
+  java.util.List<org.wso2.apk.enforcer.discovery.subscription.Application.Key> 
+      getKeysList();
+  /**
+   * <code>repeated .wso2.discovery.subscription.Application.Key keys = 7;</code>
+   */
+  org.wso2.apk.enforcer.discovery.subscription.Application.Key getKeys(int index);
+  /**
+   * <code>repeated .wso2.discovery.subscription.Application.Key keys = 7;</code>
+   */
+  int getKeysCount();
+  /**
+   * <code>repeated .wso2.discovery.subscription.Application.Key keys = 7;</code>
+   */
+  java.util.List<? extends org.wso2.apk.enforcer.discovery.subscription.Application.KeyOrBuilder> 
+      getKeysOrBuilderList();
+  /**
+   * <code>repeated .wso2.discovery.subscription.Application.Key keys = 7;</code>
+   */
+  org.wso2.apk.enforcer.discovery.subscription.Application.KeyOrBuilder getKeysOrBuilder(
+      int index);
 
   /**
-   * <code>string tenantDomain = 10;</code>
-   * @return The tenantDomain.
+   * <code>string organization = 8;</code>
+   * @return The organization.
    */
-  java.lang.String getTenantDomain();
+  java.lang.String getOrganization();
   /**
-   * <code>string tenantDomain = 10;</code>
-   * @return The bytes for tenantDomain.
+   * <code>string organization = 8;</code>
+   * @return The bytes for organization.
    */
   com.google.protobuf.ByteString
-      getTenantDomainBytes();
+      getOrganizationBytes();
 
   /**
-   * <code>int64 timestamp = 11;</code>
-   * @return The timestamp.
+   * <code>string timeStamp = 9;</code>
+   * @return The timeStamp.
    */
-  long getTimestamp();
+  java.lang.String getTimeStamp();
+  /**
+   * <code>string timeStamp = 9;</code>
+   * @return The bytes for timeStamp.
+   */
+  com.google.protobuf.ByteString
+      getTimeStampBytes();
 }

@@ -527,34 +527,26 @@ func MarshalAPIForLifeCycleChangeEventAndReturnList(apiUUID, status, gatewayLabe
 
 func marshalSubscription(subscriptionInternal *types.Subscription) *subscription.Subscription {
 	sub := &subscription.Subscription{
-		SubscriptionId:    fmt.Sprint(subscriptionInternal.SubscriptionID),
-		PolicyId:          subscriptionInternal.PolicyID,
-		ApiId:             subscriptionInternal.APIID,
-		AppId:             subscriptionInternal.AppID,
-		SubscriptionState: subscriptionInternal.SubscriptionState,
-		TimeStamp:         subscriptionInternal.TimeStamp,
-		TenantId:          subscriptionInternal.TenantID,
-		TenantDomain:      subscriptionInternal.TenantDomain,
-		SubscriptionUUID:  subscriptionInternal.SubscriptionUUID,
-		ApiUUID:           subscriptionInternal.APIUUID,
-		AppUUID:           subscriptionInternal.ApplicationUUID,
+		Uuid:           subscriptionInternal.SubscriptionUUID,
+		PolicyId:       subscriptionInternal.PolicyID,
+		ApiRef:         subscriptionInternal.APIUUID,
+		ApplicationRef: subscriptionInternal.ApplicationUUID,
+		SubStatus:      subscriptionInternal.SubscriptionState,
+		//TimeStamp:      subscriptionInternal.TimeStamp,
+		Organization: subscriptionInternal.TenantDomain,
 	}
 	return sub
 }
 
 func marshalApplication(appInternal *types.Application) *subscription.Application {
 	app := &subscription.Application{
-		Uuid:         appInternal.UUID,
-		Id:           appInternal.ID,
-		Name:         appInternal.Name,
-		SubId:        appInternal.ID,
-		SubName:      appInternal.SubName,
-		Policy:       appInternal.Policy,
-		TokenType:    appInternal.TokenType,
+		Uuid:   appInternal.UUID,
+		Name:   appInternal.Name,
+		Policy: appInternal.Policy,
+		//Owner:        appInternal.Owner,
 		Attributes:   appInternal.Attributes,
-		TenantId:     appInternal.TenantID,
-		TenantDomain: appInternal.TenantDomain,
-		Timestamp:    appInternal.TimeStamp,
+		Organization: appInternal.TenantDomain,
+		//Timestamp:    appInternal.TimeStamp,
 	}
 	return app
 }

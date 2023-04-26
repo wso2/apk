@@ -48,8 +48,15 @@ func newnotificationService() *notificationService {
 func (s *notificationService) CreateApplication(ctx context.Context, application *Application) (*NotificationResponse, error) {
 	logger.LoggerNotificationServer.Infof("Message received : %q", &application)
 	var event = internal_types.ApplicationEvent{
-		Label:         config.ReadConfigs().ManagementServer.NodeLabels[0],
-		UUID:          application.Uuid,
+		Label:      config.ReadConfigs().ManagementServer.NodeLabels[0],
+		UUID:       application.Uuid,
+		Name:       application.Name,
+		Owner:      application.Owner,
+		Policy:     application.Policy,
+		Attributes: application.Attributes,
+		//Keys:         application.Keys,
+		Organization:  application.Organization,
+		TimeStamp:     application.TimeStamp,
 		IsRemoveEvent: false,
 	}
 	synchronizer.AddApplicationEventsToChannel(event)
@@ -60,8 +67,15 @@ func (s *notificationService) CreateApplication(ctx context.Context, application
 func (s *notificationService) UpdateApplication(ctx context.Context, application *Application) (*NotificationResponse, error) {
 	logger.LoggerNotificationServer.Infof("Message received : %q", &application)
 	var event = internal_types.ApplicationEvent{
-		Label:         config.ReadConfigs().ManagementServer.NodeLabels[0],
-		UUID:          application.Uuid,
+		Label:      config.ReadConfigs().ManagementServer.NodeLabels[0],
+		UUID:       application.Uuid,
+		Name:       application.Name,
+		Owner:      application.Owner,
+		Policy:     application.Policy,
+		Attributes: application.Attributes,
+		//Keys:         application.Keys,
+		Organization:  application.Organization,
+		TimeStamp:     application.TimeStamp,
 		IsRemoveEvent: false,
 	}
 	synchronizer.AddApplicationEventsToChannel(event)
@@ -74,6 +88,7 @@ func (s *notificationService) DeleteApplication(ctx context.Context, application
 	var event = internal_types.ApplicationEvent{
 		Label:         config.ReadConfigs().ManagementServer.NodeLabels[0],
 		UUID:          application.Uuid,
+		Organization:  application.Organization,
 		IsRemoveEvent: true,
 	}
 	synchronizer.AddApplicationEventsToChannel(event)
@@ -84,9 +99,16 @@ func (s *notificationService) DeleteApplication(ctx context.Context, application
 func (s *notificationService) CreateSubscription(ctx context.Context, subscription *Subscription) (*NotificationResponse, error) {
 	logger.LoggerNotificationServer.Infof("Message received : %q", &subscription)
 	var event = internal_types.SubscriptionEvent{
-		Label:         config.ReadConfigs().ManagementServer.NodeLabels[0],
-		UUID:          subscription.Uuid,
-		IsRemoveEvent: false,
+		Label:          config.ReadConfigs().ManagementServer.NodeLabels[0],
+		UUID:           subscription.Uuid,
+		ApplicationRef: subscription.ApplicationRef,
+		APIRef:         subscription.ApiRef,
+		PolicyID:       subscription.PolicyId,
+		SubStatus:      subscription.SubStatus,
+		Subscriber:     subscription.Subscriber,
+		Organization:   subscription.Organization,
+		TimeStamp:      subscription.TimeStamp,
+		IsRemoveEvent:  false,
 	}
 	synchronizer.AddSubscriptionEventsToChannel(event)
 	return &NotificationResponse{Code: NotificationResponse_OK}, nil
@@ -96,9 +118,16 @@ func (s *notificationService) CreateSubscription(ctx context.Context, subscripti
 func (s *notificationService) UpdateSubscription(ctx context.Context, subscription *Subscription) (*NotificationResponse, error) {
 	logger.LoggerNotificationServer.Infof("Message received : %q", &subscription)
 	var event = internal_types.SubscriptionEvent{
-		Label:         config.ReadConfigs().ManagementServer.NodeLabels[0],
-		UUID:          subscription.Uuid,
-		IsRemoveEvent: false,
+		Label:          config.ReadConfigs().ManagementServer.NodeLabels[0],
+		UUID:           subscription.Uuid,
+		ApplicationRef: subscription.ApplicationRef,
+		APIRef:         subscription.ApiRef,
+		PolicyID:       subscription.PolicyId,
+		SubStatus:      subscription.SubStatus,
+		Subscriber:     subscription.Subscriber,
+		Organization:   subscription.Organization,
+		TimeStamp:      subscription.TimeStamp,
+		IsRemoveEvent:  false,
 	}
 	synchronizer.AddSubscriptionEventsToChannel(event)
 	return &NotificationResponse{Code: NotificationResponse_OK}, nil
@@ -110,6 +139,7 @@ func (s *notificationService) DeleteSubscription(ctx context.Context, subscripti
 	var event = internal_types.SubscriptionEvent{
 		Label:         config.ReadConfigs().ManagementServer.NodeLabels[0],
 		UUID:          subscription.Uuid,
+		Organization:  subscription.Organization,
 		IsRemoveEvent: true,
 	}
 	synchronizer.AddSubscriptionEventsToChannel(event)

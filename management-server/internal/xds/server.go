@@ -31,8 +31,8 @@ import (
 
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
-	apkmgt_application "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/apkmgt"
-	apkmgt_service "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/apkmgt"
+	sub_service "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/subscription"
+	internal_application "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/subscription"
 	wso2_cache "github.com/wso2/apk/adapter/pkg/discovery/protocol/cache/v3"
 	wso2_resource "github.com/wso2/apk/adapter/pkg/discovery/protocol/resource/v3"
 	wso2_server "github.com/wso2/apk/adapter/pkg/discovery/protocol/server/v3"
@@ -48,15 +48,16 @@ import (
 )
 
 var (
-	applicationCache      wso2_cache.SnapshotCache
-	applicationCacheMutex sync.Mutex
-	introducedLabels      map[string]bool
+	applicationCache       wso2_cache.SnapshotCache
+	applicationCacheMutex  sync.Mutex
+	subscriptionCache      wso2_cache.SnapshotCache
+	subscriptionCacheMutex sync.Mutex
+	introducedLabels       map[string]bool
 )
 
 const (
-	maxRandomInt             int    = 999999999
-	typeURL                  string = "wso2.discovery.apkmgt.Application"
-	grpcMaxConcurrentStreams        = 1000000
+	maxRandomInt             int = 999999999
+	grpcMaxConcurrentStreams     = 1000000
 )
 
 // IDHash uses ID field as the node hash.
@@ -74,6 +75,7 @@ var _ wso2_cache.NodeHash = IDHash{}
 
 func init() {
 	applicationCache = wso2_cache.NewSnapshotCache(false, IDHash{}, nil)
+	subscriptionCache = wso2_cache.NewSnapshotCache(false, IDHash{}, nil)
 	rand.Seed(time.Now().UnixNano())
 	introducedLabels = make(map[string]bool, 1)
 }
@@ -83,12 +85,12 @@ func FeedData() {
 	config := config.ReadConfigs()
 	logger.LoggerXdsServer.Debug("adding mock data")
 	version := rand.Intn(maxRandomInt)
-	applications := apkmgt_application.Application{
+	applications := internal_application.Application{
 		Uuid: "apiUUID1",
 		Name: "name1",
 	}
 	newSnapshot, _ := wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
-		wso2_resource.APKMgtApplicationType: {&applications},
+		wso2_resource.ApplicationType: {&applications},
 	})
 	applicationCacheMutex.Lock()
 	defer applicationCacheMutex.Unlock()
@@ -96,25 +98,42 @@ func FeedData() {
 }
 
 // AddSingleApplication will update the Application specified by the UUID to the xds cache
-func AddSingleApplication(label string, application *apkmgt_application.Application) {
+func AddSingleApplication(label string, application internal_types.ApplicationEvent) {
+	appKeys := make([]*internal_application.Application_Key, len(application.Keys))
+	for i, key := range application.Keys {
+		appKeys[i] = &internal_application.Application_Key{
+			Key:        key.Key,
+			KeyManager: key.KeyManager,
+		}
+	}
+	convertedApplication := &internal_application.Application{
+		Uuid:         application.UUID,
+		Name:         application.Name,
+		Policy:       application.Policy,
+		Owner:        application.Owner,
+		Organization: application.Organization,
+		Keys:         appKeys,
+		Attributes:   application.Attributes,
+	}
+	logger.LoggerXds.Debugf("Converted Application: %v", convertedApplication)
+
 	var newSnapshot wso2_cache.Snapshot
 	version := rand.Intn(maxRandomInt)
-	//application, errDb := database.GetApplicationByUUID(appUUID)
 	currentSnapshot, err := applicationCache.GetSnapshot(label)
 
 	// error occurs if no snapshot is under the provided label
 	if err != nil {
 		newSnapshot, _ = wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
-			wso2_resource.APKMgtApplicationType: {application},
+			wso2_resource.ApplicationType: {convertedApplication},
 		})
 	} else {
-		resourceMap := currentSnapshot.GetResourcesAndTTL(wso2_resource.APKMgtApplicationType)
-		resourceMap[application.Uuid] = types.ResourceWithTTL{
-			Resource: application,
+		resourceMap := currentSnapshot.GetResourcesAndTTL(wso2_resource.ApplicationType)
+		resourceMap[convertedApplication.Uuid] = types.ResourceWithTTL{
+			Resource: convertedApplication,
 		}
 		applicationResources := convertResourceMapToArray(resourceMap)
 		newSnapshot, _ = wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
-			wso2_resource.APKMgtApplicationType: applicationResources,
+			wso2_resource.ApplicationType: applicationResources,
 		})
 	}
 	applicationCacheMutex.Lock()
@@ -122,7 +141,7 @@ func AddSingleApplication(label string, application *apkmgt_application.Applicat
 	applicationCache.SetSnapshot(context.Background(), label, newSnapshot)
 	introducedLabels[label] = true
 	logger.LoggerXds.Infof("Application Snapshot is updated for label %s with the version %d. New snapshot "+
-		"size is %d.", label, version, len(newSnapshot.GetResourcesAndTTL(wso2_resource.APKMgtApplicationType)))
+		"size is %d.", label, version, len(newSnapshot.GetResourcesAndTTL(wso2_resource.ApplicationType)))
 
 }
 
@@ -140,7 +159,7 @@ func RemoveApplication(label, appUUID string) {
 			continue
 		}
 
-		resourceMap := currentSnapshot.GetResourcesAndTTL(wso2_resource.APKMgtApplicationType)
+		resourceMap := currentSnapshot.GetResourcesAndTTL(wso2_resource.ApplicationType)
 		_, apiFound := resourceMap[appUUID]
 		// If the Application is found, then the xds cache is updated and returned.
 		if apiFound {
@@ -148,13 +167,13 @@ func RemoveApplication(label, appUUID string) {
 			delete(resourceMap, appUUID)
 			apiResources := convertResourceMapToArray(resourceMap)
 			newSnapshot, _ = wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
-				wso2_resource.APKMgtApplicationType: apiResources,
+				wso2_resource.ApplicationType: apiResources,
 			})
 			applicationCacheMutex.Lock()
 			defer applicationCacheMutex.Unlock()
 			applicationCache.SetSnapshot(context.Background(), label, newSnapshot)
 			logger.LoggerXds.Infof("API Snaphsot is updated for label %s with the version %d. New snapshot "+
-				"size is %d.", label, version, len(newSnapshot.GetResourcesAndTTL(wso2_resource.APKMgtApplicationType)))
+				"size is %d.", label, version, len(newSnapshot.GetResourcesAndTTL(wso2_resource.ApplicationType)))
 			return
 		}
 	}
@@ -187,19 +206,19 @@ func AddMultipleApplications(applicationEventArray []*internal_types.Application
 
 		if !snapshotFound {
 			newSnapshot, _ = wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
-				wso2_resource.APKMgtApplicationType: {application},
+				wso2_resource.ApplicationType: {application},
 			})
 			snapshotEntry = &newSnapshot
 			snapshotMap[label] = &newSnapshot
 		} else {
 			// error occurs if no snapshot is under the provided label
-			resourceMap := snapshotEntry.GetResourcesAndTTL(wso2_resource.APKMgtApplicationType)
+			resourceMap := snapshotEntry.GetResourcesAndTTL(wso2_resource.ApplicationType)
 			resourceMap[appUUID] = types.ResourceWithTTL{
 				Resource: application,
 			}
 			appResources := convertResourceMapToArray(resourceMap)
 			newSnapshot, _ = wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
-				wso2_resource.APKMgtApplicationType: appResources,
+				wso2_resource.ApplicationType: appResources,
 			})
 			snapshotMap[label] = &newSnapshot
 		}
@@ -226,7 +245,7 @@ func convertResourceMapToArray(resourceMap map[string]types.ResourceWithTTL) []t
 func SetEmptySnapshot(label string) error {
 	version := rand.Intn(maxRandomInt)
 	newSnapshot, err := wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
-		wso2_resource.APKMgtApplicationType: {},
+		wso2_resource.ApplicationType: {},
 	})
 	if err != nil {
 		logger.LoggerXds.ErrorC(logging.ErrorDetails{
@@ -259,6 +278,7 @@ func InitAPKMgtServer() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	apkMgtAPIDsSrv := wso2_server.NewServer(ctx, applicationCache, &callbacks.Callbacks{})
+	subSrv := wso2_server.NewServer(ctx, subscriptionCache, &callbacks.Callbacks{})
 	publicKeyLocation, privateKeyLocation, truststoreLocation := utils.GetKeyLocations()
 	cert, err := tlsutils.GetServerCertificate(publicKeyLocation, privateKeyLocation)
 	if err != nil {
@@ -278,7 +298,8 @@ func InitAPKMgtServer() {
 		}),
 	))
 	grpcServer := grpc.NewServer(grpcOptions...)
-	apkmgt_service.RegisterAPKMgtDiscoveryServiceServer(grpcServer, apkMgtAPIDsSrv)
+	sub_service.RegisterApplicationDiscoveryServiceServer(grpcServer, apkMgtAPIDsSrv)
+	sub_service.RegisterSubscriptionDiscoveryServiceServer(grpcServer, subSrv)
 	config := config.ReadConfigs()
 	port := config.ManagementServer.XDSPort
 
@@ -300,4 +321,80 @@ func InitAPKMgtServer() {
 			ErrorCode: 1001,
 		})
 	}
+}
+
+// AddSingleSubscription will update the Subscription specified by the UUID to the xds cache
+func AddSingleSubscription(label string, subscription internal_types.SubscriptionEvent) {
+	convertedSubscription := &internal_application.Subscription{
+		Uuid:           subscription.UUID,
+		ApplicationRef: subscription.ApplicationRef,
+		ApiRef:         subscription.APIRef,
+		SubStatus:      subscription.SubStatus,
+		PolicyId:       subscription.PolicyID,
+		Organization:   subscription.Organization,
+		Subscriber:     subscription.Subscriber,
+		TimeStamp:      subscription.TimeStamp,
+	}
+	logger.LoggerXds.Debugf("Converted Subscription: %v", convertedSubscription)
+	var newSnapshot wso2_cache.Snapshot
+	version := rand.Intn(maxRandomInt)
+	currentSnapshot, err := subscriptionCache.GetSnapshot(label)
+
+	// error occurs if no snapshot is under the provided label
+	if err != nil {
+		newSnapshot, _ = wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
+			wso2_resource.SubscriptionType: {convertedSubscription},
+		})
+	} else {
+		resourceMap := currentSnapshot.GetResourcesAndTTL(wso2_resource.SubscriptionType)
+		resourceMap[convertedSubscription.Uuid] = types.ResourceWithTTL{
+			Resource: convertedSubscription,
+		}
+		subscriptionResources := convertResourceMapToArray(resourceMap)
+		newSnapshot, _ = wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
+			wso2_resource.SubscriptionType: subscriptionResources,
+		})
+	}
+	subscriptionCacheMutex.Lock()
+	defer subscriptionCacheMutex.Unlock()
+	subscriptionCache.SetSnapshot(context.Background(), label, newSnapshot)
+	introducedLabels[label] = true
+	logger.LoggerXds.Infof("Subscription Snapshot is updated for label %s with the version %d. New snapshot "+
+		"size is %d.", label, version, len(newSnapshot.GetResourcesAndTTL(wso2_resource.SubscriptionType)))
+
+}
+
+// RemoveSubscription removes the Subscription entry from XDS cache
+func RemoveSubscription(label, subUUID string) {
+	var newSnapshot wso2_cache.Snapshot
+	version := rand.Intn(maxRandomInt)
+	for l := range introducedLabels {
+		// If the label does not match with any introduced labels, don't need to delete the subscription from cache.
+		if !strings.EqualFold(label, l) {
+			continue
+		}
+		currentSnapshot, err := subscriptionCache.GetSnapshot(label)
+		if err != nil {
+			continue
+		}
+
+		resourceMap := currentSnapshot.GetResourcesAndTTL(wso2_resource.SubscriptionType)
+		_, subFound := resourceMap[subUUID]
+		// If the Subscription is found, then the xds cache is updated and returned.
+		if subFound {
+			logger.LoggerXds.Debugf("Subscription : %s is found within snapshot for label %s", subUUID, label)
+			delete(resourceMap, subUUID)
+			subResources := convertResourceMapToArray(resourceMap)
+			newSnapshot, _ = wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
+				wso2_resource.SubscriptionType: subResources,
+			})
+			subscriptionCacheMutex.Lock()
+			defer subscriptionCacheMutex.Unlock()
+			subscriptionCache.SetSnapshot(context.Background(), label, newSnapshot)
+			logger.LoggerXds.Infof("Subscription Snaphsot is updated for label %s with the version %d. New snapshot "+
+				"size is %d.", label, version, len(newSnapshot.GetResourcesAndTTL(wso2_resource.SubscriptionType)))
+			return
+		}
+	}
+	logger.LoggerXds.Errorf("Subscription : %s is not found within snapshot for label %s", subUUID, label)
 }

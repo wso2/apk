@@ -32,8 +32,8 @@ import (
 	"github.com/wso2/apk/adapter/internal/management-server/utils"
 	cpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/cp/v1alpha1"
 
-	apkmgt_model "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/apkmgt"
-	stub "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/apkmgt"
+	stub "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/subscription"
+	sub_model "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/subscription"
 
 	operatorutils "github.com/wso2/apk/adapter/internal/operator/utils"
 	"github.com/wso2/apk/adapter/pkg/utils/stringutils"
@@ -52,11 +52,23 @@ var (
 	// validation performed on successfully received response.
 	lastReceivedResponse *discovery.DiscoveryResponse
 	// XDS stream for streaming Aplications from APK Mgt client
-	xdsStream stub.APKMgtDiscoveryService_StreamAPKMgtApplicationsClient
+	xdsStream stub.ApplicationDiscoveryService_StreamApplicationsClient
 	// applicationMap contains the application cache
 	applicationMap map[string]cpv1alpha1.Application
 	// applicationChannel is used to notifiy the application updates
 	applicationChannel chan ApplicationEvent
+	// subscriptionMap contains the application cache
+	subscriptionMap map[string]cpv1alpha1.Subscription
+	// subscriptionChannel is used to notifiy the subscription updates
+	subscriptionChannel chan SubscriptionEvent
+	// XDS stream for streaming Subscriptions from client
+	xdsSubStream stub.SubscriptionDiscoveryService_StreamSubscriptionsClient
+	// Last Acknowledged Response from the apkmgt server
+	lastAckedResponseSub *discovery.DiscoveryResponse
+	// Last Received Response from the apkmgt server
+	// Last Received Response is always is equal to the lastAckedResponse according to current implementation as there is no
+	// validation performed on successfully received response.
+	lastReceivedResponseSub *discovery.DiscoveryResponse
 )
 
 // EventType is the type of the event
@@ -71,21 +83,41 @@ const (
 	ApplicationDelete = 2
 )
 
+const (
+	// SubscriptionCreate is subscription create event type
+	SubscriptionCreate = 0
+	// SubscriptionUpdate is subscription update event type
+	SubscriptionUpdate = 1
+	// SubscriptionDelete is subscription delete event type
+	SubscriptionDelete = 2
+)
+
 // ApplicationEvent is the application event data holder
 type ApplicationEvent struct {
 	Type        EventType
 	Application *cpv1alpha1.Application
 }
 
+// SubscriptionEvent is the subsctiption event data holder
+type SubscriptionEvent struct {
+	Type         EventType
+	Subscription *cpv1alpha1.Subscription
+}
+
 const (
 	// The type url for requesting Application Entries from apkmgt server.
-	applicationTypeURL string = "type.googleapis.com/wso2.discovery.apkmgt.Application"
+	applicationTypeURL string = "type.googleapis.com/wso2.discovery.subscription.Application"
+	// The type url for requesting Subscription Entries from apkmgt server.
+	subscriptionTypeURL string = "type.googleapis.com/wso2.discovery.subscription.Subscription"
 )
 
 func init() {
 	lastAckedResponse = &discovery.DiscoveryResponse{}
+	lastAckedResponseSub = &discovery.DiscoveryResponse{}
 	applicationChannel = make(chan ApplicationEvent, 1000)
 	applicationMap = make(map[string]cpv1alpha1.Application)
+	subscriptionChannel = make(chan SubscriptionEvent, 1000)
+	subscriptionMap = make(map[string]cpv1alpha1.Subscription)
 }
 
 func initConnection(xdsURL string) error {
@@ -98,9 +130,11 @@ func initConnection(xdsURL string) error {
 		return err
 	}
 
-	client := stub.NewAPKMgtDiscoveryServiceClient(conn)
+	client := stub.NewApplicationDiscoveryServiceClient(conn)
+	clientSub := stub.NewSubscriptionDiscoveryServiceClient(conn)
 	streamContext := context.Background()
-	xdsStream, err = client.StreamAPKMgtApplications(streamContext)
+	xdsStream, err = client.StreamApplications(streamContext)
+	xdsSubStream, err = clientSub.StreamSubscriptions(streamContext)
 
 	if err != nil {
 		// TODO: (AmaliMatharaarachchi) handle error.
@@ -135,6 +169,30 @@ func watchApplications() {
 	}
 }
 
+func watchSubscriptions() {
+	for {
+		discoveryResponse, err := xdsSubStream.Recv()
+		if err == io.EOF {
+			loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1702, err.Error()))
+			return
+		}
+		if err != nil {
+			loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1703, err.Error()))
+			errStatus, _ := grpcStatus.FromError(err)
+			if errStatus.Code() == codes.Unavailable {
+				loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1704, err.Error()))
+				return
+			}
+			nackSub(err.Error())
+		} else {
+			lastReceivedResponseSub = discoveryResponse
+			loggers.LoggerXds.Debugf("Discovery response is received : %s", discoveryResponse.VersionInfo)
+			addSubscriptionsToChannel(discoveryResponse)
+			ackSub()
+		}
+	}
+}
+
 func ack() {
 	lastAckedResponse = lastReceivedResponse
 	discoveryRequest := &discovery.DiscoveryRequest{
@@ -144,6 +202,17 @@ func ack() {
 		ResponseNonce: lastReceivedResponse.Nonce,
 	}
 	xdsStream.Send(discoveryRequest)
+}
+
+func ackSub() {
+	lastAckedResponseSub = lastReceivedResponseSub
+	discoveryRequest := &discovery.DiscoveryRequest{
+		Node:          getAdapterNode(),
+		VersionInfo:   lastAckedResponseSub.VersionInfo,
+		TypeUrl:       subscriptionTypeURL,
+		ResponseNonce: lastReceivedResponseSub.Nonce,
+	}
+	xdsSubStream.Send(discoveryRequest)
 }
 
 func nack(errorMessage string) {
@@ -160,6 +229,22 @@ func nack(errorMessage string) {
 		},
 	}
 	xdsStream.Send(discoveryRequest)
+}
+
+func nackSub(errorMessage string) {
+	if lastAckedResponseSub == nil {
+		return
+	}
+	discoveryRequest := &discovery.DiscoveryRequest{
+		Node:          getAdapterNode(),
+		VersionInfo:   lastAckedResponseSub.VersionInfo,
+		TypeUrl:       subscriptionTypeURL,
+		ResponseNonce: lastReceivedResponseSub.Nonce,
+		ErrorDetail: &status.Status{
+			Message: errorMessage,
+		},
+	}
+	xdsSubStream.Send(discoveryRequest)
 }
 
 func getAdapterNode() *core.Node {
@@ -182,6 +267,13 @@ func InitApkMgtXDSClient() {
 			TypeUrl:     applicationTypeURL,
 		}
 		xdsStream.Send(discoveryRequest)
+		go watchSubscriptions()
+		discoveryRequestSub := &discovery.DiscoveryRequest{
+			Node:        getAdapterNode(),
+			VersionInfo: "",
+			TypeUrl:     subscriptionTypeURL,
+		}
+		xdsSubStream.Send(discoveryRequestSub)
 	} else {
 		loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1705, err.Error()))
 	}
@@ -191,7 +283,7 @@ func addApplicationsToChannel(resp *discovery.DiscoveryResponse) {
 	var newApplicationUUIDs []string
 
 	for _, res := range resp.Resources {
-		application := &apkmgt_model.Application{}
+		application := &sub_model.Application{}
 		err := ptypes.UnmarshalAny(res, application)
 
 		if err != nil {
@@ -208,14 +300,16 @@ func addApplicationsToChannel(resp *discovery.DiscoveryResponse) {
 				Name:      application.Uuid,
 			},
 			Spec: cpv1alpha1.ApplicationSpec{
-				Name:       application.Name,
-				Owner:      application.Owner,
-				Attributes: application.Attributes,
+				Name:         application.Name,
+				Owner:        application.Owner,
+				Attributes:   application.Attributes,
+				Policy:       application.Policy,
+				Organization: application.Organization,
 			},
 		}
 
 		var consumerKeys []cpv1alpha1.Key
-		for _, consumerKey := range application.ConsumerKeys {
+		for _, consumerKey := range application.Keys {
 			consumerKeys = append(consumerKeys, cpv1alpha1.Key{Key: consumerKey.Key, KeyManager: consumerKey.KeyManager})
 		}
 		applicationResource.Spec.Keys = consumerKeys
@@ -266,6 +360,74 @@ func addApplicationsToChannel(resp *discovery.DiscoveryResponse) {
 			}
 			applicationChannel <- event
 			delete(applicationMap, application.Name)
+		}
+	}
+}
+
+func addSubscriptionsToChannel(resp *discovery.DiscoveryResponse) {
+	var newSubscriptionUUIDs []string
+
+	for _, res := range resp.Resources {
+		subscription := &sub_model.Subscription{}
+		err := ptypes.UnmarshalAny(res, subscription)
+
+		if err != nil {
+			loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1706, err.Error()))
+			continue
+		}
+
+		subscriptionUUID := subscription.Uuid
+		newSubscriptionUUIDs = append(newSubscriptionUUIDs, subscriptionUUID)
+
+		subscriptionResource := &cpv1alpha1.Subscription{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: operatorutils.GetOperatorPodNamespace(),
+				Name:      subscription.Uuid,
+			},
+			Spec: cpv1alpha1.SubscriptionSpec{
+				APIRef:             subscription.ApiRef,
+				ApplicationRef:     subscription.ApplicationRef,
+				PolicyID:           subscription.PolicyId,
+				SubscriptionStatus: subscription.SubStatus,
+				Subscriber:         subscription.Subscriber,
+				Organization:       subscription.Organization,
+			},
+		}
+
+		var event SubscriptionEvent
+
+		if currentSubscription, found := subscriptionMap[subscriptionUUID]; found {
+			if reflect.DeepEqual(currentSubscription.Spec, subscriptionResource.Spec) {
+				continue
+			}
+			// Subscription update event
+			event = SubscriptionEvent{
+				Type:         SubscriptionUpdate,
+				Subscription: subscriptionResource,
+			}
+			subscriptionMap[subscriptionUUID] = *subscriptionResource
+		} else {
+			// Subscription create event
+			event = SubscriptionEvent{
+				Type:         SubscriptionCreate,
+				Subscription: subscriptionResource,
+			}
+			subscriptionMap[subscriptionUUID] = *subscriptionResource
+		}
+
+		subscriptionChannel <- event
+
+	}
+	// Send delete events for removed subscriptions
+	for _, subscription := range subscriptionMap {
+		if !stringutils.StringInSlice(subscription.Name, newSubscriptionUUIDs) {
+			// Subscription delete event
+			event := SubscriptionEvent{
+				Type:         SubscriptionDelete,
+				Subscription: &subscription,
+			}
+			subscriptionChannel <- event
+			delete(subscriptionMap, subscription.Name)
 		}
 	}
 }
