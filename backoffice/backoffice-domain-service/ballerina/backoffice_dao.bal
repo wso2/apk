@@ -23,7 +23,7 @@ import ballerina/io;
 
 import wso2/apk_common_lib as commons;
 
-isolated function db_getAPIsDAO() returns API[]|commons:APKError {
+isolated function db_getAPIsDAO(string organization) returns API[]|commons:APKError {
     postgresql:Client | error db_Client  = getConnection();
     if db_Client is error {
         return e909601(db_Client);
@@ -31,7 +31,7 @@ isolated function db_getAPIsDAO() returns API[]|commons:APKError {
         do {
             sql:ParameterizedQuery GET_API = `SELECT API_UUID AS ID, API_ID as APIID,
             API_PROVIDER as PROVIDER, API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION, STATUS as STATE, string_to_array(SDK::text,',')::text[] AS SDK,string_to_array(API_TIER::text,',') AS POLICIES, ARTIFACT as ARTIFACT
-            FROM API `;
+            FROM API where ORGANIZATION = ${organization}`;
             stream<API, sql:Error?> apisStream = db_Client->query(GET_API);
             API[] apis = check from API api in apisStream select api;
             check apisStream.close();
@@ -42,7 +42,7 @@ isolated function db_getAPIsDAO() returns API[]|commons:APKError {
     }
 }
 
-isolated function db_changeLCState(string targetState, string apiId, string organization) returns string|commons:APKError {
+isolated function db_changeLCState(string targetState, string apiId) returns string|commons:APKError {
     postgresql:Client | error db_Client  = getConnection();
     if db_Client is error {
         return e909601(db_Client);
@@ -66,7 +66,7 @@ isolated function db_changeLCState(string targetState, string apiId, string orga
     }
 }
 
-isolated function db_getCurrentLCStatus(string apiId, string organization) returns string|commons:APKError {
+isolated function db_getCurrentLCStatus(string apiId) returns string|commons:APKError {
     postgresql:Client | error db_Client  = getConnection();
     if db_Client is error {
         return e909601(db_Client);
@@ -251,7 +251,7 @@ isolated function db_getAPIDefinition(string apiId) returns APIDefinition|common
     }
 }
 
-isolated function db_updateAPI(string apiId, ModifiableAPI payload, string organization) returns API|commons:APKError {
+isolated function db_updateAPI(string apiId, ModifiableAPI payload) returns API|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return e909601(dbClient);
@@ -302,7 +302,7 @@ isolated function getAPIsByQueryDAO(string payload, string org) returns API[]|co
             sql:ParameterizedQuery query = `SELECT DISTINCT API_UUID AS ID, API_ID as APIID,
             API_PROVIDER as PROVIDER, API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS, 
             ARTIFACT as ARTIFACT FROM API JOIN JSONB_EACH_TEXT(ARTIFACT) e ON true 
-            WHERE e.value LIKE ${payload}`;
+            WHERE e.value LIKE ${payload} AND ORGANIZATION = ${org}`;
             stream<API, sql:Error?> apisStream = dbClient->query(query);
             API[] apis = check from API api in apisStream select api;
             check apisStream.close();

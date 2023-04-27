@@ -23,7 +23,7 @@ import wso2/apk_common_lib as commons;
 # + return - Return Value string?|APIList|error
 isolated function getAPIList(int 'limit, int  offset, string? query, string organization) returns APIList|commons:APKError {
     if query !is string {
-        API[]|commons:APKError apis = db_getAPIsDAO();
+        API[]|commons:APKError apis = db_getAPIsDAO(organization);
         if apis is API[] {
             API[] limitSet = [];
             if apis.length() > offset {
@@ -75,11 +75,11 @@ isolated function getAPIList(int 'limit, int  offset, string? query, string orga
 # + organization - organization
 # + return - Return Value LifecycleState|error
 isolated function changeLifeCyleState(string targetState, string apiId, string organization) returns LifecycleState|error {
-    string prevLCState = check db_getCurrentLCStatus(apiId, organization);
+    string prevLCState = check db_getCurrentLCStatus(apiId);
     transaction {
-        string|error lcState = db_changeLCState(targetState, apiId, organization);
+        string|error lcState = db_changeLCState(targetState, apiId);
         if lcState is string {
-                string newvLCState = check db_getCurrentLCStatus(apiId, organization);
+                string newvLCState = check db_getCurrentLCStatus(apiId);
                 string|error lcEvent = db_AddLCEvent(apiId, prevLCState, newvLCState, organization);
                 if lcEvent is string {
                     check commit;
@@ -102,8 +102,8 @@ isolated function changeLifeCyleState(string targetState, string apiId, string o
 # + apiId - API Id parameter
 # + organization - organization
 # + return - Return Value LifecycleState|error
-isolated function getLifeCyleState(string apiId, string organization) returns LifecycleState|error {
-    string|error currentLCState = db_getCurrentLCStatus(apiId, organization);
+isolated function getLifeCyleState(string apiId) returns LifecycleState|error {
+    string|error currentLCState = db_getCurrentLCStatus(apiId);
     if currentLCState is string {
         json lcPayload =  check getTransitionsFromState(currentLCState);
         LifecycleState|error lcGet =  lcPayload.cloneWithType(LifecycleState);
@@ -207,14 +207,13 @@ isolated function getAPIDefinition(string apiId) returns APIDefinition|commons:A
 }
 
 
-isolated function updateAPI(string apiId, ModifiableAPI payload, string organization) returns API|commons:APKError {
-    API|commons:APKError api = db_updateAPI(apiId, payload, organization);
+isolated function updateAPI(string apiId, ModifiableAPI payload) returns API|commons:APKError {
+    API|commons:APKError api = db_updateAPI(apiId, payload);
     return api;
 }
 
-isolated function getAllCategoryList() returns APICategoryList|commons:APKError {
-    string org = "carbon.super";
-    APICategory[]|commons:APKError categories = getAPICategoriesDAO(org);
+isolated function getAllCategoryList(string organization) returns APICategoryList|commons:APKError {
+    APICategory[]|commons:APKError categories = getAPICategoriesDAO(organization);
     if categories is APICategory[] {
         int count = categories.length();
         APICategoryList apiCategoriesList = {count: count, list: categories};
@@ -224,9 +223,8 @@ isolated function getAllCategoryList() returns APICategoryList|commons:APKError 
     }
 }
 
-isolated function getBusinessPlans() returns BusinessPlanList|commons:APKError {
-    string org = "carbon.super";
-    BusinessPlan[]|commons:APKError businessPlans = getBusinessPlansDAO(org);
+isolated function getBusinessPlans(string organization) returns BusinessPlanList|commons:APKError {
+    BusinessPlan[]|commons:APKError businessPlans = getBusinessPlansDAO(organization);
     if businessPlans is BusinessPlan[] {
         int count = businessPlans.length();
         BusinessPlanList BusinessPlansList = {count: count, list: businessPlans};

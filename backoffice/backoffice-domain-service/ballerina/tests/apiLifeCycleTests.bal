@@ -42,7 +42,7 @@ function getLcEventHistoryTest() {
 
 @test:Config {}
 function getLifeCyleStateTest() {
-    LifecycleState|error lcState1 = getLifeCyleState("01ed75e2-b30b-18c8-wwf2-25da7edd2231", "carbon.super");
+    LifecycleState|error lcState1 = getLifeCyleState("01ed75e2-b30b-18c8-wwf2-25da7edd2231");
     if lcState1 is LifecycleState {
         test:assertTrue(true, "Successfully getting the LC state");
     } else {
