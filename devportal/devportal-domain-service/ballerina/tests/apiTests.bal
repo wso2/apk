@@ -94,7 +94,7 @@ function beforeFunc() {
 
 @test:Config {}
 function getAPIByIdTest(){
-    API|APKError|NotFoundError apiResponse = getAPIByAPIId("01ed75e2-b30b-18c8-wwf2-25da7edd2231","carbon.super");
+    API|APKError|NotFoundError apiResponse = getAPIByAPIId("01ed75e2-b30b-18c8-wwf2-25da7edd2231");
     if apiResponse is API {
         test:assertTrue(true, "Successfully retrieved API");
     } else if apiResponse is  APKError {
@@ -146,7 +146,7 @@ function getAPIListContentSearchTest3(){
 
 @test:Config {}
 function getAPIDefinitionByIdTest(){
-    APIDefinition|NotFoundError|APKError apiDefResponse = getAPIDefinition("01ed75e2-b30b-18c8-wwf2-25da7edd2231","carbon.super");
+    APIDefinition|NotFoundError|APKError apiDefResponse = getAPIDefinition("01ed75e2-b30b-18c8-wwf2-25da7edd2231");
     if apiDefResponse is APIDefinition {
         test:assertTrue(true, "Successfully retrieved API Definition");
     } else if apiDefResponse is  APKError {
@@ -159,7 +159,7 @@ function getAPIDefinitionByIdTest(){
 
 @test:Config {}
 function getAPIDefinitionByIdNegativeTest(){
-    APIDefinition|NotFoundError|APKError apiDefResponse = getAPIDefinition("12sqwsqadasd","carbon.super");
+    APIDefinition|NotFoundError|APKError apiDefResponse = getAPIDefinition("12sqwsqadasd");
     if apiDefResponse is APIDefinition {
         test:assertFail("Successfully retrieved API Definition");
     } else if apiDefResponse is  APKError {
@@ -171,7 +171,7 @@ function getAPIDefinitionByIdNegativeTest(){
 
 @test:Config {}
 function generateSDKImplTest(){
-    http:Response|sdk:APIClientGenerationException|NotFoundError|APKError sdk = generateSDKImpl("01ed75e2-b30b-18c8-wwf2-25da7edd2231","java","carbon.super");
+    http:Response|sdk:APIClientGenerationException|NotFoundError|APKError sdk = generateSDKImpl("01ed75e2-b30b-18c8-wwf2-25da7edd2231","java");
     if sdk is http:Response {
         test:assertTrue(true, "Successfully generated API SDK");
     } else if sdk is sdk:APIClientGenerationException|APKError{
@@ -181,7 +181,7 @@ function generateSDKImplTest(){
 
 @test:Config {}
 function generateSDKImplTestNegative(){
-    http:Response|sdk:APIClientGenerationException|NotFoundError|APKError sdk = generateSDKImpl("12sqwsqadasd","java","carbon.super");
+    http:Response|sdk:APIClientGenerationException|NotFoundError|APKError sdk = generateSDKImpl("12sqwsqadasd","java");
     if sdk is http:Response {
         test:assertFail("Successfully generated API SDK");
     } else if sdk is sdk:APIClientGenerationException|APKError {

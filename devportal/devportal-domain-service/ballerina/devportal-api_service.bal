@@ -19,11 +19,13 @@
 import ballerina/http;
 import ballerina/log;
 import devportal_service.org.wso2.apk.devportal.sdk as sdk;
+import wso2/apk_common_lib as commons;
 
 service /api/am/devportal on ep0 {
-    isolated resource function get apis(@http:Header string? 'x\-wso2\-tenant, string? query, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0) returns APIList|BadRequestError|InternalServerErrorError {
-        string organization = "carbon.super";
-        APIList|APKError apiList = getAPIList('limit, offset, query, organization);
+    isolated resource function get apis(http:RequestContext requestContext, @http:Header string? 'x\-wso2\-tenant, string? query, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0) returns APIList|BadRequestError|InternalServerErrorError|commons:APKError {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        APIList|APKError apiList = getAPIList('limit, offset, query, organization.uuid);
         if apiList is APIList {
             log:printDebug(apiList.toString());
             return apiList;
@@ -32,8 +34,7 @@ service /api/am/devportal on ep0 {
         }
     }
     isolated resource function get apis/[string apiId](@http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match) returns API|http:NotModified|NotFoundError|BadRequestError|InternalServerErrorError|json {
-        string organization = "carbon.super";
-        API|NotFoundError|APKError api = getAPIByAPIId(apiId, organization);
+        API|NotFoundError|APKError api = getAPIByAPIId(apiId);
         if api is API|NotFoundError {
             log:printDebug(api.toString());
             return api;
@@ -42,8 +43,8 @@ service /api/am/devportal on ep0 {
         }
     }
     isolated resource function get apis/[string apiId]/definition(@http:Header string? 'if\-none\-match) returns APIDefinition|http:NotModified|NotFoundError|BadRequestError|InternalServerErrorError {
-        string organization = "carbon.super";
-        APIDefinition|NotFoundError|APKError apiDefinition = getAPIDefinition(apiId, organization);
+       
+        APIDefinition|NotFoundError|APKError apiDefinition = getAPIDefinition(apiId);
         if apiDefinition is APIDefinition|NotFoundError {
             log:printDebug(apiDefinition.toString());
             return apiDefinition;
@@ -52,8 +53,7 @@ service /api/am/devportal on ep0 {
         }
     }
     resource function get apis/[string apiId]/sdks/[string language](@http:Header string? 'x\-wso2\-tenant) returns http:Response|json|BadRequestError|NotFoundError|InternalServerErrorError {
-        string organization = "carbon.super";
-        NotFoundError|http:Response|sdk:APIClientGenerationException|APKError sdk = generateSDKImpl(apiId,language, organization);
+        NotFoundError|http:Response|sdk:APIClientGenerationException|APKError sdk = generateSDKImpl(apiId,language);
         if sdk is http:Response {
             return sdk;
         } else if sdk is sdk:APIClientGenerationException {

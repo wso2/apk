@@ -22,8 +22,8 @@ import devportal_service.java.util as javautil;
 import devportal_service.java.lang as javalang;
 import ballerina/http;
 
-isolated function getAPIByAPIId(string apiId, string organization) returns API|NotFoundError|APKError {
-    API|APKError|NotFoundError api = getAPIByIdDAO(apiId, organization);
+isolated function getAPIByAPIId(string apiId) returns API|NotFoundError|APKError {
+    API|APKError|NotFoundError api = getAPIByIdDAO(apiId);
     return api;
 }
 
@@ -78,20 +78,20 @@ isolated function getAPIList(int 'limit, int  offset, string? query, string orga
     }
 }
 
-isolated function getAPIDefinition(string apiId, string organization) returns APIDefinition|NotFoundError|APKError {
-    APIDefinition|NotFoundError|APKError apiDefinition = getAPIDefinitionDAO(apiId,organization);
+isolated function getAPIDefinition(string apiId) returns APIDefinition|NotFoundError|APKError {
+    APIDefinition|NotFoundError|APKError apiDefinition = getAPIDefinitionDAO(apiId);
     return apiDefinition;
 }
 
-function generateSDKImpl(string apiId, string language, string org) returns http:Response|sdk:APIClientGenerationException|NotFoundError|APKError {
+function generateSDKImpl(string apiId, string language) returns http:Response|sdk:APIClientGenerationException|NotFoundError|APKError {
     sdk:APIClientGenerationManager sdkClient = new sdk:APIClientGenerationManager(newSDKClient());
     string apiName;
     string apiVersion;
-    API|NotFoundError|APKError api = getAPIByAPIId(apiId,org);
+    API|NotFoundError|APKError api = getAPIByAPIId(apiId);
     if api is API {
         apiName = api.name;
         apiVersion = api.'version;
-        APIDefinition|NotFoundError|APKError apiDefinition = getAPIDefinition(apiId,org);
+        APIDefinition|NotFoundError|APKError apiDefinition = getAPIDefinition(apiId);
         if apiDefinition is APIDefinition {
             string? schema = apiDefinition.schemaDefinition;
             if schema is string {
