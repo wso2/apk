@@ -33,16 +33,6 @@ spec:
 {{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" "adapter" ) | indent 8}}
     spec:
       serviceAccountName: {{ .Values.wso2.apk.auth.serviceAccountName }}
-      affinity:
-        podAntiAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-          - labelSelector:
-              matchExpressions:
-              - key: app.kubernetes.io/app
-                operator: In
-                values:
-                - adapter
-            topologyKey: "kubernetes.io/hostname"
       containers:
         - name: adapter
           image: {{ .Values.wso2.apk.dp.adapter.deployment.image }}
