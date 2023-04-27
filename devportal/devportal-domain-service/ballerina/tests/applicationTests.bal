@@ -18,6 +18,7 @@
 
 import ballerina/test;
 import ballerina/log;
+import ballerina/uuid;
 
 @test:Mock { functionName: "generateToken" }
 test:MockFunction generateTokenMock = new();
@@ -51,6 +52,8 @@ function beforeFunc1() {
             }
         }
     };
+    string applicationUsagePlanId = uuid:createType1AsString();
+    payload.planId = applicationUsagePlanId;
     ApplicationRatePlan|APKError createdAppPol = addApplicationUsagePlanDAO(payload);
     if createdAppPol is ApplicationRatePlan {
         test:assertTrue(true,"Application usage plan added successfully");
@@ -70,6 +73,7 @@ function beforeFunc1() {
             "rateLimitTimeUnit": "sec",
             "customAttributes": []
         };
+        payloadbp.planId = uuid:createType1AsString();
         BusinessPlan|APKError createdBusinessPlan = addBusinessPlanDAO(payloadbp);
         if createdBusinessPlan is BusinessPlan {
             test:assertTrue(true,"Business Plan added successfully");

@@ -3455,7 +3455,6 @@ components:
         - context
         - lifeCycleStatus
         - name
-        - provider
         - version
       type: object
       properties:
@@ -3480,11 +3479,6 @@ components:
           type: string
           description: The version of the API
           example: 1.0.0
-        provider:
-          type: string
-          description: |
-            If the provider value is not given user invoking the api will be used as the provider.
-          example: admin
         apiDefinition:
           type: string
           description: |

@@ -25,7 +25,6 @@ type Artifact record {|
     string context;
     string 'version;
     string? status;
-    string? providerName;
 |};
 
 public type APIBody record {

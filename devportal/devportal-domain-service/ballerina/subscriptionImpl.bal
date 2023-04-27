@@ -23,10 +23,10 @@ import ballerina/time;
 import ballerina/log;
 
 isolated function addSubscription(Subscription payload, string org, string user) returns Subscription|APKError|NotFoundError|error {
-    int apiId = 0;
-    int appId = 0;
-    int|NotFoundError|APKError subscriberId = getSubscriberIdDAO(user,org);
-    if subscriberId !is int {
+    string apiId = "";
+    string appId = "";
+    string|NotFoundError|APKError subscriberId = getSubscriberIdDAO(user,org);
+    if subscriberId !is string {
         return subscriberId;
     } 
     string? apiUUID = payload.apiId;
@@ -37,7 +37,7 @@ isolated function addSubscription(Subscription payload, string org, string user)
         } else if api is API {
             string apiInString = api.toJsonString();
             json j = check value:fromJsonString(apiInString);
-            apiId = check j.apiId.ensureType();
+            apiId = check j.id.ensureType();
         }
     }
     string? appUUID = payload.applicationId;
@@ -48,7 +48,7 @@ isolated function addSubscription(Subscription payload, string org, string user)
         } else  if application is Application {
             string appInString = application.toJsonString();
             json j = check value:fromJsonString(appInString);
-            appId = check j.id.ensureType();
+            appId = check j.applicationId.ensureType();
         }
     }
     string? businessPlan = payload.throttlingPolicy;
@@ -158,9 +158,9 @@ isolated function updateSubscription(string subId, Subscription payload, string 
     } else {
         return existingSub;
     }
-    int apiId = 0;
-    int appId = 0;
-    int|NotFoundError|APKError subscriberId = getSubscriberIdDAO(user,org);
+    string apiId = "";
+    string appId = "";
+    string|NotFoundError|APKError subscriberId = getSubscriberIdDAO(user,org);
     if subscriberId is APKError|NotFoundError {
         return subscriberId;
     } 
@@ -172,7 +172,7 @@ isolated function updateSubscription(string subId, Subscription payload, string 
         } else if api is API {
             string apiInString = api.toJsonString();
             json j = check value:fromJsonString(apiInString);
-            apiId = check j.apiId.ensureType();
+            apiId = check j.id.ensureType();
         }
     }
     string? appUUID = payload.applicationId;
@@ -183,7 +183,7 @@ isolated function updateSubscription(string subId, Subscription payload, string 
         } else if application is Application {
             string appInString = application.toJsonString();
             json j = check value:fromJsonString(appInString);
-            appId = check j.id.ensureType();
+            appId = check j.applicationId.ensureType();
         }
     }
     string? businessPlan = payload.throttlingPolicy;

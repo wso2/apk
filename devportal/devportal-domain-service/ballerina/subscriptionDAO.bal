@@ -48,7 +48,7 @@ public isolated function getBusinessPlanByNameDAO(string policyName) returns str
     }
 }
 
-isolated function addSubscriptionDAO(Subscription sub, string user, int apiId, int appId) returns Subscription|APKError {
+isolated function addSubscriptionDAO(Subscription sub, string user, string apiId, string appId) returns Subscription|APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
@@ -56,7 +56,7 @@ isolated function addSubscriptionDAO(Subscription sub, string user, int apiId, i
     } else {
         // check existing subscriptions
         sql:ParameterizedQuery existingCheckQuery = `SELECT SUB_STATUS, SUBS_CREATE_STATE FROM SUBSCRIPTION 
-        WHERE API_ID = ${apiId} AND APPLICATION_ID = ${appId}`;
+        WHERE API_UUID = ${apiId} AND APPLICATION_UUID = ${appId}`;
         Subscription | sql:Error existingCheckResult =  dbClient->queryRow(existingCheckQuery);
         if existingCheckResult is sql:NoRowsError {
             log:printDebug(existingCheckResult.toString());
@@ -71,7 +71,7 @@ isolated function addSubscriptionDAO(Subscription sub, string user, int apiId, i
         }
 
         // Insert into SUBSCRIPTION table
-        sql:ParameterizedQuery query = `INSERT INTO SUBSCRIPTION (TIER_ID,API_ID,APPLICATION_ID,
+        sql:ParameterizedQuery query = `INSERT INTO SUBSCRIPTION (TIER_ID,API_UUID,APPLICATION_UUID,
         SUB_STATUS,CREATED_BY,UUID, TIER_ID_PENDING) 
         VALUES (${sub.throttlingPolicy},${apiId},${appId},
         ${sub.status},${user},${sub.subscriptionId},${sub.requestedThrottlingPolicy})`;
@@ -94,8 +94,7 @@ isolated function getSubscriptionByIdDAO(string subId, string org) returns Subsc
         return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
         sql:ParameterizedQuery query = `SELECT 
-        SUBS.SUBSCRIPTION_ID AS SUBSCRIPTION_ID, 
-        API.API_PROVIDER AS API_PROVIDER, 
+        SUBS.UUID AS SUBSCRIPTION_ID, 
         API.API_NAME AS API_NAME, 
         API.API_VERSION AS API_VERSION, 
         API.API_TYPE AS API_TYPE, 
@@ -105,12 +104,11 @@ isolated function getSubscriptionByIdDAO(string subId, string org) returns Subsc
         SUBS.TIER_ID_PENDING AS TIER_ID_PENDING, 
         SUBS.SUB_STATUS AS SUB_STATUS, 
         SUBS.SUBS_CREATE_STATE AS SUBS_CREATE_STATE, 
-        SUBS.UUID AS UUID, 
         SUBS.CREATED_TIME AS CREATED_TIME, 
         SUBS.UPDATED_TIME AS UPDATED_TIME, 
-        API.API_UUID AS APIID
+        API.UUID AS APIID
         FROM SUBSCRIPTION SUBS, API API, APPLICATION APP 
-        WHERE APP.APPLICATION_ID=SUBS.APPLICATION_ID AND API.API_ID = SUBS.API_ID AND SUBS.UUID =${subId}`;
+        WHERE APP.UUID=SUBS.APPLICATION_UUID AND API.UUID = SUBS.API_UUID AND SUBS.UUID =${subId}`;
         Subscription | sql:Error result =  dbClient->queryRow(query);
         if result is sql:NoRowsError {
             log:printDebug(result.toString());
@@ -145,7 +143,7 @@ isolated function deleteSubscriptionDAO(string subId, string org) returns APKErr
     }
 }
 
-isolated function updateSubscriptionDAO(Subscription sub, string user, int apiId, int appId) returns Subscription|APKError {
+isolated function updateSubscriptionDAO(Subscription sub, string user, string apiId, string appId) returns Subscription|APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
@@ -174,8 +172,7 @@ isolated function getSubscriptionByAPIandAppIdDAO(string apiId, string appId, st
         return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
         sql:ParameterizedQuery query = `SELECT 
-        SUBS.SUBSCRIPTION_ID AS SUBSCRIPTION_ID, 
-        API.API_PROVIDER AS API_PROVIDER, 
+        SUBS.UUID AS SUBSCRIPTION_ID, 
         API.API_NAME AS API_NAME, 
         API.API_VERSION AS API_VERSION, 
         API.API_TYPE AS API_TYPE, 
@@ -185,12 +182,11 @@ isolated function getSubscriptionByAPIandAppIdDAO(string apiId, string appId, st
         SUBS.TIER_ID_PENDING AS TIER_ID_PENDING, 
         SUBS.SUB_STATUS AS SUB_STATUS, 
         SUBS.SUBS_CREATE_STATE AS SUBS_CREATE_STATE, 
-        SUBS.UUID AS UUID, 
         SUBS.CREATED_TIME AS CREATED_TIME, 
         SUBS.UPDATED_TIME AS UPDATED_TIME, 
-        API.API_UUID AS APIID
+        API.UUID AS APIID
         FROM SUBSCRIPTION SUBS, API API, APPLICATION APP 
-        WHERE APP.APPLICATION_ID=SUBS.APPLICATION_ID AND API.API_ID = SUBS.API_ID AND API.API_UUID =${apiId} AND APP.UUID=${appId}`;
+        WHERE APP.UUID=SUBS.APPLICATION_UUID AND API.UUID = SUBS.API_UUID AND API.UUID =${apiId} AND APP.UUID=${appId}`;
         Subscription | sql:Error result =  dbClient->queryRow(query);
         if result is sql:NoRowsError {
             log:printDebug(result.toString());
@@ -215,8 +211,7 @@ isolated function getSubscriptionsByAPIIdDAO(string apiId, string org) returns S
     } else {
         do {
             sql:ParameterizedQuery query = `SELECT 
-            SUBS.SUBSCRIPTION_ID AS SUBSCRIPTION_ID, 
-            API.API_PROVIDER AS API_PROVIDER, 
+            SUBS.UUID AS SUBSCRIPTION_ID, 
             API.API_NAME AS API_NAME, 
             API.API_VERSION AS API_VERSION, 
             API.API_TYPE AS API_TYPE, 
@@ -226,12 +221,11 @@ isolated function getSubscriptionsByAPIIdDAO(string apiId, string org) returns S
             SUBS.TIER_ID_PENDING AS TIER_ID_PENDING, 
             SUBS.SUB_STATUS AS SUB_STATUS, 
             SUBS.SUBS_CREATE_STATE AS SUBS_CREATE_STATE, 
-            SUBS.UUID AS UUID, 
             SUBS.CREATED_TIME AS CREATED_TIME, 
             SUBS.UPDATED_TIME AS UPDATED_TIME, 
-            API.API_UUID AS APIID
+            API.UUID AS APIID
             FROM SUBSCRIPTION SUBS, API API, APPLICATION APP 
-            WHERE APP.APPLICATION_ID=SUBS.APPLICATION_ID AND API.API_ID = SUBS.API_ID AND API.API_UUID =${apiId}`;
+            WHERE APP.UUID=SUBS.APPLICATION_UUID AND API.UUID = SUBS.API_UUID AND API.UUID =${apiId}`;
             stream<Subscription, sql:Error?> subscriptionStream = dbClient->query(query);
             Subscription[] subscriptions = check from Subscription subscription in subscriptionStream select subscription;
             check subscriptionStream.close();
@@ -251,8 +245,7 @@ isolated function getSubscriptionsByAPPIdDAO(string appId, string org) returns S
     } else {
         do {
             sql:ParameterizedQuery query = `SELECT 
-            SUBS.SUBSCRIPTION_ID AS SUBSCRIPTION_ID, 
-            API.API_PROVIDER AS API_PROVIDER, 
+            SUBS.UUID AS SUBSCRIPTION_ID, 
             API.API_NAME AS API_NAME, 
             API.API_VERSION AS API_VERSION, 
             API.API_TYPE AS API_TYPE, 
@@ -262,12 +255,11 @@ isolated function getSubscriptionsByAPPIdDAO(string appId, string org) returns S
             SUBS.TIER_ID_PENDING AS TIER_ID_PENDING, 
             SUBS.SUB_STATUS AS SUB_STATUS, 
             SUBS.SUBS_CREATE_STATE AS SUBS_CREATE_STATE, 
-            SUBS.UUID AS UUID, 
             SUBS.CREATED_TIME AS CREATED_TIME, 
             SUBS.UPDATED_TIME AS UPDATED_TIME, 
-            API.API_UUID AS APIID
+            API.UUID AS APIID
             FROM SUBSCRIPTION SUBS, API API, APPLICATION APP 
-            WHERE APP.APPLICATION_ID=SUBS.APPLICATION_ID AND API.API_ID = SUBS.API_ID AND APP.UUID=${appId}`;
+            WHERE APP.UUID=SUBS.APPLICATION_UUID AND API.UUID = SUBS.API_UUID AND APP.UUID=${appId}`;
             stream<Subscription, sql:Error?> subscriptionStream = dbClient->query(query);
             Subscription[] subscriptions = check from Subscription subscription in subscriptionStream select subscription;
             check subscriptionStream.close();
@@ -287,8 +279,7 @@ isolated function getSubscriptionsList(string org) returns Subscription[]|APKErr
     } else {
         do {
             sql:ParameterizedQuery query = `SELECT 
-            SUBS.SUBSCRIPTION_ID AS SUBSCRIPTION_ID, 
-            API.API_PROVIDER AS API_PROVIDER, 
+            SUBS.UUID AS SUBSCRIPTION_ID, 
             API.API_NAME AS API_NAME, 
             API.API_VERSION AS API_VERSION, 
             API.API_TYPE AS API_TYPE, 
@@ -301,9 +292,9 @@ isolated function getSubscriptionsList(string org) returns Subscription[]|APKErr
             SUBS.UUID AS UUID, 
             SUBS.CREATED_TIME AS CREATED_TIME, 
             SUBS.UPDATED_TIME AS UPDATED_TIME, 
-            API.API_UUID AS APIID
+            API.UUID AS APIID
             FROM SUBSCRIPTION SUBS, API API, APPLICATION APP 
-            WHERE APP.APPLICATION_ID=SUBS.APPLICATION_ID AND API.API_ID = SUBS.API_ID`;
+            WHERE APP.UUID=SUBS.APPLICATION_UUID AND API.UUID = SUBS.API_UUID`;
             stream<Subscription, sql:Error?> subscriptionStream = dbClient->query(query);
             Subscription[] subscriptions = check from Subscription subscription in subscriptionStream select subscription;
             check subscriptionStream.close();

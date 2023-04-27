@@ -18,6 +18,7 @@
 
 import ballerina/test;
 import ballerina/log;
+import ballerina/uuid;
 
 Subscription sub = { apiId: "01ed75e2-b30b-18c8-wwf2-25da7edd2231",applicationId: "21212",throttlingPolicy: "MyBusinessPlan"};
 Application applicationNew  ={name:"sampleAppNew",throttlingPolicy:"25PerMin",description: "sample application"};
@@ -76,6 +77,7 @@ function beforeFunc2() {
             "rateLimitTimeUnit": "sec",
             "customAttributes": []
         };
+        payloadbp.planId = uuid:createType1AsString();
         BusinessPlan|APKError createdBusinessPlan = addBusinessPlanDAO(payloadbp);
         if createdBusinessPlan is APKError {
             test:assertFail("Error occured while adding Business Plan");
@@ -223,6 +225,7 @@ function updateSubscriptionTest() {
         "rateLimitTimeUnit": "sec",
         "customAttributes": []
     };
+    payloadbp.planId = uuid:createType1AsString();
     BusinessPlan|APKError createdBusinessPlan = addBusinessPlanDAO(payloadbp);
     if createdBusinessPlan is BusinessPlan {
         test:assertTrue(true,"Business Plan added successfully");

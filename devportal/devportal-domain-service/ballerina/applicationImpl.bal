@@ -30,9 +30,8 @@ isolated function addApplication(Application application, string org, string use
         log:printError(message);
         return error(message, policyId, message = message, description = message, code = 909000, statusCode = "500");
     }
-    int|NotFoundError|APKError subscriberId = getSubscriberIdDAO(user,org);
-    if subscriberId is int {
-        log:printDebug("subscriber id" + subscriberId.toString());
+    string|NotFoundError|APKError subscriberId = getSubscriberIdDAO(user,org);
+    if subscriberId is string {
         Application|APKError createdApp = addApplicationDAO(application, subscriberId, org);
         if createdApp is Application {
             string[]|APKError hostList = retrieveManagementServerHostsList();
@@ -103,8 +102,8 @@ isolated function updateApplication(string appId, Application application, strin
         log:printError(message);
         return error(message, policyId, message = message, description = message, code = 909000, statusCode = "500");
     }
-    int|NotFoundError|APKError subscriberId = getSubscriberIdDAO(user,org);
-    if subscriberId is int {
+    string|NotFoundError|APKError subscriberId = getSubscriberIdDAO(user,org);
+    if subscriberId is string {
         log:printDebug("subscriber id" + subscriberId.toString());
         Application|APKError updatedApp = updateApplicationDAO(application, subscriberId, org);
         if updatedApp is Application {
