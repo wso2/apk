@@ -95,14 +95,17 @@ class APIListingTask {
             if apiModel is model:API {
                 if (apiModel.metadata.namespace == getNameSpace(runtimeConfiguration.apiCreationNamespace)) {
                     if eventType == "ADDED" {
+                        log:printDebug("API added event received", eventType = "ADDED", api = apiModel);
                         lock {
                             putAPI(apiModel.clone());
                         }
                     } else if (eventType == "MODIFIED") {
+                        log:printDebug("API modified event received", eventType = "MODIFIED", api = apiModel);
                         lock {
                             updateAPI(apiModel.clone());
                         }
                     } else if (eventType == "DELETED") {
+                        log:printDebug("API delete event received", eventType = "DELETED", api = apiModel);
                         lock {
                             removeAPI(apiModel);
                         }
@@ -137,9 +140,9 @@ public function getAPIClient(string resourceVersion) returns websocket:Client|er
     }
 
     return new (requestURl,
-    auth = {
-        token: token
-    },
+        auth = {
+            token: token
+        },
         secureSocket = {
             cert: caCertPath
         }

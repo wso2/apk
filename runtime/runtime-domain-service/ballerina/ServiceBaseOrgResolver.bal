@@ -20,6 +20,7 @@ import ballerina/uuid;
 import ballerina/http;
 import ballerina/constraint;
 import ballerina/cache;
+import ballerina/log;
 
 public isolated class ServiceBaseOrgResolver {
     *commons:OrganizationResolver;
@@ -27,28 +28,16 @@ public isolated class ServiceBaseOrgResolver {
     private final map<string>? headers;
     private final cache:Cache orgCache;
     private final cache:Cache orgnizationClaimValueCache = new ({
-        // The maximum size of the cache is 10.
         capacity: 1000,
-        // The eviction factor is set to 0.2, which means at the
-        // time of eviction 10*0.2=2 entries get removed from the cache.
         evictionFactor: 0.2,
-        // The default max age of the cache entry is set to 2 seconds.
-        defaultMaxAge: 600,
-        // The cache cleanup task runs every 3 seconds and clears all
-        // the expired entries.
+        defaultMaxAge: 900,
         cleanupInterval: 60
     });
     public isolated function init(string serviceBaseURL, map<string>? headers, commons:KeyStore? certificate, boolean enableAuth) returns error? {
         self.orgCache = new ({
-            // The maximum size of the cache is 10.
             capacity: 1000,
-            // The eviction factor is set to 0.2, which means at the
-            // time of eviction 10*0.2=2 entries get removed from the cache.
             evictionFactor: 0.2,
-            // The default max age of the cache entry is set to 2 seconds.
-            defaultMaxAge: 600,
-            // The cache cleanup task runs every 3 seconds and clears all
-            // the expired entries.
+            defaultMaxAge: 900,
             cleanupInterval: 60
         });
         TokenIssuerConfiguration issuerConfiguration = runtimeConfiguration.tokenIssuerConfiguration;
@@ -56,30 +45,40 @@ public isolated class ServiceBaseOrgResolver {
         self.headers = headers.cloneReadOnly();
         boolean secured = serviceBaseURL.startsWith("https:");
         self.httpClient = check new (serviceBaseURL,
-        auth = enableAuth ? {
-                username: "runtime-domain-service",
-                issuer: issuerConfiguration.issuer,
-                keyId: issuerConfiguration.keyId,
-                jwtId: uuid:createType1AsString(),
-                expTime: issuerConfiguration.expTime,
-                signatureConfig: {
-                    config: {
-                        keyFile: <string>signingCert.keyFilePath
+            auth = enableAuth ? {
+                    username: "runtime-domain-service",
+                    issuer: issuerConfiguration.issuer,
+                    keyId: issuerConfiguration.keyId,
+                    jwtId: uuid:createType1AsString(),
+                    expTime: issuerConfiguration.expTime,
+                    signatureConfig: {
+                        config: {
+                            keyFile: <string>signingCert.keyFilePath
+                        }
                     }
-                }
-            } : {},
-        secureSocket = secured ? (certificate is commons:KeyStore ? {cert: certificate.certFilePath, verifyHostName: runtimeConfiguration.controlPlane.enableHostNameVerification} : ()) : {});
+                } : {},
+            secureSocket = secured ? (certificate is commons:KeyStore ? {cert: certificate.certFilePath, verifyHostName: runtimeConfiguration.controlPlane.enableHostNameVerification} : ()) : {}
+        );
     }
 
     public isolated function retrieveOrganizationByName(string organizationName) returns commons:Organization|commons:APKError|() {
         do {
-
             if self.orgCache.hasKey(organizationName) {
-                return check self.orgCache.get(organizationName).ensureType(commons:Organization);
+                any|cache:Error cacheEntry = self.orgCache.get(organizationName);
+                if cacheEntry is any {
+                    return check cacheEntry.ensureType(commons:Organization);
+                } else {
+                    log:printError("Cache invalidation happen in middle", cacheEntry);
+                }
             }
             lock {
                 if self.orgCache.hasKey(organizationName) {
-                    return check self.orgCache.get(organizationName).ensureType(commons:Organization);
+                    commons:Organization|error cacheEntry = self.orgCache.get(organizationName).ensureType(commons:Organization);
+                    if cacheEntry is commons:Organization {
+                            return cacheEntry.clone();
+                    } else {
+                        log:printError("Cache invalidation happen in middle", cacheEntry);
+                    }
                 }
                 OrganizationList|http:ClientError getOrgnizationByName = self.httpClient->get("/organizations?name=" + organizationName, targetType = OrganizationList, headers = self.headers);
                 if getOrgnizationByName is OrganizationList {
@@ -112,10 +111,12 @@ public isolated class ServiceBaseOrgResolver {
 
     public isolated function retrieveOrganizationFromIDPClaimValue(map<anydata> claims, string organizationClaim) returns commons:Organization|commons:APKError|() {
         do {
-            if self.orgnizationClaimValueCache.hasKey(organizationClaim) {
-                string orgName = check self.orgnizationClaimValueCache.get(organizationClaim).ensureType(string);
-                if self.orgCache.hasKey(orgName) {
-                    return check self.orgCache.get(orgName).ensureType(commons:Organization);
+            lock {
+                if self.orgnizationClaimValueCache.hasKey(organizationClaim) {
+                    string orgName = check self.orgnizationClaimValueCache.get(organizationClaim).ensureType(string);
+                    if self.orgCache.hasKey(orgName) {
+                        return check self.orgCache.get(orgName).ensureType(commons:Organization);
+                    }
                 }
             }
             lock {
