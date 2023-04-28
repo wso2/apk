@@ -1,9 +1,8 @@
-name: Clean Azure Container Registrt
+name: Clean Azure Container Registry
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 20 * * *"
-
+    - cron: "0 0 * * MON"
 env:
   GH_TOKEN: ${{ secrets.WSO2_BOT_TOKEN }}  
 jobs:
@@ -17,7 +16,7 @@ jobs:
     - uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
-    - name: Create AKS Cluster and set context
+    - name: Login to AZURE AND DELETE
       uses: azure/CLI@v1
       with:
         azcliversion: 2.44.1
@@ -28,6 +27,6 @@ jobs:
     - name: Enable workflow
       if: always()
       run: |
-        curl -X DELETE -H "Authorization: token ${{ secrets.WSO2_BOT_TOKEN }}" \
-          https://api.github.com/repos/wso2/apk/actions/workflows/49589306/disable
+        curl -X PUT -H "Authorization: token ${{ secrets.WSO2_BOT_TOKEN }}" \
+          https://api.github.com/repos/wso2/apk/actions/workflows/49589306/enable
           
