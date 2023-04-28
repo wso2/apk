@@ -191,18 +191,18 @@ Follow the instruction below to deploy an API using the `kubectl`.
 
 ### Build all components
 
-Run <APK>/apk-build.sh file.
-  ```bash
-  sh apk-build.sh
-  ```
+Run `apk/build-apk.sh` file.
+```bash
+sh build-apk.sh
+```
 
 ### Build single component
 
 For example: building Runtime Domain Service
-  ```bash
-  cd runtime/runtime-domain-service
-  gradle build
-  ```
+```bash
+cd runtime/runtime-domain-service
+gradle build
+```
 
 ## Issue management
 We use GitHub to track all of our bugs and feature requests. Each issue we track has a variety of metadata:
