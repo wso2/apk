@@ -202,7 +202,7 @@ isolated function generateAPIKey(APIKeyGenerateRequest payload, string appId, st
                     foreach Subscription item in subArray {
                         string? apiUUID = item.apiId;
                         if apiUUID is string {
-                            API|NotFoundError|APKError api = getAPIByAPIId(apiUUID, org);
+                            API|NotFoundError|APKError api = getAPIByAPIId(apiUUID);
                             if api is API {
                                 apiList.push(api);
                             }

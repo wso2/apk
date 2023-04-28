@@ -49,14 +49,10 @@ service /api/am/backoffice on ep0 {
     }
 
     isolated resource function get apis/[string apiId](http:RequestContext requestContext, @http:Header string? 'if\-none\-match) returns API|http:NotModified|commons:APKError {
-        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
-        commons:Organization organization = authenticatedUserContext.organization;
         return getAPI(apiId);
     }
     resource function put apis/[string apiId](http:RequestContext requestContext, @http:Header string? 'if\-none\-match, @http:Payload ModifiableAPI payload) returns API|commons:APKError {
-        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
-        commons:Organization organization = authenticatedUserContext.organization;
-        return updateAPI(apiId, payload, organization.uuid);
+        return updateAPI(apiId, payload);
     }
 
     isolated resource function get apis/[string apiId]/definition(http:RequestContext requestContext, @http:Header string? 'if\-none\-match) returns APIDefinition|http:NotModified|commons:APKError {
@@ -127,7 +123,9 @@ service /api/am/backoffice on ep0 {
     // }
 
     isolated resource function get 'api\-categories(http:RequestContext requestContext) returns APICategoryList|commons:APKError {
-        return getAllCategoryList();
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        return getAllCategoryList(organization.uuid);
     }
 
     isolated resource function post apis/'change\-lifecycle(http:RequestContext requestContext, string targetState, string apiId, @http:Header string? 'if\-match) returns LifecycleState|commons:APKError|error {
@@ -144,9 +142,7 @@ service /api/am/backoffice on ep0 {
         return getLcEventHistory(apiId);
     }
     isolated resource function get apis/[string apiId]/'lifecycle\-state(http:RequestContext requestContext, @http:Header string? 'if\-none\-match) returns LifecycleState|commons:APKError|error {
-        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
-        commons:Organization organization = authenticatedUserContext.organization;
-        LifecycleState|error currentState = getLifeCyleState(apiId, organization.uuid);
+        LifecycleState|error currentState = getLifeCyleState(apiId);
         if currentState is LifecycleState {
             return currentState;
         } else {
@@ -154,7 +150,9 @@ service /api/am/backoffice on ep0 {
         }
     }
     resource function get 'business\-plans(http:RequestContext requestContext, @http:Header string? accept = "application/json") returns BusinessPlanList|commons:APKError {
-        BusinessPlanList|commons:APKError subPolicyList = getBusinessPlans();
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        BusinessPlanList|commons:APKError subPolicyList = getBusinessPlans(organization.uuid);
         if subPolicyList is BusinessPlanList {
             log:printDebug(subPolicyList.toString());    
         }

@@ -87,7 +87,7 @@ isolated function db_AddDefinition(APIBody apiBody, string organization) returns
 # + apiId - API Id parameter
 # + organization - organization
 # + return - API | error
-isolated function db_getAPI_internal(string apiId, string organization) returns API | commons:APKError| error {
+isolated function db_getAPI_internal(string apiId) returns API | commons:APKError| error {
     postgresql:Client | error db_Client  = getConnection();
     if db_Client is error {
         return error("Issue while conecting to databse");
@@ -116,7 +116,7 @@ isolated function db_getAPI_internal(string apiId, string organization) returns 
 # + apiId - API Id parameter
 # + organization - organization
 # + return - API | error
-isolated function db_updateAPI_internal(string apiId, APIBody api, string organization) returns API | error {
+isolated function db_updateAPI_internal(string apiId, APIBody api) returns API | error {
     postgresql:Client | error db_client  = getConnection();
     if db_client is error {
         return error("Issue while conecting to databse");

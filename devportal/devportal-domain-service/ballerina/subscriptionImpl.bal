@@ -31,7 +31,7 @@ isolated function addSubscription(Subscription payload, string org, string user)
     } 
     string? apiUUID = payload.apiId;
     if apiUUID is string {
-        API|NotFoundError|APKError api = getAPIByAPIId(apiUUID, org);
+        API|NotFoundError|APKError api = getAPIByAPIId(apiUUID);
         if api is APKError|NotFoundError {
             return api;
         } else if api is API {
@@ -164,7 +164,7 @@ isolated function updateSubscription(string subId, Subscription payload, string 
     } 
     string? apiUUID = payload.apiId;
     if apiUUID is string {
-        API|NotFoundError|APKError api = getAPIByAPIId(apiUUID, org);
+        API|NotFoundError|APKError api = getAPIByAPIId(apiUUID);
         if api is NotFoundError|APKError {
             return api;
         } else if api is API {

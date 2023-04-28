@@ -626,6 +626,7 @@ public type API record {
     string context;
     @constraint:String {maxLength: 30, minLength: 1}
     string 'version;
+    string organization;
     # The api creation type to be used. Accepted values are HTTP, WS, SOAPTOREST, GRAPHQL, WEBSUB, SSE, WEBHOOK, ASYNC
     string 'type = "HTTP";
     # Supported transports for the API (http and/or https).

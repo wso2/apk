@@ -30,6 +30,7 @@ function createAPITest() {
             "context":"pizzssa",
             "version":"1.0.0",
             "provider":"admin",
+            "organization":"1111-1111-1111-1111",
             "lifeCycleStatus":"CREATED",
             "type":"HTTP"
         },
@@ -75,7 +76,7 @@ function createAPITest() {
         }
         }
     };
-    API|error createdAPI = createAPI(body,"carbon.super");
+    API|error createdAPI = createAPI(body);
     if createdAPI is API {
         test:assertTrue(true, "Successfully created API");
     } else if createdAPI is  error {
@@ -87,7 +88,7 @@ function createAPITest() {
 
 @test:Config {dataProvider: getApiDataProvider}
 public function testGetApi(string apiId, string organization, anydata expectedData) {
-    API|commons:APKError|error getAPI = getAPI_internal(apiId, organization);
+    API|commons:APKError|error getAPI = getAPI_internal(apiId);
     if getAPI is API {
         test:assertEquals(getAPI.toBalString(), expectedData);
     } else if getAPI is commons:APKError {
@@ -108,16 +109,16 @@ public function getApiDataProvider() returns map<[string, string, anydata]> {
     map<[string, string, anydata]> dataset = {
         "1": [
             "01ed75e2-b30b-18c8-wwf2-25da7edd2231",
-            "carbon.super",
+            "1111-1111-1111-1111",
             {
                 "id": "01ed75e2-b30b-18c8-wwf2-25da7edd2231",
                 "name": "PizzaShask",
                 "context": "pizzssa",
                 "version": "1.0.0",
+                "organization": "1111-1111-1111-1111",
                 "type": "HTTP",
                 "state": "CREATED",
                 "provider": "admin",
-                "organization": "carbon.super",
                 "apiid": 1,
                 "status": "CREATED"
             }.toBalString()
@@ -136,6 +137,7 @@ function updateInternalAPITest() {
                 "version":"1.0.0",
                 "provider":"admin",
                 "lifeCycleStatus":"CREATED",
+                "organization":"1111-1111-1111-1111",
                 "type":"HTTP"
             },
             "Definition" : {	  
@@ -180,7 +182,7 @@ function updateInternalAPITest() {
             }
             }
         };
-        API|commons:APKError|error updateAPI = updateAPI_internal("01ed75e2-b30b-18c8-wwf2-25da7edd2231", updateBody, "carbon.super");
+        API|commons:APKError|error updateAPI = updateAPI_internal("01ed75e2-b30b-18c8-wwf2-25da7edd2231", updateBody);
             if updateAPI is API {
                 test:assertTrue(true, "Successfully updtaing API");
             } else if updateAPI is  error {
