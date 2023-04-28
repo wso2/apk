@@ -1,10 +1,10 @@
 {
-	"id": "9e8a2d98-52d7-422b-9a29-4e5cb74a9061",
+	"id": "b4b13961-13bf-40dc-ae1c-a49eb716de31",
 	"name": "LocalMinikube",
 	"values": [
 		{
 			"key": "gatewayBaseURl",
-			"value": "https://10.104.175.38:9095",
+			"value": "https://127.0.0.1:9095",
 			"type": "default",
 			"enabled": true
 		},
@@ -26,12 +26,18 @@
 		},
 		{
 			"key": "requestsPerUnit",
-			"value": "5",
+			"value": "",
 			"type": "any",
+			"enabled": true
+		},
+		{
+			"key": "testArtifactPath",
+			"value": "/home/tharindud/Desktop",
+			"type": "default",
 			"enabled": true
 		}
 	],
 	"_postman_variable_scope": "environment",
-	"_postman_exported_at": "2023-02-13T05:07:36.379Z",
-	"_postman_exported_using": "Postman/10.9.4"
+	"_postman_exported_at": "2023-04-28T06:13:19.759Z",
+	"_postman_exported_using": "Postman/10.13.0"
 }

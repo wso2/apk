@@ -29,6 +29,12 @@
 			"value": "5",
 			"type": "any",
 			"enabled": true
+		},
+		{
+			"key": "testArtifactPath",
+			"value": "TEST_ARTIFACT_PATH",
+			"type": "default",
+			"enabled": true
 		}
 	],
 	"_postman_variable_scope": "environment",

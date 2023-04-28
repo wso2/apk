@@ -53,7 +53,6 @@ const string MEDIATION_POLICY_TYPE_INTERCEPTOR = "Interceptor";
 const string MEDIATION_POLICY_NAME_ADD_HEADER = "addHeader";
 const string MEDIATION_POLICY_NAME_REMOVE_HEADER = "removeHeader";
 const string MEDIATION_POLICY_TYPE_URL_REWRITE = "URLRewrite";
-const string MEDIATION_POLICY_NAME_ADD_INTERCEPTOR = "addInterceptor";
 const string MEDIATION_POLICY_FLOW_REQUEST  = "request";
 const string MEDIATION_POLICY_FLOW_RESPONSE  = "response";
 

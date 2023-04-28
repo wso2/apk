@@ -1,0 +1,1631 @@
+{
+	"info": {
+		"_postman_id": "1ef3b85c-7e9e-4aac-9249-8e655eff892e",
+		"name": "Test Request Interceptor",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Generate Token",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var accessTokenResponse = pm.response.json();",
+							"pm.collectionVariables.set(\"access_token\",accessTokenResponse.access_token);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "45f1c5c8-a92e-11ed-afa1-0242ac120002",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "4fbd62ec-a92e-11ed-afa1-0242ac120002",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Host",
+						"value": "idp.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "grant_type",
+							"value": "client_credentials",
+							"type": "default"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/oauth2/token",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"oauth2",
+						"token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create API",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"  pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Assert API creation response\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const responseJson = pm.response.json();",
+							"    pm.collectionVariables.set(\"APIUUID\",responseJson.id)",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"interrceptorapi\",\n    \"context\": \"/interrceptorapi/1.0.0\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"endpointConfig\": {\n        \"endpoint_type\": \"http\",\n        \"sandbox_endpoints\": {\n            \"url\": \"http://backend.test-apk.svc.cluster.local\"\n        },\n        \"production_endpoints\": {\n            \"url\": \"http://backend.test-apk.svc.cluster.local\"\n        }\n    },\n    \"operations\": [\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": []\n        },\n        {\n            \"target\": \"/get\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": []\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Generate Access Token",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Assert token generation response\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(parseInt(responseJson.validityTime)).greaterThan(100);",
+							"    pm.collectionVariables.set('APITestKey', responseJson.apikey);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}/generate-key",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIUUID}}",
+						"generate-key"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Invoke API using Test Token for Verification Before",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Check API response and status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Verify unavailability of intercpetor header\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const responseJson = pm.response.json().headers;",
+							"    pm.expect(responseJson[\"Interceptor-Header\"]).equals(undefined);",
+							"const responseHeaders = pm.response.headers;",
+							"    pm.expect(responseHeaders[\"interceptor-response-header\"]).equals(undefined);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "HOST",
+						"value": "a3b58ccf-6ecc-4557-b5bb-0a35cce38256.gw.wso2.com",
+						"type": "text"
+					},
+					{
+						"key": "Internal-Key",
+						"value": "{{APITestKey}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURl}}/interrceptorapi/1.0.0/get",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"interrceptorapi",
+						"1.0.0",
+						"get"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "update API with API level http InterceptorPolicy request",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": \"{{APIUUID}}\",\n    \"name\": \"interrceptorapi\",\n    \"context\": \"/interrceptorapi/1.0.0\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"apiPolicies\": {\n        \"request\": [\n            {\n                \"policyName\": \"Interceptor\",\n                \"policyVersion\": \"v1\",\n                \"parameters\": {\n                    \"headersEnabled\": true,\n                    \"backendUrl\": \"http://interceptor-service.test-apk.svc.cluster.local:8443\"\n                }\n            }\n        ]\n    },\n    \"endpointConfig\": {\n        \"endpoint_type\": \"http\",\n        \"sandbox_endpoints\": {\n            \"url\": \"http://backend.test-apk.svc.cluster.local\"\n        },\n        \"production_endpoints\": {\n            \"url\": \"http://backend.test-apk.svc.cluster.local\"\n        }\n    },\n    \"operations\": [\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": []\n        },\n        {\n            \"target\": \"/get\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": []\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIUUID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Verify after applying  request interceptor at api level",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Check API response and status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Verify unavailability of intercpetor header\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const requestHeaders = pm.response.json().headers;",
+							"    pm.expect(requestHeaders[\"Interceptor-Header\"]).equals(\"Interceptor-header-value\");",
+							"    const responseHeaders = pm.response.headers;",
+							"    pm.expect(responseHeaders[\"interceptor-response-header\"]).equals(undefined);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "HOST",
+						"value": "a3b58ccf-6ecc-4557-b5bb-0a35cce38256.gw.wso2.com",
+						"type": "text"
+					},
+					{
+						"key": "Internal-Key",
+						"value": "{{APITestKey}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURl}}/interrceptorapi/1.0.0/get",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"interrceptorapi",
+						"1.0.0",
+						"get"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Verify after applying  request interceptor at api level Copy",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Check API response and status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Verify unavailability of intercpetor header\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const requestHeaders = pm.response.json().headers;",
+							"    pm.expect(requestHeaders[\"Interceptor-Header\"]).equals(\"Interceptor-header-value\");",
+							"    const responseHeaders = pm.response.headers;",
+							"    pm.expect(responseHeaders.get(\"interceptor-response-header\")).equals(undefined);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "HOST",
+						"value": "a3b58ccf-6ecc-4557-b5bb-0a35cce38256.gw.wso2.com",
+						"type": "text"
+					},
+					{
+						"key": "Internal-Key",
+						"value": "{{APITestKey}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURl}}/interrceptorapi/1.0.0/headers",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"interrceptorapi",
+						"1.0.0",
+						"headers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "update API with API level http InterceptorPolicy response",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": \"{{APIUUID}}\",\n    \"name\": \"interrceptorapi\",\n    \"context\": \"/interrceptorapi/1.0.0\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"apiPolicies\": {\n        \"response\": [\n            {\n                \"policyName\": \"Interceptor\",\n                \"policyVersion\": \"v1\",\n                \"parameters\": {\n                    \"headersEnabled\": true,\n                    \"backendUrl\": \"http://interceptor-service.test-apk.svc.cluster.local:8443\"\n                }\n            }\n        ]\n    },\n    \"endpointConfig\": {\n        \"endpoint_type\": \"http\",\n        \"sandbox_endpoints\": {\n            \"url\": \"http://backend.test-apk.svc.cluster.local\"\n        },\n        \"production_endpoints\": {\n            \"url\": \"http://backend.test-apk.svc.cluster.local\"\n        }\n    },\n    \"operations\": [\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": []\n        },\n        {\n            \"target\": \"/get\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": []\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIUUID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Verify after applying  request interceptor at api level Copy 2",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Check API response and status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Verify unavailability of intercpetor header\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const requestHeaders = pm.response.json().headers;",
+							"    pm.expect(requestHeaders[\"Interceptor-Header\"]).equals(undefined);",
+							"    const responseHeaders = pm.response.headers;",
+							"    pm.expect(responseHeaders.get(\"interceptor-response-header\")).equals(\"Interceptor-Response-header-value\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "HOST",
+						"value": "a3b58ccf-6ecc-4557-b5bb-0a35cce38256.gw.wso2.com",
+						"type": "text"
+					},
+					{
+						"key": "Internal-Key",
+						"value": "{{APITestKey}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURl}}/interrceptorapi/1.0.0/get",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"interrceptorapi",
+						"1.0.0",
+						"get"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Verify after applying  request interceptor at api level Copy 3",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Check API response and status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Verify unavailability of intercpetor header\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const requestHeaders = pm.response.json().headers;",
+							"    pm.expect(requestHeaders[\"Interceptor-Header\"]).equals(undefined);",
+							"    const responseHeaders = pm.response.headers;",
+							"    pm.expect(responseHeaders.get(\"interceptor-response-header\")).equals(\"Interceptor-Response-header-value\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "HOST",
+						"value": "a3b58ccf-6ecc-4557-b5bb-0a35cce38256.gw.wso2.com",
+						"type": "text"
+					},
+					{
+						"key": "Internal-Key",
+						"value": "{{APITestKey}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURl}}/interrceptorapi/1.0.0/headers",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"interrceptorapi",
+						"1.0.0",
+						"headers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "update API with API level http InterceptorPolicy request and response",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": \"{{APIUUID}}\",\n    \"name\": \"interrceptorapi\",\n    \"context\": \"/interrceptorapi/1.0.0\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"apiPolicies\": {\n        \"request\": [\n            {\n                \"policyName\": \"Interceptor\",\n                \"policyVersion\": \"v1\",\n                \"parameters\": {\n                    \"headersEnabled\": true,\n                    \"backendUrl\": \"http://interceptor-service.test-apk.svc.cluster.local:8443\"\n                }\n            }\n        ],\n        \"response\": [\n            {\n                \"policyName\": \"Interceptor\",\n                \"policyVersion\": \"v1\",\n                \"parameters\": {\n                    \"headersEnabled\": true,\n                    \"backendUrl\": \"http://interceptor-service.test-apk.svc.cluster.local:8443\"\n                }\n            }\n        ]\n    },\n    \"endpointConfig\": {\n        \"endpoint_type\": \"http\",\n        \"sandbox_endpoints\": {\n            \"url\": \"http://backend.test-apk.svc.cluster.local\"\n        },\n        \"production_endpoints\": {\n            \"url\": \"http://backend.test-apk.svc.cluster.local\"\n        }\n    },\n    \"operations\": [\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": []\n        },\n        {\n            \"target\": \"/get\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": []\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIUUID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Verify after applying  request interceptor at api level Copy 4",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Check API response and status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Verify unavailability of intercpetor header\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const requestHeaders = pm.response.json().headers;",
+							"    pm.expect(requestHeaders[\"Interceptor-Header\"]).equals(\"Interceptor-header-value\");",
+							"    const responseHeaders = pm.response.headers;",
+							"    pm.expect(responseHeaders.get(\"interceptor-response-header\")).equals(\"Interceptor-Response-header-value\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "HOST",
+						"value": "a3b58ccf-6ecc-4557-b5bb-0a35cce38256.gw.wso2.com",
+						"type": "text"
+					},
+					{
+						"key": "Internal-Key",
+						"value": "{{APITestKey}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURl}}/interrceptorapi/1.0.0/get",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"interrceptorapi",
+						"1.0.0",
+						"get"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Verify after applying  request interceptor at api level Copy 5",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Check API response and status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Verify unavailability of intercpetor header\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const requestHeaders = pm.response.json().headers;",
+							"    pm.expect(requestHeaders[\"Interceptor-Header\"]).equals(\"Interceptor-header-value\");",
+							"    const responseHeaders = pm.response.headers;",
+							"    pm.expect(responseHeaders.get(\"interceptor-response-header\")).equals(\"Interceptor-Response-header-value\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "HOST",
+						"value": "a3b58ccf-6ecc-4557-b5bb-0a35cce38256.gw.wso2.com",
+						"type": "text"
+					},
+					{
+						"key": "Internal-Key",
+						"value": "{{APITestKey}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURl}}/interrceptorapi/1.0.0/headers",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"interrceptorapi",
+						"1.0.0",
+						"headers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "change interceptor policies to resource level",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": \"{{APIUUID}}\",\n    \"name\": \"interrceptorapi\",\n    \"context\": \"/interrceptorapi/1.0.0\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"endpointConfig\": {\n        \"endpoint_type\": \"http\",\n        \"sandbox_endpoints\": {\n            \"url\": \"http://backend.test-apk.svc.cluster.local\"\n        },\n        \"production_endpoints\": {\n            \"url\": \"http://backend.test-apk.svc.cluster.local\"\n        }\n    },\n    \"operations\": [\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [\n                    {\n                        \"policyName\": \"Interceptor\",\n                        \"policyVersion\": \"v1\",\n                        \"parameters\": {\n                            \"headersEnabled\": true,\n                            \"backendUrl\": \"http://interceptor-service.test-apk.svc.cluster.local:8443\"\n                        }\n                    }\n                ],\n                \"response\": [\n                    {\n                        \"policyName\": \"Interceptor\",\n                        \"policyVersion\": \"v1\",\n                        \"parameters\": {\n                            \"headersEnabled\": true,\n                            \"backendUrl\": \"http://interceptor-service.test-apk.svc.cluster.local:8443\"\n                        }\n                    }\n                ]\n            }\n        },\n        {\n            \"target\": \"/get\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": []\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIUUID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Verify after applying  request interceptor at api level Copy 7",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Check API response and status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Verify unavailability of intercpetor header\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const requestHeaders = pm.response.json().headers;",
+							"    pm.expect(requestHeaders[\"Interceptor-Header\"]).equals(\"Interceptor-header-value\");",
+							"    const responseHeaders = pm.response.headers;",
+							"    pm.expect(responseHeaders.get(\"interceptor-response-header\")).equals(\"Interceptor-Response-header-value\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "HOST",
+						"value": "a3b58ccf-6ecc-4557-b5bb-0a35cce38256.gw.wso2.com",
+						"type": "text"
+					},
+					{
+						"key": "Internal-Key",
+						"value": "{{APITestKey}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURl}}/interrceptorapi/1.0.0/headers",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"interrceptorapi",
+						"1.0.0",
+						"headers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Verify after applying  request interceptor at resource level - negative",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Check API response and status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Verify unavailability of intercpetor header\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const requestHeaders = pm.response.json().headers;",
+							"    pm.expect(requestHeaders[\"Interceptor-Header\"]).equals(undefined);",
+							"    const responseHeaders = pm.response.headers;",
+							"    pm.expect(responseHeaders.get(\"interceptor-response-header\")).equals(undefined);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "HOST",
+						"value": "a3b58ccf-6ecc-4557-b5bb-0a35cce38256.gw.wso2.com",
+						"type": "text"
+					},
+					{
+						"key": "Internal-Key",
+						"value": "{{APITestKey}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURl}}/interrceptorapi/1.0.0/get",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"interrceptorapi",
+						"1.0.0",
+						"get"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Apply https endpoint",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": \"{{APIUUID}}\",\n    \"name\": \"interrceptorapi\",\n    \"context\": \"/interrceptorapi/1.0.0\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"endpointConfig\": {\n        \"endpoint_type\": \"http\",\n        \"sandbox_endpoints\": {\n            \"url\": \"http://backend.test-apk.svc.cluster.local\"\n        },\n        \"production_endpoints\": {\n            \"url\": \"http://backend.test-apk.svc.cluster.local\"\n        }\n    },\n    \"operations\": [\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [\n                    {\n                        \"policyName\": \"Interceptor\",\n                        \"policyVersion\": \"v1\",\n                        \"parameters\": {\n                            \"headersEnabled\": true,\n                            \"backendUrl\": \"https://interceptor-service.test-apk.svc.cluster.local:8444\"\n                        }\n                    }\n                ],\n                \"response\": [\n                    {\n                        \"policyName\": \"Interceptor\",\n                        \"policyVersion\": \"v1\",\n                        \"parameters\": {\n                            \"headersEnabled\": true,\n                            \"backendUrl\": \"https://interceptor-service.test-apk.svc.cluster.local:8444\"\n                        }\n                    }\n                ]\n            }\n        },\n        {\n            \"target\": \"/get\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": []\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIUUID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "verify after applyinghttps endpoint",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Check API response and status code is 500\", function () {",
+							"  pm.response.to.have.status(500);",
+							"});",
+							"pm.test(\"check error code\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const payload = pm.response.json();",
+							"    pm.expect(payload[\"code\"]).equals(\"103500\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "HOST",
+						"value": "a3b58ccf-6ecc-4557-b5bb-0a35cce38256.gw.wso2.com",
+						"type": "text"
+					},
+					{
+						"key": "Internal-Key",
+						"value": "{{APITestKey}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURl}}/interrceptorapi/1.0.0/headers",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"interrceptorapi",
+						"1.0.0",
+						"headers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "apply endpoint certificate for interceptor service",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"const response = pm.response.json();",
+							"pm.collectionVariables.set(\"CERTIFICATE_ID\",response.certificateId);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "certificate",
+							"type": "file",
+							"src": "{{testArtifactPath}}/interceptor_service.pem"
+						},
+						{
+							"key": "host",
+							"value": "interceptor-service.test-apk.svc.cluster.local",
+							"type": "text"
+						}
+					],
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}/endpoint-certificates",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIUUID}}",
+						"endpoint-certificates"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "verify endpoint certificate list",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"check certificate availability\", function () {",
+							"    const responseJson = pm.response.json();",
+							"pm.expect(responseJson.count).to.be.above(0);",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "certificate",
+							"type": "file",
+							"src": "/home/tharindud/Desktop/interceptor_service.pem"
+						},
+						{
+							"key": "host",
+							"value": "interceptor-service.test-apk.svc.cluster.local",
+							"type": "text"
+						}
+					],
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}/endpoint-certificates",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIUUID}}",
+						"endpoint-certificates"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get specific endpoint certificate",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"check certificate availability\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.status).equals(\"Active\");",
+							"    pm.expect(responseJson.version).equals(\"3\");",
+							"    pm.expect(responseJson.validity.from).equals(\"2023-04-27T09:53:35Z\");",
+							"    pm.expect(responseJson.validity.to).equals(\"2024-04-26T09:53:35Z\");",
+							"    pm.expect(responseJson.subject).equals(\"CN=interceptor-service,OU=Engineering,O=WSO2,L=Mountain View,ST=CA,C=US\");",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "certificate",
+							"type": "file",
+							"src": "/home/tharindud/Desktop/interceptor_service.pem"
+						},
+						{
+							"key": "host",
+							"value": "interceptor-service.test-apk.svc.cluster.local",
+							"type": "text"
+						}
+					],
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}/endpoint-certificates/{{CERTIFICATE_ID}}",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIUUID}}",
+						"endpoint-certificates",
+						"{{CERTIFICATE_ID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get certificate content",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"",
+							"",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "certificate",
+							"type": "file",
+							"src": "/home/tharindud/Desktop/interceptor_service.pem"
+						},
+						{
+							"key": "host",
+							"value": "interceptor-service.test-apk.svc.cluster.local",
+							"type": "text"
+						}
+					],
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}/endpoint-certificates/{{CERTIFICATE_ID}}/content",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIUUID}}",
+						"endpoint-certificates",
+						"{{CERTIFICATE_ID}}",
+						"content"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "apply endpoint certificate",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": \"{{APIUUID}}\",\n    \"name\": \"interrceptorapi\",\n    \"context\": \"/interrceptorapi/1.0.0\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"endpointConfig\": {\n        \"endpoint_type\": \"http\",\n        \"sandbox_endpoints\": {\n            \"url\": \"http://backend.test-apk.svc.cluster.local\"\n        },\n        \"production_endpoints\": {\n            \"url\": \"http://backend.test-apk.svc.cluster.local\"\n        }\n    },\n    \"operations\": [\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": [],\n            \"operationPolicies\": {\n                \"request\": [\n                    {\n                        \"policyName\": \"Interceptor\",\n                        \"policyVersion\": \"v1\",\n                        \"parameters\": {\n                            \"headersEnabled\": true,\n                            \"backendUrl\": \"https://interceptor-service.test-apk.svc.cluster.local:8444\"\n                        }\n                    }\n                ],\n                \"response\": [\n                    {\n                        \"policyName\": \"Interceptor\",\n                        \"policyVersion\": \"v1\",\n                        \"parameters\": {\n                            \"headersEnabled\": true,\n                            \"backendUrl\": \"https://interceptor-service.test-apk.svc.cluster.local:8444\"\n                        }\n                    }\n                ]\n            }\n        },\n        {\n            \"target\": \"/get\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": []\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIUUID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "verify after applying endpoint cetrtificates",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Check API response and status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Verify unavailability of intercpetor header\", () => {",
+							"    //parse the response JSON and test three properties",
+							"    const requestHeaders = pm.response.json().headers;",
+							"    pm.expect(requestHeaders[\"Interceptor-Header\"]).equals(\"Interceptor-header-value\");",
+							"    const responseHeaders = pm.response.headers;",
+							"    pm.expect(responseHeaders.get(\"interceptor-response-header\")).equals(\"Interceptor-Response-header-value\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "HOST",
+						"value": "a3b58ccf-6ecc-4557-b5bb-0a35cce38256.gw.wso2.com",
+						"type": "text"
+					},
+					{
+						"key": "Internal-Key",
+						"value": "{{APITestKey}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURl}}/interrceptorapi/1.0.0/headers",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"interrceptorapi",
+						"1.0.0",
+						"headers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete interceptor API",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIUUID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Verify API Deletion",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 404\", function () {",
+							"  pm.response.to.have.status(404);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Host",
+						"value": "api.am.wso2.com",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": \"{{APIUUID}}\",\n    \"name\": \"interrceptorapi\",\n    \"context\": \"/interrceptorapi/1.0.0\",\n    \"version\": \"1.0.0\",\n    \"type\": \"REST\",\n    \"apiPolicies\": {\n        \"request\": [\n            {\n                \"policyName\": \"Interceptor\",\n                \"policyVersion\": \"v1\",\n                \"parameters\": {\n                    \"headersEnabled\": true,\n                    \"backendUrl\": \"http://interceptor-service.test-apk.svc.cluster.local:8443\"\n                }\n            }\n        ]\n    },\n    \"endpointConfig\": {\n        \"endpoint_type\": \"http\",\n        \"sandbox_endpoints\": {\n            \"url\": \"http://backend.test-apk.svc.cluster.local\"\n        },\n        \"production_endpoints\": {\n            \"url\": \"http://backend.test-apk.svc.cluster.local\"\n        }\n    },\n    \"operations\": [\n        {\n            \"target\": \"/headers\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": []\n        },\n        {\n            \"target\": \"/get\",\n            \"verb\": \"GET\",\n            \"authTypeEnabled\": true,\n            \"scopes\": []\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gatewayBaseURl}}/api/am/runtime/apis/{{APIUUID}}",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"api",
+						"am",
+						"runtime",
+						"apis",
+						"{{APIUUID}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "access_token",
+			"value": "",
+			"type": "default"
+		},
+		{
+			"key": "APIUUID",
+			"value": ""
+		},
+		{
+			"key": "APITestKey",
+			"value": ""
+		},
+		{
+			"key": "CERTIFICATE_ID",
+			"value": ""
+		}
+	]
+}

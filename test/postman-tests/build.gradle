@@ -43,9 +43,11 @@ task generate_environment_json {
         }else {
             gwHost = "localhost";
         }
+    def currentDir = System.getProperty("user.dir")
 	println 'applying environment.json value' + gwHost
     def environmentJsonPlaceHolder = new File("${projectDir}/resources/environments/APK_environment.json.template")
     def newEnvironmentJson = environmentJsonPlaceHolder.text.replace("GW_HOST", gwHost);
+    newEnvironmentJson = newEnvironmentJson.replace("TEST_ARTIFACT_PATH",currentDir+"/resources/artifacts");
     def newEnvironmentJsonFile = new File("$project.buildDir/APK_environment.json");
     newEnvironmentJsonFile.text = newEnvironmentJson;
     }
@@ -75,10 +77,6 @@ tasks.register('test'){
     description 'Run tests'
     dependsOn generate_environment_json
     mustRunAfter generate_environment_json
-    // dependsOn admin_postman_collection
-    // dependsOn devportal_postman_collection
-    // dependsOn backoffice_postman_collection
-    // dependsOn runtime_postman_collection
     dependsOn run_all_collection
     doLast{
         println buildDir

@@ -173,6 +173,7 @@ public class APIClient {
                 _ = check self.deleteScopeCrsForAPI(api, organization);
                 _ = check self.deleteRateLimitPolicyCRs(api, organization);
                 _ = check self.deleteBackends(api, organization);
+                _ = check self.deleteEndpointCertificates(api, organization);
                 _ = check self.deleteAPIPolicyCRs(api, organization);
                 _ = check self.deleteInternalAPI(api.metadata.name, api.metadata.namespace);
             } else {
@@ -500,7 +501,21 @@ public class APIClient {
     }
 
     isolated function isPolicyEmpty(APIOperationPolicies? policies) returns boolean {
-        return policies == () || policies.length() == 0;
+        if policies is APIOperationPolicies {
+            OperationPolicy[]? request = policies.request;
+            if request is OperationPolicy[] {
+                if (request.length() > 0) {
+                    return false;
+                }
+            }
+            OperationPolicy[]? response = policies.response;
+            if response is OperationPolicy[] {
+                if (response.length() > 0) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     isolated function validateOperationPolicyData(APIOperationPolicies? operationPolicies, commons:Organization organization) returns commons:APKError|() {
@@ -982,7 +997,6 @@ public class APIClient {
                 check self.deleteRateLimitPolicyCRs(api, organization);
                 check self.deleteAPIPolicyCRs(api, organization);
                 check self.deleteInternalAPI(api.metadata.name, api.metadata.namespace);
-                check self.deleteEndpointCertificates(api, organization);
             }
             check self.deployScopeCrs(apiArtifact);
             check self.deployEndpointCertificates(apiArtifact);
@@ -1009,7 +1023,8 @@ public class APIClient {
             _ = check self.deployConfigMap(endpointCertificate);
         }
     }
-    private isolated function deleteEndpointCertificates(model:API api, commons:Organization organization) returns error? {
+    private isolated function deleteEndpointCertificates(model:API api, commons:Organization organization) returns commons:APKError? {
+        do{
         model:ConfigMap[] endpointCertificates = check getConfigMapsForAPICertificate(api.spec.apiDisplayName, api.spec.apiVersion, organization);
         foreach model:ConfigMap endpointCertificate in endpointCertificates {
             http:Response deleteEndpointCertificateResult = check deleteConfigMap(endpointCertificate.metadata.name, endpointCertificate.metadata.namespace);
@@ -1020,6 +1035,13 @@ public class APIClient {
                 model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
                 check self.handleK8sTimeout(statusResponse);
             }
+        }
+        }on fail var e{
+            if e is commons:APKError {
+                return e;
+            }
+            log:printError("Internal Error occured while deleting Endpoint Certificates", e);
+            return e909022("Internal Error occured while deleting Endpoint Certificates", e);
         }
     }
     private isolated function deployScopeCrs(model:APIArtifact apiArtifact) returns error? {
@@ -2350,7 +2372,7 @@ public class APIClient {
                 string policyName = policy.policyName;
                 record {}? policyParameters = policy.parameters;
                 if (policyParameters is record {}) {
-                    if (policyName == "addInterceptor") {
+                    if (policyName == "Interceptor") {
                         string backendUrl = <string>policyParameters.get("backendUrl");
                         model:EndpointSecurity backendSecurity = {};
                         model:Backend|error backendService = self.createBackendService(api, operations, INTERCEPTOR_TYPE, organization, backendUrl, backendSecurity);
@@ -3472,6 +3494,7 @@ public class APIClient {
                 if payload.'version != api.'version {
                     return e909050();
                 }
+                payload.id = apiId;
                 self.setDefaultOperationsIfNotExist(payload);
                 string uniqueId = getUniqueIdForAPI(payload.name, payload.'version, organization);
                 model:APIArtifact apiArtifact = {uniqueId: uniqueId};
@@ -3508,12 +3531,12 @@ public class APIClient {
                         return e909021();
                     }
                     // Validating operation policies.
-                    commons:APKError|() apkError = self.validateOperationPolicies(api.apiPolicies, operations, organization);
+                    commons:APKError|() apkError = self.validateOperationPolicies(payload.apiPolicies, operations, organization);
                     if (apkError is commons:APKError) {
                         return apkError;
                     }
                     // Validating rate limit.
-                    commons:APKError|() invalidRateLimitError = self.validateRateLimit(api.apiRateLimit, operations);
+                    commons:APKError|() invalidRateLimitError = self.validateRateLimit(payload.apiRateLimit, operations);
                     if (invalidRateLimitError is commons:APKError) {
                         return invalidRateLimitError;
                     }
