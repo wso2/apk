@@ -101,4 +101,7 @@ rules:
   - apiGroups: [ "dp.wso2.com" ]
     resources: [ "ratelimitpolicies/status" ]
     verbs: [ "get","patch","update" ]
+  - apiGroups: [ "coordination.k8s.io" ]
+    resources: [ "leases" ]
+    verbs: [ "get","list","watch","update","patch","create","delete" ]
 {{- end -}}
