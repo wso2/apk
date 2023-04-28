@@ -108,8 +108,8 @@ isolated final model:MediationPolicy[] avilableMediationPolicyList = [
     {
         id: "5",
         'type: MEDIATION_POLICY_TYPE_INTERCEPTOR,
-        name: MEDIATION_POLICY_NAME_ADD_INTERCEPTOR,
-        displayName: "Add Interceptor",
+        name: MEDIATION_POLICY_TYPE_INTERCEPTOR,
+        displayName: "Interceptor",
         description: "This policy allows you to engage an interceptor service",
         applicableFlows: [MEDIATION_POLICY_FLOW_REQUEST, MEDIATION_POLICY_FLOW_RESPONSE],
         supportedApiTypes: [API_TYPE_REST],
