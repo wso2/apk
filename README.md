@@ -121,11 +121,11 @@ WSO2 API Kubernetes Platform has released following docker images in the WSO2 pu
     ```bash
     kubectl get svc -n apk | grep router-service
     ```
+
 - or, port forward to router-service to use localhost.
     ```bash
     kubectl port-forward svc/apk-test-wso2-apk-router-service -n apk 9095:9095
     ```
-
 
 ## Quick Start APK with Kubernetes client
 Follow the instruction below to deploy an API using the `kubectl`.
@@ -146,7 +146,7 @@ Follow the instruction below to deploy an API using the `kubectl`.
 
 3. Get a token to invoke the System API.
     ```bash
-    ACCESS_TOKEN=$(curl --location --request POST '{router_service}:9095/oauth2/token' \
+    ACCESS_TOKEN=$(curl --location --request POST 'https://{router_service}:9095/oauth2/token' \
     --header 'Host: idp.am.wso2.com' \
     --header 'Authorization: Basic NDVmMWM1YzgtYTkyZS0xMWVkLWFmYTEtMDI0MmFjMTIwMDAyOjRmYmQ2MmVjLWE5MmUtMTFlZC1hZmExLTAyNDJhYzEyMDAwMg==' \
     --header 'Content-Type: application/x-www-form-urlencoded' \
@@ -155,14 +155,14 @@ Follow the instruction below to deploy an API using the `kubectl`.
 
 4. List the created API and retrieve API's `id`.
     ```bash
-    curl --location --request GET '{router_service}:9095/api/am/runtime/apis' \
+    curl --location --request GET 'https://{router_service}:9095/api/am/runtime/apis' \
     --header 'Host: api.am.wso2.com' \
     --header 'Authorization: Bearer $ACCESS_TOKEN'
     ```
 
 5. Get a token to invoke the created API. Provide the API's `id` to `{api_id}` in below command.
     ```bash
-    INTERNAL_KEY=$(curl --location --request POST '{router_service}:9095/api/am/runtime/apis/{api_id}/generate-key' \
+    INTERNAL_KEY=$(curl --location --request POST 'https://{router_service}:9095/api/am/runtime/apis/{api_id}/generate-key' \
     --header 'Content-Type: application/json' \
     --header 'Accept: application/json' \
     --header 'Host: api.am.wso2.com' \
@@ -171,7 +171,7 @@ Follow the instruction below to deploy an API using the `kubectl`.
 
 6. Invoke the API.
     ```bash
-    curl --location --request GET '{router_service}:9095/http-bin-api/1.0.8/get' \
+    curl --location --request GET 'https://{router_service}:9095/http-bin-api/1.0.8/get' \
     --header 'HOST: gw.wso2.com' \
     --header 'Internal-Key: $INTERNAL_KEY'
     ```
