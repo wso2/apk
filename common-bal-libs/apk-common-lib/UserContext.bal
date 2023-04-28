@@ -8,3 +8,8 @@ public type UserContext record{|
     Organization organization;
     map<anydata> claims = {};
 |};
+
+public type User record {|
+    string uuid;
+    string IDPUserName;
+|};
