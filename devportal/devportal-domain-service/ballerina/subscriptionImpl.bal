@@ -71,9 +71,9 @@ isolated function addSubscription(Subscription payload, commons:Organization org
             string eventId = uuid:createType1AsString();
             time:Utc currTime = time:utcNow();
             string date = time:utcToString(currTime);
-            SubscriptionGRPC createSubscriptionRequest = {eventId: eventId, applicationRef: createdSub.applicationId, 
+            SubscriptionGRPC createSubscriptionRequest = {eventId: eventId, applicationRef: createdSub.applicationId,
             apiRef: <string>createdSub.apiId, policyId: createdSub.throttlingPolicy, subStatus:<string>createdSub.status,
-            subscriber: user, uuid: subscriptionId, timeStamp: date, organization: org};
+            subscriber: user, uuid: subscriptionId, timeStamp: date, organization: org.uuid};
             string devportalPubCert = <string>keyStores.tls.certFilePath;
             string devportalKeyCert = <string>keyStores.tls.keyFilePath;
             string pubCertPath = managementServerConfig.certPath;
@@ -129,7 +129,7 @@ isolated function deleteSubscription(string subId, commons:Organization organiza
             string eventId = uuid:createType1AsString();
             time:Utc currTime = time:utcNow();
             string date = time:utcToString(currTime);
-            SubscriptionGRPC deleteSubscriptionRequest = {eventId: eventId, uuid: subId, timeStamp: date, organization: organization};
+            SubscriptionGRPC deleteSubscriptionRequest = {eventId: eventId, uuid: subId, timeStamp: date, organization: organization.uuid};
             string devportalPubCert = <string>keyStores.tls.certFilePath;
             string devportalKeyCert = <string>keyStores.tls.keyFilePath;
             string pubCertPath = managementServerConfig.certPath;
@@ -204,9 +204,9 @@ isolated function updateSubscription(string subId, Subscription payload, commons
             string eventId = uuid:createType1AsString();
             time:Utc currTime = time:utcNow();
             string date = time:utcToString(currTime);
-            SubscriptionGRPC updateSubscriptionRequest = {eventId: eventId, applicationRef: createdSub.applicationId, 
+            SubscriptionGRPC updateSubscriptionRequest = {eventId: eventId, applicationRef: createdSub.applicationId,
             apiRef: <string>createdSub.apiId, policyId: createdSub.throttlingPolicy, subStatus:<string>createdSub.status,
-            subscriber: user, uuid: subId, timeStamp: date, organization: org};
+            subscriber: user, uuid: subId, timeStamp: date, organization: org.uuid};
             string devportalPubCert = <string>keyStores.tls.certFilePath;
             string devportalKeyCert = <string>keyStores.tls.keyFilePath;
             string pubCertPath = managementServerConfig.certPath;
