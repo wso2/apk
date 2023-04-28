@@ -359,7 +359,7 @@ func updateXdsCacheOnAPIChange(oldLabels []string, newLabels []string) bool {
 }
 
 // SetReady Method to set the status after the last api is fected and updated in router.
-func SetReady(isReady bool) {
+func SetReady() {
 	logger.LoggerXds.Infof("Finished deploying startup APIs. Deploying the readiness endpoint...")
 	isReady = true
 }

@@ -20,6 +20,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/discovery/xds"
@@ -73,6 +74,12 @@ const (
 	backendAPIPolicyIndex     = "backendAPIPolicyIndex"
 )
 
+var (
+	readyToReconcile = false
+	// mutexForReconcile ensures that reconcile only skipped for initial APIs
+	mutexForReconcile sync.Mutex
+)
+
 // APIReconciler reconciles a API object
 type APIReconciler struct {
 	client        k8client.Client
@@ -85,7 +92,7 @@ type APIReconciler struct {
 // NewAPIController creates a new API controller instance. API Controllers watches for dpv1alpha1.API and gwapiv1b1.HTTPRoute.
 func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.OperatorDataStore, statusUpdater *status.UpdateHandler,
 	ch *chan synchronizer.APIEvent) error {
-	r := &APIReconciler{
+	apiReconciler := &APIReconciler{
 		client:        mgr.GetClient(),
 		ods:           operatorDataStore,
 		ch:            ch,
@@ -93,13 +100,8 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 		mgr:           mgr,
 	}
 	ctx := context.Background()
-	// initial startup API apply
-	if err := r.applyStartupAPIs(ctx); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2601, err))
-		return err
-	}
 
-	c, err := controller.New(constants.APIController, mgr, controller.Options{Reconciler: r})
+	c, err := controller.New(constants.APIController, mgr, controller.Options{Reconciler: apiReconciler})
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2619, err))
 		return err
@@ -118,55 +120,55 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 		return err
 	}
 
-	if err := c.Watch(&source.Kind{Type: &gwapiv1b1.HTTPRoute{}}, handler.EnqueueRequestsFromMapFunc(r.getAPIForHTTPRoute),
+	if err := c.Watch(&source.Kind{Type: &gwapiv1b1.HTTPRoute{}}, handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIForHTTPRoute),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2613, err))
 		return err
 	}
 
-	if err := c.Watch(&source.Kind{Type: &gwapiv1b1.Gateway{}}, handler.EnqueueRequestsFromMapFunc(r.getAPIsForGateway),
+	if err := c.Watch(&source.Kind{Type: &gwapiv1b1.Gateway{}}, handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForGateway),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2611, err))
 		return err
 	}
 
-	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.Backend{}}, handler.EnqueueRequestsFromMapFunc(r.getAPIsForBackend),
+	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.Backend{}}, handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForBackend),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2615, err))
 		return err
 	}
 
-	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.Authentication{}}, handler.EnqueueRequestsFromMapFunc(r.getAPIsForAuthentication),
+	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.Authentication{}}, handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForAuthentication),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2616, err))
 		return err
 	}
 
-	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.APIPolicy{}}, handler.EnqueueRequestsFromMapFunc(r.getAPIsForAPIPolicy),
+	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.APIPolicy{}}, handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForAPIPolicy),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2617, err))
 		return err
 	}
 
-	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.RateLimitPolicy{}}, handler.EnqueueRequestsFromMapFunc(r.getAPIsForRateLimitPolicy),
+	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.RateLimitPolicy{}}, handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForRateLimitPolicy),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2639, err))
 		return err
 	}
 
-	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.Scope{}}, handler.EnqueueRequestsFromMapFunc(r.getAPIsForScope),
+	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.Scope{}}, handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForScope),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2618, err))
 		return err
 	}
 
-	if err := c.Watch(&source.Kind{Type: &corev1.ConfigMap{}}, handler.EnqueueRequestsFromMapFunc(r.getAPIsForConfigMap),
+	if err := c.Watch(&source.Kind{Type: &corev1.ConfigMap{}}, handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForConfigMap),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2644, err))
 		return err
 	}
 
-	if err := c.Watch(&source.Kind{Type: &corev1.Secret{}}, handler.EnqueueRequestsFromMapFunc(r.getAPIsForSecret),
+	if err := c.Watch(&source.Kind{Type: &corev1.Secret{}}, handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForSecret),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2645, err))
 		return err
@@ -201,8 +203,16 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.13.0/pkg/reconcile
 func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+	if !readyToReconcile {
+		mutexForReconcile.Lock()
+		defer mutexForReconcile.Unlock()
+		if !readyToReconcile {
+			loggers.LoggerAPKOperator.Infof("Ignore reconciling for API %s as the startup API apply is pending.", req.NamespacedName.String())
+			apiReconciler.applyStartupAPIs()
+			return ctrl.Result{}, nil
+		}
+	}
 	loggers.LoggerAPKOperator.Infof("Reconciling for API %s", req.NamespacedName.String())
-
 	// Check whether the API CR exist, if not consider as a DELETE event.
 	var apiDef dpv1alpha1.API
 	if err := apiReconciler.client.Get(ctx, req.NamespacedName, &apiDef); err != nil {
@@ -217,31 +227,35 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		loggers.LoggerAPKOperator.Warnf("Api CR related to the reconcile request with key: %s returned error. Assuming API is already deleted, hence ignoring the error : %v", err)
 		return ctrl.Result{}, nil
 	}
-	apiState, err := apiReconciler.resolveAPIRefs(ctx, apiDef, req.NamespacedName, req.Namespace)
-	if err != nil {
+	if apiState, err := apiReconciler.resolveAPIRefs(ctx, apiDef, req.NamespacedName, req.Namespace); err != nil {
 		loggers.LoggerAPKOperator.Warnf("Error retrieving ref CRs for API in namespace : %s, %v", req.NamespacedName.String(), err)
 		return ctrl.Result{}, err
+	} else if apiState != nil {
+		*apiReconciler.ch <- *apiState
 	}
-	*apiReconciler.ch <- *apiState
 	return ctrl.Result{}, nil
 }
 
-func (apiReconciler *APIReconciler) applyStartupAPIs(ctx context.Context) error {
+// applyStartupAPIs applies the APIs which are already available in the cluster at the startup of the operator.
+func (apiReconciler *APIReconciler) applyStartupAPIs() {
+	ctx := context.Background()
 	apiList := &dpv1alpha1.APIList{}
 	conf := config.ReadConfigs()
 	listOptions := utils.RetrieveNamespaceListOptions(conf.Adapter.Operator.Namespaces)
 	if err := apiReconciler.client.List(ctx, apiList, &listOptions); err != nil {
-		return err
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2601, err))
+		return
 	}
+	readyToReconcile = true
 	for _, api := range apiList.Items {
 		if apiState, err := apiReconciler.resolveAPIRefs(ctx, api, utils.NamespacedName(&api), api.Namespace); err != nil {
 			loggers.LoggerAPKOperator.Warnf("Error retrieving ref CRs for API : %s in namespace : %s, %v", api.Name, api.Namespace, err)
-		} else {
+		} else if apiState != nil {
 			*apiReconciler.ch <- *apiState
 		}
 	}
-	xds.SetReady(true)
-	return nil
+	xds.SetReady()
+	loggers.LoggerAPKOperator.Info("Initial APIs were deployed successfully")
 }
 
 // resolveAPIRefs validates following references related to the API
