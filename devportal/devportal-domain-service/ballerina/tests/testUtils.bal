@@ -102,13 +102,12 @@ isolated function addDefinitionDAO(APIBody apiBody, string organization) returns
     }
 }
 
-public isolated function addApplicationUsagePlanDAO(ApplicationRatePlan atp) returns ApplicationRatePlan|APKError {
+public isolated function addApplicationUsagePlanDAO(ApplicationRatePlan atp, string org) returns ApplicationRatePlan|APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
         return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
-        string org = "carbon.super";
         sql:ParameterizedQuery query = `INSERT INTO APPLICATION_USAGE_PLAN (NAME, DISPLAY_NAME, 
         ORGANIZATION, DESCRIPTION, QUOTA_TYPE, QUOTA, UNIT_TIME, TIME_UNIT, IS_DEPLOYED, UUID) 
         VALUES (${atp.planName},${atp.displayName},${org},${atp.description},${atp.defaultLimit.'type},
@@ -125,13 +124,12 @@ public isolated function addApplicationUsagePlanDAO(ApplicationRatePlan atp) ret
     }
 }
 
-public isolated function addBusinessPlanDAO(BusinessPlan stp) returns BusinessPlan|APKError {
+public isolated function addBusinessPlanDAO(BusinessPlan stp, string org) returns BusinessPlan|APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
         return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
-        string org = "carbon.super";
         sql:ParameterizedQuery query = `INSERT INTO BUSINESS_PLAN (NAME, DISPLAY_NAME, ORGANIZATION, DESCRIPTION, 
         QUOTA_TYPE, QUOTA, UNIT_TIME, TIME_UNIT, IS_DEPLOYED, UUID, 
         RATE_LIMIT_COUNT,RATE_LIMIT_TIME_UNIT,MAX_DEPTH, MAX_COMPLEXITY,

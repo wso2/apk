@@ -54,7 +54,7 @@ function beforeFunc1() {
     };
     string applicationUsagePlanId = uuid:createType1AsString();
     payload.planId = applicationUsagePlanId;
-    ApplicationRatePlan|APKError createdAppPol = addApplicationUsagePlanDAO(payload);
+    ApplicationRatePlan|APKError createdAppPol = addApplicationUsagePlanDAO(payload, organiztion.uuid);
     if createdAppPol is ApplicationRatePlan {
         test:assertTrue(true,"Application usage plan added successfully");
         BusinessPlan payloadbp = {
@@ -74,7 +74,7 @@ function beforeFunc1() {
             "customAttributes": []
         };
         payloadbp.planId = uuid:createType1AsString();
-        BusinessPlan|APKError createdBusinessPlan = addBusinessPlanDAO(payloadbp);
+        BusinessPlan|APKError createdBusinessPlan = addBusinessPlanDAO(payloadbp, organiztion.uuid);
         if createdBusinessPlan is BusinessPlan {
             test:assertTrue(true,"Business Plan added successfully");
         } else if createdBusinessPlan is APKError {
@@ -91,7 +91,7 @@ function addApplicationTest() {
     string[] testHosts= ["http://localhost:9090"];
     test:when(retrieveManagementServerHostsListMock).thenReturn(testHosts);
     Application payload = {name:"sampleApp",throttlingPolicy:"25PerMin",description: "sample application"};
-    NotFoundError|Application|APKError createdApplication = addApplication(payload, "carbon.super", "apkuser");
+    NotFoundError|Application|APKError createdApplication = addApplication(payload, organiztion, "apkuser");
     if createdApplication is Application {
         test:assertTrue(true, "Successfully added the application");
         application.applicationId = createdApplication.applicationId;
@@ -104,7 +104,7 @@ function addApplicationTest() {
 function getApplicationByIdTest(){
     string? appId = application.applicationId;
     if appId is string {
-        Application|APKError|NotFoundError returnedResponse = getApplicationById(appId,"carbon.super");
+        Application|APKError|NotFoundError returnedResponse = getApplicationById(appId, organiztion);
         if returnedResponse is Application {
         test:assertTrue(true, "Successfully retrieved application");
         } else if returnedResponse is  APKError|NotFoundError {
@@ -117,7 +117,7 @@ function getApplicationByIdTest(){
 
 @test:Config {dependsOn: [getApplicationByIdTest]}
 function getApplicationListTest(){
-    ApplicationList|APKError applicationList = getApplicationList("","","","",0,0,"carbon.super");
+    ApplicationList|APKError applicationList = getApplicationList("","","","",0,0,organiztion);
     if applicationList is ApplicationList {
     test:assertTrue(true, "Successfully retrieved all applications");
     } else if applicationList is APKError {
@@ -132,7 +132,7 @@ function updateApplicationTest() {
     Application payload = {name:"sampleApp",throttlingPolicy:"25PerMin",description: "sample application updated"};
     string? appId = application.applicationId;
     if appId is string {
-        NotFoundError|Application|APKError createdApplication = updateApplication(appId,payload, "carbon.super", "apkuser");
+        NotFoundError|Application|APKError createdApplication = updateApplication(appId,payload, organiztion, "apkuser");
         if createdApplication is Application {
             test:assertTrue(true, "Successfully added the application");
             application.applicationId = createdApplication.applicationId;
@@ -166,7 +166,7 @@ function generateAPIKeyTest(){
     test:when(generateTokenMock).thenReturn(token);
     string? appId = application.applicationId;
     if appId is string {
-        APIKey|APKError|NotFoundError key = generateAPIKey(payload, appId, "PRODUCTION", "apkuser", "carbon.super");
+        APIKey|APKError|NotFoundError key = generateAPIKey(payload, appId, "PRODUCTION", "apkuser", organiztion);
         if key is APIKey {
             test:assertTrue(true, "API Key Successfully Generated");
         } else {
@@ -181,7 +181,7 @@ function generateAPIKeyTest(){
 function deleteApplicationTest() {
     string? appId = application.applicationId;
     if appId is string {
-        error?|string status = deleteApplication(appId, "carbon.super");
+        error?|string status = deleteApplication(appId, organiztion);
         if status is string {
             test:assertTrue(true, "Successfully deleted application");
         } else if status is  error {

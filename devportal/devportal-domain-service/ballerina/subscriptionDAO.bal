@@ -24,13 +24,12 @@ import ballerina/sql;
 #
 # + policyName -   Policy Name
 # + return -      Policy ID
-public isolated function getBusinessPlanByNameDAO(string policyName) returns string|APKError|NotFoundError {
+public isolated function getBusinessPlanByNameDAO(string policyName, string org) returns string|APKError|NotFoundError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
         return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
-        string org = "carbon.super";
         sql:ParameterizedQuery query = `SELECT UUID FROM BUSINESS_PLAN WHERE NAME =${policyName} AND ORGANIZATION =${org}`;
         string| sql:Error result =  dbClient->queryRow(query);
         if result is sql:NoRowsError {
