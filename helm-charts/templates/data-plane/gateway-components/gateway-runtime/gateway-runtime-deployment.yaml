@@ -179,8 +179,6 @@ spec:
               value: {{ template "apk-helm.resource.prefix" . }}-adapter-service.{{ .Release.Namespace }}.svc
             - name: ADAPTER_HOST
               value: {{ template "apk-helm.resource.prefix" . }}-adapter-service.{{ .Release.Namespace }}.svc
-            - name: ENFORCER_HOST_NAME
-              value: {{ template "apk-helm.resource.prefix" . }}-enforcer-service.{{ .Release.Namespace }}.svc
             - name: ENFORCER_HOST
               value: "127.0.0.1"
             - name: ROUTER_ADMIN_HOST
