@@ -339,6 +339,7 @@
 							"    pm.expect(requestHeaders[\"Interceptor-Header\"]).equals(\"Interceptor-header-value\");",
 							"    const responseHeaders = pm.response.headers;",
 							"    pm.expect(responseHeaders[\"interceptor-response-header\"]).equals(undefined);",
+							"    pm.expect(requestHeaders[\"Gw-Header\"]).equals(\"GW-header-value\");",
 							"});"
 						],
 						"type": "text/javascript"
@@ -1158,7 +1159,7 @@
 						{
 							"key": "certificate",
 							"type": "file",
-							"src": "/home/tharindud/Desktop/interceptor_service.pem"
+							"src": "{{testArtifactPath}}/interceptor_service.pem"
 						},
 						{
 							"key": "host",
@@ -1243,7 +1244,7 @@
 						{
 							"key": "certificate",
 							"type": "file",
-							"src": "/home/tharindud/Desktop/interceptor_service.pem"
+							"src": "{{testArtifactPath}}/interceptor_service.pem"
 						},
 						{
 							"key": "host",
@@ -1322,7 +1323,7 @@
 						{
 							"key": "certificate",
 							"type": "file",
-							"src": "/home/tharindud/Desktop/interceptor_service.pem"
+							"src": "{{testArtifactPath}}/interceptor_service.pem"
 						},
 						{
 							"key": "host",
@@ -1430,7 +1431,14 @@
 							"    pm.expect(requestHeaders[\"Interceptor-Header\"]).equals(\"Interceptor-header-value\");",
 							"    const responseHeaders = pm.response.headers;",
 							"    pm.expect(responseHeaders.get(\"interceptor-response-header\")).equals(\"Interceptor-Response-header-value\");",
-							"});"
+							"});",
+							"",
+							"const now = new Date();",
+							"let seconds = now.getSeconds();",
+							"if (seconds >0){",
+							"setTimeout(function() {",
+							"}, (120-seconds) * 1000); ",
+							"}"
 						],
 						"type": "text/javascript"
 					}
@@ -1451,6 +1459,168 @@
 						"key": "Internal-Key",
 						"value": "{{APITestKey}}",
 						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURl}}/interrceptorapi/1.0.0/headers",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"interrceptorapi",
+						"1.0.0",
+						"headers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "ratelimit custom for user",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"",
+							"var currentCount = pm.variables.get('requestCount')",
+							"if (currentCount == undefined){",
+							"currentCount = 1;",
+							"}",
+							"console.log(currentCount);",
+							"if (currentCount <= 4) {",
+							"    pm.test(\"Check API response and status code is 200\", function () {",
+							"        pm.response.to.have.status(200);",
+							"    });",
+							"    currentCount = currentCount + 1;",
+							"    pm.variables.set(\"requestCount\", currentCount);",
+							"    postman.setNextRequest(\"ratelimit custom for user\");",
+							"} else {",
+							"    pm.test(\"Check API response and status code is 429\", function () {",
+							"        pm.response.to.have.status(429);",
+							"    });",
+							"    pm.variables.set('requestCount', 5)",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "HOST",
+						"value": "a3b58ccf-6ecc-4557-b5bb-0a35cce38256.gw.wso2.com",
+						"type": "text"
+					},
+					{
+						"key": "Internal-Key",
+						"value": "{{APITestKey}}",
+						"type": "text"
+					},
+					{
+						"key": "user_id",
+						"value": "bob",
+						"type": "default"
+					},
+					{
+						"key": "org_id",
+						"value": "wso2",
+						"type": "default"
+					}
+				],
+				"url": {
+					"raw": "{{gatewayBaseURl}}/interrceptorapi/1.0.0/headers",
+					"host": [
+						"{{gatewayBaseURl}}"
+					],
+					"path": [
+						"interrceptorapi",
+						"1.0.0",
+						"headers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "ratelimit custom for org",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"",
+							"var currentCount = pm.variables.get('requestCount1')",
+							"if (currentCount == undefined){",
+							"currentCount = 1;",
+							"}",
+							"console.log(currentCount);",
+							"if (currentCount <= 6) {",
+							"    pm.test(\"Check API response and status code is 200\", function () {",
+							"        pm.response.to.have.status(200);",
+							"    });",
+							"    currentCount = currentCount + 1;",
+							"    pm.variables.set(\"requestCount1\", currentCount);",
+							"    postman.setNextRequest(\"ratelimit custom for org\");",
+							"} else {",
+							"    pm.test(\"Check API response and status code is 429\", function () {",
+							"        pm.response.to.have.status(429);",
+							"    });",
+							"    pm.variables.set('requestCount1', 4);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "HOST",
+						"value": "a3b58ccf-6ecc-4557-b5bb-0a35cce38256.gw.wso2.com",
+						"type": "text"
+					},
+					{
+						"key": "Internal-Key",
+						"value": "{{APITestKey}}",
+						"type": "text"
+					},
+					{
+						"key": "user_id",
+						"value": "bob1",
+						"type": "default"
+					},
+					{
+						"key": "org_id",
+						"value": "wso2",
+						"type": "default"
 					}
 				],
 				"url": {

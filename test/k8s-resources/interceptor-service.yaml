@@ -37,6 +37,10 @@ spec:
     port: 8444
     protocol: "TCP"
     targetPort: 8444
+  - name: "port-3-intercep"
+    port: 8445
+    protocol: "TCP"
+    targetPort: 8445
   selector:
     app: "interceptor_service"
   type: "ClusterIP"
@@ -68,6 +72,9 @@ spec:
           protocol: "TCP"
         - containerPort: 8444
           name: "port-2-intercep"
+          protocol: "TCP"
+        - containerPort: 8445
+          name: "port-3-intercep"
           protocol: "TCP"
         resources:
           limits:

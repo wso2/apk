@@ -1,6 +1,6 @@
 import ballerina/http;
 
-http:Service interceptorService = service object {
+http:Service gwInterceptorService = service object {
     # Handle Request
     #
     # + payload - Content of the request 
@@ -24,7 +24,7 @@ http:Service interceptorService = service object {
         if orgId is string {
             ratelimitKeys["org_key"] = orgId;
         }
-        OkRequestHandlerResponseBody okRequestHandlerResponseBody = {body: {headersToAdd: {"Interceptor-header": "Interceptor-header-value"}, rateLimitKeys: ratelimitKeys}};
+        OkRequestHandlerResponseBody okRequestHandlerResponseBody = {body: {headersToAdd: {"GW-header": "GW-header-value"}, rateLimitKeys: ratelimitKeys}};
         return okRequestHandlerResponseBody;
     }
     # Handle Response
@@ -32,7 +32,7 @@ http:Service interceptorService = service object {
     # + payload - Content of the request 
     # + return - Successful operation 
     isolated resource function post 'handle\-response(@http:Payload ResponseHandlerRequestBody payload) returns OkResponseHandlerResponseBody {
-        return {body: {headersToAdd: {"Interceptor-Response-header": "Interceptor-Response-header-value"}}};
+        return {body: {headersToAdd: {"GW-response-header": "GW-response-header-value"}}};
     }
     isolated resource function get health() returns http:Ok {
         json status = {"health": "Ok"};
