@@ -4,5 +4,5 @@ RUN \
     && adduser -S -u 1001 -h /home/ineterceptor -G ineterceptor ineterceptor \
     && chown -R ineterceptor:ineterceptor /home/ineterceptor
 COPY /target/bin/interceptor_service.jar /home/ineterceptor/interceptor_service.jar
-EXPOSE 8443 8444
+EXPOSE 8443 8444 8445
 CMD java -jar /home/ineterceptor/interceptor_service.jar
