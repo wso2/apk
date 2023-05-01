@@ -47,16 +47,18 @@ public isolated service class UserRegistrationInterceptor {
         }
         if ctx.hasKey(VALIDATED_USER_CONTEXT) {
             UserContext userContext = check ctx.getWithType(VALIDATED_USER_CONTEXT, UserContext);
-            check self.RegisterUser(userContext);
+            string userId = check self.RegisterUser(userContext);
+            userContext.userId = userId;
+            ctx.set(VALIDATED_USER_CONTEXT, userContext.clone());
             return ctx.next();
         }
         return;
     }
-    isolated function RegisterUser(UserContext userContext) returns APKError|() {
+    isolated function RegisterUser(UserContext userContext) returns string|APKError {
         string|APKError|() userId = self.retrieveUserFromIDPClaim(userContext.username);
         if userId is string {
              log:printDebug("User already in the DB " + userId);
-            return;
+            return userId;
         } else if userId is APKError {
                 APKError apkError = error("Error while registering user", userId, code = 900900, description = "Internal Server Error.", statusCode = 500, message = "Internal Server Error.");
                 return apkError;
@@ -69,6 +71,10 @@ public isolated service class UserRegistrationInterceptor {
             User|APKError addedUser = check self.addUsertoDB(payload);
             if addedUser is User {
                 log:printDebug("User added to the DB " + addedUser.toBalString());
+                return addedUser.uuid;
+            } else {
+                APKError apkError = error("Error while adding user to the DB", userId, code = 900900, description = "Internal Server Error.", statusCode = 500, message = "Internal Server Error.");
+                return apkError;
             }
         }
     }

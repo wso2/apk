@@ -109,7 +109,7 @@ service /api/am/devportal on ep0 {
     isolated resource function post applications(http:RequestContext requestContext, @http:Payload Application payload) returns CreatedApplication|AcceptedWorkflowResponse|BadRequestError|ConflictError|NotFoundError|InternalServerErrorError|error|json|commons:APKError {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
-        Application|NotFoundError|APKError application = addApplication(payload, organization, authenticatedUserContext.username);
+        Application|NotFoundError|APKError application = addApplication(payload, organization, <string>authenticatedUserContext.userId);
         if application is Application {
             CreatedApplication createdApp = {body: check application.cloneWithType(Application)};
             log:printDebug(application.toString());
@@ -136,7 +136,7 @@ service /api/am/devportal on ep0 {
     isolated resource function put applications/[string applicationId](http:RequestContext requestContext, @http:Header string? 'if\-match, @http:Payload Application payload) returns Application|BadRequestError|NotFoundError|PreconditionFailedError|InternalServerErrorError|commons:APKError {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
-        Application|NotFoundError|APKError application = updateApplication(applicationId, payload, organization, authenticatedUserContext.username);
+        Application|NotFoundError|APKError application = updateApplication(applicationId, payload, organization, <string>authenticatedUserContext.userId);
         if application is Application|NotFoundError {
             log:printDebug(application.toString());
             return application;
@@ -185,7 +185,7 @@ service /api/am/devportal on ep0 {
     isolated resource function post applications/[string applicationId]/'api\-keys/[string keyType]/generate(http:RequestContext requestContext, @http:Header string? 'if\-match, @http:Payload APIKeyGenerateRequest payload) returns APIKey|BadRequestError|NotFoundError|PreconditionFailedError|InternalServerErrorError|commons:APKError {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
-        APIKey|APKError|NotFoundError apiKey = generateAPIKey(payload, applicationId, keyType, authenticatedUserContext.username, organization);
+        APIKey|APKError|NotFoundError apiKey = generateAPIKey(payload, applicationId, keyType, <string>authenticatedUserContext.userId, organization);
         if apiKey is APIKey|NotFoundError {
             return apiKey;
         } else {
@@ -212,7 +212,7 @@ service /api/am/devportal on ep0 {
     isolated resource function post subscriptions(http:RequestContext requestContext, @http:Header string? 'x\-wso2\-tenant, @http:Payload Subscription payload) returns CreatedSubscription|AcceptedWorkflowResponse|BadRequestError|NotFoundError|InternalServerErrorError|error|json|commons:APKError {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
-        Subscription|APKError|NotFoundError|error subscription = addSubscription(payload, organization, authenticatedUserContext.username);
+        Subscription|APKError|NotFoundError|error subscription = addSubscription(payload, organization, <string>authenticatedUserContext.userId);
         if subscription is APKError {
             return handleAPKError(subscription);
         } else {
@@ -229,7 +229,7 @@ service /api/am/devportal on ep0 {
     isolated resource function post subscriptions/multiple(http:RequestContext requestContext, @http:Header string? 'x\-wso2\-tenant, @http:Payload Subscription[] payload) returns Subscription[]|BadRequestError|UnsupportedMediaTypeError|NotFoundError|InternalServerErrorError|commons:APKError|error {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
-        Subscription[]|APKError|NotFoundError subscriptions = check addMultipleSubscriptions(payload, organization, authenticatedUserContext.username);
+        Subscription[]|APKError|NotFoundError subscriptions = check addMultipleSubscriptions(payload, organization, <string>authenticatedUserContext.userId);
         if subscriptions is Subscription[]|NotFoundError  {
             log:printDebug(subscriptions.toString());
             return subscriptions;
@@ -253,7 +253,7 @@ service /api/am/devportal on ep0 {
     isolated resource function put subscriptions/[string subscriptionId](http:RequestContext requestContext, @http:Header string? 'x\-wso2\-tenant, @http:Payload Subscription payload) returns Subscription|AcceptedWorkflowResponse|http:NotModified|BadRequestError|NotFoundError|http:UnsupportedMediaType|InternalServerErrorError|json|commons:APKError|error {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
-        Subscription|NotFoundError|APKError|error subscription = check updateSubscription(subscriptionId, payload, organization, authenticatedUserContext.username);
+        Subscription|NotFoundError|APKError|error subscription = check updateSubscription(subscriptionId, payload, organization, <string>authenticatedUserContext.userId);
         if subscription is Subscription|NotFoundError  {
             log:printDebug(subscription.toString());
             return subscription;
