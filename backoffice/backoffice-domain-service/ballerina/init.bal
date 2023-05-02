@@ -22,12 +22,14 @@ import ballerina/sql;
 import wso2/apk_common_lib as commons;
 
 configurable commons:DatasourceConfiguration datasourceConfiguration = ?;
+configurable K8sConfiguration k8sConfig = ?;
+configurable ManagementServerConfiguration & readonly managementServerConfig = ?;
 final postgresql:Client|sql:Error dbClient;
 
 configurable commons:IDPConfiguration idpConfiguration = {
     publicKey: {certFilePath: "/home/wso2apk/backoffice/security/mg.pem"}
 };
-configurable KeyStores keyStores = {
+configurable KeyStores & readonly keyStores = {
     tls: {certFilePath: "/home/wso2apk/admin/security/backoffice.pem", keyFilePath: "/home/wso2apk/admin/security/backoffice.key"}
 };
 

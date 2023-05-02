@@ -32,6 +32,7 @@ spec:
       labels:
 {{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" "backoffice-ds" ) | indent 8}}
     spec:
+      serviceAccountName: {{ .Values.wso2.apk.auth.serviceAccountName }}
       initContainers:
         - name: init-db
           image: busybox:1.32
@@ -81,6 +82,13 @@ spec:
                 {{- else }}
                   subPath: tls.crt
                 {{- end }}
+                - name: management-server-tls-volume
+                  mountPath: /home/wso2apk/backoffice/security/truststore/management-server.pem
+                {{- if and .Values.wso2.apk.cp.managementServer.configs .Values.wso2.apk.cp.managementServer.configs.tls }}
+                  subPath: {{ .Values.wso2.apk.cp.managementServer.configs.tls.certFilename | default "tls.crt" }}
+                {{- else }}
+                  subPath: tls.crt
+                {{- end }}
           env:
             - name: DB_PASSWORD
               valueFrom:
@@ -111,4 +119,11 @@ spec:
            {{ else }}
             secretName: {{ template "apk-helm.resource.prefix" . }}-backoffice-ds-server-cert
           {{ end }}
+        - name: management-server-tls-volume
+          secret:
+          {{- if and .Values.wso2.apk.cp.managementServer.configs .Values.wso2.apk.cp.managementServer.configs.tls }}
+            secretName: {{ .Values.wso2.apk.cp.managementServer.configs.tls.secretName | default (printf "%s-management-server-cert" (include "apk-helm.resource.prefix" .)) }}
+          {{- else }}
+            secretName: {{ template "apk-helm.resource.prefix" . }}-management-server-cert
+          {{- end }}
 {{- end -}}

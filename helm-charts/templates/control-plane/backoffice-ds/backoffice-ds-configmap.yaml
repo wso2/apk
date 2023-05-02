@@ -41,5 +41,11 @@ data:
     [wso2.backoffice_service.keyStores.tls]
     keyFilePath = "/home/wso2apk/backoffice/security/backoffice.key"
     certFilePath = "/home/wso2apk/backoffice/security/backoffice.pem"
-
+    [wso2.backoffice_service.k8sConfig]
+    host = "kubernetes.default"
+    serviceAccountPath = "/var/run/secrets/kubernetes.io/serviceaccount"
+    [wso2.backoffice_service.managementServerConfig]
+    serviceName = "{{ template "apk-helm.resource.prefix" . }}-management-server"
+    namespace = "{{ .Release.Namespace }}"
+    certPath = "/home/wso2apk/backoffice/security/truststore/management-server.pem"
 {{- end -}}
