@@ -75,9 +75,7 @@ const (
 )
 
 var (
-	readyToReconcile = false
-	// mutexForReconcile ensures that reconcile only skipped for initial APIs
-	mutexForReconcile sync.Mutex
+	applyAllAPIsOnce sync.Once
 )
 
 // APIReconciler reconciles a API object
@@ -203,15 +201,7 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.13.0/pkg/reconcile
 func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	if !readyToReconcile {
-		mutexForReconcile.Lock()
-		defer mutexForReconcile.Unlock()
-		if !readyToReconcile {
-			loggers.LoggerAPKOperator.Infof("Ignore reconciling for API %s as the startup API apply is pending.", req.NamespacedName.String())
-			apiReconciler.applyStartupAPIs()
-			return ctrl.Result{}, nil
-		}
-	}
+	applyAllAPIsOnce.Do(apiReconciler.applyStartupAPIs)
 	loggers.LoggerAPKOperator.Infof("Reconciling for API %s", req.NamespacedName.String())
 	// Check whether the API CR exist, if not consider as a DELETE event.
 	var apiDef dpv1alpha1.API
@@ -246,7 +236,6 @@ func (apiReconciler *APIReconciler) applyStartupAPIs() {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2601, err))
 		return
 	}
-	readyToReconcile = true
 	for _, api := range apiList.Items {
 		if apiState, err := apiReconciler.resolveAPIRefs(ctx, api, utils.NamespacedName(&api), api.Namespace); err != nil {
 			loggers.LoggerAPKOperator.Warnf("Error retrieving ref CRs for API : %s in namespace : %s, %v", api.Name, api.Namespace, err)

@@ -18,12 +18,8 @@
 # -----------------------------------------------------------------------
 
 ROUTER_PORT="${ROUTER_PORT:-9095}"
-status_code=$(curl --write-out %{http_code} --silent --output /dev/null https://localhost:${ROUTER_PORT}/health -k -v)
-
-if [ "$1" = "ready" ] ; then
-  echo "Checking ready state"
-  status_code=$(curl --write-out %{http_code} --silent --output /dev/null https://localhost:${ROUTER_PORT}/ready -k -v)
-fi
+CHECK_PATH="$1"
+status_code=$(curl --write-out %{http_code} --silent --output /dev/null https://localhost:${ROUTER_PORT}/${CHECK_PATH} -k -v)
 
 if [ "$status_code" -ne 200 ] ; then
   echo "Health check status changed to state : $status_code not equals to 200"
