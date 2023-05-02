@@ -88,7 +88,7 @@ WSO2 API Kubernetes Platform has released following docker images in the WSO2 pu
 
 ### Before you begin...
 
-* Install [Helm](https://helm.sh/docs/intro/install/)
+* Install [Helm](https://helm.sh/docs/intro/install/) (3.11.x)
   and [Kubernetes client](https://kubernetes.io/docs/tasks/tools/install-kubectl/).
 
 * Setup a [Kubernetes cluster](https://kubernetes.io/docs/setup). If you want to run it on the local you can use Minikube or Kind or a similar software.
