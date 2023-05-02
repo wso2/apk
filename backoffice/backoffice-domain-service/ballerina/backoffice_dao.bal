@@ -291,17 +291,19 @@ isolated function db_getAPIDefinition(string apiId) returns APIDefinition|common
     }
 }
 
-isolated function db_updateAPI(string apiId, ModifiableAPI payload) returns API|commons:APKError {
+isolated function db_updateAPI(string apiId, string organization, ModifiableAPI payload) returns API|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return e909601(dbClient);
     } else {
+        postgresql:JsonBinaryValue artifact = new (createArtifactofAPI(apiId, payload));
         postgresql:JsonBinaryValue sdk = new (payload.sdk.toJson());
         postgresql:JsonBinaryValue categories = new (payload.categories.toJson());
         postgresql:JsonBinaryValue businessPlans = new (payload.policies.toJson());
         sql:ParameterizedQuery UPDATE_API_Suffix = `UPDATE api SET`;
         sql:ParameterizedQuery values = ` status= ${payload.state}, sdk = ${sdk},
-        categories = ${categories}, api_tier=${businessPlans} WHERE uuid = ${apiId}`;
+        categories = ${categories}, api_tier=${businessPlans}, artifact=${artifact} WHERE api_uuid = ${apiId}
+        AND organization = ${organization}`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(UPDATE_API_Suffix, values);
 
         sql:ExecutionResult | sql:Error result = dbClient->execute(sqlQuery);

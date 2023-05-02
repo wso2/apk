@@ -394,6 +394,8 @@ public type ModifiableAPI record {
     string context?;
     # A brief description about the API
     string description?;
+    string version?;
+    string provider?;
     boolean hasThumbnail?;
     # State of the API. Only published APIs are visible on the Developer Portal
     string state = "CREATED";

@@ -71,7 +71,7 @@ function updateAPITest() {
                 "mysub1","mysub2"
             ]
         };
-    API|commons:APKError updateAPICr = updateAPI("01ed75e2-b30b-18c8-wwf2-25da7edd2231", payload);
+    API|commons:APKError updateAPICr = updateAPI("01ed75e2-b30b-18c8-wwf2-25da7edd2231", "1111-1111-1111-1111", payload);
     if updateAPICr is API {
         test:assertTrue(true, "Successfully Update API");
         log:printInfo(updateAPICr.toString());

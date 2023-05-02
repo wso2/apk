@@ -52,7 +52,9 @@ service /api/am/backoffice on ep0 {
         return getAPI(apiId);
     }
     resource function put apis/[string apiId](http:RequestContext requestContext, @http:Header string? 'if\-none\-match, @http:Payload ModifiableAPI payload) returns API|commons:APKError {
-        return updateAPI(apiId, payload);
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        return updateAPI(apiId, organization.uuid, payload);
     }
 
     isolated resource function get apis/[string apiId]/definition(http:RequestContext requestContext, @http:Header string? 'if\-none\-match) returns APIDefinition|http:NotModified|commons:APKError {

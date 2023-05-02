@@ -277,8 +277,8 @@ isolated function getAPIDefinition(string apiId) returns APIDefinition|commons:A
 }
 
 
-isolated function updateAPI(string apiId, ModifiableAPI payload) returns API|commons:APKError {
-    API|commons:APKError api = db_updateAPI(apiId, payload);
+isolated function updateAPI(string apiId, string organization, ModifiableAPI payload) returns API|commons:APKError {
+    API|commons:APKError api = db_updateAPI(apiId, organization, payload);
     return api;
 }
 
@@ -312,3 +312,21 @@ isolated function retrieveManagementServerHostsList() returns string[]|commons:A
     string[]|commons:APKError hostList = getPodFromNameAndNamespace(managementServerServiceName,managementServerNamespace);
     return hostList;
  }
+
+# This function used to create artifact from API
+#
+# + apiID - API Id parameter
+# + api - api object
+# + return - Return Value json
+isolated function createArtifactofAPI(string? apiID, ModifiableAPI api) returns json {
+    Artifact artifact = {
+        id: apiID,
+        apiName: api.name,
+        context: api.context.toString(),
+        'version: api.'version.toString(),
+        status: api.state,
+        providerName: api.provider
+    };
+    json artifactJson = artifact;
+    return artifactJson;
+}
