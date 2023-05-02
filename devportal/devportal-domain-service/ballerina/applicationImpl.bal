@@ -150,7 +150,7 @@ isolated function deleteApplication(string appId, commons:Organization organizat
             string eventId = uuid:createType1AsString();
             time:Utc currTime = time:utcNow();
             string date = time:utcToString(currTime);
-            ApplicationGRPC deleteApplicationRequest = {eventId: eventId, applicationId: appId, uuid: appId, timeStamp: date, organization: organization.uuid};
+            ApplicationGRPC deleteApplicationRequest = {eventId: eventId, uuid: appId, timeStamp: date, organization: organization.uuid};
             string devportalPubCert = <string>keyStores.tls.certFilePath;
             string devportalKeyCert = <string>keyStores.tls.keyFilePath;
             string pubCertPath = <string>managementServerConfig.certPath;
