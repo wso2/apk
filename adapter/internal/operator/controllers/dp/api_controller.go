@@ -646,6 +646,10 @@ func (apiReconciler *APIReconciler) getAPIsForAPIPolicy(obj k8client.Object) []r
 	}
 	requests := []reconcile.Request{}
 
+	if apiPolicy.Spec.TargetRef.Kind == constants.KindGateway {
+		return []reconcile.Request{}
+	}
+
 	// todo(amali) move this validation to validation hook
 	if !(apiPolicy.Spec.TargetRef.Kind == constants.KindAPI || apiPolicy.Spec.TargetRef.Kind == constants.KindResource) {
 		loggers.LoggerAPKOperator.Errorf("Unsupported target ref kind : %s was given for authentication: %s",
