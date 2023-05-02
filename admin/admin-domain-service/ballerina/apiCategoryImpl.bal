@@ -19,9 +19,8 @@
 import ballerina/uuid;
 import wso2/apk_common_lib as commons;
 
-isolated function addAPICategory(APICategory payload) returns APICategory|commons:APKError {
-    string org = "carbon.super";
-    boolean|commons:APKError existingCategory = checkAPICategoryExistsByNameDAO(payload.name, org);
+isolated function addAPICategory(APICategory payload, commons:Organization org) returns APICategory|commons:APKError {
+    boolean|commons:APKError existingCategory = checkAPICategoryExistsByNameDAO(payload.name, org.uuid);
     if existingCategory is commons:APKError {
         return existingCategory;
     } else if existingCategory is true {
@@ -29,7 +28,7 @@ isolated function addAPICategory(APICategory payload) returns APICategory|common
     }
     string categoryId = uuid:createType1AsString();
     payload.id = categoryId;
-    APICategory|commons:APKError category = addAPICategoryDAO(payload, org);
+    APICategory|commons:APKError category = addAPICategoryDAO(payload, org.uuid);
     if category is APICategory {
         category.numberOfAPIs = 0;
         APICategory createdCategory = category;
@@ -39,9 +38,8 @@ isolated function addAPICategory(APICategory payload) returns APICategory|common
     }
 }
 
-isolated function getAllCategoryList() returns APICategoryList|commons:APKError {
-    string org = "carbon.super";
-    APICategory[]|commons:APKError categories = getAPICategoriesDAO(org);
+isolated function getAllCategoryList(commons:Organization org) returns APICategoryList|commons:APKError {
+    APICategory[]|commons:APKError categories = getAPICategoriesDAO(org.uuid);
     if categories is APICategory[] {
         int count = categories.length();
         if (count > 0) {
@@ -59,16 +57,15 @@ isolated function getAllCategoryList() returns APICategoryList|commons:APKError 
     }
 }
 
-isolated function updateAPICategory(string id, APICategory body) returns APICategory|commons:APKError {
-    string org = "carbon.super";
-    APICategory|commons:APKError existingAPICategory = getAPICategoryByIdDAO(id, org);
+isolated function updateAPICategory(string id, APICategory body, commons:Organization org) returns APICategory|commons:APKError {
+    APICategory|commons:APKError existingAPICategory = getAPICategoryByIdDAO(id, org.uuid);
     if existingAPICategory !is APICategory {
         return existingAPICategory;
     } else {
         body.id = id;
         string existingName = existingAPICategory.name;
         if (existingName != body.name) {
-            boolean|commons:APKError existingCategory = checkAPICategoryExistsByNameDAO(body.name, org);
+            boolean|commons:APKError existingCategory = checkAPICategoryExistsByNameDAO(body.name, org.uuid);
             if existingCategory is commons:APKError {
                 return existingCategory;
             }
@@ -78,7 +75,7 @@ isolated function updateAPICategory(string id, APICategory body) returns APICate
             }
         } 
     }
-    APICategory|commons:APKError response = updateAPICategoryDAO(body, org);
+    APICategory|commons:APKError response = updateAPICategoryDAO(body, org.uuid);
     if response is APICategory {
         //TODO:(Sampath) need to properly retrieve attached api count per category 
         //int count = isCategoryAttached(apiCategory.name);
@@ -88,8 +85,7 @@ isolated function updateAPICategory(string id, APICategory body) returns APICate
     return response;
 }
 
-isolated function removeAPICategory(string id) returns string|commons:APKError {
-    string org = "carbon.super";
-    commons:APKError|string status = deleteAPICategoryDAO(id, org);
+isolated function removeAPICategory(string id, commons:Organization org) returns string|commons:APKError {
+    commons:APKError|string status = deleteAPICategoryDAO(id, org.uuid);
     return status;
 }

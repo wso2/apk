@@ -21,12 +21,11 @@ import ballerinax/postgresql;
 import ballerina/sql;
 import wso2/apk_common_lib as commons;
 
-public isolated function addApplicationUsagePlanDAO(ApplicationRatePlan atp) returns ApplicationRatePlan|commons:APKError {
+public isolated function addApplicationUsagePlanDAO(ApplicationRatePlan atp, string org) returns ApplicationRatePlan|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return e909401(dbClient);
     } else {
-        string org = "carbon.super";
         sql:ParameterizedQuery query = `INSERT INTO APPLICATION_USAGE_PLAN (NAME, DISPLAY_NAME, 
         ORGANIZATION, DESCRIPTION, QUOTA_TYPE, QUOTA, UNIT_TIME, TIME_UNIT, IS_DEPLOYED, UUID) 
         VALUES (${atp.planName},${atp.displayName},${org},${atp.description},${atp.defaultLimit.'type},
@@ -42,12 +41,11 @@ public isolated function addApplicationUsagePlanDAO(ApplicationRatePlan atp) ret
     }
 }
 
-public isolated function getApplicationUsagePlanByIdDAO(string policyId) returns ApplicationRatePlan|commons:APKError {
+public isolated function getApplicationUsagePlanByIdDAO(string policyId, string org) returns ApplicationRatePlan|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return e909401(dbClient);
     } else {
-        string org = "carbon.super";
         sql:ParameterizedQuery query = `SELECT NAME as PLANNAME, DISPLAY_NAME as DISPLAYNAME, DESCRIPTION, 
         UUID as PLANID, IS_DEPLOYED as ISDEPLOYED, 
         QUOTA_TYPE as DefaulLimitType, QUOTA , TIME_UNIT as TIMEUNIT, UNIT_TIME as 
@@ -136,12 +134,11 @@ public isolated function getApplicationUsagePlansDAO(string org) returns Applica
     }
 }
 
-public isolated function updateApplicationUsagePlanDAO(ApplicationRatePlan atp) returns ApplicationRatePlan|commons:APKError {
+public isolated function updateApplicationUsagePlanDAO(ApplicationRatePlan atp, string org) returns ApplicationRatePlan|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return e909401(dbClient);
     } else {
-        string org = "carbon.super";
         sql:ParameterizedQuery query = `UPDATE APPLICATION_USAGE_PLAN SET DISPLAY_NAME = ${atp.displayName},
          DESCRIPTION = ${atp.description}, QUOTA_TYPE = ${atp.defaultLimit.'type}, QUOTA = ${atp.defaultLimit.requestCount?.requestCount}, 
          UNIT_TIME = ${atp.defaultLimit.requestCount?.unitTime}, TIME_UNIT = ${atp.defaultLimit.requestCount?.timeUnit} 
@@ -156,12 +153,11 @@ public isolated function updateApplicationUsagePlanDAO(ApplicationRatePlan atp) 
     }
 }
 
-public isolated function deleteApplicationUsagePlanDAO(string policyId) returns string|commons:APKError {
+public isolated function deleteApplicationUsagePlanDAO(string policyId, string org) returns string|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return e909401(dbClient);
     } else {
-        string org = "carbon.super";
         sql:ParameterizedQuery query = `DELETE FROM APPLICATION_USAGE_PLAN WHERE UUID = ${policyId} AND ORGANIZATION = ${org}`;
         sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
         if result is sql:ExecutionResult {
@@ -173,12 +169,11 @@ public isolated function deleteApplicationUsagePlanDAO(string policyId) returns 
     }
 }
 
-public isolated function addBusinessPlanDAO(BusinessPlan stp) returns BusinessPlan|commons:APKError {
+public isolated function addBusinessPlanDAO(BusinessPlan stp, string org) returns BusinessPlan|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return e909401(dbClient);
     } else {
-        string org = "carbon.super";
         sql:ParameterizedQuery query = `INSERT INTO BUSINESS_PLAN (NAME, DISPLAY_NAME, ORGANIZATION, DESCRIPTION, 
         QUOTA_TYPE, QUOTA, UNIT_TIME, TIME_UNIT, IS_DEPLOYED, UUID, 
         RATE_LIMIT_COUNT,RATE_LIMIT_TIME_UNIT,MAX_DEPTH, MAX_COMPLEXITY,
@@ -197,12 +192,11 @@ public isolated function addBusinessPlanDAO(BusinessPlan stp) returns BusinessPl
     }
 }
 
-public isolated function getBusinessPlanByIdDAO(string policyId) returns BusinessPlan|commons:APKError {
+public isolated function getBusinessPlanByIdDAO(string policyId, string org) returns BusinessPlan|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return e909401(dbClient);
     } else {
-        string org = "carbon.super";
         sql:ParameterizedQuery query = `SELECT NAME as PLANNAME, DISPLAY_NAME as DISPLAYNAME, DESCRIPTION, 
         UUID as PLANID, IS_DEPLOYED as ISDEPLOYED, 
         QUOTA_TYPE as DefaulLimitType, QUOTA , TIME_UNIT as TIMEUNIT, UNIT_TIME as 
@@ -297,12 +291,11 @@ public isolated function getBusinessPlansDAO(string org) returns BusinessPlan[]|
     }
 }
 
-public isolated function updateBusinessPlanDAO(BusinessPlan stp) returns BusinessPlan|commons:APKError {
+public isolated function updateBusinessPlanDAO(BusinessPlan stp, string org) returns BusinessPlan|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return e909401(dbClient);
     } else {
-        string org = "carbon.super";
         sql:ParameterizedQuery query = `UPDATE BUSINESS_PLAN SET DISPLAY_NAME = ${stp.displayName},
          DESCRIPTION = ${stp.description}, QUOTA_TYPE = ${stp.defaultLimit.'type}, QUOTA = ${stp.defaultLimit.requestCount?.requestCount}, 
          UNIT_TIME = ${stp.defaultLimit.requestCount?.unitTime}, TIME_UNIT = ${stp.defaultLimit.requestCount?.timeUnit},
@@ -318,12 +311,11 @@ public isolated function updateBusinessPlanDAO(BusinessPlan stp) returns Busines
     }
 }
 
-public isolated function deleteBusinessPlanDAO(string policyId) returns string|commons:APKError {
+public isolated function deleteBusinessPlanDAO(string policyId, string org) returns string|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return e909401(dbClient);
     } else {
-        string org = "carbon.super";
         sql:ParameterizedQuery query = `DELETE FROM BUSINESS_PLAN WHERE UUID = ${policyId} AND ORGANIZATION = ${org}`;
         sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
         if result is sql:ExecutionResult {
@@ -335,12 +327,11 @@ public isolated function deleteBusinessPlanDAO(string policyId) returns string|c
     }
 }
 
-public isolated function addDenyPolicyDAO(BlockingCondition bc) returns BlockingCondition|commons:APKError {
+public isolated function addDenyPolicyDAO(BlockingCondition bc, string org) returns BlockingCondition|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return e909401(dbClient);
     } else {
-        string org = "carbon.super";
         sql:ParameterizedQuery query = `INSERT INTO BLOCK_CONDITION (TYPE,BLOCK_CONDITION,ENABLED,ORGANIZATION,UUID) 
         VALUES (${bc.conditionType},${bc.conditionValue},${bc.conditionStatus},${org},${bc.policyId})`;
         sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
@@ -353,12 +344,11 @@ public isolated function addDenyPolicyDAO(BlockingCondition bc) returns Blocking
     }
 }
 
-public isolated function getDenyPolicyByIdDAO(string policyId) returns BlockingCondition|commons:APKError {
+public isolated function getDenyPolicyByIdDAO(string policyId, string org) returns BlockingCondition|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return e909401(dbClient);
     } else {
-        string org = "carbon.super";
         sql:ParameterizedQuery query = `SELECT UUID as POLICYID, TYPE as CONDITIONTYPE, BLOCK_CONDITION as CONDITIONVALUE, ENABLED::BOOLEAN as CONDITIONSTATUS FROM BLOCK_CONDITION WHERE UUID =${policyId} AND ORGANIZATION =${org}`;
         BlockingCondition | sql:Error result =  dbClient->queryRow(query);
         if result is sql:NoRowsError {
@@ -407,12 +397,11 @@ public isolated function updateDenyPolicyDAO(BlockingConditionStatus status) ret
     }
 }
 
-public isolated function deleteDenyPolicyDAO(string policyId) returns string|commons:APKError {
+public isolated function deleteDenyPolicyDAO(string policyId, string org) returns string|commons:APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         return e909401(dbClient);
     } else {
-        string org = "carbon.super";
         sql:ParameterizedQuery query = `DELETE FROM BLOCK_CONDITION WHERE UUID = ${policyId} AND ORGANIZATION = ${org}`;
         sql:ExecutionResult | sql:Error result =  dbClient->execute(query);
         if result is sql:ExecutionResult {
