@@ -75,6 +75,14 @@ const (
 	error1714 = 1714
 	error1715 = 1715
 	error1716 = 1716
+	error1717 = 1717
+	error1718 = 1718
+	error1719 = 1719
+	error1720 = 1720
+	error1721 = 1721
+	error1722 = 1722
+	error1723 = 1723
+	error1724 = 1724
 )
 
 // Error Log Internal intercepter(1800-1899) Config Constants
@@ -284,6 +292,46 @@ var Mapper = map[int]logging.ErrorDetails{
 		ErrorCode: error1716,
 		Message:   "Error while updating the rate limit snapshot: %v",
 		Severity:  MAJOR,
+	},
+	error1717: {
+		ErrorCode: error1717,
+		Message:   "EOF is received from the APK Management Server subscription stream. %v",
+		Severity:  CRITICAL,
+	},
+	error1718: {
+		ErrorCode: error1718,
+		Message:   "Failed to receive the discovery response from the APK Management Server subscription stream. %v",
+		Severity:  CRITICAL,
+	},
+	error1719: {
+		ErrorCode: error1719,
+		Message:   "The APK Management Server subscription stream connection stopped: %v",
+		Severity:  MINOR,
+	},
+	error1720: {
+		ErrorCode: error1720,
+		Message:   "Error while unmarshalling APK Management Server Subscription discovery response: %v",
+		Severity:  MINOR,
+	},
+	error1721: {
+		ErrorCode: error1721,
+		Message:   "Error creating subscription: %v",
+		Severity:  CRITICAL,
+	},
+	error1722: {
+		ErrorCode: error1722,
+		Message:   "Error updating subscription: %v",
+		Severity:  CRITICAL,
+	},
+	error1723: {
+		ErrorCode: error1723,
+		Message:   "Error deleting subscription: %v",
+		Severity:  CRITICAL,
+	},
+	error1724: {
+		ErrorCode: error1724,
+		Message:   "Error retrieving subscription: %v",
+		Severity:  CRITICAL,
 	},
 	error1800: {
 		ErrorCode: error1800,

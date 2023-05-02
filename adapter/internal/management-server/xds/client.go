@@ -173,14 +173,14 @@ func watchSubscriptions() {
 	for {
 		discoveryResponse, err := xdsSubStream.Recv()
 		if err == io.EOF {
-			loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1702, err.Error()))
+			loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1717, err.Error()))
 			return
 		}
 		if err != nil {
-			loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1703, err.Error()))
+			loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1718, err.Error()))
 			errStatus, _ := grpcStatus.FromError(err)
 			if errStatus.Code() == codes.Unavailable {
-				loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1704, err.Error()))
+				loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1719, err.Error()))
 				return
 			}
 			nackSub(err.Error())
@@ -372,7 +372,7 @@ func addSubscriptionsToChannel(resp *discovery.DiscoveryResponse) {
 		err := ptypes.UnmarshalAny(res, subscription)
 
 		if err != nil {
-			loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1706, err.Error()))
+			loggers.LoggerXds.ErrorC(logging.GetErrorByCode(1720, err.Error()))
 			continue
 		}
 
