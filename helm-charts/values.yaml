@@ -134,7 +134,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/management-server:0.0.1-m8
+          image: wso2/management-server:latest
           readinessProbe:
             initialDelaySeconds: 20
             periodSeconds: 20
@@ -223,7 +223,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/adapter:0.0.1-m8
+          image: wso2/adapter:latest
           security:
             sslHostname: "adapter"
         # configs:
@@ -254,7 +254,7 @@ wso2:
           strategy: Recreate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/ratelimiter:0.0.1-m8
+          image: wso2/ratelimiter:latest
           security:
             sslHostname: "ratelimiter"
           # configs:
@@ -284,7 +284,7 @@ wso2:
               failureThreshold: 5
             strategy: Recreate
             imagePullPolicy: Always
-            image: wso2/router:0.0.1-m8
+            image: wso2/router:latest
             # configs:
             #   tls:
             #     secretName: "router-cert"
