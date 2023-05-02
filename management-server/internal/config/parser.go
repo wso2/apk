@@ -25,9 +25,9 @@ import (
 	"sync"
 
 	toml "github.com/pelletier/go-toml"
-	"github.com/wso2/apk/management-server/internal/logger"
 	"github.com/wso2/apk/adapter/pkg/config"
 	"github.com/wso2/apk/adapter/pkg/logging"
+	"github.com/wso2/apk/management-server/internal/logger"
 )
 
 var (
@@ -53,7 +53,7 @@ const (
 func ReadConfigs() *Config {
 	managementServerConfig := defaultConfig
 	onceConfigRead.Do(func() {
-		mgwHome = config.GetMgwHome()
+		mgwHome = config.GetApkHome()
 		_, err := os.Stat(mgwHome + relativeConfigPath)
 		if err != nil {
 			logger.LoggerMGTServer.ErrorC(logging.ErrorDetails{

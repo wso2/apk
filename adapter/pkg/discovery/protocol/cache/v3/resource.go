@@ -54,6 +54,10 @@ func GetResponseType(typeURL string) types.ResponseType {
 		return types.ThrottleData
 	case resource.APKMgtApplicationType:
 		return types.APKMgtApplicationList
+	case resource.ApplicationType:
+		return types.Application
+	case resource.SubscriptionType:
+		return types.Subscription
 	}
 	return types.UnknownType
 }
@@ -86,6 +90,10 @@ func GetResourceName(res envoy_types.Resource) string {
 		return fmt.Sprint(v.Uuid)
 	case *keymgt.RevokedToken:
 		return fmt.Sprint(v.Jti)
+	case *subscription.Application:
+		return fmt.Sprint(v.Uuid)
+	case *subscription.Subscription:
+		return fmt.Sprint(v.Uuid)
 	default:
 		return ""
 	}

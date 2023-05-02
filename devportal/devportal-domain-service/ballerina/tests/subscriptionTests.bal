@@ -34,19 +34,19 @@ test:MockFunction retrieveManagementServerHostsListMock = new();
  }
 
  @test:Mock { functionName: "createSubscription",moduleName: "wso2/notification_grpc_client" }
- public isolated function createSubscriptionMock(ApplicationGRPC createSubscriptionRequest, string endpoint, string pubCert, string devCert, string devKey) returns error|NotificationResponse {
+ public isolated function createSubscriptionMock(SubscriptionGRPC createSubscriptionRequest, string endpoint, string pubCert, string devCert, string devKey) returns error|NotificationResponse {
      NotificationResponse noti= {code: "OK"};
      return noti;
  }
 
  @test:Mock { functionName: "updateSubscription",moduleName: "wso2/notification_grpc_client" }
- public isolated function updateSubscriptionMock(ApplicationGRPC updateSubscriptionRequest, string endpoint, string pubCert, string devCert, string devKey) returns error|NotificationResponse {
+ public isolated function updateSubscriptionMock(SubscriptionGRPC updateSubscriptionRequest, string endpoint, string pubCert, string devCert, string devKey) returns error|NotificationResponse {
      NotificationResponse noti= {code: "OK"};
      return noti;
  }
 
  @test:Mock { functionName: "deleteSubscription",moduleName: "wso2/notification_grpc_client" }
- public isolated function deleteSubscriptionMock(ApplicationGRPC deleteSubscriptionRequest, string endpoint, string pubCert, string devCert, string devKey) returns error|NotificationResponse {
+ public isolated function deleteSubscriptionMock(SubscriptionGRPC deleteSubscriptionRequest, string endpoint, string pubCert, string devCert, string devKey) returns error|NotificationResponse {
      NotificationResponse noti= {code: "OK"};
      return noti;
  }
