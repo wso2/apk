@@ -158,7 +158,7 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
             newSubscription.setApiUUID(subscription.getApiRef());
             newSubscription.setAppUUID(subscription.getApplicationRef());
             newSubscription.setSubscriptionState(subscription.getSubStatus());
-            newSubscription.setTimeStamp(Long.parseLong(subscription.getTimeStamp()));
+            //newSubscription.setTimeStamp(Long.parseLong(subscription.getTimeStamp()));
 
             newSubscriptionMap.put(newSubscription.getCacheKey(), newSubscription);
         }
