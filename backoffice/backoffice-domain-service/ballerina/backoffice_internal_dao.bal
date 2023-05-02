@@ -169,7 +169,7 @@ isolated function db_deleteAPI(string apiId) returns string | error? {
     if db_client is error {
         return error("Issue while conecting to databse");
     } else {
-        sql:ParameterizedQuery DELETE_API_Suffix = `DELETE FROM api WHERE api_uuid = `;
+        sql:ParameterizedQuery DELETE_API_Suffix = `DELETE FROM api WHERE uuid = `;
         sql:ParameterizedQuery values = `${apiId}`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(DELETE_API_Suffix, values);
         sql:ExecutionResult | sql:Error result =  db_client->execute(sqlQuery);
