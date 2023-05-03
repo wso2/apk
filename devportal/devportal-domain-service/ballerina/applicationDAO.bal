@@ -48,7 +48,7 @@ isolated function getSubscriberIdDAO(string user, string org) returns string|Not
         string message = "Error while retrieving connection";
         return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
-        sql:ParameterizedQuery query = `SELECT UUID FROM APK_USER WHERE UUID =${user}`;
+        sql:ParameterizedQuery query = `SELECT UUID FROM INTERNAL_USER WHERE UUID =${user}`;
         string|sql:Error result =  dbClient->queryRow(query);
         if result is sql:NoRowsError {
             log:printDebug(result.toString());

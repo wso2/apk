@@ -85,7 +85,7 @@ public isolated service class UserRegistrationInterceptor {
             return;
         } else {
             sql:ParameterizedQuery query = `SELECT UUID 
-                FROM APK_USER WHERE IDP_USER_NAME = ${userId}`;
+                FROM INTERNAL_USER WHERE IDP_USER_NAME = ${userId}`;
             string|sql:Error result = dbClient->queryRow(query);
             if result is sql:NoRowsError {
                 log:printDebug("no rows found for User " + userId);
@@ -106,7 +106,7 @@ public isolated service class UserRegistrationInterceptor {
             string message = "Error while retrieving connection";
             return error(message, dbClient, message = message, description = message, code = 909000, statusCode = 500);
         } else {
-            sql:ParameterizedQuery query = `INSERT INTO APK_USER(UUID, IDP_USER_NAME) VALUES (${payload.uuid},${payload.IDPUserName})`;
+            sql:ParameterizedQuery query = `INSERT INTO INTERNAL_USER(UUID, IDP_USER_NAME) VALUES (${payload.uuid},${payload.IDPUserName})`;
             sql:ExecutionResult | sql:Error result = dbClient->execute(query);
             if result is sql:ExecutionResult {
                 return payload;
