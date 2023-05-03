@@ -24,7 +24,7 @@ APICategory  apiCategory = {name: "MyCat1", description: "My Desc 1", id: "01ed9
 @test:Config {}
 function addAPICategoryTest() {
     APICategory payload = {name: "MyCat1", description: "My Desc 1"};
-    APICategory|commons:APKError createdApiCategory = addAPICategory(payload);
+    APICategory|commons:APKError createdApiCategory = addAPICategory(payload, organiztion);
     if createdApiCategory is APICategory {
         test:assertTrue(true,"API Category added successfully");
         apiCategory.id = createdApiCategory.id;
@@ -37,7 +37,7 @@ function addAPICategoryTest() {
 function addAPICategoryTestNegative1() {
     APICategory payload = {name: "MyCat1", description: "My Desc 1"};
     //API Category Name alrady exisitng
-    APICategory|commons:APKError createdApiCategory = addAPICategory(payload);
+    APICategory|commons:APKError createdApiCategory = addAPICategory(payload, organiztion);
     if createdApiCategory is APICategory {
         test:assertFail("API Category added successfully");
     } else if createdApiCategory is commons:APKError {
@@ -47,7 +47,7 @@ function addAPICategoryTestNegative1() {
 
 @test:Config {dependsOn: [addAPICategoryTest]}
 function getAllCategoryListTest() {
-    APICategoryList|commons:APKError apiCategoryList = getAllCategoryList();
+    APICategoryList|commons:APKError apiCategoryList = getAllCategoryList(organiztion);
     if apiCategoryList is APICategoryList {
         test:assertTrue(true,"API Category list retrieved successfully");
     } else if apiCategoryList is commons:APKError {
@@ -60,7 +60,7 @@ function updateAPICategoryTest() {
     APICategory payload = {name: "MyCat1", description: "My Desc 1 new"};
     string? catId = apiCategory.id;
     if catId is string {
-        APICategory|commons:APKError createdApiCategory = updateAPICategory(catId,payload);
+        APICategory|commons:APKError createdApiCategory = updateAPICategory(catId, payload, organiztion);
         if createdApiCategory is APICategory {
             test:assertTrue(true,"API Category updated successfully");
         } else if createdApiCategory is commons:APKError {
@@ -77,7 +77,7 @@ function updateAPICategoryTestNegative1() {
     APICategory payload = {name: "MyCat1", description: "My Desc 1 new"};
     string? catId = apiCategory.id;
     if catId is string {
-        APICategory|error createdApiCategory = updateAPICategory("01ed9241-2d5d-1b98-8ecb-40f85676b081",payload);
+        APICategory|error createdApiCategory = updateAPICategory("01ed9241-2d5d-1b98-8ecb-40f85676b081",payload, organiztion);
         if createdApiCategory is APICategory {
             test:assertFail("API Category updated successfully");
         } else if createdApiCategory is commons:APKError {
@@ -92,13 +92,13 @@ function updateAPICategoryTestNegative1() {
 function updateAPICategoryTestNegative2() {
     // Another API Category by same name exists
     APICategory payloadOther = {name: "MyCat2", description: "My Desc 1"};
-    APICategory|commons:APKError anotherApiCategory = addAPICategory(payloadOther);
+    APICategory|commons:APKError anotherApiCategory = addAPICategory(payloadOther, organiztion);
 
     // New Name
     APICategory payload = {name: "MyCat2", description: "My Desc 1 new"};
     string? catId = apiCategory.id;
     if catId is string {
-        APICategory|commons:APKError createdApiCategory = updateAPICategory(catId,payload);
+        APICategory|commons:APKError createdApiCategory = updateAPICategory(catId,payload, organiztion);
         if createdApiCategory is APICategory {
             test:assertFail("API Category updated successfully");
         } else if createdApiCategory is commons:APKError {
@@ -113,7 +113,7 @@ function updateAPICategoryTestNegative2() {
 function removeAPICategoryTest(){
     string? catId = apiCategory.id;
     if catId is string {
-        commons:APKError|string status = removeAPICategory(catId);
+        commons:APKError|string status = removeAPICategory(catId, organiztion);
         if status is string {
         test:assertTrue(true, "Successfully deleted API Category");
         } else if status is  commons:APKError {

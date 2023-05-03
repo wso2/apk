@@ -18,10 +18,12 @@
 
 import ballerina/log;
 import ballerina/uuid;
+import wso2/apk_common_lib as commons;
 import wso2/notification_grpc_client;
 import ballerina/time;
 
-isolated function addApplication(Application application, string org, string user) returns NotFoundError|Application|APKError {
+
+isolated function addApplication(Application application, commons:Organization org, string user) returns NotFoundError|Application|APKError {
     string applicationId = uuid:createType1AsString();
     application.applicationId = applicationId;
     string?|error policyId = validateApplicationUsagePolicy(application.throttlingPolicy, org);
@@ -30,19 +32,18 @@ isolated function addApplication(Application application, string org, string use
         log:printError(message);
         return error(message, policyId, message = message, description = message, code = 909000, statusCode = "500");
     }
-    int|NotFoundError|APKError subscriberId = getSubscriberIdDAO(user,org);
-    if subscriberId is int {
-        log:printDebug("subscriber id" + subscriberId.toString());
-        Application|APKError createdApp = addApplicationDAO(application, subscriberId, org);
+    string|NotFoundError|APKError subscriberId = getSubscriberIdDAO(user,org.uuid);
+    if subscriberId is string {
+        Application|APKError createdApp = addApplicationDAO(application, subscriberId, org.uuid);
         if createdApp is Application {
             string[]|APKError hostList = retrieveManagementServerHostsList();
             if hostList is string[] {
                 string eventId = uuid:createType1AsString();
                 time:Utc currTime = time:utcNow();
                 string date = time:utcToString(currTime);
-                ApplicationGRPC createApplicationRequest = {eventId: eventId, name: createdApp.name, uuid: applicationId, 
-                owner: user, policy: createdApp.throttlingPolicy, keys: [],  
-                attributes: [], timeStamp: date, organization: org};
+                ApplicationGRPC createApplicationRequest = {eventId: eventId, name: createdApp.name, uuid: applicationId,
+                owner: user, policy: createdApp.throttlingPolicy, keys: [],
+                attributes: [], timeStamp: date, organization: org.uuid};
                 foreach string host in hostList {
                     log:printDebug("Retrieved Mgt Host:"+host);
                     string devportalPubCert = <string>keyStores.tls.certFilePath;
@@ -59,26 +60,26 @@ isolated function addApplication(Application application, string org, string use
             } else {
                 return hostList;
             }
-        } 
+        }
         return application;
-        
+
     } else {
         return subscriberId;
     }
 }
 
-isolated function validateApplicationUsagePolicy(string policyName, string org) returns string?|error {
-    string?|error policy = getApplicationUsagePlanByNameDAO(policyName,org);
+isolated function validateApplicationUsagePolicy(string policyName, commons:Organization org) returns string?|error {
+    string?|error policy = getApplicationUsagePlanByNameDAO(policyName,org.uuid);
     return policy;
 }
 
-isolated function getApplicationById(string appId, string org) returns Application|APKError|NotFoundError {
-    Application|APKError|NotFoundError application = getApplicationByIdDAO(appId, org);
+isolated function getApplicationById(string appId, commons:Organization org) returns Application|APKError|NotFoundError {
+    Application|APKError|NotFoundError application = getApplicationByIdDAO(appId, org.uuid);
     return application;
 }
 
-isolated function getApplicationList(string? sortBy, string? groupId, string? query, string? sortOrder, int 'limit, int offset, string org) returns ApplicationList|APKError {
-    Application[]|APKError applications = getApplicationsDAO(org);
+isolated function getApplicationList(string? sortBy, string? groupId, string? query, string? sortOrder, int 'limit, int offset, commons:Organization org) returns ApplicationList|APKError {
+    Application[]|APKError applications = getApplicationsDAO(org.uuid);
     if applications is Application[] {
         int count = applications.length();
         ApplicationList applicationsList = {count: count, list: applications};
@@ -88,8 +89,8 @@ isolated function getApplicationList(string? sortBy, string? groupId, string? qu
     }
 }
 
-isolated function updateApplication(string appId, Application application, string org, string user) returns Application|NotFoundError|APKError {
-    Application|APKError|NotFoundError existingApp = getApplicationByIdDAO(appId, org);
+isolated function updateApplication(string appId, Application application, commons:Organization org, string user) returns Application|NotFoundError|APKError {
+    Application|APKError|NotFoundError existingApp = getApplicationByIdDAO(appId, org.uuid);
     if existingApp is Application {
         application.applicationId = appId;
     } else {
@@ -103,19 +104,19 @@ isolated function updateApplication(string appId, Application application, strin
         log:printError(message);
         return error(message, policyId, message = message, description = message, code = 909000, statusCode = "500");
     }
-    int|NotFoundError|APKError subscriberId = getSubscriberIdDAO(user,org);
-    if subscriberId is int {
+    string|NotFoundError|APKError subscriberId = getSubscriberIdDAO(user,org.uuid);
+    if subscriberId is string {
         log:printDebug("subscriber id" + subscriberId.toString());
-        Application|APKError updatedApp = updateApplicationDAO(application, subscriberId, org);
+        Application|APKError updatedApp = updateApplicationDAO(application, subscriberId, org.uuid);
         if updatedApp is Application {
             string[]|APKError hostList = retrieveManagementServerHostsList();
             if hostList is string[] {
                 string eventId = uuid:createType1AsString();
                 time:Utc currTime = time:utcNow();
                 string date = time:utcToString(currTime);
-                ApplicationGRPC createApplicationRequest = {eventId: eventId, name: updatedApp.name, uuid: appId, 
-                owner: user, policy: updatedApp.throttlingPolicy, keys: [],  
-                attributes: [], timeStamp: date, organization: org};
+                ApplicationGRPC createApplicationRequest = {eventId: eventId, name: updatedApp.name, uuid: appId,
+                owner: user, policy: updatedApp.throttlingPolicy, keys: [],
+                attributes: [], timeStamp: date, organization: org.uuid};
                 foreach string host in hostList {
                     log:printDebug("Retrieved Host:"+host);
                     string devportalPubCert = <string>keyStores.tls.certFilePath;
@@ -141,15 +142,15 @@ isolated function updateApplication(string appId, Application application, strin
     }
 }
 
-isolated function deleteApplication(string appId, string organization) returns string|APKError {
-    APKError|string status = deleteApplicationDAO(appId,organization);
+isolated function deleteApplication(string appId, commons:Organization organization) returns string|APKError {
+    APKError|string status = deleteApplicationDAO(appId,organization.uuid);
     if status is string {
         string[]|APKError hostList = retrieveManagementServerHostsList();
         if hostList is string[] {
             string eventId = uuid:createType1AsString();
             time:Utc currTime = time:utcNow();
             string date = time:utcToString(currTime);
-            ApplicationGRPC deleteApplicationRequest = {eventId: eventId, uuid: appId, timeStamp: date, organization: organization};
+            ApplicationGRPC deleteApplicationRequest = {eventId: eventId, uuid: appId, timeStamp: date, organization: organization.uuid};
             string devportalPubCert = <string>keyStores.tls.certFilePath;
             string devportalKeyCert = <string>keyStores.tls.keyFilePath;
             string pubCertPath = <string>managementServerConfig.certPath;
@@ -167,11 +168,11 @@ isolated function deleteApplication(string appId, string organization) returns s
         }
     } else {
         return status;
-    } 
+    }
     return status;
 }
 
-isolated function generateAPIKey(APIKeyGenerateRequest payload, string appId, string keyType, string user, string org) returns APIKey|APKError|NotFoundError {
+isolated function generateAPIKey(APIKeyGenerateRequest payload, string appId, string keyType, string user, commons:Organization org) returns APIKey|APKError|NotFoundError {
     Application|APKError|NotFoundError application = getApplicationById(appId, org);
     if application !is Application {
         return application;

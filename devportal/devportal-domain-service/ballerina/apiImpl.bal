@@ -21,15 +21,16 @@ import devportal_service.org.wso2.apk.devportal.sdk as sdk;
 import devportal_service.java.util as javautil;
 import devportal_service.java.lang as javalang;
 import ballerina/http;
+import wso2/apk_common_lib as commons;
 
 isolated function getAPIByAPIId(string apiId) returns API|NotFoundError|APKError {
     API|APKError|NotFoundError api = getAPIByIdDAO(apiId);
     return api;
 }
 
-isolated function getAPIList(int 'limit, int  offset, string? query, string organization) returns APIList|APKError {
+isolated function getAPIList(int 'limit, int  offset, string? query, commons:Organization organization) returns APIList|APKError {
     if query !is string {
-        API[]|APKError apis = getAPIsDAO(organization);
+        API[]|APKError apis = getAPIsDAO(organization.uuid);
         if apis is API[] {
             API[] limitSet = [];
             if apis.length() > offset {
@@ -50,7 +51,7 @@ isolated function getAPIList(int 'limit, int  offset, string? query, string orga
             int? index = query.indexOf(":");
             if index is int {
                 string modifiedQuery = "%" + query.substring(index+1) +"%";
-                API[]|APKError apis = getAPIsByQueryDAO(modifiedQuery,organization);
+                API[]|APKError apis = getAPIsByQueryDAO(modifiedQuery, organization.uuid);
                 if apis is API[] {
                     API[] limitSet = [];
                     if apis.length() > offset {

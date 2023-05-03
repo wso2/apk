@@ -23,68 +23,88 @@ import wso2/apk_common_lib as commons;
 service /api/am/admin on ep0 {
     // resource function get policies/search(string? query) returns PolicyDetailsList {
     // }
-    isolated resource function get 'application\-rate\-plans(@http:Header string? accept = "application/json") returns ApplicationRatePlanList|commons:APKError {
-        ApplicationRatePlanList|commons:APKError appPolicyList = getApplicationUsagePlans();
+    isolated resource function get 'application\-rate\-plans(http:RequestContext requestContext, @http:Header string? accept = "application/json") returns ApplicationRatePlanList|commons:APKError {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        ApplicationRatePlanList|commons:APKError appPolicyList = getApplicationUsagePlans(organization);
         if appPolicyList is ApplicationRatePlanList {
             log:printDebug(appPolicyList.toString());
         }
         return appPolicyList;
     }
-    isolated resource function post 'application\-rate\-plans(@http:Payload ApplicationRatePlan payload, @http:Header string 'content\-type = "application/json") returns ApplicationRatePlan|commons:APKError {
-        ApplicationRatePlan|commons:APKError createdAppPol = addApplicationUsagePlan(payload);
+    isolated resource function post 'application\-rate\-plans(http:RequestContext requestContext, @http:Payload ApplicationRatePlan payload, @http:Header string 'content\-type = "application/json") returns ApplicationRatePlan|commons:APKError {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        ApplicationRatePlan|commons:APKError createdAppPol = addApplicationUsagePlan(payload, organization);
         if createdAppPol is ApplicationRatePlan {
             log:printDebug(createdAppPol.toString());
         }
         return createdAppPol;
     }
-    isolated resource function get 'application\-rate\-plans/[string planId]() returns ApplicationRatePlan|commons:APKError {
-        ApplicationRatePlan|commons:APKError appPolicy = getApplicationUsagePlanById(planId);
+    isolated resource function get 'application\-rate\-plans/[string planId](http:RequestContext requestContext) returns ApplicationRatePlan|commons:APKError {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        ApplicationRatePlan|commons:APKError appPolicy = getApplicationUsagePlanById(planId, organization);
         if appPolicy is ApplicationRatePlan {
             log:printDebug(appPolicy.toString());
         }
         return appPolicy;
     }
-    isolated resource function put 'application\-rate\-plans/[string planId](@http:Payload ApplicationRatePlan payload, @http:Header string 'content\-type = "application/json") returns ApplicationRatePlan|commons:APKError {
-        ApplicationRatePlan|commons:APKError appPolicy = updateApplicationUsagePlan(planId, payload);
+    isolated resource function put 'application\-rate\-plans/[string planId](http:RequestContext requestContext, @http:Payload ApplicationRatePlan payload, @http:Header string 'content\-type = "application/json") returns ApplicationRatePlan|commons:APKError {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        ApplicationRatePlan|commons:APKError appPolicy = updateApplicationUsagePlan(planId, payload, organization);
         if appPolicy is ApplicationRatePlan {
             log:printDebug(appPolicy.toString());
         }
         return appPolicy;
     }
-    isolated resource function delete 'application\-rate\-plans/[string planId]() returns http:Ok|commons:APKError {
-        string|commons:APKError ex = removeApplicationUsagePlan(planId);
+    isolated resource function delete 'application\-rate\-plans/[string planId](http:RequestContext requestContext) returns http:Ok|commons:APKError {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        string|commons:APKError ex = removeApplicationUsagePlan(planId, organization);
         if ex is commons:APKError {
             return ex;
         } else {
             return http:OK;
         }
     }
-    isolated resource function get 'business\-plans(@http:Header string? accept = "application/json") returns BusinessPlanList|commons:APKError {
-        BusinessPlanList|commons:APKError subPolicyList = getBusinessPlans();
+    isolated resource function get 'business\-plans(http:RequestContext requestContext, @http:Header string? accept = "application/json") returns BusinessPlanList|commons:APKError {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        BusinessPlanList|commons:APKError subPolicyList = getBusinessPlans(organization);
         if subPolicyList is BusinessPlanList {
             log:printDebug(subPolicyList.toString());
         }
         return subPolicyList;
     }
-    isolated resource function post 'business\-plans(@http:Payload BusinessPlan payload, @http:Header string 'content\-type = "application/json") returns BusinessPlan|commons:APKError {
-        BusinessPlan|commons:APKError createdSubPol = addBusinessPlan(payload);
+    isolated resource function post 'business\-plans(http:RequestContext requestContext, @http:Payload BusinessPlan payload, @http:Header string 'content\-type = "application/json") returns BusinessPlan|commons:APKError {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        BusinessPlan|commons:APKError createdSubPol = addBusinessPlan(payload, organization);
         if createdSubPol is BusinessPlan {
             log:printDebug(createdSubPol.toString());
         }
         return createdSubPol;
     }
-    isolated resource function get 'business\-plans/[string planId]() returns BusinessPlan|commons:APKError {
-        BusinessPlan|commons:APKError subPolicy = getBusinessPlanById(planId);
+    isolated resource function get 'business\-plans/[string planId](http:RequestContext requestContext) returns BusinessPlan|commons:APKError {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        BusinessPlan|commons:APKError subPolicy = getBusinessPlanById(planId, organization);
         if subPolicy is BusinessPlan {
             log:printDebug(subPolicy.toString());
         }
         return subPolicy;
     }
-    isolated resource function put 'business\-plans/[string planId](@http:Payload BusinessPlan payload, @http:Header string 'content\-type = "application/json") returns BusinessPlan|commons:APKError {
-        return updateBusinessPlan(planId, payload);
+    isolated resource function put 'business\-plans/[string planId](http:RequestContext requestContext, @http:Payload BusinessPlan payload, @http:Header string 'content\-type = "application/json") returns BusinessPlan|commons:APKError {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        return updateBusinessPlan(planId, payload, organization);
     }
-    isolated resource function delete 'business\-plans/[string planId]() returns http:Ok|commons:APKError{
-        string|commons:APKError ex = removeBusinessPlan(planId);
+    isolated resource function delete 'business\-plans/[string planId](http:RequestContext requestContext) returns http:Ok|commons:APKError{
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        string|commons:APKError ex = removeBusinessPlan(planId, organization);
         if ex is commons:APKError {
             return ex;
         } else {
@@ -105,33 +125,43 @@ service /api/am/admin on ep0 {
     // }
     // resource function post throttling/policies/'import(boolean? overwrite, @http:Payload json payload) returns http:Ok|ForbiddenError|NotFoundError|ConflictError|InternalServerErrorError {
     // }
-    isolated resource function get 'deny\-policies(@http:Header string? accept = "application/json") returns BlockingConditionList|commons:APKError {
-        return getAllDenyPolicies();
+    isolated resource function get 'deny\-policies(http:RequestContext requestContext, @http:Header string? accept = "application/json") returns BlockingConditionList|commons:APKError {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        return getAllDenyPolicies(organization);
     }
-    isolated resource function post 'deny\-policies(@http:Payload BlockingCondition payload, @http:Header string 'content\-type = "application/json") returns BlockingCondition|commons:APKError {
-        BlockingCondition|commons:APKError createdDenyPol = addDenyPolicy(payload);
+    isolated resource function post 'deny\-policies(http:RequestContext requestContext, @http:Payload BlockingCondition payload, @http:Header string 'content\-type = "application/json") returns BlockingCondition|commons:APKError {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        BlockingCondition|commons:APKError createdDenyPol = addDenyPolicy(payload, organization);
         if createdDenyPol is BlockingCondition {
             log:printDebug(createdDenyPol.toString());
         }
         return createdDenyPol;
     }
-    isolated resource function get 'deny\-policies/[string policyId]() returns BlockingCondition|commons:APKError {
-        BlockingCondition|commons:APKError denyPolicy = getDenyPolicyById(policyId);
+    isolated resource function get 'deny\-policies/[string policyId](http:RequestContext requestContext) returns BlockingCondition|commons:APKError {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        BlockingCondition|commons:APKError denyPolicy = getDenyPolicyById(policyId, organization);
         if denyPolicy is BlockingCondition {
             log:printDebug(denyPolicy.toString());
         }
         return denyPolicy;
     }
-    isolated resource function delete 'deny\-policies/[string policyId]() returns http:Ok|commons:APKError {
-        string|commons:APKError ex = removeDenyPolicy(policyId);
+    isolated resource function delete 'deny\-policies/[string policyId](http:RequestContext requestContext) returns http:Ok|commons:APKError {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        string|commons:APKError ex = removeDenyPolicy(policyId, organization);
         if ex is commons:APKError {
             return ex;
         } else {
             return http:OK;
         }
     }
-    isolated resource function patch 'deny\-policies/[string policyId](@http:Payload BlockingConditionStatus payload, @http:Header string 'content\-type = "application/json") returns BlockingCondition|commons:APKError {
-        BlockingCondition|commons:APKError updatedPolicy = updateDenyPolicy(policyId, payload);
+    isolated resource function patch 'deny\-policies/[string policyId](http:RequestContext requestContext, @http:Payload BlockingConditionStatus payload, @http:Header string 'content\-type = "application/json") returns BlockingCondition|commons:APKError {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        BlockingCondition|commons:APKError updatedPolicy = updateDenyPolicy(policyId, payload, organization);
         if updatedPolicy is BlockingCondition {
             log:printDebug(updatedPolicy.toString());
         }
@@ -169,17 +199,25 @@ service /api/am/admin on ep0 {
     // }
     // resource function get 'custom\-urls/[string tenantDomain]() returns CustomUrlInfo|NotFoundError|NotAcceptableError {
     // }
-    isolated resource function get 'api\-categories() returns APICategoryList|commons:APKError {
-        return getAllCategoryList();
+    isolated resource function get 'api\-categories(http:RequestContext requestContext) returns APICategoryList|commons:APKError {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        return getAllCategoryList(organization);
     }
-    isolated resource function post 'api\-categories(@http:Payload APICategory payload) returns APICategory|commons:APKError {
-        return addAPICategory(payload);
+    isolated resource function post 'api\-categories(http:RequestContext requestContext, @http:Payload APICategory payload) returns APICategory|commons:APKError {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        return addAPICategory(payload, organization);
     }
-    isolated resource function put 'api\-categories/[string apiCategoryId](@http:Payload APICategory payload) returns APICategory|commons:APKError {
-        return updateAPICategory(apiCategoryId, payload);
+    isolated resource function put 'api\-categories/[string apiCategoryId](http:RequestContext requestContext, @http:Payload APICategory payload) returns APICategory|commons:APKError {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        return updateAPICategory(apiCategoryId, payload, organization);
     }
-    isolated resource function delete 'api\-categories/[string apiCategoryId]() returns http:Ok|commons:APKError {
-        string|commons:APKError ex = removeAPICategory(apiCategoryId);
+    isolated resource function delete 'api\-categories/[string apiCategoryId](http:RequestContext requestContext) returns http:Ok|commons:APKError {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        string|commons:APKError ex = removeAPICategory(apiCategoryId, organization);
         if ex is commons:APKError {
             return ex;
         } else {

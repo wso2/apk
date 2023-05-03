@@ -25,7 +25,7 @@ service /api/am/devportal on ep0 {
     isolated resource function get apis(http:RequestContext requestContext, @http:Header string? 'x\-wso2\-tenant, string? query, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0) returns APIList|BadRequestError|InternalServerErrorError|commons:APKError {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
-        APIList|APKError apiList = getAPIList('limit, offset, query, organization.uuid);
+        APIList|APKError apiList = getAPIList('limit, offset, query, organization);
         if apiList is APIList {
             log:printDebug(apiList.toString());
             return apiList;
@@ -43,7 +43,7 @@ service /api/am/devportal on ep0 {
         }
     }
     isolated resource function get apis/[string apiId]/definition(@http:Header string? 'if\-none\-match) returns APIDefinition|http:NotModified|NotFoundError|BadRequestError|InternalServerErrorError {
-       
+
         APIDefinition|NotFoundError|APKError apiDefinition = getAPIDefinition(apiId);
         if apiDefinition is APIDefinition|NotFoundError {
             log:printDebug(apiDefinition.toString());
@@ -95,8 +95,9 @@ service /api/am/devportal on ep0 {
     // }
     // resource function get apis/[string apiId]/'subscription\-policies(@http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match) returns ThrottlingPolicy|http:NotModified|NotFoundError|NotAcceptableError {
     // }
-    isolated resource function get applications(string? groupId, string? query, string? sortBy, string? sortOrder, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0) returns ApplicationList|http:NotModified|BadRequestError|NotAcceptableError|InternalServerErrorError{
-        string organization = "carbon.super";
+    isolated resource function get applications(http:RequestContext requestContext, string? groupId, string? query, string? sortBy, string? sortOrder, @http:Header string? 'if\-none\-match, int 'limit = 25, int offset = 0) returns ApplicationList|http:NotModified|BadRequestError|NotAcceptableError|InternalServerErrorError|commons:APKError {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
         ApplicationList|APKError applicationList = getApplicationList(sortBy, groupId, query, sortOrder, 'limit, offset, organization);
         if applicationList is ApplicationList {
             log:printDebug(applicationList.toString());
@@ -105,8 +106,10 @@ service /api/am/devportal on ep0 {
             return handleAPKError(applicationList);
         }
     }
-    isolated resource function post applications(@http:Payload Application payload) returns CreatedApplication|AcceptedWorkflowResponse|BadRequestError|ConflictError|NotFoundError|InternalServerErrorError|error|json {
-        Application|NotFoundError|APKError application = addApplication(payload, "carbon.super", "apkuser");
+    isolated resource function post applications(http:RequestContext requestContext, @http:Payload Application payload) returns CreatedApplication|AcceptedWorkflowResponse|BadRequestError|ConflictError|NotFoundError|InternalServerErrorError|error|json|commons:APKError {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        Application|NotFoundError|APKError application = addApplication(payload, organization, <string>authenticatedUserContext.userId);
         if application is Application {
             CreatedApplication createdApp = {body: check application.cloneWithType(Application)};
             log:printDebug(application.toString());
@@ -119,8 +122,10 @@ service /api/am/devportal on ep0 {
             return {};
         }
     }
-    isolated resource function get applications/[string applicationId](@http:Header string? 'if\-none\-match, @http:Header string? 'x\-wso2\-tenant) returns Application|http:NotModified|NotFoundError|BadRequestError|InternalServerErrorError {
-        Application|APKError|NotFoundError application = getApplicationById(applicationId, "carbon.super");
+    isolated resource function get applications/[string applicationId](http:RequestContext requestContext, @http:Header string? 'if\-none\-match, @http:Header string? 'x\-wso2\-tenant) returns Application|http:NotModified|NotFoundError|BadRequestError|InternalServerErrorError|commons:APKError {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        Application|APKError|NotFoundError application = getApplicationById(applicationId, organization);
         if application is Application|NotFoundError {
             log:printDebug(application.toString());
             return application;
@@ -128,9 +133,10 @@ service /api/am/devportal on ep0 {
             return handleAPKError(application);
         }
     }
-    isolated resource function put applications/[string applicationId](@http:Header string? 'if\-match, @http:Payload Application payload) returns Application|BadRequestError|NotFoundError|PreconditionFailedError|InternalServerErrorError {
-        string organization = "carbon.super";
-        Application|NotFoundError|APKError application = updateApplication(applicationId, payload, organization,"apkuser");
+    isolated resource function put applications/[string applicationId](http:RequestContext requestContext, @http:Header string? 'if\-match, @http:Payload Application payload) returns Application|BadRequestError|NotFoundError|PreconditionFailedError|InternalServerErrorError|commons:APKError {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        Application|NotFoundError|APKError application = updateApplication(applicationId, payload, organization, <string>authenticatedUserContext.userId);
         if application is Application|NotFoundError {
             log:printDebug(application.toString());
             return application;
@@ -138,9 +144,10 @@ service /api/am/devportal on ep0 {
             return handleAPKError(application);
         }
     }
-    isolated resource function delete applications/[string applicationId](@http:Header string? 'if\-match) returns http:Ok|AcceptedWorkflowResponse|NotFoundError|BadRequestError|PreconditionFailedError|InternalServerErrorError {
-        string organization = "carbon.super";
-        string|APKError response = deleteApplication(applicationId,organization);
+    isolated resource function delete applications/[string applicationId](http:RequestContext requestContext, @http:Header string? 'if\-match) returns http:Ok|AcceptedWorkflowResponse|NotFoundError|BadRequestError|PreconditionFailedError|InternalServerErrorError|commons:APKError {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        string|APKError response = deleteApplication(applicationId, organization);
         if response is APKError {
             return handleAPKError(response);
         } else {
@@ -175,8 +182,10 @@ service /api/am/devportal on ep0 {
     // }
     // resource function post applications/[string applicationId]/'oauth\-keys/[string keyMappingId]/'generate\-token(@http:Header string? 'if\-match, @http:Payload ApplicationTokenGenerateRequest payload) returns ApplicationToken|BadRequestError|NotFoundError|PreconditionFailedError {
     // }
-    isolated resource function post applications/[string applicationId]/'api\-keys/[string keyType]/generate(@http:Header string? 'if\-match, @http:Payload APIKeyGenerateRequest payload) returns APIKey|BadRequestError|NotFoundError|PreconditionFailedError|InternalServerErrorError {
-        APIKey|APKError|NotFoundError apiKey = generateAPIKey(payload, applicationId, keyType, "apkuser", "carbon.super");
+    isolated resource function post applications/[string applicationId]/'api\-keys/[string keyType]/generate(http:RequestContext requestContext, @http:Header string? 'if\-match, @http:Payload APIKeyGenerateRequest payload) returns APIKey|BadRequestError|NotFoundError|PreconditionFailedError|InternalServerErrorError|commons:APKError {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        APIKey|APKError|NotFoundError apiKey = generateAPIKey(payload, applicationId, keyType, <string>authenticatedUserContext.userId, organization);
         if apiKey is APIKey|NotFoundError {
             return apiKey;
         } else {
@@ -189,8 +198,10 @@ service /api/am/devportal on ep0 {
     // }
     // resource function post applications/'import(boolean? preserveOwner, boolean? skipSubscriptions, string? appOwner, boolean? skipApplicationKeys, boolean? update, @http:Payload json payload) returns ApplicationInfo|BadRequestError|NotAcceptableError {
     // }
-    isolated resource function get subscriptions(string? apiId, string? applicationId, string? groupId, @http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match, int offset = 0, int 'limit = 25) returns SubscriptionList|http:NotModified|NotFoundError|BadRequestError|InternalServerErrorError {
-        SubscriptionList|APKError|NotFoundError subscriptionList = getSubscriptions(apiId, applicationId, groupId, offset, 'limit, "carbon.super");
+    isolated resource function get subscriptions(http:RequestContext requestContext, string? apiId, string? applicationId, string? groupId, @http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match, int offset = 0, int 'limit = 25) returns SubscriptionList|http:NotModified|NotFoundError|BadRequestError|InternalServerErrorError|commons:APKError {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        SubscriptionList|APKError|NotFoundError subscriptionList = getSubscriptions(apiId, applicationId, groupId, offset, 'limit, organization);
         if subscriptionList is SubscriptionList|NotFoundError {
             log:printDebug(subscriptionList.toString());
             return subscriptionList;
@@ -198,8 +209,10 @@ service /api/am/devportal on ep0 {
             return handleAPKError(subscriptionList);
         }
     }
-    isolated resource function post subscriptions(@http:Header string? 'x\-wso2\-tenant, @http:Payload Subscription payload) returns CreatedSubscription|AcceptedWorkflowResponse|BadRequestError|NotFoundError|InternalServerErrorError|error|json {
-        Subscription|APKError|NotFoundError|error subscription = addSubscription(payload, "carbon.super", "apkuser");
+    isolated resource function post subscriptions(http:RequestContext requestContext, @http:Header string? 'x\-wso2\-tenant, @http:Payload Subscription payload) returns CreatedSubscription|AcceptedWorkflowResponse|BadRequestError|NotFoundError|InternalServerErrorError|error|json|commons:APKError {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        Subscription|APKError|NotFoundError|error subscription = addSubscription(payload, organization, <string>authenticatedUserContext.userId);
         if subscription is APKError {
             return handleAPKError(subscription);
         } else {
@@ -213,8 +226,10 @@ service /api/am/devportal on ep0 {
         }
         return {};
     }
-    isolated resource function post subscriptions/multiple(@http:Header string? 'x\-wso2\-tenant, @http:Payload Subscription[] payload) returns Subscription[]|BadRequestError|UnsupportedMediaTypeError|NotFoundError|InternalServerErrorError|error {
-        Subscription[]|APKError|NotFoundError subscriptions = check addMultipleSubscriptions(payload, "carbon.super", "apkuser");
+    isolated resource function post subscriptions/multiple(http:RequestContext requestContext, @http:Header string? 'x\-wso2\-tenant, @http:Payload Subscription[] payload) returns Subscription[]|BadRequestError|UnsupportedMediaTypeError|NotFoundError|InternalServerErrorError|commons:APKError|error {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        Subscription[]|APKError|NotFoundError subscriptions = check addMultipleSubscriptions(payload, organization, <string>authenticatedUserContext.userId);
         if subscriptions is Subscription[]|NotFoundError  {
             log:printDebug(subscriptions.toString());
             return subscriptions;
@@ -224,8 +239,10 @@ service /api/am/devportal on ep0 {
     }
     // resource function get subscriptions/[string apiId]/additionalInfo(string? groupId, @http:Header string? 'x\-wso2\-tenant, @http:Header string? 'if\-none\-match, int offset = 0, int 'limit = 25) returns AdditionalSubscriptionInfoList|http:NotFound {
     // }
-    isolated resource function get subscriptions/[string subscriptionId](@http:Header string? 'if\-none\-match) returns Subscription|http:NotModified|NotFoundError|BadRequestError|InternalServerErrorError|error {
-        Subscription|APKError|NotFoundError subscription = getSubscriptionById(subscriptionId, "carbon.super");
+    isolated resource function get subscriptions/[string subscriptionId](http:RequestContext requestContext, @http:Header string? 'if\-none\-match) returns Subscription|http:NotModified|NotFoundError|BadRequestError|InternalServerErrorError|error {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        Subscription|APKError|NotFoundError subscription = getSubscriptionById(subscriptionId, organization);
         if subscription is Subscription|NotFoundError {
             log:printDebug(subscription.toString());
             return subscription;
@@ -233,8 +250,10 @@ service /api/am/devportal on ep0 {
             return handleAPKError(subscription);
         }
     }
-    isolated resource function put subscriptions/[string subscriptionId](@http:Header string? 'x\-wso2\-tenant, @http:Payload Subscription payload) returns Subscription|AcceptedWorkflowResponse|http:NotModified|BadRequestError|NotFoundError|http:UnsupportedMediaType|InternalServerErrorError|error|json {
-        Subscription|NotFoundError|APKError|error subscription = check updateSubscription(subscriptionId, payload, "carbon.super", "apkuser");
+    isolated resource function put subscriptions/[string subscriptionId](http:RequestContext requestContext, @http:Header string? 'x\-wso2\-tenant, @http:Payload Subscription payload) returns Subscription|AcceptedWorkflowResponse|http:NotModified|BadRequestError|NotFoundError|http:UnsupportedMediaType|InternalServerErrorError|json|commons:APKError|error {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
+        Subscription|NotFoundError|APKError|error subscription = check updateSubscription(subscriptionId, payload, organization, <string>authenticatedUserContext.userId);
         if subscription is Subscription|NotFoundError  {
             log:printDebug(subscription.toString());
             return subscription;
@@ -242,8 +261,9 @@ service /api/am/devportal on ep0 {
             return handleAPKError(subscription);
         }
     }
-    isolated resource function delete subscriptions/[string subscriptionId](@http:Header string? 'if\-match) returns http:Ok|AcceptedWorkflowResponse|NotFoundError|PreconditionFailedError|BadRequestError|InternalServerErrorError|error{
-        string organization = "carbon.super";
+    isolated resource function delete subscriptions/[string subscriptionId](http:RequestContext requestContext, @http:Header string? 'if\-match) returns http:Ok|AcceptedWorkflowResponse|NotFoundError|PreconditionFailedError|BadRequestError|InternalServerErrorError|commons:APKError|APKError {
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
         string|APKError response = deleteSubscription(subscriptionId,organization);
         if response is APKError {
             return handleAPKError(response);

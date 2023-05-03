@@ -20,13 +20,13 @@ import ballerina/log;
 import ballerinax/postgresql;
 import ballerina/sql;
 
-isolated function addApplicationDAO(Application application,int subscriberId, string org) returns Application|APKError {
+isolated function addApplicationDAO(Application application,string subscriberId, string org) returns Application|APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
         return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
-        sql:ParameterizedQuery query = `INSERT INTO APPLICATION (NAME, SUBSCRIBER_ID, APPLICATION_TIER,
+        sql:ParameterizedQuery query = `INSERT INTO APPLICATION (NAME, USER_UUID, APPLICATION_TIER,
         DESCRIPTION, APPLICATION_STATUS, GROUP_ID, CREATED_BY, CREATED_TIME, UPDATED_TIME,
         UUID, TOKEN_TYPE, ORGANIZATION) VALUES (${application.name},${subscriberId},${application.throttlingPolicy},
         ${application.description},${application.status},${application.groups},${application.owner},${application.createdTime},
@@ -42,19 +42,19 @@ isolated function addApplicationDAO(Application application,int subscriberId, st
     }
 }
 
-isolated function getSubscriberIdDAO(string user, string org) returns int|NotFoundError|APKError {
+isolated function getSubscriberIdDAO(string user, string org) returns string|NotFoundError|APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
         return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
-        sql:ParameterizedQuery query = `SELECT SUBSCRIBER_ID FROM SUBSCRIBER WHERE USER_ID =${user} AND ORGANIZATION =${org}`;
-        int|sql:Error result =  dbClient->queryRow(query);
+        sql:ParameterizedQuery query = `SELECT UUID FROM INTERNAL_USER WHERE UUID =${user}`;
+        string|sql:Error result =  dbClient->queryRow(query);
         if result is sql:NoRowsError {
             log:printDebug(result.toString());
             NotFoundError nfe = {body:{code: 90916, message: "Subscriber Id not found"}};
             return nfe;
-        } else if result is int {
+        } else if result is string {
             log:printDebug(result.toString());
             return result;
         } else {
@@ -70,7 +70,7 @@ isolated function getApplicationUsagePlanByNameDAO(string policyName, string org
     if dbClient is error {
         return error("Error while retrieving connection");
     } else {
-        sql:ParameterizedQuery query = `SELECT POLICY_ID FROM APPLICATION_USAGE_PLAN WHERE NAME =${policyName} AND ORGANIZATION =${org}`;
+        sql:ParameterizedQuery query = `SELECT UUID FROM APPLICATION_USAGE_PLAN WHERE NAME =${policyName} AND ORGANIZATION =${org}`;
         string | sql:Error result =  dbClient->queryRow(query);
         if result is sql:NoRowsError {
             log:printDebug(result.toString());
@@ -91,7 +91,7 @@ isolated function getApplicationByIdDAO(string appId, string org) returns Applic
         string message = "Error while retrieving connection";
         return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
-        sql:ParameterizedQuery query = `SELECT NAME, APPLICATION_ID as ID, UUID as APPLICATIONID, DESCRIPTION, APPLICATION_TIER as THROTTLINGPOLICY, TOKEN_TYPE as TOKENTYPE, ORGANIZATION,
+        sql:ParameterizedQuery query = `SELECT NAME, UUID as APPLICATIONID, DESCRIPTION, APPLICATION_TIER as THROTTLINGPOLICY, TOKEN_TYPE as TOKENTYPE, ORGANIZATION,
         APPLICATION_STATUS as STATUS FROM APPLICATION WHERE UUID =${appId} AND ORGANIZATION =${org}`;
         Application | sql:Error result =  dbClient->queryRow(query);
         if result is sql:NoRowsError {
@@ -116,7 +116,7 @@ isolated function getApplicationsDAO(string org) returns Application[]|APKError 
         return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
         do {
-            sql:ParameterizedQuery query = `SELECT NAME, APPLICATION_ID as ID, UUID as APPLICATIONID, DESCRIPTION, APPLICATION_TIER as THROTTLINGPOLICY, TOKEN_TYPE as TOKENTYPE, ORGANIZATION,
+            sql:ParameterizedQuery query = `SELECT NAME, UUID as APPLICATIONID, DESCRIPTION, APPLICATION_TIER as THROTTLINGPOLICY, TOKEN_TYPE as TOKENTYPE, ORGANIZATION,
             APPLICATION_STATUS as STATUS  FROM APPLICATION WHERE ORGANIZATION =${org}`;
             stream<Application, sql:Error?> applicationStream = dbClient->query(query);
             Application[] applications = check from Application application in applicationStream select application;
@@ -129,14 +129,14 @@ isolated function getApplicationsDAO(string org) returns Application[]|APKError 
     }
 }
 
-isolated function updateApplicationDAO(Application application,int subscriberId, string org) returns Application|APKError {
+isolated function updateApplicationDAO(Application application, string subscriberId, string org) returns Application|APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
         return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
         sql:ParameterizedQuery query = `UPDATE APPLICATION SET NAME = ${application.name},
-         DESCRIPTION = ${application.description}, SUBSCRIBER_ID = ${subscriberId}, APPLICATION_TIER = ${application.throttlingPolicy}, 
+         DESCRIPTION = ${application.description}, USER_UUID = ${subscriberId}, APPLICATION_TIER = ${application.throttlingPolicy}, 
          APPLICATION_STATUS = ${application.status}, GROUP_ID = ${application.groups},CREATED_BY = ${application.owner},
          CREATED_TIME = ${application.createdTime}, UPDATED_TIME = ${application.updatedTime}, TOKEN_TYPE = ${application.tokenType} 
          WHERE UUID = ${application.applicationId} AND ORGANIZATION = ${org}`;

@@ -307,6 +307,21 @@ dependencies = [
 ]
 
 [[package]]
+org = "ballerina"
+name = "uuid"
+version = "1.4.0"
+dependencies = [
+	{org = "ballerina", name = "crypto"},
+	{org = "ballerina", name = "jballerina.java"},
+	{org = "ballerina", name = "lang.int"},
+	{org = "ballerina", name = "regex"},
+	{org = "ballerina", name = "time"}
+]
+modules = [
+	{org = "ballerina", packageName = "uuid", moduleName = "uuid"}
+]
+
+[[package]]
 org = "ballerinax"
 name = "postgresql"
 version = "1.8.0"
@@ -332,6 +347,7 @@ dependencies = [
 	{org = "ballerina", name = "log"},
 	{org = "ballerina", name = "os"},
 	{org = "ballerina", name = "sql"},
+	{org = "ballerina", name = "uuid"},
 	{org = "ballerinax", name = "postgresql"}
 ]
 modules = [

@@ -30,8 +30,8 @@ isolated function db_getAPIsDAO(string organization) returns API[]|commons:APKEr
         return e909601(db_Client);
     } else {
         do {
-            sql:ParameterizedQuery GET_API = `SELECT API_UUID AS ID, API_ID as APIID,
-            API_PROVIDER as PROVIDER, API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION, STATUS as STATE, string_to_array(SDK::text,',')::text[] AS SDK,string_to_array(API_TIER::text,',') AS POLICIES, ARTIFACT as ARTIFACT
+            sql:ParameterizedQuery GET_API = `SELECT UUID AS ID,
+            API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION, STATUS as STATE, string_to_array(SDK::text,',')::text[] AS SDK,string_to_array(API_TIER::text,',') AS POLICIES, ARTIFACT as ARTIFACT
             FROM API where ORGANIZATION = ${organization}`;
             stream<API, sql:Error?> apisStream = db_Client->query(GET_API);
             API[] apis = check from API api in apisStream select api;
@@ -54,7 +54,7 @@ isolated function db_changeLCState(string targetState, string apiId) returns str
         }
         sql:ParameterizedQuery UPDATE_API_LifeCycle_Prefix = `UPDATE api SET status = `;
         sql:ParameterizedQuery values = `${newState}
-        WHERE api_uuid = ${apiId}`;
+        WHERE uuid = ${apiId}`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(UPDATE_API_LifeCycle_Prefix, values);
 
         sql:ExecutionResult | sql:Error result = db_Client->execute(sqlQuery);
@@ -62,7 +62,7 @@ isolated function db_changeLCState(string targetState, string apiId) returns str
         if result is sql:ExecutionResult {
             return targetState;
         } else {
-            return e909608(result);  
+            return e909608(result);
         }
     }
 }
@@ -72,7 +72,7 @@ isolated function db_getCurrentLCStatus(string apiId) returns string|commons:APK
     if db_Client is error {
         return e909601(db_Client);
     } else {
-        sql:ParameterizedQuery GET_API_LifeCycle_Prefix = `SELECT status from api where api_uuid = `;
+        sql:ParameterizedQuery GET_API_LifeCycle_Prefix = `SELECT status from api where uuid = `;
         sql:ParameterizedQuery values = `${apiId}`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(GET_API_LifeCycle_Prefix, values);
 
@@ -106,7 +106,7 @@ isolated function db_AddLCEvent(string? apiId, string? prev_state, string? new_s
                                         ${organization},
                                         ${utc}
                                     )`;
-        sql:ParameterizedQuery ADD_LC_EVENT_Prefix = `INSERT INTO api_lc_event (api_id,previous_state,new_state,user_id,organization,event_date) VALUES (`;
+        sql:ParameterizedQuery ADD_LC_EVENT_Prefix = `INSERT INTO api_lc_event (api_uuid,previous_state,new_state,user_uuid,organization,event_date) VALUES (`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(ADD_LC_EVENT_Prefix, values);
 
         sql:ExecutionResult | sql:Error result = db_client->execute(sqlQuery);
@@ -125,7 +125,7 @@ isolated function db_getLCEventHistory(string apiId) returns LifecycleHistoryIte
         return e909601(dbClient);
     } else {
         do{
-            sql:ParameterizedQuery query = `SELECT previous_state, new_state, user_id, event_date FROM api_lc_event WHERE api_id =${apiId}`;
+            sql:ParameterizedQuery query = `SELECT previous_state, new_state, user_uuid, event_date FROM api_lc_event WHERE api_uuid =${apiId}`;
             stream<LifecycleHistoryItem, sql:Error?> lcStream = dbClient->query(query);
             LifecycleHistoryItem[] lcItems = check from LifecycleHistoryItem lcitem in lcStream select lcitem;
             check lcStream.close();
@@ -143,18 +143,18 @@ isolated function db_getSubscriptionsForAPI(string apiId) returns Subscription[]
         return e909601(dbClient);
     } else {
         
-        sql:ParameterizedQuery query = `SELECT api_id FROM api WHERE api_uuid =${apiId}`;
-        int | sql:Error result =  dbClient->queryRow(query);
-        if result is int {
+        sql:ParameterizedQuery query = `SELECT uuid as api_id FROM api WHERE uuid =${apiId}`;
+        string | sql:Error result =  dbClient->queryRow(query);
+        if result is string {
             do {
                 sql:ParameterizedQuery query1 = `SELECT 
-                    SUBS.SUBSCRIPTION_ID AS subscriptionId, 
+                    SUBS.UUID AS subscriptionId,
                     APP.UUID AS applicationId,
                     APP.name AS name,
                     SUBS.TIER_ID AS usagePlan, 
                     SUBS.sub_status AS subscriptionStatus
                     FROM SUBSCRIPTION SUBS, API API, APPLICATION APP 
-                    WHERE APP.APPLICATION_ID=SUBS.APPLICATION_ID AND API.API_ID = SUBS.API_ID AND API.API_UUID = ${apiId}`;
+                    WHERE APP.UUID=SUBS.APPLICATION_UUID AND API.UUID = SUBS.API_UUID AND API.UUID = ${apiId}`;
                 stream<Subscriptions, sql:Error?> result1 =  dbClient->query(query1);
                 Subscription[] subsList = [];
                 check from Subscriptions subitem in result1 do {
@@ -184,7 +184,6 @@ isolated function getSubscriptionByIdDAO(string subId) returns SubscriptionInter
     } else {
         sql:ParameterizedQuery query = `SELECT 
         SUBS.SUBSCRIPTION_ID AS SUBSCRIPTION_ID, 
-        API.API_PROVIDER AS API_PROVIDER, 
         API.API_NAME AS API_NAME, 
         API.API_VERSION AS API_VERSION, 
         API.API_TYPE AS API_TYPE, 
@@ -197,9 +196,9 @@ isolated function getSubscriptionByIdDAO(string subId) returns SubscriptionInter
         SUBS.UUID AS UUID, 
         SUBS.CREATED_TIME AS CREATED_TIME, 
         SUBS.UPDATED_TIME AS UPDATED_TIME, 
-        API.API_UUID AS APIID
+        API.UUID AS APIID
         FROM SUBSCRIPTION SUBS, API API, APPLICATION APP 
-        WHERE APP.APPLICATION_ID=SUBS.APPLICATION_ID AND API.API_ID = SUBS.API_ID AND SUBS.UUID =${subId}`;
+        WHERE APP.UUID=SUBS.APPLICATION_UUID AND API.UUID = SUBS.API_UUID AND SUBS.UUID =${subId}`;
         SubscriptionInternal | sql:Error result =  dbClient->queryRow(query);
         if result is sql:NoRowsError {
             log:printDebug(result.toString());
@@ -258,9 +257,9 @@ isolated function db_getAPI(string apiId) returns API|commons:APKError {
     if db_Client is error {
         return e909601(db_Client);
     } else {
-        sql:ParameterizedQuery GET_API_Prefix = `SELECT API_UUID AS ID, API_ID as APIID,
-        API_PROVIDER as PROVIDER, API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS,string_to_array(SDK::text,',')::text[] AS SDK,string_to_array(API_TIER::text,',') AS POLICIES, ARTIFACT as ARTIFACT
-        FROM API where API_UUID = `;
+        sql:ParameterizedQuery GET_API_Prefix = `SELECT UUID AS ID,
+        API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS,string_to_array(SDK::text,',')::text[] AS SDK,string_to_array(API_TIER::text,',') AS POLICIES, ARTIFACT as ARTIFACT
+        FROM API where UUID = `;
         sql:ParameterizedQuery values = `${apiId}`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(GET_API_Prefix, values);
 
@@ -302,7 +301,7 @@ isolated function db_updateAPI(string apiId, ModifiableAPI payload) returns API|
         postgresql:JsonBinaryValue businessPlans = new (payload.policies.toJson());
         sql:ParameterizedQuery UPDATE_API_Suffix = `UPDATE api SET`;
         sql:ParameterizedQuery values = ` status= ${payload.state}, sdk = ${sdk},
-        categories = ${categories}, api_tier=${businessPlans} WHERE api_uuid = ${apiId}`;
+        categories = ${categories}, api_tier=${businessPlans} WHERE uuid = ${apiId}`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(UPDATE_API_Suffix, values);
 
         sql:ExecutionResult | sql:Error result = dbClient->execute(sqlQuery);
@@ -340,8 +339,8 @@ isolated function getAPIsByQueryDAO(string payload, string org) returns API[]|co
         return e909601(dbClient);
     } else {
         do {
-            sql:ParameterizedQuery query = `SELECT DISTINCT API_UUID AS ID, API_ID as APIID,
-            API_PROVIDER as PROVIDER, API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS, 
+            sql:ParameterizedQuery query = `SELECT DISTINCT UUID AS ID,
+            API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS,
             ARTIFACT as ARTIFACT FROM API JOIN JSONB_EACH_TEXT(ARTIFACT) e ON true 
             WHERE e.value LIKE ${payload} AND ORGANIZATION = ${org}`;
             stream<API, sql:Error?> apisStream = dbClient->query(query);

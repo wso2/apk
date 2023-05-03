@@ -823,8 +823,6 @@ public type WorkflowResponse record {
 public type API record {
     # UUID of the api
     string id?;
-    # ID of the api
-    int apiId?;
     # Name of the API
     string name;
     # A brief description about the API
@@ -833,8 +831,6 @@ public type API record {
     string context;
     # The version of the API
     string 'version;
-    # If the provider value is not given user invoking the api will be used as the provider.
-    string provider;
     # Swagger definition of the API which contains details about URI templates and scopes
     string apiDefinition?;
     # WSDL URL if the API is based on a WSDL endpoint

@@ -32,12 +32,11 @@ isolated function createAPIDAO(APIBody apiBody, string organization) returns API
         return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
         postgresql:JsonBinaryValue artifact = new (createArtifact(apiBody.apiProperties.id, apiBody.apiProperties));
-        sql:ParameterizedQuery ADD_API_Suffix = `INSERT INTO api(api_uuid, api_name, api_version,context,api_provider,status,organization,artifact) VALUES (`;
+        sql:ParameterizedQuery ADD_API_Suffix = `INSERT INTO api(uuid, api_name, api_version,context,status,organization,artifact) VALUES (`;
         sql:ParameterizedQuery values = `${apiBody.apiProperties.id},
                                             ${apiBody.apiProperties.name},
                                             ${apiBody.apiProperties.'version},
                                             ${apiBody.apiProperties.context},
-                                            ${apiBody.apiProperties.provider},
                                             ${apiBody.apiProperties.lifeCycleStatus},
                                             ${organization},
                                             ${artifact})`;
@@ -66,8 +65,7 @@ isolated function createArtifact(string? apiID, API api) returns json {
                     apiName : api.name,
                     context : api.context,
                     'version : api.'version,
-                    status: api.lifeCycleStatus,
-                    providerName: api.provider
+                    status: api.lifeCycleStatus
                     };
     json artifactJson = artifact;
     return artifactJson;
@@ -104,13 +102,12 @@ isolated function addDefinitionDAO(APIBody apiBody, string organization) returns
     }
 }
 
-public isolated function addApplicationUsagePlanDAO(ApplicationRatePlan atp) returns ApplicationRatePlan|APKError {
+public isolated function addApplicationUsagePlanDAO(ApplicationRatePlan atp, string org) returns ApplicationRatePlan|APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
         return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
-        string org = "carbon.super";
         sql:ParameterizedQuery query = `INSERT INTO APPLICATION_USAGE_PLAN (NAME, DISPLAY_NAME, 
         ORGANIZATION, DESCRIPTION, QUOTA_TYPE, QUOTA, UNIT_TIME, TIME_UNIT, IS_DEPLOYED, UUID) 
         VALUES (${atp.planName},${atp.displayName},${org},${atp.description},${atp.defaultLimit.'type},
@@ -127,13 +124,12 @@ public isolated function addApplicationUsagePlanDAO(ApplicationRatePlan atp) ret
     }
 }
 
-public isolated function addBusinessPlanDAO(BusinessPlan stp) returns BusinessPlan|APKError {
+public isolated function addBusinessPlanDAO(BusinessPlan stp, string org) returns BusinessPlan|APKError {
     postgresql:Client | error dbClient  = getConnection();
     if dbClient is error {
         string message = "Error while retrieving connection";
         return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
-        string org = "carbon.super";
         sql:ParameterizedQuery query = `INSERT INTO BUSINESS_PLAN (NAME, DISPLAY_NAME, ORGANIZATION, DESCRIPTION, 
         QUOTA_TYPE, QUOTA, UNIT_TIME, TIME_UNIT, IS_DEPLOYED, UUID, 
         RATE_LIMIT_COUNT,RATE_LIMIT_TIME_UNIT,MAX_DEPTH, MAX_COMPLEXITY,
