@@ -73,12 +73,13 @@ type CombinedTemplateValues struct {
 
 // Constants relevant to the route related ratelimit configurations
 const (
-	DescriptorKeyForOrg               = "org"
-	DescriptorKeyForVhost             = "vhost"
-	DescriptorKeyForPath              = "path"
-	DescriptorKeyForMethod            = "method"
-	DescriptorValueForAPIMethod       = "ALL"
-	DescriptorValueForOperationMethod = ":method"
+	DescriptorKeyForOrg                = "org"
+	DescriptorKeyForCustomOrg          = "custom_org"
+	DescriptorKeyForVhost              = "vhost"
+	DescriptorKeyForPath               = "path"
+	DescriptorKeyForMethod             = "method"
+	DescriptorValueForAPIMethod        = "ALL"
+	DescriptorValueForOperationMethod  = ":method"
 	MetadataNamespaceForCustomPolicies = "apk.ratelimit.metadata"
 )
 
