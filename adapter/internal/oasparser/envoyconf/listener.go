@@ -307,7 +307,7 @@ func CreateVirtualHosts(vhostToRouteArrayMap map[string][]*routev3.Route, custom
 		actions = append(actions, &routev3.RateLimit_Action{
 			ActionSpecifier: &routev3.RateLimit_Action_GenericKey_{
 				GenericKey: &routev3.RateLimit_Action_GenericKey{
-					DescriptorKey:   DescriptorKeyForOrg,
+					DescriptorKey:   DescriptorKeyForCustomOrg,
 					DescriptorValue: customRateLimitPolicy.Organization,
 				},
 			},
