@@ -21,3 +21,15 @@ import wso2/apk_common_lib as commons;
 public type KeyStores record{|
         commons:KeyStore tls;
 |};
+
+public type K8sConfiguration record {|
+   string host = "kubernetes.default";
+   string serviceAccountPath = "/var/run/secrets/kubernetes.io/serviceaccount";
+   decimal readTimeout = 5;
+|};
+
+public type ManagementServerConfiguration record {|
+    string serviceName = "apk-test-wso2-apk-management-server";
+    string namespace = "apk";
+    string certPath = "/home/wso2apk/devportal/security/truststore/management-server.pem";
+|};

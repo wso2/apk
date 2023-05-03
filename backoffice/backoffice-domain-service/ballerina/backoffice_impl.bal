@@ -17,6 +17,10 @@
 //
 
 import wso2/apk_common_lib as commons;
+import ballerina/log;
+import ballerina/time;
+import ballerina/uuid;
+import wso2/notification_grpc_client as notification;
 
 # This function used to get API from database
 #
@@ -185,7 +189,40 @@ isolated function getSubscriptions(string? apiId) returns SubscriptionList|commo
 isolated function blockSubscription(string subscriptionId, string blockState) returns string|commons:APKError {
     if ("blocked".equalsIgnoreCaseAscii(blockState) || "prod_only_blocked".equalsIgnoreCaseAscii(blockState)) {
         commons:APKError|string blockSub = db_blockSubscription(subscriptionId, blockState);
-        return blockSub;
+        if blockSub is commons:APKError {
+            return blockSub;
+        } else {
+            SubscriptionInternal|commons:APKError updatedSub = getSubscriptionByIdDAO(subscriptionId);
+            if updatedSub is SubscriptionInternal {
+                string[]|commons:APKError hostList = retrieveManagementServerHostsList();
+                if hostList is string[] {
+                    string eventId = uuid:createType1AsString();
+                    time:Utc currTime = time:utcNow();
+                    string date = time:utcToString(currTime);
+                    SubscriptionGRPC updateSubscriptionRequest = {eventId: eventId, applicationRef: updatedSub.applicationId, 
+                    apiRef: <string>updatedSub.apiId, policyId: updatedSub.throttlingPolicy, subStatus:<string>updatedSub.status,
+                    subscriber: "user", uuid: subscriptionId, timeStamp: date, organization: "org"};
+                    string backofficePubCert = <string>keyStores.tls.certFilePath;
+                    string backofficeKeyCert = <string>keyStores.tls.keyFilePath;
+                    string pubCertPath = managementServerConfig.certPath;
+                    foreach string host in hostList {
+                        NotificationResponse|error subscriptionNotification = notification:updateSubscription(updateSubscriptionRequest,
+                        "https://" + host + ":8766",pubCertPath,backofficePubCert,backofficeKeyCert);
+                        if subscriptionNotification is error {
+                            string message = "Error while sending subscription update grpc event";
+                            log:printError(subscriptionNotification.toString());
+                            commons:APKError e = error(message, subscriptionNotification, message = message, description = message, code = 909000, statusCode = 500);
+                            return e;
+                        }
+                    }
+                } else {
+                    return hostList;
+                }
+            } else {
+                return updatedSub;
+            }
+            return blockSub;
+        }
     } else {
         return e909623();    
     }
@@ -193,7 +230,40 @@ isolated function blockSubscription(string subscriptionId, string blockState) re
 
 isolated function unblockSubscription(string subscriptionId) returns string|commons:APKError {
     commons:APKError|string unblockSub = db_unblockSubscription(subscriptionId);
-    return  unblockSub;
+    if unblockSub is commons:APKError {
+            return unblockSub;
+    } else {
+        SubscriptionInternal|commons:APKError updatedSub = getSubscriptionByIdDAO(subscriptionId);
+        if updatedSub is SubscriptionInternal {
+            string[]|commons:APKError hostList = retrieveManagementServerHostsList();
+            if hostList is string[] {
+                string eventId = uuid:createType1AsString();
+                time:Utc currTime = time:utcNow();
+                string date = time:utcToString(currTime);
+                SubscriptionGRPC updateSubscriptionRequest = {eventId: eventId, applicationRef: updatedSub.applicationId, 
+                apiRef: <string>updatedSub.apiId, policyId: updatedSub.throttlingPolicy, subStatus:<string>updatedSub.status,
+                subscriber: "user", uuid: subscriptionId, timeStamp: date, organization: "org"};
+                string backofficePubCert = <string>keyStores.tls.certFilePath;
+                string backofficeKeyCert = <string>keyStores.tls.keyFilePath;
+                string pubCertPath = managementServerConfig.certPath;
+                foreach string host in hostList {
+                    NotificationResponse|error subscriptionNotification = notification:updateSubscription(updateSubscriptionRequest,
+                    "https://" + host + ":8766",pubCertPath,backofficePubCert,backofficeKeyCert);
+                    if subscriptionNotification is error {
+                        string message = "Error while sending subscription update grpc event";
+                        log:printError(subscriptionNotification.toString());
+                        commons:APKError e = error(message, subscriptionNotification, message = message, description = message, code = 909000, statusCode = 500);
+                        return e;
+                    }
+                }
+            } else {
+                return hostList;
+            }
+        } else {
+            return updatedSub;
+        }
+        return unblockSub;
+    }
 }
 
 isolated function getAPI(string apiId) returns API|commons:APKError {
@@ -233,3 +303,12 @@ isolated function getBusinessPlans(string organization) returns BusinessPlanList
         return businessPlans;
     }
 }
+
+isolated function retrieveManagementServerHostsList() returns string[]|commons:APKError {
+    string managementServerServiceName = managementServerConfig.serviceName;
+    string managementServerNamespace = managementServerConfig.namespace;
+    log:printDebug("Service:" + managementServerServiceName);
+    log:printDebug("Namespace:" + managementServerNamespace);
+    string[]|commons:APKError hostList = getPodFromNameAndNamespace(managementServerServiceName,managementServerNamespace);
+    return hostList;
+ }

@@ -22,6 +22,7 @@ import ballerinax/postgresql;
 import ballerina/io;
 
 import wso2/apk_common_lib as commons;
+import ballerina/log;
 
 isolated function db_getAPIsDAO(string organization) returns API[]|commons:APKError {
     postgresql:Client | error db_Client  = getConnection();
@@ -171,6 +172,46 @@ isolated function db_getSubscriptionsForAPI(string apiId) returns Subscription[]
             }
         } else {
             return e909614(result, apiId);
+        }
+    }
+}
+
+
+isolated function getSubscriptionByIdDAO(string subId) returns SubscriptionInternal|commons:APKError{
+    postgresql:Client | error dbClient  = getConnection();
+    if dbClient is error {
+        return e909601(dbClient);
+    } else {
+        sql:ParameterizedQuery query = `SELECT 
+        SUBS.SUBSCRIPTION_ID AS SUBSCRIPTION_ID, 
+        API.API_PROVIDER AS API_PROVIDER, 
+        API.API_NAME AS API_NAME, 
+        API.API_VERSION AS API_VERSION, 
+        API.API_TYPE AS API_TYPE, 
+        API.ORGANIZATION AS ORGANIZATION, 
+        APP.UUID AS APPLICATIONID, 
+        SUBS.TIER_ID AS THROTTLINGPOLICY, 
+        SUBS.TIER_ID_PENDING AS TIER_ID_PENDING, 
+        SUBS.SUB_STATUS AS STATUS, 
+        SUBS.SUBS_CREATE_STATE AS SUBS_CREATE_STATE, 
+        SUBS.UUID AS UUID, 
+        SUBS.CREATED_TIME AS CREATED_TIME, 
+        SUBS.UPDATED_TIME AS UPDATED_TIME, 
+        API.API_UUID AS APIID
+        FROM SUBSCRIPTION SUBS, API API, APPLICATION APP 
+        WHERE APP.APPLICATION_ID=SUBS.APPLICATION_ID AND API.API_ID = SUBS.API_ID AND SUBS.UUID =${subId}`;
+        SubscriptionInternal | sql:Error result =  dbClient->queryRow(query);
+        if result is sql:NoRowsError {
+            log:printDebug(result.toString());
+            string message = "Subscription Not Found for provided ID";
+            return error(message, result, message = message, description = message, code = 909000, statusCode = 404);
+        } else if result is SubscriptionInternal {
+            log:printDebug(result.toString());
+            return result;
+        } else {
+            log:printDebug(result.toString());
+            string message = "Error while retrieving Subscription";
+            return error(message, result, message = message, description = message, code = 909000, statusCode = 500);
         }
     }
 }
