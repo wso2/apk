@@ -33,11 +33,8 @@ import io.envoyproxy.envoy.type.v3.HttpStatus;
 import io.grpc.stub.StreamObserver;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import org.wso2.apk.enforcer.api.ResponseObject;
-import org.wso2.apk.enforcer.api.RestAPI;
 import org.wso2.apk.enforcer.constants.APIConstants;
 import org.wso2.apk.enforcer.constants.HttpConstants;
 import org.wso2.apk.enforcer.constants.MetadataConstants;
@@ -63,7 +60,6 @@ import java.util.Map;
  * This is the entry point to the filter chain process for a request.
  */
 public class ExtAuthService extends AuthorizationGrpc.AuthorizationImplBase {
-    private static final Logger logger = LogManager.getLogger(ExtAuthService.class);
     private HttpRequestHandler requestHandler = new HttpRequestHandler();
 
     @Override
@@ -192,7 +188,6 @@ public class ExtAuthService extends AuthorizationGrpc.AuthorizationImplBase {
                     responseObject.getRequestPath().split("\\?")[0]);
             // adding org level ratelimit key to metadata
             addMetadata(structBuilder, MetadataConstants.RATELIMIT_WSO2_ORG_PREFIX, responseObject.getOrganizationId());
-            logger.error(responseObject.getOrganizationId());
             addMetadata(structBuilder, MetadataConstants.CHOREO_CONNECT_ENFORCER_REPLY, "Ok");
 
             return CheckResponse.newBuilder().setStatus(Status.newBuilder().setCode(Code.OK_VALUE).build())
