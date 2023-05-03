@@ -74,13 +74,14 @@ type CombinedTemplateValues struct {
 // Constants relevant to the route related ratelimit configurations
 const (
 	DescriptorKeyForOrg                = "org"
-	DescriptorKeyForCustomOrg          = "custom_org"
+	OrgMetadataKey                     = "customorg"
 	DescriptorKeyForVhost              = "vhost"
 	DescriptorKeyForPath               = "path"
 	DescriptorKeyForMethod             = "method"
 	DescriptorValueForAPIMethod        = "ALL"
 	DescriptorValueForOperationMethod  = ":method"
 	MetadataNamespaceForCustomPolicies = "apk.ratelimit.metadata"
+	MetadataNamespaceForWSO2Policies   = "envoy.filters.http.ext_authz"
 )
 
 // CreateRoutesWithClusters creates envoy routes along with clusters and endpoint instances.
