@@ -305,10 +305,20 @@ func CreateVirtualHosts(vhostToRouteArrayMap map[string][]*routev3.Route, custom
 	for _, customRateLimitPolicy := range customRateLimitPolicies {
 		var actions []*routev3.RateLimit_Action
 		actions = append(actions, &routev3.RateLimit_Action{
-			ActionSpecifier: &routev3.RateLimit_Action_GenericKey_{
-				GenericKey: &routev3.RateLimit_Action_GenericKey{
-					DescriptorKey:   DescriptorKeyForCustomOrg,
-					DescriptorValue: customRateLimitPolicy.Organization,
+			ActionSpecifier: &routev3.RateLimit_Action_Metadata{
+				Metadata: &routev3.RateLimit_Action_MetaData{
+					DescriptorKey: OrgMetadataKey,
+					MetadataKey: &metadatav3.MetadataKey{
+						Key: MetadataNamespaceForWSO2Policies,
+						Path: []*metadatav3.MetadataKey_PathSegment{
+							{
+								Segment: &metadatav3.MetadataKey_PathSegment_Key{
+									Key: OrgMetadataKey,
+								},
+							},
+						},
+					},
+					Source: routev3.RateLimit_Action_MetaData_DYNAMIC,
 				},
 			},
 		})

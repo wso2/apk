@@ -28,6 +28,6 @@ spec:
         - request_headers
         - invocation_context
   targetRef:
-    group: dp.wso2.com/v1alpha1
+    group: dp.wso2.com
     kind: API
     name: http-bin-api-basic
