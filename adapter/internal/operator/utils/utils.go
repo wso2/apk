@@ -23,6 +23,7 @@ import (
 	"encoding/pem"
 	"fmt"
 	"reflect"
+	"strings"
 
 	"github.com/wso2/apk/adapter/internal/loggers"
 	dpv1alpha1 "github.com/wso2/apk/adapter/internal/operator/apis/dp/v1alpha1"
@@ -33,6 +34,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	k8client "sigs.k8s.io/controller-runtime/pkg/client"
@@ -379,4 +381,15 @@ func resolveCertificate(ctx context.Context, client k8client.Client, namespace s
 		}
 	}
 	return certificate
+}
+
+// RetrieveNamespaceListOptions retrieve namespace list options for the given namespaces
+func RetrieveNamespaceListOptions(namespaces []string) client.ListOptions {
+	var listOptions client.ListOptions
+	if namespaces == nil {
+		listOptions = client.ListOptions{}
+	} else {
+		listOptions = client.ListOptions{FieldSelector: fields.SelectorFromSet(fields.Set{"metadata.namespace": strings.Join(namespaces, ",")})}
+	}
+	return listOptions
 }

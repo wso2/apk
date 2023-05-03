@@ -18,11 +18,13 @@
 # -----------------------------------------------------------------------
 
 ROUTER_PORT="${ROUTER_PORT:-9095}"
-status_code=$(curl --write-out %{http_code} --silent --output /dev/null https://localhost:${ROUTER_PORT}/health -k -v)
+CHECK_PATH="$1"
+status_code=$(curl --write-out %{http_code} --silent --output /dev/null https://localhost:${ROUTER_PORT}/${CHECK_PATH} -k -v)
 
-if [[ "$status_code" -ne 200 ]] ; then
-  echo "Health check status changed to $status_code"
+if [ "$status_code" -ne 200 ] ; then
+  echo "Health check status changed to state : $status_code not equals to 200"
+  exit 1
 else
-  echo "Health check status changed to $status_code"
+  echo "Health check status changed to 200"
   exit 0
 fi
