@@ -37,6 +37,7 @@ type HTTPRouteParams struct {
 	ResourceAuthSchemes       map[string]dpv1alpha1.Authentication
 	APIPolicies               map[string]dpv1alpha1.APIPolicy
 	ResourceAPIPolicies       map[string]dpv1alpha1.APIPolicy
+	InterceptorServiceMapping map[string]dpv1alpha1.InterceptorService
 	BackendMapping            dpv1alpha1.BackendMapping
 	ResourceScopes            map[string]dpv1alpha1.Scope
 	RateLimitPolicies         map[string]dpv1alpha1.RateLimitPolicy
@@ -207,7 +208,7 @@ func (swagger *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1b1.HTTPR
 			}
 		}
 
-		addOperationLevelInterceptors(&policies, resourceAPIPolicy, httpRouteParams.BackendMapping)
+		addOperationLevelInterceptors(&policies, resourceAPIPolicy, httpRouteParams.InterceptorServiceMapping, httpRouteParams.BackendMapping)
 
 		loggers.LoggerOasparser.Debug("Calculating auths for API ...")
 		securities, securityDefinitions, disabledSecurity := getSecurity(concatAuthScheme(resourceAuthScheme), scopes)
@@ -273,10 +274,14 @@ func parseRateLimitPolicyToInternal(ratelimitPolicy *dpv1alpha1.RateLimitPolicy)
 }
 
 // addOperationLevelInterceptors add the operation level interceptor policy to the policies
-func addOperationLevelInterceptors(policies *OperationPolicies, apiPolicy *dpv1alpha1.APIPolicy, backendMapping dpv1alpha1.BackendMapping) {
+func addOperationLevelInterceptors(policies *OperationPolicies, apiPolicy *dpv1alpha1.APIPolicy,
+	interceptorServicesMapping map[string]dpv1alpha1.InterceptorService, backendMapping dpv1alpha1.BackendMapping) {
 	if apiPolicy != nil && apiPolicy.Spec.Override != nil {
 		if apiPolicy.Spec.Override.RequestInterceptor != nil {
-			requestInterceptor := apiPolicy.Spec.Override.RequestInterceptor
+			requestInterceptor := interceptorServicesMapping[types.NamespacedName{
+				Name:      apiPolicy.Spec.Override.RequestInterceptor.Name,
+				Namespace: apiPolicy.Spec.Override.RequestInterceptor.Namespace,
+			}.String()].Spec
 			policyParameters := make(map[string]interface{})
 			backendName := types.NamespacedName{
 				Name:      requestInterceptor.BackendRef.Name,
@@ -294,7 +299,10 @@ func addOperationLevelInterceptors(policies *OperationPolicies, apiPolicy *dpv1a
 			}
 		}
 		if apiPolicy.Spec.Override.ResponseInterceptor != nil {
-			responseInterceptor := apiPolicy.Spec.Override.ResponseInterceptor
+			responseInterceptor := interceptorServicesMapping[types.NamespacedName{
+				Name:      apiPolicy.Spec.Override.ResponseInterceptor.Name,
+				Namespace: apiPolicy.Spec.Override.ResponseInterceptor.Namespace,
+			}.String()].Spec
 			policyParameters := make(map[string]interface{})
 			backendName := types.NamespacedName{
 				Name:      responseInterceptor.BackendRef.Name,

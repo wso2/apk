@@ -65,13 +65,14 @@ const (
 	// apiAPIPolicyIndex Index for API level apipolicies
 	apiAPIPolicyIndex = "apiAPIPolicyIndex"
 	// apiAPIPolicyResourceIndex Index for resource level apipolicies
-	apiAPIPolicyResourceIndex = "apiAPIPolicyResourceIndex"
-	serviceHTTPRouteIndex     = "serviceHTTPRouteIndex"
-	apiScopeIndex             = "apiScopeIndex"
-	configMapBackend          = "configMapBackend"
-	secretBackend             = "secretBackend"
-	backendHTTPRouteIndex     = "backendHTTPRouteIndex"
-	backendAPIPolicyIndex     = "backendAPIPolicyIndex"
+	apiAPIPolicyResourceIndex        = "apiAPIPolicyResourceIndex"
+	serviceHTTPRouteIndex            = "serviceHTTPRouteIndex"
+	apiScopeIndex                    = "apiScopeIndex"
+	configMapBackend                 = "configMapBackend"
+	secretBackend                    = "secretBackend"
+	backendHTTPRouteIndex            = "backendHTTPRouteIndex"
+	interceptorServiceAPIPolicyIndex = "interceptorServiceAPIPolicyIndex"
+	backendInterceptorServiceIndex   = "backendInterceptorServiceIndex"
 )
 
 var (
@@ -139,6 +140,12 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.Authentication{}}, handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForAuthentication),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2616, err))
+		return err
+	}
+
+	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.InterceptorService{}}, handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForInterceptorService),
+		predicates...); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2640, err))
 		return err
 	}
 
@@ -271,6 +278,7 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 	var resourceAuthentications map[string]dpv1alpha1.Authentication
 	var resourceRateLimitPolicies map[string]dpv1alpha1.RateLimitPolicy
 	var resourceAPIPolicies map[string]dpv1alpha1.APIPolicy
+	var interceptorServices map[string]dpv1alpha1.InterceptorService
 
 	var err error
 	if authentications, err = apiReconciler.getAuthenticationsForAPI(ctx, apiRef.String()); err != nil {
@@ -298,6 +306,10 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 		return nil, fmt.Errorf("error while getting httproute resource apipolicy %s in namespace :%s, %s", apiRef.String(),
 			namespace, err.Error())
 	}
+	if interceptorServices, err = apiReconciler.getInterceptorServices(ctx, apiPolicies, resourceAPIPolicies); err != nil {
+		return nil, fmt.Errorf("error while getting interceptor services %s in namespace :%s, %s", apiRef.String(),
+			namespace, err.Error())
+	}
 
 	if len(prodHTTPRouteRef) > 0 {
 		prodHTTPRoute.Authentications = authentications
@@ -306,6 +318,7 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 		prodHTTPRoute.ResourceRateLimitPolicies = resourceRateLimitPolicies
 		prodHTTPRoute.ResourceAPIPolicies = resourceAPIPolicies
 		prodHTTPRoute.APIPolicies = apiPolicies
+		prodHTTPRoute.InterceptorServiceMapping = interceptorServices
 		if prodHTTPRoute, err = apiReconciler.resolveHTTPRouteRefs(ctx, prodHTTPRoute, prodHTTPRouteRef, namespace, apiRef.String(), apiPolicies); err != nil {
 			return nil, fmt.Errorf("error while resolving production httpRouteref %s in namespace :%s has not found. %s",
 				prodHTTPRouteRef, namespace, err.Error())
@@ -326,6 +339,7 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 		sandHTTPRoute.ResourceRateLimitPolicies = resourceRateLimitPolicies
 		sandHTTPRoute.ResourceAPIPolicies = resourceAPIPolicies
 		sandHTTPRoute.APIPolicies = apiPolicies
+		sandHTTPRoute.InterceptorServiceMapping = interceptorServices
 		if sandHTTPRoute, err = apiReconciler.resolveHTTPRouteRefs(ctx, sandHTTPRoute, sandHTTPRouteRef, namespace, apiRef.String(), apiPolicies); err != nil {
 			return nil, fmt.Errorf("error while resolving sandbox httpRouteref %s in namespace :%s has not found. %s",
 				sandHTTPRouteRef, namespace, err.Error())
@@ -497,6 +511,54 @@ func (apiReconciler *APIReconciler) getAPIPoliciesForResources(ctx context.Conte
 	return apiPolicies, nil
 }
 
+// getInterceptorServices gets all the interceptor services for the resolving API
+func (apiReconciler *APIReconciler) getInterceptorServices(ctx context.Context,
+	apiPolicies, resourceAPIPolicies map[string]dpv1alpha1.APIPolicy) (map[string]dpv1alpha1.InterceptorService, error) {
+	allAPIPolicies := append(maps.Values(apiPolicies), maps.Values(resourceAPIPolicies)...)
+	interceptorServices := make(map[string]dpv1alpha1.InterceptorService)
+	for _, apiPolicy := range allAPIPolicies {
+		if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.RequestInterceptor != nil {
+			interceptorPtr := apiReconciler.getInterceptorService(ctx, apiPolicy.Spec.Default.RequestInterceptor)
+			if interceptorPtr != nil {
+				interceptorServices[utils.NamespacedName(interceptorPtr).String()] = *interceptorPtr
+			}
+		}
+		if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.ResponseInterceptor != nil {
+			interceptorPtr := apiReconciler.getInterceptorService(ctx, apiPolicy.Spec.Default.ResponseInterceptor)
+			if interceptorPtr != nil {
+				interceptorServices[utils.NamespacedName(interceptorPtr).String()] = *interceptorPtr
+			}
+		}
+		if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.RequestInterceptor != nil {
+			interceptorPtr := apiReconciler.getInterceptorService(ctx, apiPolicy.Spec.Override.RequestInterceptor)
+			if interceptorPtr != nil {
+				interceptorServices[utils.NamespacedName(interceptorPtr).String()] = *interceptorPtr
+			}
+		}
+		if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.ResponseInterceptor != nil {
+			interceptorPtr := apiReconciler.getInterceptorService(ctx, apiPolicy.Spec.Override.ResponseInterceptor)
+			if interceptorPtr != nil {
+				interceptorServices[utils.NamespacedName(interceptorPtr).String()] = *interceptorPtr
+			}
+		}
+	}
+	return interceptorServices, nil
+}
+
+// getInterceptorService reads InterceptorService when interceptorReference is given
+func (apiReconciler *APIReconciler) getInterceptorService(ctx context.Context,
+	interceptorReference *dpv1alpha1.InterceptorReference) *dpv1alpha1.InterceptorService {
+	interceptorService := &dpv1alpha1.InterceptorService{}
+	interceptorRef := types.NamespacedName{
+		Namespace: interceptorReference.Namespace,
+		Name:      interceptorReference.Name,
+	}
+	if err := apiReconciler.client.Get(ctx, interceptorRef, interceptorService); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2651, interceptorRef, err.Error()))
+	}
+	return interceptorService
+}
+
 func (apiReconciler *APIReconciler) getResolvedBackendsMapping(ctx context.Context,
 	httpRouteState *synchronizer.HTTPRouteState) dpv1alpha1.BackendMapping {
 	backendMapping := make(dpv1alpha1.BackendMapping)
@@ -516,26 +578,11 @@ func (apiReconciler *APIReconciler) getResolvedBackendsMapping(ctx context.Conte
 		}
 	}
 
-	// Resolve backends in APIPolicies and ResourceAPIPolicies
-	allAPIPolicies := append(maps.Values(httpRouteState.APIPolicies),
-		maps.Values(httpRouteState.ResourceAPIPolicies)...)
-	for _, apiPolicy := range allAPIPolicies {
-		if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.RequestInterceptor != nil {
-			utils.ResolveAndAddBackendToMapping(ctx, apiReconciler.client, backendMapping,
-				apiPolicy.Spec.Default.RequestInterceptor.BackendRef, apiPolicy.Namespace)
-		}
-		if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.RequestInterceptor != nil {
-			utils.ResolveAndAddBackendToMapping(ctx, apiReconciler.client, backendMapping,
-				apiPolicy.Spec.Override.RequestInterceptor.BackendRef, apiPolicy.Namespace)
-		}
-		if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.ResponseInterceptor != nil {
-			utils.ResolveAndAddBackendToMapping(ctx, apiReconciler.client, backendMapping,
-				apiPolicy.Spec.Default.ResponseInterceptor.BackendRef, apiPolicy.Namespace)
-		}
-		if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.ResponseInterceptor != nil {
-			utils.ResolveAndAddBackendToMapping(ctx, apiReconciler.client, backendMapping,
-				apiPolicy.Spec.Override.ResponseInterceptor.BackendRef, apiPolicy.Namespace)
-		}
+	// Resolve backends in InterceptorServices
+	interceptorServices := maps.Values(httpRouteState.InterceptorServiceMapping)
+	for _, interceptorService := range interceptorServices {
+		utils.ResolveAndAddBackendToMapping(ctx, apiReconciler.client, backendMapping,
+			interceptorService.Spec.BackendRef, interceptorService.Namespace)
 	}
 
 	loggers.LoggerAPKOperator.Debugf("Generated backendMapping: %v", backendMapping)
@@ -697,6 +744,31 @@ func (apiReconciler *APIReconciler) getAPIsForAPIPolicy(obj k8client.Object) []r
 	return requests
 }
 
+// getAPIPoliciesForInterceptorService returns associated APIPolicies for the InterceptorService
+// when the changes detected in InterceptorService resoruces.
+func (apiReconciler *APIReconciler) getAPIsForInterceptorService(obj k8client.Object) []reconcile.Request {
+	interceptorService, ok := obj.(*dpv1alpha1.InterceptorService)
+	if !ok {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2624, interceptorService))
+		return []reconcile.Request{}
+	}
+
+	ctx := context.Background()
+	apiPolicyList := &dpv1alpha1.APIPolicyList{}
+	if err := apiReconciler.client.List(ctx, apiPolicyList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(interceptorServiceAPIPolicyIndex, utils.NamespacedName(interceptorService).String()),
+	}); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2651, utils.NamespacedName(interceptorService).String(), err.Error()))
+		return []reconcile.Request{}
+	}
+
+	requests := []reconcile.Request{}
+	for _, apiPolicy := range apiPolicyList.Items {
+		requests = append(requests, apiReconciler.getAPIsForAPIPolicy(&apiPolicy)...)
+	}
+	return requests
+}
+
 // getAPIForAuthentication triggers the API controller reconcile method based on the changes detected
 // from Authentication objects. If the changes are done for an API stored in the Operator Data store,
 // a new reconcile event will be created and added to the reconcile event queue.
@@ -793,21 +865,21 @@ func (apiReconciler *APIReconciler) getAPIsForBackend(obj k8client.Object) []rec
 		requests = append(requests, apiReconciler.getAPIForHTTPRoute(&httpRoute)...)
 	}
 
-	// Create API reconcile events when Backend reffered from APIPolicy
-	apiPolicyList := &dpv1alpha1.APIPolicyList{}
-	if err := apiReconciler.client.List(ctx, apiPolicyList, &k8client.ListOptions{
-		FieldSelector: fields.OneTermEqualSelector(backendAPIPolicyIndex, utils.NamespacedName(backend).String()),
+	// Create API reconcile events when Backend reffered from InterceptorService
+	interceptorServiceList := &dpv1alpha1.InterceptorServiceList{}
+	if err := apiReconciler.client.List(ctx, interceptorServiceList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(backendInterceptorServiceIndex, utils.NamespacedName(backend).String()),
 	}); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2649, utils.NamespacedName(backend).String()))
 		return []reconcile.Request{}
 	}
 
-	if len(apiPolicyList.Items) == 0 {
-		loggers.LoggerAPKOperator.Debugf("APIPolicies for Backend not found: %s", utils.NamespacedName(backend).String())
+	if len(interceptorServiceList.Items) == 0 {
+		loggers.LoggerAPKOperator.Debugf("InterceptorService for Backend not found: %s", utils.NamespacedName(backend).String())
 	}
 
-	for _, apiPolicy := range apiPolicyList.Items {
-		requests = append(requests, apiReconciler.getAPIsForAPIPolicy(&apiPolicy)...)
+	for _, interceptorService := range interceptorServiceList.Items {
+		requests = append(requests, apiReconciler.getAPIsForInterceptorService(&interceptorService)...)
 	}
 
 	return requests
@@ -1050,44 +1122,60 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 		return err
 	}
 
-	// backend to APIPolicy indexer
-	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.APIPolicy{}, backendAPIPolicyIndex,
+	// backend to InterceptorService indexer
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.InterceptorService{}, backendInterceptorServiceIndex,
+		func(rawObj k8client.Object) []string {
+			interceptorService := rawObj.(*dpv1alpha1.InterceptorService)
+			var backends []string
+			backends = append(backends,
+				types.NamespacedName{
+					Namespace: utils.GetNamespace(
+						(*gwapiv1b1.Namespace)(&interceptorService.Spec.BackendRef.Namespace), interceptorService.Namespace),
+					Name: string(interceptorService.Spec.BackendRef.Name),
+				}.String())
+			return backends
+		}); err != nil {
+		return err
+	}
+
+	// interceptorService to APIPolicy indexer
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.APIPolicy{}, interceptorServiceAPIPolicyIndex,
 		func(rawObj k8client.Object) []string {
 			apiPolicy := rawObj.(*dpv1alpha1.APIPolicy)
-			var backends []string
+			var interceptorServices []string
 			if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.RequestInterceptor != nil {
-				backends = append(backends,
+				interceptorServices = append(interceptorServices,
 					types.NamespacedName{
 						Namespace: utils.GetNamespace(
-							(*gwapiv1b1.Namespace)(&apiPolicy.Spec.Default.RequestInterceptor.BackendRef.Namespace), apiPolicy.Namespace),
-						Name: string(apiPolicy.Spec.Default.RequestInterceptor.BackendRef.Name),
+							(*gwapiv1b1.Namespace)(&apiPolicy.Spec.Default.RequestInterceptor.Namespace), apiPolicy.Namespace),
+						Name: string(apiPolicy.Spec.Default.RequestInterceptor.Name),
 					}.String())
 			}
 			if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.RequestInterceptor != nil {
-				backends = append(backends,
+				interceptorServices = append(interceptorServices,
 					types.NamespacedName{
 						Namespace: utils.GetNamespace(
-							(*gwapiv1b1.Namespace)(&apiPolicy.Spec.Override.RequestInterceptor.BackendRef.Namespace), apiPolicy.Namespace),
-						Name: string(apiPolicy.Spec.Override.RequestInterceptor.BackendRef.Name),
+							(*gwapiv1b1.Namespace)(&apiPolicy.Spec.Override.RequestInterceptor.Namespace), apiPolicy.Namespace),
+						Name: string(apiPolicy.Spec.Override.RequestInterceptor.Name),
 					}.String())
 			}
 			if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.ResponseInterceptor != nil {
-				backends = append(backends,
+				interceptorServices = append(interceptorServices,
 					types.NamespacedName{
 						Namespace: utils.GetNamespace(
-							(*gwapiv1b1.Namespace)(&apiPolicy.Spec.Default.ResponseInterceptor.BackendRef.Namespace), apiPolicy.Namespace),
-						Name: string(apiPolicy.Spec.Default.ResponseInterceptor.BackendRef.Name),
+							(*gwapiv1b1.Namespace)(&apiPolicy.Spec.Default.ResponseInterceptor.Namespace), apiPolicy.Namespace),
+						Name: string(apiPolicy.Spec.Default.ResponseInterceptor.Name),
 					}.String())
 			}
 			if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.ResponseInterceptor != nil {
-				backends = append(backends,
+				interceptorServices = append(interceptorServices,
 					types.NamespacedName{
 						Namespace: utils.GetNamespace(
-							(*gwapiv1b1.Namespace)(&apiPolicy.Spec.Override.ResponseInterceptor.BackendRef.Namespace), apiPolicy.Namespace),
-						Name: string(apiPolicy.Spec.Override.ResponseInterceptor.BackendRef.Name),
+							(*gwapiv1b1.Namespace)(&apiPolicy.Spec.Override.ResponseInterceptor.Namespace), apiPolicy.Namespace),
+						Name: string(apiPolicy.Spec.Override.ResponseInterceptor.Name),
 					}.String())
 			}
-			return backends
+			return interceptorServices
 		}); err != nil {
 		return err
 	}

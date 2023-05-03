@@ -261,6 +261,28 @@ func updateHTTPRoute(httpRoute *HTTPRouteState, cachedHTTPRoute *HTTPRouteState,
 		}
 	}
 
+	if len(httpRoute.InterceptorServiceMapping) != len(cachedHTTPRoute.InterceptorServiceMapping) {
+		cachedHTTPRoute.InterceptorServiceMapping = httpRoute.InterceptorServiceMapping
+		updated = true
+		events = append(events, endpointType+" Interceptor Service")
+	} else {
+		for key, interceptService := range httpRoute.InterceptorServiceMapping {
+			if existingInterceptService, found := cachedHTTPRoute.InterceptorServiceMapping[key]; found {
+				if interceptService.UID != existingInterceptService.UID || interceptService.Generation > existingInterceptService.Generation {
+					cachedHTTPRoute.InterceptorServiceMapping = httpRoute.InterceptorServiceMapping
+					updated = true
+					events = append(events, endpointType+" Interceptor Service")
+					break
+				}
+			} else {
+				cachedHTTPRoute.InterceptorServiceMapping = httpRoute.InterceptorServiceMapping
+				updated = true
+				events = append(events, endpointType+" Interceptor Service")
+				break
+			}
+		}
+	}
+
 	if !reflect.DeepEqual(cachedHTTPRoute.BackendMapping, httpRoute.BackendMapping) {
 		cachedHTTPRoute.BackendMapping = httpRoute.BackendMapping
 		updated = true

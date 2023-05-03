@@ -139,6 +139,7 @@ func GenerateAdapterInternalAPI(apiState APIState, httpRoute *HTTPRouteState, en
 		APIPolicies:               httpRoute.APIPolicies,
 		ResourceAPIPolicies:       httpRoute.ResourceAPIPolicies,
 		ResourceScopes:            httpRoute.Scopes,
+		InterceptorServiceMapping: httpRoute.InterceptorServiceMapping,
 		RateLimitPolicies:         httpRoute.RateLimitPolicies,
 		ResourceRateLimitPolicies: httpRoute.ResourceRateLimitPolicies,
 	}

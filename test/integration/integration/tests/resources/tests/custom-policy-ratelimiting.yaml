@@ -41,16 +41,25 @@ metadata:
 spec:
   override:
     requestInterceptor:
-      backendRef:
-        name: interceptor-backend-v1
-      includes:
-        - request_body
-        - request_headers
-        - invocation_context
+      name: request-ratelimit-interceptor-api-level
+      namespace: gateway-integration-test-infra
   targetRef:
     group: gateway.networking.k8s.io
     kind: API
     name: prod-http-route-http-bin-api-basic
+---
+apiVersion: dp.wso2.com/v1alpha1
+kind: InterceptorService
+metadata:
+  name: request-ratelimit-interceptor-api-level
+  namespace: gateway-integration-test-infra
+spec:
+  backendRef:
+    name: interceptor-backend-v1
+  includes:
+    - request_body
+    - request_headers
+    - invocation_context
 ---
 apiVersion: dp.wso2.com/v1alpha1
 kind: API

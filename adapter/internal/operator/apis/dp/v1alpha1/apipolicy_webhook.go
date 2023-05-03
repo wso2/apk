@@ -45,25 +45,25 @@ func (r *APIPolicy) Default() {
 	apipolicylog.Info("default", "name", r.Name)
 	if r.Spec.Override != nil {
 		if r.Spec.Override.RequestInterceptor != nil {
-			if len(r.Spec.Override.RequestInterceptor.BackendRef.Namespace) == 0 {
-				r.Spec.Override.RequestInterceptor.BackendRef.Namespace = r.Namespace
+			if len(r.Spec.Override.RequestInterceptor.Namespace) == 0 {
+				r.Spec.Override.RequestInterceptor.Namespace = r.Namespace
 			}
 		}
 		if r.Spec.Override.ResponseInterceptor != nil {
-			if len(r.Spec.Override.ResponseInterceptor.BackendRef.Namespace) == 0 {
-				r.Spec.Override.ResponseInterceptor.BackendRef.Namespace = r.Namespace
+			if len(r.Spec.Override.ResponseInterceptor.Namespace) == 0 {
+				r.Spec.Override.ResponseInterceptor.Namespace = r.Namespace
 			}
 		}
 	}
 	if r.Spec.Default != nil {
 		if r.Spec.Default.RequestInterceptor != nil {
-			if len(r.Spec.Default.RequestInterceptor.BackendRef.Namespace) == 0 {
-				r.Spec.Default.RequestInterceptor.BackendRef.Namespace = r.Namespace
+			if len(r.Spec.Default.RequestInterceptor.Namespace) == 0 {
+				r.Spec.Default.RequestInterceptor.Namespace = r.Namespace
 			}
 		}
 		if r.Spec.Default.ResponseInterceptor != nil {
-			if len(r.Spec.Default.ResponseInterceptor.BackendRef.Namespace) == 0 {
-				r.Spec.Default.ResponseInterceptor.BackendRef.Namespace = r.Namespace
+			if len(r.Spec.Default.ResponseInterceptor.Namespace) == 0 {
+				r.Spec.Default.ResponseInterceptor.Namespace = r.Namespace
 			}
 		}
 	}

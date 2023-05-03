@@ -282,11 +282,11 @@ func getSecretValue(ctx context.Context, client client.Client,
 // ResolveAndAddBackendToMapping resolves backend from reference and adds it to the backendMapping.
 func ResolveAndAddBackendToMapping(ctx context.Context, client k8client.Client,
 	backendMapping dpv1alpha1.BackendMapping,
-	backendRef dpv1alpha1.BackendReference, apiPolicyNamespace string) {
+	backendRef dpv1alpha1.BackendReference, interceptorServiceNamespace string) {
 	namespace := gwapiv1b1.Namespace(backendRef.Namespace)
 	backendName := types.NamespacedName{
 		Name:      backendRef.Name,
-		Namespace: GetNamespace(&namespace, apiPolicyNamespace),
+		Namespace: GetNamespace(&namespace, interceptorServiceNamespace),
 	}
 	backend := GetResolvedBackend(ctx, client, backendName)
 	backendMapping[backendName] = backend
