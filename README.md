@@ -88,78 +88,93 @@ WSO2 API Kubernetes Platform has released following docker images in the WSO2 pu
 
 ### Before you begin...
 
-* Install [Helm](https://helm.sh/docs/intro/install/)
-  and [Kubernetes client](https://kubernetes.io/docs/tasks/tools/install-kubectl/) <br>
+* Install [Helm](https://helm.sh/docs/intro/install/) (3.11.x)
+  and [Kubernetes client](https://kubernetes.io/docs/tasks/tools/install-kubectl/).
 
-* An already setup [Kubernetes cluster](https://kubernetes.io/docs/setup). If you want to run it on the local you can use Minikube or Kind or a similar software.<br>
+* Setup a [Kubernetes cluster](https://kubernetes.io/docs/setup). If you want to run it on the local you can use Minikube or Kind or a similar software.
 
-* Setup deployment namespace
-```kubectl create namespace <Namespace>```
+* Setup deployment namespace.
+    ```bash
+    kubectl create namespace <namespace>
+    ```
 
 ### Steps to deploy APK DS servers and CloudNativePG
 
 ```HELM-HOME``` = apk/helm-charts
 
-1. Execute ``` helm repo add bitnami https://charts.bitnami.com/bitnami ``` and ```helm repo add jetstack https://charts.jetstack.io```
-2. Clone the repo and cd into the ```HELM-HOME``` folder.
-3. Execute ``` helm dependency build ``` command to download the dependent charts.
-4. Now execute ```helm install apk-test . -n apk``` to install the APK components.
-#### Optional: 
-  - To deploy control plane components only use ``` --set wso2.apk.dp.enabled=false ```
-  - To deploy data plane components only use ``` --set wso2.apk.cp.enabled=false ```
+1. Execute `helm repo add bitnami https://charts.bitnami.com/bitnami` and `helm repo add jetstack https://charts.jetstack.io`.
+2. Clone the repo and cd into the `HELM-HOME` folder.
+3. Execute `helm dependency build` command to download the dependent charts.
+4. Now execute `helm install apk-test . -n apk` to install the APK components.
+
+    > **Optional**
+    >
+    > To deploy control plane components only use `--set wso2.apk.dp.enabled=false`
+    >
+    > To deploy data plane components only use `--set wso2.apk.cp.enabled=false`
+
 5. Verify the deployment by executing ```kubectl get pods -n apk```
 
 ### To Access Deployment through local machine
 
-#### Identify the router-service external IP address to invoke the API through the APK gateway.
-``` kubectl get svc -n apk | grep router-service ```
+- You can either, identify the router-service external IP address to invoke the API through the APK gateway
+    ```bash
+    kubectl get svc -n apk | grep router-service
+    ```
 
-``` kubectl port-forward svc/apk-test-wso2-apk-router-service -n apk 9095:9095 ```
-
+- or, port forward to router-service to use localhost.
+    ```bash
+    kubectl port-forward svc/apk-test-wso2-apk-router-service -n apk 9095:9095
+    ```
 
 ## Quick Start APK with Kubernetes client
-Follow the instruction below to deploy an API using the kubectl.
+Follow the instruction below to deploy an API using the `kubectl`.
 
-1. Create API CR and create production and/or sandbox HTTPRoute CRs, and service for the API backend . 
-   You can find a sample CR set in `developer/tryout/samples/` folder in this repository.
+1. Create API CR and create production and/or sandbox HTTPRoute CRs, and service for the API backend. You can find a sample CR set in `developer/tryout/samples/` folder in this repository.
 
 2. Apply CRs to kubernetes API server using the kubectl.
-  ```bash
-  kubectl apply -f developer/tryout/samples/
-  ```
-Note: Services should be created in a different namespace than APK or Kubernetes System namespaces.
-Note: APIs should be created in the APK deployment namespace.
+    ```bash
+    kubectl apply -f developer/tryout/samples/ -n apk
+    ```
+    > **Note**
+    >
+    > Services should be created in a different namespace than APK or Kubernetes System namespaces.
+    >
+    > APIs should be created in the APK deployment namespace.
+    >
+    > Provide the router service external ip to `{router_service}` in below commands.
 
-3. Get a  token to invoke the System API. Provide the router service external ip to below command.
-  ```bash
-  TOKEN=$(curl --location --request POST '{router_service}:9095/oauth2/token' \
---header 'Host: idp.am.wso2.com' \
---header 'Authorization: Basic NDVmMWM1YzgtYTkyZS0xMWVkLWFmYTEtMDI0MmFjMTIwMDAyOjRmYmQ2MmVjLWE5MmUtMTFlZC1hZmExLTAyNDJhYzEyMDAwMg==' \
---header 'Content-Type: application/x-www-form-urlencoded' \
---data-urlencode 'grant_type=client_credentials')
-  ```
+3. Get a token to invoke the System API.
+    ```bash
+    ACCESS_TOKEN=$(curl --location --request POST "https://{router_service}:9095/oauth2/token" \
+    --header "Host: idp.am.wso2.com" \
+    --header "Authorization: Basic NDVmMWM1YzgtYTkyZS0xMWVkLWFmYTEtMDI0MmFjMTIwMDAyOjRmYmQ2MmVjLWE5MmUtMTFlZC1hZmExLTAyNDJhYzEyMDAwMg==" \
+    --header "Content-Type: application/x-www-form-urlencoded" \
+    --data-urlencode "grant_type=client_credentials" | jq -r ".access_token")
+    ```
 
-4. List the created API and retrieve API_ID.
-  ```bash
-  curl --location --request GET '{router_service}:9095/api/am/runtime/apis' \
---header 'Host: api.am.wso2.com' \
---header 'Authorization: Bearer $TOKEN'
-  ```
+4. List the created API and retrieve API's `id`.
+    ```bash
+    curl --location --request GET "https://{router_service}:9095/api/am/runtime/apis" \
+    --header "Host: api.am.wso2.com" \
+    --header "Authorization: Bearer $ACCESS_TOKEN"
+    ```
 
-5. Get a token to invoke the created API. Provide the router service external ip to below command.
-  ```bash
-  INTERNAL_KEY=$(curl --location --request POST '{router_service}:9095/api/am/runtime/apis/<$API_ID>/generate-key' \
---header 'Content-Type: application/json' \
---header 'Accept: application/json' \
---header 'Host: api.am.wso2.com' \
---header 'Authorization: Bearer $TOKEN')
-  ```
+5. Get a token to invoke the created API. Provide the API's `id` to `{api_id}` in below command.
+    ```bash
+    INTERNAL_KEY=$(curl --location --request POST "https://{router_service}:9095/api/am/runtime/apis/{api_id}/generate-key" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json" \
+    --header "Host: api.am.wso2.com" \
+    --header "Authorization: Bearer $ACCESS_TOKEN" | jq -r ".apikey")
+    ```
+
 6. Invoke the API.
-  ```bash
-  curl --location --request GET '{router_service}:9095/http-bin-api/1.0.8/get' \
---header 'HOST: gw.wso2.com' \
---header 'Internal-Key: $INTERNAL_KEY'
-  ```
+    ```bash
+    curl --location --request GET "https://{router_service}:9095/http-bin-api/1.0.8/get" \
+    --header "HOST: gw.wso2.com" \
+    --header "Internal-Key: $INTERNAL_KEY"
+    ```
 
 ## Run domain services APIs in APK with postman
 [Test Postman collection](#test/postman-tests/README.md)
@@ -176,18 +191,18 @@ Note: APIs should be created in the APK deployment namespace.
 
 ### Build all components
 
-Run <APK>/apk-build.sh file.
-  ```bash
-  sh apk-build.sh
-  ```
+Run `apk/build-apk.sh` file.
+```bash
+sh build-apk.sh
+```
 
 ### Build single component
 
 For example: building Runtime Domain Service
-  ```bash
-  cd runtime/runtime-domain-service
-  gradle build
-  ```
+```bash
+cd runtime/runtime-domain-service
+gradle build
+```
 
 ## Issue management
 We use GitHub to track all of our bugs and feature requests. Each issue we track has a variety of metadata:
