@@ -184,7 +184,6 @@ isolated function getSubscriptionByIdDAO(string subId) returns SubscriptionInter
     } else {
         sql:ParameterizedQuery query = `SELECT 
         SUBS.SUBSCRIPTION_ID AS SUBSCRIPTION_ID, 
-        API.API_PROVIDER AS API_PROVIDER, 
         API.API_NAME AS API_NAME, 
         API.API_VERSION AS API_VERSION, 
         API.API_TYPE AS API_TYPE, 
@@ -197,9 +196,9 @@ isolated function getSubscriptionByIdDAO(string subId) returns SubscriptionInter
         SUBS.UUID AS UUID, 
         SUBS.CREATED_TIME AS CREATED_TIME, 
         SUBS.UPDATED_TIME AS UPDATED_TIME, 
-        API.API_UUID AS APIID
+        API.UUID AS APIID
         FROM SUBSCRIPTION SUBS, API API, APPLICATION APP 
-        WHERE APP.APPLICATION_ID=SUBS.APPLICATION_ID AND API.API_ID = SUBS.API_ID AND SUBS.UUID =${subId}`;
+        WHERE APP.UUID=SUBS.APPLICATION_UUID AND API.UUID = SUBS.API_UUID AND SUBS.UUID =${subId}`;
         SubscriptionInternal | sql:Error result =  dbClient->queryRow(query);
         if result is sql:NoRowsError {
             log:printDebug(result.toString());
