@@ -518,45 +518,31 @@ func (apiReconciler *APIReconciler) getInterceptorServices(ctx context.Context,
 	interceptorServices := make(map[string]dpv1alpha1.InterceptorService)
 	for _, apiPolicy := range allAPIPolicies {
 		if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.RequestInterceptor != nil {
-			interceptorPtr := apiReconciler.getInterceptorService(ctx, apiPolicy.Spec.Default.RequestInterceptor)
+			interceptorPtr := utils.GetInterceptorService(ctx, apiReconciler.client, apiPolicy.Spec.Default.RequestInterceptor)
 			if interceptorPtr != nil {
 				interceptorServices[utils.NamespacedName(interceptorPtr).String()] = *interceptorPtr
 			}
 		}
 		if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.ResponseInterceptor != nil {
-			interceptorPtr := apiReconciler.getInterceptorService(ctx, apiPolicy.Spec.Default.ResponseInterceptor)
+			interceptorPtr := utils.GetInterceptorService(ctx, apiReconciler.client, apiPolicy.Spec.Default.ResponseInterceptor)
 			if interceptorPtr != nil {
 				interceptorServices[utils.NamespacedName(interceptorPtr).String()] = *interceptorPtr
 			}
 		}
 		if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.RequestInterceptor != nil {
-			interceptorPtr := apiReconciler.getInterceptorService(ctx, apiPolicy.Spec.Override.RequestInterceptor)
+			interceptorPtr := utils.GetInterceptorService(ctx, apiReconciler.client, apiPolicy.Spec.Override.RequestInterceptor)
 			if interceptorPtr != nil {
 				interceptorServices[utils.NamespacedName(interceptorPtr).String()] = *interceptorPtr
 			}
 		}
 		if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.ResponseInterceptor != nil {
-			interceptorPtr := apiReconciler.getInterceptorService(ctx, apiPolicy.Spec.Override.ResponseInterceptor)
+			interceptorPtr := utils.GetInterceptorService(ctx, apiReconciler.client, apiPolicy.Spec.Override.ResponseInterceptor)
 			if interceptorPtr != nil {
 				interceptorServices[utils.NamespacedName(interceptorPtr).String()] = *interceptorPtr
 			}
 		}
 	}
 	return interceptorServices, nil
-}
-
-// getInterceptorService reads InterceptorService when interceptorReference is given
-func (apiReconciler *APIReconciler) getInterceptorService(ctx context.Context,
-	interceptorReference *dpv1alpha1.InterceptorReference) *dpv1alpha1.InterceptorService {
-	interceptorService := &dpv1alpha1.InterceptorService{}
-	interceptorRef := types.NamespacedName{
-		Namespace: interceptorReference.Namespace,
-		Name:      interceptorReference.Name,
-	}
-	if err := apiReconciler.client.Get(ctx, interceptorRef, interceptorService); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2651, interceptorRef, err.Error()))
-	}
-	return interceptorService
 }
 
 func (apiReconciler *APIReconciler) getResolvedBackendsMapping(ctx context.Context,

@@ -36,6 +36,8 @@ import (
 	"github.com/wso2/apk/adapter/internal/operator/status"
 	"github.com/wso2/apk/adapter/internal/operator/synchronizer"
 	"github.com/wso2/apk/adapter/internal/operator/utils"
+	ctrl "sigs.k8s.io/controller-runtime"
+	k8client "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -43,9 +45,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
-
-	ctrl "sigs.k8s.io/controller-runtime"
-	k8client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
@@ -248,45 +247,31 @@ func (gatewayReconciler *GatewayReconciler) getInterceptorServicesForGateway(ctx
 	interceptorServices := make(map[string]dpv1alpha1.InterceptorService)
 	for _, apiPolicy := range allGatewayAPIPolicies {
 		if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.RequestInterceptor != nil {
-			interceptorPtr := gatewayReconciler.getInterceptorService(ctx, apiPolicy.Spec.Default.RequestInterceptor)
+			interceptorPtr := utils.GetInterceptorService(ctx, gatewayReconciler.client, apiPolicy.Spec.Default.RequestInterceptor)
 			if interceptorPtr != nil {
 				interceptorServices[utils.NamespacedName(interceptorPtr).String()] = *interceptorPtr
 			}
 		}
 		if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.ResponseInterceptor != nil {
-			interceptorPtr := gatewayReconciler.getInterceptorService(ctx, apiPolicy.Spec.Default.ResponseInterceptor)
+			interceptorPtr := utils.GetInterceptorService(ctx, gatewayReconciler.client, apiPolicy.Spec.Default.ResponseInterceptor)
 			if interceptorPtr != nil {
 				interceptorServices[utils.NamespacedName(interceptorPtr).String()] = *interceptorPtr
 			}
 		}
 		if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.RequestInterceptor != nil {
-			interceptorPtr := gatewayReconciler.getInterceptorService(ctx, apiPolicy.Spec.Override.RequestInterceptor)
+			interceptorPtr := utils.GetInterceptorService(ctx, gatewayReconciler.client, apiPolicy.Spec.Override.RequestInterceptor)
 			if interceptorPtr != nil {
 				interceptorServices[utils.NamespacedName(interceptorPtr).String()] = *interceptorPtr
 			}
 		}
 		if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.ResponseInterceptor != nil {
-			interceptorPtr := gatewayReconciler.getInterceptorService(ctx, apiPolicy.Spec.Override.ResponseInterceptor)
+			interceptorPtr := utils.GetInterceptorService(ctx, gatewayReconciler.client, apiPolicy.Spec.Override.ResponseInterceptor)
 			if interceptorPtr != nil {
 				interceptorServices[utils.NamespacedName(interceptorPtr).String()] = *interceptorPtr
 			}
 		}
 	}
 	return interceptorServices, nil
-}
-
-// getInterceptorService reads InterceptorService when interceptorReference is given
-func (gatewayReconciler *GatewayReconciler) getInterceptorService(ctx context.Context,
-	interceptorReference *dpv1alpha1.InterceptorReference) *dpv1alpha1.InterceptorService {
-	interceptorService := &dpv1alpha1.InterceptorService{}
-	interceptorRef := types.NamespacedName{
-		Namespace: interceptorReference.Namespace,
-		Name:      interceptorReference.Name,
-	}
-	if err := gatewayReconciler.client.Get(ctx, interceptorRef, interceptorService); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(3111, interceptorRef, err.Error()))
-	}
-	return interceptorService
 }
 
 func (gatewayReconciler *GatewayReconciler) getResolvedBackendsMapping(ctx context.Context,

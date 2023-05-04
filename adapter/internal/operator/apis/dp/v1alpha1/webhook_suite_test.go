@@ -109,6 +109,9 @@ var _ = BeforeSuite(func() {
 	err = (&RateLimitPolicy{}).SetupWebhookWithManager(mgr)
 	Expect(err).NotTo(HaveOccurred())
 
+	err = (&InterceptorService{}).SetupWebhookWithManager(mgr)
+	Expect(err).NotTo(HaveOccurred())
+
 	//+kubebuilder:scaffold:webhook
 
 	go func() {

@@ -393,3 +393,19 @@ func RetrieveNamespaceListOptions(namespaces []string) client.ListOptions {
 	}
 	return listOptions
 }
+
+// GetInterceptorService reads InterceptorService when interceptorReference is given
+func GetInterceptorService(ctx context.Context, client k8client.Client,
+	interceptorReference *dpv1alpha1.InterceptorReference) *dpv1alpha1.InterceptorService {
+	interceptorService := &dpv1alpha1.InterceptorService{}
+	interceptorRef := types.NamespacedName{
+		Namespace: interceptorReference.Namespace,
+		Name:      interceptorReference.Name,
+	}
+	if err := client.Get(ctx, interceptorRef, interceptorService); err != nil {
+		if !apierrors.IsNotFound(err) {
+			loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2651, interceptorRef, err.Error()))
+		}
+	}
+	return interceptorService
+}

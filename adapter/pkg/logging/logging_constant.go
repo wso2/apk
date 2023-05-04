@@ -71,6 +71,7 @@ const (
 	error2649 = 2649
 	error2650 = 2650
 	error2651 = 2651
+	error2652 = 2652
 )
 
 // Error Log Pkg auth(3001-3099) Config Constants
@@ -92,7 +93,6 @@ const (
 	error3108 = 3108
 	error3109 = 3109
 	error3110 = 3110
-	error3111 = 3111
 )
 
 // Mapper used to keep error details for error logs
@@ -353,6 +353,11 @@ var Mapper = map[int]ErrorDetails{
 		Message:   "Error while getting interceptor service %s, %s",
 		Severity:  BLOCKER,
 	},
+	error2652: {
+		ErrorCode: error2652,
+		Message:   "Unable to create webhook for InterceptorService: %v",
+		Severity:  BLOCKER,
+	},
 	error3001: {
 		ErrorCode: error3001,
 		Message:   "Error reading ssh key file: %s",
@@ -416,11 +421,6 @@ var Mapper = map[int]ErrorDetails{
 	error3110: {
 		ErrorCode: error3110,
 		Message:   "Error watching InterceptorService resources: %v",
-		Severity:  BLOCKER,
-	},
-	error3111: {
-		ErrorCode: error3111,
-		Message:   "Error while getting interceptor service %s, %s",
 		Severity:  BLOCKER,
 	},
 }

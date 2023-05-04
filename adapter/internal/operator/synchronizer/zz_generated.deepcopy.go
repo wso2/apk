@@ -132,6 +132,13 @@ func (in *GatewayStateData) DeepCopyInto(out *GatewayStateData) {
 			(*out)[key] = outVal
 		}
 	}
+	if in.GatewayInterceptorServiceMapping != nil {
+		in, out := &in.GatewayInterceptorServiceMapping, &out.GatewayInterceptorServiceMapping
+		*out = make(map[string]v1alpha1.InterceptorService, len(*in))
+		for key, val := range *in {
+			(*out)[key] = *val.DeepCopy()
+		}
+	}
 	if in.GatewayCustomRateLimitPolicies != nil {
 		in, out := &in.GatewayCustomRateLimitPolicies, &out.GatewayCustomRateLimitPolicies
 		*out = make([]*v1alpha1.RateLimitPolicy, len(*in))
@@ -187,6 +194,13 @@ func (in *HTTPRouteState) DeepCopyInto(out *HTTPRouteState) {
 	if in.ResourceAPIPolicies != nil {
 		in, out := &in.ResourceAPIPolicies, &out.ResourceAPIPolicies
 		*out = make(map[string]v1alpha1.APIPolicy, len(*in))
+		for key, val := range *in {
+			(*out)[key] = *val.DeepCopy()
+		}
+	}
+	if in.InterceptorServiceMapping != nil {
+		in, out := &in.InterceptorServiceMapping, &out.InterceptorServiceMapping
+		*out = make(map[string]v1alpha1.InterceptorService, len(*in))
 		for key, val := range *in {
 			(*out)[key] = *val.DeepCopy()
 		}
