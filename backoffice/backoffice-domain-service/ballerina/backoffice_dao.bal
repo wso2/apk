@@ -183,7 +183,7 @@ isolated function getSubscriptionByIdDAO(string subId) returns SubscriptionInter
         return e909601(dbClient);
     } else {
         sql:ParameterizedQuery query = `SELECT 
-        SUBS.SUBSCRIPTION_ID AS SUBSCRIPTION_ID, 
+        SUBS.UUID AS SUBSCRIPTION_ID, 
         API.API_NAME AS API_NAME, 
         API.API_VERSION AS API_VERSION, 
         API.API_TYPE AS API_TYPE, 
