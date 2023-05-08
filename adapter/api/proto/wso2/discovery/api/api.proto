@@ -55,4 +55,5 @@ message Api {
 	/// string graphQLSchema = 22;
 	// repeated GraphqlComplexity graphqlComplexityInfo = 23;
 	bool systemAPI = 24;
+	bool isBackendJWTEnabled = 25;
 }

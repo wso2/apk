@@ -41,6 +41,12 @@ type PolicySpec struct {
 	RequestQueryModifier RequestQueryModifier `json:"requestQueryModifier,omitempty"`
 	RequestInterceptor   *InterceptorConfig   `json:"requestInterceptor,omitempty"`
 	ResponseInterceptor  *InterceptorConfig   `json:"responseInterceptor,omitempty"`
+	BackendJWTToken      *BackendJWTToken     `json:"backendJwtToken,omitempty"`
+}
+
+// BackendJWTToken holds backend JWT token information
+type BackendJWTToken struct {
+	IsEnabled bool `json:"isEnabled,omitempty"`
 }
 
 // RequestQueryModifier allows to modify request query params

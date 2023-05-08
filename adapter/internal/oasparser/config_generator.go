@@ -97,7 +97,7 @@ func GetProductionListener(gateway *gwapiv1b1.Gateway, resolvedListenerCerts map
 // The provided set of envoy routes will be assigned under the virtual host
 //
 // The RouteConfiguration is named as "default"
-func GetRouteConfigs(vhostToRouteArrayMap map[string][]*routev3.Route, httpListener string, 
+func GetRouteConfigs(vhostToRouteArrayMap map[string][]*routev3.Route, httpListener string,
 	customRateLimitPolicies []*model.CustomRateLimitPolicy) *routev3.RouteConfiguration {
 	vHosts := envoy.CreateVirtualHosts(vhostToRouteArrayMap, customRateLimitPolicies)
 	routeConfig := envoy.CreateRoutesConfigForRds(vHosts, httpListener)
@@ -211,6 +211,7 @@ func GetEnforcerAPI(adapterInternalAPI model.AdapterInternalAPI, vhost string) *
 		OrganizationId:      adapterInternalAPI.OrganizationID,
 		Vhost:               vhost,
 		EnvType:             adapterInternalAPI.EnvType,
+		IsBackendJWTEnabled: adapterInternalAPI.IsBackendJWTEnabled,
 		// IsMockedApi:         isMockedAPI,
 		ClientCertificates:  clientCertificates,
 		MutualSSL:           adapterInternalAPI.GetXWSO2MutualSSL(),

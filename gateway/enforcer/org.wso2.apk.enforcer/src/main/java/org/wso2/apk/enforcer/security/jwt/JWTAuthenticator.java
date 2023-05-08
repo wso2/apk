@@ -77,10 +77,9 @@ public class JWTAuthenticator implements Authenticator {
     private final boolean isGatewayTokenCacheEnabled;
     private AbstractAPIMgtGatewayJWTGenerator jwtGenerator;
 
-    public JWTAuthenticator() {
-        EnforcerConfig enforcerConfig = ConfigHolder.getInstance().getConfig();
-        this.isGatewayTokenCacheEnabled = enforcerConfig.getCacheDto().isEnabled();
-        if (enforcerConfig.getJwtConfigurationDto().isEnabled()) {
+    public JWTAuthenticator(final boolean isBackendJWTEnabled, final boolean isGatewayTokenCacheEnabled) {
+        this.isGatewayTokenCacheEnabled = isGatewayTokenCacheEnabled;
+        if(isBackendJWTEnabled) {
             this.jwtGenerator = BackendJwtUtils.getApiMgtGatewayJWTGenerator();
         }
     }
@@ -305,14 +304,19 @@ public class JWTAuthenticator implements Authenticator {
 
                     // Generate or get backend JWT
                     String endUserToken = null;
+
+                    // change the config to api specific config
                     JWTConfigurationDto backendJwtConfig = ConfigHolder.getInstance().getConfig().
                             getJwtConfigurationDto();
-                    if (backendJwtConfig.isEnabled()) {
+
+                    // jwt generator is only set if the backend jwt is enabled
+                    if (this.jwtGenerator != null) {
                         JWTInfoDto jwtInfoDto = FilterUtils.generateJWTInfoDto(null, validationInfo,
                                 apiKeyValidationInfoDTO, requestContext);
                         endUserToken = BackendJwtUtils.generateAndRetrieveJWTToken(jwtGenerator, jwtTokenIdentifier,
                                 jwtInfoDto, isGatewayTokenCacheEnabled);
                         // Set generated jwt token as a response header
+                        // Change the backendJWTConfig to API level
                         requestContext.addOrModifyHeaders(backendJwtConfig.getJwtHeader(), endUserToken);
                     }
 
