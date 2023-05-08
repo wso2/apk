@@ -50,7 +50,7 @@ paths:
       responses:
         200:
           description: |
-            OK. List of qualifying Policies is returned.
+            OK.List of qualifying Policies is returned.
           headers:
             Content-Type:
               description: The content type of the body.
