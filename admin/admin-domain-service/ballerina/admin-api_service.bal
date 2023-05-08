@@ -20,9 +20,19 @@ import ballerina/http;
 import ballerina/log;
 import wso2/apk_common_lib as commons;
 
-service /api/am/admin on ep0 {
+service /api/am/admin/v1 on ep0 {
+    # Retrieve/Search Policies
+    #
+    # + query - **Search**. You can search by providing a keyword. Allowed to search by type and name only. 
+    # + return - OK. List of qualifying Policies is returned. 
     // resource function get policies/search(string? query) returns PolicyDetailsList {
     // }
+    # Get all Application Rate Plans
+    #
+    # + accept - Media types acceptable for the response. Default is application/json. 
+    # + return - returns can be any of following types
+    # ApplicationRatePlanList (OK. Policies returned)
+    # NotAcceptableError (Not Acceptable. The requested media type is not supported.)
     isolated resource function get 'application\-rate\-plans(http:RequestContext requestContext, @http:Header string? accept = "application/json") returns ApplicationRatePlanList|commons:APKError {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
@@ -32,6 +42,14 @@ service /api/am/admin on ep0 {
         }
         return appPolicyList;
     }
+    # Add an Application Rate Plan
+    #
+    # + 'content\-type - Media type of the entity in the body. Default is application/json. 
+    # + payload - Application level policy object that should to be added 
+    # + return - returns can be any of following types
+    # ApplicationRatePlan (Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity.)
+    # BadRequestError (Bad Request. Invalid request or validation error.)
+    # UnsupportedMediaTypeError (Unsupported Media Type. The entity of the request was not in a supported format.)
     isolated resource function post 'application\-rate\-plans(http:RequestContext requestContext, @http:Payload ApplicationRatePlan payload, @http:Header string 'content\-type = "application/json") returns ApplicationRatePlan|commons:APKError {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
@@ -41,6 +59,13 @@ service /api/am/admin on ep0 {
         }
         return createdAppPol;
     }
+    # Get an Application Rate Plan
+    #
+    # + planId - Policy UUID 
+    # + return - returns can be any of following types
+    # ApplicationRatePlan (OK. Plan returned)
+    # NotFoundError (Not Found. The specified resource does not exist.)
+    # NotAcceptableError (Not Acceptable. The requested media type is not supported.)
     isolated resource function get 'application\-rate\-plans/[string planId](http:RequestContext requestContext) returns ApplicationRatePlan|commons:APKError {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
@@ -50,6 +75,15 @@ service /api/am/admin on ep0 {
         }
         return appPolicy;
     }
+    # Update an Application Rate Plan
+    #
+    # + planId - Policy UUID 
+    # + 'content\-type - Media type of the entity in the body. Default is application/json. 
+    # + payload - Policy object that needs to be modified 
+    # + return - returns can be any of following types
+    # ApplicationRatePlan (OK. Plan updated.)
+    # BadRequestError (Bad Request. Invalid request or validation error.)
+    # NotFoundError (Not Found. The specified resource does not exist.)
     isolated resource function put 'application\-rate\-plans/[string planId](http:RequestContext requestContext, @http:Payload ApplicationRatePlan payload, @http:Header string 'content\-type = "application/json") returns ApplicationRatePlan|commons:APKError {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
@@ -59,6 +93,12 @@ service /api/am/admin on ep0 {
         }
         return appPolicy;
     }
+    # Delete an Application Rate Plan
+    #
+    # + planId - Policy UUID 
+    # + return - returns can be any of following types
+    # http:Ok (OK. Resource successfully deleted.)
+    # NotFoundError (Not Found. The specified resource does not exist.)
     isolated resource function delete 'application\-rate\-plans/[string planId](http:RequestContext requestContext) returns http:Ok|commons:APKError {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
@@ -69,6 +109,12 @@ service /api/am/admin on ep0 {
             return http:OK;
         }
     }
+    # Get all Business Plans
+    #
+    # + accept - Media types acceptable for the response. Default is application/json. 
+    # + return - returns can be any of following types
+    # BusinessPlanList (OK. Plans returned)
+    # NotAcceptableError (Not Acceptable. The requested media type is not supported.)
     isolated resource function get 'business\-plans(http:RequestContext requestContext, @http:Header string? accept = "application/json") returns BusinessPlanList|commons:APKError {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
@@ -78,6 +124,14 @@ service /api/am/admin on ep0 {
         }
         return subPolicyList;
     }
+    # Add a Business Plan
+    #
+    # + 'content\-type - Media type of the entity in the body. Default is application/json. 
+    # + payload - Business Plan object that should to be added 
+    # + return - returns can be any of following types
+    # BusinessPlan (Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity.)
+    # BadRequestError (Bad Request. Invalid request or validation error.)
+    # UnsupportedMediaTypeError (Unsupported Media Type. The entity of the request was not in a supported format.)
     isolated resource function post 'business\-plans(http:RequestContext requestContext, @http:Payload BusinessPlan payload, @http:Header string 'content\-type = "application/json") returns BusinessPlan|commons:APKError {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
@@ -87,6 +141,13 @@ service /api/am/admin on ep0 {
         }
         return createdSubPol;
     }
+    # Get a Business Plan
+    #
+    # + planId - Policy UUID 
+    # + return - returns can be any of following types
+    # BusinessPlan (OK. Plan returned)
+    # NotFoundError (Not Found. The specified resource does not exist.)
+    # NotAcceptableError (Not Acceptable. The requested media type is not supported.)
     isolated resource function get 'business\-plans/[string planId](http:RequestContext requestContext) returns BusinessPlan|commons:APKError {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
@@ -96,11 +157,26 @@ service /api/am/admin on ep0 {
         }
         return subPolicy;
     }
+    # Update a Business Plan
+    #
+    # + planId - Policy UUID 
+    # + 'content\-type - Media type of the entity in the body. Default is application/json. 
+    # + payload - Plan object that needs to be modified 
+    # + return - returns can be any of following types
+    # BusinessPlan (OK. Plan updated.)
+    # BadRequestError (Bad Request. Invalid request or validation error.)
+    # NotFoundError (Not Found. The specified resource does not exist.)
     isolated resource function put 'business\-plans/[string planId](http:RequestContext requestContext, @http:Payload BusinessPlan payload, @http:Header string 'content\-type = "application/json") returns BusinessPlan|commons:APKError {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
         return updateBusinessPlan(planId, payload, organization);
     }
+    # Delete a Business Plan
+    #
+    # + planId - Policy UUID 
+    # + return - returns can be any of following types
+    # http:Ok (OK. Resource successfully deleted.)
+    # NotFoundError (Not Found. The specified resource does not exist.)
     isolated resource function delete 'business\-plans/[string planId](http:RequestContext requestContext) returns http:Ok|commons:APKError{
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
@@ -111,25 +187,49 @@ service /api/am/admin on ep0 {
             return http:OK;
         }
     }
-    // resource function get throttling/policies/advanced(@http:Header string? accept = "application/json") returns AdvancedThrottlePolicyList|NotAcceptableError {
-    // }
-    // resource function post throttling/policies/advanced(@http:Payload AdvancedThrottlePolicy payload, @http:Header string 'content\-type = "application/json") returns CreatedAdvancedThrottlePolicy|BadRequestError|UnsupportedMediaTypeError {
-    // }
-    // resource function get throttling/policies/advanced/[string policyId]() returns AdvancedThrottlePolicy|NotFoundError|NotAcceptableError {
-    // }
-    // resource function put throttling/policies/advanced/[string policyId](@http:Payload AdvancedThrottlePolicy payload, @http:Header string 'content\-type = "application/json") returns AdvancedThrottlePolicy|BadRequestError|NotFoundError {
-    // }
-    // resource function delete throttling/policies/advanced/[string policyId]() returns http:Ok|NotFoundError {
-    // }
+    # Export a Throttling Policy
+    #
+    # + policyId - UUID of the ThrottlingPolicy 
+    # + name - Throttling Policy Name 
+    # + 'type - Type of the Throttling Policy 
+    # + format - Format of output documents. Can be YAML or JSON. 
+    # + return - returns can be any of following types
+    # ExportPolicy (OK. Export Successful.)
+    # NotFoundError (Not Found. The specified resource does not exist.)
+    # InternalServerErrorError (Internal Server Error.)
     // resource function get throttling/policies/export(string? policyId, string? name, string? 'type, string? format) returns ExportPolicy|NotFoundError|InternalServerErrorError {
     // }
-    // resource function post throttling/policies/'import(boolean? overwrite, @http:Payload json payload) returns http:Ok|ForbiddenError|NotFoundError|ConflictError|InternalServerErrorError {
+    # Import a Throttling Policy
+    #
+    # + overwrite - Update an existing throttling policy with the same name. 
+    # + request - parameter description 
+    # + return - returns can be any of following types
+    # http:Ok (Created. Throttling Policy Imported Successfully.)
+    # ForbiddenError (Forbidden. The request must be conditional but no condition has been specified.)
+    # NotFoundError (Not Found. The specified resource does not exist.)
+    # ConflictError (Conflict. Specified resource already exists.)
+    # InternalServerErrorError (Internal Server Error.)
+    // resource function post throttling/policies/'import(boolean? overwrite, http:Request request) returns http:Ok|ForbiddenError|NotFoundError|ConflictError|InternalServerErrorError {
     // }
+    # Get all Deny Policies
+    #
+    # + accept - Media types acceptable for the response. Default is application/json. 
+    # + return - returns can be any of following types
+    # BlockingConditionList (OK. Deny Policies returned)
+    # NotAcceptableError (Not Acceptable. The requested media type is not supported.)
     isolated resource function get 'deny\-policies(http:RequestContext requestContext, @http:Header string? accept = "application/json") returns BlockingConditionList|commons:APKError {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
         return getAllDenyPolicies(organization);
     }
+    # Add a deny policy
+    #
+    # + 'content\-type - Media type of the entity in the body. Default is application/json. 
+    # + payload - Blocking condition object that should to be added 
+    # + return - returns can be any of following types
+    # BlockingCondition (Created. Successful response with the newly created object as entity in the body. Location header contains URL of newly created entity.)
+    # BadRequestError (Bad Request. Invalid request or validation error.)
+    # UnsupportedMediaTypeError (Unsupported Media Type. The entity of the request was not in a supported format.)
     isolated resource function post 'deny\-policies(http:RequestContext requestContext, @http:Payload BlockingCondition payload, @http:Header string 'content\-type = "application/json") returns BlockingCondition|commons:APKError {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
@@ -139,6 +239,13 @@ service /api/am/admin on ep0 {
         }
         return createdDenyPol;
     }
+    # Get a Deny Policy
+    #
+    # + policyId - Policy UUID 
+    # + return - returns can be any of following types
+    # BlockingCondition (OK. Condition returned)
+    # NotFoundError (Not Found. The specified resource does not exist.)
+    # NotAcceptableError (Not Acceptable. The requested media type is not supported.)
     isolated resource function get 'deny\-policies/[string policyId](http:RequestContext requestContext) returns BlockingCondition|commons:APKError {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
@@ -148,6 +255,12 @@ service /api/am/admin on ep0 {
         }
         return denyPolicy;
     }
+    # Delete a Deny Policy
+    #
+    # + policyId - Policy UUID 
+    # + return - returns can be any of following types
+    # http:Ok (OK. Resource successfully deleted.)
+    # NotFoundError (Not Found. The specified resource does not exist.)
     isolated resource function delete 'deny\-policies/[string policyId](http:RequestContext requestContext) returns http:Ok|commons:APKError {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
@@ -158,6 +271,15 @@ service /api/am/admin on ep0 {
             return http:OK;
         }
     }
+    # Update a Deny Policy
+    #
+    # + policyId - Policy UUID 
+    # + 'content\-type - Media type of the entity in the body. Default is application/json. 
+    # + payload - Blocking condition with updated status 
+    # + return - returns can be any of following types
+    # BlockingCondition (OK. Resource successfully updated.)
+    # BadRequestError (Bad Request. Invalid request or validation error.)
+    # NotFoundError (Not Found. The specified resource does not exist.)
     isolated resource function patch 'deny\-policies/[string policyId](http:RequestContext requestContext, @http:Payload BlockingConditionStatus payload, @http:Header string 'content\-type = "application/json") returns BlockingCondition|commons:APKError {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
@@ -167,53 +289,138 @@ service /api/am/admin on ep0 {
         }
         return updatedPolicy;
     }
+    # Retrieve/Search Applications
+    #
+    # + user - username of the application creator 
+    # + 'limit - Maximum size of resource array to return. 
+    # + offset - Starting point within the complete list of items qualified. 
+    # + accept - Media types acceptable for the response. Default is application/json. 
+    # + name - Application Name 
+    # + tenantDomain - Tenant domain of the applications to get. This has to be specified only if it is required to get applications of a tenant other than the requester's tenant. So, if not specified, the default will be set as the requester's tenant domain. This cross tenant Application access is allowed only for super tenant admin users **only at a migration process**. 
+    # + sortBy - parameter description 
+    # + sortOrder - parameter description 
+    # + return - returns can be any of following types
+    # ApplicationList (OK. Application list returned.)
+    # BadRequestError (Bad Request. Invalid request or validation error.)
+    # NotAcceptableError (Not Acceptable. The requested media type is not supported.)
     // resource function get applications(string? user, string? name, string? tenantDomain, int 'limit = 25, int offset = 0, @http:Header string? accept = "application/json", string sortBy = "name", string sortOrder = "asc") returns ApplicationList|BadRequestError|NotAcceptableError {
     // }
+    # Get the details of an Application
+    #
+    # + applicationId - Application UUID 
+    # + return - returns can be any of following types
+    # Application (OK. Application details returned.)
+    # BadRequestError (Bad Request. Invalid request or validation error.)
+    # NotFoundError (Not Found. The specified resource does not exist.)
+    # NotAcceptableError (Not Acceptable. The requested media type is not supported.)
     // resource function get applications/[string applicationId]() returns Application|BadRequestError|NotFoundError|NotAcceptableError {
     // }
+    # Delete an Application
+    #
+    # + applicationId - Application UUID 
+    # + return - returns can be any of following types
+    # http:Ok (OK. Resource successfully deleted.)
+    # AcceptedWorkflowResponse (Accepted. The request has been accepted.)
+    # NotFoundError (Not Found. The specified resource does not exist.)
     // resource function delete applications/[string applicationId]() returns http:Ok|AcceptedWorkflowResponse|NotFoundError {
     // }
+    # Change Application Owner
+    #
+    # + applicationId - Application UUID 
+    # + owner - parameter description 
+    # + return - returns can be any of following types
+    # http:Ok (OK. Application owner changed successfully.)
+    # BadRequestError (Bad Request. Invalid request or validation error.)
+    # NotFoundError (Not Found. The specified resource does not exist.)
     // resource function post applications/[string applicationId]/'change\-owner(string owner) returns http:Ok|BadRequestError|NotFoundError {
     // }
+    # Get all registered Environments
+    #
+    # + return - OK. Environments returned 
     // resource function get environments() returns EnvironmentList {
     // }
-    // resource function post environments(@http:Payload Environment payload) returns CreatedEnvironment|BadRequestError {
+    # Add an Environment
+    #
+    # + payload - Environment object that should to be added 
+    # + return - returns can be any of following types
+    # Environment (Created. Successful response with the newly created environment as entity in the body.)
+    # BadRequestError (Bad Request. Invalid request or validation error.)
+    // resource function post environments(@http:Payload Environment payload) returns Environment|BadRequestError {
     // }
+    # Update an Environment
+    #
+    # + environmentId - Environment UUID (or Environment name defined in config) 
+    # + payload - Environment object with updated information 
+    # + return - returns can be any of following types
+    # Environment (OK. Environment updated.)
+    # BadRequestError (Bad Request. Invalid request or validation error.)
+    # NotFoundError (Not Found. The specified resource does not exist.)
     // resource function put environments/[string environmentId](@http:Payload Environment payload) returns Environment|BadRequestError|NotFoundError {
     // }
+    # Delete an Environment
+    #
+    # + environmentId - Environment UUID (or Environment name defined in config) 
+    # + return - returns can be any of following types
+    # http:Ok (OK. Environment successfully deleted.)
+    # NotFoundError (Not Found. The specified resource does not exist.)
     // resource function delete environments/[string environmentId]() returns http:Ok|NotFoundError {
     // }
-    // resource function get 'bot\-detection\-data() returns BotDetectionDataList|NotFoundError {
-    // }
-    // resource function post monetization/'publish\-usage() returns PublishStatus|AcceptedPublishStatus|NotFoundError|InternalServerErrorError {
-    // }
-    // resource function get monetization/'publish\-usage/status() returns MonetizationUsagePublishInfo {
-    // }
-    // resource function get workflows(string? workflowType, int 'limit = 25, int offset = 0, @http:Header string? accept = "application/json") returns WorkflowList|BadRequestError|NotFoundError|NotAcceptableError {
-    // }
-    // resource function get workflows/[string externalWorkflowRef]() returns WorkflowInfo|http:NotModified|NotFoundError|NotAcceptableError {
-    // }
-    // resource function post workflows/'update\-workflow\-status(string workflowReferenceId, @http:Payload Workflow payload) returns Workflow|BadRequestError|NotFoundError {
-    // }
+    # Get Tenant Id of User
+    #
+    # + username - The state represents the current state of the tenant. Supported states are [ active, inactive] 
+    # + return - returns can be any of following types
+    # TenantInfo (OK. Tenant id of the user retrieved.)
+    # NotFoundError (Not Found. The specified resource does not exist.)
+    # NotAcceptableError (Not Acceptable. The requested media type is not supported.)
     // resource function get 'tenant\-info/[string username]() returns TenantInfo|NotFoundError|NotAcceptableError {
     // }
+    # Get Custom URL Info of a Tenant Domain
+    #
+    # + tenantDomain - The tenant domain name. 
+    # + return - returns can be any of following types
+    # CustomUrlInfo (OK. Custom url info of the tenant is retrieved.)
+    # NotFoundError (Not Found. The specified resource does not exist.)
+    # NotAcceptableError (Not Acceptable. The requested media type is not supported.)
     // resource function get 'custom\-urls/[string tenantDomain]() returns CustomUrlInfo|NotFoundError|NotAcceptableError {
     // }
+    # Get all API Categories
+    #
+    # + return - OK. Categories returned 
     isolated resource function get 'api\-categories(http:RequestContext requestContext) returns APICategoryList|commons:APKError {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
         return getAllCategoryList(organization);
     }
+    # Add API Category
+    #
+    # + payload - API Category object that should to be added 
+    # + return - returns can be any of following types
+    # APICategory (Created. Successful response with the newly created object as entity in the body.)
+    # BadRequestError (Bad Request. Invalid request or validation error.)
     isolated resource function post 'api\-categories(http:RequestContext requestContext, @http:Payload APICategory payload) returns APICategory|commons:APKError {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
         return addAPICategory(payload, organization);
     }
+    # Update an API Category
+    #
+    # + apiCategoryId - API Category UUID 
+    # + payload - API Category object with updated information 
+    # + return - returns can be any of following types
+    # APICategory (OK. Label updated.)
+    # BadRequestError (Bad Request. Invalid request or validation error.)
+    # NotFoundError (Not Found. The specified resource does not exist.)
     isolated resource function put 'api\-categories/[string apiCategoryId](http:RequestContext requestContext, @http:Payload APICategory payload) returns APICategory|commons:APKError {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
         return updateAPICategory(apiCategoryId, payload, organization);
     }
+    # Delete an API Category
+    #
+    # + apiCategoryId - API Category UUID 
+    # + return - returns can be any of following types
+    # http:Ok (OK. API Category successfully deleted.)
+    # NotFoundError (Not Found. The specified resource does not exist.)
     isolated resource function delete 'api\-categories/[string apiCategoryId](http:RequestContext requestContext) returns http:Ok|commons:APKError {
         commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
         commons:Organization organization = authenticatedUserContext.organization;
@@ -224,59 +431,102 @@ service /api/am/admin on ep0 {
             return http:OK;
         }
     }
+    # Retrieve Admin Settings
+    #
+    # + return - returns can be any of following types
+    # Settings (OK. Settings returned)
+    # NotFoundError (Not Found. The specified resource does not exist.)
     // resource function get settings() returns Settings|NotFoundError {
     // }
-    // resource function get 'system\-scopes/[string scopeName](string? username) returns ScopeSettings|BadRequestError|NotFoundError {
-    // }
-    // resource function get 'system\-scopes() returns ScopeList|InternalServerErrorError {
-    // }
-    // resource function put 'system\-scopes(@http:Payload ScopeList payload) returns ScopeList|BadRequestError|InternalServerErrorError {
-    // }
-    // resource function get 'system\-scopes/'role\-aliases() returns RoleAliasList|NotFoundError {
-    // }
-    // resource function put 'system\-scopes/'role\-aliases(@http:Payload RoleAliasList payload) returns RoleAliasList|BadRequestError|InternalServerErrorError {
-    // }
-    // resource function head roles/[string roleId]() returns http:Ok|NotFoundError|InternalServerErrorError {
-    // }
-    // resource function get 'tenant\-theme() returns json|ForbiddenError|NotFoundError|InternalServerErrorError {
-    // }
-    // resource function put 'tenant\-theme(@http:Payload json payload) returns http:Ok|ForbiddenError|PayloadTooLargeError|InternalServerErrorError {
-    // }
-    // resource function get 'tenant\-config() returns string|ForbiddenError|NotFoundError|InternalServerErrorError {
-    // }
-    // resource function put 'tenant\-config(@http:Payload string payload) returns string|ForbiddenError|PayloadTooLargeError|InternalServerErrorError {
-    // }
-    // resource function get 'tenant\-config\-schema() returns string|ForbiddenError|NotFoundError|InternalServerErrorError {
-    // }
+    # Get all Key managers
+    #
+    # + return - OK. KeyManagers returned 
     // resource function get 'key\-managers() returns KeyManagerList {
     // }
-    // resource function post 'key\-managers(@http:Payload KeyManager payload) returns CreatedKeyManager|BadRequestError {
+    # Add a new API Key Manager
+    #
+    # + payload - Key Manager object that should to be added 
+    # + return - returns can be any of following types
+    # KeyManager (Created. Successful response with the newly created object as entity in the body.)
+    # BadRequestError (Bad Request. Invalid request or validation error.)
+    // resource function post 'key\-managers(@http:Payload KeyManager payload) returns KeyManager|BadRequestError {
     // }
+    # Get a Key Manager Configuration
+    #
+    # + keyManagerId - Key Manager UUID 
+    # + return - returns can be any of following types
+    # KeyManager (OK. KeyManager Configuration returned)
+    # NotFoundError (Not Found. The specified resource does not exist.)
+    # NotAcceptableError (Not Acceptable. The requested media type is not supported.)
     // resource function get 'key\-managers/[string keyManagerId]() returns KeyManager|NotFoundError|NotAcceptableError {
     // }
+    # Update a Key Manager
+    #
+    # + keyManagerId - Key Manager UUID 
+    # + payload - Key Manager object with updated information 
+    # + return - returns can be any of following types
+    # KeyManager (OK. Label updated.)
+    # BadRequestError (Bad Request. Invalid request or validation error.)
+    # NotFoundError (Not Found. The specified resource does not exist.)
     // resource function put 'key\-managers/[string keyManagerId](@http:Payload KeyManager payload) returns KeyManager|BadRequestError|NotFoundError {
     // }
+    # Delete a Key Manager
+    #
+    # + keyManagerId - Key Manager UUID 
+    # + return - returns can be any of following types
+    # http:Ok (OK. Key Manager successfully deleted.)
+    # NotFoundError (Not Found. The specified resource does not exist.)
     // resource function delete 'key\-managers/[string keyManagerId]() returns http:Ok|NotFoundError {
     // }
-    // resource function post 'key\-managers/discover(@http:Payload json payload) returns KeyManagerWellKnownResponse {
+    # Retrieve Well-known information from Key Manager Well-known Endpoint
+    #
+    # + request - parameter description 
+    # + return - OK. KeyManagers returned 
+    // resource function post 'key\-managers/discover(http:Request request) returns OkKeyManagerWellKnownResponse {
     // }
+    # Get all Organization
+    #
+    # + return - OK. Organization returned 
     isolated resource function get organizations() returns OrganizationList|commons:APKError {
         return getAllOrganization();
     }
-
-
+    # Add Organization
+    #
+    # + payload - Organization object that should to be added 
+    # + return - returns can be any of following types
+    # Organization (Created. Successful response with the newly created object as entity in the body.)
+    # BadRequestError (Bad Request. Invalid request or validation error.)
     isolated resource function post organizations(@http:Payload Organization payload) returns Organization|commons:APKError {
         return addOrganization(payload);
     }
-
+    # Get the details of an Organization
+    #
+    # + organizationId - Organization UUID 
+    # + return - returns can be any of following types
+    # Organization (OK. Application details returned.)
+    # BadRequestError (Bad Request. Invalid request or validation error.)
+    # NotFoundError (Not Found. The specified resource does not exist.)
+    # NotAcceptableError (Not Acceptable. The requested media type is not supported.)
     isolated resource function get organizations/[string organizationId]() returns Organization|commons:APKError {
         return getOrganizationById(organizationId);
     }
-
+    # Update an Organization
+    #
+    # + organizationId - Organization UUID 
+    # + payload - Organization object with updated information 
+    # + return - returns can be any of following types
+    # Organization (OK. Label updated.)
+    # BadRequestError (Bad Request. Invalid request or validation error.)
+    # NotFoundError (Not Found. The specified resource does not exist.)
     isolated resource function put organizations/[string organizationId](@http:Payload Organization payload) returns Organization|commons:APKError {
         return updatedOrganization(organizationId, payload);
     }
-
+    # Delete an Organization
+    #
+    # + organizationId - Organization UUID 
+    # + return - returns can be any of following types
+    # http:Ok (OK. Organization successfully deleted.)
+    # NotFoundError (Not Found. The specified resource does not exist.)
     resource function delete organizations/[string organizationId]() returns http:Ok|commons:APKError {
         boolean|commons:APKError deleteOrganization = removeOrganization(organizationId);
         if deleteOrganization is commons:APKError {
@@ -285,6 +535,12 @@ service /api/am/admin on ep0 {
             return http:OK;
         }
     }
+    # Authenticate Organization info
+    #
+    # + return - returns can be any of following types
+    # Organization (OK. Application details returned.)
+    # BadRequestError (Bad Request. Invalid request or validation error.)
+    # NotFoundError (Not Found. The specified resource does not exist.)
     resource function get 'organization\-info() returns Organization|commons:APKError {
         return getOrganizationByOrganizationClaim();
     }
