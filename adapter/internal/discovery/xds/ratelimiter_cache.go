@@ -271,7 +271,7 @@ func (r *rateLimitPolicyCache) generateCustomPolicyRateLimitConfig() []*rls_conf
 			descriptors = append(descriptors, customRateLimitPolicy)
 		}
 		orgDescriptors = append(orgDescriptors, &rls_config.RateLimitDescriptor{
-			Key:         envoyconf.DescriptorKeyForOrg,
+			Key:         envoyconf.OrgMetadataKey,
 			Value:       org,
 			Descriptors: descriptors,
 		})

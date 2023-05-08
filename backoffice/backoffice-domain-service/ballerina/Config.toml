@@ -13,3 +13,12 @@ driver = "org.postgresql.Driver"
 host = "localhost"
 port = 5432
 databaseName = "APKDB"
+
+[wso2.backoffice_service.k8sConfig]
+host = "localhost:9090"
+serviceAccountPath = "tests/resources/serviceAccount"
+
+[wso2.backoffice_service.managementServerConfig]
+serviceName = "apk-test-wso2-apk-management-server"
+namespace = "apk"
+certPath = "/home/wso2apk/backoffice/security/truststore/management-server.pem"

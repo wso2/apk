@@ -58,7 +58,7 @@ spec:
               replacePrefixMatch: /get
         - type: ExtensionRef
           extensionRef:
-            group: dp.wso2.com/v1alpha1
+            group: dp.wso2.com
             kind: APIPolicy
             name: interceptor-policy-resource-level
     - backendRefs:

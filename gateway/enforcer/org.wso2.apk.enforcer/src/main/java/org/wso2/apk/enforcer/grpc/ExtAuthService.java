@@ -60,7 +60,6 @@ import java.util.Map;
  * This is the entry point to the filter chain process for a request.
  */
 public class ExtAuthService extends AuthorizationGrpc.AuthorizationImplBase {
-
     private HttpRequestHandler requestHandler = new HttpRequestHandler();
 
     @Override
@@ -187,7 +186,8 @@ public class ExtAuthService extends AuthorizationGrpc.AuthorizationImplBase {
             //Adds original request path header without params as a metadata for access logging.
             addMetadata(structBuilder, RouterAccessLogConstants.ORIGINAL_PATH_DATA_NAME,
                     responseObject.getRequestPath().split("\\?")[0]);
-
+            // adding org level ratelimit key to metadata
+            addMetadata(structBuilder, MetadataConstants.RATELIMIT_WSO2_ORG_PREFIX, responseObject.getOrganizationId());
             addMetadata(structBuilder, MetadataConstants.CHOREO_CONNECT_ENFORCER_REPLY, "Ok");
 
             return CheckResponse.newBuilder().setStatus(Status.newBuilder().setCode(Code.OK_VALUE).build())

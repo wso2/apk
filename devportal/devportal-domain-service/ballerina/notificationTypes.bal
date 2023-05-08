@@ -18,15 +18,28 @@
 
 public type ApplicationGRPC record {|
     string eventId = "";
-    string applicationId = "";
+    string name = "";
     string uuid = "";
-    string timeStamp = "";
+    string owner = "";
+    string policy = "";
+    Application_Key[] keys = [];
     string organization = "";
+    string timeStamp = "";
+    record {|string key; string value;|}[] attributes = [];
+|};
+
+public type Application_Key record {|
+    string key = "";
+    string keyManager = "";
 |};
 
 public type SubscriptionGRPC record {|
     string eventId = "";
-    string applicationId = "";
+    string applicationRef = "";
+    string apiRef = "";
+    string policyId = "";
+    string subStatus = "";
+    string subscriber = "";
     string uuid = "";
     string timeStamp = "";
     string organization = "";

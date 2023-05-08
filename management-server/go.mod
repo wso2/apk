@@ -12,6 +12,8 @@ require (
 	google.golang.org/protobuf v1.29.0
 )
 
+replace github.com/wso2/apk/adapter => ../adapter
+
 require (
 	github.com/census-instrumentation/opencensus-proto v0.4.1 // indirect
 	github.com/cncf/xds/go v0.0.0-20230310173818-32f1caf87195 // indirect

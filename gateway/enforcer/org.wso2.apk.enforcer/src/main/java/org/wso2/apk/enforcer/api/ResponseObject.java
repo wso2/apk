@@ -41,7 +41,15 @@ public class ResponseObject {
     private Map<String, String> queryParams;
     private String requestPath;
     private String responseContent;
+    private String organizationId;
 
+    public String getOrganizationId() {
+        return organizationId;
+    }
+
+    public void setOrganizationId(String organizationId) {
+        this.organizationId = organizationId;
+    }
     public ArrayList<String> getRemoveHeaderMap() {
         return removeHeaderMap;
     }

@@ -29,6 +29,8 @@ const (
 	RevokedTokensType             = apiTypePrefix + "wso2.discovery.keymgt.RevokedToken"
 	ThrottleDataType              = apiTypePrefix + "wso2.discovery.throttle.ThrottleData"
 	APKMgtApplicationType         = apiTypePrefix + "wso2.discovery.apkmgt.Application"
+	ApplicationType               = apiTypePrefix + "wso2.discovery.subscription.Application"
+	SubscriptionType              = apiTypePrefix + "wso2.discovery.subscription.Subscription"
 
 	// AnyType is used only by ADS
 	AnyType = ""

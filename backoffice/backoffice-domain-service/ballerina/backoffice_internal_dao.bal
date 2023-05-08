@@ -33,12 +33,11 @@ isolated function db_createAPI(APIBody apiBody, string organization) returns API
         return error("Issue while conecting to databse");
     } else {
         postgresql:JsonBinaryValue artifact = new (createArtifact(apiBody.apiProperties.id, apiBody.apiProperties));
-        sql:ParameterizedQuery ADD_API_Suffix = `INSERT INTO api(api_uuid, api_name, api_version,context,api_provider,status,organization,artifact) VALUES (`;
+        sql:ParameterizedQuery ADD_API_Suffix = `INSERT INTO api(uuid, api_name, api_version,context,status,organization,artifact) VALUES (`;
         sql:ParameterizedQuery values = `${apiBody.apiProperties.id},
                                             ${apiBody.apiProperties.name}, 
                                             ${apiBody.apiProperties.'version}, 
                                             ${apiBody.apiProperties.context},
-                                            ${apiBody.apiProperties.provider},
                                             'CREATED', 
                                             ${organization},
                                             ${artifact})`;
@@ -92,9 +91,9 @@ isolated function db_getAPI_internal(string apiId) returns API | commons:APKErro
     if db_Client is error {
         return error("Issue while conecting to databse");
     } else {
-        sql:ParameterizedQuery GET_API_Prefix = `SELECT API_UUID AS ID, API_ID as APIID,
-        API_PROVIDER as PROVIDER, API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS 
-        FROM API where API_UUID = `;
+        sql:ParameterizedQuery GET_API_Prefix = `SELECT UUID AS ID,
+        API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS 
+        FROM API where UUID = `;
         sql:ParameterizedQuery values = `${apiId}`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(GET_API_Prefix, values);
 
@@ -123,7 +122,7 @@ isolated function db_updateAPI_internal(string apiId, APIBody api) returns API |
     } else {
         sql:ParameterizedQuery UPDATE_API_Suffix = `UPDATE api SET`;
         sql:ParameterizedQuery values = ` api_name = ${api.apiProperties.name}
-        WHERE api_uuid = ${apiId}`;
+        WHERE uuid = ${apiId}`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(UPDATE_API_Suffix, values);
 
         sql:ExecutionResult | sql:Error result = db_client->execute(sqlQuery);
@@ -170,7 +169,7 @@ isolated function db_deleteAPI(string apiId) returns string | error? {
     if db_client is error {
         return error("Issue while conecting to databse");
     } else {
-        sql:ParameterizedQuery DELETE_API_Suffix = `DELETE FROM api WHERE api_uuid = `;
+        sql:ParameterizedQuery DELETE_API_Suffix = `DELETE FROM api WHERE uuid = `;
         sql:ParameterizedQuery values = `${apiId}`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(DELETE_API_Suffix, values);
         sql:ExecutionResult | sql:Error result =  db_client->execute(sqlQuery);
@@ -249,7 +248,7 @@ isolated function db_AddLCEvent_internal(string? apiId, string organization) ret
                                         ${organization},
                                         ${utc}
                                     )`;
-        sql:ParameterizedQuery ADD_LC_EVENT_Prefix = `INSERT INTO api_lc_event (api_id,previous_state,new_state,user_id,organization,event_date) VALUES (`;
+        sql:ParameterizedQuery ADD_LC_EVENT_Prefix = `INSERT INTO api_lc_event (api_uuid,previous_state,new_state,user_uuid,organization,event_date) VALUES (`;
         sql:ParameterizedQuery sqlQuery = sql:queryConcat(ADD_LC_EVENT_Prefix, values);
 
         sql:ExecutionResult | sql:Error result = db_client->execute(sqlQuery);

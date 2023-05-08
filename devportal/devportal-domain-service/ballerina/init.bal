@@ -41,12 +41,13 @@ configurable commons:IDPConfiguration & readonly idpConfiguration = {
 commons:DBBasedOrgResolver organizationResolver = new (datasourceConfiguration);
 commons:JWTValidationInterceptor jwtValidationInterceptor = new (idpConfiguration, organizationResolver);
 commons:RequestErrorInterceptor requestErrorInterceptor = new;
+commons:UserRegistrationInterceptor userRegistrationInterceptor = new (datasourceConfiguration);
 listener http:Listener ep0 = new (DEVPORTAL_PORT, secureSocket = {
     'key: {
         certFile: <string>keyStores.tls.certFilePath,
         keyFile: <string>keyStores.tls.keyFilePath
     }
-}, interceptors = [jwtValidationInterceptor, requestErrorInterceptor]);
+}, interceptors = [jwtValidationInterceptor, userRegistrationInterceptor, requestErrorInterceptor]);
 
 function init() {
     log:printInfo("Starting APK Devportal Domain Service...");

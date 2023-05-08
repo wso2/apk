@@ -20,8 +20,10 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	"github.com/wso2/apk/adapter/config"
+	"github.com/wso2/apk/adapter/internal/discovery/xds"
 	"github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/operator/constants"
 	"github.com/wso2/apk/adapter/internal/operator/status"
@@ -72,6 +74,10 @@ const (
 	backendAPIPolicyIndex     = "backendAPIPolicyIndex"
 )
 
+var (
+	applyAllAPIsOnce sync.Once
+)
+
 // APIReconciler reconciles a API object
 type APIReconciler struct {
 	client        k8client.Client
@@ -84,19 +90,20 @@ type APIReconciler struct {
 // NewAPIController creates a new API controller instance. API Controllers watches for dpv1alpha1.API and gwapiv1b1.HTTPRoute.
 func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.OperatorDataStore, statusUpdater *status.UpdateHandler,
 	ch *chan synchronizer.APIEvent) error {
-	r := &APIReconciler{
+	apiReconciler := &APIReconciler{
 		client:        mgr.GetClient(),
 		ods:           operatorDataStore,
 		ch:            ch,
 		statusUpdater: statusUpdater,
 		mgr:           mgr,
 	}
-	c, err := controller.New(constants.APIController, mgr, controller.Options{Reconciler: r})
+	ctx := context.Background()
+
+	c, err := controller.New(constants.APIController, mgr, controller.Options{Reconciler: apiReconciler})
 	if err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2610, err))
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2619, err))
 		return err
 	}
-	ctx := context.Background()
 
 	conf := config.ReadConfigs()
 	predicates := []predicate.Predicate{predicate.NewPredicateFuncs(utils.FilterByNamespaces(conf.Adapter.Operator.Namespaces))}
@@ -111,55 +118,55 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 		return err
 	}
 
-	if err := c.Watch(&source.Kind{Type: &gwapiv1b1.HTTPRoute{}}, handler.EnqueueRequestsFromMapFunc(r.getAPIForHTTPRoute),
+	if err := c.Watch(&source.Kind{Type: &gwapiv1b1.HTTPRoute{}}, handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIForHTTPRoute),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2613, err))
 		return err
 	}
 
-	if err := c.Watch(&source.Kind{Type: &gwapiv1b1.Gateway{}}, handler.EnqueueRequestsFromMapFunc(r.getAPIsForGateway),
+	if err := c.Watch(&source.Kind{Type: &gwapiv1b1.Gateway{}}, handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForGateway),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2611, err))
 		return err
 	}
 
-	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.Backend{}}, handler.EnqueueRequestsFromMapFunc(r.getAPIsForBackend),
+	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.Backend{}}, handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForBackend),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2615, err))
 		return err
 	}
 
-	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.Authentication{}}, handler.EnqueueRequestsFromMapFunc(r.getAPIsForAuthentication),
+	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.Authentication{}}, handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForAuthentication),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2616, err))
 		return err
 	}
 
-	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.APIPolicy{}}, handler.EnqueueRequestsFromMapFunc(r.getAPIsForAPIPolicy),
+	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.APIPolicy{}}, handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForAPIPolicy),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2617, err))
 		return err
 	}
 
-	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.RateLimitPolicy{}}, handler.EnqueueRequestsFromMapFunc(r.getAPIsForRateLimitPolicy),
+	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.RateLimitPolicy{}}, handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForRateLimitPolicy),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2639, err))
 		return err
 	}
 
-	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.Scope{}}, handler.EnqueueRequestsFromMapFunc(r.getAPIsForScope),
+	if err := c.Watch(&source.Kind{Type: &dpv1alpha1.Scope{}}, handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForScope),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2618, err))
 		return err
 	}
 
-	if err := c.Watch(&source.Kind{Type: &corev1.ConfigMap{}}, handler.EnqueueRequestsFromMapFunc(r.getAPIsForConfigMap),
+	if err := c.Watch(&source.Kind{Type: &corev1.ConfigMap{}}, handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForConfigMap),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2644, err))
 		return err
 	}
 
-	if err := c.Watch(&source.Kind{Type: &corev1.Secret{}}, handler.EnqueueRequestsFromMapFunc(r.getAPIsForSecret),
+	if err := c.Watch(&source.Kind{Type: &corev1.Secret{}}, handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForSecret),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2645, err))
 		return err
@@ -194,8 +201,8 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.13.0/pkg/reconcile
 func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+	applyAllAPIsOnce.Do(apiReconciler.applyStartupAPIs)
 	loggers.LoggerAPKOperator.Infof("Reconciling for API %s", req.NamespacedName.String())
-
 	// Check whether the API CR exist, if not consider as a DELETE event.
 	var apiDef dpv1alpha1.API
 	if err := apiReconciler.client.Get(ctx, req.NamespacedName, &apiDef); err != nil {
@@ -210,41 +217,47 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		loggers.LoggerAPKOperator.Warnf("Api CR related to the reconcile request with key: %s returned error. Assuming API is already deleted, hence ignoring the error : %v", err)
 		return ctrl.Result{}, nil
 	}
-
-	var prodHTTPRoute1, sandHTTPRoute1 []string
-	if len(apiDef.Spec.Production) > 0 {
-		prodHTTPRoute1 = apiDef.Spec.Production[0].HTTPRouteRefs
-	}
-	if len(apiDef.Spec.Sandbox) > 0 {
-		sandHTTPRoute1 = apiDef.Spec.Sandbox[0].HTTPRouteRefs
-	}
-
-	// Retrieve HTTPRoutes
-	prodHTTPRoute, sandHTTPRoute, err := apiReconciler.resolveAPIRefs(ctx, prodHTTPRoute1,
-		sandHTTPRoute1, req.NamespacedName.String(), req.Namespace)
-	if err != nil {
-		loggers.LoggerAPKOperator.Warnf("Error retrieving ref CRs for API in namespace : %s, %v", err)
+	if apiState, err := apiReconciler.resolveAPIRefs(ctx, apiDef, req.NamespacedName, req.Namespace); err != nil {
+		loggers.LoggerAPKOperator.Warnf("Error retrieving ref CRs for API in namespace : %s, %v", req.NamespacedName.String(), err)
 		return ctrl.Result{}, err
-	}
-	loggers.LoggerAPKOperator.Debugf("HTTPRoutes are retrieved successfully for API CR %s", req.NamespacedName.String())
-
-	if !apiDef.Status.Accepted {
-		apiState := apiReconciler.ods.AddAPIState(apiDef, prodHTTPRoute, sandHTTPRoute)
-		*apiReconciler.ch <- synchronizer.APIEvent{EventType: constants.Create, Event: apiState}
-		//TODO(amali) update status only after deployed without errors
-		apiReconciler.handleStatus(req.NamespacedName, constants.DeployedState, []string{})
-	} else if cachedAPI, events, updated :=
-		apiReconciler.ods.UpdateAPIState(&apiDef, prodHTTPRoute, sandHTTPRoute); updated {
-		*apiReconciler.ch <- synchronizer.APIEvent{EventType: constants.Update, Event: cachedAPI}
-		apiReconciler.handleStatus(req.NamespacedName, constants.UpdatedState, events)
+	} else if apiState != nil {
+		*apiReconciler.ch <- *apiState
 	}
 	return ctrl.Result{}, nil
 }
 
+// applyStartupAPIs applies the APIs which are already available in the cluster at the startup of the operator.
+func (apiReconciler *APIReconciler) applyStartupAPIs() {
+	ctx := context.Background()
+	apiList := &dpv1alpha1.APIList{}
+	conf := config.ReadConfigs()
+	listOptions := utils.RetrieveNamespaceListOptions(conf.Adapter.Operator.Namespaces)
+	if err := apiReconciler.client.List(ctx, apiList, &listOptions); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.GetErrorByCode(2601, err))
+		return
+	}
+	for _, api := range apiList.Items {
+		if apiState, err := apiReconciler.resolveAPIRefs(ctx, api, utils.NamespacedName(&api), api.Namespace); err != nil {
+			loggers.LoggerAPKOperator.Warnf("Error retrieving ref CRs for API : %s in namespace : %s, %v", api.Name, api.Namespace, err)
+		} else if apiState != nil {
+			*apiReconciler.ch <- *apiState
+		}
+	}
+	xds.SetReady()
+	loggers.LoggerAPKOperator.Info("Initial APIs were deployed successfully")
+}
+
 // resolveAPIRefs validates following references related to the API
 // - HTTPRoutes
-func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, prodHTTPRouteRef, sandHTTPRouteRef []string,
-	apiRef, namespace string) (*synchronizer.HTTPRouteState, *synchronizer.HTTPRouteState, error) {
+func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1alpha1.API,
+	apiRef types.NamespacedName, namespace string) (*synchronizer.APIEvent, error) {
+	var prodHTTPRouteRef, sandHTTPRouteRef []string
+	if len(api.Spec.Production) > 0 {
+		prodHTTPRouteRef = api.Spec.Production[0].HTTPRouteRefs
+	}
+	if len(api.Spec.Sandbox) > 0 {
+		sandHTTPRouteRef = api.Spec.Sandbox[0].HTTPRouteRefs
+	}
 	prodHTTPRoute := &synchronizer.HTTPRouteState{
 		HTTPRoute: &gwapiv1b1.HTTPRoute{},
 	}
@@ -260,29 +273,29 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, prodHTTP
 	var resourceAPIPolicies map[string]dpv1alpha1.APIPolicy
 
 	var err error
-	if authentications, err = apiReconciler.getAuthenticationsForAPI(ctx, apiRef); err != nil {
-		return nil, nil, fmt.Errorf("error while getting API level auth for API : %s in namespace :%s, %s", apiRef,
+	if authentications, err = apiReconciler.getAuthenticationsForAPI(ctx, apiRef.String()); err != nil {
+		return nil, fmt.Errorf("error while getting API level auth for API : %s in namespace :%s, %s", apiRef.String(),
 			namespace, err.Error())
 	}
-	if rateLimitPolicies, err = apiReconciler.getRatelimitPoliciesForAPI(ctx, apiRef); err != nil {
-		return nil, nil, fmt.Errorf("error while getting API level ratelimit for API : %s in namespace :%s, %s", apiRef,
+	if rateLimitPolicies, err = apiReconciler.getRatelimitPoliciesForAPI(ctx, apiRef.String()); err != nil {
+		return nil, fmt.Errorf("error while getting API level ratelimit for API : %s in namespace :%s, %s", apiRef.String(),
 			namespace, err.Error())
 	}
-	if apiPolicies, err = apiReconciler.getAPIPoliciesForAPI(ctx, apiRef); err != nil {
-		return nil, nil, fmt.Errorf("error while getting API level apipolicy for API : %s in namespace :%s, %s", apiRef,
+	if apiPolicies, err = apiReconciler.getAPIPoliciesForAPI(ctx, apiRef.String()); err != nil {
+		return nil, fmt.Errorf("error while getting API level apipolicy for API : %s in namespace :%s, %s", apiRef.String(),
 			namespace, err.Error())
 	}
 
-	if resourceAuthentications, err = apiReconciler.getAuthenticationsForResources(ctx, apiRef); err != nil {
-		return nil, nil, fmt.Errorf("error while getting httproute resource auth : %s in namespace :%s, %s", apiRef,
+	if resourceAuthentications, err = apiReconciler.getAuthenticationsForResources(ctx, apiRef.String()); err != nil {
+		return nil, fmt.Errorf("error while getting httproute resource auth : %s in namespace :%s, %s", apiRef.String(),
 			namespace, err.Error())
 	}
-	if resourceRateLimitPolicies, err = apiReconciler.getRatelimitPoliciesForResources(ctx, apiRef); err != nil {
-		return nil, nil, fmt.Errorf("error while getting httproute resource ratelimit : %s in namespace :%s, %s", apiRef,
+	if resourceRateLimitPolicies, err = apiReconciler.getRatelimitPoliciesForResources(ctx, apiRef.String()); err != nil {
+		return nil, fmt.Errorf("error while getting httproute resource ratelimit : %s in namespace :%s, %s", apiRef.String(),
 			namespace, err.Error())
 	}
-	if resourceAPIPolicies, err = apiReconciler.getAPIPoliciesForResources(ctx, apiRef); err != nil {
-		return nil, nil, fmt.Errorf("error while getting httproute resource apipolicy %s in namespace :%s, %s", apiRef,
+	if resourceAPIPolicies, err = apiReconciler.getAPIPoliciesForResources(ctx, apiRef.String()); err != nil {
+		return nil, fmt.Errorf("error while getting httproute resource apipolicy %s in namespace :%s, %s", apiRef.String(),
 			namespace, err.Error())
 	}
 
@@ -293,15 +306,15 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, prodHTTP
 		prodHTTPRoute.ResourceRateLimitPolicies = resourceRateLimitPolicies
 		prodHTTPRoute.ResourceAPIPolicies = resourceAPIPolicies
 		prodHTTPRoute.APIPolicies = apiPolicies
-		if prodHTTPRoute, err = apiReconciler.resolveHTTPRouteRefs(ctx, prodHTTPRoute, prodHTTPRouteRef, namespace, apiRef, apiPolicies); err != nil {
-			return nil, nil, fmt.Errorf("error while resolving production httpRouteref %s in namespace :%s has not found. %s",
+		if prodHTTPRoute, err = apiReconciler.resolveHTTPRouteRefs(ctx, prodHTTPRoute, prodHTTPRouteRef, namespace, apiRef.String(), apiPolicies); err != nil {
+			return nil, fmt.Errorf("error while resolving production httpRouteref %s in namespace :%s has not found. %s",
 				prodHTTPRouteRef, namespace, err.Error())
 		}
 		if !apiReconciler.ods.IsGatewayAvailable(types.NamespacedName{
 			Name:      string(prodHTTPRoute.HTTPRoute.Spec.ParentRefs[0].Name),
 			Namespace: utils.GetNamespace(prodHTTPRoute.HTTPRoute.Spec.ParentRefs[0].Namespace, prodHTTPRoute.HTTPRoute.Namespace),
 		}) {
-			return nil, nil, fmt.Errorf("no gateway available for httpRouteref %s in namespace :%s has not found",
+			return nil, fmt.Errorf("no gateway available for httpRouteref %s in namespace :%s has not found",
 				prodHTTPRouteRef, namespace)
 		}
 	}
@@ -313,19 +326,33 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, prodHTTP
 		sandHTTPRoute.ResourceRateLimitPolicies = resourceRateLimitPolicies
 		sandHTTPRoute.ResourceAPIPolicies = resourceAPIPolicies
 		sandHTTPRoute.APIPolicies = apiPolicies
-		if sandHTTPRoute, err = apiReconciler.resolveHTTPRouteRefs(ctx, sandHTTPRoute, sandHTTPRouteRef, namespace, apiRef, apiPolicies); err != nil {
-			return nil, nil, fmt.Errorf("error while resolving sandbox httpRouteref %s in namespace :%s has not found. %s",
+		if sandHTTPRoute, err = apiReconciler.resolveHTTPRouteRefs(ctx, sandHTTPRoute, sandHTTPRouteRef, namespace, apiRef.String(), apiPolicies); err != nil {
+			return nil, fmt.Errorf("error while resolving sandbox httpRouteref %s in namespace :%s has not found. %s",
 				sandHTTPRouteRef, namespace, err.Error())
 		}
 		if !apiReconciler.ods.IsGatewayAvailable(types.NamespacedName{
 			Name:      string(sandHTTPRoute.HTTPRoute.Spec.ParentRefs[0].Name),
 			Namespace: utils.GetNamespace(sandHTTPRoute.HTTPRoute.Spec.ParentRefs[0].Namespace, sandHTTPRoute.HTTPRoute.Namespace),
 		}) {
-			return nil, nil, fmt.Errorf("no gateway available for httpRouteref %s in namespace :%s has not found",
+			return nil, fmt.Errorf("no gateway available for httpRouteref %s in namespace :%s has not found",
 				sandHTTPRouteRef, namespace)
 		}
 	}
-	return prodHTTPRoute, sandHTTPRoute, nil
+
+	loggers.LoggerAPKOperator.Debugf("HTTPRoutes are retrieved successfully for API CR %s", apiRef.String())
+
+	if !api.Status.Accepted {
+		apiState := apiReconciler.ods.AddAPIState(api, prodHTTPRoute, sandHTTPRoute)
+		//TODO(amali) update status only after deployed without errors
+		apiReconciler.handleStatus(apiRef, constants.DeployedState, []string{})
+		return &synchronizer.APIEvent{EventType: constants.Create, Event: apiState}, nil
+	} else if cachedAPI, events, updated :=
+		apiReconciler.ods.UpdateAPIState(&api, prodHTTPRoute, sandHTTPRoute); updated {
+		apiReconciler.handleStatus(apiRef, constants.UpdatedState, events)
+		return &synchronizer.APIEvent{EventType: constants.Update, Event: cachedAPI}, nil
+	}
+
+	return nil, nil
 }
 
 // resolveHTTPRouteRefs validates following references related to the API
@@ -653,6 +680,10 @@ func (apiReconciler *APIReconciler) getAPIsForAPIPolicy(obj k8client.Object) []r
 		return []reconcile.Request{}
 	}
 	requests := []reconcile.Request{}
+
+	if apiPolicy.Spec.TargetRef.Kind == constants.KindGateway {
+		return []reconcile.Request{}
+	}
 
 	// todo(amali) move this validation to validation hook
 	if !(apiPolicy.Spec.TargetRef.Kind == constants.KindAPI || apiPolicy.Spec.TargetRef.Kind == constants.KindResource) {

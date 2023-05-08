@@ -20,6 +20,18 @@ import ballerina/log;
 import ballerina/test;
 import devportal_service.org.wso2.apk.devportal.sdk as sdk;
 import ballerina/http;
+import wso2/apk_common_lib as commons;
+
+commons:Organization organiztion = {
+    name: "org1",
+    displayName: "org1",
+    uuid: "a3b58ccf-6ecc-4557-b5bb-0a35cce38256",
+    organizationClaimValue: "org1",
+    enabled: true,
+    serviceListingNamespaces: ["*"],
+    properties: []
+};
+
 
 @test:BeforeSuite
 function beforeFunc() {
@@ -75,10 +87,10 @@ function beforeFunc() {
         }
         }
     };
-    API|APKError createdAPI = createAPIDAO(body,"carbon.super");
+    API|APKError createdAPI = createAPIDAO(body,organiztion.uuid);
     if createdAPI is API {
     test:assertTrue(true, "Successfully created API");
-        API|APKError createdAPIDefinition = addDefinitionDAO(body,"carbon.super");
+        API|APKError createdAPIDefinition = addDefinitionDAO(body,organiztion.uuid);
         if createdAPIDefinition is API {
         test:assertTrue(true, "Successfully created API");
         } else if createdAPIDefinition is  APKError {
@@ -104,7 +116,7 @@ function getAPIByIdTest(){
 
 @test:Config {}
 function getAPIListTest(){
-    APIList | APKError apiListReturned = getAPIList(25, 0, null, "carbon.super");
+    APIList | APKError apiListReturned = getAPIList(25, 0, null, organiztion);
     if apiListReturned is APIList {
         test:assertTrue(true, "Successfully retrieved all APIs");
     } else if apiListReturned is  APKError {
@@ -114,7 +126,7 @@ function getAPIListTest(){
 
 @test:Config {}
 function getAPIListContentSearchTest1(){
-    APIList | APKError apiListReturned = getAPIList(25, 0, "content:pizza", "carbon.super");
+    APIList | APKError apiListReturned = getAPIList(25, 0, "content:pizza", organiztion);
     if apiListReturned is APIList {
         test:assertTrue(true, "Successfully retrieved all APIs");
     } else if apiListReturned is  APKError {
@@ -125,7 +137,7 @@ function getAPIListContentSearchTest1(){
 @test:Config {}
 function getAPIListContentSearchTest2(){
     //Invalid Search Query without "content:" keyword
-    APIList | APKError apiListReturned = getAPIList(25, 0, "pizza", "carbon.super");
+    APIList | APKError apiListReturned = getAPIList(25, 0, "pizza", organiztion);
     if apiListReturned is APIList {
         test:assertFail("Successfully retrieved all APIs");
     } else if apiListReturned is  APKError {
@@ -136,7 +148,7 @@ function getAPIListContentSearchTest2(){
 @test:Config {}
 function getAPIListContentSearchTest3(){
     //Invalid Search Query without ":" 
-    APIList | APKError apiListReturned = getAPIList(25, 0, "contentpizza", "carbon.super");
+    APIList | APKError apiListReturned = getAPIList(25, 0, "contentpizza", organiztion);
     if apiListReturned is APIList {
         test:assertFail("Successfully retrieved all APIs");
     } else if apiListReturned is  APKError {

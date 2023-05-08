@@ -39,6 +39,7 @@ const (
 	error2616 = 2616
 	error2617 = 2617
 	error2618 = 2618
+	error2619 = 2619
 	error2621 = 2621
 	error2622 = 2622
 	error2623 = 2623
@@ -185,6 +186,11 @@ var Mapper = map[int]ErrorDetails{
 	error2618: {
 		ErrorCode: error2618,
 		Message:   "Error watching scope resources: %v",
+		Severity:  BLOCKER,
+	},
+	error2619: {
+		ErrorCode: error2619,
+		Message:   "Error applying startup APIs: %v",
 		Severity:  BLOCKER,
 	},
 	error2622: {

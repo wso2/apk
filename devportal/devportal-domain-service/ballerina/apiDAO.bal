@@ -30,9 +30,9 @@ isolated function getAPIByIdDAO(string apiId) returns API|APKError|NotFoundError
         string message = "Error while retrieving connection";
         return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
-        sql:ParameterizedQuery query = `SELECT API_UUID AS ID, API_ID as APIID,
-        API_PROVIDER as PROVIDER, API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS, API_TYPE as TYPE, string_to_array(SDK::text,',')::text[] AS SDK , ARTIFACT as ARTIFACT
-        FROM API WHERE API_UUID =${apiId} AND 
+        sql:ParameterizedQuery query = `SELECT UUID AS ID,
+        API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS, API_TYPE as TYPE, string_to_array(SDK::text,',')::text[] AS SDK , ARTIFACT as ARTIFACT
+        FROM API WHERE UUID =${apiId} AND
         STATUS IN (${PUBLISHED},${PROTOTYPED},${DEPRECATED})`;
         API | sql:Error result =  dbClient->queryRow(query);
         if result is sql:NoRowsError {
@@ -57,8 +57,8 @@ isolated function getAPIsDAO(string org) returns API[]|APKError {
         return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
         do {
-            sql:ParameterizedQuery query = `SELECT API_UUID AS ID, API_ID as APIID,
-            API_PROVIDER as PROVIDER, API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS, 
+            sql:ParameterizedQuery query = `SELECT UUID AS ID,
+            API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS,
             API_TYPE as TYPE, ARTIFACT as ARTIFACT FROM API WHERE ORGANIZATION =${org} AND 
             STATUS IN (${PUBLISHED},${PROTOTYPED},${DEPRECATED})`;
             stream<API, sql:Error?> apisStream = dbClient->query(query);
@@ -79,8 +79,8 @@ isolated function getAPIsByQueryDAO(string payload, string org) returns API[]|AP
         return error(message, dbClient, message = message, description = message, code = 909000, statusCode = "500");
     } else {
         do {
-            sql:ParameterizedQuery query = `SELECT DISTINCT API_UUID AS ID, API_ID as APIID,
-            API_PROVIDER as PROVIDER, API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS, 
+            sql:ParameterizedQuery query = `SELECT DISTINCT UUID AS ID,
+            API_NAME as NAME, API_VERSION as VERSION,CONTEXT, ORGANIZATION,STATUS,
             API_TYPE as TYPE, ARTIFACT as ARTIFACT FROM API JOIN JSONB_EACH_TEXT(ARTIFACT) e ON true 
             WHERE ORGANIZATION =${org} AND e.value LIKE ${payload} AND 
             STATUS IN (${PUBLISHED},${PROTOTYPED},${DEPRECATED})`;

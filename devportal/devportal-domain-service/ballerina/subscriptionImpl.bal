@@ -19,14 +19,16 @@
 import ballerina/uuid;
 import ballerina/lang.value;
 import wso2/notification_grpc_client;
+import wso2/apk_common_lib as commons;
 import ballerina/time;
 import ballerina/log;
 
-isolated function addSubscription(Subscription payload, string org, string user) returns Subscription|APKError|NotFoundError|error {
-    int apiId = 0;
-    int appId = 0;
-    int|NotFoundError|APKError subscriberId = getSubscriberIdDAO(user,org);
-    if subscriberId !is int {
+
+isolated function addSubscription(Subscription payload, commons:Organization org, string user) returns Subscription|APKError|NotFoundError|error {
+    string apiId = "";
+    string appId = "";
+    string|NotFoundError|APKError subscriberId = getSubscriberIdDAO(user, org.uuid);
+    if subscriberId !is string {
         return subscriberId;
     } 
     string? apiUUID = payload.apiId;
@@ -37,7 +39,7 @@ isolated function addSubscription(Subscription payload, string org, string user)
         } else if api is API {
             string apiInString = api.toJsonString();
             json j = check value:fromJsonString(apiInString);
-            apiId = check j.apiId.ensureType();
+            apiId = check j.id.ensureType();
         }
     }
     string? appUUID = payload.applicationId;
@@ -48,12 +50,12 @@ isolated function addSubscription(Subscription payload, string org, string user)
         } else  if application is Application {
             string appInString = application.toJsonString();
             json j = check value:fromJsonString(appInString);
-            appId = check j.id.ensureType();
+            appId = check j.applicationId.ensureType();
         }
     }
     string? businessPlan = payload.throttlingPolicy;
     if businessPlan is string {
-        string|APKError|NotFoundError businessPlanID = getBusinessPlanByName(businessPlan);
+        string|APKError|NotFoundError businessPlanID = getBusinessPlanByName(businessPlan, org);
         if businessPlanID is APKError|NotFoundError {
             return businessPlanID;
         }
@@ -69,7 +71,9 @@ isolated function addSubscription(Subscription payload, string org, string user)
             string eventId = uuid:createType1AsString();
             time:Utc currTime = time:utcNow();
             string date = time:utcToString(currTime);
-            SubscriptionGRPC createSubscriptionRequest = {eventId: eventId, applicationId: createdSub.applicationId, uuid: subscriptionId, timeStamp: date, organization: org};
+            SubscriptionGRPC createSubscriptionRequest = {eventId: eventId, applicationRef: createdSub.applicationId,
+            apiRef: <string>createdSub.apiId, policyId: createdSub.throttlingPolicy, subStatus:<string>createdSub.status,
+            subscriber: user, uuid: subscriptionId, timeStamp: date, organization: org.uuid};
             string devportalPubCert = <string>keyStores.tls.certFilePath;
             string devportalKeyCert = <string>keyStores.tls.keyFilePath;
             string pubCertPath = managementServerConfig.certPath;
@@ -92,12 +96,12 @@ isolated function addSubscription(Subscription payload, string org, string user)
     return createdSub;
 }
 
-isolated function getBusinessPlanByName(string policyName) returns string|APKError|NotFoundError {
-    string|APKError|NotFoundError policy = getBusinessPlanByNameDAO(policyName);
+isolated function getBusinessPlanByName(string policyName, commons:Organization org) returns string|APKError|NotFoundError {
+    string|APKError|NotFoundError policy = getBusinessPlanByNameDAO(policyName, org.uuid);
     return policy;
 }
 
-isolated function addMultipleSubscriptions(Subscription[] subscriptions, string org, string user) returns Subscription[]|APKError|NotFoundError|error {
+isolated function addMultipleSubscriptions(Subscription[] subscriptions, commons:Organization org, string user) returns Subscription[]|APKError|NotFoundError|error {
     Subscription[]|APKError addedSubs = [];
     foreach Subscription sub in subscriptions {
         Subscription|APKError|NotFoundError|error subscriptionResponse = check addSubscription(sub, org, user);
@@ -112,20 +116,20 @@ isolated function addMultipleSubscriptions(Subscription[] subscriptions, string 
     return addedSubs;
 }
 
-isolated function getSubscriptionById(string subId, string org) returns Subscription|APKError|NotFoundError {
-    Subscription|APKError|NotFoundError subscription = getSubscriptionByIdDAO(subId, org);
+isolated function getSubscriptionById(string subId, commons:Organization org) returns Subscription|APKError|NotFoundError {
+    Subscription|APKError|NotFoundError subscription = getSubscriptionByIdDAO(subId, org.uuid);
     return subscription;
 }
 
-isolated function deleteSubscription(string subId, string organization) returns string|APKError {
-    APKError|string status = deleteSubscriptionDAO(subId,organization);
+isolated function deleteSubscription(string subId, commons:Organization organization) returns string|APKError {
+    APKError|string status = deleteSubscriptionDAO(subId, organization.uuid);
     if status is string {
         string[]|APKError hostList = retrieveManagementServerHostsList();
         if hostList is string[] {
             string eventId = uuid:createType1AsString();
             time:Utc currTime = time:utcNow();
             string date = time:utcToString(currTime);
-            SubscriptionGRPC deleteSubscriptionRequest = {eventId: eventId, applicationId: subId, uuid: subId, timeStamp: date, organization: organization};
+            SubscriptionGRPC deleteSubscriptionRequest = {eventId: eventId, uuid: subId, timeStamp: date, organization: organization.uuid};
             string devportalPubCert = <string>keyStores.tls.certFilePath;
             string devportalKeyCert = <string>keyStores.tls.keyFilePath;
             string pubCertPath = managementServerConfig.certPath;
@@ -149,16 +153,16 @@ isolated function deleteSubscription(string subId, string organization) returns 
 
 }
 
-isolated function updateSubscription(string subId, Subscription payload, string org, string user) returns Subscription|NotFoundError|APKError |error{
-    Subscription|NotFoundError|APKError existingSub = getSubscriptionByIdDAO(subId, org);
+isolated function updateSubscription(string subId, Subscription payload, commons:Organization org, string user) returns Subscription|NotFoundError|APKError |error{
+    Subscription|NotFoundError|APKError existingSub = getSubscriptionByIdDAO(subId, org.uuid);
     if existingSub is Subscription {
         payload.subscriptionId = subId;
     } else {
         return existingSub;
     }
-    int apiId = 0;
-    int appId = 0;
-    int|NotFoundError|APKError subscriberId = getSubscriberIdDAO(user,org);
+    string apiId = "";
+    string appId = "";
+    string|NotFoundError|APKError subscriberId = getSubscriberIdDAO(user,org.uuid);
     if subscriberId is APKError|NotFoundError {
         return subscriberId;
     } 
@@ -170,7 +174,7 @@ isolated function updateSubscription(string subId, Subscription payload, string 
         } else if api is API {
             string apiInString = api.toJsonString();
             json j = check value:fromJsonString(apiInString);
-            apiId = check j.apiId.ensureType();
+            apiId = check j.id.ensureType();
         }
     }
     string? appUUID = payload.applicationId;
@@ -181,12 +185,12 @@ isolated function updateSubscription(string subId, Subscription payload, string 
         } else if application is Application {
             string appInString = application.toJsonString();
             json j = check value:fromJsonString(appInString);
-            appId = check j.id.ensureType();
+            appId = check j.applicationId.ensureType();
         }
     }
     string? businessPlan = payload.throttlingPolicy;
     if businessPlan is string {
-        string|APKError|NotFoundError businessPlanID = getBusinessPlanByName(businessPlan);
+        string|APKError|NotFoundError businessPlanID = getBusinessPlanByName(businessPlan, org);
         if businessPlanID is APKError|NotFoundError {
             return businessPlanID;
         }
@@ -200,7 +204,9 @@ isolated function updateSubscription(string subId, Subscription payload, string 
             string eventId = uuid:createType1AsString();
             time:Utc currTime = time:utcNow();
             string date = time:utcToString(currTime);
-            SubscriptionGRPC updateSubscriptionRequest = {eventId: eventId, applicationId: createdSub.applicationId, uuid: subId, timeStamp: date, organization: org};
+            SubscriptionGRPC updateSubscriptionRequest = {eventId: eventId, applicationRef: createdSub.applicationId,
+            apiRef: <string>createdSub.apiId, policyId: createdSub.throttlingPolicy, subStatus:<string>createdSub.status,
+            subscriber: user, uuid: subId, timeStamp: date, organization: org.uuid};
             string devportalPubCert = <string>keyStores.tls.certFilePath;
             string devportalKeyCert = <string>keyStores.tls.keyFilePath;
             string pubCertPath = managementServerConfig.certPath;
@@ -223,10 +229,10 @@ isolated function updateSubscription(string subId, Subscription payload, string 
     return createdSub;
 }
 
-isolated function getSubscriptions(string? apiId, string? applicationId, string? groupId, int offset, int limitCount, string org) returns SubscriptionList|APKError|NotFoundError {
+isolated function getSubscriptions(string? apiId, string? applicationId, string? groupId, int offset, int limitCount, commons:Organization org) returns SubscriptionList|APKError|NotFoundError {
     if apiId is string && applicationId is string {
         // Retrieve Subscriptions per given API Id and App Id
-        Subscription|APKError|NotFoundError subscription = getSubscriptionByAPIandAppIdDAO(apiId,applicationId,org);
+        Subscription|APKError|NotFoundError subscription = getSubscriptionByAPIandAppIdDAO(apiId, applicationId, org.uuid);
         if subscription is Subscription {
             Subscription[] subs = [subscription];
             int count = subs.length();
@@ -237,7 +243,7 @@ isolated function getSubscriptions(string? apiId, string? applicationId, string?
         }
     } else if apiId is string {
         // Retrieve Subscriptions per given API Id
-        Subscription[]|APKError subs = getSubscriptionsByAPIIdDAO(apiId,org);
+        Subscription[]|APKError subs = getSubscriptionsByAPIIdDAO(apiId, org.uuid);
         if subs is Subscription[] {
             int count = subs.length();
             SubscriptionList subList = {count: count, list: subs};
@@ -247,7 +253,7 @@ isolated function getSubscriptions(string? apiId, string? applicationId, string?
         }
     } else if applicationId is string {
         // Retrieve Subscriptions per given APP Id
-        Subscription[]|APKError subs = getSubscriptionsByAPPIdDAO(applicationId,org);
+        Subscription[]|APKError subs = getSubscriptionsByAPPIdDAO(applicationId, org.uuid);
         if subs is Subscription[] {
             int count = subs.length();
             SubscriptionList subList = {count: count, list: subs};
@@ -257,7 +263,7 @@ isolated function getSubscriptions(string? apiId, string? applicationId, string?
         }
     } else {
         // Retrieve All Subscriptions
-        Subscription[]|APKError subs = getSubscriptionsList(org);
+        Subscription[]|APKError subs = getSubscriptionsList(org.uuid);
         if subs is Subscription[] {
             int count = subs.length();
             SubscriptionList subList = {count: count, list: subs};

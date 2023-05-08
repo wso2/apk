@@ -118,8 +118,6 @@ public function getApiDataProvider() returns map<[string, string, anydata]> {
                 "organization": "1111-1111-1111-1111",
                 "type": "HTTP",
                 "state": "CREATED",
-                "provider": "admin",
-                "apiid": 1,
                 "status": "CREATED"
             }.toBalString()
         ],
@@ -135,7 +133,6 @@ function updateInternalAPITest() {
                 "name":"PizzaShask",
                 "context":"pizzssa",
                 "version":"1.0.0",
-                "provider":"admin",
                 "lifeCycleStatus":"CREATED",
                 "organization":"1111-1111-1111-1111",
                 "type":"HTTP"

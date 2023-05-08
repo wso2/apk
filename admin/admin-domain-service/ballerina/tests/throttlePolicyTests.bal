@@ -20,6 +20,16 @@ import ballerina/test;
 import ballerina/log;
 import wso2/apk_common_lib as commons;
 
+commons:Organization organiztion = {
+    name: "org1",
+    displayName: "org1",
+    uuid: "a3b58ccf-6ecc-4557-b5bb-0a35cce38256",
+    organizationClaimValue: "org1",
+    enabled: true,
+    serviceListingNamespaces: ["*"],
+    properties: []
+};
+
 ApplicationRatePlan  applicationUsagePlan = {planName: "25PerMin", description: "25 Per Minute",
 'type:"ApplicationThrottlePolicy",defaultLimit: {'type: "REQUESTCOUNTLIMIT"}};
 
@@ -45,7 +55,7 @@ function addApplicationUsagePlanTest() {
             }
         }
     };
-    ApplicationRatePlan|commons:APKError createdAppPol = addApplicationUsagePlan(payload);
+    ApplicationRatePlan|commons:APKError createdAppPol = addApplicationUsagePlan(payload, organiztion);
     if createdAppPol is ApplicationRatePlan {
         test:assertTrue(true,"Application usage plan added successfully");
         applicationUsagePlan = createdAppPol;
@@ -60,7 +70,7 @@ function addApplicationUsagePlanTest() {
 function getApplicationUsagePlanByIdTest(){
     string? planId = applicationUsagePlan.planId;
     if planId is string {
-        ApplicationRatePlan|commons:APKError policy = getApplicationUsagePlanById(planId);
+        ApplicationRatePlan|commons:APKError policy = getApplicationUsagePlanById(planId, organiztion);
         if policy is ApplicationRatePlan {
             test:assertTrue(true, "Successfully retrieved Application Usage Plan");
             log:printInfo(policy.toString());
@@ -74,7 +84,7 @@ function getApplicationUsagePlanByIdTest(){
 
 @test:Config {dependsOn: [getApplicationUsagePlanByIdTest]}
 function getApplicationUsagePlansTest(){
-    ApplicationRatePlanList|commons:APKError appPolicyList = getApplicationUsagePlans();
+    ApplicationRatePlanList|commons:APKError appPolicyList = getApplicationUsagePlans(organiztion);
     if appPolicyList is ApplicationRatePlanList {
     test:assertTrue(true, "Successfully retrieved all Application Usage Plans");
     log:printInfo(appPolicyList.toString());
@@ -100,7 +110,7 @@ function updateApplicationUsagePlanTest() {
     };
     string? planId = applicationUsagePlan.planId;
     if planId is string {
-        ApplicationRatePlan|commons:APKError createdAppPol = updateApplicationUsagePlan(planId,payload);
+        ApplicationRatePlan|commons:APKError createdAppPol = updateApplicationUsagePlan(planId, payload, organiztion);
         if createdAppPol is ApplicationRatePlan {
             test:assertTrue(true,"Application usage plan updated successfully");
         } else if createdAppPol is commons:APKError {
@@ -116,7 +126,7 @@ function updateApplicationUsagePlanTest() {
 function removeApplicationUsagePlanTest(){
     string? planId = applicationUsagePlan.planId;
     if planId is string {
-        error?|string status = removeApplicationUsagePlan(planId);
+        error?|string status = removeApplicationUsagePlan(planId, organiztion);
         if status is string {
         test:assertTrue(true, "Successfully deleted Application Usage Plan");
         } else if status is  error {
@@ -145,7 +155,7 @@ function addBusinessPlanTest() {
         "rateLimitTimeUnit": "sec",
         "customAttributes": []
     };
-    BusinessPlan|commons:APKError createdBusinessPlan = addBusinessPlan(payload);
+    BusinessPlan|commons:APKError createdBusinessPlan = addBusinessPlan(payload, organiztion);
     if createdBusinessPlan is BusinessPlan {
         test:assertTrue(true,"Business Plan added successfully");
         businessPlan.planId = createdBusinessPlan.planId;
@@ -158,7 +168,7 @@ function addBusinessPlanTest() {
 function getBusinessPlanByIdTest() {
     string? planId = businessPlan.planId;
     if planId is string {
-        BusinessPlan|commons:APKError businessPlanResponse = getBusinessPlanById(planId);
+        BusinessPlan|commons:APKError businessPlanResponse = getBusinessPlanById(planId, organiztion);
         if businessPlanResponse is BusinessPlan {
             test:assertTrue(true,"Successfully retrieved Business Plan");
         } else {
@@ -171,7 +181,7 @@ function getBusinessPlanByIdTest() {
 
 @test:Config {dependsOn: [getBusinessPlanByIdTest]}
 function getBusinessPlansTest() {
-    BusinessPlanList|commons:APKError businessPlansResponse = getBusinessPlans();
+    BusinessPlanList|commons:APKError businessPlansResponse = getBusinessPlans(organiztion);
     if businessPlansResponse is BusinessPlanList {
         test:assertTrue(true,"Successfully retrieved all Business Plans");
     } else if businessPlansResponse is commons:APKError {
@@ -199,7 +209,7 @@ function updateBusinessPlanTest() {
     };
     string? planId = businessPlan.planId;
     if planId is string {
-        BusinessPlan|commons:APKError updatedBusinessPlan = updateBusinessPlan(planId,payload);
+        BusinessPlan|commons:APKError updatedBusinessPlan = updateBusinessPlan(planId, payload, organiztion);
         if updatedBusinessPlan is BusinessPlan {
             test:assertTrue(true,"Business Plan updated successfully");
         } else if updatedBusinessPlan is commons:APKError {
@@ -214,7 +224,7 @@ function updateBusinessPlanTest() {
 function removeBusinessPlanTest(){
     string? planId = businessPlan.planId;
     if planId is string {
-        commons:APKError|string status = removeBusinessPlan(planId);
+        commons:APKError|string status = removeBusinessPlan(planId, organiztion);
         if status is string {
             test:assertTrue(true, "Successfully deleted Business Plan");
         } else if status is  commons:APKError {
@@ -232,7 +242,7 @@ function addDenyPolicyTest() {
         "conditionValue": "admin:MyApp6",
         "conditionStatus": true
     };
-    BlockingCondition|commons:APKError createdDenyPolicy = addDenyPolicy(payload);
+    BlockingCondition|commons:APKError createdDenyPolicy = addDenyPolicy(payload, organiztion);
     if createdDenyPolicy is BlockingCondition {
         test:assertTrue(true,"Deny Policy added successfully");
         denyPolicy.policyId = createdDenyPolicy.policyId;
@@ -245,7 +255,7 @@ function addDenyPolicyTest() {
 function getDenyPolicyByIdTest() {
     string? policyId = denyPolicy.policyId;
     if policyId is string {
-        BlockingCondition|commons:APKError denyPolicyResponse = getDenyPolicyById(policyId);
+        BlockingCondition|commons:APKError denyPolicyResponse = getDenyPolicyById(policyId, organiztion);
         if denyPolicyResponse is BlockingCondition {
             test:assertTrue(true,"Successfully retrieved Deny Policy");
         } else  {
@@ -258,7 +268,7 @@ function getDenyPolicyByIdTest() {
 
 @test:Config {dependsOn: [getDenyPolicyByIdTest]}
 function getAllDenyPoliciesTest() {
-    BlockingConditionList|commons:APKError denyPoliciesResponse = getAllDenyPolicies();
+    BlockingConditionList|commons:APKError denyPoliciesResponse = getAllDenyPolicies(organiztion);
     if denyPoliciesResponse is BlockingConditionList {
         test:assertTrue(true,"Successfully retrieved all Deny Policy");
     } else if denyPoliciesResponse is commons:APKError {
@@ -271,7 +281,7 @@ function updateDenyPolicyTest() {
     string? policyId = denyPolicy.policyId;
     if policyId is string {
         BlockingConditionStatus status = {conditionStatus: false, policyId: policyId};
-        string?|BlockingCondition|commons:APKError denyPolicyResponse = updateDenyPolicy(policyId, status);
+        string?|BlockingCondition|commons:APKError denyPolicyResponse = updateDenyPolicy(policyId, status, organiztion);
         if denyPolicyResponse is BlockingCondition {
             test:assertTrue(true,"Successfully updated Deny Policy Status");
         } else if denyPolicyResponse is commons:APKError {
@@ -286,7 +296,7 @@ function updateDenyPolicyTest() {
 function removeDenyPolicyTest(){
     string? policyId = denyPolicy.policyId;
     if policyId is string {
-        commons:APKError|string status = removeDenyPolicy(policyId);
+        commons:APKError|string status = removeDenyPolicy(policyId, organiztion);
         if status is string {
         test:assertTrue(true, "Successfully deleted Deny Policy");
         } else if status is  commons:APKError {

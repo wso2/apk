@@ -104,11 +104,11 @@ func marshalSubscriptionList(subscriptionList []cpv1alpha1.Subscription) *subscr
 	subscriptions := []*subscription.Subscription{}
 	for _, subInternal := range subscriptionList {
 		sub := &subscription.Subscription{
-			SubscriptionUUID:  subInternal.Name,
-			ApiUUID:           subInternal.Spec.APIRef,
-			PolicyId:          subInternal.Spec.PolicyID,
-			SubscriptionState: subInternal.Spec.SubscriptionStatus,
-			AppUUID:           subInternal.Spec.ApplicationRef,
+			Uuid:           string(subInternal.UID),
+			ApiRef:         subInternal.Spec.APIRef,
+			PolicyId:       subInternal.Spec.PolicyID,
+			SubStatus:      subInternal.Spec.SubscriptionStatus,
+			ApplicationRef: subInternal.Spec.ApplicationRef,
 		}
 		subscriptions = append(subscriptions, sub)
 	}

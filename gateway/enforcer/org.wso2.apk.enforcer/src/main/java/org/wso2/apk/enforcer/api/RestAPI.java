@@ -174,6 +174,7 @@ public class RestAPI implements API {
                     APIConstants.NOT_FOUND_DESCRIPTION);
         }
         if ((isExistsMatchedResourcePath || isOptionCall) && executeFilterChain(requestContext)) {
+            responseObject.setOrganizationId(requestContext.getMatchedAPI().getOrganizationId());
             responseObject.setRemoveHeaderMap(requestContext.getRemoveHeaders());
             responseObject.setQueryParamsToRemove(requestContext.getQueryParamsToRemove());
             responseObject.setRemoveAllQueryParams(requestContext.isRemoveAllQueryParams());
