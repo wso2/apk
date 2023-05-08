@@ -40,8 +40,8 @@ metadata:
   namespace: gateway-integration-test-infra
 spec:
   override:
-    requestInterceptor:
-      name: request-ratelimit-interceptor-api-level
+    requestInterceptors:
+    - name: request-ratelimit-interceptor-api-level
       namespace: gateway-integration-test-infra
   targetRef:
     group: gateway.networking.k8s.io

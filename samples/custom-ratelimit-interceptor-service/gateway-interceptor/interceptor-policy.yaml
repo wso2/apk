@@ -19,14 +19,9 @@ metadata:
   name: interceptor-policy-gateway-level
 spec:
   override:
-    requestInterceptor:
-      backendRef:
-        name: interceptor-backend-v1
-        namespace: apk
-      includes:
-        - request_body
-        - request_headers
-        - invocation_context
+    requestInterceptors:
+    - name: interceptor-service-gateway-level
+      namespace: apk
   targetRef:
     group: gateway.networking.k8s.io
     kind: Gateway

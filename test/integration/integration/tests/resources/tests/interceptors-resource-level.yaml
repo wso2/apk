@@ -88,11 +88,11 @@ metadata:
   namespace: gateway-integration-test-infra
 spec:
   override:
-    requestInterceptor:
-      name: request-interceptor-api-level
+    requestInterceptors:
+    - name: request-interceptor-api-level
       namespace: gateway-integration-test-infra
-    responseInterceptor:
-      name: response-interceptor-api-level
+    responseInterceptors:
+    - name: response-interceptor-api-level
       namespace: gateway-integration-test-infra
   targetRef:
     group: gateway.networking.k8s.io

@@ -115,6 +115,8 @@ You can go through following to build, deploy, and test the sample interceptor s
     | api-httproute.yaml  | `HTTPRoute` resource for the API |
     | api-backend.yaml | Contains `Backend`, `Service` and `Deployment` resources represeting the API backend  |
     | api-policy.yaml  | `APIPolicy` resource to wire the interceptor service with the API  |
+    | api-req-interceptor-svc.yaml  | `InterceptorService` resource to define the interceptor service in the request path  |
+    | api-res-interceptor-svc.yaml  | `InterceptorService` resource to define the interceptor service in the response path  |
     | interceptor-backend.yaml  | Contains `Backend`, `Service` and `Deployment` resources represeting the interceptor service backend  |
     | interceptor-certificate.yaml | `Certificate` resource to generate cert/key pair and CA cert for the interceptor service |
 

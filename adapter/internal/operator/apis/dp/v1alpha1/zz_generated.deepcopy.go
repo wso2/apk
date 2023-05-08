@@ -773,15 +773,15 @@ func (in *JWTAuth) DeepCopy() *JWTAuth {
 func (in *PolicySpec) DeepCopyInto(out *PolicySpec) {
 	*out = *in
 	in.RequestQueryModifier.DeepCopyInto(&out.RequestQueryModifier)
-	if in.RequestInterceptor != nil {
-		in, out := &in.RequestInterceptor, &out.RequestInterceptor
-		*out = new(InterceptorReference)
-		**out = **in
+	if in.RequestInterceptors != nil {
+		in, out := &in.RequestInterceptors, &out.RequestInterceptors
+		*out = make([]InterceptorReference, len(*in))
+		copy(*out, *in)
 	}
-	if in.ResponseInterceptor != nil {
-		in, out := &in.ResponseInterceptor, &out.ResponseInterceptor
-		*out = new(InterceptorReference)
-		**out = **in
+	if in.ResponseInterceptors != nil {
+		in, out := &in.ResponseInterceptors, &out.ResponseInterceptors
+		*out = make([]InterceptorReference, len(*in))
+		copy(*out, *in)
 	}
 }
 

@@ -13,16 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # -----------------------------------------------------------------------
+
+---
 apiVersion: dp.wso2.com/v1alpha1
-kind: APIPolicy
+kind: InterceptorService
 metadata:
-  name: interceptor-policy-api-level
+  name: res-interceptor-service
+  namespace: interceptor
 spec:
-  override:
-    requestInterceptors:
-    - name: interceptor-service-api-level
-      namespace: apk
-  targetRef:
-    group: dp.wso2.com
-    kind: API
-    name: http-bin-api-basic
+  backendRef:
+    name: interceptor-backend
+  includes:
+  - response_headers
+  - response_body
+  - invocation_context

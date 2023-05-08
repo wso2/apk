@@ -38,9 +38,9 @@ type APIPolicySpec struct {
 
 // PolicySpec contains API policies
 type PolicySpec struct {
-	RequestQueryModifier RequestQueryModifier  `json:"requestQueryModifier,omitempty"`
-	RequestInterceptor   *InterceptorReference `json:"requestInterceptor,omitempty"`
-	ResponseInterceptor  *InterceptorReference `json:"responseInterceptor,omitempty"`
+	RequestQueryModifier RequestQueryModifier   `json:"requestQueryModifier,omitempty"`
+	RequestInterceptors  []InterceptorReference `json:"requestInterceptors,omitempty"`
+	ResponseInterceptors []InterceptorReference `json:"responseInterceptors,omitempty"`
 }
 
 // RequestQueryModifier allows to modify request query params

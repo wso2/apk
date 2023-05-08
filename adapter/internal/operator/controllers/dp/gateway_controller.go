@@ -246,26 +246,26 @@ func (gatewayReconciler *GatewayReconciler) getInterceptorServicesForGateway(ctx
 	allGatewayAPIPolicies := maps.Values(gatewayAPIPolicies)
 	interceptorServices := make(map[string]dpv1alpha1.InterceptorService)
 	for _, apiPolicy := range allGatewayAPIPolicies {
-		if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.RequestInterceptor != nil {
-			interceptorPtr := utils.GetInterceptorService(ctx, gatewayReconciler.client, apiPolicy.Spec.Default.RequestInterceptor)
+		if apiPolicy.Spec.Default != nil && len(apiPolicy.Spec.Default.RequestInterceptors) > 0 {
+			interceptorPtr := utils.GetInterceptorService(ctx, gatewayReconciler.client, &apiPolicy.Spec.Default.RequestInterceptors[0])
 			if interceptorPtr != nil {
 				interceptorServices[utils.NamespacedName(interceptorPtr).String()] = *interceptorPtr
 			}
 		}
-		if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.ResponseInterceptor != nil {
-			interceptorPtr := utils.GetInterceptorService(ctx, gatewayReconciler.client, apiPolicy.Spec.Default.ResponseInterceptor)
+		if apiPolicy.Spec.Default != nil && len(apiPolicy.Spec.Default.ResponseInterceptors) > 0 {
+			interceptorPtr := utils.GetInterceptorService(ctx, gatewayReconciler.client, &apiPolicy.Spec.Default.ResponseInterceptors[0])
 			if interceptorPtr != nil {
 				interceptorServices[utils.NamespacedName(interceptorPtr).String()] = *interceptorPtr
 			}
 		}
-		if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.RequestInterceptor != nil {
-			interceptorPtr := utils.GetInterceptorService(ctx, gatewayReconciler.client, apiPolicy.Spec.Override.RequestInterceptor)
+		if apiPolicy.Spec.Override != nil && len(apiPolicy.Spec.Override.RequestInterceptors) > 0 {
+			interceptorPtr := utils.GetInterceptorService(ctx, gatewayReconciler.client, &apiPolicy.Spec.Override.RequestInterceptors[0])
 			if interceptorPtr != nil {
 				interceptorServices[utils.NamespacedName(interceptorPtr).String()] = *interceptorPtr
 			}
 		}
-		if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.ResponseInterceptor != nil {
-			interceptorPtr := utils.GetInterceptorService(ctx, gatewayReconciler.client, apiPolicy.Spec.Override.ResponseInterceptor)
+		if apiPolicy.Spec.Override != nil && len(apiPolicy.Spec.Override.ResponseInterceptors) > 0 {
+			interceptorPtr := utils.GetInterceptorService(ctx, gatewayReconciler.client, &apiPolicy.Spec.Override.ResponseInterceptors[0])
 			if interceptorPtr != nil {
 				interceptorServices[utils.NamespacedName(interceptorPtr).String()] = *interceptorPtr
 			}

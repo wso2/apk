@@ -517,26 +517,26 @@ func (apiReconciler *APIReconciler) getInterceptorServices(ctx context.Context,
 	allAPIPolicies := append(maps.Values(apiPolicies), maps.Values(resourceAPIPolicies)...)
 	interceptorServices := make(map[string]dpv1alpha1.InterceptorService)
 	for _, apiPolicy := range allAPIPolicies {
-		if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.RequestInterceptor != nil {
-			interceptorPtr := utils.GetInterceptorService(ctx, apiReconciler.client, apiPolicy.Spec.Default.RequestInterceptor)
+		if apiPolicy.Spec.Default != nil && len(apiPolicy.Spec.Default.RequestInterceptors) > 0 {
+			interceptorPtr := utils.GetInterceptorService(ctx, apiReconciler.client, &apiPolicy.Spec.Default.RequestInterceptors[0])
 			if interceptorPtr != nil {
 				interceptorServices[utils.NamespacedName(interceptorPtr).String()] = *interceptorPtr
 			}
 		}
-		if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.ResponseInterceptor != nil {
-			interceptorPtr := utils.GetInterceptorService(ctx, apiReconciler.client, apiPolicy.Spec.Default.ResponseInterceptor)
+		if apiPolicy.Spec.Default != nil && len(apiPolicy.Spec.Default.ResponseInterceptors) > 0 {
+			interceptorPtr := utils.GetInterceptorService(ctx, apiReconciler.client, &apiPolicy.Spec.Default.ResponseInterceptors[0])
 			if interceptorPtr != nil {
 				interceptorServices[utils.NamespacedName(interceptorPtr).String()] = *interceptorPtr
 			}
 		}
-		if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.RequestInterceptor != nil {
-			interceptorPtr := utils.GetInterceptorService(ctx, apiReconciler.client, apiPolicy.Spec.Override.RequestInterceptor)
+		if apiPolicy.Spec.Override != nil && len(apiPolicy.Spec.Override.RequestInterceptors) > 0 {
+			interceptorPtr := utils.GetInterceptorService(ctx, apiReconciler.client, &apiPolicy.Spec.Override.RequestInterceptors[0])
 			if interceptorPtr != nil {
 				interceptorServices[utils.NamespacedName(interceptorPtr).String()] = *interceptorPtr
 			}
 		}
-		if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.ResponseInterceptor != nil {
-			interceptorPtr := utils.GetInterceptorService(ctx, apiReconciler.client, apiPolicy.Spec.Override.ResponseInterceptor)
+		if apiPolicy.Spec.Override != nil && len(apiPolicy.Spec.Override.ResponseInterceptors) > 0 {
+			interceptorPtr := utils.GetInterceptorService(ctx, apiReconciler.client, &apiPolicy.Spec.Override.ResponseInterceptors[0])
 			if interceptorPtr != nil {
 				interceptorServices[utils.NamespacedName(interceptorPtr).String()] = *interceptorPtr
 			}
@@ -1129,36 +1129,36 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 		func(rawObj k8client.Object) []string {
 			apiPolicy := rawObj.(*dpv1alpha1.APIPolicy)
 			var interceptorServices []string
-			if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.RequestInterceptor != nil {
+			if apiPolicy.Spec.Default != nil && len(apiPolicy.Spec.Default.RequestInterceptors) > 0 {
 				interceptorServices = append(interceptorServices,
 					types.NamespacedName{
 						Namespace: utils.GetNamespace(
-							(*gwapiv1b1.Namespace)(&apiPolicy.Spec.Default.RequestInterceptor.Namespace), apiPolicy.Namespace),
-						Name: string(apiPolicy.Spec.Default.RequestInterceptor.Name),
+							(*gwapiv1b1.Namespace)(&apiPolicy.Spec.Default.RequestInterceptors[0].Namespace), apiPolicy.Namespace),
+						Name: string(apiPolicy.Spec.Default.RequestInterceptors[0].Name),
 					}.String())
 			}
-			if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.RequestInterceptor != nil {
+			if apiPolicy.Spec.Override != nil && len(apiPolicy.Spec.Override.RequestInterceptors) > 0 {
 				interceptorServices = append(interceptorServices,
 					types.NamespacedName{
 						Namespace: utils.GetNamespace(
-							(*gwapiv1b1.Namespace)(&apiPolicy.Spec.Override.RequestInterceptor.Namespace), apiPolicy.Namespace),
-						Name: string(apiPolicy.Spec.Override.RequestInterceptor.Name),
+							(*gwapiv1b1.Namespace)(&apiPolicy.Spec.Override.RequestInterceptors[0].Namespace), apiPolicy.Namespace),
+						Name: string(apiPolicy.Spec.Override.RequestInterceptors[0].Name),
 					}.String())
 			}
-			if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.ResponseInterceptor != nil {
+			if apiPolicy.Spec.Default != nil && len(apiPolicy.Spec.Default.ResponseInterceptors) > 0 {
 				interceptorServices = append(interceptorServices,
 					types.NamespacedName{
 						Namespace: utils.GetNamespace(
-							(*gwapiv1b1.Namespace)(&apiPolicy.Spec.Default.ResponseInterceptor.Namespace), apiPolicy.Namespace),
-						Name: string(apiPolicy.Spec.Default.ResponseInterceptor.Name),
+							(*gwapiv1b1.Namespace)(&apiPolicy.Spec.Default.ResponseInterceptors[0].Namespace), apiPolicy.Namespace),
+						Name: string(apiPolicy.Spec.Default.ResponseInterceptors[0].Name),
 					}.String())
 			}
-			if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.ResponseInterceptor != nil {
+			if apiPolicy.Spec.Override != nil && len(apiPolicy.Spec.Override.ResponseInterceptors) > 0 {
 				interceptorServices = append(interceptorServices,
 					types.NamespacedName{
 						Namespace: utils.GetNamespace(
-							(*gwapiv1b1.Namespace)(&apiPolicy.Spec.Override.ResponseInterceptor.Namespace), apiPolicy.Namespace),
-						Name: string(apiPolicy.Spec.Override.ResponseInterceptor.Name),
+							(*gwapiv1b1.Namespace)(&apiPolicy.Spec.Override.ResponseInterceptors[0].Namespace), apiPolicy.Namespace),
+						Name: string(apiPolicy.Spec.Override.ResponseInterceptors[0].Name),
 					}.String())
 			}
 			return interceptorServices

@@ -277,10 +277,10 @@ func parseRateLimitPolicyToInternal(ratelimitPolicy *dpv1alpha1.RateLimitPolicy)
 func addOperationLevelInterceptors(policies *OperationPolicies, apiPolicy *dpv1alpha1.APIPolicy,
 	interceptorServicesMapping map[string]dpv1alpha1.InterceptorService, backendMapping dpv1alpha1.BackendMapping) {
 	if apiPolicy != nil && apiPolicy.Spec.Override != nil {
-		if apiPolicy.Spec.Override.RequestInterceptor != nil {
+		if len(apiPolicy.Spec.Override.RequestInterceptors) > 0 {
 			requestInterceptor := interceptorServicesMapping[types.NamespacedName{
-				Name:      apiPolicy.Spec.Override.RequestInterceptor.Name,
-				Namespace: apiPolicy.Spec.Override.RequestInterceptor.Namespace,
+				Name:      apiPolicy.Spec.Override.RequestInterceptors[0].Name,
+				Namespace: apiPolicy.Spec.Override.RequestInterceptors[0].Namespace,
 			}.String()].Spec
 			policyParameters := make(map[string]interface{})
 			backendName := types.NamespacedName{
@@ -298,10 +298,10 @@ func addOperationLevelInterceptors(policies *OperationPolicies, apiPolicy *dpv1a
 				})
 			}
 		}
-		if apiPolicy.Spec.Override.ResponseInterceptor != nil {
+		if len(apiPolicy.Spec.Override.ResponseInterceptors) > 0 {
 			responseInterceptor := interceptorServicesMapping[types.NamespacedName{
-				Name:      apiPolicy.Spec.Override.ResponseInterceptor.Name,
-				Namespace: apiPolicy.Spec.Override.ResponseInterceptor.Namespace,
+				Name:      apiPolicy.Spec.Override.ResponseInterceptors[0].Name,
+				Namespace: apiPolicy.Spec.Override.ResponseInterceptors[0].Namespace,
 			}.String()].Spec
 			policyParameters := make(map[string]interface{})
 			backendName := types.NamespacedName{

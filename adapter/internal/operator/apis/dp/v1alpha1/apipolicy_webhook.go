@@ -42,28 +42,35 @@ var _ webhook.Defaulter = &APIPolicy{}
 
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (r *APIPolicy) Default() {
-	apipolicylog.Info("default", "name", r.Name)
 	if r.Spec.Override != nil {
-		if r.Spec.Override.RequestInterceptor != nil {
-			if len(r.Spec.Override.RequestInterceptor.Namespace) == 0 {
-				r.Spec.Override.RequestInterceptor.Namespace = r.Namespace
+		if len(r.Spec.Override.RequestInterceptors) > 0 {
+			for i := range r.Spec.Override.RequestInterceptors {
+				if len(r.Spec.Override.RequestInterceptors[i].Namespace) == 0 {
+					r.Spec.Override.RequestInterceptors[i].Namespace = r.Namespace
+				}
 			}
 		}
-		if r.Spec.Override.ResponseInterceptor != nil {
-			if len(r.Spec.Override.ResponseInterceptor.Namespace) == 0 {
-				r.Spec.Override.ResponseInterceptor.Namespace = r.Namespace
+		if len(r.Spec.Override.ResponseInterceptors) > 0 {
+			for i := range r.Spec.Override.ResponseInterceptors {
+				if len(r.Spec.Override.ResponseInterceptors[i].Namespace) == 0 {
+					r.Spec.Override.ResponseInterceptors[i].Namespace = r.Namespace
+				}
 			}
 		}
 	}
 	if r.Spec.Default != nil {
-		if r.Spec.Default.RequestInterceptor != nil {
-			if len(r.Spec.Default.RequestInterceptor.Namespace) == 0 {
-				r.Spec.Default.RequestInterceptor.Namespace = r.Namespace
+		if len(r.Spec.Default.RequestInterceptors) > 0 {
+			for i := range r.Spec.Default.RequestInterceptors {
+				if len(r.Spec.Default.RequestInterceptors[i].Namespace) == 0 {
+					r.Spec.Default.RequestInterceptors[i].Namespace = r.Namespace
+				}
 			}
 		}
-		if r.Spec.Default.ResponseInterceptor != nil {
-			if len(r.Spec.Default.ResponseInterceptor.Namespace) == 0 {
-				r.Spec.Default.ResponseInterceptor.Namespace = r.Namespace
+		if r.Spec.Default.ResponseInterceptors != nil {
+			for i := range r.Spec.Default.ResponseInterceptors {
+				if len(r.Spec.Default.ResponseInterceptors[i].Namespace) == 0 {
+					r.Spec.Default.ResponseInterceptors[i].Namespace = r.Namespace
+				}
 			}
 		}
 	}

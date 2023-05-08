@@ -457,36 +457,49 @@ func TestConcatAPIPolicies(t *testing.T) {
 		{
 			schemeUpSpec: dpv1alpha1.APIPolicySpec{
 				Override: &dpv1alpha1.PolicySpec{
-					RequestInterceptor: &dpv1alpha1.InterceptorReference{
-						Name: "up-request-interceptor",
-					},
-				},
-				Default: &dpv1alpha1.PolicySpec{
-					ResponseInterceptor: &dpv1alpha1.InterceptorReference{
-						Name: "up-response-interceptor",
+					RequestInterceptors: []dpv1alpha1.InterceptorReference{
+						{
+							Name:      "up-request-interceptor",
+							Namespace: "up-request-interceptor-ns",
+						},
 					},
 				},
 			},
 			schemeDownSpec: dpv1alpha1.APIPolicySpec{
 				Override: &dpv1alpha1.PolicySpec{
-					RequestInterceptor: &dpv1alpha1.InterceptorReference{
-						Name:      "down-request-interceptor",
-						Namespace: "down-request-interceptor-ns",
+					RequestInterceptors: []dpv1alpha1.InterceptorReference{
+						{
+							Name:      "down-request-interceptor",
+							Namespace: "down-request-interceptor-ns",
+						},
+					},
+				},
+				Default: &dpv1alpha1.PolicySpec{
+					ResponseInterceptors: []dpv1alpha1.InterceptorReference{
+						{
+							Name:      "down-response-interceptor",
+							Namespace: "down-response-interceptor-ns",
+						},
 					},
 				},
 			},
 			result: dpv1alpha1.APIPolicySpec{
 				Override: &dpv1alpha1.PolicySpec{
-					RequestInterceptor: &dpv1alpha1.InterceptorReference{
-						Name:      "up-request-interceptor",
-						Namespace: "down-request-interceptor-ns",
+					RequestInterceptors: []dpv1alpha1.InterceptorReference{
+						{
+							Name:      "up-request-interceptor",
+							Namespace: "up-request-interceptor-ns",
+						},
 					},
-					ResponseInterceptor: &dpv1alpha1.InterceptorReference{
-						Name: "up-response-interceptor",
+					ResponseInterceptors: []dpv1alpha1.InterceptorReference{
+						{
+							Name:      "down-response-interceptor",
+							Namespace: "down-response-interceptor-ns",
+						},
 					},
 				},
 			},
-			message: `not extected result for request interceptor or response interceptor`,
+			message: `not expected result for request interceptor or response interceptor`,
 		},
 	}
 	for _, item := range dataItems {

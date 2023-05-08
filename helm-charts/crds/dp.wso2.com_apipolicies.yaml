@@ -54,20 +54,23 @@ spec:
               default:
                 description: RequestQueryModifier support request query modifications
                 properties:
-                  requestInterceptor:
-                    description: InterceptorReference holds InterceptorService reference
-                      using name and namespace
-                    properties:
-                      name:
-                        description: Name is the name of the InterceptorService resource.
-                        type: string
-                      namespace:
-                        description: Namespace is the namespace of the InterceptorService
-                          resource.
-                        type: string
-                    required:
-                    - name
-                    type: object
+                  requestInterceptors:
+                    items:
+                      description: InterceptorReference holds InterceptorService reference
+                        using name and namespace
+                      properties:
+                        name:
+                          description: Name is the name of the InterceptorService
+                            resource.
+                          type: string
+                        namespace:
+                          description: Namespace is the namespace of the InterceptorService
+                            resource.
+                          type: string
+                      required:
+                      - name
+                      type: object
+                    type: array
                   requestQueryModifier:
                     description: RequestQueryModifier allows to modify request query
                       params
@@ -106,38 +109,44 @@ spec:
                       removeAll:
                         type: string
                     type: object
-                  responseInterceptor:
-                    description: InterceptorReference holds InterceptorService reference
-                      using name and namespace
-                    properties:
-                      name:
-                        description: Name is the name of the InterceptorService resource.
-                        type: string
-                      namespace:
-                        description: Namespace is the namespace of the InterceptorService
-                          resource.
-                        type: string
-                    required:
-                    - name
-                    type: object
+                  responseInterceptors:
+                    items:
+                      description: InterceptorReference holds InterceptorService reference
+                        using name and namespace
+                      properties:
+                        name:
+                          description: Name is the name of the InterceptorService
+                            resource.
+                          type: string
+                        namespace:
+                          description: Namespace is the namespace of the InterceptorService
+                            resource.
+                          type: string
+                      required:
+                      - name
+                      type: object
+                    type: array
                 type: object
               override:
                 description: PolicySpec contains API policies
                 properties:
-                  requestInterceptor:
-                    description: InterceptorReference holds InterceptorService reference
-                      using name and namespace
-                    properties:
-                      name:
-                        description: Name is the name of the InterceptorService resource.
-                        type: string
-                      namespace:
-                        description: Namespace is the namespace of the InterceptorService
-                          resource.
-                        type: string
-                    required:
-                    - name
-                    type: object
+                  requestInterceptors:
+                    items:
+                      description: InterceptorReference holds InterceptorService reference
+                        using name and namespace
+                      properties:
+                        name:
+                          description: Name is the name of the InterceptorService
+                            resource.
+                          type: string
+                        namespace:
+                          description: Namespace is the namespace of the InterceptorService
+                            resource.
+                          type: string
+                      required:
+                      - name
+                      type: object
+                    type: array
                   requestQueryModifier:
                     description: RequestQueryModifier allows to modify request query
                       params
@@ -176,20 +185,23 @@ spec:
                       removeAll:
                         type: string
                     type: object
-                  responseInterceptor:
-                    description: InterceptorReference holds InterceptorService reference
-                      using name and namespace
-                    properties:
-                      name:
-                        description: Name is the name of the InterceptorService resource.
-                        type: string
-                      namespace:
-                        description: Namespace is the namespace of the InterceptorService
-                          resource.
-                        type: string
-                    required:
-                    - name
-                    type: object
+                  responseInterceptors:
+                    items:
+                      description: InterceptorReference holds InterceptorService reference
+                        using name and namespace
+                      properties:
+                        name:
+                          description: Name is the name of the InterceptorService
+                            resource.
+                          type: string
+                        namespace:
+                          description: Namespace is the namespace of the InterceptorService
+                            resource.
+                          type: string
+                      required:
+                      - name
+                      type: object
+                    type: array
                 type: object
               targetRef:
                 description: PolicyTargetReference identifies an API object to apply
