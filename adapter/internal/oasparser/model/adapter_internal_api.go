@@ -449,38 +449,23 @@ func generateEndpointCluster(endpoints []Endpoint, endpointType string) *Endpoin
 }
 
 // GetOperationInterceptors returns operation interceptors
-func (swagger *AdapterInternalAPI) GetOperationInterceptors(apiInterceptor InterceptEndpoint, resourceInterceptor InterceptEndpoint, operations []*Operation, isIn bool) map[string]InterceptEndpoint {
-	interceptorOperationMap := make(map[string]InterceptEndpoint)
-
+func (swagger *AdapterInternalAPI) GetOperationInterceptors(operations []*Operation, isIn bool) []map[string]*InterceptEndpoint {
+	// array index is the interterceptor index
+	interceptorOperations := []map[string]*InterceptEndpoint{}
 	for _, op := range operations {
-		extensionName := constants.XWso2RequestInterceptor
-		// first get operational policies
-		operationInterceptor := op.GetCallInterceptorService(isIn)
-		// if operational policy interceptor not given check operational level swagger extension
-		if !operationInterceptor.Enable {
-			if !isIn {
-				extensionName = constants.XWso2ResponseInterceptor
+		interceptors := op.GetCallInterceptorService(isIn)
+		for interceptorIndex, interceptor := range interceptors {
+			if len(interceptorOperations) <= interceptorIndex {
+				interceptorMap := make(map[string]*InterceptEndpoint)
+				interceptorMap[strings.ToUpper(op.method)] = interceptor
+				interceptorOperations = append(interceptorOperations, interceptorMap)
+			} else {
+				interceptorMap := interceptorOperations[interceptorIndex]
+				interceptorMap[strings.ToUpper(op.method)] = interceptor
 			}
-			operationInterceptor = swagger.GetInterceptor(op.GetVendorExtensions(), extensionName, constants.OperationLevelInterceptor)
-		}
-		operationInterceptor.ClusterName = op.iD
-		// if operation interceptor not given
-		if !operationInterceptor.Enable {
-			// assign resource level interceptor
-			if resourceInterceptor.Enable {
-				operationInterceptor = resourceInterceptor
-			} else if apiInterceptor.Enable {
-				// if resource interceptor not given add api level interceptor
-				operationInterceptor = apiInterceptor
-			}
-		}
-		// add operation to the list only if an interceptor is enabled for the operation
-		if operationInterceptor.Enable {
-			interceptorOperationMap[strings.ToUpper(op.method)] = operationInterceptor
 		}
 	}
-	return interceptorOperationMap
-
+	return interceptorOperations
 }
 
 // GetInterceptor returns interceptors

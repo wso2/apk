@@ -34,8 +34,8 @@ type routeCreateParams struct {
 	clusterName                  string
 	routeConfig                  *model.EndpointConfig
 	authHeader                   string
-	requestInterceptor           map[string]model.InterceptEndpoint
-	responseInterceptor          map[string]model.InterceptEndpoint
+	requestInterceptor           []map[string]*model.InterceptEndpoint
+	responseInterceptor          []map[string]*model.InterceptEndpoint
 	corsPolicy                   *model.CorsConfig
 	passRequestPayloadToEnforcer bool
 	isDefaultVersion             bool

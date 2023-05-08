@@ -39,8 +39,10 @@ type APIPolicySpec struct {
 // PolicySpec contains API policies
 type PolicySpec struct {
 	RequestQueryModifier RequestQueryModifier `json:"requestQueryModifier,omitempty"`
-	RequestInterceptor   *InterceptorConfig   `json:"requestInterceptor,omitempty"`
-	ResponseInterceptor  *InterceptorConfig   `json:"responseInterceptor,omitempty"`
+	// +kubebuilder:validation:MaxItems=10
+	RequestInterceptors []InterceptorConfig `json:"requestInterceptors,omitempty"`
+	// +kubebuilder:validation:MaxItems=10
+	ResponseInterceptors []InterceptorConfig `json:"responseInterceptors,omitempty"`
 }
 
 // RequestQueryModifier allows to modify request query params

@@ -25,13 +25,11 @@ import (
 	logging "github.com/wso2/apk/adapter/internal/logging"
 )
 
-// Interceptor hold values used for interceptor
+// Interceptor is the config holder for interceptors
 type Interceptor struct {
-	Context               *InvocationContext
-	IsRequestFlowEnabled  bool
-	IsResponseFlowEnabled bool
-	RequestFlow           map[string]Config // key:operation method -> value:config
-	ResponseFlow          map[string]Config // key:operation method -> value:config
+	Context              *InvocationContext
+	RequestInterceptors  []map[string]Config
+	ResponseInterceptors []map[string]Config
 }
 
 // Config hold config values used for request/response interceptors
@@ -78,12 +76,6 @@ var (
 	commonTemplate = `
  local interceptor = require 'home.wso2.interceptor.lib.interceptor'
  local utils = require 'home.wso2.interceptor.lib.utils'
- {{if .IsResponseFlowEnabled -}} {{/* resp_flow details are required in req flow if request info needed in resp flow */}}
- local resp_flow_list = {  
-	 {{- range $key, $value := .ResponseFlow -}} 
-		 {{- $key }} = {invocationContext = {{$value.Include.InvocationContext}}, requestHeaders = {{$value.Include.RequestHeaders}}, requestBody = {{$value.Include.RequestBody}}, requestTrailer = {{$value.Include.RequestTrailer}}, responseHeaders = {{$value.Include.ResponseHeaders}}, responseBody = {{$value.Include.ResponseBody}}, responseTrailers = {{$value.Include.ResponseTrailers}}}, 
-	 {{- end -}}}
- {{- else -}}local resp_flow_list = {}{{end}} {{/* if resp_flow disabled no need req info in resp path */}}
  local inv_context = {
 	 organizationId = "{{.Context.OrganizationID}}",
 	 basePath = "{{.Context.BasePath}}",
@@ -101,30 +93,42 @@ var (
  }
  `
 	requestInterceptorTemplate = `
- local req_flow_list = {  
-	 {{- range $key, $value := .RequestFlow -}} 
-		 {{- $key }} = {invocationContext = {{$value.Include.InvocationContext}}, requestHeaders = {{$value.Include.RequestHeaders}}, requestBody = {{$value.Include.RequestBody}}, requestTrailer = {{$value.Include.RequestTrailer}}}, 
+ {{- range $interceptorIndex, $requestFlow := .RequestInterceptors -}}
+ local req_flow_list_{{- $interceptorIndex }} = {
+	{{- range $key, $value := $requestFlow -}}
+		{{- $key }} = {invocationContext = {{$value.Include.InvocationContext}}, requestHeaders = {{$value.Include.RequestHeaders}}, requestBody = {{$value.Include.RequestBody}}, requestTrailer = {{$value.Include.RequestTrailer}}},
+	{{- end -}}}
+ local req_call_config_{{- $interceptorIndex }} = {
+	 {{- range $key, $value := $requestFlow -}}
+		 {{- $key }} = {cluster_name = "{{$value.ExternalCall.ClusterName}}", timeout = {{$value.ExternalCall.Timeout}}, authority_header = "{{$value.ExternalCall.AuthorityHeader}}"},
 	 {{- end -}}}
- local req_call_config = {  
-	 {{- range $key, $value := .RequestFlow -}} 
-		 {{- $key }} = {cluster_name = "{{$value.ExternalCall.ClusterName}}", timeout = {{$value.ExternalCall.Timeout}}, authority_header = "{{$value.ExternalCall.AuthorityHeader}}"}, 
-	 {{- end -}}}
+ {{- end -}}
  function envoy_on_request(request_handle)
+ {{- range $interceptorIndex, $requestFlow := .RequestInterceptors -}}
 	 interceptor.handle_request_interceptor(
-		 request_handle, req_call_config, req_flow_list, resp_flow_list, inv_context, false, wire_log_config
+		 request_handle, req_call_config_{{- $interceptorIndex }}, req_flow_list_{{- $interceptorIndex }}, {}, inv_context, false, wire_log_config
 	 )
+ {{- end -}}
  end
  `
 
 	responseInterceptorTemplate = `
- local res_call_config = {  
-	 {{- range $key, $value := .ResponseFlow -}} 
-		 {{- $key }} = {cluster_name = "{{$value.ExternalCall.ClusterName}}", timeout={{$value.ExternalCall.Timeout}}, authority_header = "{{$value.ExternalCall.AuthorityHeader}}"}, 
+ {{ range $interceptorIndex, $responseFlow := .ResponseInterceptors }}
+ local resp_flow_list_{{- $interceptorIndex }} = {
+	 {{- range $key, $value := $responseFlow -}}
+		 {{- $key }} = {invocationContext = {{$value.Include.InvocationContext}}, requestHeaders = {{$value.Include.RequestHeaders}}, requestBody = {{$value.Include.RequestBody}}, requestTrailer = {{$value.Include.RequestTrailer}}, responseHeaders = {{$value.Include.ResponseHeaders}}, responseBody = {{$value.Include.ResponseBody}}, responseTrailers = {{$value.Include.ResponseTrailers}}},
 	 {{- end -}}}
+ local res_call_config_{{- $interceptorIndex }} = {
+	 {{- range $key, $value := $responseFlow -}}
+		 {{- $key }} = {cluster_name = "{{$value.ExternalCall.ClusterName}}", timeout = {{$value.ExternalCall.Timeout}}, authority_header = "{{$value.ExternalCall.AuthorityHeader}}"},
+	 {{- end -}}}
+ {{- end -}}
  function envoy_on_response(response_handle)
+ {{- range $interceptorIndex, $responseFlow := .ResponseInterceptors -}}
 	 interceptor.handle_response_interceptor(
-		 response_handle, res_call_config, resp_flow_list, wire_log_config
+		 response_handle, res_call_config_{{- $interceptorIndex }}, resp_flow_list_{{- $interceptorIndex }}, wire_log_config
 	 )
+ {{- end -}}
  end
  `
 	// defaultRequestInterceptorTemplate is the template that is applied when request flow is disabled
@@ -133,7 +137,7 @@ var (
  function envoy_on_request(request_handle)
 	 utils.wire_log_headers(request_handle, " >> request headers >> ", {{ .LogConfig.LogHeadersEnabled }})
 	 utils.wire_log_body(request_handle, " >> request body >> ", {{ .LogConfig.LogBodyEnabled }})
-	 interceptor.handle_request_interceptor(request_handle, {}, {}, resp_flow_list, inv_context, true, { log_body_enabled = false, log_headers_enabled = false, log_trailers_enabled = false })
+	 interceptor.handle_request_interceptor(request_handle, {}, {}, {}, inv_context, true, { log_body_enabled = false, log_headers_enabled = false, log_trailers_enabled = false })
 	 utils.wire_log_trailers(request_handle, " >> request trailers >> ", {{ .LogConfig.LogTrailersEnabled }})
  end
  `

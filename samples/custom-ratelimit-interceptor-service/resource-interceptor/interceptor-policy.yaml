@@ -19,8 +19,8 @@ metadata:
   name: interceptor-policy-resource-level
 spec:
   override:
-    requestInterceptor:
-      backendRef:
+    requestInterceptors:
+    - backendRef:
         name: interceptor-backend-v1
         namespace: apk
       includes:
