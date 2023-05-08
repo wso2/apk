@@ -63,8 +63,8 @@ end`)
 	httpFilters := []*hcmv3.HttpFilter{
 		cors,
 		extAuth,
-		luaGlobal,
 		luaLocal,
+		luaGlobal,
 	}
 	conf := config.ReadConfigs()
 	if conf.Envoy.RateLimit.Enabled {
