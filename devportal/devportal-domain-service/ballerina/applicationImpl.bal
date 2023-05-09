@@ -26,12 +26,13 @@ import ballerina/time;
 isolated function addApplication(Application application, commons:Organization org, string user) returns NotFoundError|Application|APKError {
     string applicationId = uuid:createType1AsString();
     application.applicationId = applicationId;
-    string?|error policyId = validateApplicationUsagePolicy(application.throttlingPolicy, org);
-    if policyId is error {
-        string message = "Invalid Policy";
-        log:printError(message);
-        return error(message, policyId, message = message, description = message, code = 909000, statusCode = "500");
-    }
+    // TODO: Removed Validate the policy
+    // string?|error policyId = validateApplicationUsagePolicy(application.throttlingPolicy, org);
+    // if policyId is error {
+    //     string message = "Invalid Policy";
+    //     log:printError(message);
+    //     return error(message, policyId, message = message, description = message, code = 909000, statusCode = "500");
+    // }
     string|NotFoundError|APKError subscriberId = getSubscriberIdDAO(user,org.uuid);
     if subscriberId is string {
         Application|APKError createdApp = addApplicationDAO(application, subscriberId, org.uuid);
@@ -42,7 +43,7 @@ isolated function addApplication(Application application, commons:Organization o
                 time:Utc currTime = time:utcNow();
                 string date = time:utcToString(currTime);
                 ApplicationGRPC createApplicationRequest = {eventId: eventId, name: createdApp.name, uuid: applicationId,
-                owner: user, policy: createdApp.throttlingPolicy, keys: [],
+                owner: user, policy: "unlimited", keys: [],
                 attributes: [], timeStamp: date, organization: org.uuid};
                 foreach string host in hostList {
                     log:printDebug("Retrieved Mgt Host:"+host);
@@ -98,12 +99,13 @@ isolated function updateApplication(string appId, Application application, commo
         NotFoundError nfe = {body: err};
         return nfe;
     }
-    string?|error policyId = validateApplicationUsagePolicy(application.throttlingPolicy, org);
-    if policyId is error {
-        string message = "Invalid Policy";
-        log:printError(message);
-        return error(message, policyId, message = message, description = message, code = 909000, statusCode = "500");
-    }
+    // TODO: Removed Validate the policy
+    // string?|error policyId = validateApplicationUsagePolicy(application.throttlingPolicy, org);
+    // if policyId is error {
+    //     string message = "Invalid Policy";
+    //     log:printError(message);
+    //     return error(message, policyId, message = message, description = message, code = 909000, statusCode = "500");
+    // }
     string|NotFoundError|APKError subscriberId = getSubscriberIdDAO(user,org.uuid);
     if subscriberId is string {
         log:printDebug("subscriber id" + subscriberId.toString());
@@ -115,7 +117,7 @@ isolated function updateApplication(string appId, Application application, commo
                 time:Utc currTime = time:utcNow();
                 string date = time:utcToString(currTime);
                 ApplicationGRPC createApplicationRequest = {eventId: eventId, name: updatedApp.name, uuid: appId,
-                owner: user, policy: updatedApp.throttlingPolicy, keys: [],
+                owner: user, policy: "unlimited", keys: [],
                 attributes: [], timeStamp: date, organization: org.uuid};
                 foreach string host in hostList {
                     log:printDebug("Retrieved Host:"+host);

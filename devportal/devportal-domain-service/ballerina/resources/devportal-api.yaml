@@ -3431,7 +3431,6 @@ components:
       title: Application
       required:
         - name
-        - throttlingPolicy
       type: object
       properties:
         applicationId:
@@ -3443,10 +3442,6 @@ components:
           minLength: 1
           type: string
           example: CalculatorApp
-        throttlingPolicy:
-          minLength: 1
-          type: string
-          example: Unlimited
         description:
           maxLength: 512
           type: string
@@ -3804,7 +3799,7 @@ components:
       title: Subscription
       required:
         - applicationId
-        - throttlingPolicy
+        - apiId
       type: object
       properties:
         subscriptionId:
@@ -3824,12 +3819,6 @@ components:
           $ref: '#/components/schemas/APIInfo'
         applicationInfo:
           $ref: '#/components/schemas/ApplicationInfo'
-        throttlingPolicy:
-          type: string
-          example: Unlimited
-        requestedThrottlingPolicy:
-          type: string
-          example: Unlimited
         status:
           type: string
           example: UNBLOCKED

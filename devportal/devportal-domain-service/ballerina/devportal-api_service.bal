@@ -944,7 +944,7 @@ service /api/am/devportal on ep0 {
     # http:Ok (OK. User password changed successfully)
     # BadRequestError (Bad Request. Invalid request or validation error.)
     isolated resource function post me/'change\-password(@http:Payload CurrentAndNewPasswords payload) returns http:Ok|BadRequestError {
-        BadRequestError badRequest = {body: {code: "400", message: "Invalid request or validation error."}};
+        BadRequestError badRequest = {body: {code: 400, message: "Invalid request or validation error."}};
         return badRequest;
     }
 

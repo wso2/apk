@@ -1,3 +1,21 @@
+//
+// Copyright (c) 2022, WSO2 LLC. (http://www.wso2.com).
+//
+// WSO2 LLC. licenses this file to you under the Apache License,
+// Version 2.0 (the "License"); you may not use this file except
+// in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+//
+
 import ballerina/http;
 import ballerina/constraint;
 
@@ -74,6 +92,16 @@ public type OkApplicationKeyReGenerateResponse record {|
 public type OkApplicationInfo record {|
     *http:Ok;
     ApplicationInfo body;
+|};
+
+public type CreatedSubscription record {|
+    *http:Created;
+    Subscription body;
+|};
+
+public type CreatedApplication record {|
+    *http:Created;
+    Application body;
 |};
 
 public type DocumentList record {
@@ -234,8 +262,6 @@ public type Subscription record {
     string apiId?;
     APIInfo apiInfo?;
     ApplicationInfo applicationInfo?;
-    string throttlingPolicy;
-    string requestedThrottlingPolicy?;
     string status?;
     # A url and other parameters the subscriber can be redirected.
     string redirectionParams?;
@@ -382,8 +408,6 @@ public type Application record {
     int id?;
     @constraint:String {maxLength: 100, minLength: 1}
     string name;
-    @constraint:String {minLength: 1}
-    string throttlingPolicy;
     @constraint:String {maxLength: 512}
     string description?;
     # Type of the access token generated for this application.
