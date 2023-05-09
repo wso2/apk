@@ -415,7 +415,6 @@ dependencies = [
 	{org = "ballerina", name = "log"},
 	{org = "ballerina", name = "os"},
 	{org = "ballerina", name = "sql"},
-	{org = "ballerina", name = "uuid"},
 	{org = "ballerinax", name = "postgresql"}
 ]
 modules = [
@@ -425,7 +424,7 @@ modules = [
 [[package]]
 org = "wso2"
 name = "runtime_domain_service"
-version = "0.0.1-m9"
+version = "0.0.1-SNAPSHOT"
 dependencies = [
 	{org = "ballerina", name = "cache"},
 	{org = "ballerina", name = "constraint"},
