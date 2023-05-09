@@ -20,7 +20,8 @@ import { faGaugeSimple, faShieldAlt,
     faPenToSquare,
     faScrewdriverWrench,
     faShapes,
-    faGears} from '@fortawesome/free-solid-svg-icons';
+    faGears,
+    faSitemap} from '@fortawesome/free-solid-svg-icons';
 
 // ==============================|| MENU ITEMS ||============================== //
 
@@ -94,6 +95,20 @@ const menuItems = {
     //         }
     //     ]
     // },
+    {
+        id: 'organizations',
+        title: '',
+        type: 'group',
+        children: [
+            {
+                id: 'organizations',
+                title: 'Organizations',
+                type: 'item',
+                url: '/organizations',
+                icon: () => <FontAwesomeIcon icon={faSitemap} />,
+            }
+        ]
+    },
     {
         id: 'api-categories',
         title: '',

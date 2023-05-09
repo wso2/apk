@@ -23,6 +23,7 @@ import Item from '@mui/material/Grid';
 import APICategoriesCard from './APICategoriesCard';
 import RateLimitingCard from './RateLimitingCard';
 import TasksWorkflowCard from './TasksWorkflowCard';
+import OrganizationsCard from '../Organizations/OrganizationsCard';
 import { useAppContext } from 'context/AppContext';
 
 /**
@@ -36,6 +37,9 @@ export default function Dashboard() {
         <Grid container spacing={3}>
             <Grid item xs={11} md={6}>
                 <RateLimitingCard />
+            </Grid>
+            <Grid item xs={11} md={6}>
+                <OrganizationsCard />
             </Grid>
             <Grid item xs={11} md={6}>
                 <APICategoriesCard />

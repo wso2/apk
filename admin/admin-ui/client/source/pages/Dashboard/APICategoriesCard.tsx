@@ -29,8 +29,9 @@ import Typography from '@mui/material/Typography';
 import CategoryIcon from '@ant-design/icons/GroupOutlined';
 import LaunchIcon from '@ant-design/icons/LinkOutlined';
 import Loader from 'components/Loader';
-import Configurations from 'Config';
 import useAxios from 'components/hooks/useAxios';
+
+const Configurations = require("Config")
 
 const useStyles = makeStyles()(() => {
     return {
