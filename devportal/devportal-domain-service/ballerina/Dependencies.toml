@@ -417,7 +417,6 @@ dependencies = [
 	{org = "ballerina", name = "log"},
 	{org = "ballerina", name = "os"},
 	{org = "ballerina", name = "sql"},
-	{org = "ballerina", name = "uuid"},
 	{org = "ballerinax", name = "postgresql"}
 ]
 modules = [
@@ -427,7 +426,7 @@ modules = [
 [[package]]
 org = "wso2"
 name = "devportal_service"
-version = "0.0.1-SNAPSHOT"
+version = "0.0.1-m9"
 dependencies = [
 	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "http"},
